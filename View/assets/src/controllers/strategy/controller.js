@@ -23,6 +23,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   ns.sidIndex = 0;
 
   function init(element, attrs) {
+    // Selects the last step of the first strategy
     wdk.step.init();
 
     // Make the strategies window resizable
@@ -70,8 +71,13 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       }
     });
 
+    // remove tabs that don't have an associated jsp
     initStrategyTabs();
+
+    // init DYK and show strategy tab
     wdk.addStepPopup.showPanel(chooseStrategyTab(attrs.allCount, attrs.openCount));
+
+    // get strategies json from server and draw strategies ui
     initDisplay();
 
     // strategyselect event fired when a step in a strategy is selected
@@ -94,6 +100,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
   }
 
+  /**
+   * Returns the name of the tab to open based on all and open counts
+   */
   function chooseStrategyTab(allCount, openCount) {
     var openTabName = 'strategy_results';
     var allTabName = 'search_history';
@@ -117,10 +126,15 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
   }
 
-  // TODO - we should make this a configuration option.
-  // Then users can name the files whatever they want
-  // and we don't have to perform unnecessary HTTP requests
-  // if nothing is configured.
+  /**
+   * For each tab, if associated JSP exists, call custom function if defined.
+   * Otherwise, remove the tab.
+   *
+   * TODO - we should make this a configuration option.
+   * Then users can name the files whatever they want
+   * and we don't have to perform unnecessary HTTP requests
+   * if nothing is configured.
+   */
   function initStrategyTabs() {
     // Fetch sample, new strat, and help tab contents
     // If no page is found for a given tab, remove
@@ -173,6 +187,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
   }
 
+  /**
+   * Get state info from server and call updateStrategies
+   */
   function initDisplay(){
     $.ajax({
       url: "showStrategy.do",
@@ -189,6 +206,18 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
   }
 
+  /**
+   * Update the namespace-attached `strats` array
+   *
+   * The state is attached to the namespace. Then, strategies are removed based
+   * on the state object. Then, strategies are loaded (see @loadModel) if the
+   * strategy is not loaded, or the checksum of the strategy has changed.
+   *
+   * @param {Object} data Object retreived from server with state information
+   * @param {Boolean} ignoreFilters If `true` filters will not be reloaded.
+   *   Otherwise they will be reloaded.
+   * @returns {jQuery.Deffered} Promise
+   */
   function updateStrategies(data, ignoreFilters) {
     var deferred = $.Deferred();
 
@@ -216,49 +245,58 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   }
 
   /**
-   * Removes and reorders ns.strats
+   * Remove strategies from, and reorders, the namespace-attached `strats`
+   *  array.
    */
   function removeClosedStrategies(){
-    for (var newOrder in ns.strats) {
-      if (newOrder.indexOf(".") == -1) {
+    for (var currentOrder in ns.strats) {
+      if (currentOrder.indexOf(".") == -1) {
         var removeTopStrategy = true;
-        for (var oldOrder in ns.state) {
-          if (oldOrder != "length") {
-            if (ns.strats[newOrder].checksum == ns.state[oldOrder].checksum) {
+        for (var newOrder in ns.state) {
+          if (newOrder != "length") {
+            if (ns.strats[currentOrder].checksum == ns.state[newOrder].checksum) {
               removeTopStrategy = false;
-              if (oldOrder != newOrder) {
-                ns.strats[oldOrder] = ns.strats[newOrder];
-                removeSubStrategies(newOrder, oldOrder);
-                delete ns.strats[newOrder];
+              if (newOrder != currentOrder) {
+                ns.strats[newOrder] = ns.strats[currentOrder];
+                removeSubStrategies(currentOrder, newOrder);
+                delete ns.strats[currentOrder];
                 break;
               }
-            } else if(ns.strats[newOrder].backId == ns.state[oldOrder].id) {
+            } else if(ns.strats[currentOrder].backId == ns.state[newOrder].id) {
               removeTopStrategy = false;
-              removeSubStrategies(newOrder, oldOrder);
-              if (oldOrder != newOrder) {
-                ns.strats[oldOrder] = ns.strats[newOrder];
+              removeSubStrategies(currentOrder, newOrder);
+              if (newOrder != currentOrder) {
+                ns.strats[newOrder] = ns.strats[currentOrder];
                 break;
               }
             }
           }
         }
         if (removeTopStrategy) {
-          removeSubStrategies(newOrder);
-          delete ns.strats[newOrder];
+          removeSubStrategies(currentOrder);
+          delete ns.strats[currentOrder];
           wdk.history.update_hist(true); //set update flag for history if anything was closed.
         }
       }
     }
   }
 
-  function removeSubStrategies(newOrder, oldOrder){
+  /**
+   * Remove substrategies from `strats`. If `newOrder` is defined, then the
+   * substrategy's parent stategy order is updated. Otherwise, the substrategy
+   * is removed.
+   *
+   * @param {Number} currentOrder The stategy's current order
+   * @param {Number} newOrder The strategy's new order
+   */
+  function removeSubStrategies(currentOrder, newOrder){
     for (var order in ns.strats) {
-      if (order.split(".").length > 1 && order.split(".")[0] == newOrder) {
-        if (oldOrder == undefined) {
+      if (order.split(".").length > 1 && order.split(".")[0] == currentOrder) {
+        if (newOrder == undefined) {
           delete ns.strats[order];
         } else {
           var n_ord = order.split(".");
-          n_ord[0] = oldOrder;
+          n_ord[0] = newOrder;
           n_ord = n_ord.join(".");
           ns.strats[n_ord] = ns.strats[order];
           delete ns.strats[order];
@@ -267,6 +305,18 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
   }
 
+  /**
+   * Insert stategy HTML into DOM.
+   *
+   * @param {Object} view Current strategy, step, and results offset retrieved
+   *    from server.
+   * @param {Boolean} ignoreFilters If `true`, don't reload filters; otherwise
+   *    reload filters.
+   * @param {Number} count The number of open strategies
+   * @param {Object} jQuery.Deffered object used to allow promise chaining for
+   *  updating strategies. This adds complexity and will probably removed in
+   *  favor of event triggering.
+   */
   function showStrategies(view, ignoreFilters, count, deferred){
     $("#tab_strategy_results font.subscriptCount").text("(" + count + ")");
     var sC = 0;
@@ -329,7 +379,14 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     wdk.tooltips.assignTooltips(".step-elem", 0);
   }
 
-  function displayOpenSubStrategies(s, d) {
+  /**
+   * Insert substrategies into DOM and add colored border arround them and
+   * associated steps in parent strategies.
+   *
+   * @param {Object} strategy Parent strategy
+   * @param {Object} div DOM node
+   */
+  function displayOpenSubStrategies(strategy, div) {
     //Colors for expanded substrategies
     var indent = 20;
     var colors = [
@@ -342,20 +399,20 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var sCount = 0;
     var subs;
     var j;
-    for (j in s.subStratOrder) {
+    for (j in strategy.subStratOrder) {
       sCount++;
     }
     for (j=1; j<=sCount; j++) {
-      subs = wdk.strategy.model.getStrategy(s.subStratOrder[j]);
-      subs.color = parseInt(s.getStep(wdk.strategy.model.getStrategy(s.subStratOrder[j]).backId.split("_")[1],false).frontId, 10) % colors.length;
+      subs = wdk.strategy.model.getStrategy(strategy.subStratOrder[j]);
+      subs.color = parseInt(strategy.getStep(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]).backId.split("_")[1],false).frontId, 10) % colors.length;
       $(subs.DIV).addClass("sub_diagram").css({
         "margin-left": (subs.depth(null) * indent) + "px",
         "border-color": colors[subs.color].top+" "+colors[subs.color].right+" "+colors[subs.color].bottom+" "+colors[subs.color].left
       });
-      $("div#diagram_" + s.frontId + " div#step_" + s.getStep(wdk.strategy.model.getStrategy(s.subStratOrder[j]).backId.split("_")[1],false).frontId + "_sub", d).css({"border-color":colors[subs.color].step});
-      $("div#diagram_" + s.frontId, d).after(subs.DIV);
-      if (wdk.strategy.model.getSubStrategies(s.subStratOrder[j]).length > 0) {
-        displayOpenSubStrategies(wdk.strategy.model.getStrategy(s.subStratOrder[j]),d);
+      $("div#diagram_" + strategy.frontId + " div#step_" + strategy.getStep(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]).backId.split("_")[1],false).frontId + "_sub", div).css({"border-color":colors[subs.color].step});
+      $("div#diagram_" + strategy.frontId, div).after(subs.DIV);
+      if (wdk.strategy.model.getSubStrategies(strategy.subStratOrder[j]).length > 0) {
+        displayOpenSubStrategies(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]),d);
       }
     }
   }
@@ -404,6 +461,12 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     return instr_text + "<br>" + instr_text2;
   }
 
+  /**
+   * Instantiate Strategy object.
+   *
+   * @param {Object} json Strategy object retreived from server.
+   * @param {Number} ord The order in which to display the strategy.
+   */
   function loadModel(json, ord) {
     wdk.history.update_hist(true); //set update flag for history if anything was opened/changed.
     var strategy = json;
@@ -451,37 +514,55 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
   }
 
+  /**
+   * Display results for a particular step.
+   *
+   * Retrieve results from server as HTML and insert into workspace.
+   *
+   * @param {Number} f_strategyId Strategy order/frontID
+   * @param {Number} f_stepId Step order/frontID
+   * @param {Boolean} bool If Step is a Boolean Step set to `true`; else `false`
+   * @param {Number} pagerOffset Results offset
+   * @param {Boolean} ignoreFilters If `true` don't reload filters; else reload
+   *    filters
+   * @param {String} action Action to trigger once results are loaded.
+   * @param {Object} deferred jQuery.Deffered object created in `updateStrategies`
+   */
   function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters,
       action, deferred) {
+
     if (f_strategyId == -1) {
+      // don't show any results
       $("#strategy_results > div.Workspace").html("");
       wdk.addStepPopup.current_Front_Strategy_Id = null;
       return;
     }
+
     wdk.addStepPopup.current_Front_Strategy_Id = f_strategyId;
+
     var strategy = wdk.strategy.model.getStrategy(f_strategyId);
     var step = strategy.getStep(f_stepId, true);
     var url = "showSummary.do";
-    var d = {};
-    d.strategy = strategy.backId;
-    d.step = step.back_step_Id;
-    d.resultsOnly = true;
-    d.strategy_checksum = (strategy.checksum != null) ? strategy.checksum :
-        wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
-    if (bool) {
-      d.step = step.back_boolean_Id;
-    }
+    var data = {
+      strategy: strategy.backId,
+      step: step.back_step_Id,
+      resultsOnly: true,
+      strategy_checksum: (strategy.checksum != null) ? strategy.checksum :
+          wdk.strategy.model.getStrategy(strategy.subStratOf).checksum,
+      bool: (bool) ? step.back_boolean_Id : null
+    };
+
     if (!pagerOffset) {
-      d.noskip = 1;
+      data.noskip = 1;
     } else { 
-      d.pager = {};
-      d.pager.offset = pagerOffset;    
+      data.pager = { offset: pagerOffset };
     }
+
     return $.ajax({
       url: url,
       dataType: "html",
       type: "post",
-      data: d,
+      data: data,
       beforeSend: function() {
         wdk.util.showLoading(f_strategyId);
       },
@@ -495,9 +576,12 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
             $("#diagram_" + strategy.frontId + " step_" + step.frontId +
                 "_sub div.crumb_details div.crumb_menu a.edit_step_link"))
         ) {
+          // unselect previously selected step
           $Strategies.find(".selected").removeClass("selected");
+
           var init_view_strat = strategy.backId;
           var init_view_step;
+
           if (bool) {
             $("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" +
                 step.frontId + "']").addClass("selected");
@@ -507,7 +591,10 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
                 step.frontId + "_sub']").addClass("selected");
             init_view_step = step.back_step_Id;
           }
+
+          // insert results HTML into DOM
           wdk.resultsPage.ResultsToGrid(data, ignoreFilters, $("#strategy_results .Workspace"));
+          // update results pane title
           wdk.resultsPage.updateResultLabels($("#strategy_results .Workspace"), strategy, step);
           
           // remember user's action, if user is not logged in,
@@ -519,6 +606,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           }
 
           // trigger custom events
+          // in this case, select events
           var $selectedStrategy = $("#Strategies .diagram").has(".selected");
           var $selectedStep = $("#Strategies .diagram").find(".selected");
 
@@ -531,6 +619,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           }
 
         }
+
         wdk.util.removeLoading(f_strategyId);
         wdk.basket.checkPageBasket();
         $.cookie("refresh_results", "false", { path : '/' });
@@ -543,6 +632,14 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       }
     });
   }
+
+  //===========================================================================
+  //  =Actions
+  //
+  //  The following functions make xhr calls to the server. The server returns
+  //  a state object that is used by the function updateStrategies which will
+  //  update the local state (strats) and redraw the UI.
+  //===========================================================================
 
   function RenameStep(ele, s, stp) {
     var new_name = $(ele).val();
@@ -598,54 +695,6 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         }
       }
     });
-    wdk.step.isInsert = "";
-    wdk.addStepPopup.closeAll(true);
-  }
-
-  // deprecated?  -  dmf
-  function callSpanLogic() {
-    var cstrt = wdk.strategy.model.getStrategy(wdk.addStepPopup.current_Front_Strategy_Id);
-    var f_strategyId = cstrt.frontId;
-    var b_strategyId = cstrt.backId;
-    var d = wdk.util.parseInputs();
-    var quesName = "";
-    var outputType = "";
-    $("#form_question input[name='value(span_output)']").each(function() {
-      if (this.checked) outputType = $(this).val();
-    });
-    outputType = (outputType.indexOf("A") != -1) ? "a" : "b";
-    outputType = $("#form_question input#type"+outputType.toUpperCase()).val();
-    if (outputType == "GeneRecordClasses.GeneRecordClass") quesName = "SpanQuestions.GenesBySpanLogic";
-    if (outputType == "OrfRecordClasses.OrfRecordClass") quesName = "SpanQuestions.OrfsBySpanLogic";
-    if (outputType == "IsolateRecordClasses.IsolateRecordClass") quesName = "SpanQuestions.IsolatesBySpanLogic";
-    if (outputType == "EstRecordClasses.EstRecordClass") quesName = "SpanQuestions.EstsBySpanLogic";
-    if (outputType == "SnpRecordClasses.SnpRecordClass") quesName = "SpanQuestions.SnpsBySpanLogic";
-    if (outputType == "AssemblyRecordClasses.AssemblyRecordClass") quesName = "SpanQuestions.AssemblyBySpanLogic";
-    if (outputType == "SequenceRecordClasses.SequenceRecordClass") quesName = "SpanQuestions.SequenceBySpanLogic";
-    if (outputType == "SageTagRecordClasses.SageTagRecordClass") quesName = "SpanQuestions.SageTagsBySpanLogic";
-    if (outputType == "DynSpanRecordClasses.DynSpanRecordClass") quesName = "SpanQuestions.DynSpansBySpanLogic";
-    if (outputType == "") return null;
-    $.ajax({
-      url: "processFilter.do?questionFullName=" + quesName + "&strategy=" +
-          cstrt.backId + "&strategy_checksum=" + cstrt.checksum,
-      data: d + "&state=" + ns.stateString,
-      type: "post",
-      dataType: "json",
-      beforeSend: function(){
-        wdk.util.showLoading(f_strategyId);
-      },
-      success: function(data) {
-        if (wdk.strategy.error.ErrorHandler("AddStep", data, cstrt, $("div#query_form"))) {
-          if ($("div#query_form").css("display") == "none") {
-            $("div#query_form").remove();
-          }
-          updateStrategies(data);
-        } else {
-          wdk.util.removeLoading(f_strategyId);
-        }
-      }
-    });
-    wdk.addStepPopup.isSpan = false;
     wdk.step.isInsert = "";
     wdk.addStepPopup.closeAll(true);
   }
@@ -1018,7 +1067,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
   }
 
-  // to be bound to wdk.editable change event
+  //===========================================================================
+  //  =End Actions
+  //===========================================================================
+
+  // editable plugin event handler
   function updateStrategyName(event, widget) {
     var strategyId = widget.element.data("id");
     var strategy = wdk.strategy.model.getStrategyFromBackId(strategyId);
@@ -1034,6 +1087,54 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       }
       wdk.util.removeLoading(strategy.frontId);
     });
+  }
+
+  // deprecated?  -  dmf
+  function callSpanLogic() {
+    var cstrt = wdk.strategy.model.getStrategy(wdk.addStepPopup.current_Front_Strategy_Id);
+    var f_strategyId = cstrt.frontId;
+    var b_strategyId = cstrt.backId;
+    var d = wdk.util.parseInputs();
+    var quesName = "";
+    var outputType = "";
+    $("#form_question input[name='value(span_output)']").each(function() {
+      if (this.checked) outputType = $(this).val();
+    });
+    outputType = (outputType.indexOf("A") != -1) ? "a" : "b";
+    outputType = $("#form_question input#type"+outputType.toUpperCase()).val();
+    if (outputType == "GeneRecordClasses.GeneRecordClass") quesName = "SpanQuestions.GenesBySpanLogic";
+    if (outputType == "OrfRecordClasses.OrfRecordClass") quesName = "SpanQuestions.OrfsBySpanLogic";
+    if (outputType == "IsolateRecordClasses.IsolateRecordClass") quesName = "SpanQuestions.IsolatesBySpanLogic";
+    if (outputType == "EstRecordClasses.EstRecordClass") quesName = "SpanQuestions.EstsBySpanLogic";
+    if (outputType == "SnpRecordClasses.SnpRecordClass") quesName = "SpanQuestions.SnpsBySpanLogic";
+    if (outputType == "AssemblyRecordClasses.AssemblyRecordClass") quesName = "SpanQuestions.AssemblyBySpanLogic";
+    if (outputType == "SequenceRecordClasses.SequenceRecordClass") quesName = "SpanQuestions.SequenceBySpanLogic";
+    if (outputType == "SageTagRecordClasses.SageTagRecordClass") quesName = "SpanQuestions.SageTagsBySpanLogic";
+    if (outputType == "DynSpanRecordClasses.DynSpanRecordClass") quesName = "SpanQuestions.DynSpansBySpanLogic";
+    if (outputType == "") return null;
+    $.ajax({
+      url: "processFilter.do?questionFullName=" + quesName + "&strategy=" +
+          cstrt.backId + "&strategy_checksum=" + cstrt.checksum,
+      data: d + "&state=" + ns.stateString,
+      type: "post",
+      dataType: "json",
+      beforeSend: function(){
+        wdk.util.showLoading(f_strategyId);
+      },
+      success: function(data) {
+        if (wdk.strategy.error.ErrorHandler("AddStep", data, cstrt, $("div#query_form"))) {
+          if ($("div#query_form").css("display") == "none") {
+            $("div#query_form").remove();
+          }
+          updateStrategies(data);
+        } else {
+          wdk.util.removeLoading(f_strategyId);
+        }
+      }
+    });
+    wdk.addStepPopup.isSpan = false;
+    wdk.step.isInsert = "";
+    wdk.addStepPopup.closeAll(true);
   }
 
   ns.init = init;
