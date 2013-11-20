@@ -1432,6 +1432,11 @@ table.dataTable thead th div.DataTables_sort_wrapper {
 }
 
 
+
+
+
+
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = jQuery validation plugin messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1503,6 +1508,29 @@ span.marker a:link, span.marker a:visited {
 .wdk-error::after {
   content: "!";
 }
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     = Search Lookup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+.ui-widget { font-size:100%; font-family:Arial,Helvetica,sans-serif;}
+
+#search-lookup_wrapper #type-filter { display:inline; }
+#search-lookup td { border: 1px dotted #eeeeee; padding:2px}
+
+.mycontent ul { padding: 3px 3px 3px 15px; list-style: disc outside none; }
+.mycontent li { padding-bottom: 3px; }
+.mycontent h3 { margin: 15px 0px 0px 0px; padding: 10px; background-color: #EEEEEE; }
+
+
+//
+//
+
+#search-lookup_wrapper div.dataTables_scroll { display: none; }
+
+#search-lookup_wrapper div.ui-corner-bl { display: none; }
+img#close-table { display: none; }
+
 
 
 /* THE END */

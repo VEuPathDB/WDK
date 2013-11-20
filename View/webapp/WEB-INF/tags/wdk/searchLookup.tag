@@ -6,35 +6,6 @@
 
 <c:set var="wdkModel" value="${applicationScope.wdkModel}" />
 
-<style TYPE="text/css"> 
-.ui-widget { font-size:100%; font-family:Arial,Helvetica,sans-serif;}
-
-#search-lookup_wrapper #type-filter { display:inline; }
-#search-lookup td { border: 1px dotted #eeeeee; padding:2px}
-
-//removed the child condition >  because somehow a <b> tag appears between the <td> and the mycontent div....
-//#search-lookup td > div.mycontent { display: none; }  
-//done in a different way...
-
-.mycontent ul { padding: 3px 3px 3px 15px; list-style: disc outside none; }
-.mycontent li { padding-bottom: 3px; }
-.mycontent h3 { margin: 15px 0px 0px 0px; padding: 10px; background-color: #EEEEEE; }
-
-// when using pagination teh table would be: 
-//#search-lookup_wrapper table#search-lookup { display: none; }
-// when not using pagination, the table is: 
-#search-lookup_wrapper div.dataTables_scroll { display: none; }
-
-// footer
-#search-lookup_wrapper div.ui-corner-bl { display: none; }
-
-// image or link that closes the table
-img#close-table { display: none; }
-
-//div.dataTables_scrollHeadInner, table.datatables { width:100%; }
-
-</style>
-
 <script type="text/javascript">
 
 $(document).ready(function() {
@@ -54,13 +25,13 @@ $.fn.dataTableExt.oApi.fnGetColumnData = function ( oSettings, iColumn, bUnique,
 	// check that we have a column id
 	if ( typeof iColumn == "undefined" ) return new Array();
 				
-	// by default we only wany unique data
+	// by default we only want unique data
 	if ( typeof bUnique == "undefined" ) bUnique = true;
 				
 	// by default we do want to only look at filtered data
 	if ( typeof bFiltered == "undefined" ) bFiltered = true;
 				
-	// by default we do not wany to include empty values
+	// by default we do not want to include empty values
 	if ( typeof bIgnoreEmpty == "undefined" ) bIgnoreEmpty = true;
 				
 	// list of rows which we're going to loop through
@@ -88,29 +59,22 @@ $.fn.dataTableExt.oApi.fnGetColumnData = function ( oSettings, iColumn, bUnique,
 		// else push the value onto the result data array
 		else asResultData.push(sValue);
 	}
-				
+
 	return asResultData;
 };
 
-
 var searchTable = $('#search-lookup').dataTable( {
         "bJQueryUI": true,
-		"bPaginate": false,
-		"sScrollY": "90px",
-//		"bScrollInfinite": true,
-		"bScrollCollapse": true,
+				"bPaginate": false,
+				"sScrollY": "120px",
+				"bScrollCollapse": true,
         "aaSorting": [[ 1, 'asc']],
         "sDom": '<"H"f<"#type-filter">lr>t<"F"ip>',
         "oLanguage": {
-            // "sSearch": "<b style='font-size:120%'>To find a search, provide a keyword:</>",
-	    "sSearch": "<b style='font-size:120%'>Do you need help finding a <i>Search</i>?</b>.....Enter term:</>",
-  	//	"sSearch": "<b style='font-size:120%'>Enter term to find a <i>Search</i>:</>",
-            //  "sLengthMenu": "<span style='padding-left:50px'>Show _MENU_ searches</>",
-//	   "sInfo":"Showing _START_ to _END_ of _TOTAL_ searches",
-	   "sInfo":"Found _TOTAL_ searches",
-	   "sZeroRecords": "There are no searches that include your keyword in the search Title, Category or Description",
- 	"sInfoFiltered": "(out of _MAX_ searches)"
-
+	    	"sSearch": "<b style='font-size:120%'>Do you need help finding a <i>Search</i>?</b>...   Enter term:</>",
+	   		"sInfo":"(Found _TOTAL_ searches)",
+	   		"sZeroRecords": "There are no searches that include your keyword in the search Title, Category or Description",
+ 				"sInfoFiltered": "(out of _MAX_ searches)"
         },
 } );
 
@@ -121,11 +85,16 @@ var searchTable = $('#search-lookup').dataTable( {
 var aData = searchTable.fnGetColumnData(0);
 
 $("div.dataTables_scroll").css("display","none");
+$("div.dataTables_scroll").css("border","1px solid grey");
 $("div.ui-corner-bl").css("display","none");
 $("img#close-table").css("display","none");
+$("div.dataTables_scrollHeadInner th").css("border-width","0 0 1px 0");
+$("div.dataTables_scrollHead").css("border-width","0 0 1px 0");
+$("div.dataTables_scrollHead").css("border-style","solid");
+$("div.dataTables_scrollHead").css("border-color","grey");
+$("table#search-lookup td").css("padding","4px");
 
 } ); //document ready function
-
 
 function toggleContent(ele) {
     var mydiv= $(ele).siblings("div.mycontent").clone().dialog({width: 600});
@@ -139,15 +108,12 @@ $("div#search-lookup_filter input").live("click", function () {
     $("img#close-table").css("display","block");
 });
 
-
 //add event on close link
 $("img#close-table").live("click", function () {
     $("div.dataTables_scroll").css("display","none");
     $("div.ui-corner-bl").css("display","none");
     $("img#close-table").css("display","none");
 });
-
-
 
 </script>
 
