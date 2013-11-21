@@ -784,7 +784,6 @@
     </element>
   </define>
 
-
   <define name="processQuery">
     <element name="processQuery">
       <ref name="QueryBaseContents" />
@@ -793,9 +792,7 @@
       </oneOrMore>
       <attribute name="processName"/>
       <optional>
-        <attribute name="local">
-          <data type="boolean" />
-        </attribute>
+        <attribute name="webServiceUrl"/>
       </optional>
     </element>
   </define>
