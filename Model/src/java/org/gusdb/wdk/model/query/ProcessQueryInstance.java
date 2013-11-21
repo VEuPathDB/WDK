@@ -263,6 +263,7 @@ public class ProcessQueryInstance extends QueryInstance {
     String jsonRequest = request.toString();
 
     ProcessResponse response;
+    local = true;
     if (local) { // invoke the process query locally
       logger.info("Using local service");
       // call the service directly
