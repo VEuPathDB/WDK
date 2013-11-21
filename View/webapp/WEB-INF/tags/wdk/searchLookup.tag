@@ -9,6 +9,9 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
+
+$("table#search-lookup").css("display","table");
+
 			/*
 			 * Function: fnGetColumnData
 			 * Purpose:  Return an array of table values from a particular column.
@@ -71,7 +74,7 @@ var searchTable = $('#search-lookup').dataTable( {
         "aaSorting": [[ 1, 'asc']],
         "sDom": '<"H"f<"#type-filter">lr>t<"F"ip>',
         "oLanguage": {
-	    	"sSearch": "<b style='font-size:120%'>Do you need help finding a <i>Search</i>?</b>...   Enter term:</>",
+	    	"sSearch": "<b style='font-size:120%'>Do you need help finding a <i>Search</i>?</b>...</>",
 	   		"sInfo":"(Found _TOTAL_ searches)",
 	   		"sZeroRecords": "There are no searches that include your keyword in the search Title, Category or Description",
  				"sInfoFiltered": "(out of _MAX_ searches)"
@@ -79,7 +82,7 @@ var searchTable = $('#search-lookup').dataTable( {
 } );
 
 //adding default value to input box
-//$('table#search-lookup').dataTable().fnFilter( 'expression');
+//$('table#search-lookup').dataTable().fnFilter('Type keyword(s)');
 
 // get the type info, and create a dropdown list
 var aData = searchTable.fnGetColumnData(0);
@@ -93,6 +96,7 @@ $("div.dataTables_scrollHead").css("border-width","0 0 1px 0");
 $("div.dataTables_scrollHead").css("border-style","solid");
 $("div.dataTables_scrollHead").css("border-color","grey");
 $("table#search-lookup td").css("padding","4px");
+
 
 } ); //document ready function
 
@@ -115,6 +119,8 @@ $("img#close-table").live("click", function () {
     $("img#close-table").css("display","none");
 });
 
+
+
 </script>
 
 <%-----------------------------------------------------------------------%>
@@ -127,7 +133,7 @@ $("img#close-table").live("click", function () {
 	<imp:image id="close-table" style='vertical-align:middle' src='/wdk/images/close.gif'/>
 </a>
 
-  <table id="search-lookup" class="datatables" width="100%">
+  <table id="search-lookup" class="datatables" width="100%" style="display:none">
   <thead>
     <tr>
 
