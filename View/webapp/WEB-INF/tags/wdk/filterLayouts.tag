@@ -39,6 +39,7 @@
             <c:set var="show" value="block" />
         </c:if>
         
+<!-- ========== open/close icon, filter icon, filter TITLE, explanation =============== -->
         <div class="layout-info">
             <imp:image class="handle" src="/wdk/images/${image}" />
             <span class="display">
@@ -49,9 +50,10 @@
               (results removed by the filter will not be combined into the next step.)
             </span>
         </div>
+
+<!-- ========== TABLE defined in jsp   =============== -->
         <div class="layout-detail" style="display: ${show}">
     <%--        <div class="description">${layout.description}</div>  --%>
- 
             <c:set var="filter_layout" value="${layout}" scope="request"/>
             <c:set var="fileName" value="${layout.fileName}" />
             <c:if test="${fn:length(fileName) == 0}">
