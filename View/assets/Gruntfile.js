@@ -6,13 +6,14 @@ module.exports = function(grunt) {
 
     concat: {
       js: {
-        options: {
-          process: function(src, filepath) {
-            // wrap files in an immediately invoked function wrapper
-            // some libraries misbehave and add "use strict" pragma in global scope
-            return '(function(){' + src + '}());';
-          }
-        },
+        // this was preventing creating of some global variables
+        // options: {
+        //   process: function(src, filepath) {
+        //     // wrap files in an immediately invoked function wrapper
+        //     // some libraries misbehave and add "use strict" pragma in global scope
+        //     return '(function(){' + src + '}());';
+        //   }
+        // },
         src: wdkFiles.libs,
         dest: 'dist/wdk.libs.js'
       }
