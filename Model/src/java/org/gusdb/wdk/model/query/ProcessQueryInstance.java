@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query;
 
 import java.net.MalformedURLException;
@@ -39,7 +36,6 @@ import org.json.JSONObject;
  * instance will retrieve all the packets in order.
  * 
  * @author Jerric Gao
- * 
  */
 public class ProcessQueryInstance extends QueryInstance {
 
@@ -48,10 +44,6 @@ public class ProcessQueryInstance extends QueryInstance {
   private ProcessQuery query;
   private int signal;
 
-  /**
-   * @param query
-   * @param values
-   */
   public ProcessQueryInstance(User user, ProcessQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,
       Map<String, String> context) throws WdkModelException {
@@ -254,28 +246,25 @@ public class ProcessQueryInstance extends QueryInstance {
       throws RemoteException, MalformedURLException, ServiceException,
       WsfServiceException {
 
-    String serviceUrl = query.getWebServiceUrl();
-
-    // DEBUG
-    logger.info("Invoking " + request.getPluginClass() + " at " + serviceUrl);
     long start = System.currentTimeMillis();
-
     String jsonRequest = request.toString();
-
     ProcessResponse response;
-    local = true;
+
     if (local) { // invoke the process query locally
       logger.info("Using local service");
       // call the service directly
       org.gusdb.wsf.service.WsfService service = new org.gusdb.wsf.service.WsfService();
       org.gusdb.wsf.service.WsfResponse wsfResponse = service.invoke(jsonRequest);
       response = new ServiceProcessResponse(service, wsfResponse);
-    } else { // invoke the process query via web service
+    }
+    
+    else { // invoke the process query via web service
       logger.info("Using remote service");
       // call the service through client
+      String serviceUrl = query.getWebServiceUrl();
+      logger.info("Invoking " + request.getPluginClass() + " at " + serviceUrl);
       WsfServiceServiceLocator locator = new WsfServiceServiceLocator();
-      org.gusdb.wsf.client.WsfService client = locator.getWsfService(new URL(
-          serviceUrl));
+      org.gusdb.wsf.client.WsfService client = locator.getWsfService(new URL(serviceUrl));
       org.gusdb.wsf.client.WsfResponse wsfResponse = client.invoke(jsonRequest);
       response = new ClientProcessResponse(client, wsfResponse);
     }
