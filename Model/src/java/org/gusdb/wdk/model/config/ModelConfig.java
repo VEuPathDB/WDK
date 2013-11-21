@@ -11,6 +11,8 @@ package org.gusdb.wdk.model.config;
  */
 public class ModelConfig {
 
+  public static final String WSF_LOCAL = "local";
+
   private String modelName;
   private String webServiceUrl;
 
