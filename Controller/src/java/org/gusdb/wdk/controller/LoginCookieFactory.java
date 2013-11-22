@@ -75,6 +75,20 @@ public class LoginCookieFactory {
     loginCookie.setValue(encode(getCookieValue(username, remember)));
     return loginCookie;
   }
+
+  /**
+   * Creates a new login cookie using the given username and maxAge.
+   * 
+   * @param username user name (email address)
+   * @param maxAge maxAge value to set on cookie
+   * @return new login cookie
+   * @throws WdkModelException if a system problem occurs
+   */
+  public Cookie createLoginCookie(String username, int maxAge) throws WdkModelException {
+    Cookie loginCookie = createLoginCookie(username, false);
+    loginCookie.setMaxAge(maxAge);
+    return loginCookie;
+  }
   
   /**
    * Creates a logout cookie.  This is a login cookie that expires immediately
