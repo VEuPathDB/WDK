@@ -431,6 +431,13 @@ public abstract class WdkAction implements SecondaryValidator {
   }
   
   /**
+   * @return the cookies passed along with the current request
+   */
+  protected Cookie[] getRequestCookies() {
+    return _request.getCookies();
+  }
+  
+  /**
    * Looks for a named resource within the web application and returns whether
    * it exists or not.
    * 
