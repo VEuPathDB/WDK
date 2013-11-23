@@ -115,7 +115,7 @@
   });
 </script>    
 
-<div class="formButtonPanel" style="text-align:${buttonAlignment}">
+<div id="treeLinks-top" class="formButtonPanel" style="text-align:${buttonAlignment}">
   <c:if test="${showSelectAll}">
     <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_checkAll('${id}');">select all</a> |
   </c:if>
@@ -130,7 +130,7 @@
 <div class="checkbox-tree" id="${id}" style="display:none">
   <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp" />
 </div>
-<div class="formButtonPanel" style="text-align:${buttonAlignment}">
+<div id="treeLinks-bottom" class="formButtonPanel" style="text-align:${buttonAlignment}">
   <c:if test="${showSelectAll}">
     <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_checkAll('${id}');">select all</a> |
   </c:if>
