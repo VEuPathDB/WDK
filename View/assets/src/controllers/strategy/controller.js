@@ -545,11 +545,10 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var url = "showSummary.do";
     var data = {
       strategy: strategy.backId,
-      step: step.back_step_Id,
+      step: bool ? step.back_boolean_Id : step.back_step_Id,
       resultsOnly: true,
       strategy_checksum: (strategy.checksum != null) ? strategy.checksum :
-          wdk.strategy.model.getStrategy(strategy.subStratOf).checksum,
-      bool: (bool) ? step.back_boolean_Id : null
+          wdk.strategy.model.getStrategy(strategy.subStratOf).checksum
     };
 
     if (!pagerOffset) {
