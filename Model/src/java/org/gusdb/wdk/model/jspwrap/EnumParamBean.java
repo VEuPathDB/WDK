@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.TreeNode;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
@@ -28,7 +28,7 @@ import org.gusdb.wdk.model.user.User;
  */
 public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
-  private static final Logger logger = Logger.getLogger(EnumParamBean.class.getName());
+  private static final Logger logger = Logger.getLogger(EnumParamBean.class);
 
   private String[] currentValues;
   private String[] originalValues;
@@ -283,7 +283,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
       WdkUserException {
     logger.debug("Validating param=" + getName() + ", value="
         + rawOrDependentValue + ", dependedValue="
-        + Utilities.print(_dependedValues));
+        + FormatUtil.prettyPrint(_dependedValues));
     param.validate(user.getUser(), rawOrDependentValue, _dependedValues);
   }
 

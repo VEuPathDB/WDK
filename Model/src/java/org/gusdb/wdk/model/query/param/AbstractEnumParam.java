@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -78,7 +79,7 @@ public abstract class AbstractEnumParam extends Param {
 
     @Override
     public int hashCode() {
-      return Utilities.print(this).hashCode();
+      return Utilities.createHashFromValueMap(this);
     }
 
     @Override
@@ -180,9 +181,8 @@ public abstract class AbstractEnumParam extends Param {
       return createEnumParamCache(contextParamValues);
     } catch (WdkModelException wme) {
       throw new WdkRuntimeException(
-          "Unable to create EnumParamCache for param " + getName()
-              + " with depended values " + Utilities.print(contextParamValues),
-          wme);
+          "Unable to create EnumParamCache for param " + getName() + " with " +
+          "depended values " + FormatUtil.prettyPrint(contextParamValues), wme);
     }
   }
 
@@ -318,7 +318,7 @@ public abstract class AbstractEnumParam extends Param {
         if (param != null)
           dependedParams.add(param);
         else
-          logger.warn("missing depended param: " + paramRef + " for enum param " + getFullName());
+          logger.warn("Missing depended param: " + paramRef + " for enum param " + getFullName());
       }
     }
     return dependedParams;
@@ -546,7 +546,8 @@ public abstract class AbstractEnumParam extends Param {
       rawValue = emptyValue;
 
     String[] terms = convertToTerms(rawValue);
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
+    
     for (String term : terms) {
       String internal = (isNoTranslation()) ? term : cache.getInternal(term);
       if (!cache.containsTerm(term)) {
@@ -633,7 +634,7 @@ public abstract class AbstractEnumParam extends Param {
     if (!isSkipValidation()) {
       String rawValue = decompressValue(userDependentValue);
       logger.debug("param=" + getFullName() + " - validating: " + rawValue
-          + ", with dependedParamValues=" + Utilities.print(contextValues));
+          + ", with dependedParamValues=" + FormatUtil.prettyPrint(contextValues));
 
       String[] terms = convertToTerms(rawValue);
       if (terms.length == 0 && !allowEmpty)

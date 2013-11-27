@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -144,7 +145,7 @@ public class FlatVocabParam extends AbstractEnumParam {
   protected EnumParamCache createEnumParamCache(
       Map<String, String> dependedParamValues) throws WdkModelException {
       logger.trace("Entering createEnumParamCache("
-        + Utilities.print(dependedParamValues) + ")");
+        + FormatUtil.prettyPrint(dependedParamValues) + ")");
 
       Set<Param> dependedParams = getDependedParams();
 
@@ -165,7 +166,7 @@ public class FlatVocabParam extends AbstractEnumParam {
       // add depended value if is dependent param
       if (isDependentParam()) {
         // use the depended param as the input param for the vocab query,
-        // since the depended param might be overriden by question or
+        // since the depended param might be overridden by question or
         // query, while the original input param in the vocab query
         // does not know about it.
         for (Param param : dependedParams) {
@@ -181,14 +182,13 @@ public class FlatVocabParam extends AbstractEnumParam {
       context.put(Utilities.QUERY_CTX_PARAM, getFullName());
       if (contextQuestion != null)
         context.put(Utilities.QUERY_CTX_QUESTION, contextQuestion.getFullName());
-      logger.debug("PARAM [" + getFullName() + "] query=" + query.getFullName()
+        logger.debug("PARAM [" + getFullName() + "] query=" + query.getFullName()
           + ", context Question: "
           + ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName())
           + ", context Query: "
           + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
-      QueryInstance instance = query.makeInstance(user, values, false, 0,
-          context);
 
+      QueryInstance instance = query.makeInstance(user, values, false, 0, context);
       ResultList result = instance.getResults();
       while (result.next()) {
         Object objTerm = result.get(COLUMN_TERM);
@@ -242,7 +242,7 @@ public class FlatVocabParam extends AbstractEnumParam {
       initTreeMap(cache);
       applySelectMode(cache);
       logger.trace("Leaving createEnumParamCache("
-          + Utilities.print(dependedParamValues) + ")");
+          + FormatUtil.prettyPrint(dependedParamValues) + ")");
       return cache;
   }
 
