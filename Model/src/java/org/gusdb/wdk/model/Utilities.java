@@ -33,12 +33,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * This class provided constants that are shared amony different WDK model
- * classes. Furthermore, it also provides utility functions, such as send
- * emails, encrypting text, parsing text, etc.
+ * This class provided constants that are shared among different WDK model
+ * classes. Furthermore, it also provides utility functions to send
+ * email, encrypt text, parse text, etc.
  * 
  * @author jerric
- * 
  */
 public class Utilities {
 
@@ -117,7 +116,7 @@ public class Utilities {
   private static final String ALGORITHM = "MD5";
 
   /*
-   * Inner class to act as a JAF datasource to send HTML e-mail content
+   * Inner class to act as a JAF DataSource to send HTML e-mail content
    */
   private static class HTMLDataSource implements javax.activation.DataSource {
 
@@ -338,15 +337,16 @@ public class Utilities {
     stream.close();
     return buffer;
   }
-
-  public static String print(Map<?, ?> map) {
+  
+  public static <S,T> int createHashFromValueMap(Map<S,T> map) {
     StringBuilder buffer = new StringBuilder("{");
-    for (Object key : map.keySet()) {
-      if (buffer.length() > 1)
+    for (S key : map.keySet()) {
+      if (buffer.length() > 1) {
         buffer.append(";");
+      }
       buffer.append(key).append(":").append(map.get(key));
     }
     buffer.append("}");
-    return buffer.toString();
+    return buffer.toString().hashCode();
   }
 }

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
@@ -48,7 +48,7 @@ public class EnumParam extends AbstractEnumParam {
   protected EnumParamCache createEnumParamCache(
       Map<String, String> dependedParamValues) throws WdkModelException {
     logger.trace("Entering createEnumParamCache("
-        + Utilities.print(dependedParamValues) + ")");
+        + FormatUtil.prettyPrint(dependedParamValues) + ")");
     Set<Param> dependedParams = getDependedParams();
     EnumParamCache cache = new EnumParamCache(this, dependedParamValues);
     EnumItem[] enumItems = enumItemList.getEnumItems();
@@ -88,7 +88,7 @@ public class EnumParam extends AbstractEnumParam {
     initTreeMap(cache);
     applySelectMode(cache);
     logger.trace("Leaving createEnumParamCache("
-        + Utilities.print(dependedParamValues) + ")");
+        + FormatUtil.prettyPrint(dependedParamValues) + ")");
     return cache;
   }
 
