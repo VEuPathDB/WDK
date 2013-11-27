@@ -3,6 +3,9 @@
  */
 package org.gusdb.wdk.model.query;
 
+import java.sql.Types;
+import org.gusdb.wdk.model.query.TypeConverters.TypeConverter;
+
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
@@ -14,8 +17,55 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public enum ColumnType {
 
-  STRING("string", 1999), NUMBER("number", 12), FLOAT("float", 12), BOOLEAN(
-      "boolean", 1), CLOB("clob", 0), DATE("date", 0);
+  STRING("string", 1999, Types.VARCHAR, TypeConverters.STRING_CONVERTER),
+  NUMBER("number", 12, Types.INTEGER, TypeConverters.INTEGER_CONVERTER),
+  FLOAT("float", 12, Types.FLOAT, TypeConverters.FLOAT_CONVERTER),
+  BOOLEAN("boolean", 1, Types.BOOLEAN, TypeConverters.BOOLEAN_CONVERTER),
+  CLOB("clob", 0, Types.CLOB, TypeConverters.STRING_CONVERTER),
+  DATE("date", 0, Types.TIMESTAMP, TypeConverters.TIMESTAMP_CONVERTER);
+
+  private String type;
+  private int defaultWidth;
+  private int sqlType;
+  private TypeConverter converter;
+
+  private ColumnType(String type, int defaultWidth, int sqlType, TypeConverter converter) {
+    this.type = type;
+    this.defaultWidth = defaultWidth;
+    this.sqlType = sqlType;
+    this.converter = converter;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  /**
+   * @return type of this column as java.sql.Types value
+   */
+  public int getSqlType() {
+	return sqlType;
+  }
+  
+  /**
+   * @return the defaultWidth
+   */
+  public int getDefaultWidth() {
+    return defaultWidth;
+  }
+
+  public Object convertStringToTypedValue(String value) {
+	return converter.convert(value);
+  }
+  
+  public boolean isText() {
+    return (this == CLOB || this == DATE || this == STRING);
+  }
+
+  @Override
+  public String toString() {
+    return type;
+  }
 
   public static ColumnType parse(String name) throws WdkModelException {
     name = name.trim().toLowerCase();
@@ -35,41 +85,4 @@ public enum ColumnType {
     else
       throw new WdkModelException("Invalid column type: [" + name + "]");
   }
-
-  private String type;
-  private int defaultWidth;
-
-  /**
-     * 
-     */
-  private ColumnType(String type, int defaultWidth) {
-    this.type = type;
-    this.defaultWidth = defaultWidth;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  /**
-   * @return the defaultWidth
-   */
-  public int getDefaultWidth() {
-    return defaultWidth;
-  }
-
-  public boolean isText() {
-    return (this == CLOB || this == DATE || this == STRING);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Enum#toString()
-   */
-  @Override
-  public String toString() {
-    return type;
-  }
-
 }
