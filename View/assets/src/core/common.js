@@ -17,7 +17,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     return wdkConfig.modelName;
   }
 
-  var cookieTest = function() {
+  function cookieTest() {
       var testCookieName = 'wdkTestCookie';
       var testCookieValue = 'test';
 
@@ -33,7 +33,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   // -------------------------------------------------------------------------
   // cookie handling methods
   // -------------------------------------------------------------------------
-  var createCookie = function(name,value,days) {
+  function createCookie(name,value,days) {
      var expires;
      if (days) {
       var date = new Date();
@@ -42,20 +42,20 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     }
     else expires = "";
     document.cookie = name+"="+value+expires+"; path=/";
-  };
+  }
 
-  var readCookie = function(name) {
+  function readCookie(name) {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
     for(var i=0;i < ca.length;i++) {
       var c = ca[i];
       while (c.charAt(0)==' ') c = c.substring(1,c.length);
-      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
     }
     return null;
-  };
+  }
 
-  var eraseCookie = function(name) {
+  function eraseCookie(name) {
     createCookie(name,"",-1);
   }
 
@@ -65,44 +65,44 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   // will be invoked on the loading of stand-alone question page, and the
   // loading of question page in the add/revise step popup box.
   // ------------------------------------------------------------------------
-  var questionEvents = new Array();
-  var resultEvents = new Array();
-  var recordEvents = new Array();
+  var questionEvents = [];
+  var resultEvents = [];
+  var recordEvents = [];
 
-  var registerQuestionEvent = function(handler) {
+  function registerQuestionEvent(handler) {
       questionEvents.push(handler);
   }
 
-  var registerResultEvent = function(handler) {
+  function registerResultEvent(handler) {
       resultEvents.push(handler);
   }
 
-  var registerRecordEvent = function(handler) {
+  function registerRecordEvent(handler) {
       recordEvents.push(handler);
   }
 
-  var onloadQuestion = function() {
+  function onloadQuestion() {
       for (var i= 0; i < questionEvents.length; i++) {
           var handler = questionEvents[i];
           handler();
       }
-  };
+  }
 
-  var onloadResult = function() {
+  function onloadResult() {
       for (var i= 0; i < resultEvents.length; i++) {
           var handler = resultEvents[i];
           handler();
       }
   }
 
-  var onloadRecord = function() {
+  function onloadRecord() {
       for (var i= 0; i < recordEvents.length; i++) {
           var handler = recordEvents[i];
           handler();
       }
   }
 
-  var findActiveWorkspace = function() {
+  function findActiveWorkspace() {
       // check if the current page is result page
       var tabs = $("#strategy_tabs");
       var section = "";
@@ -120,11 +120,11 @@ wdk.util.namespace("window.wdk", function(ns, $) {
       return $(section);
   }
 
-  var findActiveView = function() {
+  function findActiveView() {
       var workspace = findActiveWorkspace();
       // check if we have summary view or record view
       var views = workspace.find("#Summary_Views");
-      if (views.length == 0) { // no sumamry views, get record views
+      if (views.length === 0) { // no sumamry views, get record views
           views = workspace.find("#Record_Views");
       }
       var section = views.children("ul").children("li.ui-tabs-active").attr("aria-controls");
@@ -133,73 +133,73 @@ wdk.util.namespace("window.wdk", function(ns, $) {
 
 
 
-function uncheckFields(notFirst) {
+  function uncheckFields(notFirst) {
     var form = document.downloadConfigForm;
     var cb = form.selectedFields;
     if (notFirst) {
-        for (var i=1; i<cb.length; i++) {
-            if (cb[i].disabled) continue;
-            cb[i].checked = null;
-        }
+      for (var i=1; i<cb.length; i++) {
+        if (cb[i].disabled) continue;
+        cb[i].checked = null;
+      }
     } else {
-        cb[0].checked = null;
+      cb[0].checked = null;
     }
-}
+  }
 
-function checkFields(all) {
+  function checkFields(all) {
     var form = document.downloadConfigForm;
     var cb = form.selectedFields;
     cb[0].checked = (all > 0 ? null : 'checked');
     for (var i=1; i<cb.length; i++) {
-        if (cb[i].disabled) continue;
-        cb[i].checked = (all > 0 ? 'checked' : null);
+      if (cb[i].disabled) continue;
+      cb[i].checked = (all > 0 ? 'checked' : null);
     }
-}
+  }
 
-function chooseAll(bool, form, node) {
+  function chooseAll(bool, form, node) {
     if (form[node].type == 'select-multiple') {
       wdk.api.multiSelectAll(bool, form, node);
     } else {
       checkAll(bool, form, node);
     }
-}
+  }
 
-function checkAll(bool, form, node) {
+  function checkAll(bool, form, node) {
     var cb = form[node];//document.getElementsByName(node);
     for (var i=0; i<cb.length; i++) {
-         if (cb[i].disabled) continue;
-   if(bool && cb[i].checked == false) cb[i].click();
-         if(!bool && cb[i].checked == true) cb[i].click();
+      if (cb[i].disabled) continue;
+      if(bool && cb[i].checked === false) cb[i].click();
+      if(!bool && cb[i].checked === true) cb[i].click();
     }
-}
+  }
 
-// returns whether or not user is logged in
-function isUserLoggedIn() {
-  //return ($('#loginStatus').attr('loggedIn') == "true");
-  return !wdkConfig.wdkUser.IsGuest;
-}
+  // returns whether or not user is logged in
+  function isUserLoggedIn() {
+    //return ($('#loginStatus').attr('loggedIn') == "true");
+    return !wdkConfig.wdkUser.IsGuest;
+  }
 
-function getWebAppUrl() {
-  //return $("#wdk-web-app-url").attr("value");
-  return wdkConfig.webappUrl;
-}
+  function getWebAppUrl() {
+    //return $("#wdk-web-app-url").attr("value");
+    return wdkConfig.webappUrl;
+  }
 
-// function getWebAppUrl() {
-//   var scripts = document.getElementsByTagName('script');
-//   var scriptPath;
-//   for (var i = 0; i < scripts.length; i++) {
-//       var script = scripts[i];
-//       scriptPath =
-//         ((script.getAttribute.length !== undefined) ?
-//             script.src : script.getAttribute('src', -1));
-//       if (scriptPath.indexOf("wdkCommon.js") != -1) {
-//         break;
-//       }
-//   }
-//   var suffixLen = new String("wdk/js/wdkCommon.js").length;
-//   scriptPath = scriptPath.substring(0, scriptPath.length - suffixLen);
-//   return scriptPath;
-// }
+  // function getWebAppUrl() {
+  //   var scripts = document.getElementsByTagName('script');
+  //   var scriptPath;
+  //   for (var i = 0; i < scripts.length; i++) {
+  //       var script = scripts[i];
+  //       scriptPath =
+  //         ((script.getAttribute.length !== undefined) ?
+  //             script.src : script.getAttribute('src', -1));
+  //       if (scriptPath.indexOf("wdkCommon.js") != -1) {
+  //         break;
+  //       }
+  //   }
+  //   var suffixLen = new String("wdk/js/wdkCommon.js").length;
+  //   scriptPath = scriptPath.substring(0, scriptPath.length - suffixLen);
+  //   return scriptPath;
+  // }
 
   /**
    * Returns the complete path to the assets dir
@@ -211,7 +211,7 @@ function getWebAppUrl() {
   }
 
 
-  var registerToggle = function() {
+  function registerToggle() {
     // register toggles
     $(".wdk-toggle").simpleToggle();
 
@@ -268,9 +268,9 @@ function getWebAppUrl() {
     //    e.preventDefault();
     //  });
 
-  };
+  }
 
-  var registerCollapsible = function() {
+  function registerCollapsible() {
     $(".collapsible").each(function() {
       var $this = $(this);
 
@@ -308,7 +308,7 @@ function getWebAppUrl() {
     });
   }
 
-  var registerTable = function() {
+  function registerTable() {
     // register data tables on wdk table
     $(".wdk-table.datatables").dataTable({
         "bJQueryUI": true
@@ -316,9 +316,9 @@ function getWebAppUrl() {
 
     // also register other tables
     $("table.wdk-data-table").not(".dataTable").wdkDataTable();
-  };
+  }
 
-  var registerTooltips = function() {
+  function registerTooltips() {
     // register elements with fancy tooltips
     // $(".wdk-tooltip").not(".qtip").qtip({
     //   position: {
@@ -328,9 +328,9 @@ function getWebAppUrl() {
     //   }
     // });
     $(".wdk-tooltip").wdkTooltip();
-  };
+  }
 
-  var registerSnippet = function() {
+  function registerSnippet() {
     $(".snippet").each(function(idx, node) {
       var $node = $(node),
           defaultHeight = $node.height();
@@ -365,10 +365,10 @@ function getWebAppUrl() {
           .appendTo($node)
           .addClass("snippet-toggle");
 
-  		var $toggle2 = $toggle1.clone()
- 						 .prependTo($node)
+      var $toggle2 = $toggle1.clone()
+          .prependTo($node)
           .css("float", "right");
-			$toggle2.html("");
+      $toggle2.html("");
 
       $node.on("click", ".snippet-toggle a", function(e) {
             e.preventDefault();
@@ -379,12 +379,12 @@ function getWebAppUrl() {
               },
               {
                 easing: "easeOutQuint"
-              })
+              });
               $toggle1.html("<a href='#'><span " +
                 "class='ui-icon ui-icon-arrowthickstop-1-s'></span><b style='font-size:120%'>...</b></a>");
               $toggle2.html("<a href='#'><span " +
                 "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show all datasets ...</a>");
-							$toggle2.html("");
+              $toggle2.html("");
 
              //cris    $ellipsis.show();
               $node.data("shown", false);
@@ -395,12 +395,12 @@ function getWebAppUrl() {
               },
               {
                 easing: "easeOutQuint"
-              })
+              });
               $toggle1.html("<a href='#'><span " +
                 "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
               $toggle2.html("<a href='#'><span " +
                 "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
-							//$toggle2.html(""); //dont show
+              //$toggle2.html(""); //dont show
 
               //cris    $ellipsis.hide();
               $node.data("shown", true);
@@ -409,9 +409,9 @@ function getWebAppUrl() {
 
       $node.data("rendered", true);
     });
-  };
+  }
 
-  var registerTruncate = function() {
+  function registerTruncate() {
     var SHOW_CHARS = 120;
 
     $(".truncate").each(function(idx, node) {
@@ -420,9 +420,9 @@ function getWebAppUrl() {
       if ($node.data("rendered")) {
         return;
       }
-			//text contains original text with '\n'
+      //text contains original text with '\n'
       var text = $node.text().trim();
-	
+
       if (text.length <= SHOW_CHARS) {
         $node.data("rendered", true);
         return;
@@ -453,7 +453,7 @@ function getWebAppUrl() {
       var $toggle2 = $toggle1.clone()
       .css({
         "float": "right"
-      })
+      });
       $toggle1.html(""); //dont show
 
       // hide original content and append teaser before it
@@ -480,7 +480,7 @@ function getWebAppUrl() {
               "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show full description ...</a>");
             $toggle2.html("<a href='#'><span " +
               "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show full description ...</a>");
-						$toggle1.html("");
+            $toggle1.html("");
           });
           $node.data("showing", false);
         } else {
@@ -495,16 +495,16 @@ function getWebAppUrl() {
             "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
           $toggle2.html("<a href='#'><span " +
             "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
-					//$toggle2.html("");
+          //$toggle2.html("");
           $node.data("showing", true);
         }
       });
 
       $node.data("rendered", true);
     });
-  };
+  }
 
-  var registerEditable = function() {
+  function registerEditable() {
     // all elements with className wdk-editable, eg:
     //   <span class="wdk-editable"
     //       data-change="someFunction">edit me</span>
@@ -529,10 +529,10 @@ function getWebAppUrl() {
       });
 
       $(element).data("rendered", true);
-    })
-  };
+    });
+  }
 
-  var setUpNavDropDowns = function() {
+  function setUpNavDropDowns() {
     var timer;
     $("#nav-top > li").hoverIntent({
       over: function() {
@@ -547,22 +547,22 @@ function getWebAppUrl() {
       },
       timeout: 500
     });
-  };
+  }
 
   // deprecated - see wdk.reporter.selectFields
   function makeSelection(state) {
-      var form = document.downloadConfigForm;
-      var cb = form.selectedFields;
-      for (var i=0; i<cb.length; i++) {
-          if (state == 1) cb[i].checked = 'checked';
-          else if (state == 0) cb[i].checked = null;
-          else if (state == -1) {
-              cb[i].checked = ((cb[i].checked) ? '' : 'checked');
-          }
+    var form = document.downloadConfigForm;
+    var cb = form.selectedFields;
+    for (var i=0; i<cb.length; i++) {
+      if (state == 1) cb[i].checked = 'checked';
+      else if (state === 0) cb[i].checked = null;
+      else if (state == -1) {
+        cb[i].checked = ((cb[i].checked) ? '' : 'checked');
       }
+    }
   }
 
-  var setUpDialogs = function () {
+  function setUpDialogs() {
     var dialogOpts = {
       width: "auto",
       autoOpen: false,
@@ -586,9 +586,9 @@ function getWebAppUrl() {
         $("#wdk-dialog-" + match[1]).dialog("close");
       }
     });
-  };
+  }
 
-  var setUpPopups = function() {
+  function setUpPopups() {
     // connect window pop outs
     $("body").on("click", "a[class='new-window']", function(e) {
       e.preventDefault();
@@ -618,9 +618,9 @@ function getWebAppUrl() {
       windowFeatures = $.map(defaultFeatures, function(v, k) { return k + "=" + v; }).join(",");
       window.open(windowUrl, windowName.replace(/-/g, "_"), windowFeatures).focus();
     });
-  };
+  }
 
-  var invokeControllers = function invokeControllers() {
+  function invokeControllers() {
     // TODO - Add data-action attribute
     // controller is a misnomer here. see issue #14107
     $("[data-controller]").each(function(idx, element) {
@@ -641,7 +641,7 @@ function getWebAppUrl() {
 
       $attrs._invoked = true;
     });
-  };
+  }
 
   function resolveAssetsUrls() {
     $('img[data-assets-src]:not([src])').each(function() {
