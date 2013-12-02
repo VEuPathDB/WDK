@@ -2,53 +2,56 @@
  * Bootstrap the wdk app. This runs on DOMReady and initializes views, etc.
  */
 
-jQuery(function($) {
+jQuery(function bootstrap($) {
   'use strict';
 
+  // Override BlockUI CSS and message
   $.blockUI.defaults.overlayCSS.opacity = 0.2;
   $.blockUI.defaults.message = '<span class="h2center">Please wait...</span>';
-  // $.blockUI.defaults.css.padding = "10px";
-  // $.blockUI.defaults.css.margin = "10px";
-  // delete $.blockUI.defaults.css.border;
+  // allow rules in external CSS to be effective
   $.blockUI.defaults.css = {};
 
+  // Override JSTree themes directory
   $.jstree._themes = wdk.assetsUrl('/wdk/lib/jstree/themes/');
 
   // Override jQueryUI tabs defaults
   //
   // We add two pieces of functionality:
   // 1. Spinner
-  // 2. Cache content (when successfully loaded
+  // 2. Cache content (when successfully loaded)
   $.extend($.ui.tabs.prototype.options, {
     cache: true,
-    beforeLoad: function(event, ui) {
-      var $this = $(this);
-      if (ui.tab.data("loaded") && $this.tabs("option", "cache")) {
-        event.preventDefault();
-        return;
-      }
-
-      ui.tab.find("span:last").append('<img style="margin-left:4px; ' +
-        'position: relative; top:2px;" src="' + wdk.assetsUrl('/wdk/images/filterLoading.gif') + '"/>');
-
-      ui.jqXHR.done(function() {
-        ui.tab.data("loaded", true);
-
-      }).fail(function(jqXHR, textStatus, errorThrown) {
-        if (errorThrown != "abort") {
-          ui.panel.html(
-            '<p style="padding:1em;">Unable to load tab content: ' +
-            '<i>' + errorThrown + '</i></p>');
-        }
-
-      }).always(function() {
-        ui.tab.find("img").remove();
-      });
-    },
+    beforeLoad: beforeLoad,
     load: wdk.load
   });
 
-  //wdk.user.init();
+  function beforeLoad(event, ui) {
+    var $this = $(this);
+    if (ui.tab.data("loaded") && $this.tabs("option", "cache")) {
+      event.preventDefault();
+      return;
+    }
+
+    ui.tab.find("span:last").append('<img style="margin-left:4px; ' +
+      'position: relative; top:2px;" src="' +
+      wdk.assetsUrl('/wdk/images/filterLoading.gif') + '"/>');
+
+    ui.jqXHR
+      .done(function() {
+        ui.tab.data("loaded", true);
+      })
+
+      .fail(function(jqXHR, textStatus, errorThrown) {
+        if (errorThrown != "abort") {
+          ui.panel.html('<p style="padding:1em;">Unable to load tab content: ' +
+            '<i>' + errorThrown + '</i></p>');
+        }
+      })
+
+      .always(function() {
+        ui.tab.find("img").remove();
+      });
+  }
 
   wdk.cookieTest();
   wdk.setUpDialogs();
