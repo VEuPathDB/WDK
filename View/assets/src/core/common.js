@@ -623,11 +623,10 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   function invokeControllers() {
     // TODO - Add data-action attribute
     // controller is a misnomer here. see issue #14107
-    $("[data-controller]").each(function(idx, element) {
-      var $element, $attrs, controller;
-      $element = $(element);
-      $attrs = $element.data();
-      controller = $attrs.controller;
+    $("[data-controller]").each(function invokeController(idx, element) {
+      var $element = $(element);
+      var $attrs = $element.data();
+      var controller = $attrs.controller;
 
       // convert some-name -> someName
       // controller = controller.replace(/-(\w)/, function(hyphenLetter) {
@@ -639,7 +638,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
 
       wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
 
-      $attrs._invoked = true;
+      $element.data('_invoked', true);
     });
   }
 
