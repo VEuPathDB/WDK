@@ -80,8 +80,8 @@ Otherwise a standard select menu is used.
     
       <%-- use a tree list --%>
       <c:when test="${displayType eq 'treeBox'}">
-        <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
         <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
           <c:set var="updateCountFunc">window.wdk.parameterHandlers.adjustEnumCountTree('${qP.name}aaa',${qP.countOnlyLeaves})</c:set>
           <imp:checkboxTree id="${pNam}CBT${idgen.nextId}" rootNode="${qP.paramTree}" checkboxName="array(${pNam})"
               buttonAlignment="left" onchange="${updateCountFunc}" onload="${updateCountFunc}"/>
