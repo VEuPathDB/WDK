@@ -52,6 +52,13 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
   Strategy.prototype.color = null;
   Strategy.prototype.nonTransformLength = null;
 
+  /**
+   * Return the leaf step by its ID or its boolean step's ID
+   *
+   * @param {Number} stepId The ID of the step or the step's boolean step.
+   * @param {Boolean} isFront `true` if stepId is a frontId, `false` otherwise.
+   * @returns {Object}
+   */
   Strategy.prototype.getStep = function (stepId,isfront) {
     var s;
     for (s in this.Steps) {
@@ -68,6 +75,14 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
     return null;
   };
 
+  /**
+   * If the strategy is a substrategy, return the step of it's parent strategy
+   * by the step's ID. Otherwise, return null.
+   *
+   * @param {Number} stpId The ID of the step or the step's boolean step.
+   * @param {Boolean} isFront `true` if stepId is a frontId, `false` otherwise.
+   * @returns {Object}
+   */
   Strategy.prototype.findParentStep = function (stpId, isFront) {
     if (this.subStratOf === null) {
       return null;
@@ -76,6 +91,20 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
     }
   };
 
+  /**
+   * Returns an object of the form:
+   *   ```
+   *   {
+   *     str: Strategy,
+   *     stp: Step
+   *   }
+   *   ```
+   * given a step's ID
+   *
+   * @param {Number} stpId The ID of the step or the step's boolean step.
+   * @param {Boolean} isFront `true` if stepId is a frontId, `false` otherwise.
+   * @returns {Object}
+   */
   Strategy.prototype.findStep = function (stpId, isFront) {
     var s = null,
         st = this.getStep(stpId,isFront);
@@ -90,6 +119,11 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
     return s;
   };
 
+  /**
+   * Get the last step of the strategy
+   *
+   * @returns {Object}
+   */
   Strategy.prototype.getLastStep = function () {
     var s,
         cId = 0;
@@ -99,6 +133,13 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
     return this.getStep(cId, true);
   };
 
+  /**
+   * Recursively determine the depth of a given step
+   *
+   * @param {Number} stepid
+   * @param {Number} d
+   * @returns {Number} 0-indexed depth of strategy
+   */
   Strategy.prototype.depth = function (stepid, d) {
     var parStrat,
         ssParts,
