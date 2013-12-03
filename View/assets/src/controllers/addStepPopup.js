@@ -7,7 +7,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
   var original_Query_Form_CSS = {};
   var buttonText = null;
 
-  ns.isSpan = false;
+  // ns.isSpan = false;
   ns.current_Front_Strategy_Id = null;
 
   // var stage = null;
@@ -685,7 +685,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
       $("#query_form").hide();
       $("#query_form_overlay").hide();
     } else {
-      ns.isSpan = false;
+      // ns.isSpan = false;
       $("#query_form").remove();
       $("#query_form_overlay").remove();
       $(".original").remove();
