@@ -63,7 +63,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       // register change event to dependedParam only once
       for (var dependedName in dependedParams) {
-          var dependedParam = $("div.param[name='" + dependedName + "'], div.param-multiPick[name='" + dependedName + "']");
+          var dependedParam = $("div.param[name='" + dependedName + "']");
           var dependentDeferreds = [];
           dependedParam.change(function(e) {
             e.stopPropagation();
