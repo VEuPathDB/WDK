@@ -179,35 +179,22 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     return !wdkConfig.wdkUser.IsGuest;
   }
 
-  function getWebAppUrl() {
-    //return $("#wdk-web-app-url").attr("value");
-    return wdkConfig.webappUrl;
+  function getWebAppUrl(path) {
+    return resolveUrl(wdkConfig.webappUrl, path);
   }
-
-  // function getWebAppUrl() {
-  //   var scripts = document.getElementsByTagName('script');
-  //   var scriptPath;
-  //   for (var i = 0; i < scripts.length; i++) {
-  //       var script = scripts[i];
-  //       scriptPath =
-  //         ((script.getAttribute.length !== undefined) ?
-  //             script.src : script.getAttribute('src', -1));
-  //       if (scriptPath.indexOf("wdkCommon.js") != -1) {
-  //         break;
-  //       }
-  //   }
-  //   var suffixLen = new String("wdk/js/wdkCommon.js").length;
-  //   scriptPath = scriptPath.substring(0, scriptPath.length - suffixLen);
-  //   return scriptPath;
-  // }
 
   /**
    * Returns the complete path to the assets dir
    * and appends the given url
    */
   function assetsUrl(path) {
+    return resolveUrl(wdkConfig.assetsUrl, path);
+  }
+
+  function resolveUrl(root, path) {
+    path = path || '';
     path = (path.indexOf('/') === 0) ? path : '/' + path;
-    return wdkConfig.assetsUrl + (path || '');
+    return root + path;
   }
 
 
