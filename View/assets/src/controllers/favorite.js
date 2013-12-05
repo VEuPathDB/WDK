@@ -242,7 +242,7 @@ wdk.util.namespace("window.wdk.favorite", function(ns, $) {
     var data = "[{\"source_id\":\"" + primaryKey + "\",\"project_id\":\"" + projectId + "\"}]";
     var requestParams = "action=" + action + "&type=" + recordType + "&data=" + data; // single id data string
     $.ajax({
-      url: wdk.getWebAppUrl() + "processFavorite.do",
+      url: wdk.webappUrl("processFavorite.do"),
       type: "post",
       data: requestParams,
       dataType: "json",

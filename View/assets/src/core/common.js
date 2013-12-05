@@ -179,8 +179,19 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     return !wdkConfig.wdkUser.IsGuest;
   }
 
-  function getWebAppUrl(path) {
+  /**
+   * Returns the complete path to the webapp dir
+   * and appends the given url
+   */
+  function webappUrl(path) {
     return resolveUrl(wdkConfig.webappUrl, path);
+  }
+
+  /**
+   * @deprecated see webappUrl
+   */
+  function getWebAppUrl() {
+    return webappUrl();
   }
 
   /**
@@ -191,6 +202,9 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     return resolveUrl(wdkConfig.assetsUrl, path);
   }
 
+  /**
+   * Resolves `path` relative to `root`
+   */
   function resolveUrl(root, path) {
     path = path || '';
     path = (path.indexOf('/') === 0) ? path : '/' + path;
@@ -665,6 +679,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   ns.findActiveView = findActiveView;
   ns.chooseAll = chooseAll;
   ns.getWebAppUrl = getWebAppUrl;
+  ns.webappUrl = webappUrl;
   ns.assetsUrl = assetsUrl;
   ns.isUserLoggedIn = isUserLoggedIn;
   ns.checkFields = checkFields;
