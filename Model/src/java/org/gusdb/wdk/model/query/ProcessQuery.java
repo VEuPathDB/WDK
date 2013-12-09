@@ -126,8 +126,7 @@ public class ProcessQuery extends Query {
       throws JSONException {
     if (extra) {
       jsQuery.put("process", this.processName);
-      if (!local)
-        jsQuery.put("url", this.webServiceUrl);
+      if (!local) jsQuery.put("url", this.webServiceUrl);
     }
   }
 

@@ -93,7 +93,7 @@ public class AnswerValueBean {
     }
 
     public Map<String, String> getInternalParams() {
-        return answerValue.getIdsQueryInstance().getValues();
+        return answerValue.getIdsQueryInstance().getParamStableValues();
     }
 
     public String getChecksum() throws WdkModelException {
@@ -108,7 +108,7 @@ public class AnswerValueBean {
             throw new RuntimeException("getBooleanOperation can not be called"
                     + " on simple AnswerBean");
         }
-        Map<String, String> params = answerValue.getIdsQueryInstance().getValues();
+        Map<String, String> params = answerValue.getIdsQueryInstance().getParamStableValues();
         return params.get(BooleanQuery.OPERATOR_PARAM);
     }
 
@@ -123,7 +123,7 @@ public class AnswerValueBean {
                     + " on simple AnswerBean");
         }
         AnswerParam param = null;
-        Map<String, String> params = answerValue.getIdsQueryInstance().getValues();
+        Map<String, String> params = answerValue.getIdsQueryInstance().getParamStableValues();
         if (getIsBoolean()) {
             BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
             param = query.getLeftOperandParam();
@@ -155,7 +155,7 @@ public class AnswerValueBean {
                     + " on simple AnswerBean");
         }
         BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
-        Map<String, String> params = answerValue.getIdsQueryInstance().getValues();
+        Map<String, String> params = answerValue.getIdsQueryInstance().getParamStableValues();
         AnswerParam param = query.getRightOperandParam();
         String dependentValue = params.get(param.getName());
         User user = answerValue.getUser();

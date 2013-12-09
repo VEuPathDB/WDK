@@ -22,6 +22,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -51,6 +52,7 @@ public class ProcessQueryInstance extends QueryInstance {
   /**
    * @param query
    * @param values
+   * @throws WdkUserException
    */
   public ProcessQueryInstance(User user, ProcessQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,
@@ -128,8 +130,7 @@ public class ProcessQueryInstance extends QueryInstance {
         // have to move clobs to the end
         for (Column column : columns.values()) {
           ColumnType type = column.getType();
-          if (type == ColumnType.CLOB)
-            continue;
+          if (type == ColumnType.CLOB) continue;
 
           String value = (String) resultList.get(column.getName());
 
@@ -163,11 +164,9 @@ public class ProcessQueryInstance extends QueryInstance {
         ps.addBatch();
 
         rowId++;
-        if (rowId % 1000 == 0)
-          ps.executeBatch();
+        if (rowId % 1000 == 0) ps.executeBatch();
       }
-      if (rowId % 1000 != 0)
-        ps.executeBatch();
+      if (rowId % 1000 != 0) ps.executeBatch();
       logger.info("Inserting results to cache took "
           + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
     } catch (SQLException e) {
@@ -191,7 +190,7 @@ public class ProcessQueryInstance extends QueryInstance {
     request.setProjectId(wdkModel.getProjectId());
 
     // prepare parameters
-    Map<String, String> paramValues = getInternalParamValues();
+    Map<String, String> paramValues = getParamInternalValues();
     HashMap<String, String> params = new HashMap<String, String>();
     for (String name : paramValues.keySet()) {
       params.put(name, paramValues.get(name));
@@ -207,8 +206,7 @@ public class ProcessQueryInstance extends QueryInstance {
     for (int i = 0; i < columnNames.length; i++) {
       // if the wsName is defined, reassign it to the columns
       Column column = columns.get(columnNames[i]);
-      if (column.getWsName() != null)
-        columnNames[i] = column.getWsName();
+      if (column.getWsName() != null) columnNames[i] = column.getWsName();
       indices.put(column.getName(), i);
       temp += columnNames[i] + ", ";
     }
@@ -321,8 +319,7 @@ public class ProcessQueryInstance extends QueryInstance {
     for (Column column : columns) {
       // weight column is already added to the sql.
       if (column.getName().equals(Utilities.COLUMN_WEIGHT)
-          && query.isHasWeight())
-        continue;
+          && query.isHasWeight()) continue;
 
       int width = column.getWidth();
       ColumnType type = column.getType();
@@ -374,8 +371,7 @@ public class ProcessQueryInstance extends QueryInstance {
         count++;
       }
       return count;
-    } else
-      return super.getResultSize();
+    } else return super.getResultSize();
   }
 
 }

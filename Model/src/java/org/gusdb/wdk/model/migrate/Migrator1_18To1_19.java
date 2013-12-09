@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -35,11 +34,9 @@ import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.dataset.DatasetParam;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -617,8 +614,6 @@ public class Migrator1_18To1_19 implements Migrator {
             int userDatasetId = getUserDatasetId(wdkModel, history.userId,
                 (DatasetParam) param, paramClob);
             paramValue = Integer.toString(userDatasetId);
-          } else if (!paramValue.startsWith(Utilities.PARAM_COMPRESSE_PREFIX)) {
-            paramValue = param.compressValue(paramValue);
           }
           jsNew.put(param.getName(), paramValue);
         }
@@ -641,7 +636,6 @@ public class Migrator1_18To1_19 implements Migrator {
 
   private int getUserDatasetId(WdkModel wdkModel, int userId,
       DatasetParam param, String value) throws WdkModelException {
-    User user = wdkModel.getUserFactory().getUser(userId);
     if (value.length() == 65 || value.length() == 32) {
       // the value is a dataset_checksum, or a combined checksum
       String checksum = value;
@@ -663,10 +657,8 @@ public class Migrator1_18To1_19 implements Migrator {
       } catch (SQLException e) {
         throw new WdkModelException(e);
       }
-    } else { // the value is raw value, create a dataset from it.
-      RecordClass recordClass = param.getRecordClass();
-      Dataset dataset = user.createDataset(recordClass, null, value);
-      return dataset.getUserDatasetId();
+    } else { // no longer apply here, the value is the userDatasetId
+      return Integer.valueOf(value);
     }
   }
 

@@ -3,9 +3,11 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.dataset.DatasetParam;
 
 /**
  * @author xingao
@@ -13,40 +15,56 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
  */
 public class DatasetParamBean extends ParamBean<DatasetParam> {
 
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger.getLogger(DatasetParamBean.class.getName());
-	
-    public DatasetParamBean(DatasetParam datasetParam) {
-        super(datasetParam);
-    }
+  @SuppressWarnings("unused")
+  private static final Logger logger = Logger.getLogger(DatasetParamBean.class.getName());
 
-    public DatasetBean getDataset() throws WdkModelException {
-        String independentValue = param.dependentValueToIndependentValue(
-                user.getUser(), dependentValue);
-        DatasetBean dataset = user.getDataset(independentValue);
-        dataset.setRecordClass(getRecordClass());
-        return dataset;
-    }
+  private final DatasetParam datasetParam;
 
-    /**
-     * @param user
-     * @param uploadFile
-     * @param rawValue
-     * @return
-     * @see org.gusdb.wdk.model.query.param.DatasetParam#rawValueToDependentValue(org.gusdb.wdk.model.user.User,
-     *      java.lang.String, java.lang.String)
-     */
-    public String rawValueToDependentValue(UserBean user, String uploadFile,
-            String rawValue) throws WdkModelException {
-        return param.rawValueToDependentValue(user.getUser(), uploadFile,
-                rawValue);
-    }
+  public DatasetParamBean(DatasetParam datasetParam) {
+    super(datasetParam);
+    this.datasetParam = datasetParam;
+  }
 
-    public RecordClassBean getRecordClass() {
-        return new RecordClassBean(param.getRecordClass());
-    }
+  public DatasetBean getDataset() throws WdkModelException {
+    int userDatasetId = Integer.valueOf(stableValue);
+    DatasetBean dataset = user.getDataset(userDatasetId);
+    return dataset;
+  }
 
-    public String getDefaultType() {
-        return param.getDefaultType();
-    }
+  public String getDefaultType() {
+    return param.getDefaultType();
+  }
+
+  /**
+   * @return
+   * @see org.gusdb.wdk.model.query.param.dataset.DatasetParam#getTypes()
+   */
+  public Map<String, String> getTypes() {
+    return datasetParam.getTypes();
+  }
+
+  /**
+   * @return
+   * @see org.gusdb.wdk.model.query.param.dataset.DatasetParam#getTypeSubParam()
+   */
+  public String getTypeSubParam() {
+    return datasetParam.getTypeSubParam();
+  }
+
+  /**
+   * @return
+   * @see org.gusdb.wdk.model.query.param.dataset.DatasetParam#getFileSubParam()
+   */
+  public String getFileSubParam() {
+    return datasetParam.getFileSubParam();
+  }
+
+  /**
+   * @return
+   * @see org.gusdb.wdk.model.query.param.dataset.DatasetParam#getMethodSubParam()
+   */
+  public String getMethodSubParam() {
+    return datasetParam.getMethodSubParam();
+  }
+
 }

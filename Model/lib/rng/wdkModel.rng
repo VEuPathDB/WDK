@@ -100,6 +100,14 @@
     </element>
   </define>
 
+  <!-- define common property element, which is used by multiple tags -->
+  <define name="property">
+    <element name="property">
+      <ref name="IncludeExclude" />
+      <attribute name="name" />
+      <text />
+    </element>
+  </define>
 
   <!-- define declared macro -->
   <define name="declaredMacro">
@@ -245,11 +253,7 @@
           <ref name="IncludeExclude" />
           <attribute name="implementation" />
           <zeroOrMore>
-            <element name="property">
-              <attribute name="name" />
-              <ref name="IncludeExclude" />
-              <text />
-            </element>
+            <ref name="property" />
           </zeroOrMore>
         </element>
     </choice>
@@ -338,7 +342,6 @@
   <define name="datasetParam">
     <element name="datasetParam">
       <ref name="ParamBaseProperties" />
-      <attribute name="recordClassRef" />
       <zeroOrMore>
         <choice>
             <ref name="ParamBaseTags" />
@@ -351,14 +354,32 @@
                 <attribute name="columnName" />
               </optional>
               <optional>
-                  <attribute name="defaultType">
-                    <choice>
-                        <value>data</value>
-                        <value>file</value>
-                        <value>basket</value>
-                    </choice>
-                  </attribute>
+                <attribute name="basketEnabled">
+                  <data type="boolean" />
+                </attribute>
               </optional>
+              <optional>
+                <attribute name="strategyEnabled">
+                  <data type="boolean" />
+                </attribute>
+              </optional>
+              <optional>
+                <attribute name="defaultTextType" />
+              </optional>
+            </element>
+            <element name="parser">
+              <ref name="IncludeExclude" />
+              <attribute name="method">
+                <choice>
+                  <value>text</value>
+                  <value>basket</value>
+                  <value>strategy</value>
+                </choice>
+              </attribute>
+	          <attribute name="implementation" />
+	          <zeroOrMore>
+	            <ref name="property" />
+	          </zeroOrMore>
             </element>
         </choice>
       </zeroOrMore>
@@ -910,11 +931,7 @@
             </optional>
 
             <zeroOrMore>
-              <element name="property" >
-                <attribute name="name" />
-                <ref name="IncludeExclude" />
-                <text />
-              </element>
+              <ref name="property" />
             </zeroOrMore>
           </element>
 
@@ -1114,11 +1131,7 @@
         <attribute name="description" />
       </optional>
 	  <zeroOrMore>
-		<element name="property">
-		  <ref name="IncludeExclude" />
-		  <attribute name="name" />
-		  <text />
-		</element>
+		<ref name="property" />
 	  </zeroOrMore>
 	</element>
   </define>

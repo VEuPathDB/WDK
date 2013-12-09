@@ -6,7 +6,6 @@ package org.gusdb.wdk.model.query.param;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
@@ -25,7 +24,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toStableValue(User user, String rawValue,
-      Map<String, String> contextValues) throws WdkUserException {
+      Map<String, String> contextValues)  {
     return rawValue;
   }
 
@@ -37,7 +36,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toRawValue(User user, String refernceValue,
-      Map<String, String> contextValues) throws WdkUserException {
+      Map<String, String> contextValues)  {
     return refernceValue;
   }
 
@@ -52,8 +51,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
+      Map<String, String> contextValues) throws WdkModelException {
     int stepId = Integer.parseInt(stableValue.split(":", 2)[0]);
 
     if (param.isNoTranslation())
@@ -67,14 +65,14 @@ public class AnswerParamHandler extends AbstractParamHandler {
   /**
    * the signature is the checksum of answer, which doesn't have any user
    * related information, to make sure the cache can be shared.
+   * @throws WdkModelException 
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
   public String toSignature(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
+      Map<String, String> contextValues) throws WdkModelException  {
     int stepId = Integer.parseInt(stableValue.split(":", 2)[0]);
     Step step = user.getStep(stepId);
     AnswerValue answerValue = step.getAnswerValue();

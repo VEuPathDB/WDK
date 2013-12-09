@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.gusdb.wdk.model.query.param;
+package org.gusdb.wdk.model.query.param.dataset;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -10,7 +10,8 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.config.ModelConfig;
+import org.gusdb.wdk.model.query.param.AbstractParamHandler;
+import org.gusdb.wdk.model.query.param.ParamHandler;
 import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.User;
@@ -59,12 +60,10 @@ public class DatasetParamHandler extends AbstractParamHandler {
         for (String propName : properties.keySet()) {
           String propValue = properties.get(propName);
           String[] parts = propName.split("\\.", 2);
-          if (parts.length != 0)
-            continue;
+          if (parts.length != 0) continue;
           String prefix = parts[0];
           DatasetParser parser = parsers.get(prefix);
-          if (parser != null)
-            parser.addProperty(parts[1], propValue);
+          if (parser != null) parser.addProperty(parts[1], propValue);
         }
       }
     }
@@ -75,12 +74,17 @@ public class DatasetParamHandler extends AbstractParamHandler {
    * sub-param of the input, we will choose different parsers to process the raw
    * value into stable value. The stable value is a user_dataset_id
    * 
+   * @throws WdkUserException
+   * 
+   * @throws WdkModelException
+   * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toStableValue(org.gusdb
    *      .wdk.model.user.User, java.lang.String, java.util.Map)
    */
   @Override
   public String toStableValue(User user, String rawValue,
-      Map<String, String> contextValues) throws WdkUserException {
+      Map<String, String> contextValues) throws WdkUserException,
+      WdkModelException {
     // get type and find a proper parser for it
     DatasetParam datasetParam = (DatasetParam) param;
     String type = contextValues.get(datasetParam.getTypeSubParam());
@@ -88,12 +92,12 @@ public class DatasetParamHandler extends AbstractParamHandler {
     DatasetParser parser = parsers.get(type);
 
     // parse the content;
-    List<String[]> data = parser.parse(rawValue);
+    List<String[]> data = parser.parse(user, rawValue);
 
     // save the data into database, and get user dataset id
     DatasetFactory datasetFactory = param.getWdkModel().getDatasetFactory();
-    Dataset dataset = datasetFactory.getDataset(user, data, rawValue, type,
-        uploadFile);
+    Dataset dataset = datasetFactory.createOrGetDataset(user, data, rawValue,
+        type, uploadFile);
 
     return Integer.toString(dataset.getUserDatasetId());
   }
@@ -108,12 +112,10 @@ public class DatasetParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toRawValue(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
+      Map<String, String> contextValues) throws WdkModelException {
     int userDatasetId = Integer.valueOf(stableValue);
     DatasetFactory datasetFactory = param.getWdkModel().getDatasetFactory();
-    Dataset dataset = datasetFactory.getDataset(user, userDatasetId);
-    return dataset.getContent();
+    return datasetFactory.getOriginalContent(userDatasetId);
   }
 
   /**
@@ -124,36 +126,25 @@ public class DatasetParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
-    if (param.isNoTranslation())
-      return stableValue;
+      Map<String, String> contextValues) {
+    if (param.isNoTranslation()) return stableValue;
 
-    ModelConfig config = wdkModel.getModelConfig();
-    String dbLink = config.getAppDB().getUserDbLink();
-    String wdkSchema = config.getUserDB().getWdkEngineSchema();
-    String userSchema = config.getUserDB().getUserSchema();
-    String dvTable = wdkSchema + DatasetFactory.TABLE_DATASET_VALUE + dbLink;
-    String udTable = userSchema + DatasetFactory.TABLE_USER_DATASET + dbLink;
-    String colDatasetId = DatasetFactory.COLUMN_DATASET_ID;
-    String colUserDatasetId = DatasetFactory.COLUMN_USER_DATASET_ID;
-    StringBuffer sql = new StringBuffer("SELECT dv.* FROM ");
-    sql.append(udTable + " ud, " + dvTable + " dv ");
-    sql.append(" WHERE dv." + colDatasetId + " = ud." + colDatasetId);
-    sql.append(" AND ud." + colUserDatasetId + " = " + stableValue);
-    return sql.toString();
+    int userDatasetId = Integer.valueOf(stableValue);
+    DatasetFactory datasetFactory = param.getWdkModel().getDatasetFactory();
+    return datasetFactory.getDatasetValueSql(userDatasetId);
   }
 
   /**
    * The signature is the dataset id, which is independent from user info.
+   * 
+   * @throws WdkModelException
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.
    *      model.user.User, java.lang.String, java.util.Map)
    */
   @Override
   public String toSignature(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
+      Map<String, String> contextValues) throws WdkModelException {
     int userDatasetId = Integer.valueOf(stableValue);
     DatasetFactory datasetFactory = param.getWdkModel().getDatasetFactory();
     Dataset dataset = datasetFactory.getDataset(user, userDatasetId);

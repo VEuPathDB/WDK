@@ -54,6 +54,7 @@ public class RecordInstance extends AttributeValueContainer {
    * 
    * @param recordClass
    * @param primaryKey
+   * @throws WdkUserException
    */
   public RecordInstance(User user, RecordClass recordClass,
       Map<String, Object> pkValues) throws WdkModelException {
@@ -112,10 +113,9 @@ public class RecordInstance extends AttributeValueContainer {
   }
 
   public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-    if (answerValue != null)
-      return answerValue.getQuestion().getAttributeFieldMap(scope);
-    else
-      return recordClass.getAttributeFieldMap(scope);
+    if (answerValue != null) return answerValue.getQuestion().getAttributeFieldMap(
+        scope);
+    else return recordClass.getAttributeFieldMap(scope);
   }
 
   /*
@@ -167,19 +167,16 @@ public class RecordInstance extends AttributeValueContainer {
 
       Map<String, AttributeField> fields = recordClass.getAttributeFieldMap();
       for (Column column : query.getColumns()) {
-        if (!fields.containsKey(column.getName()))
-          continue;
+        if (!fields.containsKey(column.getName())) continue;
         AttributeField field = fields.get(column.getName());
-        if (!(field instanceof ColumnAttributeField))
-          continue;
+        if (!(field instanceof ColumnAttributeField)) continue;
         Object objValue = resultList.get(column.getName());
         ColumnAttributeValue value = new ColumnAttributeValue(
             (ColumnAttributeField) field, objValue);
         addAttributeValue(value);
       }
     } finally {
-      if (resultList != null)
-        resultList.close();
+      if (resultList != null) resultList.close();
     }
     logger.debug("column attributes are cached.");
   }
@@ -232,7 +229,8 @@ public class RecordInstance extends AttributeValueContainer {
   /**
    * @return Map of tableName -> TableFieldValue
    */
-  public Map<String, TableValue> getTables() throws WdkModelException, WdkUserException {
+  public Map<String, TableValue> getTables() throws WdkModelException,
+      WdkUserException {
     Map<String, TableValue> values = new LinkedHashMap<String, TableValue>();
     for (TableField field : recordClass.getTableFields()) {
       String name = field.getName();
@@ -244,6 +242,7 @@ public class RecordInstance extends AttributeValueContainer {
 
   /**
    * @return Map of attributeName -> AttributeFieldValue
+   * @throws WdkUserException
    */
 
   public Map<String, AttributeValue> getAttributeValueMap()
@@ -254,6 +253,7 @@ public class RecordInstance extends AttributeValueContainer {
   /**
    * @param scope
    * @return
+   * @throws WdkUserException
    */
   public Map<String, AttributeValue> getAttributeValueMap(FieldScope scope)
       throws WdkModelException {
@@ -308,8 +308,7 @@ public class RecordInstance extends AttributeValueContainer {
         Question nextNql = nql[i];
         AnswerValue a = getNestedRecordAnswer(nextNql);
         RecordInstance[] records = a.getRecordInstances();
-        if (records != null)
-          riListMap.put(nextNql.getName(), records);
+        if (records != null) riListMap.put(nextNql.getName(), records);
       }
     }
     return riListMap;
@@ -467,7 +466,7 @@ public class RecordInstance extends AttributeValueContainer {
   }
 
   public Map<String, AttributeValue> getSummaryAttributeValueMap()
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     return getAttributeValueMap(FieldScope.NON_INTERNAL);
   }
 

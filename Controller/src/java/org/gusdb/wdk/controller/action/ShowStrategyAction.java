@@ -454,7 +454,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     param.setTruncateLength(TRUNCATE_LENGTH);
                     try {
                         jsParam.put("value", getRawValue(paramValues, param));
-                        jsParam.put("internal",param.getRawValue());
+                        jsParam.put("internal",param.getRawValue??());
                     } catch (Exception ex) {
                         throw new WdkModelException(ex);
                     }

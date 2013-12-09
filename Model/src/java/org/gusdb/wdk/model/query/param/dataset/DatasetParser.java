@@ -1,6 +1,10 @@
-package org.gusdb.wdk.model.query.param;
+package org.gusdb.wdk.model.query.param.dataset;
 
 import java.util.List;
+
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.User;
 
 public interface DatasetParser {
 
@@ -22,5 +26,5 @@ public interface DatasetParser {
   
   void addProperty(String propName, String propValue);
 
-  List<String[]> parse(String content);
+  List<String[]> parse(User user, String content) throws WdkModelException, WdkUserException;
 }

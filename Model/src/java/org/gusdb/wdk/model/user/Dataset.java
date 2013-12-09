@@ -6,9 +6,7 @@ package org.gusdb.wdk.model.user;
 import java.util.Date;
 import java.util.List;
 
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.record.RecordClass;
 
 /**
  * @author xingao
@@ -16,169 +14,146 @@ import org.gusdb.wdk.model.record.RecordClass;
  */
 public class Dataset {
 
-    private static final int UPLOAD_FILE_MAX_SIZE = 2000;
+  private static final int UPLOAD_FILE_MAX_SIZE = 2000;
 
-    private DatasetFactory factory;
+  private DatasetFactory factory;
 
-    private int datasetId;
-    private int userDatasetId;
-    private User user;
-    private String uploadFile;
-    private Date createTime;
-    private String summary;
-    private int size;
-    private String checksum;
-    private RecordClass recordClass;
+  private final int datasetId;
+  private final User user;
 
-    public Dataset(DatasetFactory factory, int datasetId) {
-        this.factory = factory;
-        this.datasetId = datasetId;
-    }
+  private int userDatasetId;
+  private String uploadFile;
+  private Date createTime;
+  private String contentType;
+  private int size;
+  private String datasetChecksum;
+  private String contentChecksum;
 
-    public User getUser() {
-        return user;
-    }
+  public Dataset(DatasetFactory factory, User user, int datasetId) {
+    this.factory = factory;
+    this.user = user;
+    this.datasetId = datasetId;
+  }
 
-    void setUser(User user) {
-        this.user = user;
-    }
+  public User getUser() {
+    return user;
+  }
 
-    public String getUploadFile() {
-        return uploadFile;
-    }
+  /**
+   * @return the datasetId
+   */
+  public int getDatasetId() {
+    return datasetId;
+  }
 
-    /**
-     * @return the createTime
-     */
-    public Date getCreateTime() {
-        return createTime;
-    }
+  public String getUploadFile() {
+    return uploadFile;
+  }
 
-    /**
-     * @return the datasetId
-     */
-    public int getDatasetId() {
-        return datasetId;
-    }
+  /**
+   * @return the createTime
+   */
+  public Date getCreateTime() {
+    return createTime;
+  }
 
-    /**
-     * @return the checksum
-     */
-    public String getChecksum() {
-        return checksum;
-    }
+  /**
+   * @return the size
+   */
+  public int getSize() {
+    return size;
+  }
 
-    /**
-     * @return the size
-     */
-    public int getSize() {
-        return size;
-    }
+  void setSize(int size) {
+    this.size = size;
+  }
 
-    void setSize(int size) {
-        this.size = size;
-    }
+  /**
+   * @return the type
+   */
+  public String getContentType() {
+    return contentType;
+  }
 
-    /**
-     * @return the summary
-     */
-    public String getSummary() {
-        return summary;
-    }
+  /**
+   * @param contentType
+   *          the type to set
+   */
+  public void setContentType(String contentType) {
+    this.contentType = contentType;
+  }
 
-    void setSummary(String summary) {
-        this.summary = summary;
-    }
+  /**
+   * @param createTime
+   *          the createTime to set
+   */
+  void setCreateTime(Date createTime) {
+    this.createTime = createTime;
+  }
 
-    /**
-     * @param createTime
-     *            the createTime to set
-     */
-    void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
+  /**
+   * @param uploadFile
+   *          the uploadFile to set
+   */
+  void setUploadFile(String uploadFile) {
+    if (uploadFile != null && uploadFile.length() > UPLOAD_FILE_MAX_SIZE)
+      uploadFile = uploadFile.substring(0, UPLOAD_FILE_MAX_SIZE - 3) + "...";
+    this.uploadFile = uploadFile;
+  }
 
-    /**
-     * @param values
-     *            the summary to set
-     */
-    void setSummary(List<String[]> values) {
-        this.size = values.size();
-        // compute summary
-        StringBuffer sbSummary = new StringBuffer();
-        int maxLength = Utilities.MAX_PARAM_VALUE_SIZE;
-        for (String[] value : values) {
-            if (sbSummary.length() != 0) sbSummary.append(DatasetFactory.RECORD_DIVIDER);
-            boolean first = true;
-            for (String column : value) {
-                if (column != null && column.length() > 0) {
-                    if (first) first = false;
-                    else sbSummary.append(DatasetFactory.COLUMN_DIVIDER);
-                    sbSummary.append(column);
-                }
-            }
-            if (sbSummary.length() > maxLength) break;
-        }
-        summary = sbSummary.toString();
-        if (summary.length() > maxLength) {
-            int pos = summary.lastIndexOf(DatasetFactory.RECORD_DIVIDER, maxLength - 3);
-            summary = summary.substring(0, (pos > 0) ? pos + 1 : maxLength - 3);
-            summary += "...";
-        }
-    }
+  /**
+   * @return
+   */
+  public List<String[]> getValues() throws WdkModelException {
+    return factory.getDatasetValues(datasetId);
+  }
 
-    /**
-     * @param uploadFile
-     *            the uploadFile to set
-     */
-    void setUploadFile(String uploadFile) {
-        if (uploadFile != null && uploadFile.length() > UPLOAD_FILE_MAX_SIZE)
-            uploadFile = uploadFile.substring(0, UPLOAD_FILE_MAX_SIZE - 3)
-                    + "...";
-        this.uploadFile = uploadFile;
-    }
+  public String getOriginalContent() throws WdkModelException {
+    return factory.getOriginalContent(userDatasetId);
+  }
 
-    /**
-     * @return
-     */
-    public List<String> getValues() throws WdkModelException {
-        return factory.getDatasetValues(this);
-    }
+  /**
+   * @return the userDatasetId
+   */
+  public int getUserDatasetId() {
+    return userDatasetId;
+  }
 
-    public String getValue() throws WdkModelException {
-        List<String> values = factory.getDatasetValues(this);
-        StringBuffer sb = new StringBuffer();
-        for (String value : values) {
-            if (sb.length() > 0) sb.append(DatasetFactory.RECORD_DIVIDER + " ");
-            sb.append(value);
-        }
-        return sb.toString();
-    }
+  /**
+   * @param userDatasetId
+   *          the userDatasetId to set
+   */
+  void setUserDatasetId(int userDatasetId) {
+    this.userDatasetId = userDatasetId;
+  }
 
-    /**
-     * @return the userDatasetId
-     */
-    public int getUserDatasetId() {
-        return userDatasetId;
-    }
+  /**
+   * @return the datasetChecksum
+   */
+  public String getDatasetChecksum() {
+    return datasetChecksum;
+  }
 
-    /**
-     * @param userDatasetId
-     *            the userDatasetId to set
-     */
-    void setUserDatasetId(int userDatasetId) {
-        this.userDatasetId = userDatasetId;
-    }
+  /**
+   * @param datasetChecksum
+   *          the datasetChecksum to set
+   */
+  public void setDatasetChecksum(String datasetChecksum) {
+    this.datasetChecksum = datasetChecksum;
+  }
 
-    /**
-     * @param checksum
-     *            the checksum to set
-     */
-    void setChecksum(String checksum) {
-        this.checksum = checksum;
-    }
-    
-    public String getContent() {
-      
-    }
+  /**
+   * @return the contentChecksum
+   */
+  public String getContentChecksum() {
+    return contentChecksum;
+  }
+
+  /**
+   * @param contentChecksum
+   *          the contentChecksum to set
+   */
+  public void setContentChecksum(String contentChecksum) {
+    this.contentChecksum = contentChecksum;
+  }
 }

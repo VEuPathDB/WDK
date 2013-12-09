@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.SqlQuery;
@@ -52,10 +53,13 @@ public abstract class AttributeValueContainer implements AttributeValueMap {
    * Get existing attribute value from cache, or create one if the value doesn't
    * exist.
    * 
+   * @throws WdkUserException
+   * 
    * @see org.gusdb.wdk.model.record.attribute.AttributeValueMap#getAttributeValue(java.lang.String)
    */
   @Override
-  public AttributeValue getAttributeValue(String fieldName) throws WdkModelException {
+  public AttributeValue getAttributeValue(String fieldName)
+      throws WdkModelException {
     // get the field from the cache; primary key always exists in the cache
     Map<String, AttributeField> fields = getAttributeFieldMap();
     AttributeField field = fields.get(fieldName);
@@ -89,7 +93,7 @@ public abstract class AttributeValueContainer implements AttributeValueMap {
 
       fillColumnAttributeValues(query);
       if (!attributeValueCache.containsKey(fieldName))
-        // something is wrong here, need further investigation.
+      // something is wrong here, need further investigation.
         throw new WdkModelException("Field exists, but the value "
             + "doesn't, need investigation: " + field.getName());
       value = attributeValueCache.get(fieldName);

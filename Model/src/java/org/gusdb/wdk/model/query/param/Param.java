@@ -163,7 +163,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     this.contextQuestion = param.contextQuestion;
     this.contextQuery = param.contextQuery;
   }
-  
+
   public WdkModel getWdkModel() {
     return wdkModel;
   }
@@ -204,8 +204,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   }
 
   public String getPrompt() {
-    if (prompt == null)
-      return name;
+    if (prompt == null) return name;
     return prompt;
   }
 
@@ -214,8 +213,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   }
 
   public String getHelp() {
-    if (help == null)
-      return getPrompt();
+    if (help == null) return getPrompt();
     return help;
   }
 
@@ -224,8 +222,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   }
 
   public void setDefault(String defaultValue) {
-    if (defaultValue == null)
-      return; // use the current one
+    if (defaultValue == null) return; // use the current one
     this.defaultValue = defaultValue;
   }
 
@@ -292,8 +289,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
    *          the emptyValue to set
    */
   public void setEmptyValue(String emptyValue) {
-    if (emptyValue != null && emptyValue.length() == 0)
-      emptyValue = "";
+    if (emptyValue != null && emptyValue.length() == 0) emptyValue = "";
     this.emptyValue = emptyValue;
   }
 
@@ -325,8 +321,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
         + "'" + newline + "  default='" + defaultValue + "'" + newline
         + "  readonly=" + readonly + newline + "  visible=" + visible + newline
         + "  noTranslation=" + noTranslation + newline);
-    if (group != null)
-      buf.append("  group=" + group.getName() + newline);
+    if (group != null) buf.append("  group=" + group.getName() + newline);
 
     return buf.toString();
   }
@@ -485,10 +480,9 @@ public abstract class Param extends WdkModelBase implements Cloneable {
    * @throws WdkModelException
    */
   public String getStableValue(User user, String rawValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
-    if (handler == null)
-      return rawValue;
+      Map<String, String> contextValues) throws WdkModelException,
+      WdkUserException {
+    if (handler == null) return rawValue;
 
     return handler.toStableValue(user, rawValue, contextValues);
   }
@@ -504,10 +498,8 @@ public abstract class Param extends WdkModelBase implements Cloneable {
    * @throws WdkModelException
    */
   public String getRawValue(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
-    if (handler == null)
-      return stableValue;
+      Map<String, String> contextValues) throws WdkModelException {
+    if (handler == null) return stableValue;
 
     return handler.toRawValue(user, stableValue, contextValues);
   }
@@ -527,31 +519,25 @@ public abstract class Param extends WdkModelBase implements Cloneable {
    * @throws WdkModelException
    */
   public String getInternalValue(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
+      Map<String, String> contextValues) throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0)
-      if (isAllowEmpty())
-        stableValue = getEmptyValue();
+      if (isAllowEmpty()) stableValue = getEmptyValue();
 
-    if (handler == null)
-      return stableValue;
+    if (handler == null) return stableValue;
 
     return handler.toInternalValue(user, stableValue, contextValues);
   }
 
   public String getSignature(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
-    if (handler == null)
-      return stableValue;
+      Map<String, String> contextValues) throws WdkModelException {
+    if (handler == null) return stableValue;
 
     return handler.toSignature(user, stableValue, contextValues);
   }
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    if (resolved)
-      return;
+    if (resolved) return;
 
     super.resolveReferences(wdkModel);
 

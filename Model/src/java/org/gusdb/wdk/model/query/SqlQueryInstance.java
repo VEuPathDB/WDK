@@ -14,6 +14,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
@@ -38,6 +39,7 @@ public class SqlQueryInstance extends QueryInstance {
   /**
    * @param query
    * @param values
+   * @throws WdkUserException
    */
   protected SqlQueryInstance(User user, SqlQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,
@@ -112,16 +114,15 @@ public class SqlQueryInstance extends QueryInstance {
 
     try {
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      SqlUtils.executeUpdate(dataSource, buffer.toString(),
-          query.getFullName() + "__insert-cache");
-    }
-    catch (SQLException e) {
+      SqlUtils.executeUpdate(dataSource, buffer.toString(), query.getFullName()
+          + "__insert-cache");
+    } catch (SQLException e) {
       throw new WdkModelException("Unable to insert record into cache.", e);
     }
   }
 
   public String getUncachedSql() throws WdkModelException {
-    Map<String, String> internalValues = getInternalParamValues();
+    Map<String, String> internalValues = getParamInternalValues();
     Map<String, Param> params = query.getParamMap();
     String sql = query.getSql();
     for (String paramName : params.keySet()) {
@@ -140,12 +141,9 @@ public class SqlQueryInstance extends QueryInstance {
       } else { // has weight column defined, add assigned weight to it
         StringBuilder builder = new StringBuilder();
         for (String column : columns.keySet()) {
-          if (column.equals(weightColumn))
-            continue;
-          if (builder.length() == 0)
-            builder.append("SELECT ");
-          else
-            builder.append(", o.");
+          if (column.equals(weightColumn)) continue;
+          if (builder.length() == 0) builder.append("SELECT ");
+          else builder.append(", o.");
           builder.append(column);
         }
         builder.append(", (o." + weightColumn + " + " + assignedWeight);
@@ -164,10 +162,8 @@ public class SqlQueryInstance extends QueryInstance {
    */
   @Override
   public String getSql() throws WdkModelException {
-    if (isCached())
-      return getCachedSql();
-    else
-      return getUncachedSql();
+    if (isCached()) return getCachedSql();
+    else return getUncachedSql();
   }
 
   /*
@@ -191,10 +187,9 @@ public class SqlQueryInstance extends QueryInstance {
 
     try {
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      SqlUtils.executeUpdate(dataSource, buffer.toString(),
-          query.getFullName() + "__create-cache");
-    }
-    catch (SQLException e) {
+      SqlUtils.executeUpdate(dataSource, buffer.toString(), query.getFullName()
+          + "__create-cache");
+    } catch (SQLException e) {
       throw new WdkModelException("Unable to create cache.", e);
     }
   }

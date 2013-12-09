@@ -114,6 +114,9 @@ public class Utilities {
   public static final String QUERY_CTX_QUERY = "wdk-query";
   public static final String QUERY_CTX_USER = "wdk-user";
 
+  public static final String RECORD_DIVIDER = "\n";
+  public static final String COLUMN_DIVIDER = ",";
+
   private static final String ALGORITHM = "MD5";
 
   /*

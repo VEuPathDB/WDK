@@ -57,7 +57,7 @@ public class AnswerFilterInstance extends WdkModelBase {
   private String description;
 
   private List<WdkModelText> paramValueList = new ArrayList<WdkModelText>();
-  private Map<String, String> paramValueMap = new LinkedHashMap<String, String>();
+  private Map<String, String> stableValues = new LinkedHashMap<String, String>();
 
   private RecordClass recordClass;
   private SqlQuery filterQuery;
@@ -190,7 +190,7 @@ public class AnswerFilterInstance extends WdkModelBase {
   }
 
   public Map<String, Object> getParamValueMap() {
-    return new LinkedHashMap<String, Object>(paramValueMap);
+    return new LinkedHashMap<String, Object>(stableValues);
   }
 
   /*
@@ -233,11 +233,11 @@ public class AnswerFilterInstance extends WdkModelBase {
         String paramName = param.getName();
         String paramValue = param.getText().trim();
  
-        if (paramValueMap.containsKey(paramName))
+        if (stableValues.containsKey(paramName))
           throw new WdkModelException("The param [" + paramName
               + "] for answerFilterInstance [" + name + "] of type "
               + recordClass.getFullName() + "  is included more than once.");
-        paramValueMap.put(paramName, paramValue);
+        stableValues.put(paramName, paramValue);
       }
     }
     paramValueList = null;
@@ -258,7 +258,7 @@ public class AnswerFilterInstance extends WdkModelBase {
 
     // make sure the params provides match with those in the filter query
     Map<String, Param> params = filterQuery.getParamMap();
-    for (String paramName : paramValueMap.keySet()) {
+    for (String paramName : stableValues.keySet()) {
       if (!params.containsKey(paramName))
         throw new WdkModelException("The param [" + paramName
             + "] declared in answerFilterInstance [" + name + "] of type "
@@ -271,7 +271,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     for (String paramName : params.keySet()) {
       if (answerParam.getName().equals(paramName))
         continue;
-      if (!paramValueMap.containsKey(paramName))
+      if (!stableValues.containsKey(paramName))
         throw new WdkModelException("The required param value of [" + paramName
             + "] is not assigned to filter [" + getName() + "]");
 
@@ -317,8 +317,8 @@ public class AnswerFilterInstance extends WdkModelBase {
       if (param.getFullName().equals(answerParam.getFullName()))
         continue;
 
-      String dependentValue = paramValueMap.get(param.getName());
-      String internal = param.getInternalValue(user, dependentValue);
+      String stableValue = stableValues.get(param.getName());
+      String internal = param.getInternalValue(user, stableValue, stableValues);
       filterSql = param.replaceSql(filterSql, internal);
     }
 

@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -139,8 +140,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
       for (String name : fields.keySet()) {
 
         AttributeValue attributeValue = get(name);
-        if (attributeValue.equals(value))
-          return true;
+        if (attributeValue.equals(value)) return true;
       }
       return false;
     }
@@ -283,9 +283,11 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    *          case, the values cannot be accessed from table value. the caller
    *          is responsible for combining the table query with sorted & paged
    *          id query, and read the values directly.
+   * @throws WdkUserException
    */
   public TableValue(User user, PrimaryKeyAttributeValue primaryKey,
-      TableField tableField, boolean bulk) throws WdkModelException {
+      TableField tableField, boolean bulk) throws WdkModelException,
+      WdkUserException {
     // this.user = user;
     this.primaryKey = primaryKey;
     this.tableField = tableField;
@@ -519,9 +521,8 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     }
   }
 
-  private void initializeRows() throws WdkModelException {
-    if (rows != null)
-      return;
+  private void initializeRows() throws WdkModelException, WdkUserException {
+    if (rows != null) return;
 
     rows = new ArrayList<Map<String, AttributeValue>>();
     ResultList resultList = instance.getResults();
@@ -540,8 +541,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
 
     // fill in the column attributes
     for (AttributeField field : tableField.getAttributeFields()) {
-      if (!(field instanceof ColumnAttributeField))
-        continue;
+      if (!(field instanceof ColumnAttributeField)) continue;
 
       Object value = resultList.get(field.getName());
       ColumnAttributeValue attributeValue = new ColumnAttributeValue(

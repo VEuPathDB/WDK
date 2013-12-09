@@ -35,9 +35,9 @@ import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.dataset.DatasetParam;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -974,12 +974,10 @@ public class StepFactory {
         Step newChildStep = importStep(newUser, oldChildStep, stepIdsMap);
         paramValue = Integer.toString(newChildStep.getStepId());
       } else if (param instanceof DatasetParam) {
-        DatasetParam datasetParam = (DatasetParam) param;
+        DatasetFactory datasetFactory = wdkModel.getDatasetFactory();
         int oldUserDatasetId = Integer.parseInt(paramValue);
         Dataset oldDataset = oldUser.getDataset(oldUserDatasetId);
-        oldDataset.setRecordClass(datasetParam.getRecordClass());
-        Dataset newDataset = newUser.getDataset(oldDataset.getChecksum());
-        newDataset.setRecordClass(datasetParam.getRecordClass());
+        Dataset newDataset = datasetFactory.cloneDataset(oldDataset, newUser);
         paramValue = Integer.toString(newDataset.getUserDatasetId());
       }
       paramValues.put(paramName, paramValue);
