@@ -436,6 +436,7 @@ public class Strategy {
    * @throws WdkUserException
    */
   public boolean isValid() throws WdkModelException {
+    if (latestStep == null) getLatestStep();
     if (latestStep != null) valid = latestStep.isValid();
     return valid;
   }
