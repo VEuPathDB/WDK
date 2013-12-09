@@ -250,23 +250,18 @@ public class ShowQuestionAction extends Action {
   public ActionForward execute(ActionMapping mapping, ActionForm form,
       HttpServletRequest request, HttpServletResponse response)
       throws Exception {
-    try {
-      logger.debug("Entering ShowQuestionAction..");
+    logger.debug("Entering ShowQuestionAction..");
 
-      ActionServlet servlet = getServlet();
-      QuestionForm qForm = (QuestionForm) form;
-      String qFullName = getQuestionName(qForm, request);
-      ActionUtility.getWdkModel(servlet).validateQuestionFullName(qFullName);
-      QuestionBean wdkQuestion = getQuestionBean(servlet, qFullName);
+    ActionServlet servlet = getServlet();
+    QuestionForm qForm = (QuestionForm) form;
+    String qFullName = getQuestionName(qForm, request);
+    ActionUtility.getWdkModel(servlet).validateQuestionFullName(qFullName);
+    QuestionBean wdkQuestion = getQuestionBean(servlet, qFullName);
 
-      prepareQuestionForm(wdkQuestion, servlet, request, qForm);
-      setParametersAsAttributes(request);
+    prepareQuestionForm(wdkQuestion, servlet, request, qForm);
+    setParametersAsAttributes(request);
 
-      return determineView(servlet, request, wdkQuestion, qForm, mapping);
-    } catch (Exception ex) {
-      logger.error("Error while processing showQuestion", ex);
-      throw ex;
-    }
+    return determineView(servlet, request, wdkQuestion, qForm, mapping);
   }
 
   private QuestionBean getQuestionBean(ActionServlet servlet, String qFullName)
