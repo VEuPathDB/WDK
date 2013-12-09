@@ -40,6 +40,7 @@
     <%-- <th class = "sortable" style="width:5em;" scope="col">#Steps</th> --%>
     <th scope="col">Description</th>
     <th scope="col" style="width:12em;">Actions</th>
+    <th class="sortable" style="width:5em;" scope="col" title="${checkboxTitle}">Public</th>
     <th class="sortable" style="width:9em;" scope="col">Created</th>
     <th class="sortable" style="width:9em;" scope="col">
       <c:choose>
@@ -49,7 +50,6 @@
     </th>
     <th class="sortable" scope="col" style="width: 6em" title="It refers to the Website Version. See the Version number of this current release on the top left side of the header, on the right of the site name">Version</th>
     <th class="sortable" scope="col" style="width: 4em;text-align:right">Size</th>
-    <th class="sortable" scope="col" style="width: 5em" title="${checkboxTitle}">Public</th>
   </tr>
   </thead>
 
@@ -166,10 +166,6 @@
             <option value="wdk.history.handleBulkStrategies('delete',${strategyId})">Delete</option>
          </select>
       </td>
-      <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.createdTimeFormatted, 0, 10)}</td>
-      <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.lastModifiedTimeFormatted, 0, 10)}</td>
-      <td nowrap style="text-align:center">${strategy.version}</td>
-      <td nowrap style="text-align:right">${strategy.estimateSize}&nbsp;</td>
       
       <c:set var="checkboxTitle" value="Check this box to make your strategy visible to the community under the 'Public' tab."/>
       <c:set var="disabledProp" value=""/>
@@ -204,6 +200,11 @@
         <imp:image style="display:none" src="/wdk/images/filterLoading.gif"/>
         <input title="${checkboxTitle}" class="isPublicCheckbox" type="checkbox" ${disabledProp} ${checkedProp} onclick="${makePublicAction}"/>
       </td>
+      
+      <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.createdTimeFormatted, 0, 10)}</td>
+      <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.lastModifiedTimeFormatted, 0, 10)}</td>
+      <td nowrap style="text-align:center">${strategy.version}</td>
+      <td nowrap style="text-align:right">${strategy.estimateSize}&nbsp;</td>
     </tr>
 
     <c:set var="i" value="${i+1}"/>
