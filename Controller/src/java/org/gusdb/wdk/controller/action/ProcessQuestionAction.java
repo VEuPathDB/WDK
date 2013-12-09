@@ -66,20 +66,22 @@ public class ProcessQuestionAction extends Action {
             logger.debug("Param raw: " + paramName + " = " + rawValue);
             String dependentValue = null;
             if (param instanceof DatasetParamBean) {
+              DatasetParamBean datasetParam = (DatasetParamBean)param;
+              
                 // get the input type
-                String type = request.getParameter(paramName + "_type");
+              String typeParam = datasetParam.getTypeSubParam();
+                String type = request.getParameter(typeParam);
                 if (type == null)
                     throw new WdkUserException("Missing input parameter: "
-                            + paramName + "_type.");
+                            + typeParam);
 
-                RecordClassBean recordClass = ((DatasetParamBean) param).getRecordClass();
                 String data = null;
                 String uploadFile = "";
                 if (type.equalsIgnoreCase("data")) {
                     data = request.getParameter(paramName + "_data");
                 } else if (type.equalsIgnoreCase("file")) {
-                    FormFile file = (FormFile) qform.getValue(paramName
-                            + "_file");
+                  String fileParam = datasetParam.getFileSubParam();
+                    FormFile file = (FormFile) qform.getValue(fileParam);
                     uploadFile = file.getFileName();
                     logger.debug("upload file: " + uploadFile);
                     data = new String(file.getFileData());

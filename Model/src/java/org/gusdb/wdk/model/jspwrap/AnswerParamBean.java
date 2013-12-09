@@ -29,7 +29,7 @@ public class AnswerParamBean extends ParamBean<AnswerParam> {
         try {
             User user = this.user.getUser();
             AnswerValue answerValue = param.getAnswerValue(user,
-                    dependentValue);
+                    stableValue);
             return new AnswerValueBean(answerValue);
         } catch (Exception ex) {
             ex.printStackTrace();

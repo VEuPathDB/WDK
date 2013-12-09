@@ -45,8 +45,7 @@ public class QuestionForm extends MapActionForm {
   public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
     logger.debug("\n\n\n\n\n\nstart form validation...");
     ActionErrors errors = super.validate(mapping, request);
-    if (errors == null)
-      errors = new ActionErrors();
+    if (errors == null) errors = new ActionErrors();
 
     UserBean user = ActionUtility.getUser(servlet, request);
 
@@ -54,8 +53,7 @@ public class QuestionForm extends MapActionForm {
     request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
     request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, questionFullName);
 
-    if (!validating)
-      return errors;
+    if (!validating) return errors;
 
     String clicked = request.getParameter(CConstants.PQ_SUBMIT_KEY);
     if (clicked != null && clicked.equals(CConstants.PQ_SUBMIT_EXPAND_QUERY)) {
@@ -71,22 +69,22 @@ public class QuestionForm extends MapActionForm {
       errors.add(ActionErrors.GLOBAL_MESSAGE, message);
       return errors;
     }
-    if (wdkQuestion == null)
-      return errors;
+    if (wdkQuestion == null) return errors;
 
     Map<String, ParamBean<?>> params = wdkQuestion.getParamsMap();
-    
+
     // get the context values first
     Map<String, String> contextValues = new LinkedHashMap<>();
     for (String name : params.keySet()) {
       String value = (String) getValue(name);
       contextValues.put(name, value);
     }
-    
+
     // assign context values to the param bean
     for (ParamBean<?> param : params.values()) {
+      param.setContextValues(contextValues);
       if (param instanceof EnumParamBean) {
-        ((EnumParamBean)param).setDependedValues(contextValues);
+        ((EnumParamBean) param).setDependedValues(contextValues);
       }
     }
 
@@ -97,13 +95,12 @@ public class QuestionForm extends MapActionForm {
         ParamBean<?> param = params.get(paramName);
         param.setUser(user);
         prompt = param.getPrompt();
-        String rawOrDependentValue = (String) getValue(paramName);
-        String dependentValue = param.rawOrDependentValueToDependentValue(user,
-            rawOrDependentValue);
+        String rawValue = (String) getValue(paramName);
+        String stableValue = param.getStableValue(user, rawValue, contextValues);
 
         // cannot validate datasetParam here
         if (!(param instanceof DatasetParamBean))
-          param.validate(user, dependentValue, contextValues);
+          param.validate(user, stableValue, contextValues);
       } catch (Exception ex) {
         ex.printStackTrace();
         ActionMessage message = new ActionMessage("mapped.properties", prompt,
@@ -148,8 +145,7 @@ public class QuestionForm extends MapActionForm {
 
   public QuestionBean getQuestion() throws WdkModelException {
     if (question == null) {
-      if (questionFullName == null)
-        return null;
+      if (questionFullName == null) return null;
       int dotI = questionFullName.indexOf('.');
       String qSetName = questionFullName.substring(0, dotI);
       String qName = questionFullName.substring(dotI + 1,
@@ -158,9 +154,9 @@ public class QuestionForm extends MapActionForm {
       WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
           CConstants.WDK_MODEL_KEY);
 
-      QuestionSetBean wdkQuestionSet = wdkModel.getQuestionSetsMap().get(qSetName);
-      if (wdkQuestionSet == null)
-        return null;
+      QuestionSetBean wdkQuestionSet = wdkModel.getQuestionSetsMap().get(
+          qSetName);
+      if (wdkQuestionSet == null) return null;
       question = wdkQuestionSet.getQuestionsMap().get(qName);
     }
     return question;

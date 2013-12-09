@@ -6,7 +6,6 @@ package org.gusdb.wdk.model.query.param;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.user.User;
@@ -37,7 +36,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toRawValue(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException {
+      Map<String, String> contextValues) {
     return stableValue;
   }
 
@@ -51,9 +50,8 @@ public class EnumParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException {
-    if (stableValue == null || stableValue.length() == 0)
-      return stableValue;
+      Map<String, String> contextValues) {
+    if (stableValue == null || stableValue.length() == 0) return stableValue;
 
     AbstractEnumParam enumParam = (AbstractEnumParam) param;
     EnumParamCache cache = enumParam.getValueCache(contextValues);
@@ -61,8 +59,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     String[] terms = enumParam.convertToTerms(stableValue);
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
-      if (!cache.containsTerm(term))
-        continue;
+      if (!cache.containsTerm(term)) continue;
 
       String internal = (param.isNoTranslation()) ? term
           : cache.getInternal(term);
@@ -70,8 +67,7 @@ public class EnumParamHandler extends AbstractParamHandler {
       if (enumParam.getQuote()
           && !(internal.startsWith("'") && internal.endsWith("'")))
         internal = "'" + internal.replaceAll("'", "''") + "'";
-      if (buffer.length() != 0)
-        buffer.append(", ");
+      if (buffer.length() != 0) buffer.append(", ");
       buffer.append(internal);
     }
     return buffer.toString();
@@ -85,15 +81,13 @@ public class EnumParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toSignature(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
+      Map<String, String> contextValues) {
     AbstractEnumParam enumParam = (AbstractEnumParam) param;
     String[] terms = enumParam.convertToTerms(stableValue);
     Arrays.sort(terms);
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
-      if (buffer.length() > 0)
-        buffer.append(",");
+      if (buffer.length() > 0) buffer.append(",");
       buffer.append(term);
     }
     return buffer.toString();

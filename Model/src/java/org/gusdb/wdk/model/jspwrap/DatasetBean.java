@@ -47,10 +47,11 @@ public class DatasetBean {
 
     /**
      * @return
+     * @throws WdkModelException 
      * @see org.gusdb.wdk.model.user.Dataset#getSummary()
      */
-    public String getSummary() {
-        return dataset.getSummary();
+    public String getOriginalContent() throws WdkModelException {
+        return dataset.getOriginalContent();
     }
 
     /**
@@ -74,25 +75,24 @@ public class DatasetBean {
      * @throws WdkModelException 
      * @see org.gusdb.wdk.model.user.Dataset#getValues()
      */
-    public List<String> getValues() throws WdkModelException {
+    public List<String[]> getValues() throws WdkModelException {
       return dataset.getValues();
-    }
-
-    /**
-     * @return
-     * @throws WdkModelException 
-     * @see org.gusdb.wdk.model.user.Dataset#getValue()
-     */
-    public String getValue() throws WdkModelException {
-      return dataset.getValue();
     }
 
     /**
      * @return
      * @see org.gusdb.wdk.model.user.Dataset#getChecksum()
      */
-    public String getChecksum() {
-        return dataset.getChecksum();
+    public String getDatasetChecksum() {
+        return dataset.getDatasetChecksum();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Dataset#getContentChecksum()
+     */
+    public String getContentChecksum() {
+      return dataset.getContentChecksum();
     }
 
     /**
@@ -101,13 +101,5 @@ public class DatasetBean {
      */
     public int getUserDatasetId() {
         return dataset.getUserDatasetId();
-    }
-
-    void setRecordClass(RecordClassBean recordClass) {
-        dataset.setRecordClass(recordClass.recordClass);
-    }
-    
-    public RecordClassBean getRecordClass() {
-        return new RecordClassBean(dataset.getRecordClass());
     }
 }

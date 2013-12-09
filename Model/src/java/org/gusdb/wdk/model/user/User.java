@@ -446,7 +446,7 @@ public class User /* implements Serializable */{
   Step createStep(AnswerValue answerValue, boolean deleted, int assignedWeight)
       throws WdkModelException {
     Question question = answerValue.getQuestion();
-    Map<String, String> paramValues = answerValue.getIdsQueryInstance().getValues();
+    Map<String, String> paramValues = answerValue.getIdsQueryInstance().getParamStableValues();
     AnswerFilterInstance filter = answerValue.getFilter();
     int startIndex = answerValue.getStartIndex();
     int endIndex = answerValue.getEndIndex();
@@ -864,22 +864,9 @@ public class User /* implements Serializable */{
     return datasetFactory;
   }
 
-  public Dataset getDataset(String datasetChecksum) throws WdkModelException {
-    return datasetFactory.getDataset(this, datasetChecksum);
-  }
 
   public Dataset getDataset(int userDatasetId) throws WdkModelException {
     return datasetFactory.getDataset(this, userDatasetId);
-  }
-
-  public Dataset createDataset(RecordClass recordClass, String uploadFile,
-      String strValues) throws WdkModelException {
-    return datasetFactory.getDataset(this, recordClass, uploadFile, strValues);
-  }
-
-  public Dataset createDataset(RecordClass recordClass, String uploadFile,
-      List<String[]> values) throws WdkModelException {
-    return datasetFactory.getDataset(this, recordClass, uploadFile, values);
   }
 
   /**

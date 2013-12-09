@@ -23,18 +23,16 @@ public interface ParamHandler {
   void setProperties(Map<String, String> properties) throws WdkModelException;
 
   String toStableValue(User user, String rawValue,
-      Map<String, String> contextValues) throws WdkUserException;
+      Map<String, String> contextValues) throws WdkUserException,
+      WdkModelException;
 
   String toRawValue(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException;
+      Map<String, String> contextValues) throws WdkModelException;
 
   String toInternalValue(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException;
+      Map<String, String> contextValues) throws WdkModelException;
 
   String toSignature(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException;
+      Map<String, String> contextValues) throws WdkModelException;
 
 }

@@ -19,10 +19,10 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.dataset.DatasetParam;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
@@ -301,10 +301,8 @@ public abstract class Query extends WdkModelBase {
 
   public void addColumn(Column column) {
     column.setQuery(this);
-    if (columnList != null)
-      this.columnList.add(column);
-    else
-      columnMap.put(column.getName(), column);
+    if (columnList != null) this.columnList.add(column);
+    else columnMap.put(column.getName(), column);
   }
 
   public Map<String, Column> getColumnMap() {
@@ -424,8 +422,7 @@ public abstract class Query extends WdkModelBase {
         if (columnMap.containsKey(columnName)) {
           throw new WdkModelException("The column '" + columnName
               + "' is duplicated in query " + getFullName());
-        } else
-          columnMap.put(columnName, column);
+        } else columnMap.put(columnName, column);
       }
     }
     columnList = null;
@@ -443,14 +440,12 @@ public abstract class Query extends WdkModelBase {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // logger.debug("Resolving " + getFullName() + " - " + resolved);
-    if (resolved)
-      return;
+    if (resolved) return;
 
     this.wdkModel = wdkModel;
 
     // check if we need to use querySet's cache flag
-    if (!setCache)
-      cached = getQuerySet().isCacheable();
+    if (!setCache) cached = getQuerySet().isCacheable();
 
     // resolve the params
     for (ParamReference paramRef : paramRefList) {
@@ -476,8 +471,7 @@ public abstract class Query extends WdkModelBase {
     // resolve columns
     for (Column column : columnMap.values()) {
       String sortingColumn = column.getSortingColumn();
-      if (sortingColumn == null)
-        continue;
+      if (sortingColumn == null) continue;
       if (!columnMap.containsKey(sortingColumn))
         throw new WdkModelException("Query [" + getFullName()
             + "] has a column [" + column.getName() + "] with sortingColumn ["
@@ -532,8 +526,7 @@ public abstract class Query extends WdkModelBase {
   public int getAnswerParamCount() {
     int count = 0;
     for (Param param : paramMap.values()) {
-      if (param instanceof AnswerParam)
-        count++;
+      if (param instanceof AnswerParam) count++;
     }
     return count;
   }
@@ -549,29 +542,28 @@ public abstract class Query extends WdkModelBase {
     buffer.append(": params{");
     boolean firstParam = true;
     for (Param param : paramMap.values()) {
-      if (firstParam)
-        firstParam = false;
-      else
-        buffer.append(", ");
+      if (firstParam) firstParam = false;
+      else buffer.append(", ");
       buffer.append(param.getName()).append("[");
       buffer.append(param.getClass().getSimpleName()).append("]");
     }
     buffer.append("} columns{");
     boolean firstColumn = true;
     for (Column column : columnMap.values()) {
-      if (firstColumn)
-        firstColumn = false;
-      else
-        buffer.append(", ");
+      if (firstColumn) firstColumn = false;
+      else buffer.append(", ");
       buffer.append(column.getName());
     }
     buffer.append("}");
     return buffer.toString();
   }
 
-  public Map<String, String> rawOrDependentValuesToDependentValues(User user,
+  public Map<String, String> getStableValues(User user,
       Map<String, String> rawValues) throws WdkModelException, WdkUserException {
-    Map<String, String> dependentValues = new LinkedHashMap<String, String>();
+    // initialize the stable values with raw values first, then replace them one
+    // by one.
+    Map<String, String> stableValues = new LinkedHashMap<String, String>(
+        rawValues);
     for (String paramName : rawValues.keySet()) {
       Param param = paramMap.get(paramName);
       if (param == null) {
@@ -584,23 +576,21 @@ public abstract class Query extends WdkModelBase {
         continue;
       }
       String rawValue = rawValues.get(paramName);
-      rawValue = param.processRawValue(user, rawValue);
-      String dependentValue = param.rawOrDependentValueToDependentValue(user,
-          rawValue);
-      dependentValues.put(paramName, dependentValue);
+      String stableValue = param.getStableValue(user, rawValue, stableValues);
+      stableValues.put(paramName, stableValue);
     }
     if (paramMap.containsKey(Utilities.PARAM_USER_ID)) {
-      if (!dependentValues.containsKey(Utilities.PARAM_USER_ID))
-        dependentValues.put(Utilities.PARAM_USER_ID,
+      if (!stableValues.containsKey(Utilities.PARAM_USER_ID))
+        stableValues.put(Utilities.PARAM_USER_ID,
             Integer.toString(user.getUserId()));
     }
-    return dependentValues;
+    return stableValues;
   }
 
-  public Map<String, String> dependentValuesToIndependentValues(User user,
-      Map<String, String> dependentValues) throws WdkModelException {
-    Map<String, String> independentValues = new LinkedHashMap<String, String>();
-    for (String paramName : dependentValues.keySet()) {
+  public Map<String, String> getSignatures(User user,
+      Map<String, String> stableValues) throws WdkModelException {
+    Map<String, String> signatures = new LinkedHashMap<String, String>();
+    for (String paramName : stableValues.keySet()) {
       Param param = paramMap.get(paramName);
       if (param == null) {
         // instead of throwing an error, wdk will silently ignore it
@@ -611,12 +601,11 @@ public abstract class Query extends WdkModelBase {
             + getFullName());
         continue;
       }
-      String dependentValue = dependentValues.get(paramName);
-      String independentValue = param.dependentValueToIndependentValue(user,
-          dependentValue);
-      independentValues.put(paramName, independentValue);
+      String stableValue = stableValues.get(paramName);
+      String signature = param.getSignature(user, stableValue, stableValues);
+      signatures.put(paramName, signature);
     }
-    return independentValues;
+    return signatures;
   }
 
   /**
@@ -641,6 +630,7 @@ public abstract class Query extends WdkModelBase {
    * 
    * @param contextParamValues
    * @throws WdkModelException
+   * @throws WdkUserException
    */
   public void fillContextParamValues(User user,
       Map<String, String> contextParamValues) throws WdkModelException {
@@ -650,9 +640,10 @@ public abstract class Query extends WdkModelBase {
         Map<String, EnumParamCache> caches = new HashMap<>();
         ((AbstractEnumParam) param).fetchCorrectValue(user, contextParamValues,
             caches);
-      } else if (!(param instanceof DatasetParam)) { 
+      } else if (!(param instanceof DatasetParam)) {
         // for other params, just fill it with default value;
-        // However, we cannot use default for datasetParam, which is just sample, not a valid value (a valid value must be a dataset id)
+        // However, we cannot use default for datasetParam, which is just
+        // sample, not a valid value (a valid value must be a dataset id)
         if (!contextParamValues.containsKey(param.getName())) {
           contextParamValues.put(param.getName(), param.getDefault());
         }

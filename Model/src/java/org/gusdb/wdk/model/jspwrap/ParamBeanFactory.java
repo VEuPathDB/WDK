@@ -3,10 +3,10 @@ package org.gusdb.wdk.model.jspwrap;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
+import org.gusdb.wdk.model.query.param.dataset.DatasetParam;
 
 public class ParamBeanFactory {
 

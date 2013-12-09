@@ -5,7 +5,6 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.Map;
 
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 
@@ -35,7 +34,7 @@ public class StringParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toRawValue(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException {
+      Map<String, String> contextValues) {
     return stableValue;
   }
 
@@ -47,8 +46,7 @@ public class StringParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toSignature(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
+      Map<String, String> contextValues) {
     return stableValue;
   }
 
@@ -62,10 +60,8 @@ public class StringParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkUserException,
-      WdkModelException {
-    if (param.isNoTranslation())
-      return stableValue;
+      Map<String, String> contextValues) {
+    if (param.isNoTranslation()) return stableValue;
 
     StringParam stringParam = (StringParam) param;
     if (stringParam.isNumber()) {

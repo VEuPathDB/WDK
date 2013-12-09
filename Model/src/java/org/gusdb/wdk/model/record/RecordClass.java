@@ -107,8 +107,7 @@ public class RecordClass extends WdkModelBase implements
     // find the new params to be created
     List<String> newParams = new ArrayList<String>();
     for (String column : paramNames) {
-      if (!originalParams.containsKey(column))
-        newParams.add(column);
+      if (!originalParams.containsKey(column)) newParams.add(column);
     }
 
     // create the missing primary key params for the query
@@ -141,10 +140,8 @@ public class RecordClass extends WdkModelBase implements
       builder.append(") f WHERE ");
       boolean firstColumn = true;
       for (String columnName : newParams) {
-        if (firstColumn)
-          firstColumn = false;
-        else
-          builder.append(" AND ");
+        if (firstColumn) firstColumn = false;
+        else builder.append(" AND ");
         builder.append("f.").append(columnName);
         builder.append(" = $$").append(columnName).append("$$");
       }
@@ -152,10 +149,8 @@ public class RecordClass extends WdkModelBase implements
       // replace the id_sql macro
       StringBuilder idqBuilder = new StringBuilder();
       for (String column : paramNames) {
-        if (idqBuilder.length() == 0)
-          idqBuilder.append("(SELECT ");
-        else
-          idqBuilder.append(", ");
+        if (idqBuilder.length() == 0) idqBuilder.append("(SELECT ");
+        else idqBuilder.append(", ");
         idqBuilder.append("SUBSTR($$" + column + "$$, 1, 4000) AS " + column);
       }
       DBPlatform platform = wdkModel.getAppDb().getPlatform();
@@ -296,8 +291,7 @@ public class RecordClass extends WdkModelBase implements
   }
 
   public String getDisplayNamePlural() {
-    if (displayNamePlural != null)
-      return displayNamePlural;
+    if (displayNamePlural != null) return displayNamePlural;
 
     return getPlural(getDisplayName());
   }
@@ -307,8 +301,7 @@ public class RecordClass extends WdkModelBase implements
   }
 
   public String getShortDisplayNamePlural() {
-    if (shortDisplayNamePlural != null)
-      return shortDisplayNamePlural;
+    if (shortDisplayNamePlural != null) return shortDisplayNamePlural;
 
     return getPlural(getShortDisplayName());
   }
@@ -318,13 +311,11 @@ public class RecordClass extends WdkModelBase implements
   }
 
   private String getPlural(String name) {
-    if (name == null || name.length() == 0)
-      return name;
+    if (name == null || name.length() == 0) return name;
 
     int length = name.length();
     char last = name.charAt(length - 1);
-    if (last == 'o')
-      return name + "es";
+    if (last == 'o') return name + "es";
     if (last == 'y') {
       char second = name.charAt(length - 2);
       if (!VOWELS.contains(second))
@@ -602,8 +593,7 @@ public class RecordClass extends WdkModelBase implements
 
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
-    if (resolved)
-      return;
+    if (resolved) return;
     super.resolveReferences(model);
     this.wdkModel = model;
 
@@ -892,8 +882,7 @@ public class RecordClass extends WdkModelBase implements
         + "' can have only a '" + Utilities.PARAM_USER_ID
         + "' param, and it is optional.";
     Param[] params = query.getParams();
-    if (params.length > 1)
-      throw new WdkModelException(message);
+    if (params.length > 1) throw new WdkModelException(message);
     else if (params.length == 1
         && !params[0].getName().equals(Utilities.PARAM_USER_ID))
       throw new WdkModelException(message);
@@ -918,8 +907,7 @@ public class RecordClass extends WdkModelBase implements
     // columns. WDK will append the missing ones automatically.
     for (Param param : query.getParams()) {
       String paramName = param.getName();
-      if (paramName.equals(Utilities.PARAM_USER_ID))
-        continue;
+      if (paramName.equals(Utilities.PARAM_USER_ID)) continue;
       if (!pkColumnMap.containsKey(paramName))
         throw new WdkModelException("The attribute or table query "
             + query.getFullName() + " has param " + paramName
@@ -1245,8 +1233,7 @@ public class RecordClass extends WdkModelBase implements
   }
 
   public AnswerFilterInstance getFilter(String filterName) {
-    if (filterName == null)
-      return null;
+    if (filterName == null) return null;
     AnswerFilterInstance instance = filterMap.get(filterName);
 
     // ignore the invalid filter name
@@ -1300,8 +1287,7 @@ public class RecordClass extends WdkModelBase implements
   private void createPrimaryKeySubFields() {
     // make sure the record has at least one attribute query, otherwise skip
     // this process
-    if (attributeQueries.size() == 0)
-      return;
+    if (attributeQueries.size() == 0) return;
 
     String[] pkColumns = primaryKeyField.getColumnRefs();
     // use the first attribute query as the underlying query for the column
@@ -1310,8 +1296,7 @@ public class RecordClass extends WdkModelBase implements
     Query attributeQuery = attributeQueries.values().iterator().next();
     Map<String, Column> columns = attributeQuery.getColumnMap();
     for (String name : pkColumns) {
-      if (attributeFieldsMap.containsKey(name))
-        continue;
+      if (attributeFieldsMap.containsKey(name)) continue;
 
       ColumnAttributeField field = new ColumnAttributeField();
       field.setName(name);
@@ -1353,8 +1338,7 @@ public class RecordClass extends WdkModelBase implements
     for (String attrName : defaultSortingMap.keySet()) {
       map.put(attrName, defaultSortingMap.get(attrName));
       count++;
-      if (count >= User.SORTING_LEVEL)
-        break;
+      if (count >= User.SORTING_LEVEL) break;
     }
 
     // has to sort at least on something, primary key as default
@@ -1418,10 +1402,8 @@ public class RecordClass extends WdkModelBase implements
     List<Question> list = new ArrayList<Question>();
     for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
       for (Question question : questionSet.getQuestions()) {
-        if (!question.getQuery().isTransform())
-          continue;
-        if (question.getTransformParams(this).length == 0)
-          continue;
+        if (!question.getQuery().isTransform()) continue;
+        if (question.getTransformParams(this).length == 0) continue;
         String outType = question.getRecordClass().getFullName();
         if (allowTypeChange || this.getFullName().equals(outType))
           list.add(question);
@@ -1469,10 +1451,8 @@ public class RecordClass extends WdkModelBase implements
   }
 
   public void addSummaryView(SummaryView view) {
-    if (summaryViewList == null)
-      summaryViewMap.put(view.getName(), view);
-    else
-      summaryViewList.add(view);
+    if (summaryViewList == null) summaryViewMap.put(view.getName(), view);
+    else summaryViewList.add(view);
   }
 
   public Map<String, RecordView> getRecordViews() {
@@ -1490,8 +1470,7 @@ public class RecordClass extends WdkModelBase implements
 
   public RecordView getDefaultRecordView() {
     for (RecordView view : recordViewMap.values()) {
-      if (view.isDefault())
-        return view;
+      if (view.isDefault()) return view;
     }
 
     if (recordViewMap.size() > 0)
@@ -1501,10 +1480,8 @@ public class RecordClass extends WdkModelBase implements
   }
 
   public void addRecordView(RecordView view) {
-    if (recordViewList == null)
-      recordViewMap.put(view.getName(), view);
-    else
-      recordViewList.add(view);
+    if (recordViewList == null) recordViewMap.put(view.getName(), view);
+    else recordViewList.add(view);
   }
 
   public boolean hasMultipleRecords(User user, Map<String, Object> pkValues)
@@ -1520,6 +1497,7 @@ public class RecordClass extends WdkModelBase implements
    * @param pkValues
    * @return
    * @throws WdkModelException
+   * @throws WdkUserException
    */
   List<Map<String, Object>> lookupPrimaryKeys(User user,
       Map<String, Object> pkValues) throws WdkModelException {
@@ -1551,20 +1529,17 @@ public class RecordClass extends WdkModelBase implements
         records.add(newValue);
       }
       // no alias found, use the original ones
-      if (records.size() == 0)
-        records.add(pkValues);
+      if (records.size() == 0) records.add(pkValues);
     } finally {
-      if (resultList != null)
-        resultList.close();
+      if (resultList != null) resultList.close();
     }
 
     return records;
   }
 
-
   public String[] getIndexColumns() {
     // only need to index the pk columns;
-    return primaryKeyField.getColumnRefs();  
+    return primaryKeyField.getColumnRefs();
   }
 
 }

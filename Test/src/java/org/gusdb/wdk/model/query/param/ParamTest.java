@@ -78,39 +78,4 @@ public class ParamTest {
             }
         }
     }
-
-    @Test
-    public void testCompress() throws WdkModelException {
-        // generate random input
-        StringBuffer buffer = new StringBuffer();
-        Random rand = UnitTestHelper.getRandom();
-        for (int i = 0; i < 4000; i++) {
-            int code = rand.nextInt(36);
-            int base = (code < 0) ? '0' : 'a';
-            int ch = (char) (code + base);
-            buffer.append(ch);
-        }
-        String origin = buffer.toString();
-
-        for (ParamSet paramSet : wdkModel.getAllParamSets()) {
-            for (Param param : paramSet.getParams()) {
-                // compress
-                String compressed = param.compressValue(origin);
-                Assert.assertTrue("compress",
-                        compressed.length() < origin.length());
-
-                // compress again, should be identical
-                String compressed2 = param.compressValue(origin);
-                Assert.assertEquals("compress again", compressed, compressed2);
-
-                // decompress
-                String decompressed = param.decompressValue(compressed);
-                Assert.assertEquals("decompress", origin, decompressed);
-
-                // only needs to test once
-                return;
-            }
-        }
-
-    }
 }

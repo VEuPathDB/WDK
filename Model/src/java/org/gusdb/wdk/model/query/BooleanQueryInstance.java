@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.StringParam;
@@ -33,6 +34,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
   /**
    * @param query
    * @param values
+   * @throws WdkUserException
    */
   protected BooleanQueryInstance(User user, BooleanQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,
@@ -56,7 +58,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
     logger.info("Boolean expansion flag: " + booleanFlag);
 
-    Map<String, String> InternalValues = getInternalParamValues();
+    Map<String, String> InternalValues = getParamInternalValues();
 
     // parse operator
     String operator = InternalValues.get(booleanQuery.getOperatorParam().getName());
@@ -123,7 +125,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
   public boolean isUseBooleanFilter() {
     StringParam useBooleanFilter = booleanQuery.getUseBooleanFilter();
-    String strBooleanFlag = values.get(useBooleanFilter.getName());
+    String strBooleanFlag = stableValues.get(useBooleanFilter.getName());
     return Boolean.parseBoolean(strBooleanFlag);
   }
 
@@ -206,8 +208,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     sql.append("(" + leftPiece + ") " + operator + "(" + rightPiece + ")");
     sql.append(") b WHERE ");
     for (int i = 0; i < pkColumns.length; i++) {
-      if (i > 0)
-        sql.append(" AND ");
+      if (i > 0) sql.append(" AND ");
       sql.append("o." + pkColumns[i] + " = b." + pkColumns[i]);
     }
     return sql.toString();
