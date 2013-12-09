@@ -25,7 +25,10 @@ import org.gusdb.wdk.model.record.RecordClass;
  * 
  */
 public class AnswerFilterLayout extends WdkModelBase {
-	private static final Logger logger = Logger.getLogger(AnswerFilterLayout.class);
+
+  @SuppressWarnings("unused")
+  private static final Logger logger = Logger.getLogger(AnswerFilterLayout.class);
+  
   private RecordClass recordClass;
 
   private String name;
