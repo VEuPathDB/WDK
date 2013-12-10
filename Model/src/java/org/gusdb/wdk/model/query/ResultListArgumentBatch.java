@@ -4,7 +4,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
@@ -17,12 +16,12 @@ public class ResultListArgumentBatch implements ArgumentBatch {
   private static final Logger LOG = Logger.getLogger(ResultListArgumentBatch.class);
   
   private final ResultList _resultList;
-  private final Map<String,Column> _columns;
+  private final List<Column> _columns;
   private final int _batchSize;
   private final Integer[] _bindTypes;
   
   public ResultListArgumentBatch(ResultList resultList,
-      Map<String, Column> columns, int batchSize) {
+      List<Column> columns, int batchSize) {
     _resultList = resultList;
     _columns = columns;
     _batchSize = batchSize;
@@ -78,10 +77,10 @@ public class ResultListArgumentBatch implements ArgumentBatch {
     return _bindTypes;
   }
     
-  public static Object[] getNextRecordValues(Map<String, Column> columns,
+  public static Object[] getNextRecordValues(List<Column> columns,
         ResultList resultList) throws WdkModelException {
     List<Object> recordValues = new ArrayList<Object>();
-    for (Column column : columns.values()) {
+    for (Column column : columns) {
       ColumnType type = column.getType();
     
       // have to move clobs to the end
@@ -98,7 +97,7 @@ public class ResultListArgumentBatch implements ArgumentBatch {
       recordValues.add(type.convertStringToTypedValue(value));
     }
     // add CLOB values last
-    for (Column column : columns.values()) {
+    for (Column column : columns) {
       if (column.getType().equals(ColumnType.CLOB)) {
         recordValues.add(resultList.get(column.getName()));
       }
@@ -106,10 +105,10 @@ public class ResultListArgumentBatch implements ArgumentBatch {
     return recordValues.toArray();
   }
     
-  public static Integer[] getBindTypes(Map<String, Column> columns) {
+  public static Integer[] getBindTypes(List<Column> columns) {
       List<Integer> types = new ArrayList<Integer>();
     int numClobs = 0;
-    for (Column col : columns.values()) {
+    for (Column col : columns) {
       if (col.getType() == ColumnType.CLOB) {
         numClobs++;
       }
