@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class QuestionSummaryReporter extends BaseCLI {
     if (text == null) return;
     text = text.trim();
     if (text.length() == 0) return;
-    
+
     Set<String> projects = map.get(text);
     if (projects == null) {
       projects = new LinkedHashSet<>();
@@ -99,8 +100,8 @@ public class QuestionSummaryReporter extends BaseCLI {
    * @param description
    */
   protected QuestionSummaryReporter(String command) {
-    super((command == null) ? "wdkQuestionReporter" : command,
-        "Manages the cache tables of WDK");
+    super((command == null) ? "wdkReportQuestionSummary" : command,
+        "Report text info in questions.");
   }
 
   /*
@@ -113,7 +114,8 @@ public class QuestionSummaryReporter extends BaseCLI {
     addSingleValueOption(ARG_PROJECT_ID, true, null,
         "A comma separated list of project ids.");
 
-    addSingleValueOption(ARG_OUTPUT_FILE, true, null, "The name of the output file.");
+    addSingleValueOption(ARG_OUTPUT_FILE, true, null,
+        "The name of the output file.");
   }
 
   /*
@@ -133,14 +135,19 @@ public class QuestionSummaryReporter extends BaseCLI {
       WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
       loadQuestions(wdkModel, questionInfos);
     }
-    
+
     if (!output.endsWith(".csv")) output += ".csv";
     File outFile = new File(output);
     PrintWriter writer = null;
     try {
       writer = new PrintWriter(new FileWriter(outFile));
       writer.println("\"Question\",\"Type\",\"Param\",\"Section\",\"Text\",\"Projects\"");
-      for (QuestionInfo questionInfo : questionInfos.values()) {
+
+      // sort question info
+      String[] questionNames = questionInfos.keySet().toArray(new String[0]);
+      Arrays.sort(questionNames);
+      for (String questionName : questionNames) {
+        QuestionInfo questionInfo = questionInfos.get(questionName);
         writeQuestionInfo(writer, questionInfo);
         writer.flush();
       }
@@ -195,7 +202,12 @@ public class QuestionSummaryReporter extends BaseCLI {
     writeQuestionInfo(writer, questionInfo, questionInfo.descriptions, "",
         "description");
 
-    for (ParamInfo paramInfo : questionInfo.paramInfos.values()) {
+    // sort params
+    String[] paramNames = questionInfo.paramInfos.keySet().toArray(
+        new String[0]);
+    Arrays.sort(paramNames);
+    for (String paramName : paramNames) {
+      ParamInfo paramInfo = questionInfo.paramInfos.get(paramName);
       writeQuestionInfo(writer, questionInfo, paramInfo.prompts,
           paramInfo.paramName, "prompt");
       writeQuestionInfo(writer, questionInfo, paramInfo.helps,
@@ -214,7 +226,6 @@ public class QuestionSummaryReporter extends BaseCLI {
       }
       String projectList = buffer.toString();
 
-      
       writer.write(escape(questionInfo.questionName) + ", ");
       writer.write(escape(questionInfo.recordType) + ", ");
       writer.write(escape(paramName) + ", ");
@@ -223,7 +234,7 @@ public class QuestionSummaryReporter extends BaseCLI {
       writer.println(escape(projectList) + ", ");
     }
   }
-  
+
   private String escape(String text) {
     if (text == null || text.length() == 0) return "";
     text = text.replaceAll("\\s", " ").replaceAll(",", ";");
