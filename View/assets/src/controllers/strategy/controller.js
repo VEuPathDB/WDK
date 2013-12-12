@@ -233,6 +233,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         if (wdk.strategy.model.isLoaded(strategyId)) {
           if (wdk.strategy.model.getStrategyFromBackId(ns.state[newOrdering].id).checksum !=
               ns.state[newOrdering].checksum) {
+            // If the checksums are not the same, reload the model.
+            // This assumes the strategy object in the response (`data`)
+            // matches the current strategy in the global state object.
             loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
           }
         } else {
@@ -643,7 +646,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   function RenameStep(ele, s, stp) {
     var new_name = $(ele).val();
     var step = wdk.strategy.model.getStep(s, stp);
-    var url = "renameStep.do?strategy=" + wdk.strategy.model.getStrategy(s).backId +
+    var strat = wdk.strategy.model.getStrategy(s);
+    var url = "renameStep.do?strategy=" + strat.backId +
         "&stepId=" + step.back_step_Id + "&customName=" +
         encodeURIComponent(new_name);
     $.ajax({
@@ -656,6 +660,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       success: function(data) {
         data = eval("(" + data + ")");
         if (wdk.strategy.error.ErrorHandler("RenameStep", data, wdk.strategy.model.getStrategy(s), null)) {
+          // kludge to force a redraw of top level strategy by dirtying the checksum
+          strat.checksum += '_';
+          // endkludge
           updateStrategies(data);
         } else {
           wdk.util.removeLoading(s);
