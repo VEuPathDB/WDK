@@ -726,17 +726,18 @@ public class Step {
       jsStep.put("collapsedName", this.getCollapsedName());
       jsStep.put("deleted", deleted);
 
+      Step childStep = getChildStep();
+      if (childStep != null) {
+        jsStep.put("child", childStep.getJSONContent(strategyId));
+      }
+
+      Step prevStep = getPreviousStep();
+      if (prevStep != null) {
+        jsStep.put("previous", prevStep.getJSONContent(strategyId));
+      }
+
       if (!forChecksum) {
         jsStep.put("size", this.estimateSize);
-
-        Step prevStep = getPreviousStep();
-        if (prevStep != null) {
-          jsStep.put("previous", prevStep.getJSONContent(strategyId));
-        }
-        Step childStep = getChildStep();
-        if (childStep != null) {
-          jsStep.put("child", childStep.getJSONContent(strategyId));
-        }
       }
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + this.stepId;
