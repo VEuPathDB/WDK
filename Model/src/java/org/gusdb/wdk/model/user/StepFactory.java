@@ -1126,19 +1126,18 @@ public class StepFactory {
             user.deleteStrategy(idToDelete);
         }
       } else if (strategy.getIsSaved()) {
-        // If we're not overwriting a saved strategy, then we're
-        // modifying
-        // it. We need to get an unsaved copy to modify. Generate
-        // unsaved name
+        // If we're not overwriting a saved strategy, then we're modifying
+        // it. We need to get an unsaved copy to modify. Generate unsaved name.
+        // Note all new unsaved strats are private; they do not inherit public.
         String name = getNextName(user, strategy.getName(), false);
         Strategy newStrat = createStrategy(user, strategy.getLatestStep(),
-            name, strategy.getName(), false, strategy.getDescription(), false, strategy.getIsPublic());
+            name, strategy.getName(), false, strategy.getDescription(), false, false);
         strategy.setName(newStrat.getName());
         strategy.setSavedName(newStrat.getSavedName());
         strategy.setStrategyId(newStrat.getStrategyId());
         strategy.setSignature(newStrat.getSignature());
         strategy.setIsSaved(false);
-        strategy.setIsPublic(newStrat.getIsPublic());
+        strategy.setIsPublic(false);
       }
 
       Date modifiedTime = new Date();
