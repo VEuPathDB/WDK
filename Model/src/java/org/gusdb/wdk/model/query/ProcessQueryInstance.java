@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
@@ -41,6 +42,8 @@ public class ProcessQueryInstance extends QueryInstance {
 
   private static final Logger logger = Logger.getLogger(ProcessQueryInstance.class);
 
+  private static final int CACHE_INSERT_BATCH_SIZE = 1000;
+  
   private ProcessQuery query;
   private int signal;
 
@@ -114,7 +117,8 @@ public class ProcessQueryInstance extends QueryInstance {
       logger.info("Getting uncached results took "
           + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
       startTime = System.currentTimeMillis();
-      int rowId = 0;
+      int rowsInBatch = 0, numBatches = 0;
+      long cumulativeBatchTime = 0;
       while (resultList.next()) {
         int columnId = 1;
         // have to move clobs to the end
@@ -154,20 +158,44 @@ public class ProcessQueryInstance extends QueryInstance {
         }
         ps.addBatch();
 
-        rowId++;
-        if (rowId % 1000 == 0)
-          ps.executeBatch();
+        rowsInBatch++;
+        if (rowsInBatch == CACHE_INSERT_BATCH_SIZE) {
+          numBatches++;
+          cumulativeBatchTime = executeBatchWithLogging(ps, numBatches,
+                  rowsInBatch, cumulativeBatchTime);
+          rowsInBatch = 0;
+        }
       }
-      if (rowId % 1000 != 0)
-        ps.executeBatch();
-      logger.info("Inserting results to cache took "
-          + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
-    } catch (SQLException e) {
+      if (rowsInBatch > 0) {
+        numBatches++;
+        cumulativeBatchTime = executeBatchWithLogging(ps, numBatches,
+            rowsInBatch, cumulativeBatchTime);
+      }
+      long cumulativeInsertTime = System.currentTimeMillis() - startTime;
+      logger.info("All batches completed.\nInserting results to cache took " +
+          (cumulativeInsertTime / 1000D) + " seconds (Java + Oracle clock time)\n" +
+          (cumulativeBatchTime / 1000D) + " seconds of that were spent executing batches (" +
+          FormatUtil.getPctFromRatio(cumulativeBatchTime, cumulativeInsertTime) + ")");
+    }
+    catch (SQLException e) {
       throw new WdkModelException("Unable to insert record into cache.", e);
-    } finally {
+    }
+    finally {
       SqlUtils.closeStatement(ps);
     }
     logger.debug("process query cache insertion finished.");
+  }
+  
+  private long executeBatchWithLogging(PreparedStatement ps, int numBatches,
+      int rowsInBatch, long cumulativeBatchTime) throws SQLException {
+    long batchStart = System.currentTimeMillis();
+    ps.executeBatch();
+    long batchElapsed = System.currentTimeMillis() - batchStart;
+    cumulativeBatchTime += batchElapsed;
+    logger.info("Writing batch " + numBatches + " (" + rowsInBatch +
+        " records) took " + batchElapsed + " ms.  Cumulative batch " +
+        "execution time: " + cumulativeBatchTime + " ms");
+    return cumulativeBatchTime;
   }
 
   /*
