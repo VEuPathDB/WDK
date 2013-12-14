@@ -55,21 +55,23 @@ Otherwise a standard select menu is used.
           <c:set var="i" value="0"/>
           <table border="1" cellspacing="0"><tr><td>
             <ul>
-              <c:forEach items="${qP.displayMap}" var="entity">
+              <c:forEach items="${qP.displayMap}" var="entity" varStatus="loop">
                 <c:if test="${i == 0}"><c:set var="checked" value="checked"/></c:if>
                 <li>
-                  <html:multibox property="array(${pNam})" value="${entity.key}" styleId="${pNam}" onchange="${changeCode}"/>
-                  <c:choose>
-                    <%-- test for param labels to italicize --%>
-                    <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
-                      <i>${entity.value}</i>&nbsp;
-                    </c:when>
-                    <c:otherwise> <%-- use multiselect menu --%>
-                      ${entity.value}&nbsp;
-                    </c:otherwise>
-                  </c:choose>
-                  <c:set var="i" value="${i+1}"/>
-                  <c:set var="checked" value=""/>
+                  <label>
+                    <html:multibox property="array(${pNam})" value="${entity.key}" styleId="${pNam}_${loop.index}" onchange="${changeCode}"/>
+                    <c:choose>
+                      <%-- test for param labels to italicize --%>
+                      <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
+                        <i>${entity.value}</i>&nbsp;
+                      </c:when>
+                      <c:otherwise> <%-- use multiselect menu --%>
+                        ${entity.value}&nbsp;
+                      </c:otherwise>
+                    </c:choose>
+                    <c:set var="i" value="${i+1}"/>
+                    <c:set var="checked" value=""/>
+                  </label>
                 </li>
               </c:forEach>
             </ul>
@@ -125,7 +127,9 @@ Otherwise a standard select menu is used.
           <ul>
             <c:forEach items="${qP.displayMap}" var="entity">
               <li ${v}>
-                <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
+                <label>
+                  <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
+                </label>
               </li>
             </c:forEach>
           </ul>

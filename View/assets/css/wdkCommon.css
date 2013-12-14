@@ -518,7 +518,7 @@ ul.menubar {
   padding-bottom: 5px;
 }
 
-.param-item label {
+.param-item > label {
   float: left;
   width: 35%;  /*  320px; */   /* 300px; */
   /* clear: both; */
