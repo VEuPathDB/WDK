@@ -37,6 +37,19 @@ public class ResultListArgumentBatch implements ArgumentBatch {
     
       @Override
       public boolean hasNext() {
+        tryToLoadNext();
+        return (_nextItem != null);
+      }
+    
+      @Override
+      public Object[] next() {
+        tryToLoadNext();
+        Object[] next = _nextItem;
+        _nextItem = null;
+        return next;
+      }
+      
+      private void tryToLoadNext() {
         try {
           if (_nextItem == null) {
             // try to find next item
@@ -45,19 +58,10 @@ public class ResultListArgumentBatch implements ArgumentBatch {
               _nextItem = getNextRecordValues(_columns, _resultList);
             }
           }
-          return (_nextItem != null);
         }
         catch (WdkModelException e) {
           throw new WdkRuntimeException("Could not get next set of insertion values.");
         }
-      }
-    
-      @Override
-      public Object[] next() {
-        hasNext();
-        Object[] next = _nextItem;
-        _nextItem = null;
-        return next;
       }
     
       @Override
@@ -76,7 +80,7 @@ public class ResultListArgumentBatch implements ArgumentBatch {
   public Integer[] getParameterTypes() {
     return _bindTypes;
   }
-    
+  
   public static Object[] getNextRecordValues(List<Column> columns,
         ResultList resultList) throws WdkModelException {
     List<Object> recordValues = new ArrayList<Object>();
