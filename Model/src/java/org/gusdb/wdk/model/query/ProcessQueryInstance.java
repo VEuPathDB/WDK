@@ -140,9 +140,9 @@ public class ProcessQueryInstance extends QueryInstance {
       }
       // send any remainder to DB
       if (rowsInBatch > 0) {
-          numBatches++;
-          cumulativeBatchTime = executeBatchWithLogging(ps, numBatches,
-              rowsInBatch, cumulativeBatchTime);
+        numBatches++;
+        cumulativeBatchTime = executeBatchWithLogging(ps, numBatches,
+            rowsInBatch, cumulativeBatchTime);
       }
       
       long cumulativeInsertTime = System.currentTimeMillis() - startTime;
