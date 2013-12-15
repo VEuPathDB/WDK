@@ -69,7 +69,7 @@ public class ProcessQueryInstance extends QueryInstance {
     jsInstance.put("signal", signal);
   }
 
-  private static final boolean USE_SQLRUNNER = false;
+  private static final boolean USE_SQLRUNNER = true;
   
   /*
    * (non-Javadoc)
