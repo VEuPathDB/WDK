@@ -36,6 +36,7 @@ public class ProcessQuery extends Query {
 
   private String processName;
   private String webServiceUrl;
+  private int cacheInsertBatchSize = 1000;
   private boolean local = false;
 
   public ProcessQuery() {
@@ -46,6 +47,7 @@ public class ProcessQuery extends Query {
     super(query);
     this.processName = query.processName;
     this.webServiceUrl = query.webServiceUrl;
+    this.cacheInsertBatchSize = query.cacheInsertBatchSize;
     this.local = query.local;
   }
 
@@ -73,6 +75,16 @@ public class ProcessQuery extends Query {
 
   public void setWebServiceUrl(String webServiceUrl) {
     this.webServiceUrl = webServiceUrl;
+  }
+
+  /**
+   * @return batch size to be used during insertion into WDK cache table
+   */
+  public int getCacheInsertBatchSize() {
+    return cacheInsertBatchSize;
+  }
+  public void setCacheInsertBatchSize(int cacheInsertBatchSize) {
+    this.cacheInsertBatchSize = cacheInsertBatchSize;
   }
 
   /**
