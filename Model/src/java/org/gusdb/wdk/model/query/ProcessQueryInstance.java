@@ -164,7 +164,7 @@ public class ProcessQueryInstance extends QueryInstance {
     ps.executeBatch();
     long batchElapsed = System.currentTimeMillis() - batchStart;
     cumulativeBatchTime += batchElapsed;
-    logger.info("Writing batch " + numBatches + " (" + rowsInBatch +
+    logger.debug("Writing batch " + numBatches + " (" + rowsInBatch +
         " records) took " + batchElapsed + " ms. Cumulative batch " +
         "execution time: " + cumulativeBatchTime + " ms");
     return cumulativeBatchTime;
