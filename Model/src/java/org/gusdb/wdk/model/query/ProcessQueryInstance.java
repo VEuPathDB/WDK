@@ -45,8 +45,6 @@ public class ProcessQueryInstance extends QueryInstance {
 
   private static final Logger logger = Logger.getLogger(ProcessQueryInstance.class);
 
-  private static final int CACHE_INSERT_BATCH_SIZE = 1000;
-
   private ProcessQuery query;
   private int signal;
 
@@ -102,7 +100,7 @@ public class ProcessQueryInstance extends QueryInstance {
     // NOTE: This code may be used in the future instead of the code below; probably
     //   want to really test results to make sure exact same data gets inserted
     if (USE_SQLRUNNER) {
-      ArgumentBatch dataStream = new ResultListArgumentBatch(resultList, columns, CACHE_INSERT_BATCH_SIZE);
+      ArgumentBatch dataStream = new ResultListArgumentBatch(resultList, columns, query.getCacheInsertBatchSize());
       SQLRunner runner = new SQLRunner(dataSource, sql);
       runner.executeStatementBatch(dataStream);
       long cumulativeBatchTime = runner.getLastExecutionTime();
@@ -131,7 +129,7 @@ public class ProcessQueryInstance extends QueryInstance {
 
         // if reached the batch size, send to DB
         rowsInBatch++;
-        if (rowsInBatch == CACHE_INSERT_BATCH_SIZE) {
+        if (rowsInBatch == query.getCacheInsertBatchSize()) {
           numBatches++;
           cumulativeBatchTime = executeBatchWithLogging(ps, numBatches,
                   rowsInBatch, cumulativeBatchTime);

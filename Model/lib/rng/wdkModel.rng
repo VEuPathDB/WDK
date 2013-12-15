@@ -794,6 +794,11 @@
       <optional>
         <attribute name="webServiceUrl"/>
       </optional>
+      <optional>
+        <attribute name="cacheInsertBatchSize">
+          <data type="nonNegativeInteger"/>
+        </attribute>
+      </optional>
     </element>
   </define>
 
