@@ -112,10 +112,9 @@ public class SqlQueryInstance extends QueryInstance {
 
     try {
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      SqlUtils.executeUpdate(dataSource, buffer.toString(),
-          query.getFullName() + "__insert-cache");
-    }
-    catch (SQLException e) {
+      SqlUtils.executeUpdate(dataSource, buffer.toString(), query.getFullName()
+          + "__insert-cache");
+    } catch (SQLException e) {
       throw new WdkModelException("Unable to insert record into cache.", e);
     }
   }
@@ -129,30 +128,31 @@ public class SqlQueryInstance extends QueryInstance {
       String value = internalValues.get(paramName);
       sql = param.replaceSql(sql, value);
     }
+    StringBuilder buffer = new StringBuilder("SELECT o.* ");
     if (query.isHasWeight()) {
       // add weight to the last column if it doesn't exist, it has to be
       // the last column.
       Map<String, Column> columns = query.getColumnMap();
-      String weightColumn = Utilities.COLUMN_WEIGHT;
-      if (!columns.containsKey(weightColumn)) {
-        sql = "SELECT o.*, " + assignedWeight + " AS " + weightColumn
-            + " FROM (" + sql + ") o";
-      } else { // has weight column defined, add assigned weight to it
-        StringBuilder builder = new StringBuilder();
-        for (String column : columns.keySet()) {
-          if (column.equals(weightColumn))
-            continue;
-          if (builder.length() == 0)
-            builder.append("SELECT ");
-          else
-            builder.append(", o.");
-          builder.append(column);
-        }
-        builder.append(", (o." + weightColumn + " + " + assignedWeight);
-        builder.append(") AS " + weightColumn);
-        builder.append(" FROM (" + sql + ") o");
+      if (!columns.containsKey(Utilities.COLUMN_WEIGHT)) {
+        buffer.append(", " + assignedWeight + " AS " + Utilities.COLUMN_WEIGHT);
       }
     }
+    buffer.append(" FROM (" + sql + ") o");
+
+    // append sorting columns to the sql
+    Map<String, Boolean> sortingMap = query.getSortingMap();
+    boolean firstSortingColumn = true;
+    for (String column : sortingMap.keySet()) {
+      if (firstSortingColumn) {
+        buffer.append(" ORDER BY ");
+        firstSortingColumn = false;
+      } else {
+        buffer.append(", ");
+      }
+      String order = sortingMap.get(column) ? " ASC " : " DESC ";
+      buffer.append(column).append(order);
+    }
+
     return sql;
 
   }
@@ -164,10 +164,8 @@ public class SqlQueryInstance extends QueryInstance {
    */
   @Override
   public String getSql() throws WdkModelException {
-    if (isCached())
-      return getCachedSql();
-    else
-      return getUncachedSql();
+    if (isCached()) return getCachedSql();
+    else return getUncachedSql();
   }
 
   /*
@@ -191,10 +189,9 @@ public class SqlQueryInstance extends QueryInstance {
 
     try {
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      SqlUtils.executeUpdate(dataSource, buffer.toString(),
-          query.getFullName() + "__create-cache");
-    }
-    catch (SQLException e) {
+      SqlUtils.executeUpdate(dataSource, buffer.toString(), query.getFullName()
+          + "__create-cache");
+    } catch (SQLException e) {
       throw new WdkModelException("Unable to create cache.", e);
     }
   }

@@ -140,6 +140,8 @@ public abstract class Query extends WdkModelBase {
 
   private Question contextQuestion;
 
+  private Map<String, Boolean> sortingMap;
+
   // =========================================================================
   // Abstract methods
   // =========================================================================
@@ -167,6 +169,7 @@ public abstract class Query extends WdkModelBase {
     columnList = new ArrayList<Column>();
     columnMap = new LinkedHashMap<String, Column>();
     hasWeight = false;
+    sortingMap = new LinkedHashMap<>();
   }
 
   /**
@@ -190,6 +193,7 @@ public abstract class Query extends WdkModelBase {
     this.wdkModel = query.wdkModel;
     this.hasWeight = query.hasWeight;
     this.contextQuestion = query.getContextQuestion();
+    this.sortingMap = new LinkedHashMap<>(query.sortingMap);
 
     // clone columns
     for (String columnName : query.columnMap.keySet()) {
@@ -300,10 +304,8 @@ public abstract class Query extends WdkModelBase {
 
   public void addColumn(Column column) {
     column.setQuery(this);
-    if (columnList != null)
-      this.columnList.add(column);
-    else
-      columnMap.put(column.getName(), column);
+    if (columnList != null) this.columnList.add(column);
+    else columnMap.put(column.getName(), column);
   }
 
   public Map<String, Column> getColumnMap() {
@@ -423,8 +425,7 @@ public abstract class Query extends WdkModelBase {
         if (columnMap.containsKey(columnName)) {
           throw new WdkModelException("The column '" + columnName
               + "' is duplicated in query " + getFullName());
-        } else
-          columnMap.put(columnName, column);
+        } else columnMap.put(columnName, column);
       }
     }
     columnList = null;
@@ -442,14 +443,12 @@ public abstract class Query extends WdkModelBase {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // logger.debug("Resolving " + getFullName() + " - " + resolved);
-    if (resolved)
-      return;
+    if (resolved) return;
 
     this.wdkModel = wdkModel;
 
     // check if we need to use querySet's cache flag
-    if (!setCache)
-      cached = getQuerySet().isCacheable();
+    if (!setCache) cached = getQuerySet().isCacheable();
 
     // resolve the params
     for (ParamReference paramRef : paramRefList) {
@@ -475,8 +474,7 @@ public abstract class Query extends WdkModelBase {
     // resolve columns
     for (Column column : columnMap.values()) {
       String sortingColumn = column.getSortingColumn();
-      if (sortingColumn == null)
-        continue;
+      if (sortingColumn == null) continue;
       if (!columnMap.containsKey(sortingColumn))
         throw new WdkModelException("Query [" + getFullName()
             + "] has a column [" + column.getName() + "] with sortingColumn ["
@@ -494,6 +492,14 @@ public abstract class Query extends WdkModelBase {
     }
 
     resolveQueryReferences(wdkModel);
+
+    // check the column names in the sorting map
+    for (String column : sortingMap.keySet()) {
+      if (!columnMap.containsKey(column))
+        throw new WdkModelException("Invalid sorting column '" + column
+            + "' in query " + getFullName());
+    }
+
     resolved = true;
   }
 
@@ -531,8 +537,7 @@ public abstract class Query extends WdkModelBase {
   public int getAnswerParamCount() {
     int count = 0;
     for (Param param : paramMap.values()) {
-      if (param instanceof AnswerParam)
-        count++;
+      if (param instanceof AnswerParam) count++;
     }
     return count;
   }
@@ -548,20 +553,16 @@ public abstract class Query extends WdkModelBase {
     buffer.append(": params{");
     boolean firstParam = true;
     for (Param param : paramMap.values()) {
-      if (firstParam)
-        firstParam = false;
-      else
-        buffer.append(", ");
+      if (firstParam) firstParam = false;
+      else buffer.append(", ");
       buffer.append(param.getName()).append("[");
       buffer.append(param.getClass().getSimpleName()).append("]");
     }
     buffer.append("} columns{");
     boolean firstColumn = true;
     for (Column column : columnMap.values()) {
-      if (firstColumn)
-        firstColumn = false;
-      else
-        buffer.append(", ");
+      if (firstColumn) firstColumn = false;
+      else buffer.append(", ");
       buffer.append(column.getName());
     }
     buffer.append("}");
@@ -648,9 +649,10 @@ public abstract class Query extends WdkModelBase {
         Map<String, EnumParamCache> caches = new HashMap<>();
         ((AbstractEnumParam) param).fetchCorrectValue(user, contextParamValues,
             caches);
-      } else if (!(param instanceof DatasetParam)) { 
+      } else if (!(param instanceof DatasetParam)) {
         // for other params, just fill it with default value;
-        // However, we cannot use default for datasetParam, which is just sample, not a valid value (a valid value must be a dataset id)
+        // However, we cannot use default for datasetParam, which is just
+        // sample, not a valid value (a valid value must be a dataset id)
         if (!contextParamValues.containsKey(param.getName())) {
           contextParamValues.put(param.getName(), param.getDefault());
         }
@@ -658,4 +660,17 @@ public abstract class Query extends WdkModelBase {
     }
   }
 
+  public void setSorting(String sorting) {
+    sortingMap.clear();
+    for (String clause : sorting.split(",")) {
+      String[] term = clause.trim().split(" ", 2);
+      String column = term[0];
+      boolean order = (term.length == 1 || term[1].equalsIgnoreCase("ASC"));
+      sortingMap.put(column, order);
+    }
+  }
+  
+  public Map<String, Boolean> getSortingMap() {
+    return new LinkedHashMap<>(sortingMap);
+  }
 }
