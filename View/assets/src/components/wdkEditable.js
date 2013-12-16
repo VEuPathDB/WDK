@@ -70,7 +70,7 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
       // attach handlers
       widget.element.on("editableshow", widget.options.show);
       widget.element.on("editablehide", widget.options.hide);
-      widget.element.on("editablesave", widget.options.save);
+      // widget.element.on("editablesave", widget.options.save);
 
     },
 
@@ -175,7 +175,8 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
     // save text in input box to DOM element
     save: function() {
       var widget = this;
-      var e = $.Event("editablesave");
+      var saveIsSuccess = true;
+      // var e = $.Event("editablesave");
 
       // save off value to allow comparison with new value
       widget.oldValue = widget.value;
@@ -184,10 +185,30 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
 
       if (widget.value !== widget.oldValue) {
         // only trigger save if content differs
-        widget.element.trigger("editablesave", [widget]);
+        // widget.element.trigger(e, [widget]);
+        if (typeof widget.options.save === 'function') {
+          var saveReturn = widget.options.save.call(widget, widget);
+
+          if (saveReturn === false) {
+            // revert value
+            widget.value = widget.oldValue;
+            saveIsSuccess = false;
+
+          } else if (typeof saveReturn.then !== 'undefined') {
+            // defer hiding until promise is resolved
+            saveIsSuccess = false;
+            saveReturn.then(function() {
+              widget.hide.call(widget);
+            }).fail(function() {
+              // revert value
+              widget.value = widget.oldValue;
+              widget.$input.val(widget.value);
+            });
+          }
+        }
       }
 
-      if (!e.isDefaultPrevented()) {
+      if (saveIsSuccess) {
         widget.hide.call(widget);
       }
     }
