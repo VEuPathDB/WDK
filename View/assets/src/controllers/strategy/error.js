@@ -69,23 +69,34 @@ wdk.util.namespace("window.wdk.strategy.error", function (ns, $) {
         wdk.step.isInsert = "";
       } else if(type == "dup-name-error") {
         if (evt == "SaveStrategy") {
-          var publicAddOn = (data.isPublicDup == true) ? " -public-" : "";
-          var overwrite = confirm("A" + publicAddOn + " strategy already exists with the name '" +
-              name + ".' Do you want to overwrite the existing strategy?");
-          if (overwrite) {
-            wdk.strategy.controller.saveOrRenameStrategy(strategy, false, true,
-                fromHist, qform);
-          }
+          var publicAddOn = (data.isPublicDup == true) ? " <em>public</em>" : "";
+          var dialogContent = "<div>A" + publicAddOn + " strategy already " +
+               "exists with the name '" + name + "'.<br/> <br/>Are you sure " +
+               "you want to overwrite it?</div>";
+          $(dialogContent).dialog({
+              resizable: false,
+              modal: true,
+              title: "Please Confirm...",
+              buttons: {
+                  Ok: function () {
+                      wdk.strategy.controller.saveOrRenameStrategy(strategy, false, true, fromHist, qform);
+                      $(this).dialog("close");
+                  },
+                  Cancel: function () {
+                      $(this).dialog("close");
+                  }
+              }
+          });
         } else if(evt == "RenameStrategy") {
-          alert("An unsaved strategy already exists with the name '" + name +
-              ".'");
+          var savedNotif = (strategy.isSaved ? "saved" : "unsaved");
+          alert("An " + savedNotif + " strategy already exists with the name '" + name + ".'");
           if (strategy.isSaved) {
             $("input[name='name']",qform).attr("value", strategy.savedName);
           }
         }
-      } else { //Gerenal Error Catcher
+      } else { // General Error Catcher
         alert(data.message);
-        //TODO : Add a AJAX call to send an e-mail to Admininstrator with exception, stacktrace and message
+        //TODO : Add a AJAX call to send an e-mail to Administrator with exception, stack trace and message
         wdk.strategy.controller.initDisplay(0);
       }
     }
