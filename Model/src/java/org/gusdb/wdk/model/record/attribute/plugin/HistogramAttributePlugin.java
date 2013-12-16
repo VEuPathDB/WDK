@@ -153,7 +153,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
   private String composeSql(String attributeColumn, String sql) {
     StringBuilder groupSql = new StringBuilder("SELECT ");
     groupSql.append(attributeColumn + ", count(*) AS " + COLUMN_COUNT);
-    groupSql.append(" FROM (" + sql + ")  GROUP BY " + attributeColumn);
+    groupSql.append(" FROM (" + sql + ") AS _columns  GROUP BY " + attributeColumn);
     groupSql.append(" ORDER BY " + attributeColumn + " ASC");
     return groupSql.toString();
   }
