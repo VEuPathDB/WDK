@@ -1080,9 +1080,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   //===========================================================================
 
   // editable plugin event handler
-  function updateStrategyName(event, widget) {
+  function updateStrategyName(widget) {
     var strategyId = widget.element.data("id");
     var strategy = wdk.strategy.model.getStrategyFromBackId(strategyId);
+    var oldName = strategy.name;
+    var deferred = $.Deferred();
 
     strategy.name = widget.value;
 
@@ -1092,9 +1094,14 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       if (wdk.strategy.error.ErrorHandler("RenameStrategy", data, strategy, null, strategy.name, null)) {
         updateStrategies(data);
         $(".strategy-name[data-id='" + strategyId + "']").text(strategy.name);
+        deferred.resolve();
+      } else {
+        strategy.name = oldName;
+        deferred.reject();
       }
       wdk.util.removeLoading(strategy.frontId);
     });
+    return deferred;
   }
 
   // deprecated?  -  dmf
