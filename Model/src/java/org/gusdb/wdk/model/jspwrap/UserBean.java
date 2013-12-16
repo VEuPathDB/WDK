@@ -1009,7 +1009,7 @@ public class UserBean /* implements Serializable */{
         return user.setSummaryAttributes(questionFullName, summaryNames);
     }
 
-    public boolean checkNameExists(StrategyBean strategy, String name,
+    public boolean[] checkNameExists(StrategyBean strategy, String name,
             boolean saved) throws WdkModelException {
         return user.checkNameExists(strategy.strategy, name, saved);
     }

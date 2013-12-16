@@ -1321,10 +1321,10 @@ public class StepFactory {
     return params;
   }
 
-  boolean checkNameExists(Strategy strategy, String name, boolean saved)
+  boolean[] checkNameExists(Strategy strategy, String name, boolean saved)
       throws WdkModelException {
     ResultSet rsCheckName = null;
-    String sql = "SELECT strategy_id FROM " + userSchema + TABLE_STRATEGY
+    String sql = "SELECT strategy_id, is_public FROM " + userSchema + TABLE_STRATEGY
         + " WHERE " + Utilities.COLUMN_USER_ID + " = ? AND "
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME + " = ? AND "
         + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? AND "
@@ -1343,9 +1343,13 @@ public class StepFactory {
       QueryLogger.logEndStatementExecution(sql,
           "wdk-step-factory-strategy-name-exist", start);
 
-      if (rsCheckName.next()) return true;
-
-      return false;
+      if (rsCheckName.next()) {
+    	  boolean isPublic = rsCheckName.getBoolean(2);
+    	  return new boolean[] { true, isPublic };
+      }
+      // otherwise, no strat by this name exists
+      return new boolean[] { false, false };
+      
     } catch (SQLException e) {
       throw new WdkModelException("Error checking name for strategy "
           + strategy.getStrategyId() + ":" + name, e);

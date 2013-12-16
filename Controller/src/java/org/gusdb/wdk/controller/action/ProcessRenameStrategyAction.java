@@ -69,8 +69,8 @@ public class ProcessRenameStrategyAction extends Action {
 
             // if we haven't been asked to check the user-specified name, or a
             // strategy with that name does not already exist, do the rename
-            if (!checkName
-                    || !wdkUser.checkNameExists(strategy, customName, save)) {
+            boolean[] nameCheck = wdkUser.checkNameExists(strategy, customName, save);
+            if (!checkName || !nameCheck[0]) {
                 logger.debug("failed check.  either not checking name, or strategy doesn't already exist.");
                 int oldStrategyId = strategy.getStrategyId();
 
@@ -144,7 +144,7 @@ public class ProcessRenameStrategyAction extends Action {
                         strategy.getLatestStep());
                 request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
             } else {    // name already exists
-                ShowStrategyAction.outputDuplcicateNameJSON(wdkModel, wdkUser, response, state);
+                ShowStrategyAction.outputDuplicateNameJSON(wdkModel, wdkUser, response, state, nameCheck[1]);
                 return null;
             }
 

@@ -1239,7 +1239,7 @@ public class User /* implements Serializable */{
     return this.activeStrategyFactory.getViewPagerOffset();
   }
 
-  public boolean checkNameExists(Strategy strategy, String name, boolean saved)
+  public boolean[] checkNameExists(Strategy strategy, String name, boolean saved)
       throws WdkModelException {
     return stepFactory.checkNameExists(strategy, name, saved);
   }
