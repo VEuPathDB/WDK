@@ -838,7 +838,7 @@ public class StepFactory {
   }
 
   public int getPublicStrategyCount() throws WdkModelException {
-    String countSql = "SELECT COUNT(1) FROM (" + unsortedPublicStratsSql + ")";
+    String countSql = "SELECT COUNT(1) FROM (" + unsortedPublicStratsSql + ") AS public_strats";
     ResultSet resultSet = null;
     try {
       long start = System.currentTimeMillis();
