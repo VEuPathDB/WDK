@@ -69,7 +69,8 @@ wdk.util.namespace("window.wdk.strategy.error", function (ns, $) {
         wdk.step.isInsert = "";
       } else if(type == "dup-name-error") {
         if (evt == "SaveStrategy") {
-          var overwrite = confirm("A strategy already exists with the name '" +
+          var publicAddOn = (data.isPublicDup == true) ? " -public-" : "";
+          var overwrite = confirm("A" + publicAddOn + " strategy already exists with the name '" +
               name + ".' Do you want to overwrite the existing strategy?");
           if (overwrite) {
             wdk.strategy.controller.saveOrRenameStrategy(strategy, false, true,
