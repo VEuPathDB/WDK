@@ -192,6 +192,7 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
           if (saveReturn === false) {
             // revert value
             widget.value = widget.oldValue;
+            widget.$input.val(widget.value);
             saveIsSuccess = false;
 
           } else if (typeof saveReturn.then !== 'undefined') {
