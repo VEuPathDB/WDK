@@ -20,7 +20,9 @@ module.exports = {
     'lib/jquery.cookie.js',
     'lib/jquery.blockUI.js',
     'lib/qtip2/jquery.qtip.js',
-    'lib/json.js',
+
+    // use JSON.parse and JSON.stringify - polyfilled for older browsers by es5-shim.min.js
+    // 'lib/json.js',
 
     // question pages
     'lib/handlebars.js',
