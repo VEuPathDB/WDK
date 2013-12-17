@@ -153,8 +153,7 @@ public class SqlQueryInstance extends QueryInstance {
       buffer.append(column).append(order);
     }
 
-    return sql;
-
+    return buffer.toString();
   }
 
   /*
