@@ -553,6 +553,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         values = select.next().find('input').val();
       } else {
         values = select.val();
+        values = (values instanceof Array) ? values.join(', ') : values;
       }
       $(this).val(values);
     });
