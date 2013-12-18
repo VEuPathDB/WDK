@@ -32,6 +32,7 @@ public class ShowXmlDataContentAction extends Action {
       HttpServletRequest request, HttpServletResponse response) throws
       Exception {
     String xmlQName = request.getParameter(CConstants.NAME);
+    ActionUtility.getWdkModel(servlet).validateQuestionFullName(xmlQName);
     XmlQuestionBean xmlQuestion = getXmlQuestionByFullName(xmlQName);
     XmlAnswerBean xmlAnswer = xmlQuestion.getFullAnswer();
     request.setAttribute(CConstants.WDK_XMLANSWER_KEY, xmlAnswer);
