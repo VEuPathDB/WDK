@@ -40,14 +40,14 @@
         </c:if>
         
 <!-- ========== open/close icon, filter icon, filter TITLE, explanation =============== -->
-        <div class="layout-info">
+        <div title="You can limit your search results by clicking on the number of results in the table. Results removed by the filter will not be combined into the next step." class="layout-info">
             <imp:image class="handle" src="/wdk/images/${image}" />
             <span class="display">
               <imp:image height="14px" src="/wdk/images/filter-short.png"/> 
               <b>${layout.displayName}</b>&nbsp;&nbsp;
             </span>
             <span style="font-size:90%;font-style:italic">
-              (results removed by the filter will not be combined into the next step.)
+              (You can limit your search results by clicking on the number of results in the table.)
             </span>
         </div>
 
