@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -89,6 +90,8 @@ public class SqlQueryInstance extends QueryInstance {
   public void insertToCache(String tableName, int instanceId)
       throws WdkModelException {
     String idColumn = CacheFactory.COLUMN_INSTANCE_ID;
+    String rowIdColumn = CacheFactory.COLUMN_ROW_ID;
+
     Map<String, Column> columns = query.getColumnMap();
     StringBuffer columnList = new StringBuffer();
     for (Column column : columns.values()) {
@@ -100,15 +103,19 @@ public class SqlQueryInstance extends QueryInstance {
         columnList.append(", " + weightColumn);
     }
 
+    DBPlatform platform = wdkModel.getAppDb().getPlatform();
+    String rowNumber = platform.getRowNumberColumn();
+
     // get the sql with param values applied. The last column has to be the
     // weight.
     String sql = getUncachedSql();
 
     StringBuffer buffer = new StringBuffer("INSERT INTO " + tableName);
-    buffer.append(" (" + idColumn + columnList + ") ");
+    buffer.append(" (" + idColumn + ", " + rowIdColumn + columnList + ") ");
     buffer.append("SELECT ");
-    buffer.append(instanceId + " AS " + idColumn + columnList);
-    buffer.append(" FROM (").append(sql).append(") f");
+    buffer.append(instanceId + " AS " + idColumn + ", ");
+    buffer.append(rowNumber + " AS " + rowIdColumn);
+    buffer.append(columnList + " FROM (" + sql + ") f");
 
     try {
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
@@ -181,10 +188,14 @@ public class SqlQueryInstance extends QueryInstance {
     // get the sql with param values applied.
     String sql = getUncachedSql();
 
+    DBPlatform platform = wdkModel.getAppDb().getPlatform();
+    String rowNumber = platform.getRowNumberColumn();
+
     StringBuffer buffer = new StringBuffer("CREATE TABLE " + tableName);
     buffer.append(" AS SELECT ");
-    buffer.append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID);
-    buffer.append(", f.* FROM (").append(sql).append(") f");
+    buffer.append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID + ", ");
+    buffer.append(rowNumber + " AS " + CacheFactory.COLUMN_ROW_ID + ", ");
+    buffer.append(" f.* FROM (").append(sql).append(") f");
 
     try {
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
