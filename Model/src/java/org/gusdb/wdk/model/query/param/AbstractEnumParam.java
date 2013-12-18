@@ -552,7 +552,7 @@ public abstract class AbstractEnumParam extends Param {
       String internal = (isNoTranslation()) ? term : cache.getInternal(term);
       if (!cache.containsTerm(term)) {
         // doesn't validate term, if it doesn't exist in the list, just
-        // use it as internval value. This is for wildcard support in
+        // use it as internal value. This is for wildcard support in
         // type-ahead params.
         if (isSkipValidation()) {
           internal = term;
