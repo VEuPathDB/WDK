@@ -92,6 +92,10 @@ public class ResultFactory {
       sql.append(column).append(order);
     }
     
+    // append row id as the last sorting column
+    sql.append((sortingMap.size() > 0) ? ", " : " ORDER BY ");
+    sql.append(CacheFactory.COLUMN_ROW_ID + " ASC ");
+    
     return sql.toString();
   }
 

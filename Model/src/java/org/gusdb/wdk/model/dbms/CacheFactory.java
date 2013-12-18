@@ -39,6 +39,7 @@ public class CacheFactory {
   static final String TABLE_INSTANCE = "QueryInstance";
 
   public static final String COLUMN_INSTANCE_ID = "wdk_instance_id";
+  public static final String COLUMN_ROW_ID = "wdk_row_id";
   static final String COLUMN_INSTANCE_CHECKSUM = "instance_checksum";
   static final String COLUMN_PARAMS = "params";
   static final String COLUMN_RESULT_MESSAGE = "result_message";
