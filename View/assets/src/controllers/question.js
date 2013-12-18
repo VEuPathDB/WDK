@@ -13,7 +13,7 @@ wdk.util.namespace("window.wdk.question", function(ns, $) {
     question.registerGroups();
 
     if (attrs.showParams === true) {
-      wdk.parameterHandlers.init();
+      wdk.parameterHandlers.init(element);
     }
  
     wdk.onloadQuestion();

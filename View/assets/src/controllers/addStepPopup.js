@@ -157,6 +157,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
   /**
    * Not sure what this does. It's called in queryList.tag
+   *
+   * @deprecated
    */
   function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isOrtholog) {
     //edit = 0 ::: adding a new step
@@ -380,8 +382,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
    */
   function validateAndCall(type, url, proto, rs){
     var valid = false;
+    var queryForm = $('#query_form');
 
-    if ($("div#query_form div.filter.operators").length == 0) {
+    if (queryForm.find("div.filter.operators").length == 0) {
       valid = true;
     } else {
       if ($(".filter.operators")) {
@@ -396,7 +399,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
       return;
     }
 
-    wdk.parameterHandlers.mapTypeAheads();
+    wdk.parameterHandlers.mapTypeAheads(queryForm);
     window.scrollTo(0,0);
 
     if (type == 'add') {
@@ -508,7 +511,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     //hide any open tooltips
     $(".qtip").qtip("hide");
 
-    wdk.parameterHandlers.mapTypeAheads();
+    // Not sure we need this
+    // wdk.parameterHandlers.mapTypeAheads();
 
     if (stratFrontId == undefined) {
       stratFrontId = ns.current_Front_Strategy_Id; 
