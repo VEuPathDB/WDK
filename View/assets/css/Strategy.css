@@ -1,7 +1,7 @@
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      = Strategy Styles
+= Strategy Styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 #stage-stack { display: none; }
 
@@ -92,7 +92,7 @@
 }
 
 /* The main diagram container needs to be positioned relatively, so that
-      it's children can be positioned within it. */
+it's children can be positioned within it. */
 .diagram {
   position: relative;
   left:    0em;
@@ -113,14 +113,14 @@
 div.sub_diagram {
   position: relative;
 }
-  
+
 /*  what is this for??
 .diagram div li {
-  position: absolute;
-  margin:   0.8em;
-  padding:  0;
+position: absolute;
+margin:   0.8em;
+padding:  0;
 }
-*/
+ */
 
 
 /* State names will be centered within their boxes. */
@@ -160,12 +160,12 @@ div.sub_diagram {
   left: 8em;
   width: 4.3em;
 }
-  
+
 .arrow.right.size2 {
   left: 5.2em;
   width: 7.1em;
 }
-  
+
 .arrow.right.size3 {
   left: 5.2em;
   width: 4.8em;
@@ -181,12 +181,12 @@ div.sub_diagram {
   left: 8em;
   width: 2em;
 }
-    
+
 .arrow.down {
   top: 0.35em;
   left: 4em;  
 }
-  
+
 .operation {
   height: 18px;
   text-align: center;
@@ -222,36 +222,36 @@ td.operation {
   height: 25px;
   background-position: -30px -83px;
 }
-  
+
 .operation.RMINUS {
   border: 2px solid #FFFFFF;
   height: 25px;
   background-position: -30px -119px;
 }
-	
+
 .rightarrow3 {
-	position: absolute;
-	left: 54px;
-	top: -3.2em;
-	z-index: 1;
-	height: 11px;
-	width: 54px;
+  position: absolute;
+  left: 54px;
+  top: -3.2em;
+  z-index: 1;
+  height: 11px;
+  width: 54px;
 }
-		
+
 .downarrow {
-	position: absolute;
-	left: 3.2em;
-	top: -0.6em;
-	z-index: 1; 	
+  position: absolute;
+  left: 3.2em;
+  top: -0.6em;
+  z-index: 1; 	
 }
-	
+
 .operation {
-        background-repeat: no-repeat;
-	height: 18px;
-	text-align: center;
-	margin-top: -4px;
-	margin-right: 2px;
-	padding: 5px 0 0 0;
+  background-repeat: no-repeat;
+  height: 18px;
+  text-align: center;
+  margin-top: -4px;
+  margin-right: 2px;
+  padding: 5px 0 0 0;
 }
 
 a.operation img {
@@ -268,16 +268,16 @@ span.stepNumber {
 }
 
 .operation[type="span"] {
-        background-image: url(../images/operationSpanIcons.gif);
-	background-position:0px -11px;
+  background-image: url(../images/operationSpanIcons.gif);
+  background-position:0px -11px;
 }
 
 
 td.operation {
-	height: 18px;
-	width: 44px;
+  height: 18px;
+  width: 44px;
 }
-  
+
 h6.resultCount {
   font-size:10px;
   font-style: italic;
@@ -289,37 +289,37 @@ h6.resultCount {
 }
 
 .operation.SPAN {
-	background-image:url("../images/operationSpanIcons.gif");
-	height:27px;
+  background-image:url("../images/operationSpanIcons.gif");
+  height:27px;
 }
 
 .operation.SPAN.overlap {
-	background-position:-32px -6px;
+  background-position:-32px -6px;
 }
 
 .operation.SPAN.b_contain_a {
-	background-position:-26px -42px;
+  background-position:-26px -42px;
 }
 
 .operation.SPAN.a_contain_b {
-	background-position:-26px -85px;
+  background-position:-26px -85px;
 }
 
 .operation.MINUS {
-	border: 2px solid #FFFFFF;
-	height: 25px;
-	background-position: -30px -11px;
+  border: 2px solid #FFFFFF;
+  height: 25px;
+  background-position: -30px -11px;
 }
 
 .diagram div.simple {
   border: 2px solid #000;
 }
-   
+
 .diagram div.simple, .diagram div.operation {
   background-color: #d0cfcf;
   border-width: 2px;
 }
-  
+
 .diagram div.operation {
   margin: 0;
   padding: 0;
@@ -331,7 +331,7 @@ h6.resultCount {
 }
 
 .diagram div.simple.selected,.diagram div.operation.selected {
-   background-color:#FFFFA0;
+  background-color:#FFFFA0;
 }
 
 .diagram div.operation.selected {
@@ -349,21 +349,21 @@ h6.resultCount {
 .diagram div.operation.UNION {
   background-position: 0px -83px;
 }
-  
+
 .diagram div.operation.RMINUS {
   background-position: 0px -119px;
 }
-	
+
 .diagram div.operation.SPAN.overlap {
-	background-position: -5px -10px;
+  background-position: -5px -10px;
 }
-	
+
 .diagram div.operation.SPAN.b_contain_a {
-	background-position: 0px -48px;
+  background-position: 0px -48px;
 }
-	
+
 .diagram div.operation.SPAN.a_contain_b {
-	background-position: 0px -88px;
+  background-position: 0px -88px;
 }
 
 .diagram div.transform {
@@ -406,7 +406,7 @@ a.crumb_name img {
   left:-1px;
   top:-1px;
 }
-  
+
 div.transform a.crumb_name img{
   left: 9px;
   top: 1px;
@@ -486,7 +486,7 @@ div.transform a.crumb_name img{
   position: absolute;
   padding: 0px 0px 0px 5px;   
   text-align: left;
-/*  color: #08438F; */
+  /*  color: #08438F; */
   font-weight:bold;
   text-decoration:none;
   top: 0px;
@@ -502,30 +502,30 @@ div.transform a.crumb_name img{
   margin-right: 18px;
   top: 0;
   text-align: right;
-  */
+   */
 }
 
 .diagram div.strategy_name {
   position: relative;
   float: right;
-	font-size:14px;
-	font-weight:bold;
+  font-size:14px;
+  font-weight:bold;
   right: 4em;
   z-index: 1;
 }
 
 /*
 .diagram .strategy-name.wdk-editable {
-  padding-bottom: 5px;
+padding-bottom: 5px;
 }
 .diagram .strategy-name.wdk-editable-show {
-  padding-bottom: 1px;
+padding-bottom: 1px;
 }
 .diagram .strategy-name.wdk-editable input {
-  margin: 1px;
-  padding: 0;
+margin: 1px;
+padding: 0;
 }
-*/
+ */
 
 .diagram div.strategy_menu {
   clear: both;
@@ -580,7 +580,7 @@ span.closeStrategy {
 }
 
 /* First selector is for history page,
-   second selector is for strat diagram */
+second selector is for strat diagram */
 .modal_div, .diagram .modal_div {
   display: none;
   background-color: #FFFFFF;
@@ -610,13 +610,13 @@ span.closeStrategy {
   position: absolute;
   right: 5em;
   top: 4em;
-/*   width: 23em;  */
+  /*   width: 23em;  */
 }
 
 .save_strat .dragHandle .modal_name {
-        margin:0;
-        padding:0;
-        position:absolute;
+  margin:0;
+  padding:0;
+  position:absolute;
 }
 
 /* This selector is for Browse and Run  tab */
@@ -653,14 +653,14 @@ b.strat_help_title > span {
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      = Add Step Popup Styles
+= Add Step Popup Styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #filter_div {
   width: 100%;
   min-height: 50px;
 }
-  
+
 #instructions {
   position: relative;
   left: 70px;
@@ -671,25 +671,25 @@ b.strat_help_title > span {
 }
 
 #query_selection {
-/*  left: 40px;*/
+  /*  left: 40px;*/
   position:relative;
   margin-top: 28px;  /* thiner Add Step   36px; */
   width: 100%;
 }
 
 #query_form {
-	position: absolute;
-/*	right:140px; affects colocation */
-	left:140px; 
-	top:140px;
-	min-width: 600px; 
-	max-width: 78%; 
-	background-color: #FFFFFF;
-	background-repeat: repeat-x;
-	background-position: 0 26px;  
-	border: 1px solid #888888;	
-	padding: 0 8px 8px 8px;
-	z-index: 490; 
+  position: absolute;
+  /*	right:140px; affects colocation */
+  left:140px; 
+  top:140px;
+  min-width: 600px; 
+  max-width: 78%; 
+  background-color: #FFFFFF;
+  background-repeat: repeat-x;
+  background-position: 0 26px;  
+  border: 1px solid #888888;	
+  padding: 0 8px 8px 8px;
+  z-index: 490; 
 }
 
 #query_form form {
@@ -709,7 +709,7 @@ b.strat_help_title > span {
 }
 
 #query_selection table {
-/*  background-image: url(../images/new_step_menu.jpg);*/
+  /*  background-image: url(../images/new_step_menu.jpg);*/
   border-collapse: separate;
   border-spacing: 3px;
 }
@@ -732,7 +732,7 @@ b.strat_help_title > span {
   text-align:left;
   z-index:50;
   padding-right: 13px;
-        white-space: nowrap;
+  white-space: nowrap;
 }
 
 #query_selection .top_nav li a:link, #query_selection .top_nav li a:visited{
@@ -770,7 +770,7 @@ b.strat_help_title > span {
   z-index:1;
 }
 .back img, .close_window img  {
-	width:25px;
+  width:25px;
 }
 
 #question_title {
@@ -812,7 +812,7 @@ b.strat_help_title > span {
 }
 
 #operations {
-	margin: 10px 20px 10px 10px; 
+  margin: 10px 20px 10px 10px; 
 }
 
 #operations ul li {
@@ -821,13 +821,13 @@ b.strat_help_title > span {
 }
 
 #operations .opcheck {
-        clear: left;
+  clear: left;
 }
 
 #operations td {
   padding: 0;
-        vertical-align:middle;
-	text-align:left;
+  vertical-align:middle;
+  text-align:left;
 }
 
 .filter {
@@ -835,12 +835,12 @@ b.strat_help_title > span {
 }
 
 .filter.params, .filter.operators, .filter-button {
-       background-color: #fff;
-        margin: 4px;
-        margin-left: auto;
-        margin-right: auto;
-        width: 95%;
-        padding: 0;
+  background-color: #fff;
+  margin: 4px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 95%;
+  padding: 0;
 }
 
 .filter.params {
@@ -851,8 +851,8 @@ b.strat_help_title > span {
 }
 
 .filter-button {
-        padding-top: 10px;
-        text-align: center;
+  padding-top: 10px;
+  text-align: center;
 }
 
 .filter_link {
@@ -860,7 +860,7 @@ b.strat_help_title > span {
   float: right;
   margin-right: 5px;
   top: 65px;*/
-  color: #FFFFFF;
+color: #FFFFFF;
 }
 table.parameter-errors{
   border-collapse:separate;
@@ -881,41 +881,41 @@ div.bottom-close{
 }
 
 .crumb_details ul.question_name {
-    float:left;
-    position:relative;
-    left:50%;
+  float:left;
+  position:relative;
+  left:50%;
 }
 
 .crumb_details ul.question_name li {
-    float:left;
-    font-weight:bold;
-    margin-top:8px;
-    position:relative;
-    right:50%;
+  float:left;
+  font-weight:bold;
+  margin-top:8px;
+  position:relative;
+  right:50%;
 }
 
 .crumb_details ul.question_name li.operation {
-    width:36px;
-    margin-top: 2px;
+  width:36px;
+  margin-top: 2px;
 }
 
 .crumb_details .filter, .crumb_details .operation {
-    border:none;
+  border:none;
 }
 
 .crumb_details #operations {
-    margin: auto;
+  margin: auto;
 }
 
 .crumb_details #form_question {
-    border: 1px solid black;
-    background-color: white;
-    margin: 0 5px;
-    padding-bottom: 5px;
+  border: 1px solid black;
+  background-color: white;
+  margin: 0 5px;
+  padding-bottom: 5px;
 }
 
 .crumb_details .form_subtitle {
-    font-size: 15px;
+  font-size: 15px;
 }
 
 .crumb_details .param {
@@ -933,14 +933,14 @@ div.bottom-close{
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      = strategies All Tab
+= strategies All Tab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 .history_panel {
-    /*display: none;*/
+  /*display: none;*/
 }
 
 .history_panel.enabled {
-    display: inline;
+  display: inline;
 }
 
 .history_panel table {
@@ -956,17 +956,17 @@ div.bottom-close{
 }
 
 .unsaved-strategies-body {
-    overflow-y: auto;
-    overflow-x: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .tbody-overflow {
-    height: 250px;
+  height: 250px;
 }
 
 table.history_controls {
-   font-size:130%;
-   font-weight:bold;
+  font-size:130%;
+  font-weight:bold;
 }
 #invalid-step-text{
   background-color:#FFFFFF;
@@ -979,8 +979,8 @@ table.history_controls {
   z-index: 85; /* show above step glyphs, yet below model_div */
 }
 .strat-legend{
-    font-weight:normal;
-    font-size:72%;font-style:italic;color:darkred;
+  font-weight:normal;
+  font-size:72%;font-style:italic;color:darkred;
 }
 #strategy_messages {
   min-height:100px;
@@ -1030,35 +1030,35 @@ table.history_controls {
 }
 
 div#step_type{
-	margin-left:-10px;
+  margin-left:-10px;
 }
 div#sections{
-	line-height:1.25;
-	padding-right:50px;
+  line-height:1.25;
+  padding-right:50px;
 }
 div#sections td{
-	vertical-align: top;
+  vertical-align: top;
 }
 
 .strategy_description div {
-    /*
-    padding: 0em .4em !important;
-    height: 1em;
-    display: inline-block;
-    */
-    cursor: pointer;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  /*
+  padding: 0em .4em !important;
+  height: 1em;
+  display: inline-block;
+   */
+cursor: pointer;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
 }
 
 .strategy_description div.empty, .strategy_description div.unsaved {
-    font-style: italic;
-    color: #AAA;
+  font-style: italic;
+  color: #AAA;
 }
 
 .strategy_description div.full * {
-    display: inline;
+  display: inline;
 }
 
 #wdk-dialog-strat-desc .edit {
@@ -1067,36 +1067,36 @@ div#sections td{
 }
 
 #wdk-dialog-update-strat dt {
-    margin-top: 1em;
-    font-weight: bold;
+  margin-top: 1em;
+  font-weight: bold;
 }
 
 #wdk-dialog-update-strat textarea,
 #wdk-dialog-update-strat input[type="text"],
 #wdk-dialog-update-strat div {
-    width: 570px;
+  width: 570px;
 }
 
 #wdk-dialog-update-strat ul, #wdk-dialog-share-strat ul {
-    list-style: disc;
-    padding-left: 1em;
+  list-style: disc;
+  padding-left: 1em;
 }
 
 #wdk-dialog-update-strat li, #wdk-dialog-share-strat li {
-    margin: .4em 0;
+  margin: .4em 0;
 }
 
 #wdk-dialog-update-strat .important, #wdk-dialog-share-strat .important {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 #wdk-dialog-update-strat .count.warn {
-    color: red;
+  color: red;
 }
 
 #wdk-dialog-share-strat .share_url {
-    margin: 40px auto;
-    text-align: center;
+  margin: 40px auto;
+  text-align: center;
 }
 
 #wdk-dialog-share-strat input {
@@ -1104,121 +1104,121 @@ div#sections td{
 }
 
 .strategy-description.ui-tooltip {
-    max-width: 35em;
+  max-width: 35em;
 }
 
 /**************************************************
  ******* CSS for AddStep PopUp ********************
  *************************************************/
 .menu_section {
-   text-indent:-5px; 
-   margin-left:3px;
+  text-indent:-5px; 
+  margin-left:3px;
 }
 .menu_section li {
   padding-left: 6px;
   margin-left: -5px;
 }
 .qf_section{
-	height:190px;
-	margin-bottom:-11px;
-	margin-top:22px;
-	overflow-y:scroll;
-	padding:10px 8px 0 5px;
-	text-align:left;
-	width:170px;   /*  158px; */
-	margin-left:-6px;
+  height:190px;
+  margin-bottom:-11px;
+  margin-top:22px;
+  overflow-y:scroll;
+  padding:10px 8px 0 5px;
+  text-align:left;
+  width:170px;   /*  158px; */
+  margin-left:-6px;
 }
 .qf_section ul ul li{
-	text-indent:3px;
+  text-indent:3px;
 }
 .qf_section ul li:hover{
-	cursor:pointer;
-	font-weight:bold;
+  cursor:pointer;
+  font-weight:bold;
 }
 
 .qf_section ul li.category{
-	background:url("../images/menu_arrow.png") no-repeat scroll 100% 0 transparent;
+  background:url("../images/menu_arrow.png") no-repeat scroll 100% 0 transparent;
 }
 
 #process-crumbs{
-	border-style:solid;
-	border-width:0 0 1px;
-	margin-bottom:-20px;
-	margin-top:30px;
-	padding-bottom:5px;
-	text-align:center;
+  border-style:solid;
+  border-width:0 0 1px;
+  margin-bottom:-20px;
+  margin-top:30px;
+  padding-bottom:5px;
+  text-align:center;
 }
 #process-crumbs > div{
-	display:inline-block;
-	text-align:center;
-	width:56px;
-	opacity:0.3;
-	vertical-align:top;
+  display:inline-block;
+  text-align:center;
+  width:56px;
+  opacity:0.3;
+  vertical-align:top;
 }
 #process-crumbs > div.active{
-	opacity:1.0;
+  opacity:1.0;
 }
 #process-crumbs > div > p{
-	font-size:8pt;
-	font-style:italic;
+  font-size:8pt;
+  font-style:italic;
 }
 .step-image{
-	width:40px;
+  width:40px;
 }
 .transition{
-	height:15px;
-	margin-top:13px;
-	vertical-align:top;
-	width:108px;
-	opacity:0.3;
+  height:15px;
+  margin-top:13px;
+  vertical-align:top;
+  width:108px;
+  opacity:0.3;
 }
 
 
 /*div.operations input[type='radio']{
-	float:right;
+float:right;
 }
 div#span_popup{
-	float:right;
+float:right;
 }
 div#span_popup>table{
-	border:1px solid #BBBBBB;
+border:1px solid #BBBBBB;
 }
 td#middle{
-	border-right:1px solid #BBBBBB;
-	border-left:1px solid #BBBBBB;
+border-right:1px solid #BBBBBB;
+border-left:1px solid #BBBBBB;
 }
 ul#directions{
-	border:1px solid #BBBBBB;
-	font-size:8pt;
-	line-height:1.5;
-	padding:10px;
-	width:185px;
+border:1px solid #BBBBBB;
+font-size:8pt;
+line-height:1.5;
+padding:10px;
+width:185px;
 }
 img.step_img{
-	width:20px;
-	position:relative;
+width:20px;
+position:relative;
 }
 img#step_1{
-	left:-325px;
-	top:-161px;
+left:-325px;
+top:-161px;
 }
 img#step_2{
-	left:21px;
-	top:-161px;
+left:21px;
+top:-161px;
 }
 img#step_3{
-	left:-71px;
-	top:-161px;
+left:-71px;
+top:-161px;
 }
 img#step_4{
-	left:-120px;
-	top:-86px;
+left:-120px;
+top:-86px;
 }
 img#step_5{
-	left:-385px;
-	top:-22px;
+left:-385px;
+top:-22px;
 }
-*/
+ */
 
 /*CSS for Span Logic Operations Section*/
 
