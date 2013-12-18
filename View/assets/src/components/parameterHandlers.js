@@ -8,7 +8,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   var termDisplayMap;
 
   //==============================================================================
-  function init() {
+  function init(element) {
     // TODO - make these flags attached to this namespace
     var isPopup = window.isPopup;
     var isEdit = window.isEdit;
@@ -30,23 +30,23 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     oldValues = [];
 
     if (isEdit == undefined) isEdit = false;
-    initTypeAhead(isEdit);
-    initDependentParamHandlers(isEdit);
-    if (!isPopup) {
-      $("#form_question").submit(function() {
-        mapTypeAheads();
-        return true;
-      });
-    }
+
+    initTypeAhead(isEdit, element);
+    initDependentParamHandlers(isEdit, element);
+
+    element.closest('form').submit(function() {
+      mapTypeAheads(element);
+      return true;
+    });
 
     // need to trigger the click event so that the stage is set correctly on revise.
-    $("#form_question #operations input[type='radio']:checked").click();
+    element.find("#operations input[type='radio']:checked").click();
   }
 
   //==============================================================================
-  function initDependentParamHandlers(isEdit) {
+  function initDependentParamHandlers(isEdit, element) {
 
-    $('div.dependentParam').each(function() {
+    element.find('div.dependentParam').each(function() {
       $('input, select', this).attr('disabled', true);
       var name = $(this).attr('name');
       // the dependson may contain a comma separated list of param names the current param depends on
@@ -71,13 +71,14 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
               // set ready flag to false on all its dependent params
               var dependentList = dependedParams[dependedName];
               for (var i = 0; i < dependentList.length; i++) {
-                  $(".dependentParam[name='" + dependentList[i] + "']").find("input, select").prop("disabled", true);
+                element.find(".dependentParam[name='" + dependentList[i] + "']")
+                  .find("input, select").prop("disabled", true);
               }
               // fire update event
               var changed = false;
               for (var i = 0; i <  dependentList.length; i++) {
                   var dependentName = dependentList[i];
-                  var result =  updateDependentParam(dependentName);
+                  var result =  updateDependentParam(dependentName, element);
                   if (result) {
                     // result.then(function() {
                     //   wdk.event.publish("questionchange");
@@ -104,16 +105,16 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     //   param's change function.
     if (isEdit) {
       for (var name in dependedParams) {
-        var input = $("input.typeAhead[name='value(" + name + ")']");
+        var input = element.find("input.typeAhead[name='value(" + name + ")']");
         if (input.length == 0) {
-          input = $("div.dependentParam[name='" + name + "']").find("select");
+          input = element.find("div.dependentParam[name='" + name + "']").find("select");
           if (input.length > 0) {
             // If this is a select, there's only one value
             oldValues[name] = input.val();
           } else {
             // Otherwise, we have to know which option(s) are checked
             var allVals = [];
-            $("div.dependentParam[name='" + name + "']").find("input:checked")
+            element.find("div.dependentParam[name='" + name + "']").find("input:checked")
                 .each(function() {
                   allVals.push($(this).val());
                 });
@@ -125,26 +126,26 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
-  function initTypeAhead(isEdit) {
+  function initTypeAhead(isEdit, element) {
 
-    $("input:hidden.typeAhead").each(function() {
+    element.find("input:hidden.typeAhead").each(function() {
       var questionName = $(this).closest("form").find("input:hidden[name=questionFullName]").val();
       var paramName = getParamName($(this).attr('name'));
-      $("#" + paramName + "_display .input").prop('disabled',true);
+      element.find("#" + paramName + "_display .input").prop('disabled',true);
       if (isEdit) {
         oldValues[paramName] = $(this).val();
       }
       if ($(this).parent('div').hasClass('dependentParam')) {
-        updateDependentParam(paramName);
+        updateDependentParam(paramName, element);
       } else {
-        $("#" + paramName + "_display .input").val('Loading options...');
+        element.find("#" + paramName + "_display .input").val('Loading options...');
         var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
         $.ajax({
           url: sendReqUrl,
           dataType: "xml",
           success: function(data){
-            // createAutoComplete(data, paramName);
-            createFilteredSelect(data, paramName);
+            // createAutoComplete(data, paramName, element);
+            createFilteredSelect(data, paramName, element);
           }
         });
       }
@@ -152,10 +153,10 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
-  function createFilteredSelect(xmlDOM, paramName) {
+  function createFilteredSelect(xmlDOM, paramName, element) {
     // xmlDOM is an XML DOM object - it needs to be convered into a select list
     var values = [],
-        displayDiv = $('#' + paramName + '_display').html(''), // may want to cache
+        displayDiv = element.find('#' + paramName + '_display').html(''), // may want to cache
         removeAllDiv = $('<div class="remove-all"><a href="#">Remove all</a></div>'),
         multiDelimRegExp = /\s*[,;\n\s]\s*/,
         isMultiple = displayDiv.data('multiple'),
@@ -354,8 +355,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
-  function createAutoComplete(obj, name) {
-    $("div.ac_results").remove(); // Remove any pre-existing type-ahead results.
+  function createAutoComplete(obj, name, element) {
+    element.find("div.ac_results").remove(); // Remove any pre-existing type-ahead results.
     var def = [];
     displayTermMap[name] = [];
     termDisplayMap[name] = [];
@@ -376,7 +377,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     var noMatch = "<i>No item found</i>";
     var wildCard = "<i>Find matches using a wildcard search</i>";
     var wildCardTest = /\*/;
-    $("#" + name + "_display").autocomplete({
+    element.find("#" + name + "_display").autocomplete({
       source: function( request, response ) {
         var result = $.ui.autocomplete.filter(def, request.term);
         if (result.length == 0) {
@@ -415,19 +416,20 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       if (!value) value = oldValues[name]; // For typeaheads allowing arbitrary input
       oldValues[name] = null;
     }
-    $("#" + name + "_display").val(value).removeAttr('disabled');
+    element.find("#" + name + "_display").val(value).removeAttr('disabled');
   }
 
   //==============================================================================
-  function updateDependentParam(paramName) {
+  function updateDependentParam(paramName, element) {
     // get the current param
-    var dependentParam = $("div.dependentParam[name='" + paramName + "']");
+    var dependentParam = element.find("div.dependentParam[name='" + paramName + "']");
     var dependedNames = dependentParam.attr('dependson').split(",");
 
     // check if all the depended params are ready
     for (var i=0; i < dependedNames.length; i++) {
         var dependedName = dependedNames[i];
-        var notReady = $(".param[name='" + dependedName + "']").find("input, select").prop("disabled");
+        var notReady = element.find(".param[name='" + dependedName + "']")
+            .find("input, select").prop("disabled");
         if (notReady) return;
     }
   
@@ -436,7 +438,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     // the dependson may contain a comma separated list of param names the current param depends on
     for (var i=0; i < dependedNames.length; i++) {
       var dependedName = dependedNames[i];
-      var dependedParam = $("#" + dependedName + 
+      var dependedParam = element.find("#" + dependedName + 
           "aaa input[name='array(" + dependedName + ")']:checked, #" + 
           dependedName + "aaa select[name='array(" + dependedName + 
           ")']");
@@ -466,7 +468,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     // get dependent param and question name, contruct url from them
       var dependentParamSelector = "#" + paramName + 
           "aaa > div.dependentParam[name='" + paramName + "']";
-      var dependentParam = $(dependentParamSelector);
+      var dependentParam = element.find(dependentParamSelector);
       var questionName = dependentParam.closest("form")
           .find("input:hidden[name=questionFullName]").val();
       var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
@@ -474,13 +476,14 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       if ($('input.typeAhead',dependentParam).length > 0) {
         sendReqUrl = sendReqUrl + '&xml=true';
-        $("#" + paramName + "_display .input").prop('disabled',true).val('Loading options...');
+        element.find("#" + paramName + "_display .input").prop('disabled',true)
+            .val('Loading options...');
         return $.ajax({
           url: sendReqUrl,
           dataType: "xml",
           success: function(data) {
-            $('input',dependentParam).removeAttr('disabled');
-            $(".param[name='" + paramName + "']").attr("ready", "");
+            find('input',dependentParam).removeAttr('disabled');
+            element.find(".param[name='" + paramName + "']").attr("ready", "");
             // createAutoComplete(data, paramName);
             createFilteredSelect(data, paramName);
           }
@@ -512,7 +515,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
               }
               oldValues[name] = null;
             }
-            $(".param[name='" + paramName + "']").attr("ready", "");
+            element.find(".param[name='" + paramName + "']").attr("ready", "");
             dependentParam.change();
           },
           error: function (jqXHR, textStatus, errorThrown) {
@@ -523,8 +526,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
-  function mapTypeAheads() {
-    $("input:hidden.typeAhead").each(function() {
+  function mapTypeAheads(element) {
+    element.find("input:hidden.typeAhead").each(function() {
       var paramName,
           value,
           newValue,
@@ -533,7 +536,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           isMulti = $(this).data('max-selectable') >= 2;
 
       paramName = getParamName($(this).attr('name'));
-      value = $('#' + paramName + '_display .input').val();
+      value = element.find('#' + paramName + '_display .input').val();
 
       // old way
       // if (isMulti || true) {
@@ -547,7 +550,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       // $(this).val(value);
 
       // new way
-      var select = $('#' + paramName + '_display').find('select');
+      var select = element.find('#' + paramName + '_display').find('select');
       if (select.data('chosen-off')) {
         // get values from input
         values = select.next().find('input').val();
