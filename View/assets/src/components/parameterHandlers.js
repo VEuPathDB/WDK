@@ -485,7 +485,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
             $('input',dependentParam).removeAttr('disabled');
             element.find(".param[name='" + paramName + "']").attr("ready", "");
             // createAutoComplete(data, paramName);
-            createFilteredSelect(data, paramName);
+            createFilteredSelect(data, paramName, element);
           }
         });
       } else {
