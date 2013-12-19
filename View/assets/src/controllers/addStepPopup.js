@@ -478,7 +478,15 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           $("#query_form h1#query_form_title").html("Insert&nbsp;Step");
         }
         setDraggable($("#query_form"), ".dragHandle");
-        $("#query_form").css("z-index", 100);
+
+        $("#query_form").css({
+          // keep popup in viewport
+          top: Math.max($(window).scrollTop() + 50,
+                        $("#strategy_results").offset().top),
+          left: ($(window).width() - $("#query_form").width()) / 2,
+          zIndex: 100
+        });
+
         $("#query_form_overlay").css("z-index", 100).height($("body").height());
       },
       error: function() {
@@ -614,7 +622,11 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
                 showNewSection(ele,id,sec);
               }
             }
-            $("#query_form").css("z-index", 100);
+
+            $("#query_form").css({
+              zIndex: 100,
+              left: ($(window).width() - $("#query_form").width()) / 2
+            });
             $("#query_form_overlay").css("z-index", 100).height($("body").height());
 
             // inline-submit should be called last
@@ -732,7 +744,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     $(e).draggable({
       handle: handle,
       // containment: [0, tlimit, rlimit, blimit]
-      containment: "document"
+      containment: "document",
+      scroll: false
     });
   }
 
