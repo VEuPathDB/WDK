@@ -482,7 +482,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           url: sendReqUrl,
           dataType: "xml",
           success: function(data) {
-            find('input',dependentParam).removeAttr('disabled');
+            $('input',dependentParam).removeAttr('disabled');
             element.find(".param[name='" + paramName + "']").attr("ready", "");
             // createAutoComplete(data, paramName);
             createFilteredSelect(data, paramName);
