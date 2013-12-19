@@ -33,13 +33,14 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
       wdk.util.setDraggable(det2, ".dragHandle");
       var l = 361;
       var t = 145;
+      det2.appendTo("body");
       det2.css({
-        left: l + "px",
-        top: t + "px",
+        top: Math.max($(window).scrollTop() + 50,
+                      $("#strategy_results").offset().top),
+        left: ($(window).width() - det2.width()) / 2,
         display: "block",
         position: "absolute"
       });
-      det2.appendTo("body");
       wdk.util.initShowHide(det2);
       var op = $(".question_name .operation", det2);
       if (op.length > 0) {

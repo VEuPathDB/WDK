@@ -5,6 +5,18 @@
        - the default font size has to be 12px, otherwise the step boxes will not be aligned correctly
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+/*
+ * Fix for jquery-ui regression http://bugs.jqueryui.com/ticket/9315
+ * This will be fixed in v1.11
+ *
+ * The media selector targets Chrome and Safari only
+ */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  html, body {
+    position: relative;
+  }
+}
+
 body { 
   font-size: 12px; 
   text-align: left;

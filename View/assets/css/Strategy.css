@@ -678,10 +678,12 @@ b.strat_help_title > span {
 }
 
 #query_form {
-  position: absolute;
   /*	right:140px; affects colocation */
+  position: absolute;
+  /* Position wrt viewport in js
   left:140px; 
   top:140px;
+  */
   min-width: 600px; 
   max-width: 78%; 
   background-color: #FFFFFF;
