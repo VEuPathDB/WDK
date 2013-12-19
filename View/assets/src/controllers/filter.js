@@ -6,6 +6,18 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
   function WdkFilter() {
 
     this.initialize = function() {
+      // attach onclick event using jquery instead of onclick attr
+      // Moved from this.displayFilters since events were being registered twice.
+      // We'll use delegation instead.
+      $('.Workspace').on('click', 'a.link-url', function changeFilter(e) {
+        var $this = $(this);
+        var strategyId = $this.attr('strId');
+        var stepId = $this.attr('stpId');
+        var url = $this.attr('linkurl');
+        var filterElement = $this.closest('.filter-instance')[0];
+        wdk.strategy.controller.ChangeFilter(strategyId, stepId, url, filterElement);
+      });
+
       this.addShowHide();
       this.displayFilters();
       this.loadFilterCount();
@@ -29,11 +41,6 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
       
     this.displayFilters = function() {
       $(".filter-instance").each(function() {
-        // attach onclick event using jquery instead of onclick attr
-        var link = $(this).find(".link-url");
-        link.click(function() {
-          wdk.strategy.controller.ChangeFilter(link.attr('strId'),link.attr('stpId'),link.attr('linkUrl'),this);
-        });
         // add mouse over to the link
         var detail = $(this).find(".instance-detail");
         //cris: z-index added to show filter popup over column titles in result
