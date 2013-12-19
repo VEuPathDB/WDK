@@ -68,7 +68,9 @@ public class ProcessQueryInstance extends QueryInstance {
     jsInstance.put("signal", signal);
   }
 
-  private static final boolean USE_SQLRUNNER = true;
+  // Have to turn this off, since it is not easy to add extra column into the 
+  // result with the ArgumentBatch.
+  private static final boolean USE_SQLRUNNER = false;
 
   /*
    * (non-Javadoc)
