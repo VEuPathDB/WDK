@@ -28,7 +28,7 @@ module.exports = {
     'lib/handlebars.js',
     'lib/flexigrid.js',
     'lib/chosen.jquery.min.js',
-    'lib/jquery.dataTables-1.9.0.min.js',
+    'lib/jquery.dataTables.min.js',
     'lib/jstree/jquery.jstree.js',
     'lib/jquery.flot-0.8.1.min.js',
     'lib/jquery.flot.categories-0.8.1.min.js'
