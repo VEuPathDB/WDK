@@ -193,6 +193,11 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       oldFilters.each(function() {
         var newFilter = document.getElementById(this.id);
         var count = $(this).text();
+
+        // no need to update if nodes are the same
+        // refs #15011
+        if (this === newFilter) return;
+
         if (count == 0 || !/\d+/.test(count)) {
           $(newFilter).replaceWith(this);
         } else {
