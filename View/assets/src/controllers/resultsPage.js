@@ -191,12 +191,12 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       wdkFilter.addShowHide();
       wdkFilter.displayFilters();
       oldFilters.each(function() {
-        var id = $(this).attr("id");
+        var newFilter = document.getElementById(this.id);
         var count = $(this).text();
         if (count == 0 || !/\d+/.test(count)) {
-          $("#" + id).replaceWith(this);
+          $(newFilter).replaceWith(this);
         } else {
-          $("#" + id).html(count);
+          $(newFilter).html(count);
         }
       });
     } else {
