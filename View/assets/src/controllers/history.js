@@ -542,7 +542,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
       // update strat row data
       row.data("name", this.name.value);
       row.data("description", this.description.value);
-      row.data("isPublic", ($(this.is_public).prop('checked') ? "true" : "false"));
+      row.data("isPublic", ($(this.is_public).prop('checked') ? true : false));
 
       strategy = $.extend(wdk.strategy.model.getStrategyOBJ(strat.backId), strat);
 
