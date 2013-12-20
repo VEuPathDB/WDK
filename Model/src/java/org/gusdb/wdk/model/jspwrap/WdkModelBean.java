@@ -10,7 +10,6 @@ import java.util.Stack;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -359,13 +358,13 @@ public class WdkModelBean implements ConnectionContainer {
      * @throws WdkUserException if name is not in format *.*
      */
     public void validateQuestionFullName(String qFullName) throws WdkUserException {
-        String message = "Unable to find question with name: " + qFullName;
+        String message = "The search '" + qFullName + "' is not or is no longer available.";
         try {
-            // for now, just check format
-            Reference.assertTwoPartName(qFullName);
-            //if (qFullName == null || wdkModel.getQuestion(qFullName) == null) {
-            //    throw new WdkUserException(message);
-            //}
+            // uncomment the next line and recomment the following 3 to just check format
+            //Reference.assertTwoPartName(qFullName);
+            if (qFullName == null || wdkModel.getQuestion(qFullName) == null) {
+                throw new WdkUserException(message);
+            }
         } catch (WdkModelException e) {
             throw new WdkUserException(message, e);
         }
@@ -385,13 +384,13 @@ public class WdkModelBean implements ConnectionContainer {
      * @throws WdkUserException if name is not in format *.*
      */
     public void validateRecordClassName(String recordClassName) throws WdkUserException {
-        String message = "Unable to find record class with name: " + recordClassName;
+        String message = "The record type '" + recordClassName + "' is not or is no longer available.";
         try {
-            // for now, just check format
-            Reference.assertTwoPartName(recordClassName);
-            //if (recordClassName == null || wdkModel.getRecordClass(recordClassName) == null) {
-            //    throw new WdkUserException(message);
-            //}
+            // uncomment the next line and recomment the following 3 to just check format
+            //Reference.assertTwoPartName(recordClassName);
+            if (recordClassName == null || wdkModel.getRecordClass(recordClassName) == null) {
+                throw new WdkUserException(message);
+            }
         }
         catch (WdkModelException e) {
             throw new WdkUserException(message, e);
