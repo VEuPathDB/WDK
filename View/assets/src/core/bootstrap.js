@@ -2,8 +2,26 @@
  * Bootstrap the wdk app. This runs on DOMReady and initializes views, etc.
  */
 
-jQuery(function bootstrap($) {
+(function bootstrap($) {
   'use strict';
+
+  // conditionally load some scripts
+  Modernizr.load([
+    {
+      test: !!window.JSON,
+      nope: wdk.assetsUrl('/wdk/lib/json3.min.js'),
+      complete: $.bind(window, wdk.load)
+    },
+    {
+      // IE 8 needs some canvas help
+      test: Modernizr.canvas,
+      nope: wdk.assetsUrl('/wdk/lib/excanvas.min.js'),
+      both: [
+        '/wdk/lib/jquery.flot-0.8.1.min.js',
+        '/wdk/lib/jquery.flot.categories-0.8.1.min.js'
+      ].map(wdk.assetsUrl)
+    }
+  ]);
 
   // Override BlockUI CSS and message
   $.blockUI.defaults.overlayCSS.opacity = 0.2;
@@ -53,15 +71,16 @@ jQuery(function bootstrap($) {
       });
   }
 
-  wdk.cookieTest();
-  wdk.setUpDialogs();
-  wdk.setUpPopups();
-  wdk.load();
-
   // This is wrong:
   //   1. This gets called before tab data is loaded (as of jQuery UI 1.9?)
   //   2. This gets called for _all_ ajax requests, which is unecessary.
   $(document).ajaxSuccess(function(event, xhr, ajaxOptions) {
     xhr.done(wdk.load);
   });
-});
+
+  $(wdk.cookieTest);
+  $(wdk.setUpDialogs);
+  $(wdk.setUpPopups);
+  //$(wdk.load);
+
+}(jQuery));
