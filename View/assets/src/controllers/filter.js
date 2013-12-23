@@ -22,7 +22,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
       this.displayFilters();
       this.loadFilterCount();
     };
-      
+
     this.addShowHide = function() {
       $(".filter-layout .layout-info .handle").click(function() {
         var content = $(this).parents(".filter-layout").children(".layout-detail");
@@ -38,7 +38,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
         }
       });
     };
-      
+
     this.displayFilters = function() {
       $(".filter-instance").each(function() {
         // add mouse over to the link
@@ -59,11 +59,11 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
           var winMinusLeft = winWidth - left;
           if ( winMinusLeft < (popupWidth + 40) ) {
             left = left - (popupWidth - winMinusLeft + 40);	
-            detail.css("left", left + "px"); 
+            detail.css("left", left + "px");
           }
           detail.css("width", popupWidth + "px");
           detail.css("display", "block");
-          detail.css("z-index", "10"); 
+          detail.css("z-index", "10");
         },
         function() {
           detail.css("display", "none");
@@ -72,44 +72,43 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
     };
 
     this.loadFilterCount = function() {
-      var wdkFilter = new WdkFilter();
-      $(".filter-instance .loading:first").parents(".filter-instance").each(function() {
-        // load the result count of the filter
-        var link = $(this).find(".link-url");
-        var countUrl = link.attr("countref");
+      var links = $('.filter-instance .link-url[countref]');
 
-
-        countUrl = countUrl.replace(/\s/, "");
-
-        $.get(countUrl, '', function (data) {
-          if (data.match(/^\d+$/g) != null) {
-            if (data == '0') {
-              var deadz = document.createElement('span');
-              $(deadz).addClass("link-url");
-              $(deadz).attr('id',link.attr('id'));
-              $(deadz).text(data);
-              link.replaceWith(deadz);	
+      // map to $.ajax, which returns a thenable
+      // this allows us to download all in parallel
+      links.toArray().map(function getCount(element, i) {
+        // FIXME Use a Promise library, such as Q
+        // jQuery.Deferred deviates form the Promises/A+ spec
+        // in that jQuery.Deferred.fail doesn't return a new
+        // promise, which breaks composition.
+        var countUrl = $(element).attr('countref');
+        var deferred = $.Deferred();
+        $.get(countUrl).then(deferred.resolve,
+            deferred.resolve.bind(null, 'Error'));
+        return deferred.promise();
+      })
+      // Create a Promise sequence such that when $.ajax is resolved,
+      // we immediately add the value to the page. This seqeunce effectively
+      // interleaves ajax completion and adding the value to the page.
+        .reduce(function addToSequence(sequence, countPromise, i) {
+          return sequence.then(function() {
+            return countPromise;
+          }).then(function updateCount(count) {
+            var link = links.eq(i);
+            if (count.match(/^\d+$/g) != null) {
+              if (count == '0') {
+                // replace with a non-link
+                link.replaceWith('<span class="link-url" id="' +
+                    link.attr('id') + '">' + count + '</span>');
+              } else {
+                link.text(count);
+              }
             } else {
-              link.text(data);
+              // must be an error
+              link.replaceWith('<em style="color:red;">Error</em>');
             }
-          } else {
-            link.text("error");
-          }
-          wdkFilter.loadFilterCount();
-        }, "text")
-
-        .fail(function() {
-          var error = $("<span>Error</span>")
-              .addClass("link-url")
-              .attr("id", link.attr("id"))
-              .css({
-                color: "red",
-                "font-style": "italic"
-              });
-          link.replaceWith(error);
-        });
-
-      });
+          })
+        }, $.Deferred().resolve());
     };
   }
 
