@@ -19,10 +19,10 @@ module.exports = function(grunt) {
     var scriptLoaderStr = scripts.map(function(script) {
       var line;
       if (externalRegex.test(script)) {
-        line = 'document.writeln(\'<scr\' + \'ipt src="' + script + '"></scr\' + \'ipt>\');\n';
+        line = 'document.writeln(\'<script src="' + script + '">\\x3c/script>\');\n';
       } else {
-        line = 'document.writeln(\'<scr\' + \'ipt src="\' + wdkConfig.assetsUrl + \'/wdk/' +
-            script + '"></scr\' + \'ipt>\');\n';
+        line = 'document.writeln(\'<script src="\' + wdkConfig.assetsUrl + \'/wdk/' +
+            script + '">\\x3c/script>\');\n';
       }
       return line;
     }).join('');
