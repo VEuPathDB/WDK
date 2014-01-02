@@ -27,8 +27,8 @@
     <div class="plot"> </div>
 
     <div class="bin-control control-panel">
-      <span>Set bin size:</span>
-      <input class="bin-size" type="input" value="${binSize}" />
+      <span>Set bin size (<span class="bin-size-display">${binSize}</span>):</span>
+      <input class="bin-size" type="hidden" value="${binSize}" />
       <div class="bin-slider"></div>
     </div>
 
@@ -36,10 +36,6 @@
       Choose column display:
       <input name="display" class="normal" type="radio" value="Normal" checked="checked" />Normal
       <input name="display" class="logarithm" type="radio" value="Logarithm" />Logarithm
-    </div>
-
-    <div class="update">
-      <input class="button" type="button" value="Update" />
     </div>
   </div>
   

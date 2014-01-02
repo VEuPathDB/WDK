@@ -39,19 +39,23 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
     // register bin size control
     var binControl = histogram.find("#graph .bin-control");
     var binSizeInput = binControl.find(".bin-size");
+    var binSizeDisplay = binControl.find(".bin-size-display");
     var sliderMin = (type == "float" && min != max) ? ((max - min) / 100) : 1;
     var sliderMax = (type == "float" && min != max) ? (max - min) : (max - min + 1);
     binControl.find(".bin-slider").slider({
       value: binSizeInput.val(),
       min: sliderMin,
       max: sliderMax,
-      slide: function( event, ui ) {
+      change: function( event, ui ) {
+    	binSizeDisplay.html(ui.value);
         binSizeInput.val(ui.value);
+        // refresh display after value is changed
+        drawPlot(histogram);
       }
     });
 
-    // register update button
-    histogram.find("#graph .update .button").button().click(function() {
+    // refresh display when value radio changed
+    histogram.find("#graph .value-control input").click(function() {
       drawPlot(histogram);
     });
   }
