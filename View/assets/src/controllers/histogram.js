@@ -47,7 +47,7 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
       min: sliderMin,
       max: sliderMax,
       change: function( event, ui ) {
-    	binSizeDisplay.html(ui.value);
+        binSizeDisplay.html(ui.value);
         binSizeInput.val(ui.value);
         // refresh display after value is changed
         drawPlot(histogram);
