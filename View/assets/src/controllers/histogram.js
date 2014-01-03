@@ -66,7 +66,8 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
     // get user inputs
     var binSize = graph.find(".bin-control .bin-size").val();
     binSize = (type == "float") ? parseFloat(binSize) : parseInt(binSize);
-    var logarithm = (graph.find(".value-control .logarithm").attr("checked") == "checked");
+    var logOption = graph.find(".value-control .logarithm");
+    var logarithm = (logOption.attr("checked") == "checked");
 
     // get data
     var data = loadData(histogram, binSize, logarithm); 
@@ -85,9 +86,9 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
         if (previousPoint != item.dataIndex) {
           previousPoint = item.dataIndex;
           $("#flot-tooltip").remove();
-
           var data = item.series.data[item.dataIndex];
-          var content = sizeLabel + " = " + data[1] + ", in " + binLabel + " = " + data[0];
+          var typeValue = (logOption.attr("checked") == "checked" ? 'log('+data[1]+')' : data[1]);
+          var content = sizeLabel + " = " + typeValue + ", in " + binLabel + " = " + data[0];
           showTooltip(item.pageX, item.pageY, content);
         }
       } else {
