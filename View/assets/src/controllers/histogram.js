@@ -69,14 +69,16 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
     var logOption = graph.find(".value-control .logarithm");
     var logarithm = (logOption.attr("checked") == "checked");
 
-    // get data
-    var data = loadData(histogram, binSize, logarithm); 
-
+    // get data and labels
+    var plotDetails = loadData(histogram, binSize, logarithm);
+    var data = plotDetails[0];
+    var labels = plotDetails[1];
+    
     // get plot options
     var header = histogram.find("#data thead tr");
     var binLabel = header.children(".bin").text();
     var sizeLabel = header.children(".count").text();
-    var options = getOptions(histogram, binSize, binLabel, sizeLabel);
+    var options = getOptions(histogram, binSize, binLabel, sizeLabel, labels);
 
     // draw plot
     var plotCanvas = graph.find(".plot");
@@ -124,6 +126,7 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
     if (binSize == 1 && !logarithm) return data; // no need to convert
 
     var bins = [];
+    var labels = [];
     for (var i = 0; i < data.length; i += binSize) {
       var bin = [];
       var count = 0;
@@ -146,7 +149,8 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
 
       // add data into bins
       if (logarithm) count = Math.log(count);
-      bins.push([ label, count ]);
+      bins.push([ i, count ]);
+      labels.push([ i, label ]);
     }
     return bin;
   }
@@ -174,25 +178,27 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
 
     // now compute new labels
     var bins = [];
+    var labels = [];
     for (var j = 0; j < tempBins.length; j++) {
       var bin = tempBins[j][0];
       var label;
-      if (bin.length == 1 && type == "int") label = bin[0];
+      if (binSize == 1 && type == "int") label = bin[0];
       else {
         var upper = (type == "int") ? (bin[1] - 1) + "]" : (bin[1] + ")");
         label = "[" + bin[0] + ", " + upper;
       }
       var count = tempBins[j][1];
       if (logarithm) count = Math.log(count);
-      bins.push([ label, count ]);
+      bins.push([ j, count ]);
+      labels.push([ j, label ]);
     }
-    return bins;
+    return [ bins, labels ];
   }
 
 
-  function getOptions(histogram, binSize, binLabel, sizeLabel) {
+  function getOptions(histogram, binSize, binLabel, sizeLabel, labels) {
     // determine the mode
-    var mode = (type == "float" || binSize != 1) ? "categories" : null;
+    //var mode = (type == "float" || binSize != 1) ? "categories" : null;
 
     var options = {
       series: {
@@ -201,7 +207,7 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
         points: { show: true }
       },
       grid: { hoverable: true, clickable: true },
-      xaxis: { mode: mode, tickLength: 0, axisLabel: binLabel },
+      xaxis: { ticks: labels, axisLabel: binLabel },
       yaxis: { axisLabel: sizeLabel }
     };
     return options;
