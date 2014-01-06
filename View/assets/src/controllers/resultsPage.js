@@ -205,7 +205,11 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         }
       });
     } else {
-      wdkFilter.initialize();
+      //wdkFilter.initialize();
+      // Using setTimeout allows the results HTML to be rendered first, and
+      // thus the results ajax is fired before the filters ajax. This will make
+      // getting results faster when there are lots of filters.
+      setTimeout(wdkFilter.initialize.bind(wdkFilter), 0);
     }
 
     // convert results table to drag-and-drop flex grid
