@@ -27,7 +27,7 @@
     <div class="plot"> </div>
 
     <div class="bin-control control-panel">
-      <span>Set bin size (<span class="bin-size-display">${binSize}</span>):</span>
+      <span>Set bin size (<span class="bin-size-display"></span>):</span>
       <input class="bin-size" type="hidden" value="${binSize}" />
       <div class="bin-slider"></div>
     </div>
