@@ -40,6 +40,7 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
     var binControl = histogram.find("#graph .bin-control");
     var binSizeInput = binControl.find(".bin-size");
     var binSizeDisplay = binControl.find(".bin-size-display");
+    resetBinSizeDisplay(binSizeDisplay, binSizeInput.val());
     var sliderMin = (type == "float" && min != max) ? ((max - min) / 100) : 1;
     var sliderMax = (type == "float" && min != max) ? (max - min) : (max - min + 1);
     binControl.find(".bin-slider").slider({
@@ -52,7 +53,7 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
         drawPlot(histogram);
       },
       slide: function( event, ui ) {
-        binSizeDisplay.html(ui.value);
+        resetBinSizeDisplay(binSizeDisplay, ui.value);
       }
     });
 
@@ -62,7 +63,13 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
     });
   }
 
+  
+  function resetBinSizeDisplay(jqElem, value) {
+    var displayedSize = (type == "float" ? parseFloat(value).toFixed(2) : value);
+    jqElem.html(displayedSize);
+  }
 
+  
   function drawPlot(histogram) {
     var graph = histogram.find("#graph");
     // get user inputs
@@ -186,7 +193,11 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
       var label;
       if (binSize == 1 && type == "int") label = bin[0];
       else {
-        var upper = (type == "int") ? (bin[1] - 1) + "]" : (bin[1] + ")");
+        if (type == "float") {
+          bin[0] = bin[0].toFixed(2);
+          bin[1] = bin[1].toFixed(2);
+        }
+        var upper = (type == "int") ? (bin[1] - 1) + "]" : bin[1] + ")";
         label = "[" + bin[0] + ", " + upper;
       }
       var count = tempBins[j][1];
