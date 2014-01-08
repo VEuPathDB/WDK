@@ -120,6 +120,7 @@ sub new {
     if ($self->{'g_use_map'}) {
         open(my $fh, $self->{'map_file'}) or die $!;
         my @hits = grep /^$self->{'target_site'}/, <$fh>;
+        die "Did not find an entry for $self->{'target_site'} in $self->{'map_file'}\n" unless $hits[0];
         ($self->{'site'}, $self->{'appDb_database'},  $self->{'userDb_database'}, $self->{'appDb_login'},  $self->{'userDb_login'}) = split(/\s+/, $hits[0]);
         print "<$scriptname> using '$self->{'appDb_login'}\@$self->{'appDb_database'}',  '$self->{'userDb_login'}\@$self->{'userDb_database'}'\n";
         if ( ! ($self->{'appDb_login'} && $self->{'appDb_database'} && $self->{'userDb_database'}) ) {
