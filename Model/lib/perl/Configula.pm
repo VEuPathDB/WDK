@@ -112,7 +112,7 @@ sub new {
                                         "Common/prodSiteFilesMirror/webServices" :
                                         "Common/devSiteFilesMirror/webServices";
     $self->{'webservice_files_mirror'} = "$self->{'web_base_dir'}/$self->{'common_webservices_dir'}";
-    $self->{'rls_webservice_data_dir'} = "$self->{'webservice_files_mirror'}/$self->{'product'}/build-$self->{'build_number'}";
+    # $self->{'rls_webservice_data_dir'} = "$self->{'webservice_files_mirror'}/$self->{'product'}/build-$self->{'build_number'}";
     $self->{'server_hostname'} = qx(/bin/hostname);
     $self->{'host_class'} = $self->host_class($self->{'target_site'});
     $self->{'host_class_prefix'} = $self->{'host_class'} ? $self->{'host_class'} . '.' : '';
@@ -127,7 +127,7 @@ sub new {
         }
     }
 
-    $self->{'userDbLink'} = $dblinkMap{lc($self->{'userDb_database'})};
+    $self->{'userDbLink'} = $self->dblink($self->{'userDb_database'}, $self->{'appDb_database'});
     
     $self->{'appDb_password'} = $self->std_password($self->{'euparc'}, $self->{'appDb_login'}, $self->{'appDb_database'});
     
@@ -167,7 +167,8 @@ sub sanity_check {
 
     die "\nFATAL: I do not know what dblink to use for '" . lc $self->{'userDb_database'} . "'\n" .
       "  I know about: " . join(', ', keys(%dblinkMap)) . "\n\n"
-      if ( ! $self->{'userDbLink'} || $self->{'userDbLink'} eq '@');
+      if ( (lc($self->{userDb}) ne lc($self->{appDb})) && (! $self->{'userDbLink'} || $self->{'userDbLink'} eq '@') );
+      # OK to have no dblink if both user and and app schemas are in the same database
 
     if ( ! $self->{'g_skip_db_test'}) {
       $self->testDbConnection($self->{'appDb_login'}, $self->{'appDb_password'}, $self->{'appDb_database'});
@@ -262,15 +263,14 @@ sub get_cli_args {
   
 =cut
 sub dblink {
-    my ($self, $apicomm) = @_;
-    my %dblinkMap = (
-        'apicomms'    => 'prods.login_comment',
-        'apicommn'    => 'prodn.login_comment',
-        'apicommdevs' => 'devs.login_comment',
-        'apicommdevn' => 'devn.login_comment',
-    );
+    my ($self, $userDb, $appDb) = @_;
     
-    return  $dblinkMap{lc($apicomm)};
+    # no dblink if both user and and app schemas are in the same database
+    if (lc($userDb) eq lc($appDb)) { 
+      return undef;
+    }
+    
+    return  $dblinkMap{lc($userDb)};
 }
 
 # retreive password from users ~/.euparc
