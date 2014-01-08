@@ -4,46 +4,38 @@
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WSF-Installation">
-    <ant antfile="../WSF/build.xml" target="WSF-Installation">
-      <property name="project" value="WSF"/>
-      <property name="version" value="WDK_version_2-0"/>
-    </ant>
-  </target>  
-    
-  <target name="FgpUtil-Installation">
-    <ant antfile="../FgpUtil/build.xml" target="FgpUtil-Installation">
-      <property name="project" value="FgpUtil"/>
-      <property name="version" value="WDK_version_2-0"/>
-    </ant>
-  </target>  
-    
-  <target name="WSF-Checkout" unless="WSF.present"> 
+  <import file="${projectsDir}/FgpUtil/build.xml" />
+  <import file="${projectsDir}/WSF/build.xml" />
+
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="WDK-ChildCheckout">
+    <available file="${projectsDir}/WSF" type="dir"  property="WSF.present" />
+    <available file="${projectsDir}/FgpUtil" type="dir"  property="FgpUtil.present" />
+    <antcall target="WSF-Checkout"/>
+    <antcall target="FgpUtil-Checkout"/>
+  </target>
+
+
+  <target name="WSF-Checkout" unless="WSF.present">
     <ant target="defaultProjectCheckout" inheritAll="false">
       <property name="svnurl" value="https://www.cbil.upenn.edu/svn/gus/WSF"/>
       <property name="project" value="WSF"/>
       <property name="version" value="WDK_version_1-28"/>
     </ant>
   </target>
-  
-  <target name="FgpUtil-Checkout" unless="FgpUtil.present"> 
+
+
+  <target name="FgpUtil-Checkout" unless="FgpUtil.present">
     <ant target="defaultProjectCheckout" inheritAll="false">
       <property name="svnurl" value="https://www.cbil.upenn.edu/svn/gus/FgpUtil"/>
       <property name="project" value="FgpUtil"/>
       <property name="version" value="WDK_version_1-28"/>
     </ant>
   </target>
-  
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-ChildCheckout">
-    <available file="../WSF" type="dir"  property="WSF.present" />
-    <available file="../FgpUtil" type="dir"  property="FgpUtil.present" />
-    <antcall target="WSF-Checkout"/>
-    <antcall target="FgpUtil-Checkout"/>
-  </target>
     
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooo -->
@@ -68,7 +60,9 @@
                                            WDK/Controller-Installation,
                                            WDK/View-Installation,
                                            WDK/Test-Installation">
-    <ant target="defaultProjectInstall"/>
+    <ant target="defaultProjectInstall">
+      <property name="project" value="WDK"/>
+    </ant>
   </target>
 
   <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
@@ -326,5 +320,4 @@
   </target>  
 
 </project>
-
 
