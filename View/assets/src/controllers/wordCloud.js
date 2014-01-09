@@ -3,67 +3,72 @@ Cary  Feb. 15, 2010
 Basket Button
 */
 
-wdk.util.namespace("window.wdk.wordCloud", function(ns, $) {
+wdk.util.namespace("window.wdk.result.wordCloud", function(ns, $) {
   "use strict";
 
-  function init() {
-    var cloud = new WordCloud();
-    cloud.init(cloud);
-  }
+  var init = function(wordCloud, attrs) {
+    var tags = wordCloud.find("#tags");
+    if (tags.length == 0) return;
 
-  function WordCloud() {
-    
-    this.init = function(cloud) {
-      var tags = $("#word-cloud #tags");
-      if (tags.length == 0) return;
+    // register tabs
+    wordCloud.tabs();
 
-      var total = tags.attr("total");
-      var from = 1;
-      var to = (total > 50) ? 50 : total;
-      $("#word-cloud input[name=from]").val(from);
-      $("#word-cloud input[name=to]").val(to);
-      // register events
-      $("#word-cloud #amount").slider({
+    // register data table
+    wordCloud.find("#data .datatable").dataTable( {
+          "bDestroy": true,
+          "bJQueryUI": true,
+          "aaSorting": [[ 1, "desc" ]],
+    });
+
+    var total = tags.attr("total");
+    var from = 1;
+    var to = (total > 50) ? 50 : total;
+    wordCloud.find("input[name=from]").val(from);
+    wordCloud.find("input[name=to]").val(to);
+
+    // register events
+    wordCloud.find("#amount").slider({
         range: true,
         min: 1,
         max: total,
         values: [from, to],
         slide: function(event, ui) {
-          cloud.assignRange();
+          assignRange(wordCloud);
         },
         stop: function(event, ui) { 
-          cloud.assignRange();
-          cloud.layout(cloud); 
+          assignRange(wordCloud);
+          layout(wordCloud); 
         }
-      });
-      $("#word-cloud input[name=sort], #word-cloud input[name=from], #word-cloud input[name=to]").change( function() {
-        cloud.layout(cloud); 
-      });
+    });
+    wordCloud.find("input[name=sort], input[name=from], input[name=to]").change( function() {
+        layout(wordCloud); 
+    });
 
-      cloud.layout(cloud);
-    };
+    layout(wordCloud);
+  }
     
-    this.assignRange = function() {
-      var from = $("#word-cloud #amount").slider("values", 0);
-      var to = $("#word-cloud #amount").slider("values", 1);
-      $("#word-cloud input[name=from]").val(from);
-      $("#word-cloud input[name=to]").val(to);
-    };
+  function assignRange(wordCloud) {
+      var amount = wordCloud.find("#amount");
+      var from = amount.slider("values", 0);
+      var to = amount.slider("values", 1);
+      wordCloud.find("input[name=from]").val(from);
+      wordCloud.find("input[name=to]").val(to);
+  }
     
-    this.layout = function(cloud) {
+  function layout(wordCloud) {
       // get parameters
-      var from = $("#word-cloud input[name=from]").val();
-      var to = $("#word-cloud input[name=to]").val();
-      var sortBy = $("#word-cloud input[name=sort]:checked").val();
+      var from = wordCloud.find("input[name=from]").val();
+      var to = wordCloud.find("input[name=to]").val();
+      var sortBy = wordCloud.find("input[name=sort]:checked").val();
 
-      var layout = $("#word-cloud #layout");
+      var layout = wordCloud.find("#layout");
       layout.html("");
 
       var tags = [];
       var maxCount = Number.MIN_VALUE;
       var minCount = Number.MAX_VALUE;
       var rank = 0;
-      $("#word-cloud #tags span").each(function() {
+      wordCloud.find("#tags span").each(function() {
         rank++;
         if (rank < from) return;
         if (rank > to) return;
@@ -74,17 +79,17 @@ wdk.util.namespace("window.wdk.wordCloud", function(ns, $) {
         tags.push($(this).clone());
       });
       // compute the font size
-      cloud.computeSize(tags, minCount, maxCount);
+      computeSize(tags, minCount, maxCount);
 
       // sort word alphabetically if needed
-      if (sortBy == "word") tags.sort(cloud.sortTags);
+      if (sortBy == "word") tags.sort(sortTags);
 
       $.each(tags, function (index, tag) {
         layout.append(tag).append(" ");
       });
-    };
+    }
 
-    this.computeSize = function(tags, minCount, maxCount) {
+    function computeSize(tags, minCount, maxCount) {
       // words are sorted by occurence.
       var MAX_FONT = 50.0;
       var MIN_FONT = 6.0;
@@ -94,16 +99,15 @@ wdk.util.namespace("window.wdk.wordCloud", function(ns, $) {
         var fontSize = (count - minCount) * scale + MIN_FONT;
         $(tag).css("font-size", fontSize + "pt");
       });
-    };
+    }
 
-    this.sortTags = function(left, right) {
+    function sortTags(left, right) {
       var leftWord = $(left).text();
       var rightWord = $(right).text();
       if (leftWord > rightWord) return 1;
       else if (leftWord < rightWord) return -1;
       else return 0;
-    };
-  }
+    }
 
   ns.init = init;
 
