@@ -116,6 +116,7 @@ sub new {
     $self->{'server_hostname'} = qx(/bin/hostname);
     $self->{'host_class'} = $self->host_class($self->{'target_site'});
     $self->{'host_class_prefix'} = $self->{'host_class'} ? $self->{'host_class'} . '.' : '';
+    $self->{'canonical_hostname'} = $self->canonical_hostname($self->{'target_site'});
 
     if ($self->{'g_use_map'}) {
         open(my $fh, $self->{'map_file'}) or die $!;
@@ -292,14 +293,34 @@ sub std_password {
 }
 
 # return 'class' of host, e.g. qa, beta, integrate or hostname.
+# return empty string if no hostname (e.g. toxodb.org)
 # This is not always the hostname. A site with 'q1' hostname is a 'qa' class.
 sub host_class {
   my ($self, $target_site) = @_;
-  my ($host_class) = $target_site =~ m/^([^\.]+)\./;
+  my ($host_class) = $target_site =~ m/^([^\.]+)\.[^\.]+\..+/;
+  return '' unless $host_class;
   $host_class = 'qa' if $host_class =~ m/^q/;
+  $host_class = 'alpha' if $host_class =~ m/^a/;
   $host_class = 'beta' if $host_class =~ m/^b/;
   $host_class = '' if $host_class =~ m/^w/;
   return $host_class;
+}
+
+# given foo.goodb.org, return goodb.org
+sub base_domain {
+  my ($self, $target_site) = @_;
+  my ($base_domain) = $target_site =~ m/([^\.]+\.[^\.]+)$/;
+  return $base_domain;
+}
+
+# convert, for example
+#  q1.toxodb.org to qa.toxodb.org
+#  w1.toxodb.org to toxodb.org
+#  integrate.toxodb.org to integrate.toxodb.org (no conversion)
+sub canonical_hostname {
+  my ($self, $target_site) = @_;
+ # my $host_class = $self->host_class($target_site);
+  return  $self->{'host_class_prefix'} . $self->base_domain($target_site);
 }
 
 sub webapp_domain_map {
