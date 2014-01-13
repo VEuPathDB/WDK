@@ -231,6 +231,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           "<img src='" + wdk.assetsUrl('/wdk/images/Close-X-box.png') + "'/></a>";
     }
 
+		// should get the icon inside h1, when exists
     var quesTitle = data.substring(data.indexOf("<h1>") + 4,
         data.indexOf("</h1>")).replace(/Identify \w+( \w+)* based on/,"");
     
