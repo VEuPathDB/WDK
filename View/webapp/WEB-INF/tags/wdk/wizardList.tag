@@ -272,7 +272,10 @@ ${rcDisplay} basket
                     <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
                     <c:set var="cat" value="${catEntry.value}" />
                     <c:forEach items="${cat.websiteQuestions}" var="q">
-                      <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',null,'sl_${cat.name}',5,'next')">${q.displayName}</li>
+                      <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',null,'sl_${cat.name}',5,'next')">${q.displayName}
+											  <imp:questionFeature question="${q}" />
+
+											</li>
                     </c:forEach>
                     </c:forEach>
                     </c:otherwise>
