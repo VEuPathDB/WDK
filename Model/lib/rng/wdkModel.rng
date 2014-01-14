@@ -649,6 +649,9 @@
           </choice>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="prompt" />
+      </optional>      
       <zeroOrMore>
         <element name="help">
           <ref name="IncludeExclude" />
