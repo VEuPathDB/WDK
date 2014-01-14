@@ -57,6 +57,11 @@ public class ParamReference extends Reference {
     if (help != null)
       param.setHelp(help);
 
+    // set prompt if any
+    String prompt = paramRef.getPrompt();
+    if (prompt != null)
+      param.setPrompt(prompt);
+
     Boolean number = paramRef.getNumber();
 
     Boolean quote = paramRef.getQuote();
@@ -165,6 +170,7 @@ public class ParamReference extends Reference {
   private Integer minSelectedCount;
   private Integer maxSelectedCount;
   private Boolean countOnlyLeaves;
+  private String prompt;
 
   private List<WdkModelText> helps = new ArrayList<WdkModelText>();
   private String help;
@@ -389,6 +395,14 @@ public class ParamReference extends Reference {
 
   public String getHelp() {
     return help;
+  }
+
+  public void setPrompt(String prompt) {
+    this.prompt = prompt;
+  }
+
+  public String getPrompt() {
+    return prompt;
   }
 
   @Override
