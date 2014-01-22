@@ -15,7 +15,7 @@ module.exports = function(grunt) {
         //   }
         // },
         src: wdkFiles.libs,
-        dest: 'dist/wdk.libs.js'
+        dest: 'dist/wdk/wdk.libs.js'
       }
     },
 
@@ -25,13 +25,13 @@ module.exports = function(grunt) {
           except: ['wdk']
         },
         report: true,
-        sourceMap: 'dist/wdk.js.map',
+        sourceMap: 'dist/wdk/wdk.js.map',
         sourceMappingURL: 'wdk.js.map',
         // sourceMapPrefix: 1
       },
       wdk: {
         files: {
-          'dist/wdk.js': wdkFiles.src,
+          'dist/wdk/wdk.js': wdkFiles.src,
         }
       }
     },
@@ -43,7 +43,7 @@ module.exports = function(grunt) {
             expand: true,
             //cwd: 'js',
             src: ['src/**', 'lib/**'],
-            dest: 'dist'
+            dest: 'dist/wdk'
           }
         ]
       },
@@ -53,7 +53,7 @@ module.exports = function(grunt) {
             expand: true,
             cwd: 'css',
             src: ['**/*'],
-            dest: 'dist/css'
+            dest: 'dist/wdk/css'
           }
         ]
       },
@@ -63,7 +63,7 @@ module.exports = function(grunt) {
             expand: true,
             cwd: 'images',
             src: ['**/*'],
-            dest: 'dist/images'
+            dest: 'dist/wdk/images'
           }
         ]
       }

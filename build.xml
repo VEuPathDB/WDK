@@ -230,7 +230,7 @@
     </exec>
 
     <echo message="Copying WDK assets to webapp"/>
-    <copy todir="${webappTargetDir}/assets/wdk">
+    <copy todir="${webappTargetDir}/assets">
       <fileset dir="${projectsDir}/WDK/View/assets/dist"/>
     </copy>
     <!--
