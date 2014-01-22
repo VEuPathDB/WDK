@@ -11,5 +11,6 @@
   },
   "scripts": {
     "dist": "./node_modules/.bin/grunt --no-color dist"
-  }
+  },
+  "private": true
 }
