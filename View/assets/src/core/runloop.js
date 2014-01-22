@@ -14,15 +14,15 @@ wdk.namespace('wdk.core', function(ns) {
       this.deferring = {};
     },
 
-    defer: function defer(fn, context) {
+    defer: function defer(fn, timeout, context) {
       context = context || this.defaultContext;
 
       setTimeout(function() {
         fn.call(context);
-      });
+      }, timeout);
     },
 
-    deferOnce: function deferOnce(fn, context, timeout) {
+    deferOnce: function deferOnce(fn, timeout, context) {
       var runloop = this;
       context = context || this.defaultContext;
 
