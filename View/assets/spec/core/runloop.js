@@ -1,8 +1,9 @@
 describe('wdk.core.runloop', function() {
 
-  var runtime;
+  var runloop;
+
   beforeEach(function() {
-    runtime = wdk.core.RunLoop.create();
+    runloop = wdk.core.RunLoop.create();
   });
 
   describe('defer', function() {
@@ -21,7 +22,7 @@ describe('wdk.core.runloop', function() {
       }
 
       runs(function() {
-        runtime.defer(deferred);
+        runloop.defer(deferred);
         undeferred();
       });
 
@@ -41,7 +42,7 @@ describe('wdk.core.runloop', function() {
 
       runs(function() {
         for (var i = 1; i <= RUNS; i++) (function(i) {
-          runtime.defer(function() {
+          runloop.defer(function() {
             callCount++;
             done = (i === RUNS);
           });
@@ -60,8 +61,8 @@ describe('wdk.core.runloop', function() {
       var done = false;
       var order = [];
       runs(function() {
-        runtime.defer(function() {
-          runtime.defer(function() {
+        runloop.defer(function() {
+          runloop.defer(function() {
             order.push('inner');
             done = true;
           });
@@ -79,6 +80,29 @@ describe('wdk.core.runloop', function() {
       });
 
     });
+
+    it('should defer for at least the specified period of time', function() {
+      var timeout = 200;
+      var done = false;
+      var doneEarly = false;
+
+      runs(function() {
+        setTimeout(function() {
+          doneEarly = done;
+        }, timeout - 1);
+
+        runloop.defer(function() {
+          done = true;
+        }, timeout);
+      });
+
+      waitsFor(function() { return done || doneEarly; }, timeout * 2);
+
+      runs(function() {
+        expect(doneEarly).toBe(false);
+      });
+
+    });
   });
 
   describe('deferOnce', function() {
@@ -92,7 +116,7 @@ describe('wdk.core.runloop', function() {
       }
 
       function update() {
-        runtime.deferOnce(incrementCounter);
+        runloop.deferOnce(incrementCounter);
       }
 
       runs(function() {
@@ -109,6 +133,29 @@ describe('wdk.core.runloop', function() {
       runs(function() {
         expect(callCount).toBe(1);
       });
+    });
+
+    it('should defer for at least the specified period of time', function() {
+      var timeout = 200;
+      var done = false;
+      var doneEarly = false;
+
+      runs(function() {
+        setTimeout(function() {
+          doneEarly = done;
+        }, timeout - 1);
+
+        runloop.deferOnce(function() {
+          done = true;
+        }, timeout);
+      });
+
+      waitsFor(function() { return done; }, timeout * 2);
+
+      runs(function() {
+        expect(doneEarly).toBe(false);
+      });
+
     });
   });
 
