@@ -27,7 +27,7 @@ module.exports = function(grunt) {
       return line;
     }).join('');
 
-    grunt.file.write('dist/wdk.debug.js', scriptLoaderStr);
+    grunt.file.write('dist/wdk/wdk.debug.js', scriptLoaderStr);
 
   });
 };
