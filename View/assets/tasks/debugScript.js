@@ -1,4 +1,6 @@
 var wdkFiles = require('../wdkFiles');
+var helpers = require('./helpers');
+
 var glob = require('../node_modules/grunt/node_modules/glob');
 var externalRegex = /^(https?:)?\/\//;
 
@@ -6,7 +8,7 @@ module.exports = function(grunt) {
   grunt.registerTask('debugScript', 'Generate script tags for WDK files to load individually', function() {
     var scripts = [];
 
-    [].concat(wdkFiles.libs, wdkFiles.src).forEach(function(pattern) {
+    helpers.filterByFlag('env', 'dev', [].concat(wdkFiles.libs, wdkFiles.src)).forEach(function(pattern) {
       if (externalRegex.test(pattern)) {
         scripts = scripts.concat(pattern);
       } else {
