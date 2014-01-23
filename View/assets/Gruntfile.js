@@ -1,20 +1,13 @@
 module.exports = function(grunt) {
 
   var wdkFiles = require('./wdkFiles');
+  var helpers = require('./tasks/helpers');
 
   grunt.initConfig({
 
     concat: {
       js: {
-        // this was preventing creating of some global variables
-        // options: {
-        //   process: function(src, filepath) {
-        //     // wrap files in an immediately invoked function wrapper
-        //     // some libraries misbehave and add "use strict" pragma in global scope
-        //     return '(function(){' + src + '}());';
-        //   }
-        // },
-        src: wdkFiles.libs,
+        src: helpers.filterByFlag('env', 'prod', wdkFiles.libs),
         dest: 'dist/wdk/wdk.libs.js'
       }
     },

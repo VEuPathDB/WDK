@@ -1,3 +1,27 @@
+/**
+ * List files to be bunled here.
+ *
+ * Files under the src key will be combined to wdk.js.
+ * Files under the libs key will be combined to wdk.libs.js.
+ *
+ * A file can be flagged for a specific environment, such as dev or env
+ * by prepending the flag name and flag value to the filename, e.g.:
+ *
+ *     ...
+ *     'ENV:DEV!jquery.js',
+ *     'ENV:PROD!jquery.min.js',
+ *     ...
+ *
+ * At this time, 'env' is the only flag, and 'dev' and 'prod' are the
+ * only acceptable values. Flags are case-insensitve, so the following
+ * will also work, which may improve readability:
+ *
+ *     ...
+ *     'env:dev!jquery.js',
+ *     'env:prod!jquery.min.js',
+ *     ...
+ *
+ */
 module.exports = {
 
   src: [
@@ -16,7 +40,9 @@ module.exports = {
   libs: [
     'lib/es5-shim.min.js',
     'lib/modernizr.js',
-    'lib/jquery.js',
+    'lib/jquery-1.10.2.min.js',
+    'ENV:DEV!lib/jquery-migrate-1.2.1.js',
+    'ENV:PROD!lib/jquery-migrate-1.2.1.min.js',
     'lib/jquery-ui.js',
 
     // load polyfills
