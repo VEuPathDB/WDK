@@ -18,6 +18,10 @@ module.exports = {
     'lib/modernizr.js',
     'lib/jquery.js',
     'lib/jquery-ui.js',
+
+    // load polyfills
+    'src/core/loader.js',
+
     'lib/jquery.cookie.js',
     'lib/jquery.blockUI.js',
     'lib/qtip2/jquery.qtip.js',
