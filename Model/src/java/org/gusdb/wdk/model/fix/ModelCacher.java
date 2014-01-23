@@ -321,7 +321,7 @@ public class ModelCacher extends BaseCLI {
     private void saveQuestion(Question question, PreparedStatement psQuestion,
             PreparedStatement psParam, PreparedStatement psEnum,
             String schemaWithoutDot) throws WdkModelException, SQLException {
-        logger.debug("Caching question [" + question.getFullName() + "]...");
+        logger.debug("\n\n\nCaching question [" + question.getFullName() + "]...");
         WdkModel wdkModel = question.getWdkModel();
         DatabaseInstance userDb = wdkModel.getUserDb();
         DBPlatform platform = userDb.getPlatform();
