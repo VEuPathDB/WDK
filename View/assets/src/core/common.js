@@ -212,6 +212,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   }
 
 
+  // TODO: mixin
   function registerToggle() {
     // register toggles
     $(".wdk-toggle").simpleToggle();
@@ -229,48 +230,9 @@ wdk.util.namespace("window.wdk", function(ns, $) {
 
       e.preventDefault();
     });
-
-    //  // register toggles
-    //  $(".wdk-toggle").each(function() {
-    //    // check if the section should be displayed by default
-    //    var show = $(this).attr("show");
-    //    var active = (show == "true") ? 0 : false;
-    //    $(this).accordion({
-    //      autoHeight: false,
-    //      collapsible: true,
-    //      navigation: false,
-    //      active: active
-    //    });
-    //  });
-
-    //  // register expand/collapse links
-    //  // data-container is a selector for a container element
-    //  // data-show is a boolean to show or hide toggles
-    //  // data-animated overrides the built-in animation
-    //  $(".wdk-toggle-group").click(function(e) {
-    //    var $this = $(this);
-    //    var container = $this.closest($this.data("container"));
-    //    var $toggles = container.find(".wdk-toggle");
-    //    var scrollTop = $(document).scrollTop();
-
-    //    if ($this.data("show")) {
-    //      $toggles.each(function() {
-    //        var $toggle = $(this);
-    //        if ($toggle.accordion("option", "active") !== 0) {
-    //          $toggle.accordion("option", "active", 0);
-    //        }
-    //      });
-    //    } else {
-    //      $toggles.accordion("option", "active", false);
-    //    }
-
-    //    $(document).scrollTop(scrollTop);
-
-    //    e.preventDefault();
-    //  });
-
   }
 
+  // TODO: mixin
   function registerCollapsible() {
     $(".collapsible").each(function() {
       var $this = $(this);
@@ -309,6 +271,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     });
   }
 
+  // TODO: view
   function registerTable() {
     // register data tables on wdk table
     $(".wdk-table.datatables").dataTable({
@@ -319,6 +282,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     $("table.wdk-data-table").not(".dataTable").wdkDataTable();
   }
 
+  // TODO: mixin
   function registerTooltips() {
     // register elements with fancy tooltips
     // $(".wdk-tooltip").not(".qtip").qtip({
@@ -331,6 +295,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     $(".wdk-tooltip").wdkTooltip();
   }
 
+  // TODO: mixin
   function registerSnippet() {
     $(".snippet").each(function(idx, node) {
       var $node = $(node),
@@ -412,6 +377,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     });
   }
 
+  // TODO: mixin
   function registerTruncate() {
     var SHOW_CHARS = 120;
 
@@ -505,6 +471,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     });
   }
 
+  // TODO: mixin
   function registerEditable() {
     // all elements with className wdk-editable, eg:
     //   <span class="wdk-editable"
@@ -533,6 +500,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     });
   }
 
+  // TODO: view
   function setUpNavDropDowns() {
     var timer;
     $("#nav-top > li").hoverIntent({
@@ -563,6 +531,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     }
   }
 
+  // TODO: view - use href to find dialog
   function setUpDialogs() {
     var dialogOpts = {
       width: "auto",
@@ -589,6 +558,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     });
   }
 
+  // TODO: view
   function setUpPopups() {
     // connect window pop outs
     $("body").on("click", "a[class='new-window']", function(e) {
@@ -621,6 +591,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     });
   }
 
+  // TODO: replace with views
   function invokeControllers() {
     // TODO - Add data-action attribute
     // controller is a misnomer here. see issue #14107
