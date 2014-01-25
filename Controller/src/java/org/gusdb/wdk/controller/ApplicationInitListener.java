@@ -60,10 +60,9 @@ public class ApplicationInitListener implements ServletContextListener {
 
         logger.info("Initializing WDK web application");
         ServletContext servletContext = sce.getServletContext();
-        GusHome.webInit(servletContext);
 
         String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
-        String gusHome = servletContext.getRealPath(servletContext.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME));
+        String gusHome = GusHome.webInit(servletContext);
 
         String alwaysGoToSummary = servletContext.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
         String loginUrl = servletContext.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
