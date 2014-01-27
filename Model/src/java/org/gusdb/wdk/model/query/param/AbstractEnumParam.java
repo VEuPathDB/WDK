@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -40,15 +41,15 @@ import org.gusdb.wdk.model.user.User;
  * 
  *         The meaning of different param values, based on the processing stage:
  * 
- *         raw value: a string of a comma separated list of terms;
+ *         raw value: a String[] of term values;
  * 
- *         stable value: the same as raw value, a comma separated list of terms;
+ *         stable value: a comma separated list of terms, ordered alphabetically;
+ * 
+ *         signature: a checksum of the stable value.
  * 
  *         internal value: a comma separated list of internals. If noTranslation
  *         is true, this will be a list of terms. If quoted is true, quotes are
  *         applied to each of the individual items.
- * 
- *         signature: a sorted list of terms.
  * 
  *         Note about dependent params: AbstractEnumParams can be dependent on
  *         other parameter values. Thus, this class provides two versions of
@@ -78,7 +79,7 @@ public abstract class AbstractEnumParam extends Param {
 
     @Override
     public int hashCode() {
-      return Utilities.print(this).hashCode();
+      return Utilities.createHashFromValueMap(this);
     }
 
     @Override
@@ -179,9 +180,8 @@ public abstract class AbstractEnumParam extends Param {
       return createEnumParamCache(contextParamValues);
     } catch (WdkModelException wme) {
       throw new WdkRuntimeException(
-          "Unable to create EnumParamCache for param " + getName()
-              + " with depended values " + Utilities.print(contextParamValues),
-          wme);
+          "Unable to create EnumParamCache for param " + getName() + " with " +
+          "depended values " + FormatUtil.prettyPrint(contextParamValues), wme);
     }
   }
 
@@ -312,9 +312,10 @@ public abstract class AbstractEnumParam extends Param {
         String paramName = paramRef.split("\\.", 2)[1].trim();
         Param param = (params != null) ? params.get(paramName)
             : (Param) wdkModel.resolveReference(paramRef);
-        if (param != null) dependedParams.add(param);
-        else logger.warn("missing depended param: " + paramRef
-            + " for enum param " + getFullName());
+        if (param != null)
+          dependedParams.add(param);
+        else
+          logger.warn("Missing depended param: " + paramRef + " for enum param " + getFullName());
       }
     }
     return dependedParams;
@@ -503,24 +504,14 @@ public abstract class AbstractEnumParam extends Param {
    * .user.User, java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String storedValue,
+  protected void validateValue(User user, String stableValue,
       Map<String, String> contextValues) throws WdkModelException,
       WdkUserException {
-    // handle the empty case
-    if (storedValue == null || storedValue.length() == 0) {
-      if (!allowEmpty)
-        throw new WdkModelException("The parameter '" + getPrompt()
-            + "' does not allow empty value");
-      // otherwise, got empty value and is allowed, no need for further
-      // validation.
-    }
-
     if (!isSkipValidation()) {
-      String rawValue = getRawValue(user, storedValue, contextValues);
-      logger.debug("param=" + getFullName() + " - validating: " + rawValue
-          + ", with dependedParamValues=" + Utilities.print(contextValues));
+      String[] terms = (String[])getRawValue(user, stableValue, contextValues);
+      logger.debug("param=" + getFullName() + " - validating: " + stableValue
+          + ", with dependedParamValues=" + FormatUtil.prettyPrint(contextValues));
 
-      String[] terms = convertToTerms(rawValue);
       if (terms.length == 0 && !allowEmpty)
         throw new WdkUserException("The value to enumParam/flatVocabParam "
             + getPrompt() + " cannot be empty");
@@ -654,7 +645,7 @@ public abstract class AbstractEnumParam extends Param {
 
   @Override
   protected void applySuggection(ParamSuggestion suggest) {
-    selectMode = suggest.getSelectMode();
+    selectMode = ((EnumParamSuggestion)suggest).getSelectMode();
   }
 
   /**
@@ -759,10 +750,9 @@ public abstract class AbstractEnumParam extends Param {
       // value not in context values yet, will use default
       value = cache.getDefaultValue();
     } else { // value exists in context values, check if value is valid
-      String paramValue = contextValues.get(name);
-      paramValue = getRawValue(user, paramValue, contextValues);
-      logger.debug("CORRECTING " + name + "=\"" + paramValue + "\"");
-      String[] terms = convertToTerms(paramValue);
+      String stableValue = contextValues.get(name);
+      String[] terms = (String[])getRawValue(user, stableValue, contextValues);
+      logger.debug("CORRECTING " + name + "=\"" + stableValue + "\"");
       Map<String, String> termMap = cache.getVocabMap();
       Set<String> validValues = new LinkedHashSet<>();
       for (String term : terms) {
@@ -785,4 +775,18 @@ public abstract class AbstractEnumParam extends Param {
     logger.debug("Corrected " + name + "\"" + contextValues.get(name) + "\"");
   }
 
+  @Override
+  public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {
+    String[] terms = (String[])rawValue;
+    StringBuilder buffer = new StringBuilder();
+    for (String term : terms) {
+      if (buffer.length() > 0) buffer.append(", ");
+      buffer.append(term);
+      if (buffer.length() > truncateLength) {
+        buffer.append("...");
+        break;
+      }
+    }
+    return buffer.toString();
+  }
 }

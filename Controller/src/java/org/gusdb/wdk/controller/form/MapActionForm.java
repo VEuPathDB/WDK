@@ -48,7 +48,7 @@ public abstract class MapActionForm extends ActionForm {
                 + (value == null));
         if (value == null) {
             String[] array = arrays.get(key);
-            value = Utilities.fromArray(array);
+            value = array;
             logger.trace("array_value=" + value + ", isNull=" + (value == null));
         }
         return value;

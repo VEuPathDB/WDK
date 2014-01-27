@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,12 +31,12 @@ import org.json.JSONObject;
  * used to join with attribute queries for joining and pagination.
  * 
  * @author Jerric Gao
- * 
  */
 public class ProcessQuery extends Query {
 
   private String processName;
   private String webServiceUrl;
+  private int cacheInsertBatchSize = 1000;
   private boolean local = false;
 
   public ProcessQuery() {
@@ -46,6 +47,7 @@ public class ProcessQuery extends Query {
     super(query);
     this.processName = query.processName;
     this.webServiceUrl = query.webServiceUrl;
+    this.cacheInsertBatchSize = query.cacheInsertBatchSize;
     this.local = query.local;
   }
 
@@ -76,18 +78,20 @@ public class ProcessQuery extends Query {
   }
 
   /**
+   * @return batch size to be used during insertion into WDK cache table
+   */
+  public int getCacheInsertBatchSize() {
+    return cacheInsertBatchSize;
+  }
+  public void setCacheInsertBatchSize(int cacheInsertBatchSize) {
+    this.cacheInsertBatchSize = cacheInsertBatchSize;
+  }
+
+  /**
    * @return the local
    */
   public boolean isLocal() {
     return this.local;
-  }
-
-  /**
-   * @param local
-   *          the local to set
-   */
-  public void setLocal(boolean local) {
-    this.local = local;
   }
 
   /*
@@ -99,8 +103,28 @@ public class ProcessQuery extends Query {
   @Override
   public void resolveQueryReferences(WdkModel wdkModel)
       throws WdkModelException {
-    if (webServiceUrl == null)
+    configureProcessLocation(wdkModel);
+  }
+
+  /**
+   * Configures how this ProcessQuery is run (i.e. local/remote, which service
+   * is used).  First assess whether a webServiceUrl was provided; if so, use
+   * it and assume remote execution.  If not, set url to null and run locally.
+   * 
+   * @param wdkModel loaded wdk model
+   */
+  private void configureProcessLocation(WdkModel wdkModel) {
+    // if user did not set specific URL in model for this particular query,
+    //   use default URL in model config
+    if (webServiceUrl == null || webServiceUrl.isEmpty())
       webServiceUrl = wdkModel.getModelConfig().getWebServiceUrl();
+
+    // if no default URL was set in model config, assume local execution
+    if (webServiceUrl == null || webServiceUrl.isEmpty())
+      webServiceUrl = ModelConfig.WSF_LOCAL;
+      
+    // set local to true if no URL provided or local explicitly set
+    local = webServiceUrl.equals(ModelConfig.WSF_LOCAL);
   }
 
   /*

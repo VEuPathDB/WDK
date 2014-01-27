@@ -11,6 +11,8 @@ package org.gusdb.wdk.model.config;
  */
 public class ModelConfig {
 
+  public static final String WSF_LOCAL = "local";
+
   private String modelName;
   private String webServiceUrl;
 
@@ -27,6 +29,11 @@ public class ModelConfig {
    * the reply of the registration & recover password emails.
    */
   private String supportEmail;
+
+  /**
+   * the relative or absolute url to find assets
+   */
+  private String assetsUrl;
 
   /**
    * the recipient of the super slow query log.
@@ -212,6 +219,14 @@ public class ModelConfig {
 
   public void setSupportEmail(String supportEmail) {
     this.supportEmail = supportEmail;
+  }
+
+  public String getAssetsUrl() {
+    return assetsUrl;
+  }
+
+  public void setAssetsUrl(String assetsUrl) {
+    this.assetsUrl = assetsUrl;
   }
 
   /**

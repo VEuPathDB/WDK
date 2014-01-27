@@ -2,8 +2,11 @@ package org.gusdb.wdk.controller.action.user;
 
 import java.util.Map;
 
+import javax.servlet.http.Cookie;
+
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
@@ -27,6 +30,7 @@ public class ProcessProfileAction extends WdkAction {
     protected ActionResult handleRequest(ParamGroup params) throws Exception {
       // get the current user
       UserBean user = getCurrentUser();
+      String oldEmail = user.getEmail();
 
       // if a custom profile page exists, use it; otherwise, use default one
       String customViewFile = getCustomViewDir() + CConstants.WDK_PROFILE_PAGE;
@@ -91,6 +95,14 @@ public class ProcessProfileAction extends WdkAction {
         }
       }
 
+      // if user updated email address, set new login cookie created from new email
+      if (!oldEmail.equals(user.getEmail())) {
+    	LoginCookieFactory factory = new LoginCookieFactory(getWdkModel().getSecretKey());
+    	Cookie oldCookie = LoginCookieFactory.findLoginCookie(getRequestCookies());
+    	Cookie newCookie = factory.createLoginCookie(user.getEmail(), oldCookie.getMaxAge());
+        addCookieToResponse(newCookie);
+      }
+      
       return result;
     }
 }

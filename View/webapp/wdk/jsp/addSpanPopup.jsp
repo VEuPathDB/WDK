@@ -22,11 +22,11 @@
 <table><tr><td style="vertical-align:top">
 	<!--	<span class="heading">Instructions</span>-->
 		<ul id="directions">
-			<li><img title="The default region is the genomic location of the feature ID in the result" src="<c:url value="wdk/images/step1.png"/>" width="20"/> Define a region for the strategy results</li>
-			<li><img title="The default region is the genomic location of the feature ID in the result" src="<c:url value="wdk/images/step2.png"/>" width="20"/> Define a region for results in the new step</li>
-			<li><img src="<c:url value="wdk/images/step3.png"/>" width="20"/> Choose the operation to relate these two sets of regions</li>
-			<li><img src="<c:url value="wdk/images/step4.png"/>" width="20"/> Choose the strands to which the operation should apply</li>
-			<li><img title="Think of what you are looking for" src="<c:url value="wdk/images/step5.png"/>" width="20"/> Decide data type of the Result</li>
+      <li><imp:image title="The default region is the genomic location of the feature ID in the result" src="/wdk/images/step1.png" width="20"/> Define a region for the strategy results</li>
+      <li><imp:image title="The default region is the genomic location of the feature ID in the result" src="/wdk/images/step2.png" width="20"/> Define a region for results in the new step</li>
+      <li><imp:image src="/wdk/images/step3.png" width="20"/> Choose the operation to relate these two sets of regions</li>
+      <li><imp:image src="/wdk/images/step4.png" width="20"/> Choose the strands to which the operation should apply</li>
+      <li><imp:image title="Think of what you are looking for" src="/wdk/images/step5.png" width="20"/> Decide data type of the Result</li>
 		</ul>
 	</td>
 	<td style="vertical-align:top">
@@ -85,13 +85,13 @@
 	</table>
 	<input type="submit" value="Get Result" style="margin-top:5px"/>
 	<div id="loading_data_gif" style="display:none" >
-		<img src="<c:url value="wdk/images/getting-span-data.gif"/>"/>
+    <imp:image src="/wdk/images/getting-span-data.gif"/>
 		<span>Processing...</span>
 	</div>
-	<img class="step_img" id="step_1" src="<c:url value="wdk/images/step1.png"/>"/>
-	<img class="step_img" id="step_3" src="<c:url value="wdk/images/step3.png"/>"/>
-	<img class="step_img" id="step_2" src="<c:url value="wdk/images/step2.png"/>"/>
-	<img class="step_img" id="step_4" src="<c:url value="wdk/images/step4.png"/>"/>
-	<img class="step_img" id="step_5" src="<c:url value="wdk/images/step5.png"/>"/>
+  <imp:image class="step_img" id="step_1" src="/wdk/images/step1.png"/>
+  <imp:image class="step_img" id="step_3" src="/wdk/images/step3.png"/>
+  <imp:image class="step_img" id="step_2" src="/wdk/images/step2.png"/>
+  <imp:image class="step_img" id="step_4" src="/wdk/images/step4.png"/>
+  <imp:image class="step_img" id="step_5" src="/wdk/images/step5.png"/>
 </div>
 	</td></tr></table>

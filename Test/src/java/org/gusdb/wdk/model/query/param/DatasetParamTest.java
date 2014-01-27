@@ -13,9 +13,10 @@ import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.dataset.DatasetParam;
-import org.gusdb.wdk.model.user.Dataset;
-import org.gusdb.wdk.model.user.DatasetFactory;
+import org.gusdb.wdk.model.dataset.Dataset;
+import org.gusdb.wdk.model.dataset.DatasetFactory;
+import org.gusdb.wdk.model.dataset.DatasetParser;
+import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,7 +42,7 @@ public class DatasetParamTest {
     return values;
   }
 
-  public static String generateRawValue(List<String[]> data) {
+  public static String generateContent(List<String[]> data) {
     StringBuilder buffer = new StringBuilder();
     for (String[] row : data) {
       for (String value : row) {
@@ -64,13 +65,11 @@ public class DatasetParamTest {
 
   private final User user;
   private final DatasetParam datasetParam;
-  private final DatasetFactory factory;
   private final Random random;
 
   public DatasetParamTest() throws Exception {
     WdkModel wdkModel = UnitTestHelper.getModel();
     this.user = UnitTestHelper.getRegisteredUser();
-    this.factory = wdkModel.getDatasetFactory();
     DatasetParam datasetParam = null;
     for (ParamSet paramSet : wdkModel.getAllParamSets()) {
       for (Param param : paramSet.getParams()) {
@@ -93,41 +92,41 @@ public class DatasetParamTest {
   public void testRawToStabletValue() throws WdkModelException,
       WdkUserException {
     List<String[]> data = generateRandomValues();
-    String rawValue = generateRawValue(data);
-    String type = "text";
+    String content = generateContent(data);
+    DatasetParser parser = new ListDatasetParser();
     String uploadFile = "file-" + random.nextInt();
 
+    DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
+    Dataset dataset = datasetFactory.createOrGetDataset(user, parser, content, uploadFile);
+    
     Map<String, String> contextValues = new LinkedHashMap<>();
-    contextValues.put(datasetParam.getFileSubParam(), uploadFile);
-    contextValues.put(datasetParam.getTypeSubParam(), type);
 
-    String stableValue = datasetParam.getStableValue(user, rawValue,
+    String stableValue = datasetParam.getStableValue(user, dataset,
         contextValues);
-    int userDatasetId = Integer.valueOf(stableValue);
-    Dataset dataset = factory.getDataset(user, userDatasetId);
+    int datasetId = Integer.valueOf(stableValue);
+    Assert.assertEquals(dataset.getDatasetId(), datasetId);
+    
+    Dataset dataset1 = (Dataset)datasetParam.getRawValue(user, stableValue, contextValues);
 
-    Assert.assertEquals(userDatasetId, dataset.getUserDatasetId());
-    Assert.assertEquals(rawValue, dataset.getOriginalContent());
-    Assert.assertEquals(type, dataset.getContentType());
+    Assert.assertEquals(dataset.getDatasetId(), dataset1.getDatasetId());
     assertEquals(data, dataset.getValues());
+    Assert.assertEquals(content, dataset.getContent());
   }
 
   @Test
   public void testStableToRawValue() throws WdkModelException, WdkUserException {
     List<String[]> data = generateRandomValues();
-    String rawValue = generateRawValue(data);
-    String type = "text";
+    String content = generateContent(data);
+    DatasetParser parser = new ListDatasetParser();
     String uploadFile = "file-" + random.nextInt();
 
-    Map<String, String> contextValues = new LinkedHashMap<>();
-    contextValues.put(datasetParam.getFileSubParam(), uploadFile);
-    contextValues.put(datasetParam.getTypeSubParam(), type);
+    DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
+    Dataset dataset = datasetFactory.createOrGetDataset(user, parser, content, uploadFile);
 
-    String stableValue = datasetParam.getStableValue(user, rawValue,
-        contextValues);
+    String stableValue = Integer.toString(dataset.getDatasetId());
 
-    String actualRaw = datasetParam.getRawValue(user, stableValue,
-        contextValues);
-    Assert.assertEquals(rawValue, actualRaw);
+    Dataset rawValue = (Dataset)datasetParam.getRawValue(user, stableValue,
+        null);
+    Assert.assertEquals(dataset.getDatasetId(), rawValue.getDatasetId());
   }
 }

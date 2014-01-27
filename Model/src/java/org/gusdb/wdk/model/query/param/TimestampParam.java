@@ -25,7 +25,7 @@ import org.json.JSONObject;
  * step is simply reloaded, but start a new cache when user runs a search or
  * revise a step with the same param values.
  * 
- * the raw, reference, and internal value for a timestampParam is the same.
+ * the raw, stable value, signature, and internal value for a timestampParam is the same.
  * 
  * @author xingao
  * 
@@ -102,5 +102,13 @@ public class TimestampParam extends Param {
   @Override
   protected void applySuggection(ParamSuggestion suggest) {
     // do nothing
+  }
+
+  @Override
+  public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {
+    String value = (String) rawValue;
+    if (value.length() > truncateLength)
+      value = value.substring(0, truncateLength) + "...";
+    return value;
   }
 }

@@ -13,17 +13,18 @@
 
 <div id="stage-stack"> </div>
 
-<div id="contentwrapper">
+<div id="contentwrapper"
+    data-controller="wdk.strategy.controller.init"
+    data-all-count="${allCount}"
+    data-open-count="${openCount}"
+    data-public-count="${publicCount}" >
+
    <div id="contentcolumn2">
       <div class="innertube">
 
 <c:if test="${includeDYK}">
   <imp:dyk/>
 </c:if>
-
-<script type="text/javascript">
-  wdk.strategy.controller.setStrategyStatusCounts('${allCount}','${openCount}','${publicCount}');
-</script>
 
 <%------------MY STRATEGIES MENU (TABs)----------%>
 <ul id="strategy_tabs">
@@ -44,10 +45,10 @@
    <c:if test="${fn:length(basketCounts) > 0}">
       <c:choose>
 	       <c:when test="${wdkUser.guest}">
-            <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.user.login();"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+            <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.user.login();"><imp:image class="basket" src="/wdk/images/basket_gray.png" width="15" height="15"/>&nbsp;Basket</a></li>
 	       </c:when>
 	       <c:otherwise>
-            <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+            <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('basket')"><imp:image class="basket" src="/wdk/images/basket_gray.png" width="15" height="15"/>&nbsp;Basket</a></li>
 	       </c:otherwise>
       </c:choose>
    </c:if>

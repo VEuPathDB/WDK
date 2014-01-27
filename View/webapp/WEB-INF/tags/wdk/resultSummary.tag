@@ -43,24 +43,27 @@
 </td>
 
 <td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
-  <div style="float:right">
-   <c:set var="r_count" value="${wdkAnswer.resultSize} ${recordName}" />
-   <c:if test="${strategy != null}">
-    <c:choose>
-      <c:when test="${wdkUser.guest}">
-        <c:set var="basketClick" value="wdk.user.login();" />
-      </c:when>
-      <c:otherwise>
-        <c:set var="basketClick" value="wdk.basket.updateBasket(this, '${step.stepId}', '0', '0', '${recordName}');" /> <!-- fourth param is unused (basket.js) -->
-      </c:otherwise>
-    </c:choose>
-    <c:if test="${recHasBasket}"><a id="basketStep" style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add ${r_count} to Basket</b></a>&nbsp;|&nbsp;</c:if>
-   </c:if>
-    <a style="font-size:120%" href="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}"><b>Download ${r_count}</b></a>
-  <c:if test="${!empty sessionScope.GALAXY_URL}">
-    &nbsp;|&nbsp;<a href="downloadStep.do?step_id=${step.stepId}&wdkReportFormat=tabular"><b>SEND TO GALAXY</b></a>
+  <c:if test="${wdkAnswer.resultSize > 0}">
+    <div style="float:right">
+     <c:set var="r_count" value="${wdkAnswer.resultSize} ${recordName}" />
+     <c:if test="${strategy != null}">
+      <c:choose>
+        <c:when test="${wdkUser.guest}">
+          <c:set var="basketClick" value="wdk.user.login();" />
+        </c:when>
+        <c:otherwise>
+          <c:set var="basketClick" value="wdk.basket.updateBasket(this, '${step.stepId}', '0', '0', '${recordName}');" /> <!-- fourth param is unused (basket.js) -->
+        </c:otherwise>
+      </c:choose>
+      <c:if test="${recHasBasket}"><a id="basketStep" style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add ${r_count} to Basket</b></a>&nbsp;|&nbsp;</c:if>
+     </c:if>
+      <a style="font-size:120%" href="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}"><b>Download ${r_count}</b></a>
+   
+    <c:if test="${!empty sessionScope.GALAXY_URL}">
+      &nbsp;|&nbsp;<a href="downloadStep.do?step_id=${step.stepId}&wdkReportFormat=tabular"><b class="galaxy">SEND TO GALAXY</b></a>
+    </c:if>
+    </div>
   </c:if>
-  </div>
 </td>
 </tr></table>
 

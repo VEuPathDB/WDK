@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -26,10 +27,11 @@ public class AnswerParamBean extends ParamBean<AnswerParam> {
     }
 
     public AnswerValueBean getAnswerValue() throws Exception {
+      AnswerParam answerParam = (AnswerParam)param;
         try {
             User user = this.user.getUser();
-            AnswerValue answerValue = param.getAnswerValue(user,
-                    stableValue);
+            Step step = (Step)answerParam.getRawValue(user, stableValue, contextValues);
+            AnswerValue answerValue = step.getAnswerValue();
             return new AnswerValueBean(answerValue);
         } catch (Exception ex) {
             ex.printStackTrace();

@@ -184,7 +184,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             } else { // otherwise, forward to the show application page
                 // create new strategy before going to application page
                 if (strategy == null) {
-                    strategy = wdkUser.createStrategy(step, false);
+                    strategy = wdkUser.createStrategy(step, false, false);
                     request.getSession().setAttribute(
                             CConstants.WDK_NEW_STRATEGY_KEY, true);
                     strategyKey = Integer.toString(strategy.getStrategyId());
@@ -464,7 +464,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             request.setAttribute("customName", customName);
             request.setAttribute("params", params);
             request.setAttribute("paramNames", paramNames);
-            request.setAttribute("exception", ex);
+            request.setAttribute(CConstants.WDK_EXCEPTION, ex);
         } catch (Exception ex2) {
             ex2.printStackTrace();
         }

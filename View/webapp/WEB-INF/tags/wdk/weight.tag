@@ -1,5 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <%@ attribute name="wdkModel"
               required="true"
@@ -22,7 +23,7 @@
     <c:set var="display" value="none"/>
     <c:set var="image" value="plus.gif"/>
     <div class="group-title">
-      <img class="group-handle" src='<c:url value="wdk/images/${image}" />'/>
+      <imp:image class="group-handle" src='/wdk/images/${image}'/>
       <span title="This is an optional number that will be assigned to all the results of this search; this 'weight' might later be used for sorting when doing unions in a strategy."> Give this search a weight</span>
     </div>
     <div class="group-detail" style="display:${display};text-align:center">

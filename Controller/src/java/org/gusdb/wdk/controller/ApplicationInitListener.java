@@ -9,6 +9,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.controller.wizard.Wizard;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -59,6 +60,7 @@ public class ApplicationInitListener implements ServletContextListener {
 
         logger.info("Initializing WDK web application");
         ServletContext servletContext = sce.getServletContext();
+        GusHome.webInit(servletContext);
 
         String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
         String gusHome = servletContext.getRealPath(servletContext.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME));
@@ -85,6 +87,9 @@ public class ApplicationInitListener implements ServletContextListener {
         logger.info("Initialized model object.  Setting on servlet context.");
         servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
 
+        // set assetsUrl attribtue
+        servletContext.setAttribute(CConstants.WDK_ASSETS_URL_KEY, getAssetsUrl(wdkModel, servletContext));
+
         // load wizard
         Wizard wizard = Wizard.loadWizard(gusHome, wdkModel);
         servletContext.setAttribute(CConstants.WDK_WIZARD_KEY, wizard);
@@ -95,5 +100,18 @@ public class ApplicationInitListener implements ServletContextListener {
 
         // set the context to WsfService so that it can be accessed in the local mode.
         WsfService.SERVLET_CONTEXT = servletContext;
+    }
+
+    private String getAssetsUrl(WdkModelBean wdkModel, ServletContext servletContext) {
+        String url = wdkModel.getModel().getModelConfig().getAssetsUrl();
+        if (url == null || url.isEmpty()) {
+          // default to [contextPath]/assets
+          url = servletContext.getContextPath() + "/assets";
+        } else if (!url.startsWith("/")) {
+          // if relative, make relative to [contextPath]
+          url = servletContext.getContextPath() + "/" + url;
+        }
+        logger.debug("Assets URL: " + url);
+        return url;
     }
 }

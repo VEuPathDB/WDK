@@ -5,6 +5,8 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.Map;
 
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -20,9 +22,9 @@ public class TimestampParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, String rawValue,
+  public String toStableValue(User user, Object rawValue,
       Map<String, String> contextValues) {
-    return rawValue;
+    return (String)rawValue;
   }
 
   /**
@@ -32,7 +34,7 @@ public class TimestampParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toRawValue(User user, String refernceValue,
+  public Object toRawValue(User user, String refernceValue,
       Map<String, String> contextValues) {
     return refernceValue;
   }
@@ -59,6 +61,18 @@ public class TimestampParamHandler extends AbstractParamHandler {
   public String toSignature(User user, String stableValue,
       Map<String, String> contextValues) {
     return stableValue;
+  }
+
+  @Override
+  public Object getRawValue(User user, RequestParams requestParams) throws WdkUserException,
+      WdkModelException {
+    String value = requestParams.getParam(param.getName());
+    if (value == null) {
+      if (!param.isAllowEmpty())
+        throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required");
+      value = param.getEmptyValue();
+    }
+    return value;
   }
 
 }

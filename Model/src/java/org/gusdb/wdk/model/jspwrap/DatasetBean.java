@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.Dataset;
+import org.gusdb.wdk.model.dataset.Dataset;
 
 /**
  * @author xingao
@@ -23,15 +23,15 @@ public class DatasetBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Dataset#getCreateTime()
+     * @see org.gusdb.wdk.model.dataset.Dataset#getCreateTime()
      */
-    public Date getCreateTime() {
-        return dataset.getCreateTime();
+    public Date getCreatedTime() {
+        return dataset.getCreatedTime();
     }
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Dataset#getDatasetId()
+     * @see org.gusdb.wdk.model.dataset.Dataset#getDatasetId()
      */
     public int getDatasetId() {
         return dataset.getDatasetId();
@@ -39,7 +39,7 @@ public class DatasetBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Dataset#getSize()
+     * @see org.gusdb.wdk.model.dataset.Dataset#getSize()
      */
     public int getSize() {
         return dataset.getSize();
@@ -48,15 +48,15 @@ public class DatasetBean {
     /**
      * @return
      * @throws WdkModelException 
-     * @see org.gusdb.wdk.model.user.Dataset#getSummary()
+     * @see org.gusdb.wdk.model.dataset.Dataset#getSummary()
      */
-    public String getOriginalContent() throws WdkModelException {
-        return dataset.getOriginalContent();
+    public String getContent() throws WdkModelException {
+        return dataset.getContent();
     }
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Dataset#getUploadFile()
+     * @see org.gusdb.wdk.model.dataset.Dataset#getUploadFile()
      */
     public String getUploadFile() {
         return dataset.getUploadFile();
@@ -64,7 +64,7 @@ public class DatasetBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Dataset#getUser()
+     * @see org.gusdb.wdk.model.dataset.Dataset#getUser()
      */
     public UserBean getUser() {
         return new UserBean(dataset.getUser());
@@ -73,7 +73,7 @@ public class DatasetBean {
     /**
      * @return
      * @throws WdkModelException 
-     * @see org.gusdb.wdk.model.user.Dataset#getValues()
+     * @see org.gusdb.wdk.model.dataset.Dataset#getValues()
      */
     public List<String[]> getValues() throws WdkModelException {
       return dataset.getValues();
@@ -81,25 +81,13 @@ public class DatasetBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Dataset#getChecksum()
+     * @see org.gusdb.wdk.model.dataset.Dataset#getChecksum()
      */
-    public String getDatasetChecksum() {
-        return dataset.getDatasetChecksum();
+    public String getChecksum() {
+        return dataset.getChecksum();
     }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.user.Dataset#getContentChecksum()
-     */
-    public String getContentChecksum() {
-      return dataset.getContentChecksum();
-    }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.user.Dataset#getUserDatasetId()
-     */
-    public int getUserDatasetId() {
-        return dataset.getUserDatasetId();
+    
+    public String getParserName() {
+      return dataset.getParserName();
     }
 }

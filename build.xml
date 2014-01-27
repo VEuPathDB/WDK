@@ -4,46 +4,38 @@
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WSF-Installation">
-    <ant antfile="../WSF/build.xml" target="WSF-Installation">
-      <property name="project" value="WSF"/>
-      <property name="version" value="WDK_version_2-0"/>
-    </ant>
-  </target>  
-    
-  <target name="FgpUtil-Installation">
-    <ant antfile="../FgpUtil/build.xml" target="FgpUtil-Installation">
-      <property name="project" value="FgpUtil"/>
-      <property name="version" value="WDK_version_2-0"/>
-    </ant>
-  </target>  
-    
-  <target name="WSF-Checkout" unless="WSF.present"> 
+  <import file="${projectsDir}/FgpUtil/build.xml" />
+  <import file="${projectsDir}/WSF/build.xml" />
+
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="WDK-ChildCheckout">
+    <available file="${projectsDir}/WSF" type="dir"  property="WSF.present" />
+    <available file="${projectsDir}/FgpUtil" type="dir"  property="FgpUtil.present" />
+    <antcall target="WSF-Checkout"/>
+    <antcall target="FgpUtil-Checkout"/>
+  </target>
+
+
+  <target name="WSF-Checkout" unless="WSF.present">
     <ant target="defaultProjectCheckout" inheritAll="false">
       <property name="svnurl" value="https://www.cbil.upenn.edu/svn/gus/WSF"/>
       <property name="project" value="WSF"/>
       <property name="version" value="WDK_version_1-28"/>
     </ant>
   </target>
-  
-  <target name="FgpUtil-Checkout" unless="FgpUtil.present"> 
+
+
+  <target name="FgpUtil-Checkout" unless="FgpUtil.present">
     <ant target="defaultProjectCheckout" inheritAll="false">
       <property name="svnurl" value="https://www.cbil.upenn.edu/svn/gus/FgpUtil"/>
       <property name="project" value="FgpUtil"/>
       <property name="version" value="WDK_version_1-28"/>
     </ant>
   </target>
-  
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-ChildCheckout">
-    <available file="../WSF" type="dir"  property="WSF.present" />
-    <available file="../FgpUtil" type="dir"  property="FgpUtil.present" />
-    <antcall target="WSF-Checkout"/>
-    <antcall target="FgpUtil-Checkout"/>
-  </target>
     
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooo -->
@@ -66,8 +58,11 @@
                                            WSF-Installation,
                                            WDK/Model-Installation,
                                            WDK/Controller-Installation,
-                                           WDK/View-Installation">
-    <ant target="defaultProjectInstall"/>
+                                           WDK/View-Installation,
+                                           WDK/Test-Installation">
+    <ant target="defaultProjectInstall">
+      <property name="project" value="WDK"/>
+    </ant>
   </target>
 
   <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
@@ -188,12 +183,18 @@
     </ant>
   </target>
 
+  <target name="WDK/Test-Installation">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="WDK"/>
+      <property name="component" value="Test"/>
+    </ant>
+  </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooo  Web Installation  oooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-WebInstallation" depends="WebitePlusGusHome">
+  <target name="WDK-WebInstallation" depends="WebsitePlusGusHome">
     <echo message="." />
     <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) from ${targetDir}/lib/java/db_driver into your webapp server's designated place (such as common/lib for Tomcat). See the installation instructions available at www.gusdb.org/wdk for details."  />
     <echo message="." />
@@ -211,29 +212,54 @@
       <property name="project" value="WDK"/>
       <property name="component" value="View"/>
     </ant>
+
+    <echo message="Installing npm packages"/>
+    <exec dir="${projectsDir}/WDK/View/assets"
+          executable="npm"
+          failonerror="true"
+          failifexecutionfails="true">
+      <arg line="install"/>
+    </exec>
+
+    <echo message="Running npm run dist"/>
+    <exec dir="${projectsDir}/WDK/View/assets"
+          executable="npm"
+          failonerror="true"
+          failifexecutionfails="true">
+      <arg line="run dist"/>
+    </exec>
+
+    <echo message="Copying WDK assets to webapp"/>
+    <copy todir="${webappTargetDir}/assets/wdk">
+      <fileset dir="${projectsDir}/WDK/View/assets/dist"/>
+    </copy>
+    <!--
     <ant target="webinstall-javascript">
       <property name="srcDir" value="${webappTargetDir}/wdk/js/src"/>
       <property name="initialFiles" value="util/namespace.js"/>
       <property name="destDir" value="${webappTargetDir}/wdk/js"/>
       <property name="destFilename" value="wdk.js"/>
     </ant>
+    -->
   </target>  
 
-  <target name="WebitePlusGusHome" depends="WDK-Installation,
-                                            WDK/Controller-WebInstallation,
-                                            WDK/View-WebInstallation,
-                                            checkLinks,
-                                            webInfDir,
-                                            libLink,
-                                            configLink,
-                                            rngLink,
-                                            xmlLink,
-                                            wdkLink"/>
+  <target name="WebsitePlusGusHome" depends="WDK-Installation,
+                                             WDK/Controller-WebInstallation,
+                                             WDK/View-WebInstallation,
+                                             checkLinks,
+                                             webInfDir,
+                                             libLink,
+                                             configLink,
+                                             binLink,
+                                             rngLink,
+                                             xmlLink,
+                                             wdkLink"/>
 
   <target name="checkLinks">
      <available file="${webappTargetDir}/WEB-INF" property="webInfDirExists"/>
      <available file="${webappTargetDir}/WEB-INF/lib" property="libLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/config" property="configLinkExists"/>
+     <available file="${webappTargetDir}/WEB-INF/wdk-model/bin" property="binLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" property="rngLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/xml" property="xmlLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk" property="wdkLinkExists"/>
@@ -252,6 +278,10 @@
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/config" resource="${targetDir}/config"/>
   </target>
   
+  <target name="binLink" unless="binLinkExists">
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/bin" resource="${targetDir}/bin"/>
+  </target>
+
   <target name="rngLink" unless="rngLinkExists">
     <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>    
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" resource="${targetDir}/lib/rng"/>
@@ -290,5 +320,4 @@
   </target>  
 
 </project>
-
 

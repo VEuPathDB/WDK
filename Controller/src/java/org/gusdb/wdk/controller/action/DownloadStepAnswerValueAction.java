@@ -109,6 +109,8 @@ public class DownloadStepAnswerValueAction extends Action {
             } else {
                 wdkUser = ActionUtility.getUser(servlet, request);
             }
+            // also set the user as the attribute of the request, so that the jsp can use it.
+            request.setAttribute("wdkUser", wdkUser);
             
             StepBean step = wdkUser.getStep( stepId );
             

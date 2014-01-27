@@ -8,6 +8,9 @@
             <attribute name="smtpServer" />
             <attribute name="supportEmail" />
             <optional>
+                <attribute name="assetsUrl" />
+            </optional>
+            <optional>
                 <attribute name="secretKeyFile" />
             </optional>
             <optional>

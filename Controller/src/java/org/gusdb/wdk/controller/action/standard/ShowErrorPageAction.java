@@ -8,6 +8,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
+import org.gusdb.wdk.controller.actionutil.RequestData;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 
 /**
@@ -25,8 +26,8 @@ public class ShowErrorPageAction extends WdkAction {
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
 
-    Exception causingException = (Exception)
-        getRequestData().getRequestAttribute(Globals.EXCEPTION_KEY);
+    RequestData requestData = getRequestData();
+    Exception causingException = (Exception)requestData.getRequestAttribute(Globals.EXCEPTION_KEY);
     
     // Alternative mechanism to pass Exception to this action
     //   (see CustomProcessLoginAction.java for example)

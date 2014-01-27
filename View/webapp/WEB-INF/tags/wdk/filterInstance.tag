@@ -70,7 +70,7 @@
            strId="${strategyId}" stpId="${stpId}" linkUrl="${linkUrl}">
 		<c:choose>
 		<c:when test="${current}">${answerValue.resultSize}</c:when>
-		<c:otherwise><img class="loading" src="<c:url value="/wdk/images/filterLoading.gif" />" /></c:otherwise>
+		<c:otherwise><imp:image class="loading" src="/wdk/images/filterLoading.gif" /></c:otherwise>
 		</c:choose>
 	</a>
         <div class="instance-detail" style="display: none;">

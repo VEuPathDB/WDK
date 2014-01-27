@@ -5,6 +5,8 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.Map;
 
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 
@@ -21,9 +23,9 @@ public class StringParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, String rawValue,
+  public String toStableValue(User user, Object rawValue,
       Map<String, String> contextValues) throws WdkUserException {
-    return rawValue;
+    return (String)rawValue;
   }
 
   /**
@@ -33,21 +35,22 @@ public class StringParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toRawValue(User user, String stableValue,
+  public Object toRawValue(User user, String stableValue,
       Map<String, String> contextValues) {
     return stableValue;
   }
 
   /**
-   * the stable value is the same as signature.
+   * the signature is a checksum of the stable value.
+   * @throws WdkModelException 
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
   public String toSignature(User user, String stableValue,
-      Map<String, String> contextValues) {
-    return stableValue;
+      Map<String, String> contextValues) throws WdkModelException {
+    return Utilities.encrypt(stableValue);
   }
 
   /**
@@ -72,6 +75,19 @@ public class StringParamHandler extends AbstractParamHandler {
       stableValue = stableValue.replaceAll("'", "''");
       return "'" + stableValue + "'";
     }
+  }
+
+  @Override
+  public Object getRawValue(User user, RequestParams requestParams) throws WdkUserException,
+      WdkModelException {
+    String value = requestParams.getParam(param.getName());
+    if (value == null) {
+      if (!param.isAllowEmpty())
+        throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required");
+      value = param.getEmptyValue();
+    }
+    if (value != null) value = value.trim();
+    return value;
   }
 
 }

@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -91,6 +92,8 @@ public class SqlQueryInstance extends QueryInstance {
   public void insertToCache(String tableName, int instanceId)
       throws WdkModelException {
     String idColumn = CacheFactory.COLUMN_INSTANCE_ID;
+    String rowIdColumn = CacheFactory.COLUMN_ROW_ID;
+
     Map<String, Column> columns = query.getColumnMap();
     StringBuffer columnList = new StringBuffer();
     for (Column column : columns.values()) {
@@ -102,15 +105,19 @@ public class SqlQueryInstance extends QueryInstance {
         columnList.append(", " + weightColumn);
     }
 
+    DBPlatform platform = wdkModel.getAppDb().getPlatform();
+    String rowNumber = platform.getRowNumberColumn();
+
     // get the sql with param values applied. The last column has to be the
     // weight.
     String sql = getUncachedSql();
 
     StringBuffer buffer = new StringBuffer("INSERT INTO " + tableName);
-    buffer.append(" (" + idColumn + columnList + ") ");
+    buffer.append(" (" + idColumn + ", " + rowIdColumn + columnList + ") ");
     buffer.append("SELECT ");
-    buffer.append(instanceId + " AS " + idColumn + columnList);
-    buffer.append(" FROM (").append(sql).append(") f");
+    buffer.append(instanceId + " AS " + idColumn + ", ");
+    buffer.append(rowNumber + " AS " + rowIdColumn);
+    buffer.append(columnList + " FROM (" + sql + ") f");
 
     try {
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
@@ -130,29 +137,32 @@ public class SqlQueryInstance extends QueryInstance {
       String value = internalValues.get(paramName);
       sql = param.replaceSql(sql, value);
     }
+    StringBuilder buffer = new StringBuilder("SELECT o.* ");
     if (query.isHasWeight()) {
       // add weight to the last column if it doesn't exist, it has to be
       // the last column.
       Map<String, Column> columns = query.getColumnMap();
-      String weightColumn = Utilities.COLUMN_WEIGHT;
-      if (!columns.containsKey(weightColumn)) {
-        sql = "SELECT o.*, " + assignedWeight + " AS " + weightColumn
-            + " FROM (" + sql + ") o";
-      } else { // has weight column defined, add assigned weight to it
-        StringBuilder builder = new StringBuilder();
-        for (String column : columns.keySet()) {
-          if (column.equals(weightColumn)) continue;
-          if (builder.length() == 0) builder.append("SELECT ");
-          else builder.append(", o.");
-          builder.append(column);
-        }
-        builder.append(", (o." + weightColumn + " + " + assignedWeight);
-        builder.append(") AS " + weightColumn);
-        builder.append(" FROM (" + sql + ") o");
+      if (!columns.containsKey(Utilities.COLUMN_WEIGHT)) {
+        buffer.append(", " + assignedWeight + " AS " + Utilities.COLUMN_WEIGHT);
       }
     }
-    return sql;
+    buffer.append(" FROM (" + sql + ") o");
 
+    // append sorting columns to the sql
+    Map<String, Boolean> sortingMap = query.getSortingMap();
+    boolean firstSortingColumn = true;
+    for (String column : sortingMap.keySet()) {
+      if (firstSortingColumn) {
+        buffer.append(" ORDER BY ");
+        firstSortingColumn = false;
+      } else {
+        buffer.append(", ");
+      }
+      String order = sortingMap.get(column) ? " ASC " : " DESC ";
+      buffer.append(column).append(order);
+    }
+
+    return buffer.toString();
   }
 
   /*
@@ -180,10 +190,14 @@ public class SqlQueryInstance extends QueryInstance {
     // get the sql with param values applied.
     String sql = getUncachedSql();
 
+    DBPlatform platform = wdkModel.getAppDb().getPlatform();
+    String rowNumber = platform.getRowNumberColumn();
+
     StringBuffer buffer = new StringBuffer("CREATE TABLE " + tableName);
     buffer.append(" AS SELECT ");
-    buffer.append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID);
-    buffer.append(", f.* FROM (").append(sql).append(") f");
+    buffer.append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID + ", ");
+    buffer.append(rowNumber + " AS " + CacheFactory.COLUMN_ROW_ID + ", ");
+    buffer.append(" f.* FROM (").append(sql).append(") f");
 
     try {
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
