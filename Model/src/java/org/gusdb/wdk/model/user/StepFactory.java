@@ -32,12 +32,14 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
+import org.gusdb.wdk.model.dataset.Dataset;
+import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
-import org.gusdb.wdk.model.query.param.dataset.DatasetParam;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -842,7 +844,7 @@ public class StepFactory {
   }
 
   public int getPublicStrategyCount() throws WdkModelException {
-    String countSql = "SELECT COUNT(1) FROM (" + unsortedPublicStratsSql + ")";
+    String countSql = "SELECT COUNT(1) FROM (" + unsortedPublicStratsSql + ") public_strats";
     ResultSet resultSet = null;
     try {
       long start = System.currentTimeMillis();
@@ -978,7 +980,7 @@ public class StepFactory {
         int oldUserDatasetId = Integer.parseInt(paramValue);
         Dataset oldDataset = oldUser.getDataset(oldUserDatasetId);
         Dataset newDataset = datasetFactory.cloneDataset(oldDataset, newUser);
-        paramValue = Integer.toString(newDataset.getUserDatasetId());
+        paramValue = Integer.toString(newDataset.getDatasetId());
       }
       paramValues.put(paramName, paramValue);
     }
@@ -1133,20 +1135,18 @@ public class StepFactory {
             user.deleteStrategy(idToDelete);
         }
       } else if (strategy.getIsSaved()) {
-        // If we're not overwriting a saved strategy, then we're
-        // modifying
-        // it. We need to get an unsaved copy to modify. Generate
-        // unsaved name
+        // If we're not overwriting a saved strategy, then we're modifying
+        // it. We need to get an unsaved copy to modify. Generate unsaved name.
+        // Note all new unsaved strats are private; they do not inherit public.
         String name = getNextName(user, strategy.getName(), false);
         Strategy newStrat = createStrategy(user, strategy.getLatestStep(),
-            name, strategy.getName(), false, strategy.getDescription(), false,
-            strategy.getIsPublic());
+            name, strategy.getName(), false, strategy.getDescription(), false, false);
         strategy.setName(newStrat.getName());
         strategy.setSavedName(newStrat.getSavedName());
         strategy.setStrategyId(newStrat.getStrategyId());
         strategy.setSignature(newStrat.getSignature());
         strategy.setIsSaved(false);
-        strategy.setIsPublic(newStrat.getIsPublic());
+        strategy.setIsPublic(false);
       }
 
       Date modifiedTime = new Date();
@@ -1336,10 +1336,10 @@ public class StepFactory {
     return params;
   }
 
-  boolean checkNameExists(Strategy strategy, String name, boolean saved)
+  boolean[] checkNameExists(Strategy strategy, String name, boolean saved)
       throws WdkModelException {
     ResultSet rsCheckName = null;
-    String sql = "SELECT strategy_id FROM " + userSchema + TABLE_STRATEGY
+    String sql = "SELECT strategy_id, is_public FROM " + userSchema + TABLE_STRATEGY
         + " WHERE " + Utilities.COLUMN_USER_ID + " = ? AND "
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME + " = ? AND "
         + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? AND "
@@ -1358,10 +1358,13 @@ public class StepFactory {
       QueryLogger.logEndStatementExecution(sql,
           "wdk-step-factory-strategy-name-exist", start);
 
-      if (rsCheckName.next())
-        return true;
-
-      return false;
+      if (rsCheckName.next()) {
+    	  boolean isPublic = rsCheckName.getBoolean(2);
+    	  return new boolean[] { true, isPublic };
+      }
+      // otherwise, no strat by this name exists
+      return new boolean[] { false, false };
+      
     } catch (SQLException e) {
       throw new WdkModelException("Error checking name for strategy "
           + strategy.getStrategyId() + ":" + name, e);

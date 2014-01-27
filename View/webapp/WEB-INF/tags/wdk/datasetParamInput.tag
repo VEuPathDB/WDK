@@ -92,6 +92,39 @@ function chooseType(paramName, type) {
     </tr>
   </c:if>
 
+  
+    <c:if test="${defaultType ne 'basket' and noAction}">
+        <!-- display an input box and upload file button -->
+        <tr class="dataset-file">
+            <td align="left" valign="top">
+                <input type="radio" name="${pNam}_radio" ${fileChecked}
+                       onclick="chooseType('${pNam}', 'file');" />
+               Upload from a <i>text</i> file:&nbsp;
+            </td>
+            <td align="left">
+                <html:file styleId="${pNam}_file" styleClass="input" property="value(${pNam}_file)" disabled="true"/>
+								<div class="type-ahead-help">Maximum size: 10MB.
+            </td>
+        </tr>
+    </c:if>
+    
+    
+    <!-- display options for the parser -->
+    <tr class="dataset-parsers">
+      <td></td>
+      <td>
+        <c:forEach items="${qP.parsers} var="parser">
+          <c:set var="checked">
+            <c:if test="${(dataset != null && parser.name = dataset.parserName) || (dataset == null && parser.name == 'list')}">checked="checked"</c:if>
+          </c:set>
+          <span class="parser" title="${parser.description}">
+            <input type="radio" name="${pNam}_parser" value="${parser.name} ${checked} />
+            ${parser.display}
+          </span>
+        </c:forEach>
+      </td>
+    </tr>
+
     <c:if test="${qp.recordClass.useBasket}">	
     <!-- display option to use basket snapshot -->
     <tr>
@@ -117,21 +150,6 @@ function chooseType(paramName, type) {
         <tr>
             <td colspan="2" align="right">
                 <i>Data was uploaded from: ${dataset.uploadFile}</i>
-            </td>
-        </tr>
-    </c:if>
-
-    <c:if test="${defaultType ne 'basket' and noAction}">
-        <!-- display an input box and upload file button -->
-        <tr class="dataset-file">
-            <td align="left" valign="top">
-                <input type="radio" name="${pNam}_radio" ${fileChecked}
-                       onclick="chooseType('${pNam}', 'file');" />
-               Upload from a <i>text</i> file:&nbsp;
-            </td>
-            <td align="left">
-                <html:file styleId="${pNam}_file" styleClass="input" property="value(${pNam}_file)" disabled="true"/>
-								<div class="type-ahead-help">Maximum size: 10MB.
             </td>
         </tr>
     </c:if>

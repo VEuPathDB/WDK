@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,22 +19,18 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.upload.FormFile;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
 import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.jspwrap.DatasetBean;
-import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.RecordClassBean;
-import org.gusdb.wdk.model.jspwrap.StepBean;
-import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.query.param.RequestParams;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It
@@ -50,65 +46,17 @@ public class ProcessQuestionAction extends Action {
             HttpServletRequest request, QuestionForm qform)
             throws WdkModelException, WdkUserException, FileNotFoundException,
             IOException, SQLException {
-        Map<String, String> paramValues = new HashMap<String, String>();
-        QuestionBean question = qform.getQuestion();
-        if (question == null)
-            throw new WdkUserException("The question '"
-                    + request.getParameter(CConstants.QUESTION_FULLNAME_PARAM)
-                    + "' doesn't exist.");
-
-        Map<String, ParamBean<?>> params = question.getParamsMap();
-        // convert from raw data to user dependent data
-        for (String paramName : params.keySet()) {
-        	ParamBean<?> param = params.get(paramName);
-
-            String rawValue = (String) qform.getValue(paramName);
-            logger.debug("Param raw: " + paramName + " = " + rawValue);
-            String dependentValue = null;
-            if (param instanceof DatasetParamBean) {
-              DatasetParamBean datasetParam = (DatasetParamBean)param;
-              
-                // get the input type
-              String typeParam = datasetParam.getTypeSubParam();
-                String type = request.getParameter(typeParam);
-                if (type == null)
-                    throw new WdkUserException("Missing input parameter: "
-                            + typeParam);
-
-                String data = null;
-                String uploadFile = "";
-                if (type.equalsIgnoreCase("data")) {
-                    data = request.getParameter(paramName + "_data");
-                } else if (type.equalsIgnoreCase("file")) {
-                  String fileParam = datasetParam.getFileSubParam();
-                    FormFile file = (FormFile) qform.getValue(fileParam);
-                    uploadFile = file.getFileName();
-                    logger.debug("upload file: " + uploadFile);
-                    data = new String(file.getFileData());
-                } else if (type.equalsIgnoreCase("basket")) {
-                    data = user.getBasket(recordClass);
-                } else if (type.equals("strategy")) {
-                    String strId = request.getParameter(paramName + "_strategy");
-                    int displayId = Integer.parseInt(strId);
-                    StrategyBean strategy = user.getStrategy(displayId);
-                    StepBean step = strategy.getLatestStep();
-                    data = step.getAnswerValue().getAllIdList();
-                }
-
-                logger.debug("dataset data: '" + data + "'");
-                if (data != null && data.trim().length() > 0) {
-                    DatasetBean dataset = user.createDataset(recordClass,
-                            uploadFile, data);
-                    dependentValue = Integer.toString(dataset.getUserDatasetId());
-                }
-            } else if (rawValue != null && rawValue.length() > 0) {
-            	// check to see if this param is dependent and assign depended value
-                dependentValue = param.rawOrDependentValueToDependentValue(user, rawValue);
-            }
-            logger.debug("param " + paramName + " - " + param.getClass().getSimpleName() + " = " + dependentValue);
-            paramValues.put(paramName, dependentValue);
-        }
-        return paramValues;
+      RequestParams requestParams = new QuestionRequestParams(request, qform);
+      QuestionBean question = qform.getQuestion();
+      Map<String, ParamBean<?>> params = question.getParamsMap();
+      Map<String, String> stableValues = new LinkedHashMap<>();
+      for (String paramName : params.keySet()) {
+        ParamBean<?> param = params.get(paramName);
+        Object rawValue = param.getRawValue(user, requestParams);
+        String stableValue = param.getStableValue(user, rawValue, stableValues);
+        stableValues.put(paramName, stableValue);
+      }
+      return stableValues;
     }
 
     @Override

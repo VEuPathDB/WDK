@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.RequestParams;
 
 /**
  * A wrapper on a {@link Param} that provides simplified access for consumption
@@ -105,18 +106,13 @@ public abstract class ParamBean<T extends Param> {
     this.stableValue = dependentValue;
   }
 
-  public String getRawValue() throws WdkModelException {
+  public Object getRawValue() throws WdkModelException {
     return param.getRawValue(user.getUser(), stableValue, contextValues);
   }
 
   public String getBriefRawValue() throws WdkModelException {
-    String rawValue = getRawValue();
-    if (rawValue != null) {
-      rawValue = rawValue.replaceAll("\\,", ", ");
-      if (rawValue.length() > truncateLength)
-        rawValue = rawValue.substring(0, truncateLength) + "...";
-    }
-    return rawValue;
+    Object rawValue = getRawValue();
+    return param.getBriefRawValue(rawValue, truncateLength);
   }
 
   public void setTruncateLength(int truncateLength) {
@@ -141,12 +137,13 @@ public abstract class ParamBean<T extends Param> {
    * @param user
    * @param independentValue
    * @return
+   * @throws WdkUserException 
    * @see org.gusdb.wdk.model.query.param.Param#independentValueToRawValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
-  public String getRawValue(UserBean user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException {
-    return param.getRawValue(user.getUser(), stableValue, contextValues);
+  public Object getRawValue(UserBean user, RequestParams requestParams)
+      throws WdkModelException, WdkUserException {
+    return param.getRawValue(user.getUser(), requestParams);
   }
 
   /**
@@ -157,7 +154,7 @@ public abstract class ParamBean<T extends Param> {
    * @see org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
-  public String getStableValue(UserBean user, String rawValue, Map<String, String> contextValues)
+  public String getStableValue(UserBean user, Object rawValue, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
     return param.getStableValue(user.getUser(), rawValue, contextValues);
   }

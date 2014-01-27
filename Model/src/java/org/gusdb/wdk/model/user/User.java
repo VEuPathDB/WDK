@@ -18,6 +18,8 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
+import org.gusdb.wdk.model.dataset.Dataset;
+import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.query.BooleanExpression;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -751,8 +753,8 @@ public class User /* implements Serializable */{
     return array;
   }
 
-  public Step getStep(int displayId) throws WdkModelException {
-    return stepFactory.loadStep(this, displayId);
+  public Step getStep(int stepID) throws WdkModelException {
+    return stepFactory.loadStep(this, stepID);
   }
 
   public Strategy getStrategy(int userStrategyId) throws WdkModelException,
@@ -865,8 +867,8 @@ public class User /* implements Serializable */{
   }
 
 
-  public Dataset getDataset(int userDatasetId) throws WdkModelException {
-    return datasetFactory.getDataset(this, userDatasetId);
+  public Dataset getDataset(int datasetId) throws WdkModelException {
+    return datasetFactory.getDataset(this, datasetId);
   }
 
   /**
@@ -1226,7 +1228,7 @@ public class User /* implements Serializable */{
     return this.activeStrategyFactory.getViewPagerOffset();
   }
 
-  public boolean checkNameExists(Strategy strategy, String name, boolean saved)
+  public boolean[] checkNameExists(Strategy strategy, String name, boolean saved)
       throws WdkModelException {
     return stepFactory.checkNameExists(strategy, name, saved);
   }

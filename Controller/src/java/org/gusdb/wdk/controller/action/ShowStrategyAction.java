@@ -215,8 +215,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         writer.print(jsMessage.toString());
     }
 
-    public static void outputDuplcicateNameJSON(WdkModelBean model,
-            UserBean user, HttpServletResponse response, String state)
+    public static void outputDuplicateNameJSON(WdkModelBean model,
+            UserBean user, HttpServletResponse response, String state, boolean isDupPublic)
             throws JSONException, NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, IOException {
         logger.debug("output JSON dup-name-error message...");
@@ -226,6 +226,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_DUP_NAME_ERROR);
+        jsMessage.put("isPublicDup", isDupPublic);
 
         // get a list of strategy checksums
         outputCommon(user, jsMessage);
@@ -454,7 +455,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     param.setTruncateLength(TRUNCATE_LENGTH);
                     try {
                         jsParam.put("value", getRawValue(paramValues, param));
-                        jsParam.put("internal",param.getRawValue??());
+                        jsParam.put("internal",!param.getIsVisible());
                     } catch (Exception ex) {
                         throw new WdkModelException(ex);
                     }

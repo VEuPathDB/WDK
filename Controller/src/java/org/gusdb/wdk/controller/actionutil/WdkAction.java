@@ -76,24 +76,6 @@ public abstract class WdkAction implements SecondaryValidator {
   // default max upload file size
   private static final int DEFAULT_MAX_UPLOAD_SIZE_MB = 10;
   
-  /**
-   * Provides standard information that came in on the current request
-   * 
-   * @author rdoherty
-   */
-  public static interface RequestData {
-    public String getWebAppBaseUrl();
-    public String getRequestUrl();
-    public String getQueryString();
-    /** returns the full request URL (including the query string) */
-    public String getFullRequestUrl();
-    public String getBrowser();
-    public String getReferrer();
-    public String getIpAddress();
-    public Object getRequestAttribute(String key);
-    public String getRequestHeader(String key);
-  }
-  
   private WdkModelBean _wdkModel;
   private HttpServlet _servlet;
   private HttpServletRequest _request;
@@ -135,7 +117,7 @@ public abstract class WdkAction implements SecondaryValidator {
       
       ActionResult result;
       try {
-        _params = createParamGroup(getTypedParamMap(request.getParameterMap()));
+        _params = createParamGroup(getRequestData().getTypedParamMap());
         result = handleRequest(_params);
       }
       catch (WdkValidationException wve) {
@@ -176,14 +158,6 @@ public abstract class WdkAction implements SecondaryValidator {
       _request.setAttribute(EXCEPTION_OBJ, e);
       return getForwardFromResult(new ActionResult().setViewName(ERROR), mapping);
     }
-  }
-  
-  @SuppressWarnings("rawtypes")
-  private Map<String, String[]> getTypedParamMap(Map parameterMap) {
-    @SuppressWarnings({ "unchecked", "cast" })
-    Map<String, String[]> parameters = (Map<String, String[]>) (parameterMap == null ?
-        new HashMap<>() : new HashMap<>((Map<String, String[]>)parameterMap));
-    return parameters;
   }
   
   private ParamGroup createParamGroup(Map<String, String[]> paramMap) throws WdkValidationException, WdkUserException {
@@ -457,6 +431,13 @@ public abstract class WdkAction implements SecondaryValidator {
   }
   
   /**
+   * @return the cookies passed along with the current request
+   */
+  protected Cookie[] getRequestCookies() {
+    return _request.getCookies();
+  }
+  
+  /**
    * Looks for a named resource within the web application and returns whether
    * it exists or not.
    * 
@@ -500,65 +481,7 @@ public abstract class WdkAction implements SecondaryValidator {
    * @return request data object
    */
   public RequestData getRequestData() {
-    return new RequestData() {
-
-      @Override
-      public String getWebAppBaseUrl() {
-        return new StringBuilder()
-          .append(_request.getScheme())
-          .append("://")
-          .append(_request.getServerName())
-          .append(_request.getServerPort() == 80 ||
-                  _request.getServerPort() == 443 ?
-                  "" : ":" + _request.getServerPort())
-          .append(_request.getContextPath())
-          .toString();
-      }
-      
-      @Override
-      public String getRequestUrl() {
-        return _request.getRequestURL().toString();
-      }
-      
-      @Override
-      public String getQueryString() {
-        return _request.getQueryString();
-      }
-      
-      @Override
-      public String getFullRequestUrl() {
-        StringBuffer buf = _request.getRequestURL();
-        String qString = _request.getQueryString();
-        return (buf == null ? new StringBuffer() : buf)
-            .append(qString == null ? "" : "?" + qString)
-            .toString();
-      }
-      
-      @Override
-      public String getBrowser() {
-        return _request.getHeader("User-Agent");
-      }
-
-      @Override
-      public String getReferrer() {
-        return _request.getHeader("Referer");
-      }
-
-      @Override
-      public String getIpAddress() {
-        return _request.getRemoteAddr();
-      }
-      
-      @Override
-      public Object getRequestAttribute(String key) {
-        return _request.getAttribute(key);
-      }
-
-      @Override
-      public String getRequestHeader(String key) {
-        return _request.getHeader(key);
-      }
-    };
+    return new HttpRequestData(_request);
   }
   
   /**

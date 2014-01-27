@@ -18,8 +18,6 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.user.BasketFactory;
-import org.gusdb.wdk.model.user.Dataset;
-import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.Favorite;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
@@ -606,16 +604,6 @@ public class UserBean /* implements Serializable */{
   // Methods for dataset operations
   // =========================================================================
 
-  public DatasetBean createDataset(List<String[]> data, String contentType,
-      String originalContent, String uploadFile) throws WdkModelException,
-      WdkUserException {
-    DatasetFactory factory = user.getWdkModel().getDatasetFactory();
-    Dataset dataset = factory.createOrGetDataset(user, data, originalContent,
-        contentType, uploadFile);
-    DatasetBean bean = new DatasetBean(dataset);
-    return bean;
-  }
-
   /*
    * (non-Javadoc)
    * 
@@ -948,17 +936,10 @@ public class UserBean /* implements Serializable */{
     return new StrategyBean(this, strategy);
   }
 
-  /**
-   * @param answer
-   * @param saved
-   * @return
-   * @see org.gusdb.wdk.model.user.User#createStrategy(org.gusdb.wdk.model.user.Step,
-   *      boolean)
-   */
-  public StrategyBean createStrategy(StepBean step, boolean saved)
-      throws WdkUserException, WdkModelException {
-    return new StrategyBean(this, user.createStrategy(step.step, saved));
-  }
+    public boolean[] checkNameExists(StrategyBean strategy, String name,
+            boolean saved) throws WdkModelException {
+        return user.checkNameExists(strategy.strategy, name, saved);
+    }
 
   /**
    * @param answer
@@ -993,11 +974,6 @@ public class UserBean /* implements Serializable */{
   public String setSummaryAttributes(String questionFullName,
       String[] summaryNames) throws WdkModelException {
     return user.setSummaryAttributes(questionFullName, summaryNames);
-  }
-
-  public boolean checkNameExists(StrategyBean strategy, String name,
-      boolean saved) throws WdkModelException {
-    return user.checkNameExists(strategy.strategy, name, saved);
   }
 
   public Map<String, List<StrategyBean>> getSavedStrategiesByCategory()

@@ -18,6 +18,7 @@ public class CConstants {
     public static final String WDK_RECORDS_DIR = "records";
     public static final String WDK_REPORTERS_DIR = "reporters";
     public static final String WDK_STRATEGY_DIR = "strategies";
+    public static final String WDK_ASSETS_URL_KEY = "assetsUrl";
 
     public static final String WDK_DOWNLOAD_CONFIG_PAGE = "ReporterConfig.jsp";
     public static final String WDK_LOGIN_PAGE = "Login.jsp";
@@ -212,4 +213,5 @@ public class CConstants {
     protected static final String DEFAULT_XMLDATA_DIR = "/WEB-INF/wdk-model/lib/xml";
     
     public static final int MIN_PAGE_SIZE = 5;
+    public static final String WDK_EXCEPTION = "exception";
 }

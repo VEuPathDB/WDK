@@ -39,19 +39,18 @@
             <c:set var="show" value="block" />
         </c:if>
         
-        <div class="layout-info">
-            <img class="handle" src="<c:url value="/wdk/images/${image}" />" />
+<!-- ========== open/close icon, filter icon, filter TITLE, explanation =============== -->
+        <div title="Results hidden by the filter will not be combined into the next step." class="layout-info">
+            <imp:image class="handle" src="/wdk/images/${image}" />
             <span class="display">
-              <img height="14px" src="${pageContext.request.contextPath}/wdk/images/filter-short.png"/> 
+              <imp:image height="14px" src="/wdk/images/filter-short.png"/> 
               <b>${layout.displayName}</b>&nbsp;&nbsp;
             </span>
-            <span style="font-size:90%;font-style:italic">
-              (results removed by the filter will not be combined into the next step.)
-            </span>
         </div>
+
+<!-- ========== TABLE defined in jsp   =============== -->
         <div class="layout-detail" style="display: ${show}">
     <%--        <div class="description">${layout.description}</div>  --%>
- 
             <c:set var="filter_layout" value="${layout}" scope="request"/>
             <c:set var="fileName" value="${layout.fileName}" />
             <c:if test="${fn:length(fileName) == 0}">

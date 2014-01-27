@@ -77,6 +77,25 @@ public class ResultFactory {
     sql.append(" FROM ").append(queryInfo.getCacheTable());
     sql.append(" WHERE ").append(CacheFactory.COLUMN_INSTANCE_ID);
     sql.append(" = ").append(instanceId);
+    
+    // append sorting columns to the sql
+    Map<String, Boolean> sortingMap = query.getSortingMap();
+    boolean firstSortingColumn = true;
+    for (String column : sortingMap.keySet()) {
+      if (firstSortingColumn) {
+        sql.append(" ORDER BY ");
+        firstSortingColumn = false;
+      } else {
+        sql.append(", ");
+      }
+      String order = sortingMap.get(column) ? " ASC " : " DESC ";
+      sql.append(column).append(order);
+    }
+    
+    // append row id as the last sorting column
+    sql.append((sortingMap.size() > 0) ? ", " : " ORDER BY ");
+    sql.append(CacheFactory.COLUMN_ROW_ID + " ASC ");
+    
     return sql.toString();
   }
 

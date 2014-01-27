@@ -19,10 +19,10 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.gusdb.wdk.model.query.param.dataset.DatasetParam;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
@@ -141,6 +141,8 @@ public abstract class Query extends WdkModelBase {
 
   private Question contextQuestion;
 
+  private Map<String, Boolean> sortingMap;
+
   // =========================================================================
   // Abstract methods
   // =========================================================================
@@ -168,6 +170,7 @@ public abstract class Query extends WdkModelBase {
     columnList = new ArrayList<Column>();
     columnMap = new LinkedHashMap<String, Column>();
     hasWeight = false;
+    sortingMap = new LinkedHashMap<>();
   }
 
   /**
@@ -191,6 +194,7 @@ public abstract class Query extends WdkModelBase {
     this.wdkModel = query.wdkModel;
     this.hasWeight = query.hasWeight;
     this.contextQuestion = query.getContextQuestion();
+    this.sortingMap = new LinkedHashMap<>(query.sortingMap);
 
     // clone columns
     for (String columnName : query.columnMap.keySet()) {
@@ -489,6 +493,14 @@ public abstract class Query extends WdkModelBase {
     }
 
     resolveQueryReferences(wdkModel);
+
+    // check the column names in the sorting map
+    for (String column : sortingMap.keySet()) {
+      if (!columnMap.containsKey(column))
+        throw new WdkModelException("Invalid sorting column '" + column
+            + "' in query " + getFullName());
+    }
+
     resolved = true;
   }
 
@@ -651,4 +663,17 @@ public abstract class Query extends WdkModelBase {
     }
   }
 
+  public void setSorting(String sorting) {
+    sortingMap.clear();
+    for (String clause : sorting.split(",")) {
+      String[] term = clause.trim().split(" ", 2);
+      String column = term[0];
+      boolean order = (term.length == 1 || term[1].equalsIgnoreCase("ASC"));
+      sortingMap.put(column, order);
+    }
+  }
+  
+  public Map<String, Boolean> getSortingMap() {
+    return new LinkedHashMap<>(sortingMap);
+  }
 }

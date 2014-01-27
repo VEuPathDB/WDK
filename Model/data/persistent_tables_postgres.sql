@@ -1,6 +1,5 @@
 /*
 DROP SEQUENCE IF EXISTS wdkuser.datasets_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.user_datasets_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.dataset_values_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.migration_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.favorites_pkseq;
@@ -13,7 +12,6 @@ DROP TABLE IF EXISTS wdkuser.favorites;
 DROP TABLE IF EXISTS wdkuser.user_baskets;
 DROP TABLE IF EXISTS wdkuser.strategies;
 DROP TABLE IF EXISTS wdkuser.steps;
-DROP TABLE IF EXISTS wdkuser.user_datasets;
 DROP TABLE IF EXISTS wdkuser.dataset_values;
 DROP TABLE IF EXISTS wdkuser.datasets;
 DROP TABLE IF EXISTS wdkuser.preferences;
@@ -49,9 +47,6 @@ CREATE SEQUENCE wdkuser.datasets_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkuser.dataset_values_pkseq INCREMENT BY 1 START WITH 1;
-
-
-CREATE SEQUENCE wdkuser.user_datasets_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkuser.user_baskets_pkseq INCREMENT BY 1 START WITH 1;
@@ -193,36 +188,21 @@ CREATE INDEX strategies_idx05 ON wdkuser.strategies (project_id, is_public, is_s
 
 CREATE TABLE wdkuser.datasets (
   dataset_id NUMERIC(12) NOT NULL,
-  dataset_checksum VARCHAR(40) NOT NULL,
+  user_id NUMERIC(12),
+  dataset_name VARCHAR(100) NOT NULL,
   dataset_size NUMERIC(12) NOT NULL,
+  content_checksum VARCHAR(40) NOT NULL,
+  created_time TIMESTAMP NOT NULL,
+  upload_file VARCHAR(2000),
+  parser VARCHAR(50) NOT NULL,
+  content CLOB,
   prev_dataset_id NUMERIC(12),
   migration_id NUMERIC(12),
   CONSTRAINT "datasets_pk" PRIMARY KEY (dataset_id),
-  CONSTRAINT "datasets_uq01" UNIQUE (dataset_checksum)
-);
-
-
-CREATE TABLE wdkuser.user_datasets
-(
-  user_dataset_id NUMERIC(12) NOT NULL,
-  user_id NUMERIC(12) NOT NULL,
-  dataset_id NUMERIC(12) NOT NULL,
-  content_checksum VARCHAR(40) NOT NULL,
-  create_time TIMESTAMP NOT NULL,
-  upload_file VARCHAR(2000),
-  data_type VARCHAR(50) NOT NULL,
-  content CLOB,
-  prev_user_dataset_id NUMERIC(12),
-  migration_id NUMERIC(12),
-  CONSTRAINT "user_datasets_pk" PRIMARY KEY (user_dataset_id),
-  CONSTRAINT "user_datasets_uq01" UNIQUE (user_id, content_checksum),
-  CONSTRAINT "user_datasets_fk01" FOREIGN KEY (user_id)
+  CONSTRAINT "datasets_uq01" UNIQUE (user_id, content_checksum),
+  CONSTRAINT "datasets_fk01" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id),
-  CONSTRAINT "user_datasets_fk02" FOREIGN KEY (dataset_id)
-      REFERENCES wdkuser.datasets (dataset_id)
 );
-
-CREATE INDEX wdkuser.user_datasets_idx01 ON wdkuser.user_datasets (dataset_id, user_id, user_dataset_id);
 
 
 CREATE TABLE wdkuser.dataset_values

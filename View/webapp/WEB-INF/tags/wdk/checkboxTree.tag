@@ -84,8 +84,8 @@
               description="image used for leaf nodes within the tree" %>
               
 <c:if test="${empty leafImage}" >
-  <c:set var="leafImage" value="/wdk/js/lib/jstree/graphFileIcon-16x16.gif"/>
-  <%--<c:set var="leafImage" value="/wdk/js/lib/jstree/clear2x16.gif"/>--%>
+  <c:set var="leafImage" value="/wdk/lib/jstree/graphFileIcon-16x16.gif"/>
+  <%--<c:set var="leafImage" value="/wdk/lib/jstree/clear2x16.gif"/>--%>
 </c:if>
 
 <%@ attribute name="segregateLeaves"
@@ -107,7 +107,7 @@
 <script type="text/javascript">
   // configure the tree
   wdk.checkboxTree.addTreeToPage("${id}", "${checkboxName}", ${useIcons}, 
-      ${rootNode.isAllSelected}, "<c:url value='${leafImage}'/>", 
+      ${rootNode.isAllSelected}, wdk.assetsUrl('${leafImage}'), 
       [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}],
       function(){ setTimeout(function() { ${onchange}; }, 0); }, function(){ ${onload}; });
   $(function() {
@@ -115,7 +115,7 @@
   });
 </script>    
 
-<div class="formButtonPanel" style="text-align:${buttonAlignment}">
+<div id="treeLinks-top" class="formButtonPanel" style="text-align:${buttonAlignment}">
   <c:if test="${showSelectAll}">
     <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_checkAll('${id}');">select all</a> |
   </c:if>
@@ -130,7 +130,7 @@
 <div class="checkbox-tree" id="${id}" style="display:none">
   <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp" />
 </div>
-<div class="formButtonPanel" style="text-align:${buttonAlignment}">
+<div id="treeLinks-bottom" class="formButtonPanel" style="text-align:${buttonAlignment}">
   <c:if test="${showSelectAll}">
     <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_checkAll('${id}');">select all</a> |
   </c:if>

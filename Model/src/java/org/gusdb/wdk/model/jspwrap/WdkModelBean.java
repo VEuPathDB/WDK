@@ -17,11 +17,11 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
-import org.gusdb.wdk.model.query.param.dataset.DatasetParam;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -359,16 +359,24 @@ public class WdkModelBean implements ConnectionContainer {
      * @throws WdkUserException if name is not in format *.*
      */
     public void validateQuestionFullName(String qFullName) throws WdkUserException {
-        String message = "Unable to find question with name: " + qFullName;
-        try {
-            // for now, just check format
-            Reference.assertTwoPartName(qFullName);
-            //if (qFullName == null || wdkModel.getQuestion(qFullName) == null) {
-            //    throw new WdkUserException(message);
-            //}
-        } catch (WdkModelException e) {
-            throw new WdkUserException(message, e);
+      String message = "The search '" + qFullName + "' is not or is no longer available.";
+      try {
+        // First check to see if this is a 'regular' question; if not, check XML questions
+        if (qFullName == null || wdkModel.getQuestion(qFullName) == null) {
+          throw new WdkModelException("Question name is null or resulting question is null");
         }
+      }
+      catch (WdkModelException e) {
+        try {
+          // exception will be thrown below; will mean that name is neither 'regular' question nor XML
+          Reference r = new Reference(qFullName);
+          XmlQuestionSet xqs = wdkModel.getXmlQuestionSet(r.getSetName());
+          xqs.getQuestion(r.getElementName());
+        }
+        catch (WdkModelException e2) {
+          throw new WdkUserException(message, e2);
+        }
+      }
     }
 
     /**
@@ -385,16 +393,23 @@ public class WdkModelBean implements ConnectionContainer {
      * @throws WdkUserException if name is not in format *.*
      */
     public void validateRecordClassName(String recordClassName) throws WdkUserException {
-        String message = "Unable to find record class with name: " + recordClassName;
+      String message = "The record type '" + recordClassName + "' is not or is no longer available.";
+      try {
+        // First check to see if this is a 'regular' record class; if not, check XML record classes
+        if (recordClassName == null || wdkModel.getRecordClass(recordClassName) == null) {
+          throw new WdkModelException("RecordClass name is null or resulting RecordClass is null");
+        }
+      }
+      catch (WdkModelException e) {
         try {
-            // for now, just check format
-            Reference.assertTwoPartName(recordClassName);
-            //if (recordClassName == null || wdkModel.getRecordClass(recordClassName) == null) {
-            //    throw new WdkUserException(message);
-            //}
+          // exception will be thrown below; will mean that name is neither 'regular' RC nor XML
+          Reference r = new Reference(recordClassName);
+          XmlRecordClassSet xrcs = wdkModel.getXmlRecordClassSet(r.getSetName());
+          xrcs.getRecordClass(r.getElementName());
         }
-        catch (WdkModelException e) {
-            throw new WdkUserException(message, e);
+        catch (WdkModelException e2) {
+          throw new WdkUserException(message, e2);
         }
+      }
     }
 }

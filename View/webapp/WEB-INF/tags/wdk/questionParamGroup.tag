@@ -41,7 +41,7 @@
           <div class="param-item">
             <label>
               <span style="font-weight:bold">${qP.prompt}</span>
-              <img class="help-link" style="cursor:pointer" title="${fn:escapeXml(qP.help)}" src="${pageContext.request.contextPath}/wdk/images/question.png" />
+              <imp:image class="help-link" style="cursor:pointer" title="${fn:escapeXml(qP.help)}" src="/wdk/images/question.png" />
             </label>
               <c:choose>
                   <c:when test="${paramType eq 'EnumParam' || paramType eq 'FlatVocabParam'}">

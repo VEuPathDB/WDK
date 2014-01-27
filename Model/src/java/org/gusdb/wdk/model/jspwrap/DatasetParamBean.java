@@ -3,11 +3,12 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import java.util.Map;
+import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.query.param.dataset.DatasetParam;
+import org.gusdb.wdk.model.dataset.DatasetParser;
+import org.gusdb.wdk.model.query.param.DatasetParam;
 
 /**
  * @author xingao
@@ -37,15 +38,7 @@ public class DatasetParamBean extends ParamBean<DatasetParam> {
 
   /**
    * @return
-   * @see org.gusdb.wdk.model.query.param.dataset.DatasetParam#getTypes()
-   */
-  public Map<String, String> getTypes() {
-    return datasetParam.getTypes();
-  }
-
-  /**
-   * @return
-   * @see org.gusdb.wdk.model.query.param.dataset.DatasetParam#getTypeSubParam()
+   * @see org.gusdb.wdk.model.query.param.DatasetParam#getTypeSubParam()
    */
   public String getTypeSubParam() {
     return datasetParam.getTypeSubParam();
@@ -53,18 +46,21 @@ public class DatasetParamBean extends ParamBean<DatasetParam> {
 
   /**
    * @return
-   * @see org.gusdb.wdk.model.query.param.dataset.DatasetParam#getFileSubParam()
+   * @see org.gusdb.wdk.model.query.param.DatasetParam#getFileSubParam()
    */
   public String getFileSubParam() {
     return datasetParam.getFileSubParam();
   }
 
-  /**
-   * @return
-   * @see org.gusdb.wdk.model.query.param.dataset.DatasetParam#getMethodSubParam()
-   */
-  public String getMethodSubParam() {
-    return datasetParam.getMethodSubParam();
+  public String getDataSubParam() {
+    return datasetParam.getDataSubParam();
   }
 
+  public String getStrategySubParam() {
+    return datasetParam.getStrategySubParam();
+  }
+  
+  public Collection<DatasetParser> getParsers() {
+    return datasetParam.getParsers();
+  }
 }

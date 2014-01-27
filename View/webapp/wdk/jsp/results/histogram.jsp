@@ -7,36 +7,58 @@
 
 <c:set var="attribute" value="${requestScope.attribute}" />
 <c:set var="plugin" value="${requestScope.plugin}" />
-<c:set var="data" value="${requestScope.data}" />
-<c:set var="histogram" value="${requestScope.histogram}" />
+<c:set var="data" value="${requestScope.histogramData}" />
+<c:set var="type" value="${requestScope.histogramType}" />
+<c:set var="binSize" value="${requestScope.histogramBinSize}" />
+<c:set var="min" value="${requestScope.histogramMin}" />
+<c:set var="max" value="${requestScope.histogramMax}" />
 
 <div id="${attribute.name}-${plugin.name}" class="histogram"
-     data-controller="wdk.result.histogram.init">
+     data-controller="wdk.result.histogram.init"
+     data-type="${type}" data-min="${min}" data-max="${max}">
   <h2 align="center">${plugin.display}</h2>
 
   <ul>
     <li><a href="#graph">Graph</a></li>
-    <li><a href="#data">Table</a></li>
+    <li><a href="#data">Data</a></li>
   </ul>
   
   <div id="graph">
     <div class="plot"> </div>
+
+    <div class="bin-control control-panel">
+      <span>Set bin size (<span class="bin-size-display"></span>):</span>
+      <input class="bin-size" type="hidden" value="${binSize}" />
+      <div class="bin-slider"></div>
+    </div>
+
+    <div class="value-control control-panel">
+      Choose column display:
+      <input name="display" class="normal" type="radio" value="Normal" checked="checked" />Normal
+      <input name="display" class="logarithm" type="radio" value="Logarithm" />Logarithm
+    </div>
   </div>
   
-  <div id="data" mode="${plugin.axisMode}">
+  <div id="data">
+    <div class="data">
+      <c:forEach items="${data}" var="item">
+        <span data-count="${data[item.key]}">${item.key}</span>
+      </c:forEach>
+    </div>
 
     <table class="datatable">
       <thead>
         <tr>
-          <th class="bin">${attribute.displayName}</th>
-          <th class="size"># ${attribute.recordClass.displayNamePlural}</th>
+          <th class="label">${attribute.displayName}</th>
+          <th class="count"># of ${attribute.recordClass.displayNamePlural}</th>
+
         </tr>
       </thead>
       <tbody>
         <c:forEach items="${data}" var="item">
           <tr>
-            <td>${item.key}</td>
-            <td>${data[item.key]}</td>
+            <td class="label">${item.key}</td>
+            <td class="count">${data[item.key]}</td>
           </tr>
         </c:forEach>
       </tbody>

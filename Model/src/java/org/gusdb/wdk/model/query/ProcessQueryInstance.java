@@ -1,28 +1,29 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -40,7 +41,6 @@ import org.json.JSONObject;
  * instance will retrieve all the packets in order.
  * 
  * @author Jerric Gao
- * 
  */
 public class ProcessQueryInstance extends QueryInstance {
 
@@ -49,11 +49,6 @@ public class ProcessQueryInstance extends QueryInstance {
   private ProcessQuery query;
   private int signal;
 
-  /**
-   * @param query
-   * @param values
-   * @throws WdkUserException
-   */
   public ProcessQueryInstance(User user, ProcessQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,
       Map<String, String> context) throws WdkModelException {
@@ -73,6 +68,10 @@ public class ProcessQueryInstance extends QueryInstance {
     jsInstance.put("signal", signal);
   }
 
+  // Have to turn this off, since it is not easy to add extra column into the 
+  // result with the ArgumentBatch.
+  private static final boolean USE_SQLRUNNER = false;
+
   /*
    * (non-Javadoc)
    * 
@@ -83,98 +82,156 @@ public class ProcessQueryInstance extends QueryInstance {
   @Override
   public void insertToCache(String tableName, int instanceId)
       throws WdkModelException {
+
     logger.debug("inserting process query result to cache...");
-    Map<String, Column> columns = query.getColumnMap();
-    String weightColumn = Utilities.COLUMN_WEIGHT;
+    List<Column> columns = Arrays.asList(query.getColumns());
+    Set<String> columnNames = query.getColumnMap().keySet();
 
     // prepare the sql
-    StringBuffer sql = new StringBuffer("INSERT INTO ");
-    sql.append(tableName);
-    sql.append(" (");
-    sql.append(CacheFactory.COLUMN_INSTANCE_ID);
-    // have to move clobs to the end of insert
-    for (Column column : columns.values()) {
-      if (column.getType() != ColumnType.CLOB)
-        sql.append(", " + column.getName());
-    }
-    for (Column column : columns.values()) {
-      if (column.getType() == ColumnType.CLOB)
-        sql.append(", " + column.getName());
+    String sql = buildCacheInsertSql(tableName, instanceId, columns,
+        columnNames);
+
+    // get results and time process
+    long startTime = System.currentTimeMillis();
+    final ResultList resultList = getUncachedResults();
+    logger.info("Getting uncached results took "
+        + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
+
+    // start timer again for insertion to cache
+    startTime = System.currentTimeMillis();
+    DataSource dataSource = wdkModel.getAppDb().getDataSource();
+
+    // NOTE: This code may be used in the future instead of the code below;
+    // probably
+    // want to really test results to make sure exact same data gets inserted
+    if (USE_SQLRUNNER) {
+      ArgumentBatch dataStream = new ResultListArgumentBatch(resultList,
+          columns, query.getCacheInsertBatchSize());
+      SQLRunner runner = new SQLRunner(dataSource, sql);
+      runner.executeStatementBatch(dataStream);
+      long cumulativeBatchTime = runner.getLastExecutionTime();
+      long cumulativeInsertTime = System.currentTimeMillis() - startTime;
+      logger.info("All batches completed.\nInserting results to cache took "
+          + (cumulativeInsertTime / 1000D)
+          + " seconds (Java + Oracle clock time)\n"
+          + (cumulativeBatchTime / 1000D)
+          + " seconds of that were spent executing batches ("
+          + FormatUtil.getPctFromRatio(cumulativeBatchTime,
+              cumulativeInsertTime) + ")");
+      logger.debug("Process query cache insertion finished.");
+      return;
     }
 
-    if (query.isHasWeight() && !columns.containsKey(weightColumn))
-      sql.append(", " + weightColumn);
-    sql.append(") VALUES (");
-    sql.append(instanceId);
-    for (int i = 0; i < columns.size(); i++) {
-      sql.append(", ?");
-    }
-    // insert weight to the last column, if doesn't exist
-    if (query.isHasWeight() && !columns.containsKey(weightColumn))
-      sql.append(", " + assignedWeight);
-    sql.append(")");
-
-    DBPlatform platform = query.getWdkModel().getAppDb().getPlatform();
+    // get bind types for each column
+    Integer[] bindTypes = ResultListArgumentBatch.getBindTypes(columns);
+    
+    // add rowID into bindTypes
+    Integer[] newBindTypes = new Integer[bindTypes.length + 1];
+    System.arraycopy(bindTypes, 0, newBindTypes, 1, bindTypes.length);
+    newBindTypes[0] = Types.INTEGER;
+    bindTypes = newBindTypes;
+    
     PreparedStatement ps = null;
+    int rowCount = 0;
     try {
-      DataSource dataSource = wdkModel.getAppDb().getDataSource();
       ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-      long startTime = System.currentTimeMillis();
-      ResultList resultList = getUncachedResults();
-      logger.info("Getting uncached results took "
-          + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
-      startTime = System.currentTimeMillis();
-      int rowId = 0;
+      int rowsInBatch = 0, numBatches = 0;
+      long cumulativeBatchTime = 0;
       while (resultList.next()) {
-        int columnId = 1;
-        // have to move clobs to the end
-        for (Column column : columns.values()) {
-          ColumnType type = column.getType();
-          if (type == ColumnType.CLOB) continue;
+        
+        // build typed object array from this record, bind to statement, and add
+        // to batch
+        Object[] values = ResultListArgumentBatch.getNextRecordValues(columns,
+            resultList);
+        
+        // add rowCount into values
+        rowCount++;
+        Object[] newValues = new Object[values.length + 1];
+        System.arraycopy(values, 0, newValues, 1, values.length);
+        newValues[0] = rowCount;
+        values = newValues;
 
-          String value = (String) resultList.get(column.getName());
-
-          // determine the type
-          if (type == ColumnType.BOOLEAN) {
-            ps.setBoolean(columnId, Boolean.parseBoolean(value));
-          } else if (type == ColumnType.DATE) {
-            ps.setTimestamp(columnId, new Timestamp(
-                Date.valueOf(value).getTime()));
-          } else if (type == ColumnType.FLOAT) {
-            ps.setFloat(columnId, Float.parseFloat(value));
-          } else if (type == ColumnType.NUMBER) {
-            ps.setInt(columnId, Integer.parseInt(value));
-          } else {
-            int width = column.getWidth();
-            if (value != null && value.length() > width) {
-              logger.warn("Column [" + column.getName() + "] value truncated.");
-              value = value.substring(0, width - 3) + "...";
-            }
-            ps.setString(columnId, value);
-          }
-          columnId++;
-        }
-        for (Column column : columns.values()) {
-          if (column.getType() == ColumnType.CLOB) {
-            String value = (String) resultList.get(column.getName());
-            platform.setClobData(ps, columnId, value, false);
-            columnId++;
-          }
-        }
+        SqlUtils.bindParamValues(ps, bindTypes, values);
         ps.addBatch();
 
-        rowId++;
-        if (rowId % 1000 == 0) ps.executeBatch();
+        // if reached the batch size, send to DB
+        rowsInBatch++;
+        if (rowsInBatch == query.getCacheInsertBatchSize()) {
+          numBatches++;
+          cumulativeBatchTime = executeBatchWithLogging(ps, numBatches,
+              rowsInBatch, cumulativeBatchTime);
+          rowsInBatch = 0;
+        }
       }
-      if (rowId % 1000 != 0) ps.executeBatch();
-      logger.info("Inserting results to cache took "
-          + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
+      // send any remainder to DB
+      if (rowsInBatch > 0) {
+        numBatches++;
+        cumulativeBatchTime = executeBatchWithLogging(ps, numBatches,
+            rowsInBatch, cumulativeBatchTime);
+      }
+
+      long cumulativeInsertTime = System.currentTimeMillis() - startTime;
+      logger.info("All batches completed.\nInserting results to cache took "
+          + (cumulativeInsertTime / 1000D)
+          + " seconds (Java + Oracle clock time)\n"
+          + (cumulativeBatchTime / 1000D)
+          + " seconds of that were spent executing batches ("
+          + FormatUtil.getPctFromRatio(cumulativeBatchTime,
+              cumulativeInsertTime) + ")");
     } catch (SQLException e) {
       throw new WdkModelException("Unable to insert record into cache.", e);
     } finally {
       SqlUtils.closeStatement(ps);
     }
-    logger.debug("process query cache insertion finished.");
+    logger.debug("Process query cache insertion finished.");
+  }
+
+  private long executeBatchWithLogging(PreparedStatement ps, int numBatches,
+      int rowsInBatch, long cumulativeBatchTime) throws SQLException {
+    long batchStart = System.currentTimeMillis();
+    ps.executeBatch();
+    long batchElapsed = System.currentTimeMillis() - batchStart;
+    cumulativeBatchTime += batchElapsed;
+    logger.debug("Writing batch " + numBatches + " (" + rowsInBatch
+        + " records) took " + batchElapsed + " ms. Cumulative batch "
+        + "execution time: " + cumulativeBatchTime + " ms");
+    return cumulativeBatchTime;
+  }
+
+  private String buildCacheInsertSql(String tableName, int instanceId,
+      List<Column> columns, Set<String> columnNames) {
+
+    String weightColumn = Utilities.COLUMN_WEIGHT;
+
+    StringBuilder sql = new StringBuilder("INSERT INTO " + tableName);
+    sql.append(" (").append(CacheFactory.COLUMN_INSTANCE_ID + ", ");
+    sql.append(CacheFactory.COLUMN_ROW_ID);
+
+    // have to move clobs to the end of bind variables or Oracle will complain
+    for (Column column : columns) {
+      if (column.getType() != ColumnType.CLOB)
+        sql.append(", ").append(column.getName());
+    }
+    for (Column column : columns) {
+      if (column.getType() == ColumnType.CLOB)
+        sql.append(", ").append(column.getName());
+    }
+
+    // insert name of weight as the last column, if it doesn't exist
+    if (query.isHasWeight() && !columnNames.contains(weightColumn))
+      sql.append(", ").append(weightColumn);
+
+    sql.append(") VALUES (");
+    sql.append(instanceId).append(", ?");
+    for (int i = 0; i < columns.size(); i++) {
+      sql.append(", ?");
+    }
+
+    // insert weight to the last column, if doesn't exist
+    if (query.isHasWeight() && !columnNames.contains(weightColumn))
+      sql.append(", ").append(assignedWeight);
+
+    return sql.append(")").toString();
   }
 
   /*
@@ -252,22 +309,23 @@ public class ProcessQueryInstance extends QueryInstance {
       throws RemoteException, MalformedURLException, ServiceException,
       WsfServiceException {
 
-    String serviceUrl = query.getWebServiceUrl();
-
-    // DEBUG
-    logger.info("Invoking " + request.getPluginClass() + " at " + serviceUrl);
     long start = System.currentTimeMillis();
-
     String jsonRequest = request.toString();
-
     ProcessResponse response;
+
     if (local) { // invoke the process query locally
+      logger.info("Using local service");
       // call the service directly
       org.gusdb.wsf.service.WsfService service = new org.gusdb.wsf.service.WsfService();
       org.gusdb.wsf.service.WsfResponse wsfResponse = service.invoke(jsonRequest);
       response = new ServiceProcessResponse(service, wsfResponse);
-    } else { // invoke the process query via web service
+    }
+
+    else { // invoke the process query via web service
+      logger.info("Using remote service");
       // call the service through client
+      String serviceUrl = query.getWebServiceUrl();
+      logger.info("Invoking " + request.getPluginClass() + " at " + serviceUrl);
       WsfServiceServiceLocator locator = new WsfServiceServiceLocator();
       org.gusdb.wsf.client.WsfService client = locator.getWsfService(new URL(
           serviceUrl));
@@ -305,13 +363,12 @@ public class ProcessQueryInstance extends QueryInstance {
     DBPlatform platform = query.getWdkModel().getAppDb().getPlatform();
     Column[] columns = query.getColumns();
 
-    StringBuffer sqlTable = new StringBuffer("CREATE TABLE ");
-    sqlTable.append(tableName).append(" (");
+    StringBuffer sqlTable = new StringBuffer("CREATE TABLE " + tableName + " (");
 
     // define the instance id column
     String numberType = platform.getNumberDataType(12);
-    sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID + " " + numberType);
-    sqlTable.append(" NOT NULL");
+    sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID + " " + numberType + " NOT NULL, ");
+    sqlTable.append(CacheFactory.COLUMN_ROW_ID + " " + numberType + " NOT NULL");
     if (query.isHasWeight())
       sqlTable.append(", " + Utilities.COLUMN_WEIGHT + " " + numberType);
 

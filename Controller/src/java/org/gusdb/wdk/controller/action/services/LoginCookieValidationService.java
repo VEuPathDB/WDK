@@ -29,6 +29,7 @@ import org.json.JSONObject;
  * {
  *   "isValid": true,
  *   "userData": {
+ *     "id" : 7145453,
  *     "displayName" : "Ryan Doherty",
  *     "email" : "rdoherty@pcbi.upenn.edu"
  *   }
@@ -46,6 +47,7 @@ public class LoginCookieValidationService extends WdkAction {
   // json output constants
   private static final String IS_VALID_KEY = "isValid";
   private static final String USER_DATA_KEY = "userData";
+  private static final String USER_ID_KEY = "id";
   private static final String DISPLAY_NAME_KEY = "displayName";
   private static final String EMAIL_KEY = "email";
   
@@ -104,6 +106,7 @@ public class LoginCookieValidationService extends WdkAction {
           // cookie seems valid; try to get user's name and email
           UserBean user = getWdkModel().getUserFactory().getUserByEmail(username);
           JSONObject userData = new JSONObject();
+          userData.put(USER_ID_KEY, user.getUserId());
           userData.put(DISPLAY_NAME_KEY, user.getFirstName() + " " + user.getLastName());
           userData.put(EMAIL_KEY, user.getEmail());
           result.put(USER_DATA_KEY, userData);

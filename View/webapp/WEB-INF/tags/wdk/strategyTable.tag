@@ -40,6 +40,7 @@
     <%-- <th class = "sortable" style="width:5em;" scope="col">#Steps</th> --%>
     <th scope="col">Description</th>
     <th scope="col" style="width:12em;">Actions</th>
+    <th class="sortable" style="width:5em;" scope="col" title="${checkboxTitle}">Public</th>
     <th class="sortable" style="width:9em;" scope="col">Created</th>
     <th class="sortable" style="width:9em;" scope="col">
       <c:choose>
@@ -49,7 +50,6 @@
     </th>
     <th class="sortable" scope="col" style="width: 6em" title="It refers to the Website Version. See the Version number of this current release on the top left side of the header, on the right of the site name">Version</th>
     <th class="sortable" scope="col" style="width: 4em;text-align:right">Size</th>
-    <th class="sortable" scope="col" style="width: 5em" title="${checkboxTitle}">Public</th>
   </tr>
   </thead>
 
@@ -79,7 +79,7 @@
       </c:forEach>
 
 <%--
-      <td><img id="img_${strategyId}" class="plus-minus plus" src="<c:url value='/wdk/images/sqr_bullet_plus.png'/>" alt="" onclick="wdk.history.toggleSteps2(${strategyId})"/></td>
+      <td><imp:image id="img_${strategyId}" class="plus-minus plus" src="/wdk/images/sqr_bullet_plus.png" alt="" onclick="wdk.history.toggleSteps2(${strategyId})"/></td>
 --%>
 
       <c:set var="dispNam" value="${strategy.name}"/>
@@ -98,7 +98,7 @@
             <c:out value="${dispNam}"/>
           </span>
           <c:if test="${!strategy.isSaved}">*</c:if>
-          <c:if test="${!strategy.valid}">&nbsp;&nbsp;&nbsp;<img title="This strategy has one or more steps that need to be revised, due to release updates; click to revise!" src="<c:url value='/wdk/images/invalidIcon.png'/>" width="12"/></c:if>
+          <c:if test="${!strategy.valid}">&nbsp;&nbsp;&nbsp;<imp:image title="This strategy has one or more steps that need to be revised, due to release updates; click to revise!" src="/wdk/images/invalidIcon.png" width="12"/></c:if>
         </div> 
 
       </td>
@@ -166,10 +166,6 @@
             <option value="wdk.history.handleBulkStrategies('delete',${strategyId})">Delete</option>
          </select>
       </td>
-      <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.createdTimeFormatted, 0, 10)}</td>
-      <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.lastModifiedTimeFormatted, 0, 10)}</td>
-      <td nowrap style="text-align:center">${strategy.version}</td>
-      <td nowrap style="text-align:right">${strategy.estimateSize}&nbsp;</td>
       
       <c:set var="checkboxTitle" value="Check this box to make your strategy visible to the community under the 'Public' tab."/>
       <c:set var="disabledProp" value=""/>
@@ -201,9 +197,14 @@
         <c:set var="checkedProp">checked="checked"</c:set>
       </c:if>
       <td nowrap style="text-align:center;width:5em">
-        <img style="display:none" src="wdk/images/filterLoading.gif"/>
+        <imp:image style="display:none" src="/wdk/images/filterLoading.gif"/>
         <input title="${checkboxTitle}" class="isPublicCheckbox" type="checkbox" ${disabledProp} ${checkedProp} onclick="${makePublicAction}"/>
       </td>
+      
+      <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.createdTimeFormatted, 0, 10)}</td>
+      <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.lastModifiedTimeFormatted, 0, 10)}</td>
+      <td nowrap style="text-align:center">${strategy.version}</td>
+      <td nowrap style="text-align:right">${strategy.estimateSize}&nbsp;</td>
     </tr>
 
     <c:set var="i" value="${i+1}"/>

@@ -55,21 +55,23 @@ Otherwise a standard select menu is used.
           <c:set var="i" value="0"/>
           <table border="1" cellspacing="0"><tr><td>
             <ul>
-              <c:forEach items="${qP.displayMap}" var="entity">
+              <c:forEach items="${qP.displayMap}" var="entity" varStatus="loop">
                 <c:if test="${i == 0}"><c:set var="checked" value="checked"/></c:if>
                 <li>
-                  <html:multibox property="array(${pNam})" value="${entity.key}" styleId="${pNam}" onchange="${changeCode}"/>
-                  <c:choose>
-                    <%-- test for param labels to italicize --%>
-                    <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
-                      <i>${entity.value}</i>&nbsp;
-                    </c:when>
-                    <c:otherwise> <%-- use multiselect menu --%>
-                      ${entity.value}&nbsp;
-                    </c:otherwise>
-                  </c:choose>
-                  <c:set var="i" value="${i+1}"/>
-                  <c:set var="checked" value=""/>
+                  <label>
+                    <html:multibox property="array(${pNam})" value="${entity.key}" styleId="${pNam}_${loop.index}" onchange="${changeCode}"/>
+                    <c:choose>
+                      <%-- test for param labels to italicize --%>
+                      <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
+                        <i>${entity.value}</i>&nbsp;
+                      </c:when>
+                      <c:otherwise> <%-- use multiselect menu --%>
+                        ${entity.value}&nbsp;
+                      </c:otherwise>
+                    </c:choose>
+                    <c:set var="i" value="${i+1}"/>
+                    <c:set var="checked" value=""/>
+                  </label>
                 </li>
               </c:forEach>
             </ul>
@@ -80,11 +82,26 @@ Otherwise a standard select menu is used.
     
       <%-- use a tree list --%>
       <c:when test="${displayType eq 'treeBox'}">
-        <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
         <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
           <c:set var="updateCountFunc">window.wdk.parameterHandlers.adjustEnumCountTree('${qP.name}aaa',${qP.countOnlyLeaves})</c:set>
           <imp:checkboxTree id="${pNam}CBT${idgen.nextId}" rootNode="${qP.paramTree}" checkboxName="array(${pNam})"
               buttonAlignment="left" onchange="${updateCountFunc}" onload="${updateCountFunc}"/>
+        </div>
+      </c:when>
+
+      <%-- use a type ahead --%>
+      <c:when test="${displayType eq 'typeAhead'}">
+        <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <div id="${pNam}_display" data-multiple="true"></div>
+          <html:hidden styleClass="typeAhead" property="value(${pNam})" />
+          <div class="type-ahead-help" style="margin:2px;">
+            Begin typing to see suggestions to choose from (CTRL or CMD click to select multiple)<br/>
+            Or paste a list of IDs separated by a comma, new-line, white-space, or semi-colon.<br/>
+            <%-- wildcard support has been dropped due to SQL complications
+            Or use * as a wildcard, like this: *your-term*
+            --%>
+          </div>
         </div>
       </c:when>
   
@@ -110,7 +127,9 @@ Otherwise a standard select menu is used.
           <ul>
             <c:forEach items="${qP.displayMap}" var="entity">
               <li ${v}>
-                <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
+                <label>
+                  <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
+                </label>
               </li>
             </c:forEach>
           </ul>
@@ -118,9 +137,14 @@ Otherwise a standard select menu is used.
       
         <%-- use a type ahead --%>
         <c:when test="${displayType eq 'typeAhead'}">
-          <input type="text" id="${pNam}_display" size="50" value=""/>
-          <html:hidden styleClass="typeAhead" property="value(${pNam})" />
-          <div class="type-ahead-help">Type three characters to see suggestions.<br>Or use * as a wildcard, like this: *your-term*</div>
+          <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+            <div id="${pNam}_display" data-multiple="false"></div>
+            <html:hidden styleClass="typeAhead" property="value(${pNam})" />
+            <div class="type-ahead-help" style="margin:2px;">
+              Begin typing to see suggestions to choose from<br/>
+              Or use * as a wildcard, like this: *your-term*
+            </div>
+          </div>
         </c:when>
   
         <c:otherwise>

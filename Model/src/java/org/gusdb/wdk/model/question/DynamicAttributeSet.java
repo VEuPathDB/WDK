@@ -16,7 +16,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
-import org.gusdb.wdk.model.record.attribute.plugin.FloatHistogramAttributePlugin;
+import org.gusdb.wdk.model.record.attribute.plugin.HistogramAttributePlugin;
 
 /**
  * An object representation of the {@code <question>/<dynamicAttributes>}. The
@@ -134,7 +134,7 @@ public class DynamicAttributeSet extends WdkModelBase {
       reference.setName("histogram");
       reference.setDisplay("Histogram");
       reference.setDescription("Display a histogram of weigh distribution");
-      reference.setImplementation(FloatHistogramAttributePlugin.class.getName());
+      reference.setImplementation(HistogramAttributePlugin.class.getName());
       reference.setView("/wdk/jsp/results/histogram.jsp");
       attribute.addAttributePluginReference(reference);
 

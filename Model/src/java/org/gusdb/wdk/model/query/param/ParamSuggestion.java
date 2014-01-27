@@ -26,17 +26,6 @@ public class ParamSuggestion extends WdkModelBase {
   private String emptyValue = "";
 
   /**
-   * only used by abstractEnumParam
-   */
-  private String selectMode;
-
-  /**
-   * Only used by datasetParam, determines what input type to be selected as
-   * default.
-   */
-  private String defaultType;
-
-  /**
    * the default constructor is used by the digester
    */
   public ParamSuggestion() {}
@@ -48,8 +37,6 @@ public class ParamSuggestion extends WdkModelBase {
     this.defaultValue = suggestion.defaultValue;
     this.allowEmpty = suggestion.allowEmpty;
     this.emptyValue = suggestion.emptyValue;
-    this.selectMode = suggestion.selectMode;
-    this.defaultType = suggestion.defaultType;
   }
 
   /**
@@ -117,28 +104,5 @@ public class ParamSuggestion extends WdkModelBase {
    */
   public void setEmptyValue(String emptyValue) {
     this.emptyValue = emptyValue;
-  }
-
-  /**
-   * @return the selectMode
-   */
-  public String getSelectMode() {
-    return selectMode;
-  }
-
-  /**
-   * @param selectMode
-   *          the selectMode to set
-   */
-  public void setSelectMode(String selectMode) {
-    this.selectMode = selectMode;
-  }
-
-  public String getDefaultType() {
-    return defaultType;
-  }
-
-  public void setDefaultType(String defaultType) {
-    this.defaultType = defaultType;
   }
 }

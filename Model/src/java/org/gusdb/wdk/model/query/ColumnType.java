@@ -1,7 +1,7 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query;
+
+import java.sql.Types;
+import org.gusdb.wdk.model.query.TypeConverters.TypeConverter;
 
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -10,47 +10,37 @@ import org.gusdb.wdk.model.WdkModelException;
  * actual type of a field in the database.
  * 
  * @author xingao
- * 
  */
 public enum ColumnType {
 
-  STRING("string", 1999), NUMBER("number", 12), FLOAT("float", 12), BOOLEAN(
-      "boolean", 1), CLOB("clob", 0), DATE("date", 0);
+  STRING(1999, Types.VARCHAR, TypeConverters.STRING_CONVERTER),
+  NUMBER(12, Types.INTEGER, TypeConverters.INTEGER_CONVERTER),
+  FLOAT(12, Types.FLOAT, TypeConverters.FLOAT_CONVERTER),
+  BOOLEAN(1, Types.BOOLEAN, TypeConverters.BOOLEAN_CONVERTER),
+  CLOB(0, Types.CLOB, TypeConverters.STRING_CONVERTER),
+  DATE(0, Types.TIMESTAMP, TypeConverters.TIMESTAMP_CONVERTER);
 
-  public static ColumnType parse(String name) throws WdkModelException {
-    name = name.trim().toLowerCase();
-
-    if (name.equals(STRING.type))
-      return STRING;
-    else if (name.equals(NUMBER.type))
-      return NUMBER;
-    else if (name.equals(FLOAT.type))
-      return FLOAT;
-    else if (name.equals(CLOB.type))
-      return CLOB;
-    else if (name.equals(BOOLEAN.type))
-      return BOOLEAN;
-    else if (name.equals(DATE.type))
-      return DATE;
-    else
-      throw new WdkModelException("Invalid column type: [" + name + "]");
-  }
-
-  private String type;
   private int defaultWidth;
+  private int sqlType;
+  private TypeConverter converter;
 
-  /**
-     * 
-     */
-  private ColumnType(String type, int defaultWidth) {
-    this.type = type;
+  private ColumnType(int defaultWidth, int sqlType, TypeConverter converter) {
     this.defaultWidth = defaultWidth;
+    this.sqlType = sqlType;
+    this.converter = converter;
   }
 
   public String getType() {
-    return type;
+    return name().toLowerCase();
   }
 
+  /**
+   * @return type of this column as java.sql.Types value
+   */
+  public int getSqlType() {
+    return sqlType;
+  }
+  
   /**
    * @return the defaultWidth
    */
@@ -58,18 +48,25 @@ public enum ColumnType {
     return defaultWidth;
   }
 
+  public Object convertStringToTypedValue(String value) {
+    return converter.convert(value);
+  }
+  
   public boolean isText() {
     return (this == CLOB || this == DATE || this == STRING);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Enum#toString()
-   */
   @Override
   public String toString() {
-    return type;
+    return getType();
   }
 
+  public static ColumnType parse(String name) throws WdkModelException {
+    try {
+      return valueOf(name.trim().toUpperCase());
+    }
+    catch (IllegalArgumentException | NullPointerException e) {
+      throw new WdkModelException("Invalid column type: [" + name + "]", e);
+    }
+  }
 }

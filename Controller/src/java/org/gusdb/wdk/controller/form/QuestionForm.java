@@ -11,8 +11,10 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -20,6 +22,7 @@ import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.RequestParams;
 
 /**
  * form bean for showing a wdk question from a question set
@@ -38,14 +41,15 @@ public class QuestionForm extends MapActionForm {
   private String customName;
 
   /**
-   * validate the properties that have been sent from the HTTP request, and
-   * return an ActionErrors object that encapsulates any validation errors
+   * validate the properties that have been sent from the HTTP request, and return an ActionErrors object that
+   * encapsulates any validation errors
    */
   @Override
   public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
     logger.debug("\n\n\n\n\n\nstart form validation...");
     ActionErrors errors = super.validate(mapping, request);
-    if (errors == null) errors = new ActionErrors();
+    if (errors == null)
+      errors = new ActionErrors();
 
     UserBean user = ActionUtility.getUser(servlet, request);
 
@@ -53,7 +57,8 @@ public class QuestionForm extends MapActionForm {
     request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
     request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, questionFullName);
 
-    if (!validating) return errors;
+    if (!validating)
+      return errors;
 
     String clicked = request.getParameter(CConstants.PQ_SUBMIT_KEY);
     if (clicked != null && clicked.equals(CConstants.PQ_SUBMIT_EXPAND_QUERY)) {
@@ -63,21 +68,31 @@ public class QuestionForm extends MapActionForm {
     QuestionBean wdkQuestion;
     try {
       wdkQuestion = getQuestion();
-    } catch (WdkModelException ex) {
-      ActionMessage message = new ActionMessage("mapped.properties",
-          ex.getMessage());
+    }
+    catch (WdkModelException ex) {
+      ActionMessage message = new ActionMessage("mapped.properties", ex.getMessage());
       errors.add(ActionErrors.GLOBAL_MESSAGE, message);
       return errors;
     }
-    if (wdkQuestion == null) return errors;
+    if (wdkQuestion == null)
+      return errors;
 
     Map<String, ParamBean<?>> params = wdkQuestion.getParamsMap();
+    RequestParams requestParams = new QuestionRequestParams(request, this);
 
     // get the context values first
     Map<String, String> contextValues = new LinkedHashMap<>();
     for (String name : params.keySet()) {
-      String value = (String) getValue(name);
-      contextValues.put(name, value);
+      ParamBean<?> param = params.get(name);
+      try {
+        Object rawValue = param.getRawValue(user, requestParams);
+        String stableValue = param.getStableValue(user, rawValue, contextValues);
+        contextValues.put(name, stableValue);
+      }
+      catch (WdkModelException | WdkUserException ex) {
+        ActionMessage message = new ActionMessage("mapped.properties", param.getPrompt(), ex.getMessage());
+        errors.add(ActionErrors.GLOBAL_MESSAGE, message);
+      }
     }
 
     // assign context values to the param bean
@@ -99,12 +114,12 @@ public class QuestionForm extends MapActionForm {
         String stableValue = param.getStableValue(user, rawValue, contextValues);
 
         // cannot validate datasetParam here
-        if (!(param instanceof DatasetParamBean))
+        if (!(param instanceof DatasetParamBean)) {
           param.validate(user, stableValue, contextValues);
-      } catch (Exception ex) {
-        ex.printStackTrace();
-        ActionMessage message = new ActionMessage("mapped.properties", prompt,
-            ex.getMessage());
+        }
+      }
+      catch (Exception ex) {
+        ActionMessage message = new ActionMessage("mapped.properties", prompt, ex.getMessage());
         errors.add(ActionErrors.GLOBAL_MESSAGE, message);
       }
     }
@@ -114,16 +129,21 @@ public class QuestionForm extends MapActionForm {
     if (hasWeight) {
       String message = null;
       if (!weight.matches("[\\-\\+]?\\d+")) {
-        message = "Invalid weight value: '" + weight
-            + "'. Only integer numbers are allowed.";
-      } else if (weight.length() > 9) {
+        message = "Invalid weight value: '" + weight + "'. Only integer numbers are allowed.";
+      }
+      else if (weight.length() > 9) {
         message = "Weight number is too big: " + weight;
       }
       if (message != null) {
-        ActionMessage am = new ActionMessage("mapped.properties",
-            "Assigned weight", message);
+        ActionMessage am = new ActionMessage("mapped.properties", "Assigned weight", message);
         errors.add(ActionErrors.GLOBAL_MESSAGE, am);
       }
+    }
+
+    // add explicit exception to request for access later
+    if (!errors.isEmpty()) {
+      request.setAttribute(CConstants.WDK_EXCEPTION, new WdkUserException(
+          "Unable to validate params in request."));
     }
 
     logger.debug("finish validation...\n\n\n\n\n");
@@ -145,18 +165,18 @@ public class QuestionForm extends MapActionForm {
 
   public QuestionBean getQuestion() throws WdkModelException {
     if (question == null) {
-      if (questionFullName == null) return null;
+      if (questionFullName == null)
+        return null;
       int dotI = questionFullName.indexOf('.');
       String qSetName = questionFullName.substring(0, dotI);
-      String qName = questionFullName.substring(dotI + 1,
-          questionFullName.length());
+      String qName = questionFullName.substring(dotI + 1, questionFullName.length());
 
       WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
           CConstants.WDK_MODEL_KEY);
 
-      QuestionSetBean wdkQuestionSet = wdkModel.getQuestionSetsMap().get(
-          qSetName);
-      if (wdkQuestionSet == null) return null;
+      QuestionSetBean wdkQuestionSet = wdkModel.getQuestionSetsMap().get(qSetName);
+      if (wdkQuestionSet == null)
+        return null;
       question = wdkQuestionSet.getQuestionsMap().get(qName);
     }
     return question;
