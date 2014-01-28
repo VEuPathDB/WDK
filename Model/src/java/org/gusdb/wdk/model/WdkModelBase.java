@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
@@ -18,17 +15,15 @@ import java.util.Set;
  * They are used to support shared model files among different projects. If
  * several projects shared many common definitions such as record class types,
  * attributes, and queries, they can reuse the same model files, and just use
- * include/exclude projects on hte project specific elements. If the flags are
+ * include/exclude projects on the project specific elements. If the flags are
  * not set, then an element will be included in all the projects by default. The
  * include/exclude flag can be applied to almost all the model tags.
  * 
  * This class provides property list to all its children classes, and it also
- * supports the include/exclude properies for almost all the tags in the wdk
+ * supports the include/exclude properties for almost all the tags in the wdk
  * model.
  * 
- * 
  * @author Jerric
- * 
  */
 public abstract class WdkModelBase {
 

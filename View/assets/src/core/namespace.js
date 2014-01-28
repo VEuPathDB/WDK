@@ -14,11 +14,11 @@
 //          // attach some functionality to the ns object
 //        });
 
-(function (ns, jQuery) {
+(function (ns, root) {
    "use strict";
 
     var namespace = function (ns, func) {
-        var nsRegExp = /^([a-zA-Z]+)(\.[a-zA-Z]*)*$/,
+        var nsRegExp = /^([a-zA-Z_]+)(\.[a-zA-Z_]*)*$/,
             nsArray,
             currentNS,
             i;
@@ -31,11 +31,11 @@
         //parse namespace string
         nsArray = ns.split(".");
 
-        //set the root namespace to window (if it's not explictly stated)
+        //set the root namespace to root (if it's not explictly stated)
         if (nsArray[0] === "window") {
-            currentNS = window;
+            currentNS = root;
         } else {
-            currentNS = (window[nsArray[0]] === undefined)?window[nsArray[0]] = {}:window[nsArray[0]];
+            currentNS = (root[nsArray[0]] === undefined)?root[nsArray[0]] = {}:root[nsArray[0]];
         }
 
         //confirm func is actually a function
@@ -53,7 +53,7 @@
 
         //if the function was defined, run it on the current namespace
         if (func) {
-            func(currentNS, jQuery);
+            func(currentNS, root.jQuery);
         }
 
         //return namespace
@@ -63,7 +63,7 @@
     return namespace(ns, function (exports) {
         exports.namespace = namespace;
     });
-}("wdk", window.jQuery));
+}("wdk", typeof window !== 'undefined' ? window : global));
 
 // for legacy
 wdk.namespace('wdk.util', function(ns) {
