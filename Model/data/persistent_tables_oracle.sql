@@ -182,7 +182,7 @@ CREATE INDEX wdkuser.strategies_idx05 ON wdkuser.strategies (project_id, is_publ
 CREATE TABLE wdkuser.datasets (
   dataset_id NUMBER(12) NOT NULL,
   user_id NUMBER(12),
-  dataset_name VARCHAR(100),
+  dataset_name VARCHAR(100) NOT NULL,
   dataset_size NUMBER(12) NOT NULL,
   content_checksum VARCHAR(40) NOT NULL,
   created_time TIMESTAMP NOT NULL,
