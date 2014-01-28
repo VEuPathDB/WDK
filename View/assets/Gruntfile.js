@@ -1,21 +1,14 @@
 module.exports = function(grunt) {
 
   var wdkFiles = require('./wdkFiles');
+  var helpers = require('./tasks/helpers');
 
   grunt.initConfig({
 
     concat: {
       js: {
-        // this was preventing creating of some global variables
-        // options: {
-        //   process: function(src, filepath) {
-        //     // wrap files in an immediately invoked function wrapper
-        //     // some libraries misbehave and add "use strict" pragma in global scope
-        //     return '(function(){' + src + '}());';
-        //   }
-        // },
-        src: wdkFiles.libs,
-        dest: 'dist/wdk.libs.js'
+        src: helpers.filterByFlag('env', 'prod', wdkFiles.libs),
+        dest: 'dist/wdk/wdk.libs.js'
       }
     },
 
@@ -25,13 +18,13 @@ module.exports = function(grunt) {
           except: ['wdk']
         },
         report: true,
-        sourceMap: 'dist/wdk.js.map',
+        sourceMap: 'dist/wdk/wdk.js.map',
         sourceMappingURL: 'wdk.js.map',
         // sourceMapPrefix: 1
       },
       wdk: {
         files: {
-          'dist/wdk.js': wdkFiles.src,
+          'dist/wdk/wdk.js': wdkFiles.src,
         }
       }
     },
@@ -43,7 +36,7 @@ module.exports = function(grunt) {
             expand: true,
             //cwd: 'js',
             src: ['src/**', 'lib/**'],
-            dest: 'dist'
+            dest: 'dist/wdk'
           }
         ]
       },
@@ -53,7 +46,7 @@ module.exports = function(grunt) {
             expand: true,
             cwd: 'css',
             src: ['**/*'],
-            dest: 'dist/css'
+            dest: 'dist/wdk/css'
           }
         ]
       },
@@ -63,7 +56,7 @@ module.exports = function(grunt) {
             expand: true,
             cwd: 'images',
             src: ['**/*'],
-            dest: 'dist/images'
+            dest: 'dist/wdk/images'
           }
         ]
       }

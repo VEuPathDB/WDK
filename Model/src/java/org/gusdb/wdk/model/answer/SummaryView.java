@@ -20,8 +20,8 @@ public class SummaryView extends WdkView {
         SummaryView view = new SummaryView();
         view.setName("_default");
         //view.setDisplay(recordClass.getDisplayName() + " Results");
-	// basket shares the tab title with the results table, so the tab should say "Genes" not "Gene results"
-	view.setDisplay(recordClass.getDisplayName() + " Results");
+        // basket shares the tab title with the results table, so the tab should say "Genes" not "Gene results"
+        view.setDisplay(recordClass.getDisplayName() + " Results");
         view.setJsp("/wdk/jsp/results/default.jsp");
         return view;
     }
@@ -44,7 +44,7 @@ public class SummaryView extends WdkView {
         if (handlerClass != null) {  // resolve the handler class
             try {
                 Class<? extends SummaryViewHandler> hClass = Class.forName(
-                        handlerClass).asSubclass(SummaryViewHandler.class);
+                    handlerClass).asSubclass(SummaryViewHandler.class);
                 handler = hClass.newInstance();
             } catch (ClassNotFoundException ex) {
                 throw new WdkModelException(ex);
