@@ -59,7 +59,6 @@
                 
                 <element name="userDb">
                     <attribute name="userSchema" />
-                    <attribute name="wdkEngineSchema" />
                     <ref name="DBBaseContent" />
                 </element>
                 
