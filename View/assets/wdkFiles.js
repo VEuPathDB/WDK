@@ -27,6 +27,11 @@ module.exports = {
   src: [
     'src/core/console.js',
     'src/core/namespace.js',
+    'src/core/c_properties.js',
+    'src/core/base_object.js',
+    'src/core/runloop.js',
+    'src/core/container.js',
+    'src/core/application.js',
     'src/core/common.js',
     'src/core/bootstrap.js',
     'src/core/event.js',
@@ -40,7 +45,7 @@ module.exports = {
   libs: [
     'lib/es5-shim.min.js',
     'lib/modernizr.js',
-    'lib/jquery-1.10.2.min.js',
+    'lib/jquery-1.11.0.min.js',
     'ENV:DEV!lib/jquery-migrate-1.2.1.js',
     'ENV:PROD!lib/jquery-migrate-1.2.1.min.js',
     'lib/jquery-ui.js',

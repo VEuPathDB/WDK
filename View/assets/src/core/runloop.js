@@ -17,9 +17,7 @@ wdk.namespace('wdk.core', function(ns) {
     defer: function defer(fn, timeout, context) {
       context = context || this.defaultContext;
 
-      setTimeout(function() {
-        fn.call(context);
-      }, timeout);
+      setTimeout(fn.bind(context), timeout);
     },
 
     deferOnce: function deferOnce(fn, timeout, context) {
