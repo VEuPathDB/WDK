@@ -342,7 +342,7 @@
     <element name="datasetParam">
       <ref name="ParamBaseProperties" />
       <optional>
-      	<attribute name="recordClass" />
+      	<attribute name="recordClassRef" />
       </optional>
       <zeroOrMore>
         <choice>
@@ -358,27 +358,28 @@
                   <value>data</value>
                   <value>file</value>
                   <value>basket</value>
+                  <value>strategy</value>
                 </choice>
               </attribute>
             </optional>
           </element>
-            <element name="parser">
-              <ref name="IncludeExclude" />
-              <attribute name="name">
-	          <attribute name="implementation" />
-	          <optional>
-	          	<attribute name="display" />
-	          </optional>
-	          <zeroOrMore>
-	          	<choice>
-	          		<element name="description">
-			          <ref name="IncludeExclude" />
-			          <text />
-	          		</element>
-	            	<ref name="property" />
-	           	</choice>
-	          </zeroOrMore>
-            </element>
+          <element name="parser">
+            <ref name="IncludeExclude" />
+            <attribute name="name" />
+            <attribute name="implementation" />
+            <optional>
+              <attribute name="display" />
+            </optional>
+            <zeroOrMore>
+              <choice>
+                <element name="description">
+                  <ref name="IncludeExclude" />
+                  <text />
+                </element>
+                <ref name="property" />
+              </choice>
+            </zeroOrMore>
+          </element>
         </choice>
       </zeroOrMore>
     </element>

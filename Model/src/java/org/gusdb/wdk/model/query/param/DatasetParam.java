@@ -57,7 +57,9 @@ public class DatasetParam extends Param {
 
   private Map<String, DatasetParser> parsers;
 
-  public DatasetParam() {}
+  public DatasetParam() {
+    setHandler(new DatasetParamHandler());
+  }
 
   public DatasetParam(DatasetParam param) {
     super(param);

@@ -51,13 +51,15 @@ import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.DatasetParamSuggestion;
 import org.gusdb.wdk.model.query.param.EnumItem;
 import org.gusdb.wdk.model.query.param.EnumItemList;
 import org.gusdb.wdk.model.query.param.EnumParam;
+import org.gusdb.wdk.model.query.param.EnumParamSuggestion;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamConfiguration;
-import org.gusdb.wdk.model.query.param.ParamHandler;
+import org.gusdb.wdk.model.query.param.ParamHandlerReference;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamSuggestion;
@@ -410,10 +412,6 @@ public class ModelXmlParser extends XmlParser {
     if (!propMap.containsKey("USER_SCHEMA")) {
       propMap.put("USER_SCHEMA", config.getUserDB().getUserSchema());
     }
-    if (!propMap.containsKey("WDK_ENGINE_SCHEMA")) {
-      String engineSchema = config.getUserDB().getWdkEngineSchema();
-      propMap.put("WDK_ENGINE_SCHEMA", engineSchema);
-    }
 
     return propMap;
   }
@@ -745,31 +743,32 @@ public class ModelXmlParser extends XmlParser {
     // string param
     String path = "wdkModel/paramSet/stringParam";
     configureNode(digester, path, StringParam.class, "addParam");
-    configureParamContent(digester, path);
+    configureParamContent(digester, path, ParamSuggestion.class);
     configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
     digester.addCallMethod(path + "/regex", "setText", 0);
 
     // flatVocabParam
     path = "wdkModel/paramSet/flatVocabParam";
     configureNode(digester, path, FlatVocabParam.class, "addParam");
-    configureParamContent(digester, path);
+    configureParamContent(digester, path, EnumParamSuggestion.class);
 
     // answer param
-    configureNode(digester, "wdkModel/paramSet/answerParam", AnswerParam.class,
+    path = "wdkModel/paramSet/answerParam";
+    configureNode(digester, path, AnswerParam.class,
         "addParam");
-    configureParamContent(digester, "wdkModel/paramSet/answerParam");
-    configureNode(digester, "wdkModel/paramSet/answerParam/recordClass",
+    configureParamContent(digester, path, ParamSuggestion.class);
+    configureNode(digester, path + "/recordClass",
         RecordClassReference.class, "addRecordClassRef");
 
     // dataset param
     path = "wdkModel/paramSet/datasetParam";
     configureNode(digester, path, DatasetParam.class, "addParam");
-    configureParamContent(digester, path);
+    configureParamContent(digester, path, DatasetParamSuggestion.class);
 
     // enum param
     path = "wdkModel/paramSet/enumParam";
     configureNode(digester, path, EnumParam.class, "addParam");
-    configureParamContent(digester, path);
+    configureParamContent(digester, path, EnumParamSuggestion.class);
 
     path = path + "/enumList";
     configureNode(digester, path, EnumItemList.class, "addEnumItemList");
@@ -787,16 +786,16 @@ public class ModelXmlParser extends XmlParser {
     // timestamp param
     path = "wdkModel/paramSet/timestampParam";
     configureNode(digester, path, TimestampParam.class, "addParam");
-    configureParamContent(digester, path);
+    configureParamContent(digester, path, ParamSuggestion.class);
   }
 
-  private void configureParamContent(Digester digester, String paramPath) {
-    configureNode(digester, paramPath + "/suggest", ParamSuggestion.class,
+  private void configureParamContent(Digester digester, String paramPath, Class<?> suggestionClass) {
+    configureNode(digester, paramPath + "/suggest", suggestionClass,
         "addSuggest");
     configureNode(digester, paramPath + "/noTranslation",
         ParamConfiguration.class, "addNoTranslation");
 
-    configureNode(digester, paramPath + "/handler", ParamHandler.class,
+    configureNode(digester, paramPath + "/handler", ParamHandlerReference.class,
         "addHandler");
     configureNode(digester, paramPath + "/handler/property",
         WdkModelText.class, "addProperty");
@@ -992,21 +991,26 @@ public class ModelXmlParser extends XmlParser {
         WdkCookie.class, "add");
   }
 
-  public static void main(String[] args) throws WdkModelException {
+  public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
 
     // process args
-    Options options = declareOptions();
-    CommandLine cmdLine = parseOptions(cmdName, options, args);
-    String projectId = cmdLine.getOptionValue(Utilities.ARGUMENT_PROJECT_ID);
-    String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+    try {
+      Options options = declareOptions();
+      CommandLine cmdLine = parseOptions(cmdName, options, args);
+      String projectId = cmdLine.getOptionValue(Utilities.ARGUMENT_PROJECT_ID);
+      String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
-    // create a parser, and parse the model file
-    WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+      // create a parser, and parse the model file
+      WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
 
-    // print out the model content
-    System.out.println(wdkModel.toString());
-    System.exit(0);
+      // print out the model content
+      System.out.println(wdkModel.toString());
+      System.exit(0);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      System.exit(1);
+    }
   }
 
   private static void addOption(Options options, String argName, String desc) {

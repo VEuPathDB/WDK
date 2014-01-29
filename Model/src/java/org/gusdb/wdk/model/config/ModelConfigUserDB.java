@@ -15,7 +15,6 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 public class ModelConfigUserDB extends ModelConfigDB {
 
   private String userSchema;
-  private String wdkEngineSchema;
 
   /**
    * @return the userSchema
@@ -30,20 +29,5 @@ public class ModelConfigUserDB extends ModelConfigDB {
    */
   public void setUserSchema(String userSchema) {
     this.userSchema = DBPlatform.normalizeSchema(userSchema);
-  }
-
-  /**
-   * @return the wdkEngineSchema
-   */
-  public String getWdkEngineSchema() {
-    return wdkEngineSchema;
-  }
-
-  /**
-   * @param wdkEngineSchema
-   *          the wdkEngineSchema to set
-   */
-  public void setWdkEngineSchema(String wdkEngineSchema) {
-    this.wdkEngineSchema = DBPlatform.normalizeSchema(wdkEngineSchema);
   }
 }
