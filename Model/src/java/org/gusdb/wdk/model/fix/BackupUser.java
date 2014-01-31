@@ -12,8 +12,7 @@ import org.gusdb.wsf.util.BaseCLI;
 
 public class BackupUser extends BaseCLI {
 
-  private static final String BACKUP_SCHEMA = "userlogins5_archive";
-  
+  private static final String ARG_BACKUP_SCHEMA = "backupSchema";
   private static final String ARG_CUTOFF_DATE = "cutoffDate";
 
   private static final Logger logger = Logger.getLogger(BackupUser.class);
@@ -69,6 +68,9 @@ public class BackupUser extends BaseCLI {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "a ProjectId, which should match the directory name "
         + "under $GUS_HOME, where model-config.xml is stored.");
 
+    addSingleValueOption(ARG_BACKUP_SCHEMA, true, null, "the backup schema"
+        + " where the data should be stored.");
+
     addSingleValueOption(ARG_CUTOFF_DATE, true, null, "Any guest user "
         + "created by this date will be backed up, and removed "
         + "from the live schema defined in the model-config.xml. "
@@ -79,7 +81,7 @@ public class BackupUser extends BaseCLI {
   protected void execute() throws Exception {
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
-    backupSchema = BACKUP_SCHEMA;
+    backupSchema = (String) getOptionValue(ARG_BACKUP_SCHEMA);
 
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
     String cutoffDate = (String) getOptionValue(ARG_CUTOFF_DATE);
