@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -38,6 +39,8 @@ public class User /* implements Serializable */{
 
   public final static String PREF_ITEMS_PER_PAGE = "preference_global_items_per_page";
   public final static String PREF_REMOTE_KEY = "preference_remote_key";
+  
+  private final static int PREF_VALUE_LENGTH = 4000;
 
   public final static String SORTING_ATTRIBUTES_SUFFIX = "_sort";
   public final static String SUMMARY_ATTRIBUTES_SUFFIX = "_summary";
@@ -932,120 +935,89 @@ public class User /* implements Serializable */{
     be.parseExpression(expression, false);
   }
 
-  public Map<String, Boolean> getSortingAttributes(String questionFullName)
-      throws WdkModelException {
+  public Map<String, Boolean> getSortingAttributes(String questionFullName) throws WdkModelException {
     Question question = wdkModel.getQuestion(questionFullName);
+    Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
     String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
-    String sortingChecksum = projectPreferences.get(sortKey);
-    if (sortingChecksum == null) return null;
+    String sortingList = projectPreferences.get(sortKey);
 
-    QueryFactory queryFactory = wdkModel.getQueryFactory();
-    Map<String, Boolean> sortingAttributes = queryFactory.getSortingAttributes(sortingChecksum);
-    if (sortingAttributes != null) {
-      // remove invalid columns
-      Map<String, AttributeField> attributes = question.getAttributeFieldMap();
-      String[] names = new String[sortingAttributes.size()];
-      sortingAttributes.keySet().toArray(names);
-      for (String name : names) {
-        if (!attributes.containsKey(name)) sortingAttributes.remove(name);
-      }
+    // user doesn't have sorting preference, return the default from question.
+    if (sortingList == null)
+      return question.getSortingAttributeMap();
 
-      return sortingAttributes;
+    // convert the list into a map.
+    Map<String, Boolean> sortingAttributes = new LinkedHashMap<>();
+    for (String clause : sortingList.split(",")) {
+      String[] sort = clause.trim().split("\\s+", 2);
+
+      // ignore the invalid sorting attribute
+      String attrName = sort[0];
+      if (!attributes.containsKey(attrName))
+        continue;
+
+      boolean order = (sort.length == 1 || sort[1].equalsIgnoreCase("ASC"));
+      sortingAttributes.put(sort[0], order);
     }
-
-    // user doesn't have preference, use the default one of the question
-    return question.getSortingAttributeMap();
+    return sortingAttributes;
   }
 
-  public Map<String, Boolean> getSortingAttributesByChecksum(
-      String sortingChecksum) throws WdkModelException {
-    if (sortingChecksum == null) return null;
-    QueryFactory queryFactory = wdkModel.getQueryFactory();
-    return queryFactory.getSortingAttributes(sortingChecksum);
-  }
+  public String addSortingAttribute(String questionFullName, String attrName, boolean ascending)
+      throws WdkModelException {
+    // make sure the attribute exists in the question
+    Question question = wdkModel.getQuestion(questionFullName);
+    if (!question.getAttributeFieldMap().containsKey(attrName))
+      throw new WdkModelException("Cannot sort by attribute '" + attrName +
+          "' since it doesn't belong the question " + questionFullName);
 
-  public String addSortingAttribute(String questionFullName, String attrName,
-      boolean ascending) throws WdkModelException {
-    Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>();
-    sortingMap.put(attrName, ascending);
+    StringBuilder sort = new StringBuilder(attrName);
+    sort.append(ascending ? " ASC" : " DESC");
+
     Map<String, Boolean> previousMap = getSortingAttributes(questionFullName);
-    if (previousMap == null)
-      previousMap = new LinkedHashMap<String, Boolean>();
-    for (String aName : previousMap.keySet()) {
-      if (!sortingMap.containsKey(aName))
-        sortingMap.put(aName, previousMap.get(aName));
+    if (previousMap != null) {
+      int count = 1;
+      for (String name : previousMap.keySet()) {
+        if (name.equals(attrName))
+          continue;
+        if (count >= Utilities.SORTING_LEVEL)
+          break;
+        sort.append(",").append(name).append(previousMap.get(name) ? " ASC" : " DESC");
+      }
     }
 
-    // save and get sorting checksum
-    QueryFactory queryFactory = wdkModel.getQueryFactory();
-    String sortingChecksum = queryFactory.makeSortingChecksum(sortingMap);
-
-    applySortingChecksum(questionFullName, sortingChecksum);
-    return sortingChecksum;
-  }
-
-  public void applySortingChecksum(String questionFullName,
-      String sortingChecksum) {
     String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
-    projectPreferences.put(sortKey, sortingChecksum);
+    String sortValue = sort.toString();
+    projectPreferences.put(sortKey, sortValue);
+    return sortValue;
+  }
+  
+  public void setSortingAttributes(String questionName, String sortings) throws WdkModelException {
+    String sortKey = questionName + SORTING_ATTRIBUTES_SUFFIX;
+    projectPreferences.put(sortKey, sortings);
   }
 
-  public String[] getSummaryAttributes(String questionFullName)
-      throws WdkModelException {
+  public String[] getSummaryAttributes(String questionFullName) throws WdkModelException {
     Question question = wdkModel.getQuestion(questionFullName);
+    Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
     String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
-    String summaryChecksum = projectPreferences.get(summaryKey);
-    String[] summary = null;
-    boolean savedSummary = false;
-    if (summaryChecksum != null && summaryChecksum.length() > 0) {
-      // get summary list
-      QueryFactory queryFactory = wdkModel.getQueryFactory();
-      summary = queryFactory.getSummaryAttributes(summaryChecksum);
-      if (summary != null && summary.length > 0) {
-        savedSummary = true;
-
-        // ignore invalid attribute names
-        Map<String, AttributeField> attributes = question.getAttributeFieldMap();
-        List<String> list = new ArrayList<String>();
-        for (String attribute : summary) {
-          if (attributes.containsKey(attribute)) list.add(attribute);
+    String summaryValue = projectPreferences.get(summaryKey);
+    Set<String> summary = new LinkedHashSet<>();
+    if (summaryValue != null) {
+      for (String attrName : summaryValue.split(",")) {
+        attrName = attrName.trim();
+        // ignore invalid attribute names;
+        if (attributes.containsKey(attrName) && !summary.contains(attrName)) {
+          summary.add(attrName);
         }
-        summary = new String[list.size()];
-        list.toArray(summary);
       }
     }
-
-    // if user does't have preference, use the default of the question
-    if (!savedSummary) {
-      Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
-      summary = new String[attributes.size()];
-      attributes.keySet().toArray(summary);
+    if (summary.isEmpty()) {
+      return question.getSummaryAttributeFieldMap().keySet().toArray(new String[0]);
     }
-
-    // always display weight for combined questions
-    // if (question.getQuery().isCombined()) {
-    // // check if weight already exists
-    // boolean hasWeight = false;
-    // for (String name : summary) {
-    // if (name.equals(Utilities.COLUMN_WEIGHT)) {
-    // hasWeight = true;
-    // break;
-    // }
-    // }
-    //
-    // // add weight to the last item if it's not included
-    // if (!hasWeight) {
-    // String[] array = new String[summary.length + 1];
-    // System.arraycopy(summary, 0, array, 0, summary.length);
-    // array[summary.length] = Utilities.COLUMN_WEIGHT;
-    // summary = array;
-    // summaryChecksum = null;
-    // }
-    // }
-
-    return summary;
+    else {
+      return summary.toArray(new String[0]);
+    }
   }
 
   public void resetSummaryAttributes(String questionFullName) {
@@ -1059,35 +1031,23 @@ public class User /* implements Serializable */{
     // make sure all the attribute names exist
     Question question = (Question) wdkModel.resolveReference(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
-
-    // instead throwing out an error, just ignore the invalid columns
-    List<String> validNames = new ArrayList<String>();
-    for (String name : summaryNames) {
-      if (attributes.containsKey(name)) validNames.add(name);
+    
+    StringBuilder summary = new StringBuilder();
+    for (String attrName : summaryNames) {
+      // ignore invalid attribute names
+      if (!attributes.keySet().contains(attrName))continue;
+      
+      // exit if we have too many attributes
+      if (summary.length() + attrName.length() + 1 >= PREF_VALUE_LENGTH) break;
+      
+      if (summary.length() > 0) summary.append(",");
+      summary.append(attrName);
     }
-    summaryNames = validNames.toArray(new String[0]);
 
-    logger.debug("Saving Valid summary names: " + validNames);
-    // create checksum
-    QueryFactory queryFactory = wdkModel.getQueryFactory();
-    String summaryChecksum = queryFactory.makeSummaryChecksum(summaryNames);
-
-    applySummaryChecksum(questionFullName, summaryChecksum);
-    return summaryChecksum;
-  }
-
-  /**
-   * The method replace the previous checksum with the given one.
-   * 
-   * @param summaryChecksum
-   * @throws WdkUserException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   */
-  public void applySummaryChecksum(String questionFullName,
-      String summaryChecksum) {
     String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
-    projectPreferences.put(summaryKey, summaryChecksum);
+    String summaryValue = summary.toString();
+    projectPreferences.put(summaryKey, summaryValue);
+    return summaryValue;
   }
 
   public String createRemoteKey() throws WdkUserException, WdkModelException {

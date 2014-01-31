@@ -1,4 +1,5 @@
 /*
+DROP SEQUENCE wdkuser.categories_pkseq;
 DROP SEQUENCE wdkuser.datasets_pkseq;
 DROP SEQUENCE wdkuser.dataset_values_pkseq;
 DROP SEQUENCE wdkuser.favorites_pkseq;
@@ -8,6 +9,7 @@ DROP SEQUENCE wdkuser.steps_pkseq;
 DROP SEQUENCE wdkuser.strategies_pkseq;
 DROP SEQUENCE wdkuser.users_pkseq;
 
+DROP TABLE wdkuser.categories;
 DROP TABLE wdkuser.favorites;
 DROP TABLE wdkuser.user_baskets;
 DROP TABLE wdkuser.strategies;
@@ -45,6 +47,9 @@ CREATE SEQUENCE wdkuser.user_baskets_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkuser.favorites_pkseq INCREMENT BY 1 START WITH 1;
+
+
+CREATE SEQUENCE wdkuser.categories_pkseq INCREMENT BY 1 START WITH 1;
 
 
 
@@ -124,15 +129,15 @@ CREATE TABLE wdkuser.steps
   is_valid NUMBER(1),
   collapsed_name varchar(200),
   is_collapsible NUMBER(1),
-  prev_step_id NUMBER(12),
   assigned_weight NUMBER(12),
-  migration_id NUMBER(12),
   project_id VARCHAR(50) NOT NULL,
   project_version VARCHAR(50) NOT NULL,
   question_name VARCHAR(200) NOT NULL,
   strategy_id NUMBER(12),
   display_params CLOB,
   result_message CLOB,
+  prev_step_id NUMBER(12),
+  migration_id NUMBER(12),
   CONSTRAINT "steps_pk" PRIMARY KEY (step_id),
   CONSTRAINT "steps_fk01" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
@@ -188,13 +193,14 @@ CREATE TABLE wdkuser.datasets (
   created_time TIMESTAMP NOT NULL,
   upload_file VARCHAR(2000),
   parser VARCHAR(50) NOT NULL,
+  category_id NUMBER(12),
   content CLOB,
   prev_dataset_id NUMBER(12),
   migration_id NUMBER(12),
   CONSTRAINT "datasets_pk" PRIMARY KEY (dataset_id),
   CONSTRAINT "datasets_uq01" UNIQUE (user_id, content_checksum),
   CONSTRAINT "datasets_fk01" FOREIGN KEY (user_id)
-      REFERENCES wdkuser.users (user_id),
+      REFERENCES wdkuser.users (user_id)
 );
 
 
@@ -207,6 +213,7 @@ CREATE TABLE wdkuser.dataset_values
   data3 VARCHAR(1999),
   data4 VARCHAR(1999),
   data5 VARCHAR(1999),
+  prev_dataset_value_id NUMBER(12),
   migration_id NUMBER(12),
   CONSTRAINT "dataset_values_pk" PRIMARY KEY (dataset_value_id),
   CONSTRAINT "dataset_values_fk01" FOREIGN KEY (dataset_id)
@@ -220,11 +227,16 @@ CREATE TABLE wdkuser.user_baskets
 (
   basket_id NUMBER(12) NOT NULL,
   user_id NUMBER(12) NOT NULL,
+  basket_name VARCHAR(100),
   project_id VARCHAR(50) NOT NULL,
   record_class VARCHAR(100) NOT NULL,
+  is_default NUMBER(1),
+  category_id NUMBER(12),
   pk_column_1 VARCHAR(1999) NOT NULL,
   pk_column_2 VARCHAR(1999),
   pk_column_3 VARCHAR(1999),
+  prev_basket_id NUMBER(12),
+  migration_id NUMBER(12),
   CONSTRAINT "user_baskets_pk" PRIMARY KEY (basket_id),
   CONSTRAINT "user_baskets_uq01" UNIQUE (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3),
   CONSTRAINT "user_baskets_fk01" FOREIGN KEY (user_id)
@@ -245,6 +257,8 @@ CREATE TABLE wdkuser.favorites
   pk_column_3 VARCHAR(1999),
   record_note VARCHAR(200),
   record_group VARCHAR(50),
+  prev_favorite_id NUMBER(12),
+  migration_id NUMBER(12),
   CONSTRAINT "favorites_pk" PRIMARY KEY (favorite_id),
   CONSTRAINT "favorites_uq01" UNIQUE (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3),
   CONSTRAINT "favorites_fk01" FOREIGN KEY (user_id)
@@ -252,3 +266,20 @@ CREATE TABLE wdkuser.favorites
 );
 
 CREATE INDEX wdkuser.favorites_idx01 ON wdkuser.favorites (record_class, project_id);
+
+
+CREATE TABLE wdkuser.categories
+(
+  category_id NUMBER(12) NOT NULL,
+  user_id NUMBER(12) NOT NULL,
+  parent_id NUMBER(12),
+  category_type VARCHAR(50) NOT NULL,
+  category_name VARCHAR(100) NOT NULL,
+  description VARCHAR(200),
+  prev_category_id NUMBER(12),
+  migration_id NUMBER(12),
+  CONSTRAINT "categories_pk" PRIMARY KEY (category_id),
+  CONSTRAINT "categories_uq01" UNIQUE (user_id, category_type, parent_id, category_name),
+  CONSTRAINT "categories_fk01" FOREIGN KEY (user_id)
+      REFERENCES wdkuser.users (user_id)
+);

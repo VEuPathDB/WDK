@@ -520,25 +520,26 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute(CConstants.WDK_STEP_KEY, step);
     }
 
-    private boolean updateSortingSummary(HttpServletRequest request,
-            UserBean wdkUser, String questionName) {
-        // update sorting key, if have
-        String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
-        boolean updated = false;
-        if (sortingChecksum != null) {
-            wdkUser.applySortingChecksum(questionName, sortingChecksum);
-            updated = true;
-        }
-
-        // get summary key, if have
-        String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
-        if (summaryChecksum != null) {
-            wdkUser.applySummaryChecksum(questionName, summaryChecksum);
-            updated = true;
-        }
-        logger.debug("summary checksum: " + summaryChecksum);
-        return updated;
+  private boolean updateSortingSummary(HttpServletRequest request, UserBean wdkUser, String questionName)
+      throws WdkModelException {
+    // update sorting key, if have
+    String sortingAttributes = request.getParameter(CConstants.WDK_SORTING_KEY);
+    boolean updated = false;
+    if (sortingAttributes != null) {
+      wdkUser.setSortingAttributes(questionName, sortingAttributes);
+      updated = true;
     }
+    logger.debug("sorting columns for question " + questionName + ": " + sortingAttributes);
+
+    // get summary key, if have
+    String summaryAttributes = request.getParameter(CConstants.WDK_SUMMARY_KEY);
+    if (summaryAttributes != null) {
+      wdkUser.setSummaryAttributes(questionName, summaryAttributes.split(","));
+      updated = true;
+    }
+    logger.debug("summary columns for question " + questionName + ": " + summaryAttributes);
+    return updated;
+  }
 
     /**
      * get the cached size of the given answerValue/Filter

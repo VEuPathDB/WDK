@@ -38,19 +38,19 @@ import org.json.JSONArray;
 public class DatasetFactory {
 
   // all the dataset tables are now in wdk user schema.
-  private static final String TABLE_DATASET_VALUES = "dataset_values";
-  private static final String TABLE_DATASETS = "datasets";
+  public static final String TABLE_DATASET_VALUES = "dataset_values";
+  public static final String TABLE_DATASETS = "datasets";
 
   // Columns in datasets table
-  private static final String COLUMN_DATASET_ID = "dataset_id";
-  private static final String COLUMN_DATASET_SIZE = "dataset_size";
-  private static final String COLUMN_USER_ID = "user_id";
-  private static final String COLUMN_NAME = "dataset_name";
-  private static final String COLUMN_PARSER = "parser";
-  private static final String COLUMN_CONTENT_CHECKSUM = "content_checksum";
-  private static final String COLUMN_CONTENT = "content";
-  private static final String COLUMN_CREATED_TIME = "created_time";
-  private static final String COLUMN_UPLOAD_FILE = "upload_file";
+  public static final String COLUMN_DATASET_ID = "dataset_id";
+  public static final String COLUMN_DATASET_SIZE = "dataset_size";
+  public static final String COLUMN_USER_ID = "user_id";
+  public static final String COLUMN_NAME = "dataset_name";
+  public static final String COLUMN_PARSER = "parser";
+  public static final String COLUMN_CONTENT_CHECKSUM = "content_checksum";
+  public static final String COLUMN_CONTENT = "content";
+  public static final String COLUMN_CREATED_TIME = "created_time";
+  public static final String COLUMN_UPLOAD_FILE = "upload_file";
 //  private static final String COLUMN_CATEGORY_ID = "category_id";
 
   // Columns in the dataset_values table
