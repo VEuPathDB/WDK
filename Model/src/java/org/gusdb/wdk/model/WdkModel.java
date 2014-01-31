@@ -35,7 +35,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteFactory;
-import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -153,7 +152,6 @@ public class WdkModel implements ConnectionContainer {
   private UserFactory userFactory;
   private StepFactory stepFactory;
   private DatasetFactory datasetFactory;
-  private QueryFactory queryFactory;
   private BasketFactory basketFactory;
   private FavoriteFactory favoriteFactory;
 
@@ -470,7 +468,6 @@ public class WdkModel implements ConnectionContainer {
     userFactory = new UserFactory(this);
     stepFactory = new StepFactory(this);
     datasetFactory = new DatasetFactory(this);
-    queryFactory = new QueryFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
 
@@ -968,10 +965,6 @@ public class WdkModel implements ConnectionContainer {
 
   public DatasetFactory getDatasetFactory() {
     return datasetFactory;
-  }
-
-  public QueryFactory getQueryFactory() {
-    return queryFactory;
   }
 
   public String getProjectId() {

@@ -22,7 +22,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wsf.util.BaseCLI;
 import org.json.JSONException;
@@ -170,18 +169,10 @@ public class StepParamExpander extends BaseCLI {
   private List<String[]> parseClob(WdkModel wdkModel, String clob)
       throws JSONException, WdkModelException {
     StepFactory stepFactory = wdkModel.getStepFactory();
-    QueryFactory queryFactory = wdkModel.getQueryFactory();
     Map<String, String> values = stepFactory.parseParamContent(clob);
     List<String[]> newValues = new ArrayList<String[]>();
     for (String paramName : values.keySet()) {
       String value = values.get(paramName);
-      String prefix = Utilities.PARAM_COMPRESSE_PREFIX;
-      if (value.startsWith(prefix)) {
-        String checksum = value.substring(prefix.length()).trim();
-        String decompressed = queryFactory.getClobValue(checksum);
-        if (decompressed != null)
-          value = decompressed;
-      }
       String[] terms = value.split(",");
       Set<String> used = new HashSet<>();
       for (String term : terms) {

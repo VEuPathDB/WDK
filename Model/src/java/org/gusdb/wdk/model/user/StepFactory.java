@@ -1323,8 +1323,6 @@ public class StepFactory {
         if (paramNames != null) {
           for (String paramName : paramNames) {
             String paramValue = json.getString(paramName);
-            // decompress param values
-            paramValue = decompressValue(paramValue);
             logger.trace("param '" + paramName + "' = '" + paramValue + "'");
             params.put(paramName, paramValue);
           }
@@ -1514,23 +1512,4 @@ public class StepFactory {
       SqlUtils.closeStatement(psUpdate);
     }
   }
-
-  private String decompressValue(String value) throws WdkModelException {
-    if (value == null || value.length() == 0)
-      return null;
-
-    // check if the value is compressed; that is, if it has a compression
-    // prefix
-    if (!value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX))
-      return value;
-
-    // decompress the value
-    QueryFactory queryFactory = wdkModel.getQueryFactory();
-    String checksum = value.substring(Utilities.PARAM_COMPRESSE_PREFIX.length()).trim();
-    String decompressed = queryFactory.getClobValue(checksum);
-    if (decompressed != null)
-      value = decompressed.trim();
-    return value;
-  }
-
 }

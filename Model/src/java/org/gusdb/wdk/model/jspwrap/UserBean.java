@@ -824,31 +824,12 @@ public class UserBean /* implements Serializable */{
 
   /**
    * @param questionFullName
-   * @param sortingChecksum
-   */
-  public void applySortingChecksum(String questionFullName,
-      String sortingChecksum) {
-    user.applySortingChecksum(questionFullName, sortingChecksum);
-  }
-
-  /**
-   * @param questionFullName
    * @return
    * @see org.gusdb.wdk.model.user.User#getSortingAttributes(java.lang.String)
    */
   public Map<String, Boolean> getSortingAttributes(String questionFullName)
       throws WdkModelException {
     return user.getSortingAttributes(questionFullName);
-  }
-
-  /**
-   * @param sortingChecksum
-   * @return
-   * @see org.gusdb.wdk.model.user.User#getSortingAttributesByChecksum(java.lang.String)
-   */
-  public Map<String, Boolean> getSortingAttributesByChecksum(
-      String sortingChecksum) throws WdkModelException {
-    return user.getSortingAttributesByChecksum(sortingChecksum);
   }
 
   /**
@@ -951,17 +932,6 @@ public class UserBean /* implements Serializable */{
   public StrategyBean createStrategy(StepBean step, boolean saved,
       boolean hidden) throws WdkUserException, WdkModelException {
     return new StrategyBean(this, user.createStrategy(step.step, saved, hidden));
-  }
-
-  /**
-   * @param questionFullName
-   * @param summaryChecksum
-   * @see org.gusdb.wdk.model.user.User#applySummaryChecksum(java.lang.String,
-   *      java.lang.String)
-   */
-  public void applySummaryChecksum(String questionFullName,
-      String summaryChecksum) {
-    user.applySummaryChecksum(questionFullName, summaryChecksum);
   }
 
   /**
@@ -1353,4 +1323,7 @@ public class UserBean /* implements Serializable */{
     user.setCurrentRecordView(recordClass.recordClass, recordView);
   }
 
+  public void setSortingAttributes(String questionName, String sortColumns) throws WdkModelException {
+    user.setSortingAttributes(questionName, sortColumns);
+  }
 }

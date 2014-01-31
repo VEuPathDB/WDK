@@ -76,12 +76,12 @@ public class ProcessSummaryViewAction extends Action {
 	        // } else summaryChecksum = null;
 	
 	        // get sorting checksum, if have
-	        String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
-	        if (sortingChecksum != null && sortingChecksum.length() > 0) {
+	        String sorting = request.getParameter(CConstants.WDK_SORTING_KEY);
+	        if (sorting != null && sorting.length() > 0) {
 	            // apply the current sorting to the question first, then do other
 	            // command
-	            wdkUser.applySortingChecksum(questionName, sortingChecksum);
-	        } else sortingChecksum = null;
+	          wdkUser.setSortingAttributes(questionName, sorting);
+	        } 
 	
 	        // get command
 	        if (command != null) {
