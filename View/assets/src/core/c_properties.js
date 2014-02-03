@@ -64,7 +64,7 @@ wdk.namespace('wdk.core.c_properties', function(ns) {
     var parent = this;
     var child;
 
-    if (c_protoProps && c_protoProps.constructor) {
+    if (c_protoProps && c_protoProps.hasOwnProperty('constructor')) {
       child = c_protoProps.constructor;
     } else {
       // use parent's constructor function

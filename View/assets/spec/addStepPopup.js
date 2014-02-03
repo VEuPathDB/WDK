@@ -22,7 +22,7 @@ describe("wdk.addStepPopup", function() {
       .submit();
 
       expect(inlineSubmit).toHaveBeenCalled();
-      expect(inlineSubmit.calls.length).toEqual(1);
+      expect(inlineSubmit.calls.count()).toEqual(1);
     });
 
   });
