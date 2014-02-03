@@ -141,8 +141,8 @@ Otherwise a standard select menu is used.
             <div id="${pNam}_display" data-multiple="false"></div>
             <html:hidden styleClass="typeAhead" property="value(${pNam})" />
             <div class="type-ahead-help" style="margin:2px;">
-              Begin typing to see suggestions to choose from<br/>
-              Or use * as a wildcard, like this: *your-term*
+              Begin typing to see suggestions from which to choose<br/>
+              <%-- Or use * as a wildcard, like this: *your-term* --%>
             </div>
           </div>
         </c:when>
