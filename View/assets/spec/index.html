@@ -1,68 +1,36 @@
-<!doctype html>
+<!DOCTYPE HTML>
 <html>
 <head>
-  <title>Jasmine Spec Runner</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Jasmine Spec Runner v2.0.0</title>
 
-  <link rel="shortcut icon" type="image/png" href="../lib/jasmine-1.3.1/jasmine_favicon.png">
-  <link rel="stylesheet" type="text/css" href="../lib/jasmine-1.3.1/jasmine.css">
-</head>
+  <link rel="shortcut icon" type="image/png" href="../lib/jasmine-2.0.0/jasmine_favicon.png">
+  <link rel="stylesheet" type="text/css" href="../lib/jasmine-2.0.0/jasmine.css">
 
-<body>
+  <script src="../lib/jasmine-2.0.0/jasmine.js"></script>
+  <script src="../lib/jasmine-2.0.0/jasmine-html.js"></script>
+  <script src="../lib/jasmine-2.0.0/boot.js"></script>
 
-  <!-- include source files here... -->
-  <!-- FIXME: build target needs to be dist/wdk, instead of just dist
-  <script type="text/javascript" src="../src/core/namespace.js"></script>
-  <script type="text/javascript" src="../src/core/c_properties.js"></script>
-  <script type="text/javascript" src="../src/core/base_object.js"></script>
-  <script type="text/javascript" src="../src/core/runloop.js"></script>
-  <script type="text/javascript" src="../src/controllers/addStepPopup.js"></script>
-  -->
+  <!-- include wdk libs and src files -->
   <script>
     var wdkConfig = {
-      assetsUrl: '/dist'
+      assetsUrl: '../dist'
     }
-    </script>
+  </script>
   <script src="../dist/wdk/wdk.libs.js"></script>
   <script src="../dist/wdk/wdk.js"></script>
 
-  <script src="../lib/jasmine-1.3.1/jasmine.js"></script>
-  <script src="../lib/jasmine-1.3.1/jasmine-html.js"></script>
-
   <!-- include spec files here... -->
-  <!-- <script type="text/javascript" src="util/namespace.js"></script> -->
-  <script src="/spec/core/c_properties.js"></script>
-  <script src="/spec/core/base_object.js"></script>
-  <script src="/spec/core/runloop.js"></script>
-  <script src="/spec/addStepPopup.js"></script>
+  <script src="core/c_properties.js"></script>
+  <script src="core/base_object.js"></script>
+  <script src="core/container.js"></script>
+  <script src="core/runloop.js"></script>
+  <script src="core/application.js"></script>
 
-  <script type="text/javascript">
-    (function() {
-      var jasmineEnv = jasmine.getEnv();
-      jasmineEnv.updateInterval = 1000;
+  <script src="addStepPopup.js"></script>
 
-      var htmlReporter = new jasmine.HtmlReporter();
+</head>
 
-      jasmineEnv.addReporter(htmlReporter);
-
-      jasmineEnv.specFilter = function(spec) {
-        return htmlReporter.specFilter(spec);
-      };
-
-      var currentWindowOnload = window.onload;
-
-      window.onload = function() {
-        if (currentWindowOnload) {
-          currentWindowOnload();
-        }
-        execJasmine();
-      };
-
-      function execJasmine() {
-        jasmineEnv.execute();
-      }
-
-    })();
-  </script>
-
+<body>
 </body>
 </html>

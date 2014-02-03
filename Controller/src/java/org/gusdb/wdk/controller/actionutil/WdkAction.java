@@ -34,6 +34,7 @@ import org.gusdb.wdk.controller.actionutil.ParamDef.Required;
 import org.gusdb.wdk.controller.actionutil.ParameterValidator.SecondaryValidator;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkResourceChecker;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -48,7 +49,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  * 
  * @author rdoherty
  */
-public abstract class WdkAction implements SecondaryValidator {
+public abstract class WdkAction implements SecondaryValidator, WdkResourceChecker {
 
   private static final Logger LOG = Logger.getLogger(WdkAction.class.getName());
 
@@ -444,7 +445,8 @@ public abstract class WdkAction implements SecondaryValidator {
    * @param name path to the resource from web application root
    * @return true if resource exists, otherwise false
    */
-  protected boolean wdkResourceExists(String name) {
+  @Override
+  public boolean wdkResourceExists(String name) {
     return ApplicationInitListener.resourceExists(name, _servlet.getServletContext());
   }
   
@@ -463,13 +465,14 @@ public abstract class WdkAction implements SecondaryValidator {
       return null;
     }
   }
-    
+  
   private Map<String, ParamDef> getExpectedParams() {
     // make a copy of the child-defined set of expected params
     Map<String, ParamDef> definedParams = new HashMap<>(getParamDefs());
     
     // now add params that we may expect from any request (i.e. global params)
     definedParams.put(AUTH_TICKET, new ParamDef(Required.OPTIONAL));
+    definedParams.put("_", new ParamDef(Required.OPTIONAL));
     definedParams.put(CConstants.WDK_RESPONSE_TYPE_KEY, new ParamDef(Required.OPTIONAL));
     
     return definedParams;
