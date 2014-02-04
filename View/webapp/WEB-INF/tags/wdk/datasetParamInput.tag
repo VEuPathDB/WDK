@@ -1,10 +1,11 @@
-<%-- 
-Provides form input element for a given DatasetParam.
---%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
+
+<%--
+Provides form input element for a given DatasetParam.
+--%>
 
 <%@ attribute name="qp"
               type="org.gusdb.wdk.model.jspwrap.DatasetParamBean"
@@ -111,14 +112,14 @@ function chooseType(paramName, type) {
     
     <!-- display options for the parser -->
     <tr class="dataset-parsers">
-      <td></td>
+      <td> </td>
       <td>
-        <c:forEach items="${qP.parsers} var="parser">
+       <c:forEach items="${qP.parsers}" var="parser">
           <c:set var="checked">
-            <c:if test="${(dataset != null && parser.name = dataset.parserName) || (dataset == null && parser.name == 'list')}">checked="checked"</c:if>
+            <c:if test="${(dataset != null && parser.name eq dataset.parserName) || (dataset eq null && parser.name eq 'list')}">checked="checked"</c:if>
           </c:set>
           <span class="parser" title="${parser.description}">
-            <input type="radio" name="${pNam}_parser" value="${parser.name} ${checked} />
+            <input type="radio" name="${pNam}_parser" value="${parser.name}" ${checked} />
             ${parser.display}
           </span>
         </c:forEach>
