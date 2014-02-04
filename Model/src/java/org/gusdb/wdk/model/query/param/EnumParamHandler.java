@@ -27,6 +27,8 @@ public class EnumParamHandler extends AbstractParamHandler {
   @Override
   public String toStableValue(User user, Object rawValue, Map<String, String> contextValues)
       throws WdkUserException {
+    if (!(rawValue instanceof String[]))
+      new Exception().printStackTrace();
     String[] terms = (String[]) rawValue;
     Arrays.sort(terms);
     StringBuilder buffer = new StringBuilder();
@@ -107,6 +109,13 @@ public class EnumParamHandler extends AbstractParamHandler {
   public Object getRawValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
     String[] rawValue = requestParams.getArray(param.getName());
+
+    // get the single value, and convert it into array
+    if (rawValue == null || rawValue.length == 0) {
+	String value = requestParams.getParam(param.getName());
+        if (value != null && value.length() > 0)
+          rawValue = new String[]{ value };
+    }
 
     // use empty value if needed
     if (rawValue == null || rawValue.length == 0) {

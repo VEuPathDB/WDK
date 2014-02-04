@@ -19,6 +19,7 @@ import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
 import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -31,6 +32,7 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.query.param.RequestParams;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is requested. It 1) finds the full name from
@@ -234,19 +236,21 @@ public class ShowQuestionAction extends Action {
   }
 
   private static Map<String, Object> getParamMapFromForm(UserBean user, ParamBean<?>[] params,
-      QuestionForm qForm, HttpServletRequest request) {
-    Map<String, Object> rawValue = new LinkedHashMap<>();
+      QuestionForm qForm, HttpServletRequest request) throws WdkModelException {
+    Map<String, Object> rawValues = new LinkedHashMap<>();
+    RequestParams requestParams = new QuestionRequestParams(request, qForm);
     for (ParamBean<?> param : params) {
       param.setUser(user);
       String paramName = param.getName();
-      Object paramValue = qForm.getValue(paramName);
-
-      if (paramValue == null)
-        paramValue = request.getParameterValues(paramName);
-      if (paramValue != null)
-        rawValue.put(paramName, paramValue);
+      try {
+        Object rawValue = param.getRawValue(user, requestParams);
+        if (rawValue != null)
+          rawValues.put(paramName, rawValue);
+      } catch(WdkUserException ex) {
+        // do nothing, this exception means no previous value assigned
+      }
     }
-    return rawValue;
+    return rawValues;
   }
 
   @Override

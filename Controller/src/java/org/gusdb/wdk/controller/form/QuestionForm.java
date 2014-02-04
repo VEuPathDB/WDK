@@ -89,14 +89,16 @@ public class QuestionForm extends MapActionForm {
         String stableValue = param.getStableValue(user, rawValue, contextValues);
         contextValues.put(name, stableValue);
       }
-      catch (WdkModelException | WdkUserException ex) {
+      catch (Exception ex) {
         ActionMessage message = new ActionMessage("mapped.properties", param.getPrompt(), ex.getMessage());
         errors.add(ActionErrors.GLOBAL_MESSAGE, message);
+        logger.error("getting stable value failed", ex);
       }
     }
 
     // assign context values to the param bean
     for (ParamBean<?> param : params.values()) {
+      param.setUser(user);
       param.setContextValues(contextValues);
       if (param instanceof EnumParamBean) {
         ((EnumParamBean) param).setDependedValues(contextValues);
@@ -105,22 +107,15 @@ public class QuestionForm extends MapActionForm {
 
     // validate params
     for (String paramName : params.keySet()) {
-      String prompt = paramName;
+      ParamBean<?> param = params.get(paramName);
       try {
-        ParamBean<?> param = params.get(paramName);
-        param.setUser(user);
-        prompt = param.getPrompt();
-        String rawValue = (String) getValue(paramName);
-        String stableValue = param.getStableValue(user, rawValue, contextValues);
-
-        // cannot validate datasetParam here
-        if (!(param instanceof DatasetParamBean)) {
-          param.validate(user, stableValue, contextValues);
-        }
+        String stableValue = contextValues.get(paramName);
+        param.validate(user, stableValue, contextValues);
       }
       catch (Exception ex) {
-        ActionMessage message = new ActionMessage("mapped.properties", prompt, ex.getMessage());
+        ActionMessage message = new ActionMessage("mapped.properties", param.getPrompt(), ex.getMessage());
         errors.add(ActionErrors.GLOBAL_MESSAGE, message);
+        logger.error("validation failed.", ex);
       }
     }
 
@@ -137,6 +132,7 @@ public class QuestionForm extends MapActionForm {
       if (message != null) {
         ActionMessage am = new ActionMessage("mapped.properties", "Assigned weight", message);
         errors.add(ActionErrors.GLOBAL_MESSAGE, am);
+        logger.error(message);
       }
     }
 
