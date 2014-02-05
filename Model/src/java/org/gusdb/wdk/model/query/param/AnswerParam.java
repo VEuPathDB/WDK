@@ -137,10 +137,7 @@ public class AnswerParam extends Param {
   @Override
   protected void appendJSONContent(JSONObject jsParam, boolean extra) throws JSONException {
     // add recordClass names
-    String[] rcNames = new String[recordClasses.size()];
-    for (int i = 0; i < recordClasses.size(); i++) {
-      rcNames[i] = recordClasses.get(i).getFullName();
-    }
+    String[] rcNames = recordClasses.keySet().toArray(new String[0]);
     Arrays.sort(rcNames);
     JSONArray jsArray = new JSONArray(Arrays.asList(rcNames));
     jsParam.put("recordClass", jsArray);
