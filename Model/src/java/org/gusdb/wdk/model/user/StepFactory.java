@@ -221,7 +221,7 @@ public class StepFactory {
         estimateSize = answerValue.getResultSize();
     } catch (Exception ex) {
       estimateSize = 0;
-      logger.error(ex);
+      logger.error("creating step failed", ex);
       exception = ex;
     }
 
