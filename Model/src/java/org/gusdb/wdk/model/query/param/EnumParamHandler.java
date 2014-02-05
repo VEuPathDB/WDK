@@ -109,7 +109,7 @@ public class EnumParamHandler extends AbstractParamHandler {
   public Object getRawValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
     String[] rawValue = requestParams.getArray(param.getName());
-
+    
     // get the single value, and convert it into array
     if (rawValue == null || rawValue.length == 0) {
 	String value = requestParams.getParam(param.getName());

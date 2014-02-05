@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -222,5 +223,18 @@ public class DatasetParam extends Param {
     if (content.length() > truncateLength)
       content = content.substring(0, truncateLength) + "...";
     return content;
+  }
+
+  public Integer getBasketCount(User user) throws WdkModelException {
+    if (recordClass == null)
+      return null;
+    Map<RecordClass, Integer> counts = user.getBasketCounts();
+    return counts.get(recordClass);
+  }
+
+  public Strategy[] getStrategies(User user) throws WdkModelException {
+    if (recordClass == null)
+      return null;
+    return user.getStrategies(recordClass.getFullName());
   }
 }

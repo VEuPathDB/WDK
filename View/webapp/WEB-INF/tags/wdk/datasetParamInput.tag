@@ -58,7 +58,7 @@ function chooseType(paramName, type) {
 <c:set var="dsName" value="${pNam}_dataset"/>
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="dataset" value="${requestScope[dsName]}" />  
-<c:set var="recordName" value="${qp.recordClass.displayNamePlural}" />
+<c:set var="recordClass" value="${qp.recordClass}" />
 <c:set var="defaultType" value="${qp.defaultType}" />
 <c:set var="dataChecked"><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
 <c:set var="fileChecked"><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
@@ -73,7 +73,7 @@ function chooseType(paramName, type) {
     <!-- display an input box for user to enter data -->
     <tr>
         <td align="left" valign="top" nowrap>
-            <input type="radio" name="${pNam}_radio" ${dataChecked}
+            <input type="radio" name="${qp.typeSubType}" ${dataChecked}
                    onclick="chooseType('${pNam}', 'data');" />
             Enter list:&nbsp;
         </td>
@@ -126,24 +126,37 @@ function chooseType(paramName, type) {
       </td>
     </tr>
 
-    <c:if test="${qp.recordClass.useBasket}">	
-    <!-- display option to use basket snapshot -->
-    <tr>
-        <c:set var="basketCount" value="${0}" />
-        <c:forEach items="${wdkUser.basketCounts}" var="item">
-          <c:if test="${item.key.fullName eq qp.recordClass.fullName}">
-            <c:set var="basketCount" value="${item.value}" />
-          </c:if>
-        </c:forEach>
-        <c:set var="disabled">
-            <c:if test="${basketCount == 0}">disabled</c:if>
-        </c:set>
-        <td colspan="2" align="left" valign="top" nowrap>
-            <input type="radio" name="${pNam}_radio" ${basketChecked} ${disabled}
-                   onclick="chooseType('${pNam}', 'basket');" />
-            Copy ${recordName} from My Basket (${basketCount} ${recordName})&nbsp;
-        </td>
-    </tr>
+    <c:if test="${recordClass !=  null}">
+      <!-- display option to use basket snapshot -->
+      <c:if test="${recordClass.useBasket}">
+        <c:set var="basketCount" value="${qp.basketCount}" />
+        <c:if test="${basketCount gt 0}">
+          <tr>
+              <td colspan="2" align="left" valign="top" nowrap>
+                  <input type="radio" name="${pNam}_radio" ${basketChecked}
+                         onclick="chooseType('${pNam}', 'basket');" />
+                  Copy ${recordName} from My Basket (${basketCount} ${recordName})&nbsp;
+              </td>
+          </tr>
+        </c:if>
+        
+        <!-- display option to use strategy snapshot -->
+        <c:set var="strategies" value="${qp.strategies}" />
+        <c:if test="${fn:length(strategies) gt 0}">
+          <tr>
+              <td colspan="2" align="left" valign="top" nowrap>
+                <input type="radio" name="${pNam}_radio" ${basketChecked}
+                       onclick="chooseType('${pNam}', 'strategy');" />
+                <select name="${pNam}_strategy">
+                  <c:forEach item="${strategies}" var="strategy">
+                    <option value="${strategy.strategyId}">${strategy.displayName}</option>
+                  </c:forEach>
+                </select>
+              </td>
+          </tr>
+        </c:if>
+      </c:if>
+    
     </c:if>
     
     <!-- display an existing info -->
