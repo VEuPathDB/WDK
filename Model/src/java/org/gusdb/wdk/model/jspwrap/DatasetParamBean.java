@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.user.Strategy;
 
 /**
  * @author xingao
@@ -62,5 +63,13 @@ public class DatasetParamBean extends ParamBean<DatasetParam> {
   
   public Collection<DatasetParser> getParsers() {
     return datasetParam.getParsers();
+  }
+
+  public Integer getBasketCount() throws WdkModelException {
+    return datasetParam.getBasketCount(user.getUser());
+  }
+
+  public Strategy[] getStrategies() throws WdkModelException {
+    return datasetParam.getStrategies(user.getUser());
   }
 }
