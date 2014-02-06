@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.dataset;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -14,7 +15,7 @@ public abstract class AbstractDatasetParser implements DatasetParser {
   private String name;
   private String display;
   private String description;
-  protected Map<String, String> properties;
+  protected Map<String, String> properties = new LinkedHashMap<>();
 
   /*
    * (non-Javadoc)
