@@ -453,18 +453,22 @@ public abstract class Query extends WdkModelBase {
 
     // resolve the params
     for (ParamReference paramRef : paramRefList) {
-      Param param = ParamReference.resolveReference(wdkModel, paramRef,
-          getFullName());
+      Param param = ParamReference.resolveReference(wdkModel, paramRef, this);
       String paramName = param.getName();
       if (paramMap.containsKey(paramName)) {
         throw new WdkModelException("The param '" + paramName
             + "' is duplicated in query " + getFullName());
       } else {
-        param.setContextQuery(this);
         paramMap.put(paramName, param);
       }
     }
     paramRefList = null;
+
+    // resolve reference for those params
+    for (Param param : paramMap.values()) {
+      param.resolveReferences(wdkModel);
+    }
+
 
     // FIXME - this cause problems with some params, need to investigate.
     // comment out temporarily

@@ -105,15 +105,18 @@ public class DatasetParam extends Param {
       recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
 
     // get parsers
-    parsers = new LinkedHashMap<>();
-    // add the default parser into it first, so that it could be overridden if needed
-    DatasetParser parser = new ListDatasetParser();
-    parsers.put(parser.getName(), parser);
-    for (DatasetParserReference reference : parserReferences) {
-      parser = reference.getParser();
+    if (parserReferences != null) {
+      parsers = new LinkedHashMap<>();
+      // add the default parser into it first, so that it could be overridden if needed
+      DatasetParser parser = new ListDatasetParser();
       parsers.put(parser.getName(), parser);
+      for (DatasetParserReference reference : parserReferences) {
+        reference.resolveReferences(model);
+        parser = reference.getParser();
+        parsers.put(parser.getName(), parser);
+      }
+      parserReferences = null;
     }
-    parserReferences = null;
   }
 
   /*

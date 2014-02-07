@@ -635,9 +635,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                 + "] defined in QUESTION [" + getFullName()
                 + "] doesn't exist in the " + "referenced id query ["
                 + queryName + "].");
-          Param param = ParamReference.resolveReference(model, paramRef,
-              queryName);
+          Param param = ParamReference.resolveReference(model, paramRef, query);
           query.addParam(param);
+        }
+        // resolve the param references after all params are present
+        for (Param param : query.getParams()) {
+          param.resolveReferences(model);
         }
       }
       query.setContextQuestion(this);

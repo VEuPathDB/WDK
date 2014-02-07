@@ -304,17 +304,23 @@ public abstract class AbstractEnumParam extends Param {
     if (dependedParams == null) {
       dependedParams = new LinkedHashSet<>();
       Map<String, Param> params = null;
-      if (contextQuestion != null)
+      if (contextQuestion != null) {
         params = contextQuestion.getParamMap();
-      else if (contextQuery != null)
+      } else if (contextQuery != null)
         params = contextQuery.getParamMap();
       for (String paramRef : dependedParamRefs) {
         String paramName = paramRef.split("\\.", 2)[1].trim();
         Param param = (params != null) ? params.get(paramName) : (Param) wdkModel.resolveReference(paramRef);
         if (param != null)
           dependedParams.add(param);
-        else
-          logger.warn("Missing depended param: " + paramRef + " for enum param " + getFullName());
+        else {
+          String message = "Missing depended param: " + paramRef + " for enum param " + getFullName();
+          if (contextQuestion != null)
+            message += ", in context question " + contextQuestion.getFullName();
+          if (contextQuery != null)
+            message += ", in context query " + contextQuery.getFullName();
+          throw new WdkModelException(message);
+        }
       }
     }
     return dependedParams;
@@ -660,9 +666,6 @@ public abstract class AbstractEnumParam extends Param {
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    if (resolved)
-      return;
-
     super.resolveReferences(wdkModel);
 
     dependedParamRefs.clear();
@@ -679,8 +682,10 @@ public abstract class AbstractEnumParam extends Param {
       }
     }
 
+    resolved = true;
+
     // make sure the depended params exist in the context query.
-    if (isDependentParam()) {
+    if (isDependentParam() && contextQuery != null) {
       Map<String, Param> params = contextQuery.getParamMap();
       Set<Param> dependedParams = getDependedParams();
       for (Param param : dependedParams) {
@@ -689,7 +694,6 @@ public abstract class AbstractEnumParam extends Param {
               ", but the depended param doesn't exist in the same query " + contextQuery.getFullName());
       }
     }
-    resolved = true;
   }
 
   @Override

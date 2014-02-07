@@ -116,6 +116,8 @@ public class FlatVocabParam extends AbstractEnumParam {
         paramNames.add(param.getName());
       }
     }
+
+    // all param in the vocab param should match the depended params;
     for (Param param : query.getParams()) {
       String paramName = param.getName();
       if (paramName.equals(PARAM_SERVED_QUERY))
@@ -124,6 +126,16 @@ public class FlatVocabParam extends AbstractEnumParam {
         throw new WdkModelException("The vocab query " + query.getFullName() + " requires a depended param " +
             paramName + ", but the vocab param " + getFullName() + " doesn't depend on it.");
     }
+    // all depended params should match the params in the vocab query;
+    Map<String, Param> vocabParams = query.getParamMap();
+    for (String paramName : paramNames) {
+      if (!vocabParams.containsKey(paramName))
+        throw new WdkModelException("The dependent param " + getFullName() + " depends on param " +
+            paramName + ", but the vocab query " + query.getFullName() +
+            " doesn't use this depended param.");
+
+    }
+
 
     // add a served query param into flatVocabQuery, if it doesn't exist
     ParamSet paramSet = model.getParamSet(Utilities.INTERNAL_PARAM_SET);
@@ -268,5 +280,11 @@ public class FlatVocabParam extends AbstractEnumParam {
       // add underlying query name to it
       jsParam.append("query", query.getFullName());
     }
+  }
+
+  @Override
+  public void setContextQuery(Query query) {
+    super.setContextQuery(query);
+    this.servedQueryName = contextQuery.getFullName();
   }
 }

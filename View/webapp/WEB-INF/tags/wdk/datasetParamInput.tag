@@ -13,45 +13,6 @@ Provides form input element for a given DatasetParam.
               description="parameter name"
 %>
 
-<script type="text/javascript" lang="JavaScript 1.2">
-<!-- //
-
-$(document).ready(function() {
-	var param = $("#${qp.name}");
-	var paramName = param.attr("id");
-	param.find("#" + paramName + "_type").each(function() {
-		var disable = ($(this).attr("checked") == "checked") ? "false" : "true";
-		$(this).parents("tr").find(".input").attr("disabled", disable);
-	});
-});
-
-var IE = document.all?true:false
-
-if (!IE) {
-    document.captureEvents(Event.CLICK);   
-}
-
-function chooseType(paramName, type) {
-    var inputType = document.getElementById(paramName + '_type');
-    inputType.value = type;
-    // disable inputs accordingly
-    var inputData = document.getElementById(paramName + '_data');
-    var inputFile = document.getElementById(paramName + '_file');
-    if (type == "data") {
-        if (inputFile) inputData.disabled = false;
-        if (inputFile) inputFile.disabled = true;
-    } else if (type == "file") {
-        if (inputFile) inputData.disabled = true;
-        if (inputFile) inputFile.disabled = false;
-    } else if (type == "basket") {
-        if (inputFile) inputData.disabled = true;
-        if (inputFile) inputFile.disabled = true;
-    }
-}
-
-// -->
-</script>
-
 <c:set var="qP" value="${qp}"/>
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="opt" value="0"/>
@@ -60,12 +21,16 @@ function chooseType(paramName, type) {
 <c:set var="dataset" value="${requestScope[dsName]}" />  
 <c:set var="recordClass" value="${qp.recordClass}" />
 <c:set var="defaultType" value="${qp.defaultType}" />
-<c:set var="dataChecked"><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
-<c:set var="fileChecked"><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
-<c:set var="basketChecked"><c:if test="${defaultType == 'basket'}">checked</c:if></c:set>
+<c:choose>
+  <c:when test="${defaultType == 'file'}">    <c:set var="fileChecked">checked="checked"</c:set></c:when>
+  <c:when test="${defaultType == 'basket'}">  <c:set var="basketChecked">checked="checked"</c:set></c:when>
+  <c:when test="${defaultType == 'strategy'}"><c:set var="strategyChecked">checked="checked"</c:set></c:when>
+  <c:otherwise><c:set var="dataChecked">checked="checked"</c:set></c:otherwise>
+</c:choose>
 <c:set var="noAction" value="${requestScope.action == null || requestScope.action == ''}" />
 
-<input type="hidden" id="${pNam}_type" name="${pNam}_type" value="${defaultType}" />
+<div id="${qp.name}" class="param datasetParam"
+     data-controller="wdk.component.datasetParam.init">
 
 <table id="${qp.name}">
 
@@ -73,8 +38,7 @@ function chooseType(paramName, type) {
     <!-- display an input box for user to enter data -->
     <tr>
         <td align="left" valign="top" nowrap>
-            <input type="radio" name="${qp.typeSubType}" ${dataChecked}
-                   onclick="chooseType('${pNam}', 'data');" />
+            <input type="radio" name="${qp.typeSubParam}" class="type" value="data" ${dataChecked} />
             Enter list:&nbsp;
         </td>
         <c:set var="datasetValues">
@@ -88,7 +52,7 @@ function chooseType(paramName, type) {
             </c:choose>
         </c:set>
         <td align="left">
-            <textarea id="${pNam}_data" class="input" name="${pNam}_data" rows="5" cols="30">${datasetValues}</textarea>
+            <textarea name="${qp.dataSubParam}" class="data" rows="5" cols="30">${datasetValues}</textarea>
         </td>
     </tr>
   </c:if>
@@ -98,13 +62,12 @@ function chooseType(paramName, type) {
         <!-- display an input box and upload file button -->
         <tr class="dataset-file">
             <td align="left" valign="top">
-                <input type="radio" name="${pNam}_radio" ${fileChecked}
-                       onclick="chooseType('${pNam}', 'file');" />
+                <input type="radio" name="${qp.typeSubParam}" class="type" value="file" ${fileChecked} />
                Upload from a <i>text</i> file:&nbsp;
             </td>
             <td align="left">
-                <html:file styleId="${pNam}_file" styleClass="input" property="value(${pNam}_file)" disabled="true"/>
-								<div class="type-ahead-help">Maximum size: 10MB.
+                <html:file styleId="${qa.fileSubParam}" styleClass="file" property="value(${qa.fileSubParam})"/>
+		<div class="type-ahead-help">Maximum size: 10MB.</div>
             </td>
         </tr>
     </c:if>
@@ -112,14 +75,14 @@ function chooseType(paramName, type) {
     
     <!-- display options for the parser -->
     <tr class="dataset-parsers">
-      <td> </td>
+      <td>Choose a format for the input list, or uplodaed file:</td>
       <td>
        <c:forEach items="${qP.parsers}" var="parser">
           <c:set var="checked">
             <c:if test="${(dataset != null && parser.name eq dataset.parserName) || (dataset eq null && parser.name eq 'list')}">checked="checked"</c:if>
           </c:set>
-          <span class="parser" title="${parser.description}">
-            <input type="radio" name="${pNam}_parser" value="${parser.name}" ${checked} />
+          <span title="${parser.description}">
+            <input type="radio" name="${qp.parserSubParam}" class="parser" value="${parser.name}" ${checked} />
             ${parser.display}
           </span>
         </c:forEach>
@@ -130,26 +93,25 @@ function chooseType(paramName, type) {
       <!-- display option to use basket snapshot -->
       <c:if test="${recordClass.useBasket}">
         <c:set var="basketCount" value="${qp.basketCount}" />
-        <c:if test="${basketCount gt 0}">
-          <tr>
-              <td colspan="2" align="left" valign="top" nowrap>
-                  <input type="radio" name="${pNam}_radio" ${basketChecked}
-                         onclick="chooseType('${pNam}', 'basket');" />
-                  Copy ${recordName} from My Basket (${basketCount} ${recordName})&nbsp;
-              </td>
-          </tr>
-        </c:if>
+        <c:set var="disabled"><c:if test="${basketCount == 0}">disabled="disabled"</c:if></c:set>
+        <tr>
+          <td colspan="2" align="left" valign="top" nowrap>
+            <input type="radio" name="${qp.typeSubParam}" class="type" value="basket" ${basketChecked} ${disabled}/>
+            Copy ${recordClass.displayNamePlural} from My Basket (${basketCount} ${recordClass.displayNamePlural})&nbsp;
+          </td>
+        </tr>
         
         <!-- display option to use strategy snapshot -->
         <c:set var="strategies" value="${qp.strategies}" />
         <c:if test="${fn:length(strategies) gt 0}">
           <tr>
               <td colspan="2" align="left" valign="top" nowrap>
-                <input type="radio" name="${pNam}_radio" ${basketChecked}
+                <input type="radio" name="${qp.typeSubParam}" class="type" value="strategy" ${strategyChecked}
                        onclick="chooseType('${pNam}', 'strategy');" />
-                <select name="${pNam}_strategy">
-                  <c:forEach item="${strategies}" var="strategy">
-                    <option value="${strategy.strategyId}">${strategy.displayName}</option>
+                Copy from ${recordClass.displayName} strategy:
+                <select name="${qp.strategySubParam}" class="strategy">
+                  <c:forEach items="${strategies}" var="strategy">
+                    <option value="${strategy.strategyId}">${strategy.name} (${strategy.estimateSize} ${recordClass.displayNamePlural})</option>
                   </c:forEach>
                 </select>
               </td>
@@ -168,3 +130,5 @@ function chooseType(paramName, type) {
         </tr>
     </c:if>
 </table>
+
+</div>

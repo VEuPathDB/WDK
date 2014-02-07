@@ -73,7 +73,21 @@ public class DatasetParamHandler extends AbstractParamHandler {
 
     int datasetId = Integer.valueOf(stableValue);
     DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-    return datasetFactory.getDatasetValueSql(datasetId);
+    String dvSql = datasetFactory.getDatasetValueSql(datasetId);
+
+    RecordClass recordClass = ((DatasetParam)param).getRecordClass();
+    if (recordClass == null)
+      return dvSql;
+
+    // use the recordClass primary keys as the column name
+    String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    StringBuilder sql = new StringBuilder("SELECT ");
+    for (int i = 0; i < pkColumns.length; i++) {
+      sql.append("dv.data" + (i + 1) + " AS " + pkColumns[i] + ", "); 
+    }
+    // return the remaining data columns
+    sql.append("dv.* FROM (" + dvSql + ") dv");
+    return sql.toString();
   }
 
   /**
