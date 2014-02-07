@@ -7,6 +7,7 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.user.Strategy;
@@ -60,9 +61,18 @@ public class DatasetParamBean extends ParamBean<DatasetParam> {
   public String getStrategySubParam() {
     return datasetParam.getStrategySubParam();
   }
+
+  public String getParserSubParam() {
+    return datasetParam.getParserSubParam();
+  }
   
   public Collection<DatasetParser> getParsers() {
     return datasetParam.getParsers();
+  }
+
+  public RecordClassBean getRecordClass() {
+    RecordClass recordClass = datasetParam.getRecordClass();
+    return (recordClass == null) ? null : new RecordClassBean(recordClass);
   }
 
   public Integer getBasketCount() throws WdkModelException {

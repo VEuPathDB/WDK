@@ -164,7 +164,7 @@ public class DatasetFactory {
    */
   public Dataset getDataset(User user, int datasetId) throws WdkModelException {
     StringBuilder sql = new StringBuilder("SELECT d.* ");
-    sql.append(" FROM " + TABLE_DATASETS + " d ");
+    sql.append(" FROM " + schema + TABLE_DATASETS + " d ");
     sql.append(" WHERE d." + COLUMN_DATASET_ID + " = " + datasetId);
 
     DataSource dataSource = userDb.getDataSource();
@@ -293,6 +293,7 @@ public class DatasetFactory {
       QueryLogger.logEndStatementExecution(sql, "wdk-dataset-by-content-checksum", start);
 
       Dataset dataset = resultSet.next() ? readDataset(user, resultSet) : null;
+
       return dataset;
     }
     finally {
@@ -337,29 +338,31 @@ public class DatasetFactory {
 
   private void insertDatasetValues(Connection connection, int datasetId, List<String[]> data)
       throws SQLException {
+    int length = data.get(0).length;
     StringBuilder sql = new StringBuilder("INSERT INTO ");
     sql.append(schema + TABLE_DATASET_VALUES);
     sql.append(" (" + COLUMN_DATASET_VALUE_ID + ", " + COLUMN_DATASET_ID);
-    for (int i = 1; i <= MAX_VALUE_COLUMNS; i++) {
+    for (int i = 1; i <= length; i++) {
       sql.append(", " + COLUMN_DATA_PREFIX + i);
     }
     sql.append(") VALUES (?, ?");
-    for (int i = 1; i <= MAX_VALUE_COLUMNS; i++) {
+    for (int i = 1; i <= length; i++) {
       sql.append(", ?");
     }
     sql.append(")");
-
-    // get a new dataset id
-    int datasetValueId = userDb.getPlatform().getNextId(dataSource, schema, TABLE_DATASET_VALUES);
 
     PreparedStatement psInsert = null;
     try {
       psInsert = connection.prepareStatement(sql.toString());
       for (int i = 0; i < data.size(); i++) {
         String[] value = data.get(i);
+
+        // get a new value id.
+        int datasetValueId = userDb.getPlatform().getNextId(dataSource, schema, TABLE_DATASET_VALUES);
+
         psInsert.setInt(1, datasetValueId);
         psInsert.setInt(2, datasetId);
-        for (int j = 0; j < value.length; j++) {
+        for (int j = 0; j < length; j++) {
           psInsert.setString(j + 3, value[j]);
         }
         psInsert.addBatch();
