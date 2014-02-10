@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.dataset;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.log4j.Logger;
 
 public class ListDatasetParser extends AbstractDatasetParser {
   
@@ -9,6 +10,8 @@ public class ListDatasetParser extends AbstractDatasetParser {
 
   public static final String PROP_ROW_DIVIDER = "row.divider";
   public static final String PROP_COLUMN_DIVIDER = "column.divider";
+
+  private static final Logger logger = Logger.getLogger(ListDatasetParser.class);
 
   public ListDatasetParser() {
     setName(NAME);
@@ -22,6 +25,8 @@ public class ListDatasetParser extends AbstractDatasetParser {
     String[] rows = rawValue.split(rowDivider);
     String columnDivider = getColumnDivider(rows[0]);
 
+    logger.debug("row divider='" + rowDivider + "', col divider='" + columnDivider + "' for content '" + rawValue);
+
     List<String[]> records = new ArrayList<String[]>();
     int columnCount = 0;
     for (String row : rows) {
@@ -33,7 +38,7 @@ public class ListDatasetParser extends AbstractDatasetParser {
       if (columnCount == 0)
         columnCount = columns.length;
       else if (columnCount != columns.length)
-        throw new WdkDatasetException("The input data for datasetParam has " + "various columns at row #" +
+        throw new WdkDatasetException("The input data for datasetParam has various columns at row #" +
             records.size() + ". " + "The number of columns has to be the same for all the rows.");
       records.add(columns);
     }
@@ -59,7 +64,7 @@ public class ListDatasetParser extends AbstractDatasetParser {
       return ",";
 
     // then white space
-    return "\\s";
+    return "\\s+";
   }
 
   private String getColumnDivider(String row) {
@@ -74,14 +79,14 @@ public class ListDatasetParser extends AbstractDatasetParser {
 
     // then pipe
     if (row.indexOf('|') >= 0)
-      return "|";
+      return "\\|";
 
     // then comma
     if (row.indexOf(',') >= 0)
       return ",";
 
     // then white space
-    return "\\s";
+    return "\\s+";
   }
 
 }
