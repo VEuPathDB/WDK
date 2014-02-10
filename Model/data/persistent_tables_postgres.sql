@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS wdkuser.datasets;
 DROP TABLE IF EXISTS wdkuser.preferences;
 DROP TABLE IF EXISTS wdkuser.user_roles;
 DROP TABLE IF EXISTS wdkuser.users;
+DROP TABLE IF EXISTS wdkuser.config;
 */
 
 
@@ -63,7 +64,16 @@ CREATE SEQUENCE wdkuser.categories_pkseq INCREMENT BY 1 START WITH 1;
 /* =========================================================================
    tables in user schema
    ========================================================================= */
-   
+
+CREATE TABLE wdkuser.config
+(
+  config_name VARCHAR(100) NOT NULL,
+  config_value VARCHAR(255),
+  migration_id NUMBER(12),
+  CONSTRAINT "config_pk" PRIMARY KEY (config_name)
+);
+
+
 CREATE TABLE wdkuser.users
 (
   user_id NUMERIC(12) NOT NULL,

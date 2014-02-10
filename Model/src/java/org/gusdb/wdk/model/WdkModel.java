@@ -52,8 +52,10 @@ import org.gusdb.wdk.model.xml.XmlRecordClassSet;
  */
 public class WdkModel implements ConnectionContainer {
 
-  public static final String WDK_VERSION = "2.7.0";
-
+  public static final String WDK_VERSION = "2.8.0";
+  
+  public static final String USER_SCHEMA_VERSION = "5";
+  
   public static final String CONNECTION_APP = "AppDB";
   public static final String CONNECTION_USER = "UserDB";
 
@@ -170,7 +172,10 @@ public class WdkModel implements ConnectionContainer {
 
   private ThreadMonitor _myThreadMonitor;
   
-  public void doAdditionalStartup() {
+  public void doAdditionalStartup() throws WdkModelException {
+    // verify the user schema
+    modelConfig.getUserDB().checkSchema(this);
+    
     // start up thread monitor and save reference
     _myThreadMonitor = ThreadMonitor.start(this);
   }
