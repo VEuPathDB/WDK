@@ -72,7 +72,7 @@ public class CConstants {
     public static final String WDK_ALL_RECORD_IDS_KEY = "allRecordIds";
     public static final String WDK_RESULT_SIZE_ONLY_KEY = "resultSizeOnly";
     public static final String WDK_RESULT_SET_ONLY_KEY = "resultsOnly";
-    public static final String WDK_FILTER_KEY = "wdkFilter";
+    public static final String WDK_FILTER_KEY = "filter";
     public static final String WDK_STRATEGY_CHECKSUM_KEY = "strategy_checksum";
     public static final String WDK_STATE_KEY = "state";
     public static final String WDK_OPEN_KEY = "open";
