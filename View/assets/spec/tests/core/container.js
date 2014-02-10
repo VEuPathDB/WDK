@@ -11,8 +11,8 @@ describe('wdk.core.container', function() {
       var retrievedFactory = container.get('my-factory');
       var instance = retrievedFactory.create();
 
-      expect(retrievedFactory).toEqual(Factory)
-      expect(instance instanceof Factory).toBe(true);
+      expect(retrievedFactory).to.equal(Factory)
+      expect(instance instanceof Factory).to.equal(true);
     });
 
     it('should throw an error on re-register', function() {
@@ -22,7 +22,7 @@ describe('wdk.core.container', function() {
       } catch(e) {
         err = e;
       }
-      expect(err instanceof TypeError).toBe(true);
+      expect(err instanceof TypeError).to.equal(true);
     });
 
     it('should throw an error on undefined factory', function() {
@@ -32,7 +32,7 @@ describe('wdk.core.container', function() {
       } catch(e) {
         err = e;
       }
-      expect(err instanceof TypeError).toBe(true);
+      expect(err instanceof TypeError).to.equal(true);
     });
 
   });

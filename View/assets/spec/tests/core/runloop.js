@@ -18,8 +18,8 @@ describe('wdk.core.runloop', function() {
       function deferred() {
         values.push('deferred');
 
-        expect(values[0]).toBe('undeferred');
-        expect(values[1]).toBe('deferred');
+        expect(values[0]).to.equal('undeferred');
+        expect(values[1]).to.equal('deferred');
         done();
       }
 
@@ -36,7 +36,7 @@ describe('wdk.core.runloop', function() {
         runloop.defer(function() {
           callCount++;
           if (i === RUNS) {
-            expect(callCount).toBe(RUNS);
+            expect(callCount).to.equal(RUNS);
             done();
           }
         });
@@ -49,9 +49,9 @@ describe('wdk.core.runloop', function() {
         runloop.defer(function() {
           runloop.defer(function() {
             order.push('inner');
-            expect(order.indexOf('outter')).toBe(0);
-            expect(order.indexOf('middle')).toBe(1);
-            expect(order.indexOf('inner')).toBe(2);
+            expect(order.indexOf('outter')).to.equal(0);
+            expect(order.indexOf('middle')).to.equal(1);
+            expect(order.indexOf('inner')).to.equal(2);
             done();
           });
           order.push('middle');
@@ -65,7 +65,7 @@ describe('wdk.core.runloop', function() {
       var deferComplete = false;
 
         setTimeout(function() {
-          expect(deferComplete).not.toBe(true);
+          expect(deferComplete).to.not.equal(true);
           done()
         }, timeout - 1);
 
@@ -95,7 +95,7 @@ describe('wdk.core.runloop', function() {
       }
 
       setTimeout(function() {
-        expect(callCount).toBe(1);
+        expect(callCount).to.equal(1);
         done();
       }, 300);
 
@@ -106,7 +106,7 @@ describe('wdk.core.runloop', function() {
       var deferOnceDone = false;
 
       setTimeout(function() {
-        expect(deferOnceDone).not.toBe(true);
+        expect(deferOnceDone).to.not.equal(true);
         done();
       }, timeout - 1);
 
