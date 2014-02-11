@@ -3,7 +3,11 @@ package org.gusdb.wdk.model.dataset;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.model.query.param.DatasetParam;
+
 public interface DatasetParser {
+  
+  void setParam(DatasetParam param);
 
   String getName();
   
