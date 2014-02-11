@@ -73,6 +73,8 @@ CREATE TABLE wdkuser.config
   CONSTRAINT "config_pk" PRIMARY KEY (config_name)
 );
 
+INSERT INTO wdkuser.config(config_name, config_value) VALUES('wdk.user.schema.version', '5');
+
 
 CREATE TABLE wdkuser.users
 (
