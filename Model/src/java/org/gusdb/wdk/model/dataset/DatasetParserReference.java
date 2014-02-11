@@ -75,8 +75,8 @@ public class DatasetParserReference extends WdkModelBase {
       Class<? extends DatasetParser> parserClass = Class.forName(implementation).asSubclass(DatasetParser.class);
       parser = parserClass.newInstance();
       parser.setName(name);
-      parser.setDisplay(display);
-      parser.setDescription(description);
+      if (display != null) parser.setDisplay(display);
+      if (description != null) parser.setDescription(description);
       parser.setProperties(properties);
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
       throw new WdkModelException(ex);

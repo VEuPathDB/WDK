@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.record.RecordClass;
 
 /**
@@ -23,6 +24,8 @@ public class GffDatasetParser extends AbstractDatasetParser {
 
   private static final String PROP_RECORD_TYPES = "gff.record.types";
   private static final String PROP_ATTRIBUTES = "gff.attributes";
+
+  private static final Logger logger = Logger.getLogger(GffDatasetParser.class);
 
   public GffDatasetParser() {
     setName("gff");
@@ -41,6 +44,9 @@ public class GffDatasetParser extends AbstractDatasetParser {
     Map<String, Integer> attributes = getAttributes();
     List<String[]> data = new ArrayList<>();
 
+    logger.debug("types: " + types);
+    logger.debug("attributes: " + attributes);
+
     BufferedReader reader = new BufferedReader(new StringReader(content));
     String line;
     try {
@@ -53,19 +59,18 @@ public class GffDatasetParser extends AbstractDatasetParser {
         String[] columns = line.split("\t");
         if (types.isEmpty() || types.contains(columns[2].toLowerCase())) {
           String[] row = new String[attributes.size() + 2];
-          row[0] = columns[0];
           row[1] = columns[1];
 
           // parsing attributes
-          if (!attributes.isEmpty() && columns.length >= 9) {
             for (String tuple : columns[8].split(";")) {
               String[] pieces = tuple.split("=");
               String attr = pieces[0].toLowerCase();
+              if (attr.equals("id")) 
+                row[0] = pieces[1];
               if (attributes.containsKey(attr)) {
                 row[attributes.get(attr) + 2] = pieces[1];
               }
             }
-          }
           data.add(row);
         }
       }

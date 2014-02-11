@@ -44,6 +44,7 @@ import org.gusdb.wdk.model.answer.ReporterRef;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigParser;
+import org.gusdb.wdk.model.dataset.DatasetParserReference;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
@@ -764,6 +765,10 @@ public class ModelXmlParser extends XmlParser {
     path = "wdkModel/paramSet/datasetParam";
     configureNode(digester, path, DatasetParam.class, "addParam");
     configureParamContent(digester, path, DatasetParamSuggestion.class);
+    configureNode(digester, path + "/parser", DatasetParserReference.class, "addParserReference");
+    configureNode(digester, path + "/parser/property",
+        WdkModelText.class, "addProperty");
+    digester.addCallMethod(path + "/parser/property", "setText", 0);
 
     // enum param
     path = "wdkModel/paramSet/enumParam";
