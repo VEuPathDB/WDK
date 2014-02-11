@@ -6,17 +6,25 @@ package org.gusdb.wdk.model.dataset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.wdk.model.query.param.DatasetParam;
+
 /**
  * @author jerric
  * 
  */
 public abstract class AbstractDatasetParser implements DatasetParser {
 
+  protected DatasetParam param;
   private String name;
   private String display;
   private String description;
   protected Map<String, String> properties = new LinkedHashMap<>();
 
+  @Override
+  public void setParam(DatasetParam param) {
+    this.param = param;
+  }
+  
   /*
    * (non-Javadoc)
    * 

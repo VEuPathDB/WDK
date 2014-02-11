@@ -57,7 +57,7 @@ public class DatasetFactory {
   private static final String COLUMN_DATASET_VALUE_ID = "dataset_value_id";
   private static final String COLUMN_DATA_PREFIX = "data";
 
-  public static final int MAX_VALUE_COLUMNS = 5;
+  public static final int MAX_VALUE_COLUMNS = 20;
   public static final int MAX_VALUE_LENGTH = 1000;
   public static final int UPLOAD_FILE_MAX_SIZE = 2000;
 
