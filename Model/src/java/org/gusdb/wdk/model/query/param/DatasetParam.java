@@ -78,17 +78,17 @@ public class DatasetParam extends Param {
     super.excludeResources(projectId);
 
     // exclude parser references
-    List<DatasetParserReference> references = new ArrayList<>();
+    Map<String, DatasetParserReference> references = new LinkedHashMap<>();
     for (DatasetParserReference reference : parserReferences) {
       if (reference.include(projectId)) {
         String name = reference.getName();
-        if (parsers.containsKey(name))
+        if (references.containsKey(name))
           throw new WdkModelException("parser '" + name + "' is duplicated in datasetParam " + getFullName());
         reference.excludeResources(projectId);
-        references.add(reference);
+        references.put(name, reference);
       }
     }
-    parserReferences = references;
+    parserReferences = new ArrayList<>(references.values());
   }
 
   /*
@@ -105,11 +105,11 @@ public class DatasetParam extends Param {
       recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
 
     // get parsers
+    parsers = new LinkedHashMap<>();
+    // add the default parser into it first, so that it could be overridden if needed
+    DatasetParser parser = new ListDatasetParser();
+    parsers.put(parser.getName(), parser);
     if (parserReferences != null) {
-      parsers = new LinkedHashMap<>();
-      // add the default parser into it first, so that it could be overridden if needed
-      DatasetParser parser = new ListDatasetParser();
-      parsers.put(parser.getName(), parser);
       for (DatasetParserReference reference : parserReferences) {
         reference.resolveReferences(model);
         parser = reference.getParser();
@@ -117,6 +117,9 @@ public class DatasetParam extends Param {
       }
       parserReferences = null;
     }
+    for(DatasetParser p : parsers.values()) {
+      p.setParam(this);
+    } 
   }
 
   /*
@@ -239,5 +242,9 @@ public class DatasetParam extends Param {
     if (recordClass == null)
       return null;
     return user.getStrategies(recordClass.getFullName());
+  }
+
+  public void addParserReference(DatasetParserReference reference) {
+    this.parserReferences.add(reference);
   }
 }
