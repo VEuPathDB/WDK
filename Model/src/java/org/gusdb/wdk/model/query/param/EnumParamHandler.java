@@ -19,18 +19,16 @@ import org.gusdb.wdk.model.user.User;
 public class EnumParamHandler extends AbstractParamHandler {
 
   /**
-   * the raw value is a String[] of terms, and stable value is a string representation of ordered term list.
+   * the raw value is a String[] of terms, and stable value is a string representation of term list.
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toStoredValue(org.gusdb .wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, Map<String, String> contextValues)
-      throws WdkUserException {
+  public String toStableValue(User user, Object rawValue, Map<String, String> contextValues) {
     if (!(rawValue instanceof String[]))
       new Exception().printStackTrace();
     String[] terms = (String[]) rawValue;
-    Arrays.sort(terms);
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
       if (buffer.length() > 0)
@@ -41,15 +39,18 @@ public class EnumParamHandler extends AbstractParamHandler {
   }
 
   /**
-   * the raw value is String[] of terms, and stable value is a sorted, and comma separated list of terms in
-   * string representation.
+   * the raw value is String[] of terms, and comma separated list of terms in string representation.
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toRawValue(org.gusdb .wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
   public Object toRawValue(User user, String stableValue, Map<String, String> contextValues) {
-    return stableValue.split(",");
+    String[] rawValue = stableValue.split(",");
+    for (int i = 0; i < rawValue.length; i++) {
+      rawValue[i] = rawValue[i].trim();
+    }
+    return rawValue;
   }
 
   /**
@@ -86,7 +87,7 @@ public class EnumParamHandler extends AbstractParamHandler {
   }
 
   /**
-   * the stable value is a checksum of stable value.
+   * the signature is a checksum of sorted stable value.
    * 
    * @throws WdkModelException
    * 
@@ -96,6 +97,10 @@ public class EnumParamHandler extends AbstractParamHandler {
   @Override
   public String toSignature(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException {
+    // make sure to get a sorted stable value;
+    String[] rawValue = (String[]) toRawValue(user, stableValue, contextValues);
+    Arrays.sort(rawValue);
+    stableValue = toStableValue(user, rawValue, contextValues);
     return Utilities.encrypt(stableValue);
   }
 
@@ -109,12 +114,12 @@ public class EnumParamHandler extends AbstractParamHandler {
   public Object getRawValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
     String[] rawValue = requestParams.getArray(param.getName());
-    
+
     // get the single value, and convert it into array
     if (rawValue == null || rawValue.length == 0) {
-	String value = requestParams.getParam(param.getName());
-        if (value != null && value.length() > 0)
-          rawValue = new String[]{ value };
+      String value = requestParams.getParam(param.getName());
+      if (value != null && value.length() > 0)
+        rawValue = new String[] { value };
     }
 
     // use empty value if needed

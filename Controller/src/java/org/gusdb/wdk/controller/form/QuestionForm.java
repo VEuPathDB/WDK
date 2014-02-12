@@ -24,7 +24,9 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.RequestParams;
 
 /**
- * form bean for showing a wdk question from a question set
+ * form bean for showing a wdk question from a question set.
+ * 
+ * The param values stored in the question form are stable values.
  */
 
 public class QuestionForm extends MapActionForm {
