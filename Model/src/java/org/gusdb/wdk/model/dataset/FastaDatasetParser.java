@@ -8,8 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import sun.security.action.GetLongAction;
-
 public class FastaDatasetParser extends AbstractDatasetParser {
 
   private static final int SEQUENCE_LENGTH = 1999;
@@ -38,7 +36,7 @@ public class FastaDatasetParser extends AbstractDatasetParser {
           defline = new StringBuilder(line);
           sequence = new StringBuilder();
         }
-        else if (line.matches("^[\\S]+.*  $")) { // a sequence line
+        else if (line.matches("^[\\S]+.*$")) { // a sequence line
           sequence.append(line);
         }
         else { // in defline
@@ -52,7 +50,7 @@ public class FastaDatasetParser extends AbstractDatasetParser {
     catch (IOException ex) {
       throw new WdkDatasetException(ex);
     }
-    return null;
+    return data;
   }
 
   private String[] processRow(String defline, String sequence) {

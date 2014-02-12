@@ -439,6 +439,7 @@ public class CacheFactory {
         queryInfo.setQueryId(queryId);
         queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryId);
       }
+      logger.debug("Get QueryInfo: " + queryInfo);
     }
     catch (SQLException e) {
       throw new WdkModelException("Unable to check query info.", e);
@@ -502,6 +503,8 @@ public class CacheFactory {
       psInsert.setString(4, queryInfo.getCacheTable());
       psInsert.executeUpdate();
       QueryLogger.logEndStatementExecution(sql.toString(), "wdk-cache-insert-instance", start);
+
+      queryInfo.setExist(true);
     }
     catch (SQLException e) {
       throw new WdkRuntimeException("Unable to create update table.", e);
