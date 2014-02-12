@@ -10,7 +10,7 @@ describe('wdk.views.template_view', function() {
                    '<h1>{{title}}</h1>' +
                    '<div class="body">{{body}}</div>' +
                    '</script>');
-      var MyView = Wdk.TemplateView.extend({
+      var MyView = wdk.views.TemplateView.extend({
         templateName: 'my/template'
       });
 
