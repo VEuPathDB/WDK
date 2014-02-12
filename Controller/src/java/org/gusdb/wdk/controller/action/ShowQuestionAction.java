@@ -199,6 +199,7 @@ public class ShowQuestionAction extends Action {
         if (stableValue != null) {
           datasetParam.setDependentValue(stableValue);
           DatasetBean dataset = datasetParam.getDataset();
+          qForm.setValue(param.getName(), dataset);
           request.setAttribute(paramName + "_dataset", dataset);
           data = dataset.getContent();
         }
