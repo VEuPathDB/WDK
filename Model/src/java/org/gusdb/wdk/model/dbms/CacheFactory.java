@@ -132,115 +132,70 @@ public class CacheFactory {
   }
 
   public void dropCache(int instanceId, boolean purge) {
-    String whereClause = " WHERE " + COLUMN_INSTANCE_ID + " = " + instanceId;
-
-    // get the query name from the id
-    StringBuffer sql = new StringBuffer("SELECT ");
-    sql.append(COLUMN_QUERY_NAME);
-    sql.append(" FROM ");
-    sql.append(TABLE_INSTANCE);
-    sql.append(whereClause);
-
-    Query query;
-    try {
-      String queryName = (String) SqlUtils.executeScalar(dataSource, sql.toString(), "wdk-cache-select-query");
-      query = (Query) wdkModel.resolveReference(queryName);
-    }
-    catch (Exception ex) {
-      // cannot get query name or resolve query, cancel remaining steps.
-      logger.warn(ex);
-      return;
-    }
-
     // get cache table name
+    String sql = "SELECT q." + COLUMN_TABLE_NAME 
+        + " FROM " + TABLE_QUERY + " q, " + TABLE_INSTANCE + " qi " 
+        + " WHERE q." + COLUMN_QUERY_ID + " = qi." + COLUMN_QUERY_ID 
+        + "   AND qi." + COLUMN_INSTANCE_ID + " = " + instanceId;
     String cacheTable;
     try {
-      QueryInfo queryInfo = getQueryInfo(query);
-      cacheTable = queryInfo.getCacheTable();
+      cacheTable = (String) SqlUtils.executeScalar(dataSource, sql, "wdk-cache-select-table-name");
     }
     catch (Exception ex) {
-      logger.error("Cannot get cache table for query [" + query.getFullName() + "]. " + ex.getMessage());
+      logger.error("Cannot get cache table for query instance " + instanceId, ex);
       return;
     }
 
     // no need to drop cache table, since it may be used by other queries
     // from the same question; just delete rows from instance table.
-    sql = new StringBuffer("DELETE FROM ");
-    sql.append(cacheTable);
-    sql.append(whereClause);
+    sql = "DELETE FROM " +cacheTable + " WHERE " + COLUMN_INSTANCE_ID + " = " + instanceId;
     try {
-      SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-cache-delete-by-instance");
+      SqlUtils.executeUpdate(dataSource, sql, "wdk-cache-delete-by-instance");
     }
     catch (Exception ex) {
-      logger.error("Cannot delete rows from [" + cacheTable + "]. " + ex.getMessage());
+      logger.error("Cannot delete rows from [" + cacheTable + "]. ", ex);
     }
 
     // delete the instance index
-    sql = new StringBuffer("DELETE FROM ");
-    sql.append(TABLE_INSTANCE);
-    sql.append(whereClause);
+    sql = "DELETE FROM " + TABLE_INSTANCE + " WHERE " + COLUMN_INSTANCE_ID + " = " + instanceId;
     try {
-      SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk_cache_delete_instance_index");
+      SqlUtils.executeUpdate(dataSource, sql, "wdk_cache_delete_instance_index");
     }
     catch (Exception ex) {
-      logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. " + ex.getMessage());
+      logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. ", ex);
     }
   }
 
   public void dropCache(String queryName, boolean purge) {
-    String cacheTable;
+    String whereClause = " FROM " + TABLE_QUERY + " WHERE " + COLUMN_QUERY_NAME +" ='" + queryName + "'";
+    // get cache table name
+    String cacheTable = null;
+    String sql = "SELECT " + COLUMN_TABLE_NAME + whereClause; 
     try {
-      Query query = (Query) wdkModel.resolveReference(queryName);
-      QueryInfo queryInfo = getQueryInfo(query);
-      cacheTable = queryInfo.getCacheTable();
-    }
-    catch (Exception ex) {
-      logger.error("Cannot get cache table for query [" + queryName + "]. " + ex.getMessage());
-      return;
-    }
-
-    // drop the cacheTable
-    try {
+      cacheTable = (String) SqlUtils.executeScalar(dataSource, sql, "wdk-select-cache-table-by-query");
       platform.dropTable(dataSource, null, cacheTable, purge);
     }
     catch (Exception ex) {
-      logger.error("Cannot drop table [" + cacheTable + "]. " + ex.getMessage());
+      logger.error("Cannot drop table [" + cacheTable + "] for query: " + queryName, ex);
     }
-
+    
     // delete instance index
-    StringBuffer sqlInstance = new StringBuffer("DELETE FROM ");
-    sqlInstance.append(TABLE_INSTANCE);
-    sqlInstance.append(" WHERE ").append(COLUMN_QUERY_ID).append(" IN ");
-    sqlInstance.append("(SELECT ").append(COLUMN_INSTANCE_ID);
-    sqlInstance.append(" FROM ").append(TABLE_QUERY);
-    sqlInstance.append(" WHERE ").append(COLUMN_TABLE_NAME).append(" = ?)");
-
-    PreparedStatement stInstance = null;
+    sql = "DELETE FROM " + TABLE_INSTANCE + " WHERE " + COLUMN_QUERY_ID + " IN " 
+        + "(SELECT " + COLUMN_QUERY_ID + whereClause + ")"; 
     try {
-      long start = System.currentTimeMillis();
-      stInstance = SqlUtils.getPreparedStatement(dataSource, sqlInstance.toString());
-      stInstance.setString(1, cacheTable);
-      stInstance.executeUpdate();
-      QueryLogger.logEndStatementExecution(sqlInstance.toString(), "wdk-cache-delete-by-query", start);
+      SqlUtils.executeUpdate(dataSource, sql, "wdk-cache-delete-instances-by-name");
     }
     catch (SQLException ex) {
-      logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. " + ex.getMessage());
-    }
-    finally {
-      SqlUtils.closeStatement(stInstance);
+      logger.error("Cannot delete rows from " + TABLE_INSTANCE + " for query " + queryName, ex);
     }
 
     // delete query index
-    StringBuffer sqlQuery = new StringBuffer("DELETE FROM ");
-    sqlQuery.append(TABLE_QUERY);
-    sqlQuery.append(" WHERE ").append(COLUMN_TABLE_NAME);
-    sqlQuery.append(" = '").append(cacheTable).append("'");
-
+    sql = "DELETE " + whereClause;
     try {
-      SqlUtils.executeUpdate(dataSource, sqlQuery.toString(), "wdk-cache-delete-query-index");
+      SqlUtils.executeUpdate(dataSource, sql, "wdk-cache-delete-query-by-name");
     }
     catch (Exception ex) {
-      logger.error("Cannot delete rows from [" + TABLE_QUERY + "]. " + ex.getMessage());
+      logger.error("Cannot delete rows from " + TABLE_QUERY + " for query " + queryName, ex);
     }
     finally {}
   }

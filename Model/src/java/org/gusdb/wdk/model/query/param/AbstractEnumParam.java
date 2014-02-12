@@ -40,9 +40,9 @@ import org.gusdb.wdk.model.user.User;
  * 
  *         raw value: a String[] of term values;
  * 
- *         stable value: a comma separated list of terms, ordered alphabetically;
+ *         stable value: a comma separated list of terms;
  * 
- *         signature: a checksum of the stable value.
+ *         signature: a checksum of the list of terms, ordered alphabetically.
  * 
  *         internal value: a comma separated list of internals. If noTranslation is true, this will be a list
  *         of terms. If quoted is true, quotes are applied to each of the individual items.
