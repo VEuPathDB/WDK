@@ -24,13 +24,8 @@ import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
-import org.gusdb.wdk.model.jspwrap.DatasetBean;
-import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
-import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.query.param.RequestParams;
 
@@ -43,11 +38,6 @@ import org.gusdb.wdk.model.query.param.RequestParams;
 public class ShowQuestionAction extends Action {
 
   private static final Logger logger = Logger.getLogger(ShowQuestionAction.class.getName());
-
-  public static final String LABELS_SUFFIX = "-labels";
-  public static final String TERMS_SUFFIX = "-values";
-
-  public static final String PARAM_INPUT_STEP = "inputStep";
 
   private static final int MAX_PARAM_LABEL_LEN = 200;
 
@@ -115,18 +105,15 @@ public class ShowQuestionAction extends Action {
     boolean hasAllParams = true;
     ParamBean<?>[] params = wdkQuestion.getParams();
 
-    // fetch the previous values
-    Map<String, Object> rawValues = getParamMapFromForm(user, params, qForm, request);
-
-    // prepare the context values
+    // get existing stable values
+    RequestParams requestParams = new QuestionRequestParams(request, qForm);
     Map<String, String> stableValues = new LinkedHashMap<>();
     for (ParamBean<?> param : params) {
-      String paramName = param.getName();
-      Object rawValue = rawValues.get(paramName);
-      if (rawValue != null) {
-        String stableValue = param.getStableValue(user, rawValue, stableValues);
-        stableValues.put(paramName, stableValue);
-      }
+      String stableValue = requestParams.getParam(param.getName());
+      if (stableValue != null)
+        stableValues.put(param.getName(), stableValue);
+      else
+        hasAllParams = false;
     }
 
     wdkQuestion.fillContextParamValues(user, stableValues);
@@ -134,93 +121,9 @@ public class ShowQuestionAction extends Action {
     // get invalid params
     request.setAttribute("invalidParams", qForm.getInvalidParams());
 
-    // process each param
+    // prepare the display for each param
     for (ParamBean<?> param : params) {
-      String paramName = param.getName();
-      String stableValue = stableValues.get(paramName);
-
-      logger.debug("  Processing param " + paramName + "...");
-      // handle the additional information
-      if (param instanceof EnumParamBean) {
-        EnumParamBean enumParam = (EnumParamBean) param;
-        enumParam.setDependedValues(stableValues);
-
-        String[] terms = enumParam.getVocab();
-        String[] labels = getLengthBoundedLabels(enumParam.getDisplays());
-        qForm.setArray(paramName + LABELS_SUFFIX, labels);
-        qForm.setArray(paramName + TERMS_SUFFIX, terms);
-
-        // set current values to the form and the param itself.
-        if (stableValue == null) stableValue = enumParam.getDefault();
-        if (stableValue != null) {
-          String[] values = stableValue.split(",");
-          qForm.setArray(paramName, values);
-          enumParam.setCurrentValues(values);
-        }
-
-        // set the original values to the param. The original values will be
-        // used to render invalid value warning on the page, if the values is
-        // invalid.
-        if (rawValues.containsKey(paramName)) {
-          String[] values = (String[]) rawValues.get(paramName);
-          qForm.setArray(paramName, values);
-          enumParam.setOriginalValues(values);
-        }
-      }
-      else if (param instanceof AnswerParamBean) {
-        if (stableValue == null) {
-          String stepId = (String) request.getAttribute(PARAM_INPUT_STEP);
-          if (stepId == null)
-            stepId = request.getParameter(PARAM_INPUT_STEP);
-          if (stepId == null) {
-            String strategyKey = request.getParameter("strategy");
-            if (strategyKey != null) {
-              int pos = strategyKey.indexOf("_");
-              if (pos < 0) {
-                int strategyId = Integer.parseInt(strategyKey);
-                StrategyBean strategy = user.getStrategy(strategyId);
-                stepId = Integer.toString(strategy.getLatestStepId());
-              }
-              else {
-                stepId = strategyKey.substring(pos + 1);
-              }
-            }
-          }
-
-          // if no step is assigned, use the first step
-          stableValue = stepId;
-        }
-      }
-      else if (param instanceof DatasetParamBean) {
-        DatasetParamBean datasetParam = (DatasetParamBean) param;
-
-        // check if the param value is assigned
-        String data;
-        if (stableValue != null) {
-          datasetParam.setDependentValue(stableValue);
-          DatasetBean dataset = datasetParam.getDataset();
-          qForm.setValue(param.getName(), dataset);
-          request.setAttribute(paramName + "_dataset", dataset);
-          data = dataset.getContent();
-        }
-        else {
-          data = param.getDefault();
-        }
-        qForm.setValue(datasetParam.getDataSubParam(), data);
-      }
-      else {
-        if (stableValue == null) {
-          stableValue = param.getDefault();
-        }
-      }
-      
-      if (stableValue == null) {
-        hasAllParams = false;
-      }
-      else {
-        qForm.setValue(paramName, stableValue);
-      }
-      logger.debug("param: " + paramName + "='" + stableValue + "'");
+      param.prepareDisplay(user, requestParams, stableValues);
     }
 
     qForm.setQuestion(wdkQuestion);
@@ -234,24 +137,6 @@ public class ShowQuestionAction extends Action {
     request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
     request.setAttribute("params", stableValues);
     logger.trace("Leaving prepareQustionForm()");
-  }
-
-  private static Map<String, Object> getParamMapFromForm(UserBean user, ParamBean<?>[] params,
-      QuestionForm qForm, HttpServletRequest request) throws WdkModelException {
-    Map<String, Object> rawValues = new LinkedHashMap<>();
-    RequestParams requestParams = new QuestionRequestParams(request, qForm);
-    for (ParamBean<?> param : params) {
-      param.setUser(user);
-      String paramName = param.getName();
-      try {
-        Object rawValue = param.getRawValue(user, requestParams);
-        if (rawValue != null)
-          rawValues.put(paramName, rawValue);
-      } catch(WdkUserException ex) {
-        // do nothing, this exception means no previous value assigned
-      }
-    }
-    return rawValues;
   }
 
   @Override

@@ -23,9 +23,9 @@ public class StringParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue,
-      Map<String, String> contextValues) throws WdkUserException {
-    return (String)rawValue;
+  public String toStableValue(User user, Object rawValue, Map<String, String> contextValues)
+      throws WdkUserException {
+    return (String) rawValue;
   }
 
   /**
@@ -35,50 +35,50 @@ public class StringParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public Object toRawValue(User user, String stableValue,
-      Map<String, String> contextValues) {
+  public Object toRawValue(User user, String stableValue, Map<String, String> contextValues) {
     return stableValue;
   }
 
   /**
    * the signature is a checksum of the stable value.
-   * @throws WdkModelException 
+   * 
+   * @throws WdkModelException
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toSignature(User user, String stableValue,
-      Map<String, String> contextValues) throws WdkModelException {
+  public String toSignature(User user, String stableValue, Map<String, String> contextValues)
+      throws WdkModelException {
     return Utilities.encrypt(stableValue);
   }
 
   /**
-   * If number is true, the internal is a string representation of a parsed
-   * Double; otherwise, quotes are properly applied; If noTranslation is true,
-   * the reference value is used without any change.
+   * If number is true, the internal is a string representation of a parsed Double; otherwise, quotes are
+   * properly applied; If noTranslation is true, the reference value is used without any change.
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toInternalValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue,
-      Map<String, String> contextValues) {
-    if (param.isNoTranslation()) return stableValue;
+  public String toInternalValue(User user, String stableValue, Map<String, String> contextValues) {
+    if (param.isNoTranslation())
+      return stableValue;
 
     StringParam stringParam = (StringParam) param;
     if (stringParam.isNumber()) {
       stableValue = stableValue.replaceAll(",", "");
       double value = Double.valueOf(stableValue);
       return Double.toString(value);
-    } else {
+    }
+    else {
       stableValue = stableValue.replaceAll("'", "''");
       return "'" + stableValue + "'";
     }
   }
 
   @Override
-  public Object getRawValue(User user, RequestParams requestParams) throws WdkUserException,
+  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
     String value = requestParams.getParam(param.getName());
     if (value == null) {
@@ -86,8 +86,20 @@ public class StringParamHandler extends AbstractParamHandler {
         throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required");
       value = param.getEmptyValue();
     }
-    if (value != null) value = value.trim();
+    if (value != null)
+      value = value.trim();
     return value;
+  }
+
+  @Override
+  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
+      throws WdkModelException, WdkUserException {
+    String stableValue = requestParams.getParam(param.getName());
+    if (stableValue == null) {
+      stableValue = param.getDefault();
+      if (stableValue != null)
+        requestParams.setParam(param.getName(), stableValue);
+    }
   }
 
 }

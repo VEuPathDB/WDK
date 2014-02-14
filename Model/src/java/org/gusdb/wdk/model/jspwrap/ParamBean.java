@@ -141,9 +141,9 @@ public abstract class ParamBean<T extends Param> {
    * @see org.gusdb.wdk.model.query.param.Param#independentValueToRawValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
-  public Object getRawValue(UserBean user, RequestParams requestParams)
+  public String getStableValue(UserBean user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
-    return param.getRawValue(user.getUser(), requestParams);
+    return param.getStableValue(user.getUser(), requestParams);
   }
 
   /**
@@ -185,4 +185,11 @@ public abstract class ParamBean<T extends Param> {
   public void setContextValues(Map<String, String> contextValues) {
     this.contextValues = contextValues;
   }
+
+  public void prepareDisplay(UserBean user, RequestParams requestParams, Map<String, String> contextValues)
+      throws WdkModelException, WdkUserException {
+    param.prepareDisplay(user.getUser(), requestParams, contextValues);
+  }
+  
+  
 }

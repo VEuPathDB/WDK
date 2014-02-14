@@ -23,8 +23,8 @@ public interface ParamHandler {
   void setProperties(Map<String, String> properties) throws WdkModelException;
 
   /**
-   * get the raw value from the input request params; and if empty value is allowed, get the empty value if no
-   * value is given by the user.
+   * get the stable value from the input request params; and if empty value is allowed, get the empty value if
+   * no value is given by the user.
    * 
    * @param user
    * @param requestParams
@@ -32,7 +32,19 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  Object getRawValue(User user, RequestParams requestParams) throws WdkUserException, WdkModelException;
+  String getStableValue(User user, RequestParams requestParams) throws WdkUserException, WdkModelException;
+
+  /**
+   * Prepare the display of the param in the question form.
+   * 
+   * @param user
+   * @param requestParams
+   * @param contextValues
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
+  void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
+      throws WdkModelException, WdkUserException;
 
   /**
    * convert raw value into stable value.

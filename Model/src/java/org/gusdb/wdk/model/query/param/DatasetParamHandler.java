@@ -75,7 +75,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
     DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
     String dvSql = datasetFactory.getDatasetValueSql(datasetId);
 
-    RecordClass recordClass = ((DatasetParam)param).getRecordClass();
+    RecordClass recordClass = ((DatasetParam) param).getRecordClass();
     if (recordClass == null)
       return dvSql;
 
@@ -83,7 +83,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
     String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
     StringBuilder sql = new StringBuilder("SELECT ");
     for (int i = 0; i < pkColumns.length; i++) {
-      sql.append("dv.data" + (i + 1) + " AS " + pkColumns[i] + ", "); 
+      sql.append("dv.data" + (i + 1) + " AS " + pkColumns[i] + ", ");
     }
     // return the remaining data columns
     sql.append("dv.* FROM (" + dvSql + ") dv");
@@ -107,14 +107,24 @@ public class DatasetParamHandler extends AbstractParamHandler {
   }
 
   /**
-   * get the raw value from the user input, and if empty value is allowed, use empty value as needed.
+   * get the step value from the user input, and if empty value is allowed, use empty value as needed.
    * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#getRawValue(org.gusdb.wdk.model.user.User,
+   * @see org.gusdb.wdk.model.query.param.ParamHandler#getStableValue(org.gusdb.wdk.model.user.User,
    *      org.gusdb.wdk.model.query.param.RequestParams)
    */
   @Override
-  public Object getRawValue(User user, RequestParams requestParams) throws WdkUserException,
+  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
+    DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
+
+    // check if stable value is assigned
+    String datasetId = requestParams.getParam(param.getName());
+    if (datasetId != null) {
+      Dataset dataset = datasetFactory.getDataset(user, Integer.valueOf(datasetId));
+      return Integer.toString(dataset.getDatasetId());
+    }
+
+    // dataset id not assigned, create one.
     DatasetParam datasetParam = (DatasetParam) param;
     String type = requestParams.getParam(datasetParam.getTypeSubParam());
     if (type == null)
@@ -164,10 +174,9 @@ public class DatasetParamHandler extends AbstractParamHandler {
       data = data.trim();
       // get parser and parse the content
       DatasetParser parser = datasetParam.getParser(parserName);
-      DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
       Dataset dataset = datasetFactory.createOrGetDataset(user, parser, data, uploadFile);
       logger.debug("User #" + user.getUserId() + " - dataset created: #" + dataset.getDatasetId());
-      return dataset;
+      return Integer.toString(dataset.getDatasetId());
     }
     else
       return null;
@@ -188,5 +197,31 @@ public class DatasetParamHandler extends AbstractParamHandler {
       buffer.append("\n");
     }
     return buffer.toString();
+  }
+
+  @Override
+  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
+      throws WdkModelException, WdkUserException {
+    DatasetParam datasetParam = (DatasetParam) param;
+    // check if the stable value is available
+    String stableValue = requestParams.getParam(param.getName());
+
+    // get dataset if possible
+    Dataset dataset = null;
+    if (stableValue != null) {
+      DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
+      dataset = datasetFactory.getDataset(user, Integer.getInteger(stableValue));
+      requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, dataset);
+    }
+
+    // get data
+    String data = (dataset != null) ? dataset.getContent() : param.getDefault();
+    requestParams.setParam(datasetParam.getDataSubParam(), data);
+
+    if (dataset != null) {
+      String fileName = dataset.getUploadFile();
+      if (fileName != null)
+        requestParams.setParam(datasetParam.getFileSubParam(), fileName);
+    }
   }
 }

@@ -8,5 +8,13 @@ public interface RequestParams {
   
   String[] getArray(String name);
   
+  Object getAttribute(String name);
+  
   String getUploadFileContent(String name) throws WdkModelException;
+  
+  void setParam(String name, String value);
+  
+  void setArray(String name, String[] array);
+  
+  void setAttribute(String name, Object value);
 }

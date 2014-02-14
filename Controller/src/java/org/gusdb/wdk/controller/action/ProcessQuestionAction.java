@@ -45,8 +45,7 @@ public class ProcessQuestionAction extends Action {
     Map<String, String> stableValues = new LinkedHashMap<>();
     for (String paramName : params.keySet()) {
       ParamBean<?> param = params.get(paramName);
-      Object rawValue = param.getRawValue(user, requestParams);
-      String stableValue = param.getStableValue(user, rawValue, stableValues);
+      String stableValue = param.getStableValue(user, requestParams);
       stableValues.put(paramName, stableValue);
     }
     return stableValues;

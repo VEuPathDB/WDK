@@ -64,7 +64,7 @@ public class TimestampParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public Object getRawValue(User user, RequestParams requestParams) throws WdkUserException,
+  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
     String value = requestParams.getParam(param.getName());
     if (value == null) {
@@ -73,6 +73,17 @@ public class TimestampParamHandler extends AbstractParamHandler {
       value = param.getEmptyValue();
     }
     return value;
+  }
+
+  @Override
+  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
+      throws WdkModelException, WdkUserException {
+    String stableValue = requestParams.getParam(param.getName());
+    if (stableValue == null) {
+      stableValue = param.getDefault();
+      if (stableValue != null)
+        requestParams.setParam(param.getName(), stableValue);
+    }
   }
 
 }

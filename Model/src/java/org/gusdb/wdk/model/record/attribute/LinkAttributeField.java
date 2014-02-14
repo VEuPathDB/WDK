@@ -139,8 +139,8 @@ public class LinkAttributeField extends AttributeField {
    */
   @Override
   protected Collection<AttributeField> getDependents() throws WdkModelException {
-    Map<String, AttributeField> dependents = parseFields(url);
-    dependents.putAll(parseFields(displayText));
+    Map<String, AttributeField> dependents = parseFields(displayText);
+    dependents.putAll(parseFields(url));
     return dependents.values();
   }
 }
