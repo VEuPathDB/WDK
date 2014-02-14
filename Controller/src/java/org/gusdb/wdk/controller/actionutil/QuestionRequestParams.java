@@ -40,6 +40,11 @@ public class QuestionRequestParams implements RequestParams {
   public String[] getArray(String name) {
     return questionForm.getArray(name);
   }
+  
+  @Override
+  public Object getAttribute(String name) {
+    return request.getAttribute(name);
+  }
 
   @Override
   public String getUploadFileContent(String name) throws WdkModelException {
@@ -55,5 +60,20 @@ public class QuestionRequestParams implements RequestParams {
     }
     else
       return null;
+  }
+
+  @Override
+  public void setParam(String name, String value) {
+    questionForm.setValue(name, value);
+  }
+
+  @Override
+  public void setArray(String name, String[] array) {
+    questionForm.setArray(name, array);
+  }
+
+  @Override
+  public void setAttribute(String name, Object value) {
+    request.setAttribute(name, value);
   }
 }

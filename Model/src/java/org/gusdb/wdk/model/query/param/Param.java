@@ -62,6 +62,9 @@ import org.json.JSONObject;
  * 
  */
 public abstract class Param extends WdkModelBase implements Cloneable {
+  
+  public static final String RAW_VALUE_SUFFIX = "_raw";
+  public static final String INVALID_VALUE_SUFFIX = "_invalid";
 
   protected static Logger logger = Logger.getLogger(Param.class);
 
@@ -480,9 +483,9 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     return handler.toStableValue(user, rawValue, contextValues);
   }
 
-  public Object getRawValue(User user, RequestParams requestParams) throws WdkUserException,
+  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    return handler.getRawValue(user, requestParams);
+    return handler.getStableValue(user, requestParams);
   }
 
   /**
@@ -564,4 +567,8 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     return values;
   }
 
+  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
+      throws WdkModelException, WdkUserException {
+    handler.prepareDisplay(user, requestParams, contextValues);
+  }
 }

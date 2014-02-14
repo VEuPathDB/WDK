@@ -4,7 +4,10 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -17,6 +20,9 @@ import org.gusdb.wdk.model.user.User;
  * 
  */
 public class EnumParamHandler extends AbstractParamHandler {
+
+  public static final String LABELS_SUFFIX = "-labels";
+  public static final String TERMS_SUFFIX = "-values";
 
   /**
    * the raw value is a String[] of terms, and stable value is a string representation of term list.
@@ -107,12 +113,17 @@ public class EnumParamHandler extends AbstractParamHandler {
   /**
    * raw value is a String[] of terms
    * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#getRawValue(org.gusdb.wdk.model.user.User,
+   * @see org.gusdb.wdk.model.query.param.ParamHandler#getStableValue(org.gusdb.wdk.model.user.User,
    *      org.gusdb.wdk.model.query.param.RequestParams)
    */
   @Override
-  public Object getRawValue(User user, RequestParams requestParams) throws WdkUserException,
+  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
+    String stableValue = requestParams.getParam(param.getName());
+    if (stableValue != null)
+      return stableValue;
+
+    // stable value not assigned, get raw value first;
     String[] rawValue = requestParams.getArray(param.getName());
 
     // get the single value, and convert it into array
@@ -129,6 +140,55 @@ public class EnumParamHandler extends AbstractParamHandler {
       rawValue = param.getDefault().split(",");
     }
 
-    return rawValue;
+    return param.getStableValue(user, rawValue, new HashMap<String, String>());
+  }
+
+  @Override
+  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
+      throws WdkModelException, WdkUserException {
+    AbstractEnumParam aeParam = (AbstractEnumParam) param;
+
+    // set labels
+    Map<String, String> displayMap = aeParam.getDisplayMap(contextValues);
+    String[] terms = displayMap.keySet().toArray(new String[0]);
+    String[] labels = displayMap.values().toArray(new String[0]);
+    requestParams.setArray(param.getName() + LABELS_SUFFIX, labels);
+    requestParams.setArray(param.getName() + TERMS_SUFFIX, terms);
+
+    // get the stable value
+    String stableValue = requestParams.getParam(param.getName());
+    Set<String> values = new HashSet<>();
+    if (stableValue == null) { // stable value not set, use default
+      stableValue = aeParam.getDefault(contextValues);
+      if (stableValue != null) {
+        // don't validate default, just use it as is.
+        for (String term : stableValue.split(",")) {
+          values.add(term.trim());
+        }
+      }
+    }
+    else { // stable value set, check if any of them are invalid
+      Set<String> invalidValues = new HashSet<>();
+      for (String term : stableValue.split(",")) {
+        term = term.trim();
+        if (displayMap.containsKey(term))
+          values.add(term);
+        else
+          invalidValues.add(term);
+      }
+      // store the invalid values
+      String[] invalids = invalidValues.toArray(new String[0]);
+      Arrays.sort(invalids);
+      requestParams.setAttribute(param.getName() + Param.INVALID_VALUE_SUFFIX, invalids);
+    }
+
+    // set the stable & raw value
+    if (stableValue != null)
+      requestParams.setParam(param.getName(), stableValue);
+    if (values.size() > 0) {
+      String[] rawValue = values.toArray(new String[0]);
+      requestParams.setArray(param.getName(), rawValue);
+      requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, rawValue);
+    }
   }
 }

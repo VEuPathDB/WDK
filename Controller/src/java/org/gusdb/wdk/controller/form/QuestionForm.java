@@ -86,8 +86,7 @@ public class QuestionForm extends MapActionForm {
     for (String name : params.keySet()) {
       ParamBean<?> param = params.get(name);
       try {
-        Object rawValue = param.getRawValue(user, requestParams);
-        String stableValue = param.getStableValue(user, rawValue, contextValues);
+        String stableValue = param.getStableValue(user, requestParams);
         contextValues.put(name, stableValue);
       }
       catch (Exception ex) {
