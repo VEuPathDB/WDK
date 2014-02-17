@@ -245,6 +245,8 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     EnumParamTermNode[] rootNodes = getVocabTreeRoots();
     TreeNode root = getParamTree(getName(), rootNodes);
     populateParamTree(root, currentValues);
+    logger.debug("param " + getName() + ", stable=" + stableValue + ", current=" + currentValues);
+
     return root;
   }
 
@@ -285,6 +287,11 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   public void setStableValue(String stabletValue) throws WdkModelException {
     super.setStableValue(stabletValue);
     // also set the current values
-    currentValues = (String[])param.getRawValue(user.getUser(), stabletValue, _dependedValues);
+    if (stableValue == null)
+      stableValue = getDefault();
+
+    if (stableValue != null)
+      currentValues = (String[])param.getRawValue(user.getUser(), stabletValue, _dependedValues);
+
   }
 }
