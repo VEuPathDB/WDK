@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.Query;
@@ -318,6 +319,12 @@ public class AnswerFilterInstance extends WdkModelBase {
         continue;
 
       String stableValue = stableValues.get(param.getName());
+      try {
+        param.validate(user, stableValue, stableValues);
+      }
+      catch (WdkUserException ex) {
+        throw new WdkModelException(ex);
+      }
       String internal = param.getInternalValue(user, stableValue, stableValues);
       filterSql = param.replaceSql(filterSql, internal);
     }
