@@ -109,6 +109,7 @@ public class ShowQuestionAction extends Action {
     RequestParams requestParams = new QuestionRequestParams(request, qForm);
     Map<String, String> stableValues = new LinkedHashMap<>();
     for (ParamBean<?> param : params) {
+      param.setUser(user);
       String stableValue = requestParams.getParam(param.getName());
       if (stableValue != null) {
         stableValues.put(param.getName(), stableValue);
@@ -117,15 +118,14 @@ public class ShowQuestionAction extends Action {
     }
 
     wdkQuestion.fillContextParamValues(user, stableValues);
-    for (ParamBean<?> param : params) {
-      param.setStableValue(stableValues.get(param.getName()));
-    }
 
     // get invalid params
     request.setAttribute("invalidParams", qForm.getInvalidParams());
 
     // prepare the display for each param
     for (ParamBean<?> param : params) {
+      param.setContextValues(stableValues);
+      param.setStableValue(stableValues.get(param.getName()));
       param.prepareDisplay(user, requestParams, stableValues);
     }
 
