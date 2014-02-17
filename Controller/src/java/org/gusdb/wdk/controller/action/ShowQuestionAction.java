@@ -112,12 +112,14 @@ public class ShowQuestionAction extends Action {
       String stableValue = requestParams.getParam(param.getName());
       if (stableValue != null) {
         stableValues.put(param.getName(), stableValue);
-        param.setStableValue(stableValue);
       } else
         hasAllParams = false;
     }
 
     wdkQuestion.fillContextParamValues(user, stableValues);
+    for (ParamBean<?> param : params) {
+      param.setStableValue(stableValues.get(param.getName()));
+    }
 
     // get invalid params
     request.setAttribute("invalidParams", qForm.getInvalidParams());
