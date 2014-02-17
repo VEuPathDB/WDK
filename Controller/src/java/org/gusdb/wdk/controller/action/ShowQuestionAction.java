@@ -110,9 +110,10 @@ public class ShowQuestionAction extends Action {
     Map<String, String> stableValues = new LinkedHashMap<>();
     for (ParamBean<?> param : params) {
       String stableValue = requestParams.getParam(param.getName());
-      if (stableValue != null)
+      if (stableValue != null) {
         stableValues.put(param.getName(), stableValue);
-      else
+        param.setStableValue(stableValue);
+      } else
         hasAllParams = false;
     }
 

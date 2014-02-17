@@ -281,4 +281,10 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return param.isSuppressNode();
   }
 
+  @Override
+  public void setStableValue(String stabletValue) throws WdkModelException {
+    super.setStableValue(stabletValue);
+    // also set the current values
+    currentValues = (String[])param.getRawValue(user.getUser(), stabletValue, _dependedValues);
+  }
 }
