@@ -3,14 +3,15 @@ describe("wdk.addStepPopup", function() {
   describe("validateOperations", function() {
 
     it( "is a function", function() {
-      expect(wdk.addStepPopup.validateOperations instanceof Function).toBe(true);
+      expect(wdk.addStepPopup.validateOperations instanceof Function).to.equal(true);
     });
 
-    it( "executes inline onsubmit", function() {
-      var $form, inlineSubmit;
+    it( "executes inline onsubmit", function(done) {
+      var $form;
 
-      // create a function with a spy
-      inlineSubmit = jasmine.createSpy("inline-submit");
+      function inlineSubmit() {
+        done();
+      }
 
       // create form
       $form = $("<form/>")
@@ -20,9 +21,6 @@ describe("wdk.addStepPopup", function() {
       .submit(wdk.addStepPopup.validateOperations)
       // submit
       .submit();
-
-      expect(inlineSubmit).toHaveBeenCalled();
-      expect(inlineSubmit.calls.count()).toEqual(1);
     });
 
   });

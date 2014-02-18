@@ -16,9 +16,9 @@ describe('wdk.core.c_properties', function() {
       var foo = Foo.create();
       var bar = Bar.create();
 
-      expect(foo instanceof Foo).toBe(true);
-      expect(bar instanceof Bar).toBe(true);
-      expect(bar instanceof Foo).toBe(true);
+      expect(foo instanceof Foo).to.equal(true);
+      expect(bar instanceof Bar).to.equal(true);
+      expect(bar instanceof Foo).to.equal(true);
 
     });
 

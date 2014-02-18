@@ -33,21 +33,29 @@ module.exports = {
     'src/core/container.js',
     'src/core/application.js',
     'src/core/common.js',
-    'src/core/bootstrap.js',
     'src/core/event.js',
     'src/core/util.js',
 
     'src/user.js',
+    'src/models/filter/filter.js',
+    'src/models/filter/filter_service.js',
     'src/components/**/*.js',
-    'src/controllers/**/*.js'
+    'src/views/core.js',
+    'src/views/template_view.js',
+    'src/controllers/**/*.js',
+
+    'src/core/bootstrap.js'
+
   ],
 
   libs: [
     'lib/es5-shim.min.js',
     'lib/modernizr.js',
-    'lib/jquery-1.11.0.min.js',
+    'lib/jquery.js',
     'ENV:DEV!lib/jquery-migrate-1.2.1.js',
     'ENV:PROD!lib/jquery-migrate-1.2.1.min.js',
+    'lib/underscore-min.js',
+    'lib/backbone-min.js',
     'lib/jquery-ui.js',
 
     // load polyfills
