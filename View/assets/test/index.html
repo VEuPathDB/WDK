@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mocha</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="mocha.css" />
+
+    <style>
+      body > h1 {
+        color: darkred;
+        padding-left: 1em;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+      #test-fixture { display: none; }
+    </style>
+
+  </head>
+  <body>
+    <h1>WDK JavaScript Test Suite</h1>
+    <div id="mocha"></div>
+    <div id="test-fixture"></div>
+    <script src="mocha.js"></script>
+    <script src="chai.js"></script>
+
+    <!-- include wdk libs and src files -->
+    <script>
+      mocha.setup('bdd');
+      var wdkConfig = {
+        assetsUrl: '/dist'
+      };
+      var expect = chai.expect;
+    </script>
+    <script src="/dist/wdk/wdk.debug.js"></script>
+
+    <!-- include spec files here... -->
+    <script src="tests/core/c_properties.js"></script>
+    <script src="tests/core/base_object.js"></script>
+    <script src="tests/core/container.js"></script>
+    <script src="tests/core/runloop.js"></script>
+    <script src="tests/core/application.js"></script>
+
+    <script src="tests/models/filter.js"></script>
+
+    <script src="tests/views/core.js"></script>
+    <script src="tests/views/template_view.js"></script>
+
+    <script src="tests/addStepPopup.js"></script>
+    <script>
+      mocha.run();
+    </script>
+
+  </body>
+</html>

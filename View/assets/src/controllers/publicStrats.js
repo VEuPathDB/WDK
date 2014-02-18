@@ -40,7 +40,6 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
         "bAutoWidth": false,
         "bJQueryUI": true,
         "bScrollCollapse": true,
-        "sScrollY": "300px",
         "bPaginate": false,
         "aoColumns": [ { "bSearchable": false, "bVisible": false },
                        null,

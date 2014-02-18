@@ -1,21 +1,26 @@
 describe('wdk.core.application', function() {
 
+  var Application = wdk.core.Application;
+  var BaseObject = wdk.core.BaseObject;
+  var mockDom, TestApp;
+
+  beforeEach(function() {
+    var htmlString = '<div>' +
+                       '<div id="mock-view" data-view-name="my-view" data-view-default="default-view"></div>' +
+                     '</div>'
+    mockDom = $(htmlString);
+    TestApp = Application.extend({
+      rootElement: mockDom
+    });
+  });
+
   describe('Application', function() {
-    var Application = wdk.core.Application;
-    var BaseObject = wdk.core.BaseObject;
 
     describe('constructor', function() {
       it('should use body as the default rootElement', function() {
         var app = Application.create();
-        expect(app.rootElement).toBe('body');
+        expect(app.rootElement).to.equal('body');
       });
-    });
-
-    var mockDom = $('<div>' +
-                    '<div id="mock-view" data-view-name="my-view" data-view-default="default-view"></div>' +
-                    '</div>');
-    var TestApp = Application.extend({
-      rootElement: mockDom
     });
 
     describe('registerView', function() {
@@ -27,7 +32,7 @@ describe('wdk.core.application', function() {
         var app = TestApp.create({
           ready: function() {
             var View = app.getView('my-view');
-            expect(View).toEqual(MyView);
+            expect(View).to.equal(MyView);
             done();
           }
         });
@@ -65,7 +70,7 @@ describe('wdk.core.application', function() {
       it('should initialize the rootElement on app ready', function(done) {
         TestApp.create({
           ready: function() {
-            expect(this.rootElement.attr('__initialized')).toBe('true');
+            expect(this.rootElement.attr('__initialized')).to.equal('true');
             done();
           }
         });
@@ -75,13 +80,13 @@ describe('wdk.core.application', function() {
         var element = document.createElement('div');
         var app = TestApp.create();
         app.initializeDOM(element);
-        expect(element.getAttribute('__initialized')).toBe('true');
+        expect(element.getAttribute('__initialized')).to.equal('true');
       });
 
       it('should accept an HTML string as an argument', function() {
         var app = TestApp.create();
         var $el = app.initializeDOM('<div></div>');
-        expect($el.attr('__initialized')).toBe('true');
+        expect($el.attr('__initialized')).to.equal('true');
       });
 
     });
@@ -99,7 +104,7 @@ describe('wdk.core.application', function() {
       it('should be called after views are initialized', function(done) {
         TestApp.create({
           ready: function() {
-            expect(this.rootElement.attr('__initialized')).toBe('true');
+            expect(this.rootElement.attr('__initialized')).to.equal('true');
             done();
           }
         });

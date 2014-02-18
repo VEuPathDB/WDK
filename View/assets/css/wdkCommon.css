@@ -539,6 +539,7 @@ ul.menubar {
 }
 
 .param-control {
+  min-height: 1em;
   margin-left: 36%;    /*330px;*/ /*310px; */
 }
 
