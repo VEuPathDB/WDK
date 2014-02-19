@@ -39,6 +39,8 @@ public class ShowQuestionAction extends Action {
 
   private static final Logger logger = Logger.getLogger(ShowQuestionAction.class.getName());
 
+  public static final String PARAM_INPUT_STEP = "inputStep";
+
   private static final int MAX_PARAM_LABEL_LEN = 200;
 
   private static final String DEFAULT_VIEW_FILE = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator +
