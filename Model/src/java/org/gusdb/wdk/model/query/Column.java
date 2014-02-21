@@ -171,6 +171,12 @@ public class Column extends WdkModelBase {
   }
 
   public void printDependency(PrintWriter writer, String indent) {
-    writer.println(indent + getClass().getSimpleName() + ": " + getName());
+    writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getName() + "\">");
+    printDependencyContent(writer, indent + WdkModel.INDENT);
+    writer.println(indent + "</" + getClass().getSimpleName() + ">");
+  }
+  
+  protected void printDependencyContent(PrintWriter writer, String indent) {
+    // by default, nothing to print out.
   }
 }

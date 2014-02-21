@@ -1527,48 +1527,54 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
-    writer.println(indent + "RecordClass: " + getName());
-    indent += WdkModel.INDENT;
-    String indent2 = indent + WdkModel.INDENT;
-    
+    writer.println(indent + "<recordClass name=\"" + getName() + "\">");
+    String indent1 = indent + WdkModel.INDENT;
+    String indent2 = indent1 + WdkModel.INDENT;
+
     // print attributes
     if (attributeFieldsMap.size() > 0) {
-      writer.println(indent + "Attributes = " + attributeFieldsMap.size());
+      writer.println(indent1 + "<attributes size=\"" + attributeFieldsMap.size() + "\">");
       String[] attributeNames = attributeFieldsMap.keySet().toArray(new String[0]);
       Arrays.sort(attributeNames);
       for (String attributeName : attributeNames) {
         attributeFieldsMap.get(attributeName).printDependency(writer, indent2);
       }
+      writer.println(indent1 + "</attributes>");
     }
 
     // print attribute queries
     if (attributeQueries.size() > 0) {
-      writer.println(indent + "Attribute Queries = " + attributeQueries.size());
+      writer.println(indent1 + "<attributeQueries size=\"" + attributeQueries.size() + "\">");
       String[] queryNames = attributeQueries.keySet().toArray(new String[0]);
       Arrays.sort(queryNames);
       for (String queryName : queryNames) {
         attributeQueries.get(queryName).printDependency(writer, indent2);
       }
+      writer.println(indent1 + "</attributeQueries>");
     }
-    
+
     // print tables
     if (tableFieldsMap.size() > 0) {
-      writer.println(indent + "Tables = " + tableFieldsMap.size());
+      writer.println(indent1 + "<tables size=\"" + tableFieldsMap.size() + "\">");
       String[] tableNames = tableFieldsMap.keySet().toArray(new String[0]);
       Arrays.sort(tableNames);
       for (String tableName : tableNames) {
         tableFieldsMap.get(tableName).printDependency(writer, indent2);
       }
+      writer.println(indent1 + "</tables>");
     }
 
     // print table queries
     if (tableQueries.size() > 0) {
-      writer.println(indent + "Table Queries = " + tableQueries.size());
+      writer.println(indent1 + "<tableQueries size=\"" + tableQueries.size() + "\">");
       String[] queryNames = tableQueries.keySet().toArray(new String[0]);
       Arrays.sort(queryNames);
       for (String queryName : queryNames) {
         tableQueries.get(queryName).printDependency(writer, indent2);
       }
+      writer.println(indent1 + "</tableQueries>");
     }
+
+    writer.println(indent + "</recordClass>");
   }
 }

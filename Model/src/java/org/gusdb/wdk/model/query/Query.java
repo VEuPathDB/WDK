@@ -32,78 +32,64 @@ import org.json.JSONObject;
 
 /**
  * <p>
- * The query in WDK defines how the data is accessed from the resource. There
- * are currently two kinds of query, SQL based query, and web service based
- * query. The query is not exposed to the user, only the question are visible on
- * the web sites as searches.
+ * The query in WDK defines how the data is accessed from the resource. There are currently two kinds of
+ * query, SQL based query, and web service based query. The query is not exposed to the user, only the
+ * question are visible on the web sites as searches.
  * </p>
  * 
  * <p>
- * A Query holds only the definition of query, such as params, SQL template, or
- * information about the web service etc. It can be used to create
- * QueryInstance, which will hold param values, and does the real work of
- * executing a query and retrieve data.
+ * A Query holds only the definition of query, such as params, SQL template, or information about the web
+ * service etc. It can be used to create QueryInstance, which will hold param values, and does the real work
+ * of executing a query and retrieve data.
  * </p>
  * 
  * <p>
- * Dependending on how many answerParams a query might have, a query can be
- * called as a normal query (without any answerParam), or a combined query (with
- * one or more answerParams). If a query has exactly one answerParam, it is also
- * called a transform query; in the transform query, the type of the answerParam
- * can be different from the type of the results the query returns. And there is
- * another special kind of combined query, called BooleanQuery, which has
- * exactly two answerParams, and the types of the answerParam are the same as
- * the result of the query.
+ * Dependending on how many answerParams a query might have, a query can be called as a normal query (without
+ * any answerParam), or a combined query (with one or more answerParams). If a query has exactly one
+ * answerParam, it is also called a transform query; in the transform query, the type of the answerParam can
+ * be different from the type of the results the query returns. And there is another special kind of combined
+ * query, called BooleanQuery, which has exactly two answerParams, and the types of the answerParam are the
+ * same as the result of the query.
  * </p>
  * 
  * <p>
- * A query can be used in four contexts in WDK, as ID query, attribute query,
- * table query, and param query. and SqlQuery can be used in all four contexts,
- * but ProcessQuery (web service query) can only be used in ID and param
- * queries.
+ * A query can be used in four contexts in WDK, as ID query, attribute query, table query, and param query.
+ * and SqlQuery can be used in all four contexts, but ProcessQuery (web service query) can only be used in ID
+ * and param queries.
  * </p>
  * 
  * <p>
- * An ID query is a query referenced by a question, and the parameters for the
- * search (the visual name of the question) are defined in the queries. An ID
- * query should return all the primary key columns of the recordClass type the
- * associated question linked to. The the primary key values returned by ID
- * query should be unique, and cannot have duplicate rows. If duplicate primary
- * key occurs, WDK will fail when joining it with the attribute query. An ID
- * query can have other columns other than the primary key columns, and those
+ * An ID query is a query referenced by a question, and the parameters for the search (the visual name of the
+ * question) are defined in the queries. An ID query should return all the primary key columns of the
+ * recordClass type the associated question linked to. The the primary key values returned by ID query should
+ * be unique, and cannot have duplicate rows. If duplicate primary key occurs, WDK will fail when joining it
+ * with the attribute query. An ID query can have other columns other than the primary key columns, and those
  * columns are usually used for the dynamic attributes.
  * </p>
  * 
  * <p>
- * An attribute query is a query referenced by a recordClass, in the
- * <attributeQueryRef> tag. An attribute query has to be SqlQuery, and it does
- * not normally have params, although you can define an internal wdk user param
- * in some rare case where the content of the result is user-dependent. The
- * attribute query should return all possible records of a given record type,
- * and the records in the result has to be unique, and the attribute query has
- * to return all the primary key columns, although the corresponding
- * ColumnAttributeField is optional for those columns. The attribute query will
- * be used in two contexts, for single records, and for records in an answer.
- * When used in single record, the attribute SQL is wrapped with the primary key
- * values to return only one row for the record. When used in answer, the
- * attribute SQL is used for sorting the result on the columns in the attribute
- * query, and then the paged id SQL will be used to join with the attribute SQL,
- * to return a page of attributes for the records.
+ * An attribute query is a query referenced by a recordClass, in the <attributeQueryRef> tag. An attribute
+ * query has to be SqlQuery, and it does not normally have params, although you can define an internal wdk
+ * user param in some rare case where the content of the result is user-dependent. The attribute query should
+ * return all possible records of a given record type, and the records in the result has to be unique, and the
+ * attribute query has to return all the primary key columns, although the corresponding ColumnAttributeField
+ * is optional for those columns. The attribute query will be used in two contexts, for single records, and
+ * for records in an answer. When used in single record, the attribute SQL is wrapped with the primary key
+ * values to return only one row for the record. When used in answer, the attribute SQL is used for sorting
+ * the result on the columns in the attribute query, and then the paged id SQL will be used to join with the
+ * attribute SQL, to return a page of attributes for the records.
  * <p>
  * 
  * <p>
- * An table query is query referenced by recordClass, in the &lt;table&gt; tag.
- * A table query has to be SqlQuery, and it doesn't normally have params,
- * although you can define an internal wdk user param same way as in attribute
- * query. The table query should return the results for all possible records of
- * a given record type, and each record can have zero or more rows in the
- * result. The table query also must return all the primary key columns,
- * although the ColumnAttributeField of those is optional. The table can be used
- * in two contexts, in single record, or in an answer. In a single record, the
- * table query is used in the similar way as attribute query, and it will be
- * wrapped with the primary key values of the record, to get zero or more rows.
- * In the context of an answer, the table SQL can be used to be combined with
- * the paged ID SQL to get a page of the results for the records.
+ * An table query is query referenced by recordClass, in the &lt;table&gt; tag. A table query has to be
+ * SqlQuery, and it doesn't normally have params, although you can define an internal wdk user param same way
+ * as in attribute query. The table query should return the results for all possible records of a given record
+ * type, and each record can have zero or more rows in the result. The table query also must return all the
+ * primary key columns, although the ColumnAttributeField of those is optional. The table can be used in two
+ * contexts, in single record, or in an answer. In a single record, the table query is used in the similar way
+ * as attribute query, and it will be wrapped with the primary key values of the record, to get zero or more
+ * rows. In the context of an answer, the table SQL can be used to be combined with the paged ID SQL to get a
+ * page of the results for the records.
  * </p>
  * 
  * @author Jerric Gao
@@ -116,8 +102,7 @@ public abstract class Query extends WdkModelBase {
   private String name;
   protected boolean cached = false;
   /**
-   * A flag to check if the cached has been set. if not set, the value from
-   * parent querySet will be used.
+   * A flag to check if the cached has been set. if not set, the value from parent querySet will be used.
    */
   private boolean setCache = false;
 
@@ -148,18 +133,15 @@ public abstract class Query extends WdkModelBase {
   // Abstract methods
   // =========================================================================
 
-  protected abstract void appendJSONContent(JSONObject jsQuery, boolean extra)
-      throws JSONException;
+  protected abstract void appendJSONContent(JSONObject jsQuery, boolean extra) throws JSONException;
 
-  public abstract QueryInstance makeInstance(User user,
-      Map<String, String> values, boolean validate, int assignedWeight,
-      Map<String, String> context) throws WdkModelException;
+  public abstract QueryInstance makeInstance(User user, Map<String, String> values, boolean validate,
+      int assignedWeight, Map<String, String> context) throws WdkModelException;
 
   @Override
   public abstract Query clone();
 
-  public abstract void resolveQueryReferences(WdkModel wdkModel)
-      throws WdkModelException;
+  public abstract void resolveQueryReferences(WdkModel wdkModel) throws WdkModelException;
 
   // =========================================================================
   // Constructors
@@ -310,8 +292,10 @@ public abstract class Query extends WdkModelBase {
 
   public void addColumn(Column column) {
     column.setQuery(this);
-    if (columnList != null) this.columnList.add(column);
-    else columnMap.put(column.getName(), column);
+    if (columnList != null)
+      this.columnList.add(column);
+    else
+      columnMap.put(column.getName(), column);
   }
 
   public Map<String, Column> getColumnMap() {
@@ -351,15 +335,15 @@ public abstract class Query extends WdkModelBase {
     try {
       JSONObject jsQuery = getJSONContent(extra);
       return Utilities.encrypt(jsQuery.toString());
-    } catch (JSONException e) {
+    }
+    catch (JSONException e) {
       throw new WdkModelException("Unable to get JSON content for checksum.", e);
     }
   }
 
   /**
    * @param extra
-   *          if extra is true, then column names are also includes, plus the
-   *          extra info from param.
+   *          if extra is true, then column names are also includes, plus the extra info from param.
    * @return
    * @throws JSONException
    *           if unable to create JSON object
@@ -429,9 +413,11 @@ public abstract class Query extends WdkModelBase {
         column.excludeResources(projectId);
         String columnName = column.getName();
         if (columnMap.containsKey(columnName)) {
-          throw new WdkModelException("The column '" + columnName
-              + "' is duplicated in query " + getFullName());
-        } else columnMap.put(columnName, column);
+          throw new WdkModelException("The column '" + columnName + "' is duplicated in query " +
+              getFullName());
+        }
+        else
+          columnMap.put(columnName, column);
       }
     }
     columnList = null;
@@ -449,21 +435,23 @@ public abstract class Query extends WdkModelBase {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // logger.debug("Resolving " + getFullName() + " - " + resolved);
-    if (resolved) return;
+    if (resolved)
+      return;
 
     this.wdkModel = wdkModel;
 
     // check if we need to use querySet's cache flag
-    if (!setCache) cached = getQuerySet().isCacheable();
+    if (!setCache)
+      cached = getQuerySet().isCacheable();
 
     // resolve the params
     for (ParamReference paramRef : paramRefList) {
       Param param = ParamReference.resolveReference(wdkModel, paramRef, this);
       String paramName = param.getName();
       if (paramMap.containsKey(paramName)) {
-        throw new WdkModelException("The param '" + paramName
-            + "' is duplicated in query " + getFullName());
-      } else {
+        throw new WdkModelException("The param '" + paramName + "' is duplicated in query " + getFullName());
+      }
+      else {
         paramMap.put(paramName, param);
       }
     }
@@ -474,7 +462,6 @@ public abstract class Query extends WdkModelBase {
       param.resolveReferences(wdkModel);
     }
 
-
     // FIXME - this cause problems with some params, need to investigate.
     // comment out temporarily
     // apply the default values to depended params
@@ -484,21 +471,20 @@ public abstract class Query extends WdkModelBase {
     // resolve columns
     for (Column column : columnMap.values()) {
       String sortingColumn = column.getSortingColumn();
-      if (sortingColumn == null) continue;
+      if (sortingColumn == null)
+        continue;
       if (!columnMap.containsKey(sortingColumn))
-        throw new WdkModelException("Query [" + getFullName()
-            + "] has a column [" + column.getName() + "] with sortingColumn ["
-            + sortingColumn + "], but the sorting column doesn't exist in "
-            + "the same query.");
+        throw new WdkModelException("Query [" + getFullName() + "] has a column [" + column.getName() +
+            "] with sortingColumn [" + sortingColumn + "], but the sorting column doesn't exist in " +
+            "the same query.");
     }
 
     // if the query is a transform, it has to return weight column.
     // this applies to both explicit transform and filter queries.
     if (isTransform()) {
       if (!columnMap.containsKey(Utilities.COLUMN_WEIGHT))
-        throw new WdkModelException("Transform query [" + getFullName()
-            + "] doesn't define the required " + Utilities.COLUMN_WEIGHT
-            + " column.");
+        throw new WdkModelException("Transform query [" + getFullName() + "] doesn't define the required " +
+            Utilities.COLUMN_WEIGHT + " column.");
     }
 
     resolveQueryReferences(wdkModel);
@@ -506,8 +492,7 @@ public abstract class Query extends WdkModelBase {
     // check the column names in the sorting map
     for (String column : sortingMap.keySet()) {
       if (!columnMap.containsKey(column))
-        throw new WdkModelException("Invalid sorting column '" + column
-            + "' in query " + getFullName());
+        throw new WdkModelException("Invalid sorting column '" + column + "' in query " + getFullName());
     }
 
     resolved = true;
@@ -547,7 +532,8 @@ public abstract class Query extends WdkModelBase {
   public int getAnswerParamCount() {
     int count = 0;
     for (Param param : paramMap.values()) {
-      if (param instanceof AnswerParam) count++;
+      if (param instanceof AnswerParam)
+        count++;
     }
     return count;
   }
@@ -563,28 +549,31 @@ public abstract class Query extends WdkModelBase {
     buffer.append(": params{");
     boolean firstParam = true;
     for (Param param : paramMap.values()) {
-      if (firstParam) firstParam = false;
-      else buffer.append(", ");
+      if (firstParam)
+        firstParam = false;
+      else
+        buffer.append(", ");
       buffer.append(param.getName()).append("[");
       buffer.append(param.getClass().getSimpleName()).append("]");
     }
     buffer.append("} columns{");
     boolean firstColumn = true;
     for (Column column : columnMap.values()) {
-      if (firstColumn) firstColumn = false;
-      else buffer.append(", ");
+      if (firstColumn)
+        firstColumn = false;
+      else
+        buffer.append(", ");
       buffer.append(column.getName());
     }
     buffer.append("}");
     return buffer.toString();
   }
 
-  public Map<String, String> getStableValues(User user,
-      Map<String, String> rawValues) throws WdkModelException, WdkUserException {
+  public Map<String, String> getStableValues(User user, Map<String, String> rawValues)
+      throws WdkModelException, WdkUserException {
     // initialize the stable values with raw values first, then replace them one
     // by one.
-    Map<String, String> stableValues = new LinkedHashMap<String, String>(
-        rawValues);
+    Map<String, String> stableValues = new LinkedHashMap<String, String>(rawValues);
     for (String paramName : rawValues.keySet()) {
       Param param = paramMap.get(paramName);
       if (param == null) {
@@ -592,8 +581,7 @@ public abstract class Query extends WdkModelBase {
         // throw new WdkModelException("Invalid param name '" +
         // paramName
         // + "' in query " + getFullName());
-        logger.warn("Param " + paramName + " does not exist in query "
-            + getFullName());
+        logger.warn("Param " + paramName + " does not exist in query " + getFullName());
         continue;
       }
       String rawValue = rawValues.get(paramName);
@@ -602,14 +590,13 @@ public abstract class Query extends WdkModelBase {
     }
     if (paramMap.containsKey(Utilities.PARAM_USER_ID)) {
       if (!stableValues.containsKey(Utilities.PARAM_USER_ID))
-        stableValues.put(Utilities.PARAM_USER_ID,
-            Integer.toString(user.getUserId()));
+        stableValues.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
     }
     return stableValues;
   }
 
-  public Map<String, String> getSignatures(User user,
-      Map<String, String> stableValues) throws WdkModelException {
+  public Map<String, String> getSignatures(User user, Map<String, String> stableValues)
+      throws WdkModelException {
     Map<String, String> signatures = new LinkedHashMap<String, String>();
     for (String paramName : stableValues.keySet()) {
       Param param = paramMap.get(paramName);
@@ -618,8 +605,7 @@ public abstract class Query extends WdkModelBase {
         // throw new WdkModelException("Invalid param name '" +
         // paramName
         // + "' in query " + getFullName());
-        logger.warn("Param " + paramName + " does not exist in query "
-            + getFullName());
+        logger.warn("Param " + paramName + " does not exist in query " + getFullName());
         continue;
       }
       String stableValue = stableValues.get(paramName);
@@ -645,23 +631,22 @@ public abstract class Query extends WdkModelBase {
   }
 
   /**
-   * for reviseStep action, validate all the values, and if it's invalid,
-   * substitute it with default. if the value doesn't exist in the map, I will
-   * add default into it.
+   * for reviseStep action, validate all the values, and if it's invalid, substitute it with default. if the
+   * value doesn't exist in the map, I will add default into it.
    * 
    * @param contextParamValues
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public void fillContextParamValues(User user,
-      Map<String, String> contextParamValues) throws WdkModelException {
+  public void fillContextParamValues(User user, Map<String, String> contextParamValues)
+      throws WdkModelException {
     for (Param param : paramMap.values()) {
       if (param instanceof AbstractEnumParam) {
         // for enum/flatVocab params, call a special method to process it
         Map<String, EnumParamCache> caches = new HashMap<>();
-        ((AbstractEnumParam) param).fetchCorrectValue(user, contextParamValues,
-            caches);
-      } else if (!(param instanceof DatasetParam)) {
+        ((AbstractEnumParam) param).fetchCorrectValue(user, contextParamValues, caches);
+      }
+      else if (!(param instanceof DatasetParam)) {
         // for other params, just fill it with default value;
         // However, we cannot use default for datasetParam, which is just
         // sample, not a valid value (a valid value must be a dataset id)
@@ -681,34 +666,36 @@ public abstract class Query extends WdkModelBase {
       sortingMap.put(column, order);
     }
   }
-  
+
   public Map<String, Boolean> getSortingMap() {
     return new LinkedHashMap<>(sortingMap);
   }
-  
+
   public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
-    writer.println(indent + getClass().getSimpleName() + ": " + getFullName());
-    indent += WdkModel.INDENT;
-    String indent2 = indent + WdkModel.INDENT;
-    
+    writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getFullName() + "\">");
+    String indent1 = indent + WdkModel.INDENT;
+    String indent2 = indent1 + WdkModel.INDENT;
+
     // print params
     if (paramMap.size() > 0) {
-      writer.println(indent + "Params = " + paramMap.size());
+      writer.println(indent1 + "Params = " + paramMap.size());
       String[] paramNames = paramMap.keySet().toArray(new String[0]);
       Arrays.sort(paramNames);
       for (String paramName : paramNames) {
         paramMap.get(paramName).printDependency(writer, indent2);
       }
     }
-    
+
     // print columns
     if (columnMap.size() > 0) {
-      writer.println(indent + "Columns = " + columnMap.size());
+      writer.println(indent1 + "Columns = " + columnMap.size());
       String[] columnNames = columnMap.keySet().toArray(new String[0]);
       Arrays.sort(columnNames);
       for (String columnName : columnNames) {
         columnMap.get(columnName).printDependency(writer, indent2);
       }
     }
+
+    writer.println(indent + "</" + getClass().getSimpleName() + ">");
   }
 }

@@ -1013,23 +1013,25 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   }
   
   public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
-    writer.println(indent + "Question: " + getName());
-    indent += WdkModel.INDENT;
-    String indent2 = indent + WdkModel.INDENT;
-    writer.println(indent + "RecordClass: " + recordClass.getFullName());
+    writer.println(indent + "<question name=\"" + getName() + "\">");
+    String indent1 = indent + WdkModel.INDENT;
+    String indent2 = indent1 + WdkModel.INDENT;
+    writer.println(indent1 + "RecordClass: " + recordClass.getFullName());
     
     // print dynamic attributes
     if (dynamicAttributeSet != null) {
       Map<String, AttributeField> attributes = dynamicAttributeSet.getAttributeFieldMap();
-      writer.println(indent + "Dynamic attributes = " + attributes.size());
+      writer.println(indent1 + "<dynamicAttributes size=\"" + attributes.size() + "\">");
       String[] attributeNames = attributes.keySet().toArray(new String[0]);
       Arrays.sort(attributeNames);
       for (String attributeName : attributeNames) {
         attributes.get(attributeName).printDependency(writer, indent2);
       }
+      writer.println(indent1 + "</dynamicAttributes>");
     }
     
     // print query
     query.printDependency(writer, indent);
+    writer.print(indent + "</question>");
   }
 }
