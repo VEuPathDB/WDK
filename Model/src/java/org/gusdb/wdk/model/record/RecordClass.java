@@ -1526,7 +1526,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return primaryKeyField.getColumnRefs();
   }
 
-  public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+  public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<recordClass name=\"" + getName() + "\">");
     String indent1 = indent + WdkModel.INDENT;
     String indent2 = indent1 + WdkModel.INDENT;
@@ -1562,17 +1562,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         tableFieldsMap.get(tableName).printDependency(writer, indent2);
       }
       writer.println(indent1 + "</tables>");
-    }
-
-    // print table queries
-    if (tableQueries.size() > 0) {
-      writer.println(indent1 + "<tableQueries size=\"" + tableQueries.size() + "\">");
-      String[] queryNames = tableQueries.keySet().toArray(new String[0]);
-      Arrays.sort(queryNames);
-      for (String queryName : queryNames) {
-        tableQueries.get(queryName).printDependency(writer, indent2);
-      }
-      writer.println(indent1 + "</tableQueries>");
     }
 
     writer.println(indent + "</recordClass>");
