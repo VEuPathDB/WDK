@@ -463,6 +463,10 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     this.contextQuery = query;
   }
 
+  public Query getContextQuery() {
+    return contextQuery;
+  }
+
   public void setHandler(ParamHandler handler) {
     handler.setParam(this);
     this.handler = handler;

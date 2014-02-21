@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -322,6 +323,14 @@ public abstract class AbstractEnumParam extends Param {
           throw new WdkModelException(message);
         }
       }
+    }
+    for(Param param : dependedParams) {
+      String vocab = "";
+      if ((param instanceof FlatVocabParam)) {
+        Query query = ((FlatVocabParam)param).getQuery();
+        vocab = (query != null) ? query.getFullName() : "unavailable";
+      }
+      logger.debug("param " + getName() + " depends on " + param.getName() + "(" + vocab + ")");
     }
     return dependedParams;
   }
