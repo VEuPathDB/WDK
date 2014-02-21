@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -58,6 +61,8 @@ public class WdkModel implements ConnectionContainer {
   
   public static final String CONNECTION_APP = "AppDB";
   public static final String CONNECTION_USER = "UserDB";
+  
+  public static final String INDENT = "   ";
 
   private static final Logger logger = Logger.getLogger(WdkModel.class);
 
@@ -1180,5 +1185,37 @@ public class WdkModel implements ConnectionContainer {
     } else { // unknown
       throw new WdkModelException("Invalid DB Connection key.");
     }
+  }
+  
+  
+  public String getDependencyTree() throws WdkModelException {
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    
+    // print questions
+    String[] setNames = questionSets.keySet().toArray(new String[0]);
+    Arrays.sort(setNames);
+    for (String setName : setNames) {
+      writer.println("QuestionSet: " + setName);
+      Map<String, Question> questions = questionSets.get(setName).getQuestionMap();
+      String[] questionNames = questions.keySet().toArray(new String[0]);
+      for (String questionName : questionNames) {
+        questions.get(questionName).printDependency(writer, INDENT);
+      }
+    }
+    
+    // print record classes
+    setNames = recordClassSets.keySet().toArray(new String[0]);
+    Arrays.sort(setNames);
+    for (String setName : setNames) {
+      writer.println("RecordClassSet: " + setName);
+      Map<String, RecordClass> recordClasses = recordClassSets.get(setName).getRecordClassMap();
+      String[] rcNames = recordClasses.keySet().toArray(new String[0]);
+      for (String rcName : rcNames) {
+        recordClasses.get(rcName).printDependency(writer, INDENT);
+      }
+    }
+    
+    return stringWriter.toString();
   }
 }

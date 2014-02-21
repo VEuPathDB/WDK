@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.query;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -683,5 +684,31 @@ public abstract class Query extends WdkModelBase {
   
   public Map<String, Boolean> getSortingMap() {
     return new LinkedHashMap<>(sortingMap);
+  }
+  
+  public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+    writer.println(indent + getClass().getSimpleName() + ": " + getFullName());
+    indent += WdkModel.INDENT;
+    String indent2 = indent + WdkModel.INDENT;
+    
+    // print params
+    if (paramMap.size() > 0) {
+      writer.println(indent + "Params = " + paramMap.size());
+      String[] paramNames = paramMap.keySet().toArray(new String[0]);
+      Arrays.sort(paramNames);
+      for (String paramName : paramNames) {
+        paramMap.get(paramName).printDependency(writer, indent2);
+      }
+    }
+    
+    // print columns
+    if (columnMap.size() > 0) {
+      writer.println(indent + "Columns = " + columnMap.size());
+      String[] columnNames = columnMap.keySet().toArray(new String[0]);
+      Arrays.sort(columnNames);
+      for (String columnName : columnNames) {
+        columnMap.get(columnName).printDependency(writer, indent2);
+      }
+    }
   }
 }
