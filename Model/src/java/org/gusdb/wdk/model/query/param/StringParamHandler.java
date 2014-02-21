@@ -16,6 +16,12 @@ import org.gusdb.wdk.model.user.User;
  */
 public class StringParamHandler extends AbstractParamHandler {
 
+  public StringParamHandler(){}
+  
+  public StringParamHandler(StringParamHandler handler, Param param) {
+    super(handler, param);
+  }
+  
   /**
    * the raw value is the same as stable value.
    * 
@@ -100,6 +106,11 @@ public class StringParamHandler extends AbstractParamHandler {
       if (stableValue != null)
         requestParams.setParam(param.getName(), stableValue);
     }
+  }
+
+  @Override
+  public ParamHandler clone(Param param) {
+    return new StringParamHandler(this, param);
   }
 
 }

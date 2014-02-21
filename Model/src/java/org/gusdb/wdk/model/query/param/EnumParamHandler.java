@@ -23,6 +23,12 @@ public class EnumParamHandler extends AbstractParamHandler {
 
   public static final String LABELS_SUFFIX = "-labels";
   public static final String TERMS_SUFFIX = "-values";
+  
+  public EnumParamHandler(){}
+  
+  public EnumParamHandler(EnumParamHandler handler, Param param) {
+    super(handler, param);
+  }
 
   /**
    * the raw value is a String[] of terms, and stable value is a string representation of term list.
@@ -190,5 +196,10 @@ public class EnumParamHandler extends AbstractParamHandler {
       requestParams.setArray(param.getName(), rawValue);
       requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, rawValue);
     }
+  }
+
+  @Override
+  public ParamHandler clone(Param param) {
+    return new EnumParamHandler(this, param);
   }
 }

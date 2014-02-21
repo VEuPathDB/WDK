@@ -63,7 +63,7 @@ import org.json.JSONObject;
  * 
  */
 public abstract class Param extends WdkModelBase implements Cloneable {
-  
+
   public static final String RAW_VALUE_SUFFIX = "_raw";
   public static final String INVALID_VALUE_SUFFIX = "_invalid";
 
@@ -71,7 +71,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   @Override
   public abstract Param clone();
-  
+
   public abstract String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException;
 
   protected abstract void applySuggection(ParamSuggestion suggest);
@@ -162,7 +162,8 @@ public abstract class Param extends WdkModelBase implements Cloneable {
       }
     }
     this.handlerReference = param.handlerReference;
-    this.handler = param.handler;
+    if (param.handler != null)
+      this.handler = param.handler.clone(this);
     this.contextQuestion = param.contextQuestion;
     this.contextQuery = param.contextQuery;
   }
@@ -576,13 +577,13 @@ public abstract class Param extends WdkModelBase implements Cloneable {
       throws WdkModelException, WdkUserException {
     handler.prepareDisplay(user, requestParams, contextValues);
   }
-  
+
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getFullName() + "\">");
     printDependencyContent(writer, indent + WdkModel.INDENT);
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
   }
-  
+
   protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
     // by default, print nothing
   }

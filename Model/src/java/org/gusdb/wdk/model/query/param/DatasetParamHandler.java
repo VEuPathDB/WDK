@@ -28,6 +28,12 @@ public class DatasetParamHandler extends AbstractParamHandler {
 
   private static final Logger logger = Logger.getLogger(DatasetParamHandler.class);
 
+  public DatasetParamHandler(){}
+  
+  public DatasetParamHandler(DatasetParamHandler handler, Param param) {
+    super(handler, param);
+  }
+  
   /**
    * The raw value is Dataset object, and stable value is the dataset id.
    * 
@@ -223,5 +229,10 @@ public class DatasetParamHandler extends AbstractParamHandler {
       if (fileName != null)
         requestParams.setParam(datasetParam.getFileSubParam(), fileName);
     }
+  }
+
+  @Override
+  public ParamHandler clone(Param param) {
+    return new DatasetParamHandler(this, param);
   }
 }
