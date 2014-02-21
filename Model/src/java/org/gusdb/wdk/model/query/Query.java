@@ -678,22 +678,24 @@ public abstract class Query extends WdkModelBase {
 
     // print params
     if (paramMap.size() > 0) {
-      writer.println(indent1 + "Params = " + paramMap.size());
+      writer.println(indent1 + "<params size=\"" + paramMap.size() + "\">");
       String[] paramNames = paramMap.keySet().toArray(new String[0]);
       Arrays.sort(paramNames);
       for (String paramName : paramNames) {
         paramMap.get(paramName).printDependency(writer, indent2);
       }
+      writer.println(indent1 + "</params>");
     }
 
     // print columns
     if (columnMap.size() > 0) {
-      writer.println(indent1 + "Columns = " + columnMap.size());
+      writer.println(indent1 + "<olumns size=\"" + columnMap.size() + "\">");
       String[] columnNames = columnMap.keySet().toArray(new String[0]);
       Arrays.sort(columnNames);
       for (String columnName : columnNames) {
         columnMap.get(columnName).printDependency(writer, indent2);
       }
+      writer.println(indent1 + "</olumns>");
     }
 
     writer.println(indent + "</" + getClass().getSimpleName() + ">");

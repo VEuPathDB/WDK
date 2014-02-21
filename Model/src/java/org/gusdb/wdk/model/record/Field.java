@@ -176,7 +176,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
   public void printDependency(PrintWriter writer, String indent) {
     writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getName() + "\">");
     printDependencyContent(writer, indent + WdkModel.INDENT);
-    writer.println("</" + getClass().getSimpleName() + ">");
+    writer.println(indent + "</" + getClass().getSimpleName() + ">");
   }
 
   protected void printDependencyContent(PrintWriter writer, String indent) {
