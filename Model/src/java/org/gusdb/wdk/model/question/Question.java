@@ -1012,7 +1012,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return map;
   }
   
-  public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+  public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<question name=\"" + getName() + "\" recordClass=\"" + recordClass.getFullName() + "\">");
     String indent1 = indent + WdkModel.INDENT;
     String indent2 = indent1 + WdkModel.INDENT;

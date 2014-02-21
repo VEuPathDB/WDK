@@ -671,7 +671,7 @@ public abstract class Query extends WdkModelBase {
     return new LinkedHashMap<>(sortingMap);
   }
 
-  public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+  public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getFullName() + "\">");
     String indent1 = indent + WdkModel.INDENT;
     String indent2 = indent1 + WdkModel.INDENT;

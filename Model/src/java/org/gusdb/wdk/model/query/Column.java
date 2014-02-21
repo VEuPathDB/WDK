@@ -170,7 +170,7 @@ public class Column extends WdkModelBase {
     this.ignoreCase = ignoreCase;
   }
 
-  public void printDependency(PrintWriter writer, String indent) {
+  public final void printDependency(PrintWriter writer, String indent) {
     writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getName() + "\">");
     printDependencyContent(writer, indent + WdkModel.INDENT);
     writer.println(indent + "</" + getClass().getSimpleName() + ">");

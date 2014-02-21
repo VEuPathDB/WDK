@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * A field defines a property of a {@link RecordClass}.
@@ -173,13 +174,13 @@ public abstract class Field extends WdkModelBase implements ScopedField {
     return getDisplayName();
   }
 
-  public void printDependency(PrintWriter writer, String indent) {
+  public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getName() + "\">");
     printDependencyContent(writer, indent + WdkModel.INDENT);
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
   }
 
-  protected void printDependencyContent(PrintWriter writer, String indent) {
+  protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
     // by default, no content to print out
   }
 }
