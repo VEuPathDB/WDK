@@ -689,13 +689,13 @@ public abstract class Query extends WdkModelBase {
 
     // print columns
     if (columnMap.size() > 0) {
-      writer.println(indent1 + "<olumns size=\"" + columnMap.size() + "\">");
+      writer.println(indent1 + "<columns size=\"" + columnMap.size() + "\">");
       String[] columnNames = columnMap.keySet().toArray(new String[0]);
       Arrays.sort(columnNames);
       for (String columnName : columnNames) {
         columnMap.get(columnName).printDependency(writer, indent2);
       }
-      writer.println(indent1 + "</olumns>");
+      writer.println(indent1 + "</columns>");
     }
 
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
