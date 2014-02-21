@@ -77,4 +77,5 @@ public interface ParamHandler {
   String toSignature(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException;
 
+  ParamHandler clone(Param param);
 }

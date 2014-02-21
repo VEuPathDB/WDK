@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.query.param;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -18,6 +19,16 @@ public abstract class AbstractParamHandler implements ParamHandler {
   protected Param param;
   protected Map<String, String> properties;
 
+  public AbstractParamHandler() {
+    properties = new LinkedHashMap<>();
+  }
+  
+  public AbstractParamHandler(AbstractParamHandler handler, Param param) {
+    this.wdkModel = handler.wdkModel;
+    this.param = param;
+    this.properties = new LinkedHashMap<>(handler.properties);
+  }
+  
   /*
    * (non-Javadoc)
    * 

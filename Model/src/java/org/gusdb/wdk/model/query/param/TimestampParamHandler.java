@@ -15,6 +15,12 @@ import org.gusdb.wdk.model.user.User;
  */
 public class TimestampParamHandler extends AbstractParamHandler {
 
+  public TimestampParamHandler(){}
+  
+  public TimestampParamHandler(TimestampParamHandler handler, Param param) {
+    super(handler, param);
+  }
+  
   /**
    * The raw value is the same as stable value.
    * 
@@ -84,6 +90,11 @@ public class TimestampParamHandler extends AbstractParamHandler {
       if (stableValue != null)
         requestParams.setParam(param.getName(), stableValue);
     }
+  }
+
+  @Override
+  public ParamHandler clone(Param param) {
+    return new TimestampParamHandler(this, param);
   }
 
 }

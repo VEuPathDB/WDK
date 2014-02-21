@@ -20,6 +20,12 @@ public class AnswerParamHandler extends AbstractParamHandler {
 
   public static final String PARAM_INPUT_STEP = "inputStep";
   public static final String PARAM_INPUT_STRATEGY = "strategy";
+  
+  public AnswerParamHandler(){}
+  
+  public AnswerParamHandler(AnswerParamHandler handler, Param param) {
+    super(handler, param);
+  }
 
   /**
    * the stable value is the step id;
@@ -148,6 +154,11 @@ public class AnswerParamHandler extends AbstractParamHandler {
       Step step = user.getStep(Integer.valueOf(stableValue));
       requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, step);
     }
+  }
+
+  @Override
+  public ParamHandler clone(Param param) {
+    return new AnswerParamHandler(this, param);
   }
 
 }
