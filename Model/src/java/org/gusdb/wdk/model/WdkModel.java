@@ -1181,13 +1181,13 @@ public class WdkModel implements ConnectionContainer {
     setNames = recordClassSets.keySet().toArray(new String[0]);
     Arrays.sort(setNames);
     for (String setName : setNames) {
-      writer.println("INDENT + <recordClassSet name=\"" + setName + "\">");
+      writer.println(INDENT + "<recordClassSet name=\"" + setName + "\">");
       Map<String, RecordClass> recordClasses = recordClassSets.get(setName).getRecordClassMap();
       String[] rcNames = recordClasses.keySet().toArray(new String[0]);
       for (String rcName : rcNames) {
         recordClasses.get(rcName).printDependency(writer, INDENT + INDENT);
       }
-      writer.println("INDENT + </recordClassSet>");
+      writer.println(INDENT + "</recordClassSet>");
     }
 
     writer.println("</wdkModel>");
