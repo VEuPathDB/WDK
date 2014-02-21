@@ -169,6 +169,8 @@ import org.xml.sax.SAXException;
  * 
  */
 public class ModelXmlParser extends XmlParser {
+  
+  public static final String ARG_DEPENDENCY = "dependency";
 
   private static final Logger logger = Logger.getLogger(ModelXmlParser.class);
 
@@ -1009,8 +1011,11 @@ public class ModelXmlParser extends XmlParser {
       // create a parser, and parse the model file
       WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
 
-      // print out the model content
-      System.out.println(wdkModel.toString());
+      if (cmdLine.hasOption(ARG_DEPENDENCY)) {  // print out only the dependency
+        System.out.println(wdkModel.getDependencyTree());
+      } else { // print out the model content
+        System.out.println(wdkModel.toString());
+      }
       System.exit(0);
     } catch (Exception ex) {
       ex.printStackTrace();
@@ -1036,6 +1041,11 @@ public class ModelXmlParser extends XmlParser {
         + "the Model property file ($GUS_HOME/config/model_name.prop) "
         + "and the Model config file "
         + "($GUS_HOME/config/model_name-config.xml)");
+    
+    Option optDependency = new Option(ARG_DEPENDENCY, false, "Print out the dependency tree of the model");
+    optDependency.setRequired(false);
+    optDependency.setArgName(ARG_DEPENDENCY);
+    options.addOption(optDependency);
 
     return options;
   }

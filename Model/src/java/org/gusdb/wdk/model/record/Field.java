@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.model.record;
 
+import java.io.PrintWriter;
+
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelBase;
 
@@ -169,5 +171,9 @@ public abstract class Field extends WdkModelBase implements ScopedField {
   @Override
   public String toString() {
     return getDisplayName();
+  }
+  
+  public void printDependency(PrintWriter writer, String indent) {
+    writer.println(indent + getClass().getSimpleName() + ": " + getName());
   }
 }

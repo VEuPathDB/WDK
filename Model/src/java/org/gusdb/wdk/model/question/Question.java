@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.question;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1008,5 +1010,26 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
     }
     return map;
+  }
+  
+  public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+    writer.println(indent + "Question: " + getName());
+    indent += WdkModel.INDENT;
+    String indent2 = indent + WdkModel.INDENT;
+    writer.println(indent + "RecordClass: " + recordClass.getFullName());
+    
+    // print dynamic attributes
+    if (dynamicAttributeSet != null) {
+      Map<String, AttributeField> attributes = dynamicAttributeSet.getAttributeFieldMap();
+      writer.println(indent + "Dynamic attributes = " + attributes.size());
+      String[] attributeNames = attributes.keySet().toArray(new String[0]);
+      Arrays.sort(attributeNames);
+      for (String attributeName : attributeNames) {
+        attributes.get(attributeName).printDependency(writer, indent2);
+      }
+    }
+    
+    // print query
+    query.printDependency(writer, indent);
   }
 }

@@ -97,6 +97,10 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
         questionMap.values().toArray(array);
         return array;
     }
+    
+    public Map<String, Question> getQuestionMap() {
+      return new LinkedHashMap<>(questionMap);
+    }
 
     public void addQuestion(Question question) {
         question.setQuestionSet(this);

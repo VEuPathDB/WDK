@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -574,5 +575,9 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
     handler.prepareDisplay(user, requestParams, contextValues);
+  }
+  
+  public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+    writer.println(indent + getClass().getSimpleName() + ": " + getFullName());
   }
 }

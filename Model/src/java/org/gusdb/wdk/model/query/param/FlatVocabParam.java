@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -291,5 +292,14 @@ public class FlatVocabParam extends AbstractEnumParam {
     super.setContextQuery(query);
     if (contextQuery != null)
       this.servedQueryName = contextQuery.getFullName();
+  }
+  
+  @Override
+  public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+    super.printDependency(writer, indent);
+    
+    // also print out the vocab query
+    indent += WdkModel.INDENT;
+    query.printDependency(writer, indent);
   }
 }

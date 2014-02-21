@@ -1,5 +1,9 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -307,7 +311,8 @@ public abstract class AbstractEnumParam extends Param {
       Map<String, Param> params = null;
       if (contextQuestion != null) {
         params = contextQuestion.getParamMap();
-      } else if (contextQuery != null)
+      }
+      else if (contextQuery != null)
         params = contextQuery.getParamMap();
       for (String paramRef : dependedParamRefs) {
         String paramName = paramRef.split("\\.", 2)[1].trim();
@@ -324,10 +329,10 @@ public abstract class AbstractEnumParam extends Param {
         }
       }
     }
-    for(Param param : dependedParams) {
+    for (Param param : dependedParams) {
       String vocab = "";
       if ((param instanceof FlatVocabParam)) {
-        Query query = ((FlatVocabParam)param).getQuery();
+        Query query = ((FlatVocabParam) param).getQuery();
         vocab = (query != null) ? query.getFullName() : "unavailable";
       }
       logger.debug("param " + getName() + " depends on " + param.getName() + "(" + vocab + ")");
@@ -815,5 +820,28 @@ public abstract class AbstractEnumParam extends Param {
       }
     }
     return buffer.toString();
+  }
+
+  @Override
+  public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+    super.printDependency(writer, indent);
+
+    indent += WdkModel.INDENT;
+
+    // print out depended params, if any
+    if (isDependentParam()) {
+      List<Param> dependedParams = new ArrayList<>(getDependedParams());
+      writer.println(indent + "Depended Params = " + getDependedParams().size());
+      indent += WdkModel.INDENT;
+      Collections.sort(dependedParams, new Comparator<Param>() {
+        @Override
+        public int compare(Param param1, Param param2) {
+          return param1.getFullName().compareToIgnoreCase(param2.getFullName());
+        }
+      });
+      for (Param param : dependedParams) {
+        param.printDependency(writer, indent);
+      }
+    }
   }
 }
