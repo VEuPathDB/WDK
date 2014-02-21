@@ -823,25 +823,24 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   @Override
-  public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
-    super.printDependency(writer, indent);
-
-    indent += WdkModel.INDENT;
+  protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
+    super.printDependencyContent(writer, indent);
 
     // print out depended params, if any
     if (isDependentParam()) {
       List<Param> dependedParams = new ArrayList<>(getDependedParams());
-      writer.println(indent + "Depended Params = " + getDependedParams().size());
-      indent += WdkModel.INDENT;
+      writer.println(indent + "<dependedParams count=\"" + getDependedParams().size() + "\">");
       Collections.sort(dependedParams, new Comparator<Param>() {
         @Override
         public int compare(Param param1, Param param2) {
           return param1.getFullName().compareToIgnoreCase(param2.getFullName());
         }
       });
+      String indent1 = indent + WdkModel.INDENT;
       for (Param param : dependedParams) {
-        param.printDependency(writer, indent);
+        param.printDependency(writer, indent1);
       }
+      writer.println(indent + "</dependedParams>");
     }
   }
 }

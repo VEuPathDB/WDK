@@ -578,6 +578,12 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   }
   
   public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
-    writer.println(indent + getClass().getSimpleName() + ": " + getFullName());
+    writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getFullName() + "\">");
+    printDependencyContent(writer, indent + WdkModel.INDENT);
+    writer.println(indent + "</" + getClass().getSimpleName() + ">");
+  }
+  
+  protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
+    // by default, print nothing
   }
 }

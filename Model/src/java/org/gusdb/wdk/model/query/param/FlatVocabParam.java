@@ -295,11 +295,10 @@ public class FlatVocabParam extends AbstractEnumParam {
   }
   
   @Override
-  public void printDependency(PrintWriter writer, String indent) throws WdkModelException {
-    super.printDependency(writer, indent);
+  protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
+    super.printDependencyContent(writer, indent);
     
     // also print out the vocab query
-    indent += WdkModel.INDENT;
     query.printDependency(writer, indent);
   }
 }

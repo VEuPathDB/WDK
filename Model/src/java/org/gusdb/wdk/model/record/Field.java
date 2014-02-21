@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.record;
 import java.io.PrintWriter;
 
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 
 /**
@@ -85,8 +86,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
   }
 
   /**
-   * if true, a field is unavailable in the summary configuration. default
-   * false.
+   * if true, a field is unavailable in the summary configuration. default false.
    * 
    * @return Returns the internal.
    */
@@ -172,8 +172,14 @@ public abstract class Field extends WdkModelBase implements ScopedField {
   public String toString() {
     return getDisplayName();
   }
-  
+
   public void printDependency(PrintWriter writer, String indent) {
-    writer.println(indent + getClass().getSimpleName() + ": " + getName());
+    writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getName() + "\">");
+    printDependencyContent(writer, indent + WdkModel.INDENT);
+    writer.println("</" + getClass().getSimpleName() + ">");
+  }
+
+  protected void printDependencyContent(PrintWriter writer, String indent) {
+    // by default, no content to print out
   }
 }

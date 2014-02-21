@@ -1191,31 +1191,35 @@ public class WdkModel implements ConnectionContainer {
   public String getDependencyTree() throws WdkModelException {
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
+    writer.println("<wdkModel>");
     
     // print questions
     String[] setNames = questionSets.keySet().toArray(new String[0]);
     Arrays.sort(setNames);
     for (String setName : setNames) {
-      writer.println("QuestionSet: " + setName);
+      writer.println("<questionSet name=\"" + setName + "\">");
       Map<String, Question> questions = questionSets.get(setName).getQuestionMap();
       String[] questionNames = questions.keySet().toArray(new String[0]);
       for (String questionName : questionNames) {
         questions.get(questionName).printDependency(writer, INDENT);
       }
+      writer.println("</questionSet>");
     }
     
     // print record classes
     setNames = recordClassSets.keySet().toArray(new String[0]);
     Arrays.sort(setNames);
     for (String setName : setNames) {
-      writer.println("RecordClassSet: " + setName);
+      writer.println("<recordClassSet name=\"" + setName + "\">");
       Map<String, RecordClass> recordClasses = recordClassSets.get(setName).getRecordClassMap();
       String[] rcNames = recordClasses.keySet().toArray(new String[0]);
       for (String rcName : rcNames) {
         recordClasses.get(rcName).printDependency(writer, INDENT);
       }
+      writer.println("</recordClassSet>");
     }
     
+    writer.println("</wdkModel>");
     return stringWriter.toString();
   }
 }
