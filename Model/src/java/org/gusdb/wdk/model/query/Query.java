@@ -185,7 +185,11 @@ public abstract class Query extends WdkModelBase {
     this.name = query.name;
     this.cached = query.cached;
     this.setCache = query.setCache;
+    if (query.paramRefList != null)
+      this.paramRefList = new ArrayList<>(query.paramRefList);
     this.paramMap = new LinkedHashMap<String, Param>();
+    if (query.columnList != null)
+      this.columnList = new ArrayList<>(query.columnList);
     this.columnMap = new LinkedHashMap<String, Column>();
     this.wdkModel = query.wdkModel;
     this.querySet = query.querySet;

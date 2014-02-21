@@ -58,7 +58,8 @@ public class FlatVocabParam extends AbstractEnumParam {
 
   public FlatVocabParam(FlatVocabParam param) {
     super(param);
-    this.query = param.query;
+    if (param.query != null)
+      this.query = param.query.clone();
     this.queryTwoPartName = param.queryTwoPartName;
     this.servedQueryName = param.servedQueryName;
   }
@@ -136,7 +137,6 @@ public class FlatVocabParam extends AbstractEnumParam {
 
     }
 
-
     // add a served query param into flatVocabQuery, if it doesn't exist
     ParamSet paramSet = model.getParamSet(Utilities.INTERNAL_PARAM_SET);
     StringParam param = new StringParam();
@@ -193,7 +193,11 @@ public class FlatVocabParam extends AbstractEnumParam {
       // query, while the original input param in the vocab query
       // does not know about it.
       for (Param param : dependedParams) {
-        query.addParam(param.clone());
+        // preserve the context query
+        Query contextQuery = param.getContextQuery();
+        param = param.clone();
+        query.addParam(param);
+        param.setContextQuery(contextQuery);
         String value = dependedParamValues.get(param.getName());
         values.put(param.getName(), value);
       }
@@ -285,6 +289,7 @@ public class FlatVocabParam extends AbstractEnumParam {
   @Override
   public void setContextQuery(Query query) {
     super.setContextQuery(query);
-    this.servedQueryName = contextQuery.getFullName();
+    if (contextQuery != null)
+      this.servedQueryName = contextQuery.getFullName();
   }
 }
