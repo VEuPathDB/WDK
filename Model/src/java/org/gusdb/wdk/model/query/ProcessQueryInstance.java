@@ -247,7 +247,7 @@ public class ProcessQueryInstance extends QueryInstance {
     request.setProjectId(wdkModel.getProjectId());
 
     // prepare parameters
-    Map<String, String> paramValues = getInternalParamValues();
+    Map<String, String> paramValues = getParamInternalValues();
     HashMap<String, String> params = new HashMap<String, String>();
     for (String name : paramValues.keySet()) {
       params.put(name, paramValues.get(name));

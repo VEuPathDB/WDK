@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -184,7 +182,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             } else { // otherwise, forward to the show application page
                 // create new strategy before going to application page
                 if (strategy == null) {
-                    strategy = wdkUser.createStrategy(step, false);
+                    strategy = wdkUser.createStrategy(step, false, false);
                     request.getSession().setAttribute(
                             CConstants.WDK_NEW_STRATEGY_KEY, true);
                     strategyKey = Integer.toString(strategy.getStrategyId());
@@ -266,12 +264,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             updated = updateSortingSummary(request, wdkUser, questionName);
 
-            Map<String, String> params = new HashMap<String, String>();
-            for (ParamBean<?> param : wdkQuestion.getParams()) {
-                String paramName = param.getName();
-                Object value = qForm.getValue(paramName);
-                params.put(paramName, (String) value);
-            }
+            Map<String, String> params = ProcessQuestionAction.prepareParams(wdkUser, request, qForm);
 
             // get the hidden flag
             String strHidden = request.getParameter(PARAM_HIDDEN_STEP);
@@ -293,7 +286,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
 
             // make the answer
-            String filterName = request.getParameter("filter");
+            String filterName = request.getParameter(CConstants.WDK_FILTER_KEY);
             step = summaryPaging(request, wdkQuestion, params, filterName,
                     hidden, weight);
         } else {
@@ -520,25 +513,26 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute(CConstants.WDK_STEP_KEY, step);
     }
 
-    private boolean updateSortingSummary(HttpServletRequest request,
-            UserBean wdkUser, String questionName) {
-        // update sorting key, if have
-        String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
-        boolean updated = false;
-        if (sortingChecksum != null) {
-            wdkUser.applySortingChecksum(questionName, sortingChecksum);
-            updated = true;
-        }
-
-        // get summary key, if have
-        String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
-        if (summaryChecksum != null) {
-            wdkUser.applySummaryChecksum(questionName, summaryChecksum);
-            updated = true;
-        }
-        logger.debug("summary checksum: " + summaryChecksum);
-        return updated;
+  private boolean updateSortingSummary(HttpServletRequest request, UserBean wdkUser, String questionName)
+      throws WdkModelException {
+    // update sorting key, if have
+    String sortingAttributes = request.getParameter(CConstants.WDK_SORTING_KEY);
+    boolean updated = false;
+    if (sortingAttributes != null) {
+      wdkUser.setSortingAttributes(questionName, sortingAttributes);
+      updated = true;
     }
+    logger.debug("sorting columns for question " + questionName + ": " + sortingAttributes);
+
+    // get summary key, if have
+    String summaryAttributes = request.getParameter(CConstants.WDK_SUMMARY_KEY);
+    if (summaryAttributes != null) {
+      wdkUser.setSummaryAttributes(questionName, summaryAttributes.split(","));
+      updated = true;
+    }
+    logger.debug("summary columns for question " + questionName + ": " + summaryAttributes);
+    return updated;
+  }
 
     /**
      * get the cached size of the given answerValue/Filter

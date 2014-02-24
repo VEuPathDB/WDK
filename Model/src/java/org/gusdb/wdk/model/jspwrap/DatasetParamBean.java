@@ -3,9 +3,14 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.util.Collection;
+
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.user.Strategy;
 
 /**
  * @author xingao
@@ -13,40 +18,68 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
  */
 public class DatasetParamBean extends ParamBean<DatasetParam> {
 
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger.getLogger(DatasetParamBean.class.getName());
-	
-    public DatasetParamBean(DatasetParam datasetParam) {
-        super(datasetParam);
-    }
+  @SuppressWarnings("unused")
+  private static final Logger logger = Logger.getLogger(DatasetParamBean.class.getName());
 
-    public DatasetBean getDataset() throws WdkModelException {
-        String independentValue = param.dependentValueToIndependentValue(
-                user.getUser(), dependentValue);
-        DatasetBean dataset = user.getDataset(independentValue);
-        dataset.setRecordClass(getRecordClass());
-        return dataset;
-    }
+  private final DatasetParam datasetParam;
 
-    /**
-     * @param user
-     * @param uploadFile
-     * @param rawValue
-     * @return
-     * @see org.gusdb.wdk.model.query.param.DatasetParam#rawValueToDependentValue(org.gusdb.wdk.model.user.User,
-     *      java.lang.String, java.lang.String)
-     */
-    public String rawValueToDependentValue(UserBean user, String uploadFile,
-            String rawValue) throws WdkModelException {
-        return param.rawValueToDependentValue(user.getUser(), uploadFile,
-                rawValue);
-    }
+  public DatasetParamBean(DatasetParam datasetParam) {
+    super(datasetParam);
+    this.datasetParam = datasetParam;
+  }
 
-    public RecordClassBean getRecordClass() {
-        return new RecordClassBean(param.getRecordClass());
-    }
+  public DatasetBean getDataset() throws WdkModelException {
+    int userDatasetId = Integer.valueOf(stableValue);
+    DatasetBean dataset = user.getDataset(userDatasetId);
+    return dataset;
+  }
 
-    public String getDefaultType() {
-        return param.getDefaultType();
-    }
+  public String getDefaultType() {
+    return param.getDefaultType();
+  }
+
+  /**
+   * @return
+   * @see org.gusdb.wdk.model.query.param.DatasetParam#getTypeSubParam()
+   */
+  public String getTypeSubParam() {
+    return datasetParam.getTypeSubParam();
+  }
+
+  /**
+   * @return
+   * @see org.gusdb.wdk.model.query.param.DatasetParam#getFileSubParam()
+   */
+  public String getFileSubParam() {
+    return datasetParam.getFileSubParam();
+  }
+
+  public String getDataSubParam() {
+    return datasetParam.getDataSubParam();
+  }
+
+  public String getStrategySubParam() {
+    return datasetParam.getStrategySubParam();
+  }
+
+  public String getParserSubParam() {
+    return datasetParam.getParserSubParam();
+  }
+  
+  public Collection<DatasetParser> getParsers() {
+    return datasetParam.getParsers();
+  }
+
+  public RecordClassBean getRecordClass() {
+    RecordClass recordClass = datasetParam.getRecordClass();
+    return (recordClass == null) ? null : new RecordClassBean(recordClass);
+  }
+
+  public Integer getBasketCount() throws WdkModelException {
+    return datasetParam.getBasketCount(user.getUser());
+  }
+
+  public Strategy[] getStrategies() throws WdkModelException {
+    return datasetParam.getStrategies(user.getUser());
+  }
 }

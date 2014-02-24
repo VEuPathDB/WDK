@@ -3,8 +3,12 @@
  */
 package org.gusdb.wdk.model.record;
 
+import java.io.PrintWriter;
+
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * A field defines a property of a {@link RecordClass}.
@@ -83,8 +87,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
   }
 
   /**
-   * if true, a field is unavailable in the summary configuration. default
-   * false.
+   * if true, a field is unavailable in the summary configuration. default false.
    * 
    * @return Returns the internal.
    */
@@ -169,5 +172,15 @@ public abstract class Field extends WdkModelBase implements ScopedField {
   @Override
   public String toString() {
     return getDisplayName();
+  }
+
+  public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+    writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getName() + "\">");
+    printDependencyContent(writer, indent + WdkModel.INDENT);
+    writer.println(indent + "</" + getClass().getSimpleName() + ">");
+  }
+
+  protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
+    // by default, no content to print out
   }
 }

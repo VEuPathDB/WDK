@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.user;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
+import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 
@@ -359,52 +361,61 @@ public class BasketFactory {
     }
   }
 
-  public String getBasket(User user, RecordClass recordClass)
-      throws SQLException {
+  public List<RecordInstance> getBasket(User user, RecordClass recordClass)
+      throws WdkModelException {
     String sql = "SELECT * FROM " + schema + TABLE_BASKET + " WHERE "
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID + " = ? AND "
         + COLUMN_RECORD_CLASS + " =?";
     DataSource ds = wdkModel.getUserDb().getDataSource();
     ResultSet rs = null;
+    long start = System.currentTimeMillis();
     try {
-      long start = System.currentTimeMillis();
-      PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
-      ps.setFetchSize(100);
-      ps.setString(1, wdkModel.getProjectId());
-      ps.setInt(2, user.getUserId());
-      ps.setString(3, recordClass.getFullName());
-      rs = ps.executeQuery();
-      QueryLogger.logEndStatementExecution(sql,
-          "wdk-basket-factory-select-all", start);
+      try {
+        PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
+        ps.setFetchSize(100);
+        ps.setString(1, wdkModel.getProjectId());
+        ps.setInt(2, user.getUserId());
+        ps.setString(3, recordClass.getFullName());
+        rs = ps.executeQuery();
+        QueryLogger.logEndStatementExecution(sql,
+            "wdk-basket-factory-select-all", start);
 
-      StringBuffer buffer = new StringBuffer();
-      PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
-      String[] columns = pkField.getColumnRefs();
-      while (rs.next()) {
-        if (buffer.length() > 0) buffer.append(DatasetFactory.RECORD_DIVIDER);
+        List<RecordInstance> records = new ArrayList<>();
+        PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
+        String[] columns = pkField.getColumnRefs();
+        while (rs.next()) {
 
-        Map<String, Object> columnValues = new LinkedHashMap<String, Object>();
-        for (int i = 1; i <= columns.length; i++) {
-          Object columnValue = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
-          columnValues.put(columns[i - 1], columnValue);
-
-          // cannot use primary key value to format the output,
-          // otherwise we might loose information
-          if (i > 1) buffer.append(DatasetFactory.COLUMN_DIVIDER);
-          buffer.append(columnValue);
+          Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+          for (int i = 1; i <= columns.length; i++) {
+            Object columnValue = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
+            pkValues.put(columns[i - 1], columnValue);
+          }
+          RecordInstance record = new RecordInstance(user, recordClass,
+              pkValues);
+          records.add(record);
         }
-
-        // format the basket with a primary key value stub
-
-        // PrimaryKeyAttributeValue pkValue = new
-        // PrimaryKeyAttributeValue(
-        // pkField, columnValues);
-        // buffer.append(pkValue.getValue());
+        return records;
+      } finally {
+        SqlUtils.closeResultSetAndStatement(rs);
       }
-      return buffer.toString();
-    } finally {
-      SqlUtils.closeResultSetAndStatement(rs);
+    } catch (SQLException ex) {
+      throw new WdkModelException(ex);
     }
+  }
+
+  public String getBasketContent(User user, RecordClass recordClass)
+      throws SQLException {
+    StringBuilder buffer = new StringBuilder();
+    List<RecordInstance> records = new ArrayList<>();
+    for (RecordInstance record : records) {
+      Map<String, String> values = record.getPrimaryKey().getValues();
+      for (String value : values.values()) {
+        if (buffer.length() > 0) buffer.append(Utilities.COLUMN_DIVIDER);
+        buffer.append(value);
+      }
+      buffer.append(Utilities.RECORD_DIVIDER);
+    }
+    return buffer.toString();
   }
 
   /**
@@ -487,10 +498,7 @@ public class BasketFactory {
     param.setName(paramName);
     param.setId(paramName);
     param.setAllowEmpty(false);
-    param.setRecordClassRef(rcName);
-    param.setRecordClass(recordClass);
     param.setPrompt(recordClass.getDisplayNamePlural() + " from");
-    param.setDefaultType(DatasetParam.TYPE_BASKET);
     param.setAllowEmpty(false);
     paramSet.addParam(param);
     param.excludeResources(wdkModel.getProjectId());

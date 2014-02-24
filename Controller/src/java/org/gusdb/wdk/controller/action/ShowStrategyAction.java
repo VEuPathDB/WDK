@@ -443,24 +443,24 @@ public class ShowStrategyAction extends ShowQuestionAction {
             Map<String, ParamBean<?>> params = groups.get(group);
             for (String paramName : params.keySet()) {
             	ParamBean<?> param = params.get(paramName);
-                String dependentValue = getUserDependentValue(paramValues, param);
+                String stableValue = getUserDependentValue(paramValues, param);
                 JSONObject jsParam = new JSONObject();
                 jsParam.put("name", paramName);
                 if (param != null) {
                     jsParam.put("prompt", param.getPrompt());
                     jsParam.put("visible", param.getIsVisible());
                     jsParam.put("className", param.getClass().getName());
-                    param.setDependentValue(dependentValue);
                     param.setUser(user);
+                    param.setStableValue(stableValue);
                     param.setTruncateLength(TRUNCATE_LENGTH);
                     try {
                         jsParam.put("value", getRawValue(paramValues, param));
-                        jsParam.put("internal",param.getRawValue());
+                        jsParam.put("internal",!param.getIsVisible());
                     } catch (Exception ex) {
                         throw new WdkModelException(ex);
                     }
                 } else {
-                    jsParam.put("value", dependentValue);
+                    jsParam.put("value", stableValue);
                 }
                 jsParams.put(jsParam);
             }

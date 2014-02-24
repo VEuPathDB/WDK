@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.record;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -44,51 +45,45 @@ import org.gusdb.wdk.model.user.User;
 
 /**
  * <p>
- * RecordClass is the core entity in WDK, and it defined the type of the data
- * that is presented in WDK driven system.
+ * RecordClass is the core entity in WDK, and it defined the type of the data that is presented in WDK driven
+ * system.
  * </p>
  * 
  * <p>
- * Records are normally retrieved by running questions, and each question is
- * associated with one recordClass type.
+ * Records are normally retrieved by running questions, and each question is associated with one recordClass
+ * type.
  * </p>
  * 
  * <p>
- * Records can have attributes and tables, as well as nest records and nested
- * record lists. A recordClass defines the attribute fields and table fields for
- * records, and for a given primary key, a RecordInstance can be instantiated,
- * and the instance will holds attribute values and table values.
+ * Records can have attributes and tables, as well as nest records and nested record lists. A recordClass
+ * defines the attribute fields and table fields for records, and for a given primary key, a RecordInstance
+ * can be instantiated, and the instance will holds attribute values and table values.
  * </p>
  * 
- * A record can have multiple attributes, but for each attribute, it can have
- * only have one value; the tables can have multiple attributes, and each
- * attribute might have zero or more values. Please refer to the
- * AttributeQueryReference and TableQueryReference for details about defining
- * the attribute and table queries.
+ * A record can have multiple attributes, but for each attribute, it can have only have one value; the tables
+ * can have multiple attributes, and each attribute might have zero or more values. Please refer to the
+ * AttributeQueryReference and TableQueryReference for details about defining the attribute and table queries.
  * 
- * A nested record is similar to a single-row table, but instead of defining
- * attributes within the recordClass, we can reuse the existing recordClass
- * referenced by nested Record.
+ * A nested record is similar to a single-row table, but instead of defining attributes within the
+ * recordClass, we can reuse the existing recordClass referenced by nested Record.
  * 
- * A nested record list is similar to nested record in most aspects, but it can
- * have multiple nested records for a given record.
+ * A nested record list is similar to nested record in most aspects, but it can have multiple nested records
+ * for a given record.
  * 
  * 
  * 
  * @author jerric
  * 
  */
-public class RecordClass extends WdkModelBase implements
-    AttributeFieldContainer {
+public class RecordClass extends WdkModelBase implements AttributeFieldContainer {
 
   // private static final Logger logger = Logger.getLogger(RecordClass.class);
 
-  private static final Set<Character> VOWELS = new HashSet<>(Arrays.asList('a',
-      'e', 'i', 'o', 'u'));
+  private static final Set<Character> VOWELS = new HashSet<>(Arrays.asList('a', 'e', 'i', 'o', 'u'));
 
   /**
-   * This method takes in a bulk attribute or table query, and adds the primary
-   * key columns as params into the SQL, and return the a Query with the params.
+   * This method takes in a bulk attribute or table query, and adds the primary key columns as params into the
+   * SQL, and return the a Query with the params.
    * 
    * @param wdkModel
    * @param query
@@ -96,8 +91,8 @@ public class RecordClass extends WdkModelBase implements
    * @return
    * @throws WdkModelException
    */
-  public static Query prepareQuery(WdkModel wdkModel, Query query,
-      String[] paramNames) throws WdkModelException {
+  public static Query prepareQuery(WdkModel wdkModel, Query query, String[] paramNames)
+      throws WdkModelException {
     Map<String, Column> columns = query.getColumnMap();
     Map<String, Param> originalParams = query.getParamMap();
     Query newQuery = query.clone();
@@ -117,7 +112,8 @@ public class RecordClass extends WdkModelBase implements
       StringParam param;
       if (paramSet.contains(columnName)) {
         param = (StringParam) paramSet.getParam(columnName);
-      } else {
+      }
+      else {
         param = new StringParam();
         Column column = columns.get(columnName);
         ColumnType type = column.getType();
@@ -192,8 +188,8 @@ public class RecordClass extends WdkModelBase implements
   private String fullName;
 
   /**
-   * TODO - the displayName, shortDisplayName, and type are redundant, need to
-   * consolidate them into one field.
+   * TODO - the displayName, shortDisplayName, and type are redundant, need to consolidate them into one
+   * field.
    */
   private String displayName;
   private String displayNamePlural;
@@ -216,22 +212,20 @@ public class RecordClass extends WdkModelBase implements
   private ParamValuesSet paramValuesSet;
 
   /**
-   * This object is not initialized until the first time the RecordClass is
-   * asked for a nestedRecordQuestion. At that point it is given the questions
-   * in <code>nestedRecordQuestionRefs</code>;
+   * This object is not initialized until the first time the RecordClass is asked for a nestedRecordQuestion.
+   * At that point it is given the questions in <code>nestedRecordQuestionRefs</code>;
    */
   private Map<String, Question> nestedRecordQuestions;
 
   /**
-   * This object is not initialized until the first time the RecordClass is
-   * asked for a nestedRecordListQuestion. At that point it is given the
-   * questions in <code>nestedRecordListQuestionRefs</code>;
+   * This object is not initialized until the first time the RecordClass is asked for a
+   * nestedRecordListQuestion. At that point it is given the questions in
+   * <code>nestedRecordListQuestionRefs</code>;
    */
   private Map<String, Question> nestedRecordListQuestions;
 
   /**
-   * the reference to a query that returns a list of alias ids of the given gene
-   * id
+   * the reference to a query that returns a list of alias ids of the given gene id
    */
   private String aliasQueryRef = null;
   private Query aliasQuery = null;
@@ -247,9 +241,8 @@ public class RecordClass extends WdkModelBase implements
 
   private AnswerFilterInstance defaultFilter;
   /**
-   * If the filter is set, in all the boolean operations of the record page, the
-   * operands will first be filtered by this filter, and then the results of
-   * these will be used in boolean operation.
+   * If the filter is set, in all the boolean operations of the record page, the operands will first be
+   * filtered by this filter, and then the results of these will be used in boolean operation.
    */
   private AnswerFilterInstance booleanExpansionFilter;
 
@@ -335,12 +328,10 @@ public class RecordClass extends WdkModelBase implements
 
   /**
    * @param attList
-   *          comma separated list of attributes in a summary containing this
-   *          recordClass.
+   *          comma separated list of attributes in a summary containing this recordClass.
    */
   /*
-   * public void setSummaryAttributeList (String attList){
-   * this.summaryAttributeList = attList; }
+   * public void setSummaryAttributeList (String attList){ this.summaryAttributeList = attList; }
    */
 
   public void setAttributeOrdering(String attOrder) {
@@ -522,9 +513,7 @@ public class RecordClass extends WdkModelBase implements
     String newline = System.getProperty("line.separator");
     StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
 
-    buf.append(
-        "--- Attribute Category Tree (with attribute count per category) ---").append(
-        newline);
+    buf.append("--- Attribute Category Tree (with attribute count per category) ---").append(newline);
     buf.append(attributeCategoryTree.toString());
 
     buf.append("--- Attributes ---").append(newline);
@@ -540,15 +529,13 @@ public class RecordClass extends WdkModelBase implements
   }
 
   /*
-   * <sanityRecord ref="GeneRecordClasses.GeneRecordClass"
-   * primaryKey="PF11_0344"/>
+   * <sanityRecord ref="GeneRecordClasses.GeneRecordClass" primaryKey="PF11_0344"/>
    */
   public String getSanityTestSuggestion() {
     String indent = "    ";
     String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer(newline + newline + indent
-        + "<sanityRecord ref=\"" + getFullName() + "\"" + newline + indent
-        + indent + indent + "primaryKey=\"FIX_pk\">" + newline);
+    StringBuffer buf = new StringBuffer(newline + newline + indent + "<sanityRecord ref=\"" + getFullName() +
+        "\"" + newline + indent + indent + indent + "primaryKey=\"FIX_pk\">" + newline);
     buf.append(indent + "</sanityRecord>");
     return buf.toString();
   }
@@ -578,13 +565,11 @@ public class RecordClass extends WdkModelBase implements
     return new LinkedHashMap<String, Query>(this.attributeQueries);
   }
 
-  AttributeField getAttributeField(String attributeName)
-      throws WdkModelException {
+  AttributeField getAttributeField(String attributeName) throws WdkModelException {
     AttributeField attributeField = attributeFieldsMap.get(attributeName);
     if (attributeField == null) {
-      String message = "RecordClass " + getName()
-          + " doesn't have an attribute field with name '" + attributeName
-          + "'.";
+      String message = "RecordClass " + getName() + " doesn't have an attribute field with name '" +
+          attributeName + "'.";
       throw new WdkModelException(message);
     }
     return attributeField;
@@ -593,8 +578,7 @@ public class RecordClass extends WdkModelBase implements
   TableField getTableField(String tableName) throws WdkModelException {
     TableField tableField = tableFieldsMap.get(tableName);
     if (tableField == null) {
-      String message = "Record " + getName()
-          + " does not have a table field with name '" + tableName + "'.";
+      String message = "Record " + getName() + " does not have a table field with name '" + tableName + "'.";
       throw new WdkModelException(message);
     }
     return tableField;
@@ -608,8 +592,7 @@ public class RecordClass extends WdkModelBase implements
     this.wdkModel = model;
 
     if (name.length() == 0 || name.indexOf('\'') >= 0)
-      throw new WdkModelException("recordClass name cannot be empty or "
-          + "having single quotes: " + name);
+      throw new WdkModelException("recordClass name cannot be empty or " + "having single quotes: " + name);
 
     // resolve the references for attribute queries
     resolveAttributeQueryReferences(model);
@@ -651,8 +634,8 @@ public class RecordClass extends WdkModelBase implements
       for (String fieldName : defaultSummaryAttributeNames) {
         AttributeField field = attributeFields.get(fieldName);
         if (field == null)
-          throw new WdkModelException("Summary attribute field [" + fieldName
-              + "] defined in question [" + getFullName() + "] is invalid.");
+          throw new WdkModelException("Summary attribute field [" + fieldName + "] defined in question [" +
+              getFullName() + "] is invalid.");
         defaultSummaryAttributeFields.put(fieldName, field);
       }
     }
@@ -665,9 +648,8 @@ public class RecordClass extends WdkModelBase implements
     if (favoriteNoteFieldName != null) {
       favoriteNoteField = attributeFieldsMap.get(favoriteNoteFieldName);
       if (favoriteNoteField == null)
-        throw new WdkModelException("The attribute '" + favoriteNoteFieldName
-            + "' for the default favorite " + "note content of recordClass '"
-            + getFullName() + "' is invalid.");
+        throw new WdkModelException("The attribute '" + favoriteNoteFieldName +
+            "' for the default favorite " + "note content of recordClass '" + getFullName() + "' is invalid.");
     }
 
     // resolve references in the attribute category tree
@@ -684,8 +666,7 @@ public class RecordClass extends WdkModelBase implements
     resolved = true;
   }
 
-  private void resolveCategoryTreeReferences(WdkModel model)
-      throws WdkModelException {
+  private void resolveCategoryTreeReferences(WdkModel model) throws WdkModelException {
     // ensure attribute categories are unique, then add attribute
     // references to appropriate places on category tree
     if (attributeCategoryTree == null) {
@@ -709,8 +690,7 @@ public class RecordClass extends WdkModelBase implements
     }
   }
 
-  private void resolveAttributeQueryReferences(WdkModel wdkModel)
-      throws WdkModelException {
+  private void resolveAttributeQueryReferences(WdkModel wdkModel) throws WdkModelException {
     String[] paramNames = primaryKeyField.getColumnRefs();
     for (AttributeQueryReference reference : attributesQueryRefList) {
       // validate attribute query
@@ -726,16 +706,15 @@ public class RecordClass extends WdkModelBase implements
         String fieldName = field.getName();
         // check if the attribute is duplicated
         if (attributeFieldsMap.containsKey(fieldName))
-          throw new WdkModelException("The AttributeField " + fieldName
-              + " is duplicated in the recordClass " + getFullName());
+          throw new WdkModelException("The AttributeField " + fieldName +
+              " is duplicated in the recordClass " + getFullName());
 
         // link columnAttributes with columns
         if (field instanceof ColumnAttributeField) {
           Column column = columns.get(fieldName);
           if (column == null)
-            throw new WdkModelException("Column is missing for "
-                + "the columnAttributeField " + fieldName + " in recordClass "
-                + getFullName());
+            throw new WdkModelException("Column is missing for " + "the columnAttributeField " + fieldName +
+                " in recordClass " + getFullName());
           ((ColumnAttributeField) field).setColumn(column);
         }
         attributeFieldsMap.put(fieldName, field);
@@ -745,17 +724,15 @@ public class RecordClass extends WdkModelBase implements
         query.addParam(getUserParam());
       }
 
-      Query attributeQuery = RecordClass.prepareQuery(wdkModel, query,
-          paramNames);
+      Query attributeQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
       attributeQueries.put(query.getFullName(), attributeQuery);
     }
   }
 
   /**
-   * resolve the alias query, and verify the needed columns. A alias query
-   * should return all columns in the primary key, and it should also return
-   * another set of columns that starts with ALIAS_OLD_KEY_COLUMN_PREFIX
-   * constant, appended by the column names in the primary key.
+   * resolve the alias query, and verify the needed columns. A alias query should return all columns in the
+   * primary key, and it should also return another set of columns that starts with
+   * ALIAS_OLD_KEY_COLUMN_PREFIX constant, appended by the column names in the primary key.
    * 
    * @param wdkModel
    * @throws WdkModelException
@@ -772,10 +749,8 @@ public class RecordClass extends WdkModelBase implements
       for (String column : primaryKeyField.getColumnRefs()) {
         column = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + column;
         if (!columnMap.containsKey(column))
-          throw new WdkModelException("The attribute query "
-              + query.getFullName() + " of " + getFullName()
-              + " does not return the required old primary key " + "column "
-              + column);
+          throw new WdkModelException("The attribute query " + query.getFullName() + " of " + getFullName() +
+              " does not return the required old primary key " + "column " + column);
       }
 
       // the alias query should also return columns for old primary key
@@ -790,8 +765,7 @@ public class RecordClass extends WdkModelBase implements
     }
   }
 
-  private void resolveTableFieldReferences(WdkModel wdkModel)
-      throws WdkModelException {
+  private void resolveTableFieldReferences(WdkModel wdkModel) throws WdkModelException {
     String[] paramNames = primaryKeyField.getColumnRefs();
 
     // resolve the references for table queries
@@ -811,8 +785,7 @@ public class RecordClass extends WdkModelBase implements
 
   }
 
-  private void resolveFilterReferences(WdkModel wdkModel)
-      throws WdkModelException {
+  private void resolveFilterReferences(WdkModel wdkModel) throws WdkModelException {
     // resolve references for filter instances
     for (AnswerFilter filter : filterList) {
       filter.resolveReferences(wdkModel);
@@ -820,24 +793,22 @@ public class RecordClass extends WdkModelBase implements
       Map<String, AnswerFilterInstance> instances = filter.getInstances();
       for (String filterName : instances.keySet()) {
         if (filterMap.containsKey(filterName))
-          throw new WdkModelException("Filter instance [" + filterName
-              + "] of type " + getFullName() + " is included more than once");
+          throw new WdkModelException("Filter instance [" + filterName + "] of type " + getFullName() +
+              " is included more than once");
         AnswerFilterInstance instance = instances.get(filterName);
         filterMap.put(filterName, instance);
 
         if (instance.isDefault()) {
           if (defaultFilter != null)
-            throw new WdkModelException("The default filter of type "
-                + getFullName() + " is defined more than once: ["
-                + defaultFilter.getName() + "], [" + instance.getName() + "]");
+            throw new WdkModelException("The default filter of type " + getFullName() +
+                " is defined more than once: [" + defaultFilter.getName() + "], [" + instance.getName() + "]");
           defaultFilter = instance;
         }
         if (instance.isBooleanExpansion()) {
           if (booleanExpansionFilter != null)
-            throw new WdkModelException("The boolean expansion "
-                + "filter of type " + getFullName() + " is defined more "
-                + "than once: [" + booleanExpansionFilter.getName() + "] and ["
-                + instance.getName() + "]");
+            throw new WdkModelException("The boolean expansion " + "filter of type " + getFullName() +
+                " is defined more " + "than once: [" + booleanExpansionFilter.getName() + "] and [" +
+                instance.getName() + "]");
           booleanExpansionFilter = instance;
         }
       }
@@ -851,9 +822,8 @@ public class RecordClass extends WdkModelBase implements
   }
 
   /**
-   * Create or get an internal user param, which is a stringParam with a
-   * pre-defined name. This param will be added to all the queries, and the
-   * value of it will be the current user id, and is assigned automatically.
+   * Create or get an internal user param, which is a stringParam with a pre-defined name. This param will be
+   * added to all the queries, and the value of it will be the current user id, and is assigned automatically.
    * 
    * @return
    * @throws WdkModelException
@@ -876,9 +846,8 @@ public class RecordClass extends WdkModelBase implements
   }
 
   /**
-   * A bulk query is either an original attribute or table query, that is, it
-   * either doesn't any param, or just one param with the name of
-   * Utilities.PARAM_USER_ID.
+   * A bulk query is either an original attribute or table query, that is, it either doesn't any param, or
+   * just one param with the name of Utilities.PARAM_USER_ID.
    * 
    * @param query
    * @throws WdkModelException
@@ -888,21 +857,18 @@ public class RecordClass extends WdkModelBase implements
 
     // Further limit the attribute/table query to have only user_id param
     // (optional). This is required to enable bulk query rewriting.
-    String message = "Bulk query '" + query.getFullName()
-        + "' can have only a '" + Utilities.PARAM_USER_ID
-        + "' param, and it is optional.";
+    String message = "Bulk query '" + query.getFullName() + "' can have only a '" + Utilities.PARAM_USER_ID +
+        "' param, and it is optional.";
     Param[] params = query.getParams();
     if (params.length > 1)
       throw new WdkModelException(message);
-    else if (params.length == 1
-        && !params[0].getName().equals(Utilities.PARAM_USER_ID))
+    else if (params.length == 1 && !params[0].getName().equals(Utilities.PARAM_USER_ID))
       throw new WdkModelException(message);
   }
 
   /**
-   * validate a query, and make sure it returns primary key columns, and the
-   * params of it can have only primary_key-column-mapped params (optional) and
-   * user_id param (optional).
+   * validate a query, and make sure it returns primary key columns, and the params of it can have only
+   * primary_key-column-mapped params (optional) and user_id param (optional).
    * 
    * @param query
    * @throws WdkModelException
@@ -921,19 +887,16 @@ public class RecordClass extends WdkModelBase implements
       if (paramName.equals(Utilities.PARAM_USER_ID))
         continue;
       if (!pkColumnMap.containsKey(paramName))
-        throw new WdkModelException("The attribute or table query "
-            + query.getFullName() + " has param " + paramName
-            + ", and it doesn't match with any of the primary key "
-            + "columns.");
+        throw new WdkModelException("The attribute or table query " + query.getFullName() + " has param " +
+            paramName + ", and it doesn't match with any of the primary key " + "columns.");
     }
 
     // make sure the attribute/table query returns primary key columns
     Map<String, Column> columnMap = query.getColumnMap();
     for (String column : primaryKeyField.getColumnRefs()) {
       if (!columnMap.containsKey(column))
-        throw new WdkModelException("The query " + query.getFullName() + " of "
-            + getFullName() + " doesn't return the "
-            + "required primary key column " + column);
+        throw new WdkModelException("The query " + query.getFullName() + " of " + getFullName() +
+            " doesn't return the " + "required primary key column " + column);
     }
   }
 
@@ -945,11 +908,9 @@ public class RecordClass extends WdkModelBase implements
   }
 
   /**
-   * Called when the RecordClass is asked for a NestedRecordQuestion or
-   * NestedRecordQuestionList. Cannot be done upon RecordClass initialization
-   * because the Questions are not guaranteed to have their resources set, which
-   * throws a NullPointerException when the Question is asked for the name of
-   * its QuestionSet.
+   * Called when the RecordClass is asked for a NestedRecordQuestion or NestedRecordQuestionList. Cannot be
+   * done upon RecordClass initialization because the Questions are not guaranteed to have their resources
+   * set, which throws a NullPointerException when the Question is asked for the name of its QuestionSet.
    */
 
   public void initNestedRecords() {
@@ -968,8 +929,7 @@ public class RecordClass extends WdkModelBase implements
     }
   }
 
-  private Map<String, AttributeField> sortAllAttributes()
-      throws WdkModelException {
+  private Map<String, AttributeField> sortAllAttributes() throws WdkModelException {
     String orderedAtts[] = attributeOrdering.split(",");
     Map<String, AttributeField> orderedAttsMap = new LinkedHashMap<String, AttributeField>();
 
@@ -982,10 +942,8 @@ public class RecordClass extends WdkModelBase implements
         AttributeField nextAttField = attributeFieldsMap.get(nextAtt);
 
         if (nextAttField == null) {
-          String message = "RecordClass " + getFullName()
-              + " defined attribute " + nextAtt + " in its "
-              + "attribute ordering, but that is not a valid "
-              + "attribute for this RecordClass";
+          String message = "RecordClass " + getFullName() + " defined attribute " + nextAtt + " in its " +
+              "attribute ordering, but that is not a valid " + "attribute for this RecordClass";
           throw new WdkModelException(message);
         }
         orderedAttsMap.put(nextAtt, nextAttField);
@@ -1014,8 +972,8 @@ public class RecordClass extends WdkModelBase implements
         reporter.excludeResources(projectId);
         String reporterName = reporter.getName();
         if (reporterMap.containsKey(reporterName))
-          throw new WdkModelException("The reporter " + reporterName
-              + " is duplicated in recordClass " + this.getFullName());
+          throw new WdkModelException("The reporter " + reporterName + " is duplicated in recordClass " +
+              this.getFullName());
         reporterMap.put(reporterName, reporter);
       }
     }
@@ -1029,13 +987,14 @@ public class RecordClass extends WdkModelBase implements
         String fieldName = field.getName();
         if (field instanceof PrimaryKeyAttributeField) {
           if (this.primaryKeyField != null)
-            throw new WdkModelException("primary key field is "
-                + "duplicated in recordClass " + getFullName());
+            throw new WdkModelException("primary key field is " + "duplicated in recordClass " +
+                getFullName());
           this.primaryKeyField = (PrimaryKeyAttributeField) field;
-        } else { // other attribute fields
+        }
+        else { // other attribute fields
           if (attributeFieldsMap.containsKey(fieldName))
-            throw new WdkModelException("The attributeField " + fieldName
-                + " is duplicated in recordClass " + getFullName());
+            throw new WdkModelException("The attributeField " + fieldName + " is duplicated in recordClass " +
+                getFullName());
         }
         attributeFieldsMap.put(fieldName, field);
         newFieldList.add(field);
@@ -1045,9 +1004,8 @@ public class RecordClass extends WdkModelBase implements
 
     // make sure there is a primary key
     if (primaryKeyField == null)
-      throw new WdkModelException("The primaryKeyField of recordClass "
-          + getFullName() + " is not set. Please define a "
-          + "<primaryKeyAttribute> in the recordClass.");
+      throw new WdkModelException("The primaryKeyField of recordClass " + getFullName() +
+          " is not set. Please define a " + "<primaryKeyAttribute> in the recordClass.");
     this.aliasQueryRef = primaryKeyField.getAliasQueryRef();
 
     // exclude table fields
@@ -1056,8 +1014,8 @@ public class RecordClass extends WdkModelBase implements
         field.excludeResources(projectId);
         String fieldName = field.getName();
         if (attributeFieldsMap.containsKey(fieldName))
-          throw new WdkModelException("The table " + fieldName
-              + " is duplicated in recordClass " + getFullName());
+          throw new WdkModelException("The table " + fieldName + " is duplicated in recordClass " +
+              getFullName());
         tableFieldsMap.put(fieldName, field);
       }
     }
@@ -1069,9 +1027,10 @@ public class RecordClass extends WdkModelBase implements
       if (queryRef.include(projectId)) {
         String refName = queryRef.getTwoPartName();
         if (attributesQueryRefs.containsKey(refName)) {
-          throw new WdkModelException("recordClass " + getFullName()
-              + " has more than one attributeQueryRef \"" + refName + "\"");
-        } else {
+          throw new WdkModelException("recordClass " + getFullName() +
+              " has more than one attributeQueryRef \"" + refName + "\"");
+        }
+        else {
           queryRef.excludeResources(projectId);
           attributesQueryRefs.put(refName, queryRef);
         }
@@ -1085,9 +1044,10 @@ public class RecordClass extends WdkModelBase implements
       if (nestedRecord.include(projectId)) {
         String refName = nestedRecord.getTwoPartName();
         if (nestedRecordQuestionRefs.containsKey(refName)) {
-          throw new WdkModelException("recordClass " + getFullName()
-              + " has more than one nestedRecord \"" + refName + "\"");
-        } else {
+          throw new WdkModelException("recordClass " + getFullName() + " has more than one nestedRecord \"" +
+              refName + "\"");
+        }
+        else {
           nestedRecord.excludeResources(projectId);
           nestedRecordQuestionRefs.put(refName, nestedRecord);
         }
@@ -1100,9 +1060,10 @@ public class RecordClass extends WdkModelBase implements
       if (recordList.include(projectId)) {
         String refName = recordList.getTwoPartName();
         if (nestedRecordListQuestionRefs.containsKey(refName)) {
-          throw new WdkModelException("recordClass " + getFullName()
-              + " has more than one nestedRecordList \"" + refName + "\"");
-        } else {
+          throw new WdkModelException("recordClass " + getFullName() +
+              " has more than one nestedRecordList \"" + refName + "\"");
+        }
+        else {
           recordList.excludeResources(projectId);
           nestedRecordListQuestionRefs.put(refName, recordList);
         }
@@ -1126,8 +1087,8 @@ public class RecordClass extends WdkModelBase implements
         layout.excludeResources(projectId);
         String layoutName = layout.getName();
         if (filterLayoutMap.containsKey(layoutName))
-          throw new WdkModelException("Filter layout [" + layoutName
-              + "] of type " + getFullName() + " is included more than once");
+          throw new WdkModelException("Filter layout [" + layoutName + "] of type " + getFullName() +
+              " is included more than once");
         filterLayoutMap.put(layoutName, layout);
       }
     }
@@ -1137,9 +1098,8 @@ public class RecordClass extends WdkModelBase implements
     for (ParamValuesSet pvs : unexcludedParamValuesSets) {
       if (pvs.include(projectId)) {
         if (paramValuesSet != null)
-          throw new WdkModelException(
-              "Duplicate <paramErrors> included in record class " + getName()
-                  + " for projectId " + projectId);
+          throw new WdkModelException("Duplicate <paramErrors> included in record class " + getName() +
+              " for projectId " + projectId);
         paramValuesSet = pvs;
 
       }
@@ -1150,10 +1110,10 @@ public class RecordClass extends WdkModelBase implements
     for (AttributeList attributeList : attributeLists) {
       if (attributeList.include(projectId)) {
         if (hasAttributeList) {
-          throw new WdkModelException("The question " + getFullName()
-              + " has more than one <attributesList> for " + "project "
-              + projectId);
-        } else {
+          throw new WdkModelException("The question " + getFullName() +
+              " has more than one <attributesList> for " + "project " + projectId);
+        }
+        else {
           this.defaultSummaryAttributeNames = attributeList.getSummaryAttributeNames();
           this.defaultSortingMap = attributeList.getSortingAttributeMap();
           hasAttributeList = true;
@@ -1166,8 +1126,8 @@ public class RecordClass extends WdkModelBase implements
     for (FavoriteReference favorite : favorites) {
       if (favorite.include(projectId)) {
         if (favoriteNoteFieldName != null)
-          throw new WdkModelException("The favorite tag is "
-              + "duplicated on the recordClass " + getFullName());
+          throw new WdkModelException("The favorite tag is " + "duplicated on the recordClass " +
+              getFullName());
         this.favoriteNoteFieldName = favorite.getNoteField();
       }
     }
@@ -1180,8 +1140,8 @@ public class RecordClass extends WdkModelBase implements
         view.excludeResources(projectId);
         String name = view.getName();
         if (summaryViews.containsKey(name))
-          throw new WdkModelException("The summary view '" + name
-              + "' is duplicated in record " + getFullName());
+          throw new WdkModelException("The summary view '" + name + "' is duplicated in record " +
+              getFullName());
 
         summaryViews.put(name, view);
       }
@@ -1206,8 +1166,8 @@ public class RecordClass extends WdkModelBase implements
         view.excludeResources(projectId);
         String name = view.getName();
         if (recordViews.containsKey(name))
-          throw new WdkModelException("The record view '" + name
-              + "' is duplicated in record " + getFullName());
+          throw new WdkModelException("The record view '" + name + "' is duplicated in record " +
+              getFullName());
 
         recordViews.put(name, view);
       }
@@ -1272,12 +1232,11 @@ public class RecordClass extends WdkModelBase implements
     return layouts;
   }
 
-  public AnswerFilterLayout getFilterLayout(String layoutName)
-      throws WdkModelException {
+  public AnswerFilterLayout getFilterLayout(String layoutName) throws WdkModelException {
     AnswerFilterLayout layout = filterLayoutMap.get(layoutName);
     if (layout == null)
-      throw new WdkModelException("The name [" + layoutName + "] does "
-          + "not match any filter layout of type " + getFullName());
+      throw new WdkModelException("The name [" + layoutName + "] does " +
+          "not match any filter layout of type " + getFullName());
     return layout;
   }
 
@@ -1286,9 +1245,8 @@ public class RecordClass extends WdkModelBase implements
   }
 
   /**
-   * If the filter is not null, in all the boolean operations of the record
-   * page, the operands will first be filtered by this filter, and then the
-   * results of these will be used in boolean operation.
+   * If the filter is not null, in all the boolean operations of the record page, the operands will first be
+   * filtered by this filter, and then the results of these will be used in boolean operation.
    */
   public AnswerFilterInstance getBooleanExpansionFilter() {
     return booleanExpansionFilter;
@@ -1336,7 +1294,8 @@ public class RecordClass extends WdkModelBase implements
 
     if (defaultSummaryAttributeFields.size() > 0) {
       attributeFields.putAll(defaultSummaryAttributeFields);
-    } else {
+    }
+    else {
       Map<String, AttributeField> nonInternalFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
       for (String fieldName : nonInternalFields.keySet()) {
         attributeFields.put(fieldName, nonInternalFields.get(fieldName));
@@ -1386,8 +1345,7 @@ public class RecordClass extends WdkModelBase implements
   }
 
   /**
-   * The real time question is used on the basket page to display the current
-   * records in the basket.
+   * The real time question is used on the basket page to display the current records in the basket.
    * 
    * @return
    * @throws WdkModelException
@@ -1400,9 +1358,8 @@ public class RecordClass extends WdkModelBase implements
   }
 
   /**
-   * The snapshot question is used when exporting basket to a strategy, and the
-   * step will use this question to get a snapshot of those records in basket,
-   * and store them in the
+   * The snapshot question is used when exporting basket to a strategy, and the step will use this question to
+   * get a snapshot of those records in basket, and store them in the
    * 
    * @return
    * @throws WdkModelException
@@ -1462,9 +1419,10 @@ public class RecordClass extends WdkModelBase implements
   public SummaryView getSummaryView(String viewName) throws WdkUserException {
     if (summaryViewMap.containsKey(viewName)) {
       return summaryViewMap.get(viewName);
-    } else {
-      throw new WdkUserException("Unknown summary view for record class " + "["
-          + getFullName() + "]: " + viewName);
+    }
+    else {
+      throw new WdkUserException("Unknown summary view for record class " + "[" + getFullName() + "]: " +
+          viewName);
     }
   }
 
@@ -1482,9 +1440,10 @@ public class RecordClass extends WdkModelBase implements
   public RecordView getRecordView(String viewName) throws WdkUserException {
     if (recordViewMap.containsKey(viewName)) {
       return recordViewMap.get(viewName);
-    } else {
-      throw new WdkUserException("Unknown record view for record class " + "["
-          + getFullName() + "]: " + viewName);
+    }
+    else {
+      throw new WdkUserException("Unknown record view for record class " + "[" + getFullName() + "]: " +
+          viewName);
     }
   }
 
@@ -1507,8 +1466,7 @@ public class RecordClass extends WdkModelBase implements
       recordViewList.add(view);
   }
 
-  public boolean hasMultipleRecords(User user, Map<String, Object> pkValues)
-      throws WdkModelException {
+  public boolean hasMultipleRecords(User user, Map<String, Object> pkValues) throws WdkModelException {
     List<Map<String, Object>> records = lookupPrimaryKeys(user, pkValues);
     return records.size() > 1;
   }
@@ -1520,9 +1478,10 @@ public class RecordClass extends WdkModelBase implements
    * @param pkValues
    * @return
    * @throws WdkModelException
+   * @throws WdkUserException
    */
-  List<Map<String, Object>> lookupPrimaryKeys(User user,
-      Map<String, Object> pkValues) throws WdkModelException {
+  List<Map<String, Object>> lookupPrimaryKeys(User user, Map<String, Object> pkValues)
+      throws WdkModelException {
     List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
     // nothing to look up
     if (aliasQuery == null) {
@@ -1553,7 +1512,8 @@ public class RecordClass extends WdkModelBase implements
       // no alias found, use the original ones
       if (records.size() == 0)
         records.add(pkValues);
-    } finally {
+    }
+    finally {
       if (resultList != null)
         resultList.close();
     }
@@ -1561,10 +1521,49 @@ public class RecordClass extends WdkModelBase implements
     return records;
   }
 
-
   public String[] getIndexColumns() {
     // only need to index the pk columns;
-    return primaryKeyField.getColumnRefs();  
+    return primaryKeyField.getColumnRefs();
   }
 
+  public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+    writer.println(indent + "<recordClass name=\"" + getName() + "\">");
+    String indent1 = indent + WdkModel.INDENT;
+    String indent2 = indent1 + WdkModel.INDENT;
+
+    // print attributes
+    if (attributeFieldsMap.size() > 0) {
+      writer.println(indent1 + "<attributes size=\"" + attributeFieldsMap.size() + "\">");
+      String[] attributeNames = attributeFieldsMap.keySet().toArray(new String[0]);
+      Arrays.sort(attributeNames);
+      for (String attributeName : attributeNames) {
+        attributeFieldsMap.get(attributeName).printDependency(writer, indent2);
+      }
+      writer.println(indent1 + "</attributes>");
+    }
+
+    // print attribute queries
+    if (attributeQueries.size() > 0) {
+      writer.println(indent1 + "<attributeQueries size=\"" + attributeQueries.size() + "\">");
+      String[] queryNames = attributeQueries.keySet().toArray(new String[0]);
+      Arrays.sort(queryNames);
+      for (String queryName : queryNames) {
+        attributeQueries.get(queryName).printDependency(writer, indent2);
+      }
+      writer.println(indent1 + "</attributeQueries>");
+    }
+
+    // print tables
+    if (tableFieldsMap.size() > 0) {
+      writer.println(indent1 + "<tables size=\"" + tableFieldsMap.size() + "\">");
+      String[] tableNames = tableFieldsMap.keySet().toArray(new String[0]);
+      Arrays.sort(tableNames);
+      for (String tableName : tableNames) {
+        tableFieldsMap.get(tableName).printDependency(writer, indent2);
+      }
+      writer.println(indent1 + "</tables>");
+    }
+
+    writer.println(indent + "</recordClass>");
+  }
 }

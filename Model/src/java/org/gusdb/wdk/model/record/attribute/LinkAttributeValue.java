@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * <p>
@@ -66,6 +67,8 @@ public class LinkAttributeValue extends AttributeValue {
 
   /**
    * Get the text representation of the url.
+   * 
+   * @throws WdkUserException
    * 
    * @see org.gusdb.wdk.model.record.attribute.AttributeValue#getValue()
    */

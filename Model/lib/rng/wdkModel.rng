@@ -99,6 +99,14 @@
     </element>
   </define>
 
+  <!-- define common property element, which is used by multiple tags -->
+  <define name="property">
+    <element name="property">
+      <ref name="IncludeExclude" />
+      <attribute name="name" />
+      <text />
+    </element>
+  </define>
 
   <!-- define declared macro -->
   <define name="declaredMacro">
@@ -226,9 +234,6 @@
     <optional>
       <attribute name="default" />
     </optional>
-    <optional>
-      <attribute name="handlerClass" />
-    </optional>
   </define>
 
   <define name="ParamBaseTags">
@@ -243,6 +248,13 @@
           <data type="boolean" />
         </attribute>
       </element>
+        <element name="handler">
+          <ref name="IncludeExclude" />
+          <attribute name="implementation" />
+          <zeroOrMore>
+            <ref name="property" />
+          </zeroOrMore>
+        </element>
     </choice>
   </define>
 
@@ -329,7 +341,9 @@
   <define name="datasetParam">
     <element name="datasetParam">
       <ref name="ParamBaseProperties" />
-      <attribute name="recordClassRef" />
+      <optional>
+      	<attribute name="recordClassRef" />
+      </optional>
       <zeroOrMore>
         <choice>
           <ref name="ParamBaseTags" />
@@ -339,17 +353,32 @@
               <attribute name="default" />
             </optional>
             <optional>
-              <attribute name="columnName" />
-            </optional>
-            <optional>
               <attribute name="defaultType">
                 <choice>
                   <value>data</value>
                   <value>file</value>
                   <value>basket</value>
+                  <value>strategy</value>
                 </choice>
               </attribute>
             </optional>
+          </element>
+          <element name="parser">
+            <ref name="IncludeExclude" />
+            <attribute name="name" />
+            <attribute name="implementation" />
+            <optional>
+              <attribute name="display" />
+            </optional>
+            <zeroOrMore>
+              <choice>
+                <element name="description">
+                  <ref name="IncludeExclude" />
+                  <text />
+                </element>
+                <ref name="property" />
+              </choice>
+            </zeroOrMore>
           </element>
         </choice>
       </zeroOrMore>

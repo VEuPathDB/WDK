@@ -322,7 +322,7 @@ public class AnswerValue {
    */
   public Map<String, String> getParamDisplays() {
     Map<String, String> displayParamsMap = new LinkedHashMap<String, String>();
-    Map<String, String> paramsMap = idsQueryInstance.getValues();
+    Map<String, String> paramsMap = idsQueryInstance.getParamStableValues();
     Param[] params = question.getParams();
     for (int i = 0; i < params.length; i++) {
       Param param = params[i];
@@ -352,7 +352,7 @@ public class AnswerValue {
   }
 
   /**
-   * the checksum of the iq query, filter info is not included in it.
+   * the checksum of the iq query, plus the filter information on the answer.
    * 
    * @return
    */

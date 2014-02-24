@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
@@ -41,7 +42,7 @@ public class QueryTester {
   }
 
   private String showSql(Query query, Map<String, String> paramHash)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     QueryInstance instance = query.makeInstance(user, paramHash, true, 0,
         new LinkedHashMap<String, String>());
     if (instance instanceof SqlQueryInstance) {
@@ -50,7 +51,7 @@ public class QueryTester {
   }
 
   private String showResultTable(Query query, Map<String, String> paramHash)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     QueryInstance instance = query.makeInstance(user, paramHash, true, 0,
         new LinkedHashMap<String, String>());
     ResultFactory resultFactory = wdkModel.getResultFactory();
@@ -137,7 +138,8 @@ public class QueryTester {
   // /////////// static methods /////////////////////////////////////
   // ////////////////////////////////////////////////////////////////////
 
-  public static void main(String[] args) throws WdkModelException {
+  public static void main(String[] args) throws WdkModelException,
+      WdkUserException {
     String cmdName = System.getProperty("cmdName");
 
     // process args
@@ -173,20 +175,20 @@ public class QueryTester {
     } else {
       Map<String, String> rawValues = QueryTester.parseParamArgs(params,
           useDefaults, query);
-      Map<String, String> dependentValues = query.rawOrDependentValuesToDependentValues(
-          tester.user, rawValues);
+      Map<String, String> stableValues = query.getStableValues(tester.user,
+          rawValues);
       if (showQuery) {
-        String querySql = tester.showSql(query, dependentValues);
+        String querySql = tester.showSql(query, stableValues);
         String newline = System.getProperty("line.separator");
         String newlineQuery = querySql.replaceAll("^\\s\\s\\s", newline);
         newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1" + newline);
         System.out.println(newline + newlineQuery + newline);
       } else if (returnResultAsTable) {
-        String table = tester.showResultTable(query, dependentValues);
+        String table = tester.showResultTable(query, stableValues);
         System.out.println(table);
       } else {
-        QueryInstance instance = query.makeInstance(tester.user,
-            dependentValues, true, 0, new LinkedHashMap<String, String>());
+        QueryInstance instance = query.makeInstance(tester.user, stableValues,
+            true, 0, new LinkedHashMap<String, String>());
         ResultList rs = instance.getResults();
         print(query, rs);
       }
