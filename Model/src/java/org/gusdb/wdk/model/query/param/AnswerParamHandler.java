@@ -160,5 +160,4 @@ public class AnswerParamHandler extends AbstractParamHandler {
   public ParamHandler clone(Param param) {
     return new AnswerParamHandler(this, param);
   }
-
 }
