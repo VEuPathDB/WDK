@@ -12,8 +12,7 @@ import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.json.JSONObject;
 
 /**
- * The enumParam represents a list of param values declared in the model that
- * user can choose from.
+ * The enumParam represents a list of param values declared in the model that user can choose from.
  * 
  * @author jerric
  * 
@@ -45,10 +44,9 @@ public class EnumParam extends AbstractEnumParam {
   // ///////////////////////////////////////////////////////////////////
 
   @Override
-  protected EnumParamCache createEnumParamCache(
-      Map<String, String> dependedParamValues) throws WdkModelException {
-    logger.trace("Entering createEnumParamCache("
-        + FormatUtil.prettyPrint(dependedParamValues) + ")");
+  protected EnumParamCache createEnumParamCache(Map<String, String> dependedParamValues)
+      throws WdkModelException {
+    logger.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     Set<Param> dependedParams = getDependedParams();
     EnumParamCache cache = new EnumParamCache(this, dependedParamValues);
     EnumItem[] enumItems = enumItemList.getEnumItems();
@@ -63,12 +61,10 @@ public class EnumParam extends AbstractEnumParam {
       // if (parentTerm != null)
       // parentTerm = parentTerm.replaceAll("[,]", "_");
       if (term.indexOf(',') >= 0 && dependedParams != null)
-        throw new WdkModelException(this.getFullName()
-            + ": The term cannot contain comma: '" + term + "'");
+        throw new WdkModelException(this.getFullName() + ": The term cannot contain comma: '" + term + "'");
       if (parentTerm != null && parentTerm.indexOf(',') >= 0)
-        throw new WdkModelException(this.getFullName()
-            + ": The parent term cannot contain" + "comma: '" + parentTerm
-            + "'");
+        throw new WdkModelException(this.getFullName() + ": The parent term cannot contain" + "comma: '" +
+            parentTerm + "'");
 
       if (isDependentParam()) {
         // if this is a dependent param, only include items that are
@@ -82,13 +78,11 @@ public class EnumParam extends AbstractEnumParam {
     }
     // check if the result is empty
     if (cache.isEmpty())
-      throw new WdkEmptyEnumListException("The EnumParam [" + getFullName()
-          + "] doesn't have any values.");
+      throw new WdkEmptyEnumListException("The EnumParam [" + getFullName() + "] doesn't have any values.");
 
     initTreeMap(cache);
     applySelectMode(cache);
-    logger.trace("Leaving createEnumParamCache("
-        + FormatUtil.prettyPrint(dependedParamValues) + ")");
+    logger.trace("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     return cache;
   }
 
@@ -106,13 +100,13 @@ public class EnumParam extends AbstractEnumParam {
     for (EnumItemList itemList : enumItemLists) {
       if (itemList.include(projectId)) {
         if (hasEnumList) {
-          throw new WdkModelException("enumParam " + getFullName()
-              + " has more than one <enumList> for project " + projectId);
-        } else {
+          throw new WdkModelException("enumParam " + getFullName() +
+              " has more than one <enumList> for project " + projectId);
+        }
+        else {
           EnumItem[] enumItems = itemList.getEnumItems();
           if (enumItems.length == 0)
-            throw new WdkModelException("enumParam '" + this.name
-                + "' has zero items");
+            throw new WdkModelException("enumParam '" + this.name + "' has zero items");
 
           itemList.setParam(this);
           itemList.excludeResources(projectId);
@@ -124,15 +118,13 @@ public class EnumParam extends AbstractEnumParam {
     }
     enumItemLists = null;
     if (enumItemList == null || enumItemList.getEnumItems().length == 0)
-      throw new WdkModelException("No enum items available in enumParam "
-          + getFullName());
+      throw new WdkModelException("No enum items available in enumParam " + getFullName());
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
+   * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
    */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
@@ -154,7 +146,7 @@ public class EnumParam extends AbstractEnumParam {
       }
     }
     if (sb.length() > 0) {
-      this.defaultValue = sb.toString();
+      setDefault(sb.toString());
     }
   }
 

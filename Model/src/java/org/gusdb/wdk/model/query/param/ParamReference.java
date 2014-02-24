@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.query.Query;
 
 /**
  * An object representation of a <paramRef> tag, It is used in query and
@@ -22,11 +23,13 @@ import org.gusdb.wdk.model.WdkModelText;
 public class ParamReference extends Reference {
 
   public static Param resolveReference(WdkModel wdkModel,
-      ParamReference paramRef, String servedQueryName) throws WdkModelException {
+      ParamReference paramRef, Query contextQuery) throws WdkModelException {
+
     String twoPartName = paramRef.getTwoPartName();
     Param param = (Param) wdkModel.resolveReference(twoPartName);
     // clone the param to have different default values
     param = param.clone();
+    param.setContextQuery(contextQuery);
 
     // if the param has customized default value
     String defaultValue = paramRef.getDefault();
@@ -80,9 +83,6 @@ public class ParamReference extends Reference {
       if (number != null)
         throw new WdkModelException("The 'number' property is not "
             + "allowed in param '" + twoPartName + "'");
-
-      if (param instanceof FlatVocabParam)
-        ((FlatVocabParam) param).setServedQueryName(servedQueryName);
 
       // if the param has customized multi pick
       if (multiPick != null)
@@ -149,7 +149,6 @@ public class ParamReference extends Reference {
     } else if (!param.isVisible()) {
       param.setGroup(Group.Hidden());
     }
-    param.resolveReferences(wdkModel);
     param.setResources(wdkModel);
     return param;
   }

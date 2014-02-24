@@ -1,29 +1,25 @@
 /*
-DROP SEQUENCE IF EXISTS wdkengine.migration_pkseq;
-DROP SEQUENCE IF EXISTS wdkengine.dataset_indices_pkseq;
-
+DROP SEQUENCE IF EXISTS wdkuser.categories_pkseq;
+DROP SEQUENCE IF EXISTS wdkuser.datasets_pkseq;
+DROP SEQUENCE IF EXISTS wdkuser.dataset_values_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.migration_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.favorites_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.user_baskets_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.user_datasets2_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.step_params_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.steps_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.strategies_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.users_pkseq;
 
+DROP TABLE IF EXISTS wdkuser.categories;
 DROP TABLE IF EXISTS wdkuser.favorites;
 DROP TABLE IF EXISTS wdkuser.user_baskets;
 DROP TABLE IF EXISTS wdkuser.strategies;
-DROP TABLE IF EXISTS wdkuser.step_params;
 DROP TABLE IF EXISTS wdkuser.steps;
-DROP TABLE IF EXISTS wdkuser.user_datasets2;
+DROP TABLE IF EXISTS wdkuser.dataset_values;
+DROP TABLE IF EXISTS wdkuser.datasets;
 DROP TABLE IF EXISTS wdkuser.preferences;
 DROP TABLE IF EXISTS wdkuser.user_roles;
 DROP TABLE IF EXISTS wdkuser.users;
-
-DROP TABLE IF EXISTS wdkengine.clob_values;
-DROP TABLE IF EXISTS wdkengine.dataset_values;
-DROP TABLE IF EXISTS wdkengine.dataset_indices;
+DROP TABLE IF EXISTS wdkuser.config;
 */
 
 
@@ -34,20 +30,10 @@ DROP TABLE IF EXISTS wdkengine.dataset_indices;
 -- CREATE SCHEMA IF NOT EXISTS wdkuser;
 CREATE SCHEMA wdkuser;
 
--- CREATE SCHEMA IF NOT EXISTS wdkengine;
-CREATE SCHEMA wdkengine;
-
 
 /* =========================================================================
    create sequences
    ========================================================================= */
-
-CREATE SEQUENCE wdkengine.migration_pkseq INCREMENT BY 1 START WITH 1;
-
-
-CREATE SEQUENCE wdkengine.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
-
-
 CREATE SEQUENCE wdkuser.users_pkseq INCREMENT BY 1 START WITH 1;
 
 
@@ -60,10 +46,10 @@ CREATE SEQUENCE wdkuser.strategies_pkseq INCREMENT BY 1 START WITH 1;
 CREATE SEQUENCE wdkuser.steps_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkuser.step_params_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE wdkuser.datasets_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkuser.user_datasets2_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE wdkuser.dataset_values_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkuser.user_baskets_pkseq INCREMENT BY 1 START WITH 1;
@@ -72,54 +58,24 @@ CREATE SEQUENCE wdkuser.user_baskets_pkseq INCREMENT BY 1 START WITH 1;
 CREATE SEQUENCE wdkuser.favorites_pkseq INCREMENT BY 1 START WITH 1;
 
 
-
-/* =========================================================================
-   tables in wdk engine schema
-   ========================================================================= */
-
-CREATE TABLE wdkengine.dataset_indices
-(
-  dataset_id NUMERIC(12) NOT NULL,
-  dataset_checksum VARCHAR(40) NOT NULL,
-  record_class VARCHAR(200) NOT NULL,
-  summary VARCHAR(200) NOT NULL,
-  dataset_size NUMERIC(12) NOT NULL,
-  PREV_DATASET_ID NUMERIC(12),
-  migration_id NUMERIC(12),
-  CONSTRAINT "dataset_indices_pk" PRIMARY KEY (dataset_id),
-  CONSTRAINT "dataset_indices_uq01" UNIQUE (dataset_checksum)
-);
-
-CREATE INDEX dataset_indices_idx01 ON wdkengine.dataset_indices (prev_dataset_id);
-
-
-/* cannot create PK on composite columns, since there might be null values */
-CREATE TABLE wdkengine.dataset_values
-(
-  dataset_id NUMERIC(12) NOT NULL,
-  pk_column_1 VARCHAR(1999) NOT NULL,
-  pk_column_2 VARCHAR(1999),
-  pk_column_3 VARCHAR(1999),
-  migration_id NUMERIC(12),
-  CONSTRAINT "dataset_values_uq01" UNIQUE (dataset_id, pk_column_1, pk_column_2, pk_column_3),
-  CONSTRAINT "dataset_values_fk01" FOREIGN KEY (dataset_id)
-      REFERENCES wdkengine.dataset_indices (dataset_id)
-);
-
-
-CREATE TABLE wdkengine.clob_values
-(
-  clob_checksum VARCHAR(40) NOT NULL,
-  clob_value TEXT NOT NULL,
-  migration_id NUMERIC(12),
-  CONSTRAINT "clob_values_pk" PRIMARY KEY (clob_checksum)
-);
+CREATE SEQUENCE wdkuser.categories_pkseq INCREMENT BY 1 START WITH 1;
 
 
 /* =========================================================================
    tables in user schema
    ========================================================================= */
-   
+
+CREATE TABLE wdkuser.config
+(
+  config_name VARCHAR(100) NOT NULL,
+  config_value VARCHAR(255),
+  migration_id NUMBER(12),
+  CONSTRAINT "config_pk" PRIMARY KEY (config_name)
+);
+
+INSERT INTO wdkuser.config(config_name, config_value) VALUES('wdk.user.schema.version', '5');
+
+
 CREATE TABLE wdkuser.users
 (
   user_id NUMERIC(12) NOT NULL,
@@ -192,15 +148,15 @@ CREATE TABLE wdkuser.steps
   is_valid BOOLEAN,
   collapsed_name VARCHAR(200),
   is_collapsible BOOLEAN,
-  prev_step_id NUMERIC(12),
   assigned_weight NUMERIC(12),
-  migration_id NUMERIC(12),
   project_id VARCHAR(50) NOT NULL,
   project_version VARCHAR(50) NOT NULL,
   question_name VARCHAR(200) NOT NULL,
   strategy_id NUMERIC(12),
   display_params TEXT,
   result_message TEXT,
+  prev_step_id NUMERIC(12),
+  migration_id NUMERIC(12),
   CONSTRAINT "steps_pk" PRIMARY KEY (step_id),
   CONSTRAINT "steps_fk01" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
@@ -212,23 +168,6 @@ CREATE INDEX steps_idx03 ON wdkuser.steps (is_deleted, user_id, project_id);
 CREATE INDEX steps_idx04 ON wdkuser.steps (is_valid, user_id, project_id);
 CREATE INDEX steps_idx05 ON wdkuser.steps (last_run_time, user_id, project_id);
 CREATE INDEX steps_idx06 ON wdkuser.steps (strategy_id, user_id, project_id);
-
-
-/* 
-   cannot create foreign key constraint on step_id, since step_params table is
-   used in a different context than steps table.
-*/
-CREATE TABLE wdkuser.step_params
-(
-  step_param_id NUMERIC(12) NOT NULL,
-  step_id NUMERIC(12) NOT NULL,
-  param_name VARCHAR(200) NOT NULL,
-  param_value VARCHAR(4000),
-  migration_id NUMERIC(12),
-  CONSTRAINT "step_params_pk" PRIMARY KEY (step_param_id)
-);
-
-CREATE INDEX step_params_idx02 ON wdkuser.step_params (step_id, param_name);
 
 
 CREATE TABLE wdkuser.strategies
@@ -264,24 +203,58 @@ CREATE INDEX strategies_idx04 ON wdkuser.strategies (is_deleted, is_saved, name,
 CREATE INDEX strategies_idx05 ON wdkuser.strategies (project_id, is_public, is_saved, is_deleted);
 
 
-CREATE TABLE wdkuser.user_datasets2
-(
-  user_dataset_id NUMERIC(12) NOT NULL,
+CREATE TABLE wdkuser.datasets (
   dataset_id NUMERIC(12) NOT NULL,
-  user_id NUMERIC(12) NOT NULL,
-  create_time TIMESTAMP NOT NULL,
+  user_id NUMERIC(12),
+  dataset_name VARCHAR(100) NOT NULL,
+  dataset_size NUMERIC(12) NOT NULL,
+  content_checksum VARCHAR(40) NOT NULL,
+  created_time TIMESTAMP NOT NULL,
   upload_file VARCHAR(2000),
-  prev_user_dataset_id NUMERIC(12),
+  parser VARCHAR(50) NOT NULL,
+  category_id NUMERIC(12),
+  content CLOB,
+  prev_dataset_id NUMERIC(12),
   migration_id NUMERIC(12),
-  CONSTRAINT "user_datasets2_pk" PRIMARY KEY (user_dataset_id),
-  CONSTRAINT "user_datasets2_uq01" UNIQUE (dataset_id, user_id),
-  CONSTRAINT "user_datasets2_fk01" FOREIGN KEY (dataset_id)
-      REFERENCES wdkengine.dataset_indices (dataset_id),
-  CONSTRAINT "user_datasets2_fk02" FOREIGN KEY (user_id)
+  CONSTRAINT "datasets_pk" PRIMARY KEY (dataset_id),
+  CONSTRAINT "datasets_uq01" UNIQUE (user_id, content_checksum),
+  CONSTRAINT "datasets_fk01" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX user_datasets2_idx01 ON wdkuser.user_datasets2 (user_id);
+
+CREATE TABLE wdkuser.dataset_values
+(
+  dataset_value_id NUMERIC(12) NOT NULL,
+  dataset_id NUMERIC(12) NOT NULL,
+  data1 VARCHAR(1999) NOT NULL,
+  data2 VARCHAR(1999),
+  data3 VARCHAR(1999),
+  data4 VARCHAR(1999),
+  data5 VARCHAR(1999),
+  data6 VARCHAR(1999),
+  data7 VARCHAR(1999),
+  data8 VARCHAR(1999),
+  data9 VARCHAR(1999),
+  data10 VARCHAR(1999),
+  data11 VARCHAR(1999),
+  data12 VARCHAR(1999),
+  data13 VARCHAR(1999),
+  data14 VARCHAR(1999),
+  data15 VARCHAR(1999),
+  data16 VARCHAR(1999),
+  data17 VARCHAR(1999),
+  data18 VARCHAR(1999),
+  data19 VARCHAR(1999),
+  data20 VARCHAR(1999),
+  prev_dataset_value_id NUMERIC(12),
+  migration_id NUMERIC(12),
+  CONSTRAINT "dataset_values_pk" PRIMARY KEY (dataset_value_id),
+  CONSTRAINT "dataset_values_fk01" FOREIGN KEY (dataset_id)
+      REFERENCES wdkuser.datasets (dataset_id)
+);
+
+CREATE INDEX wdkuser.dataset_values_idx01 ON wdkuser.dataset_values (dataset_id, data1);
 
 
 /* cannot create composite primary key, since the columns might contain null values */
@@ -289,11 +262,16 @@ CREATE TABLE wdkuser.user_baskets
 (
   basket_id NUMERIC(12) NOT NULL,
   user_id NUMERIC(12) NOT NULL,
+  basket_name VARCHAR(100),
   project_id VARCHAR(50) NOT NULL,
   record_class VARCHAR(100) NOT NULL,
+  is_default NUMERIC(1),
+  category_id NUMERIC(12),
   pk_column_1 VARCHAR(1999) NOT NULL,
   pk_column_2 VARCHAR(1999),
   pk_column_3 VARCHAR(1999),
+  prev_basket_id NUMERIC(12),
+  migration_id NUMERIC(12),
   CONSTRAINT "user_baskets_pk" PRIMARY KEY (basket_id),
   CONSTRAINT "user_baskets_uq01" UNIQUE (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3),
   CONSTRAINT "user_baskets_fk01" FOREIGN KEY (user_id)
@@ -314,6 +292,8 @@ CREATE TABLE wdkuser.favorites
   pk_column_3 VARCHAR(1999),
   record_note VARCHAR(200),
   record_group VARCHAR(50),
+  prev_favorite_id NUMERIC(12),
+  migration_id NUMERIC(12),
   CONSTRAINT "favorites_pk" PRIMARY KEY (favorite_id),
   CONSTRAINT "favorites_uq01" UNIQUE (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3),
   CONSTRAINT "favorites_fk01" FOREIGN KEY (user_id)
@@ -321,3 +301,20 @@ CREATE TABLE wdkuser.favorites
 );
 
 CREATE INDEX favorites_idx01 ON wdkuser.favorites (record_class, project_id);
+
+
+CREATE TABLE wdkuser.categories
+(
+  category_id NUMERIC(12) NOT NULL,
+  user_id NUMERIC(12) NOT NULL,
+  parent_id NUMERIC(12),
+  category_type VARCHAR(50) NOT NULL,
+  category_name VARCHAR(100) NOT NULL,
+  description VARCHAR(200),
+  prev_category_id NUMERIC(12),
+  migration_id NUMERIC(12),
+  CONSTRAINT "categories_pk" PRIMARY KEY (category_id),
+  CONSTRAINT "categories_uq01" UNIQUE (user_id, category_type, parent_id, category_name),
+  CONSTRAINT "categories_fk01" FOREIGN KEY (user_id)
+      REFERENCES wdkuser.users (user_id)
+);

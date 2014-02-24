@@ -426,7 +426,8 @@ public class QuestionBean {
 
   private List<CategoryBean> getCategories(String usedBy, boolean strict) {
     List<CategoryBean> beans = new ArrayList<>();
-    Map<String, SearchCategory> categories = question.getCategories(usedBy, strict);
+    Map<String, SearchCategory> categories = question.getCategories(usedBy,
+        strict);
     for (SearchCategory category : categories.values()) {
       beans.add(new CategoryBean(category));
     }

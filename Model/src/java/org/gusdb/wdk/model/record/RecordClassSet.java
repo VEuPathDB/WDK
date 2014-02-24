@@ -50,6 +50,10 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
     recordClassMap.values().toArray(array);
     return array;
   }
+  
+  public Map<String, RecordClass> getRecordClassMap() {
+    return new LinkedHashMap<>(recordClassMap);
+  }
 
   boolean hasRecordClass(RecordClass recordClass) {
     return recordClassMap.containsKey(recordClass.getName());

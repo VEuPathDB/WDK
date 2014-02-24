@@ -65,8 +65,7 @@ public class SqlQuery extends Query {
     this.sql = query.sql;
     this.cached = query.cached;
 
-    if (query.sqlList != null)
-      this.sqlList = new ArrayList<>(query.sqlList);
+    if (query.sqlList != null) this.sqlList = new ArrayList<>(query.sqlList);
     if (query.sqlMacroMap != null)
       this.sqlMacroMap = new LinkedHashMap<>(query.sqlMacroMap);
     if (query.sqlMacroList != null)

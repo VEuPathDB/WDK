@@ -15,10 +15,13 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
 import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.RequestParams;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -42,7 +45,7 @@ public class GetVocabAction extends Action {
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
     try {
       String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-      ActionUtility.getWdkModel(servlet).validateQuestionFullName(qFullName);
+      wdkModel.validateQuestionFullName(qFullName);
       String paramName = request.getParameter("name");
 
       // the dependent values are a JSON representation of {name: [values],
@@ -73,20 +76,11 @@ public class GetVocabAction extends Action {
           paramName);
 
       param.setDependedValues(dependedValues);
-
-      // set the labels
-      String[] terms = param.getVocab();
-      String[] labels = ShowQuestionAction.getLengthBoundedLabels(param.getDisplays());
+      
+      UserBean user = ActionUtility.getUser(servlet, request);
       QuestionForm qForm = (QuestionForm) form;
-      qForm.setArray(paramName + ShowQuestionAction.LABELS_SUFFIX, labels);
-      qForm.setArray(paramName + ShowQuestionAction.TERMS_SUFFIX, terms);
-
-      String paramValue = param.getDefault();
-      if (paramValue != null) {
-        qForm.setArray(paramName, paramValue.split(","));
-      }
-
-      request.setAttribute("vocabParam", param);
+      RequestParams requestParams = new QuestionRequestParams(request, qForm);
+      param.prepareDisplay(user, requestParams, dependedValues);
 
       String xmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator
           + CConstants.WDK_PAGES_DIR + File.separator + "vocabXml.jsp";

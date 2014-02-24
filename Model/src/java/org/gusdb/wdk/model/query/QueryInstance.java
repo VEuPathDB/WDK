@@ -57,7 +57,7 @@ public abstract class QueryInstance {
   private int instanceId;
   protected Query query;
   protected WdkModel wdkModel;
-  protected Map<String, String> values;
+  protected Map<String, String> stableValues;
   protected String resultMessage;
 
   private String checksum;
@@ -65,9 +65,9 @@ public abstract class QueryInstance {
 
   protected Map<String, String> context;
 
-  protected QueryInstance(User user, Query query, Map<String, String> values,
-      boolean validate, int assignedWeight, Map<String, String> context)
-      throws WdkModelException {
+  protected QueryInstance(User user, Query query,
+      Map<String, String> stableValues, boolean validate, int assignedWeight,
+      Map<String, String> context) throws WdkModelException {
     this.user = user;
     this.query = query;
     this.wdkModel = query.getWdkModel();
@@ -77,7 +77,7 @@ public abstract class QueryInstance {
     this.context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
     this.context.put(Utilities.QUERY_CTX_USER, user.getSignature());
 
-    setValues(values, validate);
+    setValues(stableValues, validate);
   }
 
   public Query getQuery() {
@@ -99,33 +99,24 @@ public abstract class QueryInstance {
     this.instanceId = instanceId;
   }
 
-  private void setValues(Map<String, String> values, boolean validate)
+  private void setValues(Map<String, String> stableValues, boolean validate)
       throws WdkModelException {
     logger.trace("----- input value for [" + query.getFullName() + "] -----");
-    for (String paramName : values.keySet()) {
-      logger.trace(paramName + "='" + values.get(paramName) + "'");
+    for (String paramName : stableValues.keySet()) {
+      logger.trace(paramName + "='" + stableValues.get(paramName) + "'");
     }
 
     // add user_id into the param values
     Map<String, Param> params = query.getParamMap();
     String userKey = Utilities.PARAM_USER_ID;
-    if (params.containsKey(userKey) && !values.containsKey(userKey)) {
-      values.put(userKey, Integer.toString(user.getUserId()));
+    if (params.containsKey(userKey) && !stableValues.containsKey(userKey)) {
+      stableValues.put(userKey, Integer.toString(user.getUserId()));
     }
 
-    // convert the values into dependent values
-    for (Param param : params.values()) {
-      if (values.containsKey(param.getName())) {
-        String value = values.get(param.getName());
-        value = param.rawOrDependentValueToDependentValue(user, value);
-        values.put(param.getName(), value);
-      }
-    }
+    if (validate) validateValues(user, stableValues);
 
-    if (validate)
-      validateValues(user, values);
     // passed, assign the value
-    this.values = new LinkedHashMap<String, String>(values);
+    this.stableValues = stableValues;
     checksum = null;
   }
 
@@ -160,7 +151,7 @@ public abstract class QueryInstance {
       jsInstance.put("project", wdkModel.getProjectId());
       jsInstance.put("query", query.getFullName());
 
-      jsInstance.put("params", getIndependentParamValuesJSONObject());
+      jsInstance.put("params", getParamSignatures());
       jsInstance.put("assignedWeight", assignedWeight);
 
       // include extra info from child
@@ -172,22 +163,20 @@ public abstract class QueryInstance {
     }
   }
 
-  public JSONObject getIndependentParamValuesJSONObject()
-      throws WdkModelException {
+  public JSONObject getParamSignatures() throws WdkModelException {
     // the values are dependent values. need to convert it into independent
     // values
-    Map<String, String> independentValues = query.dependentValuesToIndependentValues(
-        user, values);
+    Map<String, String> signatures = query.getSignatures(user, stableValues);
 
     // construct param-value map; param is sorted by name
-    String[] paramNames = new String[independentValues.size()];
-    independentValues.keySet().toArray(paramNames);
+    String[] paramNames = new String[signatures.size()];
+    signatures.keySet().toArray(paramNames);
     Arrays.sort(paramNames);
 
     try {
       JSONObject jsParams = new JSONObject();
       for (String paramName : paramNames) {
-        String value = independentValues.get(paramName);
+        String value = signatures.get(paramName);
         if (value != null && value.length() > 0)
           jsParams.put(paramName, value);
       }
@@ -225,8 +214,8 @@ public abstract class QueryInstance {
     }
   }
 
-  public Map<String, String> getValues() {
-    return values;
+  public Map<String, String> getParamStableValues() {
+    return stableValues;
   }
 
   private ResultList getCachedResults() throws WdkModelException {
@@ -265,12 +254,10 @@ public abstract class QueryInstance {
       } catch (Exception ex) {
         ex.printStackTrace();
         errMsg = ex.getMessage();
-        if (errMsg == null)
-          errMsg = ex.getClass().getName();
+        if (errMsg == null) errMsg = ex.getClass().getName();
       }
       if (errMsg != null) {
-        if (errors == null)
-          errors = new LinkedHashMap<String, String>();
+        if (errors == null) errors = new LinkedHashMap<String, String>();
         errors.put(prompt, errMsg);
       }
     }
@@ -282,9 +269,10 @@ public abstract class QueryInstance {
     }
   }
 
-  private Map<String, String> fillEmptyValues(Map<String, String> values)
+  private Map<String, String> fillEmptyValues(Map<String, String> stableValues)
       throws WdkModelException {
-    Map<String, String> newValues = new LinkedHashMap<String, String>(values);
+    Map<String, String> newValues = new LinkedHashMap<String, String>(
+        stableValues);
     Map<String, Param> paramMap = query.getParamMap();
 
     // iterate through this query's params, filling values
@@ -294,10 +282,10 @@ public abstract class QueryInstance {
     return newValues;
   }
 
-  private void resolveParamValue(Param param, Map<String, String> values)
+  private void resolveParamValue(Param param, Map<String, String> stableValues)
       throws WdkModelException {
     String value;
-    if (!values.containsKey(param.getName())) {
+    if (!stableValues.containsKey(param.getName())) {
       // param not provided, determine value
       if (param instanceof AbstractEnumParam
           && ((AbstractEnumParam) param).isDependentParam()) {
@@ -305,32 +293,32 @@ public abstract class QueryInstance {
         AbstractEnumParam aeParam = (AbstractEnumParam) param;
         Map<String, String> dependedValues = new LinkedHashMap<>();
         for (Param dependedParam : aeParam.getDependedParams()) {
-          resolveParamValue(dependedParam, values);
+          resolveParamValue(dependedParam, stableValues);
           String dependedName = dependedParam.getName();
-          dependedValues.put(dependedName, values.get(dependedName));
+          dependedValues.put(dependedName, stableValues.get(dependedName));
         }
         value = aeParam.getDefault(dependedValues);
       } else {
         value = param.getDefault();
       }
     } else { // param provided, but it can be empty
-      value = values.get(param.getName());
+      value = stableValues.get(param.getName());
       if (value == null || value.length() == 0) {
         value = param.isAllowEmpty() ? param.getEmptyValue() : null;
       }
     }
-    values.put(param.getName(), value);
+    stableValues.put(param.getName(), value);
   }
 
-  protected Map<String, String> getInternalParamValues()
+  protected Map<String, String> getParamInternalValues()
       throws WdkModelException {
     // the empty & default values are filled
-    Map<String, String> values = fillEmptyValues(this.values);
+    Map<String, String> stableValues = fillEmptyValues(this.stableValues);
     Map<String, String> internalValues = new LinkedHashMap<String, String>();
     Map<String, Param> params = query.getParamMap();
     for (String paramName : params.keySet()) {
       Param param = params.get(paramName);
-      String internalValue, dependentValue = values.get(paramName);
+      String internalValue, stableValue = stableValues.get(paramName);
 
       // TODO: refactor so this fork isn't necessary
       if (param instanceof AbstractEnumParam
@@ -338,13 +326,13 @@ public abstract class QueryInstance {
         AbstractEnumParam aeParam = (AbstractEnumParam) param;
         Map<String, String> dependedParamValues = new LinkedHashMap<>();
         for (Param dependedParam : aeParam.getDependedParams()) {
-          String value = values.get(dependedParam.getName());
+          String value = stableValues.get(dependedParam.getName());
           dependedParamValues.put(dependedParam.getName(), value);
         }
-        internalValue = aeParam.getInternalValue(user, dependentValue,
+        internalValue = aeParam.getInternalValue(user, stableValue,
             dependedParamValues);
       } else {
-        internalValue = param.getInternalValue(user, dependentValue);
+        internalValue = param.getInternalValue(user, stableValue, stableValues);
       }
 
       internalValues.put(paramName, internalValue);

@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.query;
 
+import java.io.PrintWriter;
+
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -168,4 +170,13 @@ public class Column extends WdkModelBase {
     this.ignoreCase = ignoreCase;
   }
 
+  public final void printDependency(PrintWriter writer, String indent) {
+    writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getName() + "\">");
+    printDependencyContent(writer, indent + WdkModel.INDENT);
+    writer.println(indent + "</" + getClass().getSimpleName() + ">");
+  }
+  
+  protected void printDependencyContent(PrintWriter writer, String indent) {
+    // by default, nothing to print out.
+  }
 }

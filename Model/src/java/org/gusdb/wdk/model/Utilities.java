@@ -46,15 +46,6 @@ public class Utilities {
   public static final int TRUNCATE_DEFAULT = 100;
 
   /**
-   * param values with is prefix means the result of that value is a checksum
-   * for the real value. if the param is a datasetParam, then the checksum is an
-   * index to a dataset obejct; if the param is of other types, then the value
-   * of the param can be found in the clob values table by the checksum
-   */
-  public static final String PARAM_COMPRESSE_PREFIX = "[C]";
-  public static final String DATASET_PARAM_KEY_PREFIX = "[K]";
-
-  /**
    * The maximum size for parameter values that will be displayed in thr URL as
    * plain values
    */
@@ -112,6 +103,9 @@ public class Utilities {
   public static final String QUERY_CTX_PARAM = "wdk-param";
   public static final String QUERY_CTX_QUERY = "wdk-query";
   public static final String QUERY_CTX_USER = "wdk-user";
+
+  public static final String RECORD_DIVIDER = "\n";
+  public static final String COLUMN_DIVIDER = ",";
 
   private static final String ALGORITHM = "MD5";
 

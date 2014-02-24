@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.question;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -635,9 +637,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                 + "] defined in QUESTION [" + getFullName()
                 + "] doesn't exist in the " + "referenced id query ["
                 + queryName + "].");
-          Param param = ParamReference.resolveReference(model, paramRef,
-              queryName);
+          Param param = ParamReference.resolveReference(model, paramRef, query);
           query.addParam(param);
+        }
+        // resolve the param references after all params are present
+        for (Param param : query.getParams()) {
+          param.resolveReferences(model);
         }
       }
       query.setContextQuestion(this);
@@ -1005,5 +1010,27 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
     }
     return map;
+  }
+  
+  public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+    writer.println(indent + "<question name=\"" + getName() + "\" recordClass=\"" + recordClass.getFullName() + "\">");
+    String indent1 = indent + WdkModel.INDENT;
+    String indent2 = indent1 + WdkModel.INDENT;
+    
+    // print dynamic attributes
+    if (dynamicAttributeSet != null) {
+      Map<String, AttributeField> attributes = dynamicAttributeSet.getAttributeFieldMap();
+      writer.println(indent1 + "<dynamicAttributes size=\"" + attributes.size() + "\">");
+      String[] attributeNames = attributes.keySet().toArray(new String[0]);
+      Arrays.sort(attributeNames);
+      for (String attributeName : attributeNames) {
+        attributes.get(attributeName).printDependency(writer, indent2);
+      }
+      writer.println(indent1 + "</dynamicAttributes>");
+    }
+    
+    // print query
+    query.printDependency(writer, indent);
+    writer.print(indent + "</question>");
   }
 }

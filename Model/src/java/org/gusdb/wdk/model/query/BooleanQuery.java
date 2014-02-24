@@ -236,10 +236,8 @@ public class BooleanQuery extends SqlQuery {
     sql.append("SELECT ");
     boolean first = true;
     for (String column : columnMap.keySet()) {
-      if (first)
-        first = false;
-      else
-        sql.append(", ");
+      if (first) first = false;
+      else sql.append(", ");
       sql.append(column);
     }
     sql.append(" FROM $$").append(operand).append("$$");

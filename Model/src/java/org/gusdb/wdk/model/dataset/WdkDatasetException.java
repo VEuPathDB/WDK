@@ -1,15 +1,16 @@
 /**
  * 
  */
-package org.gusdb.wdk.model.user;
+package org.gusdb.wdk.model.dataset;
 
-import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author xingao
  *
  */
-public class WdkDatasetException extends WdkModelException {
+public class WdkDatasetException extends WdkUserException
+{
 
     /**
      * 

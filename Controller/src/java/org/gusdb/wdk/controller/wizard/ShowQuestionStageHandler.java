@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.AnswerParamHandler;
 import org.gusdb.wdk.model.WdkUserException;
 
 public class ShowQuestionStageHandler implements StageHandler {
@@ -80,7 +81,7 @@ public class ShowQuestionStageHandler implements StageHandler {
             int inputStepId = previousStep.getStepId();
             // the name here is hard-coded, it will be used by
             // ShowQuestionAction.
-            request.setAttribute(ShowQuestionAction.PARAM_INPUT_STEP,
+            request.setAttribute(AnswerParamHandler.PARAM_INPUT_STEP,
                     Integer.toString(inputStepId));
         }
 

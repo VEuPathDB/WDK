@@ -15,6 +15,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
@@ -39,6 +40,7 @@ public class SqlQueryInstance extends QueryInstance {
   /**
    * @param query
    * @param values
+   * @throws WdkUserException
    */
   protected SqlQueryInstance(User user, SqlQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,
@@ -127,7 +129,7 @@ public class SqlQueryInstance extends QueryInstance {
   }
 
   public String getUncachedSql() throws WdkModelException {
-    Map<String, String> internalValues = getInternalParamValues();
+    Map<String, String> internalValues = getParamInternalValues();
     Map<String, Param> params = query.getParamMap();
     String sql = query.getSql();
     for (String paramName : params.keySet()) {
