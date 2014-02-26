@@ -217,7 +217,7 @@ CREATE TABLE wdkuser.datasets (
   prev_dataset_id NUMERIC(12),
   migration_id NUMERIC(12),
   CONSTRAINT "datasets_pk" PRIMARY KEY (dataset_id),
-  CONSTRAINT "datasets_uq01" UNIQUE (user_id, content_checksum),
+--  CONSTRAINT "datasets_uq01" UNIQUE (user_id, content_checksum),
   CONSTRAINT "datasets_fk01" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
 );
