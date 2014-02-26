@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.dbms;
 
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
@@ -72,7 +73,12 @@ public class SqlResultList implements ResultList {
     @Override
     public Object get(String columnName) throws WdkModelException {
         try {
-            return resultSet.getObject(columnName);
+          Object value = resultSet.getObject(columnName);
+          if (value != null && value instanceof Clob) {
+            Clob clob = (Clob) value;
+            value = clob.getSubString(1, (int) clob.length());
+          }
+          return value;
         } catch (SQLException ex) {
             logger.error("Cannot get value for column '" + columnName + "'");
             throw new WdkModelException(ex);
