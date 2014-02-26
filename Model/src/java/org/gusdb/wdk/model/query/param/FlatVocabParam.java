@@ -43,6 +43,7 @@ public class FlatVocabParam extends AbstractEnumParam {
 
   private Query query;
   private String queryTwoPartName;
+  
   /**
    * The name of the query where is param is used. Please note that each query hold a separate copy of the
    * params, so each object of param will belong to only one query.
@@ -54,15 +55,27 @@ public class FlatVocabParam extends AbstractEnumParam {
    * is an ID query, we will need to get the correct question first, then get query from question.)
    */
   private String servedQueryName = "unknown";
+  
+  private String propertyQueryRef;
+  private Query propertyQuery;
+  
+  private String metadataQueryRef;
+  private Query metadataQuery;
 
   public FlatVocabParam() {}
 
   public FlatVocabParam(FlatVocabParam param) {
     super(param);
+    this.servedQueryName = param.servedQueryName;
+    this.queryTwoPartName = param.queryTwoPartName;
     if (param.query != null)
       this.query = param.query.clone();
-    this.queryTwoPartName = param.queryTwoPartName;
-    this.servedQueryName = param.servedQueryName;
+    this.propertyQueryRef = param.propertyQueryRef;
+    if (param.propertyQuery != null)
+      this.propertyQuery = param.propertyQuery.clone();
+    this.metadataQueryRef = param.metadataQueryRef;
+    if (param.metadataQuery != null)
+      this.metadataQuery = param.metadataQuery.clone();
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -76,6 +89,64 @@ public class FlatVocabParam extends AbstractEnumParam {
 
   public Query getQuery() {
     return query;
+  }
+  
+  
+
+  /**
+   * @return the propertyQueryName
+   */
+  public String getPropertyQueryRef() {
+    return propertyQueryRef;
+  }
+
+  /**
+   * @param propertyQueryRef the propertyQueryName to set
+   */
+  public void setPropertyQueryRef(String propertyQueryRef) {
+    this.propertyQueryRef = propertyQueryRef;
+  }
+
+  /**
+   * @return the propertyQuery
+   */
+  public Query getPropertyQuery() {
+    return propertyQuery;
+  }
+
+  /**
+   * @param propertyQuery the propertyQuery to set
+   */
+  public void setPropertyQuery(Query propertyQuery) {
+    this.propertyQuery = propertyQuery;
+  }
+
+  /**
+   * @return the metadataQueryName
+   */
+  public String getMetadataQueryRef() {
+    return metadataQueryRef;
+  }
+
+  /**
+   * @param metadataQueryRef the metadataQueryName to set
+   */
+  public void setMetadataQueryRef(String metadataQueryRef) {
+    this.metadataQueryRef = metadataQueryRef;
+  }
+
+  /**
+   * @return the metadataQuery
+   */
+  public Query getMetadataQuery() {
+    return metadataQuery;
+  }
+
+  /**
+   * @param metadataQuery the metadataQuery to set
+   */
+  public void setMetadataQuery(Query metadataQuery) {
+    this.metadataQuery = metadataQuery;
   }
 
   @Override
