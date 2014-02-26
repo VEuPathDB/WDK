@@ -324,7 +324,9 @@ public abstract class AbstractEnumParam extends Param {
           if (contextQuestion != null)
             message += ", in context question " + contextQuestion.getFullName();
           if (contextQuery != null)
-            message += ", in context query " + contextQuery.getFullName();
+            message += ", in context query " + contextQuery.getFullName() +
+                ". Please check the context query, and make sure " + paramRef +
+                " is a valid param, and is declared in the context query.";
           throw new WdkModelException(message);
         }
       }
