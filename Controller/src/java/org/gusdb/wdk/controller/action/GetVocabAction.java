@@ -81,6 +81,7 @@ public class GetVocabAction extends Action {
       QuestionForm qForm = (QuestionForm) form;
       RequestParams requestParams = new QuestionRequestParams(request, qForm);
       param.prepareDisplay(user, requestParams, dependedValues);
+			request.setAttribute("vocabParam", param);
 
       String xmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator
           + CConstants.WDK_PAGES_DIR + File.separator + "vocabXml.jsp";
