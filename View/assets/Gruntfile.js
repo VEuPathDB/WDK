@@ -5,10 +5,28 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
 
+    jshint: {
+      all: ['Gruntfile.js', [].concat(wdkFiles.src)]
+    },
+
     concat: {
       js: {
         src: helpers.filterByFlag('env', 'prod', wdkFiles.libs),
         dest: 'dist/wdk/wdk.libs.js'
+      }
+    },
+
+    handlebars: {
+      compile: {
+        options: {
+          namespace: 'wdk.templates',
+          processName: function(filePath) {
+            return filePath.replace(/^src\/templates\//, '');
+          }
+        },
+        files: {
+          'dist/wdk/wdk.templates.js': ['src/templates/**/*.handlebars']
+        }
       }
     },
 
@@ -24,7 +42,7 @@ module.exports = function(grunt) {
       },
       wdk: {
         files: {
-          'dist/wdk/wdk.js': wdkFiles.src,
+          'dist/wdk/wdk.js': wdkFiles.src.concat('dist/wdk/templates.js'),
         }
       }
     },
@@ -72,9 +90,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-handlebars');
 
-  grunt.registerTask('dist', ['clean', 'concat', 'uglify', 'copy', 'debugScript']);
+  grunt.registerTask('dist', ['clean', 'concat', 'handlebars', 'uglify', 'copy', 'debugScript']);
 
   grunt.registerTask('default', ['dist']);
 
