@@ -42,6 +42,16 @@ module.exports = {
     'src/components/**/*.js',
     'src/views/core.js',
     'src/views/template_view.js',
+
+    // filter views
+    'src/views/filter/field_list_view.js',
+    'src/views/filter/range_filter_view.js',
+    'src/views/filter/membership_filter_view.js',
+    'src/views/filter/field_detail_view.js',
+    'src/views/filter/filter_fields_view.js',
+    'src/views/filter/results_view.js',
+    'src/views/filter/filter_view.js',
+
     'src/controllers/**/*.js',
 
     'src/core/bootstrap.js'

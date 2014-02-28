@@ -2,10 +2,15 @@ describe('wdk.models.filter', function() {
 
   describe('FilterService', function() {
 
-    var filterService;
+    var filterService, field;
 
     beforeEach(function() {
       filterService = new wdk.models.filter.FilterService;
+      field = new Backbone.Model({
+        term: 'age',
+        display: 'Age',
+        filter: 'range'
+      });
     });
 
     afterEach(function() {
@@ -13,19 +18,19 @@ describe('wdk.models.filter', function() {
     });
 
     it('should add filters', function() {
-      var filter = filterService.filters.add({ field: 'age', operation: 'between', min: 10, max: 20 });
+      var filter = filterService.filters.add({ field: field, operation: field.get('filter'), min: 10, max: 20 });
       expect(filterService.filters.first()).to.equal(filter);
     });
 
     it('should remove filters', function() {
-      var filter = filterService.filters.add({ field: 'age', operation: 'between', min: 10, max: 20 });
+      var filter = filterService.filters.add({ field: field, operation: field.get('filter'), min: 10, max: 20 });
       filterService.filters.remove(filter);
       expect(filterService.filters.length).to.equal(0);
     });
 
     it('should describe filters', function() {
-      var filter = filterService.filters.add({ field: 'age', operation: 'between', min: 10, max: 20 });
-      expect(filter.toString()).to.equal('Age is between 10 and 20');
+      var filter = filterService.filters.add({ field: field, operation: field.get('filter'), min: 10, max: 20 });
+      expect(filter.toString()).to.equal('Age between 10 and 20');
     });
 
   });
@@ -35,7 +40,7 @@ describe('wdk.models.filter', function() {
 
     beforeEach(function() {
       filterService = new wdk.models.filter.LocalFilterService({
-        "filters": [
+        "fields": [
           { "term": "age", "display": "Age", "type": "number" },
           { "term": "year", "display": "Year", "type": "number" },
           { "term": "host", "display": "Host", "type": "string" }
@@ -168,21 +173,29 @@ describe('wdk.models.filter', function() {
             "metadata": {"age": 14, "year": 2013, "host": "human" }
           }
         ]
+      }, {
+        parse: true
       });
     });
 
     it('should filter by equality', function(done) {
-      filterService.on('change:data', function(filterService, data) {
+      filterService.filteredData.on('reset', function(data) {
         expect(data).to.have.length.above(0);
         data.forEach(function(d) {
-          expect(d.metadata.host).to.equal('human');
+          expect(d.get('metadata').host).to.equal('human');
         });
         done();
       });
 
+      var field = new Backbone.Model({
+        term: 'host',
+        display: 'Host',
+        filter: 'membership'
+      });
+
       filterService.filters.add({
-        field: 'host',
-        operation: 'equals',
+        field: field,
+        operation: field.get('filter'),
         values: ['human']
       });
 
@@ -190,18 +203,24 @@ describe('wdk.models.filter', function() {
     });
 
     it('should filter by membership', function(done) {
-      filterService.on('change:data', function(filterService, data) {
+      filterService.filteredData.on('reset', function(data) {
         expect(data).to.have.length.above(0);
-        var foxes = data.filter(function(d){return d.metadata.host === 'fox'});
-        var humans = data.filter(function(d){return d.metadata.host === 'human'});
+        var foxes = data.filter(function(d){return d.get('metadata').host === 'fox'});
+        var humans = data.filter(function(d){return d.get('metadata').host === 'human'});
         expect(foxes).to.have.length.above(1);
         expect(humans).to.have.length.above(1);
         done();
       });
 
+      var field = new Backbone.Model({
+        term: 'host',
+        display: 'Host',
+        filter: 'membership'
+      });
+
       filterService.filters.add({
-        field: 'host',
-        operation: 'equals',
+        field: field,
+        operation: field.get('filter'),
         values: ['human', 'fox']
       });
 
@@ -209,17 +228,22 @@ describe('wdk.models.filter', function() {
     });
 
     it('should filter by range', function(done) {
-      filterService.on('change:data', function(filterService, data) {
+      filterService.filteredData.on('reset', function(data) {
         expect(data).to.have.length.above(0);
         data.forEach(function(d) {
-          expect(d.metadata.age).to.be.within(10, 20);
+          expect(d.get('metadata').age).to.be.within(10, 20);
         });
         done();
       });
 
+      var field = new Backbone.Model({
+        term: 'age',
+        display: 'Age'
+      });
+
       filterService.filters.add({
-        field: 'age',
-        operation: 'between',
+        field: field,
+        operation: 'range',
         min: 10,
         max: 20
       });
@@ -228,17 +252,22 @@ describe('wdk.models.filter', function() {
     });
 
     it('should filter by lower bound', function(done) {
-      filterService.on('change:data', function(filterService, data) {
+      filterService.filteredData.on('reset', function(data) {
         expect(data).to.have.length.above(0);
         data.forEach(function(d) {
-          expect(d.metadata.age).to.be.at.least(10);
+          expect(d.get('metadata').age).to.be.at.least(10);
         });
         done();
       });
 
+      var field = new Backbone.Model({
+        term: 'age',
+        display: 'Age'
+      });
+
       filterService.filters.add({
-        field: 'age',
-        operation: 'between',
+        field: field,
+        operation: 'range',
         min: 10
       });
 
@@ -246,17 +275,22 @@ describe('wdk.models.filter', function() {
     });
 
     it('should filter by upper bound', function(done) {
-      filterService.on('change:data', function(filterService, data) {
+      filterService.filteredData.on('reset', function(data) {
         expect(data).to.have.length.above(0);
         data.forEach(function(d) {
-          expect(d.metadata.age).to.be.at.most(20);
+          expect(d.get('metadata').age).to.be.at.most(20);
         });
         done();
       });
 
+      var field = new Backbone.Model({
+        term: 'age',
+        display: 'Age'
+      });
+
       filterService.filters.add({
-        field: 'age',
-        operation: 'between',
+        field: field,
+        operation: 'range',
         max: 20
       });
 

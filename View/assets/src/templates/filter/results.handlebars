@@ -1,0 +1,21 @@
+<table class="table table-striped table-condensed table-bordered table-responsive">
+  <thead>
+    <tr>
+      <th class="name">Name</th>
+      {{#each fields}}
+        <th class="{{term}}">{{display}}</td>
+      {{/each}}
+    </tr>
+  </thead>
+
+  <tbody>
+  {{#each filteredData}}
+    <tr>
+      <td class="name">{{display}}</td>
+      {{#each ../fields}}
+        <td class="{{term}}">{{property term ../metadata}}</td>
+      {{/each}}
+    </tr>
+  {{/each}}
+  </tbody>
+</table>
