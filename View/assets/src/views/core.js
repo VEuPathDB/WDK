@@ -21,7 +21,7 @@ wdk.namespace('wdk.views', function(ns, $) {
           view.applyMixin(mixin);
         });
       }
-      Backbone.View.prototype.constructor.apply(this, arguments);
+      Backbone.View.apply(this, arguments);
     },
 
     /**
