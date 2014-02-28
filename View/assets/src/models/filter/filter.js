@@ -5,12 +5,11 @@ wdk.namespace('wdk.models.filter', function(ns) {
    * Provides filter methods based on type (string or number).
    */
   var Filter = Backbone.Model.extend({
-    template: _.template('<%= field %> is <%= condition %>'),
+    template: _.template('<%= field %> <%= condition %>'),
 
     toString: function() {
       return this.template({
-        field: this.attributes.field.slice(0,1).toUpperCase() +
-          this.attributes.field.slice(1),
+        field: this.attributes.field.get('display'),
         condition: _.result(this, 'condition')
       });
     }
@@ -21,10 +20,13 @@ wdk.namespace('wdk.models.filter', function(ns) {
    */
   var MemberFilter = Filter.extend({
     condition: function() {
-      var condition = this.attributes.values.slice(0,-1).join(', ');
+      var condition;
       if (this.attributes.values.length > 1) {
+        condition = this.attributes.values.slice(0,-1).join(', ');
         condition = 'either ' + condition + ' or ' +
           this.attributes.values.slice(-1);
+      } else {
+        condition = this.attributes.values[0];
       }
       return condition;
     }
@@ -48,8 +50,22 @@ wdk.namespace('wdk.models.filter', function(ns) {
     }
   });
 
+  var Filters = Backbone.Collection.extend({
+    model: function(attrs, options) {
+      if (attrs.operation === 'membership') {
+        return new MemberFilter(attrs, options);
+      } else if (attrs.operation === 'range') {
+        return new RangeFilter(attrs, options);
+      } else {
+        throw new TypeError('Unkown operation: "' + attrs.operation + '". ' +
+          'Supported operations are "membership" and "range"');
+      }
+    }
+  });
+
   ns.Filter = Filter;
   ns.MemberFilter = MemberFilter;
   ns.RangeFilter = RangeFilter;
+  ns.Filters = Filters;
 
 });

@@ -1,22 +1,29 @@
 var wdkFiles = require('../wdkFiles');
-var helpers = require('./helpers');
+var filterByFlag = require('./helpers').filterByFlag;
 
 var glob = require('../node_modules/grunt/node_modules/glob');
 var externalRegex = /^(https?:)?\/\//;
 
+function expandGlob(files, pattern) {
+  // var files = [];
+  // if (externalRegex.test(pattern)) {
+  //   files = files.concat(pattern);
+  // } else {
+  //   files = files.concat(glob.sync(pattern));
+  // }
+  // return files
+  return externalRegex.test(pattern)
+    ? files.concat(pattern)
+    : files.concat(glob.sync(pattern));
+}
+
 module.exports = function(grunt) {
   grunt.registerTask('debugScript', 'Generate script tags for WDK files to load individually', function() {
-    var scripts = [];
-
-    helpers.filterByFlag('env', 'dev', [].concat(wdkFiles.libs, wdkFiles.src)).forEach(function(pattern) {
-      if (externalRegex.test(pattern)) {
-        scripts = scripts.concat(pattern);
-      } else {
-        var theseScripts = glob.sync(pattern);
-        theseScripts = (theseScripts instanceof Array) ? theseScripts : [theseScripts];
-        scripts = scripts.concat(theseScripts);
-      }
-    });
+    var scripts = [].concat(
+      filterByFlag('env', 'dev', wdkFiles.libs).reduce(expandGlob, []),
+      'wdk.templates.js',
+      filterByFlag('env', 'dev', wdkFiles.src).reduce(expandGlob, [])
+    );
 
     var scriptLoaderStr = scripts.map(function(script) {
       var line;

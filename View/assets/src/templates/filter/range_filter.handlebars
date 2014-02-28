@@ -1,0 +1,27 @@
+<h3>Filter {{options.title}} by {{field.display}}</h3>
+
+<div class="range-filter">
+  <div class="overview">
+    <dl class="clearfix">
+      <dt>Avg</dt>
+      <dd>{{avg}}</dd>
+      <dt>Min</dt>
+      <dd>{{min}}</dd>
+      <dt>Max</dt>
+      <dd>{{max}}</dd>
+    </dl>
+  </div>
+
+  <p>
+    Filter between
+    <input name="min" type="text" size="6" placeholder="{{min}}"/> and
+    <input name="max" type="text" size="6" placeholder="{{max}}"/>
+    <img src="/dist/wdk/images/question.png"
+    title="Enter a minimum and/or maximum value here, or select a region of the chart below"/>
+  </p>
+
+  <div class="chart"></div>
+  <div class="chart-title x-axis">{{options.xAxisTitle}}</div>
+  <div class="chart-title y-axis">{{options.yAxisTitle}}</div>
+</div>
+<div class="chart-tooltip"></div>
