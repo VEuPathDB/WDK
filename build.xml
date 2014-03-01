@@ -213,6 +213,7 @@
       <property name="component" value="View"/>
     </ant>
 
+    <!--
     <echo message="Setting npm registry"/>
     <exec dir="${projectsDir}/WDK/View/assets"
           executable="npm"
@@ -220,13 +221,14 @@
           failifexecutionfails="true">
     <arg line="config set registry http://registry.npmjs.org/"/>
     </exec>
+    -->
 
     <echo message="Installing npm packages"/>
     <exec dir="${projectsDir}/WDK/View/assets"
           executable="npm"
           failonerror="true"
           failifexecutionfails="true">
-      <arg line="install"/>
+      <arg line="install --registry ${npmRegistry}"/>
     </exec>
 
     <echo message="Running npm run dist"/>
