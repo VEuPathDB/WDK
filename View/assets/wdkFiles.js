@@ -39,7 +39,11 @@ module.exports = {
     'src/user.js',
     'src/models/filter/filter.js',
     'src/models/filter/filter_service.js',
+
+    'src/plugins/**/*.js',
+
     'src/components/**/*.js',
+
     'src/views/core.js',
     'src/views/template_view.js',
 
