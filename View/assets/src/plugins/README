@@ -1,0 +1,6 @@
+# Plugins
+
+Files in this directory fall into one of two categories:
+
+  1. Custom jQuery plugins (such as editable.js).
+  2. Configure or override default plugin options.
