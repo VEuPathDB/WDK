@@ -42,7 +42,7 @@ module.exports = function(grunt) {
       },
       wdk: {
         files: {
-          'dist/wdk/wdk.js': [].concat('dist/wdk/templates.js', wdkFiles.src),
+          'dist/wdk/wdk.js': [].concat('dist/wdk/wdk.templates.js', wdkFiles.src),
         }
       }
     },
