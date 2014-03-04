@@ -312,4 +312,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return enumParam.getJSONValues(user.getUser(), contextValues, getCache());
   }
 
+  public boolean isFilterParam() {
+    return false;
+  }
 }
