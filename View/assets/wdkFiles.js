@@ -25,6 +25,9 @@
 module.exports = {
 
   src: [
+    // load polyfills
+    'src/core/loader.js',
+
     'src/core/console.js',
     'src/core/namespace.js',
     'src/core/c_properties.js',
@@ -58,7 +61,7 @@ module.exports = {
 
     'src/controllers/**/*.js',
 
-    'src/core/bootstrap.js'
+    'src/app.js'
 
   ],
 
@@ -72,15 +75,9 @@ module.exports = {
     'lib/backbone-min.js',
     'lib/jquery-ui.js',
 
-    // load polyfills
-    'src/core/loader.js',
-
     'lib/jquery.cookie.js',
     'lib/jquery.blockUI.js',
     'lib/qtip2/jquery.qtip.js',
-
-    // use JSON.parse and JSON.stringify - polyfilled for older browsers by es5-shim.min.js
-    // 'lib/json.js',
 
     // question pages
     'lib/handlebars.js',
@@ -88,11 +85,6 @@ module.exports = {
     'lib/chosen.jquery.min.js',
     'lib/jquery.dataTables.min.js',
     'lib/jstree/jquery.jstree.js',
-
-    // these will get loaded in bootstrap.js by Modernizr.load
-    // 'lib/jquery.flot-0.8.1.min.js',
-    // 'lib/jquery.flot.categories-0.8.1.min.js'
-
   ]
 
 };
