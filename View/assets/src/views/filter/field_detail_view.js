@@ -14,14 +14,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     // The active delegate view
     delegateView: null,
 
-    // Default options that can be overridden
-    options: {
-      emptyText: 'Get started by choosing a filter in the panel at left'
-    },
-
-    initialize: function(options) {
-      _.extend(this.options, options);
-    },
+    template: wdk.templates['filter/field_detail.handlebars'],
 
     render: function(field) {
       return typeof field === 'undefined'
@@ -30,7 +23,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     renderEmpty: function() {
-      this.$el.html('<h4 style="margin-top: 2em;">' + this.options.emptyText + '</h4>');
+      this.$el.html(this.template(this.model.attributes));
       return this;
     },
 
