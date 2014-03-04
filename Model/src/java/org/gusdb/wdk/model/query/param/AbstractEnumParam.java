@@ -22,6 +22,9 @@ import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * This class provides functions that are common among EnumParam and FlatVocabParam. The parameter of this
@@ -131,7 +134,7 @@ public abstract class AbstractEnumParam extends Param {
    */
   private boolean suppressNode = false;
 
-  protected abstract EnumParamCache createEnumParamCache(Map<String, String> dependedParamValues)
+  protected abstract EnumParamCache createEnumParamCache(User user, Map<String, String> dependedParamValues)
       throws WdkModelException;
 
   public AbstractEnumParam() {
@@ -156,7 +159,7 @@ public abstract class AbstractEnumParam extends Param {
     this.countOnlyLeaves = param.countOnlyLeaves;
   }
 
-  private EnumParamCache getEnumParamCache(Map<String, String> contextParamValues) {
+  private EnumParamCache getEnumParamCache(User user, Map<String, String> contextParamValues) {
     if (contextParamValues == null)
       contextParamValues = new LinkedHashMap<>();
     if (isDependentParam() && contextParamValues.size() == 0) {
@@ -166,7 +169,7 @@ public abstract class AbstractEnumParam extends Param {
           String dependedParamVal = contextParamValues.get(dependedParam.getName());
           if (dependedParamVal == null) {
             dependedParamVal = (dependedParam instanceof AbstractEnumParam)
-                ? ((AbstractEnumParam) dependedParam).getDefault(contextParamValues)
+                ? ((AbstractEnumParam) dependedParam).getDefault(user, contextParamValues)
                 : dependedParam.getDefault();
             contextParamValues.put(dependedParam.getName(), dependedParamVal);
           }
@@ -182,7 +185,7 @@ public abstract class AbstractEnumParam extends Param {
       }
     }
     try {
-      return createEnumParamCache(contextParamValues);
+      return createEnumParamCache(user, contextParamValues);
     }
     catch (WdkModelException wme) {
       throw new WdkRuntimeException("Unable to create EnumParamCache for param " + getName() + " with " +
@@ -352,7 +355,7 @@ public abstract class AbstractEnumParam extends Param {
    */
   @Override
   public String getDefault() throws WdkModelException {
-    return getDefault(new LinkedHashMap<String, String>());
+    return getDefault(wdkModel.getSystemUser(), new LinkedHashMap<String, String>());
   }
 
   /**
@@ -361,72 +364,72 @@ public abstract class AbstractEnumParam extends Param {
    * @return
    * @throws WdkModelException
    */
-  public String getDefault(Map<String, String> contextParamValues) throws WdkModelException {
-    return getEnumParamCache(contextParamValues).getDefaultValue();
+  public String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException {
+    return getEnumParamCache(user, contextParamValues).getDefaultValue();
   }
 
-  public EnumParamCache getValueCache() {
-    return getValueCache(null);
+  public EnumParamCache getValueCache(User user) {
+    return getValueCache(user, null);
   }
 
-  public EnumParamCache getValueCache(Map<String, String> dependedParamValues) {
-    return getEnumParamCache(dependedParamValues);
+  public EnumParamCache getValueCache(User user, Map<String, String> dependedParamValues) {
+    return getEnumParamCache(user, dependedParamValues);
   }
 
-  public String[] getVocab() {
-    return getVocab(null);
+  public String[] getVocab(User user) {
+    return getVocab(user, null);
   }
 
-  public String[] getVocab(Map<String, String> dependedParamValues) throws WdkRuntimeException {
-    return getEnumParamCache(dependedParamValues).getVocab();
+  public String[] getVocab(User user, Map<String, String> dependedParamValues) throws WdkRuntimeException {
+    return getEnumParamCache(user, dependedParamValues).getVocab();
   }
 
-  public EnumParamTermNode[] getVocabTreeRoots() {
-    return getVocabTreeRoots(null);
+  public EnumParamTermNode[] getVocabTreeRoots(User user) {
+    return getVocabTreeRoots(user, null);
   }
 
-  public EnumParamTermNode[] getVocabTreeRoots(Map<String, String> dependedParamValues) {
-    return getEnumParamCache(dependedParamValues).getVocabTreeRoots();
+  public EnumParamTermNode[] getVocabTreeRoots(User user, Map<String, String> dependedParamValues) {
+    return getEnumParamCache(user, dependedParamValues).getVocabTreeRoots();
   }
 
-  public String[] getVocabInternal() {
-    return getVocabInternal(null);
+  public String[] getVocabInternal(User user) {
+    return getVocabInternal(user, null);
   }
 
-  public String[] getVocabInternal(Map<String, String> dependedParamValues) {
-    return getEnumParamCache(dependedParamValues).getVocabInternal();
+  public String[] getVocabInternal(User user, Map<String, String> dependedParamValues) {
+    return getEnumParamCache(user, dependedParamValues).getVocabInternal();
   }
 
-  public String[] getDisplays() {
-    return getDisplays(null);
+  public String[] getDisplays(User user) {
+    return getDisplays(user, null);
   }
 
-  public String[] getDisplays(Map<String, String> dependedParamValues) {
-    return getEnumParamCache(dependedParamValues).getDisplays();
+  public String[] getDisplays(User user, Map<String, String> dependedParamValues) {
+    return getEnumParamCache(user, dependedParamValues).getDisplays();
   }
 
-  public Map<String, String> getVocabMap() {
-    return getVocabMap(null);
+  public Map<String, String> getVocabMap(User user) {
+    return getVocabMap(user, null);
   }
 
-  public Map<String, String> getVocabMap(Map<String, String> contextValues) {
-    return getEnumParamCache(contextValues).getVocabMap();
+  public Map<String, String> getVocabMap(User user, Map<String, String> contextValues) {
+    return getEnumParamCache(user, contextValues).getVocabMap();
   }
 
-  public Map<String, String> getDisplayMap() {
-    return getDisplayMap(null);
+  public Map<String, String> getDisplayMap(User user) {
+    return getDisplayMap(user, null);
   }
 
-  public Map<String, String> getDisplayMap(Map<String, String> dependedParamValues) {
-    return getEnumParamCache(dependedParamValues).getDisplayMap();
+  public Map<String, String> getDisplayMap(User user, Map<String, String> dependedParamValues) {
+    return getEnumParamCache(user, dependedParamValues).getDisplayMap();
   }
 
-  public Map<String, String> getParentMap() {
-    return getParentMap(null);
+  public Map<String, String> getParentMap(User user) {
+    return getParentMap(user, null);
   }
 
-  public Map<String, String> getParentMap(Map<String, String> dependedParamValues) {
-    return getEnumParamCache(dependedParamValues).getParentMap();
+  public Map<String, String> getParentMap(User user, Map<String, String> dependedParamValues) {
+    return getEnumParamCache(user, dependedParamValues).getParentMap();
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -534,7 +537,7 @@ public abstract class AbstractEnumParam extends Param {
 
       // verify that user did not select too few or too many values for this
       // param
-      int numSelected = getNumSelected(terms, contextValues);
+      int numSelected = getNumSelected(user, terms, contextValues);
       if ((maxSelectedCount > 0 && numSelected > maxSelectedCount) ||
           (minSelectedCount > 0 && numSelected < minSelectedCount)) {
         String range = (minSelectedCount > 0 ? "[ " + minSelectedCount : "( Inf") + ", " +
@@ -543,7 +546,7 @@ public abstract class AbstractEnumParam extends Param {
             range + " for parameter " + getPrompt());
       }
 
-      Map<String, String> map = getVocabMap(contextValues);
+      Map<String, String> map = getVocabMap(user, contextValues);
       boolean error = false;
       StringBuilder message = new StringBuilder();
       for (String term : terms) {
@@ -560,7 +563,7 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
 
-  private int getNumSelected(String[] terms, Map<String, String> contextValues) {
+  private int getNumSelected(User user, String[] terms, Map<String, String> contextValues) {
     // if countOnlyLeaves is set, must generate original tree, set values, and
     // count the leaves
     String displayType = getDisplayType();
@@ -568,7 +571,7 @@ public abstract class AbstractEnumParam extends Param {
         ": displayType = " + displayType + ", maxSelectedCount = " + getMaxSelectedCount() +
         ", countOnlyLeaves = " + getCountOnlyLeaves());
     if (displayType != null && displayType.equals("treeBox") && getCountOnlyLeaves()) {
-      EnumParamTermNode[] rootNodes = getEnumParamCache(contextValues).getVocabTreeRoots();
+      EnumParamTermNode[] rootNodes = getEnumParamCache(user, contextValues).getVocabTreeRoots();
       TreeNode tree = EnumParamBean.getParamTree(getName(), rootNodes);
       EnumParamBean.populateParamTree(tree, terms);
       return tree.getSelectedLeaves().size();
@@ -714,6 +717,7 @@ public abstract class AbstractEnumParam extends Param {
 
   @Override
   public Set<String> getAllValues() throws WdkModelException {
+    User user = wdkModel.getSystemUser();
     Set<String> values = new LinkedHashSet<>();
     if (isDependentParam()) {
       // dependent param, need to get all the combinations of the depended
@@ -736,7 +740,7 @@ public abstract class AbstractEnumParam extends Param {
       // now for each dependedValue tuplet, get the possible values
       for (Map<String, String> dependedValue : dependedValues) {
         try {
-          values.addAll(getVocabMap(dependedValue).keySet());
+          values.addAll(getVocabMap(user, dependedValue).keySet());
         }
         catch (WdkRuntimeException ex) {
           // if (ex.getMessage().startsWith("No item returned by")) {
@@ -748,7 +752,7 @@ public abstract class AbstractEnumParam extends Param {
       }
     }
     else {
-      values.addAll(getVocabMap().keySet());
+      values.addAll(getVocabMap(user).keySet());
     }
     return values;
   }
@@ -770,7 +774,7 @@ public abstract class AbstractEnumParam extends Param {
     // check if the value for this param is correct
     EnumParamCache cache = caches.get(name);
     if (cache == null) {
-      cache = createEnumParamCache(contextValues);
+      cache = createEnumParamCache(user, contextValues);
       caches.put(name, cache);
     }
     String value;
@@ -844,5 +848,30 @@ public abstract class AbstractEnumParam extends Param {
       }
       writer.println(indent + "</dependedParams>");
     }
+  }
+
+  public JSONObject getJSONValues(User user, Map<String, String> contextValues) throws WdkModelException {
+    EnumParamCache cache = createEnumParamCache(user, contextValues);
+    return getJSONValues(user, contextValues, cache);
+  }
+
+  public JSONObject getJSONValues(User user, Map<String, String> contextValues, EnumParamCache cache)
+      throws WdkModelException {
+    JSONObject jsParam = new JSONObject();
+    try {
+      JSONArray jsValues = new JSONArray();
+      for (String term : cache.getTerms()) {
+        JSONObject jsValue = new JSONObject();
+        jsValue.put("parent", cache.getParent(term));
+        jsValue.put("term", term);
+        jsValue.put("display", cache.getDisplay(term));
+        jsValues.put(jsValue);
+      }
+      jsParam.put("values", jsValues);
+    }
+    catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
+    return jsParam;
   }
 }

@@ -15,9 +15,10 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.EnumParam;
+import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.StringParam;
@@ -302,8 +303,10 @@ public class WdkModelBean implements ConnectionContainer {
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
                 ParamBean<?> bean;
-                if (param instanceof AbstractEnumParam) {
-                    bean = new EnumParamBean((AbstractEnumParam) param);
+                if (param instanceof FlatVocabParam) {
+                  bean = new FlatVocabParamBean((FlatVocabParam) param);
+                } else if (param instanceof EnumParam) {
+                    bean = new EnumParamBean((EnumParam) param);
                 } else if (param instanceof AnswerParam) {
                     bean = new AnswerParamBean((AnswerParam) param);
                 } else if (param instanceof DatasetParam) {

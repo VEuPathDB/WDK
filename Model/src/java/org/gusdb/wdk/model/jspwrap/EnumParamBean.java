@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONObject;
 
 /**
  * A wrapper on a {@link AbstractEnumParam} that provides simplified access for consumption by a view.
@@ -28,6 +29,8 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
   private static final Logger logger = Logger.getLogger(EnumParamBean.class);
 
+  private final AbstractEnumParam enumParam;
+
   private String[] currentValues;
   private String[] originalValues;
 
@@ -38,6 +41,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
   public EnumParamBean(AbstractEnumParam param) {
     super(param);
+    this.enumParam = param;
     _dependedValues = new LinkedHashMap<>();
   }
 
@@ -107,7 +111,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   // thread
   private EnumParamCache getCache() {
     if (_cache == null || _dependedValueChanged) {
-      _cache = param.getValueCache(_dependedValues);
+      _cache = param.getValueCache(user.getUser(), _dependedValues);
       _dependedValueChanged = false;
     }
     return _cache;
@@ -291,7 +295,21 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
       stableValue = getDefault();
 
     if (stableValue != null)
-      currentValues = (String[])param.getRawValue(user.getUser(), stabletValue, _dependedValues);
+      currentValues = (String[]) param.getRawValue(user.getUser(), stabletValue, _dependedValues);
 
   }
+
+  /**
+   * @param user
+   * @param contextValues
+   * @param cache
+   * @return
+   * @throws WdkModelException
+   * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#getJSONValues(org.gusdb.wdk.model.user.User,
+   *      java.util.Map, org.gusdb.wdk.model.jspwrap.EnumParamCache)
+   */
+  public JSONObject getJSONValues() throws WdkModelException {
+    return enumParam.getJSONValues(user.getUser(), contextValues, getCache());
+  }
+
 }

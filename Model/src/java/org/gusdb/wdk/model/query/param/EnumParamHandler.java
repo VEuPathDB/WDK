@@ -79,7 +79,7 @@ public class EnumParamHandler extends AbstractParamHandler {
       return stableValue;
 
     AbstractEnumParam enumParam = (AbstractEnumParam) param;
-    EnumParamCache cache = enumParam.getValueCache(contextValues);
+    EnumParamCache cache = enumParam.getValueCache(user, contextValues);
 
     String[] terms = enumParam.convertToTerms(stableValue);
     StringBuilder buffer = new StringBuilder();
@@ -155,7 +155,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     AbstractEnumParam aeParam = (AbstractEnumParam) param;
 
     // set labels
-    Map<String, String> displayMap = aeParam.getDisplayMap(contextValues);
+    Map<String, String> displayMap = aeParam.getDisplayMap(user, contextValues);
     String[] terms = displayMap.keySet().toArray(new String[0]);
     String[] labels = displayMap.values().toArray(new String[0]);
     requestParams.setArray(param.getName() + LABELS_SUFFIX, labels);
@@ -165,7 +165,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     String stableValue = requestParams.getParam(param.getName());
     Set<String> values = new HashSet<>();
     if (stableValue == null) { // stable value not set, use default
-      stableValue = aeParam.getDefault(contextValues);
+      stableValue = aeParam.getDefault(user, contextValues);
       if (stableValue != null) {
         // don't validate default, just use it as is.
         for (String term : stableValue.split(",")) {
