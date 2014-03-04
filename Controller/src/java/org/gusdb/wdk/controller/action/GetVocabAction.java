@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,15 +33,13 @@ public class GetVocabAction extends Action {
   /*
    * (non-Javadoc)
    * 
-   * @seeorg.apache.struts.action.Action#execute(org.apache.struts.action.
-   * ActionMapping, org.apache.struts.action.ActionForm,
-   * javax.servlet.http.HttpServletRequest,
+   * @seeorg.apache.struts.action.Action#execute(org.apache.struts.action. ActionMapping,
+   * org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest,
    * javax.servlet.http.HttpServletResponse)
    */
   @Override
-  public ActionForward execute(ActionMapping mapping, ActionForm form,
-      HttpServletRequest request, HttpServletResponse response)
-      throws Exception {
+  public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+      HttpServletResponse response) throws Exception {
     logger.trace("Entering GetVocabAction...");
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
     try {
@@ -70,31 +69,41 @@ public class GetVocabAction extends Action {
         }
       }
 
+      boolean getJson = Boolean.valueOf(request.getParameter("json"));
       boolean getXml = Boolean.valueOf(request.getParameter("xml"));
       QuestionBean wdkQuestion = wdkModel.getQuestion(qFullName);
-      EnumParamBean param = (EnumParamBean) wdkQuestion.getParamsMap().get(
-          paramName);
+      EnumParamBean param = (EnumParamBean) wdkQuestion.getParamsMap().get(paramName);
 
       param.setDependedValues(dependedValues);
-      
+
       UserBean user = ActionUtility.getUser(servlet, request);
       QuestionForm qForm = (QuestionForm) form;
       RequestParams requestParams = new QuestionRequestParams(request, qForm);
       param.prepareDisplay(user, requestParams, dependedValues);
-			request.setAttribute("vocabParam", param);
+      request.setAttribute("vocabParam", param);
 
-      String xmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator
-          + CConstants.WDK_PAGES_DIR + File.separator + "vocabXml.jsp";
+      if (getJson) {    // output json string directly
+        PrintWriter writer = response.getWriter();
+        JSONObject jsValues = param.getJSONValues();
+        writer.print(jsValues.toString());
+        writer.flush();
+        writer.close();
+        return null;
+      }
+      else {    // output xml or html.
+        String xmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator + CConstants.WDK_PAGES_DIR +
+            File.separator + "vocabXml.jsp";
 
-      String htmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator
-          + CConstants.WDK_PAGES_DIR + File.separator + "vocabHtml.jsp";
+        String htmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator + CConstants.WDK_PAGES_DIR +
+            File.separator + "vocabHtml.jsp";
 
-      ActionForward forward = new ActionForward(getXml ? xmlVocabFile
-          : htmlVocabFile);
+        ActionForward forward = new ActionForward(getXml ? xmlVocabFile : htmlVocabFile);
 
-      logger.trace("Leaving GetVocabAction...");
-      return forward;
-    } catch (Exception ex) {
+        logger.trace("Leaving GetVocabAction...");
+        return forward;
+      }
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       throw ex;
     }

@@ -24,30 +24,25 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * The query instance holds the values for the parameters, and the sub classes
- * of it are responsible for running the actual query, and retrieving the
- * results from the resource.
+ * The query instance holds the values for the parameters, and the sub classes of it are responsible for
+ * running the actual query, and retrieving the results from the resource.
  * 
- * If the query is set to be cached, the query instance will call the
- * CacheFactory to cache the results, and then represent the results as an SQL
- * on the cached result. If a query of the same param values is called later,
- * the cache will be used instead to improve the performance of query.
+ * If the query is set to be cached, the query instance will call the CacheFactory to cache the results, and
+ * then represent the results as an SQL on the cached result. If a query of the same param values is called
+ * later, the cache will be used instead to improve the performance of query.
  * 
  * @author Jerric Gao
  * 
  */
 public abstract class QueryInstance {
 
-  public abstract void createCache(String tableName, int instanceId)
-      throws WdkModelException;
+  public abstract void createCache(String tableName, int instanceId) throws WdkModelException;
 
-  public abstract void insertToCache(String tableName, int instanceId)
-      throws WdkModelException;
+  public abstract void insertToCache(String tableName, int instanceId) throws WdkModelException;
 
   public abstract String getSql() throws WdkModelException;
 
-  protected abstract void appendSJONContent(JSONObject jsInstance)
-      throws JSONException;
+  protected abstract void appendSJONContent(JSONObject jsInstance) throws JSONException;
 
   protected abstract ResultList getUncachedResults() throws WdkModelException;
 
@@ -65,9 +60,8 @@ public abstract class QueryInstance {
 
   protected Map<String, String> context;
 
-  protected QueryInstance(User user, Query query,
-      Map<String, String> stableValues, boolean validate, int assignedWeight,
-      Map<String, String> context) throws WdkModelException {
+  protected QueryInstance(User user, Query query, Map<String, String> stableValues, boolean validate,
+      int assignedWeight, Map<String, String> context) throws WdkModelException {
     this.user = user;
     this.query = query;
     this.wdkModel = query.getWdkModel();
@@ -99,8 +93,7 @@ public abstract class QueryInstance {
     this.instanceId = instanceId;
   }
 
-  private void setValues(Map<String, String> stableValues, boolean validate)
-      throws WdkModelException {
+  private void setValues(Map<String, String> stableValues, boolean validate) throws WdkModelException {
     logger.trace("----- input value for [" + query.getFullName() + "] -----");
     for (String paramName : stableValues.keySet()) {
       logger.trace(paramName + "='" + stableValues.get(paramName) + "'");
@@ -113,7 +106,8 @@ public abstract class QueryInstance {
       stableValues.put(userKey, Integer.toString(user.getUserId()));
     }
 
-    if (validate) validateValues(user, stableValues);
+    if (validate)
+      validateValues(user, stableValues);
 
     // passed, assign the value
     this.stableValues = stableValues;
@@ -158,7 +152,8 @@ public abstract class QueryInstance {
       appendSJONContent(jsInstance);
 
       return jsInstance;
-    } catch (JSONException e) {
+    }
+    catch (JSONException e) {
       throw new WdkModelException("Unable to build JSON object.", e);
     }
   }
@@ -181,17 +176,16 @@ public abstract class QueryInstance {
           jsParams.put(paramName, value);
       }
       return jsParams;
-    } catch (JSONException e) {
-      throw new WdkModelException(
-          "Error while converting param values to JSON." + e);
+    }
+    catch (JSONException e) {
+      throw new WdkModelException("Error while converting param values to JSON." + e);
     }
   }
 
   public ResultList getResults() throws WdkModelException {
     logger.debug("retrieving results of query [" + query.getFullName() + "]");
 
-    ResultList resultList = (isCached()) ? getCachedResults()
-        : getUncachedResults();
+    ResultList resultList = (isCached()) ? getCachedResults() : getUncachedResults();
 
     logger.debug("results of query [" + query.getFullName() + "] retrieved.");
 
@@ -204,12 +198,12 @@ public abstract class QueryInstance {
       StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
       sql.append(getSql()).append(") f");
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      Object objSize = SqlUtils.executeScalar(dataSource, sql.toString(),
-          query.getFullName() + "__count");
+      Object objSize = SqlUtils.executeScalar(dataSource, sql.toString(), query.getFullName() + "__count");
       int resultSize = Integer.parseInt(objSize.toString());
       logger.debug("end getting query size");
       return resultSize;
-    } catch (SQLException e) {
+    }
+    catch (SQLException e) {
       throw new WdkModelException(e);
     }
   }
@@ -228,8 +222,7 @@ public abstract class QueryInstance {
     return resultFactory.getCachedSql(this);
   }
 
-  private void validateValues(User user, Map<String, String> values)
-      throws WdkModelException {
+  private void validateValues(User user, Map<String, String> values) throws WdkModelException {
     Map<String, Param> params = query.getParamMap();
     Map<String, String> errors = null;
 
@@ -241,8 +234,7 @@ public abstract class QueryInstance {
       String prompt = paramName;
       try {
         if (!params.containsKey(paramName)) {
-          logger.warn("The parameter '" + paramName
-              + "' doesn't exist in query " + query.getFullName());
+          logger.warn("The parameter '" + paramName + "' doesn't exist in query " + query.getFullName());
           continue;
         }
 
@@ -251,28 +243,28 @@ public abstract class QueryInstance {
 
         // validate param
         param.validate(user, dependentValue, values);
-      } catch (Exception ex) {
+      }
+      catch (Exception ex) {
         ex.printStackTrace();
         errMsg = ex.getMessage();
-        if (errMsg == null) errMsg = ex.getClass().getName();
+        if (errMsg == null)
+          errMsg = ex.getClass().getName();
       }
       if (errMsg != null) {
-        if (errors == null) errors = new LinkedHashMap<String, String>();
+        if (errors == null)
+          errors = new LinkedHashMap<String, String>();
         errors.put(prompt, errMsg);
       }
     }
     if (errors != null) {
-      WdkModelException ex = new WdkModelException(
-          "Some of the input parameters are invalid.", errors);
+      WdkModelException ex = new WdkModelException("Some of the input parameters are invalid.", errors);
       logger.debug(ex.formatErrors());
       throw ex;
     }
   }
 
-  private Map<String, String> fillEmptyValues(Map<String, String> stableValues)
-      throws WdkModelException {
-    Map<String, String> newValues = new LinkedHashMap<String, String>(
-        stableValues);
+  private Map<String, String> fillEmptyValues(Map<String, String> stableValues) throws WdkModelException {
+    Map<String, String> newValues = new LinkedHashMap<String, String>(stableValues);
     Map<String, Param> paramMap = query.getParamMap();
 
     // iterate through this query's params, filling values
@@ -282,13 +274,11 @@ public abstract class QueryInstance {
     return newValues;
   }
 
-  private void resolveParamValue(Param param, Map<String, String> stableValues)
-      throws WdkModelException {
+  private void resolveParamValue(Param param, Map<String, String> stableValues) throws WdkModelException {
     String value;
     if (!stableValues.containsKey(param.getName())) {
       // param not provided, determine value
-      if (param instanceof AbstractEnumParam
-          && ((AbstractEnumParam) param).isDependentParam()) {
+      if (param instanceof AbstractEnumParam && ((AbstractEnumParam) param).isDependentParam()) {
         // special case; must get value of depended param first
         AbstractEnumParam aeParam = (AbstractEnumParam) param;
         Map<String, String> dependedValues = new LinkedHashMap<>();
@@ -297,11 +287,13 @@ public abstract class QueryInstance {
           String dependedName = dependedParam.getName();
           dependedValues.put(dependedName, stableValues.get(dependedName));
         }
-        value = aeParam.getDefault(dependedValues);
-      } else {
+        value = aeParam.getDefault(user, dependedValues);
+      }
+      else {
         value = param.getDefault();
       }
-    } else { // param provided, but it can be empty
+    }
+    else { // param provided, but it can be empty
       value = stableValues.get(param.getName());
       if (value == null || value.length() == 0) {
         value = param.isAllowEmpty() ? param.getEmptyValue() : null;
@@ -310,8 +302,7 @@ public abstract class QueryInstance {
     stableValues.put(param.getName(), value);
   }
 
-  protected Map<String, String> getParamInternalValues()
-      throws WdkModelException {
+  protected Map<String, String> getParamInternalValues() throws WdkModelException {
     // the empty & default values are filled
     Map<String, String> stableValues = fillEmptyValues(this.stableValues);
     Map<String, String> internalValues = new LinkedHashMap<String, String>();
@@ -321,17 +312,16 @@ public abstract class QueryInstance {
       String internalValue, stableValue = stableValues.get(paramName);
 
       // TODO: refactor so this fork isn't necessary
-      if (param instanceof AbstractEnumParam
-          && ((AbstractEnumParam) param).isDependentParam()) {
+      if (param instanceof AbstractEnumParam && ((AbstractEnumParam) param).isDependentParam()) {
         AbstractEnumParam aeParam = (AbstractEnumParam) param;
         Map<String, String> dependedParamValues = new LinkedHashMap<>();
         for (Param dependedParam : aeParam.getDependedParams()) {
           String value = stableValues.get(dependedParam.getName());
           dependedParamValues.put(dependedParam.getName(), value);
         }
-        internalValue = aeParam.getInternalValue(user, stableValue,
-            dependedParamValues);
-      } else {
+        internalValue = aeParam.getInternalValue(user, stableValue, dependedParamValues);
+      }
+      else {
         internalValue = param.getInternalValue(user, stableValue, stableValues);
       }
 

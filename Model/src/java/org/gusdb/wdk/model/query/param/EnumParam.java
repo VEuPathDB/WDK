@@ -9,6 +9,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
 /**
@@ -44,7 +45,7 @@ public class EnumParam extends AbstractEnumParam {
   // ///////////////////////////////////////////////////////////////////
 
   @Override
-  protected EnumParamCache createEnumParamCache(Map<String, String> dependedParamValues)
+  protected EnumParamCache createEnumParamCache(User user, Map<String, String> dependedParamValues)
       throws WdkModelException {
     logger.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     Set<Param> dependedParams = getDependedParams();

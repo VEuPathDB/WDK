@@ -444,6 +444,10 @@
     <element name="flatVocabParam">
       <ref name="EnumParamBaseProperties" />
       <attribute name="queryRef" />
+      <optional>
+        <attribute name="metadataSpecQueryRef" />
+        <attribute name="metadataQueryRef" />
+      </optional>
       <zeroOrMore>
         <choice>
           <ref name="ParamBaseTags" />
