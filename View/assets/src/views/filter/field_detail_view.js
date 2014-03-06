@@ -57,7 +57,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
 
       if (typeof constructor === 'undefined') {
-        throw new TypeError('Uknown filter type: ' + type);
+        throw new TypeError('Unknown filter type: ' + type);
       }
 
       return constructor;
