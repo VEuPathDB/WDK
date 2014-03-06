@@ -1,9 +1,9 @@
 wdk.namespace('wdk.core', function(ns, $) {
   'use strict';
 
-  var BaseObject = wdk.core.BaseObject;
-  var Container = wdk.core.Container;
-  var RunLoop = wdk.core.RunLoop;
+  var BaseObject = ns.BaseObject;
+  var Container = ns.Container;
+  var RunLoop = ns.RunLoop;
 
   /**
    * Main application controller and IoC container
