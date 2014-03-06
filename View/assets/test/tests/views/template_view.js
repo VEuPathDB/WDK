@@ -1,4 +1,4 @@
-describe('wdk.views.template_view', function() {
+xdescribe('wdk.views.template_view', function() {
 
   describe('TemplateView', function() {
 
