@@ -49,6 +49,7 @@ module.exports = {
 
     'src/views/core.js',
     'src/views/template_view.js',
+    'src/views/question_view.js',
 
     // filter views
     'src/views/filter/field_list_view.js',
