@@ -1,8 +1,6 @@
 wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   "use strict";
 
-  var dependedParams = {};
-  var dependedValues;
   var displayTermMap;
   var oldValues;
   var termDisplayMap;
@@ -45,6 +43,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   //==============================================================================
   function initDependentParamHandlers(isEdit, element) {
+    var dependedParams = {};
 
     element.find('div.dependentParam').each(function() {
       $('input, select', this).attr('disabled', true);
