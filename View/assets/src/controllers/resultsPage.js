@@ -20,6 +20,32 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
       }
     });
+    
+    // add delete buttons to step analysis tabs (must do this after tabs are applied)
+    $element.find("li[id^='step-analysis']").each(function(){ addDeleteButton(this); });
+    
+    // add hover and click handlers for step analysis add buttons
+    var newAnalysisDiv = $element.find('.new-analysis');
+    var newAnalysisButton = $(newAnalysisDiv).find(".new-analysis-button");
+    var newAnalysisInstr = $(newAnalysisDiv).find(".new-analysis-instr");
+    var newAnalysisMenu = $(newAnalysisDiv).find(".new-analysis-menu");
+    $(newAnalysisDiv).hover(
+    	function(){
+    		newAnalysisInstr.html("Analyze This Result");
+    		newAnalysisButton.css("border","1px solid black");
+    		newAnalysisMenu.show();
+    	},
+    	function(){
+    		newAnalysisInstr.html("");
+    		newAnalysisButton.css("border","1px solid #AAAAAA");
+    		newAnalysisMenu.hide();
+    	}
+    );
+    $(newAnalysisMenu).find("li").click(function(event){
+    	newAnalysisMenu.hide();
+    	var data = $(event.target).data();
+    	wdk.resultsPage.configureStepAnalysis(data.analysis, data.strategy, data.step);
+    });
 
     // var workspace = window.wdk.findActiveWorkspace(); 
 
@@ -40,6 +66,167 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     // });
   }
 
+  function addDeleteButton(tabElement) {
+	  var errorMsg = "Cannot delete this analysis at this time.  Please " +
+	  		"try again later, or contact us if the problem persists.";
+	  $(tabElement).find(".ui-closable-tab").live("click", function(e) {
+		  var button = e.target;
+		  var analysisId = $(tabElement).attr('id').substring(14);
+		  $.ajax({
+			  url: wdk.webappUrl("/deleteStepAnalysis.do"),
+			  data: { "stepAnalysisId": analysisId },
+			  type: 'POST',
+			  dataType: 'json',
+			  success: function(data, textStatus, jqXHR) {
+				  if (data.status == "success") {
+					  var tabContainerDiv = $(button).closest(".ui-tabs").attr("id");
+					  var panelId = $(button).closest("li").remove().attr("aria-controls");
+					  $("#"+panelId ).remove();
+					  $("#"+tabContainerDiv).tabs("refresh");
+					  return;
+				  }
+				  alert(errorMsg);
+			  },
+			  error: function(jqXHR, textStatus, errorThrown) {
+				  alert(errorMsg);
+			  }
+		  });
+	  });
+	  // old way of trying to append image to tab
+	  //var imageMarkup = '<img ' +
+	  //    'class="analysis-close-button" ' +
+	  //    'data-analysisid="' + analysisId + '" ' +
+	  //    'src="' + wdk.assetsUrl('/wdk/images/closeIcon-blue.png') + '" ' +
+	  //    'onclick="wdk.resultsPage.deleteStepAnalysis"/>';
+	  //$(tabElement).find('a').append(imageMarkup);
+  }
+  
+  function configureStepAnalysis(analysisName, strategyId, stepId) {
+	  // fetch plugin's form
+	  $.ajax({
+		  url: wdk.webappUrl("/stepAnalysisForm.do"),
+		  data: { "analysisName": analysisName, "strategyId": strategyId, "stepId": stepId },
+		  type: 'GET',
+		  dataType: 'html',
+		  success: function(data, textStatus, jqXHR) {
+			  // convert returned page into contained DOM elements
+			  var returnedDomElements = $.parseHTML(data);
+			  // wrap all elements with a div
+			  var wrappingDiv = $('<div id="stepAnalysisFormContainer"></div>');
+			  for (var i=0; i < returnedDomElements.length; i++) {
+			    $(wrappingDiv).append(returnedDomElements[i]);
+			  }
+			  // configure form for submission to the step analysis runner action
+			  var hiddenFields = '' +
+			      '<input type="hidden" name="strategyId" value="' + strategyId + '"/>' +
+			      '<input type="hidden" name="stepId" value="' + stepId + '"/>' +
+			      '<input type="hidden" name="analysisName" value="' + analysisName + '"/>';
+			  $(wrappingDiv).find("form")
+			      .append(hiddenFields)
+			      .submit(function(event) {
+			    	  event.preventDefault();
+			    	  $(wrappingDiv).dialog('close');
+			    	  wdk.resultsPage.runStepAnalysis(event.target);
+			    	  return false;
+			      });
+			  $(wrappingDiv).dialog({
+				  modal: true,
+				  autoOpen: false,
+				  width: "auto",
+				  height: "auto",
+			      buttons: { "Cancel": function() {
+			          $(wrappingDiv).dialog('close');
+			      }}
+			  });
+			  $(wrappingDiv).dialog('open');
+		  },
+		  error: function(jqXHR, textStatus, errorThrown) {
+			  alert("Error: Unable to retrieve step analysis plugin form for " + analysisName);
+		  }
+	  });
+  }
+  
+  function runStepAnalysis(form) {
+	  var analysisName = $(form).find("input[name=analysisName]").val();
+	  var strategyId = $(form).find("input[name=strategyId]").val();
+	  var stepId = $(form).find("input[name=stepId]").val();
+	  $.ajax({
+		  url: wdk.webappUrl("/runStepAnalysis.do"),
+		  data: $(form).serialize(),
+		  type: 'POST',
+		  dataType: 'json',
+		  success: function(data, textStatus, jqXHR) {
+			  // if success, then reload results pane (to show new tab)
+			  if (data.status == 'success') {
+				  // create, add, and select new tab representing this execution
+				  var analysisId = data.analysisId;
+				  var displayName = data.displayName;
+				  var description = data.description;
+				  var queryString = "?strategyId=" + strategyId + "&stepId=" + stepId +
+				      "&analysisName=" + analysisName + "&analysisId=" + analysisId;
+				  var tabUrl = wdk.webappUrl("/showStepAnalysis.do" + queryString);
+				  var tabId = "step-analysis-" + analysisId;
+				  var tabIndex = $('#Summary_Views ul.ui-tabs-nav > li').length - 1;
+			      var tabContent = '<li id="' + tabId + '">' +
+			          '<a href="' + tabUrl + '" title="' + description + '">' +
+			          displayName + '<span></span><span ' +
+			          'class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span></a></li>';
+				  $('#Summary_Views ul.ui-tabs-nav > li:last').before(tabContent);
+				  $('#Summary_Views').tabs('refresh');
+				  addDeleteButton($('#Summary_Views').find('#'+tabId)[0]);
+				  $('#Summary_Views').tabs('option', 'active', tabIndex);
+				  return;
+			  }
+			  // if fail, then load plugin form again and add validation errors
+			  // TODO!!!
+			  alert("Error: Could not validate step analysis plugin form for " + analysisName);
+		  },
+		  error: function(jqXHR, textStatus, errorThrown) {
+			  alert("Error: Unable to run step analysis plugin for " + analysisName);
+		  }
+	  });
+  }
+  
+  function findTabIndexById(tabContainerSelector, tabId) {
+	  var tabs = $(tabContainerSelector).find('ul.ui-tabs-nav > li');
+	  for (var i=0; i < tabs.length; i++) {
+		  if ($(tabs[i]).attr('id') == tabId) {
+			  return i;
+		  }
+	  }
+	  return -1;
+  }
+  
+  function analysisRefresh($obj, $attribs) {
+	  var analysisId = $attribs.analysisid;
+	  var secondsLeft = 0 + $obj.find('.countdown').html();
+	  wdk.resultsPage.doRefreshCountdown($obj, analysisId, secondsLeft);
+  }
+  
+  function doRefreshCountdown($obj, analysisId, secondsLeft) {
+	  if (secondsLeft == 0) {
+		  // refresh this tab to see if results are present
+		  var urlToLoad = $('#step-analysis-' + analysisId + ' > a').attr('href');
+		  $obj.parent().load(urlToLoad, function() {
+			  //alert("refreshed page loaded!");
+		  });
+	  }
+	  else {
+		  // count down one second and update timer display
+		  setTimeout(function() {
+			  var newRemaining = secondsLeft - 1;
+			  $obj.find('.countdown').html(newRemaining);
+			  wdk.resultsPage.doRefreshCountdown($obj, analysisId, newRemaining);
+		  }, 1000);
+	  }
+  }
+  
+  function deleteStepAnalysis(event) {
+	  var button = event.target;
+	  var analysisId = $(button).data('analysisid');
+	  alert("Will delete analysis with ID: " + analysisId);
+  }
+  
   function moveAttr(col_ix, table) {
     // Get name of target attribute & attribute to left (if any)
     // NOTE:  Have to convert these from frontId to backId!!!
@@ -359,5 +546,10 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   ns.updateAttrs = updateAttrs;
   ns.updatePageCount = updatePageCount;
   ns.updateResultLabels = updateResultLabels;
-
+  ns.configureStepAnalysis = configureStepAnalysis;
+  ns.runStepAnalysis = runStepAnalysis;
+  ns.analysisRefresh = analysisRefresh;
+  ns.doRefreshCountdown = doRefreshCountdown;
+  ns.deleteStepAnalysis = deleteStepAnalysis;
+  
 });

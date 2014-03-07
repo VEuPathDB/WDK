@@ -16,6 +16,8 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.analysis.StepAnalysisXml;
 import org.gusdb.wdk.model.answer.AnswerFilter;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
@@ -60,20 +62,23 @@ import org.gusdb.wdk.model.user.User;
  * can be instantiated, and the instance will holds attribute values and table values.
  * </p>
  * 
- * A record can have multiple attributes, but for each attribute, it can have only have one value; the tables
+ * <p>
+ * A record can have multiple attributes, but for each attribute, it can have only one value; the tables
  * can have multiple attributes, and each attribute might have zero or more values. Please refer to the
  * AttributeQueryReference and TableQueryReference for details about defining the attribute and table queries.
+ * </p>
  * 
+ * <p>
  * A nested record is similar to a single-row table, but instead of defining attributes within the
  * recordClass, we can reuse the existing recordClass referenced by nested Record.
+ * </p>
  * 
+ * <p>
  * A nested record list is similar to nested record in most aspects, but it can have multiple nested records
  * for a given record.
- * 
- * 
+ * </p>
  * 
  * @author jerric
- * 
  */
 public class RecordClass extends WdkModelBase implements AttributeFieldContainer {
 
@@ -261,12 +266,15 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String favoriteNoteFieldName;
   private AttributeField favoriteNoteField;
 
-  private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
-  private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<String, SummaryView>();
+  private List<SummaryView> summaryViewList = new ArrayList<>();
+  private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<>();
 
-  private List<RecordView> recordViewList = new ArrayList<RecordView>();
-  private Map<String, RecordView> recordViewMap = new LinkedHashMap<String, RecordView>();
+  private List<RecordView> recordViewList = new ArrayList<>();
+  private Map<String, RecordView> recordViewMap = new LinkedHashMap<>();
 
+  private List<StepAnalysisXml> stepAnalysisList = new ArrayList<>();
+  private Map<String, StepAnalysis> stepAnalysisMap = new LinkedHashMap<>();
+  
   // ////////////////////////////////////////////////////////////////////
   // Called at model creation time
   // ////////////////////////////////////////////////////////////////////
@@ -661,6 +669,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     for (RecordView recordView : recordViewMap.values()) {
       recordView.resolveReferences(model);
+    }
+    
+    // resolve step analysis refs
+    for (StepAnalysis stepAnalysisRef : stepAnalysisMap.values()) {
+      ((StepAnalysisXml)stepAnalysisRef).resolveReferences(model);
     }
 
     resolved = true;
@@ -1147,7 +1160,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       }
     }
     summaryViewList = null;
-
+    
     // add WDK supported views to all record classes, first
     for (SummaryView view : SummaryView.createSupportedSummaryViews(this)) {
       view.excludeResources(projectId);
@@ -1159,6 +1172,20 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       summaryViewMap.put(view.getName(), view);
     }
 
+    // exclude step analyses
+    for (StepAnalysisXml analysis : stepAnalysisList) {
+      if (analysis.include(projectId)) {
+        analysis.excludeResources(projectId);
+        String name = analysis.getName();
+        if (stepAnalysisMap.containsKey(name)) {
+          throw new WdkModelException("The step analysis '" + name
+              + "' is duplicated in question " + getFullName());
+        }
+        stepAnalysisMap.put(name, analysis);
+      }
+    }
+    stepAnalysisList = null;
+    
     // exclude the summary views
     Map<String, RecordView> recordViews = new LinkedHashMap<String, RecordView>();
     for (RecordView view : recordViewList) {
@@ -1431,6 +1458,26 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       summaryViewMap.put(view.getName(), view);
     else
       summaryViewList.add(view);
+  }
+
+  public Map<String, StepAnalysis> getStepAnalyses() {
+    return new LinkedHashMap<String, StepAnalysis>(stepAnalysisMap);
+  }
+
+  public StepAnalysis getStepAnalysis(String name) throws WdkUserException {
+    if (stepAnalysisMap.containsKey(name)) {
+      return stepAnalysisMap.get(name);
+    } else {
+      throw new WdkUserException("Unknown step analysis for record class " + "["
+          + getFullName() + "]: " + name);
+    }
+  }
+
+  public void addStepAnalysis(StepAnalysisXml analysis) {
+    if (stepAnalysisList == null)
+      stepAnalysisMap.put(analysis.getName(), analysis);
+    else
+      stepAnalysisList.add(analysis);
   }
 
   public Map<String, RecordView> getRecordViews() {
