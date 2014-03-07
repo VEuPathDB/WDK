@@ -69,7 +69,7 @@ CREATE TABLE wdkuser.config
 (
   config_name VARCHAR(100) NOT NULL,
   config_value VARCHAR(255),
-  migration_id NUMBER(12),
+  migration_id NUMERIC(12),
   CONSTRAINT "config_pk" PRIMARY KEY (config_name)
 );
 
