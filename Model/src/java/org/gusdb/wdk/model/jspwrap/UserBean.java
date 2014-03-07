@@ -1147,7 +1147,7 @@ public class UserBean /* implements Serializable */{
     factory.clearBasket(user, recordClass.recordClass);
   }
 
-  public String getBasket(RecordClassBean recordClass) throws SQLException {
+  public String getBasket(RecordClassBean recordClass) {
     BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
     return basketFactory.getBasketContent(user, recordClass.recordClass);
   }
@@ -1323,7 +1323,7 @@ public class UserBean /* implements Serializable */{
     user.setCurrentRecordView(recordClass.recordClass, recordView);
   }
 
-  public void setSortingAttributes(String questionName, String sortColumns) throws WdkModelException {
+  public void setSortingAttributes(String questionName, String sortColumns) {
     user.setSortingAttributes(questionName, sortColumns);
   }
 }

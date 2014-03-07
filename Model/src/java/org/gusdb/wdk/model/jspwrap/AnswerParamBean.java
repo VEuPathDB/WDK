@@ -27,7 +27,7 @@ public class AnswerParamBean extends ParamBean<AnswerParam> {
     }
 
     public AnswerValueBean getAnswerValue() throws Exception {
-      AnswerParam answerParam = (AnswerParam)param;
+      AnswerParam answerParam = param;
         try {
             User user = this.user.getUser();
             Step step = (Step)answerParam.getRawValue(user, stableValue, contextValues);

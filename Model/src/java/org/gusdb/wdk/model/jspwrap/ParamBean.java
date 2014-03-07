@@ -102,6 +102,9 @@ public abstract class ParamBean<T extends Param> {
     param.validate(user.getUser(), rawOrDependentValue, contextValues);
   }
 
+  /**
+   * @throws WdkModelException if unable to set stable value 
+   */
   public void setStableValue(String stabletValue) throws WdkModelException {
     this.stableValue = stabletValue;
   }

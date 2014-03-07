@@ -168,6 +168,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     this.contextQuery = param.contextQuery;
   }
 
+  @Override
   public WdkModel getWdkModel() {
     return wdkModel;
   }
@@ -584,6 +585,9 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
   }
 
+  /**
+   * @throws WdkModelException if unable to print dependency content 
+   */
   protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
     // by default, print nothing
   }

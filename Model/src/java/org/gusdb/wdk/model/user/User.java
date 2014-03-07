@@ -991,7 +991,7 @@ public class User /* implements Serializable */{
     return sortValue;
   }
   
-  public void setSortingAttributes(String questionName, String sortings) throws WdkModelException {
+  public void setSortingAttributes(String questionName, String sortings) {
     String sortKey = questionName + SORTING_ATTRIBUTES_SUFFIX;
     projectPreferences.put(sortKey, sortings);
   }

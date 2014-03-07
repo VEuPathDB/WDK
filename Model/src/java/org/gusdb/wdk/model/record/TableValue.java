@@ -521,7 +521,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     }
   }
 
-  private void initializeRows() throws WdkModelException, WdkUserException {
+  private void initializeRows() throws WdkModelException {
     if (rows != null) return;
 
     rows = new ArrayList<Map<String, AttributeValue>>();

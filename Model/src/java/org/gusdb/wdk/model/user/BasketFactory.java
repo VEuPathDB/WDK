@@ -403,8 +403,7 @@ public class BasketFactory {
     }
   }
 
-  public String getBasketContent(User user, RecordClass recordClass)
-      throws SQLException {
+  public String getBasketContent(User user, RecordClass recordClass) {
     StringBuilder buffer = new StringBuilder();
     List<RecordInstance> records = new ArrayList<>();
     for (RecordInstance record : records) {

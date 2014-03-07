@@ -466,7 +466,7 @@ public class RecordInstance extends AttributeValueContainer {
   }
 
   public Map<String, AttributeValue> getSummaryAttributeValueMap()
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     return getAttributeValueMap(FieldScope.NON_INTERNAL);
   }
 
