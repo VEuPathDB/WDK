@@ -10,6 +10,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
@@ -158,10 +159,7 @@ public class Utilities {
     byte[] byteBuffer = getEncryptedBytes(data.toString());
     if (shortDigest) {
       // just take the first 8 bytes from MD5 hash
-      int size = Math.min(byteBuffer.length, 8);
-      byte[] newBuffer = new byte[size];
-      System.arraycopy(byteBuffer, 0, newBuffer, 0, newBuffer.length);
-      byteBuffer = newBuffer;
+      byteBuffer = Arrays.copyOf(byteBuffer, Math.min(byteBuffer.length, 8));
     }
     // convert each byte into hex format
     StringBuffer buffer = new StringBuffer();

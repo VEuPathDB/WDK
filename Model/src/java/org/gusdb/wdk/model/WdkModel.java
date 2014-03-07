@@ -986,9 +986,7 @@ public class WdkModel implements ConnectionContainer {
     Map<String, String[]> propLists = new LinkedHashMap<String, String[]>();
     for (String plName : defaultPropertyListMap.keySet()) {
       String[] values = defaultPropertyListMap.get(plName);
-      String[] array = new String[values.length];
-      System.arraycopy(values, 0, array, 0, array.length);
-      propLists.put(plName, array);
+      propLists.put(plName, Arrays.copyOf(values, values.length));
     }
     return propLists;
   }

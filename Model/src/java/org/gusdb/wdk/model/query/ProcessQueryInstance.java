@@ -17,6 +17,7 @@ import javax.sql.DataSource;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.ArrayUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -126,10 +127,7 @@ public class ProcessQueryInstance extends QueryInstance {
     Integer[] bindTypes = ResultListArgumentBatch.getBindTypes(columns);
     
     // add rowID into bindTypes
-    Integer[] newBindTypes = new Integer[bindTypes.length + 1];
-    System.arraycopy(bindTypes, 0, newBindTypes, 1, bindTypes.length);
-    newBindTypes[0] = Types.INTEGER;
-    bindTypes = newBindTypes;
+    bindTypes = ArrayUtil.insert(bindTypes, 0, Types.INTEGER);
     
     PreparedStatement ps = null;
     int rowCount = 0;
@@ -146,10 +144,7 @@ public class ProcessQueryInstance extends QueryInstance {
         
         // add rowCount into values
         rowCount++;
-        Object[] newValues = new Object[values.length + 1];
-        System.arraycopy(values, 0, newValues, 1, values.length);
-        newValues[0] = rowCount;
-        values = newValues;
+        values = ArrayUtil.insert(values, 0, rowCount);
 
         SqlUtils.bindParamValues(ps, bindTypes, values);
         ps.addBatch();
@@ -287,11 +282,7 @@ public class ProcessQueryInstance extends QueryInstance {
       if (query.isHasWeight() && !columns.containsKey(weightColumn)) {
         indices.put(weightColumn, indices.size());
         for (int i = 0; i < content.length; i++) {
-          String[] line = content[i];
-          String[] newLine = new String[line.length + 1];
-          System.arraycopy(line, 0, newLine, 0, line.length);
-          newLine[line.length] = Integer.toString(assignedWeight);
-          content[i] = newLine;
+          content[i] = ArrayUtil.append(content[i], Integer.toString(assignedWeight));
         }
       }
 
