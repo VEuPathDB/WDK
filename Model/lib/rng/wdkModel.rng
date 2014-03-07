@@ -56,6 +56,8 @@
 
           <ref name="uiConfig" />
 
+          <ref name="stepAnalysisPlugins" />
+
         </choice>
       </oneOrMore>
     </element>
@@ -908,7 +910,7 @@
           <ref name="attributesList" />
           <ref name="summaryView" />
           <ref name="recordView" />
-
+          <ref name="stepAnalysisRef" />
 
           <!-- define the default note field for the recordClass -->
           <element name="favorite">
@@ -1127,6 +1129,8 @@
           <ref name="sqlParamValue" />
 
           <ref name="summaryView" />
+          
+          <ref name="stepAnalysisRef" />
 
         </choice>
       </zeroOrMore>
@@ -1436,7 +1440,6 @@
     </element>
   </define>
 
-
   <define name="summaryView">
     <element name="summaryView">
       <ref name="ViewBaseContent" />
@@ -1469,7 +1472,75 @@
       </element>
     </zeroOrMore>
   </define>
+  
+  <define name="stepAnalysisPlugins">
+    <element name="stepAnalysisPlugins">
+      <optional>
+        <element name="viewConfig">
+          <optional>
+            <attribute name="prefix" />
+          </optional>
+          <optional>
+            <attribute name="suffix" />
+          </optional>
+        </element>
+      </optional>
+      <optional>
+        <element name="executionConfig">
+          <optional>
+            <attribute name="threadPoolSize">
+              <data type="positiveInteger" />
+            </attribute>
+          </optional>
+        </element>
+      </optional>
+      <oneOrMore>
+        <ref name="stepAnalysisPlugin" />
+      </oneOrMore>
+    </element>
+  </define>
 
+  <define name="stepAnalysisPlugin">
+    <element name="stepAnalysisPlugin">
+      <attribute name="name" />
+      <attribute name="analyzerClass" />
+      <attribute name="version">
+        <data type="positiveInteger" />
+      </attribute>
+      <ref name="stepAnalysisOptions" />
+    </element>
+  </define>
+  
+  <define name="stepAnalysisRef">
+    <element name="stepAnalysisRef">
+      <attribute name="name" />
+      <ref name="stepAnalysisOptions" />
+    </element>
+  </define>
+
+  <define name="stepAnalysisOptions">
+    <optional>
+      <attribute name="displayName"/>
+    </optional>
+    <optional>
+      <attribute name="formViewName" />
+    </optional>
+    <optional>
+      <attribute name="analysisViewName" />
+    </optional>
+    <zeroOrMore>
+      <choice>
+        <element name="property">
+          <attribute name="name" />
+          <attribute name="value" />
+        </element>
+        <element name="description">
+          <text />
+        </element>
+      </choice>
+    </zeroOrMore>
+  </define>
+  
   <define name="uiConfig">
     <element name="uiConfig">
       <ref name="IncludeExclude" />

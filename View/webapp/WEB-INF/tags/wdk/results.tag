@@ -51,10 +51,6 @@
 </c:if>
 
 
-
-
-
-
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
 <%-- display view list --%>
 
@@ -62,7 +58,7 @@
     data-controller="wdk.resultsPage.configureSummaryViews"
     strategy="${strategy.strategyId}"
     step="${step.stepId}"
-    updateUrl="<c:url value='/processSummaryView.do' />">
+    updateUrl="${pageContext.request.contextPath}/processSummaryView.do">
   <c:set var="question" value="${wdkStep.question}" />
   <c:set var="views" value="${question.summaryViews}" />
   <jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />
@@ -82,11 +78,36 @@
     <c:forEach items="${views}" var="item">
       <c:set var="view" value="${item.value}" />
       <li id="${view.name}">
-        <a href="<c:url value='/showSummaryView.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}' />"
+        <a href="${pageContext.request.contextPath}/showSummaryView.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}"
            title="${view.description}"
         >${view.display} <span> </span></a>
       </li>
     </c:forEach>
+    <c:forEach items="${wdkStep.appliedAnalyses}" var="analysisEntry">
+      <c:set var="analysisExecId" value="${analysisEntry.key}"/>
+      <c:set var="analysisCtx" value="${analysisEntry.value}"/>
+      <c:set var="analysis" value="${analysisCtx.stepAnalysis}"/>
+      <li id="step-analysis-${analysisExecId}">
+        <a href="${pageContext.request.contextPath}/showStepAnalysis.do?strategyId=${wdkStrategy.strategyId}&stepId=${wdkStep.stepId}&analysisName=${analysis.name}&analysisId=${analysisExecId}"
+           title="${analysis.description}">${analysisCtx.displayName} <span> </span><span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span></a>
+      </li>
+    </c:forEach>
+    <c:if test="${fn:length(question.stepAnalyses) > 0}">
+      <li>
+        <div class="new-analysis">
+          <span class="new-analysis-button">+</span><span class="new-analysis-instr"></span>
+          <div class="new-analysis-menu">
+            <ul>
+              <c:forEach items="${question.stepAnalyses}" var="analysisEntry">
+                <c:set var="analysis" value="${analysisEntry.value}"/>
+                <li data-strategy="${wdkStrategy.strategyId}" data-step="${wdkStep.stepId}" data-analysis="${analysis.name}">
+                  ${analysis.displayName}</li>
+              </c:forEach>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </c:if>
   </ul>
 </div>
 

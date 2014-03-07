@@ -34,7 +34,10 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.xml.NamedValue;
 import org.gusdb.wdk.model.UIConfig.ExtraLogoutCookies;
+import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
+import org.gusdb.wdk.model.analysis.StepAnalysisXml;
 import org.gusdb.wdk.model.answer.AnswerFilter;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterInstanceReference;
@@ -507,6 +510,8 @@ public class ModelXmlParser extends XmlParser {
     configureCommonNodes(digester);
 
     configureUiConfig(digester);
+    
+    configureStepAnalysis(digester);
 
     return digester;
   }
@@ -670,6 +675,8 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/recordClassSet/recordClass/summaryView",
         SummaryView.class, "addSummaryView");
 
+    configureStepAnalysisNode(digester, "wdkModel/recordClassSet/recordClass/stepAnalysisRef");
+    
     configureNode(digester,
         "wdkModel/recordClassSet/recordClass/summaryView/description",
         WdkModelText.class, "addDescription");
@@ -858,6 +865,8 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/questionSet/question/summaryView",
         SummaryView.class, "addSummaryView");
 
+    configureStepAnalysisNode(digester, "wdkModel/questionSet/question/stepAnalysisRef");
+    
     configureNode(digester,
         "wdkModel/questionSet/question/summaryView/description",
         WdkModelText.class, "addDescription");
@@ -996,6 +1005,23 @@ public class ModelXmlParser extends XmlParser {
         ExtraLogoutCookies.class, "setExtraLogoutCookies");
     configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies/cookie",
         WdkCookie.class, "add");
+  }
+
+  private void configureStepAnalysis(Digester digester) {
+    configureNode(digester, "wdkModel/stepAnalysisPlugins",
+        StepAnalysisPlugins.class, "setStepAnalysisPlugins");
+    configureNode(digester, "wdkModel/stepAnalysisPlugins/viewConfig",
+        StepAnalysisPlugins.ViewConfig.class, "setViewConfig");
+    configureNode(digester, "wdkModel/stepAnalysisPlugins/executionConfig",
+        StepAnalysisPlugins.ExecutionConfig.class, "setExecutionConfig");
+    configureStepAnalysisNode(digester, "wdkModel/stepAnalysisPlugins/stepAnalysisPlugin");
+  }
+
+  private void configureStepAnalysisNode(Digester digester, String nodeLocation) {
+    configureNode(digester, nodeLocation, StepAnalysisXml.class, "addStepAnalysis");
+    configureNode(digester, nodeLocation + "/description", WdkModelText.class, "setDescription");
+    digester.addCallMethod(nodeLocation + "/description", "setText", 0);
+    configureNode(digester, nodeLocation + "/property", NamedValue.class, "addProperty");
   }
 
   public static void main(String[] args) {

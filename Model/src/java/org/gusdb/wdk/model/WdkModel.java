@@ -20,6 +20,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
@@ -41,6 +43,7 @@ import org.gusdb.wdk.model.user.FavoriteFactory;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 
@@ -145,6 +148,8 @@ public class WdkModel implements ConnectionContainer {
 
   private ExampleStratsAuthor exampleStratsAuthor;
 
+  private StepAnalysisPlugins stepAnalysisPlugins = new StepAnalysisPlugins();
+  
   /**
    * xmlSchemaURL is used by the XmlQuestions. This is the only place where XmlQuestion can find it.
    */
@@ -157,6 +162,7 @@ public class WdkModel implements ConnectionContainer {
   private DatasetFactory datasetFactory;
   private BasketFactory basketFactory;
   private FavoriteFactory favoriteFactory;
+  private StepAnalysisFactory stepAnalysisFactory;
 
   private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
   private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
@@ -464,6 +470,7 @@ public class WdkModel implements ConnectionContainer {
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
+    stepAnalysisFactory = new StepAnalysisFactory(this);
 
     // set the exception header
     WdkModelException.modelName = getProjectId();
@@ -484,9 +491,11 @@ public class WdkModel implements ConnectionContainer {
 
     // create boolean questions
     createBooleanQuestions();
+    
   }
 
   public void releaseResources() {
+    stepAnalysisFactory.shutDown();
     releaseDb(appDb);
     releaseDb(userDb);
     ThreadMonitor.shutDown(_myThreadMonitor);
@@ -534,6 +543,10 @@ public class WdkModel implements ConnectionContainer {
 
   public StepFactory getStepFactory() {
     return stepFactory;
+  }
+  
+  public StepAnalysisFactory getStepAnalysisFactory() {
+    return stepAnalysisFactory;
   }
 
   public Object resolveReference(String twoPartName) throws WdkModelException {
@@ -756,6 +769,8 @@ public class WdkModel implements ConnectionContainer {
       }
     }
     macroList = null;
+    
+    stepAnalysisPlugins.excludeResources(projectId);
   }
 
   /**
@@ -1136,6 +1151,14 @@ public class WdkModel implements ConnectionContainer {
     return uiConfig;
   }
 
+  public StepAnalysisPlugins getStepAnalysisPlugins() {
+    return stepAnalysisPlugins;
+  }
+
+  public void setStepAnalysisPlugins(StepAnalysisPlugins stepAnalysisPlugins) {
+    this.stepAnalysisPlugins = stepAnalysisPlugins;
+  }
+
   public ExampleStratsAuthor getExampleStratsAuthor() {
     return exampleStratsAuthor;
   }
@@ -1155,6 +1178,27 @@ public class WdkModel implements ConnectionContainer {
     else { // unknown
       throw new WdkModelException("Invalid DB Connection key.");
     }
+  }
+
+  public void logStepAnalysisPlugins() {
+    StringBuilder sb = new StringBuilder()
+      .append("*******************************************\n")
+      .append("Included Step Analysis Plugin Configuration:\n")
+      .append(stepAnalysisPlugins.toString())
+      .append("*******************************************\n")
+      .append("Step Analysis Plugins per Question:\n");
+    for (QuestionSet questionSet : getQuestionSets().values()) {
+      for (Question question : questionSet.getQuestions()) {
+        Map<String,StepAnalysis> sas = question.getStepAnalyses();
+        if (!sas.isEmpty()) {
+          sb.append("Plugins for Question:" + question.getFullName() + "\n");
+          for (StepAnalysis sa : sas.values()) {
+            sb.append(sa);
+          }
+        }
+      }
+    }
+    logger.info(sb.toString());
   }
 
   public String getDependencyTree() throws WdkModelException {

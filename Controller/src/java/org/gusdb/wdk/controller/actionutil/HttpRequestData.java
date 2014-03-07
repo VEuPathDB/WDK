@@ -13,6 +13,11 @@ public class HttpRequestData implements RequestData {
     _request = request;
   }
   
+  @Deprecated
+  public HttpServletRequest getUnderlyingRequest() {
+    return _request;
+  }
+  
   @Override
   public String getWebAppBaseUrl() {
     return new StringBuilder()

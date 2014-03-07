@@ -83,6 +83,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
   private HttpServletResponse _response;
   private ParamGroup _params;
   private ResponseType _responseType;
+  private ActionForm _strutsActionForm;
 
   protected abstract boolean shouldValidateParams();
   protected abstract Map<String, ParamDef> getParamDefs();
@@ -111,6 +112,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
       _servlet = servlet;
       _wdkModel = (WdkModelBean)_servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
       _responseType = ResponseType.html;
+      _strutsActionForm = form;
       
       if (requiresLogin() && getCurrentUser().isGuest()) {
         return getForwardFromResult(new ActionResult().setViewName(NEEDS_LOGIN), mapping);
@@ -485,6 +487,16 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
    */
   public RequestData getRequestData() {
     return new HttpRequestData(_request);
+  }
+  
+  /**
+   * Returns Struts ActionForm associated with this request
+   * 
+   * @return action form for this request
+   */
+  @Deprecated
+  public ActionForm getStrutsActionForm() {
+    return _strutsActionForm;
   }
   
   /**
