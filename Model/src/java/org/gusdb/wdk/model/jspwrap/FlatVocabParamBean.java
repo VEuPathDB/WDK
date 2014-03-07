@@ -50,6 +50,7 @@ public class FlatVocabParamBean extends EnumParamBean {
     return flatVocabParam.getJSONValues(user, contextValues);
   }
 
+  @Override
   public boolean isFilterParam() {
     return flatVocabParam.isFilterParam();
   }

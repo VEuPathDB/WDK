@@ -1,7 +1,5 @@
 package org.gusdb.wdk.controller.wizard;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,7 +77,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
     private StepBean createStepFromQuestion(ActionServlet servlet,
             HttpServletRequest request, WizardForm wizardForm,
             String questionName, UserBean user, WdkModelBean wdkModel)
-                throws WdkUserException, WdkModelException, IOException, SQLException {
+                throws WdkUserException, WdkModelException {
         logger.debug("creating step from question: " + questionName);
 
         // get the assigned weight

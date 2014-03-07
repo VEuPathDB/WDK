@@ -180,6 +180,9 @@ public abstract class Field extends WdkModelBase implements ScopedField {
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
   }
 
+  /**
+   * @throws WdkModelException if unable to print dependency content 
+   */
   protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
     // by default, no content to print out
   }

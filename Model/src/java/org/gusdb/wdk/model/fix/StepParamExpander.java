@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.fix;
 
 import java.sql.Connection;
@@ -24,7 +21,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wsf.util.BaseCLI;
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -60,8 +56,7 @@ public class StepParamExpander extends BaseCLI {
         "expand the param clob into its own rows in step_params table");
   }
 
-  public void expand(WdkModel wdkModel) throws SQLException, JSONException,
-      WdkModelException {
+  public void expand(WdkModel wdkModel) throws SQLException, WdkModelException {
     Connection connection = wdkModel.getUserDb().getDataSource().getConnection();
     ResultSet resultSet = null;
     PreparedStatement psInsert = null;
@@ -106,7 +101,7 @@ public class StepParamExpander extends BaseCLI {
         }
       }
       logger.info("Totally processed " + count + " steps.");
-    } catch (SQLException | JSONException | WdkModelException ex) {
+    } catch (SQLException | WdkModelException ex) {
       connection.rollback();
       throw ex;
     } finally {
@@ -167,7 +162,7 @@ public class StepParamExpander extends BaseCLI {
   }
 
   private List<String[]> parseClob(WdkModel wdkModel, String clob)
-      throws JSONException, WdkModelException {
+      throws WdkModelException {
     StepFactory stepFactory = wdkModel.getStepFactory();
     Map<String, String> values = stepFactory.parseParamContent(clob);
     List<String[]> newValues = new ArrayList<String[]>();

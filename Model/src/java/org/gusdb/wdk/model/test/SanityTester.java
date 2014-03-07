@@ -23,7 +23,6 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.ProcessQuery;
@@ -316,7 +315,7 @@ public class SanityTester {
   }
 
   private int testNonAttributeQuery(QuerySet querySet, Query query,
-      ParamValuesSet paramValuesSet) throws WdkModelException, WdkUserException {
+      ParamValuesSet paramValuesSet) throws WdkModelException {
 
     int count = 0;
 
@@ -333,8 +332,7 @@ public class SanityTester {
   }
 
   private int testAttributeQuery_Count(Query query,
-      ParamValuesSet paramValuesSet) throws SQLException, WdkModelException,
-      WdkUserException {
+      ParamValuesSet paramValuesSet) throws SQLException, WdkModelException {
     // put user id into the param
     Map<String, String> params = new LinkedHashMap<String, String>();
 
@@ -363,8 +361,7 @@ public class SanityTester {
   }
 
   private void testAttributeQuery_Time(Query query,
-      ParamValuesSet paramValuesSet, int count) throws SQLException,
-      WdkModelException, WdkUserException {
+      ParamValuesSet paramValuesSet, int count) throws SQLException, WdkModelException {
     // put user id into the param
     Map<String, String> params = new LinkedHashMap<String, String>();
     // params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
@@ -387,8 +384,8 @@ public class SanityTester {
     SqlUtils.closeResultSetAndStatement(resultSet);
   }
 
-  private int testTableQuery_TotalTime(Query query) throws SQLException,
-      WdkModelException, WdkUserException {
+  private int testTableQuery_TotalTime(Query query) throws SQLException, WdkModelException {
+
     // put user id into the param
     Map<String, String> params = new LinkedHashMap<String, String>();
     // params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
