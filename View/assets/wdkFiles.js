@@ -47,7 +47,7 @@ module.exports = {
 
     'src/components/**/*.js',
 
-    'src/views/core.js',
+    'src/views/view.js',
     'src/views/template_view.js',
     'src/views/question_view.js',
 
