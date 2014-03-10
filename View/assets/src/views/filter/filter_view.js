@@ -4,6 +4,7 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
+  var FilterItemsView = ns.FilterItemsView;
   var FilterFieldsView = ns.FilterFieldsView;
   var ResultsView = ns.ResultsView;
 
@@ -38,6 +39,13 @@ wdk.namespace('wdk.views.filter', function(ns) {
         el: this.$('.results'),
         model: this.model
       });
+
+      // FIXME model should be this.model.fields
+      var filterItemsView = new FilterItemsView({
+        model: this.model.filters
+      });
+      this.$('.filter-items').append(filterItemsView.el);
+
       return this;
     },
 
@@ -49,8 +57,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     setContext: function(context) {
       // show other links
-      this.$('a').show();
-      this.$('a[href="#' + context + '"]').hide();
+      this.$('.summary li').removeClass('hidden')
+      this.$('a[href="#' + context + '"]').parent().addClass('hidden');
 
       // show context div
       this.$('.context').hide();

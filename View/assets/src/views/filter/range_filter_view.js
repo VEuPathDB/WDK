@@ -20,6 +20,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
         xAxisTitle: this.model.get('display'),
         yAxisTitle: 'Frequency'
       }, options);
+      this.listenTo(this.model, 'change', function(field, options) {
+        if (!options.fromDetailView) {
+          this.render();
+        }
+      });
     },
 
     render: function() {
@@ -153,19 +158,19 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.model.set('filterValues', {
         min: min,
         max: max
-      });
+      }, { fromDetailView: true });
     },
 
     handlePlotUnselected: function(event) {
       this.$min.val(null);
       this.$max.val(null);
 
-      this.model.set('filterValues', null);
+      this.model.set('filterValues', null, { fromDetailView: true });
     },
 
     handleFormChange: function(e) {
-      var min = this.$min.val();
-      var max = this.$max.val();
+      var min = this.$min.val() === '' ? null : this.$min.val();
+      var max = this.$max.val() === '' ? null : this.$max.val();
 
       this.plot.setSelection({
         xaxis: {
@@ -174,10 +179,14 @@ wdk.namespace('wdk.views.filter', function(ns) {
         }
       }, true);
 
-      this.model.set('filterValues', {
-        min: min,
-        max: max
-      });
+      if (min === null && max === null) {
+        this.model.set('filterValues', null, { fromDetailView: true });
+      } else {
+        this.model.set('filterValues', {
+          min: min,
+          max: max
+        }, { fromDetailView: true });
+      }
     }
 
   });
