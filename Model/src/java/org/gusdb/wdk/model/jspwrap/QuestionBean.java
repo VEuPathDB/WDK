@@ -54,7 +54,7 @@ public class QuestionBean {
     _paramBeanMap = new LinkedHashMap<String, ParamBean<?>>();
     for (int i = 0; i < params.length; i++) {
       _paramBeanMap.put(params[i].getName(),
-          ParamBeanFactory.createBeanFromParam(user, params[i]));
+          ParamBeanFactory.createBeanFromParam(question.getWdkModel(), user, params[i]));
     }
   }
 
