@@ -91,6 +91,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function(options) {
       this.options = options;
+      this.listenTo(this.model, 'change', function(field, options) {
+        if (!options.fromDetailView) {
+          this.render();
+        }
+      });
     },
 
     render: function() {
@@ -147,9 +152,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
             : member.get('value');
         });
         if (values.length) {
-          view.model.set('filterValues', { values: values });
+          view.model.set('filterValues', { values: values }, { fromDetailView: true });
         } else {
-          view.model.set('filterValues', null);
+          view.model.set('filterValues', null, { fromDetailView: true });
         }
       });
 
