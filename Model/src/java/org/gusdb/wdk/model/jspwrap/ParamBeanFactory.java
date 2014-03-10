@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
@@ -12,8 +13,12 @@ import org.gusdb.wdk.model.query.param.TimestampParam;
 public class ParamBeanFactory {
 
     @SuppressWarnings("unchecked")
-	public static <T extends Param> ParamBean<T> createBeanFromParam(UserBean user, T param) throws WdkModelException {
+	public static <T extends Param> ParamBean<T> createBeanFromParam(WdkModel wdkModel, UserBean user, T param) throws WdkModelException {
     	ParamBean<T> bean;
+    	if (user == null) {
+    	  // FIXME - need to get the actual user in the future.
+    	  user = new UserBean(wdkModel.getSystemUser());
+    	}
         if (param instanceof FlatVocabParam) {
           bean = (ParamBean<T>) new FlatVocabParamBean((FlatVocabParam)param);
         }else if (param instanceof EnumParam) {

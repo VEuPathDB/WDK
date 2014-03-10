@@ -150,7 +150,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     if (dependedParams != null) {
       Set<ParamBean<?>> paramBeans = new LinkedHashSet<>();
       for (Param param : dependedParams) {
-        paramBeans.add(ParamBeanFactory.createBeanFromParam(user, param));
+        paramBeans.add(ParamBeanFactory.createBeanFromParam(param.getWdkModel(), user, param));
       }
       return paramBeans;
     }
