@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS wdkuser.config;
 
 
 /* =========================================================================
-   create schemas ("schemata"?)
+   create schema ("schemata"?)
    ========================================================================= */
 
 -- CREATE SCHEMA IF NOT EXISTS wdkuser;

@@ -298,7 +298,7 @@ public class WdkModelBean implements ConnectionContainer {
         return new QuestionBean(wdkModel.getQuestion(questionFullName));
     }
 
-    public Map<String, ParamBean<?>> getParams() throws WdkModelException {
+    public Map<String, ParamBean<?>> getParams(UserBean user) throws WdkModelException {
         Map<String, ParamBean<?>> params = new LinkedHashMap<String, ParamBean<?>>();
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
@@ -319,6 +319,7 @@ public class WdkModelBean implements ConnectionContainer {
                     throw new WdkModelException("Unknown param type:"
                             + param.getClass().getName());
                 }
+                bean.setUser(user);
                 params.put(param.getFullName(), bean);
             }
         }
