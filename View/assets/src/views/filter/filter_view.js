@@ -32,12 +32,13 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     render: function() {
       this.$el.html(this.template(this.model.attributes));
-      this.setCount();
-      this.setContext('hide');
 
+      this.$el.prepend(this.filterItemsView.el);
       this.$el.append(this.filterFieldsView.el);
       this.$el.append(this.resultsView.el);
-      this.$el.prepend(this.filterItemsView.el);
+
+      this.setCount();
+      this.setContext('hide');
 
       return this;
     },
