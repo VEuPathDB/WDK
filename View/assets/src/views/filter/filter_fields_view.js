@@ -14,7 +14,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     template: wdk.templates['filter/filter_fields.handlebars'],
 
-    className: 'filter',
+    className: 'filters context ui-helper-clearfix',
 
     initialize: function() {
       this.fieldList = new FieldListView({ model: this.model });

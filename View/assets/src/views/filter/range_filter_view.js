@@ -108,6 +108,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
         }, true);
       }
 
+      $(window).on('resize', this.resizeChart.bind(this));
+
       return this;
     },
 
@@ -125,14 +127,15 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     handlePlotHover: function(event, pos, item) {
       var tooltip = this.$('.chart-tooltip');
+      var offset = this.$el.offset();
       if (item) {
         var x = item.datapoint[0];
         var y = item.datapoint[1];
         tooltip
           .css({
             display:'inline-block',
-            top: item.pageY + 5,
-            left: item.pageX + 5
+            top: item.pageY - offset.top + 5,
+            left: item.pageX - offset.left + 5
           })
           .html('<strong>' + this.model.get('display') + '</strong> ' + x +
                 '<br><strong>Frequency</strong> ' + y);
@@ -187,6 +190,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
           max: max
         }, { fromDetailView: true });
       }
+    },
+
+    resizeChart: function() {
+      this.plot.draw();
     }
 
   });
