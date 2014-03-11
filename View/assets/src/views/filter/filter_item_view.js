@@ -8,7 +8,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     template: wdk.templates['filter/filter_item.handlebars'],
 
     events: {
-      'click': 'removeItem'
+      'click .remove': 'removeItem'
     },
 
     initialize: function() {
@@ -16,7 +16,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
-      var html = this.template({ description: this.model.toString() });
+      var html = this.template({ description: _.result(this.model, 'description') });
       this.$el.html(html);
     },
 

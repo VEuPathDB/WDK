@@ -5,13 +5,8 @@ wdk.namespace('wdk.models.filter', function(ns) {
    * Provides filter methods based on type (string or number).
    */
   var Filter = Backbone.Model.extend({
-    template: _.template('<%= field %> <%= condition %>'),
-
-    toString: function() {
-      return this.template({
-        field: this.attributes.field.get('display'),
-        condition: _.result(this, 'condition')
-      });
+    description: function() {
+      return this.attributes.field.get('display') + ' ' + _.result(this, 'condition');
     }
   });
 

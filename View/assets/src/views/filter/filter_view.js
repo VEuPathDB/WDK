@@ -18,33 +18,26 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
     },
 
+    className: 'filter',
+
     template: wdk.templates['filter/filter.handlebars'],
 
     initialize: function(properties) {
       this.listenTo(this.model.filteredData, 'reset', this.setCount);
+      this.filterFieldsView = new FilterFieldsView({ model: this.model });
+      this.resultsView = new ResultsView({ model: this.model });
+      this.filterItemsView = new FilterItemsView({ model: this.model.filters });
       this.render();
     },
 
     render: function() {
       this.$el.html(this.template(this.model.attributes));
       this.setCount();
-      this.setContext('filters');
+      this.setContext('hide');
 
-      var filterFieldsView = new FilterFieldsView({
-        el: this.$('.filters'),
-        model: this.model
-      });
-
-      var resultsView = new ResultsView({
-        el: this.$('.results'),
-        model: this.model
-      });
-
-      // FIXME model should be this.model.fields
-      var filterItemsView = new FilterItemsView({
-        model: this.model.filters
-      });
-      this.$('.filter-items').append(filterItemsView.el);
+      this.$el.append(this.filterFieldsView.el);
+      this.$el.append(this.resultsView.el);
+      this.$el.prepend(this.filterItemsView.el);
 
       return this;
     },

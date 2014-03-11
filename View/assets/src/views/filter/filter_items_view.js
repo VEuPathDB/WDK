@@ -6,6 +6,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
   ns.FilterItemsView = wdk.views.View.extend({
     itemViews: null,
 
+    className: 'filter-items',
+
     tagName: 'ul',
 
     initialize: function() {
