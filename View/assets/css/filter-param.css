@@ -17,7 +17,7 @@ li {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-  line-height: 16px;
+  line-height: 14px;
 }
 .range-filter .table tr {
   display: inline-block;
@@ -217,15 +217,12 @@ li {
 }
 .filter .legend {
   text-align: right;
-  opacity: .7;
   width: 100%;
   padding: 1em;
   bottom: 0;
   right: 0;
   position: absolute;
-}
-.filter .legend:hover {
-  opacity: 1;
+  color: #666666;
 }
 .filter .legend .bar {
   display: inline-block;
@@ -249,67 +246,51 @@ li {
   float: left;
   padding-right: .8em;
 }
+.filters, .results {
+  border: 1px solid #aaa;
+  width: 110%;
+  margin: auto;
+  position: relative;
+  left: -20%;
+  top: 1em;
+  margin-bottom: 1em;
+}
+#applied-filters {
+  text-align: center;
+  min-height: 2em;
+}
+.filter-items li {
+  display: inline-block;
+}
+.filter-items li {
+  margin-right: .5em;
+}
+.filter-items li > div {
+  padding: 3px 4px;
+  background-color: #efefef;
+  border: 1px solid #ccc;
+}
+.filter-items .remove {
+  vertical-align: text-bottom;
+  cursor: pointer;
+  font-size: 20px;
+  padding-left: 4px;
+  opacity: .4;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";
+}
+.filter-items .remove:hover {
+  opacity: 1;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+}
+.summary ul, .summary li {
+  display: inline-block;
+}
+.filter .summary {
+  margin-top: 4px;
+}
 /*
-a[href="#filters"], a[href="#results"] {
-display: none;
+.summary ul li:not(.hidden)+li:not(.hidden):before {
+content: "|";
+padding: 0 2px;
 }
  */
-  #top {
-    background: url("images/filter-param-top.png") no-repeat center;
-    height: 265px;
-    margin-bottom: -2em;
-  }
-  #bottom {
-    background: url("images/filter-param-bottom.png") no-repeat center;
-    height: 300px;
-  }
-  #top, #bottom {
-    opacity: .3;
-  }
-  .filters, .results {
-    border: 1px solid #aaa;
-    width: 110%;
-    margin: auto;
-    position: relative;
-    left: -20%;
-    top: 1em;
-    margin-bottom: 1em;
-  }
-  #applied-filters {
-    text-align: center;
-    min-height: 2em;
-  }
-  .filter-items li {
-    display: inline-block;
-  }
-  .filter-items li {
-    margin-right: .5em;
-  }
-  .filter-items li > div {
-    padding: 1px 4px;
-    background-color: #efefef;
-    border: 1px solid #ccc;
-  }
-  .filter-items .remove {
-    vertical-align: text-top;
-    cursor: pointer;
-    opacity: .6;
-    font-size: 18px;
-    font-weight: bold;
-    padding-left: 4px;
-  }
-  .filter-items .remove:hover {
-    opacity: 1;
-  }
-  .summary ul, .summary li {
-    display: inline-block;
-  }
-  .filter .summary {
-    margin-top: 4px;
-  }
-  /*
-  .summary ul li:not(.hidden)+li:not(.hidden):before {
-  content: "|";
-  padding: 0 2px;
-  }
-   */
