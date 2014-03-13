@@ -262,6 +262,7 @@
                                              configLink,
                                              binLink,
                                              rngLink,
+                                             perlLink,
                                              xmlLink,
                                              wdkLink"/>
 
@@ -271,6 +272,7 @@
      <available file="${webappTargetDir}/WEB-INF/wdk-model/config" property="configLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/bin" property="binLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" property="rngLinkExists"/>
+     <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/perl" property="perlLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/xml" property="xmlLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk" property="wdkLinkExists"/>
   </target>
@@ -295,6 +297,11 @@
   <target name="rngLink" unless="rngLinkExists">
     <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>    
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" resource="${targetDir}/lib/rng"/>
+  </target>
+
+  <target name="perlLink" unless="perlLinkExists">
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>    
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/perl" resource="${targetDir}/lib/perl"/>
   </target>
 
   <target name="xmlLink" unless="xmlLinkExists">
