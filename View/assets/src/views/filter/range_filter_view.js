@@ -20,6 +20,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
         xAxisTitle: this.model.get('display'),
         yAxisTitle: 'Frequency'
       }, options);
+      this.listenTo(this.model, 'change', function(field, options) {
+        if (!options.fromDetailView) {
+          this.render();
+        }
+      });
     },
 
     render: function() {
@@ -103,6 +108,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
         }, true);
       }
 
+      $(window).on('resize', this.resizeChart.bind(this));
+
       return this;
     },
 
@@ -120,14 +127,15 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     handlePlotHover: function(event, pos, item) {
       var tooltip = this.$('.chart-tooltip');
+      var offset = this.$el.offset();
       if (item) {
         var x = item.datapoint[0];
         var y = item.datapoint[1];
         tooltip
           .css({
             display:'inline-block',
-            top: item.pageY + 5,
-            left: item.pageX + 5
+            top: item.pageY - offset.top + 5,
+            left: item.pageX - offset.left + 5
           })
           .html('<strong>' + this.model.get('display') + '</strong> ' + x +
                 '<br><strong>Frequency</strong> ' + y);
@@ -153,19 +161,19 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.model.set('filterValues', {
         min: min,
         max: max
-      });
+      }, { fromDetailView: true });
     },
 
     handlePlotUnselected: function(event) {
       this.$min.val(null);
       this.$max.val(null);
 
-      this.model.set('filterValues', null);
+      this.model.set('filterValues', null, { fromDetailView: true });
     },
 
     handleFormChange: function(e) {
-      var min = this.$min.val();
-      var max = this.$max.val();
+      var min = this.$min.val() === '' ? null : this.$min.val();
+      var max = this.$max.val() === '' ? null : this.$max.val();
 
       this.plot.setSelection({
         xaxis: {
@@ -174,10 +182,18 @@ wdk.namespace('wdk.views.filter', function(ns) {
         }
       }, true);
 
-      this.model.set('filterValues', {
-        min: min,
-        max: max
-      });
+      if (min === null && max === null) {
+        this.model.set('filterValues', null, { fromDetailView: true });
+      } else {
+        this.model.set('filterValues', {
+          min: min,
+          max: max
+        }, { fromDetailView: true });
+      }
+    },
+
+    resizeChart: function() {
+      this.plot.draw();
     }
 
   });

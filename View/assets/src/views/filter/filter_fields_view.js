@@ -14,7 +14,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     template: wdk.templates['filter/filter_fields.handlebars'],
 
-    className: 'filter',
+    className: 'filters context ui-helper-clearfix',
 
     initialize: function() {
       this.fieldList = new FieldListView({ model: this.model });
@@ -36,6 +36,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.fieldDetail.render(field);
     },
 
+    // FIXME This logic should be in the Field model
     setFilter: function(field, filterValues) {
       var filters = this.model.filters;
 
@@ -50,8 +51,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
         filters.add(filter);
       }
-
-      this.model.applyFilters();
     }
 
   });

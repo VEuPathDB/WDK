@@ -47,7 +47,7 @@ module.exports = {
 
     'src/components/**/*.js',
 
-    'src/views/core.js',
+    'src/views/view.js',
     'src/views/template_view.js',
     'src/views/question_view.js',
 
@@ -58,6 +58,8 @@ module.exports = {
     'src/views/filter/field_detail_view.js',
     'src/views/filter/filter_fields_view.js',
     'src/views/filter/results_view.js',
+    'src/views/filter/filter_item_view.js',
+    'src/views/filter/filter_items_view.js',
     'src/views/filter/filter_view.js',
 
     'src/controllers/**/*.js',

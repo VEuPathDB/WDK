@@ -9,7 +9,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     template: wdk.templates['filter/results.handlebars'],
 
-    className: 'results',
+    className: 'results context ui-helper-clearfixs',
 
     constructor: function() {
       Handlebars.registerHelper('property', function(key, context, options) {
@@ -27,6 +27,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         fields: this.model.fields.toJSON(),
         filteredData: this.model.filteredData.toJSON()
       }));
+      this.$('table').wdkDataTable({ bFilter: false });
       return this;
     },
 

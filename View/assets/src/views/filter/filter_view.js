@@ -4,6 +4,7 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
+  var FilterItemsView = ns.FilterItemsView;
   var FilterFieldsView = ns.FilterFieldsView;
   var ResultsView = ns.ResultsView;
 
@@ -17,27 +18,28 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
     },
 
+    className: 'filter',
+
     template: wdk.templates['filter/filter.handlebars'],
 
     initialize: function(properties) {
       this.listenTo(this.model.filteredData, 'reset', this.setCount);
+      this.filterFieldsView = new FilterFieldsView({ model: this.model });
+      this.resultsView = new ResultsView({ model: this.model });
+      this.filterItemsView = new FilterItemsView({ model: this.model.filters });
       this.render();
     },
 
     render: function() {
       this.$el.html(this.template(this.model.attributes));
+
+      this.$el.prepend(this.filterItemsView.el);
+      this.$el.append(this.filterFieldsView.el);
+      this.$el.append(this.resultsView.el);
+
       this.setCount();
-      this.setContext('filters');
+      this.setContext('hide');
 
-      var filterFieldsView = new FilterFieldsView({
-        el: this.$('.filters'),
-        model: this.model
-      });
-
-      var resultsView = new ResultsView({
-        el: this.$('.results'),
-        model: this.model
-      });
       return this;
     },
 
@@ -49,8 +51,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     setContext: function(context) {
       // show other links
-      this.$('a').show();
-      this.$('a[href="#' + context + '"]').hide();
+      this.$('.summary li').removeClass('hidden')
+      this.$('a[href="#' + context + '"]').parent().addClass('hidden');
 
       // show context div
       this.$('.context').hide();

@@ -216,7 +216,8 @@ public class DatasetParamHandler extends AbstractParamHandler {
     Dataset dataset = null;
     if (stableValue != null) {
       DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-      dataset = datasetFactory.getDataset(user, Integer.getInteger(stableValue));
+      Integer sv = Integer.getInteger(stableValue);
+      dataset = datasetFactory.getDataset(user, sv);
       requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, dataset);
     }
 

@@ -78,19 +78,30 @@ wdk.namespace('wdk.views.filter', function(ns) {
     template: Handlebars.compile(
       '<h3>Filter {{options.title}} by {{model.display}}</h3>' +
       '<p>Select one or more items below.</p>' +
-      '<ul class="nav nav-tabs">' +
-      '  <li class="active"><a href="#condensed" data-toggle="tab">Condensed</a></li>' +
-      '  <li><a href="#large" data-toggle="tab">Large</a></li>' +
-      '</ul>' +
+      '<div class="tabs">' +
+      '  <ul>' +
+      '    <li><a href="#condensed" data-toggle="tab">Condensed</a></li>' +
+      '    <li><a href="#large" data-toggle="tab">Large</a></li>' +
+      '  </ul>' +
 
-      '<div class="tab-content" style="padding:1em">' +
-      ' <div class="tab-pane fade in active" id="condensed"><form><table><tbody class="membership-filter2"></tbody></table></form></div>' +
-      ' <div class="tab-pane fade membership-filter" id="large"><p>Select value for filtering by clicking below.</p> </div>' +
+      '  <div id="condensed"><form><table><tbody class="membership-filter2"></tbody></table></form></div>' +
+      '  <div class="membership-filter" id="large"><p>Select value for filtering by clicking below.</p> </div>' +
+      '</div>' +
+      '<div class="legend">The distribution of your filtered results will be shown in red:' +
+      '  <div class="bar" style="width:20%">' +
+      '    <div class="fill" style="width:100%"></div>' +
+      '    <div class="fill filtered" style="width:30%"></div>' +
+      '  </div>' +
       '</div>'
     ),
 
     initialize: function(options) {
       this.options = options;
+      this.listenTo(this.model, 'change', function(field, options) {
+        if (!options.fromDetailView) {
+          this.render();
+        }
+      });
     },
 
     render: function() {
@@ -147,11 +158,13 @@ wdk.namespace('wdk.views.filter', function(ns) {
             : member.get('value');
         });
         if (values.length) {
-          view.model.set('filterValues', { values: values });
+          view.model.set('filterValues', { values: values }, { fromDetailView: true });
         } else {
-          view.model.set('filterValues', null);
+          view.model.set('filterValues', null, { fromDetailView: true });
         }
       });
+
+      this.$('.tabs').tabs();
 
       return this;
     }

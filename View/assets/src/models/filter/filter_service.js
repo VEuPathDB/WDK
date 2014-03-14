@@ -54,6 +54,8 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     initialize: function() {
+      var debounceApplyFilters = _.debounce(this.applyFilters, 50);
+      this.listenTo(this.filters, 'add remove', debounceApplyFilters);
       this.listenTo(this.filteredData, 'reset', this.setFieldFilteredValues);
     },
 
