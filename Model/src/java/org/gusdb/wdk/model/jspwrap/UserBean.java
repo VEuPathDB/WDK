@@ -38,8 +38,6 @@ public class UserBean /* implements Serializable */{
 
   private int stepId;
 
-  public UserBean() {}
-
   /**
      * 
      */

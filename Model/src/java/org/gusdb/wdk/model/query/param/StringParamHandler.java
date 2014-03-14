@@ -74,8 +74,7 @@ public class StringParamHandler extends AbstractParamHandler {
     StringParam stringParam = (StringParam) param;
     if (stringParam.isNumber()) {
       stableValue = stableValue.replaceAll(",", "");
-      double value = Double.valueOf(stableValue);
-      return Double.toString(value);
+      return stableValue;
     }
     else {
       stableValue = stableValue.replaceAll("'", "''");
