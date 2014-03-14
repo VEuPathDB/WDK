@@ -308,8 +308,8 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#getJSONValues(org.gusdb.wdk.model.user.User,
    *      java.util.Map, org.gusdb.wdk.model.jspwrap.EnumParamCache)
    */
-  public JSONObject getJSONValues() throws WdkModelException {
-    return enumParam.getJSONValues(user.getUser(), contextValues, getCache());
+  public JSONObject getJsonValues() throws WdkModelException {
+    return enumParam.getJsonValues(user.getUser(), contextValues, getCache());
   }
 
   public boolean isFilterParam() {

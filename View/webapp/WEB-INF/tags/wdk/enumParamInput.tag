@@ -44,14 +44,7 @@ Otherwise a standard select menu is used.
 </c:if>
 
 <c:choose>
-  <c:when test="${qP.filterParam}">
-    <%-- display the param as an advanced filter param --%>
-    <div class="param filter-param" data-data-id="filter-param-{qP.name}">
-      <script type="application/json" id="filter-param-{qP.name}">
-        ${qP.filterJSON}
-      </script>
-    </div>
-  </c:when>  <c:when test="${qP.multiPick}">
+  <c:when test="${qP.multiPick}">
     <%-- multiPick is true, use checkboxes or scroll pane --%>
     <c:choose>
       <c:when test="${displayType eq 'checkBox' or (displayType eq null and fn:length(qP.vocab) lt 15)}"><!-- use checkboxes -->

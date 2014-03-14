@@ -850,12 +850,12 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
 
-  public JSONObject getJSONValues(User user, Map<String, String> contextValues) throws WdkModelException {
+  public JSONObject getJsonValues(User user, Map<String, String> contextValues) throws WdkModelException {
     EnumParamCache cache = createEnumParamCache(user, contextValues);
-    return getJSONValues(user, contextValues, cache);
+    return getJsonValues(user, contextValues, cache);
   }
 
-  public JSONObject getJSONValues(User user, Map<String, String> contextValues, EnumParamCache cache)
+  public JSONObject getJsonValues(User user, Map<String, String> contextValues, EnumParamCache cache)
       throws WdkModelException {
     JSONObject jsParam = new JSONObject();
     try {

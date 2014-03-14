@@ -3,17 +3,16 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.query.param.FlatVocabParam;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.param.FilterParam;
 import org.json.JSONObject;
 
-public class FlatVocabParamBean extends EnumParamBean {
+public class FilterParamBean extends EnumParamBean {
 
-  private final FlatVocabParam flatVocabParam;
+  private final FilterParam filterParam;
 
-  public FlatVocabParamBean(FlatVocabParam param) {
+  public FilterParamBean(FilterParam param) {
     super(param);
-    flatVocabParam = param;
+    filterParam = param;
   }
 
   /**
@@ -23,7 +22,7 @@ public class FlatVocabParamBean extends EnumParamBean {
    * @see org.gusdb.wdk.model.query.param.FlatVocabParam#getMetadataSpec(org.gusdb.wdk.model.user.User)
    */
   public Map<String, Map<String, String>> getMetadataSpec(UserBean user) throws WdkModelException {
-    return flatVocabParam.getMetadataSpec(user.getUser());
+    return filterParam.getMetadataSpec(user.getUser());
   }
 
   /**
@@ -36,7 +35,7 @@ public class FlatVocabParamBean extends EnumParamBean {
    */
   public Map<String, Map<String, String>> getMetadata(UserBean user, Map<String, String> contextValues)
       throws WdkModelException {
-    return flatVocabParam.getMetadata(user.getUser(), contextValues);
+    return filterParam.getMetadata(user.getUser(), contextValues);
   }
 
   /**
@@ -46,12 +45,8 @@ public class FlatVocabParamBean extends EnumParamBean {
    * @throws WdkModelException
    * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#getJSONValues(org.gusdb.wdk.model.user.User, java.util.Map)
    */
-  public JSONObject getJSONValues(User user, Map<String, String> contextValues) throws WdkModelException {
-    return flatVocabParam.getJSONValues(user, contextValues);
-  }
-
   @Override
-  public boolean isFilterParam() {
-    return flatVocabParam.isFilterParam();
+  public JSONObject getJsonValues() throws WdkModelException {
+    return filterParam.getJsonValues(user.getUser(), contextValues);
   }
 }
