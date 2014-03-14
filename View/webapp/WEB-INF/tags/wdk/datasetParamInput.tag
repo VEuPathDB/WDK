@@ -32,7 +32,6 @@ Provides form input element for a given DatasetParam.
 <div id="${qp.name}" class="param datasetParam"
      data-controller="wdk.component.datasetParam.init">
 
-dataset: ${dataset}
 <table id="${qp.name}">
 
   <c:if test="${dataset != null || defaultType != 'basket'}"> 
