@@ -23,7 +23,7 @@ public class ParamBeanFactory {
         if (param instanceof FilterParam) {
           bean = (ParamBean<T>) new FilterParamBean((FilterParam)param);
         }else if (param instanceof AbstractEnumParam) {
-            bean = (ParamBean<T>) new EnumParamBean((EnumParam)param);
+            bean = (ParamBean<T>) new EnumParamBean((AbstractEnumParam)param);
         } else if (param instanceof AnswerParam) {
             bean = (ParamBean<T>) new AnswerParamBean((AnswerParam)param);
         } else if (param instanceof DatasetParam) {

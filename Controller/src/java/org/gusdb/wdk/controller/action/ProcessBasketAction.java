@@ -95,6 +95,9 @@ public class ProcessBasketAction extends Action {
         UserBean user = ActionUtility.getUser(servlet, request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         String action = request.getParameter(PARAM_ACTION);
+        if (action == null)
+          throw new WdkUserException("required action param is missing");
+        
         int numProcessed = 0;
         if (action.equalsIgnoreCase(ACTION_ADD)) {
             // need type & data params, where data is a JSON list of record ids
@@ -145,9 +148,11 @@ public class ProcessBasketAction extends Action {
     }
 
     private RecordClassBean getRecordClass(HttpServletRequest request,
-            WdkModelBean wdkModel) throws WdkModelException {
+            WdkModelBean wdkModel) throws WdkModelException, WdkUserException {
         // get recordClass
         String type = request.getParameter(PARAM_TYPE);
+        if (type == null)
+          throw new WdkUserException("required type param is missing");
         return wdkModel.findRecordClass(type);
     }
 
@@ -167,8 +172,7 @@ public class ProcessBasketAction extends Action {
             RecordClassBean recordClass) throws JSONException, WdkUserException {
         String data = request.getParameter(PARAM_DATA);
         if (data == null)
-            throw new WdkUserException("the record ids list is invalid: '"
-                    + data + "'.");
+            throw new WdkUserException("the record ids list is missing.");
 
         String[] pkColumns = recordClass.getPrimaryKeyColumns();
         JSONArray array = new JSONArray(data);
