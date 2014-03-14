@@ -3,9 +3,11 @@
  */
 package org.gusdb.wdk.model.query.param;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,55 +16,48 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * @author jerric
  * 
  */
-public class EnumParamHandler extends AbstractParamHandler {
+public class FilterParamHandler extends AbstractParamHandler {
 
   public static final String LABELS_SUFFIX = "-labels";
   public static final String TERMS_SUFFIX = "-values";
 
-  public EnumParamHandler() {}
+  public static final String TERMS_KEY = "values";
+  public static final String FILTERS_KEY = "filters";
 
-  public EnumParamHandler(EnumParamHandler handler, Param param) {
+  public FilterParamHandler() {}
+
+  public FilterParamHandler(FilterParamHandler handler, Param param) {
     super(handler, param);
   }
 
   /**
-   * the raw value is a String[] of terms, and stable value is a string representation of term list.
+   * the raw value is a JSON string, and same as the stable value.
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toStoredValue(org.gusdb .wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
   public String toStableValue(User user, Object rawValue, Map<String, String> contextValues) {
-    if (!(rawValue instanceof String[]))
-      new Exception().printStackTrace();
-    String[] terms = (String[]) rawValue;
-    StringBuilder buffer = new StringBuilder();
-    for (String term : terms) {
-      if (buffer.length() > 0)
-        buffer.append(",");
-      buffer.append(term);
-    }
-    return buffer.toString();
+    return (String) rawValue;
   }
 
   /**
-   * the raw value is String[] of terms, and comma separated list of terms in string representation.
+   * the raw value is a JSON string, and same as the stable value.
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toRawValue(org.gusdb .wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
   public Object toRawValue(User user, String stableValue, Map<String, String> contextValues) {
-    String[] rawValue = stableValue.split(",");
-    for (int i = 0; i < rawValue.length; i++) {
-      rawValue[i] = rawValue[i].trim();
-    }
-    return rawValue;
+    return stableValue;
   }
 
   /**
@@ -70,7 +65,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    * representation of a list of terms instead. If quoted is true, each individual value will be quoted
    * properly.
    * 
-   * @throws WdkModelException
+   * @throws WdkUserException
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#transform(org.gusdb. wdk.model.user.User,
    *      java.lang.String, java.util.Map)
@@ -81,24 +76,35 @@ public class EnumParamHandler extends AbstractParamHandler {
     if (stableValue == null || stableValue.length() == 0)
       return stableValue;
 
-    AbstractEnumParam enumParam = (AbstractEnumParam) param;
-    EnumParamCache cache = enumParam.getValueCache(user, contextValues);
+    try {
+      JSONObject jsValue = new JSONObject(stableValue);
+      JSONArray jsTerms = jsValue.getJSONArray(TERMS_KEY);
+      String[] terms = new String[jsTerms.length()];
+      for (int i = 0; i < terms.length; i++) {
+        terms[i] = jsTerms.getString(i);
+      }
 
-    String[] terms = enumParam.convertToTerms(stableValue);
-    StringBuilder buffer = new StringBuilder();
-    for (String term : terms) {
-      if (!cache.containsTerm(term))
-        continue;
+      AbstractEnumParam enumParam = (AbstractEnumParam) param;
+      EnumParamCache cache = enumParam.getValueCache(user, contextValues);
 
-      String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
+      StringBuilder buffer = new StringBuilder();
+      for (String term : terms) {
+        if (!cache.containsTerm(term))
+          continue;
 
-      if (enumParam.getQuote() && !(internal.startsWith("'") && internal.endsWith("'")))
-        internal = "'" + internal.replaceAll("'", "''") + "'";
-      if (buffer.length() != 0)
-        buffer.append(", ");
-      buffer.append(internal);
+        String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
+
+        if (enumParam.getQuote() && !(internal.startsWith("'") && internal.endsWith("'")))
+          internal = "'" + internal.replaceAll("'", "''") + "'";
+        if (buffer.length() != 0)
+          buffer.append(", ");
+        buffer.append(internal);
+      }
+      return buffer.toString();
     }
-    return buffer.toString();
+    catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
   }
 
   /**
@@ -113,10 +119,26 @@ public class EnumParamHandler extends AbstractParamHandler {
   public String toSignature(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException {
     // make sure to get a sorted stable value;
-    String[] rawValue = (String[]) toRawValue(user, stableValue, contextValues);
-    Arrays.sort(rawValue);
-    stableValue = toStableValue(user, rawValue, contextValues);
-    return Utilities.encrypt(stableValue);
+    try {
+      JSONObject jsValue = new JSONObject(stableValue);
+      JSONObject jsNewValue = new JSONObject();
+      jsNewValue.put(TERMS_KEY, sort(jsValue.getJSONArray(TERMS_KEY)));
+      jsNewValue.put(FILTERS_KEY, sort(jsValue.getJSONArray(FILTERS_KEY)));
+      return Utilities.encrypt(jsNewValue.toString());
+    }
+    catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
+
+  }
+
+  private JSONArray sort(JSONArray jsArray) throws JSONException {
+    List<String> values = new ArrayList<>(jsArray.length());
+    for (int i = 0; i < jsArray.length(); i++) {
+      values.add(jsArray.getString(i));
+    }
+    Collections.sort(values);
+    return new JSONArray(values);
   }
 
   /**
@@ -129,27 +151,14 @@ public class EnumParamHandler extends AbstractParamHandler {
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
     String stableValue = requestParams.getParam(param.getName());
-    if (stableValue != null)
-      return stableValue;
-
-    // stable value not assigned, get raw value first;
-    String[] rawValue = requestParams.getArray(param.getName());
-
-    // get the single value, and convert it into array
-    if (rawValue == null || rawValue.length == 0) {
-      String value = requestParams.getParam(param.getName());
-      if (value != null && value.length() > 0)
-        rawValue = new String[] { value };
-    }
-
-    // use empty value if needed
-    if (rawValue == null || rawValue.length == 0) {
+    if (stableValue == null || stableValue.length() == 0) {
+      // use empty value if needed
       if (!param.isAllowEmpty())
         throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
-      rawValue = param.getDefault().split(",");
-    }
 
-    return param.getStableValue(user, rawValue, new HashMap<String, String>());
+      stableValue = param.getDefault();
+    }
+    return stableValue;
   }
 
   @Override
@@ -203,6 +212,6 @@ public class EnumParamHandler extends AbstractParamHandler {
 
   @Override
   public ParamHandler clone(Param param) {
-    return new EnumParamHandler(this, param);
+    return new FilterParamHandler(this, param);
   }
 }
