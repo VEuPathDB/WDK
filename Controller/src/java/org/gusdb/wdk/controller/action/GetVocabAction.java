@@ -84,7 +84,7 @@ public class GetVocabAction extends Action {
 
       if (getJson) {    // output json string directly
         PrintWriter writer = response.getWriter();
-        JSONObject jsValues = param.getJSONValues();
+        JSONObject jsValues = param.getJsonValues();
         writer.print(jsValues.toString());
         writer.flush();
         writer.close();
