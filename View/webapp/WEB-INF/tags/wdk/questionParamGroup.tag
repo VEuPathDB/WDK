@@ -23,6 +23,9 @@
 
   <%-- hide invisible params --%>
   <c:choose>
+      <c:when test="${paramType eq 'FilterParam'}">
+          <imp:filterParamInput qp="${qP}" />
+      </c:when>
       <c:when test="${paramType eq 'TimestampParam'}">
           <imp:timestampParamInput qp="${qP}" />
       </c:when>

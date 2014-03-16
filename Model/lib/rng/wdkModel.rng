@@ -206,6 +206,7 @@
           <ref name="stringParam" />
           <ref name="enumParam" />
           <ref name="flatVocabParam" />
+          <ref name="filterParam" />
           <ref name="answerParam" />
           <ref name="datasetParam" />
           <ref name="timestampParam" />
@@ -444,27 +445,48 @@
 
   <define name="flatVocabParam">
     <element name="flatVocabParam">
-      <ref name="EnumParamBaseProperties" />
-      <attribute name="queryRef" />
+      <ref name="FlatVocabParamBaseProperties" />
+      <zeroOrMore>
+        <choice>
+          <ref name="FlatVocabParamBaseTags" />
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+ 
+  <define name="filterParam">
+    <element name="filterParam">
+      <ref name="FlatVocabParamBaseProperties" />
       <optional>
         <attribute name="metadataSpecQueryRef" />
         <attribute name="metadataQueryRef" />
       </optional>
       <zeroOrMore>
         <choice>
-          <ref name="ParamBaseTags" />
-          <element name="suggest">
-            <ref name="SuggestContent" />
-            <optional>
-              <choice>
-                <attribute name="default" />
-                <ref name="SelectModeContents" />
-              </choice>
-            </optional>
-          </element>
+          <ref name="FlatVocabParamBaseTags" />
         </choice>
       </zeroOrMore>
     </element>
+  </define>
+ 
+  <define name="FlatVocabParamBaseProperties">
+    <ref name="EnumParamBaseProperties" />
+    <attribute name="queryRef" />
+  </define>
+  
+  <define name="FlatVocabParamBaseTags">
+    <choice>
+      <ref name="ParamBaseTags" />
+      <element name="suggest">
+        <ref name="SuggestContent" />
+        <optional>
+          <choice>
+            <attribute name="default" />
+            <ref name="SelectModeContents" />
+          </choice>
+        </optional>
+      </element>
+    </choice>
   </define>
 
   <define name="EnumParamBaseProperties">
