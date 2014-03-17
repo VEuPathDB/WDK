@@ -20,6 +20,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -77,8 +78,8 @@ public class BasketFactory {
     return schema;
   }
 
-  public void addToBasket(User user, Step step) throws WdkModelException,
-      SQLException {
+  public void addToBasket(User user, Step step) throws WdkModelException
+       {
     logger.debug("adding to basket from step...");
 
     AnswerValue answerValue = step.getAnswerValue();
@@ -93,9 +94,10 @@ public class BasketFactory {
    * @param pkValues
    *          a list of primary key values. the inner map is a primary-key
    *          column-value map.
+   * @throws WdkModelException 
    */
   public void addToBasket(User user, RecordClass recordClass,
-      List<String[]> pkValues) throws SQLException {
+      List<String[]> pkValues) throws WdkModelException  {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
@@ -172,14 +174,17 @@ public class BasketFactory {
       // check the remote table to solve out-dated db-link issue with
       // Oracle.
       checkRemoteTable();
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
     } finally {
       SqlUtils.closeStatement(psInsert);
       SqlUtils.closeStatement(psCount);
     }
   }
 
-  public void removeFromBasket(User user, Step step) throws WdkModelException,
-      SQLException {
+  public void removeFromBasket(User user, Step step) throws WdkModelException
+       {
     AnswerValue answerValue = step.getAnswerValue();
     RecordClass recordClass = answerValue.getQuestion().getRecordClass();
     List<String[]> pkValues = answerValue.getAllIds();
@@ -187,7 +192,7 @@ public class BasketFactory {
   }
 
   public void removeFromBasket(User user, RecordClass recordClass,
-      List<String[]> pkValues) throws SQLException {
+      List<String[]> pkValues) throws WdkModelException  {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
@@ -229,6 +234,9 @@ public class BasketFactory {
       // check the remote table to solve out-dated db-link issue with
       // Oracle.
       checkRemoteTable();
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
     } finally {
       SqlUtils.closeStatement(psDelete);
     }
@@ -362,7 +370,7 @@ public class BasketFactory {
   }
 
   public List<RecordInstance> getBasket(User user, RecordClass recordClass)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     String sql = "SELECT * FROM " + schema + TABLE_BASKET + " WHERE "
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID + " = ? AND "
         + COLUMN_RECORD_CLASS + " =?";

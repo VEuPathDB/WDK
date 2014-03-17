@@ -192,7 +192,7 @@ public class StepFactory {
   Step createStep(User user, Question question,
       Map<String, String> dependentValues, AnswerFilterInstance filter,
       int pageStart, int pageEnd, boolean deleted, boolean validate,
-      int assignedWeight) throws WdkModelException {
+      int assignedWeight) throws WdkModelException, WdkUserException {
 
     // get summary list and sorting list
     String questionName = question.getFullName();
@@ -989,8 +989,14 @@ public class StepFactory {
     int endIndex = oldStep.getUser().getItemsPerPage();
     boolean deleted = oldStep.isDeleted();
     int assignedWeight = oldStep.getAssignedWeight();
-    Step newStep = newUser.createStep(question, paramValues, filter,
-        startIndex, endIndex, deleted, false, assignedWeight);
+    Step newStep;
+    try {
+      newStep = newUser.createStep(question, paramValues, filter,
+          startIndex, endIndex, deleted, false, assignedWeight);
+    }
+    catch (WdkUserException ex) {
+      throw new WdkModelException(ex);
+    }
     stepIdsMap.put(oldStep.getStepId(), newStep.getStepId());
     newStep.setCollapsedName(oldStep.getCollapsedName());
     newStep.setCollapsible(oldStep.isCollapsible());

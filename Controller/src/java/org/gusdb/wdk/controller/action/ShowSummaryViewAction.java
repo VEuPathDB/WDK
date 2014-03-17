@@ -46,8 +46,12 @@ public class ShowSummaryViewAction extends Action {
         String strStep = request.getParameter(PARAM_STEP);
         if (strStep == null || strStep.length() == 0)
             throw new WdkUserException("Required step parameter is missing.");
-        int stepId = Integer.valueOf(strStep);
-        StepBean step = wdkUser.getStep(stepId);
+        StepBean step;
+        try {
+          step = wdkUser.getStep(Integer.valueOf(strStep));
+        } catch(NumberFormatException ex) {
+          throw new WdkUserException("The step id is invalid: " + strStep);
+        }
 
         request.setAttribute(ATTR_STEP, step);
 

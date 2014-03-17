@@ -235,11 +235,12 @@ public class QuestionBean {
    *          Index of the first record to include in the answer
    * @param end
    *          Index of the last record to include in the answer
+   * @throws WdkUserException 
    */
   public AnswerValueBean makeAnswerValue(UserBean user,
       Map<String, String> paramValues, int pageStart, int pageEnd,
       Map<String, Boolean> sortingMap, String filterName, boolean validate,
-      int assignedWeight) throws WdkModelException {
+      int assignedWeight) throws WdkModelException, WdkUserException {
     AnswerFilterInstance filter = null;
     if (filterName != null) {
       RecordClass recordClass = question.getRecordClass();
@@ -279,11 +280,12 @@ public class QuestionBean {
    * 
    * @param paramErrors
    * @return
+   * @throws WdkUserException 
    * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
    */
   public AnswerValueBean makeAnswerValue(UserBean user,
       Map<String, String> paramValues, boolean validate, int assignedWeight)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     return new AnswerValueBean(question.makeAnswerValue(user.getUser(),
         paramValues, validate, assignedWeight));
   }
@@ -435,7 +437,7 @@ public class QuestionBean {
   }
 
   public void fillContextParamValues(UserBean user,
-      Map<String, String> contextParamValues) throws WdkModelException {
+      Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
     question.getQuery().fillContextParamValues(user.getUser(),
         contextParamValues);
   }

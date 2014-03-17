@@ -10,6 +10,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.Column;
@@ -172,8 +173,9 @@ public class FilterParam extends FlatVocabParam {
   /**
    * @return <propertyName, <infoKey, infoValue>>, or null if metadataQuery is not specified
    * @throws WdkModelException
+   * @throws WdkUserException 
    */
-  public Map<String, Map<String, String>> getMetadataSpec(User user) throws WdkModelException {
+  public Map<String, Map<String, String>> getMetadataSpec(User user) throws WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
       return null;
 
@@ -205,9 +207,10 @@ public class FilterParam extends FlatVocabParam {
   /**
    * @return <term, <propertyName, propertyValue>>, or null if propertyQuery is not specified.
    * @throws WdkModelException
+   * @throws WdkUserException 
    */
   public Map<String, Map<String, String>> getMetadata(User user, Map<String, String> contextValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
       return null;
 
@@ -236,7 +239,7 @@ public class FilterParam extends FlatVocabParam {
 
   @Override
   public JSONObject getJsonValues(User user, Map<String, String> contextValues, EnumParamCache cache)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     JSONObject jsParam = super.getJsonValues(user, contextValues, cache);
     try { // add additional info into the json
       appendJsonFilterValue(jsParam, user, contextValues);
@@ -248,7 +251,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   private void appendJsonFilterValue(JSONObject jsParam, User user, Map<String, String> contextValues)
-      throws JSONException, WdkModelException {
+      throws JSONException, WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
       return;
 
