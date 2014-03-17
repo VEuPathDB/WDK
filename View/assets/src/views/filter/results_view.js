@@ -9,7 +9,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     template: wdk.templates['filter/results.handlebars'],
 
-    className: 'results context ui-helper-clearfixs',
+    className: 'results context ui-helper-clearfix',
+
+    dataTable: null,
 
     constructor: function() {
       Handlebars.registerHelper('property', function(key, context, options) {
@@ -20,6 +22,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function() {
       this.listenTo(this.model.filteredData, 'reset', this.render);
+      this.render();
     },
 
     render: function() {
@@ -27,7 +30,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
         fields: this.model.fields.toJSON(),
         filteredData: this.model.filteredData.toJSON()
       }));
-      this.$('table').wdkDataTable({ bFilter: false });
+      this.dataTable = this.$('.results-table').wdkDataTable({ bFilter: false }).dataTable();
+
+      $(window).on('resize', _.debounce(this.resizeTable.bind(this), 100));
+
       return this;
     },
 
@@ -36,6 +42,14 @@ wdk.namespace('wdk.views.filter', function(ns) {
       if (td.scrollWidth > td.clientWidth) {
         td.setAttribute('title', $(td).text());
       }
+    },
+
+    didShow: function() {
+      this.dataTable.fnDraw();
+    },
+
+    resizeTable: function() {
+      this.dataTable.fnDraw();
     }
 
   });

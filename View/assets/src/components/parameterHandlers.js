@@ -31,6 +31,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     initTypeAhead(isEdit, element);
     initDependentParamHandlers(isEdit, element);
+    initFilterParam(element);
 
     element.closest('form').submit(function() {
       mapTypeAheads(element);
@@ -149,6 +150,64 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         });
       }
     });
+  }
+
+  //==============================================================================
+  function initFilterParam(element) {
+    element.find('.filter-param').each(function(i, node) {
+      var $node = $(node);
+      var dataId = $node.data('data-id');
+      var name = $node.data('name');
+      var input = $node.find('input');
+
+      var jsonContainer = $(node).find('script[type="application/json"][id="' + dataId + '"]');
+      var data = JSON.parse(jsonContainer.text());
+      data = parseFilterData(data);
+      _.extend(data, { title: name });
+
+      var model = new wdk.models.filter.LocalFilterService(data, { parse: true, root: 'metadata' });
+      var view = new wdk.views.filter.FilterView({ model: model });
+
+      model.filteredData.on('reset', function(filteredData) {
+        input.val(filteredData.pluck('term').join(', '));
+      });
+
+      $(node).append(view.el);
+    });
+  }
+
+  function parseFilterData(filterData) {
+    var metadata = filterData.metadata;
+    var metadataSpec = filterData.metadataSpec;
+    var values = filterData.values;
+    var numericProps = _.keys(metadataSpec)
+      .filter(function(prop) {
+        return metadataSpec[prop].type === 'numberic';
+      });
+
+    var data = {
+      fields: _.keys(metadataSpec)
+        .map(function(name) {
+          return _.extend({
+            term: name,
+            display: name
+          }, metadataSpec[name]);
+        }),
+
+      data: values
+        .map(function(d) {
+          // type coercion
+          var mdata = metadata[d.term];
+          numericProps.forEach(function(prop) {
+            mdata[prop] = Number(mdata[prop]);
+          });
+          return _.extend(d, {
+            metadata: mdata
+          });
+        })
+    };
+
+    return data;
   }
 
   //==============================================================================
