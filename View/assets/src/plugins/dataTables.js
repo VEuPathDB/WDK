@@ -37,7 +37,7 @@ wdk.util.namespace("window.wdk.plugin", function(ns, $) {
       }
 
       // allow options to be passed like in the default dataTable function
-      $this.dataTable($.extend(dataTableOpts, opts));
+      return $this.dataTable($.extend(dataTableOpts, opts));
     });
   };
 
