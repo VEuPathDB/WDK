@@ -106,7 +106,8 @@ public class Step {
   public int getAnswerParamCount() {
     try {
       return getQuestion().getQuery().getAnswerParamCount();
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       return 0;
     }
   }
@@ -114,7 +115,8 @@ public class Step {
   public int getResultSize() {
     try {
       this.estimateSize = getAnswerValue().getResultSize();
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       valid = false;
       ex.printStackTrace();
     }
@@ -124,8 +126,7 @@ public class Step {
   // Needs to be updated for transforms
   public String getOperation() throws WdkModelException, WdkUserException {
     if (isFirstStep()) {
-      throw new WdkUserException(
-          "getOperation cannot be called on the first Step.");
+      throw new WdkUserException("getOperation cannot be called on the first Step.");
     }
     BooleanQuery query = (BooleanQuery) getQuestion().getQuery();
     StringParam operator = query.getOperatorParam();
@@ -145,7 +146,9 @@ public class Step {
     if (childStep != null) {
       childStep.parentStep = this;
       childStepId = childStep.getStepId();
-    } else childStepId = 0;
+    }
+    else
+      childStepId = 0;
   }
 
   public void setNextStep(Step nextStep) {
@@ -161,7 +164,9 @@ public class Step {
     if (previousStep != null) {
       previousStep.nextStep = this;
       previousStepId = previousStep.getStepId();
-    } else previousStepId = 0;
+    }
+    else
+      previousStepId = 0;
   }
 
   public boolean isFirstStep() {
@@ -192,9 +197,8 @@ public class Step {
   }
 
   /**
-   * @return Returns the customName. If no custom name set before, it will
-   *         return the default name provided by the underline AnswerValue - a
-   *         combination of question's full name, parameter names and values.
+   * @return Returns the customName. If no custom name set before, it will return the default name provided by
+   *         the underline AnswerValue - a combination of question's full name, parameter names and values.
    * @throws WdkModelException
    * @throws SQLException
    * @throws JSONException
@@ -206,38 +210,41 @@ public class Step {
     if (name == null || name.length() == 0) {
       try {
         name = getQuestion().getShortDisplayName();
-      } catch (WdkModelException ex) {
+      }
+      catch (WdkModelException ex) {
         name = null;
       }
     }
-    if (name == null) name = getQuestionName();
+    if (name == null)
+      name = getQuestionName();
     if (name != null) {
       // remove script injections
       name = name.replaceAll("<.+?>", " ");
       name = name.replaceAll("[\"]", " ");
       name = name.trim().replaceAll("\\s+", " ");
-      if (name.length() > 4000) name = name.substring(0, 4000);
+      if (name.length() > 4000)
+        name = name.substring(0, 4000);
     }
     return name;
   }
 
   /**
-   * @return Returns the custom name, if it is set. Otherwise, returns the short
-   *         display name for the underlying question.
+   * @return Returns the custom name, if it is set. Otherwise, returns the short display name for the
+   *         underlying question.
    */
   public String getShortDisplayName() {
     /*
      * String name = customName;
      * 
-     * if (name == null) name = getQuestion().getShortDisplayName(); if (name !=
-     * null) { // remove script injections name = name.replaceAll("<.+?>", " ");
-     * name = name.replaceAll("['\"]", " "); name =
-     * name.trim().replaceAll("\\s+", " "); if (name.length() > 4000) name =
-     * name.substring(0, 4000); } return name;
+     * if (name == null) name = getQuestion().getShortDisplayName(); if (name != null) { // remove script
+     * injections name = name.replaceAll("<.+?>", " "); name = name.replaceAll("['\"]", " "); name =
+     * name.trim().replaceAll("\\s+", " "); if (name.length() > 4000) name = name.substring(0, 4000); } return
+     * name;
      */
     try {
       return getQuestion().getShortDisplayName();
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       return getDisplayName();
     }
   }
@@ -245,7 +252,8 @@ public class Step {
   public String getDisplayName() {
     try {
       return getQuestion().getDisplayName();
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       return (customName != null) ? customName : questionName;
     }
   }
@@ -317,7 +325,8 @@ public class Step {
   public boolean isCombined() {
     try {
       return getQuestion().getQuery().isCombined();
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       return false;
     }
   }
@@ -334,7 +343,8 @@ public class Step {
   public boolean isTransform() {
     try {
       return getQuestion().getQuery().isTransform();
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       return false;
     }
   }
@@ -361,7 +371,8 @@ public class Step {
   public String getDescription() {
     try {
       return getQuestion().getDescription();
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       return null;
     }
   }
@@ -382,7 +393,8 @@ public class Step {
   }
 
   public boolean isCollapsible() {
-    if (collapsible) return true;
+    if (collapsible)
+      return true;
     // it is true if the step is a branch
     return (getParentStep() != null && isCombined());
   }
@@ -392,7 +404,8 @@ public class Step {
   }
 
   public String getCollapsedName() {
-    if (collapsedName == null && isCollapsible()) return getCustomName();
+    if (collapsedName == null && isCollapsible())
+      return getCustomName();
     return collapsedName;
   }
 
@@ -408,14 +421,17 @@ public class Step {
    * @throws WdkUserException
    */
   public boolean isValid() throws WdkModelException {
-    if (!valid) return false;
+    if (!valid)
+      return false;
     Step prevStep = getPreviousStep();
     if (prevStep != null) {
-      if (!prevStep.isValid()) return false;
+      if (!prevStep.isValid())
+        return false;
     }
     Step childStep = getChildStep();
     if (childStep != null) {
-      if (!childStep.isValid()) return false;
+      if (!childStep.isValid())
+        return false;
     }
     return true;
   }
@@ -469,11 +485,11 @@ public class Step {
     return getAllSteps().length;
   }
 
-  private ArrayList<Step> buildAllStepsArray(ArrayList<Step> array, Step step)
-      throws WdkModelException {
+  private ArrayList<Step> buildAllStepsArray(ArrayList<Step> array, Step step) throws WdkModelException {
     if (step.isFirstStep()) {
       array.add(step);
-    } else {
+    }
+    else {
       array = buildAllStepsArray(array, step.getPreviousStep());
       array.add(step);
     }
@@ -508,8 +524,7 @@ public class Step {
   }
 
   public Step getStepByChildId(int childId) throws WdkModelException {
-    logger.debug("gettting step by child id. current=" + this + ", input="
-        + childId);
+    logger.debug("gettting step by child id. current=" + this + ", input=" + childId);
     Step target;
     if (this.childStepId == childId) {
       return this;
@@ -532,8 +547,7 @@ public class Step {
   }
 
   public Step getStepByPreviousId(int previousId) throws WdkModelException {
-    logger.debug("gettting step by prev id. current=" + this + ", input="
-        + previousId);
+    logger.debug("gettting step by prev id. current=" + this + ", input=" + previousId);
     Step target;
     if (this.previousStepId == previousId) {
       return this;
@@ -566,8 +580,7 @@ public class Step {
    * @param paramErrors
    *          the paramErrors to set
    */
-  public void setParamValues(Map<String, String> paramValues)
-      throws WdkModelException {
+  public void setParamValues(Map<String, String> paramValues) throws WdkModelException {
     this.paramValues = new LinkedHashMap<String, String>(paramValues);
     // make sure the params do exist
     if (this.valid) {
@@ -585,51 +598,53 @@ public class Step {
     return getQuestion().getRecordClass();
   }
 
-  public int getIndexFromId(int stepId) throws WdkUserException,
-      WdkModelException {
+  public int getIndexFromId(int stepId) throws WdkUserException, WdkModelException {
     Step[] steps = getAllSteps();
     for (int i = 0; i < steps.length; ++i) {
-      if (steps[i].getStepId() == stepId
-          || (steps[i].getChildStep() != null && steps[i].getChildStep().getStepId() == stepId)) {
+      if (steps[i].getStepId() == stepId ||
+          (steps[i].getChildStep() != null && steps[i].getChildStep().getStepId() == stepId)) {
         return i;
       }
     }
     throw new WdkUserException("Id not found!");
   }
 
-  public Step createStep(String filterName, int assignedWeight)
-      throws WdkModelException {
+  public Step createStep(String filterName, int assignedWeight) throws WdkModelException {
     RecordClass recordClass = getQuestion().getRecordClass();
     AnswerFilterInstance filter = recordClass.getFilter(filterName);
     return createStep(filter, assignedWeight);
   }
 
-  public Step createStep(AnswerFilterInstance filter, int assignedWeight)
-      throws WdkModelException {
+  public Step createStep(AnswerFilterInstance filter, int assignedWeight) throws WdkModelException {
     AnswerFilterInstance oldFilter = getFilter();
-    if (filter == null && oldFilter == null
-        && this.assignedWeight == assignedWeight) return this;
-    if (filter != null && oldFilter != null
-        && filter.getName().equals(oldFilter.getName())
-        && this.assignedWeight == assignedWeight) return this;
+    if (filter == null && oldFilter == null && this.assignedWeight == assignedWeight)
+      return this;
+    if (filter != null && oldFilter != null && filter.getName().equals(oldFilter.getName()) &&
+        this.assignedWeight == assignedWeight)
+      return this;
 
     // create new steps
     Question question = getQuestion();
     Map<String, String> params = getParamValues();
-    int startIndex = getAnswerValue().getStartIndex();
-    int endIndex = getAnswerValue().getEndIndex();
-    Step step = user.createStep(question, params, filter, startIndex, endIndex,
-        deleted, false, assignedWeight);
-    step.collapsedName = collapsedName;
-    step.customName = customName;
-    step.collapsible = collapsible;
-    step.update(false);
-    return step;
+    try {
+      int startIndex = getAnswerValue().getStartIndex();
+      int endIndex = getAnswerValue().getEndIndex();
+      Step step = user.createStep(question, params, filter, startIndex, endIndex, deleted, false,
+          assignedWeight);
+      step.collapsedName = collapsedName;
+      step.customName = customName;
+      step.collapsible = collapsible;
+      step.update(false);
+      return step;
+    }
+    catch (WdkUserException ex) {
+      throw new WdkModelException(ex);
+    }
   }
 
   /**
-   * deep clone a step, the step will get a new id, and if the step contains
-   * other sub-steps, all those sub steps are cloned recursively.
+   * deep clone a step, the step will get a new id, and if the step contains other sub-steps, all those sub
+   * steps are cloned recursively.
    * 
    * @throws SQLException
    * @throws WdkUserException
@@ -640,29 +655,37 @@ public class Step {
    */
   public Step deepClone() throws WdkModelException {
     Step step;
-    AnswerValue answerValue = getAnswerValue();
-    if (!isCombined()) {
-      step = user.createStep(answerValue, deleted, assignedWeight);
-    } else {
-      Question question = getQuestion();
-      Map<String, String> paramValues = new LinkedHashMap<String, String>();
-      Map<String, Param> params = question.getParamMap();
-      for (String paramName : this.paramValues.keySet()) {
-        Param param = params.get(paramName);
-        String paramValue = this.paramValues.get(paramName);
-        if (param instanceof AnswerParam) {
-          Step child = user.getStep(Integer.parseInt(paramValue));
-          child = child.deepClone();
-          paramValue = Integer.toString(child.getStepId());
-        }
-        paramValues.put(paramName, paramValue);
+    AnswerValue answerValue;
+    try {
+      answerValue = getAnswerValue();
+      if (!isCombined()) {
+        step = user.createStep(answerValue, deleted, assignedWeight);
       }
-      AnswerFilterInstance filter = getFilter();
-      int pageStart = answerValue.getStartIndex();
-      int pageEnd = answerValue.getEndIndex();
-      step = user.createStep(question, paramValues, filter, pageStart, pageEnd,
-          deleted, false, assignedWeight);
+      else {
+        Question question = getQuestion();
+        Map<String, String> paramValues = new LinkedHashMap<String, String>();
+        Map<String, Param> params = question.getParamMap();
+        for (String paramName : this.paramValues.keySet()) {
+          Param param = params.get(paramName);
+          String paramValue = this.paramValues.get(paramName);
+          if (param instanceof AnswerParam) {
+            Step child = user.getStep(Integer.parseInt(paramValue));
+            child = child.deepClone();
+            paramValue = Integer.toString(child.getStepId());
+          }
+          paramValues.put(paramName, paramValue);
+        }
+        AnswerFilterInstance filter = getFilter();
+        int pageStart = answerValue.getStartIndex();
+        int pageEnd = answerValue.getEndIndex();
+        step = user.createStep(question, paramValues, filter, pageStart, pageEnd, deleted, false,
+            assignedWeight);
+      }
     }
+    catch (WdkUserException ex) {
+      throw new WdkModelException(ex);
+    }
+
     step.collapsedName = collapsedName;
     step.customName = customName;
     step.collapsible = collapsible;
@@ -672,17 +695,20 @@ public class Step {
 
   public boolean isFiltered() {
     AnswerFilterInstance filter = getFilter();
-    if (filter == null) return false;
+    if (filter == null)
+      return false;
 
     Question question;
     try {
       question = getQuestion();
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       return false;
     }
     RecordClass recordClass = question.getRecordClass();
     AnswerFilterInstance defaultFilter = recordClass.getDefaultFilter();
-    if (defaultFilter == null) return true;
+    if (defaultFilter == null)
+      return true;
 
     return (!defaultFilter.getName().equals(filter.getName()));
   }
@@ -702,7 +728,8 @@ public class Step {
   public boolean isBoolean() {
     try {
       return getQuestion().getQuery().isBoolean();
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       return false;
     }
   }
@@ -710,9 +737,8 @@ public class Step {
   public JSONObject getJSONContent(int strategyId) throws WdkModelException {
     return getJSONContent(strategyId, false);
   }
-  
-  public JSONObject getJSONContent(int strategyId, boolean forChecksum) 
-      throws WdkModelException {
+
+  public JSONObject getJSONContent(int strategyId, boolean forChecksum) throws WdkModelException {
 
     JSONObject jsStep = new JSONObject();
 
@@ -742,10 +768,12 @@ public class Step {
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + this.stepId;
         Integer order = user.getStrategyOrder(subStratId);
-        if (order == null) order = 0; // the sub-strategy is not displayed
+        if (order == null)
+          order = 0; // the sub-strategy is not displayed
         jsStep.put("order", order);
       }
-    } catch (JSONException ex) {
+    }
+    catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
     return jsStep;
@@ -759,7 +787,8 @@ public class Step {
   public AnswerFilterInstance getFilter() {
     try {
       return getQuestion().getRecordClass().getFilter(filterName);
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       return null;
     }
   }
@@ -785,11 +814,17 @@ public class Step {
       Question question = getQuestion();
       Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
       int endIndex = user.getItemsPerPage();
-      answerValue = question.makeAnswerValue(user, paramValues, 1, endIndex,
-          sortingMap, getFilter(), validate, assignedWeight);
+      try {
+        answerValue = question.makeAnswerValue(user, paramValues, 1, endIndex, sortingMap, getFilter(),
+            validate, assignedWeight);
+      }
+      catch (WdkUserException ex) {
+        throw new WdkModelException(ex);
+      }
       try {
         this.estimateSize = answerValue.getResultSize();
-      } catch (WdkModelException ex) {
+      }
+      catch (WdkModelException ex) {
         // if validate is false, the error will be ignored to allow the process to continue.
         if (validate)
           throw ex;
@@ -802,7 +837,8 @@ public class Step {
   }
 
   public boolean isUseBooleanFilter() throws WdkModelException {
-    if (!isBoolean()) return false;
+    if (!isBoolean())
+      return false;
     BooleanQuery query = (BooleanQuery) getQuestion().getQuery();
     String paramName = query.getUseBooleanFilter().getName();
     String strBooleanFlag = paramValues.get(paramName);
@@ -818,9 +854,8 @@ public class Step {
   }
 
   /**
-   * Validate a step and all the children steps it depends on. the result of
-   * validation will also be stored in "valid" variable. If a step was already
-   * invalid it will stay invalid.
+   * Validate a step and all the children steps it depends on. the result of validation will also be stored in
+   * "valid" variable. If a step was already invalid it will stay invalid.
    * 
    * @return
    * @throws SQLException
@@ -828,29 +863,35 @@ public class Step {
    * @throws WdkUserException
    * @throws JSONException
    */
-  public boolean validate() throws SQLException, WdkUserException,
-      WdkModelException, JSONException {
+  public boolean validate() throws SQLException, WdkUserException, WdkModelException, JSONException {
     // only validate leaf steps. the validation of a combined step is
     // determined by the children.
     Step prevStep = getPreviousStep();
     Step childStep = getChildStep();
     if (childStep == null && prevStep == null) {
-      if (!valid) return valid;
+      if (!valid)
+        return valid;
       try {
         getAnswerValue();
-      } catch (Exception ex) {
+      }
+      catch (Exception ex) {
         this.validationMessage = ex.getMessage();
         this.valid = false;
       }
-    } else {
+    }
+    else {
       if (childStep != null) {
-        if (!childStep.validate()) this.valid = false;
-      } else if (prevStep != null) {
-        if (!prevStep.validate()) this.valid = false;
+        if (!childStep.validate())
+          this.valid = false;
+      }
+      else if (prevStep != null) {
+        if (!prevStep.validate())
+          this.valid = false;
       }
     }
     // set the invalid flag
-    if (!valid) stepFactory.setStepValidFlag(this);
+    if (!valid)
+      stepFactory.setStepValidFlag(this);
     return valid;
   }
 
@@ -946,17 +987,18 @@ public class Step {
     for (Param param : params) {
       if (param instanceof AnswerParam) {
         index++;
-        if (index == 2) return param.getName();
+        if (index == 2)
+          return param.getName();
       }
     }
     return null;
   }
 
-  public int getFrontId() throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public int getFrontId() throws WdkUserException, WdkModelException, SQLException, JSONException {
     int frontId;
     Step previousStep = getPreviousStep();
-    if (previousStep == null) frontId = 1;
+    if (previousStep == null)
+      frontId = 1;
     else {
       frontId = previousStep.getFrontId();
       frontId++;
@@ -971,10 +1013,12 @@ public class Step {
 
   public boolean isUncollapsible() {
     // if the step hasn't been collapsed, it cannot be uncollapsed.
-    if (!collapsible) return false;
+    if (!collapsible)
+      return false;
 
     // if the step is a combined step, it cannot be uncollapsed
-    if (isCombined()) return false;
+    if (isCombined())
+      return false;
 
     return true;
   }

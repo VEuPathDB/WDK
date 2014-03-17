@@ -38,7 +38,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
    */
   protected BooleanQueryInstance(User user, BooleanQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,
-      Map<String, String> context) throws WdkModelException {
+      Map<String, String> context) throws WdkModelException, WdkUserException {
     // boolean query doesn't use assigned weight
     super(user, query, values, validate, assignedWeight, context);
     this.booleanQuery = query;

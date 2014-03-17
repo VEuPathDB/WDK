@@ -25,6 +25,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -52,7 +53,7 @@ public class ProcessQueryInstance extends QueryInstance {
 
   public ProcessQueryInstance(User user, ProcessQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,
-      Map<String, String> context) throws WdkModelException {
+      Map<String, String> context) throws WdkModelException, WdkUserException {
     super(user, query, values, validate, assignedWeight, context);
     this.query = query;
   }

@@ -97,7 +97,12 @@ public class DownloadStepAnswerValueAction extends Action {
             stepIdstr = ( String ) request.getAttribute( "step_id" );
         }
         if ( stepIdstr != null ) {
-            int stepId = Integer.parseInt( stepIdstr );
+          int stepId;
+          try{
+            stepId = Integer.parseInt( stepIdstr );
+          } catch(NumberFormatException ex) {
+            throw new WdkUserException("The step id is invalid: " + stepIdstr);
+          }
             request.setAttribute( "step_id", stepId );
             request.setAttribute( "history_id", stepId );
 

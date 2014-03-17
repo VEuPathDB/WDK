@@ -15,6 +15,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
@@ -61,7 +62,7 @@ public abstract class QueryInstance {
   protected Map<String, String> context;
 
   protected QueryInstance(User user, Query query, Map<String, String> stableValues, boolean validate,
-      int assignedWeight, Map<String, String> context) throws WdkModelException {
+      int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
     this.user = user;
     this.query = query;
     this.wdkModel = query.getWdkModel();
@@ -93,7 +94,8 @@ public abstract class QueryInstance {
     this.instanceId = instanceId;
   }
 
-  private void setValues(Map<String, String> stableValues, boolean validate) throws WdkModelException {
+  private void setValues(Map<String, String> stableValues, boolean validate) throws WdkModelException,
+      WdkUserException {
     logger.trace("----- input value for [" + query.getFullName() + "] -----");
     for (String paramName : stableValues.keySet()) {
       logger.trace(paramName + "='" + stableValues.get(paramName) + "'");
@@ -222,7 +224,8 @@ public abstract class QueryInstance {
     return resultFactory.getCachedSql(this);
   }
 
-  private void validateValues(User user, Map<String, String> values) throws WdkModelException {
+  private void validateValues(User user, Map<String, String> values) throws WdkUserException,
+      WdkModelException {
     Map<String, Param> params = query.getParamMap();
     Map<String, String> errors = null;
 
@@ -257,8 +260,8 @@ public abstract class QueryInstance {
       }
     }
     if (errors != null) {
-      WdkModelException ex = new WdkModelException("Some of the input parameters are invalid.", errors);
-      logger.debug(ex.formatErrors());
+      WdkUserException ex = new WdkUserException("Some of the input parameters are invalid.", errors);
+      logger.error(ex.formatErrors());
       throw ex;
     }
   }

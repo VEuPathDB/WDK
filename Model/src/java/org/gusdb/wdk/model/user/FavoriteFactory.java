@@ -20,6 +20,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -51,9 +52,10 @@ public class FavoriteFactory {
    * @param recordIds
    *          a list of primary key values. the inner map is a primary-key
    *          column-value map.
+   * @throws WdkUserException 
    */
   public void addToFavorite(User user, RecordClass recordClass,
-      List<Map<String, Object>> recordIds) throws WdkModelException {
+      List<Map<String, Object>> recordIds) throws WdkModelException, WdkUserException {
     logger.debug("adding favorite...");
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
@@ -80,9 +82,9 @@ public class FavoriteFactory {
       psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
       psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
       int count = 0;
-      for (Map<String, Object> recordId : recordIds) {
+      for (Map<String, Object> pkValues : recordIds) {
         // check if the record already exists.
-        setParams(psCount, userId, projectId, rcName, pkColumns, recordId, 1);
+        setParams(psCount, userId, projectId, rcName, pkColumns, pkValues, 1);
         boolean hasRecord = false;
         ResultSet resultSet = null;
         try {
@@ -104,7 +106,7 @@ public class FavoriteFactory {
         String note = null;
         if (noteField != null) {
           RecordInstance instance = new RecordInstance(user, recordClass,
-              recordId);
+              pkValues);
           AttributeValue noteValue = instance.getAttributeValue(noteField.getName());
           Object value = noteValue.getValue();
           note = (value != null) ? value.toString() : "";
@@ -113,7 +115,7 @@ public class FavoriteFactory {
         // insert new record
         int favoriteId = platform.getNextId(dataSource, schema, TABLE_FAVORITES);
         psInsert.setInt(1, favoriteId);
-        setParams(psInsert, userId, projectId, rcName, pkColumns, recordId, 2);
+        setParams(psInsert, userId, projectId, rcName, pkColumns, pkValues, 2);
         psInsert.setString(5 + pkColumns.length, note);
         psInsert.addBatch();
 
@@ -278,7 +280,7 @@ public class FavoriteFactory {
         list.add(favorite);
       }
       return favorites;
-    } catch (SQLException e) {
+    } catch (SQLException | WdkUserException e) {
       throw new WdkModelException("Cannot get favorites for user "
           + user.getUserId(), e);
     } finally {

@@ -134,7 +134,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
     DatasetParam datasetParam = (DatasetParam) param;
     String type = requestParams.getParam(datasetParam.getTypeSubParam());
     if (type == null)
-      throw new WdkUserException("Please choose the type of the input for paramter '" + param.getPrompt() +
+      throw new WdkUserException("Please choose the type of the input for parameter '" + param.getPrompt() +
           "'.");
 
     String data = null;
@@ -143,10 +143,14 @@ public class DatasetParamHandler extends AbstractParamHandler {
     String parserName = requestParams.getParam(datasetParam.getParserSubParam());
     if (type.equalsIgnoreCase(DatasetParam.TYPE_DATA)) {
       data = requestParams.getParam(datasetParam.getDataSubParam());
+      if (data == null || data.length() == 0)
+        throw new WdkUserException("Please input data for parameter '" + param.getPrompt() + "'.");
     }
     else if (type.equalsIgnoreCase(DatasetParam.TYPE_FILE)) {
       String fileParam = datasetParam.getFileSubParam();
       uploadFile = requestParams.getParam(fileParam);
+      if (uploadFile == null || uploadFile.length() == 0)
+        throw new WdkUserException("Please select a file to upload for parameter '" + param.getPrompt() + "'.");
       logger.debug("upload file: " + uploadFile);
       data = requestParams.getUploadFileContent(fileParam);
     }
