@@ -49,14 +49,25 @@ wdk.namespace('wdk.views.filter', function(ns) {
       return this;
     },
 
+    /**
+     * Determine which panel to show.
+     *
+     * Options are 'filters', 'results', or neither.
+     */
     setContext: function(context) {
       // show other links
       this.$('.summary li').removeClass('hidden')
       this.$('a[href="#' + context + '"]').parent().addClass('hidden');
 
-      // show context div
-      this.$('.context').hide();
-      this.$('.' + context).show();
+      this.filterFieldsView.hide();
+      this.resultsView.hide();
+
+      if (context === 'filters') {
+        this.filterFieldsView.show();
+      }
+      if (context === 'results') {
+        this.resultsView.show();
+      }
 
       return this;
     }

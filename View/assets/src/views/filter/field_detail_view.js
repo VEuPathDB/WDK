@@ -61,6 +61,12 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
 
       return constructor;
+    },
+
+    didShow: function() {
+      if (this.delegateView) {
+        this.delegateView.show();
+      }
     }
 
   });
