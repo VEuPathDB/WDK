@@ -84,6 +84,7 @@ li {
 .field-detail {
   width: 80%;
   padding-left: 2em;
+  padding-right: 2em;
   padding-bottom: 3em;
   position: relative;
 }
@@ -158,7 +159,7 @@ li {
   width: 100%;
 }
 .filter table {
-  table-layout: fixed;
+  /*table-layout: fixed;*/
   width: 100%;
 }
 .membership-filter2 .member {
@@ -218,7 +219,7 @@ li {
 .filter .legend {
   text-align: right;
   width: 100%;
-  padding: 1em;
+  padding: 1em 2em;
   bottom: 0;
   right: 0;
   position: absolute;
@@ -251,7 +252,7 @@ li {
   width: 110%;
   margin: auto;
   position: relative;
-  left: -20%;
+  left: -25%;
   top: 1em;
   margin-bottom: 1em;
 }
