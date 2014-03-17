@@ -87,7 +87,22 @@ wdk.namespace('wdk.views', function(ns, $) {
      *
      * @method didInitialize
      */
-    didInitialize: function() { }
+    didInitialize: function() { },
+
+    show: function() {
+      this.$el.show();
+      this.didShow();
+    },
+
+    didShow: function() { },
+
+    hide: function() {
+      this.$el.hide();
+      this.didHide();
+    },
+
+    didHide: function() { }
+
   });
 
   View.create = wdk.core.BaseObject.create;

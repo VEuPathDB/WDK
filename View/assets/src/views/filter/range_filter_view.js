@@ -29,7 +29,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     render: function() {
       var field = this.model;
-      var values = field.get('values');
+      var values = field.get('values').map(Number);
       var filterValues = field.get('filterValues');
 
       var distribution = _(values).countBy();
@@ -108,9 +108,14 @@ wdk.namespace('wdk.views.filter', function(ns) {
         }, true);
       }
 
-      $(window).on('resize', this.resizeChart.bind(this));
+      var resizePlot = _.debounce(this.resizePlot.bind(this), 100);
+      $(window).on('resize', resizePlot);
 
       return this;
+    },
+
+    didShow: function() {
+      this.resizePlot();
     },
 
     handlePlotClick: function(event, pos, item) {
@@ -192,8 +197,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
     },
 
-    resizeChart: function() {
+    resizePlot: function() {
+      this.plot.resize();
+      this.plot.setupGrid();
       this.plot.draw();
+      this.handleFormChange();
     }
 
   });

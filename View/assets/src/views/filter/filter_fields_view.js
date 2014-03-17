@@ -36,6 +36,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.fieldDetail.render(field);
     },
 
+    didShow: function() {
+      this.fieldDetail.show();
+    },
+
     // FIXME This logic should be in the Field model
     setFilter: function(field, filterValues) {
       var filters = this.model.filters;
