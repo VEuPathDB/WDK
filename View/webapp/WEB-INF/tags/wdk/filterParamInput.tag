@@ -44,9 +44,9 @@ Otherwise a standard select menu is used.
 </c:if>
 
 <%-- display the param as an advanced filter param --%>
-<div class="param filter-param" data-data-id="filter-param-{qP.name}">
+<div class="param filter-param" data-name="${qp.prompt}" data-data-id="filter-param-{qP.name}">
   <script type="application/json" id="filter-param-{qP.name}">
-    ${qP.jsonValue}
+    ${qP.jsonValues}
   </script>
 </div>
 
