@@ -74,6 +74,16 @@ public class FilterParam extends FlatVocabParam {
       this.metadataSpecQuery = param.metadataSpecQuery.clone();
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.gusdb.wdk.model.Param#clone()
+   */
+  @Override
+  public Param clone() {
+    return new FilterParam(this);
+  }
+
   /**
    * @return the propertyQueryName
    */
