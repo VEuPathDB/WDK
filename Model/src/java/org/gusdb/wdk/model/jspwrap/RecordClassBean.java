@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.ReporterRef;
@@ -217,10 +218,11 @@ public class RecordClassBean {
      * @param user
      * @param pkValues
      * @return
+     * @throws WdkUserException 
      * @see org.gusdb.wdk.model.RecordClass#hasMultipleRecords(org.gusdb.wdk.model.user.User, java.util.Map)
      */
     public boolean hasMultipleRecords(UserBean user, Map<String, Object> pkValues)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         return recordClass.hasMultipleRecords(user.getUser(), pkValues);
     }
     

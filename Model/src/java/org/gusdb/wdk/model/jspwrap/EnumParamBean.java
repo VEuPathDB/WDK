@@ -305,10 +305,11 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * @param cache
    * @return
    * @throws WdkModelException
+   * @throws WdkUserException 
    * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#getJSONValues(org.gusdb.wdk.model.user.User,
    *      java.util.Map, org.gusdb.wdk.model.jspwrap.EnumParamCache)
    */
-  public JSONObject getJsonValues() throws WdkModelException {
+  public JSONObject getJsonValues() throws WdkModelException, WdkUserException {
     return enumParam.getJsonValues(user.getUser(), contextValues, getCache());
   }
 

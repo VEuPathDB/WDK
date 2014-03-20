@@ -632,7 +632,7 @@ public class UserBean /* implements Serializable */{
    */
   public StepBean createStep(QuestionBean question, Map<String, String> params,
       String filterName, boolean deleted, boolean validate, int assignedWeight)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     Step step = user.createStep(question.question, params, filterName, deleted,
         validate, assignedWeight);
     return new StepBean(this, step);
@@ -1117,8 +1117,8 @@ public class UserBean /* implements Serializable */{
     return new StrategyBean(this, user.copyStrategy(strategy.strategy, stepId));
   }
 
-  public void addToBasket(RecordClassBean recordClass, List<String[]> ids)
-      throws SQLException {
+  public void addToBasket(RecordClassBean recordClass, List<String[]> ids) throws WdkModelException
+       {
     BasketFactory factory = user.getWdkModel().getBasketFactory();
     factory.addToBasket(user, recordClass.recordClass, ids);
   }
@@ -1128,8 +1128,8 @@ public class UserBean /* implements Serializable */{
     factory.addToBasket(user, step.step);
   }
 
-  public void removeFromBasket(RecordClassBean recordClass, List<String[]> ids)
-      throws SQLException {
+  public void removeFromBasket(RecordClassBean recordClass, List<String[]> ids) throws WdkModelException
+       {
     BasketFactory factory = user.getWdkModel().getBasketFactory();
     factory.removeFromBasket(user, recordClass.recordClass, ids);
   }
@@ -1174,11 +1174,12 @@ public class UserBean /* implements Serializable */{
   /**
    * @param recordClass
    * @param pkValues
+   * @throws WdkUserException 
    * @see org.gusdb.wdk.model.user.User#addToFavorite(org.gusdb.wdk.model.RecordClass,
    *      java.util.List)
    */
   public void addToFavorite(RecordClassBean recordClass,
-      List<Map<String, Object>> pkValues) throws WdkModelException {
+      List<Map<String, Object>> pkValues) throws WdkModelException, WdkUserException {
     user.addToFavorite(recordClass.recordClass, pkValues);
   }
 

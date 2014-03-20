@@ -456,13 +456,18 @@ public class User /* implements Serializable */{
     int startIndex = answerValue.getStartIndex();
     int endIndex = answerValue.getEndIndex();
 
-    return createStep(question, paramValues, filter, startIndex, endIndex,
-        deleted, true, assignedWeight);
+    try {
+      return createStep(question, paramValues, filter, startIndex, endIndex,
+          deleted, true, assignedWeight);
+    }
+    catch (WdkUserException ex) {
+      throw new WdkModelException(ex);
+    }
   }
 
   public Step createStep(Question question, Map<String, String> paramValues,
       String filterName, boolean deleted, boolean validate, int assignedWeight)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     AnswerFilterInstance filter = null;
     RecordClass recordClass = question.getRecordClass();
     if (filterName != null) {
@@ -474,7 +479,7 @@ public class User /* implements Serializable */{
 
   public Step createStep(Question question, Map<String, String> paramValues,
       AnswerFilterInstance filter, boolean deleted, boolean validate,
-      int assignedWeight) throws WdkModelException {
+      int assignedWeight) throws WdkModelException, WdkUserException {
     int endIndex = getItemsPerPage();
     return createStep(question, paramValues, filter, 1, endIndex, deleted,
         validate, assignedWeight);
@@ -483,7 +488,7 @@ public class User /* implements Serializable */{
   public Step createStep(Question question,
       Map<String, String> paramValues, AnswerFilterInstance filter,
       int pageStart, int pageEnd, boolean deleted, boolean validate,
-      int assignedWeight) throws WdkModelException {
+      int assignedWeight) throws WdkModelException, WdkUserException {
     Step step = stepFactory.createStep(this, question, paramValues, filter,
         pageStart, pageEnd, deleted, validate, assignedWeight);
     return step;
@@ -1278,7 +1283,13 @@ public class User /* implements Serializable */{
     params.put(booleanQuery.getUseBooleanFilter().getName(),
         Boolean.toString(useBooleanFilter));
 
-    Step booleanStep = createStep(question, params, filter, false, false, 0);
+    Step booleanStep;
+    try {
+      booleanStep = createStep(question, params, filter, false, false, 0);
+    }
+    catch (WdkUserException ex) {
+      throw new WdkModelException(ex);
+    }
     booleanStep.setPreviousStep(leftStep);
     booleanStep.setChildStep(rightStep);
     return booleanStep;
@@ -1307,7 +1318,7 @@ public class User /* implements Serializable */{
   }
 
   public void addToFavorite(RecordClass recordClass,
-      List<Map<String, Object>> pkValues) throws WdkModelException {
+      List<Map<String, Object>> pkValues) throws WdkModelException, WdkUserException {
     FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
     favoriteFactory.addToFavorite(this, recordClass, pkValues);
   }

@@ -39,6 +39,11 @@ public class HttpRequestData implements RequestData {
   }
   
   @Override
+  public String getRequestUri() {
+    return _request.getRequestURI();
+  }
+  
+  @Override
   public String getRequestUrl() {
     return _request.getRequestURL().toString();
   }
@@ -105,5 +110,10 @@ public class HttpRequestData implements RequestData {
     Map<String, String[]> parameters = (Map<String, String[]>) (parameterMap == null ?
         new HashMap<>() : new HashMap<>((Map<String, String[]>)parameterMap));
     return parameters;
+  }
+
+  @Override
+  public HttpMethod getMethod() {
+    return HttpMethod.getValueOf(_request.getMethod());
   }
 }

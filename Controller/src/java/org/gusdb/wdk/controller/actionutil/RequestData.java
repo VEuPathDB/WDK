@@ -8,6 +8,7 @@ import java.util.Map;
  * @author rdoherty
  */
 public interface RequestData {
+  public String getRequestUri();
   public String getNoContextUrl();
   public String getWebAppBaseUrl();
   public String getRequestUrl();
@@ -22,5 +23,6 @@ public interface RequestData {
   public String getRemoteHost();
   public String getServerName();
   public String getUserAgent();
+  public HttpMethod getMethod();
   public Map<String, String[]> getTypedParamMap();
 }

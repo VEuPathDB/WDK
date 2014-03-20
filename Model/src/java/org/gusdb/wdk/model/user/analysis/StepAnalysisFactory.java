@@ -84,13 +84,17 @@ public class StepAnalysisFactory {
     if (errors == null) errors = new ArrayList<String>();
     return errors;
   }
-  
-  public void applyAnalysis(StepAnalysisContext context) throws WdkModelException {
+
+  public StepAnalysisContext createAnalysis(StepAnalysisContext context) throws WdkModelException {
     // create new execution instance
     int saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(),
         context.getDisplayName(), context.serializeContext());
     context.setAnalysisId(saId);
+    return context;
+  }
+  
+  public void applyAnalysis(StepAnalysisContext context) throws WdkModelException {
     boolean created = _dataStore.insertExecution(context.createHash());
     if (!created) {
       // result is being or has already been generated
@@ -275,5 +279,9 @@ public class StepAnalysisFactory {
         return ExecutionStatus.ERROR;
       }
     }
+  }
+
+  public int getNextId() throws WdkModelException {
+    return _dataStore.getNextId();
   }
 }

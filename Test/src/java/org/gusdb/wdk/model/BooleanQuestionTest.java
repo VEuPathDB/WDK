@@ -58,7 +58,7 @@ public class BooleanQuestionTest {
     }
 
     @Test
-    public void testOrOperator() throws WdkModelException {
+    public void testOrOperator() throws WdkModelException, WdkUserException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -88,7 +88,7 @@ public class BooleanQuestionTest {
     }
 
     @Test
-    public void testAndOperator() throws WdkModelException {
+    public void testAndOperator() throws WdkModelException, WdkUserException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -118,7 +118,7 @@ public class BooleanQuestionTest {
     }
 
     @Test
-    public void testLeftMinusOperator() throws WdkModelException {
+    public void testLeftMinusOperator() throws WdkModelException, WdkUserException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -146,7 +146,7 @@ public class BooleanQuestionTest {
     }
 
     @Test
-    public void testRightMinueOperator() throws WdkModelException {
+    public void testRightMinueOperator() throws WdkModelException, WdkUserException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();

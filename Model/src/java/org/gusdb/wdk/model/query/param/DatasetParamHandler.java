@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
+import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -134,7 +135,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
     DatasetParam datasetParam = (DatasetParam) param;
     String type = requestParams.getParam(datasetParam.getTypeSubParam());
     if (type == null)
-      throw new WdkUserException("Please choose the type of the input for paramter '" + param.getPrompt() +
+      throw new WdkUserException("Please choose the type of the input for parameter '" + param.getPrompt() +
           "'.");
 
     String data = null;
@@ -143,10 +144,14 @@ public class DatasetParamHandler extends AbstractParamHandler {
     String parserName = requestParams.getParam(datasetParam.getParserSubParam());
     if (type.equalsIgnoreCase(DatasetParam.TYPE_DATA)) {
       data = requestParams.getParam(datasetParam.getDataSubParam());
+      if (data == null || data.length() == 0)
+        throw new WdkUserException("Please input data for parameter '" + param.getPrompt() + "'.");
     }
     else if (type.equalsIgnoreCase(DatasetParam.TYPE_FILE)) {
       String fileParam = datasetParam.getFileSubParam();
       uploadFile = requestParams.getParam(fileParam);
+      if (uploadFile == null || uploadFile.length() == 0)
+        throw new WdkUserException("Please select a file to upload for parameter '" + param.getPrompt() + "'.");
       logger.debug("upload file: " + uploadFile);
       data = requestParams.getUploadFileContent(fileParam);
     }
@@ -216,9 +221,11 @@ public class DatasetParamHandler extends AbstractParamHandler {
     Dataset dataset = null;
     if (stableValue != null) {
       DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-      Integer sv = Integer.getInteger(stableValue);
+      Integer sv = Integer.valueOf(stableValue);
+      logger.debug("User: " + user + ", sv: " + sv + "stable: " + stableValue);
       dataset = datasetFactory.getDataset(user, sv);
-      requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, dataset);
+      DatasetBean bean = new DatasetBean(dataset);
+      requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, bean);
     }
 
     // get data

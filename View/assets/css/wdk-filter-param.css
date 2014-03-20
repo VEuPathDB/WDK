@@ -66,20 +66,22 @@ li {
 .field-list {
   width: 20%;
   padding-left: 10px;
-  /*background: #fafafa;*/
+  background: #fafafa;
 }
 .field-list li a {
-  width: 150px;
   display: block;
   padding: 5px 10px;
-  border-radius: 4px;
+  /*border-radius: 4px;*/
+  border-left: 2px solid transparent;
   text-decoration: none;
 }
 .field-list li a:hover {
   /*background-color: #eee;*/
+  border-left: 2px solid;
 }
 .field-list li.active a {
-  /*background-color: #ccc;*/
+  background-color: #f0f0f0;
+  border-left: 2px solid;
 }
 .field-detail {
   width: 80%;

@@ -135,7 +135,7 @@ public abstract class AbstractEnumParam extends Param {
   private boolean suppressNode = false;
 
   protected abstract EnumParamCache createEnumParamCache(User user, Map<String, String> dependedParamValues)
-      throws WdkModelException;
+      throws WdkModelException, WdkUserException;
 
   public AbstractEnumParam() {
     super();
@@ -187,7 +187,7 @@ public abstract class AbstractEnumParam extends Param {
     try {
       return createEnumParamCache(user, contextParamValues);
     }
-    catch (WdkModelException wme) {
+    catch (WdkModelException | WdkUserException wme) {
       throw new WdkRuntimeException("Unable to create EnumParamCache for param " + getName() + " with " +
           "depended values " + FormatUtil.prettyPrint(contextParamValues), wme);
     }
@@ -758,7 +758,7 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   public void fetchCorrectValue(User user, Map<String, String> contextValues,
-      Map<String, EnumParamCache> caches) throws WdkModelException {
+      Map<String, EnumParamCache> caches) throws WdkModelException, WdkUserException {
     logger.debug("Fixing value " + name + "='" + contextValues.get(name) + "'");
 
     // make sure the values for depended params are fetched first.
@@ -850,13 +850,13 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
 
-  public JSONObject getJsonValues(User user, Map<String, String> contextValues) throws WdkModelException {
+  public JSONObject getJsonValues(User user, Map<String, String> contextValues) throws WdkModelException, WdkUserException {
     EnumParamCache cache = createEnumParamCache(user, contextValues);
     return getJsonValues(user, contextValues, cache);
   }
 
   public JSONObject getJsonValues(User user, Map<String, String> contextValues, EnumParamCache cache)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     JSONObject jsParam = new JSONObject();
     try {
       JSONArray jsValues = new JSONArray();

@@ -44,7 +44,7 @@ public class SqlQueryInstance extends QueryInstance {
    */
   protected SqlQueryInstance(User user, SqlQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,
-      Map<String, String> context) throws WdkModelException {
+      Map<String, String> context) throws WdkModelException, WdkUserException {
     super(user, query, values, validate, assignedWeight, context);
     this.query = query;
   }

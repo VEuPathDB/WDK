@@ -136,7 +136,7 @@ public abstract class Query extends WdkModelBase {
   protected abstract void appendJSONContent(JSONObject jsQuery, boolean extra) throws JSONException;
 
   public abstract QueryInstance makeInstance(User user, Map<String, String> values, boolean validate,
-      int assignedWeight, Map<String, String> context) throws WdkModelException;
+      int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException;
 
   @Override
   public abstract Query clone();
@@ -639,7 +639,7 @@ public abstract class Query extends WdkModelBase {
    * @throws WdkUserException
    */
   public void fillContextParamValues(User user, Map<String, String> contextParamValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     for (Param param : paramMap.values()) {
       if (param instanceof AbstractEnumParam) {
         // for enum/flatVocab params, call a special method to process it

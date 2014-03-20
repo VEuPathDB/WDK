@@ -22,14 +22,16 @@ import org.json.JSONObject;
 
 public class StepAnalysisContext {
 
-  private static final String ANALYSIS_NAME_KEY = "analysisName";
-  private static final String STRATEGY_ID_KEY = "strategyId";
-  private static final String STEP_ID_KEY = "stepId";
+  public static final String ANALYSIS_NAME_KEY = "analysisName";
+  public static final String STRATEGY_ID_KEY = "strategyId";
+  public static final String STEP_ID_KEY = "stepId";
+  public static final String ANALYSIS_ID_KEY = "analysisId";
 
-  private static final String DISPLAY_NAME_KEY = "displayName";
+  // This is an optional param the user can use to set the display name of the execution
+  public static final String DISPLAY_NAME_KEY = "displayName";
 
   private static final String[] CONTEXT_PARAM_KEYS =
-    { ANALYSIS_NAME_KEY, STRATEGY_ID_KEY, STEP_ID_KEY };
+    { ANALYSIS_NAME_KEY, STRATEGY_ID_KEY, STEP_ID_KEY, ANALYSIS_ID_KEY };
 
   private WdkModel _wdkModel;
   private int _analysisId;
@@ -42,16 +44,31 @@ public class StepAnalysisContext {
   private Map<String,String> _analysisProperties;
   private Map<String,String[]> _formParams;
 
+  /**
+   * Creates a step analysis context based on the passed user and params.  Four
+   * params are expected in the given map:
+   * <ul>
+   *   <li>analysisName: name of analysis plugin</li>
+   *   <li>strategyId: id of strategy on which to run analysis</li>
+   *   <li>stepId: id of step on which to run analysis</li>
+   *   <li>analysisId: id of analysis instance (if available)</li>
+   * </ul>
+   * 
+   * @param userBean
+   * @param params map of params
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
   public StepAnalysisContext(UserBean userBean, Map<String,String[]> params)
       throws WdkModelException, WdkUserException {
 
     _wdkModel = userBean.getUser().getWdkModel();
-    _analysisId = -1;
     
     Map<String,String> contextParams = findContextParams(params);
     String analysisName = contextParams.get(ANALYSIS_NAME_KEY);
     String strategyIdStr = contextParams.get(STRATEGY_ID_KEY);
     String stepIdStr = contextParams.get(STEP_ID_KEY);
+    String analysisIdStr = contextParams.get(ANALYSIS_ID_KEY);
     
     if (analysisName == null || analysisName.isEmpty() ||
         !FormatUtil.isInteger(strategyIdStr) || !FormatUtil.isInteger(stepIdStr)) {
@@ -90,6 +107,16 @@ public class StepAnalysisContext {
           _strategyId + ", step=" + _step.getStepId());
     }
 
+    if (analysisIdStr == null || analysisIdStr.isEmpty() || analysisIdStr.equals("-1")) {
+      _analysisId = -1;
+    }
+    else if (FormatUtil.isInteger(analysisIdStr) &&
+        (_analysisId = Integer.parseInt(analysisIdStr)) > 0) {
+    }
+    else {
+      throw new WdkUserException("Parameter '" + ANALYSIS_ID_KEY + "' must be a positive integer.");
+    }
+    
     _analysisVersion = _stepAnalysis.getCombinedVersion();
     _analysisProperties = _stepAnalysis.getProperties();
     _formParams = trimContextParams(params);
@@ -208,6 +235,14 @@ public class StepAnalysisContext {
   public int getAnalysisId() {
     return _analysisId;
   }
+  
+  public int getValidatedAnalysisId() throws WdkUserException {
+    if (_analysisId == -1) {
+      throw new WdkUserException("Parameter '" + ANALYSIS_ID_KEY + "' must exist and be an integer.");
+    }
+    return _analysisId;
+  }
+  
   public void setAnalysisId(int analysisId) {
     _analysisId = analysisId;
   }
@@ -215,6 +250,7 @@ public class StepAnalysisContext {
   public String getDisplayName() {
     return _displayName;
   }
+  
   public void setDisplayName(String displayName) {
     _displayName = displayName;
   }
@@ -223,6 +259,10 @@ public class StepAnalysisContext {
     return _step;
   }
 
+  public int getStrategyId() {
+    return _strategyId;
+  }
+  
   public Question getQuestion() {
     return _question;
   }
