@@ -16,7 +16,7 @@ Provides form input element for a given DatasetParam.
 <c:set var="qP" value="${qp}"/>
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="opt" value="0"/>
-<c:set var="dsName" value="${pNam}_dataset"/>
+<c:set var="dsName" value="${pNam}_raw"/>
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="dataset" value="${requestScope[dsName]}" />  
 <c:set var="recordClass" value="${qp.recordClass}" />
@@ -44,7 +44,7 @@ Provides form input element for a given DatasetParam.
         <c:set var="datasetValues">
             <c:choose>
                 <c:when test="${dataset != null}">
-                    ${dataset.value}
+                    ${dataset.content}
                 </c:when>
                 <c:otherwise>
                     ${qP.default}
@@ -74,10 +74,13 @@ Provides form input element for a given DatasetParam.
     
     
     <!-- display options for the parser -->
+  <c:set var="parsers" value="${qP.parsers}" />
+  <c:choose>
+   <c:when test="${fn:length(parsers) gt 1}">
     <tr class="dataset-parsers">
-      <td>Choose a format for the input list, or uplodaed file:</td>
-      <td>
-       <c:forEach items="${qP.parsers}" var="parser">
+      <td colspan="2">
+       Choose a format for the input list, or uploaded file:
+       <c:forEach items="${parsers}" var="parser">
           <c:set var="checked">
             <c:if test="${(dataset != null && parser.name eq dataset.parserName) || (dataset eq null && parser.name eq 'list')}">checked="checked"</c:if>
           </c:set>
@@ -88,6 +91,13 @@ Provides form input element for a given DatasetParam.
         </c:forEach>
       </td>
     </tr>
+   </c:when>
+   <c:otherwise>
+     <c:forEach items="${parsers}" var="parser">
+       <input type="hidden" name="${qp.parserSubParam}" class="parser" value="${parser.name}" />
+     </c:forEach>
+   </c:otherwise>
+  </c:choose>
 
     <c:if test="${recordClass !=  null}">
       <!-- display option to use basket snapshot -->
@@ -103,15 +113,18 @@ Provides form input element for a given DatasetParam.
         
         <!-- display option to use strategy snapshot -->
         <c:set var="strategies" value="${qp.strategies}" />
-        <c:if test="${fn:length(strategies) gt 0}">
+        <c:if test="${fn:length(strategies) gt 1}">
           <tr>
               <td colspan="2" align="left" valign="top" nowrap>
                 <input type="radio" name="${qp.typeSubParam}" class="type" value="strategy" ${strategyChecked}
                        onclick="chooseType('${pNam}', 'strategy');" />
+                <c:set var="currentStrategy" value="${requestScope.strategy}" />
                 Copy from ${recordClass.displayName} strategy:
                 <select name="${qp.strategySubParam}" class="strategy">
                   <c:forEach items="${strategies}" var="strategy">
-                    <option value="${strategy.strategyId}">${strategy.name} (${strategy.estimateSize} ${recordClass.displayNamePlural})</option>
+                    <c:if test="${strategy.strategyId != currentStrategy}" >
+                      <option value="${strategy.strategyId}">${strategy.name} (${strategy.estimateSize} ${recordClass.displayNamePlural})</option>
+                    </c:if>
                   </c:forEach>
                 </select>
               </td>

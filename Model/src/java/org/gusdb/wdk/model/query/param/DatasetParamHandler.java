@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
+import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -220,9 +221,11 @@ public class DatasetParamHandler extends AbstractParamHandler {
     Dataset dataset = null;
     if (stableValue != null) {
       DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-      Integer sv = Integer.getInteger(stableValue);
+      Integer sv = Integer.valueOf(stableValue);
+      logger.debug("User: " + user + ", sv: " + sv + "stable: " + stableValue);
       dataset = datasetFactory.getDataset(user, sv);
-      requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, dataset);
+      DatasetBean bean = new DatasetBean(dataset);
+      requestParams.setAttribute(param.getName() + Param.RAW_VALUE_SUFFIX, bean);
     }
 
     // get data
