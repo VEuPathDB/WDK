@@ -308,7 +308,11 @@
   <define name="timestampParam">
     <element name="timestampParam">
       <ref name="ParamBaseProperties" />
-      <!-- defines the type of the values of this timestampParam -->
+      <optional>
+        <attribute name="interval">
+          <data type="positiveInteger" />
+        </attribute>
+      </optional>
       <zeroOrMore>
         <choice>
           <ref name="ParamBaseTags" />
