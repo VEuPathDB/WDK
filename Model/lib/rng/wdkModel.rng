@@ -711,6 +711,11 @@
       <optional>
         <attribute name="prompt" />
       </optional>      
+      <optional>
+        <attribute name="interval">
+          <data type="positiveInteger" />
+        </attribute>
+      </optional>
       <zeroOrMore>
         <element name="help">
           <ref name="IncludeExclude" />
