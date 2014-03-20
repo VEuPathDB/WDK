@@ -343,4 +343,24 @@ public class FilterParam extends FlatVocabParam {
     }
     return jsTerms;
   }
+
+  @Override
+  protected String[] getTerms(User user, String stableValue, Map<String, String> contextValues)
+      throws WdkModelException {
+    if (stableValue == null || stableValue.length() == 0) return new String[0];
+    
+    try {
+      JSONObject jsStableValue = new JSONObject(stableValue);
+      JSONArray jsTerms = jsStableValue.getJSONArray(FilterParamHandler.TERMS_KEY);
+      String[] terms = new String[jsTerms.length()];
+      for (int i = 0; i < terms.length; i++) {
+        terms[i] = jsTerms.getString(i);
+      }
+      return terms;
+    }
+    catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
+    
+  }
 }
