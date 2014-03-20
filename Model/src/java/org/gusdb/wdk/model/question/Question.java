@@ -314,10 +314,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * 
    * @param paramErrors
    * @return
+   * @throws WdkUserException 
    */
   public AnswerValue makeAnswerValue(User user,
       Map<String, String> dependentValues, boolean validate, int assignedWeight)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     int pageStart = 1;
     int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
     Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(
@@ -341,11 +342,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * @param j
    * @param sortingAttributes
    * @return
+   * @throws WdkUserException 
    */
   public AnswerValue makeAnswerValue(User user,
       Map<String, String> dependentValues, int pageStart, int pageEnd,
       Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter,
-      boolean validate, int assignedWeight) throws WdkModelException {
+      boolean validate, int assignedWeight) throws WdkModelException, WdkUserException {
     Map<String, String> context = new LinkedHashMap<String, String>();
     context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
 

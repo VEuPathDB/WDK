@@ -42,7 +42,7 @@ public class QueryTester {
   }
 
   private String showSql(Query query, Map<String, String> paramHash)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     QueryInstance instance = query.makeInstance(user, paramHash, true, 0,
         new LinkedHashMap<String, String>());
     if (instance instanceof SqlQueryInstance) {
@@ -51,7 +51,7 @@ public class QueryTester {
   }
 
   private String showResultTable(Query query, Map<String, String> paramHash)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     QueryInstance instance = query.makeInstance(user, paramHash, true, 0,
         new LinkedHashMap<String, String>());
     ResultFactory resultFactory = wdkModel.getResultFactory();

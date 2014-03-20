@@ -1513,7 +1513,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       recordViewList.add(view);
   }
 
-  public boolean hasMultipleRecords(User user, Map<String, Object> pkValues) throws WdkModelException {
+  public boolean hasMultipleRecords(User user, Map<String, Object> pkValues) throws WdkModelException, WdkUserException {
     List<Map<String, Object>> records = lookupPrimaryKeys(user, pkValues);
     return records.size() > 1;
   }
@@ -1528,7 +1528,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * @throws WdkUserException
    */
   List<Map<String, Object>> lookupPrimaryKeys(User user, Map<String, Object> pkValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
     // nothing to look up
     if (aliasQuery == null) {

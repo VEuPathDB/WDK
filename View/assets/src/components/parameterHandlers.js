@@ -182,7 +182,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     var values = filterData.values;
     var numericProps = _.keys(metadataSpec)
       .filter(function(prop) {
-        return metadataSpec[prop].type === 'numberic';
+        return metadataSpec[prop].type === 'number';
       });
 
     var data = {

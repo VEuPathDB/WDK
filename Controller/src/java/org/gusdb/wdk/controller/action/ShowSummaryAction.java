@@ -346,7 +346,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     public static StepBean summaryPaging(HttpServletRequest request,
-            StepBean step) throws WdkModelException {
+            StepBean step) throws WdkModelException, WdkUserException {
         QuestionBean question = step.getQuestion();
         Map<String, String> paramValues = step.getParams();
         String filterName = step.getFilterName();
@@ -358,7 +358,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     public static StepBean summaryPaging(HttpServletRequest request,
             QuestionBean question, Map<String, String> params,
             String filterName, boolean deleted, int assignedWeight)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         logger.debug("start summary paging...");
 
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(

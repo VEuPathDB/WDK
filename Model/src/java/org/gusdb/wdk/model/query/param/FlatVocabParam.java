@@ -10,6 +10,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.Query;
@@ -176,7 +177,7 @@ public class FlatVocabParam extends AbstractEnumParam {
    */
   @Override
   protected EnumParamCache createEnumParamCache(User user, Map<String, String> dependedParamValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     logger.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
 
     Set<Param> dependedParams = getDependedParams();

@@ -7,7 +7,7 @@
   <html>
     <body>
       <div class="analysis-pending-pane" data-analysisid="${analysisId}"
-           data-controller="wdk.resultsPage.analysisRefresh">
+           data-controller="wdk.stepAnalysis.analysisRefresh">
         <h3>Results Pending...</h3>
         <p>
           The results of this analysis are not yet available.<br/>
