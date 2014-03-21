@@ -563,7 +563,7 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
   
-  protected String[] getTerms(User user, String stableValue, Map<String, String> contextValues) throws WdkModelException {
+  public String[] getTerms(User user, String stableValue, Map<String, String> contextValues) throws WdkModelException {
     return (String[]) getRawValue(user, stableValue, contextValues);
   }
 
