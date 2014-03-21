@@ -62,12 +62,15 @@ public class StringParamHandler extends AbstractParamHandler {
   /**
    * If number is true, the internal is a string representation of a parsed Double; otherwise, quotes are
    * properly applied; If noTranslation is true, the reference value is used without any change.
-   * 
+   *
+   * @throws WdkModelException
+   *
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toInternalValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, Map<String, String> contextValues) {
+  public String toInternalValue(User user, String stableValue, Map<String, String> contextValues)
+      throws WdkModelException {
     if (param.isNoTranslation())
       return stableValue;
 
