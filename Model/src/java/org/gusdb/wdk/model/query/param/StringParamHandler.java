@@ -56,6 +56,7 @@ public class StringParamHandler extends AbstractParamHandler {
   @Override
   public String toSignature(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException {
+    if (stableValue == null || stableValue.length() == 0) return "";
     return Utilities.encrypt(stableValue);
   }
 
