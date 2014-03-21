@@ -179,7 +179,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   public String getRawDisplayValue() throws WdkModelException {
-    String[] terms = (String[]) getRawValue();
+    String[] terms = param.getTerms(user.getUser(), stableValue, contextValues);
     // if (!param.isSkipValidation()) {
     Map<String, String> displays = getDisplayMap();
     StringBuffer buffer = new StringBuffer();

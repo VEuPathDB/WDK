@@ -591,4 +591,8 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
     // by default, print nothing
   }
+  
+  public void addHandler(ParamHandlerReference handlerReference) {
+    this.handlerReferences.add(handlerReference);
+  }
 }
