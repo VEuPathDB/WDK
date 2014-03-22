@@ -101,7 +101,15 @@ wdk.namespace('wdk.views', function(ns, $) {
       this.didHide();
     },
 
-    didHide: function() { }
+    didHide: function() { },
+
+    destroy: function() {
+      this.undelegateEvents();
+      this.stopListening();
+      this.didDestroy();
+    },
+
+    didDestroy: function() { }
 
   });
 

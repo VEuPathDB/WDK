@@ -6,7 +6,11 @@ wdk.namespace('wdk.models.filter', function(ns) {
    */
   var Filter = Backbone.Model.extend({
     description: function() {
-      return this.attributes.field.get('display') + ' ' + _.result(this, 'condition');
+      return this.attributes.field + ' is ' + _.result(this, 'condition');
+    },
+
+    condition: function() {
+      throw new Error('Filter.condition must be overridden by inheriting objects.');
     }
   });
 
@@ -15,15 +19,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
    */
   var MemberFilter = Filter.extend({
     condition: function() {
-      var condition;
-      if (this.attributes.values.length > 1) {
-        condition = this.attributes.values.slice(0,-1).join(', ');
-        condition = 'either ' + condition + ' or ' +
-          this.attributes.values.slice(-1);
-      } else {
-        condition = this.attributes.values[0];
-      }
-      return condition;
+      return this.attributes.values.join(' or ');
     }
   });
 

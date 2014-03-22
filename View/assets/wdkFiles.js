@@ -40,6 +40,7 @@ module.exports = {
     'src/core/util.js',
 
     'src/user.js',
+    'src/models/filter/field.js',
     'src/models/filter/filter.js',
     'src/models/filter/filter_service.js',
 
@@ -60,6 +61,8 @@ module.exports = {
     'src/views/filter/results_view.js',
     'src/views/filter/filter_item_view.js',
     'src/views/filter/filter_items_view.js',
+    'src/views/filter/filter_collapsed_view.js',
+    'src/views/filter/filter_expanded_view.js',
     'src/views/filter/filter_view.js',
 
     'src/controllers/**/*.js',
