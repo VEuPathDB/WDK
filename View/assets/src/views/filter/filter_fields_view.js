@@ -21,7 +21,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.fieldDetail = new FieldDetailView({ model: this.model });
 
       this.listenTo(this.fieldList, 'select', this.renderDetail);
-      this.listenTo(this.model.fields, 'change:filterValues', this.setFilter);
+      //this.listenTo(this.model.fields, 'change:filterValues', this.setFilter);
 
       this.render();
     },
@@ -45,11 +45,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var filters = this.model.filters;
 
       // remove previous filters for this field
-      filters.remove(filters.where({ field: field }));
+      filters.remove(filters.where({ field: field.get('term') }));
 
       if (filterValues) {
         var filter = _.extend({
-          field: field,
+          field: field.get('term'),
           operation: field.get('filter')
         }, filterValues);
 

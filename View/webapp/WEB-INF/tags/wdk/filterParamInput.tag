@@ -45,6 +45,7 @@ Otherwise a standard select menu is used.
 
 <%-- display the param as an advanced filter param --%>
 <div class="param filter-param" data-name="${qp.prompt}" data-data-id="filter-param-{qP.name}">
+  <html:hidden property="value(${pNam})" />
   <script type="application/json" id="filter-param-{qP.name}">
     ${qP.jsonValues}
   </script>
