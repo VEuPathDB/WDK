@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
@@ -408,11 +409,11 @@ public class StepBean {
                     paramValue = paramValue.substring(pos + 1).trim();
             }
             String[] values = { paramValue };
-            if (param instanceof FlatVocabParam) {
+            if (param instanceof FlatVocabParam && !(param instanceof FilterParam)) {
                 FlatVocabParam fvParam = (FlatVocabParam) param;
                 if (fvParam.getMultiPick()) values = paramValue.split(",");
             }
-            String wrapper = (param instanceof AbstractEnumParam) ? "array" : "value";
+            String wrapper = (param instanceof AbstractEnumParam && !(param instanceof FilterParam)) ? "array" : "value";
             // URL encode the values
             for (String value : values) {
                 
