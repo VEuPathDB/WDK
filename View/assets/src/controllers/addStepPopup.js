@@ -517,6 +517,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     // set isPopup flag, which will be used by param initialization process
     window.isPopup = true;
 
+    var urlBase = url.split(/\?/)[0];
+    var params = url.split(/\?/)[1];
+
     //hide any open tooltips
     $(".qtip").qtip("hide");
 
@@ -534,13 +537,13 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
       case "submit":
         var stage = $(ele).find("#stage").val();
-        url = url + "stage="+stage+"&strategy="+strategy.backId;
+        params = params + "stage="+stage+"&strategy="+strategy.backId;
         $(ele).attr("action", "javascript:void(0)");
         $.ajax({
-          url: url,
-          type: "post",
+          url: urlBase,
+          type: "POST",
           dataType: "html",
-          data: wdk.util.parseInputs() + "&state=" + wdk.strategy.controller.stateString,
+          data: params + wdk.util.parseInputs() + "&state=" + wdk.strategy.controller.stateString,
 
           beforeSend: function() {
             //$(".crumb_details").block( {message: "Loading..."} );
@@ -578,12 +581,12 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
         break;
 
       case "next":
-        var d = "strategy="+strategy.backId;
+        params = params + "&strategy="+strategy.backId;
         $.ajax({
-          url: url,
-          type: "get",
+          url: urlBase,
+          type: "POST",
           dataType: "html",
-          data: d,
+          data: params,
 
           beforeSend: function(jqXHR, data) {
             $("#query_form").block({
