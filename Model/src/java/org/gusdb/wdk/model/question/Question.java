@@ -463,9 +463,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     String newline = System.getProperty("line.separator");
 
     StringBuffer saNames = new StringBuffer();
-    Map<String, AttributeField> summaryFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
-    for (String saName : summaryFields.keySet()) {
-      saNames.append(saName + ", ");
+    if (recordClass != null) {
+      Map<String, AttributeField> summaryFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
+      for (String saName : summaryFields.keySet()) {
+        saNames.append(saName + ", ");
+      }
     }
     StringBuffer buf = new StringBuffer("Question: name='" + name + "'"
         + newline + "  recordClass='" + recordClassRef + "'" + newline
@@ -475,7 +477,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         + "'" + newline + "  description='" + getDescription() + "'" + newline
         + "  summaryAttributes='" + saNames + "'" + newline + "  help='"
         + getHelp() + "'" + newline);
-    buf.append(dynamicAttributeSet.toString());
+    if (dynamicAttributeSet != null)
+      buf.append(dynamicAttributeSet.toString());
     return buf.toString();
   }
 

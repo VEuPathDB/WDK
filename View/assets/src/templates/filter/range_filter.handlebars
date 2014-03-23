@@ -1,4 +1,4 @@
-<h3>Filter {{options.title}} by {{field.display}}</h3>
+<!--<h3>Filter {{options.title}} by {{field.display}}</h3>-->
 
 <div class="range-filter">
   <div class="overview">
@@ -13,18 +13,18 @@
   </div>
 
   <p>
-    Filter between
+  Select {{field.display}} between
     <input name="min" type="text" size="6" placeholder="{{min}}"/> and
     <input name="max" type="text" size="6" placeholder="{{max}}"/>
-    <img src="assets/wdk/images/question.png"
-    title="Enter a minimum and/or maximum value here, or select a region of the chart below"/>
+    <!--<img src="assets/wdk/images/question.png"
+    title="Enter a minimum and/or maximum value here, or select a region of the chart below"/>-->
   </p>
 
   <div class="chart"></div>
   <div class="chart-title x-axis">{{options.xAxisTitle}}</div>
   <div class="chart-title y-axis">{{options.yAxisTitle}}</div>
 </div>
-<div class="legend">The distribution of your filtered results will be shown in red:
+<div class="legend">The distribution of your selected results will be shown in red:
   <div class="bar" style="width:20%">
     <div class="fill" style="width:100%"></div>
     <div class="fill filtered" style="width:30%"></div>

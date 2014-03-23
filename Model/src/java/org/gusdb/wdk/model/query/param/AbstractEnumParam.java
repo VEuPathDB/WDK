@@ -527,7 +527,7 @@ public abstract class AbstractEnumParam extends Param {
   protected void validateValue(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
     if (!isSkipValidation()) {
-      String[] terms = (String[]) getRawValue(user, stableValue, contextValues);
+      String[] terms = getTerms(user, stableValue, contextValues);
       logger.debug("param=" + getFullName() + " - validating: " + stableValue +
           ", with dependedParamValues=" + FormatUtil.prettyPrint(contextValues));
 
@@ -561,6 +561,10 @@ public abstract class AbstractEnumParam extends Param {
     else {
       logger.debug("param=" + getFullName() + " - skip validation");
     }
+  }
+  
+  public String[] getTerms(User user, String stableValue, Map<String, String> contextValues) throws WdkModelException {
+    return (String[]) getRawValue(user, stableValue, contextValues);
   }
 
   private int getNumSelected(User user, String[] terms, Map<String, String> contextValues) {
@@ -777,39 +781,41 @@ public abstract class AbstractEnumParam extends Param {
       cache = createEnumParamCache(user, contextValues);
       caches.put(name, cache);
     }
-    String value;
-    if (!contextValues.containsKey(name)) {
-      // value not in context values yet, will use default
-      value = cache.getDefaultValue();
-    }
-    else { // value exists in context values, check if value is valid
-      String stableValue = contextValues.get(name);
-      String[] terms = (String[]) getRawValue(user, stableValue, contextValues);
-      logger.debug("CORRECTING " + name + "=\"" + stableValue + "\"");
-      Map<String, String> termMap = cache.getVocabMap();
-      Set<String> validValues = new LinkedHashSet<>();
-      for (String term : terms) {
-        if (termMap.containsKey(term))
-          validValues.add(term);
-      }
+  
+    String stableValue = contextValues.get(name);
+    String value = getValidStableValue(user, stableValue, contextValues, cache);
 
-      // if no valid values exist, use default; otherwise, use valid values
-      if (validValues.size() > 0) {
-        StringBuilder buffer = new StringBuilder();
-        for (String term : validValues) {
-          if (buffer.length() > 0)
-            buffer.append(",");
-          buffer.append(term);
-        }
-        value = buffer.toString();
-      }
-      else {
-        value = cache.getDefaultValue();
-      }
-    }
     if (value != null)
-      contextValues.put(name, value);
+    contextValues.put(name, value);
     logger.debug("Corrected " + name + "\"" + contextValues.get(name) + "\"");
+  }
+
+  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextValues,
+      EnumParamCache cache) throws WdkModelException {
+    if (stableValue == null)
+      return cache.getDefaultValue();
+    
+    String[] terms = getTerms(user, stableValue, contextValues);
+    logger.debug("CORRECTING " + name + "=\"" + stableValue + "\"");
+    Map<String, String> termMap = cache.getVocabMap();
+    Set<String> validValues = new LinkedHashSet<>();
+    for (String term : terms) {
+      if (termMap.containsKey(term))
+        validValues.add(term);
+    }
+
+    // if no valid values exist, use default; otherwise, use valid values
+    if (validValues.size() > 0) {
+      StringBuilder buffer = new StringBuilder();
+      for (String term : validValues) {
+        if (buffer.length() > 0)
+          buffer.append(",");
+        buffer.append(term);
+      }
+      return buffer.toString();
+    }
+    else
+      return cache.getDefaultValue();
   }
 
   @Override
@@ -850,7 +856,8 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
 
-  public JSONObject getJsonValues(User user, Map<String, String> contextValues) throws WdkModelException, WdkUserException {
+  public JSONObject getJsonValues(User user, Map<String, String> contextValues) throws WdkModelException,
+      WdkUserException {
     EnumParamCache cache = createEnumParamCache(user, contextValues);
     return getJsonValues(user, contextValues, cache);
   }

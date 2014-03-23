@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.GroupBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
@@ -432,44 +433,62 @@ public class ShowStrategyAction extends ShowQuestionAction {
         }
     }
 
-    static private void outputParams(UserBean user, StepBean step,
-            JSONObject jsStep) throws JSONException, WdkUserException {
+  static private void outputParams(UserBean user, StepBean step, JSONObject jsStep) throws
+      WdkUserException, WdkModelException {
 
-        JSONArray jsParams = new JSONArray();
-        try {
-        Map<GroupBean, Map<String, ParamBean<?>>> groups = step.getQuestion().getParamMapByGroups();
-        Map<String, String> paramValues = step.getParams();
-        for (GroupBean group : groups.keySet()) {
-            Map<String, ParamBean<?>> params = groups.get(group);
-            for (String paramName : params.keySet()) {
-            	ParamBean<?> param = params.get(paramName);
-                String stableValue = getUserDependentValue(paramValues, param);
-                JSONObject jsParam = new JSONObject();
-                jsParam.put("name", paramName);
-                if (param != null) {
-                    jsParam.put("prompt", param.getPrompt());
-                    jsParam.put("visible", param.getIsVisible());
-                    jsParam.put("className", param.getClass().getName());
-                    param.setUser(user);
-                    param.setStableValue(stableValue);
-                    param.setTruncateLength(TRUNCATE_LENGTH);
-                    try {
-                        jsParam.put("value", getRawValue(paramValues, param));
-                        jsParam.put("internal",!param.getIsVisible());
-                    } catch (Exception ex) {
-                        throw new WdkModelException(ex);
-                    }
-                } else {
-                    jsParam.put("value", stableValue);
-                }
-                jsParams.put(jsParam);
-            }
-        }
-        } catch(WdkModelException ex) {
-            // ignore the invalid question name
-        }
-        jsStep.put("params", jsParams);
+    JSONArray jsParams = new JSONArray();
+    QuestionBean question;
+    try {
+      question = step.getQuestion();
     }
+    catch (WdkModelException ex) {
+      // ignore the invalid question name
+      try {
+        jsStep.put("params", jsParams);
+      }
+      catch (JSONException ex1) {
+        throw new WdkModelException(ex);
+      }
+      return;
+    }
+
+    try {
+      Map<GroupBean, Map<String, ParamBean<?>>> groups = question.getParamMapByGroups();
+      Map<String, String> paramValues = step.getParams();
+      for (GroupBean group : groups.keySet()) {
+        Map<String, ParamBean<?>> params = groups.get(group);
+        for (String paramName : params.keySet()) {
+          ParamBean<?> param = params.get(paramName);
+          String stableValue = getStableValue(paramValues, param);
+          JSONObject jsParam = new JSONObject();
+          jsParam.put("name", paramName);
+          if (param != null) {
+            jsParam.put("prompt", param.getPrompt());
+            jsParam.put("visible", param.getIsVisible());
+            jsParam.put("className", param.getClass().getName());
+            param.setUser(user);
+            param.setStableValue(stableValue);
+            param.setTruncateLength(TRUNCATE_LENGTH);
+            try {
+              jsParam.put("value", getRawValue(paramValues, param));
+              jsParam.put("internal", !param.getIsVisible());
+            }
+            catch (Exception ex) {
+              throw new WdkModelException(ex);
+            }
+          }
+          else {
+            jsParam.put("value", stableValue);
+          }
+          jsParams.put(jsParam);
+        }
+      }
+      jsStep.put("params", jsParams);
+    }
+    catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
+  }
 
     private static String getRawValue(Map<String, String> paramValues, ParamBean<?> param)
     		throws WdkUserException, WdkModelException {
@@ -478,7 +497,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         	if (enumParam.isDependentParam()) {
         	  Map<String, String> dependedValues = new LinkedHashMap<>();
         	  for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
-        	    String dependedValue = getUserDependentValue(paramValues, dependedParam);
+        	    String dependedValue = getStableValue(paramValues, dependedParam);
         	    dependedValues.put(dependedParam.getName(), dependedValue);
         	  }
         	  enumParam.setDependedValues(dependedValues);
@@ -488,7 +507,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         return param.getBriefRawValue();
 	}
 
-	private static String getUserDependentValue(Map<String, String> paramValues, ParamBean<?> param)
+	private static String getStableValue(Map<String, String> paramValues, ParamBean<?> param)
     		throws WdkUserException, WdkModelException {
     	    if (paramValues.containsKey(param.getName())) {
     	        return paramValues.get(param.getName());
@@ -498,7 +517,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     if (enumParam.isDependentParam()) {
                       Map<String, String> dependedValues = new LinkedHashMap<>();
                       for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
-                        String dependedValue = getUserDependentValue(paramValues, dependedParam);
+                        String dependedValue = getStableValue(paramValues, dependedParam);
                         dependedValues.put(dependedParam.getName(), dependedValue);
                       }
                       enumParam.setDependedValues(dependedValues);

@@ -431,7 +431,7 @@ public class ParamReference extends Reference {
   /**
    * @param interval the interval to set
    */
-  public void setInterval(long interval) {
+  public void setInterval(Long interval) {
     this.interval = interval;
   }
 

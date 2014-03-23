@@ -133,24 +133,27 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
       if (result == null || result.isEmptyResult()) {
         return null;
       }
-      else if (result.isStream()) {
-        // handle stream response
-        if (result.getFileName().isEmpty()) {
-          result.setFileName(result.getResponseType().getDefaultFileName());
-        }
-        _response.setContentType(result.getResponseType().getMimeType());
-        _response.setHeader("Content-Disposition", "attachment; filename=\"" + result.getFileName() + "\"");
-        transferStream(_response.getOutputStream(), result.getStream());
-        return null;
-      }
-      else if (result.isExternalRedirect()){
-        _response.sendRedirect(result.getExternalPath());
-        return null;
-      }
       else {
-        // otherwise, handle normal response
-        assignAttributesToRequest(result);
-        return getForwardFromResult(result, mapping);
+        _response.setStatus(result.getHttpResponseStatus());
+        if (result.isStream()) {
+          // handle stream response
+          if (result.getFileName().isEmpty()) {
+            result.setFileName(result.getResponseType().getDefaultFileName());
+          }
+          _response.setContentType(result.getResponseType().getMimeType());
+          _response.setHeader("Content-Disposition", "attachment; filename=\"" + result.getFileName() + "\"");
+          transferStream(_response.getOutputStream(), result.getStream());
+          return null;
+        }
+        else if (result.isExternalRedirect()){
+          _response.sendRedirect(result.getExternalPath());
+          return null;
+        }
+        else {
+          // otherwise, handle normal response
+          assignAttributesToRequest(result);
+          return getForwardFromResult(result, mapping);
+        }
       }
     }
     catch (Exception e) {

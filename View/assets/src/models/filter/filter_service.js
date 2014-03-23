@@ -1,9 +1,11 @@
 wdk.namespace('wdk.models.filter', function(ns) {
+  'use strict';
 
-  var Filter = wdk.models.filter.Filter;
   var MemberFilter = wdk.models.filter.MemberFilter;
   var RangeFilter = wdk.models.filter.RangeFilter;
+
   var Filters = wdk.models.filter.Filters;
+  var Fields = wdk.models.filter.Fields;
 
   /**
    * Base class for FilterService classes.
@@ -40,23 +42,27 @@ wdk.namespace('wdk.models.filter', function(ns) {
     constructor: function() {
       this.data = new Backbone.Collection();
       this.filteredData = new Backbone.Collection();
-      this.fields = new Backbone.Collection();
       this.filters = new Filters();
+      this.fields = new Fields();
 
       Backbone.Model.apply(this, arguments);
     },
 
     parse: function(data, options) {
-      this.data.reset(data.data);
-      this.fields.reset(data.fields);
+      var spec = data.spec;
+      var filters = data.filters;
+      this.data.reset(spec.data);
+      this.fields.reset(spec.fields);
+      this.filters.reset(filters);
       this.setFieldValues();
-      return { title: data.title };
+      return { title: spec.title };
     },
 
     initialize: function() {
-      var debounceApplyFilters = _.debounce(this.applyFilters, 50);
-      this.listenTo(this.filters, 'add remove', debounceApplyFilters);
+      var debounceApplyFilters = _.debounce(this.applyFilters, 100);
+      this.listenTo(this.filters, 'add remove reset', debounceApplyFilters);
       this.listenTo(this.filteredData, 'reset', this.setFieldFilteredValues);
+      this.applyFilters();
     },
 
     /**
@@ -78,9 +84,9 @@ wdk.namespace('wdk.models.filter', function(ns) {
     setFieldFilteredValues: function() {
       var fs = this;
       this.fields.forEach(function(field) {
-        var values = fs.getFilteredData({ omit: [field] })
-          .map(function(d) { return d.get('metadata')[field.get('term')]; });
-        //var values = _(fs.filteredData.pluck('metadata')).pluck(field.get('term'));
+        var term = field.get('term');
+        var values = fs.getFilteredData({ omit: [term] })
+          .map(function(d) { return d.get('metadata')[term]; });
         field.set('filteredValues', values);
       });
     },
@@ -139,7 +145,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     applyMemberFilter: function(filter, data) {
-      var field = filter.get('field').get('term');
+      var field = filter.get('field');
       var values = filter.get('values');
       return data.filter(function(d) {
         return _.contains(values, d.get('metadata')[field]);
@@ -147,7 +153,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     applyRangeFilter: function(filter, data) {
-      var field = filter.get('field').get('term');
+      var field = filter.get('field');
       var min = filter.get('min');
       var max = filter.get('max');
       var test;

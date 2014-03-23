@@ -31,12 +31,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var Delegate = this.getDelegateConstructor(field.get('filter'));
 
       if (this.delegateView) {
-        this.delegateView.undelegateEvents();
-        this.delegateView.stopListening();
+        this.delegateView.destroy();
         this.$el.empty();
       }
 
-      this.delegateView = new Delegate({
+      this.delegateView = new Delegate(this.model, {
         el: this.el,
         model: field,
         title: this.model.get('title')

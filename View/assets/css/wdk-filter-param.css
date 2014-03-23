@@ -1,23 +1,29 @@
-/*
-ul {
-  padding: 0;
-}
-li {
-  list-style: none;
-  margin-top: 2px;
-}
-*/
 .filter h3 {
   margin: auto;
 }
 .filter .hidden {
   display: none;
 }
-.filter, .filter * {
+.filter, .filter *, .filter-items {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   line-height: 14px;
+}
+.filter .ui-tabs {
+  border: none;
+}
+.filter .collapse {
+  position: absolute;
+  right: 1em;
+  top: 5px;
+}
+.filter-items li {
+  margin-bottom: .5em;
+  margin-left: 2px;
+}
+.filter .expanded .ui-tabs-panel {
+  padding: 0;
 }
 .range-filter .table tr {
   display: inline-block;
@@ -60,13 +66,13 @@ li {
 }
 .field-list, .field-detail {
   float: left;
-  min-height: 30em;
+  min-height: 25em;
   padding-top: 20px;
 }
 .field-list {
   width: 20%;
   padding-left: 10px;
-  background: #fafafa;
+  /*background: #fafafa;*/
 }
 .field-list li a {
   display: block;
@@ -80,7 +86,7 @@ li {
   border-left: 2px solid;
 }
 .field-list li.active a {
-  background-color: #f0f0f0;
+  background-color: #f7f7f7;
   border-left: 2px solid;
 }
 .field-detail {
@@ -247,16 +253,23 @@ li {
 }
 .overview dt, .overview dd {
   float: left;
+}
+.overview dt {
+  padding-right: .4em;
+}
+.overview dd {
   padding-right: .8em;
 }
 .filters, .results {
+  /*
+  margin: auto;
   border: 1px solid #aaa;
   width: 110%;
-  margin: auto;
-  position: relative;
   left: -25%;
   top: 1em;
   margin-bottom: 1em;
+  position: relative;
+  */
 }
 #applied-filters {
   text-align: center;
@@ -269,11 +282,12 @@ li {
   margin-right: .5em;
 }
 .filter-items li > div {
-  padding: 3px 4px;
+  padding: 2px 4px;
   background-color: #efefef;
   border: 1px solid #ccc;
 }
 .filter-items .remove {
+  display: inline-block;
   vertical-align: text-bottom;
   cursor: pointer;
   font-size: 20px;

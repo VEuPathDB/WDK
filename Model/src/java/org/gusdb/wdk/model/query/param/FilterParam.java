@@ -5,7 +5,9 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -17,6 +19,7 @@ import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,14 +30,14 @@ import org.json.JSONObject;
  *         between these two are that the stable value of filter param is a JSON string with values for the
  *         metadata and terms for the param itself, but the stable value of a flatVocabParam is just a string
  *         representation of comma separated list of terms.
- *         
+ * 
  *         raw value: a JSON string of both term list and metadata list.
- *         
+ * 
  *         stable value: same as raw value, a JSON string of both term list and metadata list.
- *         
+ * 
  *         signature: a checksum of the JSON string, but values are sorted
- *         
- *         internal: the internal value of the param, same as the flatVocabParam aspect of the param. 
+ * 
+ *         internal: the internal value of the param, same as the flatVocabParam aspect of the param.
  * 
  */
 public class FilterParam extends FlatVocabParam {
@@ -183,9 +186,10 @@ public class FilterParam extends FlatVocabParam {
   /**
    * @return <propertyName, <infoKey, infoValue>>, or null if metadataQuery is not specified
    * @throws WdkModelException
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
-  public Map<String, Map<String, String>> getMetadataSpec(User user) throws WdkModelException, WdkUserException {
+  public Map<String, Map<String, String>> getMetadataSpec(User user) throws WdkModelException,
+      WdkUserException {
     if (metadataSpecQuery == null)
       return null;
 
@@ -217,7 +221,7 @@ public class FilterParam extends FlatVocabParam {
   /**
    * @return <term, <propertyName, propertyValue>>, or null if propertyQuery is not specified.
    * @throws WdkModelException
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   public Map<String, Map<String, String>> getMetadata(User user, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
@@ -292,4 +296,71 @@ public class FilterParam extends FlatVocabParam {
     jsParam.put("metadata", jsMetadata);
   }
 
+  @Override
+  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextValues,
+      EnumParamCache cache) throws WdkModelException {
+    try {
+      if (stableValue == null || stableValue.length() == 0) {
+        JSONArray jsTerms = convert(getDefault());
+        JSONObject jsNewStableValue = new JSONObject();
+        jsNewStableValue.put(FilterParamHandler.TERMS_KEY, jsTerms);
+        jsNewStableValue.put(FilterParamHandler.FILTERS_KEY, new JSONArray());
+        return jsNewStableValue.toString();
+      }
+
+      JSONObject jsStableValue = new JSONObject(stableValue);
+      JSONArray jsTerms = jsStableValue.getJSONArray(FilterParamHandler.TERMS_KEY);
+      Map<String, String> termMap = cache.getVocabMap();
+      Set<String> validValues = new LinkedHashSet<>();
+      for (int i = 0; i < jsTerms.length(); i++) {
+        String term = jsTerms.getString(i);
+        if (termMap.containsKey(term))
+          validValues.add(term);
+      }
+
+      JSONArray jsNewTerms;
+      if (validValues.size() > 0) {
+        jsNewTerms = new JSONArray();
+        for (String term : validValues) {
+          jsNewTerms.put(term);
+        }
+      }
+      else
+        jsNewTerms = convert(getDefault());
+
+      jsStableValue.put(FilterParamHandler.TERMS_KEY, jsNewTerms);
+      return jsStableValue.toString();
+    }
+    catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
+  }
+
+  private JSONArray convert(String value) {
+    JSONArray jsTerms = new JSONArray();
+    for (String term : value.split(",")) {
+      jsTerms.put(term.trim());
+    }
+    return jsTerms;
+  }
+
+  @Override
+  public String[] getTerms(User user, String stableValue, Map<String, String> contextValues)
+      throws WdkModelException {
+    if (stableValue == null || stableValue.length() == 0) return new String[0];
+    
+    try {
+      JSONObject jsStableValue = new JSONObject(stableValue);
+      JSONArray jsTerms = jsStableValue.getJSONArray(FilterParamHandler.TERMS_KEY);
+      String[] terms = new String[jsTerms.length()];
+      for (int i = 0; i < terms.length; i++) {
+        terms[i] = jsTerms.getString(i);
+      }
+      return terms;
+    }
+    catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
+    
+  }
 }

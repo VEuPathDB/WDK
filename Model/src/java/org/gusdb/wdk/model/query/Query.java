@@ -263,7 +263,7 @@ public abstract class Query extends WdkModelBase {
   }
 
   public String getFullName() {
-    return querySet.getName() + "." + name;
+    return ((querySet != null) ? querySet.getName() + "." : "") + name;
   }
 
   public void addParamRef(ParamReference paramRef) {

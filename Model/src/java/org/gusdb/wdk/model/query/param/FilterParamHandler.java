@@ -135,7 +135,7 @@ public class FilterParamHandler extends AbstractParamHandler {
   private JSONArray sort(JSONArray jsArray) throws JSONException {
     List<String> values = new ArrayList<>(jsArray.length());
     for (int i = 0; i < jsArray.length(); i++) {
-      values.add(jsArray.getString(i));
+      values.add(jsArray.get(i).toString());
     }
     Collections.sort(values);
     return new JSONArray(values);
