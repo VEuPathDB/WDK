@@ -104,7 +104,7 @@ public class ProcessQuestionAction extends Action {
       return forward;
     }
     catch (Exception ex) {
-      logger.error(ex);
+      logger.error(ex, ex);
       ex.printStackTrace();
 
       ActionMessages messages = new ActionErrors();

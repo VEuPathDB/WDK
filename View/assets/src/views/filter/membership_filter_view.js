@@ -45,7 +45,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     tagName: 'tr',
 
     template: Handlebars.compile(
-      '<td><input type="checkbox" name="value" value="{{value}}" {{#if selected}} checked {{/if}} /></td>' +
+      '<td><input type="checkbox" value="{{value}}" {{#if selected}} checked {{/if}} /></td>' +
       '<td><span class="value">{{value}}</span></td>' +
       '<td><span class="frequency">{{count}}</span></td>' +
       '<td><span class="percent">{{percent}}%</span></td>' +
@@ -76,18 +76,20 @@ wdk.namespace('wdk.views.filter', function(ns) {
   var MembershipFilterView = ns.MembershipFilterView = wdk.views.View.extend({
 
     template: Handlebars.compile(
-      '<h3>Filter {{options.title}} by {{model.display}}</h3>' +
+      //'<h3>Filter {{options.title}} by {{model.display}}</h3>' +
       '<p>Select one or more items below.</p>' +
-      '<div class="tabs">' +
-      '  <ul>' +
-      '    <li><a href="#condensed" data-toggle="tab">Condensed</a></li>' +
-      '    <li><a href="#large" data-toggle="tab">Large</a></li>' +
-      '  </ul>' +
+      // '<div class="tabs">' +
+      // '  <ul>' +
+      // '    <li><a href="#condensed" data-toggle="tab">Condensed</a></li>' +
+      // '    <li><a href="#large" data-toggle="tab">Large</a></li>' +
+      // '  </ul>' +
 
-      '  <div id="condensed"><form><table><tbody class="membership-filter2"></tbody></table></form></div>' +
-      '  <div class="membership-filter" id="large"><p>Select value for filtering by clicking below.</p> </div>' +
-      '</div>' +
-      '<div class="legend">The distribution of your filtered results will be shown in red:' +
+      '  <table>' +
+      '    <tbody class="membership-filter2"></tbody>' +
+      '  </table>' +
+      // '  <div class="membership-filter" id="large"><p>Select value for filtering by clicking below.</p> </div>' +
+      // '</div>' +
+      '<div class="legend">The distribution of your selected results will be shown in red:' +
       '  <div class="bar" style="width:20%">' +
       '    <div class="fill" style="width:100%"></div>' +
       '    <div class="fill filtered" style="width:30%"></div>' +
@@ -95,10 +97,19 @@ wdk.namespace('wdk.views.filter', function(ns) {
       '</div>'
     ),
 
+    constructor: function(filterService) {
+      var initArgs = [].slice.call(arguments, 1);
+      this.filterService = filterService;
+      wdk.views.View.apply(this, initArgs);
+    },
+
     initialize: function(options) {
       this.options = options;
       this.listenTo(this.model, 'change', function(field, options) {
-        if (!options.fromDetailView) {
+          this.render();
+      });
+      this.listenTo(this.filterService.filters, 'add remove', function(filter, filters, opts) {
+        if (filter.get('field') === this.model.get('term') && opts.origin !== this) {
           this.render();
         }
       });
@@ -107,7 +118,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
     render: function() {
       var view = this;
       var field = this.model;
-      var filterValues = field.get('filterValues');
+      var filterService = this.filterService;
+      var filter = filterService.filters.findWhere({
+        field: field.get('term')
+      });
+      var filterValues = filter ? filter.get('values') : [];
 
       // unfiltered dist
       var values = field.get('values');
@@ -138,14 +153,14 @@ wdk.namespace('wdk.views.filter', function(ns) {
           percent: (count / values.length * 100).toFixed(2),
           distribution: (count / scale * 100).toFixed(2),
           filteredDistribution: (fcount / scale * 100).toFixed(2),
-          selected: !!(filterValues && _.contains(filterValues.values, name))
+          selected: !!(_.contains(filterValues, name))
         });
 
         var memberView2 = new MemberView2({ model: member }).render();
         var memberView = new MemberView({ model: member }).render();
 
         view.$('.membership-filter2').append(memberView2.$el);
-        view.$('.membership-filter').append(memberView.$el);
+        //view.$('.membership-filter').append(memberView.$el);
 
         //view.listenTo(member, 'change:selected', view.select);
       });
@@ -157,10 +172,14 @@ wdk.namespace('wdk.views.filter', function(ns) {
             ? Number(member.get('value'))
             : member.get('value');
         });
+        var filters = filterService.filters;
+        filters.remove(filters.where({ field: field.get('term') }), { origin: this });
         if (values.length) {
-          view.model.set('filterValues', { values: values }, { fromDetailView: true });
-        } else {
-          view.model.set('filterValues', null, { fromDetailView: true });
+          filters.add({
+            field: field.get('term'),
+            operation: field.get('filter'),
+            values: values
+          }, { origin: this });
         }
       });
 

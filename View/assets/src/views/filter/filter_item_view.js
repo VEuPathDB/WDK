@@ -21,7 +21,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     removeItem: function(e) {
-      this.model.get('field').set('filterValues', null);
+      //this.model.get('field').set('filterValues', null);
+      this.model.collection.remove(this.model);
     }
 
   });

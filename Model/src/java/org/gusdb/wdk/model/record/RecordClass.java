@@ -522,7 +522,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
 
     buf.append("--- Attribute Category Tree (with attribute count per category) ---").append(newline);
-    buf.append(attributeCategoryTree.toString());
+    buf.append(attributeCategoryTree);
 
     buf.append("--- Attributes ---").append(newline);
     for (AttributeField attribute : attributeFieldsMap.values()) {

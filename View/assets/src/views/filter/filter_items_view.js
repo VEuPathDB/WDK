@@ -14,7 +14,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.itemViews = {};
       this.listenTo(this.model, 'add', this.addItem);
       this.listenTo(this.model, 'remove', this.removeItem);
-      this.render();
     },
 
     render: function() {

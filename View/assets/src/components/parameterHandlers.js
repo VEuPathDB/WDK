@@ -160,18 +160,51 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var name = $node.data('name');
       var input = $node.find('input');
 
+      // parse data from <script>
       var jsonContainer = $(node).find('script[type="application/json"][id="' + dataId + '"]');
-      var data = JSON.parse(jsonContainer.text());
-      data = parseFilterData(data);
-      _.extend(data, { title: name });
+      var spec = JSON.parse(jsonContainer.html());
+      spec = parseFilterData(spec);
+      _.extend(spec, { title: name });
 
-      var model = new wdk.models.filter.LocalFilterService(data, { parse: true, root: 'metadata' });
-      var view = new wdk.views.filter.FilterView({ model: model });
+      // apply any previous filters
+      var filters;
+      try {
+        filters = JSON.parse(input.val()).filters;
+      } catch (e) {
+        console.warn(e);
+      }
 
-      model.filteredData.on('reset', function(filteredData) {
-        input.val(filteredData.pluck('term').join(', '));
+      // instantiate the filter service
+      var model = new wdk.models.filter.LocalFilterService({
+        spec: spec,
+        filters: filters
+      }, {
+        parse: true,
+        root: 'metadata'
       });
 
+      // create and render views
+      var itemsView = new wdk.views.filter.FilterItemsView({ model: model.filters });
+      itemsView.render();
+      var view = new wdk.views.filter.FilterView({ model: model });
+      view.render(); //.collapse(true);
+
+      // listen for change to filteredData and update input value
+      model.filteredData.on('reset', function(filteredData) {
+        var value = {
+          values: filteredData.pluck('term'),
+          filters: model.filters
+          //filters: model.filters.toJSON().map(function(filter) {
+          //  return _.extend({
+          //    field: _(filter.field.attributes).omit('values', 'filteredValues'),
+          //  }, _(filter).omit('field'))
+          //})
+        };
+        input.val(JSON.stringify(value));
+      });
+
+      // attach views
+      $(node).append(itemsView.el);
       $(node).append(view.el);
     });
   }
