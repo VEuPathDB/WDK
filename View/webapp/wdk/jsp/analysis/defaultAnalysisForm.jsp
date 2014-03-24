@@ -7,12 +7,7 @@
   <html>
     <body>
       <form style="text-align:center">
-        <h3>Click below to run this analysis.</h3>
-        <div style="white-space:nowrap; margin:5px"
-             title="This name will appear in the tab for this analysis. You can change it later.">
-          <span>Name this analysis (optional): </span>
-          <input type="text" name="displayName" size="40"/>
-        </div>
+        <h3 style="text-align:center">Click below to run this analysis.</h3>
         <input type="submit" value="Run Analysis"/>
       </form>
     </body>

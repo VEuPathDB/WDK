@@ -30,7 +30,7 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
 
   /**
    * Eventual table will have:
-   *   contextHash(PK), status, result CLOB
+   *   contextHash(PK), status, log CLOB, result CLOB
    */
   // will map contextHash -> String[]{ status, log, result }
   private static Map<String, String[]> ANALYSIS_STATUS_TABLE = new LinkedHashMap<>();  
@@ -68,8 +68,10 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
     synchronized(STEP_ANALYSIS_MAP) {
       if (STEP_ANALYSIS_MAP.containsKey(stepId)) {
         for (Integer id : STEP_ANALYSIS_MAP.get(stepId)) {
-          contextMap.put(id, new StepAnalysisContext(_wdkModel, id,
-              ANALYSIS_NAME_MAP.get(id), ANALYSIS_CONTEXT_MAP.get(id)));
+          StepAnalysisContext context = StepAnalysisContext.createFromStoredData(_wdkModel, id,
+              ANALYSIS_NAME_MAP.get(id), ANALYSIS_CONTEXT_MAP.get(id));
+          context.setStatus(getExecutionStatus(context.createHash()));
+          contextMap.put(id, context);
         }
       }
     }
@@ -77,12 +79,13 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
   }
   
   @Override
-  public boolean insertExecution(String contextHash) throws WdkModelException {
+  public boolean insertExecution(String contextHash, ExecutionStatus initialStatus)
+      throws WdkModelException {
     synchronized(ANALYSIS_STATUS_TABLE) {
       if (ANALYSIS_STATUS_TABLE.containsKey(contextHash)) {
         return false;
       }
-      ANALYSIS_STATUS_TABLE.put(contextHash, new String[]{ ExecutionStatus.PENDING.name(), "", "" });
+      ANALYSIS_STATUS_TABLE.put(contextHash, new String[]{ initialStatus.name(), "", "" });
       return true;
     }
   }
@@ -104,13 +107,43 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
   public StepAnalysisContext getAnalysisById(int analysisId) throws WdkModelException {
     synchronized(ANALYSIS_CONTEXT_MAP) {
       if (ANALYSIS_CONTEXT_MAP.containsKey(analysisId)) {
-        return new StepAnalysisContext(_wdkModel, analysisId,
+        StepAnalysisContext context = StepAnalysisContext.createFromStoredData(_wdkModel, analysisId,
             ANALYSIS_NAME_MAP.get(analysisId), ANALYSIS_CONTEXT_MAP.get(analysisId));
+        // need to retrieve and assign status for this analysis
+        context.setStatus(getExecutionStatus(context.createHash()));
+        return context;
       }
       return null;
     }
   }
 
+  @Override
+  public void renameAnalysis(int analysisId, String displayName) throws WdkModelException {
+    synchronized(ANALYSIS_CONTEXT_MAP) {
+      if (ANALYSIS_NAME_MAP.containsKey(analysisId)) {
+        ANALYSIS_NAME_MAP.put(analysisId, displayName);
+        return;
+      }
+      throw new WdkModelException("No analysis exists with id: " + analysisId);
+    }
+  }
+
+  private ExecutionStatus getExecutionStatus(String contextHash) throws WdkModelException {
+    synchronized(ANALYSIS_STATUS_TABLE) {
+      if (ANALYSIS_STATUS_TABLE.containsKey(contextHash)) {
+        String value = ANALYSIS_STATUS_TABLE.get(contextHash)[0];
+        try {
+          return ExecutionStatus.valueOf(value);
+        }
+        catch (IllegalArgumentException | NullPointerException e) {
+          throw new WdkModelException("Status value in database '" + value +
+              "' is not a valid execution status.");
+        }
+      }
+      return ExecutionStatus.CREATED;
+    }
+  }
+  
   @Override
   public void deleteAnalysis(int analysisId) throws WdkModelException {
     synchronized(STEP_ANALYSIS_MAP) {
@@ -153,7 +186,6 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
       }
       throw new WdkModelException("No analysis execution with context hash value: " + contextHash);
     }
-    
   }
 
   @Override
@@ -164,5 +196,4 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
     }
     throw new WdkModelException("No analysis execution with context hash value: " + contextHash);
   }
-  
 }

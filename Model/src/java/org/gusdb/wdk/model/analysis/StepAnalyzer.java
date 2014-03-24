@@ -23,6 +23,6 @@ public interface StepAnalyzer {
   
   public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log) throws WdkModelException;
 
-  public String serializeResults();
-  public void deserializeResults(String serializedResult);
+  public String serializeResult();
+  public void deserializeResult(String serializedResult);
 }

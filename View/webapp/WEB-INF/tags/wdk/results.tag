@@ -84,18 +84,19 @@
       </li>
     </c:forEach>
     <c:forEach items="${wdkStep.appliedAnalyses}" var="analysisEntry">
-      <c:set var="analysisExecId" value="${analysisEntry.key}"/>
+      <c:set var="analysisId" value="${analysisEntry.key}"/>
       <c:set var="analysisCtx" value="${analysisEntry.value}"/>
       <c:set var="analysis" value="${analysisCtx.stepAnalysis}"/>
       <li id="step-analysis-${analysisExecId}">
-        <a href="${pageContext.request.contextPath}/showStepAnalysis.do?strategyId=${wdkStrategy.strategyId}&stepId=${wdkStep.stepId}&analysisName=${analysis.name}&analysisId=${analysisExecId}"
-           title="${analysis.description}">${analysisCtx.displayName} <span> </span><span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span></a>
+        <a href="${pageContext.request.contextPath}/stepAnalysisPane.do?analysisId=${analysisId}" title="${analysis.description}">
+          ${analysisCtx.displayName} <span> </span><span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
+        </a>
       </li>
     </c:forEach>
     <c:if test="${fn:length(question.stepAnalyses) > 0}">
       <li>
         <div class="new-analysis">
-          <span class="new-analysis-button">+</span><span class="new-analysis-instr"></span>
+          <span class="new-analysis-button"><span class="new-analysis-instr">+ Analyze This Result</span></span>
           <div class="new-analysis-menu">
             <ul>
               <c:forEach items="${question.stepAnalyses}" var="analysisEntry">

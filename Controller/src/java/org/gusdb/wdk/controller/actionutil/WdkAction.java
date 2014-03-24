@@ -76,6 +76,9 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
 
   // default max upload file size
   private static final int DEFAULT_MAX_UPLOAD_SIZE_MB = 10;
+
+  // default response type (for errors and validation failures)
+  private static final ResponseType DEFAULT_RESPONSE_TYPE = ResponseType.html;
   
   private WdkModelBean _wdkModel;
   private HttpServlet _servlet;
@@ -111,7 +114,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
       _response = response;
       _servlet = servlet;
       _wdkModel = (WdkModelBean)_servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
-      _responseType = ResponseType.html;
+      _responseType = DEFAULT_RESPONSE_TYPE;
       _strutsActionForm = form;
       
       if (requiresLogin() && getCurrentUser().isGuest()) {
@@ -125,9 +128,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
       }
       catch (WdkValidationException wve) {
         // attach errors to request and return INPUT
-        return getForwardFromResult(new ActionResult(_responseType)
-            .setRequestAttribute("validator", wve.getValidator())
-            .setViewName(INPUT), mapping);
+        return getForwardFromResult(getValidationFailureResult(wve), mapping);
       }
 
       if (result == null || result.isEmptyResult()) {
@@ -164,6 +165,23 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
       _request.setAttribute(EXCEPTION_OBJ, e);
       return getForwardFromResult(new ActionResult().setViewName(ERROR), mapping);
     }
+  }
+  
+  /**
+   * Creates an ActionResult to be returned when configured parameter validation
+   * fails.  Default behavior is to return result with view name 'input' of type
+   * HTML, and attach the validator to the request under the name 'validator'.
+   * 
+   * If the calling action wishes a different response, it can override this
+   * method and return a different result.
+   * 
+   * @param wve validation exception containing failure causes
+   * @return desired result for validation failure
+   */
+  protected ActionResult getValidationFailureResult(WdkValidationException wve) {
+    return new ActionResult(_responseType)
+        .setRequestAttribute("validator", wve.getValidator())
+        .setViewName(INPUT);
   }
   
   private ParamGroup createParamGroup(Map<String, String[]> paramMap) throws WdkValidationException, WdkUserException {
@@ -264,7 +282,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
    * Allows children to explicitly set response type.  Note that this value is
    * only used if an exception is throw during handleRequest().  Under normal
    * conditions, the response type on the ActionResult is used to determine the
-   * type of response.
+   * type of response.  Default type is HTML.
    * 
    * @param responseType
    */

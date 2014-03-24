@@ -13,7 +13,7 @@ public interface StepAnalysisDataStore {
 
   public Map<Integer,StepAnalysisContext> getAnalysesByStepId(int stepId) throws WdkModelException;
   
-  public boolean insertExecution(String contextHash) throws WdkModelException;
+  public boolean insertExecution(String contextHash, ExecutionStatus pending) throws WdkModelException;
 
   public void updateExecution(String contextHash, ExecutionStatus status, String result) throws WdkModelException;
 
@@ -27,5 +27,6 @@ public interface StepAnalysisDataStore {
 
   public void deleteAnalysis(int analysisId) throws WdkModelException;
 
+  public void renameAnalysis(int analysisId, String displayName) throws WdkModelException;
   
 }

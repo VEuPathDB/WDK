@@ -785,6 +785,13 @@ a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
   background-size: 240px auto;
 }
 
+.step-analysis-subpane {
+	margin: 3px;
+	border: 1px solid #cccccc;
+	border-radius: 7px;
+	padding: 4px;
+}
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = Download page
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

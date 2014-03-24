@@ -24,24 +24,24 @@ import org.gusdb.wdk.model.analysis.StepAnalyzer;
 import org.gusdb.wdk.model.user.Step;
 
 /**
-Static/Stateless Data:
-  StepAnalysisPlugins XML
-  StepAnalysisXml XML
-  StepAnalysisRef XML
-  StepAnalysis Interface for loaded Model- defines analyses than can be run
-  StepAnalyzer worker interface
-
-StepAnalysisFactory maintains:
-  - StepAnalysisConfigs in UserDB
-  - Current threadpool for executions
-  - Results cache
-
-StepAnalysisConfig ref to analysis and params, passed to StepAnalyzer
-  
-Things to maintain:
-  - valid step + analysis name + version + props + params = def to execution
-  - cache of execDef -> status/results
-*/
+ * Static/Stateless Data:
+ *   StepAnalysisPlugins: XML wrapper
+ *   StepAnalysisXml: XML wrapper
+ *   StepAnalysisRef: XML wrapper
+ *   StepAnalysis: interface for loaded analysis refs
+ *   StepAnalyzer: interface for worker class
+ *
+ * StepAnalysisFactory maintains:
+ *   - StepAnalysisContexts in UserDB
+ *   - Threadpool for executions
+ *   - Results cache
+ *
+ * StepAnalysisContext:
+ *
+ * Things to maintain:
+ *   - valid step + analysis name + version + props + params = def to execution
+ *   - cache of execDef -> status/results
+ */
 public class StepAnalysisFactory {
   
   private static Logger LOG = Logger.getLogger(StepAnalysisFactory.class);
@@ -94,43 +94,66 @@ public class StepAnalysisFactory {
     return context;
   }
   
-  public void applyAnalysis(StepAnalysisContext context) throws WdkModelException {
-    boolean created = _dataStore.insertExecution(context.createHash());
+  public StepAnalysisContext runAnalysis(StepAnalysisContext context)
+      throws WdkModelException, WdkUserException {
+    ExecutionStatus initialStatus = ExecutionStatus.PENDING;
+    boolean created = _dataStore.insertExecution(context.createHash(), initialStatus);
     if (!created) {
-      // result is being or has already been generated
-      return;
+      // result is being or has already been generated; get current status
+      AnalysisResult result = getAnalysisResult(context);
+      context.setStatus(result.status);
+      return context;
     }
-    executeAnalysis(context);
+    context.setStatus(initialStatus);
+    return executeAnalysis(context);
   }
 
-  private void executeAnalysis(final StepAnalysisContext context) throws WdkModelException {
+  private StepAnalysisContext executeAnalysis(StepAnalysisContext context) throws WdkModelException {
     try {
       _threadResults.add(_threadPool.submit(new AnalysisCallable(context, _dataStore)));
+      return context;
     }
     catch (RejectedExecutionException e) {
       throw new WdkModelException("Unable to create new step analysis execution.  Thread pool exhausted?", e);
     }
   }
   
-  public AnalysisResult getAnalysisResult(int analysisId) throws WdkUserException, WdkModelException {
-    StepAnalysisContext context = _dataStore.getAnalysisById(analysisId);
-    if (context == null) {
-      throw new WdkUserException("Cannot find context associated with analysis ID " + analysisId + ".");
+  public AnalysisResult getAnalysisResult(StepAnalysisContext context) throws WdkUserException, WdkModelException {
+    StepAnalysisContext ctx = _dataStore.getAnalysisById(context.getAnalysisId());
+    if (ctx == null) {
+      throw new WdkUserException("Cannot find context associated with analysis ID " + context.getAnalysisId() + ".");
     }
-    String hash = context.createHash();
+    String hash = ctx.createHash();
     AnalysisResult result = _dataStore.getAnalysisResult(hash);
     if (result == null) {
-      throw new WdkModelException("Cannot find analysis result associated with hash " + hash + ".");
+      // no result yet exists; create a "dummy" result
+      result = new AnalysisResult(ExecutionStatus.CREATED, null, null);
     }
-    StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
-    analyzer.deserializeResults(result.serializedResult);
+    StepAnalyzer analyzer = ctx.getStepAnalysis().getAnalyzerInstance();
+    analyzer.deserializeResult(result.serializedResult);
     result.analysisViewModel = analyzer.getAnalysisViewModel();
     result.serializedResult = null;
     return result;
   }
 
-  public void deleteAnalysis(int analysisId) throws WdkModelException {
-    _dataStore.deleteAnalysis(analysisId);
+  public void deleteAnalysis(StepAnalysisContext context) throws WdkModelException {
+    _dataStore.deleteAnalysis(context.getAnalysisId());
+  }
+
+  public int getNextId() throws WdkModelException {
+    return _dataStore.getNextId();
+  }
+
+  public void renameContext(StepAnalysisContext context) throws WdkModelException {
+    _dataStore.renameAnalysis(context.getAnalysisId(), context.getDisplayName());
+  }
+
+  public StepAnalysisContext getSavedContext(int analysisId) throws WdkUserException, WdkModelException{
+    StepAnalysisContext context = _dataStore.getAnalysisById(analysisId);
+    if (context == null) {
+      throw new WdkUserException("No analysis exists with id: " + analysisId);
+    }
+    return context;
   }
 
   public String resolveFormView(WdkResourceChecker resourceChecker, StepAnalysisContext context) throws WdkModelException {
@@ -158,8 +181,7 @@ public class StepAnalysisFactory {
     if (resolvedView == null) {
       throw new WdkModelException("StepAnalysis " + viewType + " view [" +
           context.getStepAnalysis().getAnalysisViewName() + "] configured for step " +
-          "analysis plugin [" + context.getStepAnalysis().getName() + "] for question [" +
-          context.getQuestion().getFullName() + "] cannot be resolved.");
+          "analysis plugin [" + context.getStepAnalysis().getName() + "] cannot be resolved.");
     }
     
     return resolvedView;
@@ -269,7 +291,7 @@ public class StepAnalysisFactory {
             _context.getStep().getAnswerValue(), new StatusLogger(contextHash, _dataStore));
       
         // status completed successfully or was interrupted
-        String result = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.serializeResults() : "");
+        String result = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.serializeResult() : "");
         _dataStore.updateExecution(contextHash, status, result);
         return status;
       }
@@ -279,9 +301,5 @@ public class StepAnalysisFactory {
         return ExecutionStatus.ERROR;
       }
     }
-  }
-
-  public int getNextId() throws WdkModelException {
-    return _dataStore.getNextId();
   }
 }
