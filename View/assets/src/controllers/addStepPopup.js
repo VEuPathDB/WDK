@@ -512,6 +512,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     }
   }
 
+  // TODO Remove inline references to these functions. As it is now,
+  // it is not possible to cancel an inline 'onsubmit' handler without
+  // hacking it into a more conventional event handler.
   function callWizard(url, ele, id, sec, action, stratFrontId){
     // TODO - make this accssible via wdk.addStepPopup namespace
     // set isPopup flag, which will be used by param initialization process
