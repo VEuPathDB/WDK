@@ -1,40 +1,40 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
+  // var MemberView = wdk.views.View.extend({
+
+  //   events: {
+  //     'click': 'toggleSelected'
+  //   },
+
+  //   className: 'member',
+
+  //   template: Handlebars.compile(
+  //     '<div class="fill" style="width:{{distribution}}%">  </div>' +
+  //     '<div class="fill filtered" style="width:{{filteredDistribution}}%">  </div>' +
+  //     '<div class="value">{{value}}</div>' +
+  //     '<div class="count">{{count}} <span class="percent">({{percent}}%)</span></div>'
+  //   ),
+
+  //   initialize: function(options) {
+  //     this.options = options;
+  //     this.listenTo(this.model, 'change', this.render);
+  //   },
+
+  //   render: function() {
+  //     this.$el.html(this.template(this.model.attributes));
+  //     this.$el.tooltip({ title: this.model.get('value'), placement: 'left', delay: 400 });
+  //     this.$el.toggleClass('selected', this.model.get('selected'));
+  //     return this;
+  //   },
+
+  //   toggleSelected: function() {
+  //     this.model.set('selected', !this.model.get('selected'));
+  //   }
+
+  // });
+
   var MemberView = wdk.views.View.extend({
-
-    events: {
-      'click': 'toggleSelected'
-    },
-
-    className: 'member',
-
-    template: Handlebars.compile(
-      '<div class="fill" style="width:{{distribution}}%">  </div>' +
-      '<div class="fill filtered" style="width:{{filteredDistribution}}%">  </div>' +
-      '<div class="value">{{value}}</div>' +
-      '<div class="count">{{count}} <span class="percent">({{percent}}%)</span></div>'
-    ),
-
-    initialize: function(options) {
-      this.options = options;
-      this.listenTo(this.model, 'change', this.render);
-    },
-
-    render: function() {
-      this.$el.html(this.template(this.model.attributes));
-      this.$el.tooltip({ title: this.model.get('value'), placement: 'left', delay: 400 });
-      this.$el.toggleClass('selected', this.model.get('selected'));
-      return this;
-    },
-
-    toggleSelected: function() {
-      this.model.set('selected', !this.model.get('selected'));
-    }
-
-  });
-
-  var MemberView2 = wdk.views.View.extend({
 
     events: {
       'click': 'toggleSelected'
@@ -44,16 +44,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     tagName: 'tr',
 
-    template: Handlebars.compile(
-      '<td><input type="checkbox" value="{{value}}" {{#if selected}} checked {{/if}} /></td>' +
-      '<td><span class="value">{{value}}</span></td>' +
-      '<td><span class="frequency">{{count}}</span></td>' +
-      '<td><span class="percent">{{percent}}%</span></td>' +
-      '<td><div class="bar">' +
-      '  <div class="fill" style="width:{{distribution}}%">  </div>' +
-      '  <div class="fill filtered" style="width:{{filteredDistribution}}%">  </div>' +
-      '</div></td>'
-    ),
+    template: wdk.templates['filter/member.handlebars'],
 
     initialize: function(options) {
       this.options = options;
@@ -75,27 +66,30 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
   var MembershipFilterView = ns.MembershipFilterView = wdk.views.View.extend({
 
-    template: Handlebars.compile(
-      //'<h3>Filter {{options.title}} by {{model.display}}</h3>' +
-      '<p>Select one or more items below.</p>' +
-      // '<div class="tabs">' +
-      // '  <ul>' +
-      // '    <li><a href="#condensed" data-toggle="tab">Condensed</a></li>' +
-      // '    <li><a href="#large" data-toggle="tab">Large</a></li>' +
-      // '  </ul>' +
+    template: wdk.templates['filter/membership_filter.handlebars'],
 
-      '  <table>' +
-      '    <tbody class="membership-filter2"></tbody>' +
-      '  </table>' +
-      // '  <div class="membership-filter" id="large"><p>Select value for filtering by clicking below.</p> </div>' +
-      // '</div>' +
-      '<div class="legend">The distribution of your selected results will be shown in red:' +
-      '  <div class="bar" style="width:20%">' +
-      '    <div class="fill" style="width:100%"></div>' +
-      '    <div class="fill filtered" style="width:30%"></div>' +
-      '  </div>' +
-      '</div>'
-    ),
+
+    // template: Handlebars.compile(
+    //   '<h3>Filter {{options.title}} by {{model.display}}</h3>' +
+    //   '<p>Select one or more items below.</p>' +
+    //   '<div class="tabs">' +
+    //   '  <ul>' +
+    //   '    <li><a href="#condensed" data-toggle="tab">Condensed</a></li>' +
+    //   '    <li><a href="#large" data-toggle="tab">Large</a></li>' +
+    //   '  </ul>' +
+
+    //   '  <table>' +
+    //   '    <tbody class="membership-filter2"></tbody>' +
+    //   '  </table>' +
+    //   '  <div class="membership-filter" id="large"><p>Select value for filtering by clicking below.</p> </div>' +
+    //   '</div>' +
+    //   '<div class="legend">The distribution of your selected results will be shown in red:' +
+    //   '  <div class="bar" style="width:20%">' +
+    //   '    <div class="fill" style="width:100%"></div>' +
+    //   '    <div class="fill filtered" style="width:30%"></div>' +
+    //   '  </div>' +
+    //   '</div>'
+    // ),
 
     constructor: function(filterService) {
       var initArgs = [].slice.call(arguments, 1);
@@ -155,14 +149,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
           filteredDistribution: (fcount / scale * 100).toFixed(2),
           selected: !!(_.contains(filterValues, name))
         });
-
-        var memberView2 = new MemberView2({ model: member }).render();
         var memberView = new MemberView({ model: member }).render();
-
-        view.$('.membership-filter2').append(memberView2.$el);
-        //view.$('.membership-filter').append(memberView.$el);
-
-        //view.listenTo(member, 'change:selected', view.select);
+        view.$('.membership-filter').append(memberView.$el);
       });
 
       members.on('change:selected', function(member, selected) {
