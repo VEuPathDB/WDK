@@ -1,18 +1,17 @@
 package org.gusdb.wdk.controller.action.analysis;
 
-import org.gusdb.wdk.controller.action.standard.GenericPageAction;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.model.analysis.StepAnalyzer;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 
-public class ShowStepAnalysisFormAction extends GenericPageAction {
+public class ShowStepAnalysisFormAction extends AbstractStepAnalysisIdAction {
   
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
 
-    StepAnalysisContext context = new StepAnalysisContext(getCurrentUser(), params.getParamMap());
-    String resolvedView = getWdkModel().getModel().getStepAnalysisFactory().resolveFormView(this, context);
+    StepAnalysisContext context = getContextFromPassedId();
+    String resolvedView = getAnalysisMgr().resolveFormView(this, context);
 
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
     ActionResult result = new ActionResult().setViewPath(resolvedView)
@@ -43,5 +42,5 @@ public class ShowStepAnalysisFormAction extends GenericPageAction {
 
     prepareQuestionForm(wdkQuestion, servlet, request, qForm);
     setParametersAsAttributes(request);
-*/
+  */
 }

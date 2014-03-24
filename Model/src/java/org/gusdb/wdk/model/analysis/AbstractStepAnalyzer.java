@@ -27,11 +27,11 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   }
   
   @Override
-  public String serializeResults() {
+  public String serializeResult() {
     return _results;
   }
   @Override
-  public void deserializeResults(String serializedResult) {
+  public void deserializeResult(String serializedResult) {
     LOG.info("Received serialized result: " + serializedResult);
     _results = serializedResult;
   }
