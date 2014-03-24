@@ -1,19 +1,19 @@
-.filter h3 {
+.filter-param h3 {
   margin: auto;
 }
-.filter .hidden {
+.filter-param .hidden {
   display: none;
 }
-.filter, .filter *, .filter-items {
+.filter-param, .filter-param *, .filter-items {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   line-height: 14px;
 }
-.filter .ui-tabs {
+.filter-param .ui-tabs {
   border: none;
 }
-.filter .collapse {
+.filter-param .collapse {
   position: absolute;
   right: 1em;
   top: 5px;
@@ -22,7 +22,7 @@
   margin-bottom: .5em;
   margin-left: 2px;
 }
-.filter .expanded .ui-tabs-panel {
+.filter-param .expanded .ui-tabs-panel {
   padding: 0;
 }
 .range-filter .table tr {
@@ -99,7 +99,12 @@
 .field-detail h4 {
   margin-top: 4em;
 }
+.field-detail .apply-filter {
+  text-align: right;
+  padding: 1em 0;
+}
 /* Bars-based view */
+/*
 .membership-filter .member {
   position: relative;
   margin: 1em;
@@ -120,7 +125,6 @@
   height: 2.5em;
 }
 .membership-filter .member.selected .fill {
-  /*background-color: #66A4E7;*/
   background-color: rgb(189, 217, 240);
 }
 .membership-filter .fill.filtered,
@@ -151,53 +155,54 @@
 .membership-filter .member.selected .percent {
   font-weight: normal;
 }
+*/
 
 /* condensed view */
-.membership-filter2 .text,
-.membership-filter2 .distribution {
+.membership-filter .text,
+.membership-filter .distribution {
   display: inline-block;
 }
-.membership-filter2 .text {
+.membership-filter .text {
   width: 50%;
 }
-.membership-filter2 .distribution {
+.membership-filter .distribution {
   width: 9%;
 }
-.filter .bar {
+.filter-param .bar {
   width: 100%;
 }
-.filter table {
-  /*table-layout: fixed;*/
+.filter-param table {
   width: 100%;
 }
-.membership-filter2 .member {
+
+.membership-filter .member {
   margin: .4em 0;
   height: 1em;
 }
-.membership-filter2 input[name="value"] {
+.membership-filter input[name="value"] {
   margin-right: .4em;
 }
-.membership-filter2 .member:hover td {
+.membership-filter .member:hover td {
   background-color: #f6f6f6;
 }
-.membership-filter2 .member td {
+.membership-filter .member td {
   padding: 0 .4em;
 }
-.membership-filter2 .member td:first-child {
+.membership-filter .member td:first-child {
   width: 2em;
 }
-.membership-filter2 .member td:nth-child(2) {
+.membership-filter .member td:nth-child(2) {
   width: 30%;
 }
-.membership-filter2 .member td:last-child {
+.membership-filter .member td:last-child {
   width: 50%;
   padding-right: 0;
 }
-.membership-filter2 label {
+.membership-filter label {
   width: 100%;
   font-weight: normal;
 }
-.membership-filter2 .value {
+.membership-filter .value {
   min-width: 8em;
   width: 100%;
   display: inline-block;
@@ -206,25 +211,25 @@
   overflow-x: hidden;
   vertical-align: top;
 }
-.membership-filter2 .frequency {
+.membership-filter .frequency {
   width: 3em;
   display: inline-block;
 }
-.filter .bar {
+.filter-param .bar {
   background-color: #f6f6f6;
   position: relative;
 }
-.filter .bar .fill {
+.filter-param .bar .fill {
   color: white;
   background-color: #dadada;
   height: 1em;
   position: absolute;
   top: -.5em;
 }
-.filter .fill.filtered {
+.filter-param .fill.filtered {
   background-color: #DA7272;
 }
-.filter .legend {
+.filter-param .legend {
   text-align: right;
   width: 100%;
   padding: 1em 2em;
@@ -233,13 +238,13 @@
   position: absolute;
   color: #666666;
 }
-.filter .legend .bar {
+.filter-param .legend .bar {
   display: inline-block;
   top: 7px;
   vertical-align: text-top;
   margin-left: 1em;
 }
-.membership-filter2 .member.selected td {
+.membership-filter .member.selected td {
   font-weight: bold;
   /*background-color: #66A4E7;*/
 }
@@ -302,7 +307,7 @@
 .summary ul, .summary li {
   display: inline-block;
 }
-.filter .summary {
+.filter-param .summary {
   margin-top: 4px;
 }
 /*
