@@ -14,7 +14,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
     // The active delegate view
     delegateView: null,
 
-    template: wdk.templates['filter/field_detail.handlebars'],
+    emptyTemplate: wdk.templates['filter/field_detail_empty.handlebars'],
+
+    delegateTemplate: wdk.templates['filter/field_detail_delegate.handlebars'],
 
     render: function(field) {
       return typeof field === 'undefined'
@@ -23,12 +25,13 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     renderEmpty: function() {
-      this.$el.html(this.template(this.model.attributes));
+      this.$el.html(this.emptyTemplate(this.model.attributes));
       return this;
     },
 
     renderDetail: function(field) {
       var Delegate = this.getDelegateConstructor(field.get('filter'));
+      var html = this.delegateTemplate(this.model.attributes);
 
       if (this.delegateView) {
         this.delegateView.destroy();
@@ -40,6 +43,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
         model: field,
         title: this.model.get('title')
       }).render();
+
+      this.$el.append(html);
 
       return this;
     },

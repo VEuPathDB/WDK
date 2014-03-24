@@ -205,8 +205,13 @@ wdk.namespace('wdk.views.filter', function(ns) {
     handleFormChange: function(e) {
       var min = this.$min.val() === '' ? null : this.$min.val();
       var max = this.$max.val() === '' ? null : this.$max.val();
+
       var filters = this.filterService.filters;
       var field = this.model;
+
+      // bail if values aren't changed
+      var oldVals = _.result(this.plot.getSelection(), 'xaxis');
+      if (oldVals && min === oldVals.from.toFixed(2) && max === oldVals.to.toFixed(2)) return;
 
       filters.remove(filters.where({ field: field.get('term') }), { origin: this });
 
