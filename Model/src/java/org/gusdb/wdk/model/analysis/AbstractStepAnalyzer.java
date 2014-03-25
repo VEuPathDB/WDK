@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 public abstract class AbstractStepAnalyzer implements StepAnalyzer {
@@ -15,9 +16,19 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
     public Object getResults();
   }
   
+  private WdkModel _wdkModel;
   private Map<String, String> _properties = new HashMap<>();
   private Map<String, String[]> _formParams = new HashMap<>();
   private String _results;
+  
+  protected WdkModel getWdkModel() {
+    return _wdkModel;
+  }
+  
+  @Override
+  public void setWdkModel(WdkModel wdkModel) {
+    _wdkModel = wdkModel;
+  }
   
   protected void setResults(String results) {
     _results = results;
@@ -72,7 +83,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   }
 
   @Override
-  public Object getAnalysisViewModel() {
+  public Object getResultViewModel() {
     ResultContainer obj = new ResultContainer() {
       @Override
       public String getResults() { return _results; }

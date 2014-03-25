@@ -100,13 +100,17 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
       // find class on classpath
       Class<? extends StepAnalyzer> aClass = Class.forName(
           _analyzerClass).asSubclass(StepAnalyzer.class);
-      // instantiate instance
+
+      // instantiate instance and pass reference to model
       StepAnalyzer analyzer = aClass.newInstance();
-      // set properties defined in model
+      analyzer.setWdkModel(getWdkModel());
+      
+      // set properties defined in model and validate
       for (Entry<String,String> prop : _properties.entrySet()) {
         analyzer.setProperty(prop.getKey(), prop.getValue());
       }
       analyzer.validateProperties();
+      
       return analyzer;
     }
     catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
