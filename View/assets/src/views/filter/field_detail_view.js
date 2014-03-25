@@ -18,6 +18,28 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     delegateTemplate: wdk.templates['filter/field_detail_delegate.handlebars'],
 
+    initialize: function() {
+      this.listenTo(this.model.filters, 'add remove', function(filter, filters, opts) {
+        var delegateView = this.delegateView;
+        if (!delegateView) {
+          return;
+        }
+        if (filter.get('field') === delegateView.model.get('term') && opts.origin !== delegateView) {
+          this.renderDetail(delegateView.model);
+        }
+      });
+
+      this.listenTo(this.model.fields, 'change', function(field) {
+        var delegateView = this.delegateView;
+        if (!delegateView) {
+          return;
+        }
+        if (field === delegateView.model) {
+          this.renderDetail(field);
+        }
+      });
+    },
+
     render: function(field) {
       return typeof field === 'undefined'
         ? this.renderEmpty()
