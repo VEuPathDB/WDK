@@ -155,7 +155,14 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   //==============================================================================
   function initFilterParam(element) {
     var form = element.closest('form');
-    element.find('.filter-param').each(function(i, node) {
+    var filterParams = element.find('.filter-param');
+
+    if (filterParams.length > 0) {
+      // add class to move prompts to left
+      element.addClass('move-left');
+    }
+
+    filterParams.each(function(i, node) {
       var $node = $(node);
       var dataId = $node.data('data-id');
       var name = $node.data('name');
