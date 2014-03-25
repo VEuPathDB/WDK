@@ -20,8 +20,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.fieldList = new FieldListView({ model: this.model });
       this.fieldDetail = new FieldDetailView({ model: this.model });
 
-      this.listenTo(this.fieldList, 'select', this.renderDetail);
-      //this.listenTo(this.model.fields, 'change:filterValues', this.setFilter);
+      this.listenTo(this.model.fields, 'select', this.renderDetail);
 
       this.render();
     },
