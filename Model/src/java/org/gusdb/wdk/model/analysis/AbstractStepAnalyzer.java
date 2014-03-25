@@ -53,8 +53,11 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   public void setFormParams(Map<String, String[]> formParams) {
     _formParams = formParams;
   }
-  protected Map<String,String[]> getFormParamMap(String key) {
+  protected Map<String,String[]> getParamMap() {
     return _formParams;
+  }
+  protected String[] getParam(String key) {
+    return _formParams.get(key);
   }
 
   @Override

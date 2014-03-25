@@ -16,10 +16,8 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkResourceChecker;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins.ExecutionConfig;
-import org.gusdb.wdk.model.analysis.StepAnalysisPlugins.ViewConfig;
 import org.gusdb.wdk.model.analysis.StepAnalyzer;
 import org.gusdb.wdk.model.user.Step;
 
@@ -46,6 +44,8 @@ public class StepAnalysisFactory {
   
   private static Logger LOG = Logger.getLogger(StepAnalysisFactory.class);
   
+  private static final boolean USE_PERSISTENCE = false;
+  
   public static class AnalysisResult {
     public ExecutionStatus status;
     public String serializedResult;
@@ -58,20 +58,26 @@ public class StepAnalysisFactory {
     }
   }
   
-  private final ViewConfig _viewConfig;
   private final ExecutionConfig _execConfig;
+  private final StepAnalysisViewResolver _viewResolver;
   private final StepAnalysisDataStore _dataStore;
   private final ExecutorService _threadPool;
   private final Future<Boolean> _threadMonitor;
   private volatile ConcurrentLinkedDeque<Future<ExecutionStatus>> _threadResults;
   
   public StepAnalysisFactory(WdkModel wdkModel) {
-    _viewConfig = wdkModel.getStepAnalysisPlugins().getViewConfig();
+    _viewResolver = new StepAnalysisViewResolver(wdkModel.getStepAnalysisPlugins().getViewConfig());
     _execConfig = wdkModel.getStepAnalysisPlugins().getExecutionConfig();
-    _dataStore = new StepAnalysisInMemoryDataStore(wdkModel);
+    _dataStore = (USE_PERSISTENCE ?
+        new StepAnalysisPersistentDataStore(wdkModel) :
+        new StepAnalysisInMemoryDataStore(wdkModel));
     _threadPool = Executors.newFixedThreadPool(_execConfig.getThreadPoolSize());
     _threadResults = new ConcurrentLinkedDeque<>();
     _threadMonitor = _threadPool.submit(new FutureCleaner(_threadResults));
+  }
+
+  public List<StepAnalysisContext> getAllAnalyses() throws WdkModelException {
+    return _dataStore.getAllAnalyses();
   }
 
   public Map<Integer, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException {
@@ -90,22 +96,32 @@ public class StepAnalysisFactory {
     int saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(),
         context.getDisplayName(), context.serializeContext());
+    // override any previous values for id and status; this is a -new- analysis
     context.setAnalysisId(saId);
+    context.setStatus(ExecutionStatus.CREATED);
     return context;
   }
   
   public StepAnalysisContext runAnalysis(StepAnalysisContext context)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     ExecutionStatus initialStatus = ExecutionStatus.PENDING;
+    // first, update stored context with params
+    _dataStore.updateContext(context.getAnalysisId(), context.serializeContext());
     boolean created = _dataStore.insertExecution(context.createHash(), initialStatus);
-    if (!created) {
-      // result is being or has already been generated; get current status
-      AnalysisResult result = getAnalysisResult(context);
-      context.setStatus(result.status);
-      return context;
+    if (context.getStatus().equals(ExecutionStatus.CREATED)) {
+      // only need to set new flag if it has not already been set
+      _dataStore.setNewFlag(context.getAnalysisId(), false);
     }
-    context.setStatus(initialStatus);
-    return executeAnalysis(context);
+    if (created) {
+      // no previous results record exists; need to run analysis
+      context.setStatus(initialStatus);
+      context = executeAnalysis(context);
+    }
+    else {
+      // result is being or has already been generated; get current status
+      context.setStatus(_dataStore.getExecutionStatus(context.createHash()));
+    }
+    return context;
   }
 
   private StepAnalysisContext executeAnalysis(StepAnalysisContext context) throws WdkModelException {
@@ -118,30 +134,24 @@ public class StepAnalysisFactory {
     }
   }
   
-  public AnalysisResult getAnalysisResult(StepAnalysisContext context) throws WdkUserException, WdkModelException {
-    StepAnalysisContext ctx = _dataStore.getAnalysisById(context.getAnalysisId());
-    if (ctx == null) {
-      throw new WdkUserException("Cannot find context associated with analysis ID " + context.getAnalysisId() + ".");
-    }
-    String hash = ctx.createHash();
-    AnalysisResult result = _dataStore.getAnalysisResult(hash);
+  public AnalysisResult getAnalysisResult(StepAnalysisContext context) throws WdkModelException {
+    AnalysisResult result = _dataStore.getAnalysisResult(context.createHash());
     if (result == null) {
-      // no result yet exists; create a "dummy" result
+      LOG.info("No result could be found.  Probably does not yet exist; creating a 'dummy' result.");
       result = new AnalysisResult(ExecutionStatus.CREATED, null, null);
     }
-    StepAnalyzer analyzer = ctx.getStepAnalysis().getAnalyzerInstance();
-    analyzer.deserializeResult(result.serializedResult);
-    result.analysisViewModel = analyzer.getAnalysisViewModel();
-    result.serializedResult = null;
+    else {
+      LOG.info("Got result back from data store: " + result.status + ", with results:\n" + result.serializedResult);
+      StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
+      analyzer.deserializeResult(result.serializedResult);
+      result.analysisViewModel = analyzer.getAnalysisViewModel();
+      result.serializedResult = null;
+    }
     return result;
   }
 
   public void deleteAnalysis(StepAnalysisContext context) throws WdkModelException {
     _dataStore.deleteAnalysis(context.getAnalysisId());
-  }
-
-  public int getNextId() throws WdkModelException {
-    return _dataStore.getNextId();
   }
 
   public void renameContext(StepAnalysisContext context) throws WdkModelException {
@@ -155,36 +165,9 @@ public class StepAnalysisFactory {
     }
     return context;
   }
-
-  public String resolveFormView(WdkResourceChecker resourceChecker, StepAnalysisContext context) throws WdkModelException {
-    // first try to resolve name with prefix/suffix
-    return resolveView(resourceChecker, context, context.getStepAnalysis().getFormViewName(), "form");
-  }
-
-  public String resolveResultsView(WdkResourceChecker resourceChecker, StepAnalysisContext context) throws WdkModelException {
-    // first try to resolve name with prefix/suffix
-    return resolveView(resourceChecker, context, context.getStepAnalysis().getAnalysisViewName(), "analysis");
-  }
   
-  private String resolveView(WdkResourceChecker resourceChecker, StepAnalysisContext context,
-      String viewName, String viewType) throws WdkModelException {
-
-    String fixedName =
-        (_viewConfig.getPrefix() != null ? _viewConfig.getPrefix() : "") +
-        viewName +
-        (_viewConfig.getSuffix() != null ? _viewConfig.getSuffix() : "");
-    
-    String resolvedView =
-        resourceChecker.wdkResourceExists(fixedName) ? fixedName :
-        resourceChecker.wdkResourceExists(viewName) ? viewName : null;
-    
-    if (resolvedView == null) {
-      throw new WdkModelException("StepAnalysis " + viewType + " view [" +
-          context.getStepAnalysis().getAnalysisViewName() + "] configured for step " +
-          "analysis plugin [" + context.getStepAnalysis().getName() + "] cannot be resolved.");
-    }
-    
-    return resolvedView;
+  public StepAnalysisViewResolver getViewResolver() {
+    return _viewResolver;
   }
   
   public void shutDown() {

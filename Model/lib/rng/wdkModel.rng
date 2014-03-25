@@ -1535,9 +1535,6 @@
     <element name="stepAnalysisPlugin">
       <attribute name="name" />
       <attribute name="analyzerClass" />
-      <attribute name="version">
-        <data type="positiveInteger" />
-      </attribute>
       <ref name="stepAnalysisOptions" />
     </element>
   </define>

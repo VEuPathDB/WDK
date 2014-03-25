@@ -11,7 +11,7 @@ public class ShowStepAnalysisFormAction extends AbstractStepAnalysisIdAction {
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
 
     StepAnalysisContext context = getContextFromPassedId();
-    String resolvedView = getAnalysisMgr().resolveFormView(this, context);
+    String resolvedView = getAnalysisMgr().getViewResolver().resolveFormView(this, context);
 
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
     ActionResult result = new ActionResult().setViewPath(resolvedView)

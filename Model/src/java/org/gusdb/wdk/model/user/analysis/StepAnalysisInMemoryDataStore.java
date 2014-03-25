@@ -20,11 +20,14 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
   
   /**
    * Eventual table will have:
-   *   analysisId(PK), stepId, displayName, context CLOB
+   *   analysisId(PK), stepId, displayName, isNew, context CLOB
    */
   // will map analysisId -> context
   private static Map<Integer, String> ANALYSIS_CONTEXT_MAP = new HashMap<>();
+  // will map analysisId -> displayName
   private static Map<Integer, String> ANALYSIS_NAME_MAP = new HashMap<>();
+  // will map analysisId -> isNew
+  private static Map<Integer, Boolean> ANALYSIS_NEW_MAP = new HashMap<>();
   // will map stepId -> List<analysisId>
   private static Map<Integer, List<Integer>> STEP_ANALYSIS_MAP = new HashMap<>();
 
@@ -58,8 +61,20 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
       STEP_ANALYSIS_MAP.get(stepId).add(saId);
       ANALYSIS_CONTEXT_MAP.put(saId, serializedContext);
       ANALYSIS_NAME_MAP.put(saId, displayName);
+      ANALYSIS_NEW_MAP.put(saId, true);
       LOG.info("Inserted analysis with ID " + saId + ", map now: " + FormatUtil.prettyPrint(ANALYSIS_CONTEXT_MAP));
     }
+  }
+
+  @Override
+  public List<StepAnalysisContext> getAllAnalyses() throws WdkModelException {
+    List<StepAnalysisContext> contextList = new ArrayList<>();
+    synchronized(STEP_ANALYSIS_MAP) {
+      for (Integer id : ANALYSIS_CONTEXT_MAP.keySet()) {
+        contextList.add(getAnalysisById(id));
+      }
+    }
+    return contextList;
   }
 
   @Override
@@ -68,10 +83,7 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
     synchronized(STEP_ANALYSIS_MAP) {
       if (STEP_ANALYSIS_MAP.containsKey(stepId)) {
         for (Integer id : STEP_ANALYSIS_MAP.get(stepId)) {
-          StepAnalysisContext context = StepAnalysisContext.createFromStoredData(_wdkModel, id,
-              ANALYSIS_NAME_MAP.get(id), ANALYSIS_CONTEXT_MAP.get(id));
-          context.setStatus(getExecutionStatus(context.createHash()));
-          contextMap.put(id, context);
+          contextMap.put(id, getAnalysisById(id));
         }
       }
     }
@@ -97,23 +109,10 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
         String[] old = ANALYSIS_STATUS_TABLE.get(contextHash);
         old[0] = status.name();
         old[2] = (result == null ? "" : result);
+        LOG.info("Updated result record for hash[" + contextHash + "], status=" + status + ", result =\n" + result);
         return;
       }
       throw new WdkModelException("Step Analysis Execution for hash [" + contextHash + "] does not exist.");
-    }
-  }
-
-  @Override
-  public StepAnalysisContext getAnalysisById(int analysisId) throws WdkModelException {
-    synchronized(ANALYSIS_CONTEXT_MAP) {
-      if (ANALYSIS_CONTEXT_MAP.containsKey(analysisId)) {
-        StepAnalysisContext context = StepAnalysisContext.createFromStoredData(_wdkModel, analysisId,
-            ANALYSIS_NAME_MAP.get(analysisId), ANALYSIS_CONTEXT_MAP.get(analysisId));
-        // need to retrieve and assign status for this analysis
-        context.setStatus(getExecutionStatus(context.createHash()));
-        return context;
-      }
-      return null;
     }
   }
 
@@ -128,7 +127,45 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
     }
   }
 
-  private ExecutionStatus getExecutionStatus(String contextHash) throws WdkModelException {
+  @Override
+  public void setNewFlag(int analysisId, boolean isNew) throws WdkModelException {
+    synchronized(ANALYSIS_CONTEXT_MAP) {
+      if (ANALYSIS_NEW_MAP.containsKey(analysisId)) {
+        ANALYSIS_NEW_MAP.put(analysisId, isNew);
+        return;
+      }
+      throw new WdkModelException("No analysis exists with id: " + analysisId);
+    }
+  }
+
+  @Override
+  public void updateContext(int analysisId, String serializedContext) throws WdkModelException {
+    synchronized(ANALYSIS_CONTEXT_MAP) {
+      if (ANALYSIS_CONTEXT_MAP.containsKey(analysisId)) {
+        ANALYSIS_CONTEXT_MAP.put(analysisId, serializedContext);
+        return;
+      }
+      throw new WdkModelException("No analysis exists with id: " + analysisId);
+    }
+  }
+  
+  @Override
+  public StepAnalysisContext getAnalysisById(int analysisId) throws WdkModelException {
+    synchronized(ANALYSIS_CONTEXT_MAP) {
+      if (ANALYSIS_CONTEXT_MAP.containsKey(analysisId)) {
+        StepAnalysisContext context = StepAnalysisContext.createFromStoredData(_wdkModel, analysisId,
+            ANALYSIS_NAME_MAP.get(analysisId), ANALYSIS_CONTEXT_MAP.get(analysisId));
+        ExecutionStatus storedStatus = getExecutionStatus(context.createHash());
+        // need to resolve and assign status for this analysis
+        context.setStatus(ExecutionStatus.resolveStatus(ANALYSIS_NEW_MAP.get(analysisId), storedStatus));
+        return context;
+      }
+      return null;
+    }
+  }
+  
+  @Override
+  public ExecutionStatus getExecutionStatus(String contextHash) throws WdkModelException {
     synchronized(ANALYSIS_STATUS_TABLE) {
       if (ANALYSIS_STATUS_TABLE.containsKey(contextHash)) {
         String value = ANALYSIS_STATUS_TABLE.get(contextHash)[0];
@@ -140,7 +177,7 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
               "' is not a valid execution status.");
         }
       }
-      return ExecutionStatus.CREATED;
+      return null;
     }
   }
   
@@ -153,6 +190,7 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
       }
       ANALYSIS_CONTEXT_MAP.remove(analysisId);
       ANALYSIS_NAME_MAP.remove(analysisId);
+      ANALYSIS_NEW_MAP.remove(analysisId);
       List<Integer> stepIdsToRemove = new ArrayList<>();
       for (Entry<Integer,List<Integer>> entry : STEP_ANALYSIS_MAP.entrySet()) {
         entry.getValue().remove((Integer)analysisId);
@@ -173,6 +211,8 @@ public class StepAnalysisInMemoryDataStore implements StepAnalysisDataStore {
       String[] result = ANALYSIS_STATUS_TABLE.get(contextHash);
       return new AnalysisResult(ExecutionStatus.valueOf(result[0]), result[2], result[1]);
     }
+    LOG.warn("Could not find analysis result for hash: " + contextHash + ". Available hashes: " +
+        FormatUtil.arrayToString(new ArrayList<String>(ANALYSIS_STATUS_TABLE.keySet()).toArray()));
     return null;
   }
 

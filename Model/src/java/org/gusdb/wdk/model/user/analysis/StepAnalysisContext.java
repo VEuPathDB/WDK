@@ -1,11 +1,13 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
@@ -22,6 +24,8 @@ import org.json.JSONObject;
 
 public class StepAnalysisContext {
 
+  public static final Logger LOG = Logger.getLogger(StepAnalysisContext.class);
+  
   public static final String ANALYSIS_ID_KEY = "analysisId";
 
   public static enum JsonKey {
@@ -30,8 +34,6 @@ public class StepAnalysisContext {
     strategyId,
     stepId,
     analysisName,
-    combinedVersion,
-    properties,
     formParams,
     
     // the following values are included with JSON returned to client
@@ -47,10 +49,8 @@ public class StepAnalysisContext {
   private int _strategyId;
   private Step _step;
   private StepAnalysis _stepAnalysis;
-  private String _combinedVersion;
   private ExecutionStatus _status;
-  private Map<String,String> _analysisProperties;
-  private Map<String,String[]> _formParams;
+  private Map<String, String[]> _formParams;
 
   private StepAnalysisContext() { }
   
@@ -90,8 +90,6 @@ public class StepAnalysisContext {
     }
 
     ctx._displayName = ctx._stepAnalysis.getDisplayName();
-    ctx._combinedVersion = ctx._stepAnalysis.getCombinedVersion();
-    ctx._analysisProperties = ctx._stepAnalysis.getProperties();
     ctx._formParams = new HashMap<String,String[]>();
     ctx._status = ExecutionStatus.CREATED;
     
@@ -122,6 +120,8 @@ public class StepAnalysisContext {
       ctx._displayName = displayName;
       ctx._status = ExecutionStatus.UNKNOWN;
       
+      LOG.info("Got the following serialized context from the DB: " + serializedContext);
+      
       // deserialize hashable context values
       JSONObject json = new JSONObject(serializedContext);
       ctx._strategyId = json.getInt(JsonKey.strategyId.name());
@@ -129,19 +129,10 @@ public class StepAnalysisContext {
           .getStepById(json.getInt(JsonKey.stepId.name()));
       Question question = ctx._step.getQuestion();
       ctx._stepAnalysis = question.getStepAnalysis(json.getString(JsonKey.analysisName.name()));
-      ctx._combinedVersion = json.getString(JsonKey.combinedVersion.name());
-
-      ctx._analysisProperties = new LinkedHashMap<>();
-      JSONObject propsObj = json.getJSONObject(JsonKey.properties.name());
-      @SuppressWarnings("unchecked")
-      Iterator<String> iter1 = propsObj.keys();
-      while (iter1.hasNext()) {
-        String key = iter1.next();
-        ctx._analysisProperties.put(key, propsObj.getString(key));
-      }
 
       ctx._formParams = new LinkedHashMap<>();
       JSONObject formObj = json.getJSONObject(JsonKey.formParams.name());
+      LOG.info("Retrieved the following params JSON from the DB: " + formObj);
       @SuppressWarnings("unchecked")
       Iterator<String> iter2 = formObj.keys();
       while (iter2.hasNext()) {
@@ -161,6 +152,25 @@ public class StepAnalysisContext {
     }
   }
 
+  public static StepAnalysisContext createCopy(StepAnalysisContext oldContext) {
+    StepAnalysisContext ctx = new StepAnalysisContext();
+    ctx._wdkModel = oldContext._wdkModel;
+    ctx._analysisId = oldContext._analysisId;
+    ctx._displayName = oldContext._displayName;
+    ctx._strategyId = oldContext._strategyId;
+    ctx._step = oldContext._step;
+    ctx._stepAnalysis = oldContext._stepAnalysis;
+    ctx._formParams = new HashMap<>(oldContext._formParams);
+    for (String key : ctx._formParams.keySet()) {
+      String[] old = ctx._formParams.get(key);
+      if (old != null) {
+        ctx._formParams.put(key, Arrays.copyOf(old, old.length));
+      }
+    }
+    ctx._status = oldContext._status;
+    return ctx;
+  }
+  
   private static int getAnalysisIdParam(Map<String, String[]> params) throws WdkUserException {
     String[] values = params.get(ANALYSIS_ID_KEY);
     if (values == null || values.length != 1)
@@ -205,20 +215,11 @@ public class StepAnalysisContext {
    *   analysisName: string
    *   stepId: int
    *   strategyId: int
-   *   combinedVersion: string
-   *   properties: key-value object of properties
    *   params: key-value object of params
    */
   public String serializeContext() {
     try {
-      JSONObject json = getSharedJson();
-      json.put(JsonKey.combinedVersion.name(), _combinedVersion);
-      JSONObject properties = new JSONObject();
-      for (Entry<String,String> prop : _analysisProperties.entrySet()) {
-        properties.put(prop.getKey(), prop.getValue());
-      }
-      json.put(JsonKey.properties.name(), properties);
-      return json.toString();
+      return getSharedJson().toString();
     }
     catch (JSONException e) {
       throw new WdkRuntimeException("Unable to serialize context.", e);
@@ -230,6 +231,7 @@ public class StepAnalysisContext {
     json.put(JsonKey.strategyId.name(), _strategyId);
     json.put(JsonKey.stepId.name(), _step.getStepId());
     json.put(JsonKey.analysisName.name(), _stepAnalysis.getName());
+    
     JSONObject params = new JSONObject();
     for (Entry<String, String[]> param : _formParams.entrySet()) {
       for (String value : param.getValue()) {
@@ -237,6 +239,8 @@ public class StepAnalysisContext {
       }
     }
     json.put(JsonKey.formParams.name(), params);
+    
+    LOG.info("Returning the following shared JSON: " + json);
     return json;
   }
   
@@ -279,6 +283,10 @@ public class StepAnalysisContext {
   
   public Map<String, String[]> getFormParams() {
     return _formParams;
+  }
+
+  public ExecutionStatus getStatus() {
+    return _status;
   }
 
   public void setStatus(ExecutionStatus status) {
