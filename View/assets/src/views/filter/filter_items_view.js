@@ -24,13 +24,19 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
-      this.model.forEach(this.addItem.bind(this));
+      var view = this;
+      this.model.forEach(function(model) {
+        view.addItem.call(view, model, { inRender: true });
+      });
     },
 
-    addItem: function(model) {
+    addItem: function(model, options) {
       var itemView = new FilterItemView(this.filterService, { model: model });
       this.$el.append(itemView.$el);
       this.itemViews[model.cid] = itemView;
+      if (!options.inRender) {
+        itemView.select();
+      }
     },
 
     removeItem: function(model) {

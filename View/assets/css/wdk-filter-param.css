@@ -294,6 +294,10 @@
   background-color: #efefef;
   border: 1px solid #ccc;
 }
+.filter-items li.selected > div {
+  border-color: #A7A7A7;
+  background-color: #FDFDFD;
+}
 .filter-items .remove {
   display: inline-block;
   vertical-align: text-bottom;
