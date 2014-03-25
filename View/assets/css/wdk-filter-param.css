@@ -56,7 +56,7 @@
 .chart-title.y-axis {
   position: absolute;
   left: -3.5em;
-  bottom: 8em;
+  top: 14em;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);
