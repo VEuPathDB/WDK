@@ -154,6 +154,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   //==============================================================================
   function initFilterParam(element) {
+    var form = element.closest('form');
     element.find('.filter-param').each(function(i, node) {
       var $node = $(node);
       var dataId = $node.data('data-id');
@@ -204,8 +205,26 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       });
 
       // attach views
-      $(node).append(itemsView.el);
-      $(node).append(view.el);
+      $(node)
+        .append(itemsView.el)
+        .append(view.el);
+
+      form.on('submit', function(e) {
+        if (model.filteredData.length === 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          $(node).find('.ui-state-error').remove();
+          $(node).prepend(
+            '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">' +
+            'Please select ' + name + ' to continue.' +
+            '</div>'
+          );
+          model.filteredData.once('reset', function() {
+            $(node).find('.ui-state-error').remove();
+          });
+        }
+      });
+
     });
   }
 

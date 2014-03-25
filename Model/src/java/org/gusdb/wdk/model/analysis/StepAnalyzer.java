@@ -10,8 +10,6 @@ import org.gusdb.wdk.model.user.analysis.StatusLogger;
 
 public interface StepAnalyzer {
 
-  public int getAnalyzerVersion();
-
   public Object getFormViewModel();
   public Object getAnalysisViewModel();
   

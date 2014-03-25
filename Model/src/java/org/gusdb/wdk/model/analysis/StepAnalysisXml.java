@@ -19,14 +19,12 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   // basic information
   private String _name;
   private String _displayName;
-  private Integer _version;
   private String _description = "";
   
   // for running and viewing the analysis
   private String _analyzerClass;
-  private String _combinedVersion;  // combines version in model with version in analyzer class
-  private String _formViewName;     // for Struts
-  private String _analysisViewName; // for Struts
+  private String _formViewName;     // form view name to be resolved by factory
+  private String _analysisViewName; // analysis view name to be resolved by factory 
   private Map<String,String> _properties = new LinkedHashMap<>();
   
   public StepAnalysisXml() { }
@@ -56,17 +54,6 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   }
   public void setDisplayName(String displayName) {
     _displayName = displayName;
-  }
-
-  public Integer getVersion() {
-    return _version;
-  }
-  public void setVersion(Integer version) {
-    _version = version;
-  }
-  @Override
-  public String getCombinedVersion() {
-    return _combinedVersion;
   }
   
   @Override
@@ -157,8 +144,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     }
  
     // test to make sure we can create instance
-    StepAnalyzer instance = getAnalyzerInstance();
-    _combinedVersion = _version + "." + instance.getAnalyzerVersion();
+    getAnalyzerInstance();
   }
 
   private static String chooseValue(String refValue, String objValue, String defaultValue) {

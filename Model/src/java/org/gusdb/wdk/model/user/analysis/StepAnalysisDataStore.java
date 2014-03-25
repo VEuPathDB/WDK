@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -13,7 +14,7 @@ public interface StepAnalysisDataStore {
 
   public Map<Integer,StepAnalysisContext> getAnalysesByStepId(int stepId) throws WdkModelException;
   
-  public boolean insertExecution(String contextHash, ExecutionStatus pending) throws WdkModelException;
+  public boolean insertExecution(String contextHash, ExecutionStatus initialStatus) throws WdkModelException;
 
   public void updateExecution(String contextHash, ExecutionStatus status, String result) throws WdkModelException;
 
@@ -28,5 +29,13 @@ public interface StepAnalysisDataStore {
   public void deleteAnalysis(int analysisId) throws WdkModelException;
 
   public void renameAnalysis(int analysisId, String displayName) throws WdkModelException;
+
+  public void setNewFlag(int analysisId, boolean isNew) throws WdkModelException;
+
+  public ExecutionStatus getExecutionStatus(String contextHash) throws WdkModelException;
+
+  public List<StepAnalysisContext> getAllAnalyses() throws WdkModelException;
+
+  public void updateContext(int analysisId, String serializedContext) throws WdkModelException;
   
 }

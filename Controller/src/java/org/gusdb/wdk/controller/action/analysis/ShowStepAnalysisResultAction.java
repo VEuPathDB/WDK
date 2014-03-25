@@ -20,8 +20,9 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
         // analysis has not yet been run; return an empty result
         return new ActionResult().setStream(IoUtil.getStreamFromString(""));
       case COMPLETE:
+        String viewPath = getAnalysisMgr().getViewResolver().resolveResultsView(this, context);
         return new ActionResult()
-            .setViewPath(getAnalysisMgr().resolveResultsView(this, context))
+            .setViewPath(viewPath)
             .setRequestAttribute("viewModel", result.analysisViewModel);
       case PENDING:
       case RUNNING:

@@ -23,6 +23,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 	 *  - createAnalysis:
 	 *      takes:   strategy id, step id, analysis name
 	 *      returns: instance json
+	 *  - copyAnalysis:
+	 *      takes:   analysis id
+	 *      returns: instance json for copy
 	 *  - runAnalysis:
 	 *      takes:   analysis form submission (including analysisId hidden param)
 	 *      returns: instance json
@@ -35,6 +38,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 	 *  - deleteAnalysis:
 	 *      takes:   analysis id
 	 *      returns: instance json
+	 *  - getAll:
+	 *      takes:   nothing
+	 *      returns: json for all analysis instances and results
 	 * 
 	 * The following pages each take an analysis id and return HTML:
 	 * 
@@ -46,13 +52,15 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 	
 	var ROUTES = {
 		createAnalysis: { url: '/createStepAnalysis.do', method: 'POST', type: 'json' },
+		copyAnalysis:   { url: '/copyStepAnalysis.do',   method: 'POST', type: 'json' },
 		runAnalysis:    { url: '/runStepAnalysis.do',    method: 'POST', type: 'json' },
 		renameAnalysis: { url: '/renameStepAnalysis.do', method: 'POST', type: 'json' },
 		deleteAnalysis: { url: '/deleteStepAnalysis.do', method: 'POST', type: 'json' },
 		getAnalysis:    { url: '/stepAnalysis.do',       method: 'GET',  type: 'json' },
 		getPane:        { url: '/stepAnalysisPane.do',   method: 'GET',  type: 'html' },
 		getForm:        { url: '/stepAnalysisForm.do',   method: 'GET',  type: 'html' },
-		getResult:      { url: '/stepAnalysisResult.do', method: 'GET',  type: 'html' }
+		getResult:      { url: '/stepAnalysisResult.do', method: 'GET',  type: 'html' },
+		getAll:         { url: '/stepAnalysisAll.do',    method: 'GET',  type: 'json' }
 	};
 	
 	function doAjax(route, ajaxConfig) {
@@ -118,21 +126,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 		doAjax(ROUTES.createAnalysis, {
 			data: { "analysisName": analysisName, "strategyId": strategyId, "stepId": stepId },
 			success: function (data, textStatus, jqXHR) {
-				// create, add, and select new tab representing this analysis
-				var analysisId = data.analysisId;
-				var displayName = data.displayName;
-				var description = data.description;
-				var tabUrl = wdk.webappUrl(ROUTES.getPane.url) +"?analysisId=" + analysisId;
-				var tabId = "step-analysis-" + analysisId;
-				var tabIndex = $('#Summary_Views ul.ui-tabs-nav > li').length - 1;
-				var tabContent = '<li id="' + tabId + '">' +
-					'<a href="' + tabUrl + '" title="' + description + '">' +
-					displayName + '<span></span><span ' +
-					'class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span></a></li>';
-				$('#Summary_Views ul.ui-tabs-nav > li:last').before(tabContent);
-				$('#Summary_Views').tabs('refresh');
-				addDeleteButton($('#Summary_Views').find('#'+tabId)[0]);
-				$('#Summary_Views').tabs('option', 'active', tabIndex);
+				createAnalysisTab(data);
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
 				alert("Error: Unable to create new step analysis of type: " + analysisName);
@@ -140,25 +134,55 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 		});
 	}
 	
+	function copyStepAnalysis(analysisId) {
+		doAjax(ROUTES.copyAnalysis, {
+			data: { "analysisId": analysisId },
+			success: function(data, textStatus, jqXHR) {
+				createAnalysisTab(data);
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				alert("Error: Unable to create new step analysis from existing with id: " + analysisId);
+			}
+		});
+	}
+
+	function createAnalysisTab(data) {
+		// create, add, and select new tab representing this analysis
+		var analysisId = data.analysisId;
+		var displayName = data.displayName;
+		var description = data.description;
+		var tabUrl = wdk.webappUrl(ROUTES.getPane.url) +"?analysisId=" + analysisId;
+		var tabId = "step-analysis-" + analysisId;
+		var tabIndex = $('#Summary_Views ul.ui-tabs-nav > li').length - 1;
+		var tabContent = '<li id="' + tabId + '">' +
+			'<a href="' + tabUrl + '" title="' + description + '">' +
+			displayName + '<span></span><span ' +
+			'class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span></a></li>';
+		$('#Summary_Views ul.ui-tabs-nav > li:last').before(tabContent);
+		$('#Summary_Views').tabs('refresh');
+		addDeleteButton($('#Summary_Views').find('#'+tabId)[0]);
+		$('#Summary_Views').tabs('option', 'active', tabIndex);
+	}
+	
 	function loadDisplaySubpanes($element, $attrs) {
 		var analysisId = $attrs.analysisId;
 		// get json representing analysis (params + status, but not result)
-		// NOTE: add back if knowing results status is worth an extra trip to the server
-		//doAjax(ROUTES.getAnalysis, {
-		//	data: { "analysisId": analysisId },
-		//	success: function(data, textStatus, jqXHR) {
+		doAjax(ROUTES.getAnalysis, {
+			data: { "analysisId": analysisId },
+			success: function(data, textStatus, jqXHR) {
 				// load form and (if necessary) populate selected values
-				loadAnalysisForm($element, analysisId);				
+				loadAnalysisForm($element, data);				
 				// load results
 				loadResultsPane($element, analysisId);
-		//	},
-		//	error: function(jqXHR, textStatus, errorThrown) {
-		//		alert("Error: Unable to retrieve step analysis json for id: " + analysisId);
-		//	}
-		//});
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				alert("Error: Unable to retrieve step analysis json for id: " + analysisId);
+			}
+		});
 	}
 	
-	function loadAnalysisForm($element, analysisId) {
+	function loadAnalysisForm($element, analysisObj) {
+		var analysisId = analysisObj.analysisId;
 		// fetch plugin's form
 		doAjax(ROUTES.getForm, {
 			data: { "analysisId": analysisId },
@@ -184,8 +208,8 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				
 				var formPane = $element.find(".step-analysis-form-pane");
 				formPane.html(wrappingDiv);
-				if (data.status != 'CREATED') {
-					wdk.formUtil.populateForm(formPane.find('form').first(), data.params);
+				if (analysisObj.status != 'CREATED') {
+					wdk.formUtil.populateForm(formPane.find('form').first(), analysisObj.formParams);
 				}
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
@@ -202,7 +226,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 			data: { "analysisId": analysisId },
 			success: function(data, textStatus, jqXHR) {
 				if (data == "") {
-					// empty result means no analysis has het been run
+					// empty result means no analysis has yet been run
 					return;
 				}
 				
@@ -253,7 +277,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 		return -1;
 	}
 	*/
-	  
+	
 	function analysisRefresh($obj, $attrs) {
 		var analysisId = $attrs.analysisid;
 		var secondsLeft = 0 + $obj.find('.countdown').html();
@@ -283,7 +307,21 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 		}
 	}
 	
+	function showAllAnalyses() {
+		doAjax(ROUTES.getAll, {
+			success: function(data, textStatus, jqXHR) {
+				var jsonDisplay = JSON.stringify(data, undefined, 2);
+				var html = "<div><pre>" + jsonDisplay + "</pre></div>";
+				$(html).dialog({ modal:true });
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				alert("Error: Unable to retrieve all analysis json");
+			}
+		});
+	}
+	
 	ns.configureAnalysisViews = configureAnalysisViews;
 	ns.loadDisplaySubpanes = loadDisplaySubpanes;
 	ns.analysisRefresh = analysisRefresh;
+	ns.showAllAnalyses = showAllAnalyses;
 });

@@ -8,7 +8,6 @@ public interface StepAnalysis {
 
   public String getName();
   public String getDisplayName();
-  public String getCombinedVersion();
   public String getDescription();
   
   public StepAnalyzer getAnalyzerInstance() throws WdkModelException;

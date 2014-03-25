@@ -771,27 +771,6 @@ a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
   /* background-color:#EDEDED; */
 /* } */
 
-.step-analysis-close-icon {
-	/* Hard to override only the close icon since using an icon set for jquery ui */
-	/* background-image:url("../images/closeIcon-blue.png"); */
-	display:inline-block;
-  position:relative;
-  width:12px;
-  height:12px;
-  top:2px;
-  left:3px;
-  cursor:pointer;
-  background-position: -31px -181px;
-  background-size: 240px auto;
-}
-
-.step-analysis-subpane {
-	margin: 3px;
-	border: 1px solid #cccccc;
-	border-radius: 7px;
-	padding: 4px;
-}
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = Download page
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1064,6 +1043,10 @@ position: relative;
 z-index: 1;
 }
 
+/***~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~***
+ ***  Step Analysis: 'new' tab, and contents of SA tabs
+ ***~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~***/
+
 .new-analysis {
 	display: inline-block;
 	position: relative;
@@ -1072,7 +1055,6 @@ z-index: 1;
 .new-analysis .new-analysis-instr {
 	font-size: 0.8em;
   font-style: italic;
-  margin-left: 6px;
 }
 
 .new-analysis .new-analysis-button {
@@ -1118,6 +1100,26 @@ z-index: 1;
 .new-analysis .new-analysis-menu li:last-child { border-radius: 0 0 4px 4px; }
 .new-analysis .new-analysis-menu li:last-child:hover { border-radius: 0 0 4px 4px; }
 
+.step-analysis-close-icon {
+  /* Hard to override only the close icon since using an icon set for jquery ui */
+  /* background-image:url("../images/closeIcon-blue.png"); */
+  display:inline-block;
+  position:relative;
+  width:12px;
+  height:12px;
+  top:2px;
+  left:3px;
+  cursor:pointer;
+  background-position: -31px -181px;
+  background-size: 240px auto;
+}
+
+.step-analysis-subpane {
+  margin: 3px;
+  border: 1px solid #cccccc;
+  border-radius: 7px;
+  padding: 4px;
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       = RESULTS used in group default view (orthomcl)

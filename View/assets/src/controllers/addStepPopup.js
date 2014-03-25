@@ -512,13 +512,17 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     }
   }
 
+  // TODO Remove inline references to these functions. As it is now,
+  // it is not possible to cancel an inline 'onsubmit' handler without
+  // hacking it into a more conventional event handler.
   function callWizard(url, ele, id, sec, action, stratFrontId){
     // TODO - make this accssible via wdk.addStepPopup namespace
     // set isPopup flag, which will be used by param initialization process
     window.isPopup = true;
 
-    var urlBase = url.split(/\?/)[0];
-    var params = url.split(/\?/)[1];
+    // sometimes url can be null...
+    var urlBase = url && url.split(/\?/)[0];
+    var params = url && url.split(/\?/)[1];
 
     //hide any open tooltips
     $(".qtip").qtip("hide");
@@ -543,7 +547,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           url: urlBase,
           type: "POST",
           dataType: "html",
-          data: params + wdk.util.parseInputs() + "&state=" + wdk.strategy.controller.stateString,
+          data: params + '&' + wdk.util.parseInputs() + "&state=" + wdk.strategy.controller.stateString,
 
           beforeSend: function() {
             //$(".crumb_details").block( {message: "Loading..."} );

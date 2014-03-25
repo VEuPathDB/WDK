@@ -21,7 +21,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
     },
 
-    className: 'filter',
+    //className: 'filter',
 
     template: wdk.templates['filter/filter.handlebars'],
 
