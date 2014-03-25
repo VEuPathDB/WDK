@@ -176,7 +176,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
 
       // instantiate the filter service
-      var model = new wdk.models.filter.LocalFilterService({
+      var filterService = new wdk.models.filter.LocalFilterService({
         spec: spec,
         filters: filters
       }, {
@@ -185,21 +185,16 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       });
 
       // create and render views
-      var itemsView = new wdk.views.filter.FilterItemsView({ model: model.filters });
+      var itemsView = new wdk.views.filter.FilterItemsView(filterService, { model: filterService.filters });
       itemsView.render();
-      var view = new wdk.views.filter.FilterView({ model: model });
+      var view = new wdk.views.filter.FilterView({ model: filterService });
       view.render(); //.collapse(true);
 
       // listen for change to filteredData and update input value
-      model.filteredData.on('reset', function(filteredData) {
+      filterService.filteredData.on('reset', function(filteredData) {
         var value = {
           values: filteredData.pluck('term'),
-          filters: model.filters
-          //filters: model.filters.toJSON().map(function(filter) {
-          //  return _.extend({
-          //    field: _(filter.field.attributes).omit('values', 'filteredValues'),
-          //  }, _(filter).omit('field'))
-          //})
+          filters: filterService.filters
         };
         input.val(JSON.stringify(value));
       });
@@ -210,7 +205,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         .append(view.el);
 
       form.on('submit', function(e) {
-        if (model.filteredData.length === 0) {
+        if (filterService.filteredData.length === 0) {
           e.preventDefault();
           e.stopPropagation();
           $(node).find('.ui-state-error').remove();
@@ -219,7 +214,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
             'Please select ' + name + ' to continue.' +
             '</div>'
           );
-          model.filteredData.once('reset', function() {
+          filterService.filteredData.once('reset', function() {
             $(node).find('.ui-state-error').remove();
           });
         }
