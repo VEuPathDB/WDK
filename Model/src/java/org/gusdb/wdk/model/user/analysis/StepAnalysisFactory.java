@@ -144,7 +144,7 @@ public class StepAnalysisFactory {
       LOG.info("Got result back from data store: " + result.status + ", with results:\n" + result.serializedResult);
       StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
       analyzer.deserializeResult(result.serializedResult);
-      result.analysisViewModel = analyzer.getAnalysisViewModel();
+      result.analysisViewModel = analyzer.getResultViewModel();
       result.serializedResult = null;
     }
     return result;
