@@ -10,10 +10,17 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     tagName: 'ul',
 
+    constructor: function(filterService) {
+      var restArgs = [].slice.call(arguments, 1);
+      this.filterService = filterService;
+      wdk.views.View.apply(this, restArgs);
+    },
+
     initialize: function() {
       this.itemViews = {};
       this.listenTo(this.model, 'add', this.addItem);
       this.listenTo(this.model, 'remove', this.removeItem);
+      this.listenTo(this.filterService.fields, 'select', this.toggleSelectItems);
     },
 
     render: function() {
@@ -21,7 +28,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     addItem: function(model) {
-      var itemView = new FilterItemView({ model: model });
+      var itemView = new FilterItemView(this.filterService, { model: model });
       this.$el.append(itemView.$el);
       this.itemViews[model.cid] = itemView;
     },
@@ -29,6 +36,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
     removeItem: function(model) {
       this.itemViews[model.cid].remove();
       delete this.itemViews[model.cid];
+    },
+
+    toggleSelectItems: function(field) {
+      _.invoke(this.itemViews, 'toggleSelect', field);
     }
   });
 
