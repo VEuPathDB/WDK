@@ -520,8 +520,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     // set isPopup flag, which will be used by param initialization process
     window.isPopup = true;
 
-    var urlBase = url.split(/\?/)[0];
-    var params = url.split(/\?/)[1];
+    // sometimes url can be null...
+    var urlBase = url && url.split(/\?/)[0];
+    var params = url && url.split(/\?/)[1];
 
     //hide any open tooltips
     $(".qtip").qtip("hide");
