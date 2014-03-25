@@ -99,6 +99,9 @@
 .field-detail h4 {
   margin-top: 4em;
 }
+.field-detail p {
+  margin: 1em 0;
+}
 .field-detail .apply-filter {
   text-align: right;
   padding: 1em 0;

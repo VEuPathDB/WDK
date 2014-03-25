@@ -76,7 +76,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var fcounts = _.countBy(fvalues);
 
       this.$el.html(this.template({
-        model: this.model.attributes,
+        field: this.model.attributes,
         options: this.options
       }));
 

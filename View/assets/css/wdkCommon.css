@@ -543,6 +543,15 @@ ul.menubar {
   margin-left: 36%;    /*330px;*/ /*310px; */
 }
 
+/* Use less whitespace in popup */
+#query_form .param-item > label {
+  width: 18%;
+}
+
+#query_form .param-control {
+  margin-left: 19%;    /*330px;*/ /*310px; */
+}
+
 .param-control td {
   vertical-align: middle;
 }
