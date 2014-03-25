@@ -317,9 +317,6 @@
 .filter-param .summary {
   margin-top: 4px;
 }
-/*
-.summary ul li:not(.hidden)+li:not(.hidden):before {
-content: "|";
-padding: 0 2px;
+.filter-param .dataTables_wrapper {
+  overflow-x: auto;
 }
- */
