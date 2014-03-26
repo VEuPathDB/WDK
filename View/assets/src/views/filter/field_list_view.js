@@ -16,29 +16,38 @@ wdk.namespace('wdk.views.filter', function(ns) {
   ns.FieldListView = wdk.views.View.extend({
 
     events: {
-      'click a': 'selectField'
+      'click a': 'triggerSelect'
     },
 
     template: wdk.templates['filter/field_list.handlebars'],
+
+    initialize: function() {
+      this.listenTo(this.model.fields, 'select', this.selectField);
+    },
 
     render: function() {
       this.$el.html(this.template(this.model.fields.toJSON()));
       return this;
     },
 
-    selectField: function(e) {
+    triggerSelect: function(e) {
       e.preventDefault();
-      var link = e.currentTarget;
 
+      var link = e.currentTarget;
       if ($(link).parent().hasClass('active')) {
         return;
       }
 
-      this.$('li').removeClass('active');
-      $(link).parent().addClass('active');
       var term = link.hash.slice(1);
       var field = this.model.fields.findWhere({term: term});
-      this.trigger('select', field);
+      field.select();
+    },
+
+    selectField: function(field) {
+      var term = field.get('term');
+      var link = this.$('a[href="#' + term + '"]');
+      this.$('li').removeClass('active');
+      $(link).parent().addClass('active');
     }
 
   });

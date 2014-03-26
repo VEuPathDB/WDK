@@ -4,6 +4,10 @@ wdk.namespace('wdk.models.filter', function(ns) {
   var Field = ns.Field = Backbone.Model.extend({
     defaults: {
       filteredValues: []
+    },
+
+    select: function() {
+      this.trigger('select', this);
     }
   });
 

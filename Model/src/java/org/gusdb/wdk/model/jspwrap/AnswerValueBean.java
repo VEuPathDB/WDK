@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -410,7 +409,7 @@ public class AnswerValueBean {
         return new AnswerFilterInstanceBean(filter);
     }
 
-    public List<String[]> getAllIds() throws WdkModelException, SQLException {
+    public List<String[]> getAllIds() throws WdkModelException {
         return answerValue.getAllIds();
     }
 
@@ -418,7 +417,7 @@ public class AnswerValueBean {
      * @return
      * @see org.gusdb.wdk.model.AnswerValue#getAllPkValues()
      */
-    public String getAllIdList() throws WdkModelException, SQLException {
+    public String getAllIdList() throws WdkModelException {
         List<String[]> pkValues = answerValue.getAllIds();
         StringBuffer buffer = new StringBuffer();
         for (String[] pkValue : pkValues) {
