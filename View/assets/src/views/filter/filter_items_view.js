@@ -51,7 +51,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     updateTotal: function(data) {
-      this.$el.attr('data-total', data.length);
+      if (this.model.length > 0) {
+        this.$el.attr('data-total', data.length);
+      } else {
+        this.$el.removeAttr('data-total');
+      }
     }
   });
 
