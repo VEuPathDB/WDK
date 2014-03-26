@@ -32,6 +32,15 @@
   position: relative;
   padding: 1em 0;
 }
+.range-filter dt {
+  font-weight: bold;
+}
+.range-filter dt:after {
+  content: ':';
+}
+.range-filter .selection-total {
+  color: #666666;
+}
 .chart {
   width: 100%;
   height: 200px;
