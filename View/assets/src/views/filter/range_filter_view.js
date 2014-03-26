@@ -25,13 +25,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
       wdk.views.View.apply(this, initArgs);
     },
 
-    initialize: function(options) {
-      this.options = _.extend({
-        xAxisTitle: this.model.get('display'),
-        yAxisTitle: 'Frequency'
-      }, options);
-    },
-
     render: function() {
       var field = this.model;
       var filterService = this.filterService;
@@ -95,7 +88,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
       this.$el.html(this.template({
         field: field.attributes,
-        options: this.options,
         distribution: distribution,
         min: min,
         max: max,
