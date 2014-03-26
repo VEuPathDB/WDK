@@ -115,7 +115,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 					$("#"+tabContainerDiv).tabs("refresh");
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					alert(errorMsg);
+					handleAjaxError(errorMsg);
 				}
 			});
 		});
@@ -129,7 +129,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				createAnalysisTab(data);
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
-				alert("Error: Unable to create new step analysis of type: " + analysisName);
+				handleAjaxError("Error: Unable to create new step analysis of type: " + analysisName);
 			}
 		});
 	}
@@ -141,7 +141,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				createAnalysisTab(data);
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
-				alert("Error: Unable to create new step analysis from existing with id: " + analysisId);
+				handleAjaxError("Error: Unable to create new step analysis from existing with id: " + analysisId);
 			}
 		});
 	}
@@ -176,7 +176,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				loadResultsPane($element, analysisId);
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
-				alert("Error: Unable to retrieve step analysis json for id: " + analysisId);
+				handleAjaxError("Error: Unable to retrieve step analysis json for id: " + analysisId);
 			}
 		});
 	}
@@ -213,7 +213,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				}
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
-				alert("Error: Unable to retrieve step analysis form for analysis with id " + analysisId);
+				handleAjaxError("Error: Unable to retrieve step analysis form for analysis with id " + analysisId);
 			}
 		});
 	}
@@ -239,7 +239,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				}
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
-				alert("Error: Unable to load results for step analysis with id: " + analysisId);
+				handleAjaxError("Error: Unable to load results for step analysis with id: " + analysisId);
 			}
 		});
 	}
@@ -252,7 +252,6 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 			success: function(data, textStatus, jqXHR) {
 				if (data.status == "success") {
 					// if success, then alert user and load results pane
-					alert("Analysis started.  Will now retrieve results.");
 					loadResultsPane($(form).parents('.step-analysis-pane'), data.context.analysisId);
 				}
 				else if (data.status == "validation") {
@@ -261,7 +260,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				}
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
-				alert("Error: Unable to run step analysis");
+				handleAjaxError("Error: Unable to run step analysis");
 			}
 		});
 	}
@@ -315,9 +314,13 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				$(html).dialog({ modal:true });
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
-				alert("Error: Unable to retrieve all analysis json");
+				handleAjaxError("Error: Unable to retrieve all analysis json");
 			}
 		});
+	}
+	
+	function handleAjaxError(message) {
+		alert(message);
 	}
 	
 	ns.configureAnalysisViews = configureAnalysisViews;
