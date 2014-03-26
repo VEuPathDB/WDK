@@ -292,6 +292,9 @@
   text-align: center;
   min-height: 2em;
 }
+.filter-items[data-total]:before {
+  content: attr(data-total) " items: ";
+}
 .filter-items li {
   display: inline-block;
 }
