@@ -214,8 +214,24 @@ wdk.namespace('wdk.views.filter', function(ns) {
       filters.remove(filters.where({ field: field.get('term') }), { origin: this });
 
       if (min === null && max === null) {
-        this.plot.clearSelection(true);
         this.setSelectionTotal(null);
+      } else {
+        var filter = filters.add({
+          field: field.get('term'),
+          operation: field.get('filter'),
+          min: min,
+          max: max
+        }, { origin: this });
+        this.setSelectionTotal(filter);
+      }
+      this.doPlotSelection();
+    },
+
+    doPlotSelection: function() {
+      var min = this.$min.val() === '' ? null : this.$min.val();
+      var max = this.$max.val() === '' ? null : this.$max.val();
+      if (min === null && max === null) {
+        this.plot.clearSelection(true);
       } else {
         this.plot.setSelection({
           xaxis: {
@@ -223,15 +239,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
             to: max === null ? this.max : max
           }
         }, true);
-
-        var filter = filters.add({
-          field: field.get('term'),
-          operation: field.get('filter'),
-          min: min,
-          max: max
-        }, { origin: this });
-
-        this.setSelectionTotal(filter);
       }
     },
 
@@ -249,7 +256,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.plot.resize();
       this.plot.setupGrid();
       this.plot.draw();
-      this.handleFormChange();
+      this.doPlotSelection();
     },
 
     didDestroy: function() {
