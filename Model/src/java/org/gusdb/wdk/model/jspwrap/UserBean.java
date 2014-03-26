@@ -1123,7 +1123,7 @@ public class UserBean /* implements Serializable */{
     factory.addToBasket(user, recordClass.recordClass, ids);
   }
 
-  public void addToBasket(StepBean step) throws SQLException, WdkModelException {
+  public void addToBasket(StepBean step) throws WdkModelException {
     BasketFactory factory = user.getWdkModel().getBasketFactory();
     factory.addToBasket(user, step.step);
   }
@@ -1134,8 +1134,7 @@ public class UserBean /* implements Serializable */{
     factory.removeFromBasket(user, recordClass.recordClass, ids);
   }
 
-  public void removeFromBasket(StepBean step) throws WdkModelException,
-      SQLException {
+  public void removeFromBasket(StepBean step) throws WdkModelException {
     BasketFactory factory = user.getWdkModel().getBasketFactory();
     factory.removeFromBasket(user, step.step);
   }

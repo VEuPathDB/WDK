@@ -862,6 +862,10 @@ public abstract class AbstractEnumParam extends Param {
     return getJsonValues(user, contextValues, cache);
   }
 
+  /**
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
   public JSONObject getJsonValues(User user, Map<String, String> contextValues, EnumParamCache cache)
       throws WdkModelException, WdkUserException {
     JSONObject jsParam = new JSONObject();
