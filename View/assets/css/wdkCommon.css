@@ -543,6 +543,14 @@ ul.menubar {
   margin-left: 36%;    /*330px;*/ /*310px; */
 }
 
+.move-left .param-item > label {
+  width: 20em;
+}
+.move-left .param-control {
+  margin-left: 21em;
+  max-width: 1140px;
+}
+
 .param-control td {
   vertical-align: middle;
 }

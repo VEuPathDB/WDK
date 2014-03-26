@@ -43,14 +43,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function(options) {
       this.options = options;
-      this.listenTo(this.model, 'change', function(field, options) {
-          this.render();
-      });
-      this.listenTo(this.filterService.filters, 'add remove', function(filter, filters, opts) {
-        if (filter.get('field') === this.model.get('term') && opts.origin !== this) {
-          this.render();
-        }
-      });
     },
 
     render: function() {
