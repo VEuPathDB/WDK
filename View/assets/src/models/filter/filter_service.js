@@ -52,14 +52,15 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.data.reset(attrs.data);
       this.fields.reset(attrs.fields);
       this.filters.reset(attrs.filters);
-      this.setFieldValues();
       return { title: attrs.title || 'Items' };
     },
 
     initialize: function() {
       var debounceApplyFilters = _.debounce(this.applyFilters, 100);
       this.listenTo(this.filters, 'add remove reset', debounceApplyFilters);
+      this.listenTo(this.data, 'reset', this.setFieldValues);
       this.listenTo(this.filteredData, 'reset', this.setFieldFilteredValues);
+      this.setFieldValues();
       this.applyFilters();
     },
 
