@@ -552,7 +552,7 @@ ul.menubar {
 }
 
 .param-control td {
-  vertical-align: middle;
+  vertical-align: top;
 }
 
 .param-control .jstree-classic.jstree-focused {
@@ -601,6 +601,7 @@ ul.menubar {
 .checkbox-tree li a span {
   white-space:normal;
 }
+
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1501,6 +1502,10 @@ span.marker a:link, span.marker a:visited {
 .help_div {
 	background-color: lightYellow;
 	border: 1px solid black;
+}
+
+.disabled {
+  color:#999999;
 }
 
 .onload-function {
