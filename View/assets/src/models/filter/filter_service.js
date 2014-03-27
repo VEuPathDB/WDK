@@ -48,14 +48,12 @@ wdk.namespace('wdk.models.filter', function(ns) {
       Backbone.Model.apply(this, arguments);
     },
 
-    parse: function(data, options) {
-      var spec = data.spec;
-      var filters = data.filters;
-      this.data.reset(spec.data);
-      this.fields.reset(spec.fields);
-      this.filters.reset(filters);
+    parse: function(attrs, options) {
+      this.data.reset(attrs.data);
+      this.fields.reset(attrs.fields);
+      this.filters.reset(attrs.filters);
       this.setFieldValues();
-      return { title: spec.title };
+      return { title: attrs.title || 'Items' };
     },
 
     initialize: function() {

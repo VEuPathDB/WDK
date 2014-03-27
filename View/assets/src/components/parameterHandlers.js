@@ -178,15 +178,13 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var filters;
       try {
         filters = JSON.parse(input.val()).filters;
+        _.extend(spec, { filters: filters });
       } catch (e) {
         console.warn(e);
       }
 
       // instantiate the filter service
-      var filterService = new wdk.models.filter.LocalFilterService({
-        spec: spec,
-        filters: filters
-      }, {
+      var filterService = new wdk.models.filter.LocalFilterService(spec, {
         parse: true,
         root: 'metadata'
       });
