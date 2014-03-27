@@ -174,7 +174,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
       parserName = ListDatasetParser.NAME; // use the list parser.
     }
 
-    logger.debug("dataset data: '" + data + "'");
+    logger.debug("dataset parser: " + parserName + ", data: '" + data + "'");
     if (data == null) {
       if (!param.isAllowEmpty())
         throw new WdkUserException("The dataset param '" + param.getPrompt() + "' does't allow empty value.");
