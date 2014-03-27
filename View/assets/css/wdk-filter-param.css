@@ -191,6 +191,9 @@
   margin: .4em 0;
   height: 1em;
 }
+.membership-filter .member td {
+  vertical-align: middle;
+}
 .membership-filter input[name="value"] {
   margin-right: .4em;
 }
