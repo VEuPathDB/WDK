@@ -168,19 +168,21 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var name = $node.data('name');
       var input = $node.find('input');
 
+      // get previous values
+      try {
+        var previousValue = JSON.parse(input.val());
+      } catch (e) {
+        console.warn(e);
+      }
+
       // parse data from <script>
       var jsonContainer = $(node).find('script[type="application/json"][id="' + dataId + '"]');
       var spec = JSON.parse(jsonContainer.html());
       spec = parseFilterData(spec);
       _.extend(spec, { title: name });
 
-      // apply any previous filters
-      var filters;
-      try {
-        filters = JSON.parse(input.val()).filters;
-        _.extend(spec, { filters: filters });
-      } catch (e) {
-        console.warn(e);
+      if (previousValue) {
+        _.extend(spec, { filters: previousValue.filters });
       }
 
       // instantiate the filter service
@@ -189,6 +191,15 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         root: 'metadata'
       });
 
+      // set ignore: true for filteredData not in previousValues.values
+      if (previousValue) {
+        filterService.filteredData.forEach(function(d) {
+          if (previousValue.values.indexOf(d.id) === -1) {
+            d.set('ignored', true);
+          }
+        });
+      }
+
       // create and render views
       var itemsView = new wdk.views.filter.FilterItemsView(filterService, { model: filterService.filters });
       itemsView.render();
@@ -196,9 +207,11 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       view.render(); //.collapse(true);
 
       // listen for change to filteredData and update input value
-      filterService.filteredData.on('reset', function(filteredData) {
+      filterService.filteredData.on('reset change', function() {
+        var values = filterService.filteredData.where({ ignored: false })
+          .map(function(d) { return d.get('term') });
         var value = {
-          values: filteredData.pluck('term'),
+          values: values,
           filters: filterService.filters
         };
         input.val(JSON.stringify(value));
