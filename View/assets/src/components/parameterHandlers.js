@@ -171,6 +171,11 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       // get previous values
       try {
         var previousValue = JSON.parse(input.val());
+        if (!( _.isArray(previousValue.filters) &&
+               _.isArray(previousValue.values)  &&
+               _.isArray(previousValue.ignored) )) {
+          throw new Error('Previous value is malformed.');
+        }
       } catch (e) {
         console.warn(e);
       }
@@ -193,10 +198,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       // set ignore: true for filteredData not in previousValues.values
       if (previousValue) {
-        filterService.filteredData.forEach(function(d) {
-          if (previousValue.values.indexOf(d.id) === -1) {
-            d.set('ignored', true);
-          }
+        previousValue.ignored.forEach(function(id) {
+          filterService.filteredData.get(id).set('ignored', true);
         });
       }
 
@@ -210,8 +213,11 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       filterService.filteredData.on('reset change', function() {
         var values = filterService.filteredData.where({ ignored: false })
           .map(function(d) { return d.get('term') });
+        var ignored = filterService.filteredData.where({ ignored: true })
+          .map(function(d) { return d.get('term') });
         var value = {
           values: values,
+          ignored: ignored,
           filters: filterService.filters
         };
         input.val(JSON.stringify(value));
