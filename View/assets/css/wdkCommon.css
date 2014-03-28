@@ -586,6 +586,10 @@ ul.menubar {
     clear: left;
 }
 
+.param[data-type="type-ahead"] > div:first-child {
+  line-height: 2;
+}
+
 .params .invalid-params { padding:10px 5px 5px 100px; font-weight: bold; }
 .params .invalid-params ul { list-style:disc outside none; margin:2px 2px 2px 15px; }
 .params .invalid-params li { color:red; }
