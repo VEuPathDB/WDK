@@ -1,7 +1,7 @@
 <table class="results-table" width="100%">
   <thead>
     <tr>
-      <th class="name">Name</th>
+      <th class="display">Name</th>
       {{#each fields}}
         <th class="{{term}}">{{display}}</td>
       {{/each}}
@@ -9,13 +9,5 @@
   </thead>
 
   <tbody>
-  {{#each filteredData}}
-    <tr>
-      <td class="name">{{display}}</td>
-      {{#each ../fields}}
-        <td class="{{term}}">{{property term ../metadata}}</td>
-      {{/each}}
-    </tr>
-  {{/each}}
   </tbody>
 </table>

@@ -7,6 +7,17 @@ wdk.namespace('wdk.models.filter', function(ns) {
   var Filters = wdk.models.filter.Filters;
   var Fields = wdk.models.filter.Fields;
 
+  var Datum = Backbone.Model.extend({
+    idAttribute: 'term',
+    defaults: {
+      ignored: false
+    }
+  });
+
+  var Data = Backbone.Collection.extend({
+    model: Datum
+  });
+
   /**
    * Base class for FilterService classes.
    *
@@ -40,8 +51,8 @@ wdk.namespace('wdk.models.filter', function(ns) {
     filters: null,
 
     constructor: function() {
-      this.data = new Backbone.Collection();
-      this.filteredData = new Backbone.Collection();
+      this.data = new Data();
+      this.filteredData = new Data();
       this.filters = new Filters();
       this.fields = new Fields();
 

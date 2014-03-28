@@ -1,6 +1,42 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
+
+  var ResultsItemView = wdk.views.View.extend({
+
+    /**
+     * Fields to display
+     */
+    fields: null,
+
+    template: wdk.templates['filter/results_item.handlebars'],
+
+    tagName: 'tr',
+
+    events: {
+      'change input:checkbox': 'handleCheckboxChange'
+    },
+
+    initialize: function(options) {
+      this.fields = options.fields;
+    },
+
+    render: function() {
+      this.$el.html(this.template({
+        item: this.model.toJSON(),
+        fields: this.fields.toJSON()
+      }));
+      this.$el.toggleClass('muted', this.model.get('ignored'));
+    },
+
+    handleCheckboxChange: function(e) {
+      this.model.set('ignored', !e.currentTarget.checked);
+      this.$el.toggleClass('muted', !e.currentTarget.checked);
+    }
+
+  });
+
+
   ns.ResultsView = wdk.views.View.extend({
 
     events: {
@@ -26,10 +62,15 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
+      var view = this;
       this.$el.html(this.template({
-        fields: this.model.fields.toJSON(),
-        filteredData: this.model.filteredData.toJSON()
+        fields: this.model.fields.toJSON()
       }));
+      this.model.filteredData.forEach(function(item) {
+        var itemView = new ResultsItemView({ model: item, fields: view.model.fields });
+        itemView.render();
+        view.$('tbody').append(itemView.el);
+      });
       this.dataTable = this.$('.results-table').wdkDataTable({ bFilter: false }).dataTable();
 
       $(window).on('resize', _.debounce(this.resizeTable.bind(this), 100));

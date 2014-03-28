@@ -1,6 +1,9 @@
 .filter-param h3 {
   margin: auto;
 }
+.filter-param .muted {
+  color: #9f9f9f;
+}
 .filter-param .hidden {
   display: none;
 }
@@ -279,8 +282,8 @@
 .overview dd {
   padding-right: .8em;
 }
+/*
 .filters, .results {
-  /*
   margin: auto;
   border: 1px solid #aaa;
   width: 110%;
@@ -288,8 +291,8 @@
   top: 1em;
   margin-bottom: 1em;
   position: relative;
-  */
 }
+*/
 #applied-filters {
   text-align: center;
   min-height: 2em;
