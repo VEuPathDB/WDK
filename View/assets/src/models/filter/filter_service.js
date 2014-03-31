@@ -7,6 +7,17 @@ wdk.namespace('wdk.models.filter', function(ns) {
   var Filters = wdk.models.filter.Filters;
   var Fields = wdk.models.filter.Fields;
 
+  var Datum = Backbone.Model.extend({
+    idAttribute: 'term',
+    defaults: {
+      ignored: false
+    }
+  });
+
+  var Data = Backbone.Collection.extend({
+    model: Datum
+  });
+
   /**
    * Base class for FilterService classes.
    *
@@ -40,28 +51,27 @@ wdk.namespace('wdk.models.filter', function(ns) {
     filters: null,
 
     constructor: function() {
-      this.data = new Backbone.Collection();
-      this.filteredData = new Backbone.Collection();
+      this.data = new Data();
+      this.filteredData = new Data();
       this.filters = new Filters();
       this.fields = new Fields();
 
       Backbone.Model.apply(this, arguments);
     },
 
-    parse: function(data, options) {
-      var spec = data.spec;
-      var filters = data.filters;
-      this.data.reset(spec.data);
-      this.fields.reset(spec.fields);
-      this.filters.reset(filters);
-      this.setFieldValues();
-      return { title: spec.title };
+    parse: function(attrs, options) {
+      this.data.reset(attrs.data);
+      this.fields.reset(attrs.fields);
+      this.filters.reset(attrs.filters);
+      return { title: attrs.title || 'Items' };
     },
 
     initialize: function() {
       var debounceApplyFilters = _.debounce(this.applyFilters, 100);
       this.listenTo(this.filters, 'add remove reset', debounceApplyFilters);
+      this.listenTo(this.data, 'reset', this.setFieldValues);
       this.listenTo(this.filteredData, 'reset', this.setFieldFilteredValues);
+      this.setFieldValues();
       this.applyFilters();
     },
 

@@ -16,10 +16,11 @@
     <input name="max" type="text" size="6" placeholder="{{max}}"/>
     <!--<img src="assets/wdk/images/question.png"
     title="Enter a minimum and/or maximum value here, or select a region of the chart below"/>-->
+    <span class="selection-total"></span>
   </p>
 
   <div class="chart"></div>
-  <div class="chart-title x-axis">{{options.xAxisTitle}}</div>
-  <div class="chart-title y-axis">{{options.yAxisTitle}}</div>
+  <div class="chart-title x-axis">{{field.display}} ({{field.units}})</div>
+  <div class="chart-title y-axis">Frequency</div>
   <p>{{field.description}}</p>
 </div>

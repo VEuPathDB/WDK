@@ -25,13 +25,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
       wdk.views.View.apply(this, initArgs);
     },
 
-    initialize: function(options) {
-      this.options = _.extend({
-        xAxisTitle: this.model.get('display'),
-        yAxisTitle: 'Frequency'
-      }, options);
-    },
-
     render: function() {
       var field = this.model;
       var filterService = this.filterService;
@@ -95,7 +88,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
       this.$el.html(this.template({
         field: field.attributes,
-        options: this.options,
         distribution: distribution,
         min: min,
         max: max,
@@ -103,9 +95,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }));
 
       this.plot = wdk.$.plot(this.$('.chart'), seriesData, plotOptions);
-
       this.$min = this.$('input[name="min"]');
       this.$max = this.$('input[name="max"]');
+      this.setSelectionTotal(filter);
 
       if (filterValues) {
         this.$min.val(filterValues.min);
@@ -167,21 +159,25 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
       this.$min.val(min);
       this.$max.val(max);
+      this.setSelectionTotal(null);
     },
 
     handlePlotSelected: function(event, ranges) {
-      var min = ranges.xaxis.from.toFixed(2);
-      var max = ranges.xaxis.to.toFixed(2);
+      var min = Number(ranges.xaxis.from.toFixed(2));
+      var max = Number(ranges.xaxis.to.toFixed(2));
       var filters = this.filterService.filters;
       var field = this.model;
 
       filters.remove(filters.where({ field: field.get('term') }), { origin: this });
-      filters.add({
+
+      var filter = filters.add({
         field: field.get('term'),
         operation: field.get('filter'),
         min: min,
         max: max
       }, { origin: this });
+
+      this.setSelectionTotal(filter);
     },
 
     handlePlotUnselected: function(event) {
@@ -190,6 +186,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
       this.$min.val(null);
       this.$max.val(null);
+
+      this.setSelectionTotal(null);
 
       filters.remove(filters.where({ field: field.get('term') }), { origin: this });
     },
@@ -208,6 +206,23 @@ wdk.namespace('wdk.views.filter', function(ns) {
       filters.remove(filters.where({ field: field.get('term') }), { origin: this });
 
       if (min === null && max === null) {
+        this.setSelectionTotal(null);
+      } else {
+        var filter = filters.add({
+          field: field.get('term'),
+          operation: field.get('filter'),
+          min: min,
+          max: max
+        }, { origin: this });
+        this.setSelectionTotal(filter);
+      }
+      this.doPlotSelection();
+    },
+
+    doPlotSelection: function() {
+      var min = this.$min.val() === '' ? null : this.$min.val();
+      var max = this.$max.val() === '' ? null : this.$max.val();
+      if (min === null && max === null) {
         this.plot.clearSelection(true);
       } else {
         this.plot.setSelection({
@@ -216,13 +231,16 @@ wdk.namespace('wdk.views.filter', function(ns) {
             to: max === null ? this.max : max
           }
         }, true);
+      }
+    },
 
-        filters.add({
-          field: field.get('term'),
-          operation: field.get('filter'),
-          min: min,
-          max: max
-        }, { origin: this });
+    setSelectionTotal: function(filter) {
+      if (filter) {
+        var selectionTotal = this.filterService.applyRangeFilter(filter,
+          this.filterService.data).length;
+        this.$('.selection-total').html('(' + selectionTotal + ' items selected)');
+      } else {
+        this.$('.selection-total').empty();
       }
     },
 
@@ -230,7 +248,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.plot.resize();
       this.plot.setupGrid();
       this.plot.draw();
-      this.handleFormChange();
+      this.doPlotSelection();
     },
 
     didDestroy: function() {
