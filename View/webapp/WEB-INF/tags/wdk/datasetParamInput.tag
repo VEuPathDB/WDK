@@ -30,29 +30,33 @@ Provides form input element for a given DatasetParam.
 <c:set var="noAction" value="${requestScope.action == null || requestScope.action == ''}" />
 
 <div id="${qp.name}" class="param datasetParam"
-     data-controller="wdk.component.datasetParam.init">
+     data-controller="wdk.components.datasetParam.init">
 
 <table id="${qp.name}">
 
   <c:if test="${dataset != null || defaultType != 'basket'}"> 
     <!-- display an input box for user to enter data -->
-    <tr>
+    <tr class="subparam">
         <td align="left" valign="top" nowrap>
             <input type="radio" name="${qp.typeSubParam}" class="type" value="data" ${dataChecked} />
-            Enter list:&nbsp;
+            Enter a list of ids or text:&nbsp;
         </td>
         <c:set var="datasetValues">
             <c:choose>
                 <c:when test="${dataset != null}">
                     ${dataset.content}
                 </c:when>
+                <c:when test="${requestScope[qp.dataSubParam] != null}">
+                    ${requestScope[qp.dataSubParam]}
+                </c:when>
                 <c:otherwise>
                     ${qP.default}
                 </c:otherwise>
             </c:choose>
         </c:set>
-        <td align="left">
+        <td>
             <textarea name="${qp.dataSubParam}" class="data" rows="5" cols="30">${datasetValues}</textarea>
+            <div class="type-ahead-help">Each id must be in a new line; if the input is of a supported format listed below, please make sure to choose that format.</div>
         </td>
     </tr>
   </c:if>
@@ -60,14 +64,14 @@ Provides form input element for a given DatasetParam.
   
     <c:if test="${defaultType ne 'basket' and noAction}">
         <!-- display an input box and upload file button -->
-        <tr class="dataset-file">
-            <td align="left" valign="top">
+        <tr class="subparam">
+            <td valign="top">
                 <input type="radio" name="${qp.typeSubParam}" class="type" value="file" ${fileChecked} />
-               Upload from a <i>text</i> file:&nbsp;
+               Upload a text file:&nbsp;
             </td>
-            <td align="left">
+            <td>
                 <html:file styleId="${qa.fileSubParam}" styleClass="file" property="value(${qa.fileSubParam})"/>
-		<div class="type-ahead-help">Maximum size: 10MB.</div>
+		<div class="type-ahead-help">Maximum size: 10MB. The file can have a list of ids, or in the formats that is listed below. Please make sure to choose that format.</div>
             </td>
         </tr>
     </c:if>
@@ -75,12 +79,15 @@ Provides form input element for a given DatasetParam.
     
     <!-- display options for the parser -->
   <c:set var="parsers" value="${qP.parsers}" />
+<%--
   <c:choose>
    <c:when test="${fn:length(parsers) gt 1}">
-    <tr class="dataset-parsers">
-      <td colspan="2">
-       Choose a format for the input list, or uploaded file:
-       <c:forEach items="${parsers}" var="parser">
+--%>
+    <tr class="parsers">
+      <td> </td>
+      <td>
+        Choose a format for the input:
+        <c:forEach items="${parsers}" var="parser">
           <c:set var="checked">
             <c:if test="${(dataset != null && parser.name eq dataset.parserName) || (dataset eq null && parser.name eq 'list')}">checked="checked"</c:if>
           </c:set>
@@ -91,6 +98,7 @@ Provides form input element for a given DatasetParam.
         </c:forEach>
       </td>
     </tr>
+<%--
    </c:when>
    <c:otherwise>
      <c:forEach items="${parsers}" var="parser">
@@ -98,28 +106,40 @@ Provides form input element for a given DatasetParam.
      </c:forEach>
    </c:otherwise>
   </c:choose>
+--%>
 
     <c:if test="${recordClass !=  null}">
       <!-- display option to use basket snapshot -->
       <c:if test="${recordClass.useBasket}">
         <c:set var="basketCount" value="${qp.basketCount}" />
         <c:set var="disabled"><c:if test="${basketCount == 0}">disabled="disabled"</c:if></c:set>
-        <tr>
-          <td colspan="2" align="left" valign="top" nowrap>
+        <tr class="subparam">
+          <td valign="top" nowrap>
             <input type="radio" name="${qp.typeSubParam}" class="type" value="basket" ${basketChecked} ${disabled}/>
-            Copy ${recordClass.displayNamePlural} from My Basket (${basketCount} ${recordClass.displayNamePlural})&nbsp;
+            Copy from My Basket:&nbsp;
+          </td>
+          <td>
+             ${basketCount} ${recordClass.displayNamePlural} will be copied from your Basket.
           </td>
         </tr>
         
         <!-- display option to use strategy snapshot -->
         <c:set var="strategies" value="${qp.strategies}" />
-        <c:if test="${fn:length(strategies) gt 1}">
-          <tr>
-              <td colspan="2" align="left" valign="top" nowrap>
-                <input type="radio" name="${qp.typeSubParam}" class="type" value="strategy" ${strategyChecked}
-                       onclick="chooseType('${pNam}', 'strategy');" />
+        <c:set var="stratCount" value="${fn:length(strategies)}" />
+        <c:set var="currentStrategy" value="${requestScope.strategy}" />
+        <c:set var="disabled">
+          <c:if test="${(currentStrategy == null && stratCount lt 1) || (currentStrategy != null && stratCount lt 2)}">
+            disabled="disabled"
+          </c:if>
+        </c:set>
+        <tr class="subparam">
+              <td valign="top" nowrap>
+                <input type="radio" name="${qp.typeSubParam}" class="type" value="strategy" ${strategyChecked} ${disabled} />
+                Copy from My Strategy:&nbsp;
+              </td>
+              <td>
                 <c:set var="currentStrategy" value="${requestScope.strategy}" />
-                Copy from ${recordClass.displayName} strategy:
+                Choose a ${recordClass.displayName} strategy:
                 <select name="${qp.strategySubParam}" class="strategy">
                   <c:forEach items="${strategies}" var="strategy">
                     <c:if test="${strategy.strategyId != currentStrategy}" >
@@ -128,8 +148,7 @@ Provides form input element for a given DatasetParam.
                   </c:forEach>
                 </select>
               </td>
-          </tr>
-        </c:if>
+        </tr>
       </c:if>
     
     </c:if>

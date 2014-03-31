@@ -5,11 +5,12 @@ describe('wdk.models.filter', function() {
     var filterService, field;
 
     beforeEach(function() {
-      filterService = new wdk.models.filter.FilterService;
-      field = new Backbone.Model({
-        term: 'age',
-        display: 'Age',
-        filter: 'range'
+      filterService = new wdk.models.filter.FilterService({
+        fields: [{
+          term: 'age',
+          display: 'Age',
+          filter: 'range'
+        }]
       });
     });
 
@@ -18,19 +19,19 @@ describe('wdk.models.filter', function() {
     });
 
     it('should add filters', function() {
-      var filter = filterService.filters.add({ field: field, operation: field.get('filter'), min: 10, max: 20 });
+      var filter = filterService.filters.add({ field: 'age', operation: 'range', min: 10, max: 20 });
       expect(filterService.filters.first()).to.equal(filter);
     });
 
     it('should remove filters', function() {
-      var filter = filterService.filters.add({ field: field, operation: field.get('filter'), min: 10, max: 20 });
+      var filter = filterService.filters.add({ field: 'age', operation: 'range', min: 10, max: 20 });
       filterService.filters.remove(filter);
       expect(filterService.filters.length).to.equal(0);
     });
 
     it('should describe filters', function() {
-      var filter = filterService.filters.add({ field: field, operation: field.get('filter'), min: 10, max: 20 });
-      expect(filter.toString()).to.equal('Age between 10 and 20');
+      var filter = filterService.filters.add({ field: 'age', operation: 'range', min: 10, max: 20 });
+      expect(filter.condition()).to.equal('between 10 and 20');
     });
 
   });
@@ -194,7 +195,7 @@ describe('wdk.models.filter', function() {
       });
 
       filterService.filters.add({
-        field: field,
+        field: field.get('term'),
         operation: field.get('filter'),
         values: ['human']
       });
@@ -219,7 +220,7 @@ describe('wdk.models.filter', function() {
       });
 
       filterService.filters.add({
-        field: field,
+        field: field.get('term'),
         operation: field.get('filter'),
         values: ['human', 'fox']
       });
@@ -242,7 +243,7 @@ describe('wdk.models.filter', function() {
       });
 
       filterService.filters.add({
-        field: field,
+        field: field.get('term'),
         operation: 'range',
         min: 10,
         max: 20
@@ -266,7 +267,7 @@ describe('wdk.models.filter', function() {
       });
 
       filterService.filters.add({
-        field: field,
+        field: field.get('term'),
         operation: 'range',
         min: 10
       });
@@ -289,7 +290,7 @@ describe('wdk.models.filter', function() {
       });
 
       filterService.filters.add({
-        field: field,
+        field: field.get('term'),
         operation: 'range',
         max: 20
       });

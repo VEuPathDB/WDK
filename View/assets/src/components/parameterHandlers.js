@@ -46,11 +46,12 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   function initDependentParamHandlers(isEdit, element) {
     var dependedParams = {};
 
-    element.find('div.dependentParam').each(function() {
-      $('input, select', this).attr('disabled', true);
-      var name = $(this).attr('name');
+    element.find('div.dependentParam').each(function(i, node) {
+      var $node = $(node);
+      $node.find('input, select').prop('disabled', true);
+      var name = $node.attr('name');
       // the dependson may contain a comma separated list of param names the current param depends on
-      var dependedNames = $(this).attr('dependson').split(",");
+      var dependedNames = $node.attr('dependson').split(",");
       for (var i=0; i < dependedNames.length; i++) {
           var dependedName = dependedNames[i];
           var dependentList = dependedParams[dependedName] ? dependedParams[dependedName] : [];
@@ -58,7 +59,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           dependedParams[dependedName] = dependentList;
       }
 
-      $('input, select', this).attr('disabled',false);
+      $node.find('input, select').prop('disabled',false);
     });
 
       // register change event to dependedParam only once
@@ -96,31 +97,22 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
               });
           });
 
-          if (dependedParam.has('input.typeAhead').length > 0) {
+          if (dependedParam.is('[data-type="type-ahead"]').length > 0) {
               dependedParam.change();
           }
       }
 
     //If revising, store all of the old param values before triggering the depended 
-    //   param's change function.
+    //   param's change function. Only for non-typeahead params
     if (isEdit) {
       for (var name in dependedParams) {
-        var input = element.find("input.typeAhead[name='value(" + name + ")']");
-        if (input.length == 0) {
-          input = element.find("div.dependentParam[name='" + name + "']").find("select");
-          if (input.length > 0) {
-            // If this is a select, there's only one value
-            oldValues[name] = input.val();
-          } else {
-            // Otherwise, we have to know which option(s) are checked
-            var allVals = [];
-            element.find("div.dependentParam[name='" + name + "']").find("input:checked")
-                .each(function() {
-                  allVals.push($(this).val());
-                });
-            oldValues[name] = allVals;
-          }
-        }
+        var vals = [];
+        element.find('.param[name="' + name + '"]')
+          .not('[data-type="type-ahead"]')
+           .find('[name$="(' + name + ')"]').each(function(i, control) {
+              vals.push(control.value);
+          });
+          oldValues[name] = vals;
       }
     }
   }
@@ -128,17 +120,18 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   //==============================================================================
   function initTypeAhead(isEdit, element) {
 
-    element.find("input:hidden.typeAhead").each(function() {
-      var questionName = $(this).closest("form").find("input:hidden[name=questionFullName]").val();
-      var paramName = getParamName($(this).attr('name'));
-      element.find("#" + paramName + "_display .input").prop('disabled',true);
+    element.find('[data-type="type-ahead"]').each(function(i, node) {
+      var $node = $(node);
+      var $input = $node.find('input');
+      var questionName = element.closest('form').find('input[name="questionFullName"]').val();
+      var paramName = $node.attr('name');
       if (isEdit) {
-        oldValues[paramName] = $(this).val();
+        oldValues[paramName] = $input.val();
       }
-      if ($(this).parent('div').hasClass('dependentParam')) {
+      if ($node.hasClass('dependentParam')) {
         updateDependentParam(paramName, element);
       } else {
-        element.find("#" + paramName + "_display .input").val('Loading options...');
+        $node.find("#" + paramName + "_display").html('Loading options...');
         var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
         $.ajax({
           url: sendReqUrl,
@@ -168,28 +161,40 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var name = $node.data('name');
       var input = $node.find('input');
 
+      // get previous values
+      try {
+        var previousValue = JSON.parse(input.val());
+        if (!( _.isArray(previousValue.filters) &&
+               _.isArray(previousValue.values)  &&
+               _.isArray(previousValue.ignored) )) {
+          throw new Error('Previous value is malformed.');
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+
       // parse data from <script>
       var jsonContainer = $(node).find('script[type="application/json"][id="' + dataId + '"]');
       var spec = JSON.parse(jsonContainer.html());
       spec = parseFilterData(spec);
       _.extend(spec, { title: name });
 
-      // apply any previous filters
-      var filters;
-      try {
-        filters = JSON.parse(input.val()).filters;
-      } catch (e) {
-        console.warn(e);
+      if (previousValue) {
+        _.extend(spec, { filters: previousValue.filters });
       }
 
       // instantiate the filter service
-      var filterService = new wdk.models.filter.LocalFilterService({
-        spec: spec,
-        filters: filters
-      }, {
+      var filterService = new wdk.models.filter.LocalFilterService(spec, {
         parse: true,
         root: 'metadata'
       });
+
+      // set ignore: true for filteredData not in previousValues.values
+      if (previousValue) {
+        previousValue.ignored.forEach(function(id) {
+          filterService.filteredData.get(id).set('ignored', true);
+        });
+      }
 
       // create and render views
       var itemsView = new wdk.views.filter.FilterItemsView(filterService, { model: filterService.filters });
@@ -198,9 +203,14 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       view.render(); //.collapse(true);
 
       // listen for change to filteredData and update input value
-      filterService.filteredData.on('reset', function(filteredData) {
+      filterService.filteredData.on('reset change', function() {
+        var values = filterService.filteredData.where({ ignored: false })
+          .map(function(d) { return d.get('term') });
+        var ignored = filterService.filteredData.where({ ignored: true })
+          .map(function(d) { return d.get('term') });
         var value = {
-          values: filteredData.pluck('term'),
+          values: values,
+          ignored: ignored,
           filters: filterService.filters
         };
         input.val(JSON.stringify(value));
@@ -586,15 +596,14 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
           '&name=' + paramName + '&dependedValue=' + JSON.stringify(dependedValues);
 
-      if ($('input.typeAhead',dependentParam).length > 0) {
+      if (dependentParam.is('[data-type="type-ahead"]')) {
         sendReqUrl = sendReqUrl + '&xml=true';
-        element.find("#" + paramName + "_display .input").prop('disabled',true)
-            .val('Loading options...');
+        element.find("#" + paramName + "_display").html('Loading options...');
         return $.ajax({
           url: sendReqUrl,
           dataType: "xml",
           success: function(data) {
-            $('input',dependentParam).removeAttr('disabled');
+            dependentParam.find('input').removeAttr('disabled');
             element.find(".param[name='" + paramName + "']").attr("ready", "");
             // createAutoComplete(data, paramName);
             createFilteredSelect(data, paramName, element);
@@ -607,7 +616,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           data: {},
           dataType: "html",
           success: function(data) {
-            var newContent = $("div.param, div.param-multiPick",data);
+            var newContent = $(".param",data);
             if (newContent.length > 0) {
               dependentParam.html(newContent.html());
             } else {
@@ -639,38 +648,21 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   //==============================================================================
   function mapTypeAheads(element) {
-    element.find("input:hidden.typeAhead").each(function() {
-      var paramName,
-          value,
-          newValue,
-          select,
-          values,
-          isMulti = $(this).data('max-selectable') >= 2;
+    element.find('.param[data-type="type-ahead"]').each(function(i, param) {
+      var $param = $(param);
+      var paramName = $param.attr('name');
+      var $select = $param.find('#' + paramName + '_display').find('select');
+      var values;
 
-      paramName = getParamName($(this).attr('name'));
-      value = element.find('#' + paramName + '_display .input').val();
-
-      // old way
-      // if (isMulti || true) {
-      //   // split on comma and map
-      //   value = value.split(/\s*\n\s*/).map(function(v) {
-      //     return termDisplayMap[paramName][v] || v;
-      //   }).join(', ');
-      // } else {
-      //   value = displayTermMap[paramName][value] || value;
-      // }
-      // $(this).val(value);
-
-      // new way
-      var select = element.find('#' + paramName + '_display').find('select');
-      if (select.data('chosen-off')) {
+      if ($select.data('chosen-off')) {
         // get values from input
-        values = select.next().find('input').val();
+        values = $select.next().find('input').val();
       } else {
-        values = select.val();
-        values = (values instanceof Array) ? values.join(', ') : values;
+        values = $select.val();
+        values = _.isArray(values) ? values.join(', ') : values;
       }
-      $(this).val(values);
+
+      $param.find('input[name="value(' + paramName + ')"]').val(values);
     });
   }
 

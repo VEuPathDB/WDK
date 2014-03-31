@@ -1,6 +1,9 @@
 .filter-param h3 {
   margin: auto;
 }
+.filter-param .muted {
+  color: #9f9f9f;
+}
 .filter-param .hidden {
   display: none;
 }
@@ -32,6 +35,15 @@
   position: relative;
   padding: 1em 0;
 }
+.range-filter dt {
+  font-weight: bold;
+}
+.range-filter dt:after {
+  content: ':';
+}
+.range-filter .selection-total {
+  color: #666666;
+}
 .chart {
   width: 100%;
   height: 200px;
@@ -61,7 +73,6 @@
   -moz-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);
   -o-transform: rotate(-90deg);
-  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
   transform: rotate(-90deg);
 }
 .field-list, .field-detail {
@@ -182,6 +193,9 @@
   margin: .4em 0;
   height: 1em;
 }
+.membership-filter .member td {
+  vertical-align: middle;
+}
 .membership-filter input[name="value"] {
   margin-right: .4em;
 }
@@ -268,8 +282,8 @@
 .overview dd {
   padding-right: .8em;
 }
+/*
 .filters, .results {
-  /*
   margin: auto;
   border: 1px solid #aaa;
   width: 110%;
@@ -277,11 +291,14 @@
   top: 1em;
   margin-bottom: 1em;
   position: relative;
-  */
 }
+*/
 #applied-filters {
   text-align: center;
   min-height: 2em;
+}
+.filter-items[data-total]:before {
+  content: attr(data-total) " items: ";
 }
 .filter-items li {
   display: inline-block;
