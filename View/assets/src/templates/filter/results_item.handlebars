@@ -1,0 +1,9 @@
+<td class="display">
+  <label>
+    <input type="checkbox" value="{{item.term}}" {{#unless item.ignored }}checked{{/unless}}/>
+    {{item.display}}
+  </label>
+</td>
+{{#each fields}}
+<td class="{{term}}">{{property term ../item/metadata}}</td>
+{{/each}}
