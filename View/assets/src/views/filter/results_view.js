@@ -14,7 +14,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     tagName: 'tr',
 
     events: {
-      'change input:checkbox': 'handleCheckboxChange'
+      'click [data-action="toggleIgnored"]': 'handleToggleIgnore'
     },
 
     initialize: function(options) {
@@ -26,12 +26,15 @@ wdk.namespace('wdk.views.filter', function(ns) {
         item: this.model.toJSON(),
         fields: this.fields.toJSON()
       }));
+      this.$('.button').button();
       this.$el.toggleClass('muted', this.model.get('ignored'));
     },
 
-    handleCheckboxChange: function(e) {
-      this.model.set('ignored', !e.currentTarget.checked);
-      this.$el.toggleClass('muted', !e.currentTarget.checked);
+    handleToggleIgnore: function(e) {
+      e.preventDefault();
+      var ignored = !this.model.get('ignored');
+      this.model.set('ignored', ignored);
+      this.render();
     }
 
   });
@@ -71,7 +74,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
         itemView.render();
         view.$('tbody').append(itemView.el);
       });
-      this.dataTable = this.$('.results-table').wdkDataTable({ bFilter: false }).dataTable();
+
+      var tableConfig = this.generateTableConfig();
+      this.dataTable = this.$('.results-table').wdkDataTable(tableConfig).dataTable();
 
       $(window).on('resize', _.debounce(this.resizeTable.bind(this), 100));
 
@@ -91,6 +96,19 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     resizeTable: function() {
       this.dataTable.fnDraw();
+    },
+
+    generateTableConfig: function() {
+      // allow all columns to be sortable, except last column
+      var columns = _.range(this.model.fields.length + 1).map(function() {
+        return null;
+      });
+      columns.push({ bSortable: false });
+
+      return {
+        bFilter: false,
+        aoColumns: columns
+      };
     }
 
   });
