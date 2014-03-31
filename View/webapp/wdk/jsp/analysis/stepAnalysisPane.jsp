@@ -9,11 +9,12 @@
       <div class="step-analysis-pane" data-analysis-id="${analysisId}"
            data-controller="wdk.stepAnalysis.loadDisplaySubpanes">
         <div>
-          <h2 style="float:left">AnalysisConfiguration</h2>
+          <h2 style="float:left">Analysis Configuration</h2>
           <span style="float:right">
            [ <a href="javascript:wdk.stepAnalysis.renameStepAnalysis(${analysisId})">Rename This Tab</a> |
              <a href="javascript:wdk.stepAnalysis.copyStepAnalysis(${analysisId})">Copy This Configuration</a> ]
           </span>
+          <div style="clear:both"><jsp:text/></div>
         </div>
         <div class="step-analysis-subpane">
           <div class="step-analysis-errors-pane">
@@ -22,6 +23,9 @@
           <div class="step-analysis-form-pane">
             <jsp:text/>
           </div>
+        </div>
+        <div>
+          <h2>Analysis Results</h2>
         </div>
         <div class="step-analysis-subpane step-analysis-results-pane">
           <jsp:text/>
