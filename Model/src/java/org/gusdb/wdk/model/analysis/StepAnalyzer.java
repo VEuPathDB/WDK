@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.analysis;
 
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -68,10 +67,10 @@ public interface StepAnalyzer {
    * before params are passed in via <code>setFormParams()</code>.
    * 
    * @param formParams form parameter values to be validated
-   * @return a list of errors associated with these values.  If validation
-   * passed, an empty list or null is an acceptable return value.
+   * @return a map of errors associated with the param names.  If validation
+   * passed, an empty map or null is an acceptable return value.
    */
-  public List<String> validateFormParams(Map<String, String[]> formParams);
+  public Map<String, String> validateFormParams(Map<String, String[]> formParams);
   
   /**
    * Runs an analysis of the passed AnswerValue.  In-process logging can be

@@ -1,11 +1,9 @@
 package org.gusdb.wdk.model.user.analysis;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -37,14 +35,11 @@ public class StepAnalysisFileStore {
    */
   public void deleteAllExecutions() throws WdkModelException {
     try {
-      Files.walkFileTree(_fileStoreDirectory, null, 1, new SimpleFileVisitor<Path>(){
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException e) throws IOException {
-          if (e != null) throw e;
-          IoUtil.deleteDirectoryTree(dir);
-          return FileVisitResult.CONTINUE;
-        }
-      });
+      String[] cacheDirNames = _fileStoreDirectory.toFile().list();
+      for (String cacheDirName : cacheDirNames) {
+        Path cacheDirPath = Paths.get(_fileStoreDirectory.toString(), cacheDirName);
+        IoUtil.deleteDirectoryTree(cacheDirPath);
+      }
     }
     catch (IOException e) {
       throw new WdkModelException("Unable to delete step analysis results " +

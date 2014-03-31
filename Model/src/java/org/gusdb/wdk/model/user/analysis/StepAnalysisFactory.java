@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -76,10 +77,15 @@ public class StepAnalysisFactory {
   }
 
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
-    List<String> errors = context.getStepAnalysis().getAnalyzerInstance()
+    Map<String, String> errors = context.getStepAnalysis().getAnalyzerInstance()
         .validateFormParams(context.getFormParams());
-    if (errors == null) errors = new ArrayList<String>();
-    return errors;
+    List<String> errorList = new ArrayList<String>();
+    if (errors == null) return errorList;
+    // FIXME: figure out display of these values; for now, translate errors into strings
+    for (Entry<String,String> error : errors.entrySet()) {
+      errorList.add(error.getKey() + ": " + error.getValue());
+    }
+    return errorList;
   }
 
   public StepAnalysisContext createAnalysis(StepAnalysisContext context) throws WdkModelException {
@@ -293,6 +299,7 @@ public class StepAnalysisFactory {
         int waitSecs = 0;
         while (true) {
           if (waitSecs > FUTURE_CLEANUP_INTERVAL_SECS) {
+            List<Future<ExecutionStatus>> futuresToRemove = new ArrayList<>();
             for (Future<ExecutionStatus> future : _threadResults) {
               if (future.isDone() || future.isCancelled()) {
                 try {
@@ -301,8 +308,12 @@ public class StepAnalysisFactory {
                 catch (ExecutionException | CancellationException | InterruptedException e) {
                   LOG.error("Exception thrown while retrieving step analysis status (on completion)", e);
                 }
-                _threadResults.remove(future);
+                futuresToRemove.add(future);
               }
+            }
+            // remove futures after collecting them so as not to interfere with iterator above
+            for (Future<ExecutionStatus> future : futuresToRemove) {
+              _threadResults.remove(future);
             }
             waitSecs = 0;
           }
