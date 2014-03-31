@@ -8,6 +8,13 @@
     <body>
       <div class="step-analysis-pane" data-analysis-id="${analysisId}"
            data-controller="wdk.stepAnalysis.loadDisplaySubpanes">
+        <div>
+          <h2 style="float:left">AnalysisConfiguration</h2>
+          <span style="float:right">
+           [ <a href="javascript:wdk.stepAnalysis.renameStepAnalysis(${analysisId})">Rename This Tab</a> |
+             <a href="javascript:wdk.stepAnalysis.copyStepAnalysis(${analysisId})">Copy This Configuration</a> ]
+          </span>
+        </div>
         <div class="step-analysis-subpane">
           <div class="step-analysis-errors-pane">
             <jsp:text/>

@@ -6,10 +6,12 @@
   <jsp:directive.page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"/>
   <html>
     <body>
-      <form style="text-align:center">
-        <h3 style="text-align:center">Click below to run this analysis.</h3>
-        <input type="submit" value="Run Analysis"/>
-      </form>
+      <div style="text-align:center">
+        <form>
+          <h3>Click below to run this analysis.</h3>
+          <input type="submit" value="Run Analysis"/>
+        </form>
+      </div>
     </body>
   </html>
 </jsp:root>

@@ -6,18 +6,38 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.gusdb.fgputil.db.DBStateException;
-import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory.AnalysisResult;
 
-public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
+/**
+ * Implementation of StepAnalysisDataStore that stores information in the
+ * database.  This class manages two tables:
+ * 
+ * UserDB.STEP_ANALYSIS {
+ *   int analysisId (PK)
+ *   int stepId
+ *   varchar displayName
+ *   bool isNew
+ *   CLOB context
+ * }
+ * 
+ * AppDB.STEP_ANALYSIS_RESULTS {
+ *   varchar contextHash (PK)
+ *   varchar status
+ *   CLOB log
+ *   CLOB data
+ * }
+ * 
+ * It also depends on a primary key sequence named UserDB.STEP_ANALYSIS_PKSEQ.
+ * 
+ * @author rdoherty
+ */
+public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
 
   private static final String ANALYSIS_TABLE = "STEP_ANALYSIS";
-  private static final String ANALYSIS_RESULTS = "STEP_ANALYSIS_RESULTS";
+  private static final String ANALYSIS_RESULTS_TABLE = "STEP_ANALYSIS_RESULTS";
   
   private String INSERT_ANALYSIS_SQL;
   private String DELETE_ANALYSIS_SQL;
@@ -34,6 +54,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   private String GET_EXECUTION_LOG_SQL;
   private String GET_STATUS_BY_HASH_SQL;
   private String GET_RESULTS_BY_HASH_SQL;
+  private String DELETE_ALL_EXECUTIONS_SQL;
   
   private final DatabaseInstance _userDb;
   private final DBPlatform _userDbPlatform;
@@ -44,6 +65,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   private final DataSource _appDbDs;
   
   public StepAnalysisPersistentDataStore(WdkModel wdkModel) {
+    super(wdkModel);
     _userDb = wdkModel.getUserDb();
     _userDbPlatform = _userDb.getPlatform();
     _userDbDs = _userDb.getDataSource();
@@ -55,10 +77,12 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   }
   
   private void createUserSql(String schema) {
+    String table = schema + ANALYSIS_TABLE;
     
   }
   
   private void createAppSql(String schema) {
+    String table = schema + ANALYSIS_RESULTS_TABLE;
     
   }
 
@@ -73,8 +97,9 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   }
 
   @Override
-  public void insertAnalysis(int saId, int stepId, String displayName, String serializedContext)
-      throws WdkModelException {
+  public void insertAnalysis(int analysisId, int stepId, String displayName, String contextHash,
+      String serializedContext) throws WdkModelException {
+    // TODO Auto-generated method stub
     
   }
 
@@ -97,46 +122,64 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   }
 
   @Override
-  public void updateContext(int analysisId, String serializedContext) throws WdkModelException {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public Map<Integer, StepAnalysisContext> getAnalysesByStepId(int stepId) throws WdkModelException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public StepAnalysisContext getAnalysisById(int analysisId) throws WdkModelException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-  
-  @Override
-  public boolean insertExecution(String contextHash, ExecutionStatus initialStatus) throws WdkModelException {
-    synchronized(this) {
-      // TODO Auto-generated method stub
-      return false;
-    }
-  }
-
-  @Override
-  public void updateExecution(String contextHash, ExecutionStatus status, String result)
+  public void updateContext(int analysisId, String contextHash, String serializedContext)
       throws WdkModelException {
     // TODO Auto-generated method stub
     
   }
 
   @Override
-  public ExecutionStatus getExecutionStatus(String contextHash) throws WdkModelException {
+  protected List<Integer> getAnalysisIdsByStepId(int stepId) throws WdkModelException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public AnalysisResult getAnalysisResult(String contextHash) throws WdkModelException {
+  protected List<Integer> getAllAnalysisIds() throws WdkModelException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  protected Map<Integer, AnalysisInfoPlusStatus> getAnalysisInfoForIds(List<Integer> analysisIds)
+      throws WdkModelException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public boolean insertExecution(String contextHash, ExecutionStatus status) throws WdkModelException {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public void updateExecution(String contextHash, ExecutionStatus status, String charData, byte[] binData)
+      throws WdkModelException {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void deleteExecution(String contextHash) throws WdkModelException {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void deleteAllExecutions() throws WdkModelException {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  protected ExecutionStatus getRawExecutionStatus(String contextHash) throws WdkModelException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public AnalysisResult getRawAnalysisResult(String contextHash) throws WdkModelException {
     // TODO Auto-generated method stub
     return null;
   }
@@ -152,11 +195,4 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
     // TODO Auto-generated method stub
     return null;
   }
-
-  @Override
-  public List<StepAnalysisContext> getAllAnalyses() throws WdkModelException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
 }

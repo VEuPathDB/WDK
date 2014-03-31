@@ -7,7 +7,7 @@
   <html>
     <body>
       <pre>
-        ${viewModel.results}
+        ${requestScope.viewModel}
       </pre>
     </body>
   </html>

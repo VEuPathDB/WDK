@@ -1,76 +1,100 @@
 package org.gusdb.wdk.model.analysis;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 public abstract class AbstractStepAnalyzer implements StepAnalyzer {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(AbstractStepAnalyzer.class);
-  
-  public static interface ResultContainer {
-    public Object getResults();
-  }
   
   private WdkModel _wdkModel;
   private Map<String, String> _properties = new HashMap<>();
   private Map<String, String[]> _formParams = new HashMap<>();
-  private String _results;
+  private Path _storageDirectory;
+  private String _charData;
+  private byte[] _binaryData;
   
   protected WdkModel getWdkModel() {
     return _wdkModel;
   }
-  
   @Override
   public void setWdkModel(WdkModel wdkModel) {
     _wdkModel = wdkModel;
   }
-  
-  protected void setResults(String results) {
-    _results = results;
+
+  protected Path getStorageDirectory() {
+    return _storageDirectory;
   }
-  protected String getResults() {
-    return _results;
+  @Override
+  public void setStorageDirectory(Path storageDirectory) {
+    _storageDirectory = storageDirectory;
   }
   
   @Override
-  public String serializeResult() {
-    return _results;
+  public String getPersistentCharData() {
+    return _charData;
   }
   @Override
-  public void deserializeResult(String serializedResult) {
-    LOG.info("Received serialized result: " + serializedResult);
-    _results = serializedResult;
+  public void setPersistentCharData(String data) {
+    _charData = data;
+  }
+  
+  @Override
+  public byte[] getPersistentBinaryData() {
+    return _binaryData;
+  }
+  @Override
+  public void setPersistentBinaryData(byte[] data) {
+    _binaryData = data;
   }
 
+  protected Object getPersistentObject() throws WdkModelException {
+    try {
+      if (_binaryData == null) return null;
+      return IoUtil.deserialize(_binaryData);
+    }
+    catch (ClassNotFoundException | IOException e) {
+      throw new WdkModelException("Unable to deserialize object.", e);
+    }
+  }
+  protected void setPersistentObject(Serializable obj) throws WdkModelException {
+    try {
+      _binaryData = IoUtil.serialize(obj);
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Unable to serialize object.", e);
+    }
+  }
+
+  protected String getProperty(String key) {
+    return _properties.get(key);
+  }
   @Override
   public void setProperty(String key, String value) {
     _properties.put(key, value);
   }
-  protected String getProperty(String key) {
-    return _properties.get(key);
-  }
-
   @Override
   public void validateProperties() throws WdkModelException {
     // no required properties
   }
 
+  protected Map<String,String[]> getFormParams() {
+    return _formParams;
+  }
   @Override
   public void setFormParams(Map<String, String[]> formParams) {
     _formParams = formParams;
   }
-  protected Map<String,String[]> getParamMap() {
-    return _formParams;
-  }
-  protected String[] getParam(String key) {
-    return _formParams.get(key);
-  }
-
   @Override
   public List<String> validateFormParams(Map<String, String[]> formParams) {
     // no validation
@@ -78,17 +102,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   }
   
   @Override
-  public Object getFormViewModel() {
+  public Object getFormViewModel() throws WdkModelException {
     return null;
-  }
-
-  @Override
-  public Object getResultViewModel() {
-    ResultContainer obj = new ResultContainer() {
-      @Override
-      public String getResults() { return _results; }
-    };
-    LOG.info("Returning viewModel with results: " + obj.getResults());
-    return obj;
   }
 }
