@@ -273,6 +273,24 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+.results .ignored {
+  text-align: center;
+}
+.results .ui-button-text .ignore {
+  color: darkred;
+}
+.results .ui-button-text .include {
+  color: darkgreen;
+}
+.results .ui-button-text {
+  font-weight: bold;
+}
+.results table.dataTable tr.odd {
+  background-color: #ffffff;
+}
+.results table.dataTable tr.even {
+  background-color: #f6f6f6;
+}
 .overview dt, .overview dd {
   float: left;
 }
