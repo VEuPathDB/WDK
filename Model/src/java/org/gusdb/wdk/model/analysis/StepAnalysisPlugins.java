@@ -35,6 +35,7 @@ public class StepAnalysisPlugins extends WdkModelBase {
   
   public static class ExecutionConfig {
     
+    private String _fileStoreDirectory;
     private int _threadPoolSize = 20;
 
     public int getThreadPoolSize() {
@@ -42,6 +43,13 @@ public class StepAnalysisPlugins extends WdkModelBase {
     }
     public void setThreadPoolSize(int threadPoolSize) {
       _threadPoolSize = threadPoolSize;
+    }
+    
+    public String getFileStoreDirectory() {
+      return _fileStoreDirectory;
+    }
+    public void setFileStoreDirectory(String fileStoreDirectory) {
+      _fileStoreDirectory = fileStoreDirectory;
     }
   }
   

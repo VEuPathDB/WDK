@@ -208,9 +208,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				
 				var formPane = $element.find(".step-analysis-form-pane");
 				formPane.html(wrappingDiv);
-				if (analysisObj.status != 'CREATED') {
-					wdk.formUtil.populateForm(formPane.find('form').first(), analysisObj.formParams);
-				}
+				wdk.formUtil.populateForm(formPane.find('form').first(), analysisObj.formParams);
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
 				handleAjaxError("Error: Unable to retrieve step analysis form for analysis with id " + analysisId);
@@ -260,7 +258,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				}
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
-				handleAjaxError("Error: Unable to run step analysis");
+				handleAjaxError("Error: Unable to run step analysis.");
 			}
 		});
 	}
@@ -314,9 +312,26 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				$(html).dialog({ modal:true });
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
-				handleAjaxError("Error: Unable to retrieve all analysis json");
+				handleAjaxError("Error: Unable to retrieve all analysis json.");
 			}
 		});
+	}
+	
+	function renameStepAnalysis(analysisId) {
+		var newName = prompt("New name:");
+		if (newName != null && newName != '') {
+			doAjax(ROUTES.renameAnalysis, {
+				data: { "analysisId": analysisId, "displayName": newName },
+				success: function(data, textStatus, jqXHR) {
+					$('#step-analysis-' + analysisId + " a").contents().filter(function() {
+					    return this.nodeType == 3; //Filtering by text node
+					}).first()[0].data = newName;
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					handleAjaxError("Error: Unable to change display name for analysis with id " + analysisId);
+				}
+			});
+		}
 	}
 	
 	function handleAjaxError(message) {
@@ -325,6 +340,8 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 	
 	ns.configureAnalysisViews = configureAnalysisViews;
 	ns.loadDisplaySubpanes = loadDisplaySubpanes;
+	ns.copyStepAnalysis = copyStepAnalysis;
+	ns.renameStepAnalysis = renameStepAnalysis;
 	ns.analysisRefresh = analysisRefresh;
 	ns.showAllAnalyses = showAllAnalyses;
 });

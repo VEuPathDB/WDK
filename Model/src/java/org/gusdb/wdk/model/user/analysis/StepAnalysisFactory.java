@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,44 +46,33 @@ public class StepAnalysisFactory {
   
   private static Logger LOG = Logger.getLogger(StepAnalysisFactory.class);
   
-  private static final boolean USE_PERSISTENCE = false;
-  
-  public static class AnalysisResult {
-    public ExecutionStatus status;
-    public String serializedResult;
-    public String statusLog;
-    public Object analysisViewModel;
-    public AnalysisResult(ExecutionStatus status, String serializedResult, String statusLog) {
-      this.status = status;
-      this.serializedResult = serializedResult;
-      this.statusLog = statusLog;
-    }
-  }
+  private static final boolean USE_DB_PERSISTENCE = false;
   
   private final ExecutionConfig _execConfig;
   private final StepAnalysisViewResolver _viewResolver;
   private final StepAnalysisDataStore _dataStore;
-  private final ExecutorService _threadPool;
-  private final Future<Boolean> _threadMonitor;
+  private final StepAnalysisFileStore _fileStore;
+  private ExecutorService _threadPool;
+  private Future<Boolean> _threadMonitor;
   private volatile ConcurrentLinkedDeque<Future<ExecutionStatus>> _threadResults;
   
-  public StepAnalysisFactory(WdkModel wdkModel) {
+  public StepAnalysisFactory(WdkModel wdkModel) throws WdkModelException {
     _viewResolver = new StepAnalysisViewResolver(wdkModel.getStepAnalysisPlugins().getViewConfig());
     _execConfig = wdkModel.getStepAnalysisPlugins().getExecutionConfig();
-    _dataStore = (USE_PERSISTENCE ?
+    _dataStore = (USE_DB_PERSISTENCE ?
         new StepAnalysisPersistentDataStore(wdkModel) :
         new StepAnalysisInMemoryDataStore(wdkModel));
-    _threadPool = Executors.newFixedThreadPool(_execConfig.getThreadPoolSize());
-    _threadResults = new ConcurrentLinkedDeque<>();
-    _threadMonitor = _threadPool.submit(new FutureCleaner(_threadResults));
+    _fileStore = new StepAnalysisFileStore(Paths.get(_execConfig.getFileStoreDirectory()));
+    _fileStore.testFileStore();
+    startThreadPool();
   }
 
   public List<StepAnalysisContext> getAllAnalyses() throws WdkModelException {
-    return _dataStore.getAllAnalyses();
+    return _dataStore.getAllAnalyses(_fileStore);
   }
 
   public Map<Integer, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException {
-    return _dataStore.getAnalysesByStepId(step.getStepId());
+    return _dataStore.getAnalysesByStepId(step.getStepId(), _fileStore);
   }
 
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
@@ -95,38 +86,59 @@ public class StepAnalysisFactory {
     // create new execution instance
     int saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(),
-        context.getDisplayName(), context.serializeContext());
+        context.getDisplayName(), context.createHash(), context.serializeContext());
     // override any previous values for id and status; this is a -new- analysis
     context.setAnalysisId(saId);
     context.setStatus(ExecutionStatus.CREATED);
+    context.setNew(true);
     return context;
   }
   
   public StepAnalysisContext runAnalysis(StepAnalysisContext context)
       throws WdkModelException {
     ExecutionStatus initialStatus = ExecutionStatus.PENDING;
-    // first, update stored context with params
-    _dataStore.updateContext(context.getAnalysisId(), context.serializeContext());
-    boolean created = _dataStore.insertExecution(context.createHash(), initialStatus);
-    if (context.getStatus().equals(ExecutionStatus.CREATED)) {
-      // only need to set new flag if it has not already been set
+    String hash = context.createHash();
+    boolean newlyCreated = _dataStore.insertExecution(hash, initialStatus);
+
+    // now that user has run this analysis, set 'not new' if still new
+    if (context.isNew()) {
       _dataStore.setNewFlag(context.getAnalysisId(), false);
+      context.setNew(false);
     }
-    if (created) {
-      // no previous results record exists; need to run analysis
+    
+    // Run analysis plugin under the following conditions:
+    //   1. if new execution was created (i.e. none existed before or cache was cleared)
+    //   2. previous run failed due to error, interruption, etc.
+    //   3. file system cache has been deleted (by wdkCache or sys admins)
+    //
+    // NOTE: There is a race condition here in between the check of the store and the creation
+    //       (first line inside if).  Use combination of lock and createNewFile() to fix.
+    if (newlyCreated || context.getStatus().requiresRerun()) {
+
+      // ensure empty data and file stores and create dir
+      _fileStore.recreateStore(hash);
+      if (!newlyCreated) {
+        _dataStore.resetExecution(hash, initialStatus);
+      }
+      
+      // update stored context with param values
+      _dataStore.updateContext(context.getAnalysisId(), hash, context.serializeContext());
+      
+      // set initial status on in-memory context
       context.setStatus(initialStatus);
-      context = executeAnalysis(context);
+      
+      // run the analysis
+      return executeAnalysis(context);
     }
-    else {
-      // result is being or has already been generated; get current status
-      context.setStatus(_dataStore.getExecutionStatus(context.createHash()));
-    }
+
+    // otherwise, no need to run since result already generated or plugin currently running
     return context;
   }
 
   private StepAnalysisContext executeAnalysis(StepAnalysisContext context) throws WdkModelException {
     try {
-      _threadResults.add(_threadPool.submit(new AnalysisCallable(context, _dataStore)));
+      _threadResults.add(_threadPool.submit(new AnalysisCallable(context, _dataStore,
+          _fileStore.getStorageDirPath(context.createHash()))));
       return context;
     }
     catch (RejectedExecutionException e) {
@@ -134,19 +146,30 @@ public class StepAnalysisFactory {
     }
   }
   
+  /**
+   * Collects the data associated with a result and returns the aggregating
+   * object.  This method is only to be called when a "recent" call to
+   * getSavedContext() has status COMPLETE.  No checks are done to ensure that
+   * persistent storage mechanisms have not been cleared.
+   * 
+   * @param context context for this result
+   * @return result
+   * @throws WdkModelException if inconsistent data is found or other error occurs
+   */
   public AnalysisResult getAnalysisResult(StepAnalysisContext context) throws WdkModelException {
-    AnalysisResult result = _dataStore.getAnalysisResult(context.createHash());
+    String hash = context.createHash();
+    AnalysisResult result = _dataStore.getRawAnalysisResult(hash);
     if (result == null) {
-      LOG.info("No result could be found.  Probably does not yet exist; creating a 'dummy' result.");
-      result = new AnalysisResult(ExecutionStatus.CREATED, null, null);
+      throw new WdkModelException("Result record not found for context-generated hash: " + hash);
     }
-    else {
-      LOG.info("Got result back from data store: " + result.status + ", with results:\n" + result.serializedResult);
-      StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
-      analyzer.deserializeResult(result.serializedResult);
-      result.analysisViewModel = analyzer.getResultViewModel();
-      result.serializedResult = null;
-    }
+    
+    LOG.info("Got result back from data store: " + result.getStatus() + ", with results:\n" + result.getStoredString());
+    Path analyzerStorageDir = Paths.get(_execConfig.getFileStoreDirectory(), hash);
+    StepAnalyzer analyzer = getConfiguredAnalyzer(context, analyzerStorageDir);
+    analyzer.setPersistentCharData(result.getStoredString());
+    analyzer.setPersistentBinaryData(result.getStoredBytes());
+    result.setResultViewModel(analyzer.getResultViewModel());
+    result.clearStoredData(); // only care about the view model
     return result;
   }
 
@@ -158,21 +181,64 @@ public class StepAnalysisFactory {
     _dataStore.renameAnalysis(context.getAnalysisId(), context.getDisplayName());
   }
 
-  public StepAnalysisContext getSavedContext(int analysisId) throws WdkUserException, WdkModelException{
-    StepAnalysisContext context = _dataStore.getAnalysisById(analysisId);
+  public StepAnalysisContext getSavedContext(int analysisId) throws WdkUserException, WdkModelException {
+    StepAnalysisContext context = _dataStore.getAnalysisById(analysisId, _fileStore);
     if (context == null) {
       throw new WdkUserException("No analysis exists with id: " + analysisId);
     }
     return context;
+  }
+
+  public static StepAnalyzer getConfiguredAnalyzer(StepAnalysisContext context, Path storageDirectory) throws WdkModelException {
+    StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
+    analyzer.setStorageDirectory(storageDirectory);
+    analyzer.setFormParams(context.getFormParams());
+    return analyzer;
   }
   
   public StepAnalysisViewResolver getViewResolver() {
     return _viewResolver;
   }
   
+  public void clearResultsCache() throws WdkModelException {
+
+    // first shut down running threads
+    shutDownRunningThreads();
+    
+    // remove execution results from database
+    _dataStore.deleteAllExecutions();
+    
+    // remove execution data from file store
+    _fileStore.deleteAllExecutions();
+
+    // restart threadpool
+    startThreadPool();
+  }
+
+  public Path getResourcePath(StepAnalysisContext context, String relativePath) {
+    if (relativePath.startsWith(System.getProperty("file.separator"))) {
+      relativePath = relativePath.substring(1);
+    }
+    return Paths.get(_fileStore.getStorageDirPath(context.createHash()).toString(), relativePath);
+  }
+
+  private void startThreadPool() {
+    _threadPool = Executors.newFixedThreadPool(_execConfig.getThreadPoolSize() + 1);
+    _threadResults = new ConcurrentLinkedDeque<>();
+    _threadMonitor = _threadPool.submit(new FutureCleaner(_threadResults));
+  }
+  
   public void shutDown() {
+    // shut down any running threads
+    shutDownRunningThreads();
+  }
+  
+  private void shutDownRunningThreads() {
     try {
-      _threadPool.shutdown();
+      // FIXME: need to figure out what all is needed to shut down these threads
+      //   Currently just calling shutdownNow(), which may or may not be sufficient
+      _threadPool.shutdownNow();
+      /*
       LOG.info("Attempting to shut down Step Analysis threads...");
       cancelThread(_threadMonitor, "Step Analysis Thread Monitor");
       for (Future<?> future : _threadResults) {
@@ -190,11 +256,13 @@ public class StepAnalysisFactory {
         }
       //} catch(InterruptedException e) {}
       LOG.warn("Not all step analysis threads have shut down cleanly before timeout.");
+      */
     } catch (Exception e) {
       LOG.error("Unable to cleanly shut down Step Analysis Factory", e);
     }
   }
   
+  @SuppressWarnings("unused")
   private void cancelThread(Future<?> thread, String name) {
     //try {
       _threadMonitor.cancel(true);
@@ -254,10 +322,12 @@ public class StepAnalysisFactory {
     
     private final StepAnalysisContext _context;
     private final StepAnalysisDataStore _dataStore;
+    private final Path _storageDirectory;
     
-    public AnalysisCallable(StepAnalysisContext context, StepAnalysisDataStore dataStore) {
+    public AnalysisCallable(StepAnalysisContext context, StepAnalysisDataStore dataStore, Path storageDirectory) {
       _context = context;
       _dataStore = dataStore;
+      _storageDirectory = storageDirectory;
     }
     
     @Override
@@ -265,22 +335,22 @@ public class StepAnalysisFactory {
       String contextHash = _context.createHash();
       try {
         // update database that we are running
-        _dataStore.updateExecution(contextHash, ExecutionStatus.RUNNING, "");
+        _dataStore.updateExecution(contextHash, ExecutionStatus.RUNNING, null, null);
     
         // create step analysis instance and run
-        StepAnalyzer analyzer = _context.getStepAnalysis().getAnalyzerInstance();
-        analyzer.setFormParams(_context.getFormParams());
+        StepAnalyzer analyzer = getConfiguredAnalyzer(_context, _storageDirectory);
         ExecutionStatus status = analyzer.runAnalysis(
             _context.getStep().getAnswerValue(), new StatusLogger(contextHash, _dataStore));
       
         // status completed successfully or was interrupted
-        String result = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.serializeResult() : "");
-        _dataStore.updateExecution(contextHash, status, result);
+        String charData = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.getPersistentCharData() : "");
+        byte[] binData = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.getPersistentBinaryData() : null);
+        _dataStore.updateExecution(contextHash, status, charData, binData);
         return status;
       }
       catch (Exception e) {
         LOG.error("Step Analysis failed.", e);
-        _dataStore.updateExecution(contextHash,ExecutionStatus.ERROR, FormatUtil.getStackTrace(e));
+        _dataStore.updateExecution(contextHash, ExecutionStatus.ERROR, FormatUtil.getStackTrace(e), null);
         return ExecutionStatus.ERROR;
       }
     }

@@ -1,9 +1,6 @@
 package org.gusdb.wdk.controller.actionutil;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.WdkValidationException;
@@ -143,7 +141,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
           }
           _response.setContentType(result.getResponseType().getMimeType());
           _response.setHeader("Content-Disposition", "attachment; filename=\"" + result.getFileName() + "\"");
-          transferStream(_response.getOutputStream(), result.getStream());
+          IoUtil.transferStream(_response.getOutputStream(), result.getStream());
           return null;
         }
         else if (result.isExternalRedirect()){
@@ -236,21 +234,6 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
    */
   protected int getMaxUploadSize() {
     return DEFAULT_MAX_UPLOAD_SIZE_MB;
-  }
-  
-  private static void transferStream(OutputStream outputStream, InputStream inputStream)
-      throws IOException {
-    try {
-      byte[] buffer = new byte[1024]; // send 1kb at a time
-      int bytesRead;
-      while ((bytesRead = inputStream.read(buffer)) != -1) {
-        outputStream.write(buffer, 0, bytesRead);
-      }
-    }
-    finally {
-      // only close input stream; container will close output stream
-      inputStream.close();
-    }
   }
   
   private ParamGroup buildParamGroup(Map<String, String[]> parameters, Map<String, DiskFileItem> uploads) {

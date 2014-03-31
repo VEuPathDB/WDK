@@ -49,6 +49,7 @@ public class StepAnalysisContext {
   private int _strategyId;
   private Step _step;
   private StepAnalysis _stepAnalysis;
+  private boolean _isNew;
   private ExecutionStatus _status;
   private Map<String, String[]> _formParams;
 
@@ -91,6 +92,7 @@ public class StepAnalysisContext {
 
     ctx._displayName = ctx._stepAnalysis.getDisplayName();
     ctx._formParams = new HashMap<String,String[]>();
+    ctx._isNew = true;
     ctx._status = ExecutionStatus.CREATED;
     
     return ctx;
@@ -112,12 +114,13 @@ public class StepAnalysisContext {
   }  
   
   public static StepAnalysisContext createFromStoredData(WdkModel wdkModel,
-      int analysisId, String displayName, String serializedContext) throws WdkModelException {
+      int analysisId, boolean isNew, String displayName, String serializedContext) throws WdkModelException {
     try {
       StepAnalysisContext ctx = new StepAnalysisContext();
       ctx._wdkModel = wdkModel;
       ctx._analysisId = analysisId;
       ctx._displayName = displayName;
+      ctx._isNew = isNew;
       ctx._status = ExecutionStatus.UNKNOWN;
       
       LOG.info("Got the following serialized context from the DB: " + serializedContext);
@@ -160,17 +163,24 @@ public class StepAnalysisContext {
     ctx._strategyId = oldContext._strategyId;
     ctx._step = oldContext._step;
     ctx._stepAnalysis = oldContext._stepAnalysis;
-    ctx._formParams = new HashMap<>(oldContext._formParams);
-    for (String key : ctx._formParams.keySet()) {
-      String[] old = ctx._formParams.get(key);
-      if (old != null) {
-        ctx._formParams.put(key, Arrays.copyOf(old, old.length));
-      }
-    }
+    // deep copy params
+    ctx._formParams = getDuplicateMap(oldContext._formParams);
+    ctx._isNew = oldContext._isNew;
     ctx._status = oldContext._status;
     return ctx;
   }
   
+  private static Map<String, String[]> getDuplicateMap(Map<String, String[]> formParams) {
+    Map<String, String[]> newParamMap = new HashMap<>(formParams);
+    for (String key : newParamMap.keySet()) {
+      String[] old = newParamMap.get(key);
+      if (old != null) {
+        newParamMap.put(key, Arrays.copyOf(old, old.length));
+      }
+    }
+    return newParamMap;
+  }
+
   private static int getAnalysisIdParam(Map<String, String[]> params) throws WdkUserException {
     String[] values = params.get(ANALYSIS_ID_KEY);
     if (values == null || values.length != 1)
@@ -291,5 +301,13 @@ public class StepAnalysisContext {
 
   public void setStatus(ExecutionStatus status) {
     _status = status;
+  }
+
+  public boolean isNew() {
+    return _isNew;
+  }
+
+  public void setNew(boolean isNew) {
+    _isNew = isNew;
   }
 }

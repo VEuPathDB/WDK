@@ -1518,6 +1518,7 @@
       </optional>
       <optional>
         <element name="executionConfig">
+          <attribute name="fileStoreDirectory" />
           <optional>
             <attribute name="threadPoolSize">
               <data type="positiveInteger" />

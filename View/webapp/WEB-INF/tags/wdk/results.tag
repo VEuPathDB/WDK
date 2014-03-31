@@ -87,7 +87,7 @@
       <c:set var="analysisId" value="${analysisEntry.key}"/>
       <c:set var="analysisCtx" value="${analysisEntry.value}"/>
       <c:set var="analysis" value="${analysisCtx.stepAnalysis}"/>
-      <li id="step-analysis-${analysisExecId}">
+      <li id="step-analysis-${analysisId}">
         <a href="${pageContext.request.contextPath}/stepAnalysisPane.do?analysisId=${analysisId}" title="${analysis.description}">
           ${analysisCtx.displayName} <span> </span><span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
         </a>
