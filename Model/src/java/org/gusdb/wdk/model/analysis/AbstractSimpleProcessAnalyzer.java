@@ -19,7 +19,7 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
   private static final String STDOUT_FILE_NAME = "stdout.txt";
   private static final String STDERR_FILE_NAME = "stderr.txt";
   
-  protected abstract String[] getCommand(AnswerValue answerValue);
+  protected abstract String[] getCommand(AnswerValue answerValue) throws WdkModelException;
   
   @Override
   public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log)
