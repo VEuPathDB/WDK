@@ -44,17 +44,18 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private String UPDATE_NAME_SQL;
   private String UPDATE_NEW_FLAG_SQL;
   private String UPDATE_CONTEXT_SQL;
-  private String GET_ANALYSIS_BY_ID_SQL;
-  private String GET_ANALYSES_BY_STEP_SQL;
-  private String GET_ALL_ANALYSES_SQL;
+  private String GET_ANALYSIS_IDS_BY_STEP_SQL;
+  private String GET_ALL_ANALYSIS_IDS_SQL;
+  private String GET_ANALYSES_BY_IDS_SQL;
   
   private String INSERT_EXECUTION_SQL;
+  private String DELELE_EXECUTION_SQL;
+  private String DELETE_ALL_EXECUTIONS_SQL;
   private String UPDATE_EXECUTION_SQL;
   private String SET_EXECUTION_LOG_SQL;
   private String GET_EXECUTION_LOG_SQL;
   private String GET_STATUS_BY_HASH_SQL;
   private String GET_RESULTS_BY_HASH_SQL;
-  private String DELETE_ALL_EXECUTIONS_SQL;
   
   private final DatabaseInstance _userDb;
   private final DBPlatform _userDbPlatform;

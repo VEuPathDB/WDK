@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -96,7 +95,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
     _formParams = formParams;
   }
   @Override
-  public List<String> validateFormParams(Map<String, String[]> formParams) {
+  public Map<String, String> validateFormParams(Map<String, String[]> formParams) {
     // no validation
     return null;
   }

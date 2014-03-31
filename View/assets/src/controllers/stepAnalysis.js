@@ -219,7 +219,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 	function loadResultsPane($element, analysisId) {
 		var resultsPane = $element.find('.step-analysis-results-pane');
 		// clear previous results
-		resultsPane.html("");
+		resultsPane.empty();
 		doAjax(ROUTES.getResult, {
 			data: { "analysisId": analysisId },
 			success: function(data, textStatus, jqXHR) {
@@ -244,7 +244,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 	
 	function runStepAnalysis(form) {
 		var analysisId = $(form).find('input[name=analysisId]').val();
-		// TODO: clear any errors from a previous submission
+		var $errorsPane = $(form).parents('.step-analysis-subpane').find('.step-analysis-errors-pane');
+		// clear any errors from a previous submission
+		$errorsPane.empty();
 		doAjax(ROUTES.runAnalysis, {
 			data: $(form).serialize(),
 			success: function(data, textStatus, jqXHR) {
@@ -253,8 +255,11 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 					loadResultsPane($(form).parents('.step-analysis-pane'), data.context.analysisId);
 				}
 				else if (data.status == "validation") {
-					// TODO: place any new errors in errors pane
-					alert("Validation failed.  Please try again.");
+					var $newErrorList = $("<ul></ul>");
+					data.errors.forEach(function(val) {
+						$newErrorList.append("<li>"+val+"</li>");
+					});
+					$errorsPane.append($newErrorList);
 				}
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
@@ -282,16 +287,11 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 	}
 	  
 	function doRefreshCountdown($obj, analysisId, secondsLeft) {
+		
 		if (secondsLeft == 0) {
 			setTimeout(function() {
 				// refresh results pane to see if results are present
 				loadResultsPane($obj.parents('.step-analysis-pane'), analysisId);
-				
-				// don't need this any more??
-				//var urlToLoad = $('#step-analysis-' + analysisId + ' > a').attr('href');
-				//$obj.parent().load(urlToLoad, function() {
-				//alert("refreshed page loaded!");
-				//});
 			}, 1000);
 		}
 		else {

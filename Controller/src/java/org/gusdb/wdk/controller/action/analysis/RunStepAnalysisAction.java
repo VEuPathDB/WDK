@@ -21,7 +21,7 @@ public class RunStepAnalysisAction extends GenericPageAction {
   
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
-
+    
     StepAnalysisFactory analysisMgr = getWdkModel().getModel().getStepAnalysisFactory();
     StepAnalysisContext context = StepAnalysisContext.createFromForm(params.getParamMap(), analysisMgr);
     AbstractStepAnalysisIdAction.verifyOwnership(getCurrentUser(), context);
