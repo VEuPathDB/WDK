@@ -255,11 +255,12 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 					loadResultsPane($(form).parents('.step-analysis-pane'), data.context.analysisId);
 				}
 				else if (data.status == "validation") {
+					var errorAnnounce = "<span>Please address the following issues:</span><br/>"
 					var $newErrorList = $("<ul></ul>");
 					data.errors.forEach(function(val) {
 						$newErrorList.append("<li>"+val+"</li>");
 					});
-					$errorsPane.append($newErrorList);
+					$errorsPane.append(errorAnnounce).append($newErrorList).append("<hr/>");
 				}
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
