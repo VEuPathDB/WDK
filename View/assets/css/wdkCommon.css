@@ -1072,7 +1072,7 @@ z-index: 1;
 
 .new-analysis .new-analysis-button {
   display: inline-block;
-  border: 1px solid #AAAAAA;
+  border: 1px solid #aaaaaa;
   padding: 1px 3px;
   position: relative;
   top: 1px;
@@ -1086,10 +1086,10 @@ z-index: 1;
 }
 
 .new-analysis .new-analysis-menu {
-  border: 1px solid black;
+  border: 1px solid #d3d3d3;
   padding: none;
   position: absolute;
-  top: 20px;
+  top: 19px;
   cursor: pointer;
   background-color: #e6e6e6;
   float: none;
