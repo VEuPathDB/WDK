@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins.ExecutionConfig;
 import org.gusdb.wdk.model.analysis.StepAnalyzer;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 
 /**
@@ -92,8 +93,12 @@ public class StepAnalysisFactory {
       throws WdkModelException, IllegalAnswerValueException {
 
     // ensure this is a valid step to analyze
+    AnswerValue answer = context.getStep().getAnswerValue();
+    if (answer.getResultSize() == 0) {
+      throw new IllegalAnswerValueException("You cannot analyze a Step with zero results.");
+    }
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
-    analyzer.preApproveAnswer(context.getStep().getAnswerValue());
+    analyzer.preApproveAnswer(answer);
     
     // create new execution instance
     int saId = _dataStore.getNextId();
