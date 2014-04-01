@@ -50,7 +50,9 @@
                      answerValue="${wdkAnswer}" />
 </c:if>
 
+<!-- Pressing magic button allows easy visual of all saved analyses
 <div><a href="javascript:wdk.stepAnalysis.showAllAnalyses()">Magic Button</a></div>
+-->
 
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
 
