@@ -6,9 +6,8 @@ import java.util.Map;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
-import org.gusdb.wdk.model.user.analysis.IllegalStepException;
+import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
 
 /**
@@ -134,12 +133,14 @@ public interface StepAnalyzer {
   public void setPersistentBinaryData(byte[] data);
 
   /**
-   * Checks that this is a valid step for this analyzer, and throws an
+   * Checks that this is a valid answer for this analyzer, and throws an
    * exception if is not.
    * 
-   * @param step step that might be analyzed by this analyzer
-   * @throws IllegalStepException if step cannot be analyzed by this analyzer
+   * @param answerValue answer that might be analyzed by this analyzer
+   * @throws IllegalAnswerValueException if answer cannot be analyzed by this analyzer
+   * @throws WdkModelException if error occurs while determining validity of answer
    */
-  public void preApproveStep(Step step) throws IllegalStepException;
+  public void preApproveAnswer(AnswerValue answerValue)
+      throws IllegalAnswerValueException, WdkModelException;
 
 }

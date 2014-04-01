@@ -12,7 +12,7 @@ import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.ResponseType;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.analysis.IllegalStepException;
+import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.json.JSONException;
@@ -48,7 +48,7 @@ public class CreateStepAnalysisAction extends WdkAction {
       context = analysisMgr.createAnalysis(context);
       return AbstractStepAnalysisIdAction.getStepAnalysisJsonResult(context);
     }
-    catch (IllegalStepException ise) {
+    catch (IllegalAnswerValueException ise) {
       return getInvalidStepResult(ise.getMessage());
     }
   }
