@@ -137,7 +137,8 @@ public class StepAnalysisFactory {
       return executeAnalysis(context);
     }
 
-    // otherwise, no need to run since result already generated or plugin currently running
+    // otherwise, no need to run since result already generated or plugin currently running;
+    LOG.info("Attempt made to run analysis, but it was unnecessary.  Here's the context at that time:\n" + context.getInstanceJson());
     return context;
   }
 

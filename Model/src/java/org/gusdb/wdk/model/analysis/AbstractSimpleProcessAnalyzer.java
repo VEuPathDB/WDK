@@ -35,7 +35,12 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
       process = builder.start();
       OutputStream stdin = process.getOutputStream();
       if ((providedInput = getProvidedInput()) != null) {
-        IoUtil.transferStream(stdin, providedInput);
+        try {
+          IoUtil.transferStream(stdin, providedInput);
+        }
+        finally {
+          IoUtil.closeQuietly(stdin);
+        }
       }
       int exitValue = process.waitFor();
       return (exitValue == 0 ? ExecutionStatus.COMPLETE : ExecutionStatus.ERROR);
@@ -54,12 +59,15 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
     }
   }
 
+  protected String getStdoutFileName() { return STDOUT_FILE_NAME; }
+  protected String getStderrFileName() { return STDERR_FILE_NAME; }
+  
   protected Path getStdoutFilePath() {
-    return Paths.get(getStorageDirectory().toString(), STDOUT_FILE_NAME);
+    return Paths.get(getStorageDirectory().toString(), getStdoutFileName());
   }
   
   protected Path getStderrFilePath() {
-    return Paths.get(getStorageDirectory().toString(), STDERR_FILE_NAME);
+    return Paths.get(getStorageDirectory().toString(), getStderrFileName());
   }
   
   protected InputStream getProvidedInput() {

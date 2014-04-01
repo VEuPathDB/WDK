@@ -1082,7 +1082,7 @@ z-index: 1;
 }
 
 .new-analysis .new-analysis-button:hover {
-	background-color: lightyellow;
+	/* background-color: lightyellow; */
 }
 
 .new-analysis .new-analysis-menu {
@@ -1129,13 +1129,18 @@ z-index: 1;
 
 .step-analysis-subpane {
   margin: 3px;
-  border: 1px solid #cccccc;
-  border-radius: 7px;
+  /* border: 1px solid #cccccc;
+     border-radius: 7px; */
   padding: 4px;
 }
 
 .step-analysis-errors-pane {
 	color: red;
+}
+
+.step-analysis-errors-pane li {
+	line-height: 1.4em;
+  padding-left: 15px;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
