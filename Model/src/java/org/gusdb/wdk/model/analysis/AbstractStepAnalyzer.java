@@ -10,6 +10,8 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.analysis.IllegalStepException;
 
 public abstract class AbstractStepAnalyzer implements StepAnalyzer {
 
@@ -103,5 +105,10 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   @Override
   public Object getFormViewModel() throws WdkModelException {
     return null;
+  }
+  
+  @Override
+  public void preApproveStep(Step step) throws IllegalStepException {
+    // do nothing
   }
 }

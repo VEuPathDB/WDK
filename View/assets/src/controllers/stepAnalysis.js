@@ -126,7 +126,11 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 		doAjax(ROUTES.createAnalysis, {
 			data: { "analysisName": analysisName, "strategyId": strategyId, "stepId": stepId },
 			success: function (data, textStatus, jqXHR) {
-				createAnalysisTab(data);
+				if (data.status == "validation") {
+					alert(data.message);
+				} else {
+					createAnalysisTab(data);
+				}
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
 				handleAjaxError("Error: Unable to create new step analysis of type: " + analysisName);

@@ -88,18 +88,26 @@ public class StepAnalysisFactory {
     return errorList;
   }
 
-  public StepAnalysisContext createAnalysis(StepAnalysisContext context) throws WdkModelException {
+  public StepAnalysisContext createAnalysis(StepAnalysisContext context)
+      throws WdkModelException, IllegalStepException {
+
+    // ensure this is a valid step to analyze
+    StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
+    analyzer.preApproveStep(context.getStep());
+    
     // create new execution instance
     int saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(),
         context.getDisplayName(), context.createHash(), context.serializeContext());
+    
     // override any previous values for id and status; this is a -new- analysis
     context.setAnalysisId(saId);
     context.setStatus(ExecutionStatus.CREATED);
     context.setNew(true);
+    
     return context;
   }
-  
+
   public StepAnalysisContext runAnalysis(StepAnalysisContext context)
       throws WdkModelException {
     ExecutionStatus initialStatus = ExecutionStatus.PENDING;
