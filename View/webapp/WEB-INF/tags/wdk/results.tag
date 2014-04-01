@@ -83,6 +83,9 @@
         >${view.display} <span> </span></a>
       </li>
     </c:forEach>
+    <li id="choose-step-analysis">
+      <a href="${pageContext.request.contextPath}/showNewAnalysisTab.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}"> + Analyze This Result <span> </span></a>
+    </li>
     <c:forEach items="${wdkStep.appliedAnalyses}" var="analysisEntry">
       <c:set var="analysisId" value="${analysisEntry.key}"/>
       <c:set var="analysisCtx" value="${analysisEntry.value}"/>

@@ -10,8 +10,8 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.analysis.IllegalStepException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 
 public abstract class AbstractStepAnalyzer implements StepAnalyzer {
 
@@ -108,7 +108,8 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   }
   
   @Override
-  public void preApproveStep(Step step) throws IllegalStepException {
+  public void preApproveAnswer(AnswerValue answerValue)
+      throws IllegalAnswerValueException, WdkModelException {
     // do nothing
   }
 }

@@ -89,11 +89,11 @@ public class StepAnalysisFactory {
   }
 
   public StepAnalysisContext createAnalysis(StepAnalysisContext context)
-      throws WdkModelException, IllegalStepException {
+      throws WdkModelException, IllegalAnswerValueException {
 
     // ensure this is a valid step to analyze
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
-    analyzer.preApproveStep(context.getStep());
+    analyzer.preApproveAnswer(context.getStep().getAnswerValue());
     
     // create new execution instance
     int saId = _dataStore.getNextId();
