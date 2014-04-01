@@ -196,12 +196,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         });
       }
 
-      // create and render views
-      var itemsView = new wdk.views.filter.FilterItemsView(filterService, { model: filterService.filters });
-      itemsView.render();
-      var view = new wdk.views.filter.FilterView({ model: filterService });
-      view.render(); //.collapse(true);
-
       // listen for change to filteredData and update input value
       filterService.filteredData.on('reset change', function() {
         var values = filterService.filteredData.where({ ignored: false })
@@ -216,10 +210,17 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         input.val(JSON.stringify(value));
       });
 
+      // create views
+      var itemsView = new wdk.views.filter.FilterItemsView(filterService, { model: filterService.filters });
+      var view = new wdk.views.filter.FilterView({ model: filterService });
+
       // attach views
       $(node)
         .append(itemsView.el)
         .append(view.el);
+
+      itemsView.render();
+      view.render(); //.collapse(true);
 
       form.on('submit', function(e) {
         if (filterService.filteredData.length === 0) {
