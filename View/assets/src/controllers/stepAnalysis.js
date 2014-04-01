@@ -82,12 +82,12 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 		$(newAnalysisDiv).hover(
 				function() {
 					//newAnalysisInstr.html("Analyze This Result");
-					newAnalysisButton.css("border","1px solid black");
+					newAnalysisButton.css("border","1px solid #aaaaaa");
 					newAnalysisMenu.show();
 				},
 				function() {
 					//newAnalysisInstr.html("");
-					newAnalysisButton.css("border","1px solid #AAAAAA");
+					newAnalysisButton.css("border","1px solid #d3d3d3");
 					newAnalysisMenu.hide();
 				}
 		);
