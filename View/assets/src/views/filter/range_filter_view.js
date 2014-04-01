@@ -58,7 +58,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
         color: '#000'
       },{
         data: _.zip(xfdata, yfdata),
-        color: 'red'
+        color: 'red',
+        hoverable: false
       }];
 
       var plotOptions = {
