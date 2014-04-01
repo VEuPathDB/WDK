@@ -14,7 +14,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     tagName: 'tr',
 
     events: {
-      'click [data-action="toggleIgnored"]': 'handleToggleIgnore'
+      'change [data-action="toggleIgnored"]': 'handleToggleIgnore'
     },
 
     initialize: function(options) {
@@ -50,6 +50,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     className: 'results context ui-helper-clearfix',
 
+    _doRender: null,
+
     dataTable: null,
 
     constructor: function() {
@@ -60,7 +62,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     initialize: function() {
-      this.listenTo(this.model.filteredData, 'reset', this.render);
+      this.listenTo(this.model.filteredData, 'reset', this.queueRender);
       this.render();
     },
 
@@ -83,6 +85,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
       return this;
     },
 
+    queueRender: function() {
+      this._doRender = true;
+    },
+
     setTitle: function(e) {
       var td = e.currentTarget;
       if (td.scrollWidth > td.clientWidth) {
@@ -91,7 +97,12 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     didShow: function() {
-      this.dataTable.fnDraw();
+      if (this._doRender) {
+        this.render();
+        this._doRender = false;
+      } else {
+        this.dataTable.fnDraw();
+      }
     },
 
     resizeTable: function() {
@@ -103,7 +114,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var columns = _.range(this.model.fields.length + 1).map(function() {
         return null;
       });
-      columns.push({ bSortable: false });
+      // columns.push({ bSortable: false });
+      // columns.unshift(null);
 
       return {
         bFilter: false,
