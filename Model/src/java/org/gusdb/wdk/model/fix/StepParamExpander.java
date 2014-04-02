@@ -21,13 +21,14 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wsf.util.BaseCLI;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * @author xingao
  * 
- *         this code extract the param values from steps, and put them into
- *         separate row. The result will be used to expedite the step
- *         validation.
+ *         this code extract the param values from steps, and put them into separate row. The result will be
+ *         used to expedite the step validation.
  */
 public class StepParamExpander extends BaseCLI {
 
@@ -38,10 +39,12 @@ public class StepParamExpander extends BaseCLI {
     StepParamExpander expender = new StepParamExpander(cmdName);
     try {
       expender.invoke(args);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       throw ex;
-    } finally {
+    }
+    finally {
       logger.info("step params expanded.");
       System.exit(0);
     }
@@ -71,8 +74,7 @@ public class StepParamExpander extends BaseCLI {
       int count = 0;
       while (resultSet.next()) {
         int stepId = resultSet.getInt("step_id");
-        String clob = database.getPlatform().getClobData(resultSet,
-            "display_params");
+        String clob = database.getPlatform().getClobData(resultSet, "display_params");
 
         if (clob == null)
           continue;
@@ -101,10 +103,12 @@ public class StepParamExpander extends BaseCLI {
         }
       }
       logger.info("Totally processed " + count + " steps.");
-    } catch (SQLException | WdkModelException ex) {
+    }
+    catch (SQLException | WdkModelException | JSONException ex) {
       connection.rollback();
-      throw ex;
-    } finally {
+      throw new WdkModelException(ex);
+    }
+    finally {
       if (resultSet != null) {
         resultSet.getStatement().close();
         resultSet.close();
@@ -121,27 +125,21 @@ public class StepParamExpander extends BaseCLI {
     DataSource dataSource = database.getDataSource();
 
     // check if table exists
-    if (database.getPlatform().checkTableExists(dataSource,
-        database.getDefaultSchema(), "step_params"))
+    if (database.getPlatform().checkTableExists(dataSource, database.getDefaultSchema(), "step_params"))
       return;
 
-    SqlUtils.executeUpdate(dataSource, "CREATE TABLE step_params ("
-        + " step_id NUMBER(12) NOT NULL, "
-        + " param_name VARCHAR(200) NOT NULL, "
-        + " param_value VARCHAR(4000), migration NUMBER(12))",
+    SqlUtils.executeUpdate(dataSource, "CREATE TABLE step_params (" + " step_id NUMBER(12) NOT NULL, "
+        + " param_name VARCHAR(200) NOT NULL, " + " param_value VARCHAR(4000), migration NUMBER(12))",
         "wdk-create-param-table");
 
     SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX step_params_ux01 "
-        + "ON step_params (step_id, param_name, param_value)",
-        "wdk-create-param-indx");
+        + "ON step_params (step_id, param_name, param_value)", "wdk-create-param-indx");
 
-    SqlUtils.executeUpdate(dataSource, "CREATE INDEX step_params_ix01 "
-        + "ON step_params (step_id)",
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX step_params_ix01 " + "ON step_params (step_id)",
         "wdk-create-param-indx");
   }
 
-  private ResultSet prepareSelect(WdkModel wdkModel, Connection connection)
-      throws SQLException {
+  private ResultSet prepareSelect(WdkModel wdkModel, Connection connection) throws SQLException {
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
     String schema = userDB.getUserSchema();
     StringBuffer sql = new StringBuffer("SELECT s.step_id, s.display_params ");
@@ -149,35 +147,35 @@ public class StepParamExpander extends BaseCLI {
     sql.append(" WHERE s.user_id = u.user_id AND u.is_guest = 0");
     sql.append("   AND s.step_id NOT IN (SELECT step_id FROM step_params) ");
 
-    return SqlUtils.executeQuery(connection, sql.toString(),
-        "wdk-select-step-params", 1000);
+    return SqlUtils.executeQuery(connection, sql.toString(), "wdk-select-step-params", 1000);
   }
 
-  private PreparedStatement prepareInsert(Connection connection)
-      throws SQLException {
+  private PreparedStatement prepareInsert(Connection connection) throws SQLException {
     StringBuffer sql = new StringBuffer("INSERT INTO step_params ");
     sql.append(" (step_id, param_name, param_value) " + "  VALUES (?, ?, ?)");
 
     return connection.prepareStatement(sql.toString());
   }
 
-  private List<String[]> parseClob(WdkModel wdkModel, String clob)
-      throws WdkModelException {
-    StepFactory stepFactory = wdkModel.getStepFactory();
-    Map<String, String> values = stepFactory.parseParamContent(clob);
+  private List<String[]> parseClob(WdkModel wdkModel, String clob) throws WdkModelException, JSONException {
     List<String[]> newValues = new ArrayList<String[]>();
-    for (String paramName : values.keySet()) {
-      String value = values.get(paramName);
-      String[] terms = value.split(",");
-      Set<String> used = new HashSet<>();
-      for (String term : terms) {
-        if (term.length() > 4000)
-          term = term.substring(0, 4000);
-        if (used.contains(term)) {
-          continue;
-        } else {
-          newValues.add(new String[] { paramName, term });
-          used.add(term);
+    if (clob != null && clob.length() > 0) {
+      StepFactory stepFactory = wdkModel.getStepFactory();
+      Map<String, String> values = stepFactory.parseParamContent(new JSONObject(clob));
+      for (String paramName : values.keySet()) {
+        String value = values.get(paramName);
+        String[] terms = value.split(",");
+        Set<String> used = new HashSet<>();
+        for (String term : terms) {
+          if (term.length() > 4000)
+            term = term.substring(0, 4000);
+          if (used.contains(term)) {
+            continue;
+          }
+          else {
+            newValues.add(new String[] { paramName, term });
+            used.add(term);
+          }
         }
       }
     }
@@ -192,8 +190,7 @@ public class StepParamExpander extends BaseCLI {
   @Override
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which"
-        + " should match the directory name under $GUS_HOME, where"
-        + " model-config.xml is stored.");
+        + " should match the directory name under $GUS_HOME, where" + " model-config.xml is stored.");
   }
 
   /*

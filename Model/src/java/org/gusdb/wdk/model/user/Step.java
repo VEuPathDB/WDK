@@ -581,6 +581,8 @@ public class Step {
    *          the paramErrors to set
    */
   public void setParamValues(Map<String, String> paramValues) throws WdkModelException {
+    if (paramValues == null)
+      paramValues = new LinkedHashMap<>();
     this.paramValues = new LinkedHashMap<String, String>(paramValues);
     // make sure the params do exist
     if (this.valid) {
