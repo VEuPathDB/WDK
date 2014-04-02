@@ -47,6 +47,17 @@ module.exports = function(grunt) {
       }
     },
 
+    cssmin: {
+      wdk: {
+        src: ['css/wdk.css'],
+        dest: 'dist/wdk/css/wdk.min.css',
+      },
+      libs: {
+        src: ['css/wdk.libs.css'],
+        dest: 'dist/wdk/css/wdk.libs.min.css',
+      }
+    },
+
     copy: {
       js: {
         files: [
@@ -90,11 +101,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-handlebars');
 
-  grunt.registerTask('dist', ['clean', 'concat', 'handlebars', 'uglify', 'copy', 'debugScript']);
+  grunt.registerTask('dist', ['clean', 'concat', 'handlebars', 'uglify', 'cssmin', 'copy', 'debugScript']);
 
   grunt.registerTask('default', ['dist']);
 

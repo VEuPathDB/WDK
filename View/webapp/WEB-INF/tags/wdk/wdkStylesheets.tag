@@ -7,38 +7,16 @@
 
   <jsp:directive.attribute name="refer" required="false" 
               description="Page calling this tag. The list of WDK recognized refer values are: home, question, summary, record"/>
+  <jsp:directive.attribute name="debug" required="false" description="Use unminified files"/>
 
-
-  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-  <!-- Scripts and styles that are used on the whole site                    -->
-  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-
-  <!-- styles for JS libraries -->
-  <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/jquery-ui.css"/>
-  <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/chosen.min.css"/>
-  <!--
-  <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/jquery.multiSelect.css"/>
-  -->
-  <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/datatables.css"/>
-  <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/lib/qtip2/jquery.qtip.css"/>
-  <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdkCommon.css"/>
-  <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdk-filter-param.css"/>
-
-
-
-  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-  <!-- scripts and styles used on the SUMMARY page only                      -->
-  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-  <c:if test="${refer == 'summary'}">
-
-   <!-- Did you know popup -->
-    <imp:stylesheet rel="stylesheet" type="text/css" href='/wdk/css/dyk.css'/>
-
-    <imp:stylesheet rel="stylesheet" type="text/css" href='/wdk/css/Strategy.css'/>
-
-    <!-- Results Page  -->
-    <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/flexigrid.css"/>
-    <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdkFilter.css"/>
-
-  </c:if>
+  <c:choose>
+    <c:when test="${debug eq true}">
+      <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdk.libs.css"/>
+      <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdk.css"/>
+    </c:when>
+    <c:otherwise>
+      <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdk.libs.min.css"/>
+      <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdk.min.css"/>
+    </c:otherwise>
+  </c:choose>
 </jsp:root>
