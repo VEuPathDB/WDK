@@ -28,7 +28,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
    * Eventual table will have:
    *   contextHash(PK), status, log CLOB, data CLOB, data BLOB
    */
-  // will map contextHash -> ResultInfo
+  // will map contextHash -> AnalysisResult
   private static Map<String, AnalysisResult> RESULT_INFO_MAP = new LinkedHashMap<>();
 
   private static AtomicInteger ID_SEQUENCE = new AtomicInteger(0);

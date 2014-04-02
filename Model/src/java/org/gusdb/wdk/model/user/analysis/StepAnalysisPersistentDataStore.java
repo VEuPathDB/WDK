@@ -13,32 +13,26 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * Implementation of StepAnalysisDataStore that stores information in the
- * database.  This class manages two tables:
- * 
- * UserDB.STEP_ANALYSIS {
- *   int analysisId (PK)
- *   int stepId
- *   varchar displayName
- *   bool isNew
- *   CLOB context
- * }
- * 
- * AppDB.STEP_ANALYSIS_RESULTS {
- *   varchar contextHash (PK)
- *   varchar status
- *   CLOB log
- *   CLOB data
- * }
- * 
- * It also depends on a primary key sequence named UserDB.STEP_ANALYSIS_PKSEQ.
+ * database.  This class manages two tables: one for step analysis instances
+ * and one for analysis executions.  Instance records may exist that don't yet
+ * have an execution, and executions can be shared across instances.  The
+ * context_hash column in the instance can map to the primary key of the
+ * execution table, but it is not a strict foreign key because there's no
+ * guarantee of a mapping (execution may not yet exist).  For table definitions
+ * see documentation of the createUserSql() and createAppSql() methods below.
+ * This class also depends on a primary key sequence for the analysis instance
+ * table.
  * 
  * @author rdoherty
  */
 public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
 
   private static final String ANALYSIS_TABLE = "STEP_ANALYSIS";
-  private static final String ANALYSIS_RESULTS_TABLE = "STEP_ANALYSIS_RESULTS";
+  private static final String ANALYSIS_SEQUENCE = ANALYSIS_TABLE + "_PKSEQ";
+  private static final String EXECUTION_TABLE = "STEP_ANALYSIS_RESULTS";
   
+  // SQL to update and query analysis table
+  private String CREATE_ANALYSIS_TABLE_SQL;
   private String INSERT_ANALYSIS_SQL;
   private String DELETE_ANALYSIS_SQL;
   private String UPDATE_NAME_SQL;
@@ -48,6 +42,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private String GET_ALL_ANALYSIS_IDS_SQL;
   private String GET_ANALYSES_BY_IDS_SQL;
   
+  // SQL to update and query execution table
+  private String CREATE_EXECUTION_SQL;
   private String INSERT_EXECUTION_SQL;
   private String DELELE_EXECUTION_SQL;
   private String DELETE_ALL_EXECUTIONS_SQL;
@@ -67,24 +63,67 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   
   public StepAnalysisPersistentDataStore(WdkModel wdkModel) {
     super(wdkModel);
+    
     _userDb = wdkModel.getUserDb();
     _userDbPlatform = _userDb.getPlatform();
     _userDbDs = _userDb.getDataSource();
     createUserSql(_userDb.getDefaultSchema());
+    
     _appDb = wdkModel.getUserDb();
     _appDbPlatform = _appDb.getPlatform();
     _appDbDs = _appDb.getDataSource();
     createAppSql(_appDb.getDefaultSchema());
   }
   
+  /**
+   * Create SQL statements and queries for the analysis instance table:
+   *
+   * UserDB.STEP_ANALYSIS {
+   *   int analysis_id (PK)
+   *   int step_id
+   *   varchar display_name
+   *   bool is_new
+   *   varchar context_hash
+   *   CLOB context
+   * }
+   */
   private void createUserSql(String schema) {
     String table = schema + ANALYSIS_TABLE;
-    
+    CREATE_ANALYSIS_TABLE_SQL = "";
+    INSERT_ANALYSIS_SQL = "";
+    DELETE_ANALYSIS_SQL = "";
+    UPDATE_NAME_SQL = "";
+    UPDATE_NEW_FLAG_SQL = "";
+    UPDATE_CONTEXT_SQL = "";
+    GET_ANALYSIS_IDS_BY_STEP_SQL = "";
+    GET_ALL_ANALYSIS_IDS_SQL = "";
+    GET_ANALYSES_BY_IDS_SQL = "";
   }
-  
+
+  /**
+   * Create SQL statements and queries for the analysis execution table:
+   *
+   * AppDB.STEP_ANALYSIS_RESULTS {
+   *   varchar context_hash (PK)
+   *   varchar status
+   *   date start_time
+   *   date end_Time
+   *   CLOB log
+   *   CLOB char_data
+   *   BLOB bin_data
+   * }
+   */
   private void createAppSql(String schema) {
-    String table = schema + ANALYSIS_RESULTS_TABLE;
-    
+    String table = schema + EXECUTION_TABLE;
+    CREATE_EXECUTION_SQL = "";
+    INSERT_EXECUTION_SQL = "";
+    DELELE_EXECUTION_SQL = "";
+    DELETE_ALL_EXECUTIONS_SQL = "";
+    UPDATE_EXECUTION_SQL = "";
+    SET_EXECUTION_LOG_SQL = "";
+    GET_EXECUTION_LOG_SQL = "";
+    GET_STATUS_BY_HASH_SQL = "";
+    GET_RESULTS_BY_HASH_SQL = "";
   }
 
   @Override
