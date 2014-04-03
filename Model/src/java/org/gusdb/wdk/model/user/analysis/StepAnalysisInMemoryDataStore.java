@@ -44,13 +44,15 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
 
   @Override
   public void insertAnalysis(int analysisId, int stepId, String displayName,
-      String contextHash, String serializedContext) throws WdkModelException {
+      String invalidStepReason, String contextHash, String serializedContext)
+          throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (!STEP_ANALYSIS_MAP.containsKey(stepId)) {
         STEP_ANALYSIS_MAP.put(stepId, new ArrayList<Integer>());
       }
       STEP_ANALYSIS_MAP.get(stepId).add(analysisId);
-      AnalysisInfo info = new AnalysisInfo(analysisId, stepId, displayName, true, contextHash, serializedContext);
+      AnalysisInfo info = new AnalysisInfo(analysisId, stepId, displayName,
+          true, invalidStepReason, contextHash, serializedContext);
       ANALYSIS_INFO_MAP.put(analysisId, info);
       LOG.info("Inserted analysis with ID " + analysisId + " on step " + stepId +
           "; now " + STEP_ANALYSIS_MAP.get(stepId).size() + " analyses for this step.");

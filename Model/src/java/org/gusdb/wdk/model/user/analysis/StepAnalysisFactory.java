@@ -93,18 +93,18 @@ public class StepAnalysisFactory {
       throws WdkModelException, IllegalAnswerValueException {
 
     // ensure this is a valid step to analyze
-    AnswerValue answer = context.getStep().getAnswerValue();
-    if (answer.getResultSize() == 0) {
-      throw new IllegalAnswerValueException("You cannot analyze a Step with zero results.");
-    }
-    StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
-    analyzer.setAnswerValue(answer);
-    analyzer.validateAnswerValue(answer);
+    checkStepForValidity(context);
     
+    // analysis valid; write analysis to DB
+    return writeNewAnalysisContext(context);
+  }
+  
+  private StepAnalysisContext writeNewAnalysisContext(StepAnalysisContext context)
+      throws WdkModelException {
     // create new execution instance
     int saId = _dataStore.getNextId();
-    _dataStore.insertAnalysis(saId, context.getStep().getStepId(),
-        context.getDisplayName(), context.createHash(), context.serializeContext());
+    _dataStore.insertAnalysis(saId, context.getStep().getStepId(), context.getDisplayName(),
+        context.getInvalidStepReason(), context.createHash(), context.serializeContext());
     
     // override any previous values for id and status; this is a -new- analysis
     context.setAnalysisId(saId);
@@ -114,6 +114,18 @@ public class StepAnalysisFactory {
     return context;
   }
 
+  private void checkStepForValidity(StepAnalysisContext context)
+      throws WdkModelException, IllegalAnswerValueException {
+    // ensure this is a valid step to analyze
+    AnswerValue answer = context.getStep().getAnswerValue();
+    if (answer.getResultSize() == 0) {
+      throw new IllegalAnswerValueException("You cannot analyze a Step with zero results.");
+    }
+    StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
+    analyzer.setAnswerValue(answer);
+    analyzer.validateAnswerValue(answer);
+  }
+  
   public StepAnalysisContext runAnalysis(StepAnalysisContext context)
       throws WdkModelException {
     ExecutionStatus initialStatus = ExecutionStatus.PENDING;
@@ -220,6 +232,24 @@ public class StepAnalysisFactory {
   
   public StepAnalysisViewResolver getViewResolver() {
     return _viewResolver;
+  }
+
+  public void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException {
+    Map<Integer, StepAnalysisContext> fromContexts = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
+    for (StepAnalysisContext fromContext : fromContexts.values()) {
+      StepAnalysisContext toContext = StepAnalysisContext.createCopy(fromContext);
+      toContext.setStep(toStep);
+      try {
+        checkStepForValidity(toContext);
+        toContext.setIsValidStep(true);
+      }
+      catch (IllegalAnswerValueException e) {
+        // if answer value of toStep is not valid for the given analysis, mark as
+        // such and save; user will not be shown form and will be unable to run analysis
+        toContext.setIsValidStep(false, e.getMessage());
+      }
+      writeNewAnalysisContext(toContext);
+    }
   }
   
   public void clearResultsCache() throws WdkModelException {

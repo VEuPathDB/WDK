@@ -29,21 +29,26 @@ public class StepAnalysisFileStore {
 
   
   /**
-   * Deletes all sub-directories of this file store.
+   * Deletes all sub-directories of this file store that it can.  If permission
+   * is denied on a particular subdir, it is skipped and the process continues.
    * 
    * @throws WdkModelException if unable to delete storage cache
    */
   public void deleteAllExecutions() throws WdkModelException {
-    try {
-      String[] cacheDirNames = _fileStoreDirectory.toFile().list();
-      for (String cacheDirName : cacheDirNames) {
-        Path cacheDirPath = Paths.get(_fileStoreDirectory.toString(), cacheDirName);
+    String[] cacheDirNames = _fileStoreDirectory.toFile().list();
+    if (cacheDirNames == null) {
+      throw new WdkModelException("Unable to delete step analysis results " +
+          "cache on filesystem at path: " + _fileStoreDirectory +
+          ", directory does not exist.");
+    }
+    for (String cacheDirName : cacheDirNames) {
+      Path cacheDirPath = Paths.get(_fileStoreDirectory.toString(), cacheDirName);
+      try {
         IoUtil.deleteDirectoryTree(cacheDirPath);
       }
-    }
-    catch (IOException e) {
-      throw new WdkModelException("Unable to delete step analysis results " +
-      		"cache on filesystem at path: " + _fileStoreDirectory, e);
+      catch (Exception e) {
+        LOG.warn("Unable to delete execution storage directory: " + cacheDirPath.toString());
+      }
     }
   }
 
@@ -91,7 +96,6 @@ public class StepAnalysisFileStore {
   public boolean storageDirExists(String hash) {
     return getStorageDirPath(hash).toFile().exists();
   }
-
 
   public void testFileStore() throws WdkModelException {
     try {

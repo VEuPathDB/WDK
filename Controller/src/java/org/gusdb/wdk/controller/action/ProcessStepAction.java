@@ -198,6 +198,9 @@ public class ProcessStepAction extends Action {
       newStep = step.createStep(filterName, weight);
     }
 
+    // must copy all analysis instance configurations from old step to new step
+    wdkModel.getModel().getStepAnalysisFactory().copyAnalysisInstances(step.getStep(), newStep.getStep());
+    
     // set custom name to the new step
     if (customName != null) {
       newStep.setCustomName(customName);

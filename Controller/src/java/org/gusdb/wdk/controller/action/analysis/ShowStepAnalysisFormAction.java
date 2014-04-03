@@ -11,10 +11,15 @@ public class ShowStepAnalysisFormAction extends AbstractStepAnalysisIdAction {
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
 
     StepAnalysisContext context = getContextFromPassedId();
+    
+    if (!context.getIsValidStep()) {
+      return new ActionResult().setViewName("invalidStep")
+          .setRequestAttribute("reason", context.getInvalidStepReason());
+    }
+    
     String resolvedView = getAnalysisMgr().getViewResolver().resolveFormView(this, context);
-
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
-    ActionResult result = new ActionResult().setViewPath(resolvedView)
+    return new ActionResult().setViewPath(resolvedView)
         .setRequestAttribute("viewModel", analyzer.getFormViewModel());
     
     // special case for interacting with a WDK question
@@ -26,9 +31,8 @@ public class ShowStepAnalysisFormAction extends AbstractStepAnalysisIdAction {
         result.setRequestAttribute(entry.getKey(), entry.getValue());
       }
     }*/
-    
-    return result;
   }
+
   /*
   public void assign(ActionForm form,
       HttpServletRequest request, HttpServletResponse response)
