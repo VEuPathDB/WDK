@@ -1,21 +1,10 @@
 <td class="display">
-  <!--
   <label>
-    <input type="checkbox" value="{{item.term}}" {{#unless item.ignored }}checked{{/unless}}/>
+    <input data-action="toggleIgnored" type="checkbox" value="{{item.term}}" {{#unless item.ignored }}checked{{/unless}}/>
+    {{item.display}}
   </label>
-  -->
-  {{item.display}}
 </td>
-{{#each fields}}
-<td class="{{term}}">{{property term ../item/metadata}}</td>
-{{/each}}
 
-<td class="ignored">
-  <div class="button" data-action="toggleIgnored">
-    {{#if item.ignored}}
-      <span class="include">Include</span>
-    {{else}}
-      <span class="ignore">Ignore</span>
-    {{/if}}
-  </div>
-</td>
+{{#each fields}}
+  <td class="{{term}}">{{property term ../item/metadata}}</td>
+{{/each}}
