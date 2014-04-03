@@ -1302,9 +1302,7 @@ public class StepFactory {
     if (jsContent != null) {
       try {
         // read params;
-        JSONObject jsParams = jsContent.getJSONObject("params");
-        if (jsParams == null)
-          jsParams = jsContent;
+        JSONObject jsParams = jsContent.has("params") ? jsContent.getJSONObject("params") : jsContent;
         String[] paramNames = JSONObject.getNames(jsParams);
         if (paramNames != null) {
           for (String paramName : paramNames) {
