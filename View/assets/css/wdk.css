@@ -1,0 +1,13 @@
+/*
+ * WDK CSS files
+ *
+ * This file gets minified to wdk.min.css. It is recommended that
+ * the minified file is included for production deployments
+ */
+
+@import 'wdkCommon.css';
+@import 'wdk-filter-param.css';
+@import 'dyk.css';
+@import 'Strategy.css';
+@import 'flexigrid.css';
+@import 'wdkFilter.css';

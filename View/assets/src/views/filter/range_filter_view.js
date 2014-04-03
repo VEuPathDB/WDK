@@ -14,7 +14,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
       'plotselected .chart'   : 'handlePlotSelected',
       'plotselecting .chart'  : 'handlePlotSelecting',
       'plotunselected .chart' : 'handlePlotUnselected',
-      'keyup input'           : 'handleFormChange'
+      'keyup input'           : _.debounce(function(e) {
+        this.handleFormChange(e);
+      }, 300)
     },
 
     template: wdk.templates['filter/range_filter.handlebars'],
@@ -56,7 +58,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
         color: '#000'
       },{
         data: _.zip(xfdata, yfdata),
-        color: 'red'
+        color: 'red',
+        hoverable: false
       }];
 
       var plotOptions = {

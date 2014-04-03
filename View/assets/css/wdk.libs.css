@@ -1,0 +1,13 @@
+/*
+ * CSS libraries required by WDK
+ *
+ * This file gets minified to wdk.libs.min.css. It is recommended that
+ * the minified file is included for production deployments
+ */
+
+@import 'reset.css';
+@import 'jquery-ui.css';
+@import 'chosen.min.css';
+@import 'datatables.css';
+@import 'dataTables.colVis.min.css';
+@import '../lib/qtip2/jquery.qtip.css';
