@@ -98,7 +98,8 @@ public class StepAnalysisFactory {
       throw new IllegalAnswerValueException("You cannot analyze a Step with zero results.");
     }
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
-    analyzer.preApproveAnswer(answer);
+    analyzer.setAnswerValue(answer);
+    analyzer.validateAnswerValue(answer);
     
     // create new execution instance
     int saId = _dataStore.getNextId();
@@ -213,6 +214,7 @@ public class StepAnalysisFactory {
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
     analyzer.setStorageDirectory(storageDirectory);
     analyzer.setFormParams(context.getFormParams());
+    analyzer.setAnswerValue(context.getStep().getAnswerValue());
     return analyzer;
   }
   
