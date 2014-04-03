@@ -2,7 +2,7 @@
 # replace <baseDirectory> with the base directory (e.g. /www/wdktemplate)
 
 webappTargetDir=<baseDirectory>/webapp
-htdocsTargetDir=<baseDirectory>/html
+htdocsTargetDir=<baseDirectory>/htdocs
 cgibinTargetDir=<baseDirectory>/cgi-bin
 cgilibTargetDir=<baseDirectory>/cgi-lib
 confTargetDir=<baseDirectory>/conf
