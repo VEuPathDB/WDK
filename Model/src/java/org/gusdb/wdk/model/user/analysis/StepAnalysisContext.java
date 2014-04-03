@@ -50,6 +50,7 @@ public class StepAnalysisContext {
   private Step _step;
   private StepAnalysis _stepAnalysis;
   private boolean _isNew;
+  private String _invalidStepReason;
   private ExecutionStatus _status;
   private Map<String, String[]> _formParams;
 
@@ -93,6 +94,7 @@ public class StepAnalysisContext {
     ctx._displayName = ctx._stepAnalysis.getDisplayName();
     ctx._formParams = new HashMap<String,String[]>();
     ctx._isNew = true;
+    ctx._invalidStepReason = null;
     ctx._status = ExecutionStatus.CREATED;
     
     return ctx;
@@ -114,13 +116,14 @@ public class StepAnalysisContext {
   }  
   
   public static StepAnalysisContext createFromStoredData(WdkModel wdkModel,
-      int analysisId, boolean isNew, String displayName, String serializedContext) throws WdkModelException {
+      int analysisId, boolean isNew, String invalidStepReason, String displayName, String serializedContext) throws WdkModelException {
     try {
       StepAnalysisContext ctx = new StepAnalysisContext();
       ctx._wdkModel = wdkModel;
       ctx._analysisId = analysisId;
       ctx._displayName = displayName;
       ctx._isNew = isNew;
+      ctx._invalidStepReason = invalidStepReason;
       ctx._status = ExecutionStatus.UNKNOWN;
       
       LOG.info("Got the following serialized context from the DB: " + serializedContext);
@@ -287,6 +290,10 @@ public class StepAnalysisContext {
     return _step;
   }
 
+  public void setStep(Step step) {
+    _step = step;
+  }
+  
   public StepAnalysis getStepAnalysis() {
     return _stepAnalysis;
   }
@@ -309,5 +316,23 @@ public class StepAnalysisContext {
 
   public void setNew(boolean isNew) {
     _isNew = isNew;
+  }
+
+  public boolean getIsValidStep() {
+    return (_invalidStepReason != null && !_invalidStepReason.isEmpty());
+  }
+
+  public String getInvalidStepReason() {
+    return _invalidStepReason;
+  }
+  
+  public void setIsValidStep(boolean isValidStep) {
+    setIsValidStep(isValidStep, null);
+  }
+  
+  public void setIsValidStep(boolean isValidStep, String invalidReason) {
+    // valid steps have no invalid reasons; set to null
+    _invalidStepReason = (isValidStep ? null :
+      (invalidReason == null || invalidReason.isEmpty()) ? null : invalidReason);
   }
 }

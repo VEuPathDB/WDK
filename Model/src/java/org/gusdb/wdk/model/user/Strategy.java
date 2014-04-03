@@ -361,6 +361,9 @@ public class Strategy {
       newStep.setCollapsible(targetStep.isCollapsible());
       newStep.setCollapsedName(targetStep.getCollapsedName());
       newStep.update(false);
+      
+      // must copy all analysis instance configurations from target step to new step
+      stepFactory.getWdkModel().getStepAnalysisFactory().copyAnalysisInstances(targetStep, newStep);
 
       newStepId = newStep.getStepId();
       targetStepId = targetStep.getStepId();

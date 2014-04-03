@@ -17,14 +17,16 @@ public abstract class StepAnalysisDataStore {
     int stepId;
     String displayName;
     boolean isNew;
+    String invalidStepReason;
     String contextHash;
     String serializedContext;
     public AnalysisInfo(int analysisId, int stepId, String displayName, boolean isNew,
-        String contextHash, String serializedContext) {
+        String invalidStepReason, String contextHash, String serializedContext) {
       this.analysisId = analysisId;
       this.stepId = stepId;
       this.displayName = displayName;
       this.isNew = isNew;
+      this.invalidStepReason = invalidStepReason;
       this.contextHash = contextHash;
       this.serializedContext = serializedContext;
     }
@@ -37,7 +39,7 @@ public abstract class StepAnalysisDataStore {
   
   // abstract methods to manage analysis information
   public abstract int getNextId() throws WdkModelException;
-  public abstract void insertAnalysis(int analysisId, int stepId, String displayName, String contextHash, String serializedContext) throws WdkModelException;
+  public abstract void insertAnalysis(int analysisId, int stepId, String displayName, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
   public abstract void deleteAnalysis(int analysisId) throws WdkModelException;
   public abstract void renameAnalysis(int analysisId, String displayName) throws WdkModelException;
   public abstract void setNewFlag(int analysisId, boolean isNew) throws WdkModelException;
@@ -113,8 +115,14 @@ public abstract class StepAnalysisDataStore {
     
     AnalysisInfo info = data.analysisInfo;
     StepAnalysisContext context = StepAnalysisContext.createFromStoredData(
-        _wdkModel, info.analysisId, info.isNew, info.displayName, info.serializedContext);
+        _wdkModel, info.analysisId, info.isNew, info.invalidStepReason, info.displayName, info.serializedContext);
 
+    // if analysis was created from a step its analyzer did not approve, then status is always INVALID
+    if (!context.getIsValidStep()) {
+      context.setStatus(ExecutionStatus.INVALID);
+      return context;
+    }
+    
     // if analysis is new (has never been run), don't care about cache; just set as CREATED and return
     if (info.isNew) {
       context.setStatus(ExecutionStatus.CREATED);

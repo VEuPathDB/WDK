@@ -83,6 +83,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
    *   int step_id
    *   varchar display_name
    *   bool is_new
+   *   bool is_valid_step
    *   varchar context_hash
    *   CLOB context
    * }
@@ -137,8 +138,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void insertAnalysis(int analysisId, int stepId, String displayName, String contextHash,
-      String serializedContext) throws WdkModelException {
+  public void insertAnalysis(int analysisId, int stepId, String displayName,
+      String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException {
     // TODO Auto-generated method stub
     
   }

@@ -16,6 +16,7 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
     
     switch (context.getStatus()) {
       case CREATED:
+      case INVALID:
         // analysis has not yet been run; return an empty result
         return new ActionResult().setStream(IoUtil.getStreamFromString(""));
       case COMPLETE:
