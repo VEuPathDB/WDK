@@ -95,6 +95,7 @@ public class StepAnalysisFileStore {
 
   public void testFileStore() throws WdkModelException {
     try {
+      LOG.info("Testing step analysis file store...");
       String sampleHash = UUID.randomUUID().toString();
       Path sampleDir = getStorageDirPath(sampleHash);
       recreateStore(sampleHash);
@@ -102,7 +103,7 @@ public class StepAnalysisFileStore {
       Files.createFile(sampleFile);
       IoUtil.deleteDirectoryTree(sampleDir);
     }
-    catch(IOException e) {
+    catch (IOException e) {
       String message = "File store test failed.  Unable to write " +
           "dir or file to configured file store: " + _fileStoreDirectory;
       LOG.error(message, e);

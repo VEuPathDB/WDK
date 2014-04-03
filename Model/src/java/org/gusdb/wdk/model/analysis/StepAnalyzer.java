@@ -71,8 +71,27 @@ public interface StepAnalyzer {
    * @return a map of errors associated with the param names.  If validation
    * passed, an empty map or null is an acceptable return value.
    */
-  public Map<String, String> validateFormParams(Map<String, String[]> formParams);
+  public Map<String, String> validateFormParams(Map<String, String[]> formParams)
+      throws WdkModelException;
+
+  /**
+   * Sets answer value retrieved from the step being analyzed
+   * 
+   * @param answerValue answer value from the step being analyzed
+   */
+  public void setAnswerValue(AnswerValue answerValue);
   
+  /**
+   * Checks that this is a valid answer for this analyzer, and throws an
+   * exception if is not.
+   * 
+   * @param answerValue answer that might be analyzed by this analyzer
+   * @throws IllegalAnswerValueException if answer cannot be analyzed by this analyzer
+   * @throws WdkModelException if error occurs while determining validity of answer
+   */
+  public void validateAnswerValue(AnswerValue answerValue)
+      throws IllegalAnswerValueException, WdkModelException;
+
   /**
    * Runs an analysis of the passed AnswerValue.  In-process logging can be
    * recorded using the passed StatusLogger.
@@ -131,16 +150,5 @@ public interface StepAnalyzer {
    * @param data persistently stored binary data
    */
   public void setPersistentBinaryData(byte[] data);
-
-  /**
-   * Checks that this is a valid answer for this analyzer, and throws an
-   * exception if is not.
-   * 
-   * @param answerValue answer that might be analyzed by this analyzer
-   * @throws IllegalAnswerValueException if answer cannot be analyzed by this analyzer
-   * @throws WdkModelException if error occurs while determining validity of answer
-   */
-  public void preApproveAnswer(AnswerValue answerValue)
-      throws IllegalAnswerValueException, WdkModelException;
-
+  
 }

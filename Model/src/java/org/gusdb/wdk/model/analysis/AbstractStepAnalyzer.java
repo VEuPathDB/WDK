@@ -19,6 +19,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   private static final Logger LOG = Logger.getLogger(AbstractStepAnalyzer.class);
   
   private WdkModel _wdkModel;
+  private AnswerValue _answerValue;
   private Map<String, String> _properties = new HashMap<>();
   private Map<String, String[]> _formParams = new HashMap<>();
   private Path _storageDirectory;
@@ -32,7 +33,15 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   public void setWdkModel(WdkModel wdkModel) {
     _wdkModel = wdkModel;
   }
-
+  
+  protected AnswerValue getAnswerValue() {
+    return _answerValue;
+  }
+  @Override
+  public void setAnswerValue(AnswerValue answerValue) {
+    _answerValue = answerValue;
+  }
+  
   protected Path getStorageDirectory() {
     return _storageDirectory;
   }
@@ -97,7 +106,8 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
     _formParams = formParams;
   }
   @Override
-  public Map<String, String> validateFormParams(Map<String, String[]> formParams) {
+  public Map<String, String> validateFormParams(Map<String, String[]> formParams)
+      throws WdkModelException {
     // no validation
     return null;
   }
@@ -108,7 +118,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   }
   
   @Override
-  public void preApproveAnswer(AnswerValue answerValue)
+  public void validateAnswerValue(AnswerValue answerValue)
       throws IllegalAnswerValueException, WdkModelException {
     // do nothing
   }
