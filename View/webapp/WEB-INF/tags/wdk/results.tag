@@ -50,7 +50,7 @@
                      answerValue="${wdkAnswer}" />
 </c:if>
 
-<div><a href="javascript:wdk.stepAnalysis.showAllAnalyses()">Magic Button</a></div>
+<!--<div><a href="javascript:wdk.stepAnalysis.showAllAnalyses()">Magic Button</a></div>-->
 
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
 
