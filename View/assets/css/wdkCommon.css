@@ -1132,6 +1132,15 @@ z-index: 1;
   padding: 4px;
 }
 
+.analysis-pending-pane {
+	margin: 10px auto;
+	text-align:center;
+}
+
+.analysis-pending-pane h3 {
+  text-align:center;
+}
+
 .step-analysis-errors-pane {
 	color: red;
 }

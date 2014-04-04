@@ -1,11 +1,15 @@
 package org.gusdb.wdk.controller.action.analysis;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.model.analysis.StepAnalyzer;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 
 public class ShowStepAnalysisFormAction extends AbstractStepAnalysisIdAction {
+  
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(ShowStepAnalysisFormAction.class);
   
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {

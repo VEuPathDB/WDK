@@ -9,10 +9,19 @@ import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 
 public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
 
+  private static final String ERROR_REASON_TEXT =
+      "A run of this analysis encountered an error before it could complete.";
+  private static final String INTERRUPTED_REASON_TEXT =
+      "A run of this analysis was interrupted before it could complete";
+  private static final String OUTOFDATE_REASON_TEXT =
+      "Your previous run of this analysis is out-of-date and results must be " +
+      "regenerated.  Please confirm your parmeters above and re-run.";
+  
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
 
     StepAnalysisContext context = getContextFromPassedId();
+    String reason = null;
     
     switch (context.getStatus()) {
       case CREATED:
@@ -34,8 +43,11 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
             .setViewName("pending")
             .setRequestAttribute("analysisId", context.getAnalysisId());
       case ERROR:
+        reason = ERROR_REASON_TEXT;
       case INTERRUPTED:
+        reason = (reason == null ? INTERRUPTED_REASON_TEXT : reason);
       case OUT_OF_DATE:
+        reason = (reason == null ? OUTOFDATE_REASON_TEXT: reason);
         return new ActionResult()
             .setViewName("incomplete");
       case UNKNOWN:

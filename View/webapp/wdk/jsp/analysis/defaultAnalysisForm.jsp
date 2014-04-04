@@ -8,7 +8,6 @@
     <body>
       <div style="text-align:center">
         <form>
-          <h3 style="text-align:center">Click below to run this analysis.</h3>
           <input type="submit" value="Run Analysis"/>
         </form>
       </div>

@@ -98,19 +98,53 @@ public class StepAnalysisFactory {
     // analysis valid; write analysis to DB
     return writeNewAnalysisContext(context);
   }
-  
+
+  public StepAnalysisContext copyContext(StepAnalysisContext context)
+      throws WdkModelException {
+    StepAnalysisContext copy = StepAnalysisContext.createCopy(context);
+    copy.setStatus(ExecutionStatus.CREATED);
+    copy.setNew(true);
+    copy = writeNewAnalysisContext(copy);
+    return copy;
+  }
+
+  public void moveAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException {
+    LOG.info("Request made to move analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
+    Map<Integer, StepAnalysisContext> fromContexts = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
+    for (StepAnalysisContext fromContext : fromContexts.values()) {
+      LOG.info("Copying step analysis with ID " + fromContext.getAnalysisId());
+      StepAnalysisContext toContext = StepAnalysisContext.createCopy(fromContext);
+      toContext.setStep(toStep);
+      try {
+        checkStepForValidity(toContext);
+        toContext.setIsValidStep(true);
+      }
+      catch (IllegalAnswerValueException e) {
+        // if answer value of toStep is not valid for the given analysis, mark as
+        // such and save; user will not be shown form and will be unable to run analysis
+        toContext.setIsValidStep(false, e.getMessage());
+      }
+      writeNewAnalysisContext(toContext);
+      LOG.info("Done.");
+    }
+    LOG.info("Completed copy.  Deleting old contexts.");
+    // copies created and assigned; now delete old ones
+    for (StepAnalysisContext context : fromContexts.values()) {
+      LOG.info("Deleting context with ID " + context.getAnalysisId());
+      deleteAnalysis(context);
+    }
+    LOG.info("Step analysis move complete.");
+  }
+
   private StepAnalysisContext writeNewAnalysisContext(StepAnalysisContext context)
       throws WdkModelException {
     // create new execution instance
     int saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(), context.getDisplayName(),
-        context.getInvalidStepReason(), context.createHash(), context.serializeContext());
+        context.isNew(), context.getInvalidStepReason(), context.createHash(), context.serializeContext());
     
-    // override any previous values for id and status; this is a -new- analysis
+    // override any previous value for id
     context.setAnalysisId(saId);
-    context.setStatus(ExecutionStatus.CREATED);
-    context.setNew(true);
-    
     return context;
   }
 
@@ -206,8 +240,9 @@ public class StepAnalysisFactory {
     return result;
   }
 
-  public void deleteAnalysis(StepAnalysisContext context) throws WdkModelException {
+  public StepAnalysisContext deleteAnalysis(StepAnalysisContext context) throws WdkModelException {
     _dataStore.deleteAnalysis(context.getAnalysisId());
+    return context;
   }
 
   public void renameContext(StepAnalysisContext context) throws WdkModelException {
@@ -232,24 +267,6 @@ public class StepAnalysisFactory {
   
   public StepAnalysisViewResolver getViewResolver() {
     return _viewResolver;
-  }
-
-  public void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException {
-    Map<Integer, StepAnalysisContext> fromContexts = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
-    for (StepAnalysisContext fromContext : fromContexts.values()) {
-      StepAnalysisContext toContext = StepAnalysisContext.createCopy(fromContext);
-      toContext.setStep(toStep);
-      try {
-        checkStepForValidity(toContext);
-        toContext.setIsValidStep(true);
-      }
-      catch (IllegalAnswerValueException e) {
-        // if answer value of toStep is not valid for the given analysis, mark as
-        // such and save; user will not be shown form and will be unable to run analysis
-        toContext.setIsValidStep(false, e.getMessage());
-      }
-      writeNewAnalysisContext(toContext);
-    }
   }
   
   public void clearResultsCache() throws WdkModelException {
