@@ -138,7 +138,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void insertAnalysis(int analysisId, int stepId, String displayName,
+  public void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew,
       String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException {
     // TODO Auto-generated method stub
     

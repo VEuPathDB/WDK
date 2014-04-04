@@ -7,10 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 public abstract class StepAnalysisDataStore {
+  
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(StepAnalysisDataStore.class);
   
   protected static class AnalysisInfo {
     int analysisId;
@@ -39,7 +43,7 @@ public abstract class StepAnalysisDataStore {
   
   // abstract methods to manage analysis information
   public abstract int getNextId() throws WdkModelException;
-  public abstract void insertAnalysis(int analysisId, int stepId, String displayName, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
+  public abstract void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
   public abstract void deleteAnalysis(int analysisId) throws WdkModelException;
   public abstract void renameAnalysis(int analysisId, String displayName) throws WdkModelException;
   public abstract void setNewFlag(int analysisId, boolean isNew) throws WdkModelException;
@@ -116,7 +120,7 @@ public abstract class StepAnalysisDataStore {
     AnalysisInfo info = data.analysisInfo;
     StepAnalysisContext context = StepAnalysisContext.createFromStoredData(
         _wdkModel, info.analysisId, info.isNew, info.invalidStepReason, info.displayName, info.serializedContext);
-
+    
     // if analysis was created from a step its analyzer did not approve, then status is always INVALID
     if (!context.getIsValidStep()) {
       context.setStatus(ExecutionStatus.INVALID);

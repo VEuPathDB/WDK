@@ -43,7 +43,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void insertAnalysis(int analysisId, int stepId, String displayName,
+  public void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew,
       String invalidStepReason, String contextHash, String serializedContext)
           throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
@@ -52,7 +52,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
       }
       STEP_ANALYSIS_MAP.get(stepId).add(analysisId);
       AnalysisInfo info = new AnalysisInfo(analysisId, stepId, displayName,
-          true, invalidStepReason, contextHash, serializedContext);
+          isNew, invalidStepReason, contextHash, serializedContext);
       ANALYSIS_INFO_MAP.put(analysisId, info);
       LOG.info("Inserted analysis with ID " + analysisId + " on step " + stepId +
           "; now " + STEP_ANALYSIS_MAP.get(stepId).size() + " analyses for this step.");

@@ -40,7 +40,8 @@ public class StepAnalysisContext {
     analysisId,
     displayName,
     description,
-    status
+    status,
+    invalidStepReason
   }
   
   private WdkModel _wdkModel;
@@ -169,6 +170,7 @@ public class StepAnalysisContext {
     // deep copy params
     ctx._formParams = getDuplicateMap(oldContext._formParams);
     ctx._isNew = oldContext._isNew;
+    ctx._invalidStepReason = oldContext._invalidStepReason;
     ctx._status = oldContext._status;
     return ctx;
   }
@@ -215,6 +217,7 @@ public class StepAnalysisContext {
       json.put(JsonKey.displayName.name(), _displayName);
       json.put(JsonKey.description.name(), _stepAnalysis.getDescription());
       json.put(JsonKey.status.name(), _status.name());
+      json.put(JsonKey.invalidStepReason.name(), (_invalidStepReason == null ? "null" : _invalidStepReason));
       return json;
     }
     catch (JSONException e) {
@@ -319,7 +322,7 @@ public class StepAnalysisContext {
   }
 
   public boolean getIsValidStep() {
-    return (_invalidStepReason != null && !_invalidStepReason.isEmpty());
+    return (_invalidStepReason == null || _invalidStepReason.isEmpty());
   }
 
   public String getInvalidStepReason() {
@@ -333,6 +336,8 @@ public class StepAnalysisContext {
   public void setIsValidStep(boolean isValidStep, String invalidReason) {
     // valid steps have no invalid reasons; set to null
     _invalidStepReason = (isValidStep ? null :
-      (invalidReason == null || invalidReason.isEmpty()) ? null : invalidReason);
+      // invalid steps must give a reason or one will be provided 
+      (invalidReason == null || invalidReason.isEmpty()) ?
+          "Unable to determine." : invalidReason);
   }
 }
