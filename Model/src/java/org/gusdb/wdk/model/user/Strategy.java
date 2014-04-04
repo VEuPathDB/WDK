@@ -363,7 +363,7 @@ public class Strategy {
       newStep.update(false);
       
       // must copy all analysis instance configurations from target step to new step
-      stepFactory.getWdkModel().getStepAnalysisFactory().copyAnalysisInstances(targetStep, newStep);
+      stepFactory.getWdkModel().getStepAnalysisFactory().moveAnalysisInstances(targetStep, newStep);
 
       newStepId = newStep.getStepId();
       targetStepId = targetStep.getStepId();
