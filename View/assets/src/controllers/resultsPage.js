@@ -20,7 +20,10 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
       }
     });
-
+    
+    // pretty up analysis tabs and create "new analysis" menu
+    wdk.stepAnalysis.configureAnalysisViews($element);
+    
     // var workspace = window.wdk.findActiveWorkspace(); 
 
     // $(".Summary_Views").each(function() {
@@ -39,7 +42,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     //   });
     // });
   }
-
+  
   function moveAttr(col_ix, table) {
     // Get name of target attribute & attribute to left (if any)
     // NOTE:  Have to convert these from frontId to backId!!!
@@ -235,7 +238,6 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     });
   }
 
-
   function updatePageCount(element) {
     var advancedPaging = $(element).parent();
     var resultSize = parseInt($("input.resultSize",advancedPaging).val(), 10);
@@ -359,5 +361,5 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   ns.updateAttrs = updateAttrs;
   ns.updatePageCount = updatePageCount;
   ns.updateResultLabels = updateResultLabels;
-
+  
 });

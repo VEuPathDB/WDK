@@ -15,6 +15,8 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.analysis.StepAnalysisXml;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
@@ -136,8 +138,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    */
   private Map<String, String> sqlMacroMap = new LinkedHashMap<String, String>();
 
-  private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
-  private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<String, SummaryView>();
+  private List<SummaryView> summaryViewList = new ArrayList<>();
+  private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<>();
+  
+  private List<StepAnalysisXml> stepAnalysisList = new ArrayList<>();
+  private Map<String, StepAnalysis> stepAnalysisMap = new LinkedHashMap<>();
 
   /**
    * new build flag on what build this question is introduced.
@@ -687,6 +692,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       for (SummaryView summaryView : summaryViewMap.values()) {
         summaryView.resolveReferences(model);
       }
+      
+      // resolve step analysis refs
+      for (StepAnalysis stepAnalysis : stepAnalysisMap.values()) {
+        ((StepAnalysisXml)stepAnalysis).resolveReferences(model);
+      }
+      
     } catch (WdkModelException ex) {
       logger.error("resolving question '" + getFullName() + " failed. " + ex);
       throw ex;
@@ -874,6 +885,20 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
     }
     summaryViewList = null;
+    
+    // exclude step analyses
+    for (StepAnalysisXml analysis : stepAnalysisList) {
+      if (analysis.include(projectId)) {
+        analysis.excludeResources(projectId);
+        String name = analysis.getName();
+        if (stepAnalysisMap.containsKey(name)) {
+          throw new WdkModelException("The step analysis '" + name
+              + "' is duplicated in question " + getFullName());
+        }
+        stepAnalysisMap.put(name, analysis);
+      }
+    }
+    stepAnalysisList = null;
   }
 
   /**
@@ -998,12 +1023,46 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   }
 
   public void addSummaryView(SummaryView view) {
-    if (summaryViewList == null)
+    if (summaryViewList == null) {
+      // method called after model parsing
       summaryViewMap.put(view.getName(), view);
-    else
+    } else {
       summaryViewList.add(view);
+    }
   }
 
+  public Map<String, StepAnalysis> getStepAnalyses() {
+    Map<String, StepAnalysis> map = new LinkedHashMap<>(stepAnalysisMap);
+    // get values from record
+    Map<String, StepAnalysis> recordMap = recordClass.getStepAnalyses();
+
+    // don't override the values defined in the question
+    for (String name : recordMap.keySet()) {
+      if (!map.containsKey(name)) {
+        map.put(name, recordMap.get(name));
+      }
+    }
+
+    return map;
+  }
+
+  public StepAnalysis getStepAnalysis(String name) throws WdkUserException {
+    StepAnalysis sa = stepAnalysisMap.get(name);
+    if (sa != null)
+      return sa;
+
+    return recordClass.getStepAnalysis(name);
+  }
+  
+  public void addStepAnalysis(StepAnalysisXml analysis) {
+    if (stepAnalysisList == null) {
+      // method called after model parsing
+      stepAnalysisMap.put(analysis.getName(), analysis);
+    } else {
+      stepAnalysisList.add(analysis);
+    }
+  }
+  
   public Map<String, SearchCategory> getCategories(String usedBy, boolean strict) {
     Map<String, SearchCategory> categories = wdkModel.getCategories(usedBy, strict);
     Map<String, SearchCategory> map = new LinkedHashMap<>();
