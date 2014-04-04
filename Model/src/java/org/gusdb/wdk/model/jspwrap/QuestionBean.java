@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
@@ -393,6 +394,14 @@ public class QuestionBean {
     return question.getDefaultSummaryView();
   }
 
+  /**
+   * @return
+   * @see org.gusdb.wdk.model.Question#getStepAnalyses()
+   */
+  public Map<String, StepAnalysis> getStepAnalyses() {
+    return question.getStepAnalyses();
+  }
+  
   public boolean getContainsWildcardTextParam() {
     for (ParamBean<?> param : _paramBeanMap.values()) {
       if (param.getName().equals("text_expression")) {

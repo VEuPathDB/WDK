@@ -1049,7 +1049,106 @@ table#title-links {
 div#Summary_Views {
 	border:0;
 }
+div#Summary_Views > .ui-tabs-nav {
+position: relative;
+z-index: 1;
+}
 
+/***~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~***
+ ***  Step Analysis: 'new' tab, and contents of SA tabs
+ ***~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~***/
+
+.new-analysis {
+	display: inline-block;
+	position: relative;
+}
+
+.new-analysis .new-analysis-instr {
+	font-size: 0.8em;
+  font-style: italic;
+}
+
+.new-analysis .new-analysis-button {
+  display: inline-block;
+  border: 1px solid #aaaaaa;
+  padding: 1px 3px;
+  position: relative;
+  top: 1px;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  background-color: #e6e6e6;
+}
+
+.new-analysis .new-analysis-button:hover {
+	/* background-color: lightyellow; */
+}
+
+.new-analysis .new-analysis-menu {
+  border: 1px solid #d3d3d3;
+  padding: none;
+  position: absolute;
+  top: 19px;
+  cursor: pointer;
+  background-color: #e6e6e6;
+  float: none;
+  display: none;
+  border-radius: 0 4px 4px 4px;
+}
+
+.new-analysis .new-analysis-menu li {
+	white-space: nowrap;
+	padding: 2px 12px 2px 4px;
+	margin: 0;
+	float: none;
+}
+
+.new-analysis .new-analysis-menu li:hover {
+  background-color: lightyellow;
+}
+
+.new-analysis .new-analysis-menu li:first-child { border-radius: 0 4px 0 0; }
+.new-analysis .new-analysis-menu li:first-child:hover { border-radius: 0 4px 0 0; }
+.new-analysis .new-analysis-menu li:last-child { border-radius: 0 0 4px 4px; }
+.new-analysis .new-analysis-menu li:last-child:hover { border-radius: 0 0 4px 4px; }
+
+.step-analysis-close-icon {
+  /* Hard to override only the close icon since using an icon set for jquery ui */
+  /* background-image:url("../images/closeIcon-blue.png"); */
+  display:inline-block;
+  position:relative;
+  width:12px;
+  height:12px;
+  top:2px;
+  left:3px;
+  cursor:pointer;
+  background-position: -31px -181px;
+  background-size: 240px auto;
+}
+
+.step-analysis-subpane {
+  margin: 3px;
+  /* border: 1px solid #cccccc;
+     border-radius: 7px; */
+  padding: 4px;
+}
+
+.analysis-pending-pane {
+	margin: 10px auto;
+	text-align:center;
+}
+
+.analysis-pending-pane h3 {
+  text-align:center;
+}
+
+.step-analysis-errors-pane {
+	color: red;
+}
+
+.step-analysis-errors-pane li {
+	line-height: 1.4em;
+  padding-left: 15px;
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       = RESULTS used in group default view (orthomcl)

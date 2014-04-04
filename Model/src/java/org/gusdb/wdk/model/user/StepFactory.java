@@ -174,6 +174,10 @@ public class StepFactory {
     // new Thread(stepCache).start();
   }
 
+  WdkModel getWdkModel() {
+    return wdkModel;
+  }
+  
   // parse boolexp to pass left_child_id, right_child_id to loadAnswer
   Step createStep(User user, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
