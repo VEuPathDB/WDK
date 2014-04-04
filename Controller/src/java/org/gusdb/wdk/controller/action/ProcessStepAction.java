@@ -199,7 +199,7 @@ public class ProcessStepAction extends Action {
     }
 
     // must copy all analysis instance configurations from old step to new step
-    wdkModel.getModel().getStepAnalysisFactory().copyAnalysisInstances(step.getStep(), newStep.getStep());
+    wdkModel.getModel().getStepAnalysisFactory().moveAnalysisInstances(step.getStep(), newStep.getStep());
     
     // set custom name to the new step
     if (customName != null) {
