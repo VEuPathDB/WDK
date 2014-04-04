@@ -1516,19 +1516,17 @@
           </optional>
         </element>
       </optional>
-      <optional>
-        <element name="executionConfig">
-          <attribute name="fileStoreDirectory" />
-          <optional>
-            <attribute name="threadPoolSize">
-              <data type="positiveInteger" />
-            </attribute>
-          </optional>
-        </element>
-      </optional>
-      <oneOrMore>
+      <element name="executionConfig">
+        <attribute name="fileStoreDirectory" />
+        <optional>
+          <attribute name="threadPoolSize">
+            <data type="positiveInteger" />
+          </attribute>
+        </optional>
+      </element>
+      <zeroOrMore>
         <ref name="stepAnalysisPlugin" />
-      </oneOrMore>
+      </zeroOrMore>
     </element>
   </define>
 
