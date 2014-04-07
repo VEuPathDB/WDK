@@ -14,11 +14,11 @@ wdk.namespace('wdk.views', function(ns, $) {
   var View = ns.View = Backbone.View.extend({
 
     constructor: function() {
-      var view = this;
+      var _this = this;
       this.runloop = wdk.core.RunLoop.create(this);
-      if (view.mixins) {
-        view.mixins.forEach(function(mixin) {
-          view.applyMixin(mixin);
+      if (this.mixins) {
+        this.mixins.forEach(function(mixin) {
+          _this.applyMixin(mixin);
         });
       }
       Backbone.View.apply(this, arguments);
@@ -54,9 +54,9 @@ wdk.namespace('wdk.views', function(ns, $) {
      * @param {Object} mixin Mixin to apply to object
      */
     applyMixin: function(mixin) {
-      var view = this;
+      var _this = this;
       Object.keys(mixin).forEach(function(prop) {
-        view[prop] = mixin[prop];
+        _this[prop] = mixin[prop];
       });
     },
 
