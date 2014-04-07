@@ -16,14 +16,14 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
-      var view = this;
+      var _this = this;
 
       this.$el.html(this.template(this.model));
       this.$('#select').append(this.filterFieldsView.el);
       this.$('#results').append(this.resultsView.el);
       this.$el.tabs({
         activate: function(e, ui) {
-          view.showSubview(ui.newPanel.attr('id'));
+          _this.showSubview(ui.newPanel.attr('id'));
         }
       });
       return this;

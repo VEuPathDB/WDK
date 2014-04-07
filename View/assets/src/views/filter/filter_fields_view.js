@@ -6,15 +6,15 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
   /**
    * A FilterView is composed of several components:
-   * - A selectable list of available filters for a given data collection.
-   * - A detail view for a specific filter.
+   * - A selectable list of available filterable fields.
+   * - A detail view for a specific field.
    *
    */
   ns.FilterFieldsView = wdk.views.View.extend({
 
     template: wdk.templates['filter/filter_fields.handlebars'],
 
-    className: 'filters context ui-helper-clearfix',
+    className: 'filters ui-helper-clearfix',
 
     initialize: function() {
       this.fieldList = new FieldListView({ model: this.model });

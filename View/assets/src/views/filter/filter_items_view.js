@@ -28,9 +28,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
-      var view = this;
+      var _this = this;
       this.model.forEach(function(model) {
-        view.addItem.call(view, model, { inRender: true });
+        _this.addItem.call(_this, model, { inRender: true });
       });
       this.updateTotal(this.filterService.filteredData);
     },
