@@ -25,7 +25,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
-      var html = this.template(this.model);
+      var html = this.template({
+        filter: this.model.condition(),
+        field: this.field.attributes
+      });
       this.$el.html(html);
     },
 
