@@ -6,12 +6,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
    *
    * When a link is clicked, a 'select' event is triggered by the view.
    * Event handlers will recieve the field model as an argument.
-   *
-   * ```
-   * // In some other view ...
-   * var fieldList = new FieldListView({ model: this.model });
-   * view.listenTo(fieldList, 'select', view.renderDetail);
-   * ```
    */
   ns.FieldListView = wdk.views.View.extend({
 

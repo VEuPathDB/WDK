@@ -46,7 +46,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
-      var view = this;
+      var _this = this;
       var field = this.model;
       var filterService = this.filterService;
       var filter = filterService.filters.findWhere({
@@ -86,11 +86,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
           selected: !!(_.contains(filterValues, name))
         });
         var memberView = new MemberView({ model: member }).render();
-        view.$('.membership-filter').append(memberView.$el);
+        _this.$('.membership-filter').append(memberView.$el);
       });
 
       members.on('change:selected', function(member, selected) {
-        var type = view.model.get('type');
+        var type = _this.model.get('type');
         var values = members.where({selected: true}).map(function(member) {
           return type === 'number'
             ? Number(member.get('value'))
