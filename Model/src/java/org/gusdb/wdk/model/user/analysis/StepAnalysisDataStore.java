@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -33,6 +35,18 @@ public abstract class StepAnalysisDataStore {
       this.invalidStepReason = invalidStepReason;
       this.contextHash = contextHash;
       this.serializedContext = serializedContext;
+    }
+    @Override
+    public String toString() {
+      return new StringBuilder("AnalysisInfo {").append(NL)
+          .append("analysisId: ").append(analysisId).append(NL)
+          .append("stepId: ").append(stepId).append(NL)
+          .append("displayName: ").append(displayName).append(NL)
+          .append("isNew: ").append(isNew).append(NL)
+          .append("invalidStepReason: ").append(invalidStepReason).append(NL)
+          .append("contextHash: ").append(contextHash).append(NL)
+          .append("serializedContext: ").append(serializedContext).append(NL)
+          .append("}").append(NL).toString();
     }
   }
 
