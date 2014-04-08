@@ -90,6 +90,7 @@ module.exports = {
     'lib/flexigrid.js',
     'lib/chosen.jquery.min.js',
     'lib/jquery.dataTables.min.js',
+    // 'lib/dataTables.colVis.min.js',
     'lib/jstree/jquery.jstree.js',
   ]
 
