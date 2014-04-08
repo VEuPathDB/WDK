@@ -248,7 +248,7 @@
   min-height: 2em;
 }
 .filter-items[data-total]:before {
-  content: attr(data-total) " items: ";
+  content: attr(data-total) " selected items: ";
 }
 .filter-items li {
   display: inline-block;

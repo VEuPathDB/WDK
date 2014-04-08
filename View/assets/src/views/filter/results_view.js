@@ -1,54 +1,18 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
-
-  var ResultsItemView = wdk.views.View.extend({
-
-    /**
-     * Fields to display
-     */
-    fields: null,
-
-    template: wdk.templates['filter/results_item.handlebars'],
-
-    tagName: 'tr',
-
-    events: {
-      'change [data-action="toggleIgnored"]': 'handleToggleIgnore'
-    },
-
-    initialize: function(options) {
-      this.fields = options.fields;
-    },
-
-    render: function() {
-      this.$el.html(this.template({
-        item: this.model.toJSON(),
-        fields: this.fields.toJSON()
-      }));
-      this.$('.button').button();
-      this.$el.toggleClass('muted', this.model.get('ignored'));
-    },
-
-    handleToggleIgnore: function(e) {
-      e.preventDefault();
-      var ignored = !this.model.get('ignored');
-      this.model.set('ignored', ignored);
-      this.render();
-    }
-
-  });
-
-
   ns.ResultsView = wdk.views.View.extend({
 
     events: {
-      'mouseover td': 'setTitle'
+      'mouseover td' : 'setTitle',
+      'change input' : 'handleChange'
     },
 
     template: wdk.templates['filter/results.handlebars'],
 
-    className: 'results context ui-helper-clearfix',
+    displayTemplate: wdk.templates['filter/results_item_display.handlebars'],
+
+    className: 'results',
 
     _doRender: null,
 
@@ -58,6 +22,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       Handlebars.registerHelper('property', function(key, context, options) {
         return context[key];
       });
+
       wdk.views.View.apply(this, arguments);
     },
 
@@ -67,28 +32,35 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
-      var view = this;
+      var tableConfig = this.generateTableConfig();
+
       this.$el.html(this.template({
         fields: this.model.fields.toJSON()
       }));
-      this.model.filteredData.forEach(function(item) {
-        var itemView = new ResultsItemView({ model: item, fields: view.model.fields });
-        itemView.render();
-        view.$('tbody').append(itemView.el);
-      });
 
-      var tableConfig = this.generateTableConfig();
       this.dataTable = this.$('.results-table').wdkDataTable(tableConfig).dataTable();
+
+      this.renderTableBody();
 
       $(window).on('resize', _.debounce(this.resizeTable.bind(this), 100));
 
       return this;
     },
 
-    queueRender: function() {
-      this._doRender = true;
+    renderTableBody: function() {
+      this.dataTable.fnClearTable();
+      this.dataTable.fnAddData(this.model.filteredData.toJSON());
     },
 
+    queueRender: function() {
+      if (this.$el.is(':visible')) {
+        this.renderTableBody();
+      } else {
+        this._doRender = true;
+      }
+    },
+
+    // Add title attribute for mouseover when the text content overflows
     setTitle: function(e) {
       var td = e.currentTarget;
       if (td.scrollWidth > td.clientWidth) {
@@ -96,12 +68,20 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
     },
 
+    handleChange: function(e) {
+      var target = e.currentTarget;
+      var item = this.model.filteredData.get(target.value);
+      var ignored = !target.checked;
+      item.set('ignored', ignored);
+      $(target).closest('tr').toggleClass('muted', ignored);
+    },
+
     didShow: function() {
       if (this._doRender) {
-        this.render();
+        this.renderTableBody();
         this._doRender = false;
       } else {
-        this.dataTable.fnDraw();
+        this.resizeTable();
       }
     },
 
@@ -110,16 +90,40 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     generateTableConfig: function() {
-      // allow all columns to be sortable, except last column
-      var columns = _.range(this.model.fields.length + 1).map(function() {
-        return null;
+      var _this = this;
+      var columns = [];
+
+      columns.push({
+        sClass: 'display',
+        sTitle: 'Name',
+        mData: function(row, type, val) {
+          var html = _this.displayTemplate(row);
+          return html;
+        }
       });
-      // columns.push({ bSortable: false });
-      // columns.unshift(null);
+
+      // allow all columns to be sortable
+      this.model.fields.forEach(function(field) {
+        columns.push({
+          sClass: field.get('term'),
+          sTitle: field.get('display'),
+          mData: 'metadata.' + field.get('term')
+        });
+      });
 
       return {
+        sDom: 'C<"clear">lfrtip',
         bFilter: false,
-        aoColumns: columns
+        bDeferRender: true,
+        aoColumns: columns,
+        fnRowCallback: function(tr, d) {
+          $(tr).toggleClass('muted', d.ignored);
+        }
+        // oColVis: {
+        //   buttonText: 'Change columns',
+        //   sAlign: 'right',
+        //   aiExclude: [ 0 ]
+        // }
       };
     }
 
