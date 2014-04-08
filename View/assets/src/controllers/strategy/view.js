@@ -873,8 +873,10 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "onclick=\"wdk.strategy.controller.deleteStrategy('" + id +
         "', false)\"><b style='font-size:120%'>Delete</b></a>";
 
-    var descriptionAction = 'wdk.history.showDescriptionDialog(this, ' +
-        !strat.isSaved + ', false, ' + strat.isSaved + ');';
+    var descriptionAction = strat.description ?
+      'wdk.history.showDescriptionDialog(this, ' + !strat.isSaved + ', false, ' + strat.isSaved + ');' :
+      'wdk.history.showUpdateDialog(this, ' + !strat.isSaved + ', false);';
+
 
     var descriptionText = strat.description ? 'View Description' : 'Add Description';
 
