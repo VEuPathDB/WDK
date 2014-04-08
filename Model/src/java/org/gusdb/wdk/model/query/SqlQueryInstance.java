@@ -135,6 +135,10 @@ public class SqlQueryInstance extends QueryInstance {
     for (String paramName : params.keySet()) {
       Param param = params.get(paramName);
       String value = internalValues.get(paramName);
+      if (value == null) {
+        logger.warn("value doesn't exist for param " + param.getFullName() + " in query " + query.getFullName());
+        value = "";
+      }
       sql = param.replaceSql(sql, value);
     }
     StringBuilder buffer = new StringBuilder("SELECT o.* ");

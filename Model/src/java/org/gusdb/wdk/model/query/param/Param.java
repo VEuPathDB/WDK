@@ -534,6 +534,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   public String getSignature(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException {
+    if (stableValue == null) return "";
     return handler.toSignature(user, stableValue, contextValues);
   }
 

@@ -87,6 +87,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
       _dependedValues = dependedValues;
       _dependedValueChanged = true;
     }
+    this.contextValues = dependedValues;
   }
 
   private boolean compareValues(Map<String, String> left, Map<String, String> right) {
