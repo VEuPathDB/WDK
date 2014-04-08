@@ -1,9 +1,13 @@
 package org.gusdb.wdk.model.user.analysis;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -25,9 +29,71 @@ public class StepAnalysisFileStore {
    */
   public StepAnalysisFileStore(Path fileStoreDirectory) throws WdkModelException {
     _fileStoreDirectory = fileStoreDirectory;
+    createStoreIfAbsent(10); // pass in number of attempts remaining
+    testFileStore();
   }
 
   
+  private void createStoreIfAbsent(int remainingAttempts) throws WdkModelException {
+    // check if storage directory already exists
+    if (Files.exists(_fileStoreDirectory)) {
+      return;
+    }
+    // check whether number of attempts expired
+    if (remainingAttempts == 0) {
+      throw new WdkModelException("Unable to create missing file store at" +
+          " location: " + _fileStoreDirectory);
+    }
+    // check if parent dir can be referenced so lock file can be created
+    if (_fileStoreDirectory.getParent() == null) {
+      throw new WdkModelException("Cannot provide raw file or root directory " +
+      		"as file store.  Parent directory required for: " + _fileStoreDirectory);
+    }
+    
+    // create lock file in attempt to 
+    String lockFileName = _fileStoreDirectory.getFileName().toString() + ".lock";
+    Path lockFile = Paths.get(_fileStoreDirectory.getParent().toString(), lockFileName);
+    boolean lockFileNeedsDeletion = false;
+    try {
+      Files.createFile(lockFile);
+      lockFileNeedsDeletion = true;
+      createOpenPermsDirectory(_fileStoreDirectory);
+    }
+    catch (FileAlreadyExistsException faee) {
+      try {
+        // unable to create lock file; someone else is creating a directory; try again
+        Thread.sleep(20); // delay between attempts
+        createStoreIfAbsent(remainingAttempts - 1);
+      }
+      catch (InterruptedException e) {
+        throw new WdkModelException("Thread interrupted while attempting " +
+        		"to create data store dir at: " + _fileStoreDirectory);
+      }
+    }
+    catch (IOException ioe) {
+      throw new WdkModelException("Unable to create data store dir at: " +
+          _fileStoreDirectory);
+    }
+    finally {
+      if (lockFileNeedsDeletion) {
+        try {
+          Files.delete(lockFile);
+        }
+        catch (IOException ioe) {
+          throw new WdkModelException("Created lock file at " + lockFile +
+              " but now unable to delete.", ioe);
+        }
+      }
+    }
+  }
+
+  private static void createOpenPermsDirectory(Path directory) throws IOException {
+    Files.createDirectory(directory);
+    // apply file permissions after the fact in case umask restrictions prevent it during creation
+    Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxrwxrwx");
+    Files.setPosixFilePermissions(directory, perms);
+  }
+
   /**
    * Deletes all sub-directories of this file store that it can.  If permission
    * is denied on a particular subdir, it is skipped and the process continues.
@@ -65,11 +131,7 @@ public class StepAnalysisFileStore {
       if (Files.exists(storageDir)) {
         IoUtil.deleteDirectoryTree(storageDir);
       }
-      // TODO: test image href in results; extra permissions don't work,
-      //       probably because of tomcat user's umask restrictions
-      //Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxrwxrwx");
-      //FileAttribute<Set<PosixFilePermission>> permsAttr = PosixFilePermissions.asFileAttribute(perms);
-      Files.createDirectory(storageDir);//, permsAttr);
+      createOpenPermsDirectory(storageDir);
     }
     catch (IOException ioe) {
       throw new WdkModelException("Unable to clear or recreate results store for hash " + hash, ioe);
@@ -97,7 +159,7 @@ public class StepAnalysisFileStore {
     return getStorageDirPath(hash).toFile().exists();
   }
 
-  public void testFileStore() throws WdkModelException {
+  private void testFileStore() throws WdkModelException {
     try {
       LOG.info("Testing step analysis file store...");
       String sampleHash = UUID.randomUUID().toString();

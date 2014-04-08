@@ -65,7 +65,6 @@ public class StepAnalysisFactory {
         new StepAnalysisPersistentDataStore(wdkModel) :
         new StepAnalysisInMemoryDataStore(wdkModel));
     _fileStore = new StepAnalysisFileStore(Paths.get(_execConfig.getFileStoreDirectory()));
-    //_fileStore.testFileStore();
     startThreadPool();
   }
 
