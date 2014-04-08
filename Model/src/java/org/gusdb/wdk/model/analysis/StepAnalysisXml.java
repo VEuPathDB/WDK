@@ -12,14 +12,14 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 
 public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
-
+  
   private static final String DEFAULT_FORM_VIEW = "/wdk/jsp/analysis/defaultAnalysisForm.jsp";
   private static final String DEFAULT_ANALYSIS_VIEW = "/wdk/jsp/analysis/defaultAnalysisResult.jsp";
 
   // basic information
   private String _name;
   private String _displayName;
-  private String _description = "";
+  private String _description;
   
   // for running and viewing the analysis
   private String _analyzerClass;
@@ -58,9 +58,8 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   
   @Override
   public String getDescription() {
-    if (_description != null) 
-      return _description;
-    return "Performs a " + _name + " analysis on this step.";
+    return (_description != null && !_description.isEmpty() ? _description :
+      "Performs a " + _displayName + " analysis on this step.");
   }
   public void setDescription(WdkModelText description) {
     _description = description.getText();
