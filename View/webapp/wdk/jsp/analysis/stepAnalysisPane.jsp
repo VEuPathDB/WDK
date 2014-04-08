@@ -9,8 +9,8 @@
            data-controller="wdk.stepAnalysis.loadDisplaySubpanes">
         <div>
           <span style="float:right">
-           [ <a href="javascript:wdk.stepAnalysis.renameStepAnalysis(${analysisId})">Rename This Tab</a> |
-             <a href="javascript:wdk.stepAnalysis.copyStepAnalysis(${analysisId})">Copy This Configuration</a> ]
+           [ <a href="javascript:wdk.stepAnalysis.renameStepAnalysis(${analysisId})">Rename This Analysis</a> |
+             <a href="javascript:wdk.stepAnalysis.copyStepAnalysis(${analysisId})">Copy These Parameter Values</a> ]
           </span>
           <div style="clear:both"><jsp:text/></div>
         </div>
