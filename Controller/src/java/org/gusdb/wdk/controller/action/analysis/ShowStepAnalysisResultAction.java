@@ -49,7 +49,7 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
       case OUT_OF_DATE:
         reason = (reason == null ? OUTOFDATE_REASON_TEXT: reason);
         return new ActionResult()
-            .setViewName("incomplete");
+            .setViewName("incomplete").setRequestAttribute("reason", reason);
       case UNKNOWN:
       default:
         throw new WdkModelException("Invalid status " + context.getStatus() +
