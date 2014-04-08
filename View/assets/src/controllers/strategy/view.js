@@ -67,7 +67,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       if (strat.isDisplay) {
         var div_strat = document.createElement("div");
         div_strat.setAttribute("data-step-id", strat.JSON.steps[strat.JSON.steps.length].id);
-        div_strat.setAttribute("data-saved", Boolean(strat.saved));
+        div_strat.setAttribute("data-saved", strat.JSON.saved);
         div_strat.setAttribute("data-name", strat.name||"");
         div_strat.setAttribute("data-description", strat.description||"");
         div_strat.setAttribute("data-back-id", strat.backId);
@@ -840,24 +840,24 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "href='javascript:void(0)' onclick=\"wdk.history.showUpdateDialog(this, true, false)\">" +
           "<b style='font-size:120%'>" + sTitle + "</b></a>";
     }
-    save += "<div id='save_strat_div_" + id + "' class='modal_div save_strat'" +
-        " style='width:500px'>" +
-        "<div class='dragHandle'>" +
-        "<div class='modal_name'>"+
-        "<span class='h3left'>" + sTitle + "</span>" + 
-        "</div>"+ 
-        "<a class='close_window' href='javascript:wdk.addStepPopup.closeModal()'>"+
-        "<img alt='Close' src='" + wdk.assetsUrl('/wdk/images/close.gif') + "' />" +
-        "</a>"+
-        "</div>"+
-        "<form id='save_strat_form' onsubmit='return wdk.addStepPopup.validateSaveForm(this);'" +
-        " action=\"javascript:saveStrategy('" + id + "', true)\">"+
-        save_warning +
-        "<input type='hidden' value='" + id + "' name='strategy'/>"+
-        "<input type='text' value='' name='name' size ='50'/>"+
-        "<input style='margin-left:5px;' type='submit' value='Save'/>"+
-        "</form>"+
-        "</div>";
+    // save += "<div id='save_strat_div_" + id + "' class='modal_div save_strat'" +
+    //     " style='width:500px'>" +
+    //     "<div class='dragHandle'>" +
+    //     "<div class='modal_name'>"+
+    //     "<span class='h3left'>" + sTitle + "</span>" + 
+    //     "</div>"+ 
+    //     "<a class='close_window' href='javascript:wdk.addStepPopup.closeModal()'>"+
+    //     "<img alt='Close' src='" + wdk.assetsUrl('/wdk/images/close.gif') + "' />" +
+    //     "</a>"+
+    //     "</div>"+
+    //     "<form id='save_strat_form' onsubmit='return wdk.addStepPopup.validateSaveForm(this);'" +
+    //     " action=\"javascript:saveStrategy('" + id + "', true)\">"+
+    //     save_warning +
+    //     "<input type='hidden' value='" + id + "' name='strategy'/>"+
+    //     "<input type='text' value='' name='name' size ='50'/>"+
+    //     "<input style='margin-left:5px;' type='submit' value='Save'/>"+
+    //     "</form>"+
+    //     "</div>";
     var copy = "<a title='Create a copy of the strategy.' " +
         "class='copy_strat_link' href='javascript:void(0)' " +
         "onclick=\"wdk.strategy.controller.copyStrategy('" + id + "')\">" +
@@ -873,6 +873,16 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "onclick=\"wdk.strategy.controller.deleteStrategy('" + id +
         "', false)\"><b style='font-size:120%'>Delete</b></a>";
 
+    var descriptionAction = 'wdk.history.showDescriptionDialog(this, ' +
+        !strat.isSaved + ', false, ' + strat.isSaved + ');';
+
+    var descriptionText = strat.description ? 'View Description' : 'Add Description';
+
+    var description = '<a id="description_' + strat.frontId +
+      '" href="javascript:void(0)" title="View description" ' +
+      'onclick="' + descriptionAction + '"><b style="font-size:120%;">' +
+      descriptionText + '</b></a>';
+
     /* FIXME: First attempt at adding 'make public' link on right side of strategy display;
      *        Not called and does not work!  See also publicStrats.js, search 'togglePublicFromLink'
     var publicizeLinkText = strat.isPublic ? 'Make Private' : 'Make Public';
@@ -887,6 +897,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     
     var div_sn = document.createElement("div");
     var div_sm = document.createElement("div");
+    var div_sm_html = '';
     $(div_sn).attr("class","strategy_name");
     $(div_sm).attr("class","strategy_menu");
 
@@ -899,14 +910,23 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           " style='font-style:italic;cursor:pointer'>" + name + "</span></span>" + append +
           "<span id='strategy_id_span' style='display: none;'>" + id +
           "</span>");
-      $(div_sm).html("<span class='strategy_small_text'>" +
-          "<br/>" + rename +
-          "<br/>" + copy + 
-          "<br/>" + save +
-          "<br/>" + share +
-          "<br/>" + deleteStrat +
-          //"<br/>" + publicizeStrat +
-          "</span>");
+
+      div_sm_html += '<span class="strategy_small_text">';
+
+      if (strat.isSaved || strat.description) {
+        div_sm_html += "<br/>" + description;
+      }
+
+      div_sm_html += "<br/>" + rename;
+      div_sm_html += "<br/>" + copy;
+      div_sm_html += "<br/>" + save;
+      div_sm_html += "<br/>" + share;
+      // div_sm_html += "<br/>" + publicizeStrat;
+      div_sm_html += "<br/>" + deleteStrat;
+
+      div_sm_html += "</span>";
+
+      $(div_sm).html(div_sm_html);
     }//else{
       //$(div_sn).html("<span style='font-size:14px;font-weight:bold' title='Name of this substrategy. To rename, click on the corresponding step name in the parent strategy'>" + name + "</span>" + "<span id='strategy_id_span' style='display: none;'>" + id + "</span>"); 
     //}
