@@ -17,6 +17,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function() {
       this.listenTo(this.model.fields, 'select', this.selectField);
+      this.listenTo(this.model.fields, 'reset', this.render);
     },
 
     render: function() {
