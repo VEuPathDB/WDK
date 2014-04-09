@@ -70,7 +70,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
 
   function refreshBasket() {
     var tabs = $("#basket #basket-menu");
-    var index = tabs.tabs("option", "selected");
+    var index = tabs.tabs("option", "active");
     tabs.tabs("load", index);
   }
 

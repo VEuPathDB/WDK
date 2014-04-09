@@ -507,6 +507,7 @@ public class BasketFactory {
     param.setAllowEmpty(false);
     param.setPrompt(recordClass.getDisplayNamePlural() + " from");
     param.setAllowEmpty(false);
+    param.setRecordClassRef(recordClass.getFullName());
     paramSet.addParam(param);
     param.excludeResources(wdkModel.getProjectId());
     return param;
