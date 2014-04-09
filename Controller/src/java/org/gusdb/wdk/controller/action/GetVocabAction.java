@@ -83,6 +83,7 @@ public class GetVocabAction extends Action {
       request.setAttribute("vocabParam", param);
 
       if (getJson) {    // output json string directly
+        response.setContentType("application/json");
         PrintWriter writer = response.getWriter();
         JSONObject jsValues = param.getJsonValues();
         writer.print(jsValues.toString());
