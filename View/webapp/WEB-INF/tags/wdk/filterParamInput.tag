@@ -43,10 +43,15 @@ Otherwise a standard select menu is used.
   <c:set var="v" value="style='display:inline'"/>
 </c:if>
 
+<%-- FIXME change data-name to data-display-name --%>
 <%-- display the param as an advanced filter param --%>
-<div class="param filter-param" data-name="${qp.prompt}" data-data-id="filter-param-{qP.name}">
+<div class="param filter-param ${dependentClass}"
+    dependson="${dependedParam}"
+    name="${pNam}"
+    data-name="${qp.prompt}"
+    data-data-id="filter-param-${qP.name}">
   <html:hidden property="value(${pNam})" />
-  <script type="application/json" id="filter-param-{qP.name}">
+  <script type="application/json" id="filter-param-${qP.name}">
     ${qP.jsonValues}
   </script>
 </div>
