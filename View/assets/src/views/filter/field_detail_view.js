@@ -38,6 +38,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
           this.renderDetail(field);
         }
       });
+
+      this.listenTo(this.model.fields, 'reset', this.renderEmpty);
     },
 
     render: function(field) {

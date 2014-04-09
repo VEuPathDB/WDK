@@ -75,6 +75,12 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.applyFilters();
     },
 
+    reset: function(attrs) {
+      this.parse(attrs);
+      this.setFieldValues();
+      this.applyFilters();
+    },
+
     /**
      * Pluck out values from data for each field and set to values attribute
      */

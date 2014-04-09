@@ -148,7 +148,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   //==============================================================================
   function initFilterParam(element) {
     var form = element.closest('form');
-    var filterParams = element.find('.filter-param');
+    var filterParams = element.find('[data-type="filter-param"]');
 
     if (filterParams.length > 0) {
       // add class to move prompts to left
@@ -167,6 +167,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         if (!( _.isArray(previousValue.filters) &&
                _.isArray(previousValue.values)  &&
                _.isArray(previousValue.ignored) )) {
+          previousValue = null;
           throw new Error('Previous value is malformed.');
         }
       } catch (e) {
@@ -188,6 +189,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         parse: true,
         root: 'metadata'
       });
+
+      $node.data('filterService', filterService);
 
       // set ignore: true for filteredData not in previousValues.values
       if (previousValue) {
@@ -215,7 +218,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var view = new wdk.views.filter.FilterView({ model: filterService });
 
       // attach views
-      $(node)
+      $node.find('.filter-param')
         .append(itemsView.el)
         .append(view.el);
 
@@ -239,6 +242,10 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       });
 
     });
+  }
+
+  function updateFilterParam(paramNode, data) {
+   paramNode.data('filterService').reset(data);
   }
 
   function parseFilterData(filterData) {
@@ -613,6 +620,15 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
             createFilteredSelect(data, paramName, element);
           }
         });
+      } else if (dependentParam.is('[data-type="filter-param"]')) {
+        sendReqUrl = sendReqUrl + '&json=true';
+        return $.getJSON(sendReqUrl)
+          .then(parseFilterData)
+          .then(updateFilterParam.bind(null, dependentParam))
+          .done(function() {
+            dependentParam.find('input').removeAttr('disabled');
+            element.find(".param[name='" + paramName + "']").attr("ready", "");
+          });
       } else {
         return $.ajax({
           url: sendReqUrl,

@@ -20,6 +20,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.itemViews = {};
       this.listenTo(this.model, 'add', this.addItem);
       this.listenTo(this.model, 'remove', this.removeItem);
+      this.listenTo(this.model, 'reset', this.render);
       this.listenTo(this.filterService.fields, 'select', this.toggleSelectItems);
       this.listenTo(this.filterService.filteredData, 'reset', this.updateTotal);
       this.listenTo(this.filterService.filteredData, 'change', function(d) {
@@ -29,9 +30,17 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     render: function() {
       var _this = this;
+
+      // remove existing items
+      _.values(this.itemViews).forEach(function(view) {
+        _this.removeItem(view.model)
+      });
+
+      // add new items
       this.model.forEach(function(model) {
         _this.addItem.call(_this, model, { inRender: true });
       });
+
       this.updateTotal(this.filterService.filteredData);
     },
 

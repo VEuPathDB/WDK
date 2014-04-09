@@ -45,15 +45,17 @@ Otherwise a standard select menu is used.
 
 <%-- FIXME change data-name to data-display-name --%>
 <%-- display the param as an advanced filter param --%>
-<div class="param filter-param ${dependentClass}"
+<div class="param ${dependentClass}"
     dependson="${dependedParam}"
     name="${pNam}"
     data-name="${qp.prompt}"
+    data-type="filter-param"
     data-data-id="filter-param-${qP.name}">
   <html:hidden property="value(${pNam})" />
   <script type="application/json" id="filter-param-${qP.name}">
     ${qP.jsonValues}
   </script>
+  <div class="filter-param"></div>
 </div>
 
 <%-- display invalid terms, if any. --%>
