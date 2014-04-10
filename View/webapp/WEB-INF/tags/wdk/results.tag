@@ -106,7 +106,8 @@
             <ul>
               <c:forEach items="${question.stepAnalyses}" var="analysisEntry">
                 <c:set var="analysis" value="${analysisEntry.value}"/>
-                <li data-strategy="${wdkStrategy.strategyId}" data-step="${wdkStep.stepId}" data-analysis="${analysis.name}">
+                <li title="${analysis.description}" data-strategy="${wdkStrategy.strategyId}"
+                    data-step="${wdkStep.stepId}" data-analysis="${analysis.name}">
                   ${analysis.displayName}</li>
               </c:forEach>
             </ul>
