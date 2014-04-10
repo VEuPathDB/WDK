@@ -8,17 +8,17 @@
       <div class="analysis-menu-tab-pane">
         <h3>Select an analysis tool below with which to perform analysis</h3>
         <em>Clicking on a link below will open a new tab where you can configure and run a Step Analysis.</em>
-        <div class="new-analysis-menu">
-          <ul>
+        <hr/>
+        <div>
+          <ul class="ui-helper-clearfix">
             <c:set var="question" value="${wdkStep.question}"/>
             <c:forEach items="${question.stepAnalyses}" var="analysisEntry">
               <c:set var="analysis" value="${analysisEntry.value}"/>
-              <c:set var="hyphen" value="${empty analysis.description ? '' : ': '}"/>
-              <li>
-                <a href="javascript:createStepAnalysis('${analysis.name}', ${wdkStrategy.strategyId}, ${wdkStep.stepId})">
-                  ${analysis.displayName}
-                </a>
-                ${hyphen}${analysis.description}
+              <li onclick="javascript:wdk.stepAnalysis.createStepAnalysis('${analysis.name}', ${wdkStrategy.strategyId}, ${wdkStep.stepId})">
+                <div class="analysis-title">${analysis.displayName}</div>
+                <div>
+                  ${analysis.description}
+                </div>
               </li>
             </c:forEach>
           </ul>
