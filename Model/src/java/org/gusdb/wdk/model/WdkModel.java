@@ -44,6 +44,8 @@ import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
+import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 
@@ -148,7 +150,7 @@ public class WdkModel implements ConnectionContainer {
 
   private ExampleStratsAuthor exampleStratsAuthor;
 
-  private StepAnalysisPlugins stepAnalysisPlugins = new StepAnalysisPlugins();
+  private StepAnalysisPlugins stepAnalysisPlugins;
   
   /**
    * xmlSchemaURL is used by the XmlQuestions. This is the only place where XmlQuestion can find it.
@@ -470,7 +472,9 @@ public class WdkModel implements ConnectionContainer {
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
-    stepAnalysisFactory = new StepAnalysisFactory(this);
+    stepAnalysisFactory = (stepAnalysisPlugins == null ?
+        new UnconfiguredStepAnalysisFactory() :
+        new StepAnalysisFactoryImpl(this));
 
     // set the exception header
     WdkModelException.modelName = getProjectId();
@@ -770,7 +774,9 @@ public class WdkModel implements ConnectionContainer {
     }
     macroList = null;
     
-    stepAnalysisPlugins.excludeResources(projectId);
+    if (stepAnalysisPlugins != null) {
+      stepAnalysisPlugins.excludeResources(projectId);
+    }
   }
 
   /**

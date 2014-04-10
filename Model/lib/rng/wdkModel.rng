@@ -1505,29 +1505,31 @@
   </define>
   
   <define name="stepAnalysisPlugins">
-    <element name="stepAnalysisPlugins">
-      <optional>
-        <element name="viewConfig">
+    <optional>
+      <element name="stepAnalysisPlugins">
+        <optional>
+          <element name="viewConfig">
+            <optional>
+              <attribute name="prefix" />
+            </optional>
+            <optional>
+              <attribute name="suffix" />
+            </optional>
+          </element>
+        </optional>
+        <element name="executionConfig">
+          <attribute name="fileStoreDirectory" />
           <optional>
-            <attribute name="prefix" />
-          </optional>
-          <optional>
-            <attribute name="suffix" />
+            <attribute name="threadPoolSize">
+              <data type="positiveInteger" />
+            </attribute>
           </optional>
         </element>
-      </optional>
-      <element name="executionConfig">
-        <attribute name="fileStoreDirectory" />
-        <optional>
-          <attribute name="threadPoolSize">
-            <data type="positiveInteger" />
-          </attribute>
-        </optional>
+        <zeroOrMore>
+          <ref name="stepAnalysisPlugin" />
+        </zeroOrMore>
       </element>
-      <zeroOrMore>
-        <ref name="stepAnalysisPlugin" />
-      </zeroOrMore>
-    </element>
+    </optional>
   </define>
 
   <define name="stepAnalysisPlugin">

@@ -25,7 +25,6 @@ import org.gusdb.wdk.model.WdkModelException;
  * 
  * @author rdoherty
  */
-@SuppressWarnings("unused")
 public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
 
   private static final String ANALYSIS_TABLE = "STEP_ANALYSIS";
