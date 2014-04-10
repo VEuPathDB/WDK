@@ -4,6 +4,45 @@
   // We add two pieces of functionality:
   // 1. Spinner
   // 2. Cache content (when successfully loaded)
+
+  var uiLoad = $.ui.tabs.prototype.load;
+
+  /**
+   * Overridden jQuery.ui.tabs.prototype.load method
+   *
+   * Original method signature was load(index, event).
+   *
+   * We add the following:
+   *    load(index, event, options)
+   *    load(index, options)
+   *
+   * Available options are:
+   *    - skipCache {Boolean} : Force tab to load, even
+   *      with widget.options.cache = true.
+   */
+  $.ui.tabs.prototype.load = function(index, event, options) {
+    if (!(event instanceof $.Event)) {
+      options = event;
+      event = undefined;
+    }
+
+    if (options) {
+      // assume an options object as been passed
+
+      // force cache to be skipped
+      var origCache = this.options.cache;
+      if (options.skipCache) this.options.cache = false;
+
+      // call original load method
+      uiLoad.call(this, index, event);
+
+      // reset widget cache option
+      if (options.skipCache) this.options.cache = origCache;
+    } else {
+      uiLoad.call(this, index, event);
+    }
+  };
+
   $.extend($.ui.tabs.prototype.options, {
     cache: true,
     beforeLoad: beforeLoad,
