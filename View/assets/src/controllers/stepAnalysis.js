@@ -75,24 +75,25 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 		$element.find("li[id^='step-analysis']").each(function(){ addDeleteButton(this); });
   
 		// add hover and click handlers for step analysis add buttons
-		var newAnalysisDiv = $element.find('.new-analysis');
-		var newAnalysisButton = $(newAnalysisDiv).find(".new-analysis-button");
-		var newAnalysisInstr = $(newAnalysisDiv).find(".new-analysis-instr");
-		var newAnalysisMenu = $(newAnalysisDiv).find(".new-analysis-menu");
-		$(newAnalysisDiv).hover(
+		var $newAnalysisDiv = $element.find('.new-analysis');
+		var $newAnalysisButton = $newAnalysisDiv.find(".new-analysis-button");
+		var $newAnalysisMenu = $newAnalysisDiv.find(".new-analysis-menu");
+		applyAnalysisStyles($newAnalysisDiv, $newAnalysisButton, $newAnalysisMenu);
+	}
+	
+	function applyAnalysisStyles($newAnalysisDiv, $newAnalysisButton, $newAnalysisMenu) {
+		$newAnalysisDiv.hover(
 				function() {
-					//newAnalysisInstr.html("Analyze This Result");
-					newAnalysisButton.css("border","1px solid #aaaaaa");
-					newAnalysisMenu.show();
+					$newAnalysisButton.css("border","1px solid #aaaaaa");
+					$newAnalysisMenu.show();
 				},
 				function() {
-					//newAnalysisInstr.html("");
-					newAnalysisButton.css("border","1px solid #d3d3d3");
-					newAnalysisMenu.hide();
+					$newAnalysisButton.css("border","1px solid #d3d3d3");
+					$newAnalysisMenu.hide();
 				}
 		);
-		$(newAnalysisMenu).find("li").click(function(event){
-			newAnalysisMenu.hide();
+		$newAnalysisMenu.find("li").click(function(event){
+			$newAnalysisMenu.hide();
 			var data = $(event.target).data();
 			createStepAnalysis(data.analysis, data.strategy, data.step);
 		});
@@ -345,6 +346,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 	
 	ns.configureAnalysisViews = configureAnalysisViews;
 	ns.loadDisplaySubpanes = loadDisplaySubpanes;
+	ns.createStepAnalysis = createStepAnalysis;
 	ns.copyStepAnalysis = copyStepAnalysis;
 	ns.renameStepAnalysis = renameStepAnalysis;
 	ns.analysisRefresh = analysisRefresh;
