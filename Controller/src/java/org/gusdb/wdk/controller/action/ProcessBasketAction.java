@@ -6,6 +6,7 @@ package org.gusdb.wdk.controller.action;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -131,10 +132,20 @@ public class ProcessBasketAction extends Action {
         }
 
         // output the total count
-        int count = user.getBasketCount();
         JSONObject jsMessage = new JSONObject();
-        jsMessage.put("count", count);
-        jsMessage.put("countProcessed", numProcessed);
+
+        int count = user.getBasketCount();
+        jsMessage.put("all", count);
+        jsMessage.put("processed", numProcessed);
+
+        // output each record count
+        JSONObject jsRecordCounts = new JSONObject();
+        Map<RecordClassBean, Integer> counts = user.getBasketCounts();
+        for (RecordClassBean record : counts.keySet()) {
+          jsRecordCounts.put(record.getFullName(), counts.get(record));
+        }
+        jsMessage.put("records", jsRecordCounts);
+
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
 

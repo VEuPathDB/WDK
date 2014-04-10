@@ -21,18 +21,16 @@
       <div style="border:none" id="basket-menu" class="tabs">
 
         <ul>
-          <c:set var="index" value="${0}" />
           <c:forEach items="${baskets}" var="item">
             <c:set var="recordClass" value="${item.key}" />
             <c:set var="count" value="${item.value}" />
             <c:if test="${count > 0}">
               <li id="${fn:replace(recordClass.fullName, '.', '_')}" 
-                  tab-index="${index}" recordClass="${recordClass.fullName}">
+                  data-recordClass="${recordClass.fullName}">
                 <a href="<c:url value='/showBasket.do?recordClass=${recordClass.fullName}'/>"
                   >${recordClass.displayName} (<span class="count">${item.value}</span>)
                   <span> </span> </a>
               </li>
-              <c:set var="index" value="${index + 1}" />
             </c:if>
           </c:forEach>
         </ul>

@@ -29,7 +29,7 @@
 
 
 <td class="h3left" style="vertical-align:middle;padding-bottom:3px;">
-  <span id="text_step_count">${wdkAnswer.resultSize} </span><span id="text_data_type">${recordName}</span>
+  <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${recordName}</span>
   <c:if test="${strategy != null}">
     &nbsp;from Step <span id="text_step_number">${strategy.length}</span> <br/>Strategy:	
 			<span 
@@ -45,7 +45,7 @@
 <td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
   <c:if test="${wdkAnswer.resultSize > 0}">
     <div style="float:right">
-     <c:set var="r_count" value="${wdkAnswer.resultSize} ${recordName}" />
+      <c:set var="r_count"><span class="record-count"> ${wdkAnswer.resultSize}</span> ${recordName}</c:set>
      <c:if test="${strategy != null}">
       <c:choose>
         <c:when test="${wdkUser.guest}">

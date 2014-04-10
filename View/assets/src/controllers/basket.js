@@ -5,7 +5,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
     // determine the default tab
     var current = wdk.stratTabCookie.getCurrentTabCookie('basket');
     var tab = $("#basket-menu > ul > li#" + current);
-    var index = (tab.length > 0) ? parseInt(tab.attr("tab-index"), 10) : 0;
+    var index = (tab.length > 0) ? tab.index() : 0;
 
     $("#basket-menu").tabs({
       active: index,
@@ -71,7 +71,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
   function refreshBasket() {
     var tabs = $("#basket #basket-menu");
     var index = tabs.tabs("option", "active");
-    tabs.tabs("load", index);
+    tabs.tabs("load", index, { skipCache: true });
   }
 
   function ChangeBasket(url, noUpdate) {
@@ -96,7 +96,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
 
   function emptyBasket() {
     var currentTab = getCurrentBasketTab();
-    var recordClass = currentTab.attr("recordclass");
+    var recordClass = currentTab.data("recordclass");
     var display = currentTab.text();
     var message = $("#basketConfirmation");
     $("#basketName", message).text(display);
@@ -107,7 +107,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
   }
 
   function saveBasket() {
-    var recordClass = getCurrentBasketTab().attr("recordclass");
+    var recordClass = getCurrentBasketTab().data("recordclass");
     recordClass = recordClass.replace('.', '_');  
     window.location='processQuestion.do?questionFullName=InternalQuestions.' +
         recordClass + 'BySnapshotBasket&' + recordClass +
@@ -226,7 +226,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
           }
         }
 
-        updateBasketCount(data.count);
+        updateBasketCount(data, recordType);
         if (type != 'recordPage') {
           checkPageBasket();
           // the image has been updated, no need to restore it again.
@@ -252,8 +252,21 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
     });
   }
 
-  function updateBasketCount(c) {
-    $("#menu a#mybasket span.subscriptCount").text("(" + c + ")");
+  function updateBasketCount(counts, recordType) {
+    // menu bar
+    $("#menu a#mybasket span.subscriptCount").text("(" + counts.all + ")");
+
+    // basket tab
+    var $basketTabs = $('#basket-menu');
+    var $basketTab = $basketTabs.find('> .ui-tabs-nav ' +
+        '> li[data-recordclass="' + recordType + '"]');
+    var $basketPanel = $basketTabs.find('.ui-tabs-panel').eq($basketTab.index());
+
+    var recordTypeCount = counts.records[recordType];
+
+    $basketTab.find('.count').text(recordTypeCount);
+    $basketPanel.find('#text_step_count').text(recordTypeCount);
+    $basketPanel.find('.record-count').text(recordTypeCount);
   }
 
   function checkPageBasket() {
@@ -297,8 +310,10 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
   }
 
   function getCurrentBasketTab() {
-    var index = $("#basket #basket-menu").tabs("option", "active");
-    return $("#basket-menu > ul > li[tab-index=" + index + "]");
+    var $basketMenu = $('#basket-menu');
+    var index = $basketMenu.tabs('option', 'active');
+    var $tab = $basketMenu.find('> ul > li').eq(index);
+    return $tab;
   }
 
   /***************** Basket functions to support basket manipulation from GBrowse ********************/
@@ -344,7 +359,6 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
   ns.emptyBasket = emptyBasket;
   ns.saveBasket = saveBasket;
   ns.updateBasket = updateBasket;
-  ns.updateBasketCount = updateBasketCount;
   ns.checkPageBasket = checkPageBasket;
   ns.getCurrentBasketRegion = getCurrentBasketRegion;
   ns.getCurrentBasketTab = getCurrentBasketTab;
