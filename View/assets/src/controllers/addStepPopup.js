@@ -56,8 +56,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
     if (panel == 'strategy_results') {
       if ($.cookie("refresh_results") == "true") {
+        // reload current tab
         var currentStep = $("#Strategies div.selected");
-        var active_link = $("a.results_link", currentStep);
+        var active_link = $(".results_link", currentStep);
         if (active_link.length == 0) {
           active_link = $(".resultCount a.operation", currentStep);
         }
