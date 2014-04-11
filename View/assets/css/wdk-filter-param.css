@@ -248,7 +248,8 @@
   min-height: 2em;
 }
 .filter-items[data-total]:before {
-  content: attr(data-total) " selected items: ";
+  content: attr(data-total) " selected ";
+  font-weight: bold;
 }
 .filter-items li {
   display: inline-block;
