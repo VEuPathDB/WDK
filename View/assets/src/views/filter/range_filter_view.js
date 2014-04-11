@@ -154,7 +154,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
       return this;
     },
 
-    expandDescription: function() {
+    expandDescription: function(event) {
+      event.preventDefault();
       this.$('.description p').toggleClass('expanded');
     },
 
