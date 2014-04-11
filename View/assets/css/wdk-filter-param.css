@@ -31,7 +31,7 @@
 .range-filter .table tr {
   display: inline-block;
 }
-.range-filter {
+.field-detail > div {
   position: relative;
   padding: 1em 0;
 }
@@ -120,12 +120,30 @@
 .field-detail h4 {
   margin-top: 4em;
 }
-.field-detail p {
+.field-detail > div > div {
   margin: 1em 0;
 }
 .field-detail .apply-filter {
   text-align: right;
   padding: 1em 0;
+}
+.field-detail .description p {
+  margin: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  vertical-align: text-bottom;
+  white-space: nowrap;
+  display: inline-block;
+  width: 90%;
+}
+.field-detail .description p.expanded {
+  white-space: normal;
+}
+.field-detail .description .read-more {
+  display: none;
+}
+.field-detail .description .read-more.visible {
+  display: inline-block;
 }
 .membership-filter .text,
 .membership-filter .distribution {

@@ -10,6 +10,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     max: null,
 
     events: {
+      'click .read-more a'    : 'expandDescription',
       'plothover .chart'      : 'handlePlotHover',
       'plotselected .chart'   : 'handlePlotSelected',
       'plotselecting .chart'  : 'handlePlotSelecting',
@@ -144,7 +145,17 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var resizePlot = _.debounce(this.resizePlot.bind(this), 100);
       $(window).on('resize.range_filter', resizePlot);
 
+      // activate Read more link if text is overflowed
+      var p = this.$('.description p').get(0);
+      if (p.scrollWidth > p.clientWidth) {
+        this.$('.description .read-more').addClass('visible');
+      }
+
       return this;
+    },
+
+    expandDescription: function() {
+      this.$('.description p').toggleClass('expanded');
     },
 
     didShow: function() {
