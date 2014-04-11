@@ -274,20 +274,28 @@
   text-align: center;
   min-height: 2em;
 }
+.filter-items * {
+  vertical-align: middle;
+}
 .filter-items[data-total]:before {
   content: attr(data-total) " selected ";
   font-weight: bold;
 }
 .filter-items li {
   display: inline-block;
-}
-.filter-items li {
   margin-right: .5em;
 }
 .filter-items li > div {
   padding: 2px 4px;
   background-color: #efefef;
   border: 1px solid #ccc;
+}
+.filter-items li .select {
+  display: inline-block;
+  max-width: 15em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .filter-items li.selected > div {
   border-color: #A7A7A7;
