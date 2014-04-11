@@ -19,7 +19,13 @@ wdk.namespace('wdk.models.filter', function(ns) {
    */
   var MemberFilter = Filter.extend({
     condition: function() {
-      return this.attributes.values.join(' or ');
+      var values = this.get('values');
+
+      if (values.length <= 2) {
+        return values.join(' or ');
+      } else {
+        return values.slice(0, -1).join(', ') + ' or ' + values[values.length - 1];
+      }
     }
   });
 
