@@ -91,7 +91,13 @@ public class StepAnalysisFileStore {
     Files.createDirectory(directory);
     // apply file permissions after the fact in case umask restrictions prevent it during creation
     Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxrwxrwx");
-    Files.setPosixFilePermissions(directory, perms);
+    try {
+      Files.setPosixFilePermissions(directory, perms);
+    }
+    catch (UnsupportedOperationException ex) {
+      // ignore it since it's not supported on Windows
+      LOG.info("cannot set permissions to " + directory);
+    }
   }
 
   /**
