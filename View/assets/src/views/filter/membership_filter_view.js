@@ -143,10 +143,16 @@ wdk.namespace('wdk.views.filter', function(ns) {
         this.$('.description .read-more').addClass('visible');
       }
 
+      var panel = this.$('.membership-table-panel');
+      if (panel.get(0).scrollHeight > panel.get(0).clientHeight) {
+        panel.addClass('overflowed');
+      }
+
       return this;
     },
 
-    expandDescription: function() {
+    expandDescription: function(e) {
+      e.preventDefault();
       this.$('.description p').toggleClass('expanded');
     },
 
