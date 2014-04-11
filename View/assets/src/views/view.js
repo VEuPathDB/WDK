@@ -103,13 +103,12 @@ wdk.namespace('wdk.views', function(ns, $) {
 
     didHide: function() { },
 
-    destroy: function() {
-      this.undelegateEvents();
-      this.stopListening();
-      this.didDestroy();
+    remove: function() {
+      Backbone.View.prototype.remove.apply(this, arguments);
+      this.didRemove();
     },
 
-    didDestroy: function() { }
+    didRemove: function() { }
 
   });
 
