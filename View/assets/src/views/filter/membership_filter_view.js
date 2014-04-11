@@ -33,11 +33,14 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
   var MembershipFilterView = ns.MembershipFilterView = wdk.views.View.extend({
 
+    memberViews: null,
+
     template: wdk.templates['filter/membership_filter.handlebars'],
 
     constructor: function(filterService) {
       var initArgs = [].slice.call(arguments, 1);
       this.filterService = filterService;
+      this.memberViews = [];
       wdk.views.View.apply(this, initArgs);
     },
 
@@ -87,6 +90,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         });
         var memberView = new MemberView({ model: member }).render();
         _this.$('.membership-filter').append(memberView.$el);
+        _this.memberViews.push(memberView);
       });
 
       members.on('change:selected', function(member, selected) {
@@ -97,19 +101,23 @@ wdk.namespace('wdk.views.filter', function(ns) {
             : member.get('value');
         });
         var filters = filterService.filters;
-        filters.remove(filters.where({ field: field.get('term') }), { origin: this });
+
+        filters.remove(filters.where({ field: field.get('term') }), { origin: _this });
+
         if (values.length) {
           filters.add({
             field: field.get('term'),
             operation: field.get('filter'),
             values: values
-          }, { origin: this });
+          }, { origin: _this });
         }
       });
 
-      this.$('.tabs').tabs();
-
       return this;
+    },
+
+    didDestroy: function() {
+      _.invoke(this.memberViews, 'destroy');
     }
 
   });
