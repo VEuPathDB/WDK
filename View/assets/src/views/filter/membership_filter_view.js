@@ -33,6 +33,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
   var MembershipFilterView = ns.MembershipFilterView = wdk.views.View.extend({
 
+    events: {
+      'click .read-more a': 'expandDescription'
+    },
+
     memberViews: null,
 
     template: wdk.templates['filter/membership_filter.handlebars'],
@@ -109,7 +113,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
           selected: !!(_.contains(filterValues, name))
         });
         var memberView = new MemberView({ model: member }).render();
-        _this.$('.membership-filter').append(memberView.$el);
+        _this.$('tbody').append(memberView.$el);
         _this.memberViews.push(memberView);
       });
 
@@ -133,7 +137,17 @@ wdk.namespace('wdk.views.filter', function(ns) {
         }
       });
 
+      // activate Read more link if text is overflowed
+      var p = this.$('.description p').get(0);
+      if (p.scrollWidth > p.clientWidth) {
+        this.$('.description .read-more').addClass('visible');
+      }
+
       return this;
+    },
+
+    expandDescription: function() {
+      this.$('.description p').toggleClass('expanded');
     },
 
     didRemove: function() {
