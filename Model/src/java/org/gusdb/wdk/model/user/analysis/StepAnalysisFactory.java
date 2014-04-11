@@ -14,6 +14,8 @@ public interface StepAnalysisFactory {
 
   public Map<Integer, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException;
 
+  public Object getFormViewModel(StepAnalysisContext context) throws WdkModelException;
+
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException;
 
   public StepAnalysisContext createAnalysis(StepAnalysisContext context) throws WdkModelException, IllegalAnswerValueException;

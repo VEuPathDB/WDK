@@ -3,7 +3,6 @@ package org.gusdb.wdk.controller.action.analysis;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.model.analysis.StepAnalyzer;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 
 public class ShowStepAnalysisFormAction extends AbstractStepAnalysisIdAction {
@@ -22,9 +21,9 @@ public class ShowStepAnalysisFormAction extends AbstractStepAnalysisIdAction {
     }
     
     String resolvedView = getAnalysisMgr().getViewResolver().resolveFormView(this, context);
-    StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
+    Object formViewModel = getAnalysisMgr().getFormViewModel(context);
     return new ActionResult().setViewPath(resolvedView)
-        .setRequestAttribute("viewModel", analyzer.getFormViewModel());
+        .setRequestAttribute("viewModel", formViewModel);
     
     // special case for interacting with a WDK question
     /*

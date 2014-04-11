@@ -79,6 +79,11 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   }
 
   @Override
+  public Object getFormViewModel(StepAnalysisContext context) throws WdkModelException {
+    return getConfiguredAnalyzer(context, _fileStore).getFormViewModel();
+  }
+
+  @Override
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
     Map<String, String> errors = context.getStepAnalysis().getAnalyzerInstance()
         .validateFormParams(context.getFormParams());
@@ -210,8 +215,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
 
   private StepAnalysisContext executeAnalysis(StepAnalysisContext context) throws WdkModelException {
     try {
-      _threadResults.add(_threadPool.submit(new AnalysisCallable(context, _dataStore,
-          _fileStore.getStorageDirPath(context.createHash()))));
+      _threadResults.add(_threadPool.submit(new AnalysisCallable(context, _dataStore, _fileStore)));
       return context;
     }
     catch (RejectedExecutionException e) {
@@ -238,8 +242,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     }
     
     LOG.info("Got result back from data store: " + result.getStatus() + ", with results:\n" + result.getStoredString());
-    Path analyzerStorageDir = Paths.get(_execConfig.getFileStoreDirectory(), hash);
-    StepAnalyzer analyzer = getConfiguredAnalyzer(context, analyzerStorageDir);
+    StepAnalyzer analyzer = getConfiguredAnalyzer(context, _fileStore);
     analyzer.setPersistentCharData(result.getStoredString());
     analyzer.setPersistentBinaryData(result.getStoredBytes());
     result.setResultViewModel(analyzer.getResultViewModel());
@@ -267,9 +270,10 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     return context;
   }
 
-  private static StepAnalyzer getConfiguredAnalyzer(StepAnalysisContext context, Path storageDirectory) throws WdkModelException {
+  private static StepAnalyzer getConfiguredAnalyzer(StepAnalysisContext context,
+      StepAnalysisFileStore fileStore) throws WdkModelException {
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
-    analyzer.setStorageDirectory(storageDirectory);
+    analyzer.setStorageDirectory(fileStore.getStorageDirPath(context.createHash()));
     analyzer.setFormParams(context.getFormParams());
     analyzer.setAnswerValue(context.getStep().getAnswerValue());
     return analyzer;
@@ -410,12 +414,12 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     
     private final StepAnalysisContext _context;
     private final StepAnalysisDataStore _dataStore;
-    private final Path _storageDirectory;
+    private final StepAnalysisFileStore _fileStore;
     
-    public AnalysisCallable(StepAnalysisContext context, StepAnalysisDataStore dataStore, Path storageDirectory) {
+    public AnalysisCallable(StepAnalysisContext context, StepAnalysisDataStore dataStore, StepAnalysisFileStore fileStore) {
       _context = context;
       _dataStore = dataStore;
-      _storageDirectory = storageDirectory;
+      _fileStore = fileStore;
     }
     
     @Override
@@ -426,7 +430,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         _dataStore.updateExecution(contextHash, ExecutionStatus.RUNNING, null, null);
     
         // create step analysis instance and run
-        StepAnalyzer analyzer = getConfiguredAnalyzer(_context, _storageDirectory);
+        StepAnalyzer analyzer = getConfiguredAnalyzer(_context, _fileStore);
         ExecutionStatus status = analyzer.runAnalysis(
             _context.getStep().getAnswerValue(), new StatusLogger(contextHash, _dataStore));
       
