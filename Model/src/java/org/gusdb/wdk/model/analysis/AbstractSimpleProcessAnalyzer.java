@@ -45,7 +45,7 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
     configureEnvironment(builder.environment());
     builder.directory(getStorageDirectory().toFile());
     builder.redirectOutput(getStdoutFilePath().toFile());
-    builder.redirectError(getStdoutFilePath().toFile());
+    builder.redirectError(getStderrFilePath().toFile());
 
     InputStream providedInput = null;
     Process process = null;
@@ -62,20 +62,28 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
       }
       int exitValue = process.waitFor();
       LOG.info("Received exit code from spawned process: " + exitValue);
+      if (exitValue != 0) informUserOfError(String.valueOf(exitValue));
       return (exitValue == 0 ? ExecutionStatus.COMPLETE : ExecutionStatus.ERROR);
     }
     catch (InterruptedException ie) {
       LOG.warn("Thread for step analysis was interrupted before completion.", ie);
+      LOG.warn("Check files in " + getStorageDirectory() + " for level of completion before interruption.");
       return ExecutionStatus.INTERRUPTED;
     }
     catch (Exception e) {
       LOG.error("Thread for step analysis threw an exception before completion.", e);
+      informUserOfError("unknown");
       return ExecutionStatus.ERROR;
     }
     finally {
       IoUtil.closeQuietly(providedInput);
       if (process != null) process.destroy();
     }
+  }
+
+  private void informUserOfError(String exitValue) {
+    LOG.error("Error occurred in spawned process (exitCode=" + exitValue + "). For details, check " +
+        getStdoutFileName() + " and " + getStderrFileName() + " in dir: " + getStorageDirectory());
   }
 
   protected String getStdoutFileName() { return STDOUT_FILE_NAME; }
