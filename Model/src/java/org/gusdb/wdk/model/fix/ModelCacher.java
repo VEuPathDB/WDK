@@ -137,7 +137,7 @@ public class ModelCacher extends BaseCLI {
     try {
       String sql = "INSERT INTO " + schema + "wdk_questions "
           + "(question_id, question_name, project_id, "
-          + " question_checksum, query_checksum) " + "VALUES (?, ?, ?, ?, ?)";
+          + " question_checksum, query_checksum, record_class) " + "VALUES (?, ?, ?, ?, ?, ?)";
       psQuestion = SqlUtils.getPreparedStatement(dataSource, sql);
 
       sql = "INSERT INTO " + schema + "wdk_params (param_id, "
