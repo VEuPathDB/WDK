@@ -1,4 +1,5 @@
 <div class="range-filter">
+  <p>{{field.description}}</p>
   <div class="overview">
     <dl class="ui-helper-clearfix">
       <dt>Avg</dt>
@@ -12,8 +13,8 @@
 
   <p>
   Select {{field.display}} between
-    <input name="min" type="text" size="6" placeholder="{{min}}"/> and
-    <input name="max" type="text" size="6" placeholder="{{max}}"/>
+    <input name="min" type="text" size="6" placeholder="{{min}}" autocomplete="off" /> and
+    <input name="max" type="text" size="6" placeholder="{{max}}" autocomplete="off" />
     <!--<img src="assets/wdk/images/question.png"
     title="Enter a minimum and/or maximum value here, or select a region of the chart below"/>-->
     <span class="selection-total"></span>
@@ -22,5 +23,4 @@
   <div class="chart"></div>
   <div class="chart-title x-axis">{{field.display}} ({{field.units}})</div>
   <div class="chart-title y-axis">Frequency</div>
-  <p>{{field.description}}</p>
 </div>
