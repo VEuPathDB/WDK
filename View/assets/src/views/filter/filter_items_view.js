@@ -22,10 +22,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.listenTo(this.model, 'remove', this.removeItem);
       this.listenTo(this.model, 'reset', this.render);
       this.listenTo(this.filterService.fields, 'select', this.toggleSelectItems);
-      this.listenTo(this.filterService.filteredData, 'reset', this.updateTotal);
-      this.listenTo(this.filterService.filteredData, 'change', function(d) {
-        this.updateTotal(this.filterService.filteredData);
-      });
+      this.listenTo(this.filterService.filteredData, 'reset change', this.updateTotal);
     },
 
     render: function() {
@@ -41,7 +38,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         _this.addItem(model, { inRender: true });
       });
 
-      this.updateTotal(this.filterService.filteredData);
+      this.updateTotal();
     },
 
     addItem: function(model, options) {
@@ -62,9 +59,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
       _.invoke(this.itemViews, 'toggleSelect', field);
     },
 
-    updateTotal: function(data) {
+    updateTotal: function() {
+      var count = this.filterService.filteredData.where({ ignored: false }).length;
+
       if (this.model.length > 0) {
-        this.$el.attr('data-total', data.where({ ignored: false }).length);
+        this.$el.attr('data-total', count);
       } else {
         this.$el.removeAttr('data-total');
       }
