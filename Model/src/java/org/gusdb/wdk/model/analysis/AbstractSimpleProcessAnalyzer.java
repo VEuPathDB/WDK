@@ -4,9 +4,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
@@ -21,10 +23,26 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
   
   protected abstract String[] getCommand(AnswerValue answerValue) throws WdkModelException;
   
+  /**
+   * Allows subclasses to configure the environment of the process they want to
+   * run.  The passed environmen will be a copy of the current Java process's
+   * environment.  The default implementation adds the GUS_HOME environment
+   * variable, and adds GUS_HOME/bin to PATH.  An overriding method should call
+   * super.configureEnvironment() to receive those modifications.
+   * 
+   * @param environment writable map of environment for subprocess to run in
+   */
+  protected void configureEnvironment(Map<String,String> environment) {
+    String gusHome = GusHome.getGusHome();
+    environment.put("GUS_HOME", gusHome);
+    environment.put("PATH", Paths.get(gusHome, "bin") + ":" + environment.get("PATH"));
+  }
+  
   @Override
   public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log)
       throws WdkModelException {
     ProcessBuilder builder = new ProcessBuilder(getCommand(answerValue));
+    configureEnvironment(builder.environment());
     builder.directory(getStorageDirectory().toFile());
     builder.redirectOutput(getStdoutFilePath().toFile());
     builder.redirectError(getStdoutFilePath().toFile());
@@ -43,6 +61,7 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
         }
       }
       int exitValue = process.waitFor();
+      LOG.info("Received exit code from spawned process: " + exitValue);
       return (exitValue == 0 ? ExecutionStatus.COMPLETE : ExecutionStatus.ERROR);
     }
     catch (InterruptedException ie) {
