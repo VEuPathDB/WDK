@@ -83,11 +83,6 @@
         >${view.display} <span> </span></a>
       </li>
     </c:forEach>
-    <c:if test="${fn:length(question.stepAnalyses) > 0}">
-      <li id="choose-step-analysis">
-        <a href="${pageContext.request.contextPath}/showNewAnalysisTab.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}"> + Analyze This Result <span> </span></a>
-      </li>
-    </c:if>
     <c:forEach items="${wdkStep.appliedAnalyses}" var="analysisEntry">
       <c:set var="analysisId" value="${analysisEntry.key}"/>
       <c:set var="analysisCtx" value="${analysisEntry.value}"/>
@@ -98,6 +93,12 @@
         </a>
       </li>
     </c:forEach>
+    <c:if test="${fn:length(question.stepAnalyses) > 0}">
+      <li id="choose-step-analysis">
+        <a href="${pageContext.request.contextPath}/showNewAnalysisTab.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}">+ Add Analysis<span> </span></a>
+      </li>
+    </c:if>
+    <%--
     <c:if test="${fn:length(question.stepAnalyses) > 0}">
       <li>
         <div class="new-analysis">
@@ -115,6 +116,7 @@
         </div>
       </li>
     </c:if>
+    --%>
   </ul>
 </div>
 

@@ -23,15 +23,17 @@ public abstract class StepAnalysisDataStore {
     int stepId;
     String displayName;
     boolean isNew;
+    boolean hasParams;
     String invalidStepReason;
     String contextHash;
     String serializedContext;
     public AnalysisInfo(int analysisId, int stepId, String displayName, boolean isNew,
-        String invalidStepReason, String contextHash, String serializedContext) {
+        boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) {
       this.analysisId = analysisId;
       this.stepId = stepId;
       this.displayName = displayName;
       this.isNew = isNew;
+      this.hasParams = hasParams;
       this.invalidStepReason = invalidStepReason;
       this.contextHash = contextHash;
       this.serializedContext = serializedContext;
@@ -43,6 +45,7 @@ public abstract class StepAnalysisDataStore {
           .append("stepId: ").append(stepId).append(NL)
           .append("displayName: ").append(displayName).append(NL)
           .append("isNew: ").append(isNew).append(NL)
+          .append("hasParams: ").append(hasParams).append(NL)
           .append("invalidStepReason: ").append(invalidStepReason).append(NL)
           .append("contextHash: ").append(contextHash).append(NL)
           .append("serializedContext: ").append(serializedContext).append(NL)
@@ -57,10 +60,11 @@ public abstract class StepAnalysisDataStore {
   
   // abstract methods to manage analysis information
   public abstract int getNextId() throws WdkModelException;
-  public abstract void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
+  public abstract void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
   public abstract void deleteAnalysis(int analysisId) throws WdkModelException;
   public abstract void renameAnalysis(int analysisId, String displayName) throws WdkModelException;
   public abstract void setNewFlag(int analysisId, boolean isNew) throws WdkModelException;
+  public abstract void setHasParams(int analysisId, boolean hasParams) throws WdkModelException;
   public abstract void updateContext(int analysisId, String contextHash, String serializedContext) throws WdkModelException;
   protected abstract List<Integer> getAnalysisIdsByStepId(int stepId) throws WdkModelException;
   protected abstract List<Integer> getAllAnalysisIds() throws WdkModelException;
@@ -133,7 +137,8 @@ public abstract class StepAnalysisDataStore {
     
     AnalysisInfo info = data.analysisInfo;
     StepAnalysisContext context = StepAnalysisContext.createFromStoredData(
-        _wdkModel, info.analysisId, info.isNew, info.invalidStepReason, info.displayName, info.serializedContext);
+        _wdkModel, info.analysisId, info.isNew, info.hasParams, info.invalidStepReason,
+        info.displayName, info.serializedContext);
     
     // if analysis was created from a step its analyzer did not approve, then status is always INVALID
     if (!context.getIsValidStep()) {
