@@ -141,8 +141,8 @@ public class ModelCacher extends BaseCLI {
       psQuestion = SqlUtils.getPreparedStatement(dataSource, sql);
 
       sql = "INSERT INTO " + schema + "wdk_params (param_id, "
-          + " question_id, param_name, param_type, record_class) "
-          + "VALUES (?, ?, ?, ?, ?)";
+          + " question_id, param_name, param_type) "
+          + "VALUES (?, ?, ?, ?)";
       psParam = SqlUtils.getPreparedStatement(dataSource, sql);
 
       sql = "INSERT INTO " + schema + "wdk_enum_params "
