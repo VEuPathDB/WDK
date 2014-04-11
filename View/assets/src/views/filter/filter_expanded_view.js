@@ -9,7 +9,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     template: wdk.templates['filter/filter_expanded.handlebars'],
 
     initialize: function() {
-      this.listenTo(this.model.filteredData, 'reset', this.setCount);
+      this.listenTo(this.model.filteredData, 'reset change', this.setCount);
 
       this.filterFieldsView = new FilterFieldsView({ model: this.model });
       this.resultsView = new ResultsView({ model: this.model });
@@ -30,7 +30,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     setCount: function() {
-      this.$('a[href="#results"] .count').html(this.model.filteredData.length);
+      var count = this.model.filteredData.where({ ignored: false }).length;
+      this.$('a[href="#results"] .count').html(count);
     },
 
     didShow: function() {
