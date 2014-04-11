@@ -213,7 +213,13 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 				
 				var formPane = $element.find(".step-analysis-form-pane");
 				formPane.html(wrappingDiv);
-				wdk.formUtil.populateForm(formPane.find('form').first(), analysisObj.formParams);
+				
+				// only overwrite any default values if params have been set for this instance in the past
+				if (analysisObj.hasParams) {
+					// add analysisId to formParams so it gets overwritten with the correct value
+					analysisObj.formParams.analysisId = [ analysisId ];
+					wdk.formUtil.populateForm(formPane.find('form').first(), analysisObj.formParams);
+				}
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
 				handleAjaxError("Error: Unable to retrieve step analysis form for analysis with id " + analysisId);

@@ -41,6 +41,7 @@ public class StepAnalysisContext {
     displayName,
     description,
     status,
+    hasParams,
     invalidStepReason
   }
   
@@ -51,6 +52,7 @@ public class StepAnalysisContext {
   private Step _step;
   private StepAnalysis _stepAnalysis;
   private boolean _isNew;
+  private boolean _hasParams;
   private String _invalidStepReason;
   private ExecutionStatus _status;
   private Map<String, String[]> _formParams;
@@ -95,6 +97,7 @@ public class StepAnalysisContext {
     ctx._displayName = ctx._stepAnalysis.getDisplayName();
     ctx._formParams = new HashMap<String,String[]>();
     ctx._isNew = true;
+    ctx._hasParams = false;
     ctx._invalidStepReason = null;
     ctx._status = ExecutionStatus.CREATED;
     
@@ -117,17 +120,18 @@ public class StepAnalysisContext {
   }  
   
   public static StepAnalysisContext createFromStoredData(WdkModel wdkModel,
-      int analysisId, boolean isNew, String invalidStepReason, String displayName, String serializedContext) throws WdkModelException {
+      int analysisId, boolean isNew, boolean hasParams, String invalidStepReason, String displayName, String serializedContext) throws WdkModelException {
     try {
       StepAnalysisContext ctx = new StepAnalysisContext();
       ctx._wdkModel = wdkModel;
       ctx._analysisId = analysisId;
       ctx._displayName = displayName;
       ctx._isNew = isNew;
+      ctx._hasParams = hasParams;
       ctx._invalidStepReason = invalidStepReason;
       ctx._status = ExecutionStatus.UNKNOWN;
       
-      LOG.info("Got the following serialized context from the DB: " + serializedContext);
+      LOG.debug("Got the following serialized context from the DB: " + serializedContext);
       
       // deserialize hashable context values
       JSONObject json = new JSONObject(serializedContext);
@@ -139,7 +143,8 @@ public class StepAnalysisContext {
 
       ctx._formParams = new LinkedHashMap<>();
       JSONObject formObj = json.getJSONObject(JsonKey.formParams.name());
-      LOG.info("Retrieved the following params JSON from the DB: " + formObj);
+      LOG.debug("Retrieved the following params JSON from the DB: " + formObj);
+      
       @SuppressWarnings("unchecked")
       Iterator<String> iter2 = formObj.keys();
       while (iter2.hasNext()) {
@@ -170,6 +175,7 @@ public class StepAnalysisContext {
     // deep copy params
     ctx._formParams = getDuplicateMap(oldContext._formParams);
     ctx._isNew = oldContext._isNew;
+    ctx._hasParams = oldContext._hasParams;
     ctx._invalidStepReason = oldContext._invalidStepReason;
     ctx._status = oldContext._status;
     return ctx;
@@ -216,6 +222,7 @@ public class StepAnalysisContext {
       json.put(JsonKey.analysisId.name(), _analysisId);
       json.put(JsonKey.displayName.name(), _displayName);
       json.put(JsonKey.description.name(), _stepAnalysis.getDescription());
+      json.put(JsonKey.hasParams.name(), _hasParams);
       json.put(JsonKey.status.name(), _status.name());
       json.put(JsonKey.invalidStepReason.name(), (_invalidStepReason == null ? "null" : _invalidStepReason));
       return json;
@@ -256,7 +263,7 @@ public class StepAnalysisContext {
     }
     json.put(JsonKey.formParams.name(), params);
     
-    LOG.info("Returning the following shared JSON: " + json);
+    LOG.debug("Returning the following shared JSON: " + json);
     return json;
   }
   
@@ -319,6 +326,14 @@ public class StepAnalysisContext {
 
   public void setNew(boolean isNew) {
     _isNew = isNew;
+  }
+
+  public boolean hasParams() {
+    return _hasParams;
+  }
+
+  public void setHasParams(boolean hasParams) {
+    _hasParams = hasParams;
   }
 
   public boolean getIsValidStep() {

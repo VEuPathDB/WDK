@@ -151,7 +151,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     // create new execution instance
     int saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(), context.getDisplayName(),
-        context.isNew(), context.getInvalidStepReason(), context.createHash(), context.serializeContext());
+        context.isNew(), context.hasParams(), context.getInvalidStepReason(), context.createHash(), context.serializeContext());
     
     // override any previous value for id
     context.setAnalysisId(saId);
@@ -182,6 +182,13 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       _dataStore.setNewFlag(context.getAnalysisId(), false);
       context.setNew(false);
     }
+    
+    // now that this analysis has params, set 'has params' if not yet set
+    if (!context.hasParams()) {
+      _dataStore.setHasParams(context.getAnalysisId(), true);
+      context.setHasParams(true);
+    }
+    
     
     // Run analysis plugin under the following conditions:
     //   1. if new execution was created (i.e. none existed before or cache was cleared)
@@ -434,6 +441,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         ExecutionStatus status = analyzer.runAnalysis(
             _context.getStep().getAnswerValue(), new StatusLogger(contextHash, _dataStore));
       
+        LOG.info("Analyzer returned without exception and with status: " + status);
+        
         // status completed successfully or was interrupted
         String charData = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.getPersistentCharData() : "");
         byte[] binData = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.getPersistentBinaryData() : null);

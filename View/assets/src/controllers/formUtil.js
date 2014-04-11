@@ -1,40 +1,33 @@
 wdk.util.namespace("window.wdk.formUtil", function(ns, $) {
 	"use strict";
-	
+
+	// find input elements in form based on type, then assign values/properties
+	//   as necessary based on values in passed params object
 	function populateForm($form, paramValues) {
 		
-		// scroll through names of params
-		for (var inputName in paramValues) {
-
-			// input elements
-			$form.find('input[name='+inputName+']').each(function(){
-				var $inputElement = $(this);
-				var type = $(this).attr('type');
-
-				// if checkbox or radio and value matches, then check the box
-				if ((type == 'checkbox' || type == 'radio') &&
-					($.inArray($inputElement.val(), paramValues[inputName]) >= 0)) {
-					// element should be selected
-					$inputElement.prop('checked', true);
-				}
-				
-				// if hidden, text, or password, simply fill in the value
-				else if (type == 'hidden' || type == 'text' || type == 'password'){
-					// should only be one value, so take the first
-					$inputElement.val(paramValues[inputName][0]);
-				}
-			});
-			
-			// textarea elements
-			$form.find('textarea[name='+inputName+']').each(function() {
-				$(this).text(paramValues[inputName][0]);
-			});
-			
-			// select elements
-			$form.find('select[name='+inputName+']').each(function() {
-				$(this).val(paramValues[inputName]);
-			});
-		}
+		// handle radio/checkboxes
+		$form.find('input[type=checkbox],input[type=radio]').each(function(){
+			var $inputElement = $(this);
+			var valueArray = paramValues[$inputElement.attr('name')];
+			// uncheck box/radio if no array present or value is not in array
+			var checked = !(typeof valueArray === 'undefined' || $.inArray($inputElement.val(), valueArray) < 0);
+			$inputElement.prop('checked', checked);
+		});
+		
+		// handle select boxes
+		$form.find('select').each(function(){
+			$(this).val(paramValues[$(this).attr('name')]);
+		});
+		
+		// handle hidden, text, or password
+		$form.find('input[type=hidden],input[type=text],input[type=password]').each(function(){
+			$(this).val(paramValues[$(this).attr('name')][0]);
+		});
+		
+		// handle textareas
+		$form.find('textarea').each(function() {
+			$(this).text(paramValues[$(this).attr('name')][0]);
+		});
 	}
 
 	ns.populateForm = populateForm;

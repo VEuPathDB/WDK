@@ -37,6 +37,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private String DELETE_ANALYSIS_SQL;
   private String UPDATE_NAME_SQL;
   private String UPDATE_NEW_FLAG_SQL;
+  private String UPDATE_HAS_PARAMS_FLAG_SQL;
   private String UPDATE_CONTEXT_SQL;
   private String GET_ANALYSIS_IDS_BY_STEP_SQL;
   private String GET_ALL_ANALYSIS_IDS_SQL;
@@ -83,6 +84,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
    *   int step_id
    *   varchar display_name
    *   bool is_new
+   *   bool has_params
    *   bool is_valid_step
    *   varchar context_hash
    *   CLOB context
@@ -95,6 +97,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     DELETE_ANALYSIS_SQL = "";
     UPDATE_NAME_SQL = "";
     UPDATE_NEW_FLAG_SQL = "";
+    UPDATE_HAS_PARAMS_FLAG_SQL = "";
     UPDATE_CONTEXT_SQL = "";
     GET_ANALYSIS_IDS_BY_STEP_SQL = "";
     GET_ALL_ANALYSIS_IDS_SQL = "";
@@ -138,7 +141,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew,
+  public void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew, boolean hasParams,
       String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException {
     // TODO Auto-generated method stub
     
@@ -152,6 +155,12 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
 
   @Override
   public void renameAnalysis(int analysisId, String displayName) throws WdkModelException {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void setHasParams(int analysisId, boolean hasParams) throws WdkModelException {
     // TODO Auto-generated method stub
     
   }

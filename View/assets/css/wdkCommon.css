@@ -1152,6 +1152,10 @@ z-index: 1;
 .analysis-menu-tab-pane h3 {
 	margin: 4px 0;
 }
+.analysis-menu-tab-pane .sa-selector-container {
+  max-width: 710px;
+  margin: 0 auto;
+}
 .analysis-menu-tab-pane li {
 	float: left;
 	padding: 8px;
@@ -1160,7 +1164,7 @@ z-index: 1;
 	border: 1px dashed black;
 	border-radius: 8px;
 	background-color: lightgrey;
-	margin: 3px;
+	margin: 12px;
 }
 .analysis-menu-tab-pane li:hover {
   cursor: pointer;

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -44,7 +45,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
 
   @Override
   public void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew,
-      String invalidStepReason, String contextHash, String serializedContext)
+      boolean hasParams, String invalidStepReason, String contextHash, String serializedContext)
           throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (!STEP_ANALYSIS_MAP.containsKey(stepId)) {
@@ -52,7 +53,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
       }
       STEP_ANALYSIS_MAP.get(stepId).add(analysisId);
       AnalysisInfo info = new AnalysisInfo(analysisId, stepId, displayName,
-          isNew, invalidStepReason, contextHash, serializedContext);
+          isNew, hasParams, invalidStepReason, contextHash, serializedContext);
       ANALYSIS_INFO_MAP.put(analysisId, info);
       LOG.info("Inserted analysis with ID " + analysisId + " on step " + stepId +
           "; now " + STEP_ANALYSIS_MAP.get(stepId).size() + " analyses for this step.");
@@ -77,6 +78,10 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
       if (idsForStep.isEmpty()) {
         STEP_ANALYSIS_MAP.remove(stepId);
       }
+      
+      LOG.info("End of call to delete analysis with ID " + analysisId);
+      LOG.info(FormatUtil.prettyPrint(STEP_ANALYSIS_MAP));
+      LOG.info(FormatUtil.prettyPrint(ANALYSIS_INFO_MAP));
     }
   }
 
@@ -96,6 +101,17 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
     synchronized(ANALYSIS_INFO_MAP) {
       if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
         ANALYSIS_INFO_MAP.get(analysisId).isNew = isNew;
+        return;
+      }
+      throw new WdkModelException("No analysis exists with id: " + analysisId);
+    }
+  }
+
+  @Override
+  public void setHasParams(int analysisId, boolean hasParams) throws WdkModelException {
+    synchronized(ANALYSIS_INFO_MAP) {
+      if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
+        ANALYSIS_INFO_MAP.get(analysisId).hasParams = hasParams;
         return;
       }
       throw new WdkModelException("No analysis exists with id: " + analysisId);

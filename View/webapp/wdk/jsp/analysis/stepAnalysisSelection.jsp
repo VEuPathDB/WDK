@@ -9,7 +9,7 @@
         <h3>Select an analysis tool below with which to perform analysis</h3>
         <em>Clicking on a link below will open a new tab where you can configure and run a Step Analysis.</em>
         <hr/>
-        <div>
+        <div class="sa-selector-container">
           <ul class="ui-helper-clearfix">
             <c:set var="question" value="${wdkStep.question}"/>
             <c:forEach items="${question.stepAnalyses}" var="analysisEntry">
