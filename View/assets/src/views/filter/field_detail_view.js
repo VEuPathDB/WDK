@@ -19,26 +19,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     delegateTemplate: wdk.templates['filter/field_detail_delegate.handlebars'],
 
     initialize: function() {
-      this.listenTo(this.model.filters, 'add remove', function(filter, filters, opts) {
-        var delegateView = this.delegateView;
-        if (!delegateView) {
-          return;
-        }
-        if (filter.get('field') === delegateView.model.get('term') && opts.origin !== delegateView) {
-          this.renderDetail(delegateView.model);
-        }
-      });
-
-      this.listenTo(this.model.fields, 'change', function(field) {
-        var delegateView = this.delegateView;
-        if (!delegateView) {
-          return;
-        }
-        if (field === delegateView.model) {
-          this.renderDetail(field);
-        }
-      });
-
+      this.listenTo(this.model.fields, 'change', this.changeField);
       this.listenTo(this.model.fields, 'reset', this.renderEmpty);
     },
 
@@ -58,7 +39,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var html = this.delegateTemplate(this.model.attributes);
 
       if (this.delegateView) {
-        this.delegateView.destroy();
+        this.delegateView.stopListening();
+        this.delegateView.undelegateEvents();
         this.$el.empty();
       }
 
@@ -71,6 +53,14 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.$el.append(html);
 
       return this;
+    },
+
+    changeField: function(field) {
+      var delegateView = this.delegateView;
+
+      if (delegateView && field === delegateView.model) {
+        this.renderDetail(field);
+      }
     },
 
     getDelegateConstructor: function(type) {

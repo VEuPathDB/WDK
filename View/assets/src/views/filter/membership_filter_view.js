@@ -45,7 +45,27 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     initialize: function(options) {
+      var filters = this.filterService.filters;
       this.options = options;
+
+      this.listenTo(filters, 'add', _.partial(this.handleFilterUpdate, true));
+      this.listenTo(filters, 'remove', _.partial(this.handleFilterUpdate, false));
+    },
+
+    handleFilterUpdate: function(isSelected, filter, filters, options) {
+      var update = options.origin !== this &&
+        filter.get('field') === this.model.get('term');
+      var values = filter.get('values');
+
+      if (update) {
+        // set selected to true or false
+        this.memberViews.forEach(function renderViews(memberView) {
+          var member = memberView.model;
+          if (values.indexOf(member.get('value')) > -1) {
+            member.set('selected', isSelected);
+          }
+        })
+      }
     },
 
     render: function() {
@@ -116,8 +136,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
       return this;
     },
 
-    didDestroy: function() {
-      _.invoke(this.memberViews, 'destroy');
+    didRemove: function() {
+      _.invoke(this.memberViews, 'remove');
     }
 
   });

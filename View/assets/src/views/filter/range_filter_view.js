@@ -27,6 +27,34 @@ wdk.namespace('wdk.views.filter', function(ns) {
       wdk.views.View.apply(this, initArgs);
     },
 
+    initialize: function() {
+      var filters = this.filterService.filters;
+      this.listenTo(filters, 'add', this.addFilter);
+      this.listenTo(filters, 'remove', this.removeFilter);
+    },
+
+    addFilter: function(filter, filters, options) {
+      var update = options.origin !== this &&
+        filter.get('field') === this.model.get('term');
+
+      if (update) {
+        this.$min.val(filter.get('min'));
+        this.$max.val(filter.get('max'));
+        this.doPlotSelection();
+      }
+    },
+
+    removeFilter: function(filter, filters, options) {
+      var update = options.origin !== this &&
+        filter.get('field') === this.model.get('term');
+
+      if (update) {
+        this.$min.val(null);
+        this.$max.val(null);
+        this.doPlotSelection();
+      }
+    },
+
     render: function() {
       var field = this.model;
       var filterService = this.filterService;
@@ -66,7 +94,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         series: {
           bars: {
             show: true,
-            barWidth: .5,
+            barWidth: 0.5,
             lineWidth: 0,
             align: 'center'
           }
@@ -254,7 +282,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.doPlotSelection();
     },
 
-    didDestroy: function() {
+    didRemove: function() {
       $(window).off('resize.range_filter');
     }
 

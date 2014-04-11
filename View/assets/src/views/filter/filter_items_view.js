@@ -38,7 +38,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
       // add new items
       this.model.forEach(function(model) {
-        _this.addItem.call(_this, model, { inRender: true });
+        _this.addItem(model, { inRender: true });
       });
 
       this.updateTotal(this.filterService.filteredData);
