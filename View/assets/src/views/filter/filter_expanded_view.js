@@ -9,7 +9,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     template: wdk.templates['filter/filter_expanded.handlebars'],
 
     initialize: function() {
-      //this.listenTo(this.model.filteredData, 'reset', this.setCount);
+      this.listenTo(this.model.filteredData, 'reset', this.setCount);
 
       this.filterFieldsView = new FilterFieldsView({ model: this.model });
       this.resultsView = new ResultsView({ model: this.model });
