@@ -15,7 +15,7 @@ public class ListDatasetParser extends AbstractDatasetParser {
 
   public ListDatasetParser() {
     setName(NAME);
-    setDisplay("list");
+    setDisplay("List");
     setDescription("The input is a list of records, one record in each row, and each record can have multiple columns.");
   }
 

@@ -184,6 +184,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
     if (data != null) {
       data = data.trim();
       // get parser and parse the content
+      if (parserName == null) parserName = ListDatasetParser.NAME; // use default parser.
       DatasetParser parser = datasetParam.getParser(parserName);
       Dataset dataset = datasetFactory.createOrGetDataset(user, parser, data, uploadFile);
       logger.debug("User #" + user.getUserId() + " - dataset created: #" + dataset.getDatasetId());
