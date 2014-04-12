@@ -33,9 +33,9 @@ wdk.util.namespace("wdk.components.datasetParam", function(ns, $) {
           td.removeClass("disabled")
              .find("input, textarea, select").removeAttr("disabled");
           // move the parsers next to the subparam
-          if (subparam == 'data' || subparam == 'file') {
-            subparamDiv.after(paramDiv.find(".parsers"));
-          }
+          // if (subparam == 'data' || subparam == 'file') {
+          //   subparamDiv.after(paramDiv.find(".parsers"));
+          // }
         } else if (!td.hasClass("disabled")) {
           td.addClass("disabled")
             .find("input, textarea, select").attr("disabled", "disabled");
@@ -45,7 +45,7 @@ wdk.util.namespace("wdk.components.datasetParam", function(ns, $) {
 
     // enable/disable parsers
     var parserDiv = paramDiv.find(".parsers");
-    if (enabledSubparam == 'data' || enabledSubparam == 'file') {
+    if (enabledSubparam == 'file') {
       // enable parser
       if (parserDiv.hasClass("disabled")) {
         parserDiv.removeClass("disabled");

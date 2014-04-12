@@ -79,14 +79,14 @@ Provides form input element for a given DatasetParam.
     
     <!-- display options for the parser -->
   <c:set var="parsers" value="${qP.parsers}" />
-<%--
   <c:choose>
    <c:when test="${fn:length(parsers) gt 1}">
---%>
     <tr class="parsers">
-      <td> </td>
       <td>
-        Choose a format for the input:
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Choose file format:
+      </td>
+      <td>
         <c:forEach items="${parsers}" var="parser">
           <c:set var="checked">
             <c:if test="${(dataset != null && parser.name eq dataset.parserName) || (dataset eq null && parser.name eq 'list')}">checked="checked"</c:if>
@@ -98,7 +98,6 @@ Provides form input element for a given DatasetParam.
         </c:forEach>
       </td>
     </tr>
-<%--
    </c:when>
    <c:otherwise>
      <c:forEach items="${parsers}" var="parser">
@@ -106,7 +105,6 @@ Provides form input element for a given DatasetParam.
      </c:forEach>
    </c:otherwise>
   </c:choose>
---%>
 
     <c:if test="${recordClass !=  null}">
       <!-- display option to use basket snapshot -->
