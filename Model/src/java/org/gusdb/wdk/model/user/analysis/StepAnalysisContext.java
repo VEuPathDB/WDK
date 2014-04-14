@@ -120,7 +120,8 @@ public class StepAnalysisContext {
   }  
   
   public static StepAnalysisContext createFromStoredData(WdkModel wdkModel,
-      int analysisId, boolean isNew, boolean hasParams, String invalidStepReason, String displayName, String serializedContext) throws WdkModelException {
+      int analysisId, boolean isNew, boolean hasParams, String invalidStepReason,
+      String displayName, String serializedContext) throws WdkModelException {
     try {
       StepAnalysisContext ctx = new StepAnalysisContext();
       ctx._wdkModel = wdkModel;
@@ -136,8 +137,12 @@ public class StepAnalysisContext {
       // deserialize hashable context values
       JSONObject json = new JSONObject(serializedContext);
       ctx._strategyId = json.getInt(JsonKey.strategyId.name());
-      ctx._step = ctx._wdkModel.getStepFactory().getStrategyById(ctx._strategyId)
-          .getStepById(json.getInt(JsonKey.stepId.name()));
+      int stepId = json.getInt(JsonKey.stepId.name());
+      ctx._step = ctx._wdkModel.getStepFactory().getStrategyById(ctx._strategyId).getStepById(stepId);
+      if (ctx._step == null) {
+        throw new WdkModelException("Unable to find step (ID=" + stepId + ") in strategy (ID=" +
+            ctx._strategyId + ") defined in step analysis context (ID=" + analysisId + ")");
+      }
       Question question = ctx._step.getQuestion();
       ctx._stepAnalysis = question.getStepAnalysis(json.getString(JsonKey.analysisName.name()));
 
