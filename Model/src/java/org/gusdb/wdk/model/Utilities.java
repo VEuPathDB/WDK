@@ -107,9 +107,11 @@ public class Utilities {
 
   public static final String RECORD_DIVIDER = "\n";
   public static final String COLUMN_DIVIDER = ",";
+  
+  public static final String MODEL_KEY = "wdkModel";
 
   private static final String ALGORITHM = "MD5";
-
+  
   /*
    * Inner class to act as a JAF DataSource to send HTML e-mail content
    */
