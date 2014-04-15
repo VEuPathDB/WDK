@@ -123,6 +123,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     Map<Integer, StepAnalysisContext> fromContexts = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
     for (StepAnalysisContext fromContext : fromContexts.values()) {
       LOG.info("Copying step analysis with ID " + fromContext.getAnalysisId());
+      LOG.info("TRACE: " + fromContext.getInstanceJson());
       StepAnalysisContext toContext = StepAnalysisContext.createCopy(fromContext);
       toContext.setStep(toStep);
       try {
@@ -135,14 +136,15 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         toContext.setIsValidStep(false, e.getMessage());
       }
       writeNewAnalysisContext(toContext);
-      LOG.info("Done.");
+      LOG.info("Wrote new duplicate context with ID " + toContext.getAnalysisId() +
+          " for revised step " + toContext.getStep().getStepId());
     }
     LOG.info("Completed copy.  Deleting old contexts.");
-    // copies created and assigned; now delete old ones
-    //for (StepAnalysisContext context : fromContexts.values()) {
-    //  LOG.info("Deleting context with ID " + context.getAnalysisId());
-    //  deleteAnalysis(context);
-    //}
+    // old contexts for this step are no longer valid because old step ID no longer exists on this strategy
+    for (StepAnalysisContext context : fromContexts.values()) {
+      LOG.info("Deleting context with ID " + context.getAnalysisId());
+      deleteAnalysis(context);
+    }
     LOG.info("Step analysis move complete.");
   }
 
