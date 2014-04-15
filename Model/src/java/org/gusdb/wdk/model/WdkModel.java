@@ -29,6 +29,7 @@ import org.gusdb.wdk.model.config.QueryMonitor;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.dbms.ResultFactory;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.Param;
@@ -190,7 +191,7 @@ public class WdkModel implements ConnectionContainer {
     _myThreadMonitor = ThreadMonitor.start(this);
     
     // set the model into the static context of wsf service
-    WsfService.putStaticContext(Utilities.MODEL_KEY, this);
+    WsfService.putStaticContext(Utilities.MODEL_KEY, new WdkModelBean(this));
   }
 
   /**
