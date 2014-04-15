@@ -152,8 +152,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     expandDescription: function(e) {
+      var p = this.$('.description p').toggleClass('expanded');
+      e.currentTarget.innerHTML = p.hasClass('expanded') ? 'read less' : 'read more';
       e.preventDefault();
-      this.$('.description p').toggleClass('expanded');
     },
 
     didRemove: function() {
