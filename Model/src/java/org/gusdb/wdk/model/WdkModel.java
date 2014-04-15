@@ -48,6 +48,7 @@ import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
+import org.gusdb.wsf.service.WsfService;
 
 /**
  * The top level WdkModel object provides a facade to access all the resources and functionalities provided by
@@ -187,6 +188,9 @@ public class WdkModel implements ConnectionContainer {
 
     // start up thread monitor and save reference
     _myThreadMonitor = ThreadMonitor.start(this);
+    
+    // set the model into the static context of wsf service
+    WsfService.putStaticContext(Utilities.MODEL_KEY, this);
   }
 
   /**

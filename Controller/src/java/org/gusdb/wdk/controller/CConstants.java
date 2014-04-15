@@ -1,12 +1,14 @@
 package org.gusdb.wdk.controller;
 
+import org.gusdb.wdk.model.Utilities;
+
 public class CConstants {
     
     private CConstants() { }
     
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
-    public static final String WDK_MODEL_KEY = "wdkModel";
+    public static final String WDK_MODEL_KEY = Utilities.MODEL_KEY;
     public static final String WDK_WIZARD_KEY = "wdkWizard";
     public static final String GUS_HOME_KEY = "GUS_HOME";
     public static final String WDK_ALWAYSGOTOSUMMARY_KEY = "wdkAlwaysGoToSummary";
