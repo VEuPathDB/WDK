@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins.ExecutionConfig;
 import org.gusdb.wdk.model.analysis.StepAnalyzer;
+import org.gusdb.wdk.model.analysis.ValidationErrors;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 
@@ -85,13 +86,16 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
 
   @Override
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
-    Map<String, String> errors = context.getStepAnalysis().getAnalyzerInstance()
+    ValidationErrors errors = context.getStepAnalysis().getAnalyzerInstance()
         .validateFormParams(context.getFormParams());
     List<String> errorList = new ArrayList<String>();
-    if (errors == null) return errorList;
-    // FIXME: figure out display of these values; for now, translate errors into strings
-    for (Entry<String,String> error : errors.entrySet()) {
-      errorList.add(error.getKey() + ": " + error.getValue());
+    if (errors == null || !errors.hasMessages()) return errorList;
+    errorList.addAll(errors.getMessages());
+    // FIXME: figure out display of these values; for now, translate param errors into strings
+    for (Entry<String,List<String>> paramErrors : errors.getParamMessages().entrySet()) {
+      for (String message : paramErrors.getValue()) {
+        errorList.add(paramErrors.getKey() + ": " + message);
+      }
     }
     return errorList;
   }

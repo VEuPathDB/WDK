@@ -68,10 +68,9 @@ public interface StepAnalyzer {
    * before params are passed in via <code>setFormParams()</code>.
    * 
    * @param formParams form parameter values to be validated
-   * @return a map of errors associated with the param names.  If validation
-   * passed, an empty map or null is an acceptable return value.
+   * @return an object encapsulating the errors, or null if no errors occurred
    */
-  public Map<String, String> validateFormParams(Map<String, String[]> formParams)
+  public ValidationErrors validateFormParams(Map<String, String[]> formParams)
       throws WdkModelException;
 
   /**
