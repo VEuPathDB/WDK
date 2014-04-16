@@ -1,11 +1,13 @@
 <div class="range-filter">
 
-  <div class="description">
-    <p>{{field.description}}</p>
-    <div class="read-more">
-      <a href="#read-more">read more</a>
+  {{#if field.description}}
+    <div class="description">
+      <p>{{field.description}}</p>
+      <div class="read-more">
+        <a href="#read-more">read more</a>
+      </div>
     </div>
-  </div>
+  {{/if}}
 
   <div class="overview">
     <dl class="ui-helper-clearfix">

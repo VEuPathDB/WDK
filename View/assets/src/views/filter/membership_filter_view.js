@@ -139,7 +139,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
       // activate Read more link if text is overflowed
       var p = this.$('.description p').get(0);
-      if (p.scrollWidth > p.clientWidth) {
+      if (p && p.scrollWidth > p.clientWidth) {
         this.$('.description .read-more').addClass('visible');
       }
 
