@@ -106,7 +106,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
     _formParams = formParams;
   }
   @Override
-  public Map<String, String> validateFormParams(Map<String, String[]> formParams)
+  public ValidationErrors validateFormParams(Map<String, String[]> formParams)
       throws WdkModelException {
     // no validation
     return null;
