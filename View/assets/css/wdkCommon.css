@@ -1059,12 +1059,12 @@ z-index: 1;
  ***~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~***/
 
 .new-analysis {
-	display: inline-block;
-	position: relative;
+  display: inline-block;
+  position: relative;
 }
 
 .new-analysis .new-analysis-instr {
-	font-size: 0.8em;
+  font-size: 0.8em;
   font-style: italic;
 }
 
@@ -1080,7 +1080,7 @@ z-index: 1;
 }
 
 .new-analysis .new-analysis-button:hover {
-	/* background-color: lightyellow; */
+  /* background-color: lightyellow; */
 }
 
 .new-analysis .new-analysis-menu {
@@ -1096,10 +1096,10 @@ z-index: 1;
 }
 
 .new-analysis .new-analysis-menu li {
-	white-space: nowrap;
-	padding: 2px 12px 2px 4px;
-	margin: 0;
-	float: none;
+  white-space: nowrap;
+  padding: 2px 12px 2px 4px;
+  margin: 0;
+  float: none;
 }
 
 .new-analysis .new-analysis-menu li:hover {
@@ -1133,8 +1133,8 @@ z-index: 1;
 }
 
 .analysis-pending-pane {
-	margin: 10px auto;
-	text-align:center;
+  margin: 10px auto;
+  text-align:center;
 }
 
 .analysis-pending-pane h3 {
@@ -1142,37 +1142,38 @@ z-index: 1;
 }
 
 .step-analysis-errors-pane {
-	color: red;
+  color: red;
+  font-weight: bold;
 }
 
 .step-analysis-errors-pane li {
-	line-height: 1.4em;
+  line-height: 1.4em;
   padding-left: 15px;
 }
 .analysis-menu-tab-pane h3 {
-	margin: 4px 0;
+  margin: 4px 0;
 }
 .analysis-menu-tab-pane .sa-selector-container {
   max-width: 710px;
   margin: 0 auto;
 }
 .analysis-menu-tab-pane li {
-	float: left;
-	padding: 8px;
-	width: 190px;
-	min-height: 90px;
-	border: 1px dashed black;
-	border-radius: 8px;
-	background-color: lightgrey;
-	margin: 12px;
+  float: left;
+  padding: 8px;
+  width: 190px;
+  min-height: 90px;
+  border: 1px dashed black;
+  border-radius: 8px;
+  background-color: lightgrey;
+  margin: 12px;
 }
 .analysis-menu-tab-pane li:hover {
   cursor: pointer;
   background-color: lightyellow;
 }
 .analysis-title {
-	font-size: 1.3em;
-	margin-bottom: 3px;
+  font-size: 1.3em;
+  margin-bottom: 3px;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
