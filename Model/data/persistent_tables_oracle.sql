@@ -14,6 +14,7 @@ DROP TABLE wdkuser.categories;
 DROP TABLE wdkuser.favorites;
 DROP TABLE wdkuser.user_baskets;
 DROP TABLE wdkuser.strategies;
+DROP TABLE wdkuser.step_analysis;
 DROP TABLE wdkuser.steps;
 DROP TABLE wdkuser.dataset_values;
 DROP TABLE wdkuser.datasets;
@@ -21,7 +22,6 @@ DROP TABLE wdkuser.preferences;
 DROP TABLE wdkuser.user_roles;
 DROP TABLE wdkuser.users;
 DROP TABLE wdkuser.config;
-DROP TABLE wdkuser.step_analysis;
 */
 
 
