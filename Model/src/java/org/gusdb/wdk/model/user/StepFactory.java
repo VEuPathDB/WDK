@@ -513,6 +513,10 @@ public class StepFactory {
     return steps;
   }
 
+  public Step getStepById(int stepId) throws WdkModelException {
+    return loadStep(null, stepId);
+  }
+  
   // get left child id, right child id in here
   Step loadStep(User user, int stepId) throws WdkModelException {
     ResultSet rsStep = null;
@@ -524,7 +528,8 @@ public class StepFactory {
       rsStep = psStep.executeQuery();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-load-step", start);
       if (!rsStep.next())
-        throw new WdkModelException("The Step #" + stepId + " of user " + user.getEmail() + " doesn't exist.");
+        throw new WdkModelException("The Step #" + stepId + " of user " +
+            (user == null ? "unspecified" : user.getEmail()) + " doesn't exist.");
 
       return loadStep(user, rsStep);
     }
@@ -541,8 +546,11 @@ public class StepFactory {
 
     // load Step info
     int stepId = rsStep.getInt(COLUMN_STEP_ID);
+    int userId = rsStep.getInt(Utilities.COLUMN_USER_ID);
 
-    Step step = new Step(this, user, stepId);
+    Step step = (user == null ?
+        new Step(this, userId, stepId) :
+        new Step(this, user, stepId));
     step.setQuestionName(rsStep.getString(COLUMN_QUESTION_NAME));
     step.setCreatedTime(rsStep.getTimestamp(COLUMN_CREATE_TIME));
     step.setLastRunTime(rsStep.getTimestamp(COLUMN_LAST_RUN_TIME));

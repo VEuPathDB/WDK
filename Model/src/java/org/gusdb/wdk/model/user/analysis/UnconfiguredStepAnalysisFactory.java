@@ -42,7 +42,7 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public void moveAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException {
+  public void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException {
     // unable to move analysis instances, but cannot throw exception here
   }
 

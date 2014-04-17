@@ -14,7 +14,7 @@
             <c:set var="question" value="${wdkStep.question}"/>
             <c:forEach items="${question.stepAnalyses}" var="analysisEntry">
               <c:set var="analysis" value="${analysisEntry.value}"/>
-              <li onclick="javascript:wdk.stepAnalysis.createStepAnalysis('${analysis.name}', ${wdkStrategy.strategyId}, ${wdkStep.stepId})">
+              <li onclick="javascript:wdk.stepAnalysis.createStepAnalysis('${analysis.name}', ${wdkStep.stepId})">
                 <div class="analysis-title">${analysis.displayName}</div>
                 <div>
                   ${analysis.description}
