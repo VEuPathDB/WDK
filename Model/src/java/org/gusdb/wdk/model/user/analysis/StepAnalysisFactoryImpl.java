@@ -122,12 +122,12 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   }
 
   @Override
-  public void moveAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException {
-    LOG.info("Request made to move analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
+  public void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException {
+    LOG.info("Request made to copy analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
     Map<Integer, StepAnalysisContext> fromContexts = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
     for (StepAnalysisContext fromContext : fromContexts.values()) {
       LOG.info("Copying step analysis with ID " + fromContext.getAnalysisId());
-      LOG.info("TRACE: " + fromContext.getInstanceJson());
+      LOG.trace("TRACE: " + fromContext.getInstanceJson());
       StepAnalysisContext toContext = StepAnalysisContext.createCopy(fromContext);
       toContext.setStep(toStep);
       try {
@@ -143,13 +143,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       LOG.info("Wrote new duplicate context with ID " + toContext.getAnalysisId() +
           " for revised step " + toContext.getStep().getStepId());
     }
-    LOG.info("Completed copy.  Deleting old contexts.");
-    // old contexts for this step are no longer valid because old step ID no longer exists on this strategy
-    for (StepAnalysisContext context : fromContexts.values()) {
-      LOG.info("Deleting context with ID " + context.getAnalysisId());
-      deleteAnalysis(context);
-    }
-    LOG.info("Step analysis move complete.");
+    LOG.info("Completed copy.");
   }
 
   private StepAnalysisContext writeNewAnalysisContext(StepAnalysisContext context)
@@ -171,9 +165,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     if (answer.getResultSize() == 0) {
       throw new IllegalAnswerValueException("You cannot analyze a Step with zero results.");
     }
-    StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
-    analyzer.setAnswerValue(answer);
-    analyzer.validateAnswerValue(answer);
+    getConfiguredAnalyzer(context, _fileStore).validateAnswerValue(answer);
   }
   
   @Override
@@ -194,7 +186,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       _dataStore.setHasParams(context.getAnalysisId(), true);
       context.setHasParams(true);
     }
-    
     
     // Run analysis plugin under the following conditions:
     //   1. if new execution was created (i.e. none existed before or cache was cleared)

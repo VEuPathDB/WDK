@@ -21,14 +21,12 @@ import org.json.JSONObject;
 public class CreateStepAnalysisAction extends WdkAction {
 
   private static final String ANALYSIS_NAME_KEY = "analysisName";
-  private static final String STRATEGY_ID_KEY = "strategyId";
   private static final String STEP_ID_KEY = "stepId";
 
   private static enum JsonKey { status, message }
   
   private static final Map<String, ParamDef> PARAMS = new MapBuilder<String,ParamDef>()
       .put(ANALYSIS_NAME_KEY, new ParamDef(Required.REQUIRED))
-      .put(STRATEGY_ID_KEY, new ParamDef(Required.REQUIRED, DataType.INTEGER))
       .put(STEP_ID_KEY, new ParamDef(Required.REQUIRED, DataType.INTEGER))
       .toMap();
 
@@ -40,9 +38,8 @@ public class CreateStepAnalysisAction extends WdkAction {
     
     StepAnalysisFactory analysisMgr = getWdkModel().getModel().getStepAnalysisFactory();
     
-    StepAnalysisContext context = StepAnalysisContext.createNewContext(
-        getCurrentUser(), params.getValue(ANALYSIS_NAME_KEY),
-        params.getIntValue(STRATEGY_ID_KEY), params.getIntValue(STEP_ID_KEY));
+    StepAnalysisContext context = StepAnalysisContext.createNewContext(getCurrentUser(),
+        params.getValue(ANALYSIS_NAME_KEY), params.getIntValue(STEP_ID_KEY));
     
     try {
       context = analysisMgr.createAnalysis(context);

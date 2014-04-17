@@ -69,7 +69,7 @@ public abstract class AbstractStepAnalysisIdAction extends WdkAction {
   }
 
   public static void verifyOwnership(UserBean user, StepAnalysisContext context)
-      throws WdkUserException {
+      throws WdkUserException, WdkModelException {
     if (user.getUserId() != context.getStep().getUser().getUserId()) {
       throw new WdkUserException("Permisssion Denied: You do not have permission" +
       		" to operate on the analysis with id " + context.getAnalysisId());

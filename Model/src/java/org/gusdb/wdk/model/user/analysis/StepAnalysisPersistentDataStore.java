@@ -30,6 +30,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private static final String ANALYSIS_TABLE = "STEP_ANALYSIS";
   private static final String ANALYSIS_SEQUENCE = ANALYSIS_TABLE + "_PKSEQ";
   private static final String EXECUTION_TABLE = "STEP_ANALYSIS_RESULTS";
+  private static final String ID_IN_CLAUSE_KEY = "${SOME_IDS}";
   
   // SQL to update and query analysis table
   private String CREATE_ANALYSIS_TABLE_SQL;
@@ -85,23 +86,48 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
    *   varchar display_name
    *   bool is_new
    *   bool has_params
-   *   bool is_valid_step
+   *   varchar invalid_step_reason
    *   varchar context_hash
    *   CLOB context
    * }
    */
   private void createUserSql(String schema) {
     String table = schema + ANALYSIS_TABLE;
-    CREATE_ANALYSIS_TABLE_SQL = "";
-    INSERT_ANALYSIS_SQL = "";
-    DELETE_ANALYSIS_SQL = "";
-    UPDATE_NAME_SQL = "";
-    UPDATE_NEW_FLAG_SQL = "";
-    UPDATE_HAS_PARAMS_FLAG_SQL = "";
-    UPDATE_CONTEXT_SQL = "";
-    GET_ANALYSIS_IDS_BY_STEP_SQL = "";
-    GET_ALL_ANALYSIS_IDS_SQL = "";
-    GET_ANALYSES_BY_IDS_SQL = "";
+    CREATE_ANALYSIS_TABLE_SQL =
+        "CREATE TABLE " + table + " (" +
+        "  ANALYSIS_ID          NUMBER(12) NOT NULL," +
+        "  STEP_ID              NUMBER(12)," +
+        "  DISPLAY_NAME         VARCHAR(1024)," +
+        "  IS_NEW               NUMBER(1)," +
+        "  HAS_PARAMS           NUMBER(1)," +
+        "  INVALID_STEP_REASON  VARCHAR(1024)," +
+        "  CONTEXT_HASH         VARCHAR(96)," +
+        "  CONTEXT              CLOB," +
+        "  PRIMARY KEY (ANALYSIS_ID)" +
+        ")";
+    INSERT_ANALYSIS_SQL =
+        "INSERT INTO " + table +
+        " (ANALYSIS_ID, STEP_ID, DISPLAY_NAME, IS_NEW, HAS_PARAMS," +
+        "  INVALID_STEP_REASON, CONTEXT_HASH, CONTEXT)" +
+        " VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )";
+    DELETE_ANALYSIS_SQL =
+        "DELETE FROM " + table + " WHERE ANALYSIS_ID = ?";
+    UPDATE_NAME_SQL =
+        "UPDATE " + table + " SET DISPLAY_NAME = ? WHERE ANALYSIS_ID = ?";
+    UPDATE_NEW_FLAG_SQL =
+        "UPDATE " + table + " SET IS_NEW = ? WHERE ANALYSIS_ID = ?";
+    UPDATE_HAS_PARAMS_FLAG_SQL =
+        "UPDATE " + table + " SET HAS_PARAMS = ? WHERE ANALYSIS_ID = ?";
+    UPDATE_CONTEXT_SQL =
+        "UPDATE " + table + " SET CONTEXT_HASH = ?, CONTEXT = ? WHERE ANALYSIS_ID = ?";
+    GET_ANALYSIS_IDS_BY_STEP_SQL =
+        "SELECT ANALYSIS_ID FROM " + table + " WHERE STEP_ID = ?";
+    GET_ALL_ANALYSIS_IDS_SQL =
+        "SELECT ANALYSIS_ID FROM " + table;
+    GET_ANALYSES_BY_IDS_SQL =
+        "SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, IS_NEW, HAS_PARAMS," +
+        " INVALID_STEP_REASON, CONTEXT_HASH, CONTEXT FROM " + table +
+        " WHERE ANALYSIS_ID IN (" + ID_IN_CLAUSE_KEY + ")";
   }
 
   /**
@@ -119,7 +145,17 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
    */
   private void createAppSql(String schema) {
     String table = schema + EXECUTION_TABLE;
-    CREATE_EXECUTION_SQL = "";
+    CREATE_EXECUTION_SQL =
+        "CREATE TABLE " + table + " (" +
+        "  CONTEXT_HASH VARCHAR2(96) NOT NULL," +
+        "  STATUS VARCHAR(96)," +
+        "  START_TIME TIMESTAMP," +
+        "  END_TIME TIMESTAMP," +
+        "  LOG CLOB," +
+        "  CHAR_DATA CLOB," +
+        "  BIN_DATA BLOB," +
+        "  PRIMARY KEY (CONTEXT_HASH)" +
+        ")";
     INSERT_EXECUTION_SQL = "";
     DELELE_EXECUTION_SQL = "";
     DELETE_ALL_EXECUTIONS_SQL = "";
