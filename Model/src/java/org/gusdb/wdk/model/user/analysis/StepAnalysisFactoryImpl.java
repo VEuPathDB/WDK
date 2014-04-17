@@ -86,7 +86,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
 
   @Override
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
-    ValidationErrors errors = context.getStepAnalysis().getAnalyzerInstance()
+    ValidationErrors errors = getConfiguredAnalyzer(context, _fileStore)
         .validateFormParams(context.getFormParams());
     List<String> errorList = new ArrayList<String>();
     if (errors == null || !errors.hasMessages()) return errorList;
