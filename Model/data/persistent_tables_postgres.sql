@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS wdkuser.categories;
 DROP TABLE IF EXISTS wdkuser.favorites;
 DROP TABLE IF EXISTS wdkuser.user_baskets;
 DROP TABLE IF EXISTS wdkuser.strategies;
+DROP TABLE IF EXISTS wdkuser.step_analysis;
 DROP TABLE IF EXISTS wdkuser.steps;
 DROP TABLE IF EXISTS wdkuser.dataset_values;
 DROP TABLE IF EXISTS wdkuser.datasets;
@@ -21,7 +22,6 @@ DROP TABLE IF EXISTS wdkuser.preferences;
 DROP TABLE IF EXISTS wdkuser.user_roles;
 DROP TABLE IF EXISTS wdkuser.users;
 DROP TABLE IF EXISTS wdkuser.config;
-DROP TABLE IF EXISTS wdkuser.step_analysis;
 */
 
 
