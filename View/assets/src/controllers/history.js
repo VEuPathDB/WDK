@@ -437,37 +437,53 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
   }
 
   function showDescriptionDialog(el, save, fromHist, canEdit) {
-    var dialog_container = $("#wdk-dialog-strat-desc"),
-        row = $(el).parents("tr"),
-        strat = row.data();
+    var dialog_container = $('#wdk-dialog-strat-desc');
+    var row = $(el).closest('.strategy-data');
+    var strat = row.data();
+    var editText = '';
 
-    dialog_container.find(".description").html(
+    dialog_container.find('.description').html(
       strat.description
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/(https?:\/\/[^\s<]+)\.?/g, "<a href='$1' target='_blank'>$1</a>")
-          .replace(/\n/g, "<br/>")
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/(https?:\/\/[^\s<]+)\.?/g, '<a href="$1" target="_blank">$1</a>')
+        .replace(/\n/g, '<br/>')
     );
-    
-    dialog_container.dialog("option", "title", strat.name);
-    dialog_container.dialog("option", "width", 600);
 
-    if (canEdit) {
-      dialog_container.find(".edit a").click(function(e) {
-        e.preventDefault();
-        dialog_container.dialog("close");
-        showUpdateDialog(el, save, fromHist, strat.isPublic);
-        $(this).unbind("click");
-      }).show();
+    dialog_container.dialog('option', 'title', strat.name);
+    dialog_container.dialog('option', 'width', 600);
+
+    if (wdk.user.isGuest()) {
+      // login
+      editText = 'Login to save and edit';
+    } else if (!strat.saved) {
+      // save to update
+      editText = 'Save to edit';
     } else {
-      dialog_container.find(".edit a").hide();
+      // update
+      editText = 'Edit';
     }
-    dialog_container.dialog("open");
+
+    dialog_container.find('.edit a')
+      .html(editText)
+      .on('click', function(e) {
+        e.preventDefault();
+        dialog_container.dialog('close');
+        if (wdk.user.isGuest()) {
+          // TODO Don't use DOM ID to open dialogs
+          // For instance, wdk.showLoginForm()
+          $('#wdk-dialog-login-form').dialog('open')
+        } else {
+          showUpdateDialog(el, save, fromHist, strat.isPublic);
+        }
+        $(this).off('click');
+      }).show();
+    dialog_container.dialog('open');
   }
 
   // note checkPublic is an optional param, default value false
   function showUpdateDialog(el, save, fromHist, checkPublic) {
-    var row = $(el).parents(".strategy-data"),
+    var row = $(el).closest(".strategy-data"),
         strat = row.data(),
         dialog_container = $("#wdk-dialog-update-strat"),
         title = (save) ? "Save Strategy" : "Update Strategy",

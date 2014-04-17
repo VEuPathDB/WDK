@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,31 +11,33 @@ import java.util.Set;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * AnswerParam is used to take a previous step as input value. The answerParam
- * is the building block of the WDK Strategy system, as the answer param is used
- * to connect one step to the next, to create strategies.
+ * AnswerParam is used to take a previous step as input value. The answerParam is the building block of the
+ * WDK Strategy system, as the answer param is used to connect one step to the next, to create strategies.
  * 
- * An answer param is typed, that is, the author needs to define a set of
- * RecordClasses that can be accepted as the types of the input steps.
+ * An answer param is typed, that is, the author needs to define a set of RecordClasses that can be accepted
+ * as the types of the input steps.
+ * 
+ * The checksum in the value is needed to support in-place step editing, so that combined steps can generate
+ * new cache when a child step is revised.
  * 
  * @author xingao
  * 
- *         raw data: same as user-dependent data, it is a step id;
+ *         raw value: a Step object
  * 
- *         user-dependent data: same as raw data, a step id;
+ *         stable value: step_id;
  * 
- *         user-independent data: a key such as: answer_checksum:filter_name;
- *         the ":filter_name" is optional;
+ *         signature: answer_checksum
  * 
- *         internal data: a sql that represents the cached result
+ *         internal value: an sql that represents the cached result; if noTranslation is true, the value is
+ *         step_id (no checksum appended to it).
  * 
  */
 public class AnswerParam extends Param {
@@ -45,24 +48,18 @@ public class AnswerParam extends Param {
   public AnswerParam() {
     recordClassRefs = new ArrayList<RecordClassReference>();
     recordClasses = new LinkedHashMap<String, RecordClass>();
+
+    // register the handler
+    setHandler(new AnswerParamHandler());
+    visible = false; // default answer param is hidden
   }
 
   private AnswerParam(AnswerParam param) {
     super(param);
     if (param.recordClassRefs != null)
-      this.recordClassRefs = new ArrayList<RecordClassReference>(
-          param.recordClassRefs);
+      this.recordClassRefs = new ArrayList<RecordClassReference>(param.recordClassRefs);
     if (param.recordClasses != null)
-      this.recordClasses = new LinkedHashMap<String, RecordClass>(
-          param.recordClasses);
-  }
-
-  /**
-   * answerParam should be always invisible
-   */
-  @Override
-  public boolean isVisible() {
-    return false;
+      this.recordClasses = new LinkedHashMap<String, RecordClass>(param.recordClasses);
   }
 
   /**
@@ -93,8 +90,7 @@ public class AnswerParam extends Param {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
+   * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
    */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
@@ -119,8 +115,8 @@ public class AnswerParam extends Param {
       set.add(column);
     }
     for (RecordClass rc : recordClasses.values()) {
-      String message = "The recordClasses referred in answerParam "
-          + getFullName() + " doesn't have same primary key definitions.";
+      String message = "The recordClasses referred in answerParam " + getFullName() +
+          " doesn't have same primary key definitions.";
       columns = rc.getPrimaryKeyAttributeField().getColumnRefs();
       if (columns.length != set.size())
         throw new WdkModelException(message);
@@ -139,104 +135,37 @@ public class AnswerParam extends Param {
    * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
    */
   @Override
-  protected void appendJSONContent(JSONObject jsParam, boolean extra)
-      throws JSONException {
-    // add recordClass ref
-    // jsParam.put("recordClass", recordClassRef);
-  }
-
-  public AnswerValue getAnswerValue(User user, String dependentValue)
-      throws WdkModelException {
-
-    // check format
-    int stepId = Integer.parseInt(dependentValue);
-    Step step = user.getStep(stepId);
-    return step.getAnswerValue();
+  protected void appendJSONContent(JSONObject jsParam, boolean extra) throws JSONException {
+    // add recordClass names
+    String[] rcNames = recordClasses.keySet().toArray(new String[0]);
+    Arrays.sort(rcNames);
+    JSONArray jsArray = new JSONArray(Arrays.asList(rcNames));
+    jsParam.put("recordClass", jsArray);
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue
-   * (org.gusdb.wdk.model.user.User, java.lang.String)
+   * @see org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model .user.User,
+   * java.lang.String)
    */
   @Override
-  public String dependentValueToIndependentValue(User user,
-      String dependentValue) throws WdkModelException {
-    int stepId = Integer.parseInt(dependentValue);
-    Step step = user.getStep(stepId);
-    return step.getAnswerValue(false).getChecksum();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#independentValueToInternalValue
-   * (java.lang.String)
-   */
-  @Override
-  public String dependentValueToInternalValue(User user, String dependentValue)
-      throws WdkModelException {
-    int stepId = Integer.parseInt(dependentValue);
-
-    if (isNoTranslation())
-      return Integer.toString(stepId);
-
-    Step step = user.getStep(stepId);
-    AnswerValue answerValue = step.getAnswerValue();
-    return "(" + answerValue.getIdSql() + ")";
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#independentValueToRawValue(java
-   * .lang.String)
-   */
-  @Override
-  public String dependentValueToRawValue(User user, String dependentValue)
-      throws WdkModelException {
-    return dependentValue;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(java
-   * .lang.String)
-   */
-  @Override
-  public String rawOrDependentValueToDependentValue(User user, String rawValue)
-      throws WdkModelException {
-    return rawValue;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model
-   * .user.User, java.lang.String)
-   */
-  @Override
-  protected void validateValue(User user, String dependentValue,
-      Map<String, String> contextValues) throws WdkModelException,
-      WdkUserException {
-    int stepId = Integer.parseInt(dependentValue);
+  protected void validateValue(User user, String stableValue, Map<String, String> contextValues)
+      throws WdkModelException, WdkUserException {
+    int stepId = Integer.valueOf(stableValue);
     Step step = user.getStep(stepId);
 
     // make sure the input step is of the acceptable type
-    String rcName = step.getAnswerValue().getQuestion().getRecordClass().getFullName();
+    String rcName = step.getRecordClass().getFullName();
     if (!recordClasses.containsKey(rcName))
-      throw new WdkUserException("The step of record type '" + rcName
-          + "' is not allowed in the answerParam " + this.getFullName());
+      throw new WdkUserException("The step of record type '" + rcName +
+          "' is not allowed in the answerParam " + this.getFullName());
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.gusdb.wdk.model.query.param.Param#excludeResources(java.lang.String)
+   * @see org.gusdb.wdk.model.query.param.Param#excludeResources(java.lang.String)
    */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
@@ -248,8 +177,8 @@ public class AnswerParam extends Param {
         recordClassRefs.remove(i);
     }
     if (recordClassRefs.size() == 0)
-      throw new WdkModelException("No recordClass ref is defined in "
-          + "answerParam " + getFullName() + " for project " + projectId);
+      throw new WdkModelException("No recordClass ref is defined in " + "answerParam " + getFullName() +
+          " for project " + projectId);
   }
 
   public boolean allowRecordClass(String recordClassName) {
@@ -259,5 +188,24 @@ public class AnswerParam extends Param {
   @Override
   protected void applySuggection(ParamSuggestion suggest) {
     // do nothing
+  }
+
+  /**
+   * AnswerParam doesn't allow empty values since we cannot define user-independent empty values in the model.
+   * 
+   * @see org.gusdb.wdk.model.query.param.Param#isAllowEmpty()
+   */
+  @Override
+  public boolean isAllowEmpty() {
+    return false;
+  }
+
+  @Override
+  public String getBriefRawValue(Object rawValue, int truncateLength) {
+    Step step = (Step) rawValue;
+    String brief = step.getCustomName();
+    if (brief.length() > truncateLength)
+      brief = brief.substring(0, truncateLength) + "...";
+    return brief;
   }
 }

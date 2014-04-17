@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -134,9 +135,7 @@ public abstract class WdkModelBase {
     // replace the default ones with the ones defined in the question
     for (String plName : propertyListMap.keySet()) {
       String[] values = propertyListMap.get(plName);
-      String[] array = new String[values.length];
-      System.arraycopy(values, 0, array, 0, array.length);
-      propLists.put(plName, array);
+      propLists.put(plName, Arrays.copyOf(values, values.length));
     }
     return propLists;
   }

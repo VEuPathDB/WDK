@@ -17,6 +17,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -61,7 +62,12 @@ public class ShowResultSizeAction extends Action {
             size = sizeCache.get(key);
         } else {// size is not cached get it and cache it
             UserBean user = ActionUtility.getUser(servlet, request);
-            StepBean step = user.getStep(Integer.parseInt(stepId));
+            StepBean step;
+            try {
+              step = user.getStep(Integer.valueOf(stepId));
+            } catch(NumberFormatException ex) {
+              throw new WdkUserException("The step id is invalid: " + stepId);
+            }
             AnswerValueBean answerValue = step.getAnswerValue(false);
             size = (filterName == null) ? answerValue.getResultSize()
                     : answerValue.getFilterSize(filterName);

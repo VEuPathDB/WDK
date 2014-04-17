@@ -16,24 +16,22 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * @author jerric
  * 
- *         1. add columns to steps table: project_id, project_version,
- *         question_name, result_message 2. UPDATE those columns 3. drop
- *         steps_fk02 constraint 4. drop INDEX steps_idx01 through steps_idx08
- *         5. drop steps.answer_id (or drop not null constraint) 6. CREATE
- *         indexes.
+ *         1. add columns to steps table: project_id, project_version, question_name, result_message 2. UPDATE
+ *         those columns 3. drop steps_fk02 constraint 4. drop INDEX steps_idx01 through steps_idx08 5. drop
+ *         steps.answer_id (or drop not null constraint) 6. CREATE indexes.
  * 
  */
 public class Migrator_b18_b19 implements Migrator {
 
   private static final int UPDATE_PAGE = 100;
 
-  private static final String[] LEFT_MAP = { "gene_result", "span_result",
-      "sequence_result", "compound_result", "pathway_result", "group_answer",
-      "sequence_answer", "htsIsolateList" };
+  private static final String[] LEFT_MAP = { "gene_result", "span_result", "sequence_result",
+      "compound_result", "pathway_result", "group_answer", "sequence_answer", "htsIsolateList" };
 
   private static final Logger logger = Logger.getLogger(Migrator_b18_b19.class);
 
@@ -41,8 +39,7 @@ public class Migrator_b18_b19 implements Migrator {
   public void declareOptions(Options options) {}
 
   @Override
-  public void migrate(WdkModel wdkModel, CommandLine commandLine)
-      throws WdkModelException {
+  public void migrate(WdkModel wdkModel, CommandLine commandLine) throws WdkModelException {
     logger.info("updating step params...");
 
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
@@ -53,13 +50,12 @@ public class Migrator_b18_b19 implements Migrator {
     ResultSet rsSteps = null;
     PreparedStatement psUpdate = null;
     try {
-      psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + schema
-          + "steps SET display_params = ? WHERE step_id = ?");
-      rsSteps = SqlUtils.executeQuery(dataSource,
-          "SELECT step_id, display_params, left_child_id, right_child_id, question_name "
-              + " FROM " + schema + "steps "
-              + " WHERE left_child_id IS NOT NULL  "
-              + "    OR right_child_id IS NOT NULL ",
+      psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + schema +
+          "steps SET display_params = ? WHERE step_id = ?");
+      rsSteps = SqlUtils.executeQuery(
+          dataSource,
+          "SELECT step_id, display_params, left_child_id, right_child_id, question_name " + " FROM " +
+              schema + "steps " + " WHERE left_child_id IS NOT NULL  " + "    OR right_child_id IS NOT NULL ",
           "wdk-migrate-select-steps", 5000);
       int count = 0;
       while (rsSteps.next()) {
@@ -73,9 +69,9 @@ public class Migrator_b18_b19 implements Migrator {
 
         // update params
         String paramContent = platform.getClobData(rsSteps, "display_params");
-        Map<String, String> params = stepFactory.parseParamContent(paramContent);
+        Map<String, String> params = stepFactory.parseParamContent(new JSONObject(paramContent));
         updateParams(stepId, params, leftChildId, rightChildId);
-        paramContent = stepFactory.getParamContent(params);
+        paramContent = stepFactory.getParamContent(params).toString();
 
         // save changes
         platform.setClobData(psUpdate, 1, paramContent, false);
@@ -91,23 +87,25 @@ public class Migrator_b18_b19 implements Migrator {
         psUpdate.executeBatch();
       }
       logger.info("Totally " + count + " steps updated...");
-    } catch (SQLException | JSONException ex) {
+    }
+    catch (SQLException | JSONException ex) {
       throw new WdkModelException(ex);
-    } finally {
+    }
+    finally {
       SqlUtils.closeResultSetAndStatement(rsSteps);
       SqlUtils.closeStatement(psUpdate);
     }
   }
 
-  private void updateParams(int stepId, Map<String, String> params, int leftChildId,
-      int rightChildId) {
+  private void updateParams(int stepId, Map<String, String> params, int leftChildId, int rightChildId) {
     String[] names = params.keySet().toArray(new String[0]);
     boolean leftFound = false, rightFound = false;
     for (String name : names) {
       if (name.startsWith("bq_left_op_")) {
         params.put(name, Integer.toString(leftChildId));
         leftFound = true;
-      } else if (name.startsWith("bq_right_op_")) {
+      }
+      else if (name.startsWith("bq_right_op_")) {
         params.put(name, Integer.toString(rightChildId));
         rightFound = true;
       }
@@ -122,7 +120,8 @@ public class Migrator_b18_b19 implements Migrator {
             leftFound = true;
           }
         }
-      } else { // both left and right child have values
+      }
+      else { // both left and right child have values
         if (params.containsKey("span_a")) {
           params.put("span_a", Integer.toString(leftChildId));
           leftFound = true;

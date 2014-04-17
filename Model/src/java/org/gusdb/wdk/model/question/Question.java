@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.question;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,8 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.analysis.StepAnalysisXml;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
@@ -134,8 +138,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    */
   private Map<String, String> sqlMacroMap = new LinkedHashMap<String, String>();
 
-  private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
-  private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<String, SummaryView>();
+  private List<SummaryView> summaryViewList = new ArrayList<>();
+  private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<>();
+  
+  private List<StepAnalysisXml> stepAnalysisList = new ArrayList<>();
+  private Map<String, StepAnalysis> stepAnalysisMap = new LinkedHashMap<>();
 
   /**
    * new build flag on what build this question is introduced.
@@ -307,10 +314,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * 
    * @param paramErrors
    * @return
+   * @throws WdkUserException 
    */
   public AnswerValue makeAnswerValue(User user,
       Map<String, String> dependentValues, boolean validate, int assignedWeight)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     int pageStart = 1;
     int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
     Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(
@@ -334,11 +342,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * @param j
    * @param sortingAttributes
    * @return
+   * @throws WdkUserException 
    */
   public AnswerValue makeAnswerValue(User user,
       Map<String, String> dependentValues, int pageStart, int pageEnd,
       Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter,
-      boolean validate, int assignedWeight) throws WdkModelException {
+      boolean validate, int assignedWeight) throws WdkModelException, WdkUserException {
     Map<String, String> context = new LinkedHashMap<String, String>();
     context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
 
@@ -454,9 +463,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     String newline = System.getProperty("line.separator");
 
     StringBuffer saNames = new StringBuffer();
-    Map<String, AttributeField> summaryFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
-    for (String saName : summaryFields.keySet()) {
-      saNames.append(saName + ", ");
+    if (recordClass != null) {
+      Map<String, AttributeField> summaryFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
+      for (String saName : summaryFields.keySet()) {
+        saNames.append(saName + ", ");
+      }
     }
     StringBuffer buf = new StringBuffer("Question: name='" + name + "'"
         + newline + "  recordClass='" + recordClassRef + "'" + newline
@@ -466,7 +477,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         + "'" + newline + "  description='" + getDescription() + "'" + newline
         + "  summaryAttributes='" + saNames + "'" + newline + "  help='"
         + getHelp() + "'" + newline);
-    buf.append(dynamicAttributeSet.toString());
+    if (dynamicAttributeSet != null)
+      buf.append(dynamicAttributeSet.toString());
     return buf.toString();
   }
 
@@ -635,9 +647,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                 + "] defined in QUESTION [" + getFullName()
                 + "] doesn't exist in the " + "referenced id query ["
                 + queryName + "].");
-          Param param = ParamReference.resolveReference(model, paramRef,
-              queryName);
+          Param param = ParamReference.resolveReference(model, paramRef, query);
           query.addParam(param);
+        }
+        // resolve the param references after all params are present
+        for (Param param : query.getParams()) {
+          param.resolveReferences(model);
         }
       }
       query.setContextQuestion(this);
@@ -677,6 +692,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       for (SummaryView summaryView : summaryViewMap.values()) {
         summaryView.resolveReferences(model);
       }
+      
+      // resolve step analysis refs
+      for (StepAnalysis stepAnalysis : stepAnalysisMap.values()) {
+        ((StepAnalysisXml)stepAnalysis).resolveReferences(model);
+      }
+      
     } catch (WdkModelException ex) {
       logger.error("resolving question '" + getFullName() + " failed. " + ex);
       throw ex;
@@ -864,6 +885,20 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
     }
     summaryViewList = null;
+    
+    // exclude step analyses
+    for (StepAnalysisXml analysis : stepAnalysisList) {
+      if (analysis.include(projectId)) {
+        analysis.excludeResources(projectId);
+        String name = analysis.getName();
+        if (stepAnalysisMap.containsKey(name)) {
+          throw new WdkModelException("The step analysis '" + name
+              + "' is duplicated in question " + getFullName());
+        }
+        stepAnalysisMap.put(name, analysis);
+      }
+    }
+    stepAnalysisList = null;
   }
 
   /**
@@ -988,12 +1023,46 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   }
 
   public void addSummaryView(SummaryView view) {
-    if (summaryViewList == null)
+    if (summaryViewList == null) {
+      // method called after model parsing
       summaryViewMap.put(view.getName(), view);
-    else
+    } else {
       summaryViewList.add(view);
+    }
   }
 
+  public Map<String, StepAnalysis> getStepAnalyses() {
+    Map<String, StepAnalysis> map = new LinkedHashMap<>(stepAnalysisMap);
+    // get values from record
+    Map<String, StepAnalysis> recordMap = recordClass.getStepAnalyses();
+
+    // don't override the values defined in the question
+    for (String name : recordMap.keySet()) {
+      if (!map.containsKey(name)) {
+        map.put(name, recordMap.get(name));
+      }
+    }
+
+    return map;
+  }
+
+  public StepAnalysis getStepAnalysis(String name) throws WdkUserException {
+    StepAnalysis sa = stepAnalysisMap.get(name);
+    if (sa != null)
+      return sa;
+
+    return recordClass.getStepAnalysis(name);
+  }
+  
+  public void addStepAnalysis(StepAnalysisXml analysis) {
+    if (stepAnalysisList == null) {
+      // method called after model parsing
+      stepAnalysisMap.put(analysis.getName(), analysis);
+    } else {
+      stepAnalysisList.add(analysis);
+    }
+  }
+  
   public Map<String, SearchCategory> getCategories(String usedBy, boolean strict) {
     Map<String, SearchCategory> categories = wdkModel.getCategories(usedBy, strict);
     Map<String, SearchCategory> map = new LinkedHashMap<>();
@@ -1005,5 +1074,27 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
     }
     return map;
+  }
+  
+  public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
+    writer.println(indent + "<question name=\"" + getName() + "\" recordClass=\"" + recordClass.getFullName() + "\">");
+    String indent1 = indent + WdkModel.INDENT;
+    String indent2 = indent1 + WdkModel.INDENT;
+    
+    // print dynamic attributes
+    if (dynamicAttributeSet != null) {
+      Map<String, AttributeField> attributes = dynamicAttributeSet.getAttributeFieldMap();
+      writer.println(indent1 + "<dynamicAttributes size=\"" + attributes.size() + "\">");
+      String[] attributeNames = attributes.keySet().toArray(new String[0]);
+      Arrays.sort(attributeNames);
+      for (String attributeName : attributeNames) {
+        attributes.get(attributeName).printDependency(writer, indent2);
+      }
+      writer.println(indent1 + "</dynamicAttributes>");
+    }
+    
+    // print query
+    query.printDependency(writer, indent);
+    writer.print(indent + "</question>");
   }
 }

@@ -16,17 +16,14 @@ wdk.namespace('wdk.views', function(ns) {
      * is mapped to. For instance, 'my/cool/template.hbs' will be
      * mapped to `Wdk.Templates.my.cool.template`.
      */
-    templateName: '',
+    templateName: null,
 
     template: function() {},
 
     model: null,
 
     initialize: function() {
-      var src = $('script[type="text/x-handlebars-template"][id="' +
-                  this.templateName + '"]').html();
-      this.template =  Handlebars.compile(src)
-
+      this.template = wdk.templates[this.templateName];
       this.listenTo(this.model, 'change', this.render);
       this.render();
     },

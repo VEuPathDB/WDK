@@ -25,6 +25,9 @@
 module.exports = {
 
   src: [
+    // load polyfills
+    'src/core/loader.js',
+
     'src/core/console.js',
     'src/core/namespace.js',
     'src/core/c_properties.js',
@@ -37,14 +40,34 @@ module.exports = {
     'src/core/util.js',
 
     'src/user.js',
+    'src/models/filter/field.js',
     'src/models/filter/filter.js',
     'src/models/filter/filter_service.js',
+
+    'src/plugins/**/*.js',
+
     'src/components/**/*.js',
-    'src/views/core.js',
+
+    'src/views/view.js',
     'src/views/template_view.js',
+    'src/views/question_view.js',
+
+    // filter views
+    'src/views/filter/field_list_view.js',
+    'src/views/filter/range_filter_view.js',
+    'src/views/filter/membership_filter_view.js',
+    'src/views/filter/field_detail_view.js',
+    'src/views/filter/filter_fields_view.js',
+    'src/views/filter/results_view.js',
+    'src/views/filter/filter_item_view.js',
+    'src/views/filter/filter_items_view.js',
+    'src/views/filter/filter_collapsed_view.js',
+    'src/views/filter/filter_expanded_view.js',
+    'src/views/filter/filter_view.js',
+
     'src/controllers/**/*.js',
 
-    'src/core/bootstrap.js'
+    'src/app.js'
 
   ],
 
@@ -58,27 +81,17 @@ module.exports = {
     'lib/backbone-min.js',
     'lib/jquery-ui.js',
 
-    // load polyfills
-    'src/core/loader.js',
-
     'lib/jquery.cookie.js',
     'lib/jquery.blockUI.js',
     'lib/qtip2/jquery.qtip.js',
-
-    // use JSON.parse and JSON.stringify - polyfilled for older browsers by es5-shim.min.js
-    // 'lib/json.js',
 
     // question pages
     'lib/handlebars.js',
     'lib/flexigrid.js',
     'lib/chosen.jquery.min.js',
     'lib/jquery.dataTables.min.js',
+    // 'lib/dataTables.colVis.min.js',
     'lib/jstree/jquery.jstree.js',
-
-    // these will get loaded in bootstrap.js by Modernizr.load
-    // 'lib/jquery.flot-0.8.1.min.js',
-    // 'lib/jquery.flot.categories-0.8.1.min.js'
-
   ]
 
 };

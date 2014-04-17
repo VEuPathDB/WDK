@@ -124,9 +124,12 @@ public class UserFactory {
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences) throws WdkUserException,
       WdkModelException {
+	  boolean resetPwdAndSendEmail = true;
+	  String dontEmailProp = getWdkModel().getProperties().get("DONT_EMAIL_NEW_USER");
+	  if (dontEmailProp != null && dontEmailProp.equals("true")) resetPwdAndSendEmail = false;
     return createUser(email, lastName, firstName, middleName, title,
         organization, department, address, city, state, zipCode, phoneNumber,
-        country, openId, globalPreferences, projectPreferences, true);
+        country, openId, globalPreferences, projectPreferences, resetPwdAndSendEmail);
   }
 
   User createUser(String email, String lastName, String firstName,

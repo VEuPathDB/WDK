@@ -91,7 +91,7 @@ public class ProcessRenameStrategyAction extends Action {
                             && !customName.equals(strategy.getSavedName())) {
                         // clone the last step
                         StepBean step = strategy.getLatestStep().deepClone();
-                        strategy = wdkUser.createStrategy(step, false);
+                        strategy = wdkUser.createStrategy(step, strategy.getIsSaved(), strategy.getIsDeleted());
                     }
 
                     // mark the strategy as saved, set saved name

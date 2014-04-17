@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.record;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,12 +17,11 @@ import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 
 /**
- * A table field defines a table of data associated with a recordClass. It
- * defines what attributes the table will have. column, link, and text
- * attributes are allowed in the table field.
+ * A table field defines a table of data associated with a recordClass. It defines what attributes the table
+ * will have. column, link, and text attributes are allowed in the table field.
  * 
- * A table field is linked to a table query that provides the values for the
- * table. Please refer to the Query class for how to define table queries.
+ * A table field is linked to a table query that provides the values for the table. Please refer to the Query
+ * class for how to define table queries.
  * 
  * @author jerric
  * 
@@ -105,8 +106,7 @@ public class TableField extends Field implements AttributeFieldContainer {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
+   * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
    */
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
@@ -136,8 +136,7 @@ public class TableField extends Field implements AttributeFieldContainer {
   }
 
   /*
-   * (non-Javadoc) Should never be called, but is necessary because TableField
-   * implements FieldI.
+   * (non-Javadoc) Should never be called, but is necessary because TableField implements FieldI.
    * 
    * @see org.gusdb.wdk.model.FieldI#getTruncateTo()
    */
@@ -160,10 +159,10 @@ public class TableField extends Field implements AttributeFieldContainer {
     for (WdkModelText description : descriptions) {
       if (description.include(projectId)) {
         if (hasDescription) {
-          throw new WdkModelException("The table field " + name
-              + " of recordClass " + recordClass.getFullName()
-              + " has more than one description for project " + projectId);
-        } else {
+          throw new WdkModelException("The table field " + name + " of recordClass " +
+              recordClass.getFullName() + " has more than one description for project " + projectId);
+        }
+        else {
           this.description = description.getText();
           hasDescription = true;
         }
@@ -177,11 +176,28 @@ public class TableField extends Field implements AttributeFieldContainer {
         field.excludeResources(projectId);
         String fieldName = field.getName();
         if (attributeFieldMap.containsKey(fieldName))
-          throw new WdkModelException("The attributeField " + fieldName
-              + " is duplicated in table " + this.name);
+          throw new WdkModelException("The attributeField " + fieldName + " is duplicated in table " +
+              this.name);
         attributeFieldMap.put(fieldName, field);
       }
     }
     attributeFieldList = null;
+  }
+
+  @Override
+  protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
+    super.printDependencyContent(writer, indent);
+
+    // print attribute fields
+    writer.println(indent + "<attributes count=\"" + attributeFieldMap.size() + "\">");
+    String[] attributeNames = attributeFieldMap.keySet().toArray(new String[0]);
+    Arrays.sort(attributeNames);
+    String indent1 = indent + WdkModel.INDENT;
+    for (String attributeName : attributeNames) {
+      attributeFieldMap.get(attributeName).printDependency(writer, indent1);
+    }
+
+    // print table queries
+    query.printDependency(writer, indent);
   }
 }

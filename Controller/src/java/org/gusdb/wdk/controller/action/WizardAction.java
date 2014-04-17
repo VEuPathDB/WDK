@@ -24,6 +24,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.fgputil.FormatUtil;
 
 public class WizardAction extends Action {
 
@@ -127,7 +128,7 @@ public class WizardAction extends Action {
             }
         } catch (Exception ex) {
             logger.error(ex);
-            ex.printStackTrace();
+            logger.error("Here's the trace\n" + FormatUtil.getStackTrace(ex));
             ShowStrategyAction.outputErrorJSON(user, response, ex);
             return null;
         }

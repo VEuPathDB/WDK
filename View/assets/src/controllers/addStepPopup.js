@@ -56,8 +56,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
     if (panel == 'strategy_results') {
       if ($.cookie("refresh_results") == "true") {
+        // reload current tab
         var currentStep = $("#Strategies div.selected");
-        var active_link = $("a.results_link", currentStep);
+        var active_link = $(".results_link", currentStep);
         if (active_link.length == 0) {
           active_link = $(".resultCount a.operation", currentStep);
         }
@@ -512,10 +513,17 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     }
   }
 
+  // TODO Remove inline references to these functions. As it is now,
+  // it is not possible to cancel an inline 'onsubmit' handler without
+  // hacking it into a more conventional event handler.
   function callWizard(url, ele, id, sec, action, stratFrontId){
     // TODO - make this accssible via wdk.addStepPopup namespace
     // set isPopup flag, which will be used by param initialization process
     window.isPopup = true;
+
+    // sometimes url can be null...
+    var urlBase = url && url.split(/\?/)[0];
+    var params = url && url.split(/\?/)[1];
 
     //hide any open tooltips
     $(".qtip").qtip("hide");
@@ -534,13 +542,13 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
       case "submit":
         var stage = $(ele).find("#stage").val();
-        url = url + "stage="+stage+"&strategy="+strategy.backId;
+        params = params + "stage="+stage+"&strategy="+strategy.backId;
         $(ele).attr("action", "javascript:void(0)");
         $.ajax({
-          url: url,
-          type: "post",
+          url: urlBase,
+          type: "POST",
           dataType: "html",
-          data: wdk.util.parseInputs() + "&state=" + wdk.strategy.controller.stateString,
+          data: params + '&' + wdk.util.parseInputs() + "&state=" + wdk.strategy.controller.stateString,
 
           beforeSend: function() {
             //$(".crumb_details").block( {message: "Loading..."} );
@@ -578,12 +586,12 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
         break;
 
       case "next":
-        var d = "strategy="+strategy.backId;
+        params = params + "&strategy="+strategy.backId;
         $.ajax({
-          url: url,
-          type: "get",
+          url: urlBase,
+          type: "POST",
           dataType: "html",
-          data: d,
+          data: params,
 
           beforeSend: function(jqXHR, data) {
             $("#query_form").block({

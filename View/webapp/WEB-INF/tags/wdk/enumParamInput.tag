@@ -48,7 +48,7 @@ Otherwise a standard select menu is used.
     <%-- multiPick is true, use checkboxes or scroll pane --%>
     <c:choose>
       <c:when test="${displayType eq 'checkBox' or (displayType eq null and fn:length(qP.vocab) lt 15)}"><!-- use checkboxes -->
-        <div class="param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+        <div class="param param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
           <c:set var="initialCount" value="${fn:length(qP.currentValues)}"/>
           <imp:enumCountWarning enumParam="${qP}" initialCount="${initialCount}"/>
           <c:set var="changeCode" value="window.wdk.parameterHandlers.adjustEnumCountBoxes('${qP.name}aaa')"/>
@@ -82,7 +82,7 @@ Otherwise a standard select menu is used.
     
       <%-- use a tree list --%>
       <c:when test="${displayType eq 'treeBox'}">
-        <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
           <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
           <c:set var="updateCountFunc">window.wdk.parameterHandlers.adjustEnumCountTree('${qP.name}aaa',${qP.countOnlyLeaves})</c:set>
           <imp:checkboxTree id="${pNam}CBT${idgen.nextId}" rootNode="${qP.paramTree}" checkboxName="array(${pNam})"
@@ -92,9 +92,9 @@ Otherwise a standard select menu is used.
 
       <%-- use a type ahead --%>
       <c:when test="${displayType eq 'typeAhead'}">
-        <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+        <div class="param ${dependentClass}" data-type="type-ahead" dependson="${dependedParam}" name="${pNam}">
           <div id="${pNam}_display" data-multiple="true"></div>
-          <html:hidden styleClass="typeAhead" property="value(${pNam})" />
+          <html:hidden property="value(${pNam})" />
           <div class="type-ahead-help" style="margin:2px;">
             Begin typing to see suggestions to choose from (CTRL or CMD click to select multiple)<br/>
             Or paste a list of IDs separated by a comma, new-line, white-space, or semi-colon.<br/>
@@ -107,7 +107,7 @@ Otherwise a standard select menu is used.
   
       <%-- use a multi-select box --%>
       <c:otherwise>
-        <div class="param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+        <div class="param ${dependentClass}" data-type="multi-pick" dependson="${dependedParam}" name="${pNam}">
           <c:set var="initialCount" value="${fn:length(qP.currentValues)}"/>
           <imp:enumCountWarning enumParam="${qP}" initialCount="${initialCount}"/>
           <c:set var="changeCode" value="window.wdk.parameterHandlers.adjustEnumCountSelect('${qP.name}aaa')"/>
@@ -121,25 +121,26 @@ Otherwise a standard select menu is used.
     </c:choose>
   </c:when> <%-- end of multipick --%>
   <c:otherwise> <%-- pick single item --%>
-    <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
       <c:choose>
         <c:when test="${displayType eq 'radioBox'}">
-          <ul>
-            <c:forEach items="${qP.displayMap}" var="entity">
-              <li ${v}>
-                <label>
-                  <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
-                </label>
-              </li>
-            </c:forEach>
-          </ul>
+          <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+            <ul>
+              <c:forEach items="${qP.displayMap}" var="entity">
+                <li ${v}>
+                  <label>
+                    <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
+                  </label>
+                </li>
+              </c:forEach>
+            </ul>
+          </div>
         </c:when>
       
         <%-- use a type ahead --%>
         <c:when test="${displayType eq 'typeAhead'}">
-          <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <div class="param ${dependentClass}" data-type="type-ahead" dependson="${dependedParam}" name="${pNam}">
             <div id="${pNam}_display" data-multiple="false"></div>
-            <html:hidden styleClass="typeAhead" property="value(${pNam})" />
+            <html:hidden property="value(${pNam})" />
             <div class="type-ahead-help" style="margin:2px;">
               Begin typing to see suggestions from which to choose<br/>
               <%-- Or use * as a wildcard, like this: *your-term* --%>
@@ -149,15 +150,16 @@ Otherwise a standard select menu is used.
   
         <c:otherwise>
           <%-- multiPick is false, use pull down menu --%>
-          <html:select  property="array(${pNam})" styleId="${pNam}">
-            <c:set var="opt" value="${opt+1}"/>
-            <c:set var="sel" value=""/>
-            <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-            <html:options property="array(${pNam}-values)" labelProperty="array(${pNam}-labels)"/>
-          </html:select>
+          <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+            <html:select property="array(${pNam})" styleId="${pNam}">
+              <c:set var="opt" value="${opt+1}"/>
+              <c:set var="sel" value=""/>
+              <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
+              <html:options property="array(${pNam}-values)" labelProperty="array(${pNam}-labels)"/>
+            </html:select>
+          </div>
         </c:otherwise>
       </c:choose>
-    </div>
   </c:otherwise> <%-- end of pick single item --%>
 </c:choose>
 

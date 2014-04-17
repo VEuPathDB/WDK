@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.query.Query;
 
 /**
  * An object representation of a <paramRef> tag, It is used in query and
@@ -22,11 +23,13 @@ import org.gusdb.wdk.model.WdkModelText;
 public class ParamReference extends Reference {
 
   public static Param resolveReference(WdkModel wdkModel,
-      ParamReference paramRef, String servedQueryName) throws WdkModelException {
+      ParamReference paramRef, Query contextQuery) throws WdkModelException {
+
     String twoPartName = paramRef.getTwoPartName();
     Param param = (Param) wdkModel.resolveReference(twoPartName);
     // clone the param to have different default values
     param = param.clone();
+    param.setContextQuery(contextQuery);
 
     // if the param has customized default value
     String defaultValue = paramRef.getDefault();
@@ -73,6 +76,7 @@ public class ParamReference extends Reference {
     Integer minSelectedCount = paramRef.getMinSelectedCount();
     Integer maxSelectedCount = paramRef.getMaxSelectedCount();
     Boolean countOnlyLeaves = paramRef.getCountOnlyLeaves();
+    Long interval = paramRef.getInterval();
     
     if (param instanceof AbstractEnumParam) {
       AbstractEnumParam enumParam = (AbstractEnumParam) param;
@@ -81,8 +85,9 @@ public class ParamReference extends Reference {
         throw new WdkModelException("The 'number' property is not "
             + "allowed in param '" + twoPartName + "'");
 
-      if (param instanceof FlatVocabParam)
-        ((FlatVocabParam) param).setServedQueryName(servedQueryName);
+      if (interval != null)
+        throw new WdkModelException("The 'interval' property is not "
+            + "allowed in param '" + twoPartName + "'");
 
       // if the param has customized multi pick
       if (multiPick != null)
@@ -139,6 +144,15 @@ public class ParamReference extends Reference {
             + "' is not a stringParam. The 'number' property can "
             + "only be applied to paramRefs of stringParams.");
       }
+      
+      if (param instanceof TimestampParam) {
+        if (interval != null)
+          ((TimestampParam)param).setInterval(interval);
+      } else if (interval != null) {
+        throw new WdkModelException("The paramRef to '" + twoPartName
+            + "' is not a timestampParam. The 'interval' property can "
+            + "only be applied to paramRefs of timestampParam.");
+      }
     }
 
     // resolve the group reference
@@ -149,7 +163,6 @@ public class ParamReference extends Reference {
     } else if (!param.isVisible()) {
       param.setGroup(Group.Hidden());
     }
-    param.resolveReferences(wdkModel);
     param.setResources(wdkModel);
     return param;
   }
@@ -174,6 +187,9 @@ public class ParamReference extends Reference {
 
   private List<WdkModelText> helps = new ArrayList<WdkModelText>();
   private String help;
+
+  // this property only applies to timestamp param.
+  private Long interval;
 
   public ParamReference() {}
 
@@ -403,6 +419,20 @@ public class ParamReference extends Reference {
 
   public String getPrompt() {
     return prompt;
+  }
+  
+  /**
+   * @return the interval
+   */
+  public Long getInterval() {
+    return interval;
+  }
+
+  /**
+   * @param interval the interval to set
+   */
+  public void setInterval(Long interval) {
+    this.interval = interval;
   }
 
   @Override

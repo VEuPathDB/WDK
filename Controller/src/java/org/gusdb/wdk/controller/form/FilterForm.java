@@ -27,271 +27,266 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 public class FilterForm extends BooleanExpressionForm {
 
-    /**
+  /**
      * 
      */
-    private static final long serialVersionUID = -6678685794514383434L;
-    private static Logger logger = Logger.getLogger(FilterForm.class);
+  private static final long serialVersionUID = -6678685794514383434L;
+  private static Logger logger = Logger.getLogger(FilterForm.class);
 
-    protected String qFullName = null;
-    private Map<String, Object> myProps = new LinkedHashMap<String, Object>();
-    private Map<?, ?> myLabels = new LinkedHashMap<String, String>();
-    private Map<?, ?> myValues = new LinkedHashMap<String, String>();
-    private Map<String, Object> myPropObjects = new LinkedHashMap<String, Object>();
-    private QuestionBean question = null;
-    private boolean validating = true;
-    private boolean paramsFilled = false;
+  protected String qFullName = null;
+  private Map<String, Object> myProps = new LinkedHashMap<String, Object>();
+  private Map<?, ?> myLabels = new LinkedHashMap<String, String>();
+  private Map<?, ?> myValues = new LinkedHashMap<String, String>();
+  private Map<String, Object> myPropObjects = new LinkedHashMap<String, Object>();
+  private QuestionBean question = null;
+  private boolean validating = true;
+  private boolean paramsFilled = false;
 
-    public void reset() {
-        resetMappedProps();
+  public void reset() {
+    resetMappedProps();
+  }
+
+  protected void resetMappedProps() {
+    myProps.clear();
+    myLabels.clear();
+    myValues.clear();
+  }
+
+  /**
+   * validate the properties that have been sent from the HTTP request, and
+   * return an ActionErrors object that encapsulates any validation errors
+   */
+  @Override
+  public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
+    UserBean user = ActionUtility.getUser(servlet, request);
+
+    // set the question name into request
+    request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, qFullName);
+
+    ActionErrors errors = new ActionErrors();
+    if (!validating) {
+      return errors;
     }
 
-    protected void resetMappedProps() {
-        myProps.clear();
-        myLabels.clear();
-        myValues.clear();
+    String clicked = request.getParameter(CConstants.PQ_SUBMIT_KEY);
+    if (clicked != null && clicked.equals(CConstants.PQ_SUBMIT_EXPAND_QUERY)) {
+      return errors;
     }
 
-    /**
-     * validate the properties that have been sent from the HTTP request, and
-     * return an ActionErrors object that encapsulates any validation errors
-     */
-    @Override
-    public ActionErrors validate(ActionMapping mapping,
-            HttpServletRequest request) {
-        UserBean user = ActionUtility.getUser(servlet, request);
+    QuestionBean wdkQuestion;
+    try {
+      wdkQuestion = getQuestion();
+    } catch (WdkModelException ex) {
+      ActionMessage message = new ActionMessage("mapped.properties",
+          ex.getMessage());
+      errors.add(ActionErrors.GLOBAL_MESSAGE, message);
+      return errors;
+    }
+    if (wdkQuestion == null) return errors;
 
-        // set the question name into request
-        request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, qFullName);
+    ParamBean<?>[] params = wdkQuestion.getParams();
 
-        ActionErrors errors = new ActionErrors();
-        if (!validating) {
-            return errors;
+    // get context param values
+    Map<String, String> contextValues = new LinkedHashMap<>();
+    for (ParamBean<?> param : params) {
+      String[] values = getMyMultiProp(param.getName());
+      String value;
+      if (values != null) {
+        StringBuilder buffer = new StringBuilder();
+        for (String val : values) {
+          if (buffer.length() > 0) buffer.append(",");
+          buffer.append(val);
         }
+        value = buffer.toString();
+      } else {
+        value = getMyProp(param.getName());
+      }
+      contextValues.put(param.getName(), value);
+    }
 
-        String clicked = request.getParameter(CConstants.PQ_SUBMIT_KEY);
-        if (clicked != null
-                && clicked.equals(CConstants.PQ_SUBMIT_EXPAND_QUERY)) {
-            return errors;
-        }
-
-        QuestionBean wdkQuestion;
-        try {
-            wdkQuestion = getQuestion();
-        } catch (WdkModelException ex) {
-            ActionMessage message = new ActionMessage("mapped.properties",
-                    ex.getMessage());
-            errors.add(ActionErrors.GLOBAL_MESSAGE, message);
-            return errors;
-        }
-        if (wdkQuestion == null) return errors;
-
-        ParamBean<?>[] params = wdkQuestion.getParams();
-        
-        // get context param values
-        Map<String, String> contextValues = new LinkedHashMap<>();
-        for (ParamBean<?> param : params) {
-          String[] values = getMyMultiProp(param.getName());
-          String value;
-          if (values != null) {
-            StringBuilder buffer = new StringBuilder();
-            for (String val : values) {
-              if (buffer.length() > 0) buffer.append(",");
-              buffer.append(val);
-            }
-            value = buffer.toString();
-          } else {
-            value = getMyProp(param.getName());
+    for (int i = 0; i < params.length; i++) {
+      ParamBean<?> p = params[i];
+      try {
+        String[] pVals = null;
+        if ((p instanceof EnumParamBean) || (p instanceof AnswerParamBean)) {
+          pVals = getMyMultiProp(p.getName());
+          if (pVals == null) {
+            pVals = new String[] { "" };
           }
-          contextValues.put(param.getName(), value);
+        } else {
+          pVals = new String[] { getMyProp(p.getName()) };
         }
-        
-        for (int i = 0; i < params.length; i++) {
-        	ParamBean<?> p = params[i];
-            try {
-                String[] pVals = null;
-                if ((p instanceof EnumParamBean)
-                        || (p instanceof AnswerParamBean)) {
-                    pVals = getMyMultiProp(p.getName());
-                    if (pVals == null) {
-                        pVals = new String[] { "" };
-                    }
-                } else {
-                    pVals = new String[] { getMyProp(p.getName()) };
-                }
 
-                String errMsg = null;
-                for (int j = 0; j < pVals.length; j++) {
-                    try {
-                        String rawOrDependentValue = pVals[j];
-                        String dependentValue = p.rawOrDependentValueToDependentValue(
-                                user, rawOrDependentValue);
-                        p.validate(user, dependentValue, contextValues);
-                    }
-                    catch (Exception ex) {
-                        ex.printStackTrace();
+        String errMsg = null;
+        for (int j = 0; j < pVals.length; j++) {
+          try {
+            String rawValue = pVals[j];
+            String stableValue = p.getStableValue(user, rawValue, contextValues);
+            p.validate(user, stableValue, contextValues);
+          } catch (Exception ex) {
+            ex.printStackTrace();
 
-                        if (errMsg == null) errMsg = ex.getMessage();
-                        else errMsg += "; " + ex.getMessage();
-                    }
-                }
-                if (errMsg != null) {
-                    errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
-                            "mapped.properties", p.getPrompt(), errMsg));
-                    request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
-                }
-                // System.out.println("===== Validated " + p.getName() + ": '" +
-                // errMsg + "'");
-            }
-            catch (Exception exp) {
-                errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
-                        "mapped.properties", p.getPrompt(), exp.getMessage()));
-                request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
-            }
+            if (errMsg == null) errMsg = ex.getMessage();
+            else errMsg += "; " + ex.getMessage();
+          }
         }
-        return errors;
-    }
-
-    public void cleanup() throws WdkModelException {
-        QuestionBean question = getQuestion();
-        Vector<String> v = new Vector<String>();
-        if (question != null) {
-            String questionPattern = "_" + question.getName() + "_";
-            for (String key : getMyProps().keySet()) {
-                if (key.indexOf(questionPattern) > 0) v.add(key);
-            }
+        if (errMsg != null) {
+          errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
+              "mapped.properties", p.getPrompt(), errMsg));
+          request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
         }
-        String[] extraKeys = new String[v.size()];
-        v.toArray(extraKeys);
-        for (int i = 0; i < extraKeys.length; i++) {
-            getMyProps().remove(extraKeys[i]);
-        }
+        // System.out.println("===== Validated " + p.getName() + ": '" +
+        // errMsg + "'");
+      } catch (Exception exp) {
+        errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
+            "mapped.properties", p.getPrompt(), exp.getMessage()));
+        request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
+      }
     }
+    return errors;
+  }
 
-    public void setQuestion(QuestionBean s) {
-        question = s;
+  public void cleanup() throws WdkModelException {
+    QuestionBean question = getQuestion();
+    Vector<String> v = new Vector<String>();
+    if (question != null) {
+      String questionPattern = "_" + question.getName() + "_";
+      for (String key : getMyProps().keySet()) {
+        if (key.indexOf(questionPattern) > 0) v.add(key);
+      }
     }
-
-    public QuestionBean getQuestion() throws WdkModelException {
-        if (question == null) {
-            if (qFullName == null) return null;
-            int dotI = qFullName.indexOf('.');
-            String qSetName = qFullName.substring(0, dotI);
-            String qName = qFullName.substring(dotI + 1, qFullName.length());
-
-            WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
-                    CConstants.WDK_MODEL_KEY);
-
-            QuestionSetBean wdkQuestionSet = wdkModel.getQuestionSetsMap().get(qSetName);
-            if (wdkQuestionSet == null) return null;
-            question = wdkQuestionSet.getQuestionsMap().get(qName);
-        }
-        return question;
+    String[] extraKeys = new String[v.size()];
+    v.toArray(extraKeys);
+    for (int i = 0; i < extraKeys.length; i++) {
+      getMyProps().remove(extraKeys[i]);
     }
+  }
 
-    public void setNonValidating() {
-        validating = false;
+  public void setQuestion(QuestionBean s) {
+    question = s;
+  }
+
+  public QuestionBean getQuestion() throws WdkModelException {
+    if (question == null) {
+      if (qFullName == null) return null;
+      int dotI = qFullName.indexOf('.');
+      String qSetName = qFullName.substring(0, dotI);
+      String qName = qFullName.substring(dotI + 1, qFullName.length());
+
+      WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
+          CConstants.WDK_MODEL_KEY);
+
+      QuestionSetBean wdkQuestionSet = wdkModel.getQuestionSetsMap().get(
+          qSetName);
+      if (wdkQuestionSet == null) return null;
+      question = wdkQuestionSet.getQuestionsMap().get(qName);
     }
+    return question;
+  }
 
-    public void setParamsFilled(boolean paramsFilled) {
-        this.paramsFilled = paramsFilled;
-    }
+  public void setNonValidating() {
+    validating = false;
+  }
 
-    public boolean getParamsFilled() {
-        return paramsFilled;
-    }
+  public void setParamsFilled(boolean paramsFilled) {
+    this.paramsFilled = paramsFilled;
+  }
 
-    public void setQuestionFullName(String qFN) {
-        this.qFullName = qFN;
-    }
+  public boolean getParamsFilled() {
+    return paramsFilled;
+  }
 
-    public String getQuestionFullName() {
-        return this.qFullName;
-    }
+  public void setQuestionFullName(String qFN) {
+    this.qFullName = qFN;
+  }
 
-    public void setMyProp(String key, String val) {
-        // System.err.println("*** QuestionSetForm.setMyProp: " + key + " = " +
-        // val + "\n");
-        myProps.put(key, val.trim());
-    }
+  public String getQuestionFullName() {
+    return this.qFullName;
+  }
 
-    public void setMyPropObject(String key, Object val) {
-        // System.err.println("*** QuestionSetForm.setMyProp: " + key + " = " +
-        // val + "\n");
-        myPropObjects.put(key, val);
-        logger.info("setMyPropObject: " + key + " = '" + val + "' ("
-                + val.getClass().getName() + ")");
-    }
+  public void setMyProp(String key, String val) {
+    // System.err.println("*** QuestionSetForm.setMyProp: " + key + " = " +
+    // val + "\n");
+    myProps.put(key, val.trim());
+  }
 
-    public void setMyMultiProp(String key, String[] vals) {
-        // System.err.println("*** QuestionSetForm.setMyMultiProp: " + key +
-        // " with " + vals.length + " values\n");
-        myProps.put(key, vals);
-    }
+  public void setMyPropObject(String key, Object val) {
+    // System.err.println("*** QuestionSetForm.setMyProp: " + key + " = " +
+    // val + "\n");
+    myPropObjects.put(key, val);
+    logger.info("setMyPropObject: " + key + " = '" + val + "' ("
+        + val.getClass().getName() + ")");
+  }
 
-    public String getMyProp(String key) {
-        Object value = getMyProps().get(key);
-        if (value == null) return null;
-        if (value instanceof String[]) {
-            String[] array = (String[]) value;
-            if (array.length > 0) return array[0];
-            else return null;
-        } else return (String) value;
-    }
+  public void setMyMultiProp(String key, String[] vals) {
+    // System.err.println("*** QuestionSetForm.setMyMultiProp: " + key +
+    // " with " + vals.length + " values\n");
+    myProps.put(key, vals);
+  }
 
-    public String[] getMyMultiProp(String key) {
-        Object value = getMyProps().get(key);
-        if (value == null) return null;
-        if (value instanceof String[]) return (String[]) value;
-        else return new String[] { (String) value };
-    }
+  public String getMyProp(String key) {
+    Object value = getMyProps().get(key);
+    if (value == null) return null;
+    if (value instanceof String[]) {
+      String[] array = (String[]) value;
+      if (array.length > 0) return array[0];
+      else return null;
+    } else return (String) value;
+  }
 
-    public Object getMyPropObject(String key) {
-        return myPropObjects.get(key);
-    }
+  public String[] getMyMultiProp(String key) {
+    Object value = getMyProps().get(key);
+    if (value == null) return null;
+    if (value instanceof String[]) return (String[]) value;
+    else return new String[] { (String) value };
+  }
 
-    /* returns a list of labels for a select box */
-    public String[] getLabels(String key) {
-        return (String[]) getMyLabels().get(key);
-    }
+  public Object getMyPropObject(String key) {
+    return myPropObjects.get(key);
+  }
 
-    /* returns a list of values for a select box */
-    public String[] getValues(String key) {
-        // System.out.println("DEBUG: QuestionSetForm:getValues for: " + key +
-        // ": " + getMyValues().get(key));
+  /* returns a list of labels for a select box */
+  public String[] getLabels(String key) {
+    return (String[]) getMyLabels().get(key);
+  }
 
-        return (String[]) getMyValues().get(key);
-    }
+  /* returns a list of values for a select box */
+  public String[] getValues(String key) {
+    // System.out.println("DEBUG: QuestionSetForm:getValues for: " + key +
+    // ": " + getMyValues().get(key));
 
-    void setMyProps(Map<String, Object> props) {
-        myProps = props;
-    }
+    return (String[]) getMyValues().get(key);
+  }
 
-    public Map<String, Object> getMyProps() {
-        return myProps;
-    }
+  void setMyProps(Map<String, Object> props) {
+    myProps = props;
+  }
 
-    void setMyPropObjects(Map<String, Object> props) {
-        myPropObjects = props;
-    }
+  public Map<String, Object> getMyProps() {
+    return myProps;
+  }
 
-    public Map<String, Object> getMyPropObjects() {
-        return myPropObjects;
-    }
+  void setMyPropObjects(Map<String, Object> props) {
+    myPropObjects = props;
+  }
 
-    void setMyLabels(Map<?, ?> lbls) {
-        myLabels = lbls;
-    }
+  public Map<String, Object> getMyPropObjects() {
+    return myPropObjects;
+  }
 
-    Map<?, ?> getMyLabels() {
-        return myLabels;
-    }
+  void setMyLabels(Map<?, ?> lbls) {
+    myLabels = lbls;
+  }
 
-    void setMyValues(Map<?, ?> vals) {
-        myValues = vals;
-    }
+  Map<?, ?> getMyLabels() {
+    return myLabels;
+  }
 
-    Map<?, ?> getMyValues() {
-        return myValues;
-    }
+  void setMyValues(Map<?, ?> vals) {
+    myValues = vals;
+  }
+
+  Map<?, ?> getMyValues() {
+    return myValues;
+  }
 }

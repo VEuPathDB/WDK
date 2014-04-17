@@ -1,9 +1,6 @@
 package org.gusdb.wdk.controller.actionutil;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.WdkValidationException;
@@ -76,6 +74,9 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
 
   // default max upload file size
   private static final int DEFAULT_MAX_UPLOAD_SIZE_MB = 10;
+
+  // default response type (for errors and validation failures)
+  private static final ResponseType DEFAULT_RESPONSE_TYPE = ResponseType.html;
   
   private WdkModelBean _wdkModel;
   private HttpServlet _servlet;
@@ -83,6 +84,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
   private HttpServletResponse _response;
   private ParamGroup _params;
   private ResponseType _responseType;
+  private ActionForm _strutsActionForm;
 
   protected abstract boolean shouldValidateParams();
   protected abstract Map<String, ParamDef> getParamDefs();
@@ -110,7 +112,8 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
       _response = response;
       _servlet = servlet;
       _wdkModel = (WdkModelBean)_servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
-      _responseType = ResponseType.html;
+      _responseType = DEFAULT_RESPONSE_TYPE;
+      _strutsActionForm = form;
       
       if (requiresLogin() && getCurrentUser().isGuest()) {
         return getForwardFromResult(new ActionResult().setViewName(NEEDS_LOGIN), mapping);
@@ -123,32 +126,33 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
       }
       catch (WdkValidationException wve) {
         // attach errors to request and return INPUT
-        return getForwardFromResult(new ActionResult(_responseType)
-            .setRequestAttribute("validator", wve.getValidator())
-            .setViewName(INPUT), mapping);
+        return getForwardFromResult(getValidationFailureResult(wve), mapping);
       }
 
       if (result == null || result.isEmptyResult()) {
         return null;
       }
-      else if (result.isStream()) {
-        // handle stream response
-        if (result.getFileName().isEmpty()) {
-          result.setFileName(result.getResponseType().getDefaultFileName());
-        }
-        _response.setContentType(result.getResponseType().getMimeType());
-        _response.setHeader("Content-Disposition", "attachment; filename=\"" + result.getFileName() + "\"");
-        transferStream(_response.getOutputStream(), result.getStream());
-        return null;
-      }
-      else if (result.isExternalRedirect()){
-        _response.sendRedirect(result.getExternalPath());
-        return null;
-      }
       else {
-        // otherwise, handle normal response
-        assignAttributesToRequest(result);
-        return getForwardFromResult(result, mapping);
+        _response.setStatus(result.getHttpResponseStatus());
+        if (result.isStream()) {
+          // handle stream response
+          if (result.getFileName().isEmpty()) {
+            result.setFileName(result.getResponseType().getDefaultFileName());
+          }
+          _response.setContentType(result.getResponseType().getMimeType());
+          _response.setHeader("Content-Disposition", "attachment; filename=\"" + result.getFileName() + "\"");
+          IoUtil.transferStream(_response.getOutputStream(), result.getStream());
+          return null;
+        }
+        else if (result.isExternalRedirect()){
+          _response.sendRedirect(result.getExternalPath());
+          return null;
+        }
+        else {
+          // otherwise, handle normal response
+          assignAttributesToRequest(result);
+          return getForwardFromResult(result, mapping);
+        }
       }
     }
     catch (Exception e) {
@@ -159,6 +163,23 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
       _request.setAttribute(EXCEPTION_OBJ, e);
       return getForwardFromResult(new ActionResult().setViewName(ERROR), mapping);
     }
+  }
+  
+  /**
+   * Creates an ActionResult to be returned when configured parameter validation
+   * fails.  Default behavior is to return result with view name 'input' of type
+   * HTML, and attach the validator to the request under the name 'validator'.
+   * 
+   * If the calling action wishes a different response, it can override this
+   * method and return a different result.
+   * 
+   * @param wve validation exception containing failure causes
+   * @return desired result for validation failure
+   */
+  protected ActionResult getValidationFailureResult(WdkValidationException wve) {
+    return new ActionResult(_responseType)
+        .setRequestAttribute("validator", wve.getValidator())
+        .setViewName(INPUT);
   }
   
   private ParamGroup createParamGroup(Map<String, String[]> paramMap) throws WdkValidationException, WdkUserException {
@@ -215,21 +236,6 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
     return DEFAULT_MAX_UPLOAD_SIZE_MB;
   }
   
-  private static void transferStream(OutputStream outputStream, InputStream inputStream)
-      throws IOException {
-    try {
-      byte[] buffer = new byte[1024]; // send 1kb at a time
-      int bytesRead;
-      while ((bytesRead = inputStream.read(buffer)) != -1) {
-        outputStream.write(buffer, 0, bytesRead);
-      }
-    }
-    finally {
-      // only close input stream; container will close output stream
-      inputStream.close();
-    }
-  }
-  
   private ParamGroup buildParamGroup(Map<String, String[]> parameters, Map<String, DiskFileItem> uploads) {
     // generate param definitions based on passed params so calling code
     //   sees a complete ParamGroup structure
@@ -259,7 +265,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
    * Allows children to explicitly set response type.  Note that this value is
    * only used if an exception is throw during handleRequest().  Under normal
    * conditions, the response type on the ActionResult is used to determine the
-   * type of response.
+   * type of response.  Default type is HTML.
    * 
    * @param responseType
    */
@@ -485,6 +491,16 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
    */
   public RequestData getRequestData() {
     return new HttpRequestData(_request);
+  }
+  
+  /**
+   * Returns Struts ActionForm associated with this request
+   * 
+   * @return action form for this request
+   */
+  @Deprecated
+  public ActionForm getStrutsActionForm() {
+    return _strutsActionForm;
   }
   
   /**

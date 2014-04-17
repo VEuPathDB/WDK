@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.user;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -33,6 +35,7 @@ import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
+import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 
@@ -75,8 +78,8 @@ public class BasketFactory {
     return schema;
   }
 
-  public void addToBasket(User user, Step step) throws WdkModelException,
-      SQLException {
+  public void addToBasket(User user, Step step) throws WdkModelException
+       {
     logger.debug("adding to basket from step...");
 
     AnswerValue answerValue = step.getAnswerValue();
@@ -91,9 +94,10 @@ public class BasketFactory {
    * @param pkValues
    *          a list of primary key values. the inner map is a primary-key
    *          column-value map.
+   * @throws WdkModelException 
    */
   public void addToBasket(User user, RecordClass recordClass,
-      List<String[]> pkValues) throws SQLException {
+      List<String[]> pkValues) throws WdkModelException  {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
@@ -170,14 +174,17 @@ public class BasketFactory {
       // check the remote table to solve out-dated db-link issue with
       // Oracle.
       checkRemoteTable();
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
     } finally {
       SqlUtils.closeStatement(psInsert);
       SqlUtils.closeStatement(psCount);
     }
   }
 
-  public void removeFromBasket(User user, Step step) throws WdkModelException,
-      SQLException {
+  public void removeFromBasket(User user, Step step) throws WdkModelException
+       {
     AnswerValue answerValue = step.getAnswerValue();
     RecordClass recordClass = answerValue.getQuestion().getRecordClass();
     List<String[]> pkValues = answerValue.getAllIds();
@@ -185,7 +192,7 @@ public class BasketFactory {
   }
 
   public void removeFromBasket(User user, RecordClass recordClass,
-      List<String[]> pkValues) throws SQLException {
+      List<String[]> pkValues) throws WdkModelException  {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
@@ -227,6 +234,9 @@ public class BasketFactory {
       // check the remote table to solve out-dated db-link issue with
       // Oracle.
       checkRemoteTable();
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
     } finally {
       SqlUtils.closeStatement(psDelete);
     }
@@ -359,52 +369,60 @@ public class BasketFactory {
     }
   }
 
-  public String getBasket(User user, RecordClass recordClass)
-      throws SQLException {
+  public List<RecordInstance> getBasket(User user, RecordClass recordClass)
+      throws WdkModelException, WdkUserException {
     String sql = "SELECT * FROM " + schema + TABLE_BASKET + " WHERE "
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID + " = ? AND "
         + COLUMN_RECORD_CLASS + " =?";
     DataSource ds = wdkModel.getUserDb().getDataSource();
     ResultSet rs = null;
+    long start = System.currentTimeMillis();
     try {
-      long start = System.currentTimeMillis();
-      PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
-      ps.setFetchSize(100);
-      ps.setString(1, wdkModel.getProjectId());
-      ps.setInt(2, user.getUserId());
-      ps.setString(3, recordClass.getFullName());
-      rs = ps.executeQuery();
-      QueryLogger.logEndStatementExecution(sql,
-          "wdk-basket-factory-select-all", start);
+      try {
+        PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
+        ps.setFetchSize(100);
+        ps.setString(1, wdkModel.getProjectId());
+        ps.setInt(2, user.getUserId());
+        ps.setString(3, recordClass.getFullName());
+        rs = ps.executeQuery();
+        QueryLogger.logEndStatementExecution(sql,
+            "wdk-basket-factory-select-all", start);
 
-      StringBuffer buffer = new StringBuffer();
-      PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
-      String[] columns = pkField.getColumnRefs();
-      while (rs.next()) {
-        if (buffer.length() > 0) buffer.append(DatasetFactory.RECORD_DIVIDER);
+        List<RecordInstance> records = new ArrayList<>();
+        PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
+        String[] columns = pkField.getColumnRefs();
+        while (rs.next()) {
 
-        Map<String, Object> columnValues = new LinkedHashMap<String, Object>();
-        for (int i = 1; i <= columns.length; i++) {
-          Object columnValue = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
-          columnValues.put(columns[i - 1], columnValue);
-
-          // cannot use primary key value to format the output,
-          // otherwise we might loose information
-          if (i > 1) buffer.append(DatasetFactory.COLUMN_DIVIDER);
-          buffer.append(columnValue);
+          Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+          for (int i = 1; i <= columns.length; i++) {
+            Object columnValue = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
+            pkValues.put(columns[i - 1], columnValue);
+          }
+          RecordInstance record = new RecordInstance(user, recordClass,
+              pkValues);
+          records.add(record);
         }
-
-        // format the basket with a primary key value stub
-
-        // PrimaryKeyAttributeValue pkValue = new
-        // PrimaryKeyAttributeValue(
-        // pkField, columnValues);
-        // buffer.append(pkValue.getValue());
+        return records;
+      } finally {
+        SqlUtils.closeResultSetAndStatement(rs);
       }
-      return buffer.toString();
-    } finally {
-      SqlUtils.closeResultSetAndStatement(rs);
+    } catch (SQLException ex) {
+      throw new WdkModelException(ex);
     }
+  }
+
+  public String getBasketContent(User user, RecordClass recordClass) {
+    StringBuilder buffer = new StringBuilder();
+    List<RecordInstance> records = new ArrayList<>();
+    for (RecordInstance record : records) {
+      Map<String, String> values = record.getPrimaryKey().getValues();
+      for (String value : values.values()) {
+        if (buffer.length() > 0) buffer.append(Utilities.COLUMN_DIVIDER);
+        buffer.append(value);
+      }
+      buffer.append(Utilities.RECORD_DIVIDER);
+    }
+    return buffer.toString();
   }
 
   /**
@@ -487,11 +505,9 @@ public class BasketFactory {
     param.setName(paramName);
     param.setId(paramName);
     param.setAllowEmpty(false);
-    param.setRecordClassRef(rcName);
-    param.setRecordClass(recordClass);
     param.setPrompt(recordClass.getDisplayNamePlural() + " from");
-    param.setDefaultType(DatasetParam.TYPE_BASKET);
     param.setAllowEmpty(false);
+    param.setRecordClassRef(recordClass.getFullName());
     paramSet.addParam(param);
     param.excludeResources(wdkModel.getProjectId());
     return param;

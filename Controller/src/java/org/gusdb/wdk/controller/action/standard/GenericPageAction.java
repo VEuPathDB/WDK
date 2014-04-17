@@ -11,11 +11,11 @@ public class GenericPageAction extends WdkAction {
 
   // no params expected or required
   @Override protected boolean shouldValidateParams() { return false; }
-	@Override protected Map<String, ParamDef> getParamDefs() { return null; }
+  @Override protected Map<String, ParamDef> getParamDefs() { return null; }
 
-	@Override
-	protected ActionResult handleRequest(ParamGroup params) throws Exception {
-		// take no action
-		return new ActionResult().setViewName(SUCCESS);
-	}
+  @Override
+  protected ActionResult handleRequest(ParamGroup params) throws Exception {
+    // take no action
+    return new ActionResult().setViewName(SUCCESS);
+  }
 }

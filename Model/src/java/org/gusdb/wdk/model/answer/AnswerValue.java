@@ -214,6 +214,9 @@ public class AnswerValue {
   /**
    * provide property that user's term for question
    */
+  /**
+   * @return
+   */
   public Question getQuestion() {
     return this.question;
   }
@@ -222,6 +225,11 @@ public class AnswerValue {
     return this.user;
   }
 
+  /**
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException 
+   */
   public int getPageSize() throws WdkModelException {
     initPageRecordInstances();
     return pageRecordInstances.size();
@@ -322,7 +330,7 @@ public class AnswerValue {
    */
   public Map<String, String> getParamDisplays() {
     Map<String, String> displayParamsMap = new LinkedHashMap<String, String>();
-    Map<String, String> paramsMap = idsQueryInstance.getValues();
+    Map<String, String> paramsMap = idsQueryInstance.getParamStableValues();
     Param[] params = question.getParams();
     for (int i = 0; i < params.length; i++) {
       Param param = params[i];
@@ -335,6 +343,11 @@ public class AnswerValue {
     return idsQueryInstance;
   }
 
+  /**
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException 
+   */
   public RecordInstance[] getRecordInstances() throws WdkModelException {
     initPageRecordInstances();
 
@@ -352,7 +365,7 @@ public class AnswerValue {
   }
 
   /**
-   * the checksum of the iq query, filter info is not included in it.
+   * the checksum of the iq query, plus the filter information on the answer.
    * 
    * @return
    */
@@ -393,9 +406,10 @@ public class AnswerValue {
 
   /**
    * print summary attributes, one per line Note: not sure why this is needed
+   * @throws WdkUserException 
    * 
    */
-  public String printAsSummary() throws WdkModelException {
+  public String printAsSummary() throws WdkModelException, WdkUserException {
     StringBuffer buf = new StringBuffer();
 
     initPageRecordInstances();
@@ -408,9 +422,10 @@ public class AnswerValue {
 
   /**
    * print summary attributes in tab delimited table with header of attr. names
+   * @throws WdkUserException 
    * 
    */
-  public String printAsTable() throws WdkModelException {
+  public String printAsTable() throws WdkModelException, WdkUserException {
     String newline = System.getProperty("line.separator");
     StringBuffer buf = new StringBuffer();
 
@@ -520,6 +535,7 @@ public class AnswerValue {
    * for this page.
    * 
    * The query is obtained from Column, and the query should not be modified.
+   * @throws WdkUserException 
    * 
    */
   public void integrateAttributesQuery(Query attributeQuery)
@@ -708,7 +724,7 @@ public class AnswerValue {
     logger.debug("Table query [" + tableQuery.getFullName() + "] integrated.");
   }
 
-  private String getPagedTableSql(Query tableQuery) throws WdkModelException {
+  private String getPagedTableSql(Query tableQuery) throws WdkModelException, WdkUserException {
     // get the paged SQL of id query
     String idSql = getPagedIdSql();
 
@@ -759,8 +775,14 @@ public class AnswerValue {
       Map<String, String> params = new LinkedHashMap<String, String>();
       String userId = Integer.toString(user.getUserId());
       params.put(Utilities.PARAM_USER_ID, userId);
-      QueryInstance queryInstance = attributeQuery.makeInstance(user, params,
-          true, 0, new LinkedHashMap<String, String>());
+      QueryInstance queryInstance;
+      try {
+        queryInstance = attributeQuery.makeInstance(user, params,
+            true, 0, new LinkedHashMap<String, String>());
+      }
+      catch (WdkUserException ex) {
+        throw new WdkModelException(ex);
+      }
       sql = queryInstance.getSql();
 
       // replace the id_sql macro
@@ -939,6 +961,7 @@ public class AnswerValue {
    * If not already initialized, initialize the page's record instances, setting
    * each with its id (either just primary key or that and project, if using a
    * federated data source).
+   * @throws WdkUserException 
    * 
    */
   private void initPageRecordInstances() throws WdkModelException {
@@ -1246,8 +1269,9 @@ public class AnswerValue {
    * either one of them.
    * 
    * @return
+   * @throws WdkUserException 
    */
-  public List<String[]> getAllIds() throws WdkModelException, SQLException {
+  public List<String[]> getAllIds() throws WdkModelException {
     String idSql = getSortedIdSql();
     PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
     String[] pkColumns = pkField.getColumnRefs();
@@ -1266,6 +1290,8 @@ public class AnswerValue {
         }
         pkValues.add(values);
       }
+    } catch(SQLException ex) {
+      throw new WdkModelException(ex);
     } finally {
       SqlUtils.closeResultSetAndStatement(resultSet);
     }

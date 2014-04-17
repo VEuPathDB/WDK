@@ -11,6 +11,7 @@ import junit.framework.Assert;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
@@ -35,7 +36,7 @@ public class TableQueryTest {
     }
 
     @Test
-    public void testTableQueries() throws WdkModelException {
+    public void testTableQueries() throws WdkModelException, WdkUserException {
         for (RecordClassSet recordClassSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
                 for (TableField table : recordClass.getTableFields()) {

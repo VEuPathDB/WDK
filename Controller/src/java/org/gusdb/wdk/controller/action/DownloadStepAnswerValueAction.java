@@ -16,6 +16,7 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -90,13 +91,18 @@ public class DownloadStepAnswerValueAction extends Action {
     }
     
     protected StepBean getStep( HttpServletRequest request )
-            throws Exception {
+            throws WdkUserException, WdkModelException {
         String stepIdstr = request.getParameter( "step_id" );
         if ( stepIdstr == null ) {
             stepIdstr = ( String ) request.getAttribute( "step_id" );
         }
         if ( stepIdstr != null ) {
-            int stepId = Integer.parseInt( stepIdstr );
+          int stepId;
+          try{
+            stepId = Integer.parseInt( stepIdstr );
+          } catch(NumberFormatException ex) {
+            throw new WdkUserException("The step id is invalid: " + stepIdstr);
+          }
             request.setAttribute( "step_id", stepId );
             request.setAttribute( "history_id", stepId );
 
@@ -120,7 +126,7 @@ public class DownloadStepAnswerValueAction extends Action {
             
             return step;
         } else {
-            throw new Exception(
+            throw new WdkUserException(
                     "no step id is given for which to download the result" );
         }
     }

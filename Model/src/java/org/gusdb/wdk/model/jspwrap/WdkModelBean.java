@@ -15,13 +15,8 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
-import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
-import org.gusdb.wdk.model.query.param.StringParam;
-import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -297,25 +292,11 @@ public class WdkModelBean implements ConnectionContainer {
         return new QuestionBean(wdkModel.getQuestion(questionFullName));
     }
 
-    public Map<String, ParamBean<?>> getParams() throws WdkModelException {
+    public Map<String, ParamBean<?>> getParams(UserBean user) throws WdkModelException {
         Map<String, ParamBean<?>> params = new LinkedHashMap<String, ParamBean<?>>();
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
-                ParamBean<?> bean;
-                if (param instanceof AbstractEnumParam) {
-                    bean = new EnumParamBean((AbstractEnumParam) param);
-                } else if (param instanceof AnswerParam) {
-                    bean = new AnswerParamBean((AnswerParam) param);
-                } else if (param instanceof DatasetParam) {
-                    bean = new DatasetParamBean((DatasetParam) param);
-                } else if (param instanceof TimestampParam) {
-                    bean = new TimestampParamBean((TimestampParam) param);
-                } else if (param instanceof StringParam) {
-                    bean = new StringParamBean((StringParam) param);
-                } else {
-                    throw new WdkModelException("Unknown param type:"
-                            + param.getClass().getName());
-                }
+                ParamBean<?> bean = ParamBeanFactory.createBeanFromParam(wdkModel, user, param);
                 params.put(param.getFullName(), bean);
             }
         }

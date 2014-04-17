@@ -251,7 +251,7 @@ public class SearchCategory extends WdkModelBase {
    */
   @Override
   public int hashCode() {
-    return this.name.toLowerCase().hashCode();
+    return (name != null) ? name.toLowerCase().hashCode() : 0;
   }
 
   public boolean isMultiCategory() {

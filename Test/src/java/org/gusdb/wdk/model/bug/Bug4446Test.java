@@ -11,6 +11,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -88,7 +89,7 @@ public class Bug4446Test {
         return user.combineStep(expression);
     }
 
-    private Step createTransformStep(Step inputStep) throws WdkModelException {
+    private Step createTransformStep(Step inputStep) throws WdkModelException, WdkUserException {
         // look for a transform question
         RecordClass recordClass = inputStep.getQuestion().getRecordClass();
         Question[] questions = recordClass.getTransformQuestions(true);

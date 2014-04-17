@@ -108,18 +108,24 @@
       <td class="strategy_description">
       <c:choose>
         <c:when test="${wdkUser.guest}">
-          <div class="unsaved" title="Click to save and add description" onclick="wdk.user.login();">${not empty strategy.description ? strategy.description : 'Click to save and add a description'}</div>
+          <c:choose>
+            <c:when test="${not empty strategy.description}">
+              <div class="full" title="Click to save and add description" onclick="wdk.history.showDescriptionDialog(this, ${not strategy.isSaved}, true);">${strategy.description}</div>
+            </c:when>
+            <c:otherwise>
+              <div class="empty" title="Click to save and add description" onclick="wdk.user.login();">Login to save and add a description</div>
+            </c:otherwise>
+          </c:choose>
         </c:when>
         <c:otherwise>
           <c:choose>
-            <c:when test="${!strategy.isSaved}">
-              <div class="unsaved" title="Click to save and add description" onclick="wdk.history.showUpdateDialog(this, true, true);">${not empty strategy.description ? strategy.description : 'Save to add a description'}</div>
-            </c:when>
             <c:when test="${empty strategy.description}">
-              <div class="empty" title="Click to add a description" onclick="wdk.history.showUpdateDialog(this, false, true);">Click to add a description</div>
+              <div class="empty" title="Click to add a description" onclick="wdk.history.showUpdateDialog(this, ${not strategy.isSaved}, true);">
+                ${strategy.isSaved ? 'Click to add a description' : 'Save to add a description'}
+              </div>
             </c:when>
             <c:otherwise>
-              <div class="full" title="Click to view entire description" onclick="wdk.history.showDescriptionDialog(this, false, true, true);"><c:out value="${strategy.description}"/></div>
+              <div class="full" title="Click to view entire description" onclick="wdk.history.showDescriptionDialog(this, ${not strategy.isSaved}, true);"><c:out value="${strategy.description}"/></div>
             </c:otherwise>
           </c:choose>
         </c:otherwise>

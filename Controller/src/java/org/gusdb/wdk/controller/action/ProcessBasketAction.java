@@ -6,6 +6,7 @@ package org.gusdb.wdk.controller.action;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -95,6 +96,9 @@ public class ProcessBasketAction extends Action {
         UserBean user = ActionUtility.getUser(servlet, request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         String action = request.getParameter(PARAM_ACTION);
+        if (action == null)
+          throw new WdkUserException("required action param is missing");
+        
         int numProcessed = 0;
         if (action.equalsIgnoreCase(ACTION_ADD)) {
             // need type & data params, where data is a JSON list of record ids
@@ -128,10 +132,20 @@ public class ProcessBasketAction extends Action {
         }
 
         // output the total count
-        int count = user.getBasketCount();
         JSONObject jsMessage = new JSONObject();
-        jsMessage.put("count", count);
-        jsMessage.put("countProcessed", numProcessed);
+
+        int count = user.getBasketCount();
+        jsMessage.put("all", count);
+        jsMessage.put("processed", numProcessed);
+
+        // output each record count
+        JSONObject jsRecordCounts = new JSONObject();
+        Map<RecordClassBean, Integer> counts = user.getBasketCounts();
+        for (RecordClassBean record : counts.keySet()) {
+          jsRecordCounts.put(record.getFullName(), counts.get(record));
+        }
+        jsMessage.put("records", jsRecordCounts);
+
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
 
@@ -145,9 +159,11 @@ public class ProcessBasketAction extends Action {
     }
 
     private RecordClassBean getRecordClass(HttpServletRequest request,
-            WdkModelBean wdkModel) throws WdkModelException {
+            WdkModelBean wdkModel) throws WdkModelException, WdkUserException {
         // get recordClass
         String type = request.getParameter(PARAM_TYPE);
+        if (type == null)
+          throw new WdkUserException("required type param is missing");
         return wdkModel.findRecordClass(type);
     }
 
@@ -167,8 +183,7 @@ public class ProcessBasketAction extends Action {
             RecordClassBean recordClass) throws JSONException, WdkUserException {
         String data = request.getParameter(PARAM_DATA);
         if (data == null)
-            throw new WdkUserException("the record ids list is invalid: '"
-                    + data + "'.");
+            throw new WdkUserException("the record ids list is missing.");
 
         String[] pkColumns = recordClass.getPrimaryKeyColumns();
         JSONArray array = new JSONArray(data);

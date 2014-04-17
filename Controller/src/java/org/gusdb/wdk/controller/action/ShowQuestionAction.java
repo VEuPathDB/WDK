@@ -19,41 +19,32 @@ import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
 import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
-import org.gusdb.wdk.model.jspwrap.DatasetBean;
-import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
-import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.query.param.RequestParams;
 
 /**
- * This Action is called by the ActionServlet when a WDK question is requested.
- * It 1) finds the full name from the form, 2) gets the question from the WDK
- * model 3) forwards control to a jsp page that displays a question form
+ * This Action is called by the ActionServlet when a WDK question is requested. It 1) finds the full name from
+ * the form, 2) gets the question from the WDK model 3) forwards control to a jsp page that displays a
+ * question form
  */
 
 public class ShowQuestionAction extends Action {
 
   private static final Logger logger = Logger.getLogger(ShowQuestionAction.class.getName());
 
-  public static final String LABELS_SUFFIX = "-labels";
-  public static final String TERMS_SUFFIX = "-values";
-
   public static final String PARAM_INPUT_STEP = "inputStep";
 
   private static final int MAX_PARAM_LABEL_LEN = 200;
 
-  private static final String DEFAULT_VIEW_FILE = CConstants.WDK_CUSTOM_VIEW_DIR
-      + File.separator
-      + CConstants.WDK_PAGES_DIR
-      + File.separator
-      + CConstants.WDK_QUESTION_PAGE;
+  private static final String DEFAULT_VIEW_FILE = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator +
+      CConstants.WDK_PAGES_DIR + File.separator + CConstants.WDK_QUESTION_PAGE;
 
   static String[] getLengthBoundedLabels(String[] labels) {
     return getLengthBoundedLabels(labels, MAX_PARAM_LABEL_LEN);
@@ -76,26 +67,24 @@ public class ShowQuestionAction extends Action {
     return newLabels;
   }
 
-  public static void checkCustomForm(ActionServlet servlet,
-      HttpServletRequest request, QuestionBean wdkQuestion) {
+  public static void checkCustomForm(ActionServlet servlet, HttpServletRequest request,
+      QuestionBean wdkQuestion) {
     ServletContext svltCtx = servlet.getServletContext();
 
-    String baseFilePath = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
-        + CConstants.WDK_PAGES_DIR + File.separator
-        + CConstants.WDK_QUESTIONS_DIR;
-    String customViewFile1 = baseFilePath + File.separator
-        + wdkQuestion.getFullName() + ".form.jsp";
-    String customViewFile2 = baseFilePath + File.separator
-        + wdkQuestion.getQuestionSetName() + ".form.jsp";
-    String customViewFile3 = baseFilePath + File.separator
-        + "question.form.jsp";
+    String baseFilePath = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator + CConstants.WDK_PAGES_DIR +
+        File.separator + CConstants.WDK_QUESTIONS_DIR;
+    String customViewFile1 = baseFilePath + File.separator + wdkQuestion.getFullName() + ".form.jsp";
+    String customViewFile2 = baseFilePath + File.separator + wdkQuestion.getQuestionSetName() + ".form.jsp";
+    String customViewFile3 = baseFilePath + File.separator + "question.form.jsp";
 
     String fileToInclude = null;
     if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
       fileToInclude = customViewFile1;
-    } else if (ApplicationInitListener.resourceExists(customViewFile2, svltCtx)) {
+    }
+    else if (ApplicationInitListener.resourceExists(customViewFile2, svltCtx)) {
       fileToInclude = customViewFile2;
-    } else if (ApplicationInitListener.resourceExists(customViewFile3, svltCtx)) {
+    }
+    else if (ApplicationInitListener.resourceExists(customViewFile3, svltCtx)) {
       fileToInclude = customViewFile3;
     }
 
@@ -104,9 +93,8 @@ public class ShowQuestionAction extends Action {
 
   }
 
-  public static void prepareQuestionForm(QuestionBean wdkQuestion,
-      ActionServlet servlet, HttpServletRequest request, QuestionForm qForm)
-      throws WdkUserException, WdkModelException {
+  public static void prepareQuestionForm(QuestionBean wdkQuestion, ActionServlet servlet,
+      HttpServletRequest request, QuestionForm qForm) throws WdkUserException, WdkModelException {
     logger.trace("Entering prepareQustionForm()");
 
     // get the current user
@@ -119,100 +107,28 @@ public class ShowQuestionAction extends Action {
     boolean hasAllParams = true;
     ParamBean<?>[] params = wdkQuestion.getParams();
 
-    // fetch the previous values
-    Map<String, String> originalValues = getParamMapFromForm(user, params,
-        qForm, request);
-    // prepare the context values
-    Map<String, String> contextValues = new LinkedHashMap<>(originalValues);
-    wdkQuestion.fillContextParamValues(user, contextValues);
+    // get existing stable values
+    RequestParams requestParams = new QuestionRequestParams(request, qForm);
+    Map<String, String> stableValues = new LinkedHashMap<>();
+    for (ParamBean<?> param : params) {
+      param.setUser(user);
+      String stableValue = requestParams.getParam(param.getName());
+      if (stableValue != null) {
+        stableValues.put(param.getName(), stableValue);
+      } else
+        hasAllParams = false;
+    }
+
+    wdkQuestion.fillContextParamValues(user, stableValues);
 
     // get invalid params
     request.setAttribute("invalidParams", qForm.getInvalidParams());
 
-    // process each param
+    // prepare the display for each param
     for (ParamBean<?> param : params) {
-      String paramName = param.getName();
-      String paramValue = contextValues.get(paramName);
-
-      logger.debug("  Processing param " + paramName + "...");
-      // handle the additional information
-      if (param instanceof EnumParamBean) {
-        EnumParamBean enumParam = (EnumParamBean) param;
-        enumParam.setDependedValues(contextValues);
-
-        String[] terms = enumParam.getVocab();
-        String[] labels = getLengthBoundedLabels(enumParam.getDisplays());
-        qForm.setArray(paramName + LABELS_SUFFIX, labels);
-        qForm.setArray(paramName + TERMS_SUFFIX, terms);
-
-        // set current values to the form and the param itself.
-        if (paramValue != null) {
-          String[] values = paramValue.split(",");
-          qForm.setArray(paramName, values);
-          enumParam.setCurrentValues(values);
-        }
-
-        // set the original values to the param. The original values will be
-        // used to render invalid value warning on the page, if the values is
-        // invalid.
-        if (originalValues.containsKey(paramName)) {
-          String originalValue = originalValues.get(paramName);
-          originalValue = param.dependentValueToRawValue(user, originalValue);
-          String[] values = originalValue.split(",");
-          qForm.setArray(paramName, values);
-          enumParam.setOriginalValues(values);
-        }
-      } else if (param instanceof AnswerParamBean) {
-        if (paramValue == null) {
-          String stepId = (String) request.getAttribute(PARAM_INPUT_STEP);
-          if (stepId == null)
-            stepId = request.getParameter(PARAM_INPUT_STEP);
-          if (stepId == null) {
-            String strategyKey = request.getParameter("strategy");
-            if (strategyKey != null) {
-              int pos = strategyKey.indexOf("_");
-              if (pos < 0) {
-                int strategyId = Integer.parseInt(strategyKey);
-                StrategyBean strategy = user.getStrategy(strategyId);
-                stepId = Integer.toString(strategy.getLatestStepId());
-              } else {
-                stepId = strategyKey.substring(pos + 1);
-              }
-            }
-          }
-
-          // if no step is assigned, use the first step
-          paramValue = stepId;
-        }
-      } else if (param instanceof DatasetParamBean) {
-        DatasetParamBean datasetParam = (DatasetParamBean) param;
-
-        // check if the param value is assigned
-        if (paramValue != null) {
-          datasetParam.setDependentValue(paramValue);
-          DatasetBean dataset = datasetParam.getDataset();
-          request.setAttribute(paramName + "_dataset", dataset);
-        } else {
-          String defaultValue = param.getDefault();
-          if (defaultValue != null)
-            paramValue = defaultValue;
-        }
-      } else {
-        paramValue = param.dependentValueToRawValue(user, paramValue);
-        if (paramValue == null) {
-          String defaultValue = param.getDefault();
-          if (defaultValue != null)
-            paramValue = defaultValue;
-        } else {
-          paramValue = param.dependentValueToRawValue(user, paramValue);
-        }
-      }
-      if (paramValue == null) {
-        hasAllParams = false;
-      } else {
-        qForm.setValue(paramName, paramValue);
-      }
-      logger.debug("param: " + paramName + "='" + paramValue + "'");
+      param.setContextValues(stableValues);
+      param.setStableValue(stableValues.get(param.getName()));
+      param.prepareDisplay(user, requestParams, stableValues);
     }
 
     qForm.setQuestion(wdkQuestion);
@@ -224,32 +140,13 @@ public class ShowQuestionAction extends Action {
 
     request.setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
     request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
-    request.setAttribute("params", contextValues);
+    request.setAttribute("params", stableValues);
     logger.trace("Leaving prepareQustionForm()");
   }
 
-  private static Map<String, String> getParamMapFromForm(UserBean user,
-      ParamBean<?>[] params, QuestionForm qForm, HttpServletRequest request) {
-    Map<String, String> paramValues = new LinkedHashMap<String, String>();
-    for (ParamBean<?> param : params) {
-      param.setUser(user);
-      String paramName = param.getName();
-      String paramValue = (String) qForm.getValue(paramName);
-
-      if (paramValue == null || paramValue.length() == 0)
-        paramValue = Utilities.fromArray(request.getParameterValues(paramName));
-      if (paramValue != null && paramValue.length() == 0)
-        paramValue = null;
-      if (paramValue != null)
-        paramValues.put(paramName, paramValue);
-    }
-    return paramValues;
-  }
-
   @Override
-  public ActionForward execute(ActionMapping mapping, ActionForm form,
-      HttpServletRequest request, HttpServletResponse response)
-      throws Exception {
+  public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+      HttpServletResponse response) throws Exception {
     logger.debug("Entering ShowQuestionAction..");
 
     ActionServlet servlet = getServlet();
@@ -264,26 +161,21 @@ public class ShowQuestionAction extends Action {
     return determineView(servlet, request, wdkQuestion, qForm, mapping);
   }
 
-  private QuestionBean getQuestionBean(ActionServlet servlet, String qFullName)
-      throws WdkUserException, WdkModelException {
-    QuestionBean questionBean = ActionUtility.getWdkModel(servlet).getQuestion(
-        qFullName);
+  private QuestionBean getQuestionBean(ActionServlet servlet, String qFullName) throws WdkUserException,
+      WdkModelException {
+    QuestionBean questionBean = ActionUtility.getWdkModel(servlet).getQuestion(qFullName);
     if (questionBean == null)
-      throw new WdkUserException("The question '" + qFullName
-          + "' doesn't exist.");
+      throw new WdkUserException("The question '" + qFullName + "' doesn't exist.");
     return questionBean;
   }
 
-  private static ActionForward determineView(ActionServlet servlet,
-      HttpServletRequest request, QuestionBean wdkQuestion, QuestionForm qForm,
-      ActionMapping mapping) {
+  private static ActionForward determineView(ActionServlet servlet, HttpServletRequest request,
+      QuestionBean wdkQuestion, QuestionForm qForm, ActionMapping mapping) {
     checkCustomForm(servlet, request, wdkQuestion);
     ActionForward forward = new ActionForward(DEFAULT_VIEW_FILE);
-    if (qForm.getParamsFilled()
-        && "1".equals(request.getParameter(CConstants.GOTO_SUMMARY_PARAM))) {
+    if (qForm.getParamsFilled() && "1".equals(request.getParameter(CConstants.GOTO_SUMMARY_PARAM))) {
       forward = mapping.findForward(CConstants.SKIPTO_SUMMARY_MAPKEY);
-      logger.debug("SQA: form has all param vals, going to summary page "
-          + forward.getPath() + " directly");
+      logger.debug("SQA: form has all param vals, going to summary page " + forward.getPath() + " directly");
     }
     logger.info("ShowQuestionAction will go to: " + forward);
     return forward;

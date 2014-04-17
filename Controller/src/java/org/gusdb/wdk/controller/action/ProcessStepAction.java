@@ -1,7 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.Map;
@@ -157,7 +155,7 @@ public class ProcessStepAction extends Action {
       QuestionForm form, WdkModelBean wdkModel, UserBean user,
       StrategyBean strategy, StepBean step, String customName)
       throws NumberFormatException, WdkUserException, WdkModelException,
-      SQLException, FileNotFoundException, IOException {
+      SQLException {
     logger.debug("Revising step...");
 
     // current step has to exist for revise
@@ -200,6 +198,9 @@ public class ProcessStepAction extends Action {
       newStep = step.createStep(filterName, weight);
     }
 
+    // must copy all analysis instance configurations from old step to new step
+    wdkModel.getModel().getStepAnalysisFactory().moveAnalysisInstances(step.getStep(), newStep.getStep());
+    
     // set custom name to the new step
     if (customName != null) {
       newStep.setCustomName(customName);
@@ -216,7 +217,7 @@ public class ProcessStepAction extends Action {
       QuestionForm form, WdkModelBean wdkModel, UserBean user,
       StrategyBean strategy, StepBean step, String customName)
       throws WdkUserException, WdkModelException,
-      SQLException, FileNotFoundException, IOException {
+      SQLException {
     logger.debug("Inserting step...");
 
     // current step has to exist for insert
@@ -277,8 +278,7 @@ public class ProcessStepAction extends Action {
   private Map<Integer, Integer> addStep(HttpServletRequest request,
       QuestionForm form, WdkModelBean wdkModel, UserBean user,
       StrategyBean strategy, String customName) throws WdkUserException,
-      NumberFormatException, WdkModelException,
-      SQLException, FileNotFoundException, IOException {
+      NumberFormatException, WdkModelException, SQLException {
     logger.debug("Adding step...");
 
     // get root step

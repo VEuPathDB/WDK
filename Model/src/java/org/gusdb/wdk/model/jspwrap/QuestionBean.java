@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
@@ -54,7 +55,7 @@ public class QuestionBean {
     _paramBeanMap = new LinkedHashMap<String, ParamBean<?>>();
     for (int i = 0; i < params.length; i++) {
       _paramBeanMap.put(params[i].getName(),
-          ParamBeanFactory.createBeanFromParam(user, params[i]));
+          ParamBeanFactory.createBeanFromParam(question.getWdkModel(), user, params[i]));
     }
   }
 
@@ -235,11 +236,12 @@ public class QuestionBean {
    *          Index of the first record to include in the answer
    * @param end
    *          Index of the last record to include in the answer
+   * @throws WdkUserException 
    */
   public AnswerValueBean makeAnswerValue(UserBean user,
       Map<String, String> paramValues, int pageStart, int pageEnd,
       Map<String, Boolean> sortingMap, String filterName, boolean validate,
-      int assignedWeight) throws WdkModelException {
+      int assignedWeight) throws WdkModelException, WdkUserException {
     AnswerFilterInstance filter = null;
     if (filterName != null) {
       RecordClass recordClass = question.getRecordClass();
@@ -279,11 +281,12 @@ public class QuestionBean {
    * 
    * @param paramErrors
    * @return
+   * @throws WdkUserException 
    * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
    */
   public AnswerValueBean makeAnswerValue(UserBean user,
       Map<String, String> paramValues, boolean validate, int assignedWeight)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     return new AnswerValueBean(question.makeAnswerValue(user.getUser(),
         paramValues, validate, assignedWeight));
   }
@@ -391,6 +394,14 @@ public class QuestionBean {
     return question.getDefaultSummaryView();
   }
 
+  /**
+   * @return
+   * @see org.gusdb.wdk.model.Question#getStepAnalyses()
+   */
+  public Map<String, StepAnalysis> getStepAnalyses() {
+    return question.getStepAnalyses();
+  }
+  
   public boolean getContainsWildcardTextParam() {
     for (ParamBean<?> param : _paramBeanMap.values()) {
       if (param.getName().equals("text_expression")) {
@@ -426,7 +437,8 @@ public class QuestionBean {
 
   private List<CategoryBean> getCategories(String usedBy, boolean strict) {
     List<CategoryBean> beans = new ArrayList<>();
-    Map<String, SearchCategory> categories = question.getCategories(usedBy, strict);
+    Map<String, SearchCategory> categories = question.getCategories(usedBy,
+        strict);
     for (SearchCategory category : categories.values()) {
       beans.add(new CategoryBean(category));
     }
@@ -434,7 +446,7 @@ public class QuestionBean {
   }
 
   public void fillContextParamValues(UserBean user,
-      Map<String, String> contextParamValues) throws WdkModelException {
+      Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
     question.getQuery().fillContextParamValues(user.getUser(),
         contextParamValues);
   }

@@ -3,8 +3,11 @@
  */
 package org.gusdb.wdk.model.record.attribute;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -262,5 +265,24 @@ public abstract class AttributeField extends Field {
       traverseDependeny(dependent, path);
     }
     path.pop();
+  }
+  
+  @Override
+  protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
+    super.printDependencyContent(writer, indent);
+    
+    List<AttributeField> depends = new ArrayList<>(getDependents());
+    Collections.sort(depends, new Comparator<AttributeField>() {
+
+      @Override
+      public int compare(AttributeField attribute1, AttributeField attribute2) {
+        return attribute1.getName().compareToIgnoreCase(attribute2.getName());
+      }});
+    writer.println(indent + "<dependOn count=\"" + depends.size() + "\">");
+    String indent1 = indent + WdkModel.INDENT;
+    for (AttributeField depend : depends) {
+      depend.printDependency(writer, indent1);
+    }
+    writer.println(indent + "</dependOn>");
   }
 }

@@ -65,7 +65,7 @@ public class ProcessBooleanExpressionAction extends Action {
         boolean useBooleanFilter = beForm.isUseBooleanFilter();
 
         StepBean step = wdkUser.combineStep(expression, useBooleanFilter);
-        StrategyBean strategy = wdkUser.createStrategy(step, false);
+        StrategyBean strategy = wdkUser.createStrategy(step, false, false);
   
         logger.info("Boolean Expression: " + expression);
         logger.info("Use Boolean Filter: " + useBooleanFilter);

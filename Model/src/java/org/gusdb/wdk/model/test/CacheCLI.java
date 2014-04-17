@@ -25,13 +25,15 @@ public class CacheCLI extends BaseCLI {
     private static final String ARG_NO_SCHEMA = "noSchemaOutput";
     private static final String ARG_SHOW = "show";
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         String cmdName = System.getProperty("cmdName");
         CacheCLI cacher = new CacheCLI(cmdName);
         try {
-            cacher.invoke(args);
-        } finally {
-            System.exit(0);
+          cacher.invoke(args);
+          System.exit(0);
+        } catch (Exception ex) {
+          ex.printStackTrace();
+          System.exit(1);
         }
     }
 

@@ -73,4 +73,9 @@ public class QueryInfo {
     public void setExist(boolean exist) {
       this.exist = exist;
     }
+
+    @Override
+    public String toString() {
+      return "query=" + queryName + ", id=" + queryId + ", exist=" + exist + ", checksum=" + queryChecksum;
+    }
 }

@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -15,10 +16,13 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
 import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.RequestParams;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -29,20 +33,18 @@ public class GetVocabAction extends Action {
   /*
    * (non-Javadoc)
    * 
-   * @seeorg.apache.struts.action.Action#execute(org.apache.struts.action.
-   * ActionMapping, org.apache.struts.action.ActionForm,
-   * javax.servlet.http.HttpServletRequest,
+   * @seeorg.apache.struts.action.Action#execute(org.apache.struts.action. ActionMapping,
+   * org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest,
    * javax.servlet.http.HttpServletResponse)
    */
   @Override
-  public ActionForward execute(ActionMapping mapping, ActionForm form,
-      HttpServletRequest request, HttpServletResponse response)
-      throws Exception {
+  public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+      HttpServletResponse response) throws Exception {
     logger.trace("Entering GetVocabAction...");
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
     try {
       String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-      ActionUtility.getWdkModel(servlet).validateQuestionFullName(qFullName);
+      wdkModel.validateQuestionFullName(qFullName);
       String paramName = request.getParameter("name");
 
       // the dependent values are a JSON representation of {name: [values],
@@ -67,39 +69,42 @@ public class GetVocabAction extends Action {
         }
       }
 
+      boolean getJson = Boolean.valueOf(request.getParameter("json"));
       boolean getXml = Boolean.valueOf(request.getParameter("xml"));
       QuestionBean wdkQuestion = wdkModel.getQuestion(qFullName);
-      EnumParamBean param = (EnumParamBean) wdkQuestion.getParamsMap().get(
-          paramName);
+      EnumParamBean param = (EnumParamBean) wdkQuestion.getParamsMap().get(paramName);
 
       param.setDependedValues(dependedValues);
 
-      // set the labels
-      String[] terms = param.getVocab();
-      String[] labels = ShowQuestionAction.getLengthBoundedLabels(param.getDisplays());
+      UserBean user = ActionUtility.getUser(servlet, request);
       QuestionForm qForm = (QuestionForm) form;
-      qForm.setArray(paramName + ShowQuestionAction.LABELS_SUFFIX, labels);
-      qForm.setArray(paramName + ShowQuestionAction.TERMS_SUFFIX, terms);
-
-      String paramValue = param.getDefault();
-      if (paramValue != null) {
-        qForm.setArray(paramName, paramValue.split(","));
-      }
-
+      RequestParams requestParams = new QuestionRequestParams(request, qForm);
+      param.prepareDisplay(user, requestParams, dependedValues);
       request.setAttribute("vocabParam", param);
 
-      String xmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator
-          + CConstants.WDK_PAGES_DIR + File.separator + "vocabXml.jsp";
+      if (getJson) {    // output json string directly
+        response.setContentType("application/json");
+        PrintWriter writer = response.getWriter();
+        JSONObject jsValues = param.getJsonValues();
+        writer.print(jsValues.toString());
+        writer.flush();
+        writer.close();
+        return null;
+      }
+      else {    // output xml or html.
+        String xmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator + CConstants.WDK_PAGES_DIR +
+            File.separator + "vocabXml.jsp";
 
-      String htmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator
-          + CConstants.WDK_PAGES_DIR + File.separator + "vocabHtml.jsp";
+        String htmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator + CConstants.WDK_PAGES_DIR +
+            File.separator + "vocabHtml.jsp";
 
-      ActionForward forward = new ActionForward(getXml ? xmlVocabFile
-          : htmlVocabFile);
+        ActionForward forward = new ActionForward(getXml ? xmlVocabFile : htmlVocabFile);
 
-      logger.trace("Leaving GetVocabAction...");
-      return forward;
-    } catch (Exception ex) {
+        logger.trace("Leaving GetVocabAction...");
+        return forward;
+      }
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       throw ex;
     }

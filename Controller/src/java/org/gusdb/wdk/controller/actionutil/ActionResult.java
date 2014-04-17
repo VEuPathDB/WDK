@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Contains all the information needed to process the result of an Action.  This
  * includes whether the result is an html page, stream, or other type of data,
@@ -20,7 +22,7 @@ public class ActionResult implements Iterable<String> {
    * 
    * @author rdoherty
    */
-  public enum ResultType {
+  public static enum ResultType {
     /** Look up and use the name of an action in the MVC container */
     VIEW_NAME,
     /** Use an explicit path to a JSP */
@@ -47,6 +49,7 @@ public class ActionResult implements Iterable<String> {
   private boolean _isRedirect = false;
   private String _fileName = "";
   private InputStream _stream;
+  private int _httpResponseStatus = HttpServletResponse.SC_OK;
 
   private Map<String, Object> _requestAttributes = new HashMap<>();
 
@@ -258,5 +261,14 @@ public class ActionResult implements Iterable<String> {
 
       @Override public Iterator<String> iterator() { throw DISALLOWED; }
     };
+  }
+
+  public int getHttpResponseStatus() {
+    return _httpResponseStatus;
+  }
+
+  public ActionResult setHttpResponseStatus(int httpResponseStatus) {
+    _httpResponseStatus = httpResponseStatus;
+    return this;
   }
 }

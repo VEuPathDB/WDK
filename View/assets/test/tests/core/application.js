@@ -51,7 +51,8 @@ describe('wdk.core.application', function() {
         app.registerView('my-view', MyView);
       });
 
-      it('should use default view when unmatched', function(done) {
+      // not sure we should provide this -- seems like an anti-pattern
+      xit('should use default view when unmatched', function(done) {
         var app = TestApp.create();
         var DefaultView = BaseObject.extend({
           type: 'view',

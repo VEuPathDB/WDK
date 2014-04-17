@@ -422,7 +422,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     }
 
     protected StepBean updateTransform(UserBean wdkUser, StepBean step,
-            int newStepId, int assignedWeight) throws WdkModelException {
+            int newStepId, int assignedWeight) throws WdkModelException, WdkUserException {
         // Get question
         QuestionBean wdkQuestion = step.getQuestion();
         // Get internal params

@@ -10,6 +10,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
@@ -44,15 +45,6 @@ public class Utilities {
   private static final Logger logger = Logger.getLogger(Utilities.class);
 
   public static final int TRUNCATE_DEFAULT = 100;
-
-  /**
-   * param values with is prefix means the result of that value is a checksum
-   * for the real value. if the param is a datasetParam, then the checksum is an
-   * index to a dataset obejct; if the param is of other types, then the value
-   * of the param can be found in the clob values table by the checksum
-   */
-  public static final String PARAM_COMPRESSE_PREFIX = "[C]";
-  public static final String DATASET_PARAM_KEY_PREFIX = "[K]";
 
   /**
    * The maximum size for parameter values that will be displayed in thr URL as
@@ -113,8 +105,13 @@ public class Utilities {
   public static final String QUERY_CTX_QUERY = "wdk-query";
   public static final String QUERY_CTX_USER = "wdk-user";
 
-  private static final String ALGORITHM = "MD5";
+  public static final String RECORD_DIVIDER = "\n";
+  public static final String COLUMN_DIVIDER = ",";
+  
+  public static final String MODEL_KEY = "wdkModel";
 
+  private static final String ALGORITHM = "MD5";
+  
   /*
    * Inner class to act as a JAF DataSource to send HTML e-mail content
    */
@@ -164,10 +161,7 @@ public class Utilities {
     byte[] byteBuffer = getEncryptedBytes(data.toString());
     if (shortDigest) {
       // just take the first 8 bytes from MD5 hash
-      int size = Math.min(byteBuffer.length, 8);
-      byte[] newBuffer = new byte[size];
-      System.arraycopy(byteBuffer, 0, newBuffer, 0, newBuffer.length);
-      byteBuffer = newBuffer;
+      byteBuffer = Arrays.copyOf(byteBuffer, Math.min(byteBuffer.length, 8));
     }
     // convert each byte into hex format
     StringBuffer buffer = new StringBuffer();

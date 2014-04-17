@@ -40,19 +40,25 @@ public abstract class MapActionForm extends ActionForm {
         arrays.put(key, values.toArray(new String[0]));
     }
 
-    public Object getValueOrArray(String key) {
-        // in the case some params set value into array, we need to get it from
-        // array too.
-        Object value = values.get(key);
-        logger.trace("key=" + key + ", value=" + value + ", isNull="
-                + (value == null));
-        if (value == null) {
-            String[] array = arrays.get(key);
-            value = Utilities.fromArray(array);
-            logger.trace("array_value=" + value + ", isNull=" + (value == null));
+  public Object getValueOrArray(String key) {
+    // in the case some params set value into array, we need to get it from array too.
+    Object value = values.get(key);
+    logger.trace("key=" + key + ", value=" + value + ", isNull=" + (value == null));
+    if (value == null) {
+      String[] array = arrays.get(key);
+      if (array != null) {
+        StringBuilder buffer = new StringBuilder();
+        for (String val : array) {
+          if (buffer.length() > 0)
+            buffer.append(",");
+          buffer.append(val);
         }
-        return value;
+        value = buffer.toString();
+      }
+      logger.trace("array_value=" + value + ", isNull=" + (value == null));
     }
+    return value;
+  }
 
     public void copyFrom(MapActionForm form) {
         values.clear();

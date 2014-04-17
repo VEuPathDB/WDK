@@ -5,14 +5,12 @@ wdk.namespace('wdk.models.filter', function(ns) {
    * Provides filter methods based on type (string or number).
    */
   var Filter = Backbone.Model.extend({
-    template: _.template('<%= field %> is <%= condition %>'),
+    description: function() {
+      return this.attributes.field + ' is ' + _.result(this, 'condition');
+    },
 
-    toString: function() {
-      return this.template({
-        field: this.attributes.field.slice(0,1).toUpperCase() +
-          this.attributes.field.slice(1),
-        condition: _.result(this, 'condition')
-      });
+    condition: function() {
+      throw new Error('Filter.condition must be overridden by inheriting objects.');
     }
   });
 
@@ -21,12 +19,13 @@ wdk.namespace('wdk.models.filter', function(ns) {
    */
   var MemberFilter = Filter.extend({
     condition: function() {
-      var condition = this.attributes.values.slice(0,-1).join(', ');
-      if (this.attributes.values.length > 1) {
-        condition = 'either ' + condition + ' or ' +
-          this.attributes.values.slice(-1);
+      var values = this.get('values');
+
+      if (values.length <= 2) {
+        return values.join(' or ');
+      } else {
+        return values.slice(0, -1).join(', ') + ' or ' + values[values.length - 1];
       }
-      return condition;
     }
   });
 
@@ -48,8 +47,22 @@ wdk.namespace('wdk.models.filter', function(ns) {
     }
   });
 
+  var Filters = Backbone.Collection.extend({
+    model: function(attrs, options) {
+      if (attrs.operation === 'membership') {
+        return new MemberFilter(attrs, options);
+      } else if (attrs.operation === 'range') {
+        return new RangeFilter(attrs, options);
+      } else {
+        throw new TypeError('Unkown operation: "' + attrs.operation + '". ' +
+          'Supported operations are "membership" and "range"');
+      }
+    }
+  });
+
   ns.Filter = Filter;
   ns.MemberFilter = MemberFilter;
   ns.RangeFilter = RangeFilter;
+  ns.Filters = Filters;
 
 });
