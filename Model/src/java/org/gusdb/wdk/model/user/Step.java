@@ -456,24 +456,32 @@ public class Step {
     if (!valid)
       return false;
     Step prevStep = getPreviousStep();
-    if (prevStep != null) {
-      if (!prevStep.isValid())
-        return false;
+    if (prevStep != null && !prevStep.isValid()) {
+      setValid(false, true);
+      return false;
     }
     Step childStep = getChildStep();
-    if (childStep != null) {
-      if (!childStep.isValid())
-        return false;
+    if (childStep != null && !childStep.isValid()) {
+      setValid(false, true);
+      return false;
     }
     return true;
   }
 
   /**
-   * @param isValid
-   *          the isValid to set
+   * @param isValid the isValid to set
+   * @param updateDb whether to update the DB with this new value; will only
+   *    update if the valid param value is different then the current value
+   * @throws WdkModelException if unable to update DB
    */
-  public void setValid(boolean valid) {
+  public void setValid(boolean valid, boolean updateDb) throws WdkModelException {
+    boolean changed = (this.valid != valid);
     this.valid = valid;
+    
+    // if changed and update flag set to true, update value in DB
+    if (updateDb && changed) {
+      update(false);
+    }
   }
 
   public Map<String, String> getParamNames() throws WdkModelException {
