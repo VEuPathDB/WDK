@@ -239,11 +239,11 @@ public class StepBean {
     }
 
     /**
-     * @param isValid
-     *            the isValid to set
+     * @param isValid the isValid to set
+     * @throws WdkModelException 
      */
-    public void setIsValid(boolean isValid) {
-        step.setValid(isValid);
+    public void setIsValid(boolean isValid) throws WdkModelException {
+        step.setValid(isValid, true);
     }
 
     public void setParams(Map<String, String> params) throws WdkModelException {
