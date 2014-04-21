@@ -119,7 +119,7 @@ public class InvalidStepReporter extends BaseCLI {
     String steps = userDB.getUserSchema() + "steps";
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
-    String sql = "SELECT count(*) count, s.project_id, s.question_name"
+    String sql = "SELECT count(distinct s.step_id) count, s.project_id, s.question_name"
         + " FROM " + steps + " s,"
         + "  (SELECT project_id, question_name FROM " + steps
         + "   MINUS      "
@@ -153,7 +153,7 @@ public class InvalidStepReporter extends BaseCLI {
     String steps = userDB.getUserSchema() + "steps";
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
-    String sql = "SELECT count(*) count, s.project_id, s.question_name, "
+    String sql = "SELECT count(distinct s.step_id) count, s.project_id, s.question_name, "
         + "      sp.param_name       "
         + "FROM step_params sp, wdk_questions wq, " + steps + " s, "
         + "     ( SELECT s.project_id, s.question_name, sp.param_name "
@@ -200,7 +200,7 @@ public class InvalidStepReporter extends BaseCLI {
     String steps = userDB.getUserSchema() + "steps";
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
-    String sql = "SELECT count(*) count, s.project_id, s.question_name, "
+    String sql = "SELECT count(distinct s.step_id) count, s.project_id, s.question_name, "
         + "      sp.param_name, d.param_value              "
         + "FROM step_params sp, wdk_questions wq, wdk_params wp, "
         + steps
