@@ -102,7 +102,7 @@ public class InvalidStepReporter extends BaseCLI {
     if (include.equals(VALUE_INVALID)) {
       condition = " AND s.is_valid = 0 ";
     } else if (include.equals(VALUE_VALID)) {
-      condition = " AND s.is_valid = 1 ";
+      condition = " AND (s.is_valid = 1 OR s.is_valid IS NULL)";
     } else {
       condition = "";
     }
