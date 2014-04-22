@@ -21,12 +21,15 @@
   right: 1em;
   top: 5px;
 }
-.filter-items li {
-  margin-bottom: .5em;
-  margin-left: 2px;
+.filter-param .collapse-wrapper {
+  text-align: center;
+  position: relative;
+  top: 1.5em;
+  z-index: 1;
 }
 .filter-param .expanded .ui-tabs-panel {
   padding: 0;
+  box-shadow: 1px 1px #DDD;
 }
 .range-filter .table tr {
   display: inline-block;
@@ -284,7 +287,8 @@
 }
 .filter-items li {
   display: inline-block;
-  margin-right: .5em;
+  margin-left: .2em;
+  margin-right: .2em;
 }
 .filter-items li > div {
   padding: 2px 4px;

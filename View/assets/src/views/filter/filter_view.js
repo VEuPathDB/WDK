@@ -10,7 +10,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
   ns.FilterView = wdk.views.View.extend({
 
     events: {
-      'click a[href="#collapse"]': function(e) {
+      'click [data-action="collapse"]': function(e) {
         e.preventDefault();
         this.collapse(true);
       },
