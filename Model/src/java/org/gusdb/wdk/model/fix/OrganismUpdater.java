@@ -134,6 +134,7 @@ public class OrganismUpdater {
       if (count % 100 != 0)
         psUpdate.executeBatch();
       stepLogger.finish();
+logger.info("THE END:   " + count + " steps modified\n\n");
     }
     catch (SQLException ex) {
       logger.error(ex);
