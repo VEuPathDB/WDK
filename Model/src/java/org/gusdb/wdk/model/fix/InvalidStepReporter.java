@@ -126,7 +126,7 @@ public class InvalidStepReporter extends BaseCLI {
         + "   MINUS      "
         + "   SELECT project_id, question_name FROM wdk_questions) d"
         + " WHERE s.project_id = d.project_id"
-				+ " AND s.user_d = u.user_id "
+				+ " AND s.user_id = u.user_id "
 				+ " AND u.is_guest = 0 "
         + " AND s.question_name = d.question_name " + flag
         + " GROUP BY s.project_id, s.question_name"
@@ -168,7 +168,7 @@ public class InvalidStepReporter extends BaseCLI {
         + "       FROM wdk_questions q, wdk_params p "
         + "       WHERE q.question_id = p.question_id) d     "
         + "WHERE s.project_id = d.project_id  "
-				+ " AND s.user_d = u.user_id "
+				+ " AND s.user_id = u.user_id "
 				+ " AND u.is_guest = 0 "
         + "      AND s.question_name = d.question_name " + flag
         + "      AND sp.step_id = s.step_id  "
@@ -235,7 +235,7 @@ public class InvalidStepReporter extends BaseCLI {
         + "        WHERE q.question_id = p.question_id  "
         + "          AND p.param_id = ep.param_id) d  "
         + "WHERE s.project_id = d.project_id  "
-				+ " AND s.user_d = u.user_id "
+				+ " AND s.user_id = u.user_id "
 				+ " AND u.is_guest = 0 "
         + "  AND s.question_name = d.question_name  "
         + "  AND sp.step_id = s.step_id  "
