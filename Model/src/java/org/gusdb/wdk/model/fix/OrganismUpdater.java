@@ -123,8 +123,6 @@ public class OrganismUpdater {
 
         if (changeParams(jsParams, clobKeys)) {
           content = jsParams.toString();
-          logger.info("we need to update params: --" + content + "-- in step_id:" + stepId + "\n");
-
           platform.setClobData(psUpdate, 1, content, false);
           psUpdate.setInt(2, stepId);
           psUpdate.addBatch();
