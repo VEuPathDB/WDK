@@ -8,11 +8,13 @@ DROP SEQUENCE wdkuser.migration_pkseq;
 DROP SEQUENCE wdkuser.steps_pkseq;
 DROP SEQUENCE wdkuser.strategies_pkseq;
 DROP SEQUENCE wdkuser.users_pkseq;
+DROP SEQUENCE wdkuser.step_analysis_pkseq;
 
 DROP TABLE wdkuser.categories;
 DROP TABLE wdkuser.favorites;
 DROP TABLE wdkuser.user_baskets;
 DROP TABLE wdkuser.strategies;
+DROP TABLE wdkuser.step_analysis;
 DROP TABLE wdkuser.steps;
 DROP TABLE wdkuser.dataset_values;
 DROP TABLE wdkuser.datasets;
@@ -51,6 +53,9 @@ CREATE SEQUENCE wdkuser.favorites_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkuser.categories_pkseq INCREMENT BY 1 START WITH 1;
+
+
+CREATE SEQUENCE wdkuser.step_analysis_pkseq INCREMENT BY 1 START WITH 1;
 
 
 
@@ -310,3 +315,21 @@ CREATE TABLE wdkuser.categories
   CONSTRAINT "categories_fk01" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
 );
+
+
+CREATE TABLE wdkuser.step_analysis
+(
+  analysis_id          NUMBER(12) NOT NULL,
+  step_id              NUMBER(12) NOT NULL,
+  display_name         VARCHAR(1024),
+  is_new               NUMBER(1),
+  has_params           NUMBER(1),
+  invalid_step_reason  VARCHAR(1024),
+  context_hash         VARCHAR(96),
+  context              CLOB,
+  CONSTRAINT "step_analysis_pk" PRIMARY KEY (analysis_id),
+  CONSTRAINT "step_analysis_fk01" FOREIGN KEY (step_id)
+      REFERENCES wdkuser.steps (step_id)
+);
+
+CREATE INDEX wdkuser.step_analysis_idx01 ON wdkuser.step_analysis (step_id);

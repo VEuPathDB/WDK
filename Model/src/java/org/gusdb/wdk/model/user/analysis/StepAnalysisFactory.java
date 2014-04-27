@@ -22,7 +22,7 @@ public interface StepAnalysisFactory {
 
   public StepAnalysisContext copyContext(StepAnalysisContext context) throws WdkModelException;
 
-  public void moveAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException;
+  public void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException;
 
   public StepAnalysisContext runAnalysis(StepAnalysisContext context) throws WdkModelException;
 

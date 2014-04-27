@@ -262,6 +262,10 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         // get the unique list of all metadata props
         // for "One metadataSpec to Rule Them All"
         .reduce(function (a, b) { return _.union(a, b) })
+        // only use props in metadataspec
+        .filter(function(name) {
+          return !!metadataSpec[name];
+        })
         .map(function(name) {
           return _.extend({
             term: name,

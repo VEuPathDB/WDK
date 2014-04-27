@@ -99,12 +99,14 @@ public class StepFactory {
   private final String byUserCondition;
   private final String bySignatureCondition;
   private final String isPublicCondition;
+  private final String isRootStepValidCondition;
   private final String byStratIdCondition;
   private final String isSavedCondition;
   private final String byLastViewedCondition;
   private final String stratsByUserSql;
   private final String stratBySignatureSql;
   private final String unsortedPublicStratsSql;
+  private final String countValidPublicStratsSql;
   private final String updatePublicStratStatusSql;
 
   public StepFactory(WdkModel wdkModel) {
@@ -150,6 +152,12 @@ public class StepFactory {
     // does not add any wildcards
     isPublicCondition = new StringBuilder(" AND sr.").append(COLUMN_IS_PUBLIC).append(" = ").append(
         userDb.getPlatform().convertBoolean(true)).toString();
+    // does not add any wildcards
+    // NOTE: need to include null is_valid values, which should evaluate to 'true'
+    //       because of the way EuPathDb maintains the valid step values between releases
+    isRootStepValidCondition = new StringBuilder(" AND (sp.").append(COLUMN_IS_VALID)
+        .append(" is null OR sp.").append(COLUMN_IS_VALID).append(" = ")
+        .append(userDb.getPlatform().convertBoolean(true)).append(")").toString();
 
     // adds wildcard for project
     String aliveByProjectSql = new StringBuilder(basicStratsSql).append(isNotDeletedCondition).append(
@@ -164,7 +172,11 @@ public class StepFactory {
 
     // contains wildcard for project; does not contain ordering
     unsortedPublicStratsSql = new StringBuilder(aliveByProjectSql).append(isPublicCondition).toString();
-
+    
+    // contains wildcard for project; does not contain ordering
+    countValidPublicStratsSql = new StringBuilder("select count(1) from ( ")
+        .append(unsortedPublicStratsSql).append(isRootStepValidCondition).append(" )").toString();
+    
     // contains wildcards for is_public (boolean) and strat ID (int)
     updatePublicStratStatusSql = new StringBuilder().append("UPDATE ").append(userSchema).append(
         TABLE_STRATEGY).append(" SET ").append(COLUMN_IS_PUBLIC).append(" = ?").append(" WHERE ").append(
@@ -513,6 +525,10 @@ public class StepFactory {
     return steps;
   }
 
+  public Step getStepById(int stepId) throws WdkModelException {
+    return loadStep(null, stepId);
+  }
+  
   // get left child id, right child id in here
   Step loadStep(User user, int stepId) throws WdkModelException {
     ResultSet rsStep = null;
@@ -524,7 +540,8 @@ public class StepFactory {
       rsStep = psStep.executeQuery();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-load-step", start);
       if (!rsStep.next())
-        throw new WdkModelException("The Step #" + stepId + " of user " + user.getEmail() + " doesn't exist.");
+        throw new WdkModelException("The Step #" + stepId + " of user " +
+            (user == null ? "unspecified" : user.getEmail()) + " doesn't exist.");
 
       return loadStep(user, rsStep);
     }
@@ -541,8 +558,11 @@ public class StepFactory {
 
     // load Step info
     int stepId = rsStep.getInt(COLUMN_STEP_ID);
+    int userId = rsStep.getInt(Utilities.COLUMN_USER_ID);
 
-    Step step = new Step(this, user, stepId);
+    Step step = (user == null ?
+        new Step(this, userId, stepId) :
+        new Step(this, user, stepId));
     step.setQuestionName(rsStep.getString(COLUMN_QUESTION_NAME));
     step.setCreatedTime(rsStep.getTimestamp(COLUMN_CREATE_TIME));
     step.setLastRunTime(rsStep.getTimestamp(COLUMN_LAST_RUN_TIME));
@@ -554,7 +574,7 @@ public class StepFactory {
     step.setFilterName(rsStep.getString(COLUMN_ANSWER_FILTER));
     step.setProjectVersion(rsStep.getString(COLUMN_PROJECT_VERSION));
     if (rsStep.getObject(COLUMN_IS_VALID) != null)
-      step.setValid(rsStep.getBoolean(COLUMN_IS_VALID));
+      step.setValid(rsStep.getBoolean(COLUMN_IS_VALID), false);
     if (rsStep.getObject(COLUMN_ASSIGNED_WEIGHT) != null)
       step.setAssignedWeight(rsStep.getInt(COLUMN_ASSIGNED_WEIGHT));
 
@@ -790,6 +810,7 @@ public class StepFactory {
     ResultSet resultSet = null;
     try {
       String publicStratsSql = unsortedPublicStratsSql + modTimeSortSql;
+      logger.debug("Executing SQL with one param ('" + wdkModel.getProjectId() + "'): " + publicStratsSql);
       long start = System.currentTimeMillis();
       PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, publicStratsSql);
       ps.setString(1, wdkModel.getProjectId());
@@ -831,15 +852,15 @@ public class StepFactory {
   }
 
   public int getPublicStrategyCount() throws WdkModelException {
-    String countSql = "SELECT COUNT(1) FROM (" + unsortedPublicStratsSql + ") public_strats";
     ResultSet resultSet = null;
     try {
+      logger.debug("Executing SQL with one param ('" + wdkModel.getProjectId() + "'): " + countValidPublicStratsSql);
       long start = System.currentTimeMillis();
-      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, countSql);
+      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, countValidPublicStratsSql);
       ps.setString(1, wdkModel.getProjectId());
       resultSet = ps.executeQuery();
-      QueryLogger.logStartResultsProcessing(countSql, "wdk-step-factory-count-public-strategies", start,
-          resultSet);
+      QueryLogger.logStartResultsProcessing(countValidPublicStratsSql,
+          "wdk-step-factory-count-valid-public-strategies", start, resultSet);
       if (resultSet.next()) {
         return resultSet.getInt(1);
       }
@@ -990,7 +1011,7 @@ public class StepFactory {
     String customName = oldStep.getBaseCustomName();
     if (customName != null)
       newStep.setCustomName(customName);
-    newStep.setValid(oldStep.isValid());
+    newStep.setValid(oldStep.isValid(), false);
     newStep.update(false);
     return newStep;
   }

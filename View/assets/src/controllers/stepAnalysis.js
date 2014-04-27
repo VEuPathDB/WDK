@@ -11,7 +11,6 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 	 *   analysisId: int
 	 *   analysisName: string
 	 *   stepId: int
-	 *   strategyId: int
 	 *   displayName: string
 	 *   description: string
 	 *   status: enumerated string, see org.gusdb.wdk.model.user.analysis.ExecutionStatus
@@ -21,7 +20,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 	 * The functions below depend on the following services (see more details in code below):
 	 * 
 	 *  - createAnalysis:
-	 *      takes:   strategy id, step id, analysis name
+	 *      takes:   step id, analysis name
 	 *      returns: instance json
 	 *  - copyAnalysis:
 	 *      takes:   analysis id
@@ -122,10 +121,10 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 		});
 	}
 	
-	function createStepAnalysis(analysisName, strategyId, stepId) {
+	function createStepAnalysis(analysisName, stepId) {
 		// ask server to create new step analysis with the given params
 		doAjax(ROUTES.createAnalysis, {
-			data: { "analysisName": analysisName, "strategyId": strategyId, "stepId": stepId },
+			data: { "analysisName": analysisName, "stepId": stepId },
 			success: function (data, textStatus, jqXHR) {
 				if (data.status == "validation") {
 					alert(data.message);

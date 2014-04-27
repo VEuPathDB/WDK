@@ -36,6 +36,7 @@ public class Step {
 
   private StepFactory stepFactory;
   private User user;
+  private int userId;
   private int stepId;
   private Date createdTime;
   private Date lastRunTime;
@@ -71,9 +72,36 @@ public class Step {
   private boolean revisable = true;
   private Exception exception;
 
+  /**
+   * Creates a step object for given user and step ID.  Note that this
+   * constructor lazy-loads the User object for the passed ID if one is
+   * required for processing after construction.
+   * 
+   * @param stepFactory step factory that generated this step
+   * @param userId id of the owner of this step
+   * @param stepId id of the step
+   */
+  Step(StepFactory stepFactory, int userId, int stepId) {
+    this.stepFactory = stepFactory;
+    this.user = null;
+    this.userId = userId;
+    this.stepId = stepId;
+    deleted = false;
+    assignedWeight = 0;
+  }
+  
+  /**
+   * Creates a step object for the given user and step ID.
+   * 
+   * @param stepFactory step factory that generated this step
+   * @param user owner of this step
+   * @param stepId id of the step
+   * @throws NullPointerException if user is null
+   */
   Step(StepFactory stepFactory, User user, int stepId) {
     this.stepFactory = stepFactory;
     this.user = user;
+    this.userId = user.getUserId();
     this.stepId = stepId;
     deleted = false;
     assignedWeight = 0;
@@ -81,7 +109,7 @@ public class Step {
 
   public Step getPreviousStep() throws WdkModelException {
     if (previousStep == null && previousStepId != 0)
-      setPreviousStep(stepFactory.loadStep(user, previousStepId));
+      setPreviousStep(stepFactory.loadStep(getUser(), previousStepId));
     return previousStep;
   }
 
@@ -99,7 +127,7 @@ public class Step {
 
   public Step getChildStep() throws WdkModelException {
     if (childStep == null && childStepId != 0)
-      setChildStep(stepFactory.loadStep(user, childStepId));
+      setChildStep(stepFactory.loadStep(getUser(), childStepId));
     return childStep;
   }
 
@@ -173,7 +201,11 @@ public class Step {
     return (previousStepId == 0);
   }
 
-  public User getUser() {
+  public User getUser() throws WdkModelException {
+    if (user == null) {
+      // if constructed with only the user id, lazy-load User object 
+      user = stepFactory.getWdkModel().getUserFactory().getUser(userId);
+    }
     return user;
   }
 
@@ -365,7 +397,7 @@ public class Step {
   }
 
   public void update(boolean updateTime) throws WdkModelException {
-    stepFactory.updateStep(user, this, updateTime);
+    stepFactory.updateStep(getUser(), this, updateTime);
   }
 
   public String getDescription() {
@@ -424,24 +456,32 @@ public class Step {
     if (!valid)
       return false;
     Step prevStep = getPreviousStep();
-    if (prevStep != null) {
-      if (!prevStep.isValid())
-        return false;
+    if (prevStep != null && !prevStep.isValid()) {
+      setValid(false, true);
+      return false;
     }
     Step childStep = getChildStep();
-    if (childStep != null) {
-      if (!childStep.isValid())
-        return false;
+    if (childStep != null && !childStep.isValid()) {
+      setValid(false, true);
+      return false;
     }
     return true;
   }
 
   /**
-   * @param isValid
-   *          the isValid to set
+   * @param isValid the isValid to set
+   * @param updateDb whether to update the DB with this new value; will only
+   *    update if the valid param value is different then the current value
+   * @throws WdkModelException if unable to update DB
    */
-  public void setValid(boolean valid) {
+  public void setValid(boolean valid, boolean updateDb) throws WdkModelException {
+    boolean changed = (this.valid != valid);
     this.valid = valid;
+    
+    // if changed and update flag set to true, update value in DB
+    if (updateDb && changed) {
+      update(false);
+    }
   }
 
   public Map<String, String> getParamNames() throws WdkModelException {
@@ -631,7 +671,7 @@ public class Step {
     try {
       int startIndex = getAnswerValue().getStartIndex();
       int endIndex = getAnswerValue().getEndIndex();
-      Step step = user.createStep(question, params, filter, startIndex, endIndex, deleted, false,
+      Step step = getUser().createStep(question, params, filter, startIndex, endIndex, deleted, false,
           assignedWeight);
       step.collapsedName = collapsedName;
       step.customName = customName;
@@ -661,7 +701,7 @@ public class Step {
     try {
       answerValue = getAnswerValue();
       if (!isCombined()) {
-        step = user.createStep(answerValue, deleted, assignedWeight);
+        step = getUser().createStep(answerValue, deleted, assignedWeight);
       }
       else {
         Question question = getQuestion();
@@ -671,7 +711,7 @@ public class Step {
           Param param = params.get(paramName);
           String paramValue = this.paramValues.get(paramName);
           if (param instanceof AnswerParam) {
-            Step child = user.getStep(Integer.parseInt(paramValue));
+            Step child = getUser().getStep(Integer.parseInt(paramValue));
             child = child.deepClone();
             paramValue = Integer.toString(child.getStepId());
           }
@@ -680,7 +720,7 @@ public class Step {
         AnswerFilterInstance filter = getFilter();
         int pageStart = answerValue.getStartIndex();
         int pageEnd = answerValue.getEndIndex();
-        step = user.createStep(question, paramValues, filter, pageStart, pageEnd, deleted, false,
+        step = getUser().createStep(question, paramValues, filter, pageStart, pageEnd, deleted, false,
             assignedWeight);
       }
     }
@@ -769,7 +809,7 @@ public class Step {
       }
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + this.stepId;
-        Integer order = user.getStrategyOrder(subStratId);
+        Integer order = getUser().getStrategyOrder(subStratId);
         if (order == null)
           order = 0; // the sub-strategy is not displayed
         jsStep.put("order", order);
@@ -782,7 +822,7 @@ public class Step {
   }
 
   public Question getQuestion() throws WdkModelException {
-    WdkModel wdkModel = user.getWdkModel();
+    WdkModel wdkModel = stepFactory.getWdkModel();
     return (Question) wdkModel.resolveReference(questionName);
   }
 
@@ -814,6 +854,7 @@ public class Step {
     // + "(i) is invalid, cannot create answerValue.");
     if (answerValue == null) {
       Question question = getQuestion();
+      User user = getUser();
       Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
       int endIndex = user.getItemsPerPage();
       try {

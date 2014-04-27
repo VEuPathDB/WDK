@@ -163,17 +163,17 @@ public class FilterParam extends FlatVocabParam {
             ", and " + COLUMN_VALUE + ".");
     }
 
-    // resolve metadata query, which should not have any param
+    // resolve metadataSpec query, which should not have any param
     if (metadataSpecQueryRef != null) {
-      // no need to clone metadata query, since it's not overriden in any way here.
+      // no need to clone metadataSpec query, since it's not overriden in any way here.
       this.metadataSpecQuery = (Query) model.resolveReference(metadataSpecQueryRef);
-      // make sure metadata query don't have any params
+      // make sure metadataSpec query don't have any params
       Param[] params = metadataSpecQuery.getParams();
-      if (params.length > 2 || (params.length == 0 && !params[0].getName().equals(Utilities.PARAM_USER_ID)))
+      if (params.length > 1 || (params.length == 1 && !params[0].getName().equals(Utilities.PARAM_USER_ID)))
         throw new WdkModelException("The metadata query " + metadataSpecQueryRef + " in FlatVocabParam " +
             getFullName() + " cannot have any params.");
 
-      // the metadata query must have exactly 3 columns: property, info, data.
+      // the metadataSpec query must have exactly 3 columns: property, info, data.
       Map<String, Column> columns = metadataSpecQuery.getColumnMap();
       if (columns.size() != 3 || !columns.containsKey(COLUMN_PROPERTY) ||
           !columns.containsKey(COLUMN_SPEC_PROPERTY) || !columns.containsKey(COLUMN_SPEC_VALUE))
@@ -350,7 +350,8 @@ public class FilterParam extends FlatVocabParam {
     if (stableValue == null || stableValue.length() == 0) return new String[0];
     
     try {
-      JSONObject jsStableValue = new JSONObject(stableValue);
+      System.err.println(stableValue);
+	  JSONObject jsStableValue = new JSONObject(stableValue);
       JSONArray jsTerms = jsStableValue.getJSONArray(FilterParamHandler.TERMS_KEY);
       String[] terms = new String[jsTerms.length()];
       for (int i = 0; i < terms.length; i++) {

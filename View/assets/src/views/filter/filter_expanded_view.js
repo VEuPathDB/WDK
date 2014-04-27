@@ -21,7 +21,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.$el.html(this.template(this.model));
       this.$('#select').append(this.filterFieldsView.el);
       this.$('#results').append(this.resultsView.el);
-      this.$el.tabs({
+      this.$('.tabs').tabs({
         activate: function(e, ui) {
           _this.showSubview(ui.newPanel.attr('id'));
         }
@@ -35,7 +35,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     didShow: function() {
-      var activeTab = this.$el.tabs('option', 'active');
+      var activeTab = this.$('.tabs').tabs('option', 'active');
       var id = this.$('.ui-tabs-panel').get(activeTab).id
       this.showSubview(id);
     },

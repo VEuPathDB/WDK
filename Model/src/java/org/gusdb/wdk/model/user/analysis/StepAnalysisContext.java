@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.wdk.model.WdkException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -31,7 +32,6 @@ public class StepAnalysisContext {
   public static enum JsonKey {
     
     // the following values define the hashable serialized context
-    strategyId,
     stepId,
     analysisName,
     formParams,
@@ -48,7 +48,6 @@ public class StepAnalysisContext {
   private WdkModel _wdkModel;
   private int _analysisId;
   private String _displayName;
-  private int _strategyId;
   private Step _step;
   private StepAnalysis _stepAnalysis;
   private boolean _isNew;
@@ -60,40 +59,33 @@ public class StepAnalysisContext {
   private StepAnalysisContext() { }
   
   /**
-   * Creates a step analysis context based on the passed user, strategy id,
-   * step id, and analysis plugin name.  This context does not yet have an
-   * analysis id and will receive one when it is written to the database.
+   * Creates a step analysis context based on the passed user, step id, and
+   * analysis plugin name.  This context does not yet have an analysis id and
+   * will receive one when it is written to the database.
    * 
    * @param userBean user for which to create analysis
    * @param analysisName name of analysis plugin that will be invoked
-   * @param strategyId id of strategy referred to by this analysis
    * @param stepId id of step referred to by this analysis
    * @throws WdkModelException if something goes wrong during creation
    * @throws WdkUserException if the passed values do not refer to real objects
    */
   public static StepAnalysisContext createNewContext(UserBean userBean, String analysisName,
-      int strategyId, int stepId) throws WdkModelException, WdkUserException {
+      int stepId) throws WdkModelException, WdkUserException {
 
     StepAnalysisContext ctx = new StepAnalysisContext();
     ctx._analysisId = -1;
     ctx._wdkModel = userBean.getUser().getWdkModel();
-    ctx._strategyId = strategyId;
-    ctx._step = ctx._wdkModel.getStepFactory().getStrategyById(ctx._strategyId).getStepById(stepId);
-
-    if (ctx._step == null) {
-      throw new WdkUserException("No step bean exists with id " + stepId + " on " +
-            "strategy with id " + strategyId + " for user " + userBean.getUserId());
-    }
+    ctx._step = loadStep(ctx._wdkModel, stepId, new WdkUserException("No step " +
+        "bean exists with id " + stepId + " for user " + userBean.getUserId()));
     
     Question question = ctx._step.getQuestion();
     ctx._stepAnalysis = question.getStepAnalyses().get(analysisName);
     
     if (ctx._stepAnalysis == null) {
       throw new WdkUserException("No step analysis with name " + analysisName +
-          " exists for question " + question.getFullName() + " (see strategy=" +
-          strategyId + ", step=" + stepId);
+          " exists for question " + question.getFullName() + " (see step=" + stepId);
     }
-
+    
     ctx._displayName = ctx._stepAnalysis.getDisplayName();
     ctx._formParams = new HashMap<String,String[]>();
     ctx._isNew = true;
@@ -103,7 +95,7 @@ public class StepAnalysisContext {
     
     return ctx;
   }
-  
+
   public static StepAnalysisContext createFromForm(Map<String,String[]> params, StepAnalysisFactory analysisMgr)
       throws WdkUserException, WdkModelException {
     int analysisId = getAnalysisIdParam(params);
@@ -136,13 +128,10 @@ public class StepAnalysisContext {
       
       // deserialize hashable context values
       JSONObject json = new JSONObject(serializedContext);
-      ctx._strategyId = json.getInt(JsonKey.strategyId.name());
       int stepId = json.getInt(JsonKey.stepId.name());
-      ctx._step = ctx._wdkModel.getStepFactory().getStrategyById(ctx._strategyId).getStepById(stepId);
-      if (ctx._step == null) {
-        throw new WdkModelException("Unable to find step (ID=" + stepId + ") in strategy (ID=" +
-            ctx._strategyId + ") defined in step analysis context (ID=" + analysisId + ")");
-      }
+      ctx._step = loadStep(ctx._wdkModel, stepId, new WdkModelException("Unable " +
+          "to find step (ID=" + stepId + ") defined in step analysis context " +
+          "(ID=" + analysisId + ")"));
       Question question = ctx._step.getQuestion();
       ctx._stepAnalysis = question.getStepAnalysis(json.getString(JsonKey.analysisName.name()));
 
@@ -174,7 +163,6 @@ public class StepAnalysisContext {
     ctx._wdkModel = oldContext._wdkModel;
     ctx._analysisId = oldContext._analysisId;
     ctx._displayName = oldContext._displayName;
-    ctx._strategyId = oldContext._strategyId;
     ctx._step = oldContext._step;
     ctx._stepAnalysis = oldContext._stepAnalysis;
     // deep copy params
@@ -184,6 +172,16 @@ public class StepAnalysisContext {
     ctx._invalidStepReason = oldContext._invalidStepReason;
     ctx._status = oldContext._status;
     return ctx;
+  }
+  
+  private static <T extends WdkException> Step loadStep(WdkModel wdkModel, int stepId,
+      T wdkUserException) throws T {
+    try {
+      return wdkModel.getStepFactory().getStepById(stepId);
+    }
+    catch (WdkModelException e) {
+      throw wdkUserException;
+    }
   }
   
   private static Map<String, String[]> getDuplicateMap(Map<String, String[]> formParams) {
@@ -256,7 +254,6 @@ public class StepAnalysisContext {
   
   private JSONObject getSharedJson() throws JSONException {
     JSONObject json = new JSONObject();
-    json.put(JsonKey.strategyId.name(), _strategyId);
     json.put(JsonKey.stepId.name(), _step.getStepId());
     json.put(JsonKey.analysisName.name(), _stepAnalysis.getName());
     
