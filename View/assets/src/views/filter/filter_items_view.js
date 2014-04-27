@@ -62,11 +62,12 @@ wdk.namespace('wdk.views.filter', function(ns) {
     updateTotal: function() {
       var count = this.filterService.filteredData.where({ ignored: false }).length;
 
-      if (this.model.length > 0) {
-        this.$el.attr('data-total', count);
-      } else {
-        this.$el.removeAttr('data-total');
-      }
+      this.$el.attr('data-total', count);
+      // if (this.model.length > 0) {
+      //   this.$el.attr('data-total', count);
+      // } else {
+      //   this.$el.removeAttr('data-total');
+      // }
     }
   });
 
