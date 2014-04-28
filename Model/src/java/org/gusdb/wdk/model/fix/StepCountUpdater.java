@@ -101,7 +101,7 @@ public class StepCountUpdater extends BaseCLI {
                         step.getResultSize();
                     } catch (Exception ex) {
                         // don't need to update DB here since updating in finally
-                        step.setValid(false, false);
+                        step.setValid(false);
                     } finally {
                         step.update(false);
                     }

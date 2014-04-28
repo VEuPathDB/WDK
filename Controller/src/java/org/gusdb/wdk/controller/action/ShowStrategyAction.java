@@ -34,7 +34,7 @@ import org.json.JSONObject;
 
 /**
  * This Action handles loading a search strategy from the database. It loads the
- * strategy and forwards to a simple jsp for diplaying the strategy
+ * strategy and forwards to a simple JSP for displaying the strategy
  */
 
 public class ShowStrategyAction extends ShowQuestionAction {
@@ -113,8 +113,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             return null;
 
         } catch (Exception ex) {
-            logger.error(ex);
-            ex.printStackTrace();
+            logger.error("Error trying to retrieve strategy", ex);
             outputErrorJSON(wdkUser, response, ex);
             logger.debug("Leaving ShowStrategyAction...");
             return null;
@@ -399,7 +398,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("filterName", step.getFilterDisplayName());
         jsStep.put("urlParams", step.getQuestionUrlParams());
         jsStep.put("isValid", step.getIsValid());
-        jsStep.put("validationMessage", step.getValidationMessage());
+        jsStep.put("validationMessage", // validation message deprecated
+            "Strategy is invalid and cannot be loaded at this time");
         jsStep.put("assignedWeight", step.getAssignedWeight());
         jsStep.put("useweights", model.getUseWeights());
         jsStep.put("revisable", step.isRevisable());
