@@ -26,18 +26,41 @@ $sort_column=2;
 
 
 my $parseLogRecord = sub {
-  my ($logRecord) = @_;
+  my ($logRecord, $debug) = @_;
+
+  print "processing record: \"$logRecord\"\n"
+    if $debug;
 
   my $reject = 0;
 
+# old format:
 # 7177906 [WARN ] org.gusdb.wdk.model.dbms.SqlUtils:390 - 130.91.178.191 - [06/Mar/2013:12:21:10 -0500] QUERY LOG [HelperAttributes.Counts__insert-cache] execute: 0.43 last page: 0.43 seconds
+# new format:
+# 39694     [WARN ] [06/Feb/2014:03:15:38] 128.91.49.194 - org.gusdb.fgputil.db.QueryLogger:159 - QUERY LOG [organismVQ.withGenes__create-cache-index01] execute: 0.675 last page: 0.675 seconds
 
-  $reject = 1 unless $logRecord =~ /QUERY LOG/;
-  $reject = 1 if $logRecord =~ /\=\=/;  # some lines in the log are mangled, with missing newlines
-                                        # the symptom is that the next log entry is mashed in
-                                        # these are delimited by ========, so dodge that
-  $reject = 1 if ($genepage && !$logRecord =~ /GeneTables/);
-  $reject = 1 if ($notgenepage && $logRecord =~ /GeneTables/);
+
+  unless ($logRecord =~ /QUERY LOG/) {
+    $reject = 1;
+    print STDERR "rejecting because logRecord does not match pattern \"QUERY LOG\"\n"
+      if $debug;
+  }
+
+  if ($logRecord =~ /\=\=/) {
+    # some lines in the log are mangled, with missing newlines
+    # the symptom is that the next log entry is mashed in
+    # these are delimited by ========, so dodge that
+    $reject = 1;
+    print STDERR "rejecting because record contains double equals-sign, symptomatic of a mangled log\n"
+      if $debug;
+  }
+
+  my $geneRecord = $logRecord =~ /GeneTables/ || $logRecord =~ /GeneAttributes/;
+
+  if ( ($genepage && !$geneRecord) || ($notgenepage && $geneRecord) ) {
+    $reject = 1;
+    print STDERR "rejecting: \$genepage param = \"$genepage\" whereas current records genepageness = \"$geneRecord\"\n"
+      if $debug;
+  }
   chomp($logRecord);
 
   my ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $execSeconds, $lastSeconds, $timestamp);
