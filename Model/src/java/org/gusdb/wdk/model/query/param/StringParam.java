@@ -233,6 +233,7 @@ public class StringParam extends Param {
   @Override
   public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {
     String value = (String) rawValue;
+    if (value == null) return value;
     if (value.length() > truncateLength)
       value = value.substring(0, truncateLength) + "...";
     return value;
