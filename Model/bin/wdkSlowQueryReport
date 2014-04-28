@@ -35,7 +35,7 @@ my $parseLogRecord = sub {
 
 # old format:
 # 7177906 [WARN ] org.gusdb.wdk.model.dbms.SqlUtils:390 - 130.91.178.191 - [06/Mar/2013:12:21:10 -0500] QUERY LOG [HelperAttributes.Counts__insert-cache] execute: 0.43 last page: 0.43 seconds
-# new format:
+# format:
 # 39694     [WARN ] [06/Feb/2014:03:15:38] 128.91.49.194 - org.gusdb.fgputil.db.QueryLogger:159 - QUERY LOG [organismVQ.withGenes__create-cache-index01] execute: 0.675 last page: 0.675 seconds
 
 
@@ -64,8 +64,10 @@ my $parseLogRecord = sub {
   chomp($logRecord);
 
   my ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $execSeconds, $lastSeconds, $timestamp);
-  if (/(\d+) \[WARN \] (.*):(\d+) - ([0-9.]*) - \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d) (.+)\] .*QUERY LOG \[(.*)\] execute: ([0-9.]*) last page: ([0-9.]*) seconds/) {
-    ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $execSeconds, $lastSeconds) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);
+#  if (/(\d+) \[WARN \] (.*):(\d+) - ([0-9.]*) - \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d) (.+)\] .*QUERY LOG \[(.*)\] execute: ([0-9.]*) last page: ([0-9.]*) seconds/) {
+ #   ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $execSeconds, $lastSeconds) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);
+  if (/(\d+) \[WARN \] \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)\] ([0-9.]*) - (.*):(\d+) - .*QUERY LOG \[(.*)\] execute: ([0-9.]*) last page: ([0-9.]*) seconds/) {
+    ($digits, $class, $day, $mon, $year, $hour, $min, $sec, $ip, $line, $name, $execSeconds, $lastSeconds) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
 
     my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
     $timestamp = timelocal($sec, $min, $hour, $day, $monthNumber, $year - 1900);
