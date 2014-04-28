@@ -54,8 +54,9 @@ public class Step {
   private Step childStep = null;
 
   private String booleanExpression;
+
   private boolean valid = true;
-  private String validationMessage;
+  private boolean validityChecked = false;
 
   private int estimateSize = 0;
 
@@ -140,13 +141,22 @@ public class Step {
     }
   }
 
-  public int getResultSize() {
-    try {
-      this.estimateSize = getAnswerValue().getResultSize();
-    }
-    catch (Exception ex) {
-      valid = false;
-      ex.printStackTrace();
+  public int getResultSize() throws WdkModelException {
+    if (!isValid()) {
+      try {
+        estimateSize = getAnswerValue().getResultSize();
+      }
+      catch (Exception ex) {
+        logger.error("Exception when estimating result size.", ex);
+        // FIXME (Redmine #16030): not sure if this exception means step is
+        // invalid or not.  It could mean param values are invalid and step
+        // should be made invalid, but it could also mean DB is down or other
+        // issues.  Thus, we cannot set valid to false at all here (locally or
+        // in DB), because it might impact parent steps whose valid values
+        // depend on this one's.  To fix, we need to differentiate the
+        // exceptions thrown by AnswerValue by the errors that mean Step is
+        // invalid vs. those that don't.
+      }
     }
     return estimateSize;
   }
@@ -306,17 +316,7 @@ public class Step {
   }
 
   /**
-   * @return Returns the estimateSize.
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
+   * @return Size estimate of this step's result
    */
   public int getEstimateSize() {
     return estimateSize;
@@ -347,12 +347,6 @@ public class Step {
 
   /**
    * @return Returns the isBoolean.
-   * @throws WdkModelException
-   * @throws SQLException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
    */
   public boolean isCombined() {
     try {
@@ -365,12 +359,6 @@ public class Step {
 
   /**
    * @return Returns whether this Step is a transform
-   * @throws WdkModelException
-   * @throws SQLException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
    */
   public boolean isTransform() {
     try {
@@ -446,42 +434,59 @@ public class Step {
   }
 
   /**
-   * @return the isValid
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws WdkUserException
+   * Checks validity of this step and all the child steps it depends on and
+   * returns result.  Value is memoized for efficiency.  This call checks
+   * against any preset valid value, and checks that param names are correct,
+   * but does not check param values due to execution cost.  Param values must
+   * be checked elsewhere; if they are found invalid, invalidateStep() should
+   * be called, which updates the DB.
+   * 
+   * @return true if this step is valid (to the best of our knowledge), else false
    */
   public boolean isValid() throws WdkModelException {
-    if (!valid)
-      return false;
-    Step prevStep = getPreviousStep();
-    if (prevStep != null && !prevStep.isValid()) {
-      setValid(false, true);
-      return false;
+    if (!valid || validityChecked) {
+      // check 1: nothing but revise can turn step from invalid -> valid
+      // check 2: if value is memoized, do not check steps and params again
+      return valid;
     }
-    Step childStep = getChildStep();
-    if (childStep != null && !childStep.isValid()) {
-      setValid(false, true);
-      return false;
+    
+    // check stored param names against those in Question
+    Map<String, Param> params = getQuestion().getParamMap();
+    for (String paramName : paramValues.keySet()) {
+      if (!params.containsKey(paramName)) {
+        logger.error("Unable to find all stored param names in Question " +
+            "(bad param name = " + paramName + ").  Setting valid to false.");
+        invalidateStep();
+      }
     }
-    return true;
+    
+    // check previous and child steps if still valid
+    Step prevStep, childStep;
+    if (valid &&
+        (((prevStep = getPreviousStep()) != null && !prevStep.isValid()) ||
+         ((childStep = getChildStep()) != null && !childStep.isValid()))) {
+      invalidateStep();
+    }
+
+    // mark validity checked so we don't do the work above again
+    validityChecked = true;
+    return valid;
   }
 
   /**
-   * @param isValid the isValid to set
-   * @param updateDb whether to update the DB with this new value; will only
-   *    update if the valid param value is different then the current value
+   * Sets valid value to false and sends change to the DB
    * @throws WdkModelException if unable to update DB
    */
-  public void setValid(boolean valid, boolean updateDb) throws WdkModelException {
-    boolean changed = (this.valid != valid);
+  public void invalidateStep() throws WdkModelException {
+    setValid(false);
+    stepFactory.setStepValidFlag(this);
+  }
+  
+  /**
+   * @param isValid the isValid to set
+   */
+  public void setValid(boolean valid) {
     this.valid = valid;
-    
-    // if changed and update flag set to true, update value in DB
-    if (updateDb && changed) {
-      update(false);
-    }
   }
 
   public Map<String, String> getParamNames() throws WdkModelException {
@@ -620,20 +625,10 @@ public class Step {
    * @param paramErrors
    *          the paramErrors to set
    */
-  public void setParamValues(Map<String, String> paramValues) throws WdkModelException {
+  public void setParamValues(Map<String, String> paramValues) {
     if (paramValues == null)
       paramValues = new LinkedHashMap<>();
     this.paramValues = new LinkedHashMap<String, String>(paramValues);
-    // make sure the params do exist
-    if (this.valid) {
-      Map<String, Param> params = getQuestion().getParamMap();
-      for (String paramName : paramValues.keySet()) {
-        if (!params.containsKey(paramName)) {
-          this.valid = false;
-          break;
-        }
-      }
-    }
   }
 
   public RecordClass getRecordClass() throws WdkModelException {
@@ -894,63 +889,6 @@ public class Step {
 
   public void resetAnswerValue() {
     this.answerValue = null;
-  }
-
-  /**
-   * Validate a step and all the children steps it depends on. the result of validation will also be stored in
-   * "valid" variable. If a step was already invalid it will stay invalid.
-   * 
-   * @return
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws WdkUserException
-   * @throws JSONException
-   */
-  public boolean validate() throws SQLException, WdkUserException, WdkModelException, JSONException {
-    // only validate leaf steps. the validation of a combined step is
-    // determined by the children.
-    Step prevStep = getPreviousStep();
-    Step childStep = getChildStep();
-    if (childStep == null && prevStep == null) {
-      if (!valid)
-        return valid;
-      try {
-        getAnswerValue();
-      }
-      catch (Exception ex) {
-        this.validationMessage = ex.getMessage();
-        this.valid = false;
-      }
-    }
-    else {
-      if (childStep != null) {
-        if (!childStep.validate())
-          this.valid = false;
-      }
-      else if (prevStep != null) {
-        if (!prevStep.validate())
-          this.valid = false;
-      }
-    }
-    // set the invalid flag
-    if (!valid)
-      stepFactory.setStepValidFlag(this);
-    return valid;
-  }
-
-  /**
-   * @return the validationMessage
-   */
-  public String getValidationMessage() {
-    return validationMessage;
-  }
-
-  /**
-   * @param validationMessage
-   *          the validationMessage to set
-   */
-  public void setValidationMessage(String validationMessage) {
-    this.validationMessage = validationMessage;
   }
 
   /**

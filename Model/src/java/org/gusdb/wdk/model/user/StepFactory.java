@@ -574,7 +574,7 @@ public class StepFactory {
     step.setFilterName(rsStep.getString(COLUMN_ANSWER_FILTER));
     step.setProjectVersion(rsStep.getString(COLUMN_PROJECT_VERSION));
     if (rsStep.getObject(COLUMN_IS_VALID) != null)
-      step.setValid(rsStep.getBoolean(COLUMN_IS_VALID), false);
+      step.setValid(rsStep.getBoolean(COLUMN_IS_VALID));
     if (rsStep.getObject(COLUMN_ASSIGNED_WEIGHT) != null)
       step.setAssignedWeight(rsStep.getInt(COLUMN_ASSIGNED_WEIGHT));
 
@@ -1011,7 +1011,7 @@ public class StepFactory {
     String customName = oldStep.getBaseCustomName();
     if (customName != null)
       newStep.setCustomName(customName);
-    newStep.setValid(oldStep.isValid(), false);
+    newStep.setValid(oldStep.isValid());
     newStep.update(false);
     return newStep;
   }
@@ -1497,7 +1497,7 @@ public class StepFactory {
     return Utilities.encrypt(content, true);
   }
 
-  void setStepValidFlag(Step step) throws SQLException, WdkModelException {
+  void setStepValidFlag(Step step) throws WdkModelException {
     String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_IS_VALID + " = ? WHERE " +
         COLUMN_STEP_ID + " = ?";
     PreparedStatement psUpdate = null;
@@ -1508,6 +1508,9 @@ public class StepFactory {
       psUpdate.setInt(2, step.getStepId());
       psUpdate.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-update-strategy-signature", start);
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Unable to set valid step flag on step " + step.getStepId(), e);
     }
     finally {
       SqlUtils.closeStatement(psUpdate);

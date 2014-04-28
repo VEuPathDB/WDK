@@ -217,12 +217,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
             logger.debug("Leaving showSummary");
             return forward;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("Caught error while showing results: ", ex);
 
             // validate the existing strategy in showSummary.
             if (strategy != null) {
                 logger.info("validating all steps");
-                if (!strategy.getLatestStep().validate()) {
+                if (!strategy.isValid()) {
                     // if the strategy is invalid, go to showStrategy instead of
                     // showing the result. the invalidation message will be
                     // embedded in each step.
