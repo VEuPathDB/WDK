@@ -36,8 +36,11 @@
   display: inline-block;
 }
 .field-detail > div {
-  position: relative;
+  /*position: relative;*/
   padding: 1em 0;
+}
+.range-filter {
+  position: relative;
 }
 .range-filter dt {
   font-weight: bold;
@@ -86,6 +89,8 @@
 }
 .field-list {
   width: 20%;
+  max-height: 35em;
+  overflow-y: auto;
   padding-left: 10px;
   box-shadow: inset -1px 0px 0px #eee;
   background-image: -webkit-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
