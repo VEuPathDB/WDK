@@ -32,9 +32,8 @@
   </c:choose>
 </c:set>
 
-<td>
-<div class="attribute-summary" ${align} style="${nowrap}padding:3px 2px">
-      
+<td style="padding:2px">
+  <div class="attribute-summary" ${align} style="${nowrap}padding:3px 2px">   
   <!-- need to know if fieldVal should be hot linked -->
   <c:choose>
 
