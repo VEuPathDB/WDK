@@ -142,8 +142,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         }, true);
       }
 
-      var resizePlot = _.debounce(this.resizePlot.bind(this), 100);
-      $(window).on('resize.range_filter', resizePlot);
+      $(window).on('resize.range_filter', this.resizePlot.bind(this));
 
       // activate Read more link if text is overflowed
       var p = this.$('.description p').get(0);
@@ -157,10 +156,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
     expandDescription: function(event) {
       event.preventDefault();
       this.$('.description p').toggleClass('expanded');
-    },
-
-    didShow: function() {
-      this.resizePlot();
     },
 
     handlePlotClick: function(event, pos, item) {
@@ -287,15 +282,25 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
     },
 
-    resizePlot: function() {
+    resizePlot: _.debounce(function resizePlot() {
       this.plot.resize();
       this.plot.setupGrid();
       this.plot.draw();
       this.doPlotSelection();
+    }, 300),
+
+    didShow: function() {
+      this.resizePlot();
+      $(window).on('resize.range_filter', this.resizePlot.bind(this));
     },
 
-    didRemove: function() {
+    didHide: function() {
       $(window).off('resize.range_filter');
+    },
+
+    undelegateEvents: function() {
+      $(window).off('.range_filter');
+      wdk.views.View.prototype.undelegateEvents.apply(this, arguments);
     }
 
   });
