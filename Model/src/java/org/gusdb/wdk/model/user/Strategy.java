@@ -117,6 +117,7 @@ public class Strategy {
   }
 
   public void setLatestStep(Step step) {
+    stepFactory.verifySameOwner(this, step);
     this.latestStep = step;
     // also update the cached info
     latestStepId = step.getStepId();
@@ -157,8 +158,9 @@ public class Strategy {
     return getLatestStep().getLength();
   }
 
-  public void setLatestStepId(int displayId) {
-    this.latestStepId = displayId;
+  public void setLatestStepId(int stepId) {
+    this.latestStepId = stepId;
+    this.latestStep = null; // root step is now out of date
   }
 
   public int getLatestStepId() {
