@@ -172,6 +172,7 @@ public class Step {
   }
 
   public void setParentStep(Step parentStep) {
+    stepFactory.verifySameOwner(this, parentStep);
     this.parentStep = parentStep;
     if (parentStep != null) {
       parentStep.childStep = this;
@@ -180,6 +181,7 @@ public class Step {
   }
 
   public void setChildStep(Step childStep) {
+    stepFactory.verifySameOwner(this, childStep);
     this.childStep = childStep;
     if (childStep != null) {
       childStep.parentStep = this;
@@ -190,6 +192,7 @@ public class Step {
   }
 
   public void setNextStep(Step nextStep) {
+    stepFactory.verifySameOwner(this, nextStep);
     this.nextStep = nextStep;
     if (nextStep != null) {
       nextStep.previousStep = this;
@@ -198,6 +201,7 @@ public class Step {
   }
 
   public void setPreviousStep(Step previousStep) {
+    stepFactory.verifySameOwner(this, previousStep);
     this.previousStep = previousStep;
     if (previousStep != null) {
       previousStep.nextStep = this;
@@ -921,13 +925,18 @@ public class Step {
     this.previousStepId = previousStepId;
   }
 
+  public void setAndVerifyPreviousStepId(int previousStepId) {
+    stepFactory.verifySameOwner(this, previousStepId);
+    setPreviousStepId(previousStepId);
+  }
+  
   /**
    * @return the childStepId
    */
   public int getChildStepId() {
     return childStepId;
   }
-
+  
   /**
    * @param childStepId
    *          the childStepId to set
@@ -936,6 +945,11 @@ public class Step {
     this.childStepId = childStepId;
   }
 
+  public void setAndVerifyChildStepId(int childStepId) {
+    stepFactory.verifySameOwner(this, childStepId);
+    setChildStepId(childStepId);
+  }
+  
   public boolean isRevisable() {
     return revisable;
   }
