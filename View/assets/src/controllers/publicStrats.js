@@ -150,7 +150,7 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
   }
   
   function getDataTable() {
-    return $($("#public_strat table.datatables")[1]).dataTable();
+    return $("#public_strat table.datatables").dataTable();
   }
   
   // make the following methods "public" (i.e. available in the namespace)
