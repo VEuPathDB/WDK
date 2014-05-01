@@ -4,14 +4,14 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
 <%--
-Provides form input element for a given DatasetParam.
---%>
+	 Provides form input element for a given DatasetParam.
+	 --%>
 
 <%@ attribute name="qp"
-              type="org.gusdb.wdk.model.jspwrap.DatasetParamBean"
-              required="true"
-              description="parameter name"
-%>
+    type="org.gusdb.wdk.model.jspwrap.DatasetParamBean"
+    required="true"
+    description="parameter name"
+		%>
 
 <c:set var="qP" value="${qp}"/>
 <c:set var="pNam" value="${qP.name}"/>
@@ -32,80 +32,80 @@ Provides form input element for a given DatasetParam.
 <div id="${qp.name}" class="param datasetParam"
      data-controller="wdk.components.datasetParam.init">
 
-<table id="${qp.name}">
+	<table id="${qp.name}">
 
-  <c:if test="${dataset != null || defaultType != 'basket'}"> 
-    <!-- display an input box for user to enter data -->
-    <tr class="subparam">
+		<c:if test="${dataset != null || defaultType != 'basket'}"> 
+			<!-- display an input box for user to enter data -->
+			<tr class="subparam">
         <td align="left" style="vertical-align:top" nowrap>
-            <input type="radio" name="${qp.typeSubParam}" class="type" value="data" ${dataChecked} />
-            Enter a list of IDs or text:&nbsp;
+          <input type="radio" name="${qp.typeSubParam}" class="type" value="data" ${dataChecked} />
+          Enter a list of IDs or text:&nbsp;
         </td>
         <c:set var="datasetValues">
-            <c:choose>
-                <c:when test="${dataset != null}">
-                    ${dataset.content}
-                </c:when>
-                <c:when test="${requestScope[qp.dataSubParam] != null}">
-                    ${requestScope[qp.dataSubParam]}
-                </c:when>
-                <c:otherwise>
-                    ${qP.default}
-                </c:otherwise>
-            </c:choose>
+          <c:choose>
+            <c:when test="${dataset != null}">
+              ${dataset.content}
+            </c:when>
+            <c:when test="${requestScope[qp.dataSubParam] != null}">
+              ${requestScope[qp.dataSubParam]}
+            </c:when>
+            <c:otherwise>
+              ${qP.default}
+            </c:otherwise>
+          </c:choose>
         </c:set>
         <td>
-            <textarea name="${qp.dataSubParam}" class="data" rows="5" cols="30">${datasetValues}</textarea>
+          <textarea name="${qp.dataSubParam}" class="data" rows="5" cols="30">${datasetValues}</textarea>
         </td>
-    </tr>
-  </c:if>
+			</tr>
+		</c:if>
 
- <c:set var="parsers" value="${qP.parsers}" />
-  
+		<c:set var="parsers" value="${qP.parsers}" />
+		
     <c:if test="${defaultType ne 'basket' and noAction}">
-        <!-- display an input box and upload file button -->
-        <tr class="subparam">
-            <td>
-                <input type="radio" name="${qp.typeSubParam}" class="type" value="file" ${fileChecked} />
-               Upload a text file:&nbsp;
-            </td>
-            <td>
-                <html:file styleId="${qa.fileSubParam}" styleClass="file" property="value(${qa.fileSubParam})"/>
-		<div class="type-ahead-help">Maximum size: 10MB. The file should contain the list of IDs. 
-	<c:if test="${fn:length(parsers) gt 1}"> Alternatively, please use other file formats:</c:if>
-  </div>
-            </td>
-        </tr>
+      <!-- display an input box and upload file button -->
+      <tr class="subparam">
+        <td>
+          <input type="radio" name="${qp.typeSubParam}" class="type" value="file" ${fileChecked} />
+          Upload a text file:&nbsp;
+        </td>
+        <td>
+          <html:file styleId="${qa.fileSubParam}" styleClass="file" property="value(${qa.fileSubParam})"/>
+					<div class="type-ahead-help">Maximum size: 10MB. The file should contain the list of IDs. 
+						<c:if test="${fn:length(parsers) gt 1}"> Alternatively, please use other file formats:</c:if>
+					</div>
+        </td>
+      </tr>
     </c:if>
     
     
     <!-- display options for the parser -->
-  <c:choose>
-   <c:when test="${fn:length(parsers) gt 1}">
-    <tr class="parsers">
-      <td>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-       <!--  Choose file format: -->
-      </td>
-      <td>
-        <c:forEach items="${parsers}" var="parser">
-          <c:set var="checked">
-            <c:if test="${(dataset != null && parser.name eq dataset.parserName) || (dataset eq null && parser.name eq 'list')}">checked="checked"</c:if>
-          </c:set>
-          <span title="${parser.description}">
-            <input type="radio" name="${qp.parserSubParam}" class="parser" value="${parser.name}" ${checked} />
-            ${parser.display}
-          </span>
-        </c:forEach>
-      </td>
-    </tr>
-   </c:when>
-   <c:otherwise>
-     <c:forEach items="${parsers}" var="parser">
-       <input type="hidden" name="${qp.parserSubParam}" class="parser" value="${parser.name}" />
-     </c:forEach>
-   </c:otherwise>
-  </c:choose>
+		<c:choose>
+			<c:when test="${fn:length(parsers) gt 1}">
+				<tr class="parsers">
+					<td>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<!--  Choose file format: -->
+					</td>
+					<td>
+						<c:forEach items="${parsers}" var="parser">
+							<c:set var="checked">
+								<c:if test="${(dataset != null && parser.name eq dataset.parserName) || (dataset eq null && parser.name eq 'list')}">checked="checked"</c:if>
+							</c:set>
+							<span title="${parser.description}">
+								<input type="radio" name="${qp.parserSubParam}" class="parser" value="${parser.name}" ${checked} />
+								${parser.display}
+							</span>
+						</c:forEach>
+					</td>
+				</tr>
+			</c:when>
+			<c:otherwise>
+				<c:forEach items="${parsers}" var="parser">
+					<input type="hidden" name="${qp.parserSubParam}" class="parser" value="${parser.name}" />
+				</c:forEach>
+			</c:otherwise>
+		</c:choose>
 
     <c:if test="${recordClass !=  null}">
       <!-- display option to use basket snapshot -->
@@ -118,7 +118,7 @@ Provides form input element for a given DatasetParam.
             Copy from My Basket:&nbsp;
           </td>
           <td>
-             ${basketCount} ${recordClass.displayNamePlural} will be copied from your Basket.
+            ${basketCount} ${recordClass.displayNamePlural} will be copied from your Basket.
           </td>
         </tr>
         
@@ -132,34 +132,34 @@ Provides form input element for a given DatasetParam.
           </c:if>
         </c:set>
         <tr class="subparam">
-              <td nowrap>
-                <input type="radio" name="${qp.typeSubParam}" class="type" value="strategy" ${strategyChecked} ${disabled} />
-                Copy from My Strategy:&nbsp;
-              </td>
-              <td>
-                <c:set var="currentStrategy" value="${requestScope.strategy}" />
-                Choose a ${recordClass.displayName} strategy:
-                <select name="${qp.strategySubParam}" class="strategy">
-                  <c:forEach items="${strategies}" var="strategy">
-                    <c:if test="${strategy.strategyId != currentStrategy}" >
-                      <option value="${strategy.strategyId}">${strategy.name} (${strategy.estimateSize} ${recordClass.displayNamePlural})</option>
-                    </c:if>
-                  </c:forEach>
-                </select>
-              </td>
+          <td nowrap>
+            <input type="radio" name="${qp.typeSubParam}" class="type" value="strategy" ${strategyChecked} ${disabled} />
+            Copy from My Strategy:&nbsp;
+          </td>
+          <td>
+            <c:set var="currentStrategy" value="${requestScope.strategy}" />
+            Choose a ${recordClass.displayName} strategy:
+            <select name="${qp.strategySubParam}" class="strategy">
+              <c:forEach items="${strategies}" var="strategy">
+                <c:if test="${strategy.strategyId != currentStrategy}" >
+                  <option value="${strategy.strategyId}">${strategy.name} (${strategy.estimateSize} ${recordClass.displayNamePlural})</option>
+                </c:if>
+              </c:forEach>
+            </select>
+          </td>
         </tr>
       </c:if>
-    
+			
     </c:if>
     
     <!-- display an existing info -->
     <c:if test="${dataset ne null and fn:length(dataset.uploadFile) gt 0}">
-        <tr>
-            <td colspan="2" align="right">
-                <i>Data was uploaded from: ${dataset.uploadFile}</i>
-            </td>
-        </tr>
+      <tr>
+        <td colspan="2" align="right">
+          <i>Data was uploaded from: ${dataset.uploadFile}</i>
+        </td>
+      </tr>
     </c:if>
-</table>
+	</table>
 
 </div>
