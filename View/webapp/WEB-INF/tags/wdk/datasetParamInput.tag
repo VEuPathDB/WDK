@@ -37,9 +37,9 @@ Provides form input element for a given DatasetParam.
   <c:if test="${dataset != null || defaultType != 'basket'}"> 
     <!-- display an input box for user to enter data -->
     <tr class="subparam">
-        <td align="left" valign="top" nowrap>
+        <td align="left" style="vertical-align:top" nowrap>
             <input type="radio" name="${qp.typeSubParam}" class="type" value="data" ${dataChecked} />
-            Enter a list of ids or text:&nbsp;
+            Enter a list of IDs or text:&nbsp;
         </td>
         <c:set var="datasetValues">
             <c:choose>
@@ -56,35 +56,36 @@ Provides form input element for a given DatasetParam.
         </c:set>
         <td>
             <textarea name="${qp.dataSubParam}" class="data" rows="5" cols="30">${datasetValues}</textarea>
-            <div class="type-ahead-help">Each id must be in a new line; if the input is of a supported format listed below, please make sure to choose that format.</div>
         </td>
     </tr>
   </c:if>
 
+ <c:set var="parsers" value="${qP.parsers}" />
   
     <c:if test="${defaultType ne 'basket' and noAction}">
         <!-- display an input box and upload file button -->
         <tr class="subparam">
-            <td valign="top">
+            <td>
                 <input type="radio" name="${qp.typeSubParam}" class="type" value="file" ${fileChecked} />
                Upload a text file:&nbsp;
             </td>
             <td>
                 <html:file styleId="${qa.fileSubParam}" styleClass="file" property="value(${qa.fileSubParam})"/>
-		<div class="type-ahead-help">Maximum size: 10MB. The file can have a list of ids, or in the formats that is listed below. Please make sure to choose that format.</div>
+		<div class="type-ahead-help">Maximum size: 10MB. The file should contain the list of IDs. 
+	<c:if test="${fn:length(parsers) gt 1}"> Alternatively, please use other file formats:</c:if>
+  </div>
             </td>
         </tr>
     </c:if>
     
     
     <!-- display options for the parser -->
-  <c:set var="parsers" value="${qP.parsers}" />
   <c:choose>
    <c:when test="${fn:length(parsers) gt 1}">
     <tr class="parsers">
       <td>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Choose file format:
+       <!--  Choose file format: -->
       </td>
       <td>
         <c:forEach items="${parsers}" var="parser">
@@ -112,7 +113,7 @@ Provides form input element for a given DatasetParam.
         <c:set var="basketCount" value="${qp.basketCount}" />
         <c:set var="disabled"><c:if test="${basketCount == 0}">disabled="disabled"</c:if></c:set>
         <tr class="subparam">
-          <td valign="top" nowrap>
+          <td nowrap>
             <input type="radio" name="${qp.typeSubParam}" class="type" value="basket" ${basketChecked} ${disabled}/>
             Copy from My Basket:&nbsp;
           </td>
@@ -131,7 +132,7 @@ Provides form input element for a given DatasetParam.
           </c:if>
         </c:set>
         <tr class="subparam">
-              <td valign="top" nowrap>
+              <td nowrap>
                 <input type="radio" name="${qp.typeSubParam}" class="type" value="strategy" ${strategyChecked} ${disabled} />
                 Copy from My Strategy:&nbsp;
               </td>
