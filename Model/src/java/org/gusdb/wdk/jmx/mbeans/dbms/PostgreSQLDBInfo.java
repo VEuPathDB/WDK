@@ -40,6 +40,10 @@ public class PostgreSQLDBInfo extends AbstractDBInfo {
     return null;
   }
 
-
+  @Override
+  protected String getDbLinkValidationSql(String dblink) {
+    // not implemented
+    return null;
+  }
 
 }

@@ -48,6 +48,11 @@ public abstract class AbstractDBInfo {
    * dblinks are not supported.
    */
   protected abstract String getDblinkSql();
+  /**
+   * SQL for validating dblink. Can return null if
+   * dblinks are not supported.
+   */
+  protected abstract String getDbLinkValidationSql(String dblink);
 
   protected void setDatabaseAttributes(HashMap<String, String> databaseAttributes) {
     this.databaseAttributes = databaseAttributes;
@@ -156,6 +161,36 @@ public abstract class AbstractDBInfo {
         SqlUtils.closeResultSetAndStatement(rs);
     }
 
+    updateDblinkListWithValidity(dblinkList);
   }
   
+  public void updateDblinkListWithValidity(ArrayList<Map<String, String>> dblinkList) {
+    
+    for (Map<String,String> map : dblinkList) {
+      String sql = getDbLinkValidationSql(map.get("db_link"));
+      if (sql == null) return;
+
+      ResultSet rs = null;
+      PreparedStatement ps = null;
+      String columnName = "isValid";
+
+      try {
+        ps = SqlUtils.getPreparedStatement(datasource, sql);
+        rs = ps.executeQuery();
+        
+        while (rs.next()) {
+          map.put(columnName, "1" );
+        }
+      } catch (SQLException sqle) {
+          //logger.info("FAILED " + sqle + " " + sql);
+          map.put(columnName, "0" );
+      } catch (Exception e) {
+          logger.error("NPE ", e);
+      } finally {
+          SqlUtils.closeResultSetAndStatement(rs);
+      }
+        
+    }
+  }
+
 }
