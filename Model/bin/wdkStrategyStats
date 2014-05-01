@@ -1,0 +1,1019 @@
+#!/usr/bin/perl
+
+# Cristina Aurrecoechea 09-2010
+# counting strats and steps since July 09, which was when we released the strat system
+#
+# not counting deleted strats, otherwise there are lots of repetitions
+# traversing all nested strats
+# not considering 1-step nested strats as nested for the "very interesting" category
+# "real nested" are nested with stepcount>1
+# added step search names
+# interesting includes now the very interesting (only in users count, I left the strat count disjoint)
+# added search list ordered by % of appearances in a multistep strat vs a one-step strat
+# added # strats with result 0 (shown by step count)
+# added # default text searches in one-step strats
+#
+#
+# TODOs:
+# - add spanlogic counts
+# - remove weight counts or change them (now all steps have a weight by default)
+# - read on the fly which searches are the most common among one-steps strats, then loop again and check how often they are used in multistep strats
+# - remove text searches by Nagios (288 per project/day)
+#
+#
+
+use DBI;
+use strict;
+#use warnings;
+use ApiCommonWebsite::Model::ModelConfig;
+
+my $USER_SCHEMA = "userlogins4";
+my $DEFAULT_PROJ = "PlasmoDB";
+
+if (@ARGV < 1) {
+	print "\nusage: wdkStrategyStats PlasmoDB apicommS 01-Jul-10 guests\n";
+	print "         wdkStrategyStats PlasmoDB apicommS 01-Jul-10\n";
+	print "         wdkStrategyStats PlasmoDB apicommS\n";
+	print "         wdkStrategyStats all apicommS\n";
+	print "\nThis script searches for non-deleted strategies:\n";
+	print "- If you enter 'all' (instead of xxxxxDB) the counts will include strategies in all projects. 'all' is the default value.\n";
+	print "- apicommS: or other user database name --no default\n";
+	print "- If you enter a date (use that format) the counts will include only strategies created on or after that date.
+             The default is '01-Jul-09' which is when we released the strategy system.\n";
+	print "- If you enter 'guests' as a fourth argument, only guests will be checked,--but keep in mind that there might be no guest info if we archived it.
+             The default is only reading login users activity.
+             Developers and the eupathdb user (sample strategies) are always removed.\n\n";
+	exit 1;
+}
+
+my $start_run = time();
+
+my $model;
+my $project = $ARGV[0];
+if ( $project eq "all" ) {
+	$project = "%";
+} elsif ( !($project =~ m/DB/) ) {
+	die "which project you want?  PlasmoDB, CryptoDB, etc  or all ?\n";
+}
+
+
+if ( $project =~ m/DB/ ) {
+	$model = $project;
+} else {
+	$model = $DEFAULT_PROJ;
+}
+
+my $c = new ApiCommonWebsite::Model::ModelConfig($model);
+my $u  = $c->userDb->getLogin;
+my $pw = $c->userDb->getPassword;
+
+my $database = "dbi:Oracle:$ARGV[1]";
+my $userschema = $USER_SCHEMA;
+my $dbh = DBI->connect($database,$u,$pw,{
+																				 PrintError =>1,
+																				 RaiseError =>0}) or die "Can't connect to the database: $DBI::errstr\n";
+my $quotedproject  = $dbh->quote( $project );
+$dbh->{LongTruncOk} = 1; #to deal with clob in steps table "display_params"
+$dbh->{LongReadLen} = 180;
+
+
+
+my $myDate = $ARGV[2];
+if ( !$myDate ) {
+	$myDate = "01-JUL-09";				#when we first released strategies
+}
+my $quoteddate  = $dbh->quote( $myDate );
+my $allusers = $ARGV[3];
+my $sqlQueries;
+
+if (! $allusers) {		# only reg users
+	$sqlQueries->{strategySql} = <<EOSQL;
+    SELECT  s.strategy_id, s.name, s.user_id, u.email, s.project_id, s.is_deleted, s.is_saved, s.create_time, s.last_modify_time, s.root_step_id
+	FROM     $userschema.strategies s, $userschema.users u
+	WHERE  u.is_guest != 1
+	AND    s.project_id like $quotedproject
+	AND    s.create_time >= $quoteddate 
+	AND    s.is_deleted != 1
+	AND    s.user_id not in (46,48,50,58,64,75,81,82,128,198,223,338,339,340,346,358,369,376,391,394,409,429,542,591,632,660,725,741,1047,48407,767273,875510,1926010,2091450,3407050,4511870,5117933,7145453,12401223,29956050,51596660,53011190,70521010)
+  and    s.user_id = u.user_id
+ ORDER BY s.user_id,s.strategy_id
+	
+EOSQL
+} else {     # only guest users (CHANGE THE SQL IF YOU WANT ALL USERS, remove developers)
+	$sqlQueries->{strategySql} = <<EOSQL;
+    SELECT  s.strategy_id, s.name, s.user_id, u.email, s.project_id, s.is_deleted, s.is_saved, s.create_time, s.last_modify_time, s.root_step_id
+	FROM     $userschema.strategies s, $userschema.users u
+	WHERE  u.is_guest = 1
+  AND    s.project_id like $quotedproject
+	AND    s.create_time >= $quoteddate 
+	AND    s.is_deleted != 1
+	AND    s.user_id = u.user_id 
+ ORDER BY s.user_id,s.strategy_id
+	
+EOSQL
+}
+
+$sqlQueries->{stepSql} = <<EOSQL;
+    SELECT   s.left_child_id, s.right_child_id, s.is_valid, s.is_collapsible, s.custom_name, s.estimate_size, s.assigned_weight, s.question_name, s.display_params
+	FROM     $userschema.steps s
+	WHERE  s.user_id = ?
+	AND    s.step_id = ?
+    
+EOSQL
+
+
+#---------------- initial PRINT OUTS -----------------
+
+my $sec,my $min,my $hour,my $mday,my $mon,my $year,my $wday,my $yday,my $isdst;
+my @months = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec); # array, no hash
+($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+my $today = "$mday-".$months[$mon]. "-".($year-100);
+
+print "today is: $today\n\n"; 
+print "Database: $database, user schema: $userschema\n\n";
+
+
+print "\nREMINDER: Nagios runs a 'membrane' text search (hardcoded) every 5 minutes, 24/7 --that is 288 searches (one-step strategies) and 288 guest users per project/day that should be accounted for.\n";
+print "SQL used:\n";
+print "$sqlQueries->{strategySql}\n\n";
+print "$sqlQueries->{stepSql}\n";
+#---------------------------------------------------
+
+my $hash_ref;
+my $hash_ref_rightchild;
+my $sth1;
+my $sth2;
+my $sth3;
+my $sql;
+
+######### declarations for stats on ALL main strategies (main =  not nested)
+my $savedStrategyCount1 = 0;		#only 1-step strats
+my $savedStrategyCount2 = 0;		#only >1-step strats
+my $strategyCount = 0;  
+my $strategyCount2 = 0;					#only >1-step strats
+my @stratStepCounterArray; #main strat count for each possible stepCount (1,2,3,...)
+
+my $stratTransf = 0; #to store number of main strategies (not nested) containing that operation
+my $stratUnion = 0;
+my $stratInter = 0;
+my $stratMinus = 0;
+my $stratNested = 0;
+my $stratRealNested = 0;
+
+my $revisedStratCount = 0;    #for all main strategies, revised counts
+my $weighedStratCount = 0;
+my $zeroResultsStepStratCount = 0; # used for one step stats only....
+my $defaultTextStepStratCount = 0; # text search defaults in one-step strats only
+
+my $stepWithWeightCount = 0; #step count across all strats, including nested steps
+
+my %usersHash = {};							#main strat distribution among users
+
+
+my @revisedStratStepCounterArray;
+my @weighedStratStepCounterArray;
+
+my @zeroResultsStepStratStepCounterArray;	# used for one-step stats only....
+
+my @nestedStratStepCounterArray; #main strat -with nested strats- count for each possible stepCount (1,2,3,...) ---only realnested!!
+
+# three  sets with moreThanOneStep strategies: interesting + non interesting = total; very int included in interesting
+my $veryint = 0;     
+my $interesting = 0;   
+my $unint = 0;       
+
+#---------------- one-step strats
+my %oneStepUsersHash  = {};             
+my $oneStepRevisedStratCount = 0;  
+
+#---------------- more-than-one-step strats
+my %moreThanOneStepUsersHash  = {};
+
+#---------------- more-than-one-step strats: UNINT  ---      2 steps AND inter operation     AND has no nested
+my %unintUsersHash  = {};               
+my $unintRevisedStratCount = 0;  
+my @unintRevisedStratStepCounterArray;
+
+#---------------- more-than-one-step strats: INTERESTING ---  2 steps AND non-inter operation AND has no nested
+my %intUsersHash  = {};               
+my $intRevisedStratCount = 0;  
+my @intRevisedStratStepCounterArray;
+
+#---------------- more-than-one-step strats: VERYINT ---      >2steps AND a non-inter operation)  OR has_nested
+my %veryintUsersHash  = {};               
+my $veryintRevisedStratCount = 0;  
+my @veryintRevisedStratStepCounterArray;
+
+#---------------- nested strats
+my @nestedStratStepCounterArray2; #nested strat count for each possible stepCount (1,2,3,...)
+
+#---------------- search/step counters
+my %zeroResultsOneStepStratQuestionCounterHash  = {}; # searches in one step strats that return 0 results (looking for bots activity)
+my %oneStepStratQuestionCounterHash  = {};
+my %moreThanOneStepStratQuestionCounterHash  = {};
+my $allStepsCount = 0; # number of search steps in >1-step strategies INCLUDES NESTED!!!!
+my @stratIdArray;		# stores strat Ids so we can access the hash below
+my %stratHasCommonQ; # boolean hash: strat has a common question or not. 
+#common questions are defined below, as the most common in 1-step strats
+
+
+######### MOST COMMON (6) QUESTIONS (in PlasmoDB, Sep 2010, in 1-step strats)
+
+my %commonQuestions;
+foreach ("GeneQuestions.GenesByTextSearch",
+				 "GeneQuestions.GenesBySimilarity",
+				 "GeneQuestions.GeneByLocusTag",
+				 "GeneQuestions.GenesByInterproDomain",
+				 "GeneQuestions.GeneBySingleLocusTag",
+				 "GenomicSequenceQuestions.SequencesBySimilarity") {
+	$commonQuestions{$_} = 1;
+}
+;
+my $commonQuestionNum = keys %commonQuestions;
+
+######### for EACH strategy (cannot be declared inside strat loop because most are used in doSteps --- we should probably do it after doStep() unless it counts nested strats )
+
+#we read in SQL
+my $strat_id; 
+my $mystepId;
+my $myuser;
+my $myuseremail;
+
+my $saved;											#boolean, we want to count %
+my $name;												#for debugging
+my $project_id;									#for debugging
+
+#we generate, by looping the steps: doSteps() recursive
+my $stepCount;					 #main strategy (not counting steps in nested)
+
+my $transform; #boolean: tells if a specific strategy has the operation (e.g.transf); we do not count how many transforms
+my $union;
+my $intersect;
+my $minus;
+my $has_nested;
+my $realnested;
+my $spanlogic; #so we can dismiss the strat containing spanlogic (this is when we were running this years ago when these were in development)
+my $invalid;	 #boolean, unused
+my $has_weight;									#boolean,
+my $has_zeroResultsStep;				#boolean,
+
+# -------------------------------------------------------------  LOOPING STRATEGIES
+$sql =  $sqlQueries->{strategySql};
+$sth1 = $dbh->prepare($sql)  or &error($DBI::errstr);
+$sth1->execute();
+
+while ( $hash_ref = $sth1->fetchrow_hashref ) {
+	$strategyCount++;	#do it here instead of after doSteps() if you want to catch spanlogic or other bogus strategies
+	$stepCount = 0;
+
+	$strat_id =  $hash_ref->{STRATEGY_ID}; #only used for printout in case of error
+	$mystepId = $hash_ref->{ROOT_STEP_ID};
+	$myuser = $hash_ref->{USER_ID};
+	$myuseremail = $hash_ref->{EMAIL};
+
+	$saved = $hash_ref->{IS_SAVED};
+	$name  = $hash_ref->{NAME};
+	$project_id = $hash_ref->{PROJECT_ID};
+
+	$transform = 0;		# these are updated to 1 -when found- in doSteps()
+	$union = 0;
+	$intersect = 0;
+	$minus = 0;
+	$has_nested = 0;
+	$realnested = 0;
+	$spanlogic = 0;
+	$invalid = 0;
+	$has_weight = 0;
+	$has_zeroResultsStep = 0;
+
+	# only meaningful for 1-step strategies, if adding a step does not count as revise....
+	# comparing hours: assumed revised if worked on an hour later, even if it is for adding a step
+	# example of what $create_time might have:    23-OCT-10 06.32.23.000000 AM
+	my $revised =  substr($hash_ref->{CREATE_TIME},0,12) ne substr($hash_ref->{LAST_MODIFY_TIME},0,12);
+	#    my $fakerevised = $hash_ref->{CREATE_TIME} ne $hash_ref->{LAST_MODIFY_TIME};
+
+	# -----------------------------------  LOOPING ALL STEPS OF THIS main STRATEGY
+
+	doSteps($mystepId,"main");
+
+	#-----------------------------------  STATISTICS, adding counts FOR this main STRATEGY (not nested)
+
+	#if (! $spanlogic) {
+	#print "END OF STRATEGY";
+	#	$strategyCount++;   #you could count here instead of at the beginning of the loop, if we do not want to count strategies that contain spanlogic steps
+
+	
+	# counters for all strategies
+	$stratStepCounterArray[$stepCount]++;
+
+	$stratTransf += $transform;
+	$stratUnion += $union;
+	$stratInter += $intersect;
+	$stratMinus += $minus;
+	$stratNested += $has_nested;
+	$stratRealNested += $realnested;
+
+ 
+	#USER AND REVISED COUNTERS (and global nested counter)
+
+	#All strategies 
+	$usersHash{$myuser}++; #if $myuser does not exist, it will be added, otherwise it keeps track of how many strats the user has
+
+	if ( $revised ) {
+		$revisedStratCount++;
+		$revisedStratStepCounterArray[$stepCount]++;
+	}							# elsif ( $fakerevised ) { 	$fakerevisedcounter++;   }
+
+
+	if ( $has_weight ) {
+		$weighedStratCount++;
+		$weighedStratStepCounterArray[$stepCount]++;
+	}							# elsif ( $fakerevised ) { 	$fakerevisedcounter++;   }
+
+	if ( $realnested ) {
+		$nestedStratStepCounterArray[$stepCount]++;
+	}
+
+	#for 1-step strategies
+	if ($stepCount == 1) {
+		$savedStrategyCount1 = $savedStrategyCount1 + $saved; 
+		if (!exists $oneStepUsersHash{$myuser}) {
+			$oneStepUsersHash{$myuser}++;
+		}
+		if ( $revised ) {
+			$oneStepRevisedStratCount++;
+		} 
+		if ( $has_zeroResultsStep ) {
+			$zeroResultsStepStratCount++;
+			#		$zeroResultsStepStratStepCounterArray[$stepCount]++;
+		}
+
+		#for >1-step strategies
+	} else {     
+		$savedStrategyCount2 = $savedStrategyCount2 + $saved; 
+		$stratIdArray[$strategyCount2++] = $strat_id;
+		$moreThanOneStepUsersHash{$myuser}++;    
+	}
+
+	#subcategories for >1-step strategies
+	if ($realnested) { 
+		$veryint++;
+		$veryintUsersHash{$myuser}++; 
+		$intUsersHash{$myuser}++; 
+		if ( $revised ) {
+			$veryintRevisedStratCount++;
+			$veryintRevisedStratStepCounterArray[$stepCount]++;
+		} 
+	} elsif ( $intersect && !$union && !$transform && !$minus ) {
+		$unint++;
+		$unintUsersHash{$myuser}++; 
+		if ( $revised ) {
+			$unintRevisedStratCount++;
+			$unintRevisedStratStepCounterArray[$stepCount]++;
+		} 
+	} elsif ($stepCount == 2 ) {
+		$interesting++;
+		$intUsersHash{$myuser}++; 
+		if ( $revised ) {
+			$intRevisedStratCount++;
+			$intRevisedStratStepCounterArray[$stepCount]++;
+		} 
+	} elsif ( $stepCount > 2 ) {
+		$veryint++;
+		$veryintUsersHash{$myuser}++; 
+		$intUsersHash{$myuser}++; 
+		if ( $revised ) {
+			$veryintRevisedStratCount++;
+			$veryintRevisedStratStepCounterArray[$stepCount]++;
+		} 
+	}
+
+	#	} #if no spanlogic
+	#	else { #print "\n\nFOUND SPANLOGIC strat_id: $strat_id, user: $myuser!\n\n"; 
+	#	}
+
+	#print "strategyCount $strategyCount, and strategies with only 1 step are: $stratStepCounterArray[1]\n\n\n";
+
+
+}																#end of strats
+
+if ( ! $strategyCount) {
+	print "\nNO STRATS HAVE BEEN FOUND in ---$database---$project---activity since: $myDate---$allusers---\n";
+	exit;
+}
+
+# -------------------------------------------------------------  END OF LOOPING STRATEGIES
+
+
+
+
+
+
+
+#------------------------------  PRINTOUTS, once we are done looping  ALL STRATEGIES
+print "\n\nwe have $savedStrategyCount1 saved strategies among 1-step strategies, and we have $savedStrategyCount2 saved strategies among >1-step strategies\n";
+
+
+
+print "\nWe got $defaultTextStepStratCount one-step strats with a text search using default values (synth*)\n\n";
+print "------------------------------------------------------------------";
+my $stepCountTotal = 0;
+print "\nDistribution of strategies by step count\n";
+print "stepCt\tstratCt\n";
+my $stratStepCounterArray = @stratStepCounterArray;
+foreach my $i (1..$stratStepCounterArray-1) {
+	$stepCountTotal += $i*$stratStepCounterArray[$i];
+	print "$i\t$stratStepCounterArray[$i]\n";
+}
+
+
+
+#----------TOTALS
+print "------------------------------------------------------------------\n";
+my $usersCount = keys( %usersHash );
+my $stratsPerUser = $strategyCount / $usersCount;
+my $percRevised;
+if ($strategyCount) {
+	$percRevised = $revisedStratCount *100 / $strategyCount;
+}
+print "ALL strats:\n";
+print "   ---- strategy count: $strategyCount\n";
+printf "   ---- distinct users: %u --  %.0f strategies per user\n",$usersCount,$stratsPerUser;
+print "   ---- revised: $revisedStratCount  -- $percRevised %\n";
+#print "        ($fakerevisedcounter more strategies looked like revised but not really.....)\n";
+print "------------------------------------------------------------------\n";
+
+my $stratCountMoreThanOneStep = $strategyCount - $stratStepCounterArray[1];
+
+
+#----------BY CATEGORIES
+print "------------------------------------------------------------------\n";
+my $oneStepUsersCount = keys ( %oneStepUsersHash );
+my $percUsers = $oneStepUsersCount * 100 / $usersCount;
+my $percRevised;
+if ($stratStepCounterArray[1]) {
+	$percRevised = $oneStepRevisedStratCount * 100 / $stratStepCounterArray[1];
+}
+print "1-step strats:\n";
+print "   ---- strategy count: $stratStepCounterArray[1]\n";
+printf "   ---- distinct users: %u -- %.2f%% of total\n",$oneStepUsersCount,$percUsers;
+printf "   ---- revised: %u -- %.2f%% of %u\n",$oneStepRevisedStratCount,$percRevised,$stratStepCounterArray[1];
+my $propStrats;
+if ($stratCountMoreThanOneStep) {
+	$propStrats = $stratStepCounterArray[1] / $stratCountMoreThanOneStep;
+}
+print "------------------------------------------------------------------\n";
+printf "For each >1-step strategy, there are %.0f 1-step strategies\n",$propStrats;
+print "------------------------------------------------------------------\n";
+print ">1-step strategy categories: \n- very interesting:  (>2 steps AND a non-inter operation) OR has  realnested \n";
+print "- interesting: 2 steps AND non-inter operation AND has no realnested \n";
+print "- uninteresting: only intersect operation AND has no realnested\n\n";
+
+
+
+my $stepCountMoreThanOneStep = $stepCountTotal-$stratStepCounterArray[1];	#should be the same as $allStepsCount
+my $stepAvg;
+if ( $stratCountMoreThanOneStep) {
+	$stepAvg = ($stepCountTotal - $stratStepCounterArray[1]) /  $stratCountMoreThanOneStep;
+}
+my $moreThanOneStepRevisedCount = $veryintRevisedStratCount + $intRevisedStratCount + $unintRevisedStratCount;
+my $moreThanOneStepUsersCount = keys ( %moreThanOneStepUsersHash );
+my $percCount;
+if ($strategyCount) {
+	$percCount = $stratCountMoreThanOneStep * 100 / $strategyCount;
+}
+$percUsers = $moreThanOneStepUsersCount * 100 / $usersCount;
+if ($stratCountMoreThanOneStep) {
+	$percRevised = $moreThanOneStepRevisedCount * 100 / $stratCountMoreThanOneStep;
+}
+$stratsPerUser = $strategyCount2 / $moreThanOneStepUsersCount;
+#$strategyCount2 is = $stratCountMoreThanOneStep
+
+print ">1-step strats:\n";
+printf "   ---- strategy count: %u  -- %.2f%%\n",$stratCountMoreThanOneStep,$percCount;
+printf "   ---- distinct users: %u -- %.2f%% of total  -----  %.0f strategies per user\n",$moreThanOneStepUsersCount,$percUsers,$stratsPerUser;
+print "   ---- revised: $moreThanOneStepRevisedCount -- $percRevised %\n";
+printf "   Total number of steps in these strats is %u -- Avg #steps is %.0f per strategy\n\n",$stepCountMoreThanOneStep,$stepAvg;
+
+my $veryintUsersCount = keys ( %veryintUsersHash );
+my $intUsersCount =  keys ( %intUsersHash );
+my $unintUsersCount =  keys ( %unintUsersHash );
+
+if ($stratCountMoreThanOneStep) {
+	$percCount = $veryint * 100 / $stratCountMoreThanOneStep;
+}
+$percUsers = $veryintUsersCount * 100 / $moreThanOneStepUsersCount;
+
+if ($veryint) {
+	$percRevised = $veryintRevisedStratCount * 100 / $veryint;
+}
+print "- very interesting\n";
+printf "   ---- strategy count: %u -- %.2f%%\n",$veryint,$percCount;
+printf "   ---- distinct users: %u-- %.2f%% (wrt to $moreThanOneStepUsersCount) \n",$veryintUsersCount,$percUsers;
+print "   ---- revised: $veryintRevisedStratCount -- $percRevised %\n\n";
+
+if ($stratCountMoreThanOneStep) {
+	$percCount = ($interesting + $veryint) * 100 / $stratCountMoreThanOneStep;
+}
+$percUsers = $intUsersCount * 100 / $moreThanOneStepUsersCount;
+
+if ($interesting + $veryint) {
+	$percRevised = ($intRevisedStratCount + $veryintRevisedStratCount) * 100 / ($interesting + $veryint);
+}
+print "- interesting AND very interesting\n";
+printf "   ---- strategy count: %u -- %.2f%% \n",$interesting + $veryint,$percCount;
+printf "   ---- distinct users: %u -- %.2f%%\n",$intUsersCount,$percUsers;
+print "   ---- revised:  $intRevisedStratCount -- $percRevised %\n\n";
+
+if ($stratCountMoreThanOneStep) {
+	$percCount = $unint * 100 / $stratCountMoreThanOneStep;
+}
+$percUsers = $unintUsersCount * 100 / $moreThanOneStepUsersCount;
+
+if ($unint) {
+	$percRevised = $unintRevisedStratCount * 100 / $unint;
+}
+print "- uninteresting\n";
+printf "   ---- strategycount: %u -- %.2f%%\n",$unint,$percCount;
+printf "   ---- distinct users: %u -- %.2f%% \n",$unintUsersCount,$percUsers;
+print "   ---- revised:  $unintRevisedStratCount -- $percRevised %\n\n";
+
+my $stratTransfPerc;
+my $stratUnionPerc;
+my $stratInterPerc;
+my $stratMinusPerc;
+my $stratNestedPerc;
+my $stratRealNestedPerc;
+
+if ($strategyCount - $stratStepCounterArray[1]) {
+	$stratTransfPerc = $stratTransf *100  / ($strategyCount - $stratStepCounterArray[1]);
+	$stratUnionPerc = $stratUnion *100 / ($strategyCount - $stratStepCounterArray[1]);
+	$stratInterPerc = $stratInter *100 / ($strategyCount - $stratStepCounterArray[1]);
+	$stratMinusPerc = $stratMinus *100 / ($strategyCount - $stratStepCounterArray[1]);
+	$stratNestedPerc = $stratNested *100 / ($strategyCount - $stratStepCounterArray[1]);
+	$stratRealNestedPerc = $stratRealNested *100 / ($strategyCount - $stratStepCounterArray[1]);
+}
+print "\n\nCounts of whole strategies (main + nested) that have transforms, etc anywhere in them \n(the counters do not count how many transforms or nested strats are in them).\n";
+print "trnsfrm\tunion\tintrsct\tminus\tnested\trealnested (must have >1 step)\n";
+print "$stratTransf\t$stratUnion\t$stratInter\t$stratMinus\t$stratNested\t$stratRealNested\n";
+printf "%.0f%%\t%.0f%%\t%.0f%%\t%.0f%%\t%.0f%%\t%.0f%%",$stratTransfPerc,$stratUnionPerc,$stratInterPerc,$stratMinusPerc,$stratNestedPerc,$stratRealNestedPerc;
+print "       (percentages with respect to the $stratCountMoreThanOneStep strategies.)\n";
+
+#--------------- with WEIGHTS
+print "------------------------------------------------------------------";
+print "\nSteps with weight: $stepWithWeightCount (probably not in one-step strategies)\n\n";
+
+print "\nDistribution of the $weighedStratCount strategies with weights, by step count\n";
+print "stepCt\tstratCt\t% (with respect to the number of strats with that step count)\n";
+foreach my $i (1..$stratStepCounterArray-1) {
+	my $perc;
+	if ( $stratStepCounterArray[$i] ) {
+		$perc = $weighedStratStepCounterArray[$i] * 100 / $stratStepCounterArray[$i];
+	}
+	print "$i\t$weighedStratStepCounterArray[$i]\t$perc %\n";
+}
+
+
+#--------------- REVISED based on strategy time/date update
+print "------------------------------------------------------------------";
+print "\nDistribution of the $revisedStratCount revised strategies by step count\n";
+print "stepCt\tstratCt\t% (with respect to the number of strats with that step count)\n";
+foreach my $i (1..$stratStepCounterArray-1) {
+	my $perc;
+	if ( $stratStepCounterArray[$i] ) {
+		$perc = $revisedStratStepCounterArray[$i] * 100 / $stratStepCounterArray[$i];
+	}
+	print "$i\t$revisedStratStepCounterArray[$i]\t$perc %\n";
+}
+
+
+
+#--------------- NESTED
+print "------------------------------------------------------------------";
+#print "\n\nDistribution of $stratNested strategies that have nested strats, by step count (though we do not know how many of these have nested that do not go beyond the leave step....)\n";
+print "\n\nDistribution of $stratRealNested strategies that have nested strats, by step count (we do not count single steps as nested)\n";
+print "stepCt\tstratCt\n";
+my $size = @nestedStratStepCounterArray;
+foreach my $i (1..$size-1) {
+	print "$i\t$nestedStratStepCounterArray[$i]\n";
+}
+
+my $nestedStratCount = 0;
+my $nestedStepCount = 0;
+print "\n\nDistribution of nested strategies by step count\n";
+print "stepCt\tstratCt\n";
+my $nestedStratStepCounterArray2 = @nestedStratStepCounterArray2;
+foreach my $i (1..$nestedStratStepCounterArray2-1) {
+	$nestedStratCount += $nestedStratStepCounterArray2[$i];
+	$nestedStepCount += $i*$nestedStratStepCounterArray2[$i];
+	print "$i\t$nestedStratStepCounterArray2[$i]\n";
+}
+print "\n$nestedStratCount nested strategies with $nestedStepCount steps in total.\n";
+
+# for when we count the fake nested, in doSteps
+#my $nestedStratCountMoreThanOneStep = $nestedStratCount - $nestedStratStepCounterArray2[1];
+#my $nestedStepCountMoreThanOneStep = $nestedStepCount - $nestedStratStepCounterArray2[1];
+#print "Only $nestedStratCountMoreThanOneStep (out of $nestedStratCount) are really being used by having more than one step, with $nestedStepCountMoreThanOneStep steps in total. Reminder: there were $stratNested strategies that were using nested strategies, but we do not know how many of these have nested with more than one step.\n\n";
+
+
+#---------- SEARCHES
+print "------------------------------------------------------------------\n\n";
+print "\nEFFECTED $stratStepCounterArray[1] SEARCHES in 1-step strategies:\n";
+print "search name\t\t\t\t\t\tstepCt\tstepCt in >1-step strats\t% (wrt $allStepsCount steps in >1-step strategies --see below)\n\n";
+my $questionCountOneStep=0;
+my $firstQuestionsStepCount = 0;
+my %percMoreThanOneStepStratQuestionCounterHash;
+my %percOneVsMultiStepQuestionCounterHash;
+my $n;
+my $qnameFixed;
+foreach my $qname (sort hashValueDescendingNum (keys(%oneStepStratQuestionCounterHash))) {
+
+	if ($allStepsCount) {
+		$percMoreThanOneStepStratQuestionCounterHash{$qname} = $moreThanOneStepStratQuestionCounterHash{$qname} * 100 / $allStepsCount ;
+	}
+    
+	if ( ($oneStepStratQuestionCounterHash{$qname} + $moreThanOneStepStratQuestionCounterHash{$qname}) != 0 ) { 
+		$percOneVsMultiStepQuestionCounterHash{$qname} = $moreThanOneStepStratQuestionCounterHash{$qname} * 100 / ($oneStepStratQuestionCounterHash{$qname} + $moreThanOneStepStratQuestionCounterHash{$qname});
+	}
+
+	$n = 50 - length($qname);
+	#print "\n*******\n$n\n********\n";
+	$qnameFixed = $qname . addTrailSpaces($n);
+
+	printf "%s\t%u\t\t%u\t\t\t%.0f%%\n", $qnameFixed,$oneStepStratQuestionCounterHash{$qname},$moreThanOneStepStratQuestionCounterHash{$qname},$percMoreThanOneStepStratQuestionCounterHash{$qname};
+	$questionCountOneStep++;
+	my $i = 0;
+	if ($i < $commonQuestionNum) {
+		$firstQuestionsStepCount += $oneStepStratQuestionCounterHash{$qname};
+	}
+	$i++;
+}
+print "\nTOTAL #steps (same as #strategies!):  $stratStepCounterArray[1]    ";
+my $percStepsInQuestions;
+if ($stratStepCounterArray[1]) {
+	$percStepsInQuestions = $firstQuestionsStepCount *100 / $stratStepCounterArray[1];
+}
+printf "(in the first %u searches: %u ---%.2f%%)\n",$commonQuestionNum,$firstQuestionsStepCount,$percStepsInQuestions;
+print "TOTAL used #searches:  $questionCountOneStep   \n\n";
+
+my $stratCountWithCommonQ = 0;
+foreach my $i (0..$strategyCount2-1) {
+	$stratCountWithCommonQ += $stratHasCommonQ{$stratIdArray[$i]};
+}
+
+my $percStratCountWithCommonQ;
+if ($strategyCount2) {
+	$percStratCountWithCommonQ = $stratCountWithCommonQ * 100 / $strategyCount2;
+}
+my $percSearches;
+if ($stratStepCounterArray[1]+ $allStepsCount) {
+	$percSearches = $allStepsCount * 100 / ($stratStepCounterArray[1]+ $allStepsCount);
+}
+print "------------------------------------------------------------------\n\n";
+print "Definition: Common Search: any of the first $commonQuestionNum searches in 1-step strategies\n";
+printf "TOTAL number of >1-step strategies with a common search = %u (%.2f%% of %u strats)\n",$stratCountWithCommonQ,$percStratCountWithCommonQ,$strategyCount2;
+
+printf "\nEFFECTED %u SEARCHES in >1-step strategies (%.2f%% of all searches) :\n", $allStepsCount,$percSearches;
+print "search name\t\t\t\t\t\t\tstepCt\t%\n\n";
+my $questionCountMoreThanOneStep=0;
+
+foreach my $qname (sort hashValueDescendingNumB (keys(%moreThanOneStepStratQuestionCounterHash))) {
+
+	if ($allStepsCount) {
+		$percMoreThanOneStepStratQuestionCounterHash{$qname} = $moreThanOneStepStratQuestionCounterHash{$qname} * 100 / $allStepsCount ;
+	}
+
+	if ( ($oneStepStratQuestionCounterHash{$qname} + $moreThanOneStepStratQuestionCounterHash{$qname}) != 0 ) { 
+		$percOneVsMultiStepQuestionCounterHash{$qname} = $moreThanOneStepStratQuestionCounterHash{$qname} * 100 / ($oneStepStratQuestionCounterHash{$qname} + $moreThanOneStepStratQuestionCounterHash{$qname}); 
+	}   
+
+	$n = 50 - length($qname);
+	#print "\n*******\n$n\n********\n";
+	$qnameFixed = $qname . addTrailSpaces($n);
+
+	printf "%s\t\t%u\t%.0f%%\n",$qnameFixed,$moreThanOneStepStratQuestionCounterHash{$qname},$percMoreThanOneStepStratQuestionCounterHash{$qname};
+	$questionCountMoreThanOneStep++;
+}
+#print "\nTOTAL #steps: $allStepsCount (should be approx $stepCountMoreThanOneStep - the steps that are really nested steps $nestedStratCount + the steps in the nested strats :   $nestedStepCountMoreThanOneStep)";
+print "\nTOTAL #steps: $allStepsCount    \n  (should be approx $stepCountMoreThanOneStep - the steps that are really nested steps $nestedStratCount + the steps in the nested strats : $nestedStepCount)";
+print "\nTOTAL used #searches:  $questionCountMoreThanOneStep   \n\n";
+
+
+
+my %percZeroResultsOneStepStratQuestionCounterHash;
+print "------------------------------------------------------------------\n\n";
+print "\nEFFECTED $zeroResultsStepStratCount SEARCHES in 1-step strategies with result 0:\n";
+print "search name\t\t\t\t\t\tstepCt\n\n";
+foreach my $qname (sort hashValueDescendingNumD (keys(%zeroResultsOneStepStratQuestionCounterHash))) {
+
+	if ( $oneStepStratQuestionCounterHash{$qname} ) {
+		$percZeroResultsOneStepStratQuestionCounterHash{$qname} = $zeroResultsOneStepStratQuestionCounterHash{$qname} * 100 / $oneStepStratQuestionCounterHash{$qname};
+	}
+
+	$n = 50 - length($qname);
+	#print "\n*******\n$n\n********\n";
+	$qnameFixed = $qname . addTrailSpaces($n);
+
+	printf "%s\t%u\t%.0f%%\n", $qnameFixed,$zeroResultsOneStepStratQuestionCounterHash{$qname},$percZeroResultsOneStepStratQuestionCounterHash{$qname};
+}
+
+
+
+print "------------------------------------------------------------------\n\n";
+print "\nFor each search used in any strategy, percentage of the times it appears in a multistep strategy vs.times it appears in one-step strats\n";
+foreach my $qname (sort hashValueDescendingNumC (keys(%percOneVsMultiStepQuestionCounterHash))) {
+ 
+	$n = 50 - length($qname);
+	#print "\n*******\n$n\n********\n";
+	$qnameFixed = $qname . addTrailSpaces($n);
+
+	printf "%s\t%.0f%%\n", $qnameFixed,$percOneVsMultiStepQuestionCounterHash{$qname};
+}
+
+print "------------------------ THE END ------------------------------------------\n\n";
+$sth1->finish();
+if ($sth2) {
+	$sth2->finish();
+}
+if ($sth3) {
+	$sth3->finish();
+}
+
+
+my $end_run = time();
+my $run_time = $end_run - $start_run;
+my $minutes = $run_time/60;
+my $hours = $minutes/60;
+if ( $project eq "%" ) {
+	$project = "all projects";
+}
+if ( $allusers ) {
+	$allusers = "guest users";
+} else {
+	$allusers = "login users";
+}
+printf "*********************Job took $run_time seconds (%.2f minutes) (%.2f hours) \n",$minutes,$hours;
+print "*********************command:    ----$database---$USER_SCHEMA-----Project:--$project---activity since: $myDate---$allusers---  **************\n";
+
+
+
+
+#  ========================= SUBROUTINES ================================================================
+sub hashValueAscendingNum {
+	$oneStepStratQuestionCounterHash{$a} <=> $oneStepStratQuestionCounterHash{$b};
+}
+sub hashValueDescendingNum {
+	$oneStepStratQuestionCounterHash{$b} <=> $oneStepStratQuestionCounterHash{$a};
+}
+
+sub hashValueAscendingNumB {
+	$moreThanOneStepStratQuestionCounterHash{$a} <=> $moreThanOneStepStratQuestionCounterHash{$b};
+}
+sub hashValueDescendingNumB {
+	$moreThanOneStepStratQuestionCounterHash{$b} <=> $moreThanOneStepStratQuestionCounterHash{$a};
+}
+
+sub hashValueAscendingNumC {
+	$percOneVsMultiStepQuestionCounterHash{$a} <=> $percOneVsMultiStepQuestionCounterHash{$b};
+}
+sub hashValueDescendingNumC {
+	$percOneVsMultiStepQuestionCounterHash{$b} <=> $percOneVsMultiStepQuestionCounterHash{$a};
+}
+
+sub hashValueAscendingNumD {
+	$zeroResultsOneStepStratQuestionCounterHash{$a} <=> $zeroResultsOneStepStratQuestionCounterHash{$b};
+}
+sub hashValueDescendingNumD {
+	$zeroResultsOneStepStratQuestionCounterHash{$b} <=> $zeroResultsOneStepStratQuestionCounterHash{$a};
+}
+
+sub addTrailSpaces {
+	my $n = $_[0];
+	my $string;
+	for (my $i=1;$i<=$n;$i++) {
+		$string .= " ";
+	}
+	return $string;
+}
+
+# ==================================== LOOPING THROUGH STEPS =======================================
+
+# TASK:  a branch (main or nested) of the tree is traveresed backwards until the left-most step is found
+# INPUT: initial step ID, main or not (the sub knows if she is the main strategy or a nested strategy)
+#
+# Stats gathered while traversing the branch (global vars)
+#   $stepCount ++ , only if main strategy (local $stepCountInNested has step count in a nested strat)
+#   $stepWithWeightCount ++ anywhere (including nested strategies
+#   $transform, $union, $intrsect, $has_nested, $minus  get to be updated from 0 to 1 when any found anywhere in the strategy; 
+#   @nestedStratStepCounterArray2 stores nested strat counts per their number of steps
+#   %moreThanOneStepStratQuestionCounterHash OR %oneStepStratQuestionCounterHash (only if main) are filled in
+
+sub doSteps {
+	my $mystepId = $_[0];
+	my $mainStrat = $_[1];
+
+	my $stepCountInNested = 0; #to fill in @nestedStratStepCounterArray2
+	my $lastStep;	#boolean, to stop looping on a branch, indicates that we reached the left-most step (step 1 on UI)
+
+	while (! $lastStep) {
+
+		$sql =  $sqlQueries->{stepSql};
+		$sth2 = $dbh->prepare($sql)  or &error($DBI::errstr);	
+		#print "\n\n$sql\n\n";
+		$sth2->bind_param( 1, $myuser);
+		$sth2->bind_param( 2, $mystepId);
+		$sth2->execute();
+		my $hash_ref = $sth2->fetchrow_hashref;
+
+#		if ( keys %{ $hash_ref } == 0 ) {
+		if ( !$hash_ref ) {
+			print "\n\nERROR: DID NOT FIND STEP $mystepId (ROOT or other step inline) in user: --$myuser--$myuseremail\n";
+	    print "Project: $project_id\n";
+	    print "Strategy name: --$name--, Strategy id: --$strat_id--, ** strategy with $stepCount steps**\n";
+			print "Strategy invalid? --$invalid--\n";
+			$lastStep = 1;
+			print " =============== END OF STRATGEGY =====================\n\n\n";
+		}
+		else {
+			#print "====================== NEW STEP =====================\n\n";
+
+			if ($hash_ref->{ASSIGNED_WEIGHT}) { 
+				$stepWithWeightCount++; 
+				$has_weight = 1;
+			}
+			if (! $hash_ref->{ESTIMATE_SIZE} ) { 
+				$has_zeroResultsStep = 1;
+			}
+
+			if ($mainStrat) {
+				$stepCount++;
+			} else {
+				$stepCountInNested++;
+			} 
+
+			# step: 'is_valid' is empty in most steps, while other steps have1 as valid; Only 0 means invalid!!
+			#print "step (starting from rightmost) $mystepId has  is_valid  --$hash_ref->{IS_VALID}-- \n";
+			if ( $hash_ref->{IS_VALID} eq "0" ) {
+				$invalid = 1;
+			}
+
+			if ( !($hash_ref->{LEFT_CHILD_ID}) && !($hash_ref->{RIGHT_CHILD_ID}) ) {
+
+				# FOUND LAST STEP (that is: first step, left-most)
+				#*******it could come here when the step id is not found  ("no rows selected"), we lost part of the strategy..
+				if ($stepCount == 1) {	# we know we are in MAIN strat   
+					#--if we were in a nested strat the stepCount (which counts steps in a main strategy)  would be at least 2
+					$oneStepStratQuestionCounterHash{$hash_ref->{QUESTION_NAME}}++;
+					if ( $has_zeroResultsStep ) {
+						$zeroResultsOneStepStratQuestionCounterHash{$hash_ref->{QUESTION_NAME}}++;
+					}
+
+					if (   ($hash_ref->{QUESTION_NAME} eq "GeneQuestions.GenesByTextSearch") ) {
+						my $params = $hash_ref->{DISPLAY_PARAMS};
+						my ($whole_words, $max_pvalue,$text_fields,$text_expression,$text_search_organism,$timestamp) = split(/\,/,$params);
+						my ($title,$value) = split(/:/,$text_expression);
+						#print " ONE STEP STRAT WITH TEXT SEARCH: $hash_ref->{DISPLAY_PARAMS}\n";
+						if ( $value eq "\"synth\*\"" ) {
+							$defaultTextStepStratCount++;
+						}
+					}
+				} 
+				#******* last step in a strategy with stepCount > 1, could be main or nested strat
+				else {
+					$moreThanOneStepStratQuestionCounterHash{$hash_ref->{QUESTION_NAME}}++;  
+					$allStepsCount++;
+
+					if (exists  $commonQuestions{$hash_ref->{QUESTION_NAME}} ) {
+						$stratHasCommonQ{$strat_id} = 1;
+					}
+				}	#stepcount > 1
+
+				$lastStep = 1;
+
+				if (!$mainStrat) {						#if this is a nested strat
+					if ($stepCountInNested > 1) { #only if realnested
+						$realnested = 1;	#to count this strat as very interesting
+						$nestedStratStepCounterArray2[$stepCountInNested]++;
+					}
+				}
+
+				# if a step does not have a question name associated ring the bell
+				if ( !$hash_ref->{QUESTION_NAME} ) {
+					print "\nERROR: no QUESTION NAME in first (last one being checked) STEP: $mystepId ** strategy with $stepCount steps** \n";
+					print "User:--$myuser--$myuseremail \n";
+					print "Project: $project_id\n";
+					print "Strategy name:--$name--, Strategy id: --$strat_id\n";
+					print "Strategy invalid? --$invalid--\n";
+				}
+
+				# END OF LAST STEP
+				#print " =============== END OF STRATGEGY =====================\n\n\n";
+
+
+
+			} elsif ( !($hash_ref->{RIGHT_CHILD_ID}) ) {
+				# FOUND TRANSFORM
+
+				$transform = 1;
+				$moreThanOneStepStratQuestionCounterHash{$hash_ref->{QUESTION_NAME}}++; 
+				if (exists  $commonQuestions{$moreThanOneStepStratQuestionCounterHash{$hash_ref->{QUESTION_NAME}}} ) {
+					$stratHasCommonQ{$strat_id} = 1;
+				}
+				$allStepsCount++;
+				# if a step does not have a question name associated ring the bell
+				if ( !$hash_ref->{QUESTION_NAME} ) {
+					print "\nERROR:no QUESTION NAME in transform STEP $mystepId, strategy with $stepCount steps\n";
+					print "User:--$myuser--$myuseremail \n";
+					print "Project: $project_id\n";
+					print "Strategy name:--$name--, Strategy id: --$strat_id\n";
+					print "Strategy invalid? --$invalid--\n";
+				}
+
+			} elsif ( $hash_ref->{LEFT_CHILD_ID} && $hash_ref->{RIGHT_CHILD_ID} ) {
+				# FOUND BOOLEAN OPERATION (could be spanlogic in developers strats)
+
+				# if a step does not have a question name associated ring the bell
+				if ( !$hash_ref->{QUESTION_NAME} ) {
+					print "\nERROR:no QUESTION NAME in boolean STEP $mystepId, strategy with $stepCount steps\n";
+					print "User:--$myuser--$myuseremail \n";
+					print "Project: $project_id\n";
+					print "Strategy name:--$name--, Strategy id: --$strat_id\n";
+					print "Strategy invalid? --$invalid--\n";
+				}
+	   
+				if ( $hash_ref->{CUSTOM_NAME} =~ m/UNION/ ) {
+					$union = 1;
+				} elsif ( $hash_ref->{CUSTOM_NAME} =~ m/INTERSECT/ ) {
+					$intersect = 1;
+				} elsif ( $hash_ref->{CUSTOM_NAME} =~ m/MINUS/ ) {
+					$minus = 1;
+				} else {								# SPAN LOGIC !!!!
+					#$spanlogic = 1; ---SEE EXPLANATION BELOW, THIS WAS DONE WHEN WE DID NOT WANT TO COUNT SPAN LOGIC ACTIVITY
+					#$lastStep = 1; # finish checking steps in this strategy.... if possible do not count stats of this one 
+				}
+	
+				#if (! $spanlogic) {  #back in 2010 we did not want to count strategies that contained spanlogic operations, since they were only in development
+				# checking the right child step of a boolean (or spanlogic): could be a nested or a leave
+
+				$sql =  $sqlQueries->{stepSql};
+				$sth3 = $dbh->prepare($sql)  or &error($DBI::errstr);
+				$sth3->bind_param(1,$myuser);
+				$sth3->bind_param(2,$hash_ref->{RIGHT_CHILD_ID});
+				$sth3->execute();
+				$hash_ref_rightchild = $sth3->fetchrow_hashref;
+
+				if (! $hash_ref_rightchild) { #TELL JERRIC ABOUT THIS
+					print "\n\nERROR: DID NOT FIND A RIGHT CHILD STEP IN OPERATION STEP $mystepId FOR THE SAME STRATEGY USER: --$myuser--$myuseremail--\n";
+					print "Project: $project_id\n";
+					print "Strategy name:--$name--, Strategy id: --$strat_id--, ** strategy with $stepCount steps**\n";
+					print "Strategy invalid? --$invalid--\n\n";
+
+				} elsif ( $hash_ref_rightchild->{IS_COLLAPSIBLE} ) {
+					#to count this strat as containing nested in $stratNested, 
+					#       but if it turns that it only has one step, it will not be count as realnested (in doSteps()
+					$has_nested = 1; 
+
+					##### TASKS when traversing a nested strat
+					# $stepWithWeightCount ++ 
+					# $transform, $union, $intrsect, $has_nested, $minus, $invalid,  get to be updated from 0 to 1 when any found anywhere in the strategy; 
+					# @nestedStratStepCounterArray2 stores nested strat counts per their number of steps
+					# finally: %moreThanOneStepStratQuestionCounterHash is filled in
+					doSteps($hash_ref->{RIGHT_CHILD_ID},""); #recursive call
+
+					$lastStep = 0; #important to reset, we are back on a previous branch....
+
+				} else {	#right child is just a leave, not nested
+					$moreThanOneStepStratQuestionCounterHash{$hash_ref_rightchild->{QUESTION_NAME}}++; 
+					if (exists  $commonQuestions{$moreThanOneStepStratQuestionCounterHash{$hash_ref->{QUESTION_NAME}}} ) {
+						$stratHasCommonQ{$strat_id} = 1;
+					}
+					$allStepsCount++;
+		    
+					if ( !$hash_ref_rightchild->{QUESTION_NAME} ) {
+						print "\nERROR: NO QUESTION NAME found in LEAVE STEP $mystepId, strategy with $stepCount steps\n";
+						print "User:--$myuser--$myuseremail \n";
+						print "Project: $project_id\n";
+						print "Strategy name:--$name--, Strategy id: --$strat_id\n";
+						print "Strategy invalid? --$invalid--\n";
+					}
+				}
+
+				#}												#if a boolean operation (not span logic)
+
+			} #END OF FOUND BOOLEAN OPERATION (could be spanlogic in developers strats)
+
+			$mystepId = $hash_ref->{LEFT_CHILD_ID};
+
+			#if ($mystepId) { print"\n****last step?  $lastStep --- GOING FOR ANOTHER STEP...... $mystepId\n";}
+			#else {print "\nlast step?  $lastStep ---FINISHED STEP LOOP\n";}
+
+		} # end of readable step
+
+	} #end of while, looping steps in a branch (main or nested strategy)
+
+} # end of subroutine
+
+
+
+__END__
+

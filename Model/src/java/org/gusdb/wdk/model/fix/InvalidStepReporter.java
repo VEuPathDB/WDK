@@ -117,18 +117,21 @@ public class InvalidStepReporter extends BaseCLI {
       throws SQLException {
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
     String steps = userDB.getUserSchema() + "steps";
+    String users = userDB.getUserSchema() + "users";
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
     String sql = "SELECT count(distinct s.step_id) count, s.project_id, s.question_name"
-        + " FROM " + steps + " s,"
+        + " FROM " + steps + " s," + users + " u,"
         + "  (SELECT project_id, question_name FROM " + steps
         + "   MINUS      "
         + "   SELECT project_id, question_name FROM wdk_questions) d"
         + " WHERE s.project_id = d.project_id"
+				+ " AND s.user_id = u.user_id "
+				+ " AND u.is_guest = 0 "
         + " AND s.question_name = d.question_name " + flag
         + " GROUP BY s.project_id, s.question_name"
         + " ORDER BY s.project_id, s.question_name";
-
+ 
     ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
         "wdk-invalid-report-questions");
     System.out.println("----------- Invalid Question Name ------------");
@@ -151,11 +154,12 @@ public class InvalidStepReporter extends BaseCLI {
   private void paramNames(WdkModel wdkModel, String flag) throws SQLException {
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
     String steps = userDB.getUserSchema() + "steps";
+    String users = userDB.getUserSchema() + "users";
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
     String sql = "SELECT count(distinct s.step_id) count, s.project_id, s.question_name, "
         + "      sp.param_name       "
-        + "FROM step_params sp, wdk_questions wq, " + steps + " s, "
+        + "FROM step_params sp, wdk_questions wq, " + steps + " s, " + users + " u, "
         + "     ( SELECT s.project_id, s.question_name, sp.param_name "
         + "       FROM step_params sp, " + steps + " s "
         + "       WHERE sp.step_id = s.step_id             " + flag
@@ -164,6 +168,8 @@ public class InvalidStepReporter extends BaseCLI {
         + "       FROM wdk_questions q, wdk_params p "
         + "       WHERE q.question_id = p.question_id) d     "
         + "WHERE s.project_id = d.project_id  "
+				+ " AND s.user_id = u.user_id "
+				+ " AND u.is_guest = 0 "
         + "      AND s.question_name = d.question_name " + flag
         + "      AND sp.step_id = s.step_id  "
         + "      AND sp.param_name = d.param_name "
@@ -198,6 +204,7 @@ public class InvalidStepReporter extends BaseCLI {
       throws SQLException {
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
     String steps = userDB.getUserSchema() + "steps";
+    String users = userDB.getUserSchema() + "users";
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
     String sql = "SELECT count(distinct s.step_id) count, s.project_id, s.question_name, "
@@ -205,6 +212,8 @@ public class InvalidStepReporter extends BaseCLI {
         + "FROM step_params sp, wdk_questions wq, wdk_params wp, "
         + steps
         + " s, "
+				+ users
+        + " u, "
         + "     (  SELECT s.project_id, s.question_name,  "
         + "               sp.param_name, sp.param_value        "
         + "        FROM step_params sp, wdk_questions q, wdk_params p, "
@@ -226,6 +235,8 @@ public class InvalidStepReporter extends BaseCLI {
         + "        WHERE q.question_id = p.question_id  "
         + "          AND p.param_id = ep.param_id) d  "
         + "WHERE s.project_id = d.project_id  "
+				+ " AND s.user_id = u.user_id "
+				+ " AND u.is_guest = 0 "
         + "  AND s.question_name = d.question_name  "
         + "  AND sp.step_id = s.step_id  "
         + "  AND sp.param_name = d.param_name  "

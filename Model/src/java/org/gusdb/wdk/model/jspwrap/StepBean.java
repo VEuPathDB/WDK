@@ -115,7 +115,7 @@ public class StepBean {
         return step.getDisplayName();
     }
 
-    public int getResultSize() {
+    public int getResultSize() throws WdkModelException {
         return step.getResultSize();
     }
 
@@ -236,18 +236,6 @@ public class StepBean {
      */
     public boolean getIsValid() throws WdkModelException {
         return step.isValid();
-    }
-
-    /**
-     * @param isValid the isValid to set
-     * @throws WdkModelException 
-     */
-    public void setIsValid(boolean isValid) throws WdkModelException {
-        step.setValid(isValid, true);
-    }
-
-    public void setParams(Map<String, String> params) throws WdkModelException {
-        step.setParamValues(params);
     }
 
     public Map<String, String> getParams() {
@@ -439,23 +427,6 @@ public class StepBean {
 
     public UserBean getUser() {
         return user;
-    }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.user.Step#getValidationMessage()
-     */
-    public String getValidationMessage() {
-        return step.getValidationMessage();
-    }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.user.Step#validate()
-     */
-    public boolean validate() throws SQLException, WdkUserException,
-            WdkModelException, JSONException {
-        return step.validate();
     }
 
     /**

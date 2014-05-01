@@ -29,7 +29,7 @@ public class OrganismUpdater {
 
   private static final String PARAM_ORGANISM[] = { "organism", "BlastDatabaseOrganism", "motif_organism",
       "text_search_organism" };
-
+  private static final int lenParamOrg = PARAM_ORGANISM.length;
   private static final Logger logger = Logger.getLogger(OrganismUpdater.class);
 
   public static void main(String[] args) throws WdkModelException, SQLException, IOException, JSONException {
@@ -118,10 +118,11 @@ public class OrganismUpdater {
           continue;
 
         JSONObject jsParams = new JSONObject(content);
+				if (jsParams.has("params")) 
+						jsParams = jsParams.getJSONObject("params");
+
         if (changeParams(jsParams, clobKeys)) {
           content = jsParams.toString();
-          logger.info("we need to update params: --" + content + "-- in step_id:" + stepId + "\n");
-
           platform.setClobData(psUpdate, 1, content, false);
           psUpdate.setInt(2, stepId);
           psUpdate.addBatch();
@@ -149,7 +150,7 @@ logger.info("THE END:   " + count + " steps modified\n\n");
   private boolean changeParams(JSONObject jsParams, Set<String> clobKeys) throws JSONException {
     boolean updated = false;
     for (String name : JSONObject.getNames(jsParams)) {
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < lenParamOrg; i++) {
         if (name.equals(PARAM_ORGANISM[i])) {
           String organisms = jsParams.getString(name);
           StringBuilder buffer = new StringBuilder();

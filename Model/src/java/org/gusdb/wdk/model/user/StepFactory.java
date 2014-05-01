@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -574,7 +575,7 @@ public class StepFactory {
     step.setFilterName(rsStep.getString(COLUMN_ANSWER_FILTER));
     step.setProjectVersion(rsStep.getString(COLUMN_PROJECT_VERSION));
     if (rsStep.getObject(COLUMN_IS_VALID) != null)
-      step.setValid(rsStep.getBoolean(COLUMN_IS_VALID), false);
+      step.setValid(rsStep.getBoolean(COLUMN_IS_VALID));
     if (rsStep.getObject(COLUMN_ASSIGNED_WEIGHT) != null)
       step.setAssignedWeight(rsStep.getInt(COLUMN_ASSIGNED_WEIGHT));
 
@@ -648,8 +649,8 @@ public class StepFactory {
     else
       customName = step.getBaseCustomName();
 
-    step.setPreviousStepId(leftStepId);
-    step.setChildStepId(rightStepId);
+    step.setAndVerifyPreviousStepId(leftStepId);
+    step.setAndVerifyChildStepId(rightStepId);
 
     // construct the update sql
     StringBuffer sql = new StringBuffer("UPDATE ");
@@ -1011,7 +1012,7 @@ public class StepFactory {
     String customName = oldStep.getBaseCustomName();
     if (customName != null)
       newStep.setCustomName(customName);
-    newStep.setValid(oldStep.isValid(), false);
+    newStep.setValid(oldStep.isValid());
     newStep.update(false);
     return newStep;
   }
@@ -1497,7 +1498,7 @@ public class StepFactory {
     return Utilities.encrypt(content, true);
   }
 
-  void setStepValidFlag(Step step) throws SQLException, WdkModelException {
+  void setStepValidFlag(Step step) throws WdkModelException {
     String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_IS_VALID + " = ? WHERE " +
         COLUMN_STEP_ID + " = ?";
     PreparedStatement psUpdate = null;
@@ -1509,8 +1510,60 @@ public class StepFactory {
       psUpdate.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-update-strategy-signature", start);
     }
+    catch (SQLException e) {
+      throw new WdkModelException("Unable to set valid step flag on step " + step.getStepId(), e);
+    }
     finally {
       SqlUtils.closeStatement(psUpdate);
+    }
+  }
+
+  public void verifySameOwner(Step step1, Step step2) {
+    String errorText  = "message not initialized";
+    try {
+      if (step1.getUser().getUserId() != step2.getUser().getUserId()) {
+        errorText = "Existing step " + step1.getStepId() + " has owner " + step1.getUser().getUserId() + " (" + step1.getUser().getEmail() + ")\n" +
+            "Call made to align the following step (see stack below for how):\n" +
+            "Newly aligned step " + step2.getStepId() + " has owner " + step2.getUser().getUserId() + " (" + step2.getUser().getEmail() + ")\n\n" +
+            FormatUtil.getStackTrace(new IllegalStateException("Cannot align two steps with different owners."));
+        Utilities.sendEmail(wdkModel,
+            wdkModel.getModelConfig().getAdminEmail(),
+            wdkModel.getModelConfig().getSupportEmail(),
+            "Mismatched owners of newly adjacent steps!!",
+            errorText);
+      }
+    }
+    catch (Exception e) {
+      logger.error("Unable to send email regarding mismatched step owners.  Text below:\n" + errorText, e);
+    }
+  }
+
+  public void verifySameOwner(Step step1, int step2Id) {
+    try {
+      verifySameOwner(step1, getStepById(step2Id));
+    }
+    catch (Exception e) {
+      logger.error("Unable to load step with ID " + step2Id + " to compare owners with another step.", e);
+    }
+  }
+
+  public void verifySameOwner(Strategy strategy, Step step) {
+    String errorText  = "message not initialized";
+    try {
+      if (strategy.getUser().getUserId() != step.getUser().getUserId()) {
+        errorText = "Existing strategy " + strategy.getStrategyId() + " has owner " + strategy.getUser().getUserId() + " (" + strategy.getUser().getEmail() + ")\n" +
+            "Call made to assign the following root step (see stack below for how):\n" +
+            "Newly assigned step " + step.getStepId() + " has owner " + step.getUser().getUserId() + " (" + step.getUser().getEmail() + ")\n\n" +
+            FormatUtil.getStackTrace(new IllegalStateException("Cannot assign a root step to a strategy unless they have the same owner."));
+        Utilities.sendEmail(wdkModel,
+            wdkModel.getModelConfig().getAdminEmail(),
+            wdkModel.getModelConfig().getSupportEmail(),
+            "Mismatched owners of strategy and assigned root step!!",
+            errorText);
+      }
+    }
+    catch (Exception e) {
+      logger.error("Unable to send email regarding mismatched strategy/step owners.  Text below:\n" + errorText, e);
     }
   }
 }

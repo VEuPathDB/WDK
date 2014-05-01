@@ -291,6 +291,7 @@ h6.resultCount {
 .operation.SPAN {
   background-image:url("../images/operationSpanIcons.gif");
   height:27px;
+  background-position: -6px -8px;
 }
 
 .operation.SPAN.overlap {
