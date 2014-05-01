@@ -31,7 +31,7 @@ my $USER_SCHEMA = "userlogins4";
 my $DEFAULT_PROJ = "PlasmoDB";
 
 if (@ARGV < 1) {
-	print "\nusage: stratSummary.pl PlasmoDB  apicommS 01-Jul-10 guests\n";
+	print "\nusage: wdkStrategiesStats PlasmoDB apicommS 01-Jul-10 guests\n";
 	print "\nThis script searches for non-deleted strategies:\n";
 	print "- If you enter 'all' (instead of xxxxxDB) the counts will include strategies in all projects. 'all' is the default value.\n";
 	print "- apicommS: or other user database name --no default\n";
