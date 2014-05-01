@@ -550,7 +550,7 @@ ul.menubar {
 }
 
 .param-control td {
-  vertical-align: top;
+ /*  vertical-align: top; is messing up the datasetParam not sure where else these are used*/
 }
 
 .param-control .jstree-classic.jstree-focused {
@@ -558,7 +558,7 @@ ul.menubar {
 }
 
 .param-group td, .param-group th {
-    padding: 3px;
+  /*  padding: 3px;  we have 4px already by default */
 }
 
 /* css for the tree box enum param */
