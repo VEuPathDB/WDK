@@ -1,7 +1,11 @@
 package org.gusdb.wdk.controller.filter;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -11,11 +15,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import org.apache.log4j.Logger;
-
 public final class ParameterFilter implements Filter {
-
-  private static final Logger LOG = Logger.getLogger(ParameterFilter.class);
 
   FilterConfig filterConfig = null;
 
@@ -27,7 +27,6 @@ public final class ParameterFilter implements Filter {
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
-    LOG.info("Filtering params...");
     String regex = this.filterConfig.getInitParameter("excludeParams");
     chain.doFilter(new ParamFilteredRequest(request, regex), response);
   }
