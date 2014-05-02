@@ -4,14 +4,14 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
 <%--
-	 Provides form input element for a given DatasetParam.
-	 --%>
+   Provides form input element for a given DatasetParam.
+   --%>
 
 <%@ attribute name="qp"
     type="org.gusdb.wdk.model.jspwrap.DatasetParamBean"
     required="true"
     description="parameter name"
-		%>
+    %>
 
 <c:set var="qP" value="${qp}"/>
 <c:set var="pNam" value="${qP.name}"/>
@@ -32,11 +32,11 @@
 <div id="${qp.name}" class="param datasetParam"
      data-controller="wdk.components.datasetParam.init">
 
-	<table id="${qp.name}">
+  <table id="${qp.name}">
 
-		<c:if test="${dataset != null || defaultType != 'basket'}"> 
-			<!-- display an input box for user to enter data -->
-			<tr class="subparam">
+    <c:if test="${dataset != null || defaultType != 'basket'}"> 
+      <!-- display an input box for user to enter data -->
+      <tr class="subparam">
         <td align="left" style="vertical-align:top" nowrap>
           <input type="radio" name="${qp.typeSubParam}" class="type" value="data" ${dataChecked} />
           Enter a list of IDs or text:&nbsp;
@@ -57,8 +57,8 @@
         <td>
           <textarea name="${qp.dataSubParam}" class="data" rows="5" cols="30">${datasetValues}</textarea>
         </td>
-			</tr>
-		</c:if>
+      </tr>
+    </c:if>
 
 		<c:set var="parsers" value="${qP.parsers}" />
 		
