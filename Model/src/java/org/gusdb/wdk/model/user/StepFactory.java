@@ -1539,6 +1539,8 @@ public class StepFactory {
   }
 
   public void verifySameOwner(Step step1, int step2Id) {
+    // some logic sets 0 for step IDs; this is valid but not eligible for this check
+    if (step2Id == 0) return;
     try {
       verifySameOwner(step1, getStepById(step2Id));
     }
