@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.user.analysis;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -173,7 +174,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       throws WdkModelException {
     ExecutionStatus initialStatus = ExecutionStatus.PENDING;
     String hash = context.createHash();
-    boolean newlyCreated = _dataStore.insertExecution(hash, initialStatus);
+    boolean newlyCreated = _dataStore.insertExecution(hash, initialStatus, new Date());
 
     // now that user has run this analysis, set 'not new' if still new
     if (context.isNew()) {
@@ -431,7 +432,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       String contextHash = _context.createHash();
       try {
         // update database that we are running
-        _dataStore.updateExecution(contextHash, ExecutionStatus.RUNNING, null, null);
+        _dataStore.updateExecution(contextHash, ExecutionStatus.RUNNING, new Date(), null, null);
     
         // create step analysis instance and run
         StepAnalyzer analyzer = getConfiguredAnalyzer(_context, _fileStore);
@@ -443,12 +444,12 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         // status completed successfully or was interrupted
         String charData = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.getPersistentCharData() : "");
         byte[] binData = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.getPersistentBinaryData() : null);
-        _dataStore.updateExecution(contextHash, status, charData, binData);
+        _dataStore.updateExecution(contextHash, status, new Date(), charData, binData);
         return status;
       }
       catch (Exception e) {
         LOG.error("Step Analysis failed.", e);
-        _dataStore.updateExecution(contextHash, ExecutionStatus.ERROR, FormatUtil.getStackTrace(e), null);
+        _dataStore.updateExecution(contextHash, ExecutionStatus.ERROR, new Date(), FormatUtil.getStackTrace(e), null);
         return ExecutionStatus.ERROR;
       }
     }

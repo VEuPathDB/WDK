@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.user.analysis;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -154,8 +155,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
       synchronized(RESULT_INFO_MAP) {
         Map<Integer, AnalysisInfoPlusStatus> map = new HashMap<>();
         for (Integer analysisId : analysisIds) {
-          AnalysisInfoPlusStatus aips = new AnalysisInfoPlusStatus();
-          aips.analysisInfo = ANALYSIS_INFO_MAP.get(analysisId);
+          AnalysisInfoPlusStatus aips = new AnalysisInfoPlusStatus(ANALYSIS_INFO_MAP.get(analysisId));
           if (RESULT_INFO_MAP.containsKey(aips.analysisInfo.contextHash)) {
             aips.status = RESULT_INFO_MAP.get(aips.analysisInfo.contextHash).getStatus();
           }
@@ -167,26 +167,39 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
   
   @Override
-  public boolean insertExecution(String contextHash, ExecutionStatus initialStatus)
+  public boolean insertExecution(String contextHash, ExecutionStatus initialStatus, Date startDate)
       throws WdkModelException {
     synchronized(RESULT_INFO_MAP) {
       if (RESULT_INFO_MAP.containsKey(contextHash)) {
         return false;
       }
-      RESULT_INFO_MAP.put(contextHash, new AnalysisResult(initialStatus, null, null, null));
+      RESULT_INFO_MAP.put(contextHash, new AnalysisResult(initialStatus, startDate, startDate, null, null, null));
       return true;
     }
   }
 
   @Override
-  public void updateExecution(String contextHash, ExecutionStatus status, String charData, byte[] binData) throws WdkModelException {
+  public void updateExecution(String contextHash, ExecutionStatus status, Date updateDate, String charData, byte[] binData) throws WdkModelException {
     synchronized(RESULT_INFO_MAP) {
       if (RESULT_INFO_MAP.containsKey(contextHash)) {
         AnalysisResult info = RESULT_INFO_MAP.get(contextHash);
         info.setStatus(status);
+        info.setUpdateDate(updateDate);
         info.setStoredString(charData);
         info.setStoredBytes(binData);
         LOG.info("Updated result record for hash[" + contextHash + "], status=" + status + ", charData =\n" + charData);
+        return;
+      }
+      throw new WdkModelException("Step Analysis Execution for hash [" + contextHash + "] does not exist.");
+    }
+  }
+
+  @Override
+  public void resetStartDate(String contextHash, Date startDate) throws WdkModelException {
+    synchronized(RESULT_INFO_MAP) {
+      if (RESULT_INFO_MAP.containsKey(contextHash)) {
+        AnalysisResult info = RESULT_INFO_MAP.get(contextHash);
+        info.setStartDate(startDate);
         return;
       }
       throw new WdkModelException("Step Analysis Execution for hash [" + contextHash + "] does not exist.");
@@ -243,5 +256,21 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
       }
       throw new WdkModelException("No analysis execution with context hash value: " + contextHash);
     }
+  }
+
+  @Override
+  public void createAnalysisTableAndSequence() throws WdkModelException {
+    // no need to create; they are always here
+  }
+
+  @Override
+  public void createExecutionTable() throws WdkModelException {
+    // no need to create; it is always here
+  }
+
+  @Override
+  public void deleteExecutionTable() throws WdkModelException {
+    // just clear the execution table for in memory data store
+    deleteAllExecutions();
   }
 }

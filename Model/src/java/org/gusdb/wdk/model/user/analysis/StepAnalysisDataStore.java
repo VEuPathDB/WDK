@@ -4,6 +4,7 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ public abstract class StepAnalysisDataStore {
   private static final Logger LOG = Logger.getLogger(StepAnalysisDataStore.class);
   
   protected static class AnalysisInfo {
+    
     int analysisId;
     int stepId;
     String displayName;
@@ -27,6 +29,7 @@ public abstract class StepAnalysisDataStore {
     String invalidStepReason;
     String contextHash;
     String serializedContext;
+    
     public AnalysisInfo(int analysisId, int stepId, String displayName, boolean isNew,
         boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) {
       this.analysisId = analysisId;
@@ -38,6 +41,7 @@ public abstract class StepAnalysisDataStore {
       this.contextHash = contextHash;
       this.serializedContext = serializedContext;
     }
+    
     @Override
     public String toString() {
       return new StringBuilder("AnalysisInfo {").append(NL)
@@ -56,9 +60,13 @@ public abstract class StepAnalysisDataStore {
   protected static class AnalysisInfoPlusStatus {
     AnalysisInfo analysisInfo;
     ExecutionStatus status;
+    public AnalysisInfoPlusStatus(AnalysisInfo info) {
+      analysisInfo = info;
+    }
   }
   
   // abstract methods to manage analysis information
+  public abstract void createAnalysisTableAndSequence() throws WdkModelException;
   public abstract int getNextId() throws WdkModelException;
   public abstract void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
   public abstract void deleteAnalysis(int analysisId) throws WdkModelException;
@@ -72,8 +80,11 @@ public abstract class StepAnalysisDataStore {
   protected abstract Map<Integer, AnalysisInfoPlusStatus> getAnalysisInfoForIds(List<Integer> analysisIds) throws WdkModelException;
   
   // abstract methods to manage result/status information
-  public abstract boolean insertExecution(String contextHash, ExecutionStatus status) throws WdkModelException;  
-  public abstract void updateExecution(String contextHash, ExecutionStatus status, String charData, byte[] binData) throws WdkModelException;
+  public abstract void createExecutionTable() throws WdkModelException;
+  public abstract void deleteExecutionTable() throws WdkModelException;
+  public abstract boolean insertExecution(String contextHash, ExecutionStatus status, Date startDate) throws WdkModelException;  
+  public abstract void updateExecution(String contextHash, ExecutionStatus status, Date updateDate, String charData, byte[] binData) throws WdkModelException;
+  public abstract void resetStartDate(String contextHash, Date startDate) throws WdkModelException;
   public abstract void deleteExecution(String contextHash) throws WdkModelException;
   public abstract void deleteAllExecutions() throws WdkModelException;
   protected abstract ExecutionStatus getRawExecutionStatus(String contextHash) throws WdkModelException;
@@ -94,7 +105,9 @@ public abstract class StepAnalysisDataStore {
   
   // helper methods that contain only business logic
   public void resetExecution(String contextHash, ExecutionStatus status) throws WdkModelException {
-    updateExecution(contextHash, status, null, null);
+    Date newStartDate = new Date();
+    resetStartDate(contextHash, newStartDate);
+    updateExecution(contextHash, status, newStartDate, null, null);
   }
   
   public StepAnalysisContext getAnalysisById(int analysisId, StepAnalysisFileStore fileStore) throws WdkModelException {
