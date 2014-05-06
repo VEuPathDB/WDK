@@ -1,16 +1,22 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import java.util.Date;
+
 public class AnalysisResult {
 
   private ExecutionStatus _status;
+  private Date _startDate;
+  private Date _updateDate;
   private String _storedString;
   private byte[] _storedBytes;
   private String _statusLog;
   private Object _resultViewModel;
   
-  public AnalysisResult(ExecutionStatus status, String storedString,
-      byte[] storedBytes, String statusLog) {
+  public AnalysisResult(ExecutionStatus status, Date startDate, Date updateDate,
+      String storedString, byte[] storedBytes, String statusLog) {
     _status = status;
+    _startDate = startDate;
+    _updateDate = updateDate;
     _storedString = storedString;
     _storedBytes = storedBytes;
     _statusLog = statusLog;
@@ -27,6 +33,22 @@ public class AnalysisResult {
 
   public void setStatus(ExecutionStatus status) {
     _status = status;
+  }
+
+  public Date getStartDate() {
+    return _startDate;
+  }
+
+  public void setStartDate(Date startDate) {
+    _startDate = startDate;
+  }
+
+  public Date getUpdateDate() {
+    return _updateDate;
+  }
+
+  public void setUpdateDate(Date updateDate) {
+    _updateDate = updateDate;
   }
 
   public String getStoredString() {

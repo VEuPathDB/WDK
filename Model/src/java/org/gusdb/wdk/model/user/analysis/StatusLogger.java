@@ -23,7 +23,7 @@ public class StatusLogger {
   public synchronized void append(String str) throws WdkModelException {
     LOG.debug("Appending to log for " + _contextHash + ": " + str);
     String value = _dataStore.getAnalysisLog(_contextHash);
-    _dataStore.setAnalysisLog(_contextHash, value + str);
+    _dataStore.setAnalysisLog(_contextHash, (value == null ? "" : value) + str);
   }
   
   public void appendLine(String str) throws WdkModelException {
