@@ -89,13 +89,19 @@
       <c:set var="analysis" value="${analysisCtx.stepAnalysis}"/>
       <li id="step-analysis-${analysisId}">
         <a href="${pageContext.request.contextPath}/stepAnalysisPane.do?analysisId=${analysisId}" title="${analysis.description}">
-          ${analysisCtx.displayName} <span> </span><span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
+          ${analysisCtx.displayName} <span> </span>
         </a>
+        <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
       </li>
     </c:forEach>
     <c:if test="${fn:length(question.stepAnalyses) > 0}">
       <li id="choose-step-analysis">
-        <a href="${pageContext.request.contextPath}/showNewAnalysisTab.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}">+ Add Analysis<span> </span></a>
+        <a href="${pageContext.request.contextPath}/showNewAnalysisTab.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}">Choose Analysis<span> </span>
+        </a>
+        <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
+      </li>
+      <li id="add-analysis">
+        <button title="Choose an analysis tool to apply to the results of your current step.">Add Analysis</button>
       </li>
     </c:if>
     <%--

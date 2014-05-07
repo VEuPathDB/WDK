@@ -1,6 +1,10 @@
 wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   "use strict";
 
+  // "imports"
+  var preventEvent = wdk.fn.preventEvent,
+      partial = _.partial;
+
   /*************************************************************************
    *
    * This library enables the creation, execution, and deletion of Step
@@ -71,13 +75,31 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
   function configureAnalysisViews($element) {
     // add delete buttons to step analysis tabs (must do this after tabs are applied)
-    $element.find("li[id^='step-analysis']").each(function(){ addDeleteButton(this); });
+    $element.find("li[id^='step-analysis']").get().forEach(addDeleteButton);
+    $element.find("#choose-step-analysis").get().forEach(addHideButton);
+
+    // delegate events for create analysis pane
+    $element.on('click', '.sa-selector-container li', function(event) {
+      var data = $(this).data();
+      if (data.releaseVersion === -1) return;
+      createStepAnalysis(data.name, data.stepId);
+    });
+
+    // Attach behavior to Add Analysis button
+    $element.find('#add-analysis button')
+      .button()
+      .click(preventEvent(partial(addAnalysis, $element)));
 
     // add hover and click handlers for step analysis add buttons
     var $newAnalysisDiv = $element.find('.new-analysis');
     var $newAnalysisButton = $newAnalysisDiv.find(".new-analysis-button");
     var $newAnalysisMenu = $newAnalysisDiv.find(".new-analysis-menu");
     applyAnalysisStyles($newAnalysisDiv, $newAnalysisButton, $newAnalysisMenu);
+  }
+
+  function addAnalysis($element) {
+    var index = $element.find("#choose-step-analysis").show().index();
+    $element.tabs('option', 'active', index);
   }
 
   function applyAnalysisStyles($newAnalysisDiv, $newAnalysisButton, $newAnalysisMenu) {
@@ -101,7 +123,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   function addDeleteButton(tabElement) {
     var errorMsg = "Cannot delete this analysis at this time.  Please " +
       "try again later, or contact us if the problem persists.";
-    $(tabElement).find(".ui-closable-tab").live("click", function(e) {
+    $(tabElement).find(".ui-closable-tab").on("click", function(e) {
       if (!confirm("Are you sure you want to delete this analysis? " +
         " You will not be able to retrieve it later.")) { return; }
       var button = e.target;
@@ -121,6 +143,22 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     });
   }
 
+  function addHideButton(tabElement) {
+    var $tabElement = $(tabElement),
+        $tabs = $tabElement.closest('.ui-tabs');
+
+    $tabElement.on("click", ".ui-closable-tab", function() {
+      var active = $tabs.tabs('option', 'active');
+
+      if (active === $tabElement.index()) {
+        $tabs.tabs('option', 'active', -1);
+      }
+
+      $tabElement.hide()
+    });
+  }
+
+  // TODO Add loading indicator
   function createStepAnalysis(analysisName, stepId) {
     // ask server to create new step analysis with the given params
     doAjax(ROUTES.createAnalysis, {
@@ -155,17 +193,19 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     var analysisId = data.analysisId;
     var displayName = data.displayName;
     var description = data.description;
+    var $element = $('#Summary_Views');
+    var $chooseAnalysisTab = $element.find('#choose-step-analysis');
     var tabUrl = wdk.webappUrl(ROUTES.getPane.url) +"?analysisId=" + analysisId;
     var tabId = "step-analysis-" + analysisId;
-    var tabIndex = $('#Summary_Views ul.ui-tabs-nav > li').length - 1;
+    var tabIndex = $chooseAnalysisTab.index();
     var tabContent = '<li id="' + tabId + '">' +
       '<a href="' + tabUrl + '" title="' + description + '">' +
-      displayName + '<span></span><span ' +
-      'class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span></a></li>';
-    $('#Summary_Views ul.ui-tabs-nav > li:last').before(tabContent);
-    $('#Summary_Views').tabs('refresh');
-    addDeleteButton($('#Summary_Views').find('#'+tabId)[0]);
-    $('#Summary_Views').tabs('option', 'active', tabIndex);
+      displayName + '<span></span></a><span ' +
+      'class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span></li>';
+    $chooseAnalysisTab.before(tabContent).hide();
+    $element.tabs('refresh');
+    addDeleteButton($element.find('#'+tabId)[0]);
+    $element.tabs('option', 'active', tabIndex);
   }
 
   function loadDisplaySubpanes($element, $attrs) {
@@ -202,13 +242,10 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
         // configure form for submission to the step analysis runner action
         var hiddenField = '<input type="hidden" name="analysisId" value="' + analysisId + '"/>';
-        $(wrappingDiv).find("form").first()
-          .append(hiddenField)
-          .submit(function(event) {
-            event.preventDefault();
-            runStepAnalysis(event.target);
-            return false;
-          });
+        var $form = $(wrappingDiv).find("form").first()
+          .append(hiddenField);
+
+        $form.submit(preventEvent(partial(runStepAnalysis, $form[0])));
 
         var formPane = $element.find(".step-analysis-form-pane");
         formPane.html(wrappingDiv);
