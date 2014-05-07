@@ -96,12 +96,12 @@
     </c:forEach>
     <c:if test="${fn:length(question.stepAnalyses) > 0}">
       <li id="choose-step-analysis">
-        <a href="${pageContext.request.contextPath}/showNewAnalysisTab.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}">Choose Analysis<span> </span>
+        <a href="${pageContext.request.contextPath}/showNewAnalysisTab.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}">New Analysis<span> </span>
         </a>
         <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
       </li>
       <li id="add-analysis">
-        <button title="Choose an analysis tool to apply to the results of your current step.">Add Analysis</button>
+        <button title="Choose an analysis tool to apply to the results of your current step.">Analysis Tools</button>
       </li>
     </c:if>
     <%--
