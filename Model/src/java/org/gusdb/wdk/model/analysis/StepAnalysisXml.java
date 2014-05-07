@@ -20,6 +20,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   private String _name;
   private String _displayName;
   private String _description;
+  private String _releaseVersion;
   
   // for running and viewing the analysis
   private String _analyzerClass;
@@ -34,6 +35,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _name = obj._name;
     _displayName = obj._displayName;
     _description = obj._description;
+    _releaseVersion = obj._releaseVersion;
     _analyzerClass = obj._analyzerClass;
     _formViewName = obj._formViewName;
     _analysisViewName = obj._analysisViewName;
@@ -63,6 +65,14 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   }
   public void setDescription(WdkModelText description) {
     _description = description.getText();
+  }
+  
+  @Override
+  public String getReleaseVersion() {
+    return _releaseVersion;
+  }
+  public void setReleaseVersion(String releaseVersion) {
+    _releaseVersion = releaseVersion;
   }
   
   @Override
@@ -135,6 +145,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _analyzerClass = saObj._analyzerClass;
     _displayName = chooseValue(_displayName, saObj._displayName, _name);
     _description = chooseValue(_description, saObj._description, "");
+    _releaseVersion = chooseValue(_releaseVersion, saObj._releaseVersion, null);
     _formViewName = chooseValue(_formViewName, saObj._formViewName, DEFAULT_FORM_VIEW);
     _analysisViewName = chooseValue(_analysisViewName, saObj._analysisViewName, DEFAULT_ANALYSIS_VIEW);
     
@@ -163,6 +174,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
       .append("  Name             : ").append(_name).append(NL)
       .append("  DisplayName      : ").append(_displayName).append(NL)
       .append("  Description      : ").append(_description).append(NL)
+      .append("  ReleaseVersion   : ").append(_releaseVersion).append(NL)
       .append("  AnalysisClass    : ").append(_analyzerClass).append(NL)
       .append("  FormViewName     : ").append(_formViewName).append(NL)
       .append("  AnalysisViewName : ").append(_analysisViewName).append(NL)

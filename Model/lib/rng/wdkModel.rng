@@ -1536,6 +1536,7 @@
     <element name="stepAnalysisPlugin">
       <attribute name="name" />
       <attribute name="analyzerClass" />
+      <attribute name="releaseVersion" />
       <ref name="stepAnalysisOptions" />
     </element>
   </define>
@@ -1544,6 +1545,9 @@
     <element name="stepAnalysisRef">
       <attribute name="name" />
       <ref name="stepAnalysisOptions" />
+      <optional>
+        <attribute name="releaseVersion" />
+      </optional>
     </element>
   </define>
 
