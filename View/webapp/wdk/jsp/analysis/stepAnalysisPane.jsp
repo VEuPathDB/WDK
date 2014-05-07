@@ -7,12 +7,11 @@
     <body>
       <div class="step-analysis-pane" data-analysis-id="${analysisId}"
            data-controller="wdk.stepAnalysis.loadDisplaySubpanes">
-        <div>
+        <div class="ui-helper-clearfix">
           <span style="float:right">
-           [ <a href="javascript:wdk.stepAnalysis.renameStepAnalysis(${analysisId})">Rename This Analysis</a> |
-             <a href="javascript:wdk.stepAnalysis.copyStepAnalysis(${analysisId})">Copy These Parameter Values</a> ]
+           [ <a href="#rename">Rename This Analysis</a> |
+             <a href="#copy">Copy These Parameter Values</a> ]
           </span>
-          <div style="clear:both"><jsp:text/></div>
         </div>
         <div class="step-analysis-subpane">
           <div class="step-analysis-errors-pane">

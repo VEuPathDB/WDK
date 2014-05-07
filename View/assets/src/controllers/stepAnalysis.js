@@ -210,6 +210,14 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
   function loadDisplaySubpanes($element, $attrs) {
     var analysisId = $attrs.analysisId;
+
+    // add event handlers
+    $element.on('click', '[href="#rename"]',
+        preventEvent(partial(renameStepAnalysis, analysisId)));
+
+    $element.on('click', '[href="#copy"]',
+        preventEvent(partial(copyStepAnalysis, analysisId)));
+
     // get json representing analysis (params + status, but not result)
     doAjax(ROUTES.getAnalysis, {
       data: { "analysisId": analysisId },
