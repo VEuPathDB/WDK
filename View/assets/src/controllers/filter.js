@@ -74,6 +74,8 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
     this.loadFilterCount = function() {
       var links = $('.filter-instance .link-url[countref]');
 
+      // TODO generalize the following into a reusable function
+
       // map to $.ajax, which returns a thenable
       // this allows us to download all in parallel
       links.toArray().map(function getCount(element, i) {
