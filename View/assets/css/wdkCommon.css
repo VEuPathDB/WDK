@@ -1055,6 +1055,10 @@ position: relative;
 z-index: 1;
 }
 
+.Summary_Views .ui-tabs-panel {
+  min-height: 25em;
+}
+
 /***~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~***
  ***  Step Analysis: 'new' tab, and contents of SA tabs
  ***~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~***/
@@ -1119,11 +1123,12 @@ z-index: 1;
   position:relative;
   width:12px;
   height:12px;
+  /* left:3px; */
   top:2px;
-  left:3px;
   cursor:pointer;
   background-position: -31px -181px;
   background-size: 240px auto;
+  padding-right: 4px;
 }
 
 .step-analysis-subpane {
@@ -1158,23 +1163,84 @@ z-index: 1;
   max-width: 710px;
   margin: 0 auto;
 }
+.analysis-menu-tab-pane li,
+.analysis-menu-tab-pane li * {
+  box-sizing: border-box;
+}
 .analysis-menu-tab-pane li {
+  position: relative;
   float: left;
-  padding: 8px;
-  width: 190px;
-  min-height: 90px;
-  border: 1px dashed black;
-  border-radius: 8px;
-  background-color: lightgrey;
+  width: 210px;
+  height: 130px;
+  border: 1px solid #EEE;
+  box-shadow: 0px 0px 2px #AFAFAF;
   margin: 12px;
+  background-image: url('../images/analysis-background.png');
+  overflow: hidden;
 }
 .analysis-menu-tab-pane li:hover {
   cursor: pointer;
   background-color: lightyellow;
 }
+.analysis-menu-tab-pane li[data-release-version="-1"]:hover {
+  cursor: default;
+  background-color: inherit;
+}
 .analysis-title {
-  font-size: 1.3em;
-  margin-bottom: 3px;
+  /*font-size: 1.3em;*/
+}
+.analysis-title,
+.analysis-description {
+  padding: 8px;
+}
+.analysis-wrapper {
+  width: 100%;
+  height: 100%;
+  background-color: #EEE;
+  color: #000;
+  position: relative;
+  bottom: -104px;
+}
+.analysis-coming-soon {
+  width: 100%;
+  padding: 4px 8px;
+  background-color: #EEE;
+  color: #111;
+  font-style: italic;
+  position: absolute;
+  top: 0px;
+}
+.analysis-menu-tab-pane li:active .analysis-wrapper,
+.analysis-menu-tab-pane li:focus .analysis-wrapper,
+.analysis-menu-tab-pane li:hover .analysis-wrapper {
+  bottom: 0px;
+}
+
+/*
+ * default styles for add analysis button and tab
+ * within the tab nav container
+ */
+.ui-tabs-nav #choose-step-analysis {
+  display: none;
+}
+.ui-tabs-nav #add-analysis {
+  margin-left: 1em;
+}
+.ui-tabs-nav #add-analysis button {
+  margin: 0;
+  color: #FFF;
+  background-image: none;
+  background-color: #4F81BD;
+  border-color: #357EBD;
+}
+.ui-tabs-nav #add-analysis button:hover,
+.ui-tabs-nav #add-analysis button:active,
+.ui-tabs-nav #add-analysis button:focus {
+  background-color: #357EBD;
+  border-color: #245F92;
+}
+.ui-tabs-nav #add-analysis button .ui-button-text {
+  padding: 0 1em;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

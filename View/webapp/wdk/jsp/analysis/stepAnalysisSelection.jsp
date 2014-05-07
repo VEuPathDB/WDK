@@ -14,10 +14,17 @@
             <c:set var="question" value="${wdkStep.question}"/>
             <c:forEach items="${question.stepAnalyses}" var="analysisEntry">
               <c:set var="analysis" value="${analysisEntry.value}"/>
-              <li onclick="javascript:wdk.stepAnalysis.createStepAnalysis('${analysis.name}', ${wdkStep.stepId})">
-                <div class="analysis-title">${analysis.displayName}</div>
-                <div>
-                  ${analysis.description}
+              <!-- <li onclick="javascript:wdk.stepAnalysis.createStepAnalysis('${analysis.name}', ${wdkStep.stepId})"> -->
+              <li data-name="${analysis.name}" data-step-id="${wdkStep.stepId}"
+                  data-release-version="${analysis.releaseVersion}">
+                <c:if test="${analysis.releaseVersion eq -1}">
+                  <div class="analysis-coming-soon">Coming soon...</div>
+                </c:if>
+                <div class="analysis-wrapper">
+                  <div class="analysis-title">${analysis.displayName}</div>
+                  <div class="analysis-description">
+                    ${analysis.description}
+                  </div>
                 </div>
               </li>
             </c:forEach>
