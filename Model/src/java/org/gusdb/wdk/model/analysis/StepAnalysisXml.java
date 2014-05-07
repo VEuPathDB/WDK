@@ -27,6 +27,9 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   private String _formViewName;     // form view name to be resolved by factory
   private String _analysisViewName; // analysis view name to be resolved by factory 
   private Map<String,String> _properties = new LinkedHashMap<>();
+
+  // for ui
+  private String _customThumbnail; // path relative to WDK configured assetsUrl
   
   public StepAnalysisXml() { }
   
@@ -40,6 +43,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _formViewName = obj._formViewName;
     _analysisViewName = obj._analysisViewName;
     _properties = new HashMap<String,String>(obj._properties);
+    _customThumbnail = obj._customThumbnail;
   }
   
   @Override
@@ -102,6 +106,14 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   }
   
   @Override
+  public String getCustomThumbnail() {
+    return _customThumbnail;
+  }
+  public void setCustomThumbnail(String customThumbnail) {
+    _customThumbnail = customThumbnail;
+  }
+  
+  @Override
   public StepAnalyzer getAnalyzerInstance() throws WdkModelException {
     if (_analyzerClass == null)
       throw new WdkModelException("Analyzer class for " + _name + " cannot be null.");
@@ -148,6 +160,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _releaseVersion = chooseValue(_releaseVersion, saObj._releaseVersion, null);
     _formViewName = chooseValue(_formViewName, saObj._formViewName, DEFAULT_FORM_VIEW);
     _analysisViewName = chooseValue(_analysisViewName, saObj._analysisViewName, DEFAULT_ANALYSIS_VIEW);
+    _customThumbnail = chooseValue(_customThumbnail, saObj._customThumbnail, null);
     
     // override properties, but retain non-conflicts from obj
     for (Entry<String,String> entry : saObj._properties.entrySet()) {
@@ -178,6 +191,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
       .append("  AnalysisClass    : ").append(_analyzerClass).append(NL)
       .append("  FormViewName     : ").append(_formViewName).append(NL)
       .append("  AnalysisViewName : ").append(_analysisViewName).append(NL)
+      .append("  CustomThumbnail  : ").append(_customThumbnail).append(NL)
       .append("  Properties {").append(NL);
     for (Entry<String,String> entry : _properties.entrySet()) {
       sb.append("    ").append(entry.getKey()).append(" = ")
