@@ -10,6 +10,7 @@ public interface StepAnalysis {
   public String getDisplayName();
   public String getDescription();
   public String getReleaseVersion();
+  public String getCustomThumbnail();
   
   public StepAnalyzer getAnalyzerInstance() throws WdkModelException;
   public String getFormViewName();
