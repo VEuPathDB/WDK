@@ -30,6 +30,7 @@ module.exports = {
 
     'src/core/console.js',
     'src/core/namespace.js',
+    'src/core/fn.js',
     'src/core/c_properties.js',
     'src/core/base_object.js',
     'src/core/runloop.js',
