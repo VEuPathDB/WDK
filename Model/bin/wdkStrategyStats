@@ -27,63 +27,62 @@ use strict;
 #use warnings;
 use ApiCommonWebsite::Model::ModelConfig;
 
-my $USER_SCHEMA = "userlogins4";
-my $DEFAULT_PROJ = "PlasmoDB";
 
-if (@ARGV < 1) {
-	print "\nusage: wdkStrategyStats PlasmoDB apicommS 01-Jul-10 guests\n";
-	print "         wdkStrategyStats PlasmoDB apicommS 01-Jul-10\n";
-	print "         wdkStrategyStats PlasmoDB apicommS\n";
-	print "         wdkStrategyStats all apicommS\n";
-	print "\nThis script searches for non-deleted strategies:\n";
-	print "- If you enter 'all' (instead of xxxxxDB) the counts will include strategies in all projects. 'all' is the default value.\n";
-	print "- apicommS: or other user database name --no default\n";
-	print "- If you enter a date (use that format) the counts will include only strategies created on or after that date.
+
+
+if (@ARGV < 2) {
+	print "\nusage: wdkStrategyStats PlasmoDB apicommS ToxoDB 5 01-Jul-10 guests  ==> only Toxo strategies, schema userlogins5, guest users since July 2010 \n";
+	print "        wdkStrategyStats PlasmoDB apicommS ToxoDB 5 01-Jul-10   ==> only Toxo login users, schema userlogins5, since July 2010 \n";
+	print "        wdkStrategyStats PlasmoDB apicommS ToxoDB 4            ==> only Toxo login users, schema userlogins4, since we released the strategy system \n";
+	print "        wdkStrategyStats PlasmoDB apicommS all 5               ==> all projects only login users, schema userlogins5, since the beginning \n";
+	print "\nThis script searches for non-deleted strategies.\n";
+	print "\nThis script requires:\n";
+  print "- First TWO arguments: project name and user database: the project will be used ONLY to access a valid user/psswd for the user database.\n";
+	print "- Third argument: the project you want statistics for. If you enter 'all' (instead of xxxxxDB) the counts will include strategies in all projects.--no default\n";
+	print "- Fourth argument: the schema: 3 for userlogins3, 4 for userlogins4, and 5 for userlogins5\n";
+	print "- Fifth argument: If you enter a date (use that format) the counts will include only strategies created on or after that date.
              The default is '01-Jul-09' which is when we released the strategy system.\n";
-	print "- If you enter 'guests' as a fourth argument, only guests will be checked,--but keep in mind that there might be no guest info if we archived it.
+	print "- Sixth argument: If you enter 'guests', only guests will be checked,--keep in mind that there might be no guest info if we archived it.
              The default is only reading login users activity.
-             Developers and the eupathdb user (sample strategies) are always removed.\n\n";
+             Developers and the eupathdb user (public strategies) are always removed.\n\n";
 	exit 1;
 }
 
 my $start_run = time();
 
-my $model;
-my $project = $ARGV[0];
-if ( $project eq "all" ) {
-	$project = "%";
-} elsif ( !($project =~ m/DB/) ) {
-	die "which project you want?  PlasmoDB, CryptoDB, etc  or all ?\n";
-}
 
 
-if ( $project =~ m/DB/ ) {
-	$model = $project;
-} else {
-	$model = $DEFAULT_PROJ;
-}
-
+if ($ARGV[0] !~ /DB/) {die "\n\nPlease specify a model in first argument for reading UserID and Password (ex PlasmoDB).\n\n";}
+my $model = $ARGV[0];
 my $c = new ApiCommonWebsite::Model::ModelConfig($model);
 my $u  = $c->userDb->getLogin;
 my $pw = $c->userDb->getPassword;
 
 my $database = "dbi:Oracle:$ARGV[1]";
-my $userschema = $USER_SCHEMA;
+
 my $dbh = DBI->connect($database,$u,$pw,{
 																				 PrintError =>1,
-																				 RaiseError =>0}) or die "Can't connect to the database: $DBI::errstr\n";
+																				 RaiseError =>0}) or die "\n\nCan't connect to the database: $DBI::errstr\n\n";
+my $project = $ARGV[2];
+if ( $project eq "all" ) {
+	$project = "%";
+} elsif ( !($project =~ m/DB/) ) {
+	die "\n\nWhich project you want strategy statistics for?  PlasmoDB, CryptoDB, ...  or all ? please add as third argument.\n\n";
+}
 my $quotedproject  = $dbh->quote( $project );
 $dbh->{LongTruncOk} = 1; #to deal with clob in steps table "display_params"
 $dbh->{LongReadLen} = 180;
 
+my $userschema = $ARGV[3];
+if ( $userschema < 3 || $userschema > 5 ) {die "\n\ncurrent user schemas are 3,4 or 5\n\n";}
+$userschema = "userlogins" . $userschema;
 
-
-my $myDate = $ARGV[2];
+my $myDate = $ARGV[4];
 if ( !$myDate ) {
 	$myDate = "01-JUL-09";				#when we first released strategies
 }
 my $quoteddate  = $dbh->quote( $myDate );
-my $allusers = $ARGV[3];
+my $allusers = $ARGV[5];
 my $sqlQueries;
 
 if (! $allusers) {		# only reg users
@@ -753,7 +752,7 @@ if ( $allusers ) {
 	$allusers = "login users";
 }
 printf "*********************Job took $run_time seconds (%.2f minutes) (%.2f hours) \n",$minutes,$hours;
-print "*********************command:    ----$database---$USER_SCHEMA-----Project:--$project---activity since: $myDate---$allusers---  **************\n";
+print "*********************command:    ----$database---$userschema-----Project:--$project---activity since: $myDate---$allusers---  **************\n";
 
 
 
