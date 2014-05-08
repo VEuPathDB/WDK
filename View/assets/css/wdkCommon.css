@@ -1181,11 +1181,11 @@ z-index: 1;
 }
 .analysis-menu-tab-pane li:hover {
   cursor: pointer;
-  /*background-color: lightyellow;*/
+  border-color: #BBB;
 }
 .analysis-menu-tab-pane li[data-release-version="-1"]:hover {
   cursor: default;
-  background-color: inherit;
+  border-color: #EEE;
 }
 .analysis-title {
   /*font-size: 1.3em;*/
@@ -1208,7 +1208,7 @@ z-index: 1;
   width: 100%;
   height: 100%;
   opacity: .8;
-  filter: alpha(opacity=80)
+  filter: alpha(opacity=80);
   padding: 4px 8px;
   background-color: #FAFAFA;
   color: #111;
@@ -1217,13 +1217,6 @@ z-index: 1;
   position: absolute;
   top: 0px;
 }
-/*
-.analysis-menu-tab-pane li:active .analysis-wrapper,
-.analysis-menu-tab-pane li:focus .analysis-wrapper,
-.analysis-menu-tab-pane li:hover .analysis-wrapper {
-  bottom: 0px;
-}
-*/
 
 /*
  * default styles for add analysis button and tab
