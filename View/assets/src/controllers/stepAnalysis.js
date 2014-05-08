@@ -74,15 +74,22 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   }
 
   function configureAnalysisViews($element) {
+    // reusable spinner for selection grid items
+    var spinner = new Spinner();
+
     // add delete buttons to step analysis tabs (must do this after tabs are applied)
     $element.find("li[id^='step-analysis']").get().forEach(addDeleteButton);
     $element.find("#choose-step-analysis").get().forEach(addHideButton);
 
     // delegate events for create analysis pane
-    $element.on('click', '.sa-selector-container li', function(event) {
+    $element.on('click', '.sa-selector-container li', function() {
       var data = $(this).data();
       if (data.releaseVersion === -1) return;
-      createStepAnalysis(data.name, data.stepId);
+
+      this.appendChild(spinner.spin().el);
+
+      createStepAnalysis(data.name, data.stepId).
+        always(spinner.stop.bind(spinner));
     });
 
     // Attach behavior to Add Analysis button
@@ -125,10 +132,12 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
       "try again later, or contact us if the problem persists.";
     $(tabElement).find(".ui-closable-tab").on("click", function(e) {
       if (!confirm("Are you sure you want to delete this analysis? " +
-        " You will not be able to retrieve it later.")) { return; }
+        " You will not be able to retrieve it later.")) {
+        return ($.Deferred().resolve().promise());
+      }
       var button = e.target;
       var analysisId = $(tabElement).attr('id').substring(14);
-      doAjax(ROUTES.deleteAnalysis, {
+      return doAjax(ROUTES.deleteAnalysis, {
         data: { "analysisId": analysisId },
         success: function(data, textStatus, jqXHR) {
           var tabContainerDiv = $(button).closest(".ui-tabs").attr("id");
@@ -161,7 +170,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   // TODO Add loading indicator
   function createStepAnalysis(analysisName, stepId) {
     // ask server to create new step analysis with the given params
-    doAjax(ROUTES.createAnalysis, {
+    return doAjax(ROUTES.createAnalysis, {
       data: { "analysisName": analysisName, "stepId": stepId },
       success: function (data, textStatus, jqXHR) {
         if (data.status == "validation") {
@@ -177,7 +186,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   }
 
   function copyStepAnalysis(analysisId) {
-    doAjax(ROUTES.copyAnalysis, {
+    return doAjax(ROUTES.copyAnalysis, {
       data: { "analysisId": analysisId },
       success: function(data, textStatus, jqXHR) {
         createAnalysisTab(data);
@@ -219,7 +228,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         preventEvent(partial(copyStepAnalysis, analysisId)));
 
     // get json representing analysis (params + status, but not result)
-    doAjax(ROUTES.getAnalysis, {
+    return doAjax(ROUTES.getAnalysis, {
       data: { "analysisId": analysisId },
       success: function(data, textStatus, jqXHR) {
         // load form and (if necessary) populate selected values
@@ -236,7 +245,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   function loadAnalysisForm($element, analysisObj) {
     var analysisId = analysisObj.analysisId;
     // fetch plugin's form
-    doAjax(ROUTES.getForm, {
+    return doAjax(ROUTES.getForm, {
       data: { "analysisId": analysisId },
       success: function(data, textStatus, jqXHR) {
         // convert returned page into contained DOM elements
@@ -275,7 +284,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     var resultsPane = $element.find('.step-analysis-results-pane');
     // clear previous results
     resultsPane.empty();
-    doAjax(ROUTES.getResult, {
+    return doAjax(ROUTES.getResult, {
       data: { "analysisId": analysisId },
       success: function(data, textStatus, jqXHR) {
         if (data == "") {
@@ -302,7 +311,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     var $errorsPane = $(form).parents('.step-analysis-subpane').find('.step-analysis-errors-pane');
     // clear any errors from a previous submission
     $errorsPane.empty();
-    doAjax(ROUTES.runAnalysis, {
+    return doAjax(ROUTES.runAnalysis, {
       data: $(form).serialize(),
       success: function(data, textStatus, jqXHR) {
         if (data.status == "success") {
@@ -361,7 +370,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   }
 
   function showAllAnalyses() {
-    doAjax(ROUTES.getAll, {
+    return doAjax(ROUTES.getAll, {
       success: function(data, textStatus, jqXHR) {
         var jsonDisplay = JSON.stringify(data, undefined, 2);
         var html = "<div><pre>" + jsonDisplay + "</pre></div>";
@@ -376,7 +385,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   function renameStepAnalysis(analysisId) {
     var newName = prompt("New name:");
     if (newName != null && newName != '') {
-      doAjax(ROUTES.renameAnalysis, {
+      return doAjax(ROUTES.renameAnalysis, {
         data: { "analysisId": analysisId, "displayName": newName },
         success: function(data, textStatus, jqXHR) {
           $('#step-analysis-' + analysisId + " a").contents().filter(function() {
@@ -388,6 +397,8 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         }
       });
     }
+    // return an empty promise
+    return ($.Deferred().resolve().promise());
   }
 
   function handleAjaxError(message) {
