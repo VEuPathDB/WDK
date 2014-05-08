@@ -93,6 +93,7 @@ module.exports = {
     'lib/jquery.dataTables.min.js',
     // 'lib/dataTables.colVis.min.js',
     'lib/jstree/jquery.jstree.js',
+    'lib/spin.min.js'
   ]
 
 };
