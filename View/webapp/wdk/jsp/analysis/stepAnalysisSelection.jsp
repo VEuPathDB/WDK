@@ -20,7 +20,8 @@
               </c:set>
 
               <li data-name="${analysis.name}" data-step-id="${wdkStep.stepId}"
-                  data-release-version="${analysis.releaseVersion}" style="${style}">
+                  data-release-version="${analysis.releaseVersion}"
+                  title="${analysis.description}" style="${style}" >
                 <c:if test="${analysis.releaseVersion eq -1}">
                   <div class="analysis-coming-soon">Coming soon...</div>
                 </c:if>
