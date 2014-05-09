@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.config;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.fgputil.db.platform.UnsupportedPlatformException;
 import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
@@ -16,8 +17,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   
   protected static final String CONFIG_TABLE = "config";
   protected static final String CONFIG_NAME_COLUMN = "config_name";
-  protected static final String CONFIF_VALUE_COLUMN = "config_value";
-  
+  protected static final String CONFIG_VALUE_COLUMN = "config_value";
   
   // required properties
   private String login;
@@ -241,5 +241,18 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    */
   public void setShowConnectionsDuration(long showConnectionsDuration) {
     this.showConnectionsDuration = showConnectionsDuration;
+  }
+  
+  @Override
+  public String toString() {
+    String defaultSchema = SupportedPlatform.toPlatform(getPlatform())
+        .getPlatformInstance().getDefaultSchema(getLogin());
+    return new StringBuilder("ModelConfigDB {").append(FormatUtil.NL)
+        .append("  platform:      ").append(getPlatform()).append(FormatUtil.NL)
+        .append("  connectionUrl: ").append(getConnectionUrl()).append(FormatUtil.NL)
+        .append("  login:         ").append(getLogin()).append(FormatUtil.NL)
+        .append("  defaultSchema: ").append(defaultSchema).append(FormatUtil.NL)
+        .append("}").append(FormatUtil.NL)
+        .toString();
   }
 }
