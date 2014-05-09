@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.WdkModel;
@@ -22,6 +23,8 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class ModelConfigUserDB extends ModelConfigDB {
 
+  private static final Logger LOG = Logger.getLogger(ModelConfigUserDB.class);
+  
   private static final String CONFIG_USER_SCHEMA_VERSION = "wdk.user.schema.version";
 
   private String userSchema;
@@ -45,14 +48,16 @@ public class ModelConfigUserDB extends ModelConfigDB {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     ResultSet resultSet = null;
     try {
-      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, "SELECT " + CONFIF_VALUE_COLUMN +
-          " FROM " + userSchema + CONFIG_TABLE + " WHERE " + CONFIG_NAME_COLUMN + "= ?");
+      String validationSql = "SELECT " + CONFIG_VALUE_COLUMN +
+          " FROM " + userSchema + CONFIG_TABLE + " WHERE " + CONFIG_NAME_COLUMN + "= ?";
+      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, validationSql);
       ps.setString(1, CONFIG_USER_SCHEMA_VERSION);
+      LOG.debug("Validating user schema with SQL '" + validationSql + "' and value [" + CONFIG_USER_SCHEMA_VERSION + "].");
       resultSet = ps.executeQuery();
       if (!resultSet.next())
         throw new WdkModelException("Unable to validate the version of WDK user schema. Please make sure "
             + "the user schema is correct installed with the latest WDK schema script. ");
-      String version = resultSet.getString(CONFIF_VALUE_COLUMN);
+      String version = resultSet.getString(CONFIG_VALUE_COLUMN);
       if (!WdkModel.USER_SCHEMA_VERSION.equals(version))
         throw new WdkModelException("The version of WDK user schema is not compatible with code base. The " +
             "current WDK code base requires user schema of version '" + WdkModel.USER_SCHEMA_VERSION +
