@@ -98,11 +98,12 @@ public class ResultListArgumentBatch implements ArgumentBatch {
         value = value.substring(0, column.getWidth() - 3) + "...";
       }
       
-      if (type != ColumnType.STRING && value != null && value.isEmpty()) {
+      if (!type.equals(ColumnType.STRING) && value != null && value.isEmpty()) {
         // non-string type is being passed an empty string; treat as null
         value = null;
       }
       
+      // allow null values to be directly added to result; will be stored as nulls in DB
       recordValues.add(value == null ? null : type.convertStringToTypedValue(value));
     }
     // add CLOB values last
