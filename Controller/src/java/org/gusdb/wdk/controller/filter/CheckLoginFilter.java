@@ -1,4 +1,4 @@
-package org.gusdb.wdk.controller;
+package org.gusdb.wdk.controller.filter;
 
 import java.io.IOException;
 
@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.LoginCookieFactory.LoginCookieParts;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
