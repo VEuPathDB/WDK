@@ -15,7 +15,7 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
       "A run of this analysis was interrupted before it could complete";
   private static final String OUTOFDATE_REASON_TEXT =
       "Your previous run of this analysis is out-of-date and results must be " +
-      "regenerated.  Please confirm your parmeters above and re-run.";
+      "regenerated.  Please confirm your parameters above and re-run.";
   
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
