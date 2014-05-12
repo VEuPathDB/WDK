@@ -1,11 +1,13 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
@@ -257,10 +259,17 @@ public class StepAnalysisContext {
     json.put(JsonKey.stepId.name(), _step.getStepId());
     json.put(JsonKey.analysisName.name(), _stepAnalysis.getName());
     
+    // Sort param names so JSON values produce identical hashes
+    List<String> sortedParamNames = new ArrayList<>(_formParams.keySet());
+    Collections.sort(sortedParamNames);
+    
     JSONObject params = new JSONObject();
-    for (Entry<String, String[]> param : _formParams.entrySet()) {
-      for (String value : param.getValue()) {
-        params.append(param.getKey(), value);
+    for (String paramName : sortedParamNames) {
+      // Sort param values so JSON values produce identical hashes
+      List<String> paramValues = Arrays.asList(_formParams.get(paramName));
+      Collections.sort(paramValues);
+      for (String value : paramValues) {
+        params.append(paramName, value);
       }
     }
     json.put(JsonKey.formParams.name(), params);
