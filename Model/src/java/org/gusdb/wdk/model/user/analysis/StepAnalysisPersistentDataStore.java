@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,6 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -42,6 +44,9 @@ import org.gusdb.wdk.model.WdkRuntimeException;
  */
 public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
 
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(StepAnalysisPersistentDataStore.class);
+
   private static final String ANALYSIS_TABLE = "STEP_ANALYSIS";
   private static final String ANALYSIS_SEQUENCE_NAME = ANALYSIS_TABLE + "_PKSEQ";
   private static final String EXECUTION_TABLE = "STEP_ANALYSIS_RESULTS";
@@ -62,7 +67,6 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
 
   // SQL to update and query execution table
   private String CREATE_EXECUTION_TABLE_SQL;
-  private String DROP_EXECUTION_TABLE_SQL;
   private String FIND_EXECUTION_SQL;
   private String INSERT_EXECUTION_SQL;
   private String UPDATE_EXECUTION_SQL;
@@ -95,10 +99,10 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     _userBoolType = _userPlatform.getBooleanType();
     createUserSql(_userDb.getDefaultSchema());
     
-    _appDb = wdkModel.getUserDb();
+    _appDb = wdkModel.getAppDb();
     _appPlatform = _appDb.getPlatform();
     _appDs = _appDb.getDataSource();
-    createAppSql(_appDb.getDefaultSchema());
+    createAppSql();
   }
   
   /**
@@ -173,8 +177,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
    *   BLOB bin_data
    * }
    */
-  private void createAppSql(String schema) {
-    String table = schema + EXECUTION_TABLE;
+  private void createAppSql() {
+    String table = EXECUTION_TABLE;
     String hashType = _appPlatform.getStringDataType(96);
     String statusType = _appPlatform.getStringDataType(96);
     String timestampType = _appPlatform.getDateDataType();
@@ -191,8 +195,6 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         "  BIN_DATA      " + blobType + "," +
         "  PRIMARY KEY (CONTEXT_HASH)" +
         ")";
-    DROP_EXECUTION_TABLE_SQL =
-        "DROP TABLE " + table;
     FIND_EXECUTION_SQL =
         "SELECT 1 FROM " + table + " WHERE EXISTS" +
         " (SELECT 1 FROM " + table + " WHERE CONTEXT_HASH = ?)";
@@ -253,7 +255,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
           new Object[] { analysisId, stepId, displayName, isNew, hasParams,
               invalidStepReason, contextHash, serializedContext },
           new Integer[] { Types.INTEGER, Types.INTEGER, Types.VARCHAR, _userBoolType,
-              _userBoolType, Types.BOOLEAN, Types.VARCHAR, Types.VARCHAR, Types.CLOB });
+              _userBoolType, Types.VARCHAR, Types.VARCHAR, Types.CLOB });
     }
     catch (SQLRunnerException e) {
       throw new WdkModelException("Unable to complete operation.", e);
@@ -373,6 +375,9 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       final Map<String, List<Integer>> hashToIdsMap = new HashMap<>();
       final Map<Integer, AnalysisInfoPlusStatus> result = new HashMap<>();
 
+      // don't query DB if no IDs passed
+      if (analysisIds.isEmpty()) return result;
+      
       // read data about analysis instances from user DB
       String valuesForIn = FormatUtil.join(analysisIds.toArray(), ", ");
       String sql = GET_ANALYSES_BY_IDS_SQL.replace(IN_CLAUSE_KEY, valuesForIn);
@@ -413,7 +418,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         @Override public void handleResult(ResultSet rs) throws SQLException {
           while (rs.next()) {
             String hash = rs.getString(1);
-            ExecutionStatus status = parseStatus(hash, rs.getString(2));
+            ExecutionStatus status = parseStatus(rs.getString(2), hash);
             for (int analysisId : hashToIdsMap.get(hash)) {
               result.get(analysisId).status = status;
             }
@@ -441,11 +446,11 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void deleteExecutionTable() throws WdkModelException {
+  public void deleteExecutionTable(boolean purge) throws WdkModelException {
     try {
-      new SQLRunner(_appDs, DROP_EXECUTION_TABLE_SQL).executeStatement();
+      _appPlatform.dropTable(_appDs, null, EXECUTION_TABLE, purge);
     }
-    catch (SQLRunnerException e) {
+    catch (SQLException e) {
       throw new WdkModelException("Unable to complete operation.", e);
     }
   }
@@ -464,7 +469,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       
       // execution does not exist; create and return true
       new SQLRunner(_appDs, INSERT_EXECUTION_SQL).executeStatement(
-          new Object[]{ contextHash,  status.name(), startDate, startDate },
+          new Object[]{ contextHash,  status.name(), getTimestamp(startDate), getTimestamp(startDate) },
           new Integer[]{ Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP });
       return true;
     }
@@ -481,7 +486,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       throws WdkModelException {
     try {
       int changed = new SQLRunner(_appDs, UPDATE_EXECUTION_SQL).executeUpdate(
-          new Object[]{ status.name(), updateDate, charData, binData, contextHash },
+          new Object[]{ status.name(), getTimestamp(updateDate), charData, binData, contextHash },
           new Integer[]{ Types.VARCHAR, Types.TIMESTAMP, Types.CLOB, Types.BLOB, Types.VARCHAR });
       if (changed == 0) {
         throw new WdkModelException("Unable to find execution with context hash " + contextHash);
@@ -497,7 +502,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   public void resetStartDate(String contextHash, Date startDate) throws WdkModelException {
     try {
       int changed = new SQLRunner(_appDs, RESET_START_DATE_SQL).executeUpdate(
-          new Object[]{ startDate, contextHash }, new Integer[]{ Types.TIMESTAMP, Types.VARCHAR });
+          new Object[]{ getTimestamp(startDate), contextHash }, new Integer[]{ Types.TIMESTAMP, Types.VARCHAR });
       if (changed == 0) {
         throw new WdkModelException("Unable to find execution with context hash " + contextHash);
       }
@@ -617,6 +622,10 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     catch (SQLRunnerException e) {
       throw new WdkModelException("Unable to complete operation.", e);
     }
+  }
+
+  private Timestamp getTimestamp(Date date) {
+    return new Timestamp(date.getTime());
   }
 
   private ExecutionStatus parseStatus(String status, String hash) {

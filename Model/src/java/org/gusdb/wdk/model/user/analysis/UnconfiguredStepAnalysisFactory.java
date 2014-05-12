@@ -95,4 +95,19 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   public void shutDown() {
     // nothing to shut down
   }
+
+  @Override
+  public void createResultsTable() throws WdkModelException {
+    // do nothing; cache not configured but don't want to disrupt other cache operations
+  }
+
+  @Override
+  public void clearResultsTable() throws WdkModelException {
+    // do nothing; cache not configured but don't want to disrupt other cache operations
+  }
+
+  @Override
+  public void dropResultsTable(boolean purge) throws WdkModelException {
+    // do nothing; cache not configured but don't want to disrupt other cache operations
+  }
 }

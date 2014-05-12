@@ -175,17 +175,31 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     ExecutionStatus initialStatus = ExecutionStatus.PENDING;
     String hash = context.createHash();
     boolean newlyCreated = _dataStore.insertExecution(hash, initialStatus, new Date());
+    boolean contextModified = false;
 
     // now that user has run this analysis, set 'not new' if still new
     if (context.isNew()) {
       _dataStore.setNewFlag(context.getAnalysisId(), false);
       context.setNew(false);
+      contextModified = true;
     }
     
     // now that this analysis has params, set 'has params' if not yet set
     if (!context.hasParams()) {
       _dataStore.setHasParams(context.getAnalysisId(), true);
       context.setHasParams(true);
+      contextModified = true;
+    }
+    
+    // if context was modified, recheck status
+    //   TODO: fix logic here to be less ugly/costly
+    if (contextModified) {
+      try {
+        context = getSavedContext(context.getAnalysisId());
+      }
+      catch (WdkUserException e) {
+        throw new WdkModelException("Step Analysis was deleted mid-request!", e);
+      }
     }
     
     // Run analysis plugin under the following conditions:
@@ -195,6 +209,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     //
     // NOTE: There is a race condition here in between the check of the store and the creation
     //       (first line inside if).  Use combination of lock and createNewFile() to fix.
+    LOG.info("Checking whether to run vs. use previous result. newlyCreated = " +
+        newlyCreated + ", status = " + context.getStatus());
     if (newlyCreated || context.getStatus().requiresRerun()) {
 
       // ensure empty data and file stores and create dir
@@ -453,5 +469,20 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         return ExecutionStatus.ERROR;
       }
     }
+  }
+
+  @Override
+  public void createResultsTable() throws WdkModelException {
+    _dataStore.createExecutionTable();
+  }
+
+  @Override
+  public void clearResultsTable() throws WdkModelException {
+    _dataStore.deleteAllExecutions();
+  }
+
+  @Override
+  public void dropResultsTable(boolean purge) throws WdkModelException {
+    _dataStore.deleteExecutionTable(purge);
   }
 }
