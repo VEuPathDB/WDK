@@ -269,7 +269,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void deleteExecutionTable() throws WdkModelException {
+  public void deleteExecutionTable(boolean purge) throws WdkModelException {
     // just clear the execution table for in memory data store
     deleteAllExecutions();
   }

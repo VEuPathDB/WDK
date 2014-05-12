@@ -81,7 +81,7 @@ public abstract class StepAnalysisDataStore {
   
   // abstract methods to manage result/status information
   public abstract void createExecutionTable() throws WdkModelException;
-  public abstract void deleteExecutionTable() throws WdkModelException;
+  public abstract void deleteExecutionTable(boolean purge) throws WdkModelException;
   public abstract boolean insertExecution(String contextHash, ExecutionStatus status, Date startDate) throws WdkModelException;  
   public abstract void updateExecution(String contextHash, ExecutionStatus status, Date updateDate, String charData, byte[] binData) throws WdkModelException;
   public abstract void resetStartDate(String contextHash, Date startDate) throws WdkModelException;
