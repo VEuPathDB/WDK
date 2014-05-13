@@ -1161,6 +1161,10 @@ z-index: 1;
   text-align:center;
 }
 
+.step-analysis-description {
+  padding: 0 1em;
+}
+
 .step-analysis-errors-pane {
   color: red;
   font-weight: bold;

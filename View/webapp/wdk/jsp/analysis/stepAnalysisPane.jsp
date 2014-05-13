@@ -12,6 +12,8 @@
            [ <a href="#rename">Rename This Analysis</a> |
              <a href="#copy">Copy These Parameter Values</a> ]
           </span>
+          <h3><jsp:text/></h3>
+          <div class="step-analysis-description"><jsp:text/></div>
         </div>
         <div class="step-analysis-subpane">
           <div class="step-analysis-errors-pane">
