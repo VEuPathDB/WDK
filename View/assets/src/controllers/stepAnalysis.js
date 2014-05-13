@@ -245,6 +245,13 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     return doAjax(ROUTES.getAnalysis, {
       data: { "analysisId": analysisId },
       success: function(data, textStatus, jqXHR) {
+
+        // add display name
+        $element.find('h3').text(data.displayName);
+
+        // add description
+        $element.find('.step-analysis-description').text(data.description);
+
         // load form and (if necessary) populate selected values
         loadAnalysisForm($element, data);
         // load results
