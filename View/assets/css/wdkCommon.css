@@ -1179,11 +1179,15 @@ z-index: 1;
   background-image: url('../images/analysis-background.png');
   overflow: hidden;
 }
+.analysis-menu-tab-pane li:active,
+.analysis-menu-tab-pane li:focus,
 .analysis-menu-tab-pane li:hover {
   cursor: pointer;
   border-color: #BBB;
 }
-.analysis-menu-tab-pane li[data-release-version="-1"]:hover {
+.analysis-menu-tab-pane li.inactive:active,
+.analysis-menu-tab-pane li.inactive:focus,
+.analysis-menu-tab-pane li.inactive:hover {
   cursor: default;
   border-color: #EEE;
 }
