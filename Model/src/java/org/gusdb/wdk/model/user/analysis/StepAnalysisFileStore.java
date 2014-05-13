@@ -182,4 +182,16 @@ public class StepAnalysisFileStore {
       throw new WdkModelException(message, e);
     }
   }
+
+  public void deleteExecutionDir(String hash) throws WdkModelException {
+    try {
+      Path storageDir = getStorageDirPath(hash);
+      if (Files.exists(storageDir)) {
+        IoUtil.deleteDirectoryTree(storageDir);
+      }
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Unable to delete storage dir for hash: " + hash);
+    }
+  }
 }
