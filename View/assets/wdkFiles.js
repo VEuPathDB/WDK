@@ -84,7 +84,7 @@ module.exports = {
 
     'lib/jquery.cookie.js',
     'lib/jquery.blockUI.js',
-    'lib/qtip2/jquery.qtip.js',
+    'lib/jquery.qtip.min.js',
 
     // question pages
     'lib/handlebars.js',
