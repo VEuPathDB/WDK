@@ -113,7 +113,7 @@ public abstract class StepAnalysisDataStore {
   public StepAnalysisContext getAnalysisById(int analysisId, StepAnalysisFileStore fileStore) throws WdkModelException {
     Map<Integer, AnalysisInfoPlusStatus> rawValues = getAnalysisInfoForIds(Arrays.asList(new Integer[]{ analysisId }));
     if (rawValues.get(analysisId).analysisInfo == null) throw new WdkModelException("Did not find exactly" +
-    		" one record for analysis ID " + analysisId + "; found " + rawValues.size());
+        " one record for analysis ID " + analysisId + "; found " + rawValues.size());
     return getContexts(rawValues, fileStore).iterator().next();
   }
   
