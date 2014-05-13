@@ -83,9 +83,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     $element.find("#choose-step-analysis").get().forEach(addHideButton);
 
     // delegate events for create analysis pane
-    $element.on('click keyup', '.sa-selector-container li', function(event) {
+    $element.on('click keydown', '.sa-selector-container li', function(event) {
       var skip = (this.className == 'inactive' ||
-                  (event.type === 'keyup' && event.which !== ENTER_KEY_CODE));
+                  (event.type === 'keydown' && event.which !== ENTER_KEY_CODE));
 
       if (skip) return;
 
@@ -96,6 +96,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
       createStepAnalysis(data.name, data.stepId).
         always(spinner.stop.bind(spinner));
     });
+
+    // disable "Add Analysis" tab
+    $element.tabs('disable', $element.find('#choose-step-analysis').index());
 
     // Attach behavior to Add Analysis button
     $element.find('#add-analysis button')

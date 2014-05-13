@@ -109,6 +109,7 @@
   text-decoration: none;
 }
 .field-list li a:hover,
+.field-list li a:focus,
 .field-list li a:active {
   border-left: 2px solid;
 }
