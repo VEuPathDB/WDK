@@ -50,7 +50,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   
   private static Logger LOG = Logger.getLogger(StepAnalysisFactoryImpl.class);
   
-  private static final boolean USE_DB_PERSISTENCE = false;
+  static final boolean USE_DB_PERSISTENCE = true;
   
   private final ExecutionConfig _execConfig;
   private final StepAnalysisViewResolver _viewResolver;

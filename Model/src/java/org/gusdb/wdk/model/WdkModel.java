@@ -478,7 +478,7 @@ public class WdkModel implements ConnectionContainer {
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
     stepAnalysisFactory = (stepAnalysisPlugins == null ?
-        new UnconfiguredStepAnalysisFactory() :
+        new UnconfiguredStepAnalysisFactory(this) :
         new StepAnalysisFactoryImpl(this));
 
     // set the exception header
