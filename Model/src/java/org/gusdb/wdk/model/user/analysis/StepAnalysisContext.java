@@ -25,6 +25,25 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Encapsulation of values associated with a particular instance of a step
+ * analysis plugin (as identified as a tab in the UI).  Contexts have their own
+ * IDs and params, but may share results if they are similar enough.  This class
+ * is responsible for generating the JSON sent to the client, the context hash
+ * used to look up results, and contains the current state/status of the
+ * instance (as influenced by whether it's been run before, has params, and has
+ * results).  The following diagram describes why we have the isNew and
+ * hasParams fields in addition to status.
+ * 
+ * Cases: hasParams?        Y           ||                 N
+ * Is     Y    ||      Post-run copy    ||  Normal pre-run, or pre-run copy
+ * New?   N    ||     Normal post run   ||                N/A
+ * 
+ * IsNew tells the UI whether to try to display results
+ * HasParams tells the UI whether to repopulate form params from stored values
+ * 
+ * @author rdoherty
+ */
 public class StepAnalysisContext {
 
   public static final Logger LOG = Logger.getLogger(StepAnalysisContext.class);
