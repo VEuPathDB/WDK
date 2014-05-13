@@ -3,7 +3,8 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
   // "imports"
   var preventEvent = wdk.fn.preventEvent,
-      partial = _.partial;
+      partial = _.partial,
+      ENTER_KEY_CODE = 13;
 
   /*************************************************************************
    *
@@ -82,9 +83,13 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     $element.find("#choose-step-analysis").get().forEach(addHideButton);
 
     // delegate events for create analysis pane
-    $element.on('click', '.sa-selector-container li', function() {
+    $element.on('click keyup', '.sa-selector-container li', function(event) {
+      var skip = (this.className == 'inactive' ||
+                  (event.type === 'keyup' && event.which !== ENTER_KEY_CODE));
+
+      if (skip) return;
+
       var data = $(this).data();
-      if (data.releaseVersion === -1) return;
 
       this.appendChild(spinner.spin().el);
 
@@ -105,8 +110,11 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   }
 
   function addAnalysis($element) {
-    var index = $element.find("#choose-step-analysis").show().index();
+    var $tabItem = $element.find("#choose-step-analysis").show();
+    var index = $tabItem.index();
+    $element.tabs('enable', index);
     $element.tabs('option', 'active', index);
+    $tabItem.focus();
   }
 
   function applyAnalysisStyles($newAnalysisDiv, $newAnalysisButton, $newAnalysisMenu) {
@@ -154,15 +162,17 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
   function addHideButton(tabElement) {
     var $tabElement = $(tabElement),
-        $tabs = $tabElement.closest('.ui-tabs');
+        $container = $tabElement.closest('.ui-tabs');
 
     $tabElement.on("click", ".ui-closable-tab", function() {
-      var active = $tabs.tabs('option', 'active');
+      var active = $container.tabs('option', 'active');
+      var index = $tabElement.index();
 
-      if (active === $tabElement.index()) {
-        $tabs.tabs('option', 'active', -1);
+      if (active === index) {
+        $container.tabs('option', 'active', 0);
       }
 
+      $container.tabs('disable', index);
       $tabElement.hide()
     });
   }
@@ -215,6 +225,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     $element.tabs('refresh');
     addDeleteButton($element.find('#'+tabId)[0]);
     $element.tabs('option', 'active', tabIndex);
+    $element.tabs('disable', tabIndex + 1);
   }
 
   function loadDisplaySubpanes($element, $attrs) {

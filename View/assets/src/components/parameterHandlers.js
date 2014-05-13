@@ -50,6 +50,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var $node = $(node);
       $node.find('input, select').prop('disabled', true);
       var name = $node.attr('name');
+      // TODO Use a space-delimited list. This is more canonical for multiple values for an attribute
+      // and will allow for more concise jQuery selectors: $('[dependson~="param-name"]')
+      //
       // the dependson may contain a comma separated list of param names the current param depends on
       var dependedNames = $node.attr('dependson').split(",");
       for (var i=0; i < dependedNames.length; i++) {

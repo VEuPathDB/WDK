@@ -18,10 +18,16 @@
                   background-image: url(${applicationScope.assetsUrl}/${analysis.customThumbnail})
                 </c:if>
               </c:set>
+              <c:set var="class">
+                <c:if test="${analysis.releaseVersion eq -1}">inactive</c:if>
+              </c:set>
 
-              <li data-name="${analysis.name}" data-step-id="${wdkStep.stepId}"
-                  data-release-version="${analysis.releaseVersion}"
-                  title="${analysis.description}" style="${style}" >
+              <li class="${class}"
+                  role="${class eq 'inactive' ? '' : 'link'}"
+                  tabindex="${class eq 'inactive' ? '' : '0'}"
+                  style="${style}"
+                  title="${analysis.description}"
+                  data-name="${analysis.name}" data-step-id="${wdkStep.stepId}">
                 <c:if test="${analysis.releaseVersion eq -1}">
                   <div class="analysis-coming-soon">Coming soon...</div>
                 </c:if>
