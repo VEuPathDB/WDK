@@ -53,8 +53,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private static final String IN_CLAUSE_KEY = "${SOME_VALUES}";
 
   // SQL to update and query analysis table
-  private String CREATE_ANALYSIS_TABLE_SQL;
   private String ANALYSIS_SEQUENCE;
+  private String CREATE_ANALYSIS_TABLE_SQL;
   private String INSERT_ANALYSIS_SQL;
   private String UPDATE_NAME_SQL;
   private String UPDATE_NEW_FLAG_SQL;
