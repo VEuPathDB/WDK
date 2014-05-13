@@ -67,6 +67,9 @@
     },
     show: {
       solo: true
+    },
+    style: {
+      classes: 'qtip-tipsy'
     }
   };
 

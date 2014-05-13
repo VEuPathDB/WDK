@@ -232,6 +232,20 @@ img[data-assets-src][src] {
   display: none;
 }
 
+
+/* qtip overrides */
+
+.qtip-tipsy a,
+.qtip-tipsy a:link {
+  color: #efefef;
+  text-decoration: underline;
+}
+.qtip-tipsy a:active,
+.qtip-tipsy a:focus,
+.qtip-tipsy a:hover {
+  color: #ffffff;
+}
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     =Styling for the Login pop-up box 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1759,7 +1773,6 @@ span.marker a:link, span.marker a:visited {
 
 #search-lookup_wrapper div.ui-corner-bl { display: none; }
 img#close-table { display: none; }
-
 
 
 /* THE END */
