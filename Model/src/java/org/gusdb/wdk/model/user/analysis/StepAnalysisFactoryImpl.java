@@ -195,7 +195,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     //   TODO: fix logic here to be less ugly/costly
     if (contextModified) {
       try {
-        context = getSavedContext(context.getAnalysisId());
+        StepAnalysisContext statusContext = getSavedContext(context.getAnalysisId());
+        context.setStatus(statusContext.getStatus());
       }
       catch (WdkUserException e) {
         throw new WdkModelException("Step Analysis was deleted mid-request!", e);
