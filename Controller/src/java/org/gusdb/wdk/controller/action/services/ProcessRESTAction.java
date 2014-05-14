@@ -33,6 +33,7 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
+import org.gusdb.wdk.model.query.param.RequestParams;
 import org.gusdb.wdk.model.report.Reporter;
 
 /**
@@ -72,48 +73,19 @@ public class ProcessRESTAction extends Action {
         wdkQuestion = wdkModel.getQuestion(qFullName);
       if (wdkQuestion == null)
         throw new WdkUserException("The question '" + qFullName + "' doesn't exist.");
-      Map<String, String> params = new LinkedHashMap<String, String>();
       Map<String, String> outputConfig = new LinkedHashMap<String, String>();
-      Map<String, ParamBean<?>> paramMap = wdkQuestion.getParamsMap();
-      for (String key : paramMap.keySet()) {
-        String rawValue = null;
-        ParamBean<?> param = paramMap.get(key);
-        if (param instanceof DatasetParamBean) {
-          DatasetParamBean datasetParam = (DatasetParamBean)param;
-          rawValue = request.getParameter(datasetParam.getDataSubParam());
-          String parser = request.getParameter(datasetParam.getParserSubParam());
-          logger.debug("dataset parser: '"+parser+"', data: '" + rawValue + "'");
-          if (rawValue != null && rawValue.trim().length() > 0) {
-            // also get the type & uploadFile sub params
-            String typeParam = datasetParam.getTypeSubParam();
-            String type = request.getParameter(typeParam);
-            params.put(typeParam, type);
-
-            String fileParam = datasetParam.getFileSubParam();
-            String uploadFile = request.getParameter(fileParam);
-            params.put(fileParam, uploadFile);
-            
-            params.put(datasetParam.getParserSubParam(), parser);
-          }
-        }
-        else {
-          String[] vals = request.getParameterValues(key);
-          if (vals == null || vals.length <= 1) {
-            rawValue = request.getParameter(key);
-          }
-          else {
-            StringBuilder buf = new StringBuilder();
-            buf.append(vals[0]);
-            for (int i = 0; i < vals.length; i++) {
-              if (buf.length() > 0)
-                buf.append(",");
-              buf.append(vals[i]);
-            }
-            rawValue = buf.toString();
-          }
-        }
-        params.put(key, rawValue);
+      
+      // prepare and get the param values.
+      Map<String, ParamBean<?>> params = wdkQuestion.getParamsMap();
+      RequestParams requestParams = new ServiceRequestParams(request);
+      Map<String, String> stableValues = new LinkedHashMap<>();
+      for (String paramName : params.keySet()) {
+        ParamBean<?> param = params.get(paramName);
+        String stableValue = param.getStableValue(wdkUser, requestParams);
+        stableValues.put(paramName, stableValue);
       }
+
+      // get other fields
       Map<?, ?> reqParams = request.getParameterMap();
       for (Object kobj : reqParams.keySet()) {
         String k = (String) kobj;
@@ -138,7 +110,7 @@ public class ProcessRESTAction extends Action {
       outputConfig.put("hasEmptyTable", "true");
       // FROM SHOWSUMMARY
 
-      StepBean step = wdkUser.createStep(wdkQuestion, params, null, false, true, Utilities.DEFAULT_WEIGHT);
+      StepBean step = wdkUser.createStep(wdkQuestion, stableValues, null, false, true, Utilities.DEFAULT_WEIGHT);
       AnswerValueBean answerValue = step.getAnswerValue();
       // construct the forward to show_summary action
       request.setAttribute("wdkAnswer", answerValue);
