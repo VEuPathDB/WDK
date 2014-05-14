@@ -107,9 +107,6 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
       }
     }
 
-    // set isEdit flag, it will be used by the param initialization process
-    window.isEdit = true;
-
     wdk.addStepPopup.callWizard(url,ele,null,null,'next')
     $(this).parent().parent().hide();
   }

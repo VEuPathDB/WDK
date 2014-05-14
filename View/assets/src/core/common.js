@@ -188,13 +188,6 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   }
 
   /**
-   * @deprecated see webappUrl
-   */
-  function getWebAppUrl() {
-    return webappUrl();
-  }
-
-  /**
    * Returns the complete path to the assets dir
    * and appends the given url
    */
@@ -518,19 +511,6 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     });
   }
 
-  // deprecated - see wdk.reporter.selectFields
-  function makeSelection(state) {
-    var form = document.downloadConfigForm;
-    var cb = form.selectedFields;
-    for (var i=0; i<cb.length; i++) {
-      if (state == 1) cb[i].checked = 'checked';
-      else if (state === 0) cb[i].checked = null;
-      else if (state == -1) {
-        cb[i].checked = ((cb[i].checked) ? '' : 'checked');
-      }
-    }
-  }
-
   // TODO: view - use href to find dialog
   function setUpDialogs() {
     var dialogOpts = {
@@ -649,13 +629,11 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   ns.findActiveWorkspace = findActiveWorkspace;
   ns.findActiveView = findActiveView;
   ns.chooseAll = chooseAll;
-  ns.getWebAppUrl = getWebAppUrl;
   ns.webappUrl = webappUrl;
   ns.assetsUrl = assetsUrl;
   ns.isUserLoggedIn = isUserLoggedIn;
   ns.checkFields = checkFields;
   ns.uncheckFields = uncheckFields;
   ns.setUpNavDropDowns = setUpNavDropDowns;
-  ns.makeSelection = makeSelection;
 
 });
