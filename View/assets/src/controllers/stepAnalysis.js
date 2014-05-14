@@ -151,10 +151,20 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
       return doAjax(ROUTES.deleteAnalysis, {
         data: { "analysisId": analysisId },
         success: function(data, textStatus, jqXHR) {
-          var tabContainerDiv = $(button).closest(".ui-tabs").attr("id");
+          var $tabContainer = $(button).closest(".ui-tabs");
           var panelId = $(button).closest("li").remove().attr("aria-controls");
-          $("#"+panelId ).remove();
-          $("#"+tabContainerDiv).tabs("refresh");
+          var $panel = $tabContainer.find('#' + panelId);
+
+          // get timer ids for pending pane
+          var $pendingPane = $panel.find('.analysis-pending-pane');
+          var loadTimer = $pendingPane.data('loadTimer');
+          var refreshTimer = $pendingPane.data('refreshTimer');
+
+          clearTimeout(loadTimer);
+          clearTimeout(refreshTimer);
+
+          $panel.remove();
+          $tabContainer.tabs("refresh");
         },
         error: function(jqXHR, textStatus, errorThrown) {
           handleAjaxError(errorMsg);
@@ -375,18 +385,22 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   function doRefreshCountdown($obj, analysisId, secondsLeft) {
 
     if (secondsLeft == 0) {
-      setTimeout(function() {
+      var loadTimer = setTimeout(function() {
         // refresh results pane to see if results are present
         loadResultsPane($obj.parents('.step-analysis-pane'), analysisId);
+        $obj.data('loadTimer', undefined);
       }, 1000);
+      $obj.data('loadTimer', loadTimer);
     }
     else {
       // count down one second and update timer display
-      setTimeout(function() {
+      var refreshTimer = setTimeout(function() {
         var newRemaining = secondsLeft - 1;
         $obj.find('.countdown').html(newRemaining);
         doRefreshCountdown($obj, analysisId, newRemaining);
+        $obj.data('refreshTimer', undefined);
       }, 1000);
+      $obj.data('refreshTimer', refreshTimer);
     }
   }
 
