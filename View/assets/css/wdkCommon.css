@@ -235,6 +235,10 @@ img[data-assets-src][src] {
 
 /* qtip overrides */
 
+.qtip-tipsy {
+  background: rgb(75, 75, 75);
+  background: rgba(75, 75, 75, .97);
+}
 .qtip-tipsy a,
 .qtip-tipsy a:link {
   color: #efefef;
