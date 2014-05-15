@@ -3,7 +3,9 @@ package org.gusdb.wdk.controller.action.services;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -22,6 +24,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.DatasetParser;
+import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
@@ -74,7 +77,7 @@ public class ProcessRESTAction extends Action {
       if (wdkQuestion == null)
         throw new WdkUserException("The question '" + qFullName + "' doesn't exist.");
       Map<String, String> outputConfig = new LinkedHashMap<String, String>();
-      
+
       // prepare and get the param values.
       Map<String, ParamBean<?>> params = wdkQuestion.getParamsMap();
       RequestParams requestParams = new ServiceRequestParams(request);
@@ -110,7 +113,8 @@ public class ProcessRESTAction extends Action {
       outputConfig.put("hasEmptyTable", "true");
       // FROM SHOWSUMMARY
 
-      StepBean step = wdkUser.createStep(wdkQuestion, stableValues, null, false, true, Utilities.DEFAULT_WEIGHT);
+      StepBean step = wdkUser.createStep(wdkQuestion, stableValues, null, false, true,
+          Utilities.DEFAULT_WEIGHT);
       AnswerValueBean answerValue = step.getAnswerValue();
       // construct the forward to show_summary action
       request.setAttribute("wdkAnswer", answerValue);
@@ -282,6 +286,11 @@ public class ProcessRESTAction extends Action {
       else if (def_value == null)
         def_value = "";
 
+      // dataset param will display the data sub-param instead
+      if (param instanceof DatasetParamBean) {
+        key = ((DatasetParamBean) param).getDataSubParam();
+      }
+
       writer.println("<param name='" + key + "' type='xsd:string' required='" + !param.getIsAllowEmpty() +
           "' default='" + def_value + "' " + repeating + ">");
       writer.println("<doc title='prompt'><![CDATA[" + param.getPrompt() + "]]></doc>");
@@ -303,21 +312,27 @@ public class ProcessRESTAction extends Action {
               term + "]]></doc></option>");
         }
       }
-      else if (param instanceof DatasetParamBean) {
+      writer.println("</param>");
+
+      // for datasetParam, will also show additional sub-params
+      if (param instanceof DatasetParamBean) {
         DatasetParamBean datasetParam = (DatasetParamBean) param;
         String parserParam = datasetParam.getParserSubParam();
-        StringBuilder parsers = new StringBuilder();
+        String defaultParser = ListDatasetParser.NAME;
+        writer.println("<param name='" + parserParam + "' type='xsd:string' required='false' default='" +
+            defaultParser + "' " + repeating + ">");
+        writer.println("  <doc title='prompt'><![CDATA[Input format]]></doc>");
+        writer.println("  <doc title='help'><![CDATA[The format of the input data for param " +
+            datasetParam.getName() + "]]></doc>");
+        writer.println("  <doc title='default'><![CDATA[" + defaultParser + "]]></doc>");
         for (DatasetParser parser : datasetParam.getParsers()) {
-          if (parsers.length() > 0)
-            parsers.append(",");
-          parsers.append(parser.getName());
+          writer.println("  <option value='" + htmlEncode(parser.getName()) + "'>");
+          writer.println("    <doc title='display'><![CDATA[" + parser.getDisplay() + "]]></doc>");
+          writer.println("    <doc title='description'><![CDATA[" + parser.getDescription() + "]]></doc>");
+          writer.println("  </option>");
         }
-        writer.println("<option value='" + parserParam + "'>");
-        writer.println("<doc title='" + parserParam + "'><![CDATA[The format of the input. " +
-            "Available values are: " + parsers + "]]></doc>");
-        writer.println("</option>");
+        writer.println("</param>");
       }
-      writer.println("</param>");
     }
     writer.println("<param name='o-fields' type='xsd:string' required='false' default='none' repeating='true'>");
     writer.println("<doc title='prompt'><![CDATA[Output Fields]]></doc>");

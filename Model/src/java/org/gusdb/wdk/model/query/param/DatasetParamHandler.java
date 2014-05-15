@@ -29,12 +29,12 @@ public class DatasetParamHandler extends AbstractParamHandler {
 
   private static final Logger logger = Logger.getLogger(DatasetParamHandler.class);
 
-  public DatasetParamHandler(){}
-  
+  public DatasetParamHandler() {}
+
   public DatasetParamHandler(DatasetParamHandler handler, Param param) {
     super(handler, param);
   }
-  
+
   /**
    * The raw value is Dataset object, and stable value is the dataset id.
    * 
@@ -134,14 +134,17 @@ public class DatasetParamHandler extends AbstractParamHandler {
     // dataset id not assigned, create one.
     DatasetParam datasetParam = (DatasetParam) param;
     String type = requestParams.getParam(datasetParam.getTypeSubParam());
-    if (type == null)
-      throw new WdkUserException("Please choose the type of the input for parameter '" + param.getPrompt() +
-          "'.");
+    if (type == null) // use data as default input type
+      type = DatasetParam.TYPE_DATA;
 
     String data = null;
     String uploadFile = "";
     RecordClass recordClass = datasetParam.getRecordClass();
     String parserName = requestParams.getParam(datasetParam.getParserSubParam());
+    if (parserName == null) // list parser is the default parser.
+      parserName = ListDatasetParser.NAME;
+
+    // retrieve data by type.
     if (type.equalsIgnoreCase(DatasetParam.TYPE_DATA)) {
       data = requestParams.getParam(datasetParam.getDataSubParam());
       if (data == null || data.length() == 0)
@@ -151,7 +154,8 @@ public class DatasetParamHandler extends AbstractParamHandler {
       String fileParam = datasetParam.getFileSubParam();
       uploadFile = requestParams.getParam(fileParam);
       if (uploadFile == null || uploadFile.length() == 0)
-        throw new WdkUserException("Please select a file to upload for parameter '" + param.getPrompt() + "'.");
+        throw new WdkUserException("Please select a file to upload for parameter '" + param.getPrompt() +
+            "'.");
       logger.debug("upload file: " + uploadFile);
       data = requestParams.getUploadFileContent(fileParam);
     }
@@ -171,7 +175,6 @@ public class DatasetParamHandler extends AbstractParamHandler {
       }
       if (records != null)
         data = toString(records);
-      parserName = ListDatasetParser.NAME; // use the list parser.
     }
 
     logger.debug("dataset parser: " + parserName + ", data: '" + data + "'");
@@ -184,7 +187,8 @@ public class DatasetParamHandler extends AbstractParamHandler {
     if (data != null) {
       data = data.trim();
       // get parser and parse the content
-      if (parserName == null) parserName = ListDatasetParser.NAME; // use default parser.
+      if (parserName == null)
+        parserName = ListDatasetParser.NAME; // use default parser.
       DatasetParser parser = datasetParam.getParser(parserName);
       Dataset dataset = datasetFactory.createOrGetDataset(user, parser, data, uploadFile);
       logger.debug("User #" + user.getUserId() + " - dataset created: #" + dataset.getDatasetId());
