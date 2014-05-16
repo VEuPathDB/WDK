@@ -35,6 +35,7 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
         String viewPath = getAnalysisMgr().getViewResolver().resolveResultsView(this, context);
         return new ActionResult()
             .setViewPath(viewPath)
+            .setRequestAttribute("wdkModel", getWdkModel())
             .setRequestAttribute("analysisId", context.getAnalysisId())
             .setRequestAttribute("viewModel", result.getResultViewModel());
       case PENDING:
