@@ -1,11 +1,8 @@
 package org.gusdb.wdk.controller.action.services;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.query.param.RequestParams;
 
 public class ServiceRequestParams implements RequestParams {
