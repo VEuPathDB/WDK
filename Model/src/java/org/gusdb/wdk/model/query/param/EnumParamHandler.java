@@ -58,6 +58,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    */
   @Override
   public Object toRawValue(User user, String stableValue, Map<String, String> contextValues) {
+    if (stableValue == null) return stableValue;
     String[] rawValue = stableValue.split(",");
     for (int i = 0; i < rawValue.length; i++) {
       rawValue[i] = rawValue[i].trim();
