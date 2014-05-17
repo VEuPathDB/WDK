@@ -164,24 +164,16 @@ Otherwise a standard select menu is used.
 </c:choose>
 
 <%-- display invalid terms, if any. --%>
-<c:set var="originalValues" value="${qP.originalValues}" />
-<c:set var="invalid" value="${false}" />
-<c:forEach items="${originalValues}" var="entry">
-  <c:if test="${entry.value == false}">
-    <c:set var="invalid" value="${true}" />
-  </c:if>
-</c:forEach>
+<c:set var="invalidKey" value="${qP.name}_invalid" />
+<c:set var="invalidTerms" value="${requestScope[invalidKey]}" />
 
-<c:if test="${invalid}">
+<c:if test="${fn:length(invalidTerms) gt 0}">
   <div class="invalid-values">
     <p>Some of the option(s) you previously selected are no longer available.</p>
     <p>Here is a list of the values you selected (unavailable options are marked in red):</p>
     <ul>
-      <c:forEach items="${originalValues}" var="entry">
-        <c:set var="style">
-          <c:if test="${entry.value == false}">class="invalid"</c:if>
-        </c:set>
-        <li ${style}>${entry.key}</li>
+      <c:forEach items="${invalidTerms}" var="invalidTerm">
+        <li class="invalid">${invalidTerm}</li>
       </c:forEach>
     </ul>
   </div>
