@@ -22,7 +22,7 @@ public class ServiceRequestParams implements RequestParams {
   public String[] getArray(String name) {
     String[] values = request.getParameterValues(name);
     // only return the array if it has more than 1 value; otherwise, use the value from getParam().
-    if (values != null & values.length > 1)
+    if (values != null && values.length > 1)
       return values;
 
     String value = getParam(name);
