@@ -15,7 +15,7 @@
               <c:set var="analysis" value="${analysisEntry.value}"/>
               <c:set var="style">
                 <c:if test="${not empty analysis.customThumbnail}">
-                  background-image: url(${applicationScope.assetsUrl}/${analysis.customThumbnail})
+                  background-image: url(${analysis.customThumbnail})
                 </c:if>
               </c:set>
               <c:set var="class">
