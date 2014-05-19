@@ -69,3 +69,7 @@
 wdk.namespace('wdk.util', function(ns) {
   ns.namespace = wdk.namespace;
 });
+
+// make wdk an event bus
+_.extend(wdk ,Backbone.Events);
+
