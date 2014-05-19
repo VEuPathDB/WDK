@@ -257,15 +257,21 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
       success: function(data, textStatus, jqXHR) {
 
         // add display name
-        $element.find('h3').text(data.displayName);
+        $element.find('[data-bind="displayName"]').text(data.displayName);
 
         // add description
-        $element.find('.step-analysis-description').text(data.description);
+        $element.find('[data-bind="description"]').text(data.description);
 
         // load form and (if necessary) populate selected values
-        loadAnalysisForm($element, data);
+        var formDfd = loadAnalysisForm($element, data);
         // load results
-        loadResultsPane($element, analysisId);
+        var resultsDfd = loadResultsPane($element, analysisId);
+
+        // FIXME Only trigger 'analysis:initialize'
+        // trigger initialize event
+        $.when(formDfd, resultsDfd).then(function() {
+          wdk.trigger('analysis:initialize analysis:initialize:' + data.analysisName, analysisId, $element[0]);
+        });
       },
       error: function(jqXHR, textStatus, errorThrown) {
         handleAjaxError("Error: Unable to retrieve step analysis json for id: " + analysisId);
@@ -296,7 +302,12 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         $form.submit(preventEvent(partial(runStepAnalysis, $form[0])));
 
         var formPane = $element.find(".step-analysis-form-pane");
-        formPane.html(wrappingDiv);
+        formPane.find('> div').html(wrappingDiv);
+        formPane.accordion({
+          collapsible: true,
+          active: analysisObj.status === 'COMPLETE' ? false : 0,
+          animate: false
+        });
 
         // only overwrite any default values if params have been set for this instance in the past
         if (analysisObj.hasParams) {
@@ -340,12 +351,14 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   function runStepAnalysis(form) {
     var analysisId = $(form).find('input[name=analysisId]').val();
     var $errorsPane = $(form).parents('.step-analysis-subpane').find('.step-analysis-errors-pane');
+    var $formPane = $(form).closest('.step-analysis-form-pane');
     // clear any errors from a previous submission
     $errorsPane.empty();
     return doAjax(ROUTES.runAnalysis, {
       data: $(form).serialize(),
       success: function(data, textStatus, jqXHR) {
         if (data.status == "success") {
+          $formPane.accordion('option', 'active', false)
           // if success, then alert user and load results pane
           loadResultsPane($(form).parents('.step-analysis-pane'), data.context.analysisId);
         }
