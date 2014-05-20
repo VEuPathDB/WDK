@@ -1,6 +1,8 @@
 wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   "use strict";
 
+  // FIXME Include analysis instance name with events
+
   // "imports"
   var preventEvent = wdk.fn.preventEvent,
       partial = _.partial,
@@ -263,15 +265,10 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         $element.find('[data-bind="description"]').text(data.description);
 
         // load form and (if necessary) populate selected values
-        var formDfd = loadAnalysisForm($element, data);
-        // load results
-        var resultsDfd = loadResultsPane($element, analysisId);
+        loadAnalysisForm($element, data);
 
-        // FIXME Only trigger 'analysis:initialize'
-        // trigger initialize event
-        $.when(formDfd, resultsDfd).then(function() {
-          wdk.trigger('analysis:initialize analysis:initialize:' + data.analysisName, analysisId, $element[0]);
-        });
+        // load results
+        loadResultsPane($element, analysisId);
       },
       error: function(jqXHR, textStatus, errorThrown) {
         handleAjaxError("Error: Unable to retrieve step analysis json for id: " + analysisId);
@@ -315,6 +312,8 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           analysisObj.formParams.analysisId = [ analysisId ];
           wdk.formUtil.populateForm(formPane.find('form').first(), analysisObj.formParams);
         }
+
+        wdk.trigger('analysis:formload', analysisId, $element[0]);
       },
       error: function(jqXHR, textStatus, errorThrown) {
         handleAjaxError("Error: Unable to retrieve step analysis form for analysis with id " + analysisId);
@@ -340,6 +339,10 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         // place discovered elements in results pane
         for (var i=0; i < returnedDomElements.length; i++) {
           resultsPane.append(returnedDomElements[i]);
+        }
+
+        if (jqXHR.status === 200) {
+          wdk.trigger('analysis:resultsload', analysisId, $element[0]);
         }
       },
       error: function(jqXHR, textStatus, errorThrown) {
