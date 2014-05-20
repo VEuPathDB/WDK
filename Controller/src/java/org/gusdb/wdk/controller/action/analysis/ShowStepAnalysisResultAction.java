@@ -42,6 +42,8 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
       case RUNNING:
         return new ActionResult()
             .setViewName("pending")
+            // send 202 status so the client knows the result isn't ready
+            .setHttpResponseStatus(202)
             .setRequestAttribute("analysisId", context.getAnalysisId());
       case ERROR:
         reason = ERROR_REASON_TEXT;
