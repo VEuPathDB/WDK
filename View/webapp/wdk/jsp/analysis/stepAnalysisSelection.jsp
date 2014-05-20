@@ -19,7 +19,7 @@
                 </c:if>
               </c:set>
               <c:set var="class">
-                <c:if test="${analysis.releaseVersion eq -1}">inactive</c:if>
+                <c:if test="${analysis.releaseVersion le 0}">inactive</c:if>
               </c:set>
 
               <li class="${class}"
@@ -28,8 +28,11 @@
                   style="${style}"
                   title="${analysis.description}"
                   data-name="${analysis.name}" data-step-id="${wdkStep.stepId}">
-                <c:if test="${analysis.releaseVersion eq -1}">
-                  <div class="analysis-coming-soon">Coming soon...</div>
+                <c:if test="${analysis.releaseVersion le 0}">
+                  <div class="analysis-selection-banner">Coming soon...</div>
+                </c:if>
+                <c:if test="${analysis.releaseVersion eq wdkModel.model.buildNumber}">
+                  <div class="analysis-selection-banner">New!</div>
                 </c:if>
                 <div class="analysis-wrapper">
                   <div class="analysis-title">${analysis.displayName}</div>
