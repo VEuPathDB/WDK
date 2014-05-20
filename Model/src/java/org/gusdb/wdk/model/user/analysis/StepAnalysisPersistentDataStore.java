@@ -97,7 +97,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     _userPlatform = _userDb.getPlatform();
     _userDs = _userDb.getDataSource();
     _userBoolType = _userPlatform.getBooleanType();
-    createUserSql(_userDb.getDefaultSchema());
+    createUserSql(wdkModel.getModelConfig().getUserDB().getUserSchema());
     
     _appDb = wdkModel.getAppDb();
     _appPlatform = _appDb.getPlatform();
