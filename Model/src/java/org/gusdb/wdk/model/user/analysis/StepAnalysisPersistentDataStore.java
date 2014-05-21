@@ -82,6 +82,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private final DatabaseInstance _userDb;
   private final DBPlatform _userPlatform;
   private final DataSource _userDs;
+  private final String _userSchema;
   private final int _userBoolType;
 
   private final DatabaseInstance _appDb;
@@ -96,8 +97,9 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     _userDb = wdkModel.getUserDb();
     _userPlatform = _userDb.getPlatform();
     _userDs = _userDb.getDataSource();
+    _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
     _userBoolType = _userPlatform.getBooleanType();
-    createUserSql(wdkModel.getModelConfig().getUserDB().getUserSchema());
+    createUserSql();
     
     _appDb = wdkModel.getAppDb();
     _appPlatform = _appDb.getPlatform();
@@ -119,8 +121,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
    *   CLOB context
    * }
    */
-  private void createUserSql(String schema) {
-    String table = schema + ANALYSIS_TABLE;
+  private void createUserSql() {
+    String table = _userSchema + ANALYSIS_TABLE;
     String idType = _userPlatform.getNumberDataType(12);
     String userStringType = _userPlatform.getStringDataType(1024);
     String hashType = _userPlatform.getStringDataType(96);
@@ -138,7 +140,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         "  CONTEXT              " + clobType + "," +
         "  PRIMARY KEY (ANALYSIS_ID)" +
         ")";
-    ANALYSIS_SEQUENCE = schema + ANALYSIS_SEQUENCE_NAME;
+    ANALYSIS_SEQUENCE = _userSchema + ANALYSIS_SEQUENCE_NAME;
     INSERT_ANALYSIS_SQL =
         "INSERT INTO " + table +
         " (ANALYSIS_ID, STEP_ID, DISPLAY_NAME, IS_NEW, HAS_PARAMS," +
@@ -229,10 +231,10 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   @Override
   public int getNextId() throws WdkModelException {
     try {
-      return _userPlatform.getNextId(_userDs, _userDb.getDefaultSchema(), ANALYSIS_TABLE);
+      return _userPlatform.getNextId(_userDs, _userSchema, ANALYSIS_TABLE);
     }
     catch (SQLException ex) {
-      throw new WdkModelException("Unable to get next ID for table " + ANALYSIS_TABLE);
+      throw new WdkModelException("Unable to get next ID for table " + ANALYSIS_TABLE, ex);
     }
   }
 
