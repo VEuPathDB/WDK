@@ -257,6 +257,8 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     return doAjax(ROUTES.getAnalysis, {
       data: { "analysisId": analysisId },
       success: function(data, textStatus, jqXHR) {
+        // add name as data attribute
+        $element.data('analysis-name', data.analysisName);
 
         // add display name
         $element.find('[data-bind="displayName"]').text(data.displayName);
@@ -313,7 +315,11 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           wdk.formUtil.populateForm(formPane.find('form').first(), analysisObj.formParams);
         }
 
-        wdk.trigger('analysis:formload', analysisId, $element[0]);
+        trigger('formload', {
+          name: analysisObj.analysisName,
+          id: analysisId,
+          $el: $element
+        });
       },
       error: function(jqXHR, textStatus, errorThrown) {
         handleAjaxError("Error: Unable to retrieve step analysis form for analysis with id " + analysisId);
@@ -342,7 +348,11 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         }
 
         if (jqXHR.status === 200) {
-          wdk.trigger('analysis:resultsload', analysisId, $element[0]);
+          trigger('resultsload', {
+            name: $element.data('analysis-name'),
+            id: analysisId,
+            $el: $element
+          });
         }
       },
       error: function(jqXHR, textStatus, errorThrown) {
@@ -454,6 +464,13 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
   function handleAjaxError(message) {
     alert(message);
+  }
+
+  // Trigger two wdk events: one generic and one specific to instance
+  function trigger(eventName, pubObject) {
+    var event = 'analysis:' + eventName;
+    event = event + ' ' + event + ':' + pubObject.name;
+    wdk.trigger(event, pubObject);
   }
 
   ns.configureAnalysisViews = configureAnalysisViews;
