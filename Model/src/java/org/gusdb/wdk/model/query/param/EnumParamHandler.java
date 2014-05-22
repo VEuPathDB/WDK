@@ -79,7 +79,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(User user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0)
       return stableValue;
 
@@ -89,8 +89,13 @@ public class EnumParamHandler extends AbstractParamHandler {
     String[] terms = enumParam.convertToTerms(stableValue);
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
-      if (!cache.containsTerm(term))
-        throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
+      try {
+        if (!cache.containsTerm(term))
+          throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
+      } catch(WdkUserException ex) {
+        // TODO - need to support user exception here
+        throw new WdkModelException(ex);
+      }
 
       String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
 
