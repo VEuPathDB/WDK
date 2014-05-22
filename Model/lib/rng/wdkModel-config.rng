@@ -149,7 +149,7 @@
                 </optional>
                 <optional>
                     <attribute name="showConnectionsDuration">
-                        <data type="unsignedLong" />
+                        <data type="long" />
                     </attribute>
                 </optional>
             </group>
