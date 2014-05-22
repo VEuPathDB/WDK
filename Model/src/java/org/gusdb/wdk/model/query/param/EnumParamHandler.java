@@ -72,13 +72,14 @@ public class EnumParamHandler extends AbstractParamHandler {
    * properly.
    * 
    * @throws WdkModelException
+   * @throws WdkUserException
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#transform(org.gusdb. wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
   public String toInternalValue(User user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     if (stableValue == null || stableValue.length() == 0)
       return stableValue;
 
@@ -89,7 +90,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
       if (!cache.containsTerm(term))
-        continue;
+        throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
 
       String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
 
