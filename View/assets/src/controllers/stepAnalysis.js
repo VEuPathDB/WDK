@@ -1,8 +1,6 @@
 wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   "use strict";
 
-  // FIXME Include analysis instance name with events
-
   // "imports"
   var preventEvent = wdk.fn.preventEvent,
       partial = _.partial,
