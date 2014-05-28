@@ -113,7 +113,7 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
    * this value may be null; if so, no errors will be appended
    * @return SQL compatible list string
    */
-  static String getArrayParamValueAsString(String paramKey,
+  public static String getArrayParamValueAsString(String paramKey,
       Map<String, String[]> formParams, ValidationErrors errors) {
     String[] values = formParams.get(paramKey);
     if ((values == null || values.length == 0) && errors != null) {
