@@ -301,8 +301,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         formPane.find('> div').html(wrappingDiv);
         formPane.accordion({
           collapsible: true,
-          active: analysisObj.status === 'COMPLETE' ? false : 0,
-          animate: false
+          active: 0, //analysisObj.status === 'COMPLETE' ? false : 0,
+          animate: false,
+          heightStyle: "content"
         });
 
         // only overwrite any default values if params have been set for this instance in the past
@@ -368,7 +369,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
       data: $(form).serialize(),
       success: function(data, textStatus, jqXHR) {
         if (data.status == "success") {
-          $formPane.accordion('option', 'active', false)
+          $formPane.accordion("option", "active", false);
           // if success, then alert user and load results pane
           loadResultsPane($(form).parents('.step-analysis-pane'), data.context.analysisId);
         }
