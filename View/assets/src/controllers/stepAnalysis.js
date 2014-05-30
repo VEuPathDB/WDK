@@ -293,8 +293,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
         // configure form for submission to the step analysis runner action
         var hiddenField = '<input type="hidden" name="analysisId" value="' + analysisId + '"/>';
-        var $form = $(wrappingDiv).find("form").first()
-          .append(hiddenField);
+        var $form = $(wrappingDiv).find("form").first().append(hiddenField);
 
         $form.submit(preventEvent(partial(runStepAnalysis, $form[0])));
 
@@ -374,6 +373,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           loadResultsPane($(form).parents('.step-analysis-pane'), data.context.analysisId);
         }
         else if (data.status == "validation") {
+          // clear results pane so user doesn't see old results with new submitted form
+          $(form).parents('.step-analysis-pane').find('.step-analysis-results-pane').empty();
+          // display validation errors
           var errorAnnounce = "<span>Please address the following issues:</span><br/>"
           var $newErrorList = $("<ul></ul>");
           data.errors.forEach(function(val) {
