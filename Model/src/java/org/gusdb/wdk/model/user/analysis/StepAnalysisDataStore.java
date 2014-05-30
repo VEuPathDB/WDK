@@ -16,7 +16,6 @@ import org.gusdb.wdk.model.WdkModelException;
 
 public abstract class StepAnalysisDataStore {
   
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(StepAnalysisDataStore.class);
   
   protected static class AnalysisInfo {
@@ -140,7 +139,9 @@ public abstract class StepAnalysisDataStore {
       if (entry.getValue().analysisInfo == null) {
         throw new WdkModelException("Unable to find record for analysis ID: " + entry.getKey());
       }
-      contextList.add(convertToContext(entry.getValue(), fileStore));
+      StepAnalysisContext context = convertToContext(entry.getValue(), fileStore);
+      // skip null contexts
+      if (context != null) contextList.add(context);
     }
     return contextList;
   }
@@ -149,9 +150,16 @@ public abstract class StepAnalysisDataStore {
       StepAnalysisFileStore fileStore) throws WdkModelException {
     
     AnalysisInfo info = data.analysisInfo;
-    StepAnalysisContext context = StepAnalysisContext.createFromStoredData(
-        _wdkModel, info.analysisId, info.isNew, info.hasParams, info.invalidStepReason,
-        info.displayName, info.serializedContext);
+    StepAnalysisContext context;
+    try {
+      context = StepAnalysisContext.createFromStoredData(
+          _wdkModel, info.analysisId, info.isNew, info.hasParams, info.invalidStepReason,
+          info.displayName, info.serializedContext);
+    }
+    catch (DeprecatedAnalysisException e) {
+      LOG.warn("Previously stored step analysis has deprecated plugin", e);
+      return null;
+    }
     
     // if analysis was created from a step its analyzer did not approve, then status is always INVALID
     if (!context.getIsValidStep()) {
