@@ -104,6 +104,14 @@
 <c:set var="segregateLeavesParam" value="${segregateLeaves}" scope="request"/>
 
 <!-- JSTree/Checkbox configuration -->
+<div style="display:none" data-controller="wdk.checkboxTree.setUpCheckboxTree"
+    data-id="${id}" data-name="${checkboxName}" data-useicons="${useIcons}"
+    data-isallselected="${rootNode.isAllSelected}" data-leafimage="${leafImage}"
+    data-selectednodes="[${rootNode.selectedAsList}]", data-defaultnodes="[${rootNode.defaultAsList}]"
+    data-initialnodes="[${initiallySetList}]" data-onload="${onload};"
+    data-onchange="setTimeout(function() { ${onchange}; }, 0);"/>
+
+<%--
 <script type="text/javascript">
   // configure the tree
   wdk.checkboxTree.addTreeToPage("${id}", "${checkboxName}", ${useIcons}, 
@@ -114,33 +122,34 @@
     wdk.checkboxTree.configureCheckboxTree("${id}");
   });
 </script>    
+--%>
 
 <div id="treeLinks-top" class="formButtonPanel" style="text-align:${buttonAlignment}">
   <c:if test="${showSelectAll}">
-    <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_checkAll('${id}');">select all</a> |
+    <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.checkAll('${id}');">select all</a> |
   </c:if>
-  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_uncheckAll('${id}');">clear all</a> |
-  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_expandAll('${id}');">expand all</a> |
-  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_collapseAll('${id}');">collapse all</a>
+  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.uncheckAll('${id}');">clear all</a> |
+  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.expandAll('${id}');">expand all</a> |
+  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.collapseAll('${id}');">collapse all</a>
   <c:if test="${showResetCurrent}">
-    <br/><a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_selectCurrentNodes('${id}');">reset to current</a>
+    <br/><a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.selectCurrentNodes('${id}');">reset to current</a>
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_selectDefaultNodes('${id}');">reset to default</a>
+  | <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.selectDefaultNodes('${id}');">reset to default</a>
 </div>
-<div class="checkbox-tree" id="${id}" style="display:none">
+<div class="checkbox-tree" id="${id}" style="display:none; text-align:left">
   <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp" />
 </div>
 <div id="treeLinks-bottom" class="formButtonPanel" style="text-align:${buttonAlignment}">
   <c:if test="${showSelectAll}">
-    <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_checkAll('${id}');">select all</a> |
+    <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.checkAll('${id}');">select all</a> |
   </c:if>
-  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_uncheckAll('${id}');">clear all</a> |
-  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_expandAll('${id}');">expand all</a> |
-  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_collapseAll('${id}');">collapse all</a>
+  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.uncheckAll('${id}');">clear all</a> |
+  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.expandAll('${id}');">expand all</a> |
+  <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.collapseAll('${id}');">collapse all</a>
   <c:if test="${showResetCurrent}">
-    <br/><a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_selectCurrentNodes('${id}');">reset to current</a>
+    <br/><a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.selectCurrentNodes('${id}');">reset to current</a>
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.cbt_selectDefaultNodes('${id}');">reset to default</a>
+  | <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.selectDefaultNodes('${id}');">reset to default</a>
 </div>
 
 <c:remove var="recurseTermNode"/>
