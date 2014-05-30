@@ -91,6 +91,11 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         .validateFormParams(context.getFormParams());
     List<String> errorList = new ArrayList<String>();
     if (errors == null || !errors.hasMessages()) return errorList;
+
+    // validation failed; errors present.  Set isNew to true so old results are hidden from user
+    _dataStore.setNewFlag(context.getAnalysisId(), true);
+
+    // add and return messages to client
     errorList.addAll(errors.getMessages());
     // FIXME: figure out display of these values; for now, translate param errors into strings
     for (Entry<String,List<String>> paramErrors : errors.getParamMessages().entrySet()) {
@@ -475,15 +480,18 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   @Override
   public void createResultsTable() throws WdkModelException {
     _dataStore.createExecutionTable();
+    // nothing do do for file store; it is created automatically
   }
 
   @Override
   public void clearResultsTable() throws WdkModelException {
     _dataStore.deleteAllExecutions();
+    _fileStore.deleteAllExecutions();
   }
 
   @Override
   public void dropResultsTable(boolean purge) throws WdkModelException {
     _dataStore.deleteExecutionTable(purge);
+    _fileStore.deleteAllExecutions();
   }
 }
