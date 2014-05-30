@@ -5,40 +5,7 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
   if ((typeof checkboxTreeConfig) == 'undefined') {
     checkboxTreeConfig = {};
   }
-  
-  function setUpCheckboxTree($elem, $attrs) {
-    var id = $attrs.id;
-    var leafUrl = wdk.assetsUrl($attrs.leafimage);
-    var selectedNodes = parseJsonArray($attrs.selectednodes);
-    var defaultNodes = parseJsonArray($attrs.defaultnodes);
-    var initialNodes = parseJsonArray($attrs.initialnodes);
-    var onchangeFunction = new Function($attrs.onchange);
-    var onloadFunction = new Function($attrs.onload);
 
-    addTreeToPage(id, $attrs.name, $attrs.useicons, $attrs.isallselected, leafUrl,
-        selectedNodes, defaultNodes, initialNodes, onchangeFunction, onloadFunction);
-
-    configureCheckboxTree(id);
-
-    //id="${id}" data-name="${checkboxName}" data-useicons="${useIcons}"
-    //    data-isallselected="${rootNode.isAllSelected}" data-leafimage="${leafImage}"
-    //    data-selectednodes="[${rootNode.selectedAsList}]", data-defaultnodes="[${rootNode.defaultAsList}]"
-    //    data-initialnodes="[${initiallySetList}]" data-onchange="function"
-    //    data-onload="function"
-  }
-  
-  // could be an array already, or could be a string trying to be a JSON array
-  function parseJsonArray(jsArray) {
-    return (typeof jsArray === "object" ? jsArray :
-        jQuery.parseJSON(jsArray.replace("'", '"', "g")));
-  }
-  
-  
-  //wdk.checkboxTree.addTreeToPage("${id}", "${checkboxName}", ${useIcons}, 
-  //    ${rootNode.isAllSelected}, wdk.assetsUrl('${leafImage}'), 
-  //    [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}],
-  //    function(){ setTimeout(function() { ${onchange}; }, 0); }, function(){ ${onload}; });
-  
   // takes string, boolean, url, "current" array, "default" array, "initially set" array
   function addTreeToPage(id, checkboxName, useIcons, collapseOnLoad, leafImgUrl,
       currentList, defaultList, initiallySetList, onchange, onload) {
@@ -72,14 +39,14 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
       $('#'+treeId)
         .bind("loaded.jstree", function (event, data) {
           // need to check all selected nodes, but wait to ensure page is ready
-          selectListOfNodes(treeId, checkboxTree.initiallySetList);
+          cbt_selectListOfNodes(treeId, checkboxTree.initiallySetList);
           if (checkboxTree.collapseOnLoad) {
-            collapseAll(treeId);
+            cbt_collapseAll(treeId);
           }
           $('#'+treeId).find('ins.jstree-checkbox').click(checkboxTree.onchange);
+          checkboxTree.configured = true;
           $('#'+treeId).show();
           checkboxTree.onload();
-          checkboxTree.configured = true;
         })
         // hack to bubble change event up to containing form
         .bind("change_state.jstree", function(event, data) {
@@ -101,27 +68,17 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
     }
   }
 
-  function getInputName(treeId) {
-    return checkboxTreeConfig[treeId].checkboxName;
+  function cbt_selectCurrentNodes(treeId) {
+    cbt_selectListOfNodes(treeId, checkboxTreeConfig[treeId].currentList);
   }
 
-  function isConfigured(treeId) {
-    var treeConfig = checkboxTreeConfig[treeId];
-    if (treeConfig == null) return false;
-    return treeConfig.configured;
+  function cbt_selectDefaultNodes(treeId) {
+    cbt_selectListOfNodes(treeId, checkboxTreeConfig[treeId].defaultList);
   }
 
-  function selectCurrentNodes(treeId) {
-    selectListOfNodes(treeId, checkboxTreeConfig[treeId].currentList);
-  }
-
-  function selectDefaultNodes(treeId) {
-    selectListOfNodes(treeId, checkboxTreeConfig[treeId].defaultList);
-  }
-
-  function selectListOfNodes(treeId, checkedArray) {
+  function cbt_selectListOfNodes(treeId, checkedArray) {
     var i;
-    uncheckAll(treeId);
+    cbt_uncheckAll(treeId);
     // Why aren't we using valid IDs???
     // Have to manually select nodes and compare IDs since our ID names are not jquery-selection friendly
     // Ideally would be able to do the following for each item in the checked array:
@@ -137,37 +94,33 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
     checkboxTreeConfig[treeId].onchange();
   }
 
-  function checkAll(treeId) {
+  function cbt_checkAll(treeId) {
     $('#' + treeId).jstree("check_all");
     // tree may have changed so call user's onchange function
     checkboxTreeConfig[treeId].onchange();
   }
 
-  function uncheckAll(treeId) {
+  function cbt_uncheckAll(treeId) {
     $('#' + treeId).jstree("uncheck_all");
     // tree may have changed so call user's onchange function
     checkboxTreeConfig[treeId].onchange();
   }
 
-  function expandAll(treeId) {
+  function cbt_expandAll(treeId) {
     $('#' + treeId).jstree("open_all", -1, true);
   }
 
-  function collapseAll(treeId) {
+  function cbt_collapseAll(treeId) {
     $('#' + treeId).jstree("close_all", -1, true);
   }
 
-  ns.setUpCheckboxTree = setUpCheckboxTree;
   ns.addTreeToPage = addTreeToPage;
   ns.configureCheckboxTree = configureCheckboxTree;
-  ns.getInputName = getInputName;
-  ns.isConfigured = isConfigured;
-  ns.selectCurrentNodes = selectCurrentNodes;
-  ns.selectDefaultNodes = selectDefaultNodes;
-  ns.selectListOfNodes = selectListOfNodes;
-  ns.checkAll = checkAll;
-  ns.uncheckAll = uncheckAll;
-  ns.expandAll = expandAll;
-  ns.collapseAll = collapseAll;
+  ns.cbt_selectCurrentNodes = cbt_selectCurrentNodes;
+  ns.cbt_selectDefaultNodes = cbt_selectDefaultNodes;
+  ns.cbt_checkAll = cbt_checkAll;
+  ns.cbt_uncheckAll = cbt_uncheckAll;
+  ns.cbt_expandAll = cbt_expandAll;
+  ns.cbt_collapseAll = cbt_collapseAll;
 
 });

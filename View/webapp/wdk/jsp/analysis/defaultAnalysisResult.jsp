@@ -5,9 +5,9 @@
   <jsp:directive.page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"/>
   <html>
     <body>
-<pre>
-${requestScope.viewModel}
-</pre>
+      <pre>
+        ${requestScope.viewModel}
+      </pre>
     </body>
   </html>
 </jsp:root>
