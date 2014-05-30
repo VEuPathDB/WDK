@@ -111,19 +111,6 @@
     data-initialnodes="[${initiallySetList}]" data-onload="${onload};"
     data-onchange="setTimeout(function() { ${onchange}; }, 0);"/>
 
-<%--
-<script type="text/javascript">
-  // configure the tree
-  wdk.checkboxTree.addTreeToPage("${id}", "${checkboxName}", ${useIcons}, 
-      ${rootNode.isAllSelected}, wdk.assetsUrl('${leafImage}'), 
-      [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}],
-      function(){ setTimeout(function() { ${onchange}; }, 0); }, function(){ ${onload}; });
-  $(function() {
-    wdk.checkboxTree.configureCheckboxTree("${id}");
-  });
-</script>    
---%>
-
 <div id="treeLinks-top" class="formButtonPanel" style="text-align:${buttonAlignment}">
   <c:if test="${showSelectAll}">
     <a class="small" href="javascript:void(0)" onclick="wdk.checkboxTree.checkAll('${id}');">select all</a> |
