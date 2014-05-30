@@ -301,7 +301,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         formPane.find('> div').html(wrappingDiv);
         formPane.accordion({
           collapsible: true,
-          active: 0, //analysisObj.status === 'COMPLETE' ? false : 0,
+          active: analysisObj.status === 'COMPLETE' ? false : 0,
           animate: false,
           heightStyle: "content"
         });
