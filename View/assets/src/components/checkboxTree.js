@@ -5,67 +5,37 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
   if ((typeof checkboxTreeConfig) == 'undefined') {
     checkboxTreeConfig = {};
   }
-  
-  function setUpCheckboxTree($elem, $attrs) {
-    var id = $attrs.id;
-    var leafUrl = wdk.assetsUrl($attrs.leafimage);
-    var selectedNodes = parseJsonArray($attrs.selectednodes);
-    var defaultNodes = parseJsonArray($attrs.defaultnodes);
-    var initialNodes = parseJsonArray($attrs.initialnodes);
-    var onchangeFunction = new Function($attrs.onchange);
-    var onloadFunction = new Function($attrs.onload);
 
-    addTreeToPage(id, $attrs.name, $attrs.useicons, $attrs.isallselected, leafUrl,
-        selectedNodes, defaultNodes, initialNodes, onchangeFunction, onloadFunction);
+  function setUpCheckboxTree($elem, $attrs) {
+
+    var id = $attrs.id;
+    var checkboxTree = checkboxTreeConfig[id];
+    if ((typeof checkboxTree) == 'undefined') {
+      checkboxTree = {};
+      checkboxTreeConfig[id] = checkboxTree;
+    }
+
+    checkboxTree.id = id;
+    checkboxTree.checkboxName = $attrs.name;
+    checkboxTree.useIcons = $attrs.useicons;
+    checkboxTree.collapseOnLoad = $attrs.isallselected;
+    checkboxTree.leafImgUrl = wdk.assetsUrl($attrs.leafimage);
+    checkboxTree.currentList = parseJsonArray($attrs.selectednodes);
+    checkboxTree.defaultList = parseJsonArray($attrs.defaultnodes);
+    checkboxTree.initiallySetList = parseJsonArray($attrs.initialnodes);
+    checkboxTree.onchange = new Function($attrs.onchange);
+    checkboxTree.onload = new Function($attrs.onload);
+    checkboxTree.configured = false;
 
     configureCheckboxTree(id);
-
-    //id="${id}" data-name="${checkboxName}" data-useicons="${useIcons}"
-    //    data-isallselected="${rootNode.isAllSelected}" data-leafimage="${leafImage}"
-    //    data-selectednodes="[${rootNode.selectedAsList}]", data-defaultnodes="[${rootNode.defaultAsList}]"
-    //    data-initialnodes="[${initiallySetList}]" data-onchange="function"
-    //    data-onload="function"
   }
-  
+
   // could be an array already, or could be a string trying to be a JSON array
   function parseJsonArray(jsArray) {
     return (typeof jsArray === "object" ? jsArray :
         jQuery.parseJSON(jsArray.replace("'", '"', "g")));
   }
   
-  
-  //wdk.checkboxTree.addTreeToPage("${id}", "${checkboxName}", ${useIcons}, 
-  //    ${rootNode.isAllSelected}, wdk.assetsUrl('${leafImage}'), 
-  //    [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}],
-  //    function(){ setTimeout(function() { ${onchange}; }, 0); }, function(){ ${onload}; });
-  
-  // takes string, boolean, url, "current" array, "default" array, "initially set" array
-  function addTreeToPage(id, checkboxName, useIcons, collapseOnLoad, leafImgUrl,
-      currentList, defaultList, initiallySetList, onchange, onload) {
-    var checkboxTree = checkboxTreeConfig[id];
-    if ((typeof checkboxTree) == 'undefined') {
-      checkboxTree = {};
-      checkboxTreeConfig[id] = checkboxTree;
-    }
-    checkboxTree.id = id;
-    checkboxTree.checkboxName = checkboxName;
-    checkboxTree.useIcons = useIcons;
-    checkboxTree.collapseOnLoad = collapseOnLoad;
-    checkboxTree.leafImgUrl = leafImgUrl;
-    checkboxTree.currentList = currentList;
-    checkboxTree.defaultList = defaultList;
-    checkboxTree.initiallySetList = initiallySetList;
-    checkboxTree.onchange = onchange;
-    checkboxTree.onload = onload;
-    checkboxTree.configured = false;
-  }
-
-  function configureCheckboxTrees() {
-    $(".checkbox-tree").each(function () {
-      configureCheckboxTree(this.id);
-    });
-  }
-
   function configureCheckboxTree(treeId) {
     var checkboxTree = checkboxTreeConfig[treeId];
     if (!checkboxTree.configured) {
@@ -158,8 +128,6 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
   }
 
   ns.setUpCheckboxTree = setUpCheckboxTree;
-  ns.addTreeToPage = addTreeToPage;
-  ns.configureCheckboxTree = configureCheckboxTree;
   ns.getInputName = getInputName;
   ns.isConfigured = isConfigured;
   ns.selectCurrentNodes = selectCurrentNodes;
