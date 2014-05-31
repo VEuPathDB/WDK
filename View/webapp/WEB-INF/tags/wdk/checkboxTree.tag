@@ -109,7 +109,7 @@
     data-isallselected="${rootNode.isAllSelected}" data-leafimage="${leafImage}"
     data-selectednodes="[${rootNode.selectedAsList}]", data-defaultnodes="[${rootNode.defaultAsList}]"
     data-initialnodes="[${initiallySetList}]" data-onload="${onload};"
-    data-onchange="setTimeout(function() { ${onchange}; }, 0);"/>
+    data-onchange="setTimeout(function() { ${onchange}; }, 0);"><jsp:text/></div>
 
 <div id="treeLinks-top" class="formButtonPanel" style="text-align:${buttonAlignment}">
   <c:if test="${showSelectAll}">
