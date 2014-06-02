@@ -33,7 +33,7 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
   // could be an array already, or could be a string trying to be a JSON array
   function parseJsonArray(jsArray) {
     return (typeof jsArray === "object" ? jsArray :
-        jQuery.parseJSON(jsArray.replace("'", '"', "g")));
+        jQuery.parseJSON(jsArray.replace(/'/g, '"')));
   }
   
   function configureCheckboxTree(treeId) {
