@@ -365,9 +365,11 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     var $formPane = $(form).closest('.step-analysis-form-pane');
     // clear any errors from a previous submission
     $errorsPane.empty();
+    $.blockUI();
     return doAjax(ROUTES.runAnalysis, {
       data: $(form).serialize(),
       success: function(data, textStatus, jqXHR) {
+        $.unblockUI();
         if (data.status == "success") {
           $formPane.accordion("option", "active", false);
           // if success, then alert user and load results pane
@@ -386,6 +388,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         }
       },
       error: function(jqXHR, textStatus, errorThrown) {
+        $.unblockUI();
         handleAjaxError("Error: Unable to run step analysis.");
       }
     });
