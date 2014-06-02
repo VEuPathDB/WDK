@@ -22,10 +22,6 @@ public class ValidationErrors {
     }
     messages.add(message);
   }
-
-  public boolean hasMessages() {
-    return (!_messages.isEmpty() || !_paramMessages.isEmpty());
-  }
   
   public List<String> getMessages() {
     return _messages;
@@ -33,6 +29,10 @@ public class ValidationErrors {
   
   public Map<String,List<String>> getParamMessages() {
     return _paramMessages;
+  }
+
+  public boolean isEmpty() {
+    return _messages.isEmpty() && _paramMessages.isEmpty();
   }
   
 }
