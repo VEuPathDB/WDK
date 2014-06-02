@@ -1,4 +1,4 @@
-wdk.namespace('wdk.views.filter', function(ns) {
+wdk.namespace('wdk.views.filter', function(ns, $) {
   'use strict';
 
   /**
@@ -10,7 +10,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
   ns.FieldListView = wdk.views.View.extend({
 
     events: {
-      'click a': 'triggerSelect'
+      'click a': 'triggerSelect',
+      'click h4': 'toggleNext',
+      'keyup input': 'filter'
     },
 
     template: wdk.templates['filter/field_list.handlebars'],
@@ -21,7 +23,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
-      this.$el.html(this.template(this.model.fields.toJSON()));
+      var groupedFields = _.groupBy(this.model.fields.toJSON(), 'parent');
+      this.$el.html(this.template(groupedFields));
+      //this.$el.html(this.template(this.model.fields.toJSON()));
       return this;
     },
 
@@ -36,6 +40,20 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var term = link.hash.slice(1);
       var field = this.model.fields.findWhere({term: term});
       field.select();
+    },
+
+    toggleNext: function(e) {
+      var $target = $(e.currentTarget);
+      var $next = $target.next().slideToggle(function() {
+        $target.toggleClass('collapsed', $next.is(':hidden'));
+      });
+    },
+
+    filter: function(e) {
+      // var str = e.currentTarget.value;
+      // this.$('div')
+      // .hide()
+      // .find(':contains(' + str + ')').show();
     },
 
     selectField: function(field) {

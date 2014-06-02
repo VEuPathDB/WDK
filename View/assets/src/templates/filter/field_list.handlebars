@@ -1,5 +1,11 @@
-<ul>
-  {{#each this}}
-    <li><a href="#{{term}}">{{display}}</a></li>
-  {{/each}}
-</ul>
+<!-- <input type="text"/ placeholder="Find properties by name"> -->
+{{#each this}}
+<h4>{{@key}}</h4>
+<div>
+  <ul>
+    {{#each this}}
+    <li title="{{description}}"><a href="#{{term}}">{{display}}</a></li>
+    {{/each}}
+  </ul>
+</div>
+{{/each}}

@@ -97,8 +97,21 @@
   background-image: -moz-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: -o-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: linear-gradient(to left, #f6f6f6 0%, #fff 8px);
-  margin-top: 1em;
-  margin-bottom: 1em;
+}
+.field-list input {
+  width: 90%;
+}
+.field-list > h4 {
+  cursor: pointer;
+  margin: .5em 0;
+}
+.field-list > h4:before {
+  /* minus sign */
+  content: "\002B  ";
+}
+.field-list > h4.collapsed:before {
+  /* plus sign */
+  content: "\2212  ";
 }
 .field-list li a {
   display: block;
