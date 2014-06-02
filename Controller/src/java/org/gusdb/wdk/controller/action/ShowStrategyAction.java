@@ -474,7 +474,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
               jsParam.put("internal", !param.getIsVisible());
             }
             catch (Exception ex) {
-              throw new WdkModelException(ex);
+              //throw new WdkModelException(ex);
+							logger.error( ex.getMessage(),ex );
             }
           }
           else {
