@@ -30,14 +30,14 @@ wdk.util.namespace("window.wdk.formUtil", function(ns, $) {
 		});
 		
 		// handle checkbox trees
-		// KLUGE: often this code will be called after a form is added to a page;
-		//    make sure tree is configured before trying to set values
 		$form.find('.checkbox-tree').each(function() {
 			var treeId = $(this).attr("id");
 			handleCheckboxTree(treeId, paramValues);
 		});
 	}
 
+	// Often this code will be called after a form is newly added to a page
+	//   (e.g. via AJAX); make sure tree is configured before trying to set values
 	function handleCheckboxTree(treeId, paramValues) {
 		if (wdk.checkboxTree.isConfigured(treeId)) {
 			var inputName = wdk.checkboxTree.getInputName(treeId);
