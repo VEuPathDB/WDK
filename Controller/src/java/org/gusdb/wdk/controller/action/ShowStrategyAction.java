@@ -474,7 +474,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
               jsParam.put("internal", !param.getIsVisible());
             }
             catch (Exception ex) {
-              throw new WdkModelException(ex);
+							// instead of throwing exception we print eception in logs. 
+							// the exception prevents WDK from loading the strategy (that needs to be revised)
+							// but the straegy is considered opened by WDK, and this prevents the user from using the strategy interface
+
+							// throw new WdkModelException(ex);
+							logger.error( ex.getMessage(),ex );
+							//step.setValid(false);
             }
           }
           else {

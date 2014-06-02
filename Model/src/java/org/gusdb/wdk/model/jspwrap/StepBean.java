@@ -497,4 +497,9 @@ public class StepBean {
     public Map<Integer, StepAnalysisContext> getAppliedAnalyses() throws WdkModelException {
         return user.getUser().getWdkModel().getStepAnalysisFactory().getAppliedAnalyses(step);
     }
+
+	public void setValid(boolean valid){
+		step.setValid(valid);
+	}
+
 }
