@@ -103,15 +103,16 @@
 }
 .field-list > h4 {
   cursor: pointer;
-  margin: .5em 0;
+  margin: 1em 0 .5em 0;
 }
 .field-list > h4:before {
-  /* minus sign */
-  content: "\002B  ";
+  /* down pointing triangle */
+  content: "\25BC  ";
+  font-size: 75%;
 }
 .field-list > h4.collapsed:before {
-  /* plus sign */
-  content: "\2212  ";
+  /* right pointing triangle */
+  content: "\25B6  ";
 }
 .field-list li a {
   display: block;
