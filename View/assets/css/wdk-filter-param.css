@@ -88,7 +88,7 @@
   padding-top: 20px;
 }
 .field-list {
-  width: 20%;
+  width: 25%;
   max-height: 35em;
   overflow-y: auto;
   padding-left: 10px;
@@ -114,6 +114,11 @@
   /* right pointing triangle */
   content: "\25B6  ";
 }
+.field-list ul {
+  padding-bottom: .5em;
+  padding-left: .5em;
+  font-weight: bold;
+}
 .field-list li a {
   display: block;
   padding: 5px 10px;
@@ -121,6 +126,7 @@
   border: 1px solid transparent;
   border-left: 2px solid transparent;
   text-decoration: none;
+  font-weight: normal;
 }
 .field-list li a:hover,
 .field-list li a:focus,
@@ -135,7 +141,7 @@
   border-bottom: 1px solid #eee;
 }
 .field-detail {
-  width: 80%;
+  width: 75%;
   padding-left: 2em;
   padding-right: 2em;
   padding-bottom: 3em;

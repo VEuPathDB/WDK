@@ -1,6 +1,8 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
+  var notNaN = function(n) { return !_.isNaN(n) };
+
   ns.RangeFilterView = wdk.views.View.extend({
 
     plot: null,
@@ -64,13 +66,13 @@ wdk.namespace('wdk.views.filter', function(ns) {
       });
       var filterValues = filter ? filter.pick('min', 'max') : null;
 
-      var values = field.get('values').map(Number);
+      var values = field.get('values').filter(notNaN);
 
       var distribution = _(values).countBy();
       var xdata = _(distribution).keys().map(Number);
       var ydata = _(distribution).values().map(Number);
 
-      var fdistribution = _(field.get('filteredValues')).countBy();
+      var fdistribution = _(field.get('filteredValues').filter(notNaN)).countBy();
       var xfdata = _(fdistribution).keys().map(Number);
       var yfdata = _(fdistribution).values().map(Number);
 
