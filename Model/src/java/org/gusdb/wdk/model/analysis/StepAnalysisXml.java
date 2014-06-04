@@ -21,6 +21,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   private String _displayName;
   private String _description;
   private String _releaseVersion;
+  private int _expirationMinutes;
   
   // for running and viewing the analysis
   private String _analyzerClass;
@@ -44,6 +45,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _analysisViewName = obj._analysisViewName;
     _properties = new HashMap<String,String>(obj._properties);
     _customThumbnail = obj._customThumbnail;
+    _expirationMinutes = obj._expirationMinutes;
   }
   
   @Override
@@ -111,6 +113,14 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   }
   public void setCustomThumbnail(String customThumbnail) {
     _customThumbnail = customThumbnail;
+  }
+
+  @Override
+  public int getExpirationMinutes() {
+    return _expirationMinutes;
+  }
+  public void setExpirationMinutes(int expirationMinutes) {
+    _expirationMinutes = expirationMinutes;
   }
   
   @Override
