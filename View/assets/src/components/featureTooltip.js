@@ -10,10 +10,11 @@ wdk.namespace('wdk.components', function(ns, $) {
   //   * text is the content of the tooltip (see http://qtip2.com/options#content.text)
   ns.createFeatureTooltip = function createFeatureTooltip(opts) {
     var $el = opts.el,
-        featureType = opts.featureType,
+        key = opts.key,
         title = opts.title,
         text = opts.text,
-        dismissedStorageKey = 'dismissed_' + featureType + '_featureTooltip';
+
+        dismissedStorageKey = 'dismissed_' + key + '_featureTooltip';
 
     ($el instanceof $) || ($el = $($el));
 
