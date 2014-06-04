@@ -14,11 +14,11 @@ wdk.namespace('wdk.components', function(ns, $) {
         title = opts.title,
         text = opts.text,
 
-        dismissedStorageKey = 'dismissed_' + key + '_featureTooltip';
+        dismissedStorageKey = 'featureTooltip::dismissed::' + key;
 
     ($el instanceof $) || ($el = $($el));
 
-    if (localStorage.getItem(dismissedStorageKey))
+    if (localStorage.getItem(dismissedStorageKey) == true)
       return;
 
     return $el
@@ -50,7 +50,7 @@ wdk.namespace('wdk.components', function(ns, $) {
         },
         events: {
           hide: function(e, api) {
-            localStorage.setItem(dismissedStorageKey, true);
+            localStorage.setItem(dismissedStorageKey, 1);
             api.destroy();
           }
         }
