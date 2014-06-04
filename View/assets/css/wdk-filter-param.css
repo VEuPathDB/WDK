@@ -88,7 +88,7 @@
   padding-top: 20px;
 }
 .field-list {
-  width: 20%;
+  width: 25%;
   max-height: 35em;
   overflow-y: auto;
   padding-left: 10px;
@@ -97,8 +97,27 @@
   background-image: -moz-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: -o-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: linear-gradient(to left, #f6f6f6 0%, #fff 8px);
-  margin-top: 1em;
-  margin-bottom: 1em;
+}
+.field-list input {
+  width: 90%;
+}
+.field-list > h4 {
+  cursor: pointer;
+  margin: 1em 0 .5em 0;
+}
+.field-list > h4:before {
+  /* down pointing triangle */
+  content: "\25BC  ";
+  font-size: 75%;
+}
+.field-list > h4.collapsed:before {
+  /* right pointing triangle */
+  content: "\25B6  ";
+}
+.field-list ul {
+  padding-bottom: .5em;
+  padding-left: .5em;
+  font-weight: bold;
 }
 .field-list li a {
   display: block;
@@ -107,6 +126,7 @@
   border: 1px solid transparent;
   border-left: 2px solid transparent;
   text-decoration: none;
+  font-weight: normal;
 }
 .field-list li a:hover,
 .field-list li a:active {
@@ -120,7 +140,7 @@
   border-bottom: 1px solid #eee;
 }
 .field-detail {
-  width: 80%;
+  width: 75%;
   padding-left: 2em;
   padding-right: 2em;
   padding-bottom: 3em;

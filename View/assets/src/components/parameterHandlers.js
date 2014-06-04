@@ -257,19 +257,35 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         return metadataSpec[prop].type === 'number';
       });
 
+    var metadataTerms = _.values(metadata)
+      .map(_.keys)
+      .reduce(function (a, b) { return _.union(a, b) })
+      .filter(function(name) {
+        return !!metadataSpec[name];
+      })
+
     var data = {
-      fields: _.values(metadata).map(_.keys)
-        // get the unique list of all metadata props
-        // for "One metadataSpec to Rule Them All"
-        .reduce(function (a, b) { return _.union(a, b) })
-        // only use props in metadataspec
-        .filter(function(name) {
-          return !!metadataSpec[name];
-        })
+      // fields: _.values(metadata).map(_.keys)
+      //   // get the unique list of all metadata props
+      //   // for "One metadataSpec to Rule Them All"
+      //   .reduce(function (a, b) { return _.union(a, b) })
+      //   // only use props in metadataspec
+      //   .filter(function(name) {
+      //     return !!metadataSpec[name];
+      //   })
+      //   .map(function(name) {
+      //     return _.extend({
+      //       term: name,
+      //       display: name
+      //     }, metadataSpec[name]);
+      //   }),
+
+      fields: _.keys(metadataSpec)
         .map(function(name) {
           return _.extend({
             term: name,
-            display: name
+            display: name,
+            filterable: _.indexOf(metadataTerms, name) > -1
           }, metadataSpec[name]);
         }),
 
@@ -277,6 +293,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         .map(function(d) {
           // type coercion
           var mdata = metadata[d.term];
+          if (mdata === undefined) {
+            alert('Missing metadata for ' + d.term);
+          }
           numericProps.forEach(function(prop) {
             mdata[prop] = Number(mdata[prop]);
           });
