@@ -239,14 +239,14 @@ img[data-assets-src][src] {
   background: rgb(75, 75, 75);
   background: rgba(75, 75, 75, .97);
 }
-.qtip-tipsy a,
-.qtip-tipsy a:link {
+.qtip-tipsy .qtip-content a,
+.qtip-tipsy .qtip-content a:link {
   color: #efefef;
   text-decoration: underline;
 }
-.qtip-tipsy a:active,
-.qtip-tipsy a:focus,
-.qtip-tipsy a:hover {
+.qtip-tipsy .qtip-content a:active,
+.qtip-tipsy .qtip-content a:focus,
+.qtip-tipsy .qtip-content a:hover {
   color: #ffffff;
 }
 
@@ -1244,6 +1244,16 @@ z-index: 1;
   text-align: center;
   position: absolute;
   top: 0px;
+}
+
+.analysis-feature-tooltip {
+  display: none;
+}
+.analysis-feature-tooltip div:last-child {
+  text-align: right;
+}
+.analysis-feature-tooltip button {
+  font-size: 90%;
 }
 
 /*

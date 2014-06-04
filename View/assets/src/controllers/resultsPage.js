@@ -10,12 +10,32 @@ Provides functions to support results table
 wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   "use strict";
 
+  var createFeatureTooltip = wdk.components.createFeatureTooltip;
+
   function configureSummaryViews($element, $attrs) {
     // var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);  
     var currentTab = 0;
+
+    var analysisFeatureTooltipTarget = $element.find('#add-analysis')
+      .has('.analysis-feature-tooltip');
+
     $element.tabs({
       active : currentTab,
       load: function(event, ui) {
+        if (analysisFeatureTooltipTarget.length) {
+          createFeatureTooltip({
+            el: analysisFeatureTooltipTarget,
+            featureType: 'analysis',
+            title: 'New tools available!',
+            text: analysisFeatureTooltipTarget.find('.analysis-feature-tooltip')
+          });
+        }
+
+        analysisFeatureTooltipTarget
+          .on('click', function() {
+              analysisFeatureTooltipTarget.qtip('hide');
+            })
+
         wdk.load();
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
       }
