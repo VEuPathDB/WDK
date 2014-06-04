@@ -25,7 +25,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         if (analysisFeatureTooltipTarget.length) {
           createFeatureTooltip({
             el: analysisFeatureTooltipTarget,
-            featureType: 'analysis',
+            key: 'new-analysis-' + wdk.VERSION,
             title: 'New tools available!',
             text: analysisFeatureTooltipTarget.find('.analysis-feature-tooltip')
           });
