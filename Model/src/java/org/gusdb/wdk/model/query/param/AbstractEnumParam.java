@@ -532,8 +532,7 @@ public abstract class AbstractEnumParam extends Param {
           ", with dependedParamValues=" + FormatUtil.prettyPrint(contextValues));
 
       if (terms.length == 0 && !allowEmpty)
-        //throw new WdkUserException("The value to enumParam/flatVocabParam " + getPrompt() + " cannot be empty");
-				throw new WdkUserException(getPrompt() + ": please make a selection");
+        throw new WdkUserException("At least one value for " + getPrompt() + " must be selected.");
 
       // verify that user did not select too few or too many values for this
       // param
