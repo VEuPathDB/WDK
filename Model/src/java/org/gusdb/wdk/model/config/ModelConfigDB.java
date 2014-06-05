@@ -30,7 +30,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   private short maxActive = 20;
   private short maxIdle = 1;
   private short minIdle = 0;
-  private short maxWait = 50;
+  private long maxWait = 50;
 
   /**
    * display DB connection count periodically in the log. This is used to
@@ -168,7 +168,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    * @return the maxWait
    */
   @Override
-  public short getMaxWait() {
+  public long getMaxWait() {
     return maxWait;
   }
 
