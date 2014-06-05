@@ -176,7 +176,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    * @param maxWait
    *          the maxWait to set
    */
-  public void setMaxWait(short maxWait) {
+  public void setMaxWait(long maxWait) {
     this.maxWait = maxWait;
   }
 
