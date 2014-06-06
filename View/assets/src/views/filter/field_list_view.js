@@ -103,19 +103,17 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
       field.select();
     },
 
-    expand: function(e) {
-      e.preventDefault();
+    expand: wdk.fn.preventEvent(function() {
       this.$('div').slideDown(function() {
         $(this).prev().removeClass('collapsed');
       });
-    },
+    }),
 
-    collapse: function(e) {
-      e.preventDefault();
+    collapse: wdk.fn.preventEvent(function() {
       this.$('div').slideUp(function() {
         $(this).prev().addClass('collapsed');
       });
-    },
+    }),
 
     toggleNext: function(e) {
       var $target = $(e.currentTarget);
