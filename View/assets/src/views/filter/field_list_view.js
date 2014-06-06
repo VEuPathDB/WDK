@@ -25,68 +25,31 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
     },
 
     render: function() {
-      //var groupedFields = _.groupBy(this.model.fields.toJSON(), 'parent');
-
-      var fields = _.sortBy(this.model.fields.toJSON(), 'parent');
-      // var groupedFields = (function appendChildren(nodes, fields) {
-      //   return _.map(nodes, function(node) {
-      //     var children = _.where(fields, { parent: node.term });
-
-      //     return children.length
-      //       ? { field: node, children: appendChildren(children) }
-      //       : { field: node };
-      //   });
-      // }(_.where(fields, { leaf: 'true'}), fields));
-
-
-      var leaves = _.where(fields, { filterable: true })
-        .map(function(o) {
-          return {
-            field: o
-          }
-        })
-
-      var groupedFields = (function prependParents(nodes, fields) {
-        var tree = [], dirty;
-        _.each(nodes, function(node) {
-          // FIXME Hardcoded root -- should be a model param attribute??
-          if (node.field.parent !== 'BioMaterialCharacteristics') {
-            var parent = _.findWhere(fields, {term: node.field.parent});
-            var f = { field: parent };
-
-            var field = (function findField(tree, f) {
-              var field = _.findWhere(tree, f);
-              if (!field && tree.length) {
-                return _.reduce(tree, function(acc, subtree) {
-                  return acc || (subtree.children && findField(subtree.children, f));
-                }, undefined);
-              }
-              return field;
-            }(tree, f));
-
-            if (!field) {
-              tree.push(f);
-              field = f;
+      var prunedFields = _.sortBy(function getFields(fields) {
+        return _.where(fields, { filterable: true })
+          .reduce(function(acc, field) {
+            while (field.parent) {
+              acc.push(field);
+              field = _.findWhere(fields, {term: field.parent});
             }
+            acc.push(field);
+            return _.uniq(acc);
+          }, []);
+      }(this.model.fields.toJSON()), 'term');
 
-            (field.children || (field.children = [])).push(node);
+      var root = _.findWhere(prunedFields, { parent: undefined });
 
-            dirty = true;
-          } else {
-            tree.push(node);
-          }
+      var groupedFields = (function appendChildren(nodes, fields) {
+        return _.map(nodes, function(node) {
+          var children = _.where(fields, { parent: node.term });
+
+          return children.length
+            ? { field: node, children: appendChildren(children, fields) }
+            : { field: node };
         });
-        if (dirty) {
-          return prependParents(tree, fields);
-        } else {
-          return nodes;
-        }
-      }(leaves, fields));
-
-
+      }(_.where(prunedFields, { parent: root.term}), prunedFields));
 
       this.$el.html(this.template(groupedFields));
-      //this.$el.html(this.template(this.model.fields.toJSON()));
       return this;
     },
 
