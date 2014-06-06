@@ -145,8 +145,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
         $("#query_form_overlay").css("z-index", 100).height($("body").height());
       },
       error: function() {
-        alert("Error getting the needed information from the server \n" +
-            "Please contact the system administrator");
+        alert("Sorry. There has been an error getting the information from the server. \n" +
+            "Please reload your page.\n" +
+            "If this does not fix your problem, please contact us (link on top right) with a description.");
         enableAddStepButtons();
       }
     });
