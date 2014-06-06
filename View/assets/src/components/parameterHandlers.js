@@ -232,21 +232,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       })
 
     var data = {
-      // fields: _.values(metadata).map(_.keys)
-      //   // get the unique list of all metadata props
-      //   // for "One metadataSpec to Rule Them All"
-      //   .reduce(function (a, b) { return _.union(a, b) })
-      //   // only use props in metadataspec
-      //   .filter(function(name) {
-      //     return !!metadataSpec[name];
-      //   })
-      //   .map(function(name) {
-      //     return _.extend({
-      //       term: name,
-      //       display: name
-      //     }, metadataSpec[name]);
-      //   }),
-
       fields: _.keys(metadataSpec)
         .map(function(name) {
           return _.extend({
@@ -263,8 +248,12 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           if (mdata === undefined) {
             alert('Missing metadata for ' + d.term);
           }
-          numericProps.forEach(function(prop) {
-            mdata[prop] = Number(mdata[prop]);
+          _.each(mdata, function(value, property) {
+            if (value === null || value === '' || value === 'unknown') {
+              mdata[property] = wdk.models.filter.Field.UNKNOWN_VALUE;
+            } else if (metadataSpec[property].type === 'number') {
+              mdata[property] = Number(value);
+            }
           });
           return _.extend(d, {
             metadata: mdata
