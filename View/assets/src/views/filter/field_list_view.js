@@ -41,7 +41,10 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
 
       var groupedFields = (function appendChildren(nodes, fields) {
         return _.map(nodes, function(node) {
-          var children = _.where(fields, { parent: node.term });
+          var children = _.chain(fields)
+            .where({ parent: node.term })
+            .sortBy(function(c) { return c.filterable ? 0 : 1 }) // push leaves above nodes
+            .value();
 
           return children.length
             ? { field: node, children: appendChildren(children, fields) }
@@ -67,22 +70,25 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
     },
 
     expand: wdk.fn.preventEvent(function() {
-      this.$('div').slideDown(function() {
-        $(this).prev().removeClass('collapsed');
-      });
+      this.$('h4').removeClass('collapsed');
+      // this.$('div').slideDown(function() {
+      //   $(this).prev().removeClass('collapsed');
+      // });
     }),
 
     collapse: wdk.fn.preventEvent(function() {
-      this.$('div').slideUp(function() {
-        $(this).prev().addClass('collapsed');
-      });
+      this.$('h4').addClass('collapsed');
+      // this.$('div').slideUp(function() {
+      //   $(this).prev().addClass('collapsed');
+      // });
     }),
 
     toggleNext: function(e) {
       var $target = $(e.currentTarget);
-      var $next = $target.next().slideToggle(function() {
-        $target.toggleClass('collapsed', $next.is(':hidden'));
-      });
+      $target.toggleClass('collapsed');
+      // var $next = $target.next().slideToggle(function() {
+      //   $target.toggleClass('collapsed', $next.is(':hidden'));
+      // });
     },
 
     filter: function(e) {
