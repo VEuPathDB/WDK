@@ -85,7 +85,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }, 0);
       var avg = (sum / _.size(values)).toFixed(2);
 
-      // [ [x1, y1], [x2, y2], ... ]
+      var padding = (max - min) * 0.5;
+      var barWidth = (max - min) * 0.01;
+
       var seriesData = [{
         data: _.zip(xdata, ydata),
         color: '#000'
@@ -99,15 +101,14 @@ wdk.namespace('wdk.views.filter', function(ns) {
         series: {
           bars: {
             show: true,
-            barWidth: 0.5,
+            barWidth: barWidth,
             lineWidth: 0,
             align: 'center'
           }
         },
         xaxis: {
-          //mode: 'categories',
-          min: min - 10,
-          max: max + 10,
+          min: min - padding,
+          max: max + padding,
           tickLength: 0
         },
         grid: {
@@ -118,7 +119,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         },
         selection: {
           mode: 'x',
-          color: '#66A4E7' // was '#2a6496'
+          color: '#66A4E7'
         }
       };
 
