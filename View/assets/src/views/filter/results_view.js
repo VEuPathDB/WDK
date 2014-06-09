@@ -103,13 +103,15 @@ wdk.namespace('wdk.views.filter', function(ns) {
       });
 
       // allow all columns to be sortable
-      this.model.fields.forEach(function(field) {
-        columns.push({
-          sClass: field.get('term'),
-          sTitle: field.get('display'),
-          mData: 'metadata.' + field.get('term')
+      this.model.fields
+        .where({ filterable: true })
+        .forEach(function(field) {
+          columns.push({
+            sClass: field.get('term'),
+            sTitle: field.get('display'),
+            mData: 'metadata.' + field.get('term')
+          });
         });
-      });
 
       return {
         sDom: 'C<"clear">lfrtip',
