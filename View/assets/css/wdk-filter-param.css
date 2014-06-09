@@ -104,7 +104,6 @@
 .field-list h4 {
   cursor: pointer;
   margin: 1em 0 .5em 0;
-  padding-left: 4px;
   border: 1px solid transparent;
 }
 .field-list h4:before {
