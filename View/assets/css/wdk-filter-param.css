@@ -101,27 +101,32 @@
 .field-list input {
   width: 90%;
 }
-.field-list > h4 {
+.field-list h4 {
   cursor: pointer;
   margin: 1em 0 .5em 0;
+  padding-left: 4px;
+  border: 1px solid transparent;
 }
-.field-list > h4:before {
+.field-list h4:before {
   /* down pointing triangle */
   content: "\25BC  ";
   font-size: 75%;
 }
-.field-list > h4.collapsed:before {
+.field-list h4.collapsed:before {
   /* right pointing triangle */
   content: "\25B6  ";
 }
+.field-list h4.collapsed + div {
+  display:none;
+}
 .field-list ul {
   padding-bottom: .5em;
-  padding-left: .5em;
+  padding-left: .8em;
   font-weight: bold;
 }
 .field-list li a {
   display: block;
-  padding: 5px 10px;
+  padding: 5px 4px;
   border-radius: 2px;
   border: 1px solid transparent;
   border-left: 2px solid transparent;
