@@ -52,6 +52,18 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
    *  - getForm: returns an unpopulated form for a specific type of analysis
    *  - getResults: returns a DOM fragment displaying analysis results
    *
+   *
+   * The following events are triggered by the analysis instance.
+   *
+   *  - formload:    The form has been inserted into the DOM
+   *  - resultsload: The results table has been inserted into the DOM
+   *  - remove:      The tab has been removed form the DOM, either by delete or hide
+   *
+   * Events are called with an analysis object with the following properties:
+   *  - name: The name of the analysis instance as defined in the model
+   *  - $el:  jQuery wrapped tab pane element
+   *  - id:   ID of the analysis instance
+   *
    *************************************************************************/
 
   var ROUTES = {
@@ -162,6 +174,12 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
           clearTimeout(loadTimer);
           clearTimeout(refreshTimer);
+
+          trigger('remove', {
+            name: data.analysisName,
+            id: analysisId,
+            $el: $(tabElement)
+          });
 
           $panel.remove();
           $tabContainer.tabs("refresh");
