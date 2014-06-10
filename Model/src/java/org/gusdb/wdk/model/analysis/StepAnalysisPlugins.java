@@ -85,9 +85,10 @@ public class StepAnalysisPlugins extends WdkModelBase {
       throw new WdkModelException("Duplicate step analysis name set in " +
           StepAnalysisPlugins.class.getSimpleName() + ": " + analysis.getName());
     }
-    // for now, set global expiration minutes to this analysis; may introduce
-    //   more refined control in the future
-    analysis.setExpirationMinutes(getExecutionConfig().getExpirationMinutes());
+    // if no expiration minutes are set on individual plugin, apply global expiration deadline
+    if (!analysis.isExpirationMinutesSet()) {
+      analysis.setExpirationMinutes(getExecutionConfig().getExpirationMinutes());
+    }
     _stepAnalysisMap.put(analysis.getName(), analysis);
   }
   public StepAnalysisXml getStepAnalysis(String name) {

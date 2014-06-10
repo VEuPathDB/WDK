@@ -21,7 +21,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   private String _displayName;
   private String _description;
   private String _releaseVersion;
-  private int _expirationMinutes;
+  private Integer _expirationMinutes;
   
   // for running and viewing the analysis
   private String _analyzerClass;
@@ -121,6 +121,9 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   }
   public void setExpirationMinutes(int expirationMinutes) {
     _expirationMinutes = expirationMinutes;
+  }
+  public boolean isExpirationMinutesSet() {
+    return _expirationMinutes != null;
   }
   
   @Override
