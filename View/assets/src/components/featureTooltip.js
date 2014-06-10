@@ -25,7 +25,9 @@ wdk.namespace('wdk.components', function(ns, $) {
       .wdkTooltip({
         content: {
           text: text,
-          title: title,
+          title: '<img title="This is a new search!" alt="New feature icon" ' +
+                 'src="/plasmo.dfalke/assets/wdk/images/new-feature.png"> ' +
+                 title,
           button: 'Got it!'
           //button: $('<button>Got it!</button>')
           //  .css({
@@ -35,7 +37,8 @@ wdk.namespace('wdk.components', function(ns, $) {
           //  })
         },
         style: {
-          width: 250
+          width: 250,
+          classes: 'qtip-bootstrap'
         },
         position: {
           my: 'left top',
@@ -50,8 +53,12 @@ wdk.namespace('wdk.components', function(ns, $) {
         },
         events: {
           hide: function(e, api) {
-            localStorage.setItem(dismissedStorageKey, 1);
-            api.destroy();
+            if (e.originalEvent.type === 'tooltipsolo') {
+              e.preventDefault();
+            } else {
+              localStorage.setItem(dismissedStorageKey, 1);
+              api.destroy();
+            }
           }
         }
       });
