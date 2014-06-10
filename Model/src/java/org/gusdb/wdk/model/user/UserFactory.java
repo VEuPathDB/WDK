@@ -34,10 +34,10 @@ import org.gusdb.wdk.model.config.ModelConfigUserDB;
  */
 public class UserFactory {
 
-  public static final String SYSTEM_USER_PREFIX = "WDK_SYSTEM_";
-  public static final String GUEST_USER_PREFIX = "WDK_GUEST_";
+  private static final String GUEST_USER_PREFIX = "WDK_GUEST_";
+  private static final String SYSTEM_USER_PREFIX = GUEST_USER_PREFIX + "SYSTEM_";
 
-  public static final String GLOBAL_PREFERENCE_KEY = "[Global]";
+  private static final String GLOBAL_PREFERENCE_KEY = "[Global]";
 
   private static Logger logger = Logger.getLogger(UserFactory.class);
 
