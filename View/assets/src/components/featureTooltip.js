@@ -26,7 +26,7 @@ wdk.namespace('wdk.components', function(ns, $) {
         content: {
           text: text,
           title: '<img title="This is a new search!" alt="New feature icon" ' +
-                 'src="/plasmo.dfalke/assets/wdk/images/new-feature.png"> ' +
+                 'src="' + wdk.assetsUrl('/wdk/images/new-feature.png') + '"> ' +
                  title,
           button: 'Got it!'
           //button: $('<button>Got it!</button>')
