@@ -34,8 +34,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
       wdk.views.View.apply(this, initArgs);
     },
 
-    initialize: function() {
+    initialize: function(options) {
       var filters = this.filterService.filters;
+      this.options = options;
       this.listenTo(filters, 'add', this.addFilter);
       this.listenTo(filters, 'remove', this.removeFilter);
     },
@@ -130,7 +131,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
         distribution: distribution,
         min: min,
         max: max,
-        avg: avg
+        avg: avg,
+        options: this.options
       }));
 
       this.plot = wdk.$.plot(this.$('.chart'), seriesData, plotOptions);
