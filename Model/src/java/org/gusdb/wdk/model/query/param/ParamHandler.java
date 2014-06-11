@@ -72,10 +72,10 @@ public interface ParamHandler {
       throws WdkModelException;
 
   String toInternalValue(User user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException;
+      throws WdkModelException, WdkUserException;
 
   String toSignature(User user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException;
+      throws WdkModelException, WdkUserException;
 
   ParamHandler clone(Param param);
 }

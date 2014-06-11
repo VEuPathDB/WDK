@@ -142,7 +142,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return getCache().getParentMap();
   }
 
-  public String getInternalValue(User user, String dependentValue) throws WdkModelException {
+  public String getInternalValue(User user, String dependentValue) throws WdkModelException, WdkUserException {
     return param.getInternalValue(user, dependentValue, _dependedValues);
   }
 

@@ -14,15 +14,15 @@ public interface StepAnalysisFactory {
 
   public Map<Integer, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException;
 
-  public Object getFormViewModel(StepAnalysisContext context) throws WdkModelException;
+  public Object getFormViewModel(StepAnalysisContext context) throws WdkModelException, WdkUserException;
 
-  public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException;
+  public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException, WdkUserException;
 
-  public StepAnalysisContext createAnalysis(StepAnalysisContext context) throws WdkModelException, IllegalAnswerValueException;
+  public StepAnalysisContext createAnalysis(StepAnalysisContext context) throws WdkModelException, IllegalAnswerValueException, WdkUserException;
 
   public StepAnalysisContext copyContext(StepAnalysisContext context) throws WdkModelException;
 
-  public void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException;
+  public void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException, WdkUserException;
 
   public StepAnalysisContext runAnalysis(StepAnalysisContext context) throws WdkModelException;
 
@@ -35,8 +35,9 @@ public interface StepAnalysisFactory {
    * @param context context for this result
    * @return result
    * @throws WdkModelException if inconsistent data is found or other error occurs
+   * @throws WdkUserException 
    */
-  public AnalysisResult getAnalysisResult(StepAnalysisContext context) throws WdkModelException;
+  public AnalysisResult getAnalysisResult(StepAnalysisContext context) throws WdkModelException, WdkUserException;
 
   public StepAnalysisContext deleteAnalysis(StepAnalysisContext context) throws WdkModelException;
 

@@ -3,25 +3,28 @@
  */
 package org.gusdb.wdk.model.dbms;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.query.ProcessResponse;
+import org.gusdb.wsf.client.WsfResponseListener;
+import org.gusdb.wsf.plugin.WsfException;
 
 /**
  * @author Jerric Gao
  * 
  */
-public class ArrayResultList implements ResultList {
+public class ArrayResultList implements ResultList, WsfResponseListener {
 
   private final Map<String, Integer> columns;
-  private final ProcessResponse response;
-  private String[][] result;
-  private int pageIndex = 0;
-  private int rowIndex = -1;
 
+  private final List<String[]> rows;
+  private final Map<String, String> attachments;
+  private String message;
+  private int rowIndex;
   private boolean hasWeight;
   private int assignedWeight;
 
@@ -30,16 +33,19 @@ public class ArrayResultList implements ResultList {
    * @throws WdkModelException
    *           if the result has fewer columns than the column definition
    */
-  public ArrayResultList(ProcessResponse response, Map<String, Integer> columns)
-      throws WdkModelException {
-    this.response = response;
+  public ArrayResultList(Map<String, Integer> columns) throws WdkModelException {
     this.columns = new LinkedHashMap<String, Integer>(columns);
-    this.result = response.getResult();
-
-    // verify the columns and result
-    if (result.length > 0 && result[0].length < columns.size())
-      throw new WdkModelException(
-          "The result has fewer columns than the column definition");
+    this.rows = new ArrayList<>();
+    this.attachments = new LinkedHashMap<>();
+    this.rowIndex = -1;
+  }
+  
+  public String getMessage() {
+    return message;
+  }
+  
+  public Map<String, String> getAttachments() {
+    return attachments;
   }
 
   public boolean isHasWeight() {
@@ -65,9 +71,7 @@ public class ArrayResultList implements ResultList {
    */
   @Override
   public void close() {
-    // move the current page index out of the boundary
-    pageIndex = response.getPageCount();
-    rowIndex = -1;
+    rows.clear();
   }
 
   /*
@@ -79,9 +83,11 @@ public class ArrayResultList implements ResultList {
   public boolean contains(String columnName) {
     if (columns.containsKey(columnName)) {
       return true;
-    } else if (hasWeight && Utilities.COLUMN_WEIGHT.equals(columnName)) {
+    }
+    else if (hasWeight && Utilities.COLUMN_WEIGHT.equals(columnName)) {
       return true;
-    } else {
+    }
+    else {
       return false;
     }
   }
@@ -94,16 +100,16 @@ public class ArrayResultList implements ResultList {
   @Override
   public Object get(String columnName) throws WdkModelException {
     if (!contains(columnName) && !Utilities.COLUMN_WEIGHT.equals(columnName)) {
-      throw new WdkModelException("The column does not exist in ResultList: "
-          + columnName);
+      throw new WdkModelException("The column does not exist in ResultList: " + columnName);
     }
     if (!hasNext())
       throw new WdkModelException("No more rows in the resultList.");
 
     if (contains(columnName)) {
       int columnIndex = columns.get(columnName);
-      return result[rowIndex][columnIndex];
-    } else {
+      return rows.get(rowIndex)[columnIndex];
+    }
+    else {
       // must be a weight column, and no value available, use assignedWeight.
       return new Integer(assignedWeight);
     }
@@ -117,19 +123,29 @@ public class ArrayResultList implements ResultList {
   @Override
   public boolean next() throws WdkModelException {
     rowIndex++;
-
-    // check if we need to advance to next page
-    if (rowIndex >= result.length) {
-      pageIndex++;
-      rowIndex = 0;
-      result = null;
-      if (pageIndex < response.getPageCount() && pageIndex != response.getCurrentPage())
-        result = response.getResult(pageIndex);
-    }
     return hasNext();
   }
 
   private boolean hasNext() {
-    return (pageIndex < response.getPageCount() && rowIndex < result.length);
+    return (rowIndex < rows.size());
+  }
+
+  @Override
+  public synchronized void onRowReceived(String[] row) throws WsfException {
+    rows.add(row);
+  }
+
+  @Override
+  public void onAttachmentReceived(String key, String content) throws WsfException {
+    attachments.put(key, content);
+  }
+
+  @Override
+  public void onMessageReceived(String message) throws WsfException {
+    this.message = message;
+  }
+
+  public int getSize() {
+    return rows.size();
   }
 }

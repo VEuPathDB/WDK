@@ -132,11 +132,12 @@ public abstract class ParamBean<T extends Param> {
    * @param user
    * @param stableValue
    * @return
+   * @throws WdkUserException 
    * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
   public String getSignature(UserBean user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     return param.getSignature(user.getUser(), stableValue, contextValues);
   }
 

@@ -70,7 +70,7 @@ public class RecordBean {
         return recordInstance.getSummaryAttributeNames();
     }
 
-    public Map<String, RecordBean> getNestedRecords() throws WdkModelException {
+    public Map<String, RecordBean> getNestedRecords() throws WdkModelException, WdkUserException {
         Map<String, RecordInstance> nri = recordInstance
                 .getNestedRecordInstances();
         Map<String, RecordBean> nriBeans = new LinkedHashMap<String, RecordBean>();
@@ -82,7 +82,7 @@ public class RecordBean {
     }
 
     public Map<String, RecordBean[]> getNestedRecordLists()
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         Map<String, RecordInstance[]> nrl = recordInstance
                 .getNestedRecordInstanceLists();
         Map<String, RecordBean[]> nrlBeans = new LinkedHashMap<String, RecordBean[]>();

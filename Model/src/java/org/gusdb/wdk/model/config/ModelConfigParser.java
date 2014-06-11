@@ -20,7 +20,7 @@ public class ModelConfigParser extends XmlParser {
   // private static final Logger logger =
   // Logger.getLogger(ModelConfigParser.class);
 
-  public ModelConfigParser(String gusHome) throws SAXException, IOException {
+  public ModelConfigParser(String gusHome) throws WdkModelException {
     super(gusHome, "lib/rng/wdkModel-config.rng");
   }
 

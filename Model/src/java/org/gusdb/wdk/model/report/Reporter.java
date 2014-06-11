@@ -41,7 +41,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         private int resultSize;
 
         public PageAnswerIterator(AnswerValue answerValue, int startIndex,
-                int endIndex, int maxPageSize) throws WdkModelException {
+                int endIndex, int maxPageSize) throws WdkModelException, WdkUserException {
             this.baseAnswer = answerValue;
 
             // determine the end index, which should be no bigger result size,
@@ -138,7 +138,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
             maxPageSize = Integer.valueOf(properties.get(PROPERTY_PAGE_SIZE));
     }
 
-    public int getResultSize() throws WdkModelException {
+    public int getResultSize() throws WdkModelException, WdkUserException {
         return this.baseAnswer.getResultSize();
     }
 
@@ -205,7 +205,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         try {
             return new PageAnswerIterator(baseAnswer, startIndex, endIndex,
                     maxPageSize);
-        } catch (WdkModelException ex) {
+        } catch (WdkModelException | WdkUserException ex) {
             throw new RuntimeException(ex);
         }
     }

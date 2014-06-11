@@ -210,7 +210,7 @@ public class SummaryTester {
   }
 
   private static String getLowLevelQuery(AnswerValue answerValue)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     // QueryInstance instance = answer.getAttributesQueryInstance();
     QueryInstance instance = answerValue.getIdsQueryInstance();
     String query = (instance instanceof SqlQueryInstance)

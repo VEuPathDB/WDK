@@ -37,15 +37,15 @@ import org.json.JSONObject;
  */
 public abstract class QueryInstance {
 
-  public abstract void createCache(String tableName, int instanceId) throws WdkModelException;
+  public abstract void createCache(String tableName, int instanceId) throws WdkModelException, WdkUserException;
 
-  public abstract void insertToCache(String tableName, int instanceId) throws WdkModelException;
+  public abstract void insertToCache(String tableName, int instanceId) throws WdkModelException, WdkUserException;
 
-  public abstract String getSql() throws WdkModelException;
+  public abstract String getSql() throws WdkModelException, WdkUserException;
 
   protected abstract void appendSJONContent(JSONObject jsInstance) throws JSONException;
 
-  protected abstract ResultList getUncachedResults() throws WdkModelException;
+  protected abstract ResultList getUncachedResults() throws WdkModelException, WdkUserException;
 
   private static final Logger logger = Logger.getLogger(QueryInstance.class);
 
@@ -133,7 +133,7 @@ public abstract class QueryInstance {
     return query.isCached();
   }
 
-  public String getChecksum() throws WdkModelException {
+  public String getChecksum() throws WdkModelException, WdkUserException {
     if (checksum == null) {
       JSONObject jsQuery = getJSONContent();
       checksum = Utilities.encrypt(jsQuery.toString());
@@ -141,7 +141,7 @@ public abstract class QueryInstance {
     return checksum;
   }
 
-  public JSONObject getJSONContent() throws WdkModelException {
+  public JSONObject getJSONContent() throws WdkModelException, WdkUserException {
     try {
       JSONObject jsInstance = new JSONObject();
       jsInstance.put("project", wdkModel.getProjectId());
@@ -160,7 +160,7 @@ public abstract class QueryInstance {
     }
   }
 
-  public JSONObject getParamSignatures() throws WdkModelException {
+  public JSONObject getParamSignatures() throws WdkModelException, WdkUserException {
     // the values are dependent values. need to convert it into independent
     // values
     Map<String, String> signatures = query.getSignatures(user, stableValues);
@@ -184,7 +184,7 @@ public abstract class QueryInstance {
     }
   }
 
-  public ResultList getResults() throws WdkModelException {
+  public ResultList getResults() throws WdkModelException, WdkUserException {
     logger.debug("retrieving results of query [" + query.getFullName() + "]");
 
     ResultList resultList = (isCached()) ? getCachedResults() : getUncachedResults();
@@ -194,7 +194,7 @@ public abstract class QueryInstance {
     return resultList;
   }
 
-  public int getResultSize() throws WdkModelException {
+  public int getResultSize() throws WdkModelException, WdkUserException {
     try {
       logger.debug("start getting query size");
       StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
@@ -214,12 +214,12 @@ public abstract class QueryInstance {
     return stableValues;
   }
 
-  private ResultList getCachedResults() throws WdkModelException {
+  private ResultList getCachedResults() throws WdkModelException, WdkUserException {
     ResultFactory factory = wdkModel.getResultFactory();
     return factory.getCachedResults(this);
   }
 
-  protected String getCachedSql() throws WdkModelException {
+  protected String getCachedSql() throws WdkModelException, WdkUserException {
     ResultFactory resultFactory = wdkModel.getResultFactory();
     return resultFactory.getCachedSql(this);
   }
@@ -305,7 +305,7 @@ public abstract class QueryInstance {
     stableValues.put(param.getName(), value);
   }
 
-  protected Map<String, String> getParamInternalValues() throws WdkModelException {
+  protected Map<String, String> getParamInternalValues() throws WdkModelException, WdkUserException {
     // the empty & default values are filled
     Map<String, String> stableValues = fillEmptyValues(this.stableValues);
     Map<String, String> internalValues = new LinkedHashMap<String, String>();

@@ -126,11 +126,11 @@ public class StepBean {
     public boolean getIsFirstStep() {
         return step.isFirstStep();
     }
-    public AnswerValueBean getAnswerValue() throws WdkModelException {
+    public AnswerValueBean getAnswerValue() throws WdkModelException, WdkUserException {
         return getAnswerValue(true);
     }
 
-    public AnswerValueBean getAnswerValue(boolean validate) throws WdkModelException {
+    public AnswerValueBean getAnswerValue(boolean validate) throws WdkModelException, WdkUserException {
         return new AnswerValueBean(step.getAnswerValue(validate));
     }
 
@@ -184,11 +184,11 @@ public class StepBean {
         step.setBooleanExpression(booleanExpression);
     }
 
-    public String getQueryChecksum() throws WdkModelException {
+    public String getQueryChecksum() throws WdkModelException, WdkUserException {
         return step.getAnswerValue().getQueryChecksum(true);
     }
 
-    public String getChecksum() throws WdkModelException {
+    public String getChecksum() throws WdkModelException, WdkUserException {
         return step.getAnswerValue().getChecksum();
     }
 

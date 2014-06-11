@@ -15,7 +15,7 @@ public class WizardParser extends XmlParser {
 
     private static final Logger logger = Logger.getLogger(WizardParser.class);
 
-    public WizardParser(String gusHome) throws SAXException, IOException {
+    public WizardParser(String gusHome) throws WdkModelException {
         super(gusHome, "lib/rng/wdkWizard.rng");
     }
 

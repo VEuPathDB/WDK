@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
@@ -21,7 +22,7 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
   private static final String STDOUT_FILE_NAME = "stdout.txt";
   private static final String STDERR_FILE_NAME = "stderr.txt";
   
-  protected abstract String[] getCommand(AnswerValue answerValue) throws WdkModelException;
+  protected abstract String[] getCommand(AnswerValue answerValue) throws WdkModelException, WdkUserException;
   
   /**
    * Allows subclasses to configure the environment of the process they want to
@@ -40,7 +41,7 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
   
   @Override
   public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     ProcessBuilder builder = new ProcessBuilder(getCommand(answerValue));
     configureEnvironment(builder.environment());
     builder.directory(getStorageDirectory().toFile());

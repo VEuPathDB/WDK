@@ -524,7 +524,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
    * @throws WdkModelException
    */
   public String getInternalValue(User user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     if (stableValue == null || stableValue.length() == 0)
       if (isAllowEmpty())
         stableValue = getEmptyValue();
@@ -533,7 +533,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   }
 
   public String getSignature(User user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     if (stableValue == null) return "";
     return handler.toSignature(user, stableValue, contextValues);
   }

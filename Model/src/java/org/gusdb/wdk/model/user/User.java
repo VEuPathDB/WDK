@@ -903,12 +903,12 @@ public class User /* implements Serializable */{
     save();
   }
 
-  public Step combineStep(String expression) throws WdkModelException {
+  public Step combineStep(String expression) throws WdkModelException, WdkUserException {
     return combineStep(expression, false, false);
   }
 
   public Step combineStep(String expression, boolean useBooleanFilter,
-      boolean deleted) throws WdkModelException {
+      boolean deleted) throws WdkModelException, WdkUserException {
     logger.debug("Boolean expression: " + expression);
     BooleanExpression exp = new BooleanExpression(this);
     Step step = exp.parseExpression(expression, useBooleanFilter);

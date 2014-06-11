@@ -305,7 +305,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     private ActionForward getForward(HttpServletRequest request, StepBean step,
-            ActionMapping mapping) throws WdkModelException {
+            ActionMapping mapping) throws WdkModelException, WdkUserException {
         logger.debug("start getting forward");
 
         AnswerValueBean answerValue = step.getAnswerValue();
@@ -475,7 +475,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     private static void prepareAttributes(HttpServletRequest request,
-            UserBean user, StepBean step) throws WdkModelException {
+            UserBean user, StepBean step) throws WdkModelException, WdkUserException {
         AnswerValueBean answerValue = step.getAnswerValue();
         int start = getPageStart(request);
         int pageSize = getPageSize(request, step.getQuestion(), user);
@@ -541,9 +541,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
      * @param answerValue
      * @param filterName
      * @return
+     * @throws WdkUserException 
      */
     private int getSize(AnswerValueBean answerValue, String filterName)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
 
         String key = answerValue.getChecksum();
         if (filterName != null) key += ":" + filterName;

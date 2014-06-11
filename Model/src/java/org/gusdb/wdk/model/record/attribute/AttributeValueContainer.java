@@ -36,7 +36,7 @@ public abstract class AttributeValueContainer implements AttributeValueMap {
   protected abstract Map<String, AttributeField> getAttributeFieldMap();
 
   protected abstract void fillColumnAttributeValues(Query attributeQuery)
-      throws WdkModelException;
+      throws WdkModelException, WdkUserException;
 
   /**
    * The container cannot create primaryKeyValue since it is already been
@@ -59,7 +59,7 @@ public abstract class AttributeValueContainer implements AttributeValueMap {
    */
   @Override
   public AttributeValue getAttributeValue(String fieldName)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     // get the field from the cache; primary key always exists in the cache
     Map<String, AttributeField> fields = getAttributeFieldMap();
     AttributeField field = fields.get(fieldName);

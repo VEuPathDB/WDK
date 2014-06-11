@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * The text attribute value represents the actual text of the text attribute
@@ -49,7 +50,7 @@ public class TextAttributeValue extends AttributeValue {
    * @see org.gusdb.wdk.model.AttributeValue#getValue()
    */
   @Override
-  public Object getValue() throws WdkModelException {
+  public Object getValue() throws WdkModelException, WdkUserException {
     if (this.text == null) {
       String text = field.getText();
       Map<String, AttributeField> subFields = field.parseFields(text);
@@ -65,7 +66,7 @@ public class TextAttributeValue extends AttributeValue {
   }
 
   @Override
-  public String getDisplay() throws WdkModelException {
+  public String getDisplay() throws WdkModelException, WdkUserException {
     if (this.display == null) {
       String content = field.getDisplay();
       Map<String, AttributeField> subFields = field.parseFields(content);

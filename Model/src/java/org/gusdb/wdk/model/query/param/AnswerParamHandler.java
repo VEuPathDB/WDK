@@ -61,13 +61,14 @@ public class AnswerParamHandler extends AbstractParamHandler {
    * step_id
    * 
    * @throws WdkModelException
+   * @throws WdkUserException 
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toInternalValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
   public String toInternalValue(User user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     int stepId = Integer.parseInt(stableValue.split(":", 2)[0]);
 
     if (param.isNoTranslation())
@@ -83,13 +84,14 @@ public class AnswerParamHandler extends AbstractParamHandler {
    * the cache can be shared.
    * 
    * @throws WdkModelException
+   * @throws WdkUserException 
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
   public String toSignature(User user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     int stepId = Integer.valueOf(stableValue);
     Step step = user.getStep(stepId);
     AnswerValue answerValue = step.getAnswerValue();
