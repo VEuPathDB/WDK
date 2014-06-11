@@ -1,8 +1,10 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
+  var Field = wdk.models.filter.Field;
+
   var notUnk = function(n) {
-    return n !== wdk.models.filter.Field.UNKNOWN_VALUE && !_.isNaN(n);
+    return n !== Field.UNKNOWN_VALUE && !_.isNaN(n);
   };
 
   ns.RangeFilterView = wdk.views.View.extend({
@@ -147,6 +149,22 @@ wdk.namespace('wdk.views.filter', function(ns) {
         }, true);
       }
 
+      this.tooltip = this.$('.chart')
+        .wdkTooltip({
+          prerender: true,
+          content: ' ',
+          position: {
+            target: 'mouse',
+            viewport: this.$el,
+            my: 'left center'
+          },
+          show: false,
+          hide: {
+            event: false,
+            fixed: true
+          }
+        });
+
       $(window).on('resize.range_filter', this.resizePlot.bind(this));
 
       // activate Read more link if text is overflowed
@@ -176,21 +194,23 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     handlePlotHover: function(event, pos, item) {
-      var tooltip = this.$('.chart-tooltip');
-      var offset = this.$el.offset();
-      if (item) {
-        var x = item.datapoint[0];
-        var y = item.datapoint[1];
-        tooltip
-          .css({
-            display:'inline-block',
-            top: item.pageY - offset.top + 5,
-            left: item.pageX - offset.left + 5
-          })
-          .html('<strong>' + this.model.get('display') + '</strong> ' + x +
-                '<br><strong>Frequency</strong> ' + y);
-      } else {
-        tooltip.css('display', 'none');
+      var qtipApi = this.tooltip.qtip('api'),
+          previousPoint;
+
+      if (!item) {
+        qtipApi.cache.point = false;
+        return qtipApi.hide(item);
+      }
+
+      previousPoint = qtipApi.cache.point;
+
+      if (previousPoint !== item.dataIndex) {
+        qtipApi.cache.point = item.dataIndex;
+        qtipApi.set('content.text',
+          this.model.get('display') + ' = ' + item.datapoint[0].toFixed(2) +
+          '<br/>' + 'Frequency = ' + item.datapoint[1]);
+        qtipApi.elements.tooltip.stop(1, 1);
+        qtipApi.show(item);
       }
     },
 
