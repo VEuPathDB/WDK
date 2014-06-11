@@ -230,12 +230,12 @@ public class AnswerValue {
    * @throws WdkModelException
    * @throws WdkUserException 
    */
-  public int getPageSize() throws WdkModelException {
+  public int getPageSize() throws WdkModelException, WdkUserException {
     initPageRecordInstances();
     return pageRecordInstances.size();
   }
 
-  public int getPageCount() throws WdkModelException {
+  public int getPageCount() throws WdkModelException, WdkUserException {
     int total = getResultSize();
     int pageSize = endIndex - startIndex + 1;
     int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
@@ -244,7 +244,7 @@ public class AnswerValue {
     return pageCount;
   }
 
-  public int getResultSize() throws WdkModelException {
+  public int getResultSize() throws WdkModelException, WdkUserException {
     logger.debug("getting result size: cache=" + resultSize + ", isCached="
         + idsQueryInstance.isCached());
     if (resultSize == null || !idsQueryInstance.isCached()) {
@@ -258,7 +258,7 @@ public class AnswerValue {
     return resultSize;
   }
 
-  public Map<String, Integer> getResultSizesByProject() throws WdkModelException {
+  public Map<String, Integer> getResultSizesByProject() throws WdkModelException, WdkUserException {
     if (resultSizesByProject == null) {
       resultSizesByProject = new LinkedHashMap<String, Integer>();
 
@@ -348,7 +348,7 @@ public class AnswerValue {
    * @throws WdkModelException
    * @throws WdkUserException 
    */
-  public RecordInstance[] getRecordInstances() throws WdkModelException {
+  public RecordInstance[] getRecordInstances() throws WdkModelException, WdkUserException {
     initPageRecordInstances();
 
     RecordInstance[] array = new RecordInstance[pageRecordInstances.size()];
@@ -368,8 +368,9 @@ public class AnswerValue {
    * the checksum of the iq query, plus the filter information on the answer.
    * 
    * @return
+   * @throws WdkUserException 
    */
-  public String getChecksum() throws WdkModelException {
+  public String getChecksum() throws WdkModelException, WdkUserException {
     String checksum = idsQueryInstance.getChecksum();
     if (filter != null) checksum += ":" + filter.getName();
     return checksum;
@@ -379,8 +380,9 @@ public class AnswerValue {
    * the answer's key is the checksum of the answer, plus the filter, if any.
    * 
    * @return
+   * @throws WdkUserException 
    */
-  public String getAnswerStringKey() throws WdkModelException {
+  public String getAnswerStringKey() throws WdkModelException, WdkUserException {
     String key = getChecksum();
     if (filter != null)
       key += ":" + filter.getName();
@@ -463,9 +465,10 @@ public class AnswerValue {
    * @param reporterName
    * @param config
    * @return
+   * @throws WdkUserException 
    */
   public Reporter createReport(String reporterName, Map<String, String> config)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     // get the full answer
     int endI = getResultSize();
     return createReport(reporterName, config, 1, endI);
@@ -517,8 +520,9 @@ public class AnswerValue {
    * by an AnswerValue object.
    * 
    * @return
+   * @throws WdkUserException 
    */
-  public Iterable<AnswerValue> getFullAnswers() throws WdkModelException {
+  public Iterable<AnswerValue> getFullAnswers() throws WdkModelException, WdkUserException {
     // user tabular reporter as answer iterator
     int resultSize = this.getResultSize();
     TabularReporter reporter = new TabularReporter(this, 1, resultSize);
@@ -539,7 +543,7 @@ public class AnswerValue {
    * 
    */
   public void integrateAttributesQuery(Query attributeQuery)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     initPageRecordInstances();
 
     WdkModel wdkModel = question.getWdkModel();
@@ -627,7 +631,7 @@ public class AnswerValue {
   // ------------------------------------------------------------------
 
   private String getPagedAttributeSql(Query attributeQuery)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     // get the paged SQL of id query
     String idSql = getPagedIdSql();
 
@@ -758,7 +762,7 @@ public class AnswerValue {
     return sql.toString().replace(Utilities.MACRO_ID_SQL, idSql);
   }
 
-  public String getAttributeSql(Query attributeQuery) throws WdkModelException {
+  public String getAttributeSql(Query attributeQuery) throws WdkModelException, WdkUserException {
     String queryName = attributeQuery.getFullName();
     Query dynaQuery = question.getDynamicAttributeQuery();
     String idSql = idsQueryInstance.getSql();
@@ -791,7 +795,7 @@ public class AnswerValue {
     return sql;
   }
 
-  public String getSortedIdSql() throws WdkModelException {
+  public String getSortedIdSql() throws WdkModelException, WdkUserException {
     if (sortedIdSql != null)
       return sortedIdSql;
 
@@ -858,7 +862,7 @@ public class AnswerValue {
     return sortedIdSql;
   }
 
-  private String getPagedIdSql() throws WdkModelException {
+  private String getPagedIdSql() throws WdkModelException, WdkUserException {
     String sortedIdSql = getSortedIdSql();
     DatabaseInstance platform = question.getWdkModel().getAppDb();
     String sql = platform.getPlatform().getPagedSql(sortedIdSql, startIndex, endIndex);
@@ -871,7 +875,7 @@ public class AnswerValue {
     return sql;
   }
 
-  public String getIdSql() throws WdkModelException {
+  public String getIdSql() throws WdkModelException, WdkUserException {
     String innerSql = idsQueryInstance.getSql();
 
     // add comments to id sql
@@ -891,7 +895,7 @@ public class AnswerValue {
   }
 
   private void prepareSortingSqls(Map<String, String> sqls,
-      Collection<String> orders) throws WdkModelException {
+      Collection<String> orders) throws WdkModelException, WdkUserException {
     Map<String, AttributeField> fields = question.getAttributeFieldMap();
     Map<String, String> querySqls = new LinkedHashMap<String, String>();
     Map<String, String> queryNames = new LinkedHashMap<String, String>();
@@ -964,7 +968,7 @@ public class AnswerValue {
    * @throws WdkUserException 
    * 
    */
-  private void initPageRecordInstances() throws WdkModelException {
+  private void initPageRecordInstances() throws WdkModelException, WdkUserException {
     if (pageRecordInstances != null)
       return;
 
@@ -1170,8 +1174,9 @@ public class AnswerValue {
    * them.
    * 
    * @return returns a list of all primary key values.
+   * @throws WdkUserException 
    */
-  public Object[][] getPrimaryKeyValues() throws WdkModelException {
+  public Object[][] getPrimaryKeyValues() throws WdkModelException, WdkUserException {
     String[] columns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
     List<Object[]> buffer = new ArrayList<Object[]>();
 
@@ -1193,7 +1198,7 @@ public class AnswerValue {
     return ids;
   }
 
-  public int getFilterSize(String filterName) throws WdkModelException {
+  public int getFilterSize(String filterName) throws WdkModelException, WdkUserException {
     Integer size = resultSizesByFilter.get(filterName);
     if (size != null && idsQueryInstance.isCached()) {
       return size;
@@ -1271,7 +1276,7 @@ public class AnswerValue {
    * @return
    * @throws WdkUserException 
    */
-  public List<String[]> getAllIds() throws WdkModelException {
+  public List<String[]> getAllIds() throws WdkModelException, WdkUserException {
     String idSql = getSortedIdSql();
     PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
     String[] pkColumns = pkField.getColumnRefs();

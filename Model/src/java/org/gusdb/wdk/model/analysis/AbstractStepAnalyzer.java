@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 
@@ -107,19 +108,19 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   }
   @Override
   public ValidationErrors validateFormParams(Map<String, String[]> formParams)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     // no validation
     return null;
   }
   
   @Override
-  public Object getFormViewModel() throws WdkModelException {
+  public Object getFormViewModel() throws WdkModelException, WdkUserException {
     return null;
   }
   
   @Override
   public void validateAnswerValue(AnswerValue answerValue)
-      throws IllegalAnswerValueException, WdkModelException {
+      throws IllegalAnswerValueException, WdkModelException, WdkUserException {
     // do nothing
   }
 }

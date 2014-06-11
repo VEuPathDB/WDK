@@ -50,7 +50,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
    * @see org.gusdb.wdk.model.query.SqlQueryInstance#getUncachedSql()
    */
   @Override
-  public String getUncachedSql() throws WdkModelException {
+  public String getUncachedSql() throws WdkModelException, WdkUserException {
 
     // needs to apply the view to each operand before boolean
     // get the use_boolean filter param
@@ -99,7 +99,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
   }
 
   private String constructOperandSql(String subSql, boolean booleanFlag)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     RecordClass recordClass = booleanQuery.getRecordClass();
     // apply the filter query if needed
     AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();

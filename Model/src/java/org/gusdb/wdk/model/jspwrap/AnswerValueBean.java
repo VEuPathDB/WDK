@@ -8,6 +8,7 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -96,7 +97,7 @@ public class AnswerValueBean {
         return answerValue.getIdsQueryInstance().getParamStableValues();
     }
 
-    public String getChecksum() throws WdkModelException {
+    public String getChecksum() throws WdkModelException, WdkUserException {
         return answerValue.getChecksum();
     }
 
@@ -115,9 +116,10 @@ public class AnswerValueBean {
     /**
      * @return first child answer for boolean answer, null if it is an answer
      *         for a simple question.
+     * @throws WdkUserException 
      */
     public AnswerValueBean getFirstChildAnswer()
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         if (!getIsCombined()) {
             throw new RuntimeException("getFirstChildAnswer can not be called"
                     + " on simple AnswerBean");
@@ -148,9 +150,10 @@ public class AnswerValueBean {
     /**
      * @return second child answer for boolean answer, null if it is an answer
      *         for a simple question.
+     * @throws WdkUserException 
      */
     public AnswerValueBean getSecondChildAnswer()
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         if (!getIsBoolean()) {
             throw new RuntimeException("getSecondChildAnswer can not be called"
                     + " on simple AnswerBean");
@@ -164,20 +167,20 @@ public class AnswerValueBean {
         return new AnswerValueBean(step.getAnswerValue());
     }
 
-    public int getPageSize() throws WdkModelException {
+    public int getPageSize() throws WdkModelException, WdkUserException {
         return answerValue.getPageSize();
     }
 
-    public int getPageCount() throws WdkModelException {
+    public int getPageCount() throws WdkModelException, WdkUserException {
         return answerValue.getPageCount();
     }
 
-    public int getResultSize() throws WdkModelException {
+    public int getResultSize() throws WdkModelException, WdkUserException {
         return answerValue.getResultSize();
     }
 
     public Map<String, Integer> getResultSizesByProject()
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         return answerValue.getResultSizesByProject();
     }
 
@@ -203,8 +206,9 @@ public class AnswerValueBean {
 
     /**
      * @return A list of {@link RecordBean}s.
+     * @throws WdkUserException 
      */
-    public Iterator<RecordBean> getRecords() throws WdkModelException {
+    public Iterator<RecordBean> getRecords() throws WdkModelException, WdkUserException {
     	return new RecordBeanList(answerValue.getRecordInstances());
     }
 
@@ -342,11 +346,12 @@ public class AnswerValueBean {
      * @param reporterName
      * @param config
      * @return
+     * @throws WdkUserException 
      * @see org.gusdb.wdk.model.AnswerValue#getReport(java.lang.String,
      *      java.util.Map)
      */
     public Reporter createReport(String reporterName, Map<String, String> config)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         return answerValue.createReport(reporterName, config);
     }
 
@@ -399,7 +404,7 @@ public class AnswerValueBean {
     }
 
     public int getFilterSize(String filterName)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         return answerValue.getFilterSize(filterName);
     }
 
@@ -409,15 +414,16 @@ public class AnswerValueBean {
         return new AnswerFilterInstanceBean(filter);
     }
 
-    public List<String[]> getAllIds() throws WdkModelException {
+    public List<String[]> getAllIds() throws WdkModelException, WdkUserException {
         return answerValue.getAllIds();
     }
 
     /**
      * @return
+     * @throws WdkUserException 
      * @see org.gusdb.wdk.model.AnswerValue#getAllPkValues()
      */
-    public String getAllIdList() throws WdkModelException {
+    public String getAllIdList() throws WdkModelException, WdkUserException {
         List<String[]> pkValues = answerValue.getAllIds();
         StringBuffer buffer = new StringBuffer();
         for (String[] pkValue : pkValues) {

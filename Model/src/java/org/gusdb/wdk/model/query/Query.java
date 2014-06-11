@@ -596,7 +596,7 @@ public abstract class Query extends WdkModelBase {
   }
 
   public Map<String, String> getSignatures(User user, Map<String, String> stableValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     Map<String, String> signatures = new LinkedHashMap<String, String>();
     for (String paramName : stableValues.keySet()) {
       Param param = paramMap.get(paramName);

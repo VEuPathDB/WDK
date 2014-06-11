@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
@@ -29,8 +30,9 @@ public interface StepAnalyzer {
    * this plugin.  It we be available to your JSP page as requestScope.viewModel.
    * 
    * @return model object for form rendering
+   * @throws WdkUserException 
    */
-  public Object getFormViewModel() throws WdkModelException;
+  public Object getFormViewModel() throws WdkModelException, WdkUserException;
   
   /**
    * A MVC model object to be made available to the JSP rendering the results for
@@ -69,9 +71,10 @@ public interface StepAnalyzer {
    * 
    * @param formParams form parameter values to be validated
    * @return an object encapsulating the errors, or null if no errors occurred
+   * @throws WdkUserException 
    */
   public ValidationErrors validateFormParams(Map<String, String[]> formParams)
-      throws WdkModelException;
+      throws WdkModelException, WdkUserException;
 
   /**
    * Sets answer value retrieved from the step being analyzed
@@ -87,9 +90,10 @@ public interface StepAnalyzer {
    * @param answerValue answer that might be analyzed by this analyzer
    * @throws IllegalAnswerValueException if answer cannot be analyzed by this analyzer
    * @throws WdkModelException if error occurs while determining validity of answer
+   * @throws WdkUserException 
    */
   public void validateAnswerValue(AnswerValue answerValue)
-      throws IllegalAnswerValueException, WdkModelException;
+      throws IllegalAnswerValueException, WdkModelException, WdkUserException;
 
   /**
    * Runs an analysis of the passed AnswerValue.  In-process logging can be
@@ -99,8 +103,9 @@ public interface StepAnalyzer {
    * @param log logger mechanism; this will be for diagnostic purposes or may be exposed to the user
    * @return completion status of this run.  Typically this value is COMPLETE, INTERRUPTED, or ERROR
    * @throws WdkModelException if an unexpected error occurs.  This is a slightly messier equivalent of returning ERROR
+   * @throws WdkUserException 
    */
-  public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log) throws WdkModelException;
+  public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log) throws WdkModelException, WdkUserException;
 
   /**
    * Sets the storage directory for this analyzer.  Usage of this directory is

@@ -169,7 +169,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     public AttributeValue get(Object key) {
       try {
         return getAttributeValue((String) key);
-      } catch (WdkModelException ex) {
+      } catch (WdkModelException | WdkUserException ex) {
         throw new WdkRuntimeException(ex);
       }
     }
@@ -521,7 +521,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     }
   }
 
-  private void initializeRows() throws WdkModelException {
+  private void initializeRows() throws WdkModelException, WdkUserException {
     if (rows != null) return;
 
     rows = new ArrayList<Map<String, AttributeValue>>();

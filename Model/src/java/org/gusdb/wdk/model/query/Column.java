@@ -87,10 +87,10 @@ public class Column extends WdkModelBase {
   }
 
   /**
-   * @return Returns the wsName.
+   * @return Returns the wsName if defined, or column name, if the wsName is not defined.
    */
   public String getWsName() {
-    return this.wsName;
+    return (wsName == null)? name : wsName;
   }
 
   /**

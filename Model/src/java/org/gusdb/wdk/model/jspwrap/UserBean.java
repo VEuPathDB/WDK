@@ -776,7 +776,7 @@ public class UserBean /* implements Serializable */{
    * @see org.gusdb.wdk.model.user.User#combineHistory(java.lang.String)
    */
   public StepBean combineStep(String expression, boolean useBooleanFilter)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     return new StepBean(this, user.combineStep(expression, useBooleanFilter,
         false));
   }
@@ -1123,7 +1123,7 @@ public class UserBean /* implements Serializable */{
     factory.addToBasket(user, recordClass.recordClass, ids);
   }
 
-  public void addToBasket(StepBean step) throws WdkModelException {
+  public void addToBasket(StepBean step) throws WdkModelException, WdkUserException {
     BasketFactory factory = user.getWdkModel().getBasketFactory();
     factory.addToBasket(user, step.step);
   }
@@ -1134,7 +1134,7 @@ public class UserBean /* implements Serializable */{
     factory.removeFromBasket(user, recordClass.recordClass, ids);
   }
 
-  public void removeFromBasket(StepBean step) throws WdkModelException {
+  public void removeFromBasket(StepBean step) throws WdkModelException, WdkUserException {
     BasketFactory factory = user.getWdkModel().getBasketFactory();
     factory.removeFromBasket(user, step.step);
   }

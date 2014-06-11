@@ -296,7 +296,7 @@ public class JSONReporter extends Reporter {
 
     private void formatAttributes(RecordInstance record,
             Set<AttributeField> attributes, PrintWriter writer)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         // print out attributes of the record first
         if (attributes.size() > 0) writer.print(", \"fields\":[");
         int c = 0;

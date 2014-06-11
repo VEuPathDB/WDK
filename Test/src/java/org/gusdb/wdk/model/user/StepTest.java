@@ -7,6 +7,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,7 +19,7 @@ import org.junit.Test;
 public class StepTest {
 
     public static void compareStep(Step expectedStep, Step actualStep)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         Assert.assertEquals("step id", expectedStep.getStepId(),
                 actualStep.getStepId());
         Assert.assertEquals("valid", expectedStep.isValid(),

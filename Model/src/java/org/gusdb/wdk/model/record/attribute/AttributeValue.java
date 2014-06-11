@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.record.attribute;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordInstance;
 
 /**
@@ -21,7 +22,7 @@ public abstract class AttributeValue {
   protected AttributeField field;
   protected Object value;
 
-  public abstract Object getValue() throws WdkModelException;
+  public abstract Object getValue() throws WdkModelException, WdkUserException;
 
   public AttributeValue(AttributeField field) {
     this.field = field;
@@ -47,7 +48,7 @@ public abstract class AttributeValue {
     return field.getName();
   }
 
-  public String getBriefDisplay() throws WdkModelException {
+  public String getBriefDisplay() throws WdkModelException, WdkUserException {
     String display = getDisplay();
     int truncateTo = field.getTruncateTo();
     switch (truncateTo) {
@@ -62,7 +63,7 @@ public abstract class AttributeValue {
     }
   }
 
-  public String getDisplay() throws WdkModelException {
+  public String getDisplay() throws WdkModelException, WdkUserException {
     Object value = getValue();
     return (value != null) ? value.toString() : "";
   }
@@ -77,7 +78,7 @@ public abstract class AttributeValue {
     try {
       Object value = getValue();
       return (value == null) ? "" : value.toString();
-    } catch (WdkModelException ex) {
+    } catch (WdkModelException | WdkUserException ex) {
       throw new RuntimeException(ex);
     }
   }
