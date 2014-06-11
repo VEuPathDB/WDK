@@ -13,6 +13,8 @@ wdk.namespace('wdk.models.filter', function(ns) {
     }
   });
 
+  Field.UNKNOWN_VALUE = new String('Unknown');
+
   var Fields = ns.Fields = Backbone.Collection.extend({
     model: Field
   });

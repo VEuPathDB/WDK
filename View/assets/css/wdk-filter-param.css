@@ -55,17 +55,6 @@
   width: 100%;
   height: 200px;
 }
-.chart-tooltip {
-  display: none;
-  position: absolute;
-  background: black;
-  color: white;
-  font-size: 90%;
-  border: 2px solid black;
-  border-radius: 4px;
-  box-shadow: #DDD 1px 1px;
-  padding: 2px 4px;
-}
 .chart-title {
   color: #666;
 }
@@ -101,27 +90,31 @@
 .field-list input {
   width: 90%;
 }
-.field-list > h4 {
+.field-list h4 {
   cursor: pointer;
   margin: 1em 0 .5em 0;
+  border: 1px solid transparent;
 }
-.field-list > h4:before {
+.field-list h4:before {
   /* down pointing triangle */
   content: "\25BC  ";
   font-size: 75%;
 }
-.field-list > h4.collapsed:before {
+.field-list h4.collapsed:before {
   /* right pointing triangle */
   content: "\25B6  ";
 }
+.field-list h4.collapsed + div {
+  display:none;
+}
 .field-list ul {
   padding-bottom: .5em;
-  padding-left: .5em;
+  padding-left: .8em;
   font-weight: bold;
 }
 .field-list li a {
   display: block;
-  padding: 5px 10px;
+  padding: 5px 4px;
   border-radius: 2px;
   border: 1px solid transparent;
   border-left: 2px solid transparent;
@@ -141,9 +134,7 @@
 }
 .field-detail {
   width: 75%;
-  padding-left: 2em;
-  padding-right: 2em;
-  padding-bottom: 3em;
+  padding: 1em 2em 0;
   position: relative;
 }
 .field-detail h4 {
@@ -249,7 +240,7 @@
 }
 .filter-param .bar .fill {
   color: white;
-  background-color: #dadada;
+  background-color: #aaaaaa;
   height: 1em;
   position: absolute;
   top: -.5em;
@@ -258,13 +249,15 @@
   background-color: #DA7272;
 }
 .filter-param .legend {
-  text-align: right;
-  width: 100%;
-  padding: 1em 2em;
-  bottom: 0;
-  right: 0;
-  position: absolute;
+  float: right;
+  margin-bottom: 1em;
+  padding: 0;
   color: #666666;
+  border: 1px solid #dadada;
+  border-radius: 4px;
+}
+.filter-param .legend > div {
+  margin: .5em 0;
 }
 .filter-param .legend .bar {
   display: inline-block;
@@ -272,6 +265,10 @@
   vertical-align: text-top;
   margin: 0;
   margin-left: 1em;
+}
+.filter-param .legend .label {
+  display: inline-block;
+  padding: 0 .4em;
 }
 .membership-filter .member.selected td {
   font-weight: bold;

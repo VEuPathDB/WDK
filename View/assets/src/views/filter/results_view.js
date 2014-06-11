@@ -48,8 +48,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     renderTableBody: function() {
-      this.dataTable.fnClearTable();
-      this.dataTable.fnAddData(this.model.filteredData.toJSON());
+      this.dataTable.fnClearTable(false);
+      this.dataTable.fnAddData(this.model.filteredData.toJSON(), false);
+      this.dataTable.fnDraw();
     },
 
     queueRender: function() {
@@ -86,7 +87,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     resizeTable: function() {
-      this.dataTable.fnDraw();
+      this.dataTable.fnAdjustColumnSizing(false);
     },
 
     generateTableConfig: function() {
@@ -111,7 +112,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
             sTitle: field.get('display'),
             mData: 'metadata.' + field.get('term')
           });
-      });
+        });
 
       return {
         sDom: 'C<"clear">lfrtip',
