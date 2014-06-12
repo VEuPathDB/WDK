@@ -53,13 +53,16 @@ h3 {
 	margin-left: 11px;
 }
 
-
 a:link, a:visited {
 	text-decoration: none;
 }
 
 a:hover, a:active {
 	text-decoration: none;
+}
+
+p {
+	margin: 1em 0;
 }
 
 td { 
