@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.controller.action;
 
 import java.io.PrintWriter;
@@ -24,7 +21,6 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
  * @author xingao
- * 
  */
 public class ShowResultSizeAction extends Action {
 
