@@ -29,16 +29,9 @@ wdk.namespace('wdk.components', function(ns, $) {
                  'src="' + wdk.assetsUrl('/wdk/images/new-feature.png') + '"> ' +
                  title,
           button: 'Got it!'
-          //button: $('<button>Got it!</button>')
-          //  .css({
-          //    position: 'absolute',
-          //    right: 0,
-          //    top: 0
-          //  })
         },
         style: {
-          width: 250,
-          classes: 'qtip-bootstrap'
+          classes: 'qtip-bootstrap wdk-feature-tooltip'
         },
         position: {
           my: 'left top',

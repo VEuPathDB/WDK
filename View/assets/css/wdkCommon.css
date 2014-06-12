@@ -253,6 +253,20 @@ img[data-assets-src][src] {
   color: #ffffff;
 }
 
+.wdk-feature-tooltip {
+  background-color: #3f3f3f;
+  padding: 0;
+  min-width: 300px;
+}
+.wdk-feature-tooltip .qtip-content {
+  color: #f9f9f9;
+  padding: 1em 2em;
+}
+.wdk-feature-tooltip ul {
+  list-style: disc;
+  padding: 0 1em;
+}
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     =Styling for the Login pop-up box 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
