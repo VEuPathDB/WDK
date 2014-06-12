@@ -32,7 +32,7 @@
                   <div class="analysis-selection-banner">Coming soon...</div>
                 </c:if>
                 <c:if test="${analysis.releaseVersion eq wdkModel.model.buildNumber}">
-                  <div class="analysis-selection-banner">New!</div>
+                  <div class="analysis-selection-banner new-analysis"></div>
                 </c:if>
                 <div class="analysis-wrapper">
                   <div class="analysis-title">${analysis.displayName}</div>
