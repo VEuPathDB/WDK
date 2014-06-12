@@ -10,7 +10,7 @@ Provides functions to support results table
 wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   "use strict";
 
-  var createFeatureTooltip = wdk.components.createFeatureTooltip;
+  var createFeatureTooltipOnce = _.once(wdk.components.createFeatureTooltip);
 
   function configureSummaryViews($element, $attrs) {
     // var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);  
@@ -23,7 +23,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       active : currentTab,
       load: function(event, ui) {
         if (analysisFeatureTooltipTarget.length) {
-          createFeatureTooltip({
+          createFeatureTooltipOnce({
             el: analysisFeatureTooltipTarget,
             key: 'new-analysis::' + wdk.VERSION,
             title: 'New tools available!',
@@ -44,23 +44,6 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     // pretty up analysis tabs and create "new analysis" menu
     wdk.stepAnalysis.configureAnalysisViews($element);
     
-    // var workspace = window.wdk.findActiveWorkspace(); 
-
-    // $(".Summary_Views").each(function() {
-    //   var summaryViews = $(this);
-    //   // disable remembering current tab for now due to performance issue on
-    //   // loading the genomic summary view. Always use the first tab.
-    //   // var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"), 10);  
-    //   var currentTab = 0;
-    //   summaryViews.tabs({
-
-    //     active : currentTab,
-    //     load: function(event, ui) {
-    //       wdk.load();
-    //       createFlexigridFromTable(ui.panel.find(".Results_Table"));
-    //     }
-    //   });
-    // });
   }
   
   function moveAttr(col_ix, table) {
