@@ -57,9 +57,9 @@ import org.gusdb.wdk.model.xml.XmlRecordClassSet;
  * @author
  * @modified Jan 6, 2006 - Jerric Add a stepFactory in the model
  */
-public class WdkModel implements ConnectionContainer {
+public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
-  public static final String WDK_VERSION = "2.8.0";
+  public static final String WDK_VERSION = "2.9.0";
 
   public static final String USER_SCHEMA_VERSION = "5";
 
@@ -79,24 +79,7 @@ public class WdkModel implements ConnectionContainer {
    *           if unable to construct model
    */
   public static WdkModel construct(String projectId, String gusHome) throws WdkModelException {
-    StackTraceElement[] stackTrace = new Throwable().getStackTrace();
-    int index = stackTrace.length - 1;
-    String tip = "";
-    if (index >= 0)
-      tip = "called by " + stackTrace[index].getClassName();
-    logger.debug("Constructing wdk model [" + projectId + "] (GUS_HOME=" + gusHome + "); " + tip);
-
-    try {
-      ModelXmlParser parser = new ModelXmlParser(gusHome);
-      WdkModel wdkModel = parser.parseModel(projectId);
-      wdkModel.doAdditionalStartup();
-      logger.debug("Model ready to use.");
-      return wdkModel;
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      throw new WdkModelException(ex);
-    }
+    return new WdkModel().getInstance(projectId, gusHome);
   }
 
   private String gusHome;
@@ -180,6 +163,28 @@ public class WdkModel implements ConnectionContainer {
   private String buildNumber;
 
   private ThreadMonitor _myThreadMonitor;
+  
+  @Override
+  public WdkModel getInstance(String projectId, String gusHome) throws WdkModelException {
+    StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+    int index = stackTrace.length - 1;
+    String tip = "";
+    if (index >= 0)
+      tip = "called by " + stackTrace[index].getClassName();
+    logger.debug("Constructing wdk model [" + projectId + "] (GUS_HOME=" + gusHome + "); " + tip);
+
+    try {
+      ModelXmlParser parser = new ModelXmlParser(gusHome);
+      WdkModel wdkModel = parser.parseModel(projectId);
+      wdkModel.doAdditionalStartup();
+      logger.debug("Model ready to use.");
+      return wdkModel;
+    }
+    catch (Exception ex) {
+      ex.printStackTrace();
+      throw new WdkModelException(ex);
+    }
+  }
 
   public void doAdditionalStartup() throws WdkModelException {
     // verify the user schema
