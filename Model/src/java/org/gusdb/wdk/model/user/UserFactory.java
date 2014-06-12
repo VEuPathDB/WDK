@@ -276,7 +276,7 @@ public class UserFactory {
       // save user's roles
       saveUserRoles(user);
 
-      logger.info("Guest user #" + userId + " created.");
+      logger.info("Guest user " + email + " created.");
 
       return user;
     } catch (SQLException e) {
