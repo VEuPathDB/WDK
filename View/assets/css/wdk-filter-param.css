@@ -270,6 +270,13 @@
   display: inline-block;
   padding: 0 .4em;
 }
+.filter-param .legend .bar {
+  width: 10px;
+}
+.filter-param .legend .bar .fill {
+  width: 10px;
+  height: 10px;
+}
 .membership-filter .member.selected td {
   font-weight: bold;
   /*background-color: #66A4E7;*/
