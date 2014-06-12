@@ -280,7 +280,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         $element.find('[data-bind="displayName"]').text(data.displayName);
 
         // add description
-        $element.find('[data-bind="description"]').text(data.description);
+        $element.find('[data-bind="description"]').html(data.description);
 
         // load form and (if necessary) populate selected values
         loadAnalysisForm($element, data);
@@ -330,6 +330,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           analysisObj.formParams.analysisId = [ analysisId ];
           wdk.formUtil.populateForm(formPane.find('form').first(), analysisObj.formParams);
         }
+
+        // assign param tooltips if there are any
+        wdk.tooltips.assignParamTooltips('.step-analysis-form-pane .help-link');
 
         trigger('formload', {
           name: analysisObj.analysisName,
