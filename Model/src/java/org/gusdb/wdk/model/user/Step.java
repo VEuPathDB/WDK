@@ -172,7 +172,7 @@ public class Step {
     return this.paramValues.get(operator.getName());
   }
 
-  public void setParentStep(Step parentStep) {
+  public void setParentStep(Step parentStep) throws WdkModelException {
     stepFactory.verifySameOwnerAndProject(this, parentStep);
     this.parentStep = parentStep;
     if (parentStep != null) {
@@ -181,7 +181,7 @@ public class Step {
     }
   }
 
-  public void setChildStep(Step childStep) {
+  public void setChildStep(Step childStep) throws WdkModelException {
     stepFactory.verifySameOwnerAndProject(this, childStep);
     this.childStep = childStep;
     if (childStep != null) {
@@ -192,7 +192,7 @@ public class Step {
       childStepId = 0;
   }
 
-  public void setNextStep(Step nextStep) {
+  public void setNextStep(Step nextStep) throws WdkModelException {
     stepFactory.verifySameOwnerAndProject(this, nextStep);
     this.nextStep = nextStep;
     if (nextStep != null) {
@@ -201,7 +201,7 @@ public class Step {
     }
   }
 
-  public void setPreviousStep(Step previousStep) {
+  public void setPreviousStep(Step previousStep) throws WdkModelException {
     stepFactory.verifySameOwnerAndProject(this, previousStep);
     this.previousStep = previousStep;
     if (previousStep != null) {
@@ -554,7 +554,7 @@ public class Step {
     return array;
   }
 
-  public void addStep(Step step) {
+  public void addStep(Step step) throws WdkModelException {
     step.setPreviousStep(this);
     this.setNextStep(step);
   }
@@ -934,7 +934,7 @@ public class Step {
     this.previousStepId = previousStepId;
   }
 
-  public void setAndVerifyPreviousStepId(int previousStepId) {
+  public void setAndVerifyPreviousStepId(int previousStepId) throws WdkModelException {
     stepFactory.verifySameOwnerAndProject(this, previousStepId);
     setPreviousStepId(previousStepId);
   }
@@ -954,7 +954,7 @@ public class Step {
     this.childStepId = childStepId;
   }
 
-  public void setAndVerifyChildStepId(int childStepId) {
+  public void setAndVerifyChildStepId(int childStepId) throws WdkModelException {
     stepFactory.verifySameOwnerAndProject(this, childStepId);
     setChildStepId(childStepId);
   }

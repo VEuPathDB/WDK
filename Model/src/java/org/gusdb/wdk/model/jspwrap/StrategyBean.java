@@ -119,7 +119,7 @@ public class StrategyBean {
     // strategy.addStep(step.step);
     // }
 
-    public void setLatestStep(StepBean step) {
+    public void setLatestStep(StepBean step) throws WdkModelException {
         strategy.setLatestStep(step.step);
     }
 

@@ -125,7 +125,7 @@ public class Strategy {
     return latestStep;
   }
 
-  public void setLatestStep(Step step) {
+  public void setLatestStep(Step step) throws WdkModelException {
     stepFactory.verifySameOwnerAndProject(this, step);
     this.latestStep = step;
     // also update the cached info
