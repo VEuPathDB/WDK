@@ -22,7 +22,7 @@
                 <c:if test="${analysis.releaseVersion le 0}">inactive</c:if>
               </c:set>
 
-              <li class="${class}"
+              <li class="${class} wdk-tooltip"
                   role="${class eq 'inactive' ? '' : 'link'}"
                   tabindex="${class eq 'inactive' ? '' : '0'}"
                   style="${style}"
