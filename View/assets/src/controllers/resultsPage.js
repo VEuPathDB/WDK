@@ -10,12 +10,32 @@ Provides functions to support results table
 wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   "use strict";
 
+  var createFeatureTooltipOnce = _.once(wdk.components.createFeatureTooltip);
+
   function configureSummaryViews($element, $attrs) {
     // var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);  
     var currentTab = 0;
+
+    var analysisFeatureTooltipTarget = $element.find('#add-analysis')
+      .has('.analysis-feature-tooltip');
+
     $element.tabs({
       active : currentTab,
       load: function(event, ui) {
+        if (analysisFeatureTooltipTarget.length) {
+          createFeatureTooltipOnce({
+            el: analysisFeatureTooltipTarget,
+            key: 'new-analysis::' + wdk.VERSION,
+            title: 'New tools available!',
+            text: analysisFeatureTooltipTarget.find('.analysis-feature-tooltip')
+          });
+        }
+
+        analysisFeatureTooltipTarget
+          .on('click', function() {
+              analysisFeatureTooltipTarget.qtip('hide');
+            })
+
         wdk.load();
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
       }
@@ -24,23 +44,6 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     // pretty up analysis tabs and create "new analysis" menu
     wdk.stepAnalysis.configureAnalysisViews($element);
     
-    // var workspace = window.wdk.findActiveWorkspace(); 
-
-    // $(".Summary_Views").each(function() {
-    //   var summaryViews = $(this);
-    //   // disable remembering current tab for now due to performance issue on
-    //   // loading the genomic summary view. Always use the first tab.
-    //   // var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"), 10);  
-    //   var currentTab = 0;
-    //   summaryViews.tabs({
-
-    //     active : currentTab,
-    //     load: function(event, ui) {
-    //       wdk.load();
-    //       createFlexigridFromTable(ui.panel.find(".Results_Table"));
-    //     }
-    //   });
-    // });
   }
   
   function moveAttr(col_ix, table) {

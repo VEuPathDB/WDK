@@ -1524,6 +1524,11 @@
               <data type="positiveInteger" />
             </attribute>
           </optional>
+          <optional>
+            <attribute name="expirationMinutes">
+              <data type="positiveInteger" />
+            </attribute>
+          </optional>
         </element>
         <zeroOrMore>
           <ref name="stepAnalysisPlugin" />

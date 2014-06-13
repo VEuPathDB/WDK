@@ -1,8 +1,6 @@
 wdk.util.namespace("window.wdk", function(ns, $) {
   "use strict";
 
-  //$.noConflict();
-
   // =============================================================================
   // the common functions provided by wdk
   // =============================================================================
@@ -615,25 +613,29 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     invokeControllers();
   }
 
-  ns.$ = $;
-  ns.load = load;
-  ns.cookieTest = cookieTest;
-  ns.setUpDialogs = setUpDialogs;
-  ns.setUpPopups = setUpPopups;
-  ns.exportBaseURL = exportBaseURL;
-  ns.modelName = modelName;
-  ns.readCookie = readCookie;
-  ns.createCookie = createCookie;
-  ns.registerQuestionEvent = registerQuestionEvent;
-  ns.onloadQuestion = onloadQuestion; // anything using this?
-  ns.findActiveWorkspace = findActiveWorkspace;
-  ns.findActiveView = findActiveView;
-  ns.chooseAll = chooseAll;
-  ns.webappUrl = webappUrl;
-  ns.assetsUrl = assetsUrl;
-  ns.isUserLoggedIn = isUserLoggedIn;
-  ns.checkFields = checkFields;
-  ns.uncheckFields = uncheckFields;
-  ns.setUpNavDropDowns = setUpNavDropDowns;
+  _.extend(ns, {
+    VERSION: wdkConfig.version,
+    MODEL_NAME: wdkConfig.modelName,
+    $: $,
+    load: load,
+    cookieTest: cookieTest,
+    setUpDialogs: setUpDialogs,
+    setUpPopups: setUpPopups,
+    exportBaseURL: exportBaseURL,
+    modelName: modelName,
+    readCookie: readCookie,
+    createCookie: createCookie,
+    registerQuestionEvent: registerQuestionEvent,
+    onloadQuestion: onloadQuestion, // anything using this?
+    findActiveWorkspace: findActiveWorkspace,
+    findActiveView: findActiveView,
+    chooseAll: chooseAll,
+    webappUrl: webappUrl,
+    assetsUrl: assetsUrl,
+    isUserLoggedIn: isUserLoggedIn,
+    checkFields: checkFields,
+    uncheckFields: uncheckFields,
+    setUpNavDropDowns: setUpNavDropDowns
+  });
 
 });

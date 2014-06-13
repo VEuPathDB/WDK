@@ -60,7 +60,7 @@ public class EnumParamHandler extends AbstractParamHandler {
   public Object toRawValue(User user, String stableValue, Map<String, String> contextValues) {
     if (stableValue == null)
       return stableValue;
-    String[] rawValue = stableValue.split(",");
+    String[] rawValue = stableValue.split(",+");
     for (int i = 0; i < rawValue.length; i++) {
       rawValue[i] = rawValue[i].trim();
     }
@@ -149,7 +149,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     if (rawValue == null || rawValue.length == 0) {
       if (!param.isAllowEmpty())
         throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
-      rawValue = param.getDefault().split(",");
+      rawValue = param.getDefault().split(",+");
     }
 
     return param.getStableValue(user, rawValue, new HashMap<String, String>());
@@ -174,14 +174,14 @@ public class EnumParamHandler extends AbstractParamHandler {
       stableValue = aeParam.getDefault(user, contextValues);
       if (stableValue != null) {
         // don't validate default, just use it as is.
-        for (String term : stableValue.split(",")) {
+        for (String term : stableValue.split(",+")) {
           values.add(term.trim());
         }
       }
     }
     else { // stable value set, check if any of them are invalid
       Set<String> invalidValues = new HashSet<>();
-      for (String term : stableValue.split(",")) {
+      for (String term : stableValue.split(",+")) {
         term = term.trim();
         if (displayMap.containsKey(term))
           values.add(term);

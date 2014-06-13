@@ -23,6 +23,7 @@
 <script>
   var wdkConfig = {
     modelName: '${siteName}',
+    version: ${wdkModel.model.buildNumber},
     assetsUrl: '${applicationScope.assetsUrl}',
     webappUrl: '${pageContext.request.contextPath}',
     guestUser: ${isGuest},

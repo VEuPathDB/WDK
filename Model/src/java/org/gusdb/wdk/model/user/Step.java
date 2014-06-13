@@ -45,6 +45,7 @@ public class Step {
   private boolean collapsible = false;
   private String collapsedName = null;
 
+  private String projectId;
   private String projectVersion;
   private String questionName;
 
@@ -171,8 +172,8 @@ public class Step {
     return this.paramValues.get(operator.getName());
   }
 
-  public void setParentStep(Step parentStep) {
-    stepFactory.verifySameOwner(this, parentStep);
+  public void setParentStep(Step parentStep) throws WdkModelException {
+    stepFactory.verifySameOwnerAndProject(this, parentStep);
     this.parentStep = parentStep;
     if (parentStep != null) {
       parentStep.childStep = this;
@@ -180,8 +181,8 @@ public class Step {
     }
   }
 
-  public void setChildStep(Step childStep) {
-    stepFactory.verifySameOwner(this, childStep);
+  public void setChildStep(Step childStep) throws WdkModelException {
+    stepFactory.verifySameOwnerAndProject(this, childStep);
     this.childStep = childStep;
     if (childStep != null) {
       childStep.parentStep = this;
@@ -191,8 +192,8 @@ public class Step {
       childStepId = 0;
   }
 
-  public void setNextStep(Step nextStep) {
-    stepFactory.verifySameOwner(this, nextStep);
+  public void setNextStep(Step nextStep) throws WdkModelException {
+    stepFactory.verifySameOwnerAndProject(this, nextStep);
     this.nextStep = nextStep;
     if (nextStep != null) {
       nextStep.previousStep = this;
@@ -200,8 +201,8 @@ public class Step {
     }
   }
 
-  public void setPreviousStep(Step previousStep) {
-    stepFactory.verifySameOwner(this, previousStep);
+  public void setPreviousStep(Step previousStep) throws WdkModelException {
+    stepFactory.verifySameOwnerAndProject(this, previousStep);
     this.previousStep = previousStep;
     if (previousStep != null) {
       previousStep.nextStep = this;
@@ -510,6 +511,14 @@ public class Step {
     this.questionName = questionName;
   }
 
+  public String getProjectId() {
+    return projectId;
+  }
+
+  public void setProjectId(String projectId) {
+    this.projectId = projectId;
+  }
+
   public String getProjectVersion() {
     return projectVersion;
   }
@@ -545,7 +554,7 @@ public class Step {
     return array;
   }
 
-  public void addStep(Step step) {
+  public void addStep(Step step) throws WdkModelException {
     step.setPreviousStep(this);
     this.setNextStep(step);
   }
@@ -925,8 +934,8 @@ public class Step {
     this.previousStepId = previousStepId;
   }
 
-  public void setAndVerifyPreviousStepId(int previousStepId) {
-    stepFactory.verifySameOwner(this, previousStepId);
+  public void setAndVerifyPreviousStepId(int previousStepId) throws WdkModelException {
+    stepFactory.verifySameOwnerAndProject(this, previousStepId);
     setPreviousStepId(previousStepId);
   }
   
@@ -945,8 +954,8 @@ public class Step {
     this.childStepId = childStepId;
   }
 
-  public void setAndVerifyChildStepId(int childStepId) {
-    stepFactory.verifySameOwner(this, childStepId);
+  public void setAndVerifyChildStepId(int childStepId) throws WdkModelException {
+    stepFactory.verifySameOwnerAndProject(this, childStepId);
     setChildStepId(childStepId);
   }
   

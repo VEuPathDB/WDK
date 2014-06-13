@@ -1,5 +1,8 @@
-<ul>
-  {{#each this}}
-    <li><a href="#{{term}}">{{display}}</a></li>
-  {{/each}}
-</ul>
+<!-- <input type="text"/ placeholder="Find properties by name"> -->
+<a href="#expand">Expand all</a> | <a href="#collapse">Collapse all</a>
+{{#each this}}
+  {{#if children}}
+  <h4 class="collapsed">{{field.display}}</h4>
+  <div> {{> field_node}} </div>
+  {{/if}}
+{{/each}}

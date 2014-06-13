@@ -36,7 +36,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     renderDetail: function(field) {
       var Delegate = this.getDelegateConstructor(field.get('filter'));
-      var html = this.delegateTemplate(this.model.attributes);
 
       if (this.delegateView) {
         this.delegateView.stopListening();
@@ -49,8 +48,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
         model: field,
         title: this.model.get('title')
       }).render();
-
-      this.$el.append(html);
 
       return this;
     },

@@ -94,7 +94,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
       throws WdkModelException, WdkUserException {
     int stepId = Integer.valueOf(stableValue);
     Step step = user.getStep(stepId);
-    AnswerValue answerValue = step.getAnswerValue();
+    AnswerValue answerValue = step.getAnswerValue(false);
     return answerValue.getChecksum();
   }
 

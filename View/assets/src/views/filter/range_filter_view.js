@@ -1,6 +1,12 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
+  var Field = wdk.models.filter.Field;
+
+  var notUnk = function(n) {
+    return n !== Field.UNKNOWN_VALUE && !_.isNaN(n);
+  };
+
   ns.RangeFilterView = wdk.views.View.extend({
 
     plot: null,
@@ -28,8 +34,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
       wdk.views.View.apply(this, initArgs);
     },
 
-    initialize: function() {
+    initialize: function(options) {
       var filters = this.filterService.filters;
+      this.options = options;
       this.listenTo(filters, 'add', this.addFilter);
       this.listenTo(filters, 'remove', this.removeFilter);
     },
@@ -64,13 +71,13 @@ wdk.namespace('wdk.views.filter', function(ns) {
       });
       var filterValues = filter ? filter.pick('min', 'max') : null;
 
-      var values = field.get('values').map(Number);
+      var values = field.get('values').filter(notUnk).map(Number);
 
       var distribution = _(values).countBy();
       var xdata = _(distribution).keys().map(Number);
       var ydata = _(distribution).values().map(Number);
 
-      var fdistribution = _(field.get('filteredValues')).countBy();
+      var fdistribution = _(field.get('filteredValues').filter(notUnk)).countBy();
       var xfdata = _(fdistribution).keys().map(Number);
       var yfdata = _(fdistribution).values().map(Number);
 
@@ -81,7 +88,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }, 0);
       var avg = (sum / _.size(values)).toFixed(2);
 
-      // [ [x1, y1], [x2, y2], ... ]
+      var padding = (max - min) * 0.5;
+      var barWidth = (max - min) * 0.01;
+
       var seriesData = [{
         data: _.zip(xdata, ydata),
         color: '#000'
@@ -95,15 +104,14 @@ wdk.namespace('wdk.views.filter', function(ns) {
         series: {
           bars: {
             show: true,
-            barWidth: 0.5,
+            barWidth: barWidth,
             lineWidth: 0,
             align: 'center'
           }
         },
         xaxis: {
-          //mode: 'categories',
-          min: min - 10,
-          max: max + 10,
+          min: min - padding,
+          max: max + padding,
           tickLength: 0
         },
         grid: {
@@ -114,7 +122,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         },
         selection: {
           mode: 'x',
-          color: '#66A4E7' // was '#2a6496'
+          color: '#66A4E7'
         }
       };
 
@@ -123,7 +131,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
         distribution: distribution,
         min: min,
         max: max,
-        avg: avg
+        avg: avg,
+        options: this.options
       }));
 
       this.plot = wdk.$.plot(this.$('.chart'), seriesData, plotOptions);
@@ -141,6 +150,22 @@ wdk.namespace('wdk.views.filter', function(ns) {
           }
         }, true);
       }
+
+      this.tooltip = this.$('.chart')
+        .wdkTooltip({
+          prerender: true,
+          content: ' ',
+          position: {
+            target: 'mouse',
+            viewport: this.$el,
+            my: 'left center'
+          },
+          show: false,
+          hide: {
+            event: false,
+            fixed: true
+          }
+        });
 
       $(window).on('resize.range_filter', this.resizePlot.bind(this));
 
@@ -171,21 +196,23 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     handlePlotHover: function(event, pos, item) {
-      var tooltip = this.$('.chart-tooltip');
-      var offset = this.$el.offset();
-      if (item) {
-        var x = item.datapoint[0];
-        var y = item.datapoint[1];
-        tooltip
-          .css({
-            display:'inline-block',
-            top: item.pageY - offset.top + 5,
-            left: item.pageX - offset.left + 5
-          })
-          .html('<strong>' + this.model.get('display') + '</strong> ' + x +
-                '<br><strong>Frequency</strong> ' + y);
-      } else {
-        tooltip.css('display', 'none');
+      var qtipApi = this.tooltip.qtip('api'),
+          previousPoint;
+
+      if (!item) {
+        qtipApi.cache.point = false;
+        return qtipApi.hide(item);
+      }
+
+      previousPoint = qtipApi.cache.point;
+
+      if (previousPoint !== item.dataIndex) {
+        qtipApi.cache.point = item.dataIndex;
+        qtipApi.set('content.text',
+          this.model.get('display') + ' = ' + item.datapoint[0].toFixed(2) +
+          '<br/>' + 'Frequency = ' + item.datapoint[1]);
+        qtipApi.elements.tooltip.stop(1, 1);
+        qtipApi.show(item);
       }
     },
 

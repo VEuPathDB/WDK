@@ -90,7 +90,12 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     ValidationErrors errors = getConfiguredAnalyzer(context, _fileStore)
         .validateFormParams(context.getFormParams());
     List<String> errorList = new ArrayList<String>();
-    if (errors == null || !errors.hasMessages()) return errorList;
+    if (errors == null || errors.isEmpty()) return errorList;
+
+    // validation failed; errors present.  Set isNew to true so old results are hidden from user
+    _dataStore.setNewFlag(context.getAnalysisId(), true);
+
+    // add and return messages to client
     errorList.addAll(errors.getMessages());
     // FIXME: figure out display of these values; for now, translate param errors into strings
     for (Entry<String,List<String>> paramErrors : errors.getParamMessages().entrySet()) {
@@ -449,7 +454,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     public ExecutionStatus call() throws Exception {
       String contextHash = _context.createHash();
       try {
-        // update database that we are running
+        // update database that the thread is running
         _dataStore.updateExecution(contextHash, ExecutionStatus.RUNNING, new Date(), null, null);
     
         // create step analysis instance and run
@@ -458,6 +463,14 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
             _context.getStep().getAnswerValue(), new StatusLogger(contextHash, _dataStore));
       
         LOG.info("Analyzer returned without exception and with status: " + status);
+        
+        if (status == null || !status.isTerminal()) {
+          // illegal status returned from plugin; set to ERROR
+          LOG.error("Step Analysis Plugin " + _context.getStepAnalysis().getName() +
+              " returned illegal status " + status + " when running instance with ID " +
+              _context.getAnalysisId());
+          status = ExecutionStatus.ERROR;
+        }
         
         // status completed successfully or was interrupted
         String charData = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.getPersistentCharData() : "");
@@ -476,15 +489,18 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   @Override
   public void createResultsTable() throws WdkModelException {
     _dataStore.createExecutionTable();
+    // nothing do do for file store; it is created automatically
   }
 
   @Override
   public void clearResultsTable() throws WdkModelException {
     _dataStore.deleteAllExecutions();
+    _fileStore.deleteAllExecutions();
   }
 
   @Override
   public void dropResultsTable(boolean purge) throws WdkModelException {
     _dataStore.deleteExecutionTable(purge);
+    _fileStore.deleteAllExecutions();
   }
 }
