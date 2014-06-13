@@ -194,7 +194,8 @@
   <!-- oooooooooooooooooooooooo  Web Installation  oooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-WebInstallation" depends="WebsitePlusGusHome">
+  <target name="WDK-WebInstallation" depends="WSF-WebInstallation,
+                                              WebsitePlusGusHome">
     <echo message="." />
     <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) from ${targetDir}/lib/java/db_driver into your webapp server's designated place (such as common/lib for Tomcat). See the installation instructions available at www.gusdb.org/wdk for details."  />
     <echo message="." />
