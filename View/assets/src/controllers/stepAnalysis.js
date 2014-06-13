@@ -52,6 +52,18 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
    *  - getForm: returns an unpopulated form for a specific type of analysis
    *  - getResults: returns a DOM fragment displaying analysis results
    *
+   *
+   * The following events are triggered by the analysis instance.
+   *
+   *  - formload:    The form has been inserted into the DOM
+   *  - resultsload: The results table has been inserted into the DOM
+   *  - remove:      The tab has been removed form the DOM, either by delete or hide
+   *
+   * Events are called with an analysis object with the following properties:
+   *  - name: The name of the analysis instance as defined in the model
+   *  - $el:  jQuery wrapped tab pane element
+   *  - id:   ID of the analysis instance
+   *
    *************************************************************************/
 
   var ROUTES = {
@@ -163,6 +175,12 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           clearTimeout(loadTimer);
           clearTimeout(refreshTimer);
 
+          trigger('remove', {
+            name: data.analysisName,
+            id: analysisId,
+            $el: $(tabElement)
+          });
+
           $panel.remove();
           $tabContainer.tabs("refresh");
         },
@@ -262,7 +280,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         $element.find('[data-bind="displayName"]').text(data.displayName);
 
         // add description
-        $element.find('[data-bind="description"]').text(data.description);
+        $element.find('[data-bind="description"]').html(data.description);
 
         // load form and (if necessary) populate selected values
         loadAnalysisForm($element, data);
@@ -293,8 +311,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
         // configure form for submission to the step analysis runner action
         var hiddenField = '<input type="hidden" name="analysisId" value="' + analysisId + '"/>';
-        var $form = $(wrappingDiv).find("form").first()
-          .append(hiddenField);
+        var $form = $(wrappingDiv).find("form").first().append(hiddenField);
 
         $form.submit(preventEvent(partial(runStepAnalysis, $form[0])));
 
@@ -303,7 +320,8 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         formPane.accordion({
           collapsible: true,
           active: analysisObj.status === 'COMPLETE' ? false : 0,
-          animate: false
+          animate: false,
+          heightStyle: "content"
         });
 
         // only overwrite any default values if params have been set for this instance in the past
@@ -312,6 +330,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           analysisObj.formParams.analysisId = [ analysisId ];
           wdk.formUtil.populateForm(formPane.find('form').first(), analysisObj.formParams);
         }
+
+        // assign param tooltips if there are any
+        wdk.tooltips.assignParamTooltips('.step-analysis-form-pane .help-link');
 
         trigger('formload', {
           name: analysisObj.analysisName,
@@ -365,15 +386,20 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     var $formPane = $(form).closest('.step-analysis-form-pane');
     // clear any errors from a previous submission
     $errorsPane.empty();
+    $.blockUI();
     return doAjax(ROUTES.runAnalysis, {
       data: $(form).serialize(),
       success: function(data, textStatus, jqXHR) {
+        $.unblockUI();
         if (data.status == "success") {
-          $formPane.accordion('option', 'active', false)
+          $formPane.accordion("option", "active", false);
           // if success, then alert user and load results pane
           loadResultsPane($(form).parents('.step-analysis-pane'), data.context.analysisId);
         }
         else if (data.status == "validation") {
+          // clear results pane so user doesn't see old results with new submitted form
+          $(form).parents('.step-analysis-pane').find('.step-analysis-results-pane').empty();
+          // display validation errors
           var errorAnnounce = "<span>Please address the following issues:</span><br/>"
           var $newErrorList = $("<ul></ul>");
           data.errors.forEach(function(val) {
@@ -383,6 +409,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         }
       },
       error: function(jqXHR, textStatus, errorThrown) {
+        $.unblockUI();
         handleAjaxError("Error: Unable to run step analysis.");
       }
     });

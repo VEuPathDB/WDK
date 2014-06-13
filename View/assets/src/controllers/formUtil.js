@@ -28,6 +28,30 @@ wdk.util.namespace("window.wdk.formUtil", function(ns, $) {
 		$form.find('textarea').each(function() {
 			$(this).text(paramValues[$(this).attr('name')][0]);
 		});
+		
+		// handle checkbox trees
+		$form.find('.checkbox-tree').each(function() {
+			var treeId = $(this).attr("id");
+			handleCheckboxTree(treeId, paramValues);
+		});
+	}
+
+	// Often this code will be called after a form is newly added to a page
+	//   (e.g. via AJAX); make sure tree is configured before trying to set values
+	function handleCheckboxTree(treeId, paramValues) {
+		if (wdk.checkboxTree.isConfigured(treeId)) {
+			var inputName = wdk.checkboxTree.getInputName(treeId);
+			var values = paramValues[inputName]; // array of values
+			if (values == null) {
+				// no values were previously selected; send empty array
+				values = [ ];
+			}
+			wdk.checkboxTree.selectListOfNodes(treeId, values);
+		}
+		else {
+			// wait, then try again
+			setTimeout(function() { handleCheckboxTree(treeId, paramValues); }, 10);
+		}
 	}
 
 	ns.populateForm = populateForm;

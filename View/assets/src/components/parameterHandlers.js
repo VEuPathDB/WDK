@@ -216,42 +216,66 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   function parseFilterData(filterData) {
-    var metadata = filterData.metadata;
-    var metadataSpec = filterData.metadataSpec;
-    var values = filterData.values;
-    var numericProps = _.keys(metadataSpec)
-      .filter(function(prop) {
-        return metadataSpec[prop].type === 'number';
-      });
+    var Field = wdk.models.filter.Field,
+        metadata = filterData.metadata,
+        metadataSpec = filterData.metadataSpec,
+        values = filterData.values,
+        numericProps = _.keys(metadataSpec)
+          .filter(function(prop) {
+            return metadataSpec[prop].type === 'number';
+          }),
+        metadataTerms = _.values(metadata)
+          .map(_.keys)
+          .reduce(function (a, b) { return _.union(a, b) })
+          .filter(function(name) {
+            return !!metadataSpec[name];
+          }),
+        unknowns = [];
 
     var data = {
-      fields: _.values(metadata).map(_.keys)
-        // get the unique list of all metadata props
-        // for "One metadataSpec to Rule Them All"
-        .reduce(function (a, b) { return _.union(a, b) })
-        // only use props in metadataspec
-        .filter(function(name) {
-          return !!metadataSpec[name];
-        })
+      fields: _.keys(metadataSpec)
         .map(function(name) {
           return _.extend({
             term: name,
-            display: name
+            display: name,
+            filterable: _.indexOf(metadataTerms, name) > -1
           }, metadataSpec[name]);
         }),
 
       data: values
         .map(function(d) {
           // type coercion
-          var mdata = metadata[d.term];
-          numericProps.forEach(function(prop) {
-            mdata[prop] = Number(mdata[prop]);
+          var mdata = metadata[d.term],
+              missingMsg = '/!\\ ERROR /!\\\n\nMissing metadata for "' + d.term + '".',
+              unknownMsg = '/!\\ ERROR /!\\\n\n"' + d.term + '" only contains UNKNOWN metadata.';
+
+          if (mdata === undefined) {
+            _.defer(alert, missingMsg);
+            throw new Error(missingMsg);
+          }
+
+          _.each(mdata, function(value, property) {
+            if (value === null || value === '' || value === 'unknown') {
+              mdata[property] = Field.UNKNOWN_VALUE;
+            } else if (metadataSpec[property].type === 'number') {
+              mdata[property] = Number(value);
+            }
           });
+
+          if (_.every(mdata, function(m) { return m === Field.UNKNOWN_VALUE })) {
+            unknowns.push(d);
+          }
+
           return _.extend(d, {
             metadata: mdata
           });
         })
     };
+
+    if (unknowns.length) {
+      _.defer(alert, '/!\\ WARNING /!\\\n\nThe following items contian only UNKNOWN values: ' +
+        _.pluck(unknowns, 'term').join(', '));
+    }
 
     return data;
   }

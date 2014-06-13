@@ -16,6 +16,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.QueryLogger;
@@ -158,6 +159,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   private String secretKey;
 
+  private ReentrantLock systemUserLock = new ReentrantLock();
   private User systemUser;
 
   private String buildNumber;
@@ -1107,8 +1109,17 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   }
 
   public User getSystemUser() throws WdkModelException {
-    if (systemUser == null)
-      systemUser = userFactory.createGuestUser();
+    if (systemUser == null) {
+      try {
+        // ideally would synchronize on systemUser but cannot sync on null so use lock
+        systemUserLock.lock();
+        if (systemUser == null) {
+          systemUser = userFactory.createSystemUser();
+        }
+      } finally {
+        systemUserLock.unlock();
+      }
+    }
     return systemUser;
   }
 

@@ -30,6 +30,7 @@ public class Strategy {
   private boolean isDeleted = false;
   private Date createdTime;
   private Date lastModifiedTime;
+  private String projectId;
   private String signature;
   private String description;
   private String name;
@@ -109,15 +110,23 @@ public class Strategy {
   public void setIsPublic(boolean isPublic) {
     this.isPublic = isPublic;
   }
-    
+
+  public String getProjectId() {
+    return projectId;
+  }
+
+  public void setProjectId(String projectId) {
+    this.projectId = projectId;
+  }
+
   public Step getLatestStep() throws WdkModelException {
     if (latestStep == null && latestStepId != 0)
       setLatestStep(stepFactory.loadStep(user, latestStepId));
     return latestStep;
   }
 
-  public void setLatestStep(Step step) {
-    stepFactory.verifySameOwner(this, step);
+  public void setLatestStep(Step step) throws WdkModelException {
+    stepFactory.verifySameOwnerAndProject(this, step);
     this.latestStep = step;
     // also update the cached info
     latestStepId = step.getStepId();

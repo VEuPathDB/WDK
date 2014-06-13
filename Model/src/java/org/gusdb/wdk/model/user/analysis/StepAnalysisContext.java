@@ -134,7 +134,7 @@ public class StepAnalysisContext {
   
   public static StepAnalysisContext createFromStoredData(WdkModel wdkModel,
       int analysisId, boolean isNew, boolean hasParams, String invalidStepReason,
-      String displayName, String serializedContext) throws WdkModelException {
+      String displayName, String serializedContext) throws WdkModelException, DeprecatedAnalysisException {
     try {
       StepAnalysisContext ctx = new StepAnalysisContext();
       ctx._wdkModel = wdkModel;
@@ -174,7 +174,11 @@ public class StepAnalysisContext {
       
       return ctx;
     }
-    catch (JSONException | WdkUserException e) {
+    catch (WdkUserException e) {
+      throw new DeprecatedAnalysisException("Illegal step analysis plugin " +
+          "name for analysis with ID: " + analysisId, e);
+    }
+    catch (JSONException e) {
       throw new WdkModelException("Unable to deserialize context.", e);
     }
   }
