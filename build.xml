@@ -4,7 +4,6 @@
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <import file="${projectsDir}/FgpUtil/build.xml" />
   <import file="${projectsDir}/WSF/build.xml" />
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -13,9 +12,7 @@
 
   <target name="WDK-ChildCheckout">
     <available file="${projectsDir}/WSF" type="dir"  property="WSF.present" />
-    <available file="${projectsDir}/FgpUtil" type="dir"  property="FgpUtil.present" />
     <antcall target="WSF-Checkout"/>
-    <antcall target="FgpUtil-Checkout"/>
   </target>
 
 
@@ -23,15 +20,6 @@
     <ant target="defaultProjectCheckout" inheritAll="false">
       <property name="svnurl" value="https://www.cbil.upenn.edu/svn/gus/WSF"/>
       <property name="project" value="WSF"/>
-      <property name="version" value="WDK_version_1-28"/>
-    </ant>
-  </target>
-
-
-  <target name="FgpUtil-Checkout" unless="FgpUtil.present">
-    <ant target="defaultProjectCheckout" inheritAll="false">
-      <property name="svnurl" value="https://www.cbil.upenn.edu/svn/gus/FgpUtil"/>
-      <property name="project" value="FgpUtil"/>
       <property name="version" value="WDK_version_1-28"/>
     </ant>
   </target>
@@ -45,17 +33,13 @@
     <ant target="defaultProjectUpdate">
       <property name="project" value="WSF"/>
     </ant>
-    <ant target="defaultProjectUpdate">
-      <property name="project" value="FgpUtil"/>
-    </ant>
   </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-Installation" depends="FgpUtil-Installation,
-                                           WSF-Installation,
+  <target name="WDK-Installation" depends="WSF-Installation,
                                            WDK/Model-Installation,
                                            WDK/Controller-Installation,
                                            WDK/View-Installation,
