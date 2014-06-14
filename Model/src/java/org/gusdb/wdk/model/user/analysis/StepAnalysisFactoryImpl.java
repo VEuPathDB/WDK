@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.user.analysis;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,14 @@ import org.gusdb.wdk.model.user.Step;
 public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   
   private static Logger LOG = Logger.getLogger(StepAnalysisFactoryImpl.class);
-  
+
+  private static final String TAB_NAME_MACRO = "$$TAB_NAME$$";
+  private static final String DUPLICATE_CONTEXT_MESSAGE =
+      "This is a duplicate configuration for this tool and cannot be used.  " +
+      "Click on tab '" + TAB_NAME_MACRO + "' to view results.  To compare " +
+      "analyses of a revised step with its previous version, you must " +
+      "duplicate your strategy and run the analysis is both strategies.";
+
   static final boolean USE_DB_PERSISTENCE = true;
   
   private final ExecutionConfig _execConfig;
@@ -87,22 +95,36 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
 
   @Override
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
-    ValidationErrors errors = getConfiguredAnalyzer(context, _fileStore)
-        .validateFormParams(context.getFormParams());
     List<String> errorList = new ArrayList<String>();
-    if (errors == null || errors.isEmpty()) return errorList;
-
-    // validation failed; errors present.  Set isNew to true so old results are hidden from user
-    _dataStore.setNewFlag(context.getAnalysisId(), true);
-
-    // add and return messages to client
-    errorList.addAll(errors.getMessages());
-    // FIXME: figure out display of these values; for now, translate param errors into strings
-    for (Entry<String,List<String>> paramErrors : errors.getParamMessages().entrySet()) {
-      for (String message : paramErrors.getValue()) {
-        errorList.add(paramErrors.getKey() + ": " + message);
+    List<StepAnalysisContext> identicalContexts = _dataStore.getContextsByHash(context.createHash(), _fileStore);
+    if (identicalContexts.size() > 0) {
+      // cannot have more than one analysis configuration for a given step
+      errorList.add(DUPLICATE_CONTEXT_MESSAGE.replace(TAB_NAME_MACRO,
+          identicalContexts.iterator().next().getDisplayName()));
+    }
+    else {
+      // this is a unique configuration; validate parameters
+      ValidationErrors errors = getConfiguredAnalyzer(context, _fileStore)
+          .validateFormParams(context.getFormParams());
+      
+      // if no errors present; return empty error list
+      if (errors == null || errors.isEmpty()) return errorList;
+      
+      // otherwise, add and return messages to client
+      errorList.addAll(errors.getMessages());
+      // FIXME: figure out display of these values; for now, translate param errors into strings
+      for (Entry<String,List<String>> paramErrors : errors.getParamMessages().entrySet()) {
+        for (String message : paramErrors.getValue()) {
+          errorList.add(paramErrors.getKey() + ": " + message);
+        }
       }
     }
+    
+    // validation failed; errors present.  Set isNew to true so old results are hidden from user
+    if (!context.isNew()) {
+      _dataStore.setNewFlag(context.getAnalysisId(), true);
+    }
+    
     return errorList;
   }
 
@@ -114,7 +136,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     checkStepForValidity(context);
     
     // analysis valid; write analysis to DB
-    return writeNewAnalysisContext(context);
+    return writeNewAnalysisContext(context, true);
   }
 
   @Override
@@ -123,7 +145,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     StepAnalysisContext copy = StepAnalysisContext.createCopy(context);
     copy.setStatus(ExecutionStatus.CREATED);
     copy.setNew(true);
-    copy = writeNewAnalysisContext(copy);
+    copy = writeNewAnalysisContext(copy, true);
     return copy;
   }
 
@@ -145,15 +167,20 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         // such and save; user will not be shown form and will be unable to run analysis
         toContext.setIsValidStep(false, e.getMessage());
       }
-      writeNewAnalysisContext(toContext);
+      toContext = writeNewAnalysisContext(toContext, false);
       LOG.info("Wrote new duplicate context with ID " + toContext.getAnalysisId() +
           " for revised step " + toContext.getStep().getStepId());
     }
     LOG.info("Completed copy.");
   }
 
-  private StepAnalysisContext writeNewAnalysisContext(StepAnalysisContext context)
+  private StepAnalysisContext writeNewAnalysisContext(StepAnalysisContext context, boolean adjustDisplayName)
       throws WdkModelException {
+    // try to help user differentiate between tabs if requested
+    if (adjustDisplayName) {
+      context.setDisplayName(getAdjustedDisplayName(context));
+    }
+    
     // create new execution instance
     int saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(), context.getDisplayName(),
@@ -161,7 +188,36 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     
     // override any previous value for id
     context.setAnalysisId(saId);
+    
     return context;
+  }
+
+  private String getAdjustedDisplayName(StepAnalysisContext context) throws WdkModelException {
+    Collection<StepAnalysisContext> stepContexts =
+        _dataStore.getAnalysesByStepId(context.getStep().getStepId(), _fileStore).values();
+    if (stepContexts.isEmpty()) return context.getDisplayName();
+    String displayNameToAttempt = context.getDisplayName();
+    boolean displayNameUnique = false;
+    int index = 1;
+    while (!displayNameUnique) {
+      displayNameUnique = true;
+      LOG.info("Attempting name: " + displayNameToAttempt);
+      for (StepAnalysisContext otherContext : stepContexts) {
+        LOG.info("Comparing candidate name '" + displayNameToAttempt +
+            "' for context " + context.getAnalysisId() + " to analysis " +
+            otherContext.getAnalysisId() + " with name " +
+            otherContext.getDisplayName());
+        if (otherContext.getDisplayName().equals(displayNameToAttempt)) {
+          LOG.info("Found context " + otherContext.getAnalysisId() + " that already has name: " + displayNameToAttempt);
+          displayNameUnique = false;
+          index++;
+          displayNameToAttempt = context.getDisplayName() + " (" + index + ")";
+          break;
+        }
+      }
+      LOG.info("Result of '" + displayNameToAttempt + "': unique = " + displayNameUnique);
+    }
+    return displayNameToAttempt;
   }
 
   private void checkStepForValidity(StepAnalysisContext context)
