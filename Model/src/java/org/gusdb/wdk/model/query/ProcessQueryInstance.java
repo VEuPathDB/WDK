@@ -134,7 +134,7 @@ public class ProcessQueryInstance extends QueryInstance {
     request.setContext(context);
 
     // create client
-    WsfClient client = null;
+    WsfClient client;
     try {
       if (query.isLocal()) {
         logger.debug("Using local service...");
@@ -142,7 +142,7 @@ public class ProcessQueryInstance extends QueryInstance {
       }
       else {
         logger.debug("Using remote service at " + query.getWebServiceUrl() + "...");
-        WsfClientBuilder.newClient(listener, new URI(query.getWebServiceUrl()));
+        client = WsfClientBuilder.newClient(listener, new URI(query.getWebServiceUrl()));
       }
 
       // invoke the WSF, and set signal.
