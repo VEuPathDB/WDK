@@ -132,6 +132,21 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
+  protected List<Integer> getAnalysisIdsByHash(String contextHash) throws WdkModelException {
+    List<Integer> idList = new ArrayList<>();
+    if (contextHash == null) return idList;
+    synchronized(ANALYSIS_INFO_MAP) {
+      // inefficient search but ok since past original testing phase
+      for (AnalysisInfo analysis : ANALYSIS_INFO_MAP.values()) {
+        if (contextHash.equals(analysis.contextHash)) {
+          idList.add(analysis.analysisId);
+        }
+      }
+      return idList;
+    }
+  }
+
+  @Override
   protected List<Integer> getAnalysisIdsByStepId(int stepId) throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (STEP_ANALYSIS_MAP.containsKey(stepId)) {
