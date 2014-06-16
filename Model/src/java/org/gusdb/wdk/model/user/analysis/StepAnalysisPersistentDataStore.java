@@ -62,6 +62,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private String UPDATE_CONTEXT_SQL;
   private String DELETE_ANALYSIS_SQL;
   private String GET_ANALYSIS_IDS_BY_STEP_SQL;
+  private String GET_ANALYSIS_IDS_BY_HASH_SQL;
   private String GET_ALL_ANALYSIS_IDS_SQL;
   private String GET_ANALYSES_BY_IDS_SQL;
 
@@ -157,7 +158,9 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     DELETE_ANALYSIS_SQL =
         "DELETE FROM " + table + " WHERE ANALYSIS_ID = ?";
     GET_ANALYSIS_IDS_BY_STEP_SQL =
-        "SELECT ANALYSIS_ID FROM " + table + " WHERE STEP_ID = ?";
+        "SELECT ANALYSIS_ID FROM " + table + " WHERE STEP_ID = ? ORDER BY ANALYSIS_ID ASC";
+    GET_ANALYSIS_IDS_BY_HASH_SQL =
+        "SELECT ANALYSIS_ID FROM " + table + " WHERE CONTEXT_HASH = ? ORDER BY ANALYSIS_ID ASC";
     GET_ALL_ANALYSIS_IDS_SQL =
         "SELECT ANALYSIS_ID FROM " + table;
     GET_ANALYSES_BY_IDS_SQL =
@@ -341,6 +344,23 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       final List<Integer> ids = new ArrayList<>();
       new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_STEP_SQL).executeQuery(
           new Object[] { stepId }, new ResultSetHandler() { @Override
+            public void handleResult(ResultSet rs) throws SQLException {
+              while (rs.next()) ids.add(rs.getInt(1));
+            }
+          });
+      return ids;
+    }
+    catch (SQLRunnerException e) {
+      throw new WdkModelException("Unable to complete operation.", e);
+    }
+  }
+
+  @Override
+  protected List<Integer> getAnalysisIdsByHash(String contextHash) throws WdkModelException {
+    try {
+      final List<Integer> ids = new ArrayList<>();
+      new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_HASH_SQL).executeQuery(
+          new Object[] { contextHash }, new ResultSetHandler() { @Override
             public void handleResult(ResultSet rs) throws SQLException {
               while (rs.next()) ids.add(rs.getInt(1));
             }

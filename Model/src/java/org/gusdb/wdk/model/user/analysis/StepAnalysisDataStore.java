@@ -73,6 +73,7 @@ public abstract class StepAnalysisDataStore {
   public abstract void setNewFlag(int analysisId, boolean isNew) throws WdkModelException;
   public abstract void setHasParams(int analysisId, boolean hasParams) throws WdkModelException;
   public abstract void updateContext(int analysisId, String contextHash, String serializedContext) throws WdkModelException;
+  protected abstract List<Integer> getAnalysisIdsByHash(String contextHash) throws WdkModelException;
   protected abstract List<Integer> getAnalysisIdsByStepId(int stepId) throws WdkModelException;
   protected abstract List<Integer> getAllAnalysisIds() throws WdkModelException;
   // contract is: analysisInfo will be null if ID does not exist; status will be null if execution does not exist
@@ -114,6 +115,10 @@ public abstract class StepAnalysisDataStore {
     if (rawValues.get(analysisId).analysisInfo == null) throw new WdkModelException("Did not find exactly" +
         " one record for analysis ID " + analysisId + "; found " + rawValues.size());
     return getContexts(rawValues, fileStore).iterator().next();
+  }
+
+  public List<StepAnalysisContext> getContextsByHash(String contextHash, StepAnalysisFileStore fileStore) throws WdkModelException {
+    return getContexts(getAnalysisInfoForIds(getAnalysisIdsByHash(contextHash)), fileStore);
   }
   
   public Map<Integer,StepAnalysisContext> getAnalysesByStepId(int stepId,

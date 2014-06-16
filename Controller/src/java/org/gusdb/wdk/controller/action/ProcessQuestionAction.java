@@ -41,6 +41,7 @@ public class ProcessQuestionAction extends Action {
       QuestionForm qform) throws WdkModelException, WdkUserException {
     RequestParams requestParams = new QuestionRequestParams(request, qform);
     QuestionBean question = qform.getQuestion();
+
     Map<String, ParamBean<?>> params = question.getParamsMap();
     Map<String, String> stableValues = new LinkedHashMap<>();
     for (String paramName : params.keySet()) {
@@ -56,6 +57,8 @@ public class ProcessQuestionAction extends Action {
       HttpServletResponse response) throws Exception {
     logger.debug("Entering ProcessQuestionAction..");
     QuestionForm qForm = (QuestionForm) form;
+		String customName = qForm.getCustomName();
+
     // get question name first so it can be used in error reporting
     String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
     try {
@@ -85,6 +88,8 @@ public class ProcessQuestionAction extends Action {
       // the question is already validated in the question form, don't need to do it again.
       String filterName = request.getParameter(CConstants.WDK_FILTER_KEY);
       StepBean step = wdkUser.createStep(wdkQuestion, params, filterName, false, false, weight);
+			step.setCustomName(customName);
+			step.update(false);
 
       logger.debug("Test run search [" + qFullName + "] and get # of results: " + step.getResultSize());
 
