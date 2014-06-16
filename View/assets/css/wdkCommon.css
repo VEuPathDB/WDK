@@ -273,6 +273,10 @@ img[data-assets-src][src] {
   list-style: disc;
   padding: 0 1em;
 }
+.wdk-feature-tooltip .button-wrapper {
+  text-align: center;
+  padding: 4px;
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     =Styling for the Login pop-up box 

@@ -25,10 +25,10 @@ wdk.namespace('wdk.components', function(ns, $) {
       .wdkTooltip({
         content: {
           text: text,
+          // button: 'Got it!',
           title: '<img title="This is a new search!" alt="New feature icon" ' +
                  'src="' + wdk.assetsUrl('/wdk/images/new-feature.png') + '"> ' +
-                 title,
-          button: 'Got it!'
+                 title
         },
         style: {
           classes: 'qtip-bootstrap wdk-feature-tooltip'
@@ -53,6 +53,12 @@ wdk.namespace('wdk.components', function(ns, $) {
               localStorage.setItem(dismissedStorageKey, 1);
               api.destroy();
             }
+          },
+          show: function(e, api) {
+            var button = $('<div class="button-wrapper"><button>Got it!</button></div>')
+              .on('click', 'button', api.hide.bind(api));
+
+            api.elements.content.after(button);
           }
         }
       });
