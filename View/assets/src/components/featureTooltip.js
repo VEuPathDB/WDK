@@ -55,10 +55,10 @@ wdk.namespace('wdk.components', function(ns, $) {
             }
           },
           show: function(e, api) {
-            var button = $('<div class="button-wrapper"><button>Got it!</button></div>')
-              .on('click', 'button', api.hide.bind(api));
+            var anchor = $('<div class="dismiss-wrapper"><a href="#dismiss">Got it!</a></div>')
+              .on('click', 'a', wdk.fn.preventEvent(api.hide.bind(api)));
 
-            api.elements.content.after(button);
+            api.elements.content.append(anchor);
           }
         }
       });

@@ -266,6 +266,10 @@ img[data-assets-src][src] {
   color: #f9f9f9;
   padding: 1em 2em;
 }
+.wdk-feature-tooltip .qtip-content a {
+  color: #f9f9f9;
+  text-decoration: underline;
+}
 .wdk-feature-tooltip .qtip-title {
   font-weight: bold;
 }
@@ -273,9 +277,9 @@ img[data-assets-src][src] {
   list-style: disc;
   padding: 0 1em;
 }
-.wdk-feature-tooltip .button-wrapper {
+.wdk-feature-tooltip .dismiss-wrapper {
   text-align: center;
-  padding: 4px;
+  padding-top: 1em;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
