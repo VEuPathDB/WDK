@@ -42,7 +42,8 @@ wdk.namespace('wdk.components', function(ns, $) {
         },
         show: {
           event: false,
-          ready: true
+          ready: true,
+          effect: false
         },
         events: {
           hide: function(e, api) {
