@@ -1,6 +1,10 @@
 wdk.namespace('wdk.components', function(ns, $) {
   'use strict';
 
+  // imports
+  var preventEvent = wdk.fn.preventEvent,
+      assetsUrl = wdk.assetsUrl;
+
   // Creates a feature tooltip.
   //
   // opts:
@@ -27,7 +31,7 @@ wdk.namespace('wdk.components', function(ns, $) {
           text: text,
           // button: 'Got it!',
           title: '<img title="This is a new search!" alt="New feature icon" ' +
-                 'src="' + wdk.assetsUrl('/wdk/images/new-feature.png') + '"> ' +
+                 'src="' + assetsUrl('/wdk/images/new-feature.png') + '"> ' +
                  title
         },
         style: {
@@ -56,7 +60,7 @@ wdk.namespace('wdk.components', function(ns, $) {
           },
           show: function(e, api) {
             var anchor = $('<div class="dismiss-wrapper"><a href="#dismiss">Got it!</a></div>')
-              .on('click', 'a', wdk.fn.preventEvent(api.hide.bind(api)));
+              .on('click', 'a', preventEvent(api.hide.bind(api)));
 
             api.elements.content.append(anchor);
           }
