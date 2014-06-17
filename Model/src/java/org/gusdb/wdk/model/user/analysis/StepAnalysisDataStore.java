@@ -162,7 +162,8 @@ public abstract class StepAnalysisDataStore {
           info.displayName, info.serializedContext);
     }
     catch (DeprecatedAnalysisException e) {
-      LOG.warn("Previously stored step analysis has deprecated plugin", e);
+      LOG.warn("Previously stored step analysis with ID " + info.analysisId +
+          " could not be loaded", e);
       return null;
     }
     

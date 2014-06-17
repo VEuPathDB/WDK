@@ -60,6 +60,7 @@ public class StepAnalysisContext {
     // the following values are included with JSON returned to client
     analysisId,
     displayName,
+    shortDescription,
     description,
     status,
     hasParams,
@@ -178,6 +179,10 @@ public class StepAnalysisContext {
       throw new DeprecatedAnalysisException("Illegal step analysis plugin " +
           "name for analysis with ID: " + analysisId, e);
     }
+    catch (WdkModelException e) {
+      throw new DeprecatedAnalysisException("Unable to construct context " +
+          "from analysis with ID: " + analysisId, e);
+    }
     catch (JSONException e) {
       throw new WdkModelException("Unable to deserialize context.", e);
     }
@@ -249,6 +254,7 @@ public class StepAnalysisContext {
       JSONObject json = getSharedJson();
       json.put(JsonKey.analysisId.name(), _analysisId);
       json.put(JsonKey.displayName.name(), _displayName);
+      json.put(JsonKey.shortDescription.name(), _stepAnalysis.getShortDescription());
       json.put(JsonKey.description.name(), _stepAnalysis.getDescription());
       json.put(JsonKey.hasParams.name(), _hasParams);
       json.put(JsonKey.status.name(), _status.name());

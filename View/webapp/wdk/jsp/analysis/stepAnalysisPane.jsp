@@ -13,6 +13,10 @@
              <a href="#copy">Copy These Parameter Values</a> ]
           </span>
           <h3 data-bind="displayName"><jsp:text/></h3>
+          <div class="step-analysis-description">
+            <span data-bind="shortDescription"><jsp:text/></span>
+            <span class="toggle-description" title="Toggle full description">Read More</span>
+          </div>
           <div data-bind="description" class="step-analysis-description"><jsp:text/></div>
         </div>
         <div class="step-analysis-subpane">
