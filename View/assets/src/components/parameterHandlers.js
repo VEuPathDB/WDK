@@ -220,10 +220,15 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         metadata = filterData.metadata,
         metadataSpec = filterData.metadataSpec,
         values = filterData.values,
+
+        // metadata properties with type number
         numericProps = _.keys(metadataSpec)
           .filter(function(prop) {
             return metadataSpec[prop].type === 'number';
           }),
+
+        // unique set of metadata properties found
+        // in metadata object values
         metadataTerms = _.values(metadata)
           .map(_.keys)
           .reduce(function (a, b) { return _.union(a, b) })
@@ -238,7 +243,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           return _.extend({
             term: name,
             display: name,
-            filterable: _.indexOf(metadataTerms, name) > -1
+            filterable: _.indexOf(metadataTerms, name) > -1 &&
+              metadataSpec[name].leaf === 'true'
           }, metadataSpec[name]);
         }),
 
