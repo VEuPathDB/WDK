@@ -66,7 +66,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   private final StepAnalysisFileStore _fileStore;
   private ExecutorService _threadPool;
   private Future<Boolean> _threadMonitor;
-  private volatile ConcurrentLinkedDeque<Future<ExecutionStatus>> _threadResults;
+  private volatile ConcurrentLinkedDeque<RunningAnalysis> _threadResults;
   
   public StepAnalysisFactoryImpl(WdkModel wdkModel) throws WdkModelException {
     _viewResolver = new StepAnalysisViewResolver(wdkModel.getStepAnalysisPlugins().getViewConfig());
@@ -298,7 +298,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
 
   private StepAnalysisContext executeAnalysis(StepAnalysisContext context) throws WdkModelException {
     try {
-      _threadResults.add(_threadPool.submit(new AnalysisCallable(context, _dataStore, _fileStore)));
+      _threadResults.add(new RunningAnalysis(context.getAnalysisId(),
+          _threadPool.submit(new AnalysisCallable(context, _dataStore, _fileStore))));
       return context;
     }
     catch (RejectedExecutionException e) {
@@ -394,7 +395,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   private void startThreadPool() {
     _threadPool = Executors.newFixedThreadPool(_execConfig.getThreadPoolSize() + 1);
     _threadResults = new ConcurrentLinkedDeque<>();
-    _threadMonitor = _threadPool.submit(new FutureCleaner(_threadResults));
+    _threadMonitor = _threadPool.submit(new FutureCleaner(this, _threadResults));
   }
   
   @Override
@@ -445,14 +446,26 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     //}
   }
   
+  private static class RunningAnalysis {
+    public int analysisId;
+    public Future<ExecutionStatus> future;
+    public RunningAnalysis(int analysisId, Future<ExecutionStatus> future) {
+      this.analysisId = analysisId;
+      this.future = future;
+    }
+  }
+  
   private static class FutureCleaner implements Callable<Boolean> {
 
     private static final int FUTURE_CLEANUP_INTERVAL_SECS = 20;
     private static final int FUTURE_CLEANER_SLEEP_SECS = 2;
     
-    private volatile ConcurrentLinkedDeque<Future<ExecutionStatus>> _threadResults;
+    private volatile StepAnalysisFactory _analysisMgr;
+    private volatile ConcurrentLinkedDeque<RunningAnalysis> _threadResults;
     
-    public FutureCleaner(ConcurrentLinkedDeque<Future<ExecutionStatus>> threadResults) {
+    public FutureCleaner(StepAnalysisFactory analysisMgr,
+        ConcurrentLinkedDeque<RunningAnalysis> threadResults) {
+      _analysisMgr = analysisMgr;
       _threadResults = threadResults;
     }
     
@@ -464,7 +477,9 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         while (true) {
           if (waitSecs > FUTURE_CLEANUP_INTERVAL_SECS) {
             List<Future<ExecutionStatus>> futuresToRemove = new ArrayList<>();
-            for (Future<ExecutionStatus> future : _threadResults) {
+            long currentTime = System.currentTimeMillis();
+            for (RunningAnalysis run : _threadResults) {
+              Future<ExecutionStatus> future = run.future;
               if (future.isDone() || future.isCancelled()) {
                 try {
                   LOG.info("Step Analysis completed with status: " + future.get());
@@ -473,6 +488,34 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
                   LOG.error("Exception thrown while retrieving step analysis status (on completion)", e);
                 }
                 futuresToRemove.add(future);
+              }
+              else {
+                // See if this thread has been running too long; if so:
+                //   1. cancel the job
+                //   2. set as expired
+                // This will cover long-running analyses that this factory kicked off.  See
+                //   StepAnalysisFactoryImpl for handling others.
+                int analysisId = run.analysisId;
+                StepAnalysisContext context = _analysisMgr.getSavedContext(analysisId);
+                if (context.getStatus().equals(ExecutionStatus.RUNNING) ||
+                    context.getStatus().equals(ExecutionStatus.PENDING)) {
+                  // check to see if it's been running too long
+                  AnalysisResult result = _analysisMgr.getAnalysisResult(context);
+                  long expirationDuration = (long)context.getStepAnalysis().getExpirationMinutes() * 60 * 1000;
+                  long startTime = result.getStartDate().getTime();
+                  long currentDuration = currentTime - startTime;
+                  if (currentDuration > expirationDuration) {
+                    future.cancel(true);
+                    futuresToRemove.add(future);
+                  }
+                }
+                else {
+                  // any other status means Future should be cleaned up
+                  LOG.warn("Step Analysis Future found referencing discontinued analysis " +
+                      "with status: " + context.getStatus() + ".  Cancelling thread.");
+                  future.cancel(true);
+                  futuresToRemove.add(future);
+                }
               }
             }
             // remove futures after collecting them so as not to interfere with iterator above
