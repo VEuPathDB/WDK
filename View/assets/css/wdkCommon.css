@@ -1181,6 +1181,13 @@ z-index: 1;
   padding-right: 4px;
 }
 
+.step-analysis-pane .toggle-description {
+  cursor: pointer;
+  color: blue;
+  font-style: italic;
+  margin-left: 4px;
+}
+
 .step-analysis-subpane {
   margin: 3px;
   /* border: 1px solid #cccccc;
@@ -1198,7 +1205,7 @@ z-index: 1;
 }
 
 .step-analysis-description {
-  padding: 0 1em;
+  margin: 1em;
 }
 
 .step-analysis-errors-pane {

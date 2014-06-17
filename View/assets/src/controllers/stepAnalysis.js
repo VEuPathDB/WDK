@@ -17,6 +17,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
    *   analysisName: string
    *   stepId: int
    *   displayName: string
+   *   shortDescription: string
    *   description: string
    *   status: enumerated string, see org.gusdb.wdk.model.user.analysis.ExecutionStatus
    *   params: key-value object of params
@@ -242,14 +243,14 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     // create, add, and select new tab representing this analysis
     var analysisId = data.analysisId;
     var displayName = data.displayName;
-    var description = data.description;
+    var tooltip = data.shortDescription;
     var $element = $('#Summary_Views');
     var $chooseAnalysisTab = $element.find('#choose-step-analysis');
     var tabUrl = wdk.webappUrl(ROUTES.getPane.url) +"?analysisId=" + analysisId;
     var tabId = "step-analysis-" + analysisId;
     var tabIndex = $chooseAnalysisTab.index();
     var tabContent = '<li id="' + tabId + '">' +
-      '<a href="' + tabUrl + '" title="' + description + '">' +
+      '<a href="' + tabUrl + '" title="' + tooltip + '">' +
       displayName + '<span></span></a><span ' +
       'class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span></li>';
     $chooseAnalysisTab.before(tabContent).hide();
@@ -279,8 +280,21 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         // add display name
         $element.find('[data-bind="displayName"]').text(data.displayName);
 
-        // add description
-        $element.find('[data-bind="description"]').html(data.description);
+        // add short description
+        $element.find('[data-bind="shortDescription"]').html(data.shortDescription);
+
+        // add description and hide
+        $element.find('[data-bind="description"]').html(data.description).hide();
+
+        // add toggle link behavior
+        var descriptionVisible = false;
+        var toggleFunction = function(event) {
+          var $link = $(event.target);
+          $link.parents('.step-analysis-pane').find('[data-bind="description"]').toggle();
+          descriptionVisible = !descriptionVisible;
+          $link.text(descriptionVisible ? 'Read Less' : 'Read More');
+        };
+        $element.find('.toggle-description').click(toggleFunction);
 
         // load form and (if necessary) populate selected values
         loadAnalysisForm($element, data);
