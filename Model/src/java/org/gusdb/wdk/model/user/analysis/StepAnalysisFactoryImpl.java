@@ -97,12 +97,12 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
     List<String> errorList = new ArrayList<String>();
     List<StepAnalysisContext> identicalContexts = _dataStore.getContextsByHash(context.createHash(), _fileStore);
-    if (identicalContexts.size() > 0) {
+    //if (identicalContexts.size() > 0) {
       // cannot have more than one analysis configuration for a given step
-      errorList.add(DUPLICATE_CONTEXT_MESSAGE.replace(TAB_NAME_MACRO,
-          identicalContexts.iterator().next().getDisplayName()));
-    }
-    else {
+      //errorList.add(DUPLICATE_CONTEXT_MESSAGE.replace(TAB_NAME_MACRO,
+        //  identicalContexts.iterator().next().getDisplayName()));
+    //}
+    //else {
       // this is a unique configuration; validate parameters
       ValidationErrors errors = getConfiguredAnalyzer(context, _fileStore)
           .validateFormParams(context.getFormParams());
@@ -118,7 +118,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
           errorList.add(paramErrors.getKey() + ": " + message);
         }
       }
-    }
+    //}
     
     // validation failed; errors present.  Set isNew to true so old results are hidden from user
     if (!context.isNew()) {
