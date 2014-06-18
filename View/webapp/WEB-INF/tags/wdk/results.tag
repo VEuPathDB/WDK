@@ -89,13 +89,34 @@
       <c:set var="analysis" value="${analysisCtx.stepAnalysis}"/>
       <li id="step-analysis-${analysisId}">
         <a href="${pageContext.request.contextPath}/stepAnalysisPane.do?analysisId=${analysisId}" title="${analysis.description}">
-          ${analysisCtx.displayName} <span> </span><span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
+          ${analysisCtx.displayName} <span> </span>
         </a>
+        <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
       </li>
     </c:forEach>
     <c:if test="${fn:length(question.stepAnalyses) > 0}">
+      <c:set var="newAnalyses">
+        <c:forEach items="${question.stepAnalyses}" var="analysis">
+          <c:set var="analysisCtx" value="${analysis.value}"/>
+          <c:if test="${analysisCtx.releaseVersion eq wdkModel.model.buildNumber}">
+            <li>${analysisCtx.displayName}</li>
+          </c:if>
+        </c:forEach>
+      </c:set>
       <li id="choose-step-analysis">
-        <a href="${pageContext.request.contextPath}/showNewAnalysisTab.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}">+ Add Analysis<span> </span></a>
+        <a href="${pageContext.request.contextPath}/showNewAnalysisTab.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}">New Analysis<span> </span>
+        </a>
+        <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
+      </li>
+      <li id="add-analysis">
+        <button title="Choose an analysis tool to apply to the results of your current step.">Analysis Tools</button>
+        <c:if test="${not empty newAnalyses}">
+          <div class="analysis-feature-tooltip">
+            <ul>
+              ${newAnalyses}
+            </ul>
+          </div>
+        </c:if>
       </li>
     </c:if>
     <%--

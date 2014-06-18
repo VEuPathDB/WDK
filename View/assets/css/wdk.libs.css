@@ -10,4 +10,4 @@
 @import 'chosen.min.css';
 @import 'datatables.css';
 @import 'dataTables.colVis.min.css';
-@import '../lib/qtip2/jquery.qtip.css';
+@import 'jquery.qtip.min.css';

@@ -2,35 +2,15 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   "use strict";
 
   var displayTermMap;
-  var oldValues;
   var termDisplayMap;
 
   //==============================================================================
   function init(element) {
-    // TODO - make these flags attached to this namespace
-    var isPopup = window.isPopup;
-    var isEdit = window.isEdit;
-    if (isEdit == undefined) isEdit = false;
-    if (isPopup == undefined) isPopup = false;
-
-    // unset the flags
-    if (window.isPopup != undefined) {
-      window.isPopup = undefined;
-      // delete window.isPopup;
-    }
-    if (window.isEdit != undefined) {
-      window.isEdit = undefined;
-      // delete window.isEdit;
-    }
-
     displayTermMap = [];
     termDisplayMap = [];
-    oldValues = [];
 
-    if (isEdit == undefined) isEdit = false;
-
-    initTypeAhead(isEdit, element);
-    initDependentParamHandlers(isEdit, element);
+    initTypeAhead(element);
+    initDependentParamHandlers(element);
     initFilterParam(element);
 
     element.closest('form').submit(function() {
@@ -43,13 +23,16 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
-  function initDependentParamHandlers(isEdit, element) {
+  function initDependentParamHandlers(element) {
     var dependedParams = {};
 
     element.find('div.dependentParam').each(function(i, node) {
       var $node = $(node);
       $node.find('input, select').prop('disabled', true);
       var name = $node.attr('name');
+      // TODO Use a space-delimited list. This is more canonical for multiple values for an attribute
+      // and will allow for more concise jQuery selectors: $('[dependson~="param-name"]')
+      //
       // the dependson may contain a comma separated list of param names the current param depends on
       var dependedNames = $node.attr('dependson').split(",");
       for (var i=0; i < dependedNames.length; i++) {
@@ -101,33 +84,17 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
               dependedParam.change();
           }
       }
-
-    //If revising, store all of the old param values before triggering the depended 
-    //   param's change function. Only for non-typeahead params
-    if (isEdit) {
-      for (var name in dependedParams) {
-        var vals = [];
-        element.find('.param[name="' + name + '"]')
-          .not('[data-type="type-ahead"]')
-           .find('[name$="(' + name + ')"]').each(function(i, control) {
-              vals.push(control.value);
-          });
-          oldValues[name] = vals;
-      }
-    }
   }
 
   //==============================================================================
-  function initTypeAhead(isEdit, element) {
+  function initTypeAhead(element) {
 
     element.find('[data-type="type-ahead"]').each(function(i, node) {
       var $node = $(node);
       var $input = $node.find('input');
       var questionName = element.closest('form').find('input[name="questionFullName"]').val();
       var paramName = $node.attr('name');
-      if (isEdit) {
-        oldValues[paramName] = $input.val();
-      }
+
       if ($node.hasClass('dependentParam')) {
         updateDependentParam(paramName, element);
       } else {
@@ -249,42 +216,72 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   function parseFilterData(filterData) {
-    var metadata = filterData.metadata;
-    var metadataSpec = filterData.metadataSpec;
-    var values = filterData.values;
-    var numericProps = _.keys(metadataSpec)
-      .filter(function(prop) {
-        return metadataSpec[prop].type === 'number';
-      });
+    var Field = wdk.models.filter.Field,
+        metadata = filterData.metadata,
+        metadataSpec = filterData.metadataSpec,
+        values = filterData.values,
+
+        // metadata properties with type number
+        numericProps = _.keys(metadataSpec)
+          .filter(function(prop) {
+            return metadataSpec[prop].type === 'number';
+          }),
+
+        // unique set of metadata properties found
+        // in metadata object values
+        metadataTerms = _.values(metadata)
+          .map(_.keys)
+          .reduce(function (a, b) { return _.union(a, b) })
+          .filter(function(name) {
+            return !!metadataSpec[name];
+          }),
+        unknowns = [];
 
     var data = {
-      fields: _.values(metadata).map(_.keys)
-        // get the unique list of all metadata props
-        // for "One metadataSpec to Rule Them All"
-        .reduce(function (a, b) { return _.union(a, b) })
-        // only use props in metadataspec
-        .filter(function(name) {
-          return !!metadataSpec[name];
-        })
+      fields: _.keys(metadataSpec)
         .map(function(name) {
           return _.extend({
             term: name,
-            display: name
+            display: name,
+            filterable: _.indexOf(metadataTerms, name) > -1 &&
+              metadataSpec[name].leaf === 'true'
           }, metadataSpec[name]);
         }),
 
       data: values
         .map(function(d) {
           // type coercion
-          var mdata = metadata[d.term];
-          numericProps.forEach(function(prop) {
-            mdata[prop] = Number(mdata[prop]);
+          var mdata = metadata[d.term],
+              missingMsg = '/!\\ ERROR /!\\\n\nMissing metadata for "' + d.term + '".',
+              unknownMsg = '/!\\ ERROR /!\\\n\n"' + d.term + '" only contains UNKNOWN metadata.';
+
+          if (mdata === undefined) {
+            _.defer(alert, missingMsg);
+            throw new Error(missingMsg);
+          }
+
+          _.each(mdata, function(value, property) {
+            if (value === null || value === '' || value === 'unknown') {
+              mdata[property] = Field.UNKNOWN_VALUE;
+            } else if (metadataSpec[property].type === 'number') {
+              mdata[property] = Number(value);
+            }
           });
+
+          if (_.every(mdata, function(m) { return m === Field.UNKNOWN_VALUE })) {
+            unknowns.push(d);
+          }
+
           return _.extend(d, {
             metadata: mdata
           });
         })
     };
+
+    if (unknowns.length) {
+      _.defer(alert, '/!\\ WARNING /!\\\n\nThe following items contian only UNKNOWN values: ' +
+        _.pluck(unknowns, 'term').join(', '));
+    }
 
     return data;
   }
@@ -318,12 +315,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           width: '35em'
         };
 
-    if (oldValues[paramName]) {
-      values = oldValues[paramName].split(/\s*,\s*/);
-    }
-
     maxSelected = $.isNumeric(maxSelected) ? maxSelected : 1000;
-
 
     $(xmlDOM).find('term').each(function(idx, term) {
       $('<option/>')
@@ -548,11 +540,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       return content;
     };
 
-    if (oldValues[name]) {
-      value = termDisplayMap[name][oldValues[name]]; // Look up the display for the old value
-      if (!value) value = oldValues[name]; // For typeaheads allowing arbitrary input
-      oldValues[name] = null;
-    }
     element.find("#" + name + "_display").val(value).removeAttr('disabled');
   }
 
@@ -641,6 +628,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           dataType: "html",
           success: function(data) {
             var newContent = $(".param",data);
+
             if (newContent.length > 0) {
               dependentParam.html(newContent.html());
             } else {
@@ -648,18 +636,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
               //   calling .html() on response erases javascript, so insert directly
               dependentParam.html(data);
             }
-            if (oldValues[paramName]) {
-              var input = $("select",dependentParam);
-              if (input.length > 0) {
-                input.val(oldValues[paramName]);
-              } else {
-                var allVals = oldValues[paramName];
-                $.each(allVals, function() {
-                  $("input[value='" + this + "']", dependentParam).attr('checked',true);
-                });
-              }
-              oldValues[name] = null;
-            }
+
             element.find(".param[name='" + paramName + "']").attr("ready", "");
             dependentParam.change();
           },

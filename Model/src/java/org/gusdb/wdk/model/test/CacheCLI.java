@@ -5,6 +5,7 @@ package org.gusdb.wdk.model.test;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wsf.util.BaseCLI;
 
@@ -15,6 +16,7 @@ import org.gusdb.wsf.util.BaseCLI;
 public class CacheCLI extends BaseCLI {
 
     private static final String ARG_PROJECT_ID = "model";
+    
     private static final String ARG_CREATE = "new";
     private static final String ARG_DROP = "drop";
     private static final String ARG_DROP_SINGLE = "dropSingle";
@@ -24,6 +26,10 @@ public class CacheCLI extends BaseCLI {
     private static final String ARG_FORCE_DROP = "forceDrop";
     private static final String ARG_NO_SCHEMA = "noSchemaOutput";
     private static final String ARG_SHOW = "show";
+    
+    private enum Operation {
+      CREATE, RESET, RECREATE, DROP, DROP_SINGLE, SHOW;
+    }
 
     public static void main(String[] args) {
         String cmdName = System.getProperty("cmdName");
@@ -101,15 +107,8 @@ public class CacheCLI extends BaseCLI {
     @Override
     protected void execute() {
         String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-
-        boolean newCache = (Boolean) getOptionValue(ARG_CREATE);
-        boolean resetCache = (Boolean) getOptionValue(ARG_RESET);
-        boolean dropCache = (Boolean) getOptionValue(ARG_DROP);
-        boolean dropSingleCache = (getOptionValue(ARG_DROP_SINGLE) != null);
-        boolean purgeCache = (Boolean) getOptionValue(ARG_DROP_PURGE);
-        boolean recreateCache = (Boolean) getOptionValue(ARG_RECREATE);
-        boolean showCache = (Boolean) getOptionValue(ARG_SHOW);
         // boolean noSchemaOutput = (Boolean) getOptionValue(ARG_NO_SCHEMA);
+        boolean purgeCache = (Boolean) getOptionValue(ARG_DROP_PURGE);
         boolean forceDrop = (Boolean) getOptionValue(ARG_FORCE_DROP);
 
         try {
@@ -119,17 +118,22 @@ public class CacheCLI extends BaseCLI {
             CacheFactory factory = wdkModel.getResultFactory().getCacheFactory();
 
             long start = System.currentTimeMillis();
-            if (newCache) factory.createCache();
-            else if (resetCache) factory.resetCache(purgeCache, forceDrop);
-            else if (dropCache) factory.dropCache(purgeCache, forceDrop);
-            else if (recreateCache) factory.recreateCache(purgeCache, recreateCache);
-            else if (showCache) factory.showCache();
-            else if (dropSingleCache) {
+            
+            switch (getOperation()) {
+              case CREATE:   factory.createCache(); break;
+              case RESET:    factory.resetCache(purgeCache, forceDrop); break;
+              case DROP:     factory.dropCache(purgeCache, forceDrop); break;
+              case RECREATE: factory.recreateCache(purgeCache, true); break;
+              case SHOW:     factory.showCache(); break;
+              case DROP_SINGLE:
                 String value = (String) getOptionValue(ARG_DROP_SINGLE);
                 if (value.matches("\\d+")) {
-                    factory.dropCache(Integer.parseInt(value), purgeCache);
-                } else factory.dropCache(value, purgeCache);
+                  factory.dropCache(Integer.parseInt(value), purgeCache);
+                } else {
+                  factory.dropCache(value, purgeCache);
+                }
             }
+            
             long end = System.currentTimeMillis();
             System.out.println("Command succeeded in "
                     + ((end - start) / 1000.0) + " seconds");
@@ -140,5 +144,15 @@ public class CacheCLI extends BaseCLI {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    private Operation getOperation() {
+      if ((Boolean)getOptionValue(ARG_CREATE)) return Operation.CREATE;
+      if ((Boolean)getOptionValue(ARG_RESET)) return Operation.RESET;
+      if ((Boolean)getOptionValue(ARG_DROP)) return Operation.DROP;
+      if ((Boolean)getOptionValue(ARG_RECREATE)) return Operation.RECREATE;
+      if ((Boolean)getOptionValue(ARG_SHOW)) return Operation.SHOW;
+      if (getOptionValue(ARG_DROP_SINGLE) != null) return Operation.DROP_SINGLE;
+      throw new WdkRuntimeException("No operation specified.");
     }
 }

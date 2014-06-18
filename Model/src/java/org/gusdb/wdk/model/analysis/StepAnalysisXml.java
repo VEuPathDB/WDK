@@ -19,13 +19,19 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   // basic information
   private String _name;
   private String _displayName;
+  private String _shortDescription;
   private String _description;
+  private String _releaseVersion;
+  private Integer _expirationMinutes;
   
   // for running and viewing the analysis
   private String _analyzerClass;
   private String _formViewName;     // form view name to be resolved by factory
   private String _analysisViewName; // analysis view name to be resolved by factory 
   private Map<String,String> _properties = new LinkedHashMap<>();
+
+  // for ui
+  private String _customThumbnail; // path relative to WDK configured assetsUrl
   
   public StepAnalysisXml() { }
   
@@ -34,10 +40,13 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _name = obj._name;
     _displayName = obj._displayName;
     _description = obj._description;
+    _releaseVersion = obj._releaseVersion;
     _analyzerClass = obj._analyzerClass;
     _formViewName = obj._formViewName;
     _analysisViewName = obj._analysisViewName;
     _properties = new HashMap<String,String>(obj._properties);
+    _customThumbnail = obj._customThumbnail;
+    _expirationMinutes = obj._expirationMinutes;
   }
   
   @Override
@@ -57,12 +66,29 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   }
   
   @Override
+  public String getShortDescription() {
+    return (_shortDescription != null && !_shortDescription.isEmpty() ? _shortDescription :
+      "Performs a " + _displayName + " analysis on this step.");
+  }
+  public void setShortDescription(WdkModelText shortDescription) {
+    _shortDescription = shortDescription.getText();
+  }
+  
+  @Override
   public String getDescription() {
     return (_description != null && !_description.isEmpty() ? _description :
-      "Performs a " + _displayName + " analysis on this step.");
+      "No further details available.");
   }
   public void setDescription(WdkModelText description) {
     _description = description.getText();
+  }
+  
+  @Override
+  public String getReleaseVersion() {
+    return _releaseVersion;
+  }
+  public void setReleaseVersion(String releaseVersion) {
+    _releaseVersion = releaseVersion;
   }
   
   @Override
@@ -89,6 +115,25 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     if (property.getName().isEmpty())
       throw new IllegalArgumentException("Property must have a name.");
     _properties.put(property.getName(), property.getValue());
+  }
+  
+  @Override
+  public String getCustomThumbnail() {
+    return _customThumbnail;
+  }
+  public void setCustomThumbnail(String customThumbnail) {
+    _customThumbnail = customThumbnail;
+  }
+
+  @Override
+  public int getExpirationMinutes() {
+    return _expirationMinutes;
+  }
+  public void setExpirationMinutes(int expirationMinutes) {
+    _expirationMinutes = expirationMinutes;
+  }
+  public boolean isExpirationMinutesSet() {
+    return _expirationMinutes != null;
   }
   
   @Override
@@ -134,9 +179,12 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     // always use values from reference, then obj, then default
     _analyzerClass = saObj._analyzerClass;
     _displayName = chooseValue(_displayName, saObj._displayName, _name);
+    _shortDescription = chooseValue(_shortDescription, saObj._shortDescription, "");
     _description = chooseValue(_description, saObj._description, "");
+    _releaseVersion = chooseValue(_releaseVersion, saObj._releaseVersion, null);
     _formViewName = chooseValue(_formViewName, saObj._formViewName, DEFAULT_FORM_VIEW);
     _analysisViewName = chooseValue(_analysisViewName, saObj._analysisViewName, DEFAULT_ANALYSIS_VIEW);
+    _customThumbnail = chooseValue(_customThumbnail, saObj._customThumbnail, null);
     
     // override properties, but retain non-conflicts from obj
     for (Entry<String,String> entry : saObj._properties.entrySet()) {
@@ -163,9 +211,11 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
       .append("  Name             : ").append(_name).append(NL)
       .append("  DisplayName      : ").append(_displayName).append(NL)
       .append("  Description      : ").append(_description).append(NL)
+      .append("  ReleaseVersion   : ").append(_releaseVersion).append(NL)
       .append("  AnalysisClass    : ").append(_analyzerClass).append(NL)
       .append("  FormViewName     : ").append(_formViewName).append(NL)
       .append("  AnalysisViewName : ").append(_analysisViewName).append(NL)
+      .append("  CustomThumbnail  : ").append(_customThumbnail).append(NL)
       .append("  Properties {").append(NL);
     for (Entry<String,String> entry : _properties.entrySet()) {
       sb.append("    ").append(entry.getKey()).append(" = ")

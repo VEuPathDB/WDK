@@ -22,11 +22,11 @@ import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkIllegalArgumentException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -296,6 +296,7 @@ public class StepFactory {
     step.setEstimateSize(estimateSize);
     step.setAssignedWeight(assignedWeight);
     step.setException(exception);
+    step.setProjectId(wdkModel.getProjectId());
     step.setProjectVersion(wdkModel.getVersion());
 
     // update step dependencies
@@ -573,6 +574,7 @@ public class StepFactory {
     step.setCollapsedName(rsStep.getString(COLUMN_COLLAPSED_NAME));
     step.setEstimateSize(rsStep.getInt(COLUMN_ESTIMATE_SIZE));
     step.setFilterName(rsStep.getString(COLUMN_ANSWER_FILTER));
+    step.setProjectId(rsStep.getString(COLUMN_PROJECT_ID));
     step.setProjectVersion(rsStep.getString(COLUMN_PROJECT_VERSION));
     if (rsStep.getObject(COLUMN_IS_VALID) != null)
       step.setValid(rsStep.getBoolean(COLUMN_IS_VALID));
@@ -905,6 +907,7 @@ public class StepFactory {
       strategy.setSignature(resultSet.getString(COLUMN_SIGNATURE));
       strategy.setDescription(resultSet.getString(COLUMN_DESCRIPTION));
       strategy.setLatestStepId(resultSet.getInt(COLUMN_ROOT_STEP_ID));
+      strategy.setProjectId(resultSet.getString(COLUMN_PROJECT_ID));
 
       strategy.setLastRunTime(resultSet.getTimestamp(COLUMN_LAST_VIEWED_TIME));
       strategy.setEstimateSize(resultSet.getInt(COLUMN_ESTIMATE_SIZE));
@@ -1518,54 +1521,66 @@ public class StepFactory {
     }
   }
 
-  public void verifySameOwner(Step step1, Step step2) {
-    String errorText  = "message not initialized";
-    try {
+  public void verifySameOwnerAndProject(Step step1, Step step2) throws WdkModelException {
+    // check that users match
       if (step1.getUser().getUserId() != step2.getUser().getUserId()) {
-        errorText = "Existing step " + step1.getStepId() + " has owner " + step1.getUser().getUserId() + " (" + step1.getUser().getEmail() + ")\n" +
-            "Call made to align the following step (see stack below for how):\n" +
-            "Newly aligned step " + step2.getStepId() + " has owner " + step2.getUser().getUserId() + " (" + step2.getUser().getEmail() + ")\n\n" +
-            FormatUtil.getStackTrace(new IllegalStateException("Cannot align two steps with different owners."));
-        Utilities.sendEmail(wdkModel,
-            wdkModel.getModelConfig().getAdminEmail(),
-            wdkModel.getModelConfig().getSupportEmail(),
-            "Mismatched owners of newly adjacent steps!!",
-            errorText);
+        throw new WdkIllegalArgumentException("Cannot align two steps with different " +
+            "owners.  Existing step " + step1.getStepId() + " has owner " +
+            step1.getUser().getUserId() + " (" + step1.getUser().getEmail() +
+            ")\n  Call made to align the following step (see stack below for " +
+            "how):\n  Newly aligned step " + step2.getStepId() + " has owner " +
+            step2.getUser().getUserId() + " (" + step2.getUser().getEmail() + ")");
       }
-    }
-    catch (Exception e) {
-      logger.error("Unable to send email regarding mismatched step owners.  Text below:\n" + errorText, e);
-    }
+      
+      // check that projects both match current project
+      String projectId = wdkModel.getProjectId();
+      if (!step1.getProjectId().equals(projectId) || !step2.getProjectId().equals(projectId)) {
+        throw new WdkIllegalArgumentException("Cannot align two steps with different " +
+            "projects.  Project IDs don't match during alignment of two " +
+            "steps!!\n  Currently loaded model has project " + projectId +
+            ".\n  Existing step " + step1.getStepId() + " has project " +
+            step1.getProjectId() + "\n  Call made to align the following " +
+            "step (see stack below for how):\n  Newly aligned step " +
+            step2.getStepId() + " has project " + step2.getProjectId());
+      }
   }
 
-  public void verifySameOwner(Step step1, int step2Id) {
+  public void verifySameOwnerAndProject(Step step1, int step2Id) throws WdkModelException {
     // some logic sets 0 for step IDs; this is valid but not eligible for this check
     if (step2Id == 0) return;
+    Step step2;
     try {
-      verifySameOwner(step1, getStepById(step2Id));
+      step2 = getStepById(step2Id);
     }
     catch (Exception e) {
-      logger.error("Unable to load step with ID " + step2Id + " to compare owners with another step.", e);
+      throw new WdkIllegalArgumentException("Unable to load step with ID " + step2Id + " to compare owners with another step.", e);
     }
+    verifySameOwnerAndProject(step1, step2);
   }
 
-  public void verifySameOwner(Strategy strategy, Step step) {
-    String errorText  = "message not initialized";
-    try {
-      if (strategy.getUser().getUserId() != step.getUser().getUserId()) {
-        errorText = "Existing strategy " + strategy.getStrategyId() + " has owner " + strategy.getUser().getUserId() + " (" + strategy.getUser().getEmail() + ")\n" +
-            "Call made to assign the following root step (see stack below for how):\n" +
-            "Newly assigned step " + step.getStepId() + " has owner " + step.getUser().getUserId() + " (" + step.getUser().getEmail() + ")\n\n" +
-            FormatUtil.getStackTrace(new IllegalStateException("Cannot assign a root step to a strategy unless they have the same owner."));
-        Utilities.sendEmail(wdkModel,
-            wdkModel.getModelConfig().getAdminEmail(),
-            wdkModel.getModelConfig().getSupportEmail(),
-            "Mismatched owners of strategy and assigned root step!!",
-            errorText);
-      }
+  public void verifySameOwnerAndProject(Strategy strategy, Step step) throws WdkModelException {
+    // check that users match
+    if (strategy.getUser().getUserId() != step.getUser().getUserId()) {
+      throw new WdkIllegalArgumentException(
+          "Cannot assign a root step to a strategy unless they have the same" +
+          "owner.  Existing strategy " + strategy.getStrategyId() + " has" +
+          "owner " + strategy.getUser().getUserId() + " (" +
+          strategy.getUser().getEmail() + ")\n  Call made to assign the " +
+          "following root step (see stack below for how):\n  Newly assigned" +
+          "step " + step.getStepId() + " has owner " +
+          step.getUser().getUserId() + " (" + step.getUser().getEmail() + ")");
     }
-    catch (Exception e) {
-      logger.error("Unable to send email regarding mismatched strategy/step owners.  Text below:\n" + errorText, e);
+      
+    // check that projects both match current project
+    String projectId = wdkModel.getProjectId();
+    if (!strategy.getProjectId().equals(projectId) || !step.getProjectId().equals(projectId)) {
+      throw new WdkIllegalArgumentException("Cannot assign a root step to a strategy " +
+          "unless they have the same project.  Project IDs don't match " +
+          "during assignment of root step to strategy!!\n  Currently loaded " +
+          "model has project " + projectId + ".\n  Root step to be assigned (" +
+          step.getStepId() + ") has project " + step.getProjectId() + ".\n  " +
+          "Strategy being assigned step (" + strategy.getStrategyId() +
+          ") has project " + strategy.getProjectId());
     }
   }
 }

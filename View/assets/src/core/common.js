@@ -1,8 +1,6 @@
 wdk.util.namespace("window.wdk", function(ns, $) {
   "use strict";
 
-  //$.noConflict();
-
   // =============================================================================
   // the common functions provided by wdk
   // =============================================================================
@@ -185,13 +183,6 @@ wdk.util.namespace("window.wdk", function(ns, $) {
    */
   function webappUrl(path) {
     return resolveUrl(wdkConfig.webappUrl, path);
-  }
-
-  /**
-   * @deprecated see webappUrl
-   */
-  function getWebAppUrl() {
-    return webappUrl();
   }
 
   /**
@@ -518,19 +509,6 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     });
   }
 
-  // deprecated - see wdk.reporter.selectFields
-  function makeSelection(state) {
-    var form = document.downloadConfigForm;
-    var cb = form.selectedFields;
-    for (var i=0; i<cb.length; i++) {
-      if (state == 1) cb[i].checked = 'checked';
-      else if (state === 0) cb[i].checked = null;
-      else if (state == -1) {
-        cb[i].checked = ((cb[i].checked) ? '' : 'checked');
-      }
-    }
-  }
-
   // TODO: view - use href to find dialog
   function setUpDialogs() {
     var dialogOpts = {
@@ -635,27 +613,29 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     invokeControllers();
   }
 
-  ns.$ = $;
-  ns.load = load;
-  ns.cookieTest = cookieTest;
-  ns.setUpDialogs = setUpDialogs;
-  ns.setUpPopups = setUpPopups;
-  ns.exportBaseURL = exportBaseURL;
-  ns.modelName = modelName;
-  ns.readCookie = readCookie;
-  ns.createCookie = createCookie;
-  ns.registerQuestionEvent = registerQuestionEvent;
-  ns.onloadQuestion = onloadQuestion; // anything using this?
-  ns.findActiveWorkspace = findActiveWorkspace;
-  ns.findActiveView = findActiveView;
-  ns.chooseAll = chooseAll;
-  ns.getWebAppUrl = getWebAppUrl;
-  ns.webappUrl = webappUrl;
-  ns.assetsUrl = assetsUrl;
-  ns.isUserLoggedIn = isUserLoggedIn;
-  ns.checkFields = checkFields;
-  ns.uncheckFields = uncheckFields;
-  ns.setUpNavDropDowns = setUpNavDropDowns;
-  ns.makeSelection = makeSelection;
+  _.extend(ns, {
+    VERSION: wdkConfig.version,
+    MODEL_NAME: wdkConfig.modelName,
+    $: $,
+    load: load,
+    cookieTest: cookieTest,
+    setUpDialogs: setUpDialogs,
+    setUpPopups: setUpPopups,
+    exportBaseURL: exportBaseURL,
+    modelName: modelName,
+    readCookie: readCookie,
+    createCookie: createCookie,
+    registerQuestionEvent: registerQuestionEvent,
+    onloadQuestion: onloadQuestion, // anything using this?
+    findActiveWorkspace: findActiveWorkspace,
+    findActiveView: findActiveView,
+    chooseAll: chooseAll,
+    webappUrl: webappUrl,
+    assetsUrl: assetsUrl,
+    isUserLoggedIn: isUserLoggedIn,
+    checkFields: checkFields,
+    uncheckFields: uncheckFields,
+    setUpNavDropDowns: setUpNavDropDowns
+  });
 
 });

@@ -3,6 +3,8 @@ package org.gusdb.wdk.model.user.analysis;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -48,8 +50,15 @@ import org.gusdb.wdk.model.user.Step;
 public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   
   private static Logger LOG = Logger.getLogger(StepAnalysisFactoryImpl.class);
-  
-  private static final boolean USE_DB_PERSISTENCE = false;
+
+  private static final String TAB_NAME_MACRO = "$$TAB_NAME$$";
+  private static final String DUPLICATE_CONTEXT_MESSAGE =
+      "This is a duplicate configuration for this tool and cannot be used.  " +
+      "Click on tab '" + TAB_NAME_MACRO + "' to view results.  To compare " +
+      "analyses of a revised step with its previous version, you must " +
+      "duplicate your strategy and run the analysis is both strategies.";
+
+  static final boolean USE_DB_PERSISTENCE = true;
   
   private final ExecutionConfig _execConfig;
   private final StepAnalysisViewResolver _viewResolver;
@@ -57,7 +66,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   private final StepAnalysisFileStore _fileStore;
   private ExecutorService _threadPool;
   private Future<Boolean> _threadMonitor;
-  private volatile ConcurrentLinkedDeque<Future<ExecutionStatus>> _threadResults;
+  private volatile ConcurrentLinkedDeque<RunningAnalysis> _threadResults;
   
   public StepAnalysisFactoryImpl(WdkModel wdkModel) throws WdkModelException {
     _viewResolver = new StepAnalysisViewResolver(wdkModel.getStepAnalysisPlugins().getViewConfig());
@@ -86,17 +95,36 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
 
   @Override
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
-    ValidationErrors errors = getConfiguredAnalyzer(context, _fileStore)
-        .validateFormParams(context.getFormParams());
     List<String> errorList = new ArrayList<String>();
-    if (errors == null || !errors.hasMessages()) return errorList;
-    errorList.addAll(errors.getMessages());
-    // FIXME: figure out display of these values; for now, translate param errors into strings
-    for (Entry<String,List<String>> paramErrors : errors.getParamMessages().entrySet()) {
-      for (String message : paramErrors.getValue()) {
-        errorList.add(paramErrors.getKey() + ": " + message);
+    List<StepAnalysisContext> identicalContexts = _dataStore.getContextsByHash(context.createHash(), _fileStore);
+    //if (identicalContexts.size() > 0) {
+      // cannot have more than one analysis configuration for a given step
+      //errorList.add(DUPLICATE_CONTEXT_MESSAGE.replace(TAB_NAME_MACRO,
+        //  identicalContexts.iterator().next().getDisplayName()));
+    //}
+    //else {
+      // this is a unique configuration; validate parameters
+      ValidationErrors errors = getConfiguredAnalyzer(context, _fileStore)
+          .validateFormParams(context.getFormParams());
+      
+      // if no errors present; return empty error list
+      if (errors == null || errors.isEmpty()) return errorList;
+      
+      // otherwise, add and return messages to client
+      errorList.addAll(errors.getMessages());
+      // FIXME: figure out display of these values; for now, translate param errors into strings
+      for (Entry<String,List<String>> paramErrors : errors.getParamMessages().entrySet()) {
+        for (String message : paramErrors.getValue()) {
+          errorList.add(paramErrors.getKey() + ": " + message);
+        }
       }
+    //}
+    
+    // validation failed; errors present.  Set isNew to true so old results are hidden from user
+    if (!context.isNew()) {
+      _dataStore.setNewFlag(context.getAnalysisId(), true);
     }
+    
     return errorList;
   }
 
@@ -108,7 +136,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     checkStepForValidity(context);
     
     // analysis valid; write analysis to DB
-    return writeNewAnalysisContext(context);
+    return writeNewAnalysisContext(context, true);
   }
 
   @Override
@@ -117,7 +145,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     StepAnalysisContext copy = StepAnalysisContext.createCopy(context);
     copy.setStatus(ExecutionStatus.CREATED);
     copy.setNew(true);
-    copy = writeNewAnalysisContext(copy);
+    copy = writeNewAnalysisContext(copy, true);
     return copy;
   }
 
@@ -139,15 +167,20 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         // such and save; user will not be shown form and will be unable to run analysis
         toContext.setIsValidStep(false, e.getMessage());
       }
-      writeNewAnalysisContext(toContext);
+      toContext = writeNewAnalysisContext(toContext, false);
       LOG.info("Wrote new duplicate context with ID " + toContext.getAnalysisId() +
           " for revised step " + toContext.getStep().getStepId());
     }
     LOG.info("Completed copy.");
   }
 
-  private StepAnalysisContext writeNewAnalysisContext(StepAnalysisContext context)
+  private StepAnalysisContext writeNewAnalysisContext(StepAnalysisContext context, boolean adjustDisplayName)
       throws WdkModelException {
+    // try to help user differentiate between tabs if requested
+    if (adjustDisplayName) {
+      context.setDisplayName(getAdjustedDisplayName(context));
+    }
+    
     // create new execution instance
     int saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(), context.getDisplayName(),
@@ -155,7 +188,36 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     
     // override any previous value for id
     context.setAnalysisId(saId);
+    
     return context;
+  }
+
+  private String getAdjustedDisplayName(StepAnalysisContext context) throws WdkModelException {
+    Collection<StepAnalysisContext> stepContexts =
+        _dataStore.getAnalysesByStepId(context.getStep().getStepId(), _fileStore).values();
+    if (stepContexts.isEmpty()) return context.getDisplayName();
+    String displayNameToAttempt = context.getDisplayName();
+    boolean displayNameUnique = false;
+    int index = 1;
+    while (!displayNameUnique) {
+      displayNameUnique = true;
+      LOG.info("Attempting name: " + displayNameToAttempt);
+      for (StepAnalysisContext otherContext : stepContexts) {
+        LOG.info("Comparing candidate name '" + displayNameToAttempt +
+            "' for context " + context.getAnalysisId() + " to analysis " +
+            otherContext.getAnalysisId() + " with name " +
+            otherContext.getDisplayName());
+        if (otherContext.getDisplayName().equals(displayNameToAttempt)) {
+          LOG.info("Found context " + otherContext.getAnalysisId() + " that already has name: " + displayNameToAttempt);
+          displayNameUnique = false;
+          index++;
+          displayNameToAttempt = context.getDisplayName() + " (" + index + ")";
+          break;
+        }
+      }
+      LOG.info("Result of '" + displayNameToAttempt + "': unique = " + displayNameUnique);
+    }
+    return displayNameToAttempt;
   }
 
   private void checkStepForValidity(StepAnalysisContext context)
@@ -173,18 +235,33 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       throws WdkModelException {
     ExecutionStatus initialStatus = ExecutionStatus.PENDING;
     String hash = context.createHash();
-    boolean newlyCreated = _dataStore.insertExecution(hash, initialStatus);
+    boolean newlyCreated = _dataStore.insertExecution(hash, initialStatus, new Date());
+    boolean contextModified = false;
 
     // now that user has run this analysis, set 'not new' if still new
     if (context.isNew()) {
       _dataStore.setNewFlag(context.getAnalysisId(), false);
       context.setNew(false);
+      contextModified = true;
     }
     
     // now that this analysis has params, set 'has params' if not yet set
     if (!context.hasParams()) {
       _dataStore.setHasParams(context.getAnalysisId(), true);
       context.setHasParams(true);
+      contextModified = true;
+    }
+    
+    // if context was modified, recheck status
+    //   TODO: fix logic here to be less ugly/costly
+    if (contextModified) {
+      try {
+        StepAnalysisContext statusContext = getSavedContext(context.getAnalysisId());
+        context.setStatus(statusContext.getStatus());
+      }
+      catch (WdkUserException e) {
+        throw new WdkModelException("Step Analysis was deleted mid-request!", e);
+      }
     }
     
     // Run analysis plugin under the following conditions:
@@ -194,6 +271,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     //
     // NOTE: There is a race condition here in between the check of the store and the creation
     //       (first line inside if).  Use combination of lock and createNewFile() to fix.
+    LOG.info("Checking whether to run vs. use previous result. newlyCreated = " +
+        newlyCreated + ", status = " + context.getStatus());
     if (newlyCreated || context.getStatus().requiresRerun()) {
 
       // ensure empty data and file stores and create dir
@@ -219,7 +298,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
 
   private StepAnalysisContext executeAnalysis(StepAnalysisContext context) throws WdkModelException {
     try {
-      _threadResults.add(_threadPool.submit(new AnalysisCallable(context, _dataStore, _fileStore)));
+      _threadResults.add(new RunningAnalysis(context.getAnalysisId(),
+          _threadPool.submit(new AnalysisCallable(context, _dataStore, _fileStore))));
       return context;
     }
     catch (RejectedExecutionException e) {
@@ -315,7 +395,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   private void startThreadPool() {
     _threadPool = Executors.newFixedThreadPool(_execConfig.getThreadPoolSize() + 1);
     _threadResults = new ConcurrentLinkedDeque<>();
-    _threadMonitor = _threadPool.submit(new FutureCleaner(_threadResults));
+    _threadMonitor = _threadPool.submit(new FutureCleaner(this, _threadResults));
   }
   
   @Override
@@ -366,14 +446,26 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     //}
   }
   
+  private static class RunningAnalysis {
+    public int analysisId;
+    public Future<ExecutionStatus> future;
+    public RunningAnalysis(int analysisId, Future<ExecutionStatus> future) {
+      this.analysisId = analysisId;
+      this.future = future;
+    }
+  }
+  
   private static class FutureCleaner implements Callable<Boolean> {
 
     private static final int FUTURE_CLEANUP_INTERVAL_SECS = 20;
     private static final int FUTURE_CLEANER_SLEEP_SECS = 2;
     
-    private volatile ConcurrentLinkedDeque<Future<ExecutionStatus>> _threadResults;
+    private volatile StepAnalysisFactory _analysisMgr;
+    private volatile ConcurrentLinkedDeque<RunningAnalysis> _threadResults;
     
-    public FutureCleaner(ConcurrentLinkedDeque<Future<ExecutionStatus>> threadResults) {
+    public FutureCleaner(StepAnalysisFactory analysisMgr,
+        ConcurrentLinkedDeque<RunningAnalysis> threadResults) {
+      _analysisMgr = analysisMgr;
       _threadResults = threadResults;
     }
     
@@ -385,7 +477,9 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         while (true) {
           if (waitSecs > FUTURE_CLEANUP_INTERVAL_SECS) {
             List<Future<ExecutionStatus>> futuresToRemove = new ArrayList<>();
-            for (Future<ExecutionStatus> future : _threadResults) {
+            long currentTime = System.currentTimeMillis();
+            for (RunningAnalysis run : _threadResults) {
+              Future<ExecutionStatus> future = run.future;
               if (future.isDone() || future.isCancelled()) {
                 try {
                   LOG.info("Step Analysis completed with status: " + future.get());
@@ -394,6 +488,34 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
                   LOG.error("Exception thrown while retrieving step analysis status (on completion)", e);
                 }
                 futuresToRemove.add(future);
+              }
+              else {
+                // See if this thread has been running too long; if so:
+                //   1. cancel the job
+                //   2. set as expired
+                // This will cover long-running analyses that this factory kicked off.  See
+                //   StepAnalysisFactoryImpl for handling others.
+                int analysisId = run.analysisId;
+                StepAnalysisContext context = _analysisMgr.getSavedContext(analysisId);
+                if (context.getStatus().equals(ExecutionStatus.RUNNING) ||
+                    context.getStatus().equals(ExecutionStatus.PENDING)) {
+                  // check to see if it's been running too long
+                  AnalysisResult result = _analysisMgr.getAnalysisResult(context);
+                  long expirationDuration = (long)context.getStepAnalysis().getExpirationMinutes() * 60 * 1000;
+                  long startTime = result.getStartDate().getTime();
+                  long currentDuration = currentTime - startTime;
+                  if (currentDuration > expirationDuration) {
+                    future.cancel(true);
+                    futuresToRemove.add(future);
+                  }
+                }
+                else {
+                  // any other status means Future should be cleaned up
+                  LOG.warn("Step Analysis Future found referencing discontinued analysis " +
+                      "with status: " + context.getStatus() + ".  Cancelling thread.");
+                  future.cancel(true);
+                  futuresToRemove.add(future);
+                }
               }
             }
             // remove futures after collecting them so as not to interfere with iterator above
@@ -430,8 +552,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     public ExecutionStatus call() throws Exception {
       String contextHash = _context.createHash();
       try {
-        // update database that we are running
-        _dataStore.updateExecution(contextHash, ExecutionStatus.RUNNING, null, null);
+        // update database that the thread is running
+        _dataStore.updateExecution(contextHash, ExecutionStatus.RUNNING, new Date(), null, null);
     
         // create step analysis instance and run
         StepAnalyzer analyzer = getConfiguredAnalyzer(_context, _fileStore);
@@ -440,17 +562,43 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       
         LOG.info("Analyzer returned without exception and with status: " + status);
         
+        if (status == null || !status.isTerminal()) {
+          // illegal status returned from plugin; set to ERROR
+          LOG.error("Step Analysis Plugin " + _context.getStepAnalysis().getName() +
+              " returned illegal status " + status + " when running instance with ID " +
+              _context.getAnalysisId());
+          status = ExecutionStatus.ERROR;
+        }
+        
         // status completed successfully or was interrupted
         String charData = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.getPersistentCharData() : "");
         byte[] binData = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.getPersistentBinaryData() : null);
-        _dataStore.updateExecution(contextHash, status, charData, binData);
+        _dataStore.updateExecution(contextHash, status, new Date(), charData, binData);
         return status;
       }
       catch (Exception e) {
         LOG.error("Step Analysis failed.", e);
-        _dataStore.updateExecution(contextHash, ExecutionStatus.ERROR, FormatUtil.getStackTrace(e), null);
+        _dataStore.updateExecution(contextHash, ExecutionStatus.ERROR, new Date(), FormatUtil.getStackTrace(e), null);
         return ExecutionStatus.ERROR;
       }
     }
+  }
+
+  @Override
+  public void createResultsTable() throws WdkModelException {
+    _dataStore.createExecutionTable();
+    // nothing do do for file store; it is created automatically
+  }
+
+  @Override
+  public void clearResultsTable() throws WdkModelException {
+    _dataStore.deleteAllExecutions();
+    _fileStore.deleteAllExecutions();
+  }
+
+  @Override
+  public void dropResultsTable(boolean purge) throws WdkModelException {
+    _dataStore.deleteExecutionTable(purge);
+    _fileStore.deleteAllExecutions();
   }
 }

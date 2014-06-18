@@ -7,22 +7,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
   var original_Query_Form_CSS = {};
   var buttonText = null;
 
-  // ns.isSpan = false;
   ns.current_Front_Strategy_Id = null;
-
-  // var stage = null;
-
-  /*
-   * @deprecated Use wdk.history.showUpdateDialog()
-   */
-  function showExportLink(stratId) {
-     closeModal();
-     var exportLink = $("div#export_link_div_" + stratId);
-     exportLink.draggable({
-      handle: ".dragHandle",
-      containment: "#strategy_results .scrollable-wrapper"
-    }).show();
-  }
 
   // make panel object that implements show
   function showPanel(panel) {
@@ -78,338 +63,6 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     }
     wdk.stratTabCookie.setCurrentTabCookie('application', panel);
     $(".strategy-description.qtip").qtip("hide");
-  }
-
-  /**
-   * @deprecated Use wdk.history.showUpdateDialog()
-   */
-  function showSaveForm(stratId, save, share) {
-    closeModal();
-    $("div.save_strat_div").addClass("hidden");
-    var saveForm = $("div#save_strat_div_" + stratId);
-    var stratName = wdk.strategy.model.getStrategyOBJ(stratId).name;
-    $("input[type=text]", saveForm).attr("value", stratName);
-
-    if (save) {
-      $("form#save_strat_form", saveForm).attr("action", "javascript:wdk.strategy.controller.saveOrRenameStrategy(" + stratId + ", true, true, false)");
-      $("span.h3left", saveForm).text("Save As");
-      $("input[type=submit]", saveForm).attr("value", "Save");
-
-      if (share) {
-        $("form#save_strat_form", saveForm)
-            .append("<input type='hidden' name='action' value='share'/>");
-        $("form#save_strat_form", saveForm)
-            .append("<input type='hidden' name='actionStrat' value='" +
-                stratId + "'/>");
-        $("span.h3left", saveForm).text("First you need to Save it!");
-      }
-
-      // we want save_warning, defined in view-JSON.js, to appear for save and share only
-      $("form#save_strat_form i").css("display","block");
-
-    } else {
-      $("form#save_strat_form", saveForm)
-          .attr("action", "javascript:saveOrRenameStrategy(" + stratId +
-              ", true, false, false)");
-      $("span.h3left", saveForm).text("Rename");
-      $("input[type=submit]", saveForm).attr("value", "Rename");
-      // we want save_warning, defined in view-JSON.js, to appear for save and share only
-      $("form#save_strat_form i").css("display","none");
-    }
-
-    saveForm.show();
-    $("input[name='name']", saveForm).focus().select();
-  }
-
-  /**
-   * @deprecated Use jQueryUI dialogs
-   */
-  function closeModal() {
-    $("div.modal_div").hide();
-  }
-
-  /**
-   * @deprecated See wdk.history.showUpdateDialog()
-   */
-  function validateSaveForm(form) {
-    var strat = wdk.strategy.model.getStrategyFromBackId(form.strategy.value);
-    var message;
-    if (form.name.value == "") {
-      message = "<h1>You must specify a name for saving!</h1><input " +
-          "type='button' value='OK' onclick='jQuery(\"div#diagram_" +
-          strat.frontId + "\").unblock();jQuery(\"div#search_history\")" +
-          ".unblock();'/>";
-      $("div#diagram_" + strat.frontId).block({message: message});
-      $("div#search_history").block({message: message});
-      return false;
-
-    } else if (form.name.value.length > 200) {
-      message = "<h1>The name you have entered is too long.  " +
-          "Please enter a name that is at most 200 characters.</h1>" +
-          "<input type='button' value='OK' onclick='jQuery(\"div#diagram_" +
-          strat.frontId + "\").unblock();jQuery(\"div#search_history\")" +
-          ".unblock();'/>";
-      $("div#diagram_" + strat.frontId).block({message: message});
-      $("div#search_history").block({message: message});
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * Not sure what this does. It's called in queryList.tag
-   *
-   * @deprecated
-   */
-  function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isOrtholog) {
-    //edit = 0 ::: adding a new step
-    //edit = 1 ::: editing a current step
-    var ps = document.createElement('div');
-    var qf = document.createElement('div');
-    var topMenu_script = null;
-    qf.innerHTML = data;
-    ps.innerHTML = params.substring(params.indexOf("<form"),params.indexOf("</form>") + 6);
-
-    if ($("script#initScript", ps).length > 0) {
-      topMenu_script = $("script#initScript", ps).text();
-    }
-
-    var operation = "";
-    var stepn = 0;
-    var insert = "";
-    var proto = "";
-    var currStrategy = wdk.strategy.model.getStrategy(ns.current_Front_Strategy_Id);
-    var stratBackId = currStrategy.backId;
-    var stp = null;
-    var stepBackId = null;
-
-    if (edit == 0) {
-      insert = reviseStep;
-      if (insert == "") {
-        stp = currStrategy.getLastStep();
-        stepBackId = (stp.back_boolean_Id == "") ? stp.back_step_Id :
-            stp.back_boolean_id;
-      } else {
-        stp = currStrategy.getStep(insert,false);
-        stepBackId = insert;
-      }
-
-    } else {
-      var parts = reviseStep.split(":");
-      proto = parts[0];
-      reviseStep = parseInt(parts[1], 10);
-      stp = currStrategy.getStep(reviseStep,false);
-      stepBackId = reviseStep;
-      // isSub = true; // doesn't appear to be used anywhere - dmf
-      operation = parts[4];
-    }
-
-    var pro_url = "";
-
-    if (edit == 0) {
-      pro_url = "processFilter.do?strategy=" + stratBackId + "&insert=" +
-          insert + "&ortholog=" + isOrtholog;
-
-    } else{
-      pro_url = "processFilter.do?strategy=" + stratBackId + "&revise=" +
-          stepBackId;
-    }
-
-    var historyId = $("#history_id").val();
-    var close_link;
-    var back_link;
-    
-    if (edit == 0) {
-      close_link = "<a class='close_window' " +
-          "href='javascript:closeAll(false)'> " +
-          "<img src='" + wdk.assetsUrl('/wdk/images/Close-X-box.png') + "'/></a>";
-      back_link = "<a id='back_to_selection' href='javascript:close()'>" + 
-          "<img src='" + wdk.assetsUrl('/wdk/images/backbox.png') + "'/></a>";
-
-    } else {
-      close_link = "<a class='close_window' " +
-          "href='javascript:closeAll(false)'>" +
-          "<img src='" + wdk.assetsUrl('/wdk/images/Close-X-box.png') + "'/></a>";
-    }
-
-		// should get the icon inside h1, when exists
-    var quesTitle = data.substring(data.indexOf("<h1>") + 4,
-        data.indexOf("</h1>")).replace(/Identify \w+( \w+)* based on/,"");
-    
-    var quesForm = $("#form_question",qf);
-
-    if (quesForm[0].tagName != "FORM") {
-      var f = document.createElement('form');
-      $(f).attr("id",$(quesForm).attr("id"));
-      $(f).html($(quesForm).html());
-      quesForm = $(f);
-    }
-
-    var quesDescription = $("#query-description-section",qf);//data;
-    var dataSources = $("#attributions-section",qf);
-    $("input[value='Get Answer']",quesForm).val("Run Step");
-    $("input[value='Run Step']",quesForm).attr("id","executeStepButton");
-    $(".params", quesForm).wrap("<div class='filter params'></div>");
-    $(".params", quesForm).attr("style", "margin-top:15px;");
-
-    // hide the file upload box
-    quesForm.find(".dataset-file").each(function() {
-      $(this).css("display", "none");
-    });
-    
-    // Bring in the advanced params, if exist, and remove styling
-    var advanced = $("#advancedParams_link",quesForm);
-    advanced = advanced.parent();
-    advanced.remove();
-    advanced.attr("style", "");
-    $(".filter.params", quesForm).append(advanced);
-    
-    if (edit == 0) {
-      if (insert == "" || (stp.isLast && isOrtholog)) {
-        $(".filter.params", quesForm).prepend("<span class='form_subtitle'>" +
-            "Add&nbsp;Step&nbsp;" + (parseInt(stp.frontId, 10)+1) + ": " +
-            quesTitle + "</span></br>");    
-      } else if (stp.frontId == 1 && !isOrtholog) {
-        $(".filter.params", quesForm).prepend("<span class='form_subtitle'>" +
-            "Insert&nbsp;Step&nbsp;Before&nbsp;" + (stp.frontId) + ": " +
-            quesTitle + "</span></br>");
-      } else if (isOrtholog) {
-        $(".filter.params", quesForm).prepend("<span class='form_subtitle'>" +
-            "Insert&nbsp;Step&nbsp;Between&nbsp;" + (stp.frontId) +
-            "&nbsp;And&nbsp;" + (parseInt(stp.frontId, 10)+1) + ": " +
-            quesTitle + "</span></br>");
-      } else {
-        $(".filter.params", quesForm).prepend("<span class='form_subtitle'>" +
-            "Insert&nbsp;Step&nbsp;Between&nbsp;" +
-            (parseInt(stp.frontId, 10)-1) + "&nbsp;And&nbsp;" + (stp.frontId) +
-            ": " + quesTitle + "</span></br>");    
-      }
-    } else {
-      $(".filter.params", quesForm).prepend("<span class='form_subtitle'>" +
-          "Revise&nbsp;Step&nbsp;" + (stp.frontId) + ": " + quesTitle +
-          "</span></br>");
-    }
-
-    // TODO - replace with templates (handlebars?)
-    if (edit == 0) {
-      if (insert == "") {
-        $(".filter.params", quesForm).after("<div class='filter operators'><span class='form_subtitle'>Combine with Step " + (stp.frontId) + "</span><div id='operations'><table style='margin-left:auto; margin-right:auto;'><tr><td class='opcheck' valign='middle'><input type='radio' name='booleanExpression' value='INTERSECT' /></td><td class='operation INTERSECT'></td><td valign='middle'>&nbsp;" + (stp.frontId) + "&nbsp;<b>INTERSECT</b>&nbsp;" + (parseInt(stp.frontId, 10)+1) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='UNION'></td><td class='operation UNION'></td><td>&nbsp;" + (stp.frontId) + "&nbsp;<b>UNION</b>&nbsp;" + (parseInt(stp.frontId, 10)+1) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='NOT'></td><td class='operation MINUS'></td><td>&nbsp;" + (stp.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(stp.frontId, 10)+1) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='RMINUS'></td><td class='operation RMINUS'></td><td>&nbsp;" + (parseInt(stp.frontId, 10)+1) + "&nbsp;<b>MINUS</b>&nbsp;" + (stp.frontId) + "</td></tr></table></div></div>");
-      } else {
-        $(".filter.params", quesForm).after("<div class='filter operators'><span class='form_subtitle'>Combine with Step " + (parseInt(stp.frontId, 10)-1) + "</span><div id='operations'><table style='margin-left:auto; margin-right:auto;'><tr><td class='opcheck' valign='middle'><input type='radio' name='booleanExpression' value='INTERSECT' /></td><td class='operation INTERSECT'></td><td valign='middle'>&nbsp;" + (parseInt(stp.frontId, 10)-1) + "&nbsp;<b>INTERSECT</b>&nbsp;" + (stp.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='UNION'></td><td class='operation UNION'></td><td>&nbsp;" + (parseInt(stp.frontId, 10)-1) + "&nbsp;<b>UNION</b>&nbsp;" + (stp.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='NOT'></td><td class='operation MINUS'></td><td>&nbsp;" + (parseInt(stp.frontId, 10)-1) + "&nbsp;<b>MINUS</b>&nbsp;" + (stp.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='RMINUS'></td><td class='operation RMINUS'></td><td>&nbsp;" + (stp.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(stp.frontId, 10)-1) + "</td></tr></table></div></div>");
-      }
-
-    } else {
-      if (stp.frontId != 1) {
-        $(".filter.params", quesForm).after("<div class='filter operators'><span class='form_subtitle'>Combine with Step " + (parseInt(stp.frontId, 10)-1) + "</span><div id='operations'><table style='margin-left:auto; margin-right:auto;'><tr><td class='opcheck'><input id='INTERSECT' type='radio' name='booleanExpression' value='INTERSECT' /></td><td class='operation INTERSECT'></td><td>&nbsp;" + (parseInt(stp.frontId, 10)-1) + "&nbsp;<b>INTERSECT</b>&nbsp;" + (stp.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input id='UNION' type='radio' name='booleanExpression' value='UNION'></td><td class='operation UNION'></td><td>&nbsp;" + (parseInt(stp.frontId, 10)-1) + "&nbsp;<b>UNION</b>&nbsp;" + (stp.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input id='MINUS' type='radio' name='booleanExpression' value='NOT'></td><td class='operation MINUS'></td><td>&nbsp;" + (parseInt(stp.frontId, 10)-1) + "&nbsp;<b>MINUS</b>&nbsp;" + (stp.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='RMINUS'></td><td class='operation RMINUS'></td><td>&nbsp;" + (stp.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(stp.frontId, 10)-1) + "</td></tr></table></div></div>");
-      } else {
-        $(".filter.params", quesForm).after("<input type='hidden' name='booleanExpression' value='AND' />");
-      }
-    }
-
-    var action;
-    if (edit == 0) {
-      action = "javascript:validateAndCall('add','" + pro_url + "', '" + stratBackId + "')";
-    } else {
-      action = "javascript:validateAndCall('edit', '" + pro_url + "', '" + stratBackId + "', "+ parseInt(reviseStep, 10) + ")";
-    }
-
-    var formtitle = "";
-
-    if (edit == 0) {
-      if (insert == "") {
-        formtitle = "<h1 style='font-size:130%;position:relative;margin-top: 4px;'>Add&nbsp;Step</h1>";
-      } else {
-        formtitle = "<h1  style='font-size:130%;position:relative;margin-top: 4px;'>Insert&nbsp;Step</h1>";
-      }
-    } else {
-      formtitle = "<h1  style='font-size:130%;position:relative;margin-top: 4px;'>Revise&nbsp;Step</h1>";
-    }
-
-    quesForm.attr("action",action);
-
-    var header;
-    if (edit == 0) {
-      header = "<span class='dragHandle'>" + back_link + " " + formtitle + " " + close_link + "</span>";
-    } else {
-      header = "<span class='dragHandle'>" + formtitle + " " + close_link + "</span>";
-    }
-      
-    $("#query_form").html(header);
-
-    if (hideQuery) {
-      $(".filter.params", quesForm).remove();
-      $("input[name=questionFullName]", quesForm).remove();
-      $(".filter.operators", quesForm).width('auto');
-    } else {
-      $("div.filter div.params", quesForm).html(ps.getElementsByTagName('form')[0].innerHTML);
-    }
-
-    if (hideOp) {
-      $(".filter.operators", quesForm).remove();
-      $(".filter.params", quesForm).after("<input type='hidden' name='booleanExpression' value='AND' />");
-    }
-    
-    $("#query_form").append(quesForm);
-
-    if (edit == 1) {
-      $("#query_form div#operations input#" + operation).attr('checked','checked'); 
-    }
-    
-    if (quesDescription.length > 0) {
-      $("#query_form").append("<div style='padding:5px;margin:5px 15px 5px 15px;border-top:1px solid grey;border-bottom:1px solid grey'>" + quesDescription.html() + "</div>");
-    }
-
-    if (dataSources.length > 0) {
-      $("#query_form").append("<div style='padding:5px;margin:5px 15px 5px 15px;border-top:1px solid grey;border-bottom:1px solid grey'>" + dataSources.html() + "</div>");
-    }
-
-    $("#query_form").append("<div class='bottom-close'><a href='javascript:closeAll(false)' class='close_window'>Close</a></div>");
-    setDraggable($("#query_form"), ".dragHandle");
-    $("#query_form").fadeIn("normal");
-
-    if (topMenu_script != null) {
-      var tms = topMenu_script.substring(topMenu_script.indexOf("{")+1,topMenu_script.indexOf("}"));
-      eval(tms);
-    }
-
-    if (edit == 1) {
-      wdk.parameterHandlers.init(true, true);
-    } else {
-      wdk.parameterHandlers.init(true);
-    }
-  }
-
-  /**
-   * called in formatFilterForm -- deprecated?
-   */
-  function validateAndCall(type, url, proto, rs){
-    var valid = false;
-    var queryForm = $('#query_form');
-
-    if (queryForm.find("div.filter.operators").length == 0) {
-      valid = true;
-    } else {
-      if ($(".filter.operators")) {
-        $(".filter.operators div#operations input[name='booleanExpression']").each(function(){
-          if($(this)[0].checked) valid = true;
-        });
-      }
-    }
-
-    if (!valid) {
-      alert("Please select Intersect, Union or Minus operator.");
-      return;
-    }
-
-    wdk.parameterHandlers.mapTypeAheads(queryForm);
-    window.scrollTo(0,0);
-
-    if (type == 'add') {
-      wdk.strategy.controller.AddStepToStrategy(url, proto, rs);
-    } else {
-      wdk.strategy.controller.EditStep(url, proto, rs);
-    }
-    return;
   }
 
   // the dtype is never used, ignored.
@@ -492,8 +145,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
         $("#query_form_overlay").css("z-index", 100).height($("body").height());
       },
       error: function() {
-        alert("Error getting the needed information from the server \n" +
-            "Please contact the system administrator");
+        alert("Sorry. There has been an error getting the information from the server. \n" +
+            "Please reload your page.\n" +
+            "If this does not fix your problem, please contact us (link on top right) with a description.");
         enableAddStepButtons();
       }
     });
@@ -517,10 +171,6 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
   // it is not possible to cancel an inline 'onsubmit' handler without
   // hacking it into a more conventional event handler.
   function callWizard(url, ele, id, sec, action, stratFrontId){
-    // TODO - make this accssible via wdk.addStepPopup namespace
-    // set isPopup flag, which will be used by param initialization process
-    window.isPopup = true;
-
     // sometimes url can be null...
     var urlBase = url && url.split(/\?/)[0];
     var params = url && url.split(/\?/)[1];
@@ -676,37 +326,6 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     // updateStepNumberReferences();
   }
 
-  /**
-   * @deprecated
-   */
-  function openAddStrategy(strat_id) {
-    original_Query_Form_Text = $("#query_form").html();
-    OpenOperationBox(strat_id, (global_isAdd ? undefined : step_id));
-    return false;
-  }
-
-  /**
-   * @deprecated to close the old question form
-   */
-  function close(ele){
-    cd = $("#query_form");
-    $(cd).html(original_Query_Form_Text);
-    $("#query_form").css("max-width",original_Query_Form_CSS.maxW);
-    $("#query_form").css("min-width",original_Query_Form_CSS.minW);
-    setDraggable($("#query_form"), ".dragHandle");
-    
-    $("#query_form #continue_button").click(function(){
-      original_Query_Form_Text = $("#query_form").html();
-      OpenOperationBox(strat_id, undefined);
-      return false;
-    });
-
-    $("#query_form #continue_button_transforms").click(function(){
-      original_Query_Form_Text = $("#query_form").html();
-      getQueryForm($("#query_form select#transforms").val(),true);
-    });
-  }
-
   function closeAll(hide, as) {
     if (hide) {
       $("#query_form").hide();
@@ -837,21 +456,13 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     }
   }
 
-  ns.showExportLink = showExportLink;
   ns.showPanel = showPanel;
-  ns.showSaveForm = showSaveForm;
-  ns.closeModal = closeModal;
-  ns.validateSaveForm = validateSaveForm;
-  ns.formatFilterForm = formatFilterForm;
-  ns.validateAndCall = validateAndCall;
   ns.openFilter = openFilter;
   ns.openStage = openStage;
   ns.WizardLoading = WizardLoading;
   ns.callWizard = callWizard;
   ns.backStage = backStage;
   ns.setPopupContent = setPopupContent;
-  ns.openAddStrategy = openAddStrategy;
-  ns.close = close;
   ns.closeAll = closeAll;
   ns.enableAddStepButtons = enableAddStepButtons;
   ns.disableAddStepButtons = disableAddStepButtons;

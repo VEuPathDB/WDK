@@ -34,9 +34,17 @@ public class StepAnalysisPlugins extends WdkModelBase {
   }
   
   public static class ExecutionConfig {
-    
+
     private String _fileStoreDirectory;
     private int _threadPoolSize = 20;
+    private int _expirationMinutes = 20;
+
+    public String getFileStoreDirectory() {
+      return _fileStoreDirectory;
+    }
+    public void setFileStoreDirectory(String fileStoreDirectory) {
+      _fileStoreDirectory = fileStoreDirectory;
+    }
 
     public int getThreadPoolSize() {
       return _threadPoolSize;
@@ -44,12 +52,12 @@ public class StepAnalysisPlugins extends WdkModelBase {
     public void setThreadPoolSize(int threadPoolSize) {
       _threadPoolSize = threadPoolSize;
     }
-    
-    public String getFileStoreDirectory() {
-      return _fileStoreDirectory;
+
+    public int getExpirationMinutes() {
+      return _expirationMinutes;
     }
-    public void setFileStoreDirectory(String fileStoreDirectory) {
-      _fileStoreDirectory = fileStoreDirectory;
+    public void setExpirationMinutes(int expirationMinutes) {
+      _expirationMinutes = expirationMinutes;
     }
   }
   
@@ -71,11 +79,15 @@ public class StepAnalysisPlugins extends WdkModelBase {
   public void setExecutionConfig(ExecutionConfig executionConfig) {
     _executionConfig = executionConfig;
   }
-  
+
   public void addStepAnalysis(StepAnalysisXml analysis) throws WdkModelException {
     if (_stepAnalysisMap.containsKey(analysis.getName())) {
       throw new WdkModelException("Duplicate step analysis name set in " +
           StepAnalysisPlugins.class.getSimpleName() + ": " + analysis.getName());
+    }
+    // if no expiration minutes are set on individual plugin, apply global expiration deadline
+    if (!analysis.isExpirationMinutesSet()) {
+      analysis.setExpirationMinutes(getExecutionConfig().getExpirationMinutes());
     }
     _stepAnalysisMap.put(analysis.getName(), analysis);
   }

@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
+import org.gusdb.fgputil.FormatUtil;
 
 public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer {
   
@@ -41,15 +42,23 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
   @Override
   public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log)
       throws WdkModelException {
-    ProcessBuilder builder = new ProcessBuilder(getCommand(answerValue));
-    configureEnvironment(builder.environment());
-    builder.directory(getStorageDirectory().toFile());
-    builder.redirectOutput(getStdoutFilePath().toFile());
-    builder.redirectError(getStderrFilePath().toFile());
-
     InputStream providedInput = null;
     Process process = null;
     try {
+      // do any child class's pre-processing
+      ExecutionStatus returnStatus = null;
+      if ((returnStatus = doPreProcessing(answerValue, log)) != null) {
+        return returnStatus;
+      }
+
+      // build environment sub-process will run in
+      ProcessBuilder builder = new ProcessBuilder(getCommand(answerValue));
+      configureEnvironment(builder.environment());
+      builder.directory(getStorageDirectory().toFile());
+      builder.redirectOutput(getStdoutFilePath().toFile());
+      builder.redirectError(getStderrFilePath().toFile());
+
+      // run sub-process, passing any input subclass provided and capturing output
       process = builder.start();
       OutputStream stdin = process.getOutputStream();
       if ((providedInput = getProvidedInput()) != null) {
@@ -62,8 +71,7 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
       }
       int exitValue = process.waitFor();
       LOG.info("Received exit code from spawned process: " + exitValue);
-      if (exitValue != 0) informUserOfError(String.valueOf(exitValue));
-      return (exitValue == 0 ? ExecutionStatus.COMPLETE : ExecutionStatus.ERROR);
+      return doPostProcessing(exitValue, answerValue, log);
     }
     catch (InterruptedException ie) {
       LOG.warn("Thread for step analysis was interrupted before completion.", ie);
@@ -79,6 +87,35 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
       IoUtil.closeQuietly(providedInput);
       if (process != null) process.destroy();
     }
+  }
+
+  /**
+   * Does any processing that needs to be done before the analyzer process
+   * runs.  Default implementation does nothing and returns null.
+   * 
+   * @throws WdkModelException if something goes wrong in child implementation
+   * @return execution status if it is determined that analyzer subprocess
+   * should NOT run.  If processing should continue, returns null.
+   */
+  protected ExecutionStatus doPreProcessing(AnswerValue answerValue,
+      StatusLogger log) throws WdkModelException {
+    return null;
+  }
+
+  /**
+   * Does any processing that needs to be done after the analyzer process
+   * runs.  This allows subclasses to handle the exit code of the subprocess
+   * in a customized way, validate results stored to disk and/or save them to
+   * memory, etc.  Default implementation returns COMPLETE if exit value is 0,
+   * else ERROR, and logs the error with relevant information.
+   * 
+   * @throws WdkModelException if something goes wrong in child implementation
+   * @return final execution status of this plugin
+   */
+  protected ExecutionStatus doPostProcessing(int exitValue,
+      AnswerValue answerValue, StatusLogger log) throws WdkModelException {
+    if (exitValue != 0) informUserOfError(String.valueOf(exitValue));
+    return (exitValue == 0 ? ExecutionStatus.COMPLETE : ExecutionStatus.ERROR);
   }
 
   private void informUserOfError(String exitValue) {
@@ -99,6 +136,26 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
   
   protected InputStream getProvidedInput() {
     return null;
+  }
+
+  /**
+   * Utility method to return multiple param values for the given key as an SQL compatible list
+   * string (i.e. to be placed in an 'in' clause).  Values are assumed to be
+   * Strings, and so are single-quoted.
+   * 
+   * @param paramKey name of parameter
+   * @param formParams form params passed to this plugin
+   * @param errors validation errors object to append additional errors to; note
+   * this value may be null; if so, no errors will be appended
+   * @return SQL compatible list string
+   */
+  public static String getArrayParamValueAsString(String paramKey,
+      Map<String, String[]> formParams, ValidationErrors errors) {
+    String[] values = formParams.get(paramKey);
+    if ((values == null || values.length == 0) && errors != null) {
+      errors.addParamMessage(paramKey, "Missing required parameter.");
+    }
+    return "'" + FormatUtil.join(values, "','") + "'";
   }
 
 }

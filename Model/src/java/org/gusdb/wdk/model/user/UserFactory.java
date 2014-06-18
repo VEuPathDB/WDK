@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.user;
 
 import java.sql.Connection;
@@ -34,12 +31,13 @@ import org.gusdb.wdk.model.config.ModelConfigUserDB;
 
 /**
  * @author xingao
- * 
  */
 public class UserFactory {
-  public static final String GUEST_USER_PREFIX = "WDK_GUEST_";
 
-  public static final String GLOBAL_PREFERENCE_KEY = "[Global]";
+  private static final String GUEST_USER_PREFIX = "WDK_GUEST_";
+  private static final String SYSTEM_USER_PREFIX = GUEST_USER_PREFIX + "SYSTEM_";
+
+  private static final String GLOBAL_PREFERENCE_KEY = "[Global]";
 
   private static Logger logger = Logger.getLogger(UserFactory.class);
 
@@ -235,12 +233,21 @@ public class UserFactory {
     }
   }
 
+  public User createSystemUser() throws WdkModelException {
+    return createGuestUser(SYSTEM_USER_PREFIX);
+  }
+
   public User createGuestUser() throws WdkModelException {
+    return createGuestUser(GUEST_USER_PREFIX);
+  }
+
+  public User createGuestUser(String guestEmailPrefix) throws WdkModelException {
+    
     PreparedStatement psUser = null;
     try {
       // get a new user id
       int userId = userDb.getPlatform().getNextId(dataSource, userSchema, "users");
-      String email = GUEST_USER_PREFIX + userId;
+      String email = guestEmailPrefix + userId;
       Date registerTime = new Date();
       Date lastActiveTime = new Date();
       String signature = encrypt(userId + "_" + email);
@@ -269,7 +276,7 @@ public class UserFactory {
       // save user's roles
       saveUserRoles(user);
 
-      logger.info("Guest user #" + userId + " created.");
+      logger.info("Guest user " + email + " created.");
 
       return user;
     } catch (SQLException e) {

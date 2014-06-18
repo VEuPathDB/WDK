@@ -1,11 +1,13 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
@@ -23,6 +25,25 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Encapsulation of values associated with a particular instance of a step
+ * analysis plugin (as identified as a tab in the UI).  Contexts have their own
+ * IDs and params, but may share results if they are similar enough.  This class
+ * is responsible for generating the JSON sent to the client, the context hash
+ * used to look up results, and contains the current state/status of the
+ * instance (as influenced by whether it's been run before, has params, and has
+ * results).  The following diagram describes why we have the isNew and
+ * hasParams fields in addition to status.
+ * 
+ * Cases: hasParams?        Y           ||                 N
+ * Is     Y    ||      Post-run copy    ||  Normal pre-run, or pre-run copy
+ * New?   N    ||     Normal post run   ||                N/A
+ * 
+ * IsNew tells the UI whether to try to display results
+ * HasParams tells the UI whether to repopulate form params from stored values
+ * 
+ * @author rdoherty
+ */
 public class StepAnalysisContext {
 
   public static final Logger LOG = Logger.getLogger(StepAnalysisContext.class);
@@ -39,6 +60,7 @@ public class StepAnalysisContext {
     // the following values are included with JSON returned to client
     analysisId,
     displayName,
+    shortDescription,
     description,
     status,
     hasParams,
@@ -113,7 +135,7 @@ public class StepAnalysisContext {
   
   public static StepAnalysisContext createFromStoredData(WdkModel wdkModel,
       int analysisId, boolean isNew, boolean hasParams, String invalidStepReason,
-      String displayName, String serializedContext) throws WdkModelException {
+      String displayName, String serializedContext) throws WdkModelException, DeprecatedAnalysisException {
     try {
       StepAnalysisContext ctx = new StepAnalysisContext();
       ctx._wdkModel = wdkModel;
@@ -153,7 +175,15 @@ public class StepAnalysisContext {
       
       return ctx;
     }
-    catch (JSONException | WdkUserException e) {
+    catch (WdkUserException e) {
+      throw new DeprecatedAnalysisException("Illegal step analysis plugin " +
+          "name for analysis with ID: " + analysisId, e);
+    }
+    catch (WdkModelException e) {
+      throw new DeprecatedAnalysisException("Unable to construct context " +
+          "from analysis with ID: " + analysisId, e);
+    }
+    catch (JSONException e) {
       throw new WdkModelException("Unable to deserialize context.", e);
     }
   }
@@ -224,6 +254,7 @@ public class StepAnalysisContext {
       JSONObject json = getSharedJson();
       json.put(JsonKey.analysisId.name(), _analysisId);
       json.put(JsonKey.displayName.name(), _displayName);
+      json.put(JsonKey.shortDescription.name(), _stepAnalysis.getShortDescription());
       json.put(JsonKey.description.name(), _stepAnalysis.getDescription());
       json.put(JsonKey.hasParams.name(), _hasParams);
       json.put(JsonKey.status.name(), _status.name());
@@ -257,10 +288,17 @@ public class StepAnalysisContext {
     json.put(JsonKey.stepId.name(), _step.getStepId());
     json.put(JsonKey.analysisName.name(), _stepAnalysis.getName());
     
+    // Sort param names so JSON values produce identical hashes
+    List<String> sortedParamNames = new ArrayList<>(_formParams.keySet());
+    Collections.sort(sortedParamNames);
+    
     JSONObject params = new JSONObject();
-    for (Entry<String, String[]> param : _formParams.entrySet()) {
-      for (String value : param.getValue()) {
-        params.append(param.getKey(), value);
+    for (String paramName : sortedParamNames) {
+      // Sort param values so JSON values produce identical hashes
+      List<String> paramValues = Arrays.asList(_formParams.get(paramName));
+      Collections.sort(paramValues);
+      for (String value : paramValues) {
+        params.append(paramName, value);
       }
     }
     json.put(JsonKey.formParams.name(), params);
