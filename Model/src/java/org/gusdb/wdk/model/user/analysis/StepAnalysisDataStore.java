@@ -4,6 +4,7 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,10 +16,10 @@ import org.gusdb.wdk.model.WdkModelException;
 
 public abstract class StepAnalysisDataStore {
   
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(StepAnalysisDataStore.class);
   
   protected static class AnalysisInfo {
+    
     int analysisId;
     int stepId;
     String displayName;
@@ -27,6 +28,7 @@ public abstract class StepAnalysisDataStore {
     String invalidStepReason;
     String contextHash;
     String serializedContext;
+    
     public AnalysisInfo(int analysisId, int stepId, String displayName, boolean isNew,
         boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) {
       this.analysisId = analysisId;
@@ -38,6 +40,7 @@ public abstract class StepAnalysisDataStore {
       this.contextHash = contextHash;
       this.serializedContext = serializedContext;
     }
+    
     @Override
     public String toString() {
       return new StringBuilder("AnalysisInfo {").append(NL)
@@ -56,9 +59,13 @@ public abstract class StepAnalysisDataStore {
   protected static class AnalysisInfoPlusStatus {
     AnalysisInfo analysisInfo;
     ExecutionStatus status;
+    public AnalysisInfoPlusStatus(AnalysisInfo info) {
+      analysisInfo = info;
+    }
   }
   
   // abstract methods to manage analysis information
+  public abstract void createAnalysisTableAndSequence() throws WdkModelException;
   public abstract int getNextId() throws WdkModelException;
   public abstract void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
   public abstract void deleteAnalysis(int analysisId) throws WdkModelException;
@@ -66,14 +73,18 @@ public abstract class StepAnalysisDataStore {
   public abstract void setNewFlag(int analysisId, boolean isNew) throws WdkModelException;
   public abstract void setHasParams(int analysisId, boolean hasParams) throws WdkModelException;
   public abstract void updateContext(int analysisId, String contextHash, String serializedContext) throws WdkModelException;
+  protected abstract List<Integer> getAnalysisIdsByHash(String contextHash) throws WdkModelException;
   protected abstract List<Integer> getAnalysisIdsByStepId(int stepId) throws WdkModelException;
   protected abstract List<Integer> getAllAnalysisIds() throws WdkModelException;
   // contract is: analysisInfo will be null if ID does not exist; status will be null if execution does not exist
   protected abstract Map<Integer, AnalysisInfoPlusStatus> getAnalysisInfoForIds(List<Integer> analysisIds) throws WdkModelException;
   
   // abstract methods to manage result/status information
-  public abstract boolean insertExecution(String contextHash, ExecutionStatus status) throws WdkModelException;  
-  public abstract void updateExecution(String contextHash, ExecutionStatus status, String charData, byte[] binData) throws WdkModelException;
+  public abstract void createExecutionTable() throws WdkModelException;
+  public abstract void deleteExecutionTable(boolean purge) throws WdkModelException;
+  public abstract boolean insertExecution(String contextHash, ExecutionStatus status, Date startDate) throws WdkModelException;  
+  public abstract void updateExecution(String contextHash, ExecutionStatus status, Date updateDate, String charData, byte[] binData) throws WdkModelException;
+  public abstract void resetStartDate(String contextHash, Date startDate) throws WdkModelException;
   public abstract void deleteExecution(String contextHash) throws WdkModelException;
   public abstract void deleteAllExecutions() throws WdkModelException;
   protected abstract ExecutionStatus getRawExecutionStatus(String contextHash) throws WdkModelException;
@@ -94,14 +105,20 @@ public abstract class StepAnalysisDataStore {
   
   // helper methods that contain only business logic
   public void resetExecution(String contextHash, ExecutionStatus status) throws WdkModelException {
-    updateExecution(contextHash, status, null, null);
+    Date newStartDate = new Date();
+    resetStartDate(contextHash, newStartDate);
+    updateExecution(contextHash, status, newStartDate, null, null);
   }
   
   public StepAnalysisContext getAnalysisById(int analysisId, StepAnalysisFileStore fileStore) throws WdkModelException {
     Map<Integer, AnalysisInfoPlusStatus> rawValues = getAnalysisInfoForIds(Arrays.asList(new Integer[]{ analysisId }));
     if (rawValues.get(analysisId).analysisInfo == null) throw new WdkModelException("Did not find exactly" +
-    		" one record for analysis ID " + analysisId + "; found " + rawValues.size());
+        " one record for analysis ID " + analysisId + "; found " + rawValues.size());
     return getContexts(rawValues, fileStore).iterator().next();
+  }
+
+  public List<StepAnalysisContext> getContextsByHash(String contextHash, StepAnalysisFileStore fileStore) throws WdkModelException {
+    return getContexts(getAnalysisInfoForIds(getAnalysisIdsByHash(contextHash)), fileStore);
   }
   
   public Map<Integer,StepAnalysisContext> getAnalysesByStepId(int stepId,
@@ -127,7 +144,9 @@ public abstract class StepAnalysisDataStore {
       if (entry.getValue().analysisInfo == null) {
         throw new WdkModelException("Unable to find record for analysis ID: " + entry.getKey());
       }
-      contextList.add(convertToContext(entry.getValue(), fileStore));
+      StepAnalysisContext context = convertToContext(entry.getValue(), fileStore);
+      // skip null contexts
+      if (context != null) contextList.add(context);
     }
     return contextList;
   }
@@ -136,9 +155,17 @@ public abstract class StepAnalysisDataStore {
       StepAnalysisFileStore fileStore) throws WdkModelException {
     
     AnalysisInfo info = data.analysisInfo;
-    StepAnalysisContext context = StepAnalysisContext.createFromStoredData(
-        _wdkModel, info.analysisId, info.isNew, info.hasParams, info.invalidStepReason,
-        info.displayName, info.serializedContext);
+    StepAnalysisContext context;
+    try {
+      context = StepAnalysisContext.createFromStoredData(
+          _wdkModel, info.analysisId, info.isNew, info.hasParams, info.invalidStepReason,
+          info.displayName, info.serializedContext);
+    }
+    catch (DeprecatedAnalysisException e) {
+      LOG.warn("Previously stored step analysis with ID " + info.analysisId +
+          " could not be loaded", e);
+      return null;
+    }
     
     // if analysis was created from a step its analyzer did not approve, then status is always INVALID
     if (!context.getIsValidStep()) {

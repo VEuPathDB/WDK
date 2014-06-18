@@ -46,7 +46,7 @@ public class StepBean {
         return (nextStep == null) ? null : new StepBean(user, nextStep);
     }
 
-    public void setNextStep(StepBean next) {
+    public void setNextStep(StepBean next) throws WdkModelException {
         if (next != null) step.setNextStep(next.step);
         else {
             Step nextStep = null;
@@ -71,7 +71,7 @@ public class StepBean {
         return null;
     }
 
-    public void setParentStep(StepBean parentStep) {
+    public void setParentStep(StepBean parentStep) throws WdkModelException {
         if (parentStep != null) {
             step.setParentStep(parentStep.step);
         } else {
@@ -79,7 +79,7 @@ public class StepBean {
         }
     }
 
-    public void setChildStep(StepBean childStep) {
+    public void setChildStep(StepBean childStep) throws WdkModelException {
         if (childStep != null) {
             step.setChildStep(childStep.step);
         } else {
@@ -276,7 +276,7 @@ public class StepBean {
         return step.getLength();
     }
 
-    public void addStep(StepBean next) {
+    public void addStep(StepBean next) throws WdkModelException {
         step.addStep(next.step);
     }
 
@@ -497,4 +497,9 @@ public class StepBean {
     public Map<Integer, StepAnalysisContext> getAppliedAnalyses() throws WdkModelException {
         return user.getUser().getWdkModel().getStepAnalysisFactory().getAppliedAnalyses(step);
     }
+
+	public void setValid(boolean valid){
+		step.setValid(valid);
+	}
+
 }

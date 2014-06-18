@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.controller.action;
 
 import java.io.PrintWriter;
@@ -24,7 +21,6 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
  * @author xingao
- * 
  */
 public class ShowResultSizeAction extends Action {
 
@@ -46,21 +42,10 @@ public class ShowResultSizeAction extends Action {
     if (filterName != null)
       key += ":" + filterName;
 
-    int size;
-    Map<String, Integer> sizeCache = null;
-    HttpSession session = request.getSession();
-    synchronized (session) {
-      Object cache = session.getAttribute(KEY_SIZE_CACHE_MAP);
-      if (cache != null && cache instanceof Map) {
-        sizeCache = (Map<String, Integer>) cache;
-      }
-      else {
-        sizeCache = new LinkedHashMap<String, Integer>();
-        session.setAttribute(KEY_SIZE_CACHE_MAP, sizeCache);
-      }
-    }
+    Map<String, Integer> sizeCache = getSizeCache(request.getSession());
 
     // check if the size value has been cached
+    int size;
     if (sizeCache.containsKey(key)) {
       size = sizeCache.get(key);
     }
@@ -88,5 +73,17 @@ public class ShowResultSizeAction extends Action {
     PrintWriter writer = response.getWriter();
     writer.print(size);
     return null;
+  }
+
+  private static Map<String, Integer> getSizeCache(HttpSession session) {
+    synchronized (session) {
+      @SuppressWarnings({ "unchecked" })
+      Map<String,Integer> cache = (Map<String, Integer>)session.getAttribute(KEY_SIZE_CACHE_MAP);
+      if (cache == null) {
+        cache = new LinkedHashMap<>();
+        session.setAttribute(KEY_SIZE_CACHE_MAP, cache);
+      }
+      return cache;
+    }
   }
 }

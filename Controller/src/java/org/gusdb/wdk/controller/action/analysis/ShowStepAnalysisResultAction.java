@@ -15,7 +15,7 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
       "A run of this analysis was interrupted before it could complete";
   private static final String OUTOFDATE_REASON_TEXT =
       "Your previous run of this analysis is out-of-date and results must be " +
-      "regenerated.  Please confirm your parmeters above and re-run.";
+      "regenerated.  Please confirm your parameters above and re-run.";
   
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
@@ -35,12 +35,15 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
         String viewPath = getAnalysisMgr().getViewResolver().resolveResultsView(this, context);
         return new ActionResult()
             .setViewPath(viewPath)
+            .setRequestAttribute("wdkModel", getWdkModel())
             .setRequestAttribute("analysisId", context.getAnalysisId())
             .setRequestAttribute("viewModel", result.getResultViewModel());
       case PENDING:
       case RUNNING:
         return new ActionResult()
             .setViewName("pending")
+            // send 202 status so the client knows the result isn't ready
+            .setHttpResponseStatus(202)
             .setRequestAttribute("analysisId", context.getAnalysisId());
       case ERROR:
         reason = ERROR_REASON_TEXT;

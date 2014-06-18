@@ -164,7 +164,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
       var field = filter.get('field');
       var values = filter.get('values');
       return data.filter(function(d) {
-        return _.contains(values, d.get('metadata')[field]);
+        return _.contains(values, d.get('metadata')[field].toString());
       });
     },
 

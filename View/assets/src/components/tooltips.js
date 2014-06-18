@@ -40,6 +40,9 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
       },
       hide: {
         event: 'mouseleave'
+      },
+      style: {
+        classes: 'qtip-tipsy'
       }
     });
   }
@@ -111,7 +114,8 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
         event: 'click'
       },
       style: {
-        width: width
+        width: width,
+        classes: 'qtip-tipsy'
       },
       position: {
         adjust: {

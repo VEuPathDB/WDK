@@ -30,6 +30,7 @@ module.exports = {
 
     'src/core/console.js',
     'src/core/namespace.js',
+    'src/core/fn.js',
     'src/core/c_properties.js',
     'src/core/base_object.js',
     'src/core/runloop.js',
@@ -83,7 +84,7 @@ module.exports = {
 
     'lib/jquery.cookie.js',
     'lib/jquery.blockUI.js',
-    'lib/qtip2/jquery.qtip.js',
+    'lib/jquery.qtip.min.js',
 
     // question pages
     'lib/handlebars.js',
@@ -92,6 +93,7 @@ module.exports = {
     'lib/jquery.dataTables.min.js',
     // 'lib/dataTables.colVis.min.js',
     'lib/jstree/jquery.jstree.js',
+    'lib/spin.min.js'
   ]
 
 };

@@ -23,6 +23,7 @@ public class ShowStepAnalysisFormAction extends AbstractStepAnalysisIdAction {
     String resolvedView = getAnalysisMgr().getViewResolver().resolveFormView(this, context);
     Object formViewModel = getAnalysisMgr().getFormViewModel(context);
     return new ActionResult().setViewPath(resolvedView)
+        .setRequestAttribute("wdkModel", getWdkModel())
         .setRequestAttribute("viewModel", formViewModel);
     
     // special case for interacting with a WDK question

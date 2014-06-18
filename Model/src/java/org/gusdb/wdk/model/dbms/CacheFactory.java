@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.dbms;
 
 import java.sql.PreparedStatement;
@@ -28,7 +25,6 @@ import org.json.JSONObject;
 
 /**
  * @author Jerric Gao
- * 
  */
 public class CacheFactory {
 
@@ -82,11 +78,16 @@ public class CacheFactory {
     catch (Exception ex) {
       logger.error("Cannot create sequence [" + sequenceName + "]. " + ex.getMessage());
     }
+    
+    // create results table for step analysis
+    createStepAnalysisCache();
   }
 
   public void resetCache(boolean purge, boolean forceDrop) {
-    // drop cache tables and we are done
+    // drop cache tables
     dropCacheTables(purge, forceDrop);
+    // clear step analysis results
+    clearStepAnalysisCache();
   }
 
   public void recreateCache(boolean purge, boolean forceDrop) {
@@ -129,6 +130,9 @@ public class CacheFactory {
     catch (Exception ex) {
       logger.error("Cannot drop sequence [" + querySeq + "]. " + ex.getMessage());
     }
+    
+    // drop step analysis results cache
+    dropStepAnalysisCache(purge);
   }
 
   public void dropCache(int instanceId, boolean purge) {
@@ -466,6 +470,36 @@ public class CacheFactory {
     }
     finally {
       SqlUtils.closeStatement(psInsert);
+    }
+  }
+
+  private void createStepAnalysisCache() {
+    try {
+      logger.info("Creating step analysis results cache.");
+      wdkModel.getStepAnalysisFactory().createResultsTable();
+    }
+    catch (Exception ex) {
+      logger.error("Unable to create step analysis results cache. " + ex.getMessage());
+    }
+  }
+
+  private void clearStepAnalysisCache() {
+    try {
+      logger.info("Clearing step analysis results cache.");
+      wdkModel.getStepAnalysisFactory().clearResultsTable();
+    }
+    catch (Exception ex) {
+      logger.error("Unable to clear step analysis results cache. " + ex.getMessage());
+    }
+  }
+
+  private void dropStepAnalysisCache(boolean purge) {
+    try {
+      logger.info("Dropping step analysis results cache (purge = " + purge + ").");
+      wdkModel.getStepAnalysisFactory().dropResultsTable(purge);
+    }
+    catch (Exception ex) {
+      logger.error("Unable to drop step analysis results cache (purge = " + purge + "). " + ex.getMessage());
     }
   }
 }
