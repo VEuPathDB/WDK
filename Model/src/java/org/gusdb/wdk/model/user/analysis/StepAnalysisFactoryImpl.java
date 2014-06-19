@@ -484,7 +484,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
               Future<ExecutionStatus> future = run.future;
               if (future.isDone() || future.isCancelled()) {
                 try {
-                  LOG.info("Step Analysis completed with status: " + future.get());
+                  LOG.info("Step Analysis run for step analysis with ID " +
+                      run.analysisId + " completed with status: " + future.get());
                 }
                 catch (ExecutionException | CancellationException | InterruptedException e) {
                   LOG.error("Exception thrown while retrieving step analysis status (on completion)", e);
