@@ -29,18 +29,15 @@ import org.json.JSONObject;
  * Encapsulation of values associated with a particular instance of a step
  * analysis plugin (as identified as a tab in the UI).  Contexts have their own
  * IDs and params, but may share results if they are similar enough.  This class
- * is responsible for generating the JSON sent to the client, the context hash
+ * is responsible for generating the JSON sent to the client and the context hash
  * used to look up results, and contains the current state/status of the
  * instance (as influenced by whether it's been run before, has params, and has
- * results).  The following diagram describes why we have the isNew and
- * hasParams fields in addition to status.
+ * results).
  * 
- * Cases: hasParams?        Y           ||                 N
- * Is     Y    ||      Post-run copy    ||  Normal pre-run, or pre-run copy
- * New?   N    ||     Normal post run   ||                N/A
- * 
- * IsNew tells the UI whether to try to display results
- * HasParams tells the UI whether to repopulate form params from stored values
+ * Notes:
+ *   State tells the UI whether to show empty results, "Invalid due to revise",
+ *     or normal request of results (which may show out-of-date, error, etc.)
+ *   HasParams tells the UI whether to repopulate form params from stored values
  * 
  * @author rdoherty
  */
@@ -72,7 +69,7 @@ public class StepAnalysisContext {
   private String _displayName;
   private Step _step;
   private StepAnalysis _stepAnalysis;
-  private boolean _isNew;
+  private StepAnalysisState _state;
   private boolean _hasParams;
   private String _invalidStepReason;
   private ExecutionStatus _status;
@@ -110,7 +107,7 @@ public class StepAnalysisContext {
     
     ctx._displayName = ctx._stepAnalysis.getDisplayName();
     ctx._formParams = new HashMap<String,String[]>();
-    ctx._isNew = true;
+    ctx._state = StepAnalysisState.NO_RESULTS;
     ctx._hasParams = false;
     ctx._invalidStepReason = null;
     ctx._status = ExecutionStatus.CREATED;
@@ -134,14 +131,14 @@ public class StepAnalysisContext {
   }  
   
   public static StepAnalysisContext createFromStoredData(WdkModel wdkModel,
-      int analysisId, boolean isNew, boolean hasParams, String invalidStepReason,
+      int analysisId, int stepId, StepAnalysisState state, boolean hasParams, String invalidStepReason,
       String displayName, String serializedContext) throws WdkModelException, DeprecatedAnalysisException {
     try {
       StepAnalysisContext ctx = new StepAnalysisContext();
       ctx._wdkModel = wdkModel;
       ctx._analysisId = analysisId;
       ctx._displayName = displayName;
-      ctx._isNew = isNew;
+      ctx._state = state;
       ctx._hasParams = hasParams;
       ctx._invalidStepReason = invalidStepReason;
       ctx._status = ExecutionStatus.UNKNOWN;
@@ -150,7 +147,6 @@ public class StepAnalysisContext {
       
       // deserialize hashable context values
       JSONObject json = new JSONObject(serializedContext);
-      int stepId = json.getInt(JsonKey.stepId.name());
       ctx._step = loadStep(ctx._wdkModel, stepId, new WdkModelException("Unable " +
           "to find step (ID=" + stepId + ") defined in step analysis context " +
           "(ID=" + analysisId + ")"));
@@ -197,7 +193,7 @@ public class StepAnalysisContext {
     ctx._stepAnalysis = oldContext._stepAnalysis;
     // deep copy params
     ctx._formParams = getDuplicateMap(oldContext._formParams);
-    ctx._isNew = oldContext._isNew;
+    ctx._state = oldContext._state;
     ctx._hasParams = oldContext._hasParams;
     ctx._invalidStepReason = oldContext._invalidStepReason;
     ctx._status = oldContext._status;
@@ -360,12 +356,12 @@ public class StepAnalysisContext {
     _status = status;
   }
 
-  public boolean isNew() {
-    return _isNew;
+  public StepAnalysisState getState() {
+    return _state;
   }
 
-  public void setNew(boolean isNew) {
-    _isNew = isNew;
+  public void setState(StepAnalysisState state) {
+    _state = state;
   }
 
   public boolean hasParams() {

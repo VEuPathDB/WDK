@@ -53,7 +53,6 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
    *  - getForm: returns an unpopulated form for a specific type of analysis
    *  - getResults: returns a DOM fragment displaying analysis results
    *
-   *
    * The following events are triggered by the analysis instance.
    *
    *  - formload:    The form has been inserted into the DOM
