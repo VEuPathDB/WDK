@@ -1730,6 +1730,17 @@ table.dataTable thead th div.DataTables_sort_wrapper {
 }
 
 
+/* make datatable pagination buttons prettier */
+.dataTables_paginate .ui-button {
+  padding: .2em 0.4em;
+  margin: 0;
+}
+.dataTables_paginate .ui-button.previous {
+  border-radius: 4px 0 0 4px;
+}
+.dataTables_paginate .ui-button.next {
+  border-radius: 0 4px 4px 0;
+}
 
 
 

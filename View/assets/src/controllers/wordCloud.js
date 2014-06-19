@@ -8,17 +8,24 @@ wdk.util.namespace("window.wdk.result.wordCloud", function(ns, $) {
 
   var init = function(wordCloud, attrs) {
     var tags = wordCloud.find("#tags");
+    var dataTable;
     if (tags.length == 0) return;
 
     // register tabs
-    wordCloud.tabs();
+    wordCloud.tabs({
+      activate: function(event, ui) {
+        if (ui.newPanel.attr('id') === 'data') {
+          dataTable.draw();
+        }
+      }
+    });
 
     // register data table
-    wordCloud.find("#data .datatable").dataTable( {
+    dataTable = wordCloud.find("#data .datatable").wdkDataTable( {
           "bDestroy": true,
           "bJQueryUI": true,
           "aaSorting": [[ 1, "desc" ]],
-    });
+    }).DataTable();
 
     var total = tags.attr("total");
     var from = 1;

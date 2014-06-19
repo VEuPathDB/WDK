@@ -1,6 +1,23 @@
 wdk.util.namespace("window.wdk.plugin", function(ns, $) {
   "use strict";
 
+  // custom types
+
+  // Example: 1.04e-3
+  $.extend( $.fn.dataTableExt.oSort, {
+    "scientific-pre": function ( a ) {
+      return Number(a);
+    },
+
+    "scientific-asc": function ( a, b ) {
+      return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+    },
+
+    "scientific-desc": function ( a, b ) {
+      return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+    }
+  } );
+
   $.fn.wdkDataTable = function(opts) {
     return this.each(function() {
       var $this = $(this),
