@@ -50,12 +50,13 @@ public class StepAnalysisContext {
   public static enum JsonKey {
     
     // the following values define the hashable serialized context
-    stepId,
     analysisName,
+    answerValueHash,
     formParams,
     
     // the following values are included with JSON returned to client
     analysisId,
+    stepId,
     displayName,
     shortDescription,
     description,
@@ -68,6 +69,7 @@ public class StepAnalysisContext {
   private int _analysisId;
   private String _displayName;
   private Step _step;
+  private String _answerValueHash;
   private StepAnalysis _stepAnalysis;
   private StepAnalysisState _state;
   private boolean _hasParams;
@@ -96,6 +98,7 @@ public class StepAnalysisContext {
     ctx._wdkModel = userBean.getUser().getWdkModel();
     ctx._step = loadStep(ctx._wdkModel, stepId, new WdkUserException("No step " +
         "bean exists with id " + stepId + " for user " + userBean.getUserId()));
+    ctx._answerValueHash = ctx._step.getAnswerValue().getChecksum();
     
     Question question = ctx._step.getQuestion();
     ctx._stepAnalysis = question.getStepAnalyses().get(analysisName);
@@ -150,6 +153,7 @@ public class StepAnalysisContext {
       ctx._step = loadStep(ctx._wdkModel, stepId, new WdkModelException("Unable " +
           "to find step (ID=" + stepId + ") defined in step analysis context " +
           "(ID=" + analysisId + ")"));
+      ctx._answerValueHash = ctx._step.getAnswerValue().getChecksum();
       Question question = ctx._step.getQuestion();
       ctx._stepAnalysis = question.getStepAnalysis(json.getString(JsonKey.analysisName.name()));
 
@@ -190,6 +194,7 @@ public class StepAnalysisContext {
     ctx._analysisId = oldContext._analysisId;
     ctx._displayName = oldContext._displayName;
     ctx._step = oldContext._step;
+    ctx._answerValueHash = oldContext._answerValueHash;
     ctx._stepAnalysis = oldContext._stepAnalysis;
     // deep copy params
     ctx._formParams = getDuplicateMap(oldContext._formParams);
@@ -249,6 +254,7 @@ public class StepAnalysisContext {
     try {
       JSONObject json = getSharedJson();
       json.put(JsonKey.analysisId.name(), _analysisId);
+      json.put(JsonKey.stepId.name(), _step.getStepId());
       json.put(JsonKey.displayName.name(), _displayName);
       json.put(JsonKey.shortDescription.name(), _stepAnalysis.getShortDescription());
       json.put(JsonKey.description.name(), _stepAnalysis.getDescription());
@@ -263,11 +269,10 @@ public class StepAnalysisContext {
   }
   
   /**
-   * Returns JSON of the following spec (for generating checksum):
+   * Returns JSON of the following spec (for generating hash):
    * {
    *   analysisName: string
-   *   stepId: int
-   *   strategyId: int
+   *   answerValueHash: string
    *   params: key-value object of params
    */
   public String serializeContext() {
@@ -281,8 +286,8 @@ public class StepAnalysisContext {
   
   private JSONObject getSharedJson() throws JSONException {
     JSONObject json = new JSONObject();
-    json.put(JsonKey.stepId.name(), _step.getStepId());
     json.put(JsonKey.analysisName.name(), _stepAnalysis.getName());
+    json.put(JsonKey.answerValueHash.name(), _answerValueHash);
     
     // Sort param names so JSON values produce identical hashes
     List<String> sortedParamNames = new ArrayList<>(_formParams.keySet());
