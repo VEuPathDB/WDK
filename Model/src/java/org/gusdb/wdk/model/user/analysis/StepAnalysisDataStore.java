@@ -23,18 +23,18 @@ public abstract class StepAnalysisDataStore {
     int analysisId;
     int stepId;
     String displayName;
-    boolean isNew;
+    StepAnalysisState state;
     boolean hasParams;
     String invalidStepReason;
     String contextHash;
     String serializedContext;
     
-    public AnalysisInfo(int analysisId, int stepId, String displayName, boolean isNew,
+    public AnalysisInfo(int analysisId, int stepId, String displayName, StepAnalysisState state,
         boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) {
       this.analysisId = analysisId;
       this.stepId = stepId;
       this.displayName = displayName;
-      this.isNew = isNew;
+      this.state = state;
       this.hasParams = hasParams;
       this.invalidStepReason = invalidStepReason;
       this.contextHash = contextHash;
@@ -47,7 +47,7 @@ public abstract class StepAnalysisDataStore {
           .append("analysisId: ").append(analysisId).append(NL)
           .append("stepId: ").append(stepId).append(NL)
           .append("displayName: ").append(displayName).append(NL)
-          .append("isNew: ").append(isNew).append(NL)
+          .append("isNew: ").append(state).append(NL)
           .append("hasParams: ").append(hasParams).append(NL)
           .append("invalidStepReason: ").append(invalidStepReason).append(NL)
           .append("contextHash: ").append(contextHash).append(NL)
@@ -67,10 +67,10 @@ public abstract class StepAnalysisDataStore {
   // abstract methods to manage analysis information
   public abstract void createAnalysisTableAndSequence() throws WdkModelException;
   public abstract int getNextId() throws WdkModelException;
-  public abstract void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
+  public abstract void insertAnalysis(int analysisId, int stepId, String displayName, StepAnalysisState state, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
   public abstract void deleteAnalysis(int analysisId) throws WdkModelException;
   public abstract void renameAnalysis(int analysisId, String displayName) throws WdkModelException;
-  public abstract void setNewFlag(int analysisId, boolean isNew) throws WdkModelException;
+  public abstract void setState(int analysisId, StepAnalysisState state) throws WdkModelException;
   public abstract void setHasParams(int analysisId, boolean hasParams) throws WdkModelException;
   public abstract void updateContext(int analysisId, String contextHash, String serializedContext) throws WdkModelException;
   protected abstract List<Integer> getAnalysisIdsByHash(String contextHash) throws WdkModelException;
@@ -158,8 +158,8 @@ public abstract class StepAnalysisDataStore {
     StepAnalysisContext context;
     try {
       context = StepAnalysisContext.createFromStoredData(
-          _wdkModel, info.analysisId, info.isNew, info.hasParams, info.invalidStepReason,
-          info.displayName, info.serializedContext);
+          _wdkModel, info.analysisId, info.stepId, info.state, info.hasParams,
+          info.invalidStepReason, info.displayName, info.serializedContext);
     }
     catch (DeprecatedAnalysisException e) {
       LOG.warn("Previously stored step analysis with ID " + info.analysisId +
@@ -173,10 +173,16 @@ public abstract class StepAnalysisDataStore {
       return context;
     }
     
-    // if analysis is new (has never been run), don't care about cache; just set as CREATED and return
-    if (info.isNew) {
-      context.setStatus(ExecutionStatus.CREATED);
-      return context;
+    // if analysis is new or invalid, don't care about cache; just set appropriate status and return
+    switch(info.state) {
+      case INVALID_RESULTS:
+        context.setStatus(ExecutionStatus.STEP_REVISED);
+        return context;
+      case NO_RESULTS:
+        context.setStatus(ExecutionStatus.CREATED);
+        return context;
+      default:
+        // pass on to the code below
     }
 
     // check status of our data caches

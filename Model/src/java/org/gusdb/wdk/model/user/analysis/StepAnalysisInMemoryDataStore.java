@@ -45,7 +45,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew,
+  public void insertAnalysis(int analysisId, int stepId, String displayName, StepAnalysisState state,
       boolean hasParams, String invalidStepReason, String contextHash, String serializedContext)
           throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
@@ -54,7 +54,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
       }
       STEP_ANALYSIS_MAP.get(stepId).add(analysisId);
       AnalysisInfo info = new AnalysisInfo(analysisId, stepId, displayName,
-          isNew, hasParams, invalidStepReason, contextHash, serializedContext);
+          state, hasParams, invalidStepReason, contextHash, serializedContext);
       ANALYSIS_INFO_MAP.put(analysisId, info);
       LOG.info("Inserted analysis with ID " + analysisId + " on step " + stepId +
           "; now " + STEP_ANALYSIS_MAP.get(stepId).size() + " analyses for this step.");
@@ -98,10 +98,10 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void setNewFlag(int analysisId, boolean isNew) throws WdkModelException {
+  public void setState(int analysisId, StepAnalysisState state) throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
-        ANALYSIS_INFO_MAP.get(analysisId).isNew = isNew;
+        ANALYSIS_INFO_MAP.get(analysisId).state = state;
         return;
       }
       throw new WdkModelException("No analysis exists with id: " + analysisId);
@@ -168,7 +168,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
       throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       synchronized(RESULT_INFO_MAP) {
-        Map<Integer, AnalysisInfoPlusStatus> map = new HashMap<>();
+        Map<Integer, AnalysisInfoPlusStatus> map = new LinkedHashMap<>();
         for (Integer analysisId : analysisIds) {
           AnalysisInfoPlusStatus aips = new AnalysisInfoPlusStatus(ANALYSIS_INFO_MAP.get(analysisId));
           if (RESULT_INFO_MAP.containsKey(aips.analysisInfo.contextHash)) {

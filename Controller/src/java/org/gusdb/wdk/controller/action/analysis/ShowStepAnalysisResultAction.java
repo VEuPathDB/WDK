@@ -16,6 +16,13 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
   private static final String OUTOFDATE_REASON_TEXT =
       "Your previous run of this analysis is out-of-date and results must be " +
       "regenerated.  Please confirm your parameters above and re-run.";
+  private static final String EXPIRED_REASON_TEXT =
+      "The last run of this analysis took too long to complete and was " +
+      "cancelled.  If this problem persists, please contact us.";
+  private static final String REVISED_REASON_TEXT =
+      "Your previous analysis results are no longer valid because the result " +
+      "set of this step has changed (e.g. because you revised a step or " +
+      "applied a filter).  Please confirm your parameters above and re-run.";
   
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
@@ -50,7 +57,11 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
       case INTERRUPTED:
         reason = (reason == null ? INTERRUPTED_REASON_TEXT : reason);
       case OUT_OF_DATE:
-        reason = (reason == null ? OUTOFDATE_REASON_TEXT: reason);
+        reason = (reason == null ? OUTOFDATE_REASON_TEXT : reason);
+      case EXPIRED:
+        reason = (reason == null ? EXPIRED_REASON_TEXT : reason);
+      case STEP_REVISED:
+        reason = (reason == null ? REVISED_REASON_TEXT : reason);
         return new ActionResult()
             .setViewName("incomplete")
             .setRequestAttribute("reason", reason);

@@ -51,12 +51,18 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   
   private static Logger LOG = Logger.getLogger(StepAnalysisFactoryImpl.class);
 
+  /* TODO: remove if not needed before 7/31/14
   private static final String TAB_NAME_MACRO = "$$TAB_NAME$$";
   private static final String DUPLICATE_CONTEXT_MESSAGE =
-      "This is a duplicate configuration for this tool and cannot be used.  " +
-      "Click on tab '" + TAB_NAME_MACRO + "' to view results.  To compare " +
-      "analyses of a revised step with its previous version, you must " +
-      "duplicate your strategy and run the analysis is both strategies.";
+      "<p>You have another analysis tab open with the same parameter values " +
+      "as those set below.  Either close this tab and use that tab (named '" +
+      TAB_NAME_MACRO + "') or change the parameters below.</p>" +
+      "<p>If you revised your strategy and expected to compare the analysis " +
+      "from the previous version of the strategy with that of the revised " +
+      "version, this is not the correct approach.  Once you revise a " +
+      "strategy, all previous analysis results are invalidated.  Instead, " +
+      "duplicate the strategy and revise it as necessary.  Then run an " +
+      "analysis on each and compare the two results.</p>"; */
 
   static final boolean USE_DB_PERSISTENCE = true;
   
@@ -96,33 +102,27 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   @Override
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
     List<String> errorList = new ArrayList<String>();
-    List<StepAnalysisContext> identicalContexts = _dataStore.getContextsByHash(context.createHash(), _fileStore);
-    //if (identicalContexts.size() > 0) {
-      // cannot have more than one analysis configuration for a given step
-      //errorList.add(DUPLICATE_CONTEXT_MESSAGE.replace(TAB_NAME_MACRO,
-        //  identicalContexts.iterator().next().getDisplayName()));
-    //}
-    //else {
-      // this is a unique configuration; validate parameters
-      ValidationErrors errors = getConfiguredAnalyzer(context, _fileStore)
-          .validateFormParams(context.getFormParams());
-      
-      // if no errors present; return empty error list
-      if (errors == null || errors.isEmpty()) return errorList;
-      
-      // otherwise, add and return messages to client
-      errorList.addAll(errors.getMessages());
-      // FIXME: figure out display of these values; for now, translate param errors into strings
-      for (Entry<String,List<String>> paramErrors : errors.getParamMessages().entrySet()) {
-        for (String message : paramErrors.getValue()) {
-          errorList.add(paramErrors.getKey() + ": " + message);
-        }
+
+    // this is a unique configuration; validate parameters
+    ValidationErrors errors = getConfiguredAnalyzer(context, _fileStore)
+        .validateFormParams(context.getFormParams());
+
+    // if no errors present; return empty error list
+    if (errors == null || errors.isEmpty()) return errorList;
+
+    // otherwise, add and return messages to client
+    errorList.addAll(errors.getMessages());
+    // FIXME: figure out display of these values; for now, translate param errors into strings
+    for (Entry<String,List<String>> paramErrors : errors.getParamMessages().entrySet()) {
+      for (String message : paramErrors.getValue()) {
+        errorList.add(paramErrors.getKey() + ": " + message);
       }
-    //}
-    
-    // validation failed; errors present.  Set isNew to true so old results are hidden from user
-    if (!context.isNew()) {
-      _dataStore.setNewFlag(context.getAnalysisId(), true);
+    }
+
+    // validation failed; errors present.  Set state to NO_RESULTS so old results are hidden from user
+    if (!context.getState().equals(StepAnalysisState.NO_RESULTS)) {
+      context.setState(StepAnalysisState.NO_RESULTS);
+      _dataStore.setState(context.getAnalysisId(), StepAnalysisState.NO_RESULTS);
     }
     
     return errorList;
@@ -144,7 +144,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       throws WdkModelException {
     StepAnalysisContext copy = StepAnalysisContext.createCopy(context);
     copy.setStatus(ExecutionStatus.CREATED);
-    copy.setNew(true);
+    copy.setState(StepAnalysisState.NO_RESULTS);
     copy = writeNewAnalysisContext(copy, true);
     return copy;
   }
@@ -158,6 +158,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       LOG.trace("TRACE: " + fromContext.getInstanceJson());
       StepAnalysisContext toContext = StepAnalysisContext.createCopy(fromContext);
       toContext.setStep(toStep);
+      // steps copied during revise have invalid results until run again
+      toContext.setState(StepAnalysisState.INVALID_RESULTS);
       try {
         checkStepForValidity(toContext);
         toContext.setIsValidStep(true);
@@ -184,7 +186,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     // create new execution instance
     int saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(), context.getDisplayName(),
-        context.isNew(), context.hasParams(), context.getInvalidStepReason(), context.createHash(), context.serializeContext());
+        context.getState(), context.hasParams(), context.getInvalidStepReason(), context.createHash(), context.serializeContext());
     
     // override any previous value for id
     context.setAnalysisId(saId);
@@ -239,9 +241,9 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     boolean contextModified = false;
 
     // now that user has run this analysis, set 'not new' if still new
-    if (context.isNew()) {
-      _dataStore.setNewFlag(context.getAnalysisId(), false);
-      context.setNew(false);
+    if (!context.getState().equals(StepAnalysisState.SHOW_RESULTS)) {
+      _dataStore.setState(context.getAnalysisId(), StepAnalysisState.SHOW_RESULTS);
+      context.setState(StepAnalysisState.SHOW_RESULTS);
       contextModified = true;
     }
     
