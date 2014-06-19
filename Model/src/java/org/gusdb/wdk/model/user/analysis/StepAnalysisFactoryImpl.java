@@ -478,7 +478,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         int waitSecs = 0;
         while (true) {
           if (waitSecs > FUTURE_CLEANUP_INTERVAL_SECS) {
-            List<Future<ExecutionStatus>> futuresToRemove = new ArrayList<>();
+            List<RunningAnalysis> futuresToRemove = new ArrayList<>();
             long currentTime = System.currentTimeMillis();
             for (RunningAnalysis run : _threadResults) {
               Future<ExecutionStatus> future = run.future;
@@ -490,7 +490,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
                 catch (ExecutionException | CancellationException | InterruptedException e) {
                   LOG.error("Exception thrown while retrieving step analysis status (on completion)", e);
                 }
-                futuresToRemove.add(future);
+                futuresToRemove.add(run);
               }
               else {
                 // See if this thread has been running too long; if so:
@@ -509,7 +509,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
                   long currentDuration = currentTime - startTime;
                   if (currentDuration > expirationDuration) {
                     future.cancel(true);
-                    futuresToRemove.add(future);
+                    futuresToRemove.add(run);
                   }
                 }
                 else {
@@ -517,13 +517,13 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
                   LOG.warn("Step Analysis Future found referencing discontinued analysis " +
                       "with status: " + context.getStatus() + ".  Cancelling thread.");
                   future.cancel(true);
-                  futuresToRemove.add(future);
+                  futuresToRemove.add(run);
                 }
               }
             }
             // remove futures after collecting them so as not to interfere with iterator above
-            for (Future<ExecutionStatus> future : futuresToRemove) {
-              _threadResults.remove(future);
+            for (RunningAnalysis run : futuresToRemove) {
+              _threadResults.remove(run);
             }
             waitSecs = 0;
           }
