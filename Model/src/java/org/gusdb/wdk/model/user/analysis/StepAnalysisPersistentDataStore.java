@@ -77,6 +77,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private String GET_STATUS_BY_HASH_SQL;
   private String GET_STATUSES_BY_HASHES_SQL;
   private String GET_RESULTS_BY_HASH_SQL;
+  private String GET_RUNNING_EXECUTIONS_SQL;
   private String SET_EXECUTION_LOG_SQL;
   private String GET_EXECUTION_LOG_SQL;
 
@@ -225,6 +226,9 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     GET_RESULTS_BY_HASH_SQL =
         "SELECT STATUS, START_DATE, UPDATE_DATE, LOG, CHAR_DATA, BIN_DATA" +
         " FROM " + table + " WHERE CONTEXT_HASH = ?";
+    GET_RUNNING_EXECUTIONS_SQL =
+        "SELECT CONTEXT_HASH, STATUS, START_DATE, UPDATE_DATE FROM " + table +
+        " WHERE STATUS = 'PENDING' OR STATUS = 'RUNNING'";
     SET_EXECUTION_LOG_SQL =
         "UPDATE " + table + " SET LOG = ? WHERE CONTEXT_HASH = ?";
     GET_EXECUTION_LOG_SQL =
@@ -603,6 +607,30 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
           });
       // return object retrieved, or null if not found
       return resultContainer[0];
+    }
+    catch (SQLRunnerException e) {
+      throw new WdkModelException("Unable to complete operation.", e);
+    }
+  }
+
+  @Override
+  public List<ExecutionInfo> getAllRunningExecutions() throws WdkModelException {
+    try {
+      final List<ExecutionInfo> results = new ArrayList<>();
+      new SQLRunner(_appDs, GET_RUNNING_EXECUTIONS_SQL).executeQuery(
+          new ResultSetHandler() {
+            @Override public void handleResult(ResultSet rs) throws SQLException {
+              while (rs.next()) {
+                // parse values retrieved from database
+                String contextHash = rs.getString(1);
+                ExecutionStatus status = parseStatus(rs.getString(2), contextHash);
+                Date startDate = new Date(rs.getTimestamp(3).getTime());
+                Date updateDate = new Date(rs.getTimestamp(4).getTime());
+                results.add(new ExecutionInfo(contextHash, status, startDate, updateDate));
+              }
+            }
+          });
+      return results;
     }
     catch (SQLRunnerException e) {
       throw new WdkModelException("Unable to complete operation.", e);
