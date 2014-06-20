@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
@@ -180,7 +181,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
       }
     }
   }
-  
+
   @Override
   public boolean insertExecution(String contextHash, ExecutionStatus initialStatus, Date startDate)
       throws WdkModelException {
@@ -248,6 +249,22 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
         return RESULT_INFO_MAP.get(contextHash);
       }
       return null;
+    }
+  }
+
+  @Override
+  public List<ExecutionInfo> getAllRunningExecutions() {
+    synchronized(RESULT_INFO_MAP) {
+      List<ExecutionInfo> results = new ArrayList<>();
+      for (Entry<String, AnalysisResult> entry : RESULT_INFO_MAP.entrySet()) {
+        AnalysisResult result = entry.getValue();
+        if (result.getStatus().equals(ExecutionStatus.PENDING) ||
+            result.getStatus().equals(ExecutionStatus.RUNNING)) {
+          results.add(new ExecutionInfo(entry.getKey(), result.getStatus(),
+              result.getStartDate(), result.getUpdateDate()));
+        }
+      }
+      return results;
     }
   }
 

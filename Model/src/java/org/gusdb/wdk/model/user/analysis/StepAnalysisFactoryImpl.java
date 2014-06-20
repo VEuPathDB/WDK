@@ -8,25 +8,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins.ExecutionConfig;
 import org.gusdb.wdk.model.analysis.StepAnalyzer;
 import org.gusdb.wdk.model.analysis.ValidationErrors;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.analysis.FutureCleaner.RunningAnalysis;
 
 /**
  * Static/Stateless Data:
@@ -356,7 +354,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     return context;
   }
 
-  private static StepAnalyzer getConfiguredAnalyzer(StepAnalysisContext context,
+  static StepAnalyzer getConfiguredAnalyzer(StepAnalysisContext context,
       StepAnalysisFileStore fileStore) throws WdkModelException {
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
     analyzer.setStorageDirectory(fileStore.getStorageDirPath(context.createHash()));
@@ -447,144 +445,16 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       //LOG.warn("Unable to shut down " + name + " within a reasonable timeout.", e);
     //}
   }
-  
-  private static class RunningAnalysis {
-    public int analysisId;
-    public Future<ExecutionStatus> future;
-    public RunningAnalysis(int analysisId, Future<ExecutionStatus> future) {
-      this.analysisId = analysisId;
-      this.future = future;
-    }
-  }
-  
-  private static class FutureCleaner implements Callable<Boolean> {
 
-    private static final int FUTURE_CLEANUP_INTERVAL_SECS = 20;
-    private static final int FUTURE_CLEANER_SLEEP_SECS = 2;
-    
-    private volatile StepAnalysisFactory _analysisMgr;
-    private volatile ConcurrentLinkedDeque<RunningAnalysis> _threadResults;
-    
-    public FutureCleaner(StepAnalysisFactory analysisMgr,
-        ConcurrentLinkedDeque<RunningAnalysis> threadResults) {
-      _analysisMgr = analysisMgr;
-      _threadResults = threadResults;
-    }
-    
-    @Override
-    public Boolean call() throws Exception {
-      try {
-        LOG.info("Step Analysis Thread Monitor initialized and running.");
-        int waitSecs = 0;
-        while (true) {
-          if (waitSecs > FUTURE_CLEANUP_INTERVAL_SECS) {
-            List<RunningAnalysis> futuresToRemove = new ArrayList<>();
-            long currentTime = System.currentTimeMillis();
-            for (RunningAnalysis run : _threadResults) {
-              Future<ExecutionStatus> future = run.future;
-              if (future.isDone() || future.isCancelled()) {
-                try {
-                  LOG.info("Step Analysis run for step analysis with ID " +
-                      run.analysisId + " completed with status: " + future.get());
-                }
-                catch (ExecutionException | CancellationException | InterruptedException e) {
-                  LOG.error("Exception thrown while retrieving step analysis status (on completion)", e);
-                }
-                futuresToRemove.add(run);
-              }
-              else {
-                // See if this thread has been running too long; if so:
-                //   1. cancel the job
-                //   2. set as expired
-                // This will cover long-running analyses that this factory kicked off.  See
-                //   StepAnalysisFactoryImpl for handling others.
-                int analysisId = run.analysisId;
-                StepAnalysisContext context = _analysisMgr.getSavedContext(analysisId);
-                if (context.getStatus().equals(ExecutionStatus.RUNNING) ||
-                    context.getStatus().equals(ExecutionStatus.PENDING)) {
-                  // check to see if it's been running too long
-                  AnalysisResult result = _analysisMgr.getAnalysisResult(context);
-                  long expirationDuration = (long)context.getStepAnalysis().getExpirationMinutes() * 60 * 1000;
-                  long startTime = result.getStartDate().getTime();
-                  long currentDuration = currentTime - startTime;
-                  if (currentDuration > expirationDuration) {
-                    future.cancel(true);
-                    futuresToRemove.add(run);
-                  }
-                }
-                else {
-                  // any other status means Future should be cleaned up
-                  LOG.warn("Step Analysis Future found referencing discontinued analysis " +
-                      "with status: " + context.getStatus() + ".  Cancelling thread.");
-                  future.cancel(true);
-                  futuresToRemove.add(run);
-                }
-              }
-            }
-            // remove futures after collecting them so as not to interfere with iterator above
-            for (RunningAnalysis run : futuresToRemove) {
-              _threadResults.remove(run);
-            }
-            waitSecs = 0;
-          }
-          Thread.sleep(FUTURE_CLEANER_SLEEP_SECS * 1000);
-          if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-          waitSecs += FUTURE_CLEANER_SLEEP_SECS;
-        }
-      }
-      catch (InterruptedException e) {
-        LOG.info("Step Analysis Future cleaner interrupted.  Shutting down.");
-        return true;
-      }
-    }
+  public static boolean isRunExpired(StepAnalysis analysis, long currentTime, Date startTime) {
+    long expirationDuration = (long)analysis.getExpirationMinutes() * 60 * 1000;
+    long currentDuration = currentTime - startTime.getTime();
+    return (currentDuration > expirationDuration);
   }
-  
-  private static class AnalysisCallable implements Callable<ExecutionStatus> {
-    
-    private final StepAnalysisContext _context;
-    private final StepAnalysisDataStore _dataStore;
-    private final StepAnalysisFileStore _fileStore;
-    
-    public AnalysisCallable(StepAnalysisContext context, StepAnalysisDataStore dataStore, StepAnalysisFileStore fileStore) {
-      _context = context;
-      _dataStore = dataStore;
-      _fileStore = fileStore;
-    }
-    
-    @Override
-    public ExecutionStatus call() throws Exception {
-      String contextHash = _context.createHash();
-      try {
-        // update database that the thread is running
-        _dataStore.updateExecution(contextHash, ExecutionStatus.RUNNING, new Date(), null, null);
-    
-        // create step analysis instance and run
-        StepAnalyzer analyzer = getConfiguredAnalyzer(_context, _fileStore);
-        ExecutionStatus status = analyzer.runAnalysis(
-            _context.getStep().getAnswerValue(), new StatusLogger(contextHash, _dataStore));
-      
-        LOG.info("Analyzer returned without exception and with status: " + status);
-        
-        if (status == null || !status.isTerminal()) {
-          // illegal status returned from plugin; set to ERROR
-          LOG.error("Step Analysis Plugin " + _context.getStepAnalysis().getName() +
-              " returned illegal status " + status + " when running instance with ID " +
-              _context.getAnalysisId());
-          status = ExecutionStatus.ERROR;
-        }
-        
-        // status completed successfully or was interrupted
-        String charData = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.getPersistentCharData() : "");
-        byte[] binData = (status.equals(ExecutionStatus.COMPLETE) ? analyzer.getPersistentBinaryData() : null);
-        _dataStore.updateExecution(contextHash, status, new Date(), charData, binData);
-        return status;
-      }
-      catch (Exception e) {
-        LOG.error("Step Analysis failed.", e);
-        _dataStore.updateExecution(contextHash, ExecutionStatus.ERROR, new Date(), FormatUtil.getStackTrace(e), null);
-        return ExecutionStatus.ERROR;
-      }
-    }
+
+  @Override
+  public void expireLongRunningExecutions() throws WdkModelException {
+    _dataStore.expireLongRunningExecutions(_fileStore);
   }
 
   @Override
