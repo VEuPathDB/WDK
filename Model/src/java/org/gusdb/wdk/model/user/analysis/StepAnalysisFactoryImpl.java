@@ -46,7 +46,7 @@ import org.gusdb.wdk.model.user.analysis.FutureCleaner.RunningAnalysis;
  *   - cache of execDef -> status/results
  */
 public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
-  
+
   private static Logger LOG = Logger.getLogger(StepAnalysisFactoryImpl.class);
 
   /* TODO: remove if not needed before 7/31/14
@@ -63,7 +63,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       "analysis on each and compare the two results.</p>"; */
 
   static final boolean USE_DB_PERSISTENCE = true;
-  
+
   private final ExecutionConfig _execConfig;
   private final StepAnalysisViewResolver _viewResolver;
   private final StepAnalysisDataStore _dataStore;
@@ -71,7 +71,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   private ExecutorService _threadPool;
   private Future<Boolean> _threadMonitor;
   private volatile ConcurrentLinkedDeque<RunningAnalysis> _threadResults;
-  
+
   public StepAnalysisFactoryImpl(WdkModel wdkModel) throws WdkModelException {
     _viewResolver = new StepAnalysisViewResolver(wdkModel.getStepAnalysisPlugins().getViewConfig());
     _execConfig = wdkModel.getStepAnalysisPlugins().getExecutionConfig();
@@ -132,7 +132,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
 
     // ensure this is a valid step to analyze
     checkStepForValidity(context);
-    
+
     // analysis valid; write analysis to DB
     return writeNewAnalysisContext(context, true);
   }
@@ -180,15 +180,15 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     if (adjustDisplayName) {
       context.setDisplayName(getAdjustedDisplayName(context));
     }
-    
+
     // create new execution instance
     int saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(), context.getDisplayName(),
         context.getState(), context.hasParams(), context.getInvalidStepReason(), context.createHash(), context.serializeContext());
-    
+
     // override any previous value for id
     context.setAnalysisId(saId);
-    
+
     return context;
   }
 
@@ -229,7 +229,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     }
     getConfiguredAnalyzer(context, _fileStore).validateAnswerValue(answer);
   }
-  
+
   @Override
   public StepAnalysisContext runAnalysis(StepAnalysisContext context)
       throws WdkModelException {
@@ -244,14 +244,14 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       context.setState(StepAnalysisState.SHOW_RESULTS);
       contextModified = true;
     }
-    
+
     // now that this analysis has params, set 'has params' if not yet set
     if (!context.hasParams()) {
       _dataStore.setHasParams(context.getAnalysisId(), true);
       context.setHasParams(true);
       contextModified = true;
     }
-    
+
     // if context was modified, recheck status
     //   TODO: fix logic here to be less ugly/costly
     if (contextModified) {
@@ -263,7 +263,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         throw new WdkModelException("Step Analysis was deleted mid-request!", e);
       }
     }
-    
+
     // Run analysis plugin under the following conditions:
     //   1. if new execution was created (i.e. none existed before or cache was cleared)
     //   2. previous run failed due to error, interruption, etc.
@@ -280,13 +280,13 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       if (!newlyCreated) {
         _dataStore.resetExecution(hash, initialStatus);
       }
-      
+
       // update stored context with param values
       _dataStore.updateContext(context.getAnalysisId(), hash, context.serializeContext());
-      
+
       // set initial status on in-memory context
       context.setStatus(initialStatus);
-      
+
       // run the analysis
       return executeAnalysis(context);
     }
@@ -306,7 +306,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       throw new WdkModelException("Unable to create new step analysis execution.  Thread pool exhausted?", e);
     }
   }
-  
+
   /**
    * Collects the data associated with a result and returns the aggregating
    * object.  This method is only to be called when a "recent" call to
@@ -324,7 +324,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     if (result == null) {
       throw new WdkModelException("Result record not found for context-generated hash: " + hash);
     }
-    
+
     LOG.info("Got result back from data store: " + result.getStatus() + ", with results:\n" + result.getStoredString());
     StepAnalyzer analyzer = getConfiguredAnalyzer(context, _fileStore);
     analyzer.setPersistentCharData(result.getStoredString());
@@ -362,21 +362,21 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     analyzer.setAnswerValue(context.getStep().getAnswerValue());
     return analyzer;
   }
-  
+
   @Override
   public StepAnalysisViewResolver getViewResolver() {
     return _viewResolver;
   }
-  
+
   @Override
   public void clearResultsCache() throws WdkModelException {
 
     // first shut down running threads
     shutDownRunningThreads();
-    
+
     // remove execution results from database
     _dataStore.deleteAllExecutions();
-    
+
     // remove execution data from file store
     _fileStore.deleteAllExecutions();
 
@@ -397,13 +397,13 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     _threadResults = new ConcurrentLinkedDeque<>();
     _threadMonitor = _threadPool.submit(new FutureCleaner(this, _threadResults));
   }
-  
+
   @Override
   public void shutDown() {
     // shut down any running threads
     shutDownRunningThreads();
   }
-  
+
   private void shutDownRunningThreads() {
     try {
       // FIXME: need to figure out what all is needed to shut down these threads
@@ -432,7 +432,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       LOG.error("Unable to cleanly shut down Step Analysis Factory", e);
     }
   }
-  
+
   @SuppressWarnings("unused")
   private void cancelThread(Future<?> thread, String name) {
     //try {
