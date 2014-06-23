@@ -32,8 +32,8 @@
         <tr>
           <th>Filter words by rank: </th>
           <td>
-            <input class="ui-state-default" type="text" name="from" size="4" readonly="readonly" /> to
-            <input class="ui-state-default" type="text" name="to" size="4" readonly="readonly" />
+            <input type="text" name="from" size="4" /> to
+            <input type="text" name="to" size="4" />
           </td>
           <td style="padding-left:20px;"><div id="amount"> </div></td>
         </tr>
