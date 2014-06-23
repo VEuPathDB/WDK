@@ -1086,6 +1086,7 @@ tr.headerRow th {
   padding: 0px 2px 0px 2px;
 }
 #word-cloud #layout .word { padding: 2px; }
+#word-cloud .word-cloud-error { padding: .4em; }
 
 
 

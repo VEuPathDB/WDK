@@ -40,26 +40,56 @@ wdk.util.namespace("window.wdk.result.wordCloud", function(ns, $) {
         max: total,
         values: [from, to],
         slide: function(event, ui) {
-          assignRange(wordCloud);
+          clearError(wordCloud);
+          assignRange(wordCloud, ui);
         },
         stop: function(event, ui) { 
-          assignRange(wordCloud);
           layout(wordCloud); 
         }
     });
-    wordCloud.find("input[name=sort], input[name=from], input[name=to]").change( function() {
+
+    wordCloud.find("input[name=sort]").change( function() {
         layout(wordCloud); 
     });
+
+    wordCloud.find("input[name=from], input[name=to]")
+      .keyup(_.debounce(function() {
+        var min = Number(wordCloud.find("input[name=from]").val());
+        var max = Number(wordCloud.find("input[name=to]").val());
+
+        clearError(wordCloud);
+
+        if (min > max) {
+          showError(wordCloud, "The minumum may not exceed the maximum.");
+          return;
+        }
+
+        if (_.isNaN(min) || _.isNaN(max)) {
+          showError(wordCloud, "Only numeric input is allowed.");
+          return;
+        }
+
+        layout(wordCloud);
+        updateSlider(wordCloud);
+      }, 300));
 
     layout(wordCloud);
   }
     
-  function assignRange(wordCloud) {
-      var amount = wordCloud.find("#amount");
-      var from = amount.slider("values", 0);
-      var to = amount.slider("values", 1);
+  function assignRange(wordCloud, ui) {
+      var from = ui.values[0];
+      var to = ui.values[1];
       wordCloud.find("input[name=from]").val(from);
       wordCloud.find("input[name=to]").val(to);
+  }
+
+  function updateSlider(wordCloud) {
+    var min = Number(wordCloud.find("input[name=from]").val());
+    var max = Number(wordCloud.find("input[name=to]").val());
+
+    wordCloud.find("#amount")
+      .slider("values", 0, min)
+      .slider("values", 1, max);
   }
     
   function layout(wordCloud) {
@@ -114,6 +144,20 @@ wdk.util.namespace("window.wdk.result.wordCloud", function(ns, $) {
       if (leftWord > rightWord) return 1;
       else if (leftWord < rightWord) return -1;
       else return 0;
+    }
+
+    function showError(wordCloud, message) {
+      clearError(wordCloud);
+
+      $('<div>' + message + '</div>')
+        .addClass('word-cloud-error')
+        .addClass('ui-state-error')
+        .addClass('ui-corner-all')
+        .insertBefore(wordCloud.find('table'));
+    }
+
+    function clearError(wordCloud) {
+      wordCloud.find(".word-cloud-error").remove();
     }
 
   ns.init = init;
