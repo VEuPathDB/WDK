@@ -465,6 +465,9 @@
         <attribute name="metadataSpecQueryRef" />
         <attribute name="metadataQueryRef" />
       </optional>
+      <optional>
+        <attribute name="defaultColumns" />
+      </optional>
       <zeroOrMore>
         <choice>
           <ref name="FlatVocabParamBaseTags" />

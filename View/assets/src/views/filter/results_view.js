@@ -20,19 +20,26 @@ wdk.namespace('wdk.views.filter', function(ns) {
       Handlebars.registerHelper('property', function(key, context, options) {
         return context[key];
       });
-      this.initTableOnce = _.once(this._initTable.bind(this));
       wdk.views.View.apply(this, arguments);
     },
 
-    initialize: function() {
+    initialize: function(options) {
+      this.defaultColumns = options.defaultColumns;
+      this.initTableOnce = _.once(this._initTable.bind(this));
+
       this.listenTo(this.model.filteredData, 'reset', this.queueRender);
     },
 
     render: function() {
       this.initTableOnce();
       this.dataTable.fnClearTable(false);
-      this.dataTable.fnAddData(this.model.filteredData.toJSON(), false);
+
+      if (this.model.filteredData.length) {
+        this.dataTable.fnAddData(this.model.filteredData.toJSON(), false);
+      }
+
       this.dataTable.fnDraw();
+      this.resizeTable();
 
       return this;
     },
@@ -104,6 +111,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     generateTableConfig: function() {
       var _this = this;
       var columns = [];
+      var defaultColumns = this.defaultColumns;
 
       columns.push({
         sClass: 'display',
@@ -121,7 +129,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
           columns.push({
             sClass: field.get('term'),
             sTitle: field.get('display'),
-            mData: 'metadata.' + field.get('term')
+            mData: 'metadata.' + field.get('term'),
+            bVisible: defaultColumns
+                      ? defaultColumns.indexOf(field.get('term')) > -1
+                      : true
           });
         });
 
@@ -132,12 +143,12 @@ wdk.namespace('wdk.views.filter', function(ns) {
         aoColumns: columns,
         fnRowCallback: function(tr, d) {
           $(tr).toggleClass('muted', d.ignored);
+        },
+        oColVis: {
+          buttonText: 'Change columns',
+          sAlign: 'right',
+          aiExclude: [ 0 ] // exclude the name column
         }
-        // oColVis: {
-        //   buttonText: 'Change columns',
-        //   sAlign: 'right',
-        //   aiExclude: [ 0 ]
-        // }
       };
     }
 

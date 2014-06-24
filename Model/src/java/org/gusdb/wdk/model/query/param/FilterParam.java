@@ -53,6 +53,7 @@ public class FilterParam extends FlatVocabParam {
 
   private String metadataSpecQueryRef;
   private Query metadataSpecQuery;
+  private String defaultColumns;
 
   /**
    * 
@@ -75,6 +76,8 @@ public class FilterParam extends FlatVocabParam {
     this.metadataSpecQueryRef = param.metadataSpecQueryRef;
     if (param.metadataSpecQuery != null)
       this.metadataSpecQuery = param.metadataSpecQuery.clone();
+    if (param.defaultColumns != null)
+      this.defaultColumns = param.defaultColumns;
   }
 
   /*
@@ -145,6 +148,21 @@ public class FilterParam extends FlatVocabParam {
    */
   public void setMetadataSpecQuery(Query metadataSpecQuery) {
     this.metadataSpecQuery = metadataSpecQuery;
+  }
+
+  /**
+   * @return the defaultColumns
+   */
+  public String getDefaultColumns() {
+    return defaultColumns;
+  }
+
+  /**
+   * @param defaultColumns
+   *          the metadataQuery to set
+   */
+  public void setDefaultColumns(String defaultColumns) {
+    this.defaultColumns = defaultColumns;
   }
 
   @Override
