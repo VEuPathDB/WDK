@@ -383,10 +383,7 @@ public class AnswerValue {
    * @throws WdkUserException 
    */
   public String getAnswerStringKey() throws WdkModelException, WdkUserException {
-    String key = getChecksum();
-    if (filter != null)
-      key += ":" + filter.getName();
-    return key;
+    return getChecksum();
   }
 
   // ///////////////////////////////////////////////////////////////////
