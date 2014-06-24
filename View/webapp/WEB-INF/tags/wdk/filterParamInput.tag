@@ -50,6 +50,7 @@ Otherwise a standard select menu is used.
     name="${pNam}"
     data-name="${qp.prompt}"
     data-type="filter-param"
+    data-default-columns="${qp.defaultColumns}"
     data-data-id="filter-param-${qP.name}">
   <html:hidden property="value(${pNam})" />
   <script type="application/json" id="filter-param-${qP.name}">

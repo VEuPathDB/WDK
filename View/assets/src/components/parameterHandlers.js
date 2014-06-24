@@ -126,7 +126,12 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var $node = $(node);
       var dataId = $node.data('data-id');
       var name = $node.data('name');
+      var defaultColumns = $node.data('default-columns');
       var input = $node.find('input');
+
+      defaultColumns = defaultColumns
+                       ? defaultColumns.split(/\s+/)
+                       : undefined;
 
       // get previous values
       try {
@@ -182,7 +187,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       // create views
       var itemsView = new wdk.views.filter.FilterItemsView(filterService, { model: filterService.filters });
-      var view = new wdk.views.filter.FilterView({ model: filterService });
+      var view = new wdk.views.filter.FilterView({ model: filterService, defaultColumns: defaultColumns });
 
       // attach views
       $node.find('.filter-param')
