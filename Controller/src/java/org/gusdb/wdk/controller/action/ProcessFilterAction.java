@@ -60,6 +60,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     boolean isTransform = false;
   }
 
+  @SuppressWarnings("serial")
+  private static class UnmatchedChecksumException extends Exception { }
+  
   @Override
   public ActionForward execute(ActionMapping mapping, ActionForm form,
       HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -70,12 +73,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     
     try {
       RequestParams requestParams = getValidatedParams(request, wdkUser, form);
-
-      // verify the checksum and return error if mismatch
-      if (!requestParams.checksumValid) {
-        ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, requestParams.state);
-        return null;
-      }
 
       StrategyBean strategy = requestParams.strategy;
       int oldStrategyId = requestParams.strategy.getStrategyId();
@@ -302,11 +299,20 @@ public class ProcessFilterAction extends ProcessQuestionAction {
       logger.debug("\nLeaving ProcessFilterAction...\n");
       return forward;
     }
+    catch (UnmatchedChecksumException e) {
+      // verify the checksum and return error if mismatch
+      ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, getStateParamValue(request));
+      return null;
+    }
     catch (Exception ex) {
       logger.error("Error while processing filter.", ex);
       ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
       return null;
     }
+  }
+
+  private static String getStateParamValue(HttpServletRequest request) {
+    return request.getParameter(CConstants.WDK_STATE_KEY);
   }
 
   private static StepBean determineRootStep(Integer branchId, StrategyBean strategy) throws WdkModelException {
@@ -323,12 +329,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
   private static StepBean createNewFilterStep(WdkModelBean wdkModel, UserBean wdkUser,
       HttpServletRequest request, RequestParams requestParams) throws WdkUserException, WdkModelException {
-    StepBean newStep;
+    StepBean oldStep = null, newStep;
     if (requestParams.insertStratId != null) {
       // yes: load step, create a new step w/ same answervalue
       StrategyBean insertStrat = wdkUser.getStrategy(requestParams.insertStratId);
       // deep clone the root step of the input strategy
-      newStep = insertStrat.getLatestStep().deepClone();
+      oldStep = insertStrat.getLatestStep();
+      newStep = oldStep.deepClone();
       newStep.setIsCollapsible(true);
       newStep.setCollapsedName("Copy of " + insertStrat.getName());
       newStep.update(false);
@@ -360,7 +367,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
       logger.debug("change filter: " + requestParams.filterName);
       // change the filter of an existing step, which can be a child
       // step, or a boolean step
-      StepBean oldStep = requestParams.strategy.getStepById(requestParams.reviseStepId);
+      oldStep = requestParams.strategy.getStepById(requestParams.reviseStepId);
       if (requestParams.hasFilter) {
         newStep = oldStep.createStep(requestParams.filterName, oldStep.getAssignedWeight());
       }
@@ -374,11 +381,16 @@ public class ProcessFilterAction extends ProcessQuestionAction {
       // reset pager info in session
       wdkUser.setViewResults(wdkUser.getViewStrategyId(), wdkUser.getViewStepId(), 0);
     }
+    
+    if (oldStep != null) {
+      wdkModel.getModel().getStepAnalysisFactory().copyAnalysisInstances(oldStep.getStep(), newStep.getStep());
+    }
+    
     return newStep;
   }
 
   private static RequestParams getValidatedParams(HttpServletRequest request,
-      UserBean wdkUser, ActionForm form) throws WdkUserException, WdkModelException {
+      UserBean wdkUser, ActionForm form) throws WdkUserException, WdkModelException, UnmatchedChecksumException {
     try {
       RequestParams params = new RequestParams();
       params.strategyKey = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
@@ -395,7 +407,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
       else {
         params.strategyId = Integer.parseInt(params.strategyKey);
       }
-      params.state = request.getParameter(CConstants.WDK_STATE_KEY);
+      params.state = getStateParamValue(request);
       params.strategy = wdkUser.getStrategy(params.strategyId);
       String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
       params.checksumValid = (checksum == null ? false :
@@ -404,6 +416,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
       if (!params.checksumValid) {
         logger.error("strategy checksum: " + params.strategy.getChecksum() +
             ", but the input checksum: " + checksum);
+        throw new UnmatchedChecksumException();
       }
       // Get operation from request params. If it is non-null
       // but contains only whitespace, set it to null.

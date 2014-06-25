@@ -156,8 +156,9 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       LOG.trace("TRACE: " + fromContext.getInstanceJson());
       StepAnalysisContext toContext = StepAnalysisContext.createCopy(fromContext);
       toContext.setStep(toStep);
-      // steps copied during revise have invalid results until run again
-      toContext.setState(StepAnalysisState.INVALID_RESULTS);
+      // non-new steps copied during revise have invalid results until run again
+      toContext.setState(fromContext.getState().equals(StepAnalysisState.NO_RESULTS) ?
+          StepAnalysisState.NO_RESULTS : StepAnalysisState.INVALID_RESULTS);
       try {
         checkStepForValidity(toContext);
         toContext.setIsValidStep(true);
