@@ -59,7 +59,6 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
                 "aaSorting": [[ 6, "desc" ]]
               });
               ui.panel.removeClass("ui-widget ui-widget-content");
-              wdk.load();
             }
           }).removeClass("ui-widget ui-widget-content");
 
