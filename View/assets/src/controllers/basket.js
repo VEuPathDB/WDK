@@ -11,7 +11,6 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
       active: index,
       load: function(event, ui) {
         basketTabSelected(event, ui);
-        wdk.load();
       }
     });
   }

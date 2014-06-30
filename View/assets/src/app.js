@@ -9,7 +9,12 @@
       wdk.cookieTest();
       wdk.setUpDialogs();
       wdk.setUpPopups();
-      wdk.load();
+
+      // call wdk.load trigger DOM-based functions
+      !function load() {
+        wdk.load();
+        setTimeout(load, 100);
+      }();
     }
 
   });

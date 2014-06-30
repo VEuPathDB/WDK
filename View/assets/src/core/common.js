@@ -265,7 +265,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   // TODO: view
   function registerTable() {
     // register data tables on wdk table
-    $(".wdk-table.datatables").dataTable({
+    $(".wdk-table.datatables").not('.dataTable').dataTable({
         "bJQueryUI": true
     });
 
@@ -275,15 +275,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
 
   // TODO: mixin
   function registerTooltips() {
-    // register elements with fancy tooltips
-    // $(".wdk-tooltip").not(".qtip").qtip({
-    //   position: {
-    //     my: "top center",
-    //     at: "bottom center",
-    //     viewport: $(window)
-    //   }
-    // });
-    $(".wdk-tooltip").wdkTooltip();
+    $(".wdk-tooltip").not('.qtip').wdkTooltip();
   }
 
   // TODO: mixin
@@ -601,6 +593,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   // when a portion (or all) of the DOM is loaded...
   function load() {
     resolveAssetsUrls();
+    wdk.components.ajaxElement.triggerElements();
     wdk.util.executeOnloadFunctions("body");
     registerTable();
     registerTooltips();
