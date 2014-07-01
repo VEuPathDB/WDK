@@ -287,6 +287,9 @@ img[data-assets-src][src] {
   text-align: center;
   padding-top: 1em;
 }
+.wdk-feature-tooltip .dismiss-wrapper label {
+  font-size: 75%;
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     =Styling for the Login pop-up box 
