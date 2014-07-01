@@ -275,7 +275,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
 
   // TODO: mixin
   function registerTooltips() {
-    $(".wdk-tooltip").not('.qtip').wdkTooltip();
+    $(".wdk-tooltip").not('[data-hasqtip]').wdkTooltip();
   }
 
   // TODO: mixin
