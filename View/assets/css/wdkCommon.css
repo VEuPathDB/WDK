@@ -235,6 +235,12 @@ img[data-assets-src][src] {
   display: none;
 }
 
+.wdk-data-table {
+  opacity: 0;
+}
+.wdk-data-table.dataTable {
+  opacity: 1;
+}
 
 /* qtip overrides */
 
