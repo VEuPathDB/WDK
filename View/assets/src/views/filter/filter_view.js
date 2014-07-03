@@ -25,9 +25,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     template: wdk.templates['filter/filter.handlebars'],
 
-    initialize: function() {
-      this.filterCollapsedView = new FilterCollapsedView({ model: this.model });
-      this.filterExpandedView = new FilterExpandedView({ model: this.model });
+    initialize: function(options) {
+      this.filterCollapsedView = new FilterCollapsedView(options);
+      this.filterExpandedView = new FilterExpandedView(options);
       this.collapse(true);
       this.listenTo(this.model.fields, 'select', function() {
         this.collapse(false);

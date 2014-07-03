@@ -8,11 +8,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     template: wdk.templates['filter/filter_expanded.handlebars'],
 
-    initialize: function() {
+    initialize: function(options) {
       this.listenTo(this.model.filteredData, 'reset change', this.setCount);
 
-      this.filterFieldsView = new FilterFieldsView({ model: this.model });
-      this.resultsView = new ResultsView({ model: this.model });
+      this.filterFieldsView = new FilterFieldsView(options);
+      this.resultsView = new ResultsView(options);
     },
 
     render: function() {
