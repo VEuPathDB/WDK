@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.user.StepFactory.NameCheckInfo;
 
 /**
  * @author ctreatma
@@ -69,8 +70,8 @@ public class ProcessRenameStrategyAction extends Action {
 
             // if we haven't been asked to check the user-specified name, or a
             // strategy with that name does not already exist, do the rename
-            boolean[] nameCheck = wdkUser.checkNameExists(strategy, customName, save);
-            if (!checkName || !nameCheck[0]) {
+            NameCheckInfo nameCheck = wdkUser.checkNameExists(strategy, customName, save);
+            if (!checkName || !nameCheck.nameExists()) {
                 logger.debug("failed check.  either not checking name, or strategy doesn't already exist.");
                 int oldStrategyId = strategy.getStrategyId();
 
@@ -80,13 +81,9 @@ public class ProcessRenameStrategyAction extends Action {
                                 "You must be logged in to save a strategy!");
                     }
                     // if we're saving, and the strat is already saved (which
-                    // means
-                    // savedName is not null),
-                    // and the new name to save with is different from the
-                    // savedName
-                    // (which means we're
-                    // doing a "save as"), then make a new copy of this
-                    // strategy.
+                    // means savedName is not null), and the new name to save
+                    // with is different from the savedName (which means we're
+                    // doing a "save as"), then make a new copy of this strategy
                     if (strategy.getIsSaved()
                             && !customName.equals(strategy.getSavedName())) {
                         // clone the last step
@@ -101,8 +98,20 @@ public class ProcessRenameStrategyAction extends Action {
                 // whether its a save or rename, set new name specified by user.
                 strategy.setName(customName);
                 strategy.setSavedName(customName);
-                strategy.setDescription(description);
+                
+                // Hack for Redmine #16159: if strategy being overwritten is
+                //   public, then make overwriting strategy public too (even if
+                //   user doesn't check the is_public box).  Also, if passed
+                //   description is empty and strat is to be public, use
+                //   overwritten strat's description
+                isPublic = (nameCheck.isPublic() ? true : isPublic);
+                if (isPublic && description.trim().isEmpty()) {
+                  description = nameCheck.getDescription();
+                }
+                
                 strategy.setIsPublic(isPublic);
+                strategy.setDescription(description);
+                
                 strategy.update(save || strategy.getIsSaved());
 
                 try {
@@ -144,7 +153,7 @@ public class ProcessRenameStrategyAction extends Action {
                         strategy.getLatestStep());
                 request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
             } else {    // name already exists
-                ShowStrategyAction.outputDuplicateNameJSON(wdkModel, wdkUser, response, state, nameCheck[1]);
+                ShowStrategyAction.outputDuplicateNameJSON(wdkModel, wdkUser, response, state, nameCheck.isPublic());
                 return null;
             }
 

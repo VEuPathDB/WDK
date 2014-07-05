@@ -87,6 +87,20 @@ public class StepFactory {
 
   private static final Logger logger = Logger.getLogger(StepFactory.class);
 
+  public static class NameCheckInfo {
+    private boolean _nameExists;
+    private boolean _isPublic;
+    private String _description;
+    public NameCheckInfo(boolean nameExists, boolean isPublic, String description) {
+      _nameExists = nameExists;
+      _isPublic = isPublic;
+      _description = description;
+    }
+    public boolean nameExists() { return _nameExists; }
+    public boolean isPublic() { return _isPublic; }
+    public String getDescription() { return _description; }
+  }
+  
   private final WdkModel wdkModel;
   private final String userSchema;
   private final DatabaseInstance userDb;
@@ -1348,9 +1362,9 @@ public class StepFactory {
     return params;
   }
 
-  boolean[] checkNameExists(Strategy strategy, String name, boolean saved) throws WdkModelException {
+  NameCheckInfo checkNameExists(Strategy strategy, String name, boolean saved) throws WdkModelException {
     ResultSet rsCheckName = null;
-    String sql = "SELECT strategy_id, is_public FROM " + userSchema + TABLE_STRATEGY + " WHERE " +
+    String sql = "SELECT strategy_id, is_public, description FROM " + userSchema + TABLE_STRATEGY + " WHERE " +
         Utilities.COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME + " = ? AND " +
         COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? AND " + COLUMN_STRATEGY_ID + " <> ?";
     try {
@@ -1367,10 +1381,11 @@ public class StepFactory {
 
       if (rsCheckName.next()) {
         boolean isPublic = rsCheckName.getBoolean(2);
-        return new boolean[] { true, isPublic };
+        String description = rsCheckName.getString(3);
+        return new NameCheckInfo(true, isPublic, description);
       }
       // otherwise, no strat by this name exists
-      return new boolean[] { false, false };
+      return new NameCheckInfo(false, false, null);
 
     }
     catch (SQLException e) {
