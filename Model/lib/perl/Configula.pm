@@ -32,6 +32,7 @@ my %dblinkMap = (
     'apicommn'    => 'prodn.login_comment',
     'apicommdevs' => 'devs.login_comment',
     'apicommdevn' => 'devn.login_comment',
+    'userdb'      => 'vm.userdb', # standalone virtual machine
 );
 
 =head1 METHODS
