@@ -45,8 +45,9 @@ wdk.util.namespace("window.wdk.dyk", function(ns, $) {
     }
 
     $("#dyk-box,#dyk-shadow").show();
-    var randomnumber=Math.floor(Math.random()*tipMax);
-    setCurrent(randomnumber);
+    //var randomnumber=Math.floor(Math.random()*tipMax);
+    //setCurrent(randomnumber);
+		setCurrent(0);
     $("#dyk-box input#close").click(function(){
       dykClose();
     });
