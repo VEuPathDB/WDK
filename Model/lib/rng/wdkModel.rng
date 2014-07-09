@@ -465,6 +465,9 @@
         <attribute name="metadataSpecQueryRef" />
         <attribute name="metadataQueryRef" />
       </optional>
+      <optional>
+        <attribute name="defaultColumns" />
+      </optional>
       <zeroOrMore>
         <choice>
           <ref name="FlatVocabParamBaseTags" />
@@ -1543,6 +1546,13 @@
       <attribute name="analyzerClass" />
       <attribute name="releaseVersion" />
       <ref name="stepAnalysisOptions" />
+      <element name="shortDescription">
+        <text />
+      </element>
+      <element name="description">
+        <text />
+      </element>
+      <ref name="stepAnalysisProperties"/>
     </element>
   </define>
   
@@ -1553,6 +1563,17 @@
       <optional>
         <attribute name="releaseVersion" />
       </optional>
+      <optional>
+        <element name="shortDescription">
+          <text />
+        </element>
+      </optional>
+      <optional>
+        <element name="description">
+          <text />
+        </element>
+      </optional>
+      <ref name="stepAnalysisProperties"/>
     </element>
   </define>
 
@@ -1569,14 +1590,14 @@
     <optional>
       <attribute name="customThumbnail" />
     </optional>
+  </define>
+
+  <define name="stepAnalysisProperties">
     <zeroOrMore>
       <choice>
         <element name="property">
           <attribute name="name" />
           <attribute name="value" />
-        </element>
-        <element name="description">
-          <text />
         </element>
       </choice>
     </zeroOrMore>

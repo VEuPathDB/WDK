@@ -37,7 +37,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
           }, []);
       }(this.model.fields.toJSON()), 'term');
 
-      var root = _.findWhere(prunedFields, { parent: undefined });
+      var rootNodes = _.where(prunedFields, { parent: undefined });
 
       var groupedFields = (function appendChildren(nodes, fields) {
         return _.map(nodes, function(node) {
@@ -50,7 +50,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
             ? { field: node, children: appendChildren(children, fields) }
             : { field: node };
         });
-      }(_.where(prunedFields, { parent: root.term}), prunedFields));
+      }(rootNodes, prunedFields));
 
       this.$el.html(this.template(groupedFields));
       return this;

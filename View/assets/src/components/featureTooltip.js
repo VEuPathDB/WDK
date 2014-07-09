@@ -1,6 +1,10 @@
 wdk.namespace('wdk.components', function(ns, $) {
   'use strict';
 
+  // imports
+  var preventEvent = wdk.fn.preventEvent,
+      assetsUrl = wdk.assetsUrl;
+
   // Creates a feature tooltip.
   //
   // opts:
@@ -25,10 +29,10 @@ wdk.namespace('wdk.components', function(ns, $) {
       .wdkTooltip({
         content: {
           text: text,
+          // button: 'Got it!',
           title: '<img title="This is a new search!" alt="New feature icon" ' +
-                 'src="' + wdk.assetsUrl('/wdk/images/new-feature.png') + '"> ' +
-                 title,
-          button: 'Got it!'
+                 'src="' + assetsUrl('/wdk/images/new-feature.png') + '"> ' +
+                 title
         },
         style: {
           classes: 'qtip-bootstrap wdk-feature-tooltip'
@@ -42,16 +46,32 @@ wdk.namespace('wdk.components', function(ns, $) {
         },
         show: {
           event: false,
-          ready: true
+          ready: true,
+          effect: false
         },
         events: {
           hide: function(e, api) {
             if (e.originalEvent.type === 'tooltipsolo') {
               e.preventDefault();
             } else {
-              localStorage.setItem(dismissedStorageKey, 1);
+              if (api.cache.remember) {
+                localStorage.setItem(dismissedStorageKey, 1);
+              }
               api.destroy();
             }
+          },
+          show: function(e, api) {
+            var anchor = $('<div class="dismiss-wrapper">' +
+                           '  <a href="#dismiss">Got it!</a>' +
+                           '  <label><input type="checkbox" name="remember"/>' +
+                           'Don\'t bother me anymore.</label>' +
+                           '</div>')
+              .on('click', 'a', preventEvent(api.hide.bind(api)))
+              .on('change', 'input', function(e) {
+                api.cache.remember = e.target.checked;
+              });
+
+            api.elements.content.append(anchor);
           }
         }
       });

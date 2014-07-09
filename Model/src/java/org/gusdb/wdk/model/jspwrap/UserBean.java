@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.Favorite;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory.NameCheckInfo;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 
@@ -915,7 +916,7 @@ public class UserBean /* implements Serializable */{
     return new StrategyBean(this, strategy);
   }
 
-    public boolean[] checkNameExists(StrategyBean strategy, String name,
+    public NameCheckInfo checkNameExists(StrategyBean strategy, String name,
             boolean saved) throws WdkModelException {
         return user.checkNameExists(strategy.strategy, name, saved);
     }

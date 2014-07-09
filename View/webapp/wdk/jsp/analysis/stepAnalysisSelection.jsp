@@ -26,7 +26,7 @@
                   role="${class eq 'inactive' ? '' : 'link'}"
                   tabindex="${class eq 'inactive' ? '' : '0'}"
                   style="${style}"
-                  title="${analysis.description}"
+                  title="${analysis.shortDescription}"
                   data-name="${analysis.name}" data-step-id="${wdkStep.stepId}">
                 <c:if test="${analysis.releaseVersion le 0}">
                   <div class="analysis-selection-banner">Coming soon...</div>
@@ -37,7 +37,7 @@
                 <div class="analysis-wrapper">
                   <div class="analysis-title">${analysis.displayName}</div>
                   <div class="analysis-description">
-                    ${analysis.description}
+                    ${analysis.shortDescription}
                   </div>
                 </div>
               </li>

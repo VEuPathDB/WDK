@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -77,6 +77,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private String GET_STATUS_BY_HASH_SQL;
   private String GET_STATUSES_BY_HASHES_SQL;
   private String GET_RESULTS_BY_HASH_SQL;
+  private String GET_RUNNING_EXECUTIONS_SQL;
   private String SET_EXECUTION_LOG_SQL;
   private String GET_EXECUTION_LOG_SQL;
 
@@ -225,6 +226,9 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     GET_RESULTS_BY_HASH_SQL =
         "SELECT STATUS, START_DATE, UPDATE_DATE, LOG, CHAR_DATA, BIN_DATA" +
         " FROM " + table + " WHERE CONTEXT_HASH = ?";
+    GET_RUNNING_EXECUTIONS_SQL =
+        "SELECT CONTEXT_HASH, STATUS, START_DATE, UPDATE_DATE FROM " + table +
+        " WHERE STATUS = 'PENDING' OR STATUS = 'RUNNING'";
     SET_EXECUTION_LOG_SQL =
         "UPDATE " + table + " SET LOG = ? WHERE CONTEXT_HASH = ?";
     GET_EXECUTION_LOG_SQL =
@@ -253,13 +257,14 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew, boolean hasParams,
-      String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException {
+  public void insertAnalysis(int analysisId, int stepId, String displayName,
+      StepAnalysisState state, boolean hasParams, String invalidStepReason,
+      String contextHash, String serializedContext) throws WdkModelException {
     try {
       new SQLRunner(_userDs, INSERT_ANALYSIS_SQL).executeStatement(
-          new Object[] { analysisId, stepId, displayName, isNew, hasParams,
+          new Object[] { analysisId, stepId, displayName, state.getDbValue(), hasParams,
               invalidStepReason, contextHash, serializedContext },
-          new Integer[] { Types.INTEGER, Types.INTEGER, Types.VARCHAR, _userBoolType,
+          new Integer[] { Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER,
               _userBoolType, Types.VARCHAR, Types.VARCHAR, Types.CLOB });
     }
     catch (SQLRunnerException e) {
@@ -295,10 +300,10 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void setNewFlag(int analysisId, boolean isNew) throws WdkModelException {
+  public void setState(int analysisId, StepAnalysisState state) throws WdkModelException {
     try {
       int changed = new SQLRunner(_userDs, UPDATE_NEW_FLAG_SQL).executeUpdate(
-          new Object[] { isNew, analysisId }, new Integer[] { _userBoolType, Types.INTEGER });
+          new Object[] { state.getDbValue(), analysisId }, new Integer[] { Types.INTEGER, Types.INTEGER });
       if (changed == 0) {
         throw new WdkModelException("Could not find analysis with id " + analysisId);
       }
@@ -394,8 +399,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       throws WdkModelException {
     try {
       // data structures to build result
-      final Map<String, List<Integer>> hashToIdsMap = new HashMap<>();
-      final Map<Integer, AnalysisInfoPlusStatus> result = new HashMap<>();
+      final Map<String, List<Integer>> hashToIdsMap = new LinkedHashMap<>();
+      final Map<Integer, AnalysisInfoPlusStatus> result = new LinkedHashMap<>();
 
       // don't query DB if no IDs passed
       if (analysisIds.isEmpty()) return result;
@@ -410,7 +415,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
               // read result row into an AnalysisInfo object
               Reader contextReader = rs.getCharacterStream(8);
               AnalysisInfo info = new AnalysisInfo(rs.getInt(1), rs.getInt(2), rs.getString(3),
-                  rs.getBoolean(4), rs.getBoolean(5), rs.getString(6), rs.getString(7),
+                  StepAnalysisState.valueOf(rs.getInt(4)), rs.getBoolean(5), rs.getString(6), rs.getString(7),
                   contextReader == null ? null : IoUtil.readAllChars(contextReader));
 
               // add to result map
@@ -424,7 +429,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
               }
               idListForContext.add(info.analysisId);
             }
-            catch (IOException ioe) {
+            catch (IllegalArgumentException | IOException ioe) {
               throw new SQLException("Unable to read context value.", ioe);
             }
           }
@@ -602,6 +607,30 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
           });
       // return object retrieved, or null if not found
       return resultContainer[0];
+    }
+    catch (SQLRunnerException e) {
+      throw new WdkModelException("Unable to complete operation.", e);
+    }
+  }
+
+  @Override
+  public List<ExecutionInfo> getAllRunningExecutions() throws WdkModelException {
+    try {
+      final List<ExecutionInfo> results = new ArrayList<>();
+      new SQLRunner(_appDs, GET_RUNNING_EXECUTIONS_SQL).executeQuery(
+          new ResultSetHandler() {
+            @Override public void handleResult(ResultSet rs) throws SQLException {
+              while (rs.next()) {
+                // parse values retrieved from database
+                String contextHash = rs.getString(1);
+                ExecutionStatus status = parseStatus(rs.getString(2), contextHash);
+                Date startDate = new Date(rs.getTimestamp(3).getTime());
+                Date updateDate = new Date(rs.getTimestamp(4).getTime());
+                results.add(new ExecutionInfo(contextHash, status, startDate, updateDate));
+              }
+            }
+          });
+      return results;
     }
     catch (SQLRunnerException e) {
       throw new WdkModelException("Unable to complete operation.", e);
