@@ -26,7 +26,7 @@ import org.json.JSONException;
 public abstract class Reporter implements Iterable<AnswerValue> {
 
     public static final String FIELD_FORMAT = "downloadType";
-    private static final String PROPERTY_PAGE_SIZE = "page_size";
+    public static final String PROPERTY_PAGE_SIZE = "page_size";
 
     private static final int SORTING_THRESHOLD = 100;
 
@@ -153,6 +153,8 @@ public abstract class Reporter implements Iterable<AnswerValue> {
             if (config.containsKey(FIELD_FORMAT)) {
                 format = config.get(FIELD_FORMAT);
             }
+            if (config.containsKey(PROPERTY_PAGE_SIZE))
+              maxPageSize = Integer.valueOf(config.get(PROPERTY_PAGE_SIZE));
         }
     }
 
