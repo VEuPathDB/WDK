@@ -88,7 +88,7 @@
       <c:set var="analysisCtx" value="${analysisEntry.value}"/>
       <c:set var="analysis" value="${analysisCtx.stepAnalysis}"/>
       <li id="step-analysis-${analysisId}">
-        <a href="${pageContext.request.contextPath}/stepAnalysisPane.do?analysisId=${analysisId}" title="${analysis.description}">
+        <a href="${pageContext.request.contextPath}/stepAnalysisPane.do?analysisId=${analysisId}" title="${analysis.shortDescription}">
           ${analysisCtx.displayName} <span> </span>
         </a>
         <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
@@ -109,7 +109,7 @@
         <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
       </li>
       <li id="add-analysis">
-        <button title="Choose an analysis tool to apply to the results of your current step.">Analysis Tools</button>
+        <button title="Choose an analysis tool to apply to the results of your current step.">Analyze Results</button>
         <c:if test="${not empty newAnalyses}">
           <div class="analysis-feature-tooltip">
             <ul>

@@ -19,6 +19,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   // basic information
   private String _name;
   private String _displayName;
+  private String _shortDescription;
   private String _description;
   private String _releaseVersion;
   private Integer _expirationMinutes;
@@ -65,9 +66,18 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   }
   
   @Override
+  public String getShortDescription() {
+    return (_shortDescription != null && !_shortDescription.isEmpty() ? _shortDescription :
+      "Performs a " + _displayName + " analysis on this step.");
+  }
+  public void setShortDescription(WdkModelText shortDescription) {
+    _shortDescription = shortDescription.getText();
+  }
+  
+  @Override
   public String getDescription() {
     return (_description != null && !_description.isEmpty() ? _description :
-      "Performs a " + _displayName + " analysis on this step.");
+      "No further details available.");
   }
   public void setDescription(WdkModelText description) {
     _description = description.getText();
@@ -169,6 +179,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     // always use values from reference, then obj, then default
     _analyzerClass = saObj._analyzerClass;
     _displayName = chooseValue(_displayName, saObj._displayName, _name);
+    _shortDescription = chooseValue(_shortDescription, saObj._shortDescription, "");
     _description = chooseValue(_description, saObj._description, "");
     _releaseVersion = chooseValue(_releaseVersion, saObj._releaseVersion, null);
     _formViewName = chooseValue(_formViewName, saObj._formViewName, DEFAULT_FORM_VIEW);

@@ -109,8 +109,10 @@
 }
 .field-list ul {
   padding-bottom: .5em;
-  padding-left: .8em;
   font-weight: bold;
+}
+.field-list > ul ul {
+  padding-left: .8em;
 }
 .field-list li a {
   display: block;

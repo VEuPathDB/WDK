@@ -14,50 +14,69 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     className: 'results',
 
-    _doRender: null,
-
     dataTable: null,
 
     constructor: function() {
       Handlebars.registerHelper('property', function(key, context, options) {
         return context[key];
       });
-
       wdk.views.View.apply(this, arguments);
     },
 
-    initialize: function() {
+    initialize: function(options) {
+      this.defaultColumns = options.defaultColumns;
+      this.initTableOnce = _.once(this._initTable.bind(this));
+
       this.listenTo(this.model.filteredData, 'reset', this.queueRender);
-      this.render();
     },
 
     render: function() {
+      this.initTableOnce();
+      this.dataTable.fnClearTable(false);
+
+      if (this.model.filteredData.length) {
+        this.dataTable.fnAddData(this.model.filteredData.toJSON(), false);
+      }
+
+      this.dataTable.fnDraw();
+      this.resizeTable();
+
+      return this;
+    },
+
+    _initTable: function() {
       var tableConfig = this.generateTableConfig();
 
       this.$el.html(this.template({
         fields: this.model.fields.toJSON()
       }));
 
-      this.dataTable = this.$('.results-table').wdkDataTable(tableConfig).dataTable();
+      this.dataTable = this.$('.results-table')
+        .wdkDataTable(tableConfig)
+        .dataTable();
 
-      this.renderTableBody();
-
-      $(window).on('resize', _.debounce(this.resizeTable.bind(this), 100));
-
-      return this;
+      $(window).on('resize', _.debounce(this.queueResizeTable.bind(this), 100));
     },
 
-    renderTableBody: function() {
-      this.dataTable.fnClearTable(false);
-      this.dataTable.fnAddData(this.model.filteredData.toJSON(), false);
-      this.dataTable.fnDraw();
+    resizeTable: function() {
+      this.dataTable.fnAdjustColumnSizing(false);
     },
 
     queueRender: function() {
       if (this.$el.is(':visible')) {
-        this.renderTableBody();
-      } else {
+        this.render();
+      }
+      else {
         this._doRender = true;
+      }
+    },
+
+    queueResizeTable: function() {
+      if (this.$el.is(':visible')) {
+        this.resizeTable();
+      }
+      else {
+        this._doResizeTable = true;
       }
     },
 
@@ -79,20 +98,20 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     didShow: function() {
       if (this._doRender) {
-        this.renderTableBody();
+        this.render();
         this._doRender = false;
-      } else {
-        this.resizeTable();
+        this._doResizeTable = false;
       }
-    },
-
-    resizeTable: function() {
-      this.dataTable.fnAdjustColumnSizing(false);
+      if (this._doResizeTable) {
+        this.resizeTable();
+        this._doResizeTable = false;
+      }
     },
 
     generateTableConfig: function() {
       var _this = this;
       var columns = [];
+      var defaultColumns = this.defaultColumns;
 
       columns.push({
         sClass: 'display',
@@ -110,7 +129,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
           columns.push({
             sClass: field.get('term'),
             sTitle: field.get('display'),
-            mData: 'metadata.' + field.get('term')
+            mData: 'metadata.' + field.get('term'),
+            bVisible: defaultColumns
+                      ? defaultColumns.indexOf(field.get('term')) > -1
+                      : true
           });
         });
 
@@ -121,12 +143,12 @@ wdk.namespace('wdk.views.filter', function(ns) {
         aoColumns: columns,
         fnRowCallback: function(tr, d) {
           $(tr).toggleClass('muted', d.ignored);
+        },
+        oColVis: {
+          buttonText: 'Change columns',
+          sAlign: 'right',
+          aiExclude: [ 0 ] // exclude the name column
         }
-        // oColVis: {
-        //   buttonText: 'Change columns',
-        //   sAlign: 'right',
-        //   aiExclude: [ 0 ]
-        // }
       };
     }
 

@@ -12,9 +12,9 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
 
   /* Create an array with the values of all the checkboxes in a column */
   /* This function is used to sort datatable columns by checkbox (checked vs. not) */
-  $.fn.dataTableExt.afnSortData['dom-checkbox'] = function(oSettings, iColumn) {
-    return $.map(oSettings.oApi._fnGetTrNodes(oSettings), function (tr, i) {
-      return $('td:eq('+iColumn+') input', tr).prop('checked') ? '1' : '0';
+  $.fn.dataTable.ext.order['dom-checkbox'] = function  ( settings, col ) {
+    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+      return $('input', td).prop('checked') ? '1' : '0';
     } );
   };
 
@@ -51,15 +51,14 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
                                null, 
                                { "bSortable": false },
                                { "bSortable": false },
+                               { "sSortDataType": "dom-checkbox" },
                                null,
                                null,
                                null,
-                               null,
-                               { "sSortDataType": "dom-checkbox" } ],
+                               null ],
                 "aaSorting": [[ 6, "desc" ]]
               });
               ui.panel.removeClass("ui-widget ui-widget-content");
-              wdk.load();
             }
           }).removeClass("ui-widget ui-widget-content");
 

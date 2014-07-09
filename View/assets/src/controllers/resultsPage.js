@@ -10,33 +10,16 @@ Provides functions to support results table
 wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   "use strict";
 
-  var createFeatureTooltipOnce = _.once(wdk.components.createFeatureTooltip);
-
+  // Called when a step is selected and the tabs container is inserted in DOM
   function configureSummaryViews($element, $attrs) {
+    var addFeatureTooltipOnce = _.once(addFeatureTooltip); // only call once per step selection
     // var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);  
     var currentTab = 0;
-
-    var analysisFeatureTooltipTarget = $element.find('#add-analysis')
-      .has('.analysis-feature-tooltip');
 
     $element.tabs({
       active : currentTab,
       load: function(event, ui) {
-        if (analysisFeatureTooltipTarget.length) {
-          createFeatureTooltipOnce({
-            el: analysisFeatureTooltipTarget,
-            key: 'new-analysis::' + wdk.VERSION,
-            title: 'New tools available!',
-            text: analysisFeatureTooltipTarget.find('.analysis-feature-tooltip')
-          });
-        }
-
-        analysisFeatureTooltipTarget
-          .on('click', function() {
-              analysisFeatureTooltipTarget.qtip('hide');
-            })
-
-        wdk.load();
+        addFeatureTooltipOnce($element);
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
       }
     });
@@ -46,6 +29,37 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     
   }
   
+  // Add a feature tooltip to page for new analysis tools
+  //
+  // Business rules are:
+  // 1. Only create tooltip if .analysis-feature-tooltip is present
+  // 2. Remove previously created feature tooltips created for analysis tools
+  function addFeatureTooltip($element) {
+    var createFeatureTooltip = wdk.components.createFeatureTooltip;
+    var analysisFeatureTooltipTarget = $element.find('#add-analysis')
+      .has('.analysis-feature-tooltip');
+    var previousTooltip = $('.wdk-feature-tooltip').has('.analysis-feature-tooltip');
+
+    if (analysisFeatureTooltipTarget.length) {
+      createFeatureTooltip({
+        el: analysisFeatureTooltipTarget,
+        key: 'new-analysis::' + wdk.VERSION,
+        title: 'New tools available!',
+        text: analysisFeatureTooltipTarget.find('.analysis-feature-tooltip')
+      });
+
+      analysisFeatureTooltipTarget
+        .on('click', function() {
+          analysisFeatureTooltipTarget.qtip('hide');
+        });
+    }
+
+    if (previousTooltip.length) {
+      var qtip = previousTooltip.data('qtip');
+      _.defer(qtip.destroy.bind(qtip), true);
+    }
+  }
+
   function moveAttr(col_ix, table) {
     // Get name of target attribute & attribute to left (if any)
     // NOTE:  Have to convert these from frontId to backId!!!

@@ -134,4 +134,9 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   public void shutDown() {
     // nothing to shut down
   }
+
+  @Override
+  public void expireLongRunningExecutions() throws WdkModelException {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
 }

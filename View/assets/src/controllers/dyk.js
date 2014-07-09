@@ -45,8 +45,9 @@ wdk.util.namespace("window.wdk.dyk", function(ns, $) {
     }
 
     $("#dyk-box,#dyk-shadow").show();
-    var randomnumber=Math.floor(Math.random()*tipMax);
-    setCurrent(randomnumber);
+    //var randomnumber=Math.floor(Math.random()*tipMax);
+    //setCurrent(randomnumber);
+		setCurrent(0);
     $("#dyk-box input#close").click(function(){
       dykClose();
     });
@@ -59,9 +60,10 @@ wdk.util.namespace("window.wdk.dyk", function(ns, $) {
     $("#dyk-box input#next").unbind('click');
     $("#dyk-box input#next").click(function(){ nextTip(); });
 
+		// values also in dyk.css
     $("div#dyk-box").resizable({
-      minWidth: 405,
-      minHeight: 87,
+      minWidth: 455,
+      minHeight: 107,
       alsoResize: '#dyk-shadow,#dyk-text'
     });
 

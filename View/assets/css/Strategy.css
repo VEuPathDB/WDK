@@ -975,11 +975,14 @@ table.history_controls {
   background-color:#FFFFFF;
   padding:5px;
   position:absolute;
-  right:95px;
+  right:130px;
   top:25px;
   width:260px;
   border-color:grey;
   z-index: 85; /* show above step glyphs, yet below model_div */
+}
+#invalid-step-text p {
+  margin: 0;
 }
 .strat-legend{
   font-weight:normal;

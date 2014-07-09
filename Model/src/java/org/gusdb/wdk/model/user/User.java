@@ -29,6 +29,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.user.StepFactory.NameCheckInfo;
 import org.json.JSONException;
 
 /**
@@ -1193,7 +1194,7 @@ public class User /* implements Serializable */{
     return this.activeStrategyFactory.getViewPagerOffset();
   }
 
-  public boolean[] checkNameExists(Strategy strategy, String name, boolean saved)
+  public NameCheckInfo checkNameExists(Strategy strategy, String name, boolean saved)
       throws WdkModelException {
     return stepFactory.checkNameExists(strategy, name, saved);
   }

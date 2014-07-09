@@ -53,6 +53,8 @@ public interface StepAnalysisFactory {
 
   public void shutDown();
 
+  public void expireLongRunningExecutions() throws WdkModelException;
+
   public void createResultsTable() throws WdkModelException;
 
   public void clearResultsTable() throws WdkModelException;

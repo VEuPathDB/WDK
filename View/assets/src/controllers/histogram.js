@@ -26,15 +26,22 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
 
 
   function initializeControls(histogram) {
+    var dataTable;
+
     // register tabs
-    histogram.tabs();
+    histogram.tabs({
+      activate: function(event, ui) {
+        if (ui.newPanel.attr('id') === 'data') {
+          dataTable.draw();
+        }
+      }
+    });
 
     // register data table
-    histogram.find("#data .datatable").dataTable( {
+    dataTable = histogram.find("#data .datatable").wdkDataTable( {
           "bDestroy": true,
-          "bJQueryUI": true,
           "aaSorting": [[ 0, "asc" ]],
-    });
+    }).DataTable();
 
     // register bin size control
     var binControl = histogram.find("#graph .bin-control");

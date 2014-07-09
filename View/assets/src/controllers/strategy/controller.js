@@ -627,8 +627,6 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         $.cookie("refresh_results", "false", { path : '/' });
       }
     }).then(function() {
-      wdk.load();
-
       if (deferred) {
         deferred.resolve()
       }

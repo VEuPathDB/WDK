@@ -91,4 +91,8 @@ public class FilterParamBean extends EnumParamBean {
 	}
 
 
+  public String getDefaultColumns() {
+    return filterParam.getDefaultColumns();
+  }
+
 }
