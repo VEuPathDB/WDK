@@ -20,7 +20,7 @@
        </attribute>
        <attribute name="tip">
  <![CDATA[
-you can run an analysis on a result ? 
+you can run an analysis on a gene result ? 
 <br>Click on the blue button <img style='position:relative;top:5px' src='/a/assets/wdk/images/strathelp/blueButton.png'> to select an analysis tool.
 ]]>
        </attribute>
