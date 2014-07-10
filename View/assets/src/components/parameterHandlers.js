@@ -161,6 +161,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var name = $node.data('name');
       var defaultColumns = $node.data('default-columns');
       var input = $node.find('input');
+      var previousValue;
 
       defaultColumns = defaultColumns
                        ? defaultColumns.split(/\s+/)
@@ -168,11 +169,11 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       // get previous values
       try {
-        var previousValue = JSON.parse(input.val());
+        previousValue = JSON.parse(input.val());
         if (!( _.isArray(previousValue.filters) &&
                _.isArray(previousValue.values)  &&
                _.isArray(previousValue.ignored) )) {
-          previousValue = null;
+          previousValue = undefined;
           throw new Error('Previous value is malformed.');
         }
       } catch (e) {
@@ -182,6 +183,18 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       // parse data from <script>
       var jsonContainer = $(node).find('script[type="application/json"][id="' + dataId + '"]');
       var spec = JSON.parse(jsonContainer.html());
+
+      // validation
+      [ 'metadata', 'metadataSpec', 'values' ]
+        .forEach(function(prop) {
+          var msg;
+          if (_.isEmpty(spec[prop])) {
+            msg = 'Invalid data: ' + prop + ' may not be empty.';
+            alert(msg);
+            throw new Error(msg);
+          }
+        });
+
       spec = parseFilterData(spec);
       _.extend(spec, { title: name });
 
@@ -258,6 +271,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         metadata = filterData.metadata,
         metadataSpec = filterData.metadataSpec,
         values = filterData.values,
+        unknowns = [],
 
         // metadata properties with type number
         numericProps = _.keys(metadataSpec)
@@ -273,55 +287,54 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           .filter(function(name) {
             return !!metadataSpec[name];
           }),
-        unknowns = [];
 
-    var data = {
-      fields: _.keys(metadataSpec)
-        .map(function(name) {
-          return _.extend({
-            term: name,
-            display: name,
-            filterable: _.indexOf(metadataTerms, name) > -1 &&
-              metadataSpec[name].leaf === 'true'
-          }, metadataSpec[name]);
-        }),
+        fields = _.keys(metadataSpec)
+          .map(function(name) {
+            return _.extend({
+              term: name,
+              display: name,
+              filterable: _.indexOf(metadataTerms, name) > -1 &&
+                metadataSpec[name].leaf === 'true'
+            }, metadataSpec[name]);
+          }),
 
-      data: values
-        .map(function(d) {
-          // type coercion
-          var mdata = metadata[d.term],
-              missingMsg = '/!\\ ERROR /!\\\n\nMissing metadata for "' + d.term + '".',
-              unknownMsg = '/!\\ ERROR /!\\\n\n"' + d.term + '" only contains UNKNOWN metadata.';
+        data = values
+          .map(function(d) {
+            var mdata = metadata[d.term],
+                missingMsg = 'Missing metadata for "' + d.term + '".';
 
-          if (mdata === undefined) {
-            _.defer(alert, missingMsg);
-            throw new Error(missingMsg);
-          }
-
-          _.each(mdata, function(value, property) {
-            if (value === null || value === '' || value === 'unknown') {
-              mdata[property] = Field.UNKNOWN_VALUE;
-            } else if (metadataSpec[property].type === 'number') {
-              mdata[property] = Number(value);
+            if (mdata === undefined) {
+              _.defer(alert, '/!\\ ERROR /!\\\n\n' + missingMsg);
+              throw new Error(missingMsg);
             }
-          });
 
-          if (_.every(mdata, function(m) { return m === Field.UNKNOWN_VALUE })) {
-            unknowns.push(d);
-          }
+            _.where(fields, { filterable: true })
+              .forEach(function(field) {
+                var property = field.term,
+                    value = mdata[property];
+                if (!value) {
+                  mdata[property] = Field.UNKNOWN_VALUE;
+                } else if (metadataSpec[property].type === 'number') {
+                  // type coercion
+                  mdata[property] = Number(value);
+                }
+              });
 
-          return _.extend(d, {
-            metadata: mdata
+            if (_.every(mdata, function(m) { return m === Field.UNKNOWN_VALUE })) {
+              unknowns.push(d);
+            }
+
+            return _.extend(d, {
+              metadata: mdata
+            });
           });
-        })
-    };
 
     if (unknowns.length) {
       _.defer(alert, '/!\\ WARNING /!\\\n\nThe following items contian only UNKNOWN values: ' +
         _.pluck(unknowns, 'term').join(', '));
     }
 
-    return data;
+    return { fields: fields, data: data };
   }
 
   //==============================================================================
