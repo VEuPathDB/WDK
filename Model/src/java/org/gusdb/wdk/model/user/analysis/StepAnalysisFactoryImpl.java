@@ -93,12 +93,12 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   }
 
   @Override
-  public Object getFormViewModel(StepAnalysisContext context) throws WdkModelException {
+  public Object getFormViewModel(StepAnalysisContext context) throws WdkModelException, WdkUserException {
     return getConfiguredAnalyzer(context, _fileStore).getFormViewModel();
   }
 
   @Override
-  public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
+  public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException, WdkUserException {
     List<String> errorList = new ArrayList<String>();
 
     // this is a unique configuration; validate parameters
@@ -128,7 +128,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
 
   @Override
   public StepAnalysisContext createAnalysis(StepAnalysisContext context)
-      throws WdkModelException, IllegalAnswerValueException {
+      throws WdkModelException, IllegalAnswerValueException, WdkUserException {
 
     // ensure this is a valid step to analyze
     checkStepForValidity(context);
@@ -148,7 +148,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   }
 
   @Override
-  public void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException {
+  public void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException, WdkUserException {
     LOG.info("Request made to copy analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
     Map<Integer, StepAnalysisContext> fromContexts = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
     for (StepAnalysisContext fromContext : fromContexts.values()) {
@@ -222,7 +222,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   }
 
   private void checkStepForValidity(StepAnalysisContext context)
-      throws WdkModelException, IllegalAnswerValueException {
+      throws WdkModelException, IllegalAnswerValueException, WdkUserException {
     // ensure this is a valid step to analyze
     AnswerValue answer = context.getStep().getAnswerValue();
     if (answer.getResultSize() == 0) {
@@ -317,9 +317,10 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
    * @param context context for this result
    * @return result
    * @throws WdkModelException if inconsistent data is found or other error occurs
+   * @throws WdkUserException 
    */
   @Override
-  public AnalysisResult getAnalysisResult(StepAnalysisContext context) throws WdkModelException {
+  public AnalysisResult getAnalysisResult(StepAnalysisContext context) throws WdkModelException, WdkUserException {
     String hash = context.createHash();
     AnalysisResult result = _dataStore.getRawAnalysisResult(hash);
     if (result == null) {
@@ -356,7 +357,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   }
 
   static StepAnalyzer getConfiguredAnalyzer(StepAnalysisContext context,
-      StepAnalysisFileStore fileStore) throws WdkModelException {
+      StepAnalysisFileStore fileStore) throws WdkModelException, WdkUserException {
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
     analyzer.setStorageDirectory(fileStore.getStorageDirPath(context.createHash()));
     analyzer.setFormParams(context.getFormParams());

@@ -58,7 +58,8 @@ public class EnumParamHandler extends AbstractParamHandler {
    */
   @Override
   public Object toRawValue(User user, String stableValue, Map<String, String> contextValues) {
-    if (stableValue == null) return stableValue;
+    if (stableValue == null)
+      return stableValue;
     String[] rawValue = stableValue.split(",+");
     for (int i = 0; i < rawValue.length; i++) {
       rawValue[i] = rawValue[i].trim();
@@ -79,7 +80,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(User user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     if (stableValue == null || stableValue.length() == 0)
       return stableValue;
 
@@ -89,13 +90,8 @@ public class EnumParamHandler extends AbstractParamHandler {
     String[] terms = enumParam.convertToTerms(stableValue);
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
-      try {
-        if (!cache.containsTerm(term))
-          throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
-      } catch(WdkUserException ex) {
-        // TODO - need to support user exception here
-        throw new WdkModelException(ex);
-      }
+      if (!cache.containsTerm(term))
+        throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
 
       String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
 

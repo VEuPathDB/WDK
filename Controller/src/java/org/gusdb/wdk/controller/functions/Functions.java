@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.apache.struts.action.ActionMessages;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 
 public class Functions {
@@ -33,10 +34,11 @@ public class Functions {
   /**
    * Takes a collection of records (i.e. key-value pair sets) and groups them
    * by similar source ids
+   * @throws WdkUserException 
    */
   public static Collection<Collection<Map<String, AttributeValue>>>
       groupAttributeRecordsBySource(Collection<Map<String, AttributeValue>> recordCollection, String primaryKeyName)
-          throws WdkModelException {
+          throws WdkModelException, WdkUserException {
     
     List<Collection<Map<String, AttributeValue>>> groups =
         new ArrayList<Collection<Map<String, AttributeValue>>>();

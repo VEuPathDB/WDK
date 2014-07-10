@@ -37,7 +37,7 @@ public class LinkAttributeValue extends AttributeValue {
     this.container = container;
   }
 
-  public String getDisplayText() throws WdkModelException {
+  public String getDisplayText() throws WdkModelException, WdkUserException {
     if (displayText == null) {
       String text = field.getDisplayText();
       Map<String, AttributeField> subFields = field.parseFields(text);
@@ -51,7 +51,7 @@ public class LinkAttributeValue extends AttributeValue {
     return this.displayText;
   }
 
-  public String getUrl() throws WdkModelException {
+  public String getUrl() throws WdkModelException, WdkUserException {
     if (this.url == null) {
       String url = field.getUrl();
       Map<String, AttributeField> subFields = field.parseFields(url);
@@ -73,7 +73,7 @@ public class LinkAttributeValue extends AttributeValue {
    * @see org.gusdb.wdk.model.record.attribute.AttributeValue#getValue()
    */
   @Override
-  public Object getValue() throws WdkModelException {
+  public Object getValue() throws WdkModelException, WdkUserException {
     return getDisplayText() + "(" + getUrl() + ")";
   }
 }

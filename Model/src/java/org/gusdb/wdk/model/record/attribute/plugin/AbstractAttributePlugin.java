@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
@@ -113,8 +114,9 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
    *         PrimaryKeyAttributeField of the RecordClass), as well as a column
    *         for the associated attribute, the name of the column is defined as
    *         AbstractAttributePlugin.ATTRIBUTE_COLUMN.
+   * @throws WdkUserException 
    */
-  protected String getAttributeSql(Step step) throws WdkModelException {
+  protected String getAttributeSql(Step step) throws WdkModelException, WdkUserException {
     WdkModel wdkModel = step.getRecordClass().getWdkModel();
 
     // format the display of the attribute in sql
@@ -161,9 +163,10 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
   /**
    * @return the values of the associated attribute. the key of the map is the
    *         primary key of a record instance.
+   * @throws WdkUserException 
    */
   protected Map<PrimaryKeyAttributeValue, Object> getAttributeValues(Step step)
-      throws WdkModelException, SQLException {
+      throws WdkModelException, SQLException, WdkUserException {
     WdkModel wdkModel = step.getRecordClass().getWdkModel();
     Map<PrimaryKeyAttributeValue, Object> values = new LinkedHashMap<PrimaryKeyAttributeValue, Object>();
     RecordClass recordClass = step.getQuestion().getRecordClass();

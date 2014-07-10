@@ -16,6 +16,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 
@@ -44,7 +45,7 @@ public class ResultFactory {
   }
 
   public String getCachedSql(QueryInstance queryInstance)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     // get query info
     Query query = queryInstance.getQuery();
     QueryInfo queryInfo = cacheFactory.getQueryInfo(query);
@@ -100,7 +101,7 @@ public class ResultFactory {
   }
 
   public ResultList getCachedResults(QueryInstance queryInstance)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     String sql = getCachedSql(queryInstance);
     // get the resultList
     try {
@@ -115,7 +116,7 @@ public class ResultFactory {
   }
 
   private int getInstanceId(QueryInfo queryInfo, QueryInstance instance)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     // get the query instance id; null if not exist
     String checksum = instance.getChecksum();
     StringBuffer sql = new StringBuffer("SELECT ");
@@ -150,7 +151,7 @@ public class ResultFactory {
   }
 
   private int createCache(QueryInfo queryInfo, QueryInstance instance)
-      throws WdkModelException, SQLException {
+      throws WdkModelException, SQLException, WdkUserException {
     DataSource dataSource = database.getDataSource();
     int instanceId = platform.getNextId(dataSource, null, CacheFactory.TABLE_INSTANCE);
 
@@ -261,7 +262,7 @@ public class ResultFactory {
   }
 
   private void createCacheInstance(QueryInfo queryInfo, QueryInstance instance,
-      int instanceId) throws WdkModelException {
+      int instanceId) throws WdkModelException, WdkUserException {
     StringBuffer sql = new StringBuffer("INSERT INTO ");
     sql.append(CacheFactory.TABLE_INSTANCE).append(" (");
     sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(", ");

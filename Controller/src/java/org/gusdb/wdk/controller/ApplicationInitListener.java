@@ -15,7 +15,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wsf.service.WsfService;
 import org.xml.sax.SAXException;
 
 /**
@@ -75,13 +74,17 @@ public class ApplicationInitListener implements ServletContextListener {
             throw new RuntimeException(ex);
         }
     }
+    
+    protected WdkModel createWdkModel(String project, String gusHome) throws WdkModelException {
+      return WdkModel.construct(project, gusHome);
+    }
 
     private void initMemberVars(ServletContext servletContext, String projectId,
             String gusHome, String alwaysGoToSummary, String loginUrl)
             throws WdkModelException, IOException, SAXException {
         
         logger.info("Initializing model...");
-        WdkModel wdkModelRaw = WdkModel.construct(projectId, gusHome);
+        WdkModel wdkModelRaw = createWdkModel(projectId, gusHome);
         WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
         logger.info("Initialized model object.  Setting on servlet context.");
         servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
@@ -96,9 +99,6 @@ public class ApplicationInitListener implements ServletContextListener {
                 alwaysGoToSummary);
         servletContext.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
         servletContext.setAttribute(CConstants.GUS_HOME_KEY, gusHome);
-
-        // set the context to WsfService so that it can be accessed in the local mode.
-        WsfService.SERVLET_CONTEXT = servletContext;
     }
 
     private String getAssetsUrl(WdkModelBean wdkModel, ServletContext servletContext) {

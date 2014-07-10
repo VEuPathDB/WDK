@@ -126,7 +126,7 @@ public class RecordInstance extends AttributeValueContainer {
    */
   @Override
   protected void fillColumnAttributeValues(Query attributeQuery)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     logger.debug("filling column attribute values...");
     if (answerValue != null) {
       answerValue.integrateAttributesQuery(attributeQuery);
@@ -272,7 +272,7 @@ public class RecordInstance extends AttributeValueContainer {
 
   // change name of method?
   public Map<String, RecordInstance> getNestedRecordInstances()
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
 
     Map<String, RecordInstance> riMap = new LinkedHashMap<String, RecordInstance>();
     Question nq[] = this.recordClass.getNestedRecordQuestions();
@@ -301,7 +301,7 @@ public class RecordInstance extends AttributeValueContainer {
   }
 
   public Map<String, RecordInstance[]> getNestedRecordInstanceLists()
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
 
     Question nql[] = this.recordClass.getNestedRecordListQuestions();
     Map<String, RecordInstance[]> riListMap = new LinkedHashMap<String, RecordInstance[]>();
@@ -508,7 +508,7 @@ public class RecordInstance extends AttributeValueContainer {
   }
 
   private void printAtts_Aux(StringBuffer buf,
-      Map<String, AttributeValue> attributes) throws WdkModelException {
+      Map<String, AttributeValue> attributes) throws WdkModelException, WdkUserException {
     String newline = System.getProperty("line.separator");
     for (String attributeName : attributes.keySet()) {
       AttributeValue attribute = attributes.get(attributeName);
