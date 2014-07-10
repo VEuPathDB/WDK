@@ -30,7 +30,6 @@ import org.gusdb.wdk.model.config.QueryMonitor;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.dbms.ResultFactory;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.Param;
@@ -50,7 +49,6 @@ import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
-import org.gusdb.wsf.service.WsfService;
 
 /**
  * The top level WdkModel object provides a facade to access all the resources and functionalities provided by
@@ -60,9 +58,9 @@ import org.gusdb.wsf.service.WsfService;
  * @author
  * @modified Jan 6, 2006 - Jerric Add a stepFactory in the model
  */
-public class WdkModel implements ConnectionContainer {
+public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
-  public static final String WDK_VERSION = "2.8.0";
+  public static final String WDK_VERSION = "2.9.0";
 
   public static final String USER_SCHEMA_VERSION = "5";
 
@@ -82,24 +80,7 @@ public class WdkModel implements ConnectionContainer {
    *           if unable to construct model
    */
   public static WdkModel construct(String projectId, String gusHome) throws WdkModelException {
-    StackTraceElement[] stackTrace = new Throwable().getStackTrace();
-    int index = stackTrace.length - 1;
-    String tip = "";
-    if (index >= 0)
-      tip = "called by " + stackTrace[index].getClassName();
-    logger.debug("Constructing wdk model [" + projectId + "] (GUS_HOME=" + gusHome + "); " + tip);
-
-    try {
-      ModelXmlParser parser = new ModelXmlParser(gusHome);
-      WdkModel wdkModel = parser.parseModel(projectId);
-      wdkModel.doAdditionalStartup();
-      logger.debug("Model ready to use.");
-      return wdkModel;
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      throw new WdkModelException(ex);
-    }
+    return new WdkModel().getInstance(projectId, gusHome);
   }
 
   private String gusHome;
@@ -184,6 +165,28 @@ public class WdkModel implements ConnectionContainer {
   private String buildNumber;
 
   private ThreadMonitor _myThreadMonitor;
+  
+  @Override
+  public WdkModel getInstance(String projectId, String gusHome) throws WdkModelException {
+    StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+    int index = stackTrace.length - 1;
+    String tip = "";
+    if (index >= 0)
+      tip = "called by " + stackTrace[index].getClassName();
+    logger.debug("Constructing wdk model [" + projectId + "] (GUS_HOME=" + gusHome + "); " + tip);
+
+    try {
+      ModelXmlParser parser = new ModelXmlParser(gusHome);
+      WdkModel wdkModel = parser.parseModel(projectId);
+      wdkModel.doAdditionalStartup();
+      logger.debug("Model ready to use.");
+      return wdkModel;
+    }
+    catch (Exception ex) {
+      ex.printStackTrace();
+      throw new WdkModelException(ex);
+    }
+  }
 
   public void doAdditionalStartup() throws WdkModelException {
     // verify the user schema
@@ -191,9 +194,6 @@ public class WdkModel implements ConnectionContainer {
 
     // start up thread monitor and save reference
     _myThreadMonitor = ThreadMonitor.start(this);
-    
-    // set the model into the static context of wsf service
-    WsfService.putStaticContext(Utilities.MODEL_KEY, new WdkModelBean(this));
   }
 
   /**

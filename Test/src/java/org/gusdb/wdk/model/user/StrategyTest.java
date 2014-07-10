@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -370,7 +371,7 @@ public class StrategyTest {
   }
 
   static void compareStrategy(Strategy expected, Strategy actual)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     Assert.assertEquals("strategy id", expected.getStrategyId(),
         actual.getStrategyId());
     Assert.assertEquals("strategy length", expected.getLength(),

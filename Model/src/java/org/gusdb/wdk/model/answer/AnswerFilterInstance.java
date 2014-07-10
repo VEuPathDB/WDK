@@ -286,7 +286,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     resolved = true;
   }
 
-  public ResultList getResults(AnswerValue answerValue) throws WdkModelException {
+  public ResultList getResults(AnswerValue answerValue) throws WdkModelException, WdkUserException {
     // use only the id query sql as input
     QueryInstance idInstance = answerValue.getIdsQueryInstance();
     String sql = idInstance.getSql();
@@ -303,7 +303,7 @@ public class AnswerFilterInstance extends WdkModelBase {
   }
 
   public String applyFilter(User user, String sql, int assignedWeight)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     Map<String, Param> params = filterQuery.getParamMap();
 
     String filterSql = filterQuery.getSql();

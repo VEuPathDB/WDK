@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.junit.Test;
 
@@ -99,7 +100,7 @@ public class TestFunctions {
         }
       } */
     }
-    catch (WdkModelException e) {
+    catch (WdkModelException | WdkUserException e) {
       throw new RuntimeException(e);
     }
     

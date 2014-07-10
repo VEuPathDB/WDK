@@ -161,7 +161,7 @@ public class TabularReporter extends Reporter {
     }
 
     private void format2Text(Set<AttributeField> fields, PrintWriter writer)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         // print the header
         if (hasHeader) {
             for (AttributeField field : fields) {
@@ -188,7 +188,7 @@ public class TabularReporter extends Reporter {
     }
 
     private void format2PDF(Set<AttributeField> fields, OutputStream out)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         logger.info("format2PDF>>>");
         Document document = new Document(PageSize.LETTER.rotate());
         try {
@@ -256,7 +256,7 @@ public class TabularReporter extends Reporter {
     }
 
     private void format2Excel(Set<AttributeField> fields, PrintWriter writer)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         int count = 0;
         String header = "<table border=\"1\">";
         writer.println(header);

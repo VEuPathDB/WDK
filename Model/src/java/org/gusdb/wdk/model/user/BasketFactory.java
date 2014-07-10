@@ -78,7 +78,7 @@ public class BasketFactory {
     return schema;
   }
 
-  public void addToBasket(User user, Step step) throws WdkModelException
+  public void addToBasket(User user, Step step) throws WdkModelException, WdkUserException
        {
     logger.debug("adding to basket from step...");
 
@@ -183,7 +183,7 @@ public class BasketFactory {
     }
   }
 
-  public void removeFromBasket(User user, Step step) throws WdkModelException
+  public void removeFromBasket(User user, Step step) throws WdkModelException, WdkUserException
        {
     AnswerValue answerValue = step.getAnswerValue();
     RecordClass recordClass = answerValue.getQuestion().getRecordClass();

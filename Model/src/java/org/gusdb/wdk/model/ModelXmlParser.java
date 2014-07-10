@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
@@ -186,12 +187,17 @@ public class ModelXmlParser extends XmlParser {
   private final URL xmlSchemaURL;
   private final String xmlDataDir;
 
-  public ModelXmlParser(String gusHome) throws SAXException, IOException {
+  public ModelXmlParser(String gusHome) throws WdkModelException {
     super(gusHome, "lib/rng/wdkModel.rng");
 
     // get model schema file and xml schema file
-    xmlSchemaURL = makeURL(gusHome, "lib/rng/xmlAnswer.rng");
-    xmlDataDir = gusHome + "/lib/xml/";
+    try {
+      xmlSchemaURL = makeURL(gusHome, "lib/rng/xmlAnswer.rng");
+      xmlDataDir = gusHome + "/lib/xml/";
+    }
+    catch (MalformedURLException ex) {
+      throw new WdkModelException(ex);
+    }
   }
 
   public WdkModel parseModel(String projectId)

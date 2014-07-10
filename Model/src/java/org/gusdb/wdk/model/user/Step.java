@@ -851,11 +851,11 @@ public class Step {
     this.filterName = filterName;
   }
 
-  public AnswerValue getAnswerValue() throws WdkModelException {
+  public AnswerValue getAnswerValue() throws WdkModelException, WdkUserException {
     return getAnswerValue(true);
   }
 
-  public AnswerValue getAnswerValue(boolean validate) throws WdkModelException {
+  public AnswerValue getAnswerValue(boolean validate) throws WdkModelException, WdkUserException {
     // even if a step is invalid, still allow user to create answerValue
     // if (!valid)
     // throw new WdkUserException("Step #" + internalId
@@ -875,7 +875,7 @@ public class Step {
       try {
         this.estimateSize = answerValue.getResultSize();
       }
-      catch (WdkModelException ex) {
+      catch (WdkModelException | WdkUserException ex) {
         // if validate is false, the error will be ignored to allow the process to continue.
         if (validate)
           throw ex;

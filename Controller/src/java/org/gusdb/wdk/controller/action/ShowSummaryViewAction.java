@@ -92,7 +92,7 @@ public class ShowSummaryViewAction extends Action {
     }
 
     private void ProcessPaging(HttpServletRequest request, StepBean step)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         int start = ShowSummaryAction.getPageStart(request);
         int pageSize = ShowSummaryAction.getPageSize(request,
                 step.getQuestion(), step.getUser());
