@@ -1,13 +1,10 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.test;
 
+import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
-import org.gusdb.wsf.util.BaseCLI;
 
 /**
  * @author xingao

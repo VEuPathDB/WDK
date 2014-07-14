@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.fix;
 
 import java.io.BufferedReader;
@@ -21,6 +18,7 @@ import java.util.Stack;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -28,7 +26,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wsf.util.BaseCLI;
 
 /**
  * @author xingao

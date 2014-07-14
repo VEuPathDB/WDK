@@ -12,7 +12,7 @@ import org.gusdb.fgputil.ArrayUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wsf.client.WsfClientException;
 import org.gusdb.wsf.client.WsfResponseListener;
-import org.gusdb.wsf.plugin.WsfException;
+import org.gusdb.wsf.common.WsfException;
 
 public class ProcessQueryResponseListener implements WsfResponseListener {
 

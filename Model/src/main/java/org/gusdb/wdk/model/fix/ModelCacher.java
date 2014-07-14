@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.fix;
 
 import java.sql.PreparedStatement;
@@ -10,6 +7,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -21,7 +19,6 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
-import org.gusdb.wsf.util.BaseCLI;
 
 /**
  * @author xingao
