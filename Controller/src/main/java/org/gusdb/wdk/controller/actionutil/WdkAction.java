@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
@@ -184,17 +184,16 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
   
   private ParamGroup createParamGroup(Map<String, String[]> paramMap) throws WdkValidationException, WdkUserException {
     
-    Map<String, DiskFileItem> uploads = new HashMap<String, DiskFileItem>();
+    Map<String, FileItem> uploads = new HashMap<String, FileItem>();
 
     // parse multipart form data, including "normal" params and files
     if (ServletFileUpload.isMultipartContent(new ServletRequestContext(_request))) {
       try {
         ServletFileUpload uploadHandler = new ServletFileUpload(new DiskFileItemFactory());
         uploadHandler.setSizeMax(getMaxUploadSize()*1024*1024);
-        @SuppressWarnings("unchecked")
-        List<DiskFileItem> uploadList = uploadHandler.parseRequest(_request);
+        List<FileItem> uploadList = uploadHandler.parseRequest(_request);
         Map<String, List<String>> params = new HashMap<String, List<String>>();
-        for (DiskFileItem upload : uploadList) {
+        for (FileItem upload : uploadList) {
           if (!upload.isFormField()) {
             LOG.debug("Got a disk item from multi-part request named " + upload.getFieldName() + ": " + upload);
             uploads.put(upload.getFieldName(), upload);
@@ -236,7 +235,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
     return DEFAULT_MAX_UPLOAD_SIZE_MB;
   }
   
-  private ParamGroup buildParamGroup(Map<String, String[]> parameters, Map<String, DiskFileItem> uploads) {
+  private ParamGroup buildParamGroup(Map<String, String[]> parameters, Map<String, FileItem> uploads) {
     // generate param definitions based on passed params so calling code
     //   sees a complete ParamGroup structure
     Map<String, ParamDef> definitions = new HashMap<String, ParamDef>();

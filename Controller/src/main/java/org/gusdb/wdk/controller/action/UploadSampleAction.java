@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
@@ -46,18 +47,19 @@ public class UploadSampleAction extends WdkAction {
     for (String fieldName : params.getKeys()) {
       if (fieldName.startsWith(UPLOAD_NAME_PREFIX)) {
         JSONObject fileInfo = new JSONObject();
-        DiskFileItem file = params.getUpload(fieldName);
+        FileItem file = params.getUpload(fieldName);
         if (file == null) {
           fileInfo.put("uploadSuccessful", false);
         }
         else {
+          DiskFileItem diskFile = (DiskFileItem)file;
           fileInfo.put("uploadSuccessful", true);
           fileInfo.put("fieldName", file.getFieldName());
           fileInfo.put("fileName", file.getName());
           fileInfo.put("size", file.getSize());
           fileInfo.put("contentType", file.getContentType());
-          fileInfo.put("tmpFileLocation", file.getStoreLocation());
-          fileInfo.put("preview", getFilePreview(file));
+          fileInfo.put("tmpFileLocation", diskFile.getStoreLocation());
+          fileInfo.put("preview", getFilePreview(diskFile));
         }
         result.append("results", fileInfo);
       }

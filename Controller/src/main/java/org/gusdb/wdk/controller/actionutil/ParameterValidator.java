@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.WdkValidationException;
 import org.gusdb.wdk.controller.actionutil.ParamDef.DataType;
@@ -40,7 +40,7 @@ public class ParameterValidator {
   public ParamGroup validateParameters(
       Map<String, ParamDef> expectedParams,
       Map<String, String[]> parameters,
-      Map<String, DiskFileItem> uploads) throws WdkValidationException {
+      Map<String, FileItem> uploads) throws WdkValidationException {
     return validateParameters(expectedParams, parameters, uploads,
         new SecondaryValidator() {
             @Override public void performAdditionalValidation(ParamGroup params)
@@ -63,7 +63,7 @@ public class ParameterValidator {
   public ParamGroup validateParameters(
       Map<String, ParamDef> expectedParams,
       Map<String, String[]> parameters,
-      Map<String, DiskFileItem> uploads,
+      Map<String, FileItem> uploads,
       SecondaryValidator validator) throws WdkValidationException {
 
     ParamGroup group = new ParamGroup(expectedParams, parameters, uploads);
@@ -110,7 +110,7 @@ public class ParameterValidator {
     return group;
   }
     
-  private static void checkFileParam(String name, ParamDef paramDef, DiskFileItem uploadedFile, List<String> errors) {
+  private static void checkFileParam(String name, ParamDef paramDef, FileItem uploadedFile, List<String> errors) {
     if (paramDef.isRequired() && uploadedFile == null) {
       errors.add("Param [ " + name + " ] is required.");
     }
