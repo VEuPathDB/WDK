@@ -197,6 +197,7 @@
   <modules>
     <module>Model</module>
     <module>Controller</module>
+    <module>View</module>
   </modules>
 
   <repositories>
