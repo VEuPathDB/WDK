@@ -42,8 +42,8 @@
   <target name="WDK-Installation" depends="WSF-Installation,
                                            WDK/Model-Installation,
                                            WDK/Controller-Installation,
-                                           WDK/View-Installation,
-                                           WDK/Test-Installation">
+                                           WDK/View-Installation">
+
     <ant target="defaultProjectInstall">
       <property name="project" value="WDK"/>
     </ant>
@@ -164,13 +164,6 @@
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="View"/>
-    </ant>
-  </target>
-
-  <target name="WDK/Test-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Test"/>
     </ant>
   </target>
 
