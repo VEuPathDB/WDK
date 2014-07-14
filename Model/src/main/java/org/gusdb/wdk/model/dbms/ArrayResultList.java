@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.dbms;
 
 import java.util.ArrayList;
@@ -11,7 +8,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wsf.client.WsfResponseListener;
-import org.gusdb.wsf.plugin.WsfException;
+import org.gusdb.wsf.common.WsfException;
 
 /**
  * @author Jerric Gao

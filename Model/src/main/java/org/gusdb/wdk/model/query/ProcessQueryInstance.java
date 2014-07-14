@@ -24,13 +24,16 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfClient;
-import org.gusdb.wsf.client.WsfClientBuilder;
+import org.gusdb.wsf.client.WsfClientFactory;
 import org.gusdb.wsf.client.WsfResponseListener;
-import org.gusdb.wsf.plugin.WsfException;
-import org.gusdb.wsf.plugin.WsfUserException;
-import org.gusdb.wsf.service.WsfRequest;
+import org.gusdb.wsf.common.WsfException;
+import org.gusdb.wsf.common.WsfRequest;
+import org.gusdb.wsf.common.WsfUserException;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableLoadTimeWeaving;
 
 /**
  * This process query instance calls the web service, retrieves the result, and cache them into the cache
@@ -39,10 +42,15 @@ import org.json.JSONObject;
  * 
  * @author Jerric Gao
  */
+@Configuration
+@EnableLoadTimeWeaving
 public class ProcessQueryInstance extends QueryInstance {
 
   private static final Logger logger = Logger.getLogger(ProcessQueryInstance.class);
 
+  @Autowired
+  private WsfClientFactory _wsfClientFactory;
+  
   private ProcessQuery query;
   private int signal;
 
@@ -138,11 +146,11 @@ public class ProcessQueryInstance extends QueryInstance {
     try {
       if (query.isLocal()) {
         logger.debug("Using local service...");
-        client = WsfClientBuilder.newClient(listener);
+        client = _wsfClientFactory.newClient(listener);
       }
       else {
         logger.debug("Using remote service at " + query.getWebServiceUrl() + "...");
-        client = WsfClientBuilder.newClient(listener, new URI(query.getWebServiceUrl()));
+        client = _wsfClientFactory.newClient(listener, new URI(query.getWebServiceUrl()));
       }
 
       // invoke the WSF, and set signal.
