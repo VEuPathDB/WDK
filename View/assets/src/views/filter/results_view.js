@@ -39,7 +39,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
 
       this.dataTable.fnDraw();
-      this.resizeTable();
+      this.dataTable.fnAdjustColumnSizing(false);
 
       return this;
     },
@@ -54,12 +54,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.dataTable = this.$('.results-table')
         .wdkDataTable(tableConfig)
         .dataTable();
-
-      $(window).on('resize', _.debounce(this.queueResizeTable.bind(this), 100));
-    },
-
-    resizeTable: function() {
-      this.dataTable.fnAdjustColumnSizing(false);
     },
 
     queueRender: function() {
@@ -68,15 +62,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
       else {
         this._doRender = true;
-      }
-    },
-
-    queueResizeTable: function() {
-      if (this.$el.is(':visible')) {
-        this.resizeTable();
-      }
-      else {
-        this._doResizeTable = true;
       }
     },
 
@@ -100,10 +85,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
       if (this._doRender) {
         this.render();
         this._doRender = false;
-        this._doResizeTable = false;
-      }
-      if (this._doResizeTable) {
-        this.resizeTable();
         this._doResizeTable = false;
       }
     },

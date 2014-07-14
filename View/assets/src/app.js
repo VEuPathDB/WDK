@@ -1,4 +1,4 @@
-!(function($) {
+!function($) {
   'use strict';
 
   // Start the application. The ready callback is invoked
@@ -29,4 +29,14 @@
     return wdk;
   };
 
-}(jQuery));
+  // Global event handlers
+  // need to call draw on dataTables that are children of a tab panel
+  $(document).on('tabsactivate', function() {
+    $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+  });
+
+  $(window).on('resize', _.throttle(function() {
+    $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+  }, 100));
+
+}(jQuery);
