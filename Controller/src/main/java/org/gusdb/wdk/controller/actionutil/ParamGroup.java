@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.Logger;
 
 /**
@@ -22,9 +22,9 @@ public class ParamGroup {
 
   private Map<String, ParamDef> _defs;
   private Map<String, String[]> _values;
-	private Map<String, DiskFileItem> _uploads;
+	private Map<String, FileItem> _uploads;
 	
-	public ParamGroup(Map<String,ParamDef> definitions, Map<String, String[]> values, Map<String, DiskFileItem> uploads) {
+	public ParamGroup(Map<String,ParamDef> definitions, Map<String, String[]> values, Map<String, FileItem> uploads) {
 		_defs = definitions;
 		_values = values;
 		_uploads = uploads;
@@ -106,7 +106,7 @@ public class ParamGroup {
 		return _values;
 	}
 
-  public DiskFileItem getUpload(String key) {
+  public FileItem getUpload(String key) {
     checkValidKey(key);
     return _uploads.get(key);
   }
