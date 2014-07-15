@@ -27,6 +27,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.defaultColumns = options.defaultColumns;
       this.initTableOnce = _.once(this._initTable.bind(this));
 
+      this.queueRender();
+
       this.listenTo(this.model.filteredData, 'reset', this.queueRender);
     },
 
