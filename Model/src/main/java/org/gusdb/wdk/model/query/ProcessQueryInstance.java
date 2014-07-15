@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.wdk.model.ServiceResolver;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -31,9 +32,6 @@ import org.gusdb.wsf.common.WsfRequest;
 import org.gusdb.wsf.common.WsfUserException;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableLoadTimeWeaving;
 
 /**
  * This process query instance calls the web service, retrieves the result, and cache them into the cache
@@ -42,15 +40,12 @@ import org.springframework.context.annotation.EnableLoadTimeWeaving;
  * 
  * @author Jerric Gao
  */
-@Configuration
-@EnableLoadTimeWeaving
 public class ProcessQueryInstance extends QueryInstance {
 
   private static final Logger logger = Logger.getLogger(ProcessQueryInstance.class);
 
-  @Autowired
-  private WsfClientFactory _wsfClientFactory;
-  
+  private static WsfClientFactory _wsfClientFactory = ServiceResolver.resolve(WsfClientFactory.class);
+
   private ProcessQuery query;
   private int signal;
 
