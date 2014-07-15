@@ -58,7 +58,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
           var left = position.left;
           var winMinusLeft = winWidth - left;
           if ( winMinusLeft < (popupWidth + 40) ) {
-            left = left - (popupWidth - winMinusLeft + 40);	
+            left = left - (popupWidth - winMinusLeft + 40);  
             detail.css("left", left + "px");
           }
           detail.css("width", popupWidth + "px");
@@ -72,6 +72,21 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
     };
 
     this.loadFilterCount = function() {
+      $(".result-filters").each(function() {
+        var layouts = $(this);
+        if (layouts.data("loaded") == "true") return;
+        
+        var countUrl = layouts.data("count-url");
+        $.getJSON("", function(data) {
+          layout.find(".link-url").each(function() {
+            var filter = $(this).data("filter");
+            var count = data[filter];
+            $(this).html((count == undefined) ? "error" : count);
+          });
+        });
+      });
+      
+    /*
       var links = $('.filter-instance .link-url[countref]');
 
       // TODO generalize the following into a reusable function
@@ -111,6 +126,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
             }
           })
         }, $.Deferred().resolve());
+    */
     };
   }
 

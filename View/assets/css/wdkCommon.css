@@ -235,6 +235,12 @@ img[data-assets-src][src] {
   display: none;
 }
 
+.wdk-data-table {
+  opacity: 0;
+}
+.wdk-data-table.dataTable {
+  opacity: 1;
+}
 
 /* qtip overrides */
 
@@ -280,6 +286,9 @@ img[data-assets-src][src] {
 .wdk-feature-tooltip .dismiss-wrapper {
   text-align: center;
   padding-top: 1em;
+}
+.wdk-feature-tooltip .dismiss-wrapper label {
+  font-size: 75%;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

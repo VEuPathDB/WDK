@@ -251,6 +251,21 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
         "Show Details" : "Hide Details");
   }
 
+  // determine if element is within 500px of the viewport
+  function elementNearViewport(el) {
+    var boundaryBuffer = 0,
+        viewportHeight = $(window).height(),
+        boundaryTop = $(document).scrollTop() - boundaryBuffer,
+        boundaryBottom = boundaryTop + viewportHeight + boundaryBuffer,
+        elTop = $(el).offset().top,
+        elBottom = elTop + $(el).height(),
+        topInBoundary = boundaryTop < elTop && elTop < boundaryBottom,
+        bottomInBoundary = boundaryTop < elBottom && elBottom < boundaryBottom;
+
+    return (topInBoundary || bottomInBoundary);
+
+  }
+
   ns.getDisplayType = getDisplayType;
   ns.initShowHide = initShowHide;
   ns.parseUrlUtil = parseUrlUtil;
@@ -266,5 +281,6 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
   ns.playSadTrombone = playSadTrombone;
   ns.submitError = submitError;
   ns.toggleErrorDetails = toggleErrorDetails;
+  ns.elementNearViewport = elementNearViewport;
 
 });

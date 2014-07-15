@@ -4,7 +4,6 @@
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <import file="${projectsDir}/FgpUtil/build.xml" />
   <import file="${projectsDir}/WSF/build.xml" />
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -13,9 +12,7 @@
 
   <target name="WDK-ChildCheckout">
     <available file="${projectsDir}/WSF" type="dir"  property="WSF.present" />
-    <available file="${projectsDir}/FgpUtil" type="dir"  property="FgpUtil.present" />
     <antcall target="WSF-Checkout"/>
-    <antcall target="FgpUtil-Checkout"/>
   </target>
 
 
@@ -23,15 +20,6 @@
     <ant target="defaultProjectCheckout" inheritAll="false">
       <property name="svnurl" value="https://www.cbil.upenn.edu/svn/gus/WSF"/>
       <property name="project" value="WSF"/>
-      <property name="version" value="WDK_version_1-28"/>
-    </ant>
-  </target>
-
-
-  <target name="FgpUtil-Checkout" unless="FgpUtil.present">
-    <ant target="defaultProjectCheckout" inheritAll="false">
-      <property name="svnurl" value="https://www.cbil.upenn.edu/svn/gus/FgpUtil"/>
-      <property name="project" value="FgpUtil"/>
       <property name="version" value="WDK_version_1-28"/>
     </ant>
   </target>
@@ -45,21 +33,18 @@
     <ant target="defaultProjectUpdate">
       <property name="project" value="WSF"/>
     </ant>
-    <ant target="defaultProjectUpdate">
-      <property name="project" value="FgpUtil"/>
-    </ant>
   </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-Installation" depends="FgpUtil-Installation,
-                                           WSF-Installation,
+  <target name="WDK-Installation" depends="WSF-Installation,
+                                           WDK-MavenInstallation,
                                            WDK/Model-Installation,
                                            WDK/Controller-Installation,
-                                           WDK/View-Installation,
-                                           WDK/Test-Installation">
+                                           WDK/View-Installation">
+
     <ant target="defaultProjectInstall">
       <property name="project" value="WDK"/>
     </ant>
@@ -79,6 +64,24 @@
   </target>
 
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
+
+  <target name="WDK-MavenInstallation">
+    <ant target="mavenCleanInstall">
+      <property name="project" value="WDK"/>
+    </ant>
+    <ant target="deployMavenArtifacts">
+      <property name="project" value="WDK"/>
+      <property name="component" value="Model"/>
+    </ant>
+    <ant target="deployMavenArtifacts">
+      <property name="project" value="WDK"/>
+      <property name="component" value="Controller"/>
+    </ant>
+    <ant target="deployMavenArtifacts">
+      <property name="project" value="WDK"/>
+      <property name="component" value="View"/>
+    </ant>
+  </target>
 
   <target name="WDK/Controller-Installation">
     <ant target="defaultComponentInstall">
@@ -183,18 +186,12 @@
     </ant>
   </target>
 
-  <target name="WDK/Test-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Test"/>
-    </ant>
-  </target>
-
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooo  Web Installation  oooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-WebInstallation" depends="WebsitePlusGusHome">
+  <target name="WDK-WebInstallation" depends="WSF-WebInstallation,
+                                              WebsitePlusGusHome">
     <echo message="." />
     <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) from ${targetDir}/lib/java/db_driver into your webapp server's designated place (such as common/lib for Tomcat). See the installation instructions available at www.gusdb.org/wdk for details."  />
     <echo message="." />

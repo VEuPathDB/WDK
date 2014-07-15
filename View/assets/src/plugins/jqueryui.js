@@ -45,8 +45,7 @@
 
   $.extend($.ui.tabs.prototype.options, {
     cache: true,
-    beforeLoad: beforeLoad,
-    load: wdk.load
+    beforeLoad: beforeLoad
   });
 
   function beforeLoad(event, ui) {

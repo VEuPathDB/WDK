@@ -54,13 +54,22 @@ wdk.namespace('wdk.components', function(ns, $) {
             if (e.originalEvent.type === 'tooltipsolo') {
               e.preventDefault();
             } else {
-              localStorage.setItem(dismissedStorageKey, 1);
+              if (api.cache.remember) {
+                localStorage.setItem(dismissedStorageKey, 1);
+              }
               api.destroy();
             }
           },
           show: function(e, api) {
-            var anchor = $('<div class="dismiss-wrapper"><a href="#dismiss">Got it!</a></div>')
-              .on('click', 'a', preventEvent(api.hide.bind(api)));
+            var anchor = $('<div class="dismiss-wrapper">' +
+                           '  <a href="#dismiss">Got it!</a>' +
+                           '  <label><input type="checkbox" name="remember"/>' +
+                           'Don\'t bother me anymore.</label>' +
+                           '</div>')
+              .on('click', 'a', preventEvent(api.hide.bind(api)))
+              .on('change', 'input', function(e) {
+                api.cache.remember = e.target.checked;
+              });
 
             api.elements.content.append(anchor);
           }
