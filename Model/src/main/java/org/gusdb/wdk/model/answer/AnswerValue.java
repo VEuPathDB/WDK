@@ -48,35 +48,29 @@ import org.gusdb.wdk.model.user.User;
 
 /**
  * <p>
- * A list of {@link RecordInstance}s representing one page of the answer to a
- * {@link Question}. The constructor of the Answer provides a handle (
- * {@link QueryInstance}) on the {@link ResultList} that is the list of primary
- * keys for the all the records (not * just one page) that are the answer to the
- * {@link Question}. The {@link ResultList} also has a column that contains the
- * row number (RESULT_TABLE_I) so that a list of primary keys for a single page
- * can be efficiently accessed.
+ * A list of {@link RecordInstance}s representing one page of the answer to a {@link Question}. The
+ * constructor of the Answer provides a handle ( {@link QueryInstance}) on the {@link ResultList} that is the
+ * list of primary keys for the all the records (not * just one page) that are the answer to the
+ * {@link Question}. The {@link ResultList} also has a column that contains the row number (RESULT_TABLE_I) so
+ * that a list of primary keys for a single page can be efficiently accessed.
  * </p>
  * 
  * <p>
- * The AnswerValue is lazy in that it only constructs the set of
- * {@link RecordInstance}s for the page when the first RecordInstance is
- * requested.
+ * The AnswerValue is lazy in that it only constructs the set of {@link RecordInstance}s for the page when the
+ * first RecordInstance is requested.
  * </p>
  * 
  * <p>
- * The initial request triggers the creation of skeletal {@link RecordInstance}s
- * for the page. They contain only primary keys (these being acquired from the
- * {@link ResultList}).
+ * The initial request triggers the creation of skeletal {@link RecordInstance}s for the page. They contain
+ * only primary keys (these being acquired from the {@link ResultList}).
  * </p>
  * 
  * <p>
- * These skeletal {@link RecordInstance}s are also lazy in that they only run an
- * attributes {@link Query} when an attribute provided by that query is
- * requested. When they do run an attribute query, its {@link QueryInstance} is
- * put into joinMode. This means that the attribute query joins with the table
- * containing the primary keys, and, in one database query, generates rows
- * containing the attribute values for all the {@link RecordInstance}s in the
- * page.
+ * These skeletal {@link RecordInstance}s are also lazy in that they only run an attributes {@link Query} when
+ * an attribute provided by that query is requested. When they do run an attribute query, its
+ * {@link QueryInstance} is put into joinMode. This means that the attribute query joins with the table
+ * containing the primary keys, and, in one database query, generates rows containing the attribute values for
+ * all the {@link RecordInstance}s in the page.
  * </p>
  * 
  * <p>
@@ -84,20 +78,17 @@ import org.gusdb.wdk.model.user.User;
  * </p>
  * 
  * <p>
- * The method {@link AnswerValue#integrateAttributesQuery} is invoked by the
- * first RecordInstance in the page upon the first request for an attribute
- * provided by an attributes query. The query is a join with the list of primary
- * keys, and so has a row for each {@link RecordInstance} in the page, and
- * columns that provide the attribute values (plus RESULT_TABLE_I). The values
- * in the rows are integrated into the corresponding {@link RecordInstance} (now
- * no longer skeletal). {@link AnswerValue#integrateAttributesQuery} may be
- * called a number of times, depending upon how many attribute queries the
- * {@link RecordClass} contains.
+ * The method {@link AnswerValue#integrateAttributesQuery} is invoked by the first RecordInstance in the page
+ * upon the first request for an attribute provided by an attributes query. The query is a join with the list
+ * of primary keys, and so has a row for each {@link RecordInstance} in the page, and columns that provide the
+ * attribute values (plus RESULT_TABLE_I). The values in the rows are integrated into the corresponding
+ * {@link RecordInstance} (now no longer skeletal). {@link AnswerValue#integrateAttributesQuery} may be called
+ * a number of times, depending upon how many attribute queries the {@link RecordClass} contains.
  * </p>
  * 
  * <p>
- * Attribute queries are guaranteed to provide one row for each
- * {@link RecordInstance} in the page. An exception is thrown otherwise.
+ * Attribute queries are guaranteed to provide one row for each {@link RecordInstance} in the page. An
+ * exception is thrown otherwise.
  * </p>
  * 
  * <p>
@@ -105,8 +96,7 @@ import org.gusdb.wdk.model.user.User;
  * </p>
  * 
  * @author David Barkan
- * @version $Revision$ $Date: 2007-01-22 12:33:24 -0500 (Mon, 22 Jan
- *          2007) $ $Author$
+ * @version $Revision$ $Date$ $Author$
  * 
  * 
  */
@@ -146,22 +136,17 @@ public class AnswerValue {
 
   /**
    * @param question
-   *          The <code>Question</code> to which this is the <code>Answer</code>
-   *          .
+   *          The <code>Question</code> to which this is the <code>Answer</code> .
    * @param idsQueryInstance
-   *          The <co de>QueryInstance</code> that provides a handle on the
-   *          ResultList containing all primary keys that are the result for the
-   *          question (not just one page worth).
+   *          The <co de>QueryInstance</code> that provides a handle on the ResultList containing all primary
+   *          keys that are the result for the question (not just one page worth).
    * @param startIndex
-   *          The index of the first <code>RecordInstance</code> in the page.
-   *          (>=1)
+   *          The index of the first <code>RecordInstance</code> in the page. (>=1)
    * @param endIndex
-   *          The index of the last <code>RecordInstance</code> in the page,
-   *          inclusive.
+   *          The index of the last <code>RecordInstance</code> in the page, inclusive.
    */
-  public AnswerValue(User user, Question question,
-      QueryInstance idsQueryInstance, int startIndex, int endIndex,
-      Map<String, Boolean> sortingMap, AnswerFilterInstance filter) {
+  public AnswerValue(User user, Question question, QueryInstance idsQueryInstance, int startIndex,
+      int endIndex, Map<String, Boolean> sortingMap, AnswerFilterInstance filter) {
     this.user = user;
     this.question = question;
     this.resultFactory = question.getWdkModel().getResultFactory();
@@ -197,11 +182,9 @@ public class AnswerValue {
     this.question = answerValue.question;
     this.resultFactory = answerValue.resultFactory;
     this.resultSize = answerValue.resultSize;
-    this.resultSizesByFilter = new LinkedHashMap<String, Integer>(
-        answerValue.resultSizesByFilter);
+    this.resultSizesByFilter = new LinkedHashMap<String, Integer>(answerValue.resultSizesByFilter);
     if (answerValue.resultSizesByProject != null)
-      this.resultSizesByProject = new LinkedHashMap<String, Integer>(
-          answerValue.resultSizesByProject);
+      this.resultSizesByProject = new LinkedHashMap<String, Integer>(answerValue.resultSizesByProject);
 
     this.sortingMap = new LinkedHashMap<String, Boolean>(answerValue.sortingMap);
     this.filter = answerValue.filter;
@@ -228,7 +211,7 @@ public class AnswerValue {
   /**
    * @return
    * @throws WdkModelException
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   public int getPageSize() throws WdkModelException, WdkUserException {
     initPageRecordInstances();
@@ -239,18 +222,17 @@ public class AnswerValue {
     int total = getResultSize();
     int pageSize = endIndex - startIndex + 1;
     int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
-    logger.debug("#Pages: " + pageCount + ",\t#Total: " + total
-        + ",\t#PerPage: " + pageSize);
+    logger.debug("#Pages: " + pageCount + ",\t#Total: " + total + ",\t#PerPage: " + pageSize);
     return pageCount;
   }
 
   public int getResultSize() throws WdkModelException, WdkUserException {
-    logger.debug("getting result size: cache=" + resultSize + ", isCached="
-        + idsQueryInstance.isCached());
+    logger.debug("getting result size: cache=" + resultSize + ", isCached=" + idsQueryInstance.isCached());
     if (resultSize == null || !idsQueryInstance.isCached()) {
       if (filter == null) {
         resultSize = idsQueryInstance.getResultSize();
-      } else {
+      }
+      else {
         resultSize = getFilterSize(filter.getName());
         resultSizesByFilter.put(filter.getName(), resultSize);
       }
@@ -268,7 +250,8 @@ public class AnswerValue {
         String projectId = question.getWdkModel().getProjectId();
         // no project_id defined in the record, use the full size
         resultSizesByProject.put(projectId, getResultSize());
-      } else {
+      }
+      else {
         // need to run the query first
         ResultList resultList;
         // for portal
@@ -286,7 +269,8 @@ public class AnswerValue {
               String[] parts = size.split(":");
               if (parts.length > 1 && parts[1].matches("^\\d++$")) {
                 resultSizesByProject.put(parts[0], Integer.parseInt(parts[1]));
-              } else {
+              }
+              else {
                 // make sure if the message is not expected, the
                 // correct result size can still be retrieved
                 // from
@@ -312,7 +296,8 @@ public class AnswerValue {
               }
             }
           }
-        } finally {
+        }
+        finally {
           resultList.close();
         }
       }
@@ -346,7 +331,7 @@ public class AnswerValue {
   /**
    * @return
    * @throws WdkModelException
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   public RecordInstance[] getRecordInstances() throws WdkModelException, WdkUserException {
     initPageRecordInstances();
@@ -359,7 +344,7 @@ public class AnswerValue {
   public RecordInstance getRecordInstance(PrimaryKeyAttributeValue primaryKey) {
     return pageRecordInstances.get(primaryKey);
   }
-  
+
   public String getQueryChecksum(boolean extra) throws WdkModelException {
     return idsQueryInstance.getQuery().getChecksum(extra);
   }
@@ -368,11 +353,12 @@ public class AnswerValue {
    * the checksum of the iq query, plus the filter information on the answer.
    * 
    * @return
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   public String getChecksum() throws WdkModelException, WdkUserException {
     String checksum = idsQueryInstance.getChecksum();
-    if (filter != null) checksum += ":" + filter.getName();
+    if (filter != null)
+      checksum += ":" + filter.getName();
     return checksum;
   }
 
@@ -380,7 +366,7 @@ public class AnswerValue {
    * the answer's key is the checksum of the answer, plus the filter, if any.
    * 
    * @return
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   public String getAnswerStringKey() throws WdkModelException, WdkUserException {
     return getChecksum();
@@ -405,7 +391,8 @@ public class AnswerValue {
 
   /**
    * print summary attributes, one per line Note: not sure why this is needed
-   * @throws WdkUserException 
+   * 
+   * @throws WdkUserException
    * 
    */
   public String printAsSummary() throws WdkModelException, WdkUserException {
@@ -421,7 +408,8 @@ public class AnswerValue {
 
   /**
    * print summary attributes in tab delimited table with header of attr. names
-   * @throws WdkUserException 
+   * 
+   * @throws WdkUserException
    * 
    */
   public String printAsTable() throws WdkModelException, WdkUserException {
@@ -431,8 +419,8 @@ public class AnswerValue {
     initPageRecordInstances();
 
     // print summary info
-    buf.append("# of Records: " + getResultSize() + ",\t# of Pages: "
-        + getPageCount() + ",\t# Records per Page: " + getPageSize() + newline);
+    buf.append("# of Records: " + getResultSize() + ",\t# of Pages: " + getPageCount() +
+        ",\t# Records per Page: " + getPageSize() + newline);
 
     if (pageRecordInstances.size() == 0)
       return buf.toString();
@@ -462,27 +450,27 @@ public class AnswerValue {
    * @param reporterName
    * @param config
    * @return
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
-  public Reporter createReport(String reporterName, Map<String, String> config)
-      throws WdkModelException, WdkUserException {
+  public Reporter createReport(String reporterName, Map<String, String> config) throws WdkModelException,
+      WdkUserException {
     // get the full answer
     int endI = getResultSize();
     return createReport(reporterName, config, 1, endI);
   }
 
-  public Reporter createReport(String reporterName, Map<String, String> config,
-      int startI, int endI) throws WdkModelException {
+  public Reporter createReport(String reporterName, Map<String, String> config, int startI, int endI)
+      throws WdkModelException {
     // get Reporter
     Map<String, ReporterRef> rptMap = question.getRecordClass().getReporterMap();
     ReporterRef rptRef = rptMap.get(reporterName);
     if (rptRef == null)
-      throw new WdkModelException("The reporter " + reporterName + " is "
-          + "not registered for " + question.getRecordClass().getFullName());
+      throw new WdkModelException("The reporter " + reporterName + " is " + "not registered for " +
+          question.getRecordClass().getFullName());
     String rptImp = rptRef.getImplementation();
     if (rptImp == null)
-      throw new WdkModelException("The reporter " + reporterName + " is "
-          + "not registered for " + question.getRecordClass().getFullName());
+      throw new WdkModelException("The reporter " + reporterName + " is " + "not registered for " +
+          question.getRecordClass().getFullName());
 
     try {
       Class<?> rptClass = Class.forName(rptImp);
@@ -495,29 +483,35 @@ public class AnswerValue {
       reporter.configure(config);
       reporter.setWdkModel(rptRef.getWdkModel());
       return reporter;
-    } catch (ClassNotFoundException ex) {
+    }
+    catch (ClassNotFoundException ex) {
       throw new WdkModelException(ex);
-    } catch (InstantiationException ex) {
+    }
+    catch (InstantiationException ex) {
       throw new WdkModelException(ex);
-    } catch (IllegalAccessException ex) {
+    }
+    catch (IllegalAccessException ex) {
       throw new WdkModelException(ex);
-    } catch (SecurityException ex) {
+    }
+    catch (SecurityException ex) {
       throw new WdkModelException(ex);
-    } catch (NoSuchMethodException ex) {
+    }
+    catch (NoSuchMethodException ex) {
       throw new WdkModelException(ex);
-    } catch (IllegalArgumentException ex) {
+    }
+    catch (IllegalArgumentException ex) {
       throw new WdkModelException(ex);
-    } catch (InvocationTargetException ex) {
+    }
+    catch (InvocationTargetException ex) {
       throw new WdkModelException(ex);
     }
   }
 
   /**
-   * Iterate through all the pages of the answer, and each page is represented
-   * by an AnswerValue object.
+   * Iterate through all the pages of the answer, and each page is represented by an AnswerValue object.
    * 
    * @return
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   public Iterable<AnswerValue> getFullAnswers() throws WdkModelException, WdkUserException {
     // user tabular reporter as answer iterator
@@ -531,16 +525,15 @@ public class AnswerValue {
   // ------------------------------------------------------------------
 
   /**
-   * Integrate into the page's RecordInstances the attribute values from a
-   * particular attributes query. The attributes query result includes only rows
-   * for this page.
+   * Integrate into the page's RecordInstances the attribute values from a particular attributes query. The
+   * attributes query result includes only rows for this page.
    * 
    * The query is obtained from Column, and the query should not be modified.
-   * @throws WdkUserException 
+   * 
+   * @throws WdkUserException
    * 
    */
-  public void integrateAttributesQuery(Query attributeQuery)
-      throws WdkModelException, WdkUserException {
+  public void integrateAttributesQuery(Query attributeQuery) throws WdkModelException, WdkUserException {
     initPageRecordInstances();
 
     WdkModel wdkModel = question.getWdkModel();
@@ -548,8 +541,7 @@ public class AnswerValue {
     // appended
     attributeQuery = (Query) wdkModel.resolveReference(attributeQuery.getFullName());
 
-    logger.debug("filling attribute values from answer "
-        + attributeQuery.getFullName());
+    logger.debug("filling attribute values from answer " + attributeQuery.getFullName());
     for (Column column : attributeQuery.getColumns()) {
       logger.trace("column: '" + column.getName() + "'");
     }
@@ -558,16 +550,16 @@ public class AnswerValue {
 
     String sql = getPagedAttributeSql(attributeQuery);
     int count = 0;
-    
+
     // get and run the paged attribute query sql
     DatabaseInstance platform = wdkModel.getAppDb();
     DataSource dataSource = platform.getDataSource();
-    
+
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql,
-            attributeQuery.getFullName() + "__attr-paged");
-    } catch (SQLException e) {
+      resultSet = SqlUtils.executeQuery(dataSource, sql, attributeQuery.getFullName() + "__attr-paged");
+    }
+    catch (SQLException e) {
       throw new WdkModelException(e);
     }
     ResultList resultList = new SqlResultList(resultSet);
@@ -576,59 +568,54 @@ public class AnswerValue {
     PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
     Map<String, AttributeField> fields = question.getAttributeFieldMap();
     while (resultList.next()) {
-        // get primary key
-        Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-        for (String column : pkField.getColumnRefs()) {
-            pkValues.put(column, resultList.get(column));
-        }
-        PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
-                pkField, pkValues);
-        RecordInstance record = pageRecordInstances.get(primaryKey);
+      // get primary key
+      Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+      for (String column : pkField.getColumnRefs()) {
+        pkValues.put(column, resultList.get(column));
+      }
+      PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(pkField, pkValues);
+      RecordInstance record = pageRecordInstances.get(primaryKey);
 
-        if (record == null) {
-            StringBuffer error = new StringBuffer();
-            error.append("Paged attribute query [");
-            error.append(attributeQuery.getFullName());
-            error.append("] returns rows that doesn't match the paged ");
-            error.append("records. (");
-            for (String pkName : pkValues.keySet()) {
-                error.append(pkName).append(" = ");
-                error.append(pkValues.get(pkName)).append(", ");
-            }
-            error.append(").\nPaged Attribute SQL:\n").append(sql);
-            error.append("\n").append("Paged ID SQL:\n").append(getPagedIdSql());
-            throw new WdkModelException(error.toString());
+      if (record == null) {
+        StringBuffer error = new StringBuffer();
+        error.append("Paged attribute query [");
+        error.append(attributeQuery.getFullName());
+        error.append("] returns rows that doesn't match the paged ");
+        error.append("records. (");
+        for (String pkName : pkValues.keySet()) {
+          error.append(pkName).append(" = ");
+          error.append(pkValues.get(pkName)).append(", ");
         }
+        error.append(").\nPaged Attribute SQL:\n").append(sql);
+        error.append("\n").append("Paged ID SQL:\n").append(getPagedIdSql());
+        throw new WdkModelException(error.toString());
+      }
 
-        // fill in the column attributes
-        for (String columnName : attributeQuery.getColumnMap().keySet()) {
-            AttributeField field = fields.get(columnName);
-            if (field != null && (field instanceof ColumnAttributeField)) {
-                // valid attribute field, fill it in
-                Object objValue = resultList.get(columnName);
-                ColumnAttributeValue value = new ColumnAttributeValue(
-                        (ColumnAttributeField) field, objValue);
-                record.addAttributeValue(value);
-            }
+      // fill in the column attributes
+      for (String columnName : attributeQuery.getColumnMap().keySet()) {
+        AttributeField field = fields.get(columnName);
+        if (field != null && (field instanceof ColumnAttributeField)) {
+          // valid attribute field, fill it in
+          Object objValue = resultList.get(columnName);
+          ColumnAttributeValue value = new ColumnAttributeValue((ColumnAttributeField) field, objValue);
+          record.addAttributeValue(value);
         }
-        count++;
+      }
+      count++;
     }
 
     if (count != pageRecordInstances.size()) {
-      throw new WdkModelException("the integrated attribute query "
-          + "doesn't return the same number of records in the current "
-          + "page. Paged attribute sql:\n" + sql);
+      throw new WdkModelException("the integrated attribute query " +
+          "doesn't return the same number of records in the current " + "page. Paged attribute sql:\n" + sql);
     }
-    logger.debug("Attribute query [" + attributeQuery.getFullName()
-        + "] integrated.");
+    logger.debug("Attribute query [" + attributeQuery.getFullName() + "] integrated.");
   }
 
   // ------------------------------------------------------------------
   // Private Methods
   // ------------------------------------------------------------------
 
-  private String getPagedAttributeSql(Query attributeQuery)
-      throws WdkModelException, WdkUserException {
+  private String getPagedAttributeSql(Query attributeQuery) throws WdkModelException, WdkUserException {
     // get the paged SQL of id query
     String idSql = getPagedIdSql();
 
@@ -636,13 +623,11 @@ public class AnswerValue {
 
     // combine the id query with attribute query
     String attributeSql = getAttributeSql(attributeQuery);
-    StringBuffer sql = new StringBuffer(
-        " /* the desired attributes, for a page of sorted results */ "
-            + " SELECT aq.* FROM (");
+    StringBuffer sql = new StringBuffer(" /* the desired attributes, for a page of sorted results */ "
+        + " SELECT aq.* FROM (");
     sql.append(idSql);
-    sql.append(
-        ") pidq, (/* attribute query that returns attributes in a page */ ").append(
-        attributeSql).append(") aq WHERE ");
+    sql.append(") pidq, (/* attribute query that returns attributes in a page */ ").append(attributeSql).append(
+        ") aq WHERE ");
 
     boolean firstColumn = true;
     for (String column : pkField.getColumnRefs()) {
@@ -655,8 +640,7 @@ public class AnswerValue {
     return sql.toString();
   }
 
-  public void integrateTableQuery(TableField tableField)
-      throws WdkModelException, WdkUserException {
+  public void integrateTableQuery(TableField tableField) throws WdkModelException, WdkUserException {
     initPageRecordInstances();
 
     WdkModel wdkModel = question.getWdkModel();
@@ -665,8 +649,7 @@ public class AnswerValue {
     Query tableQuery = tableField.getQuery();
     tableQuery = (Query) wdkModel.resolveReference(tableQuery.getFullName());
 
-    logger.debug("integrate table query from answer: "
-        + tableQuery.getFullName());
+    logger.debug("integrate table query from answer: " + tableQuery.getFullName());
     for (Param param : tableQuery.getParams()) {
       logger.debug("param: " + param.getName());
     }
@@ -678,18 +661,18 @@ public class AnswerValue {
     DataSource dataSource = platform.getDataSource();
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql,
-        tableQuery.getFullName() + "_table-paged");
-    } catch (SQLException e) {
-        throw new WdkModelException(e);
+      resultSet = SqlUtils.executeQuery(dataSource, sql, tableQuery.getFullName() + "_table-paged");
+    }
+    catch (SQLException e) {
+      throw new WdkModelException(e);
     }
     ResultList resultList = new SqlResultList(resultSet);
 
     // initialize table values
     for (RecordInstance record : pageRecordInstances.values()) {
-        PrimaryKeyAttributeValue primaryKey = record.getPrimaryKey();
-        TableValue tableValue = new TableValue(user, primaryKey, tableField, true);
-        record.addTableValue(tableValue);
+      PrimaryKeyAttributeValue primaryKey = record.getPrimaryKey();
+      TableValue tableValue = new TableValue(user, primaryKey, tableField, true);
+      record.addTableValue(tableValue);
     }
 
     // make table values
@@ -700,8 +683,7 @@ public class AnswerValue {
       for (String column : pkField.getColumnRefs()) {
         pkValues.put(column, resultList.get(column));
       }
-      PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
-          pkField, pkValues);
+      PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(pkField, pkValues);
       RecordInstance record = pageRecordInstances.get(primaryKey);
 
       if (record == null) {
@@ -739,8 +721,8 @@ public class AnswerValue {
     Map<String, String> params = new LinkedHashMap<String, String>();
     String userId = Integer.toString(user.getUserId());
     params.put(Utilities.PARAM_USER_ID, userId);
-    QueryInstance queryInstance = tableQuery.makeInstance(user, params, true,
-        0, new LinkedHashMap<String, String>());
+    QueryInstance queryInstance = tableQuery.makeInstance(user, params, true, 0,
+        new LinkedHashMap<String, String>());
     String tableSql = queryInstance.getSql();
     StringBuffer sql = new StringBuffer("SELECT tq.* FROM (");
     sql.append(idSql);
@@ -768,7 +750,8 @@ public class AnswerValue {
       // the dynamic query doesn't have sql defined, the sql will be
       // constructed from the id query cache table.
       sql = idSql;
-    } else {
+    }
+    else {
       // make an instance from the original attribute query, and attribute
       // query has only one param, user_id. Note that the original
       // attribute query is different from the attribute query held by the
@@ -778,8 +761,8 @@ public class AnswerValue {
       params.put(Utilities.PARAM_USER_ID, userId);
       QueryInstance queryInstance;
       try {
-        queryInstance = attributeQuery.makeInstance(user, params,
-            true, 0, new LinkedHashMap<String, String>());
+        queryInstance = attributeQuery.makeInstance(user, params, true, 0,
+            new LinkedHashMap<String, String>());
       }
       catch (WdkUserException ex) {
         throw new WdkModelException(ex);
@@ -809,8 +792,10 @@ public class AnswerValue {
     StringBuffer sql = new StringBuffer("/* the ID query results, sorted */ SELECT ");
     boolean firstColumn = true;
     for (String pkColumn : pkColumns) {
-      if (firstColumn) firstColumn = false;
-      else sql.append(", ");
+      if (firstColumn)
+        firstColumn = false;
+      else
+        sql.append(", ");
       sql.append("idq." + pkColumn);
     }
 
@@ -828,7 +813,8 @@ public class AnswerValue {
         if (firstClause) {
           sql.append(" WHERE ");
           firstClause = false;
-        } else
+        }
+        else
           sql.append(" AND ");
 
         sql.append("idq.").append(column);
@@ -885,14 +871,14 @@ public class AnswerValue {
       innerSql = " /* filter applied on id query */ " + innerSql;
     }
     innerSql = "(" + innerSql + ")";
-    
+
     logger.debug("id sql constructed.");
-    
+
     return innerSql;
   }
 
-  private void prepareSortingSqls(Map<String, String> sqls,
-      Collection<String> orders) throws WdkModelException, WdkUserException {
+  private void prepareSortingSqls(Map<String, String> sqls, Collection<String> orders)
+      throws WdkModelException, WdkUserException {
     Map<String, AttributeField> fields = question.getAttributeFieldMap();
     Map<String, String> querySqls = new LinkedHashMap<String, String>();
     Map<String, String> queryNames = new LinkedHashMap<String, String>();
@@ -907,8 +893,7 @@ public class AnswerValue {
       Map<String, ColumnAttributeField> dependents = field.getColumnAttributeFields();
       for (ColumnAttributeField dependent : dependents.values()) {
         Column column = dependent.getColumn();
-        logger.debug("field [" + fieldName + "] depends on column ["
-            + column.getName() + "]");
+        logger.debug("field [" + fieldName + "] depends on column [" + column.getName() + "]");
         Query query = column.getQuery();
         String queryName = query.getFullName();
         // cannot use the attribute query from record, need to get it
@@ -922,8 +907,7 @@ public class AnswerValue {
           String sql = getAttributeSql(query);
 
           // add comments to sql
-          sql = " /* attribute query used for sorting: " + queryName + " */ "
-              + sql;
+          sql = " /* attribute query used for sorting: " + queryName + " */ " + sql;
           queryNames.put(queryName, shortName);
           querySqls.put(queryName, sql);
         }
@@ -959,10 +943,10 @@ public class AnswerValue {
   }
 
   /**
-   * If not already initialized, initialize the page's record instances, setting
-   * each with its id (either just primary key or that and project, if using a
-   * federated data source).
-   * @throws WdkUserException 
+   * If not already initialized, initialize the page's record instances, setting each with its id (either just
+   * primary key or that and project, if using a federated data source).
+   * 
+   * @throws WdkUserException
    * 
    */
   private void initPageRecordInstances() throws WdkModelException, WdkUserException {
@@ -978,9 +962,10 @@ public class AnswerValue {
     DataSource dataSource = platform.getDataSource();
     ResultSet resultSet;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql,
-        idsQueryInstance.getQuery().getFullName() + "__id-paged");
-    } catch (SQLException e) {
+      resultSet = SqlUtils.executeQuery(dataSource, sql, idsQueryInstance.getQuery().getFullName() +
+          "__id-paged");
+    }
+    catch (SQLException e) {
       throw new WdkModelException(e);
     }
     ResultList resultList = new SqlResultList(resultSet);
@@ -1013,22 +998,16 @@ public class AnswerValue {
           buffer.append(", ");
         buffer.append(name);
       }
-      logger.debug("resultSize: " + resultSize + ", start: " + startIndex
-          + ", end: " + endIndex);
-      logger.debug("expected: " + expected + ", actual: "
-          + pageRecordInstances.size());
+      logger.debug("resultSize: " + resultSize + ", start: " + startIndex + ", end: " + endIndex);
+      logger.debug("expected: " + expected + ", actual: " + pageRecordInstances.size());
       logger.debug("Paged ID SQL:\n" + sql);
-      throw new WdkModelException("The number of results returned "
-          + "by the id query "
-          + idsQueryInstance.getQuery().getFullName()
-          + " changes when it is joined to the query (or queries) "
-          + "for attribute set (" + buffer + ").\n"
-          + "id query: " + expected + " records\n"
-          + "join(id query, attribute query): "
-          + pageRecordInstances.size() + " records\n"
-          + "Check that the ID query returns no nulls or duplicates, "
-          + "and that the attribute-query join "
-          + "does not change the row count.");
+      throw new WdkModelException("The number of results returned " + "by the id query " +
+          idsQueryInstance.getQuery().getFullName() +
+          " changes when it is joined to the query (or queries) " + "for attribute set (" + buffer + ").\n" +
+          "id query: " + expected + " records\n" + "join(id query, attribute query): " +
+          pageRecordInstances.size() + " records\n" +
+          "Check that the ID query returns no nulls or duplicates, " + "and that the attribute-query join " +
+          "does not change the row count.");
     }
 
     logger.debug("Paged records initialized.");
@@ -1078,10 +1057,10 @@ public class AnswerValue {
         // WdkModelException("the assigned sorting attribute ["
         // + attributeName + "] doesn't exist in the answer of "
         // + "question " + question.getFullName());
-        logger.debug("Invalid sorting attribute: User #" + user.getUserId()
-            + ", question: '" + question.getFullName() + "', attribute: '"
-            + attributeName + "'");
-      } else {
+        logger.debug("Invalid sorting attribute: User #" + user.getUserId() + ", question: '" +
+            question.getFullName() + "', attribute: '" + attributeName + "'");
+      }
+      else {
         validMap.put(attributeName, sortingMap.get(attributeName));
       }
     }
@@ -1099,8 +1078,8 @@ public class AnswerValue {
   }
 
   /**
-   * The displayable includes all attributes that is not internal. It also
-   * contains all the summary attributes that are currently displayed.
+   * The displayable includes all attributes that is not internal. It also contains all the summary attributes
+   * that are currently displayed.
    * 
    * @return
    */
@@ -1128,25 +1107,21 @@ public class AnswerValue {
     return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
   }
 
-  private TreeNode convertAttributeTree(AttributeCategoryTree rawAttributeTree)
-      throws WdkModelException {
-    TreeNode root = rawAttributeTree.toTreeNode("category root",
-        "Attribute Categories");
+  private TreeNode convertAttributeTree(AttributeCategoryTree rawAttributeTree) throws WdkModelException {
+    TreeNode root = rawAttributeTree.toTreeNode("category root", "Attribute Categories");
     List<String> currentlySelectedFields = new ArrayList<String>();
     for (AttributeField field : getSummaryAttributeFieldMap().values()) {
       currentlySelectedFields.add(field.getName());
     }
     root.turnOnSelectedLeaves(currentlySelectedFields);
-    root.setDefaultLeaves(new ArrayList<String>(
-        question.getSummaryAttributeFieldMap().keySet()));
+    root.setDefaultLeaves(new ArrayList<String>(question.getSummaryAttributeFieldMap().keySet()));
     return root;
   }
 
   // private Map<String, AttributeField> summaryFieldMap;
   // this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
 
-  public Map<String, AttributeField> getSummaryAttributeFieldMap()
-      throws WdkModelException {
+  public Map<String, AttributeField> getSummaryAttributeFieldMap() throws WdkModelException {
 
     // get preferred attribs from user and initialize map
     String[] userPrefAttributes = user.getSummaryAttributes(question.getFullName());
@@ -1167,11 +1142,10 @@ public class AnswerValue {
   }
 
   /**
-   * This method is redundant with getAllIds(), consider deprecate either one of
-   * them.
+   * This method is redundant with getAllIds(), consider deprecate either one of them.
    * 
    * @return returns a list of all primary key values.
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   public Object[][] getPrimaryKeyValues() throws WdkModelException, WdkUserException {
     String[] columns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
@@ -1195,6 +1169,21 @@ public class AnswerValue {
     return ids;
   }
 
+  public Map<String, Integer> getFilterSizes() {
+    Map<String, Integer> sizes = new LinkedHashMap<>();
+    RecordClass recordClass = question.getRecordClass();
+    for (AnswerFilterInstance filter : recordClass.getFilters()) {
+      try {
+        int size = getFilterSize(filter.getName());
+        sizes.put(filter.getName(), size);
+      }
+      catch (WdkModelException | WdkUserException ex) {
+        sizes.put(filter.getName(), -1);
+      }
+    }
+    return sizes;
+  }
+
   public int getFilterSize(String filterName) throws WdkModelException, WdkUserException {
     Integer size = resultSizesByFilter.get(filterName);
     if (size != null && idsQueryInstance.isCached()) {
@@ -1216,17 +1205,16 @@ public class AnswerValue {
 
       WdkModel wdkModel = question.getWdkModel();
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      Object result = SqlUtils.executeScalar(dataSource,
-          sql.toString(), idsQueryInstance.getQuery().getFullName() + "__"
-              + filterName + "-filter-size");
+      Object result = SqlUtils.executeScalar(dataSource, sql.toString(),
+          idsQueryInstance.getQuery().getFullName() + "__" + filterName + "-filter-size");
       size = Integer.parseInt(result.toString());
 
       resultSizesByFilter.put(filterName, size);
 
       return size;
-    } catch (SQLException e) {
-      throw new WdkModelException("Unable to get filter size for filter "
-          + filterName, e);
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Unable to get filter size for filter " + filterName, e);
     }
   }
 
@@ -1241,7 +1229,8 @@ public class AnswerValue {
     if (filterName != null) {
       RecordClass recordClass = question.getRecordClass();
       setFilter(recordClass.getFilter(filterName));
-    } else
+    }
+    else
       this.filter = null;
   }
 
@@ -1263,15 +1252,13 @@ public class AnswerValue {
   }
 
   /**
-   * Get a list of all the primary key tuples of all the records in the answer.
-   * It is a shortcut of iterating through all the pages and get the primary
-   * keys.
+   * Get a list of all the primary key tuples of all the records in the answer. It is a shortcut of iterating
+   * through all the pages and get the primary keys.
    * 
-   * This method is redundant with getPrimaryKeyValues()(), consider deprecate
-   * either one of them.
+   * This method is redundant with getPrimaryKeyValues()(), consider deprecate either one of them.
    * 
    * @return
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   public List<String[]> getAllIds() throws WdkModelException, WdkUserException {
     String idSql = getSortedIdSql();
@@ -1282,8 +1269,8 @@ public class AnswerValue {
     DataSource dataSource = wdkModel.getAppDb().getDataSource();
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, idSql,
-          idsQueryInstance.getQuery().getFullName() + "__all-ids");
+      resultSet = SqlUtils.executeQuery(dataSource, idSql, idsQueryInstance.getQuery().getFullName() +
+          "__all-ids");
       while (resultSet.next()) {
         String[] values = new String[pkColumns.length];
         for (int i = 0; i < pkColumns.length; i++) {
@@ -1292,9 +1279,11 @@ public class AnswerValue {
         }
         pkValues.add(values);
       }
-    } catch(SQLException ex) {
+    }
+    catch (SQLException ex) {
       throw new WdkModelException(ex);
-    } finally {
+    }
+    finally {
       SqlUtils.closeResultSetAndStatement(resultSet);
     }
     return pkValues;
@@ -1303,7 +1292,8 @@ public class AnswerValue {
   public boolean isUseBooleanFilter() {
     if (idsQueryInstance instanceof BooleanQueryInstance) {
       return ((BooleanQueryInstance) idsQueryInstance).isUseBooleanFilter();
-    } else
+    }
+    else
       return false;
   }
 

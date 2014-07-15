@@ -30,7 +30,10 @@
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkFilter.css' />">
 -->
 
-<c:forEach items="${recordClass.filterLayouts}" var="layout">
+<c:url var="countUrl" value="/showResultSize.do?step=${stepId}" />
+
+<div class="result-filters" data-count-url="${countUrl}">
+  <c:forEach items="${recordClass.filterLayouts}" var="layout">
     <div class="filter-layout" id="${layout.name}">
         <c:set var="image" value="plus.gif" />
         <c:set var="show" value="none" />
@@ -60,7 +63,8 @@
             <c:remove var="filter_layout" scope="request"/>
         </div>
     </div>
-</c:forEach>
+  </c:forEach>
+</div>
 
 <c:remove var="answer_value" scope="request"/>
 <c:remove var="strategy_id" scope="request"/>
