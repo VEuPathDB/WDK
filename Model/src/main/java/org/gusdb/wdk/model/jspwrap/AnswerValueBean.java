@@ -407,6 +407,12 @@ public class AnswerValueBean {
             throws WdkModelException, WdkUserException {
         return answerValue.getFilterSize(filterName);
     }
+    
+    
+
+    public Map<String, Integer> getFilterSizes() {
+      return answerValue.getFilterSizes();
+    }
 
     public AnswerFilterInstanceBean getFilter() {
         AnswerFilterInstance filter = answerValue.getFilter();
