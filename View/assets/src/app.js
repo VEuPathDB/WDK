@@ -11,10 +11,7 @@
       wdk.setUpPopups();
 
       // call wdk.load trigger DOM-based functions
-      !function load() {
-        wdk.load();
-        setTimeout(load, 100);
-      }();
+      setInterval(wdk.load, 100);
     }
 
   });
