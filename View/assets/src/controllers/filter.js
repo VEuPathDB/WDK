@@ -83,7 +83,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
             var count = data[filter];
             $(this).html((count == undefined) ? "error" : count);
           });
-        }
+        });
       });
       
     /*
