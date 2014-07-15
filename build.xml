@@ -40,10 +40,11 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-Installation" depends="WSF-Installation,
+                                           WDK-MavenInstallation,
                                            WDK/Model-Installation,
                                            WDK/Controller-Installation,
-                                           WDK/View-Installation,
-                                           WDK/Test-Installation">
+                                           WDK/View-Installation">
+
     <ant target="defaultProjectInstall">
       <property name="project" value="WDK"/>
     </ant>
@@ -63,6 +64,24 @@
   </target>
 
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
+
+  <target name="WDK-MavenInstallation">
+    <ant target="mavenCleanInstall">
+      <property name="project" value="WDK"/>
+    </ant>
+    <ant target="deployMavenArtifacts">
+      <property name="project" value="WDK"/>
+      <property name="component" value="Model"/>
+    </ant>
+    <ant target="deployMavenArtifacts">
+      <property name="project" value="WDK"/>
+      <property name="component" value="Controller"/>
+    </ant>
+    <ant target="deployMavenArtifacts">
+      <property name="project" value="WDK"/>
+      <property name="component" value="View"/>
+    </ant>
+  </target>
 
   <target name="WDK/Controller-Installation">
     <ant target="defaultComponentInstall">
@@ -164,13 +183,6 @@
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="View"/>
-    </ant>
-  </target>
-
-  <target name="WDK/Test-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Test"/>
     </ant>
   </target>
 
