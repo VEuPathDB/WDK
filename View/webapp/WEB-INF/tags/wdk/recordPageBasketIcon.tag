@@ -19,23 +19,18 @@
     });
   </script>
 </c:if>
-<style type="text/css">
-	img {vertical-align:bottom;}
-</style>
-
 
 <span class="wdk-record" recordClass="${wdkRecord.recordClass.fullName}">
     <c:choose>
         <c:when test="${wdkUser.guest}">
           <c:if test="${wdkRecord.recordClass.useBasket}">
           <a class="basket" href="javascript:void(0)" onclick="wdk.user.login();"> Add to Basket
-            <imp:image src="/wdk/images/basket_gray.png" width='${imagesize}' value="0" title="Please log in to access the basket."/>
+            <imp:image src="/wdk/images/basket_gray.png" width='${imagesize}' title="Please log in to access the basket."/>
           </a>
-          &nbsp;&nbsp;&nbsp;&nbsp;
           </c:if>
 
           <a class="favorite" href="javascript:void(0)" onclick="wdk.user.login();">Add to Favorites
-            <imp:image src="/wdk/images/favorite_gray.gif" width='${imagesize}' value="0" title="Please log in to access the favorites."/>
+            <imp:image src="/wdk/images/favorite_gray.gif" width='${imagesize}' title="Please log in to access the favorites."/>
           </a>
          </c:when>
 
@@ -52,7 +47,6 @@
 		onClick="wdk.basket.updateBasket(this, 'recordPage', '${id}', '${pid}', '${wdkRecord.recordClass.fullName}')">
             <imp:image src="/wdk/images/basket_${image}.png" width='${imagesize}' value="${imagevalue}" title="${imagetitle}"/>
             </a>
-            &nbsp;&nbsp;&nbsp;&nbsp;
           </c:if>
 <%--End of Block --%>
 
