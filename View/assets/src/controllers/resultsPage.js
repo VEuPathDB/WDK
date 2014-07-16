@@ -24,8 +24,10 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       }
     });
     
-    // pretty up analysis tabs and create "new analysis" menu
-    wdk.stepAnalysis.configureAnalysisViews($element);
+    // if not a child of basket menu, configure analysis tabs
+    if (!$element.closest('#basket-menu').length) {
+      wdk.stepAnalysis.configureAnalysisViews($element);
+    }
     
   }
   
