@@ -1,3 +1,5 @@
+/* global global */
+
 // adapted from https://github.com/semmypurewal/jermaine/blob/master/src/util/namespace.js
 //
 // Bootstrap the wdk namespace and make the namespace utility available at
@@ -67,6 +69,7 @@
 
 // for legacy
 wdk.namespace('wdk.util', function(ns) {
+  'use strict';
   ns.namespace = wdk.namespace;
 });
 

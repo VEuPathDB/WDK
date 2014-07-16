@@ -1,3 +1,5 @@
+/* global wdkConfig, yepnope, Modernizr */
+
 (function bootstrap(window) {
   'use strict';
 

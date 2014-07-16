@@ -1,3 +1,4 @@
+/* jshint evil:true */
 wdk.util.namespace("window.wdk.strategy.error", function (ns, $) {
   "use strict";
 
@@ -57,35 +58,34 @@ wdk.util.namespace("window.wdk.strategy.error", function (ns, $) {
         $(qform).prepend(table);
         $(qform).show();
       } else if(type == "out-of-sync") { //Checksum sent did not match the back-end checksum
-        if (data.state.length == 0) {
+        if (data.state.length === 0) {
           alert(SessionTimeOutMessage);
         } else {
           alert(OOSMessage);
         }
         wdk.strategy.view.removeStrategyDivs(strategy.backId);
-        var f_strategyId = wdk.strategy.controller.updateStrategies(data, evt, strategy);
         wdk.util.removeLoading(strategy.frontId);
         $("#diagram_" + strategy.frontId + " div.stepBox:last h6.resultCount:last a").click();
         wdk.step.isInsert = "";
       } else if(type == "dup-name-error") {
         if (evt == "SaveStrategy") {
-          var publicAddOn = (data.isPublicDup == true) ? " <em>public</em>" : "";
+          var publicAddOn = (data.isPublicDup === true) ? " <em>public</em>" : "";
           var dialogContent = "<div>A" + publicAddOn + " strategy already " +
                "exists with the name '" + name + "'.<br/> <br/>Are you sure " +
                "you want to overwrite it?</div>";
           $(dialogContent).dialog({
-              resizable: false,
-              modal: true,
-              title: "Please Confirm...",
-              buttons: {
-                  Ok: function () {
-                      wdk.strategy.controller.saveOrRenameStrategy(strategy, false, true, fromHist, qform);
-                      $(this).dialog("close");
-                  },
-                  Cancel: function () {
-                      $(this).dialog("close");
-                  }
+            resizable: false,
+            modal: true,
+            title: "Please Confirm...",
+            buttons: {
+              Ok: function () {
+                wdk.strategy.controller.saveOrRenameStrategy(strategy, false, true, fromHist, qform);
+                $(this).dialog("close");
+              },
+              Cancel: function () {
+                $(this).dialog("close");
               }
+            }
           });
         } else if(evt == "RenameStrategy") {
           var savedNotif = (strategy.isSaved ? "saved" : "unsaved");
@@ -99,23 +99,6 @@ wdk.util.namespace("window.wdk.strategy.error", function (ns, $) {
         //TODO : Add a AJAX call to send an e-mail to Administrator with exception, stack trace and message
         wdk.strategy.controller.initDisplay(0);
       }
-    }
-  }
-
-  function ValidateView(strategies){
-    var failed = [];
-
-    for (var str in wdk.strategy.controller.strats) {
-      var strat = wdk.strategy.controller.strats[str];
-      if (strat.checksum != strategies[strat.backId]) {
-        failed.push(strat.frontId);
-      }
-    }
-
-    if (failed.length == 0) {
-      return true;
-    } else {
-      return failed;
     }
   }
 

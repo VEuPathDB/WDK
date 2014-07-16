@@ -1,3 +1,7 @@
+/* jshint ignore:start */
+
+// FIXME jshint errors
+
 window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   "use strict";
 
@@ -192,7 +196,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     }
 
     if (jsonStep.isValid) {
-      bool_link = "wdk.strategy.controller.NewResults(" + sid + "," +
+      bool_link = "wdk.strategy.controller.newResults(" + sid + "," +
           modelstep.frontId + ", true)";
     }
 
@@ -259,7 +263,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     var childinner = ""+
     "    <div style='cursor:pointer' title=\""+stepBoxTooltip(childStp.filterName)+"\" class='results_link crumb_name divlink step-elem' "+
-      "         href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'>"+
+      "         href='javascript:void(0)' onclick='wdk.strategy.controller.newResults(" + sid + "," + modelstep.frontId + ", false)'>"+
 	//"         onmouseover=\"jQuery(this).find('.edit-icon').css('display','inline')\" onmouseout=\"jQuery(this).find('.edit-icon').css('display','inline')\">"+
       "        <a href='javascript:void(0)'"+
       "           class='edit-icon step-elem' onclick='!event.stopPropagation ? event.cancelBubble = true : event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px'>"+
@@ -373,7 +377,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     //var editIconWinOffset = modelstep.isTransform ? "right:0px;top:-4px" : "right:-8px;top:-8px";
     var inner = ""+
       "    <div style='cursor:pointer' title=\""+stepBoxTooltip(jsonStep.filterName)+"\" class='results_link crumb_name divlink step-elem' "+
-      "         href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'> "+
+      "         href='javascript:void(0)' onclick='wdk.strategy.controller.newResults(" + sid + "," + modelstep.frontId + ", false)'> "+
       //"         onmouseover=\"jQuery(this).find('.edit-icon img').attr('src','wdk/images/edit-step-word.png')\" onmouseout=\"jQuery(this).find('.edit-icon img').attr('src','wdk/images/edit-step.png')\">"+
       //"      <div style='position:absolute;"+editIconWinOffset+";width:19px;height:19px;'></div>"+
       "      <a href='javascript:void(0)' class='edit-icon step-elem'"+
@@ -536,7 +540,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           ");wdk.step.hideDetails(this)'>Rename</a>&nbsp;|&nbsp;";
 
       var view_step = "<a title='" + sub_view_popup + "' " +
-          "class='view_step_link' onclick='wdk.strategy.controller.NewResults(" +
+          "class='view_step_link' onclick='wdk.strategy.controller.newResults(" +
           sid + "," + modelstep.frontId + ");wdk.step.hideDetails(this)' " +
           "href='javascript:void(0)'>View</a>&nbsp;|&nbsp;";
       var disab = "";
@@ -593,7 +597,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       }
 
       view_step = "<a title='" + ss_view_popup + "' class='view_step_link' " +
-          "onclick='wdk.strategy.controller.NewResults(" + sid + "," +
+          "onclick='wdk.strategy.controller.newResults(" + sid + "," +
           modelstep.frontId + "," + jsonStep.isboolean +
           ");wdk.step.hideDetails(this)' href='javascript:void(0)'>View</a>&nbsp;|&nbsp;";
 

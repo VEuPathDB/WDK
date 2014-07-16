@@ -59,7 +59,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
       Backbone.Model.apply(this, arguments);
     },
 
-    parse: function(attrs, options) {
+    parse: function(attrs) {
       this.data.reset(attrs.data);
       this.fields.reset(attrs.fields);
       this.filters.reset(attrs.filters);
@@ -174,16 +174,16 @@ wdk.namespace('wdk.models.filter', function(ns) {
       var max = filter.get('max');
       var test;
 
-      if (min != null && max != null) {
+      if (min !== null && max !== null) {
         test = function(d) {
-          var v = d.get('metadata')[field]
+          var v = d.get('metadata')[field];
           return v >= min && v <= max;
         };
-      } else if (min != null) {
+      } else if (min !== null) {
         test = function(d) {
           return d.get('metadata')[field] >= min;
         };
-      } else if (max != null) {
+      } else if (max !== null) {
         test = function(d) {
           return d.get('metadata')[field] <= max;
         };

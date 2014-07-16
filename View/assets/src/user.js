@@ -1,3 +1,8 @@
+/* jshint ignore:start */
+
+// FIXME Review module
+// Some redundant functions, some undefined functions called, etc.
+
 wdk.util.namespace("window.wdk.user", function(ns, $) {
   "use strict";
 
@@ -14,7 +19,7 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
   ns.country = function() { return wdkConfig.wdkUser.country; };
   ns.email = function() { return wdkConfig.wdkUser.email; };
   ns.isGuest = function() { return wdkConfig.wdkUser.isGuest; };
-  ns.isUserLoggedIn = function() { return !ns.isGuest(); }
+  ns.isUserLoggedIn = function() { return !ns.isGuest(); };
 
   // var to hold reference to login dialog
   ns._dialog = null;
@@ -52,11 +57,6 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
     }
   };
 
-  // replaced above, just below ns.init
-  // ns.isUserLoggedIn = function() {
-  //   return ($('#login-status').data('logged-in'));
-  // };
-
   ns.validateRegistrationForm = function(e) {
       if (typeof e != 'undefined' && !enter_key_trap(e)) {
           return;
@@ -67,7 +67,7 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
       var pdot = email.lastIndexOf('.');
       var len = email.length;
 
-      if (email == '') {
+      if (email === '') {
           alert('Please provide your email address.');
           document.registerForm.email.focus();
           return false;
@@ -79,15 +79,15 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
           alert('The emails do not match. Please enter it again.');
           document.registerForm.email.focus();
           return false;
-      } else if (document.registerForm.firstName.value == "") {
+      } else if (document.registerForm.firstName.value === "") {
           alert('Please provide your first name.');
           document.registerForm.firstName.focus();
           return false;
-      } else if (document.registerForm.lastName.value == "") {
+      } else if (document.registerForm.lastName.value === "") {
           alert('Please provide your last name.');
           document.registerForm.lastName.focus();
           return false;
-      } else if (document.registerForm.organization.value == "") {
+      } else if (document.registerForm.organization.value === "") {
           alert('Please provide the name of the organization you belong to.');
           document.registerForm.organization.focus();
           return false;
@@ -106,15 +106,15 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
           alert("the email does not match.");
           document.profileForm.email.focus();
           return email;
-      } else if (document.profileForm.firstName.value == "") {
+      } else if (document.profileForm.firstName.value === "") {
           alert('Please provide your first name.');
           document.profileForm.firstName.focus();
           return false;
-      } else if (document.profileForm.lastName.value == "") {
+      } else if (document.profileForm.lastName.value === "") {
           alert('Please provide your last name.');
           document.profileForm.lastName.focus();
           return false;
-      } else if (document.profileForm.organization.value == "") {
+      } else if (document.profileForm.organization.value === "") {
           alert('Please provide the name of the organization you belong to.');
           document.profileForm.organization.focus();
           return false;
@@ -130,7 +130,7 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
       }
       var newPassword = document.passwordForm.newPassword.value;
       var confirmPassword = document.passwordForm.confirmPassword.value;
-      if (newPassword == "") {
+      if (newPassword === "") {
           alert('The new password cannot be empty.');
           document.passwordForm.newPassword.focus();
           return false;
@@ -143,6 +143,6 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
           document.passwordForm.submit();
           return true;
       }
-  }
+  };
 
 });

@@ -11,7 +11,7 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
     var l_gif;
     var sz;
 
-    if (divId == undefined) {
+    if (divId === undefined) {
       d = $("#Strategies");
       le = "10px";
       t = "15px";
@@ -49,7 +49,7 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
 
   // remove the loading icon for the given strategy
   function removeLoading(divId) {
-    if (divId == undefined) {
+    if (divId === undefined) {
       $("#Strategies span#loadingGIF").remove();
     } else {
       $("#diagram_" + divId + " span#loadingGIF").remove();
@@ -63,7 +63,7 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
     var quesForm = $("#query_form").find("form#form_question");
           
     // if the questionForm is popupped by other ways, get it from the opened popup under body.
-    if (quesForm.length == 0) {
+    if (quesForm.length === 0) {
       quesForm = $("body").children("div.crumb_details").find("form#form_question");
     }
 
@@ -77,16 +77,17 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
     if(charCode == 13) $(ele).blur();
   }
 
+  // parse the value of the `name` param from the `url`
   function parseUrlUtil(name,url) {
-     name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+     name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]"); // jshint ignore:line
      var regexS = "[\\?&]" + name + "=([^&#]*)";
      var regex = new RegExp( regexS,"g" );
      var res = [];
      var results = regex.exec( url );
-     if ( results != null ) {
+     if ( results !== null ) {
        res.push(results[1]);
      }
-     if (res.length == 0) {
+     if (res.length === 0) {
        return "";
      } else {
        return res;
@@ -130,7 +131,7 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
 
       // decide whether need to change the display or not
       var showFlag = wdk.readCookie(name);
-      if (showFlag == null) return;
+      if (showFlag === null) return;
           
       var status = $(this).children(".group-detail").css("display");
       if ((showFlag == "show") && (status == "none")) {   
@@ -161,10 +162,6 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
       handle: handle,
       containment: [0, tlimit, rlimit, blimit]
     });
-  }
-
-  function popLogin() {
-    $.blockUI({message: '<h1>You have to be logged in to do that!</h1><input type="button" value="OK" onclick="jQuery.unblockUI();" />'});
   }
 
   // Credit to Jason Bunting and Alex Nazarov for this helpful function
@@ -218,7 +215,7 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
           });
           break;
       }
-    }, "json").error(function(jqXHR, textStatus, errorThrown) {
+    }, "json").error(function(jqXHR, textStatus) {
       var response = "<h3>A " + textStatus + " error occurred.</h3><br/>" +
           "<p>This indicates a problem with our server. Please email " +
           "support directly.";

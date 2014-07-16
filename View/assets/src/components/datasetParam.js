@@ -1,7 +1,7 @@
 wdk.util.namespace("wdk.components.datasetParam", function(ns, $) {
   "use strict";
 
-  var init = function(paramDiv, attrs) {
+  var init = function(paramDiv) {
     // set up change event on subparams
     paramDiv.find("input.type").each(function() {
       var type = $(this);

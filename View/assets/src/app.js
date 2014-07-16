@@ -1,4 +1,4 @@
-!function($) {
+(function($) {
   'use strict';
 
   // Start the application. The ready callback is invoked
@@ -36,4 +36,4 @@
     $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
   }, 100));
 
-}(jQuery);
+}(jQuery));

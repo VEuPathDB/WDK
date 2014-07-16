@@ -1,3 +1,6 @@
+/* global wdkConfig */
+/* jshint evil:true */
+
 wdk.util.namespace("window.wdk", function(ns, $) {
   "use strict";
 
@@ -16,24 +19,24 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   }
 
   function cookieTest() {
-      var testCookieName = 'wdkTestCookie';
-      var testCookieValue = 'test';
+    var testCookieName = 'wdkTestCookie';
+    var testCookieValue = 'test';
 
-      createCookie(testCookieName, testCookieValue, 1);
-      var test = readCookie(testCookieName);
-      if (test == 'test') {
-          eraseCookie(testCookieName);
-      } else {
-          $.blockUI({message: "<div><h2>Cookies are disabled</h2><p>This site requires cookies.  Please enable them in your browser preferences.</p><input type='submit' value='OK' onclick='jQuery.unblockUI();' /></div>", css: {position : 'absolute', backgroundImage : 'none'}});
-      }
+    createCookie(testCookieName, testCookieValue, 1);
+    var test = readCookie(testCookieName);
+    if (test == 'test') {
+      eraseCookie(testCookieName);
+    } else {
+      $.blockUI({message: "<div><h2>Cookies are disabled</h2><p>This site requires cookies.  Please enable them in your browser preferences.</p><input type='submit' value='OK' onclick='jQuery.unblockUI();' /></div>", css: {position : 'absolute', backgroundImage : 'none'}});
+    }
   }
 
   // -------------------------------------------------------------------------
   // cookie handling methods
   // -------------------------------------------------------------------------
   function createCookie(name,value,days) {
-     var expires;
-     if (days) {
+    var expires;
+    if (days) {
       var date = new Date();
       date.setTime(date.getTime()+(days*24*60*60*1000));
       expires = "; expires="+date.toGMTString();
@@ -64,69 +67,84 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   // loading of question page in the add/revise step popup box.
   // ------------------------------------------------------------------------
   var questionEvents = [];
+  /*
+   The next two variables are not used:
   var resultEvents = [];
   var recordEvents = [];
+  */
 
+ /**
+  * @deprecated See wdk.on
+  */
   function registerQuestionEvent(handler) {
-      questionEvents.push(handler);
+    questionEvents.push(handler);
   }
 
+  /*
+   The next two functions are not used:
   function registerResultEvent(handler) {
-      resultEvents.push(handler);
+    resultEvents.push(handler);
   }
 
   function registerRecordEvent(handler) {
-      recordEvents.push(handler);
+    recordEvents.push(handler);
   }
+  */
 
+ /**
+  * @deprecated See wdk.trigger
+  */
   function onloadQuestion() {
-      for (var i= 0; i < questionEvents.length; i++) {
-          var handler = questionEvents[i];
-          handler();
-      }
+    for (var i= 0; i < questionEvents.length; i++) {
+      var handler = questionEvents[i];
+      handler();
+    }
   }
 
+  /*
+   The next two functions are not used:
   function onloadResult() {
-      for (var i= 0; i < resultEvents.length; i++) {
-          var handler = resultEvents[i];
-          handler();
-      }
+    for (var i= 0; i < resultEvents.length; i++) {
+      var handler = resultEvents[i];
+      handler();
+    }
   }
 
   function onloadRecord() {
-      for (var i= 0; i < recordEvents.length; i++) {
-          var handler = recordEvents[i];
-          handler();
-      }
+    for (var i= 0; i < recordEvents.length; i++) {
+      var handler = recordEvents[i];
+      handler();
+    }
   }
+  */
 
   function findActiveWorkspace() {
-      // check if the current page is result page
-      var tabs = $("#strategy_tabs");
-      var section = "";
-      if (tabs.length > 0) { // on result page
-          // determine the default top level tab
-          section = tabs.children("#selected").children("a").attr("id");
-          if (section == "tab_basket") { // on basket tab
-              section = "#" + $("#basket #basket-menu > ul > li.ui-tabs-active").attr("aria-controls");
-          } else { // on open strategies tab
-              section = "#" + section.substring(4) + " .Workspace";
-          }
-      } else { // not on strategy page, just get the general workspace
-         section = ".Workspace";
+    // check if the current page is result page
+    var tabs = $("#strategy_tabs");
+    var section = "";
+    if (tabs.length > 0) { // on result page
+      // determine the default top level tab
+      section = tabs.children("#selected").children("a").attr("id");
+      if (section == "tab_basket") { // on basket tab
+        section = "#" + $("#basket #basket-menu > ul > li.ui-tabs-active").attr("aria-controls");
+      } else { // on open strategies tab
+        section = "#" + section.substring(4) + " .Workspace";
       }
-      return $(section);
+    } else { // not on strategy page, just get the general workspace
+      section = ".Workspace";
+    }
+    return $(section);
   }
 
   function findActiveView() {
-      var workspace = findActiveWorkspace();
-      // check if we have summary view or record view
-      var views = workspace.find("#Summary_Views");
-      if (views.length === 0) { // no sumamry views, get record views
-          views = workspace.find("#Record_Views");
-      }
-      var section = views.children("ul").children("li.ui-tabs-active").attr("aria-controls");
-      return views.find(document.getElementById(section));
+    var workspace = findActiveWorkspace();
+    // check if we have summary view or record view
+    var views = workspace.find("#Summary_Views");
+    if (views.length === 0) { // no sumamry views, get record views
+      views = workspace.find("#Record_Views");
+    }
+    var section = views.children("ul").children("li.ui-tabs-active").attr("aria-controls");
+    return views.find(document.getElementById(section));
   }
 
 
@@ -266,7 +284,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   function registerTable() {
     // register data tables on wdk table
     $(".wdk-table.datatables").not('.dataTable').dataTable({
-        "bJQueryUI": true
+      "bJQueryUI": true
     });
 
     // also register other tables
@@ -282,7 +300,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   function registerSnippet() {
     $(".snippet").each(function(idx, node) {
       var $node = $(node),
-          defaultHeight = $node.height();
+          defaultHeight = $node.height(); // jshint ignore:line
 
       if ($node.data("rendered")) {
         return;
@@ -299,9 +317,9 @@ wdk.util.namespace("window.wdk", function(ns, $) {
         return;
       }
 
-      var $ellipsis = $("<div><b>&hellip;</b></div>")
-      .css("padding-left", "2.4em")
-      .attr("title", "Click to expand");
+      // var $ellipsis = $("<div><b>&hellip;</b></div>")
+      // .css("padding-left", "2.4em")
+      // .attr("title", "Click to expand");
 
       // Wrap inner content so we can hide its overflow
       $node.wrapInner($("<div class='orig'/>").height(height)
@@ -466,13 +484,14 @@ wdk.util.namespace("window.wdk", function(ns, $) {
       var save = $(element).data("save");
 
       if (typeof save === "string") {
-        try {
-          save = (0, eval)("(" + save + ")");
-        } catch (e) {
-          if (console && console.log) {
-            console.log(e);
-          }
-        }
+        save = new Function(save);
+        // try {
+        //   save = (0, eval)("(" + save + ")");
+        // } catch (e) {
+        //   if (console && console.log) {
+        //     console.log(e);
+        //   }
+        // }
       }
 
       $(element).editable({
@@ -534,26 +553,26 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     $("body").on("click", "a[class='new-window']", function(e) {
       e.preventDefault();
       // regex below may be too stringent -- should allow for arbitrary identifier?
-      var windowFeatures,
-          windowName = $(this).data("name") || "wdk_window",
-          windowUrl = this.href,
-          windowWidth = 1050,
-          windowHeight = 740,
-          windowLeft = screen.width/2 - windowWidth/2,
-          windowTop = screen.height/2 - windowHeight/2,
-          defaultFeatures = {
-            location:    "no",
-            menubar:     "no",
-            toolbar:     "no",
-            personalbar: "no",
-            resizable:   "yes",
-            scrollbars:  "yes",
-            status:      "yes",
-            width:       windowWidth,
-            height:      windowHeight,
-            top:         windowTop,
-            left:        windowLeft
-          };
+      var windowFeatures;
+      var windowName = $(this).data("name") || "wdk_window";
+      var windowUrl = this.href;
+      var windowWidth = 1050;
+      var windowHeight = 740;
+      var windowLeft = screen.width/2 - windowWidth/2;
+      var windowTop = screen.height/2 - windowHeight/2;
+      var defaultFeatures = {
+        location:    "no",
+        menubar:     "no",
+        toolbar:     "no",
+        personalbar: "no",
+        resizable:   "yes",
+        scrollbars:  "yes",
+        status:      "yes",
+        width:       windowWidth,
+        height:      windowHeight,
+        top:         windowTop,
+        left:        windowLeft
+      };
 
       // in the future, allow spefied data attributes to override features
       windowFeatures = $.map(defaultFeatures, function(v, k) { return k + "=" + v; }).join(",");

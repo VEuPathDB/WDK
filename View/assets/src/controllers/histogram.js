@@ -39,8 +39,8 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
 
     // register data table
     dataTable = histogram.find("#data .datatable").wdkDataTable( {
-          "bDestroy": true,
-          "aaSorting": [[ 0, "asc" ]],
+      "bDestroy": true,
+      "aaSorting": [[ 0, "asc" ]],
     }).DataTable();
 
     // register bin size control
@@ -98,7 +98,7 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
 
     // draw plot
     var plotCanvas = graph.find(".plot");
-    var plot = $.plot(plotCanvas, [ data ], options);
+    $.plot(plotCanvas, [ data ], options);
     plotCanvas.bind("plothover", function (event, pos, item) {
       if (item) {
         if (previousPoint != item.dataIndex) {
@@ -143,8 +143,9 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
 
     var bins = [];
     var labels = [];
+    var bin;
     for (var i = 0; i < data.length; i += binSize) {
-      var bin = [];
+      bin = [];
       var count = 0;
       var upper = Math.max(i + binSize, data.length);
       for (var j = i; j < upper; j++) {
@@ -154,10 +155,10 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
 
       // now compute new label;
       var label;
-      if (bin.length == 0) label = bin[0];
+      if (bin.length === 0) label = bin[0];
       else {
         for (var k = 0; k < bin.length; k++) {
-          label += (k == 0) ? "[" : ", ";
+          label += (k === 0) ? "[" : ", ";
           label += bin[k];
         }
         label += "]";
@@ -174,17 +175,21 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
 
   function convertNumericData(data, binSize, logarithm) {
     var tempBins = [];
+    var bin;
+    var label;
+    var i;
+    var j;
     // create bins
-    for (var i = min; i <= max; i += binSize) {
-       var bin = [i, i + binSize];
-       tempBins.push([ bin, 0 ]);
+    for (i = min; i <= max; i += binSize) {
+      bin = [i, i + binSize];
+      tempBins.push([ bin, 0 ]);
     }
 
     // assign rows into each bin
-    for (var i = 0; i < data.length; i++) {
-      var label = data[i][0];
-      for (var j = 0; j < tempBins.length; j++) {
-        var bin = tempBins[j][0];
+    for (i = 0; i < data.length; i++) {
+      label = data[i][0];
+      for (j = 0; j < tempBins.length; j++) {
+        bin = tempBins[j][0];
         if (bin[0] <= label && label < bin[1]) {
           tempBins[j][1] = tempBins[j][1] + data[i][1];
           break;
@@ -195,9 +200,8 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
     // now compute new labels
     var bins = [];
     var labels = [];
-    for (var j = 0; j < tempBins.length; j++) {
-      var bin = tempBins[j][0];
-      var label;
+    for (j = 0; j < tempBins.length; j++) {
+      bin = tempBins[j][0];
       if (binSize == 1 && type == "int") label = bin[0];
       else {
         if (type == "float") {

@@ -41,11 +41,7 @@ wdk.util.namespace("window.wdk.formUtil", function(ns, $) {
 	function handleCheckboxTree(treeId, paramValues) {
 		if (wdk.checkboxTree.isConfigured(treeId)) {
 			var inputName = wdk.checkboxTree.getInputName(treeId);
-			var values = paramValues[inputName]; // array of values
-			if (values == null) {
-				// no values were previously selected; send empty array
-				values = [ ];
-			}
+			var values = paramValues[inputName] || []; // array of values
 			wdk.checkboxTree.selectListOfNodes(treeId, values);
 		}
 		else {
