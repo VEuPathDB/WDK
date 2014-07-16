@@ -1,8 +1,8 @@
 // functional utility functions
 wdk.namespace('wdk.fn', function(ns) {
+  'use strict';
 
-  var __slice = [].slice,
-      compose = _.compose,
+  var compose = _.compose,
       result = _.result;
 
   // Decorates (or wraps) a function such that it prevents default event

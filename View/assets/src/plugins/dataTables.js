@@ -48,7 +48,7 @@ wdk.util.namespace("window.wdk.plugin", function(ns, $) {
             column.bSortable = Boolean(s);
             // only set sType if a valid type
             if (types.join("@~@").indexOf(s) > -1) column.sType = s;
-          };
+          }
           return column;
         });
       }

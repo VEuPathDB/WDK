@@ -1,3 +1,5 @@
+/* global Spinner */
+
 wdk.namespace('wdk.components.ajaxElement', function(ns, $) {
   'use strict';
 
@@ -19,13 +21,13 @@ wdk.namespace('wdk.components.ajaxElement', function(ns, $) {
     $('wdk-ajax:not([triggered])')
       // load if [immediate]
       .filter('[immediate]')
-        .each(function(i, e) { loadUrl(e) })
+        .each(function(i, e) { loadUrl(e); })
         .end()
       // load if :visible and in viewport
       .not('[immediate]')
         .filter(':visible')
-        .filter(function(i, e) { return elementNearViewport(e) })
-        .each(function(i, e) { loadUrl(e) });
+        .filter(function(i, e) { return elementNearViewport(e); })
+        .each(function(i, e) { loadUrl(e); });
   }
 
   ns = _.extend(ns, {

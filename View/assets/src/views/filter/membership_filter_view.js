@@ -31,7 +31,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
   });
 
-  var MembershipFilterView = ns.MembershipFilterView = wdk.views.View.extend({
+  ns.MembershipFilterView = wdk.views.View.extend({
 
     events: {
       'click .read-more a': 'expandDescription'
@@ -68,7 +68,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
           if (values.indexOf(member.get('value')) > -1) {
             member.set('selected', isSelected);
           }
-        })
+        });
       }
     },
 
@@ -117,7 +117,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         _this.memberViews.push(memberView);
       });
 
-      members.on('change:selected', function(member, selected) {
+      members.on('change:selected', function() {
         var type = _this.model.get('type');
         var values = members.where({selected: true}).map(function(member) {
           return type === 'number'

@@ -1,6 +1,5 @@
-/* global Wdk, Handlebars */
-
 wdk.namespace('wdk.views', function(ns) {
+  'use strict';
 
   ns.TemplateView = wdk.views.View.extend({
 

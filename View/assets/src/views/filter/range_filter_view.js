@@ -245,7 +245,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.setSelectionTotal(filter);
     },
 
-    handlePlotUnselected: function(event) {
+    handlePlotUnselected: function() {
       var filters = this.filterService.filters;
       var field = this.model;
 
@@ -257,7 +257,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       filters.remove(filters.where({ field: field.get('term') }), { origin: this });
     },
 
-    handleFormChange: function(e) {
+    handleFormChange: function() {
       var min = this.$min.val() === '' ? null : this.$min.val();
       var max = this.$max.val() === '' ? null : this.$max.val();
 

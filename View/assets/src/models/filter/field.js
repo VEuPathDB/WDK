@@ -13,9 +13,15 @@ wdk.namespace('wdk.models.filter', function(ns) {
     }
   });
 
-  Field.UNKNOWN_VALUE = new String('Unknown');
+  // Use String as constructor so that the following is true:
+  //
+  //     'Uknown' !== Field.UNKNOWN_VALUE
+  //
+  // This will make it possible to differentiate between this
+  // and a valid value of 'Unknown'.
+  Field.UNKNOWN_VALUE = new String('Unknown'); // jshint ignore:line
 
-  var Fields = ns.Fields = Backbone.Collection.extend({
+  ns.Fields = Backbone.Collection.extend({
     model: Field
   });
 

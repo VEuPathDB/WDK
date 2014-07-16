@@ -1,10 +1,8 @@
+/* jshint evil:true */
 wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
   "use strict";
 
-  var checkboxTreeConfig;
-  if ((typeof checkboxTreeConfig) == 'undefined') {
-    checkboxTreeConfig = {};
-  }
+  var checkboxTreeConfig = {};
 
   function setUpCheckboxTree($elem, $attrs) {
 
@@ -40,7 +38,7 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
     var checkboxTree = checkboxTreeConfig[treeId];
     if (!checkboxTree.configured) {
       $('#'+treeId)
-        .bind("loaded.jstree", function (event, data) {
+        .bind("loaded.jstree", function () {
           // need to check all selected nodes, but wait to ensure page is ready
           selectListOfNodes(treeId, checkboxTree.initiallySetList);
           if (checkboxTree.collapseOnLoad) {
@@ -52,7 +50,7 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
           checkboxTree.configured = true;
         })
         // hack to bubble change event up to containing form
-        .bind("change_state.jstree", function(event, data) {
+        .bind("change_state.jstree", function() {
           $(this).trigger("change");
         })
         .jstree({
@@ -77,7 +75,7 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
 
   function isConfigured(treeId) {
     var treeConfig = checkboxTreeConfig[treeId];
-    if (treeConfig == null) return false;
+    if (treeConfig === undefined) return false;
     return treeConfig.configured;
   }
 
@@ -90,6 +88,7 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
   }
 
   function selectListOfNodes(treeId, checkedArray) {
+    // jshint loopfunc:true
     var i;
     uncheckAll(treeId);
     // Why aren't we using valid IDs???
@@ -97,7 +96,7 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
     // Ideally would be able to do the following for each item in the checked array:
     //   $('.checkboxTree').jstree("check_node", '#'+checkedArray[i];);
     for (i = 0; i < checkedArray.length; i++) {
-      $('#' + treeId + ' .jstree-leaf').each(function(index) {
+      $('#' + treeId + ' .jstree-leaf').each(function() {
         if (this.id == checkedArray[i]) {
           $('#' + treeId).jstree("check_node", $(this));
         }

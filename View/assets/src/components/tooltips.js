@@ -7,13 +7,13 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
    */
   function makeConf(hash) {
     hash.getOrDefault = function(key, defaultVal) {
-      return (this[key] == undefined || this[key] == null ? defaultVal : this[key] );
+      return this[key] || defaultVal;
     };
     return hash;
   }
 
   function getConf(hash) {
-    return (hash == undefined ? makeConf({ }) : makeConf(hash));
+    return hash ? makeConf(hash) : makeConf({});
   }
 
   /**
@@ -95,14 +95,16 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
    *  - stickySecs (1): how long the tooltip will appear on screen if mouse is no longer interacting with it
    */
   function setUpStickyTooltip(tipTarget, tipContent, conf) {
+    var width;
+
     // use default config is it is not passed in
-    if (conf == undefined) conf = getConf();
+    conf = conf || getConf();
 
     // obtain the width from content
     if (typeof tipContent !== "string") {
-      var width = $(tipContent).width();
+      width = $(tipContent).width();
     }
-    if (width == undefined || width == 0) width = 280;
+    width = width || 200;
 
     $(tipTarget).qtip({
       content : tipContent,
@@ -138,7 +140,7 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
           var cancelDelayedHide = function() {
             // clear the previous timers
             var timer = $(tipSelector).attr("timer");
-            if (timer != undefined) {
+            if (timer !== undefined) {
               clearTimeout(timer);
               $(tipSelector).removeAttr("timer");
             }

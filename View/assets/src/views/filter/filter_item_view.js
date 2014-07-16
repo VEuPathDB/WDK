@@ -32,7 +32,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.$el.html(html);
     },
 
-    handleRemove: function(e) {
+    handleRemove: function() {
       this.model.collection.remove(this.model);
     },
 
@@ -50,7 +50,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     toggleSelect: function(field) {
-      field === this.field ? this.select() : this.unselect();
+      if (field === this.field) {
+        this.select();
+      } else {
+        this.unselect();
+      }
     }
 
   });

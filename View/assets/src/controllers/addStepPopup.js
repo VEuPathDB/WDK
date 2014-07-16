@@ -1,10 +1,9 @@
+/* jshint scripturl:true */
+
 wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
   "use strict";
 
-  var _action = "";
   var global_isAdd; 
-  var original_Query_Form_Text;
-  var original_Query_Form_CSS = {};
   var buttonText = null;
 
   ns.current_Front_Strategy_Id = null;
@@ -44,7 +43,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
         // reload current tab
         var currentStep = $("#Strategies div.selected");
         var active_link = $(".results_link", currentStep);
-        if (active_link.length == 0) {
+        if (active_link.length === 0) {
           active_link = $(".resultCount a.operation", currentStep);
         }
         active_link.click();
@@ -81,17 +80,16 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     var stp;
     global_isAdd = isAdd;
 
-    if (wdk.step.openDetail != null) wdk.step.hideDetails();
+    if (wdk.step.openDetail) wdk.step.hideDetails();
 
     $("#strategy_results div.attributesList").hide();
     var isFirst = false;
-    var steps = wdk.strategy.model.getStrategy(strat_id).Steps;
 
-    if (step_id == undefined) {
+    if (!step_id) {
       isFirst = true;
     } else {
-      stp = wdk.strategy.model.getStrategy(strat_id).getStep(step_id,false)
-      if(stp != null && stp.frontId == 1 && !isAdd) isFirst = true;
+      stp = wdk.strategy.model.getStrategy(strat_id).getStep(step_id,false);
+      if(stp && stp.frontId == 1 && !isAdd) isFirst = true;
     }
 
     ns.current_Front_Strategy_Id = strat_id;
@@ -100,13 +98,13 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
     var currentStepId = stp.back_boolean_Id;
 
-    if (currentStepId == '') {
+    if (currentStepId === '') {
       currentStepId = stp.back_step_Id;
     }
     
     var url = "wizard.do?strategy="+currStrat.backId + "&step=" + currentStepId;
 
-    if (stage != '') {
+    if (stage !== '') {
       url += "&stage=" + stage;
     }
 
@@ -156,7 +154,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
   /**
    * display loading gif on form
    */
-  function WizardLoading(boo) {
+  function wizardLoading(boo) {
     if (boo) {
       var i = $("img#wizard-busy-image").clone();
       buttonText = $("div.filter-button").html();
@@ -181,7 +179,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     // Not sure we need this
     // wdk.parameterHandlers.mapTypeAheads();
 
-    if (stratFrontId == undefined) {
+    if (stratFrontId === undefined) {
       stratFrontId = ns.current_Front_Strategy_Id; 
     }
 
@@ -202,15 +200,15 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
           beforeSend: function() {
             //$(".crumb_details").block( {message: "Loading..."} );
-            WizardLoading(true);
+            wizardLoading(true);
           },
 
           success: function(data) {
             wdk.step.hideDetails();
             $(".crumb_details").unblock();
 
-            if (data.indexOf("{") == 0) {
-              data = (0, eval)("("+data+")"); // use indirect eval
+            if (data.indexOf("{") === 0) {
+              data = JSON.parse(data);
               // before close, check if json is success or error, if error, display 
               // it in the current qf_content
               if (wdk.strategy.error.ErrorHandler("Wizard", data, strategy,
@@ -220,10 +218,10 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
                 wdk.strategy.controller.updateStrategies(data);
 
               } else {
-                WizardLoading(false);
+                wizardLoading(false);
               }
             } else {
-              WizardLoading(false);
+              wizardLoading(false);
               $("#qf_content").children().wrapAll('<div class="stage" />');
               $("#qf_content > div.stage").appendTo("#stage-stack");
               setPopupContent(data);
@@ -243,7 +241,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           dataType: "html",
           data: params,
 
-          beforeSend: function(jqXHR, data) {
+          beforeSend: function() {
             $("#query_form").block({
               message: "Loading...",
               overlayCSS: {
@@ -256,11 +254,10 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
             wdk.step.hideDetails();
             $("#query_form").unblock();
 
-            if (data.indexOf("{") == 0) {
+            if (data.indexOf("{") === 0) {
               wdk.strategy.controller.updateStrategies(data);
             } else {
-              if ($("#qf_content").length == 0) {
-                var urlparts = url.split("/");
+              if ($("#qf_content").length === 0) {
                 $.ajax({
                   async: false,
                   url:"wdk/jsp/wizard/context.jsp",
@@ -277,7 +274,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
               }
               setPopupContent(data);
 
-              if (ele != undefined) {
+              if (ele) {
                 showNewSection(ele,id,sec);
               }
             }
@@ -310,7 +307,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
   function backStage() {
     var lastStage = $("#stage-stack > .stage:last").detach();
-    if (lastStage.length == 0) {
+    if (lastStage.length === 0) {
       closeAll();
     } else {
       $("#qf_content").html("");
@@ -324,7 +321,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     // updateStepNumberReferences();
   }
 
-  function closeAll(hide, as) {
+  function closeAll(hide) {
     if (hide) {
       $("#query_form").hide();
       $("#query_form_overlay").hide();
@@ -384,13 +381,13 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     var s = $("div#" + sectionName + ".original").clone();
 
     $(sec).html($(s)
-        .addClass("qf_section")
-        .removeClass("original")
-        .css({
-          "display":"block",
-          "background-color":"#EEEEEE"
-          }))
-        .attr("id","section-"+sectionNumber);
+      .addClass("qf_section")
+      .removeClass("original")
+      .css({
+        "display": "block",
+        "background-color": "#EEEEEE"
+      }))
+      .attr("id","section-"+sectionNumber);
 
     for (var i = sectionNumber; i <= 5; i++) {
       $("td#section-" + i + " div.qf_section").html("");
@@ -430,6 +427,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
    * Don't allow form to submit unless an operation is selected
    */
   function validateOperations(e) {
+   /* jshint validthis:true */
     var $this = $(this);
     var bools = $this.find("input[name='boolean']");
     var inlineSubmit = $this.data("inline-submit");
@@ -457,7 +455,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
   ns.showPanel = showPanel;
   ns.openFilter = openFilter;
   ns.openStage = openStage;
-  ns.WizardLoading = WizardLoading;
+  ns.wizardLoading = wizardLoading;
   ns.callWizard = callWizard;
   ns.backStage = backStage;
   ns.setPopupContent = setPopupContent;
