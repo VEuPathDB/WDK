@@ -24,12 +24,12 @@ import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wsf.client.ClientModelException;
+import org.gusdb.wsf.client.ClientRequest;
+import org.gusdb.wsf.client.ClientUserException;
 import org.gusdb.wsf.client.WsfClient;
 import org.gusdb.wsf.client.WsfClientFactory;
 import org.gusdb.wsf.client.WsfResponseListener;
-import org.gusdb.wsf.common.WsfException;
-import org.gusdb.wsf.common.WsfRequest;
-import org.gusdb.wsf.common.WsfUserException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -109,7 +109,7 @@ public class ProcessQueryInstance extends QueryInstance {
     long start = System.currentTimeMillis();
 
     // prepare request.
-    WsfRequest request = new WsfRequest();
+    ClientRequest request = new ClientRequest();
     request.setPluginClass(query.getProcessName());
     request.setProjectId(wdkModel.getProjectId());
 
@@ -152,10 +152,10 @@ public class ProcessQueryInstance extends QueryInstance {
       logger.debug("Invoking " + request.getPluginClass() + "...");
       this.signal = client.invoke(request);
     }
-    catch (WsfUserException ex) {
+    catch (ClientUserException ex) {
       throw new WdkUserException(ex);
     }
-    catch (WsfException | URISyntaxException ex) {
+    catch (ClientModelException | URISyntaxException ex) {
       throw new WdkModelException(ex);
     }
     long end = System.currentTimeMillis();

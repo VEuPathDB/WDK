@@ -25,7 +25,7 @@
 
       <dependency>
         <groupId>org.gusdb</groupId>
-        <artifactId>wsf-client-api</artifactId>
+        <artifactId>wsf-client</artifactId>
         <version>1.0.0</version>
       </dependency>
 
@@ -60,14 +60,20 @@
       </dependency>
 
       <dependency>
-	<groupId>javax.mail</groupId>
-	<artifactId>mail</artifactId>
-	<version>1.4.7</version>
+        <groupId>javax.mail</groupId>
+        <artifactId>mail</artifactId>
+        <version>1.4.7</version>
       </dependency>
 
       <dependency>
         <groupId>org.apache.struts</groupId>
         <artifactId>struts-core</artifactId>
+        <version>1.3.10</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.apache.struts</groupId>
+        <artifactId>struts-taglib</artifactId>
         <version>1.3.10</version>
       </dependency>
 
@@ -136,7 +142,7 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.10</version>
+        <version>4.11</version>
       </dependency>
 <!--
       <dependency>
