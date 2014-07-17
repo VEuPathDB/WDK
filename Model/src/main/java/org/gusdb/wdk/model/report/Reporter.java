@@ -32,49 +32,49 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
     private final static Logger logger = Logger.getLogger(Reporter.class);
 
-    protected class PageAnswerIterator implements Iterator<AnswerValue> {
+    protected static class PageAnswerIterator implements Iterator<AnswerValue> {
 
-        private AnswerValue baseAnswer;
-        private int endIndex;
-        private int startIndex;
-        private int maxPageSize;
-        private int resultSize;
+        private AnswerValue _baseAnswer;
+        private int _endIndex;
+        private int _startIndex;
+        private int _maxPageSize;
+        private int _resultSize;
 
         public PageAnswerIterator(AnswerValue answerValue, int startIndex,
                 int endIndex, int maxPageSize) throws WdkModelException, WdkUserException {
-            this.baseAnswer = answerValue;
+            this._baseAnswer = answerValue;
 
             // determine the end index, which should be no bigger result size,
             // since the index starts from 1
-            resultSize = baseAnswer.getResultSize();
-            this.endIndex = Math.min(endIndex, resultSize);
-            this.startIndex = startIndex;
-            this.maxPageSize = maxPageSize;
+            _resultSize = _baseAnswer.getResultSize();
+            this._endIndex = Math.min(endIndex, _resultSize);
+            this._startIndex = startIndex;
+            this._maxPageSize = maxPageSize;
         }
 
         @Override
         public boolean hasNext() {
             // if the current
-            return (startIndex <= endIndex);
+            return (_startIndex <= _endIndex);
         }
 
         @Override
         public AnswerValue next() {
             // decide the new end index for the page answer
-            int pageEndIndex = Math.min(endIndex, startIndex + maxPageSize - 1);
+            int pageEndIndex = Math.min(_endIndex, _startIndex + _maxPageSize - 1);
 
-            logger.debug("Getting records #" + startIndex + " to #"
+            logger.debug("Getting records #" + _startIndex + " to #"
                     + pageEndIndex);
 
-            AnswerValue answerValue = new AnswerValue(baseAnswer, startIndex,
+            AnswerValue answerValue = new AnswerValue(_baseAnswer, _startIndex,
                     pageEndIndex);
 
             // disable sorting if the total size is bigger than threshold
-            if (resultSize > SORTING_THRESHOLD)
+            if (_resultSize > SORTING_THRESHOLD)
                 answerValue.setSortingMap(new LinkedHashMap<String, Boolean>());
 
             // update the current index
-            startIndex = pageEndIndex + 1;
+            _startIndex = pageEndIndex + 1;
             return answerValue;
         }
 
@@ -125,7 +125,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         this.baseAnswer = answerValue;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
-
+        wdkModel = answerValue.getQuestion().getWdkModel();
         config = new LinkedHashMap<String, String>();
     }
 
@@ -146,15 +146,15 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         return this.baseAnswer;
     }
 
-    public void configure(Map<String, String> config) {
-        if (config != null) {
-            this.config = config;
+    public void configure(Map<String, String> newConfig) {
+        if (newConfig != null) {
+            this.config = newConfig;
 
-            if (config.containsKey(FIELD_FORMAT)) {
-                format = config.get(FIELD_FORMAT);
+            if (newConfig.containsKey(FIELD_FORMAT)) {
+                format = newConfig.get(FIELD_FORMAT);
             }
-            if (config.containsKey(PROPERTY_PAGE_SIZE))
-              maxPageSize = Integer.valueOf(config.get(PROPERTY_PAGE_SIZE));
+            if (newConfig.containsKey(PROPERTY_PAGE_SIZE))
+              maxPageSize = Integer.valueOf(newConfig.get(PROPERTY_PAGE_SIZE));
         }
     }
 
