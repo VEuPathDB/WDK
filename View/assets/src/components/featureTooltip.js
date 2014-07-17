@@ -35,11 +35,16 @@ wdk.namespace('wdk.components', function(ns, $) {
                  title
         },
         style: {
-          classes: 'qtip-bootstrap wdk-feature-tooltip'
+          classes: 'qtip-bootstrap wdk-feature-tooltip',
+          tip: {
+            width: 24,
+            height: 16
+          }
         },
         position: {
-          my: 'left top',
-          at: 'right center'
+          my: 'left center',
+          at: 'right center',
+          viewport: false
         },
         hide: {
           event: false

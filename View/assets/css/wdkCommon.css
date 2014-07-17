@@ -247,6 +247,7 @@ img[data-assets-src][src] {
 .qtip-tipsy {
   background: rgb(75, 75, 75);
   background: rgba(75, 75, 75, .97);
+  box-shadow: 0px 0px 3px #c9c9c9;
 }
 .qtip-tipsy .qtip-content a,
 .qtip-tipsy .qtip-content a:link {
@@ -260,13 +261,18 @@ img[data-assets-src][src] {
 }
 
 .wdk-feature-tooltip {
-  background-color: #3f3f3f;
+  background: rgb(63, 63, 63);
+  background: rgba(63, 63, 63, 1);
   padding: 0;
   min-width: 300px;
   -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
   -moz-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
   z-index: 99 !important;
+}
+.wdk-feature-tooltip .qtip-tip {
+  background: rgb(63, 63, 63);
+  background: rgba(63, 63, 63, 1);
 }
 .wdk-feature-tooltip .qtip-content {
   color: #f9f9f9;
@@ -1666,8 +1672,8 @@ textarea.favorite-note {
 }
 
 span.wdk-record {        /*to not affect a tr same class in favorites page */
-    font-size:70%;
-    font-weight:normal;
+  font-size:70%;
+  font-weight:normal;
 }
 
 .wdk-record .primaryKey {
