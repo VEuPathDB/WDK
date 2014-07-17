@@ -319,6 +319,10 @@ img[data-assets-src][src] {
 
 /***** Styling for the header links *****/
 
+#quick-search {
+  overflow: auto;
+}
+
 #nav-top-div {
   float: right;
 }
@@ -328,6 +332,8 @@ img[data-assets-src][src] {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 12px;
   font-weight: normal;
+  margin: 0;
+  list-style: none;
 }
 #nav-top li {
   float: left;
@@ -591,6 +597,7 @@ ul.menubar {
 .param-item {
   padding-top: 5px;
   padding-bottom: 5px;
+  overflow: auto;
 }
 
 .param-item > label {
@@ -652,6 +659,20 @@ ul.menubar {
 
 .param[data-type="type-ahead"] > div:first-child {
   line-height: 2;
+}
+
+.param ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.param ul li {
+  margin-top: .4em;
+  margin-bottom: .4em;
+}
+.param .jstree ul li {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .params .invalid-params { padding:10px 5px 5px 100px; font-weight: bold; }
@@ -746,10 +767,10 @@ ul#strategy_tabs {
     border-style: solid;
     border-width: 1px;
     float: left;
-    margin-top: 2px;
-    padding:0.24em 1em;
+    padding:0.3em 1em;
     text-align:center;
     text-decoration:none;
+    line-height: 1;
 }
 
 #strategy_tabs #selected a {
@@ -986,6 +1007,7 @@ tr.headerrow th table tbody tr td {
 /*	white-space: nowrap; */
 	vertical-align: middle;
 	font-size: 12px;
+  line-height: 1;
 }
 
 tr.headerInternalRow td {
@@ -1232,6 +1254,10 @@ z-index: 1;
 .step-analysis-errors-pane li {
   line-height: 1.4em;
   padding-left: 15px;
+}
+.analysis-menu-tab-pane ul {
+  padding: 0;
+  overflow: auto;
 }
 .analysis-menu-tab-pane h3 {
   margin: 4px 0;

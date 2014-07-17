@@ -286,6 +286,7 @@ h6.resultCount {
   width:100%;
   bottom: 2px;
   position: relative;
+  margin: 0;
 }
 
 .operation.SPAN {
@@ -1121,7 +1122,8 @@ white-space: nowrap;
  *************************************************/
 .menu_section {
   text-indent:-5px; 
-  margin-left:3px;
+  padding: 0;
+  margin: 0 0 0 3px;
 }
 .menu_section li {
   padding-left: 6px;

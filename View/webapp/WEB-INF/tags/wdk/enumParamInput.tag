@@ -53,7 +53,7 @@ Otherwise a standard select menu is used.
           <imp:enumCountWarning enumParam="${qP}" initialCount="${initialCount}"/>
           <c:set var="changeCode" value="window.wdk.parameterHandlers.adjustEnumCountBoxes('${qP.name}aaa')"/>
           <c:set var="i" value="0"/>
-          <table border="1" cellspacing="0"><tr><td>
+          <table><tr><td>
             <ul>
               <c:forEach items="${qP.displayMap}" var="entity" varStatus="loop">
                 <c:if test="${i == 0}"><c:set var="checked" value="checked"/></c:if>
