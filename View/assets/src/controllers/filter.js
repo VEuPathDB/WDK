@@ -81,7 +81,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
           layouts.find(".link-url").each(function() {
             var filter = $(this).data("filter");
             var count = data[filter];
-            $(this).html((count === undefined) ? "error" : count);
+            $(this).html((count == -1 || count === undefined) ? "error" : count);
           });
         });
       });
