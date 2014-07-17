@@ -216,7 +216,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "  <a href='javascript:void(0)' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px' " +
         "     onclick='!event.stopPropagation ? event.cancelBubble = true : event.stopPropagation(); wdk.step.showDetails(this)'>" + getEditImage('boolean')+"</a><br/>"+
         "  <div class='crumb_details'></div>" +
-        "  <h6 class='resultCount' style='top:1px'>" +
+        "  <h6 class='resultCount'>" +
         "    <span class='operation'>" + jsonStep.results + "&nbsp;" + displayType + "</span>" +
         "  </h6>" +
            filterImg +
