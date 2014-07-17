@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
@@ -132,6 +133,7 @@ public class AnswerValue {
   }
 
   private static final int THREAD_POOL_SIZE = 4;
+  private static final int THREAD_POOL_TIMEOUT = 5; // timeout thread pool, in minutes
 
   private static final Logger logger = Logger.getLogger(AnswerValue.class);
 
@@ -1213,7 +1215,14 @@ public class AnswerValue {
 
     // wait for executor to finish.
     executor.shutdown();
-    while (!executor.isTerminated()) {}
+    try {
+      if (!executor.awaitTermination(THREAD_POOL_TIMEOUT, TimeUnit.MINUTES)) {
+        executor.shutdownNow();
+      }
+    }
+    catch (InterruptedException ex) {
+      executor.shutdownNow();
+    }
 
     return sizes;
   }
