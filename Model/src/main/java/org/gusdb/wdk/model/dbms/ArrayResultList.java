@@ -8,7 +8,6 @@ import java.util.Map;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wsf.client.WsfResponseListener;
-import org.gusdb.wsf.common.WsfException;
 
 /**
  * @author Jerric Gao
@@ -128,17 +127,17 @@ public class ArrayResultList implements ResultList, WsfResponseListener {
   }
 
   @Override
-  public synchronized void onRowReceived(String[] row) throws WsfException {
+  public synchronized void onRowReceived(String[] row) {
     rows.add(row);
   }
 
   @Override
-  public void onAttachmentReceived(String key, String content) throws WsfException {
+  public void onAttachmentReceived(String key, String content) {
     attachments.put(key, content);
   }
 
   @Override
-  public void onMessageReceived(String message) throws WsfException {
+  public void onMessageReceived(String message) {
     this.message = message;
   }
 

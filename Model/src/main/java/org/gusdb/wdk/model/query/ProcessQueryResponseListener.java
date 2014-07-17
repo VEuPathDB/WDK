@@ -10,9 +10,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.ArrayUtil;
 import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.wsf.client.WsfClientException;
+import org.gusdb.wsf.client.ClientModelException;
 import org.gusdb.wsf.client.WsfResponseListener;
-import org.gusdb.wsf.common.WsfException;
 
 public class ProcessQueryResponseListener implements WsfResponseListener {
 
@@ -39,7 +38,7 @@ public class ProcessQueryResponseListener implements WsfResponseListener {
   }
 
   @Override
-  public void onRowReceived(String[] row) throws WsfException {
+  public void onRowReceived(String[] row) throws ClientModelException {
     Object[] objects = getObjects(row);
     try {
       // add rowCount into values
@@ -54,7 +53,7 @@ public class ProcessQueryResponseListener implements WsfResponseListener {
       }
     }
     catch (SQLException ex) {
-      throw new WsfClientException(ex);
+      throw new ClientModelException(ex);
     }
   }
 
