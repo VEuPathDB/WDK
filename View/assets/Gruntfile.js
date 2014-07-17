@@ -9,7 +9,7 @@ module.exports = function(grunt) {
       options: {
         jshintrc: true,
       },
-      all: wdkFiles.src
+      wdk: wdkFiles.src
     },
 
     concat: {
