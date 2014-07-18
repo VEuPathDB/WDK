@@ -597,7 +597,6 @@ ul.menubar {
 .param-item {
   padding-top: 5px;
   padding-bottom: 5px;
-  overflow: auto;
 }
 
 .param-item > label {
