@@ -103,6 +103,7 @@ img[data-assets-src][src] {
 	margin-bottom: 11px;
  	text-align: left;
 	margin-left: 5px;
+  line-height: 1;
 }
 
 .h4left {
