@@ -32,6 +32,7 @@
     <groupId>org.gusdb</groupId>
     <artifactId>base-pom</artifactId>
     <version>1.0.0</version>
+    <relativePath>../FgpUtil/Dependencies/org/gusdb/base-pom/1.0.0/base-pom-1.0.0.pom</relativePath>
   </parent>
   
   <repositories>
