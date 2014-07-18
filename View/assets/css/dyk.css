@@ -50,6 +50,8 @@ div#dyk-box ul.tip-box{
 	padding:2px 0 2px;
 	position:absolute;
 	width:100%;
+  margin: 0;
+  list-style: none;
 }
 
 div#dyk-box ul.tip-box li{
