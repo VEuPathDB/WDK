@@ -82,23 +82,15 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     initDisplay();
 
     // strategyselect event fired when a step in a strategy is selected
-    $("#Strategies").on("strategyselect", ".diagram", function(e, strategy) {
-      // hide editable strategy names and reset trigger
-      $(e.delegateTarget).find(".strategy-name.wdk-editable")
-      .editable("hide");
-      // .editable("option", "trigger", "click");
+    $("#Strategies")
+      .on("strategyselect", ".diagram", function(e, strategy) {
+        $(e.delegateTarget).find(".strategy-name.wdk-editable")
+          .editable("hide");
 
-      if (strategy.Steps.length > 1 && !strategy.hasCustomName()) {
-        // show and turn off trigger
-        $(this).find(".strategy-name.wdk-editable")
-        .editable("show");
-        // .editable("option", "trigger", "manual")
-        // .on("editablehide", function() {
-        //   console.log(this);
-        //   $(this).editable("option", "trigger", "click");
-        // });;
-      }
-    });
+        if (strategy.Steps.length > 1 && !strategy.hasCustomName()) {
+          $(this).find(".strategy-name.wdk-editable").editable("show");
+        }
+      });
   }
 
   /**
@@ -614,6 +606,14 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           if ($selectedStep.attr("id") !== oldSelectedStepId) {
             $selectedStep.trigger("stepselect", [step]);
           }
+
+          // disable View for selected Step detail box
+          $Strategies.find('.view_step_link').removeClass('disabled');
+          $selectedStep.find('.view_step_link').addClass('disabled');
+
+          // enable Analyze for selected Step detail box
+          $Strategies.find('.analyze_step_link').addClass('disabled');
+          $selectedStep.find('.analyze_step_link').removeClass('disabled');
 
         }
 
