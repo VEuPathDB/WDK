@@ -40,6 +40,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   //Simple Steps
   var ss_rename_popup = "Rename this search";
   var ss_view_popup = "View the results of this search in the Results area below";
+  var ss_analyze_popup = "Analyze the results of this search in the Results area below";
   var ss_edit_popup = "Revise the parameters of this search and/or its " +
       "combine operation";
   var ss_expand_popup = "Expand this step in a new panel to add nested steps." +
@@ -51,6 +52,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   var sub_rename_popup = "Rename this nested strategy";             
   var sub_view_popup = "View the results of this nested strategy in the " +
       "Results area below";
+  var sub_analyze_popup = "Analyze the results of this nested strategy in " +
+      "the Results area below";
   var sub_edit_popup = "Open this nested step to revise";
   var sub_expand_popup = "Open into a new panel to add or edit nested steps";
   var sub_collapse_popup = "Convert a single-step nested strategy back to a " +
@@ -543,6 +546,12 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "class='view_step_link' onclick='wdk.strategy.controller.newResults(" +
           sid + "," + modelstep.frontId + ");wdk.step.hideDetails(this)' " +
           "href='javascript:void(0)'>View</a>&nbsp;|&nbsp;";
+
+      var analyze_step = "<a title='" + sub_analyze_popup + "' " +
+          "class='analyze_step_link' onclick='wdk.$(\"#add-analysis button\")" +
+          ".trigger(\"click\");wdk.step.hideDetails(this)' " +
+          "href='javascript:void(0)'>Analyze</a>&nbsp;|&nbsp;";
+
       var disab = "";
       var ocExp = "onclick='wdk.strategy.controller.ExpandStep(this," + sid +
           "," + modelstep.frontId + ",\"" + collapsedName +
@@ -600,6 +609,11 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "onclick='wdk.strategy.controller.newResults(" + sid + "," +
           modelstep.frontId + "," + jsonStep.isboolean +
           ");wdk.step.hideDetails(this)' href='javascript:void(0)'>View</a>&nbsp;|&nbsp;";
+
+      analyze_step = "<a title='" + ss_analyze_popup + "' " +
+          "class='analyze_step_link' onclick='wdk.$(\"#add-analysis button\")" +
+          ".trigger(\"click\");wdk.step.hideDetails(this)' " +
+          "href='javascript:void(0)'>Analyze</a>&nbsp;|&nbsp;";
 
       if (modelstep.isTransform || modelstep.frontId == 1) {
         hideOp = true;
@@ -673,7 +687,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     var inner = ""+  
         "    <div class='crumb_menu'>" + close_button + rename_step +
-        view_step + edit_step + expand_step + collapse_step + insert_step +
+        view_step + analyze_step + edit_step + expand_step + collapse_step + insert_step +
         customMenu + delete_step + "    </div>"+ name +
         "    <table></table><hr class='clear' />" + filteredName +
         "    <p><b>Results:&nbsp;</b>" + jsonStep.results + "&nbsp;" +
