@@ -33,7 +33,7 @@ wdk.util.namespace("window.wdk.dyk", function(ns, $) {
   function initDYK(o,co) {
     setTipMax();
 
-    co = co || $.cookie("DYK");
+    if (co === undefined) co = $.cookie("DYK");
 
     if (!o) {
       tips = $("#dyk-box,#dyk-shadow").hide();
