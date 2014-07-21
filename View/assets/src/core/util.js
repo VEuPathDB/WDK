@@ -57,6 +57,7 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
   }
 
   // parses the inputs of the question form to be sent via ajax call
+  /** @deprecated */
   function parseInputs() {
     // has to use find in two steps, IE7 cannot find the form using 
     // $("#query_form form#form_question")

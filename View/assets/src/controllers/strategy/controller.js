@@ -90,6 +90,19 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         if (strategy.Steps.length > 1 && !strategy.hasCustomName()) {
           $(this).find(".strategy-name.wdk-editable").editable("show");
         }
+      })
+      .on("stepselect", function(e, step, isBoolean) {
+        var stepId = isBoolean ? step.back_boolean_Id : step.back_step_Id;
+        var $detailBoxes = $('.crumb_details');
+        var $detailBox = $('#crumb_details_' + stepId);
+
+        // disable View for selected Step detail box
+        $detailBoxes.find('.view_step_link').removeClass('disabled');
+        $detailBox.find('.view_step_link').addClass('disabled');
+
+        // enable Analyze for selected Step detail box
+        $detailBoxes.find('.analyze_step_link').addClass('disabled');
+        $detailBox.find('.analyze_step_link').removeClass('disabled');
       });
   }
 
@@ -328,7 +341,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
     $("#strategy_messages").hide();
     $("#strategy_results .resizable-wrapper:has(#Strategies)").show();
-    $("#Strategies").html($(s2).html());
+    //$("#Strategies").html($(s2).html());
+    $('#Strategies').html(s2);
     var height = wdk.stratTabCookie.getCurrentTabCookie('strategyWindow');
     var wrapper = $("#strategy_results .resizable-wrapper:has(#Strategies)");
     if (!height && $("#Strategies").parent().parent().height() > 330) {
@@ -512,14 +526,14 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    *
    * @param {Number} f_strategyId Strategy order/frontID
    * @param {Number} f_stepId Step order/frontID
-   * @param {Boolean} bool If Step is a Boolean Step set to `true`; else `false`
+   * @param {Boolean} isBoolean If Step is a Boolean Step set to `true`; else `false`
    * @param {Number} pagerOffset Results offset
    * @param {Boolean} ignoreFilters If `true` don't reload filters; else reload
    *    filters
    * @param {String} action Action to trigger once results are loaded.
    * @param {Object} deferred jQuery.Deffered object created in `updateStrategies`
    */
-  function newResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters,
+  function newResults(f_strategyId, f_stepId, isBoolean, pagerOffset, ignoreFilters,
       action, deferred) {
 
     if (f_strategyId == -1) {
@@ -536,7 +550,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var url = "showSummary.do";
     var data = {
       strategy: strategy.backId,
-      step: bool ? step.back_boolean_Id : step.back_step_Id,
+      step: isBoolean ? step.back_boolean_Id : step.back_step_Id,
       resultsOnly: true,
       strategy_checksum: (strategy.checksum !== null) ? strategy.checksum :
           wdk.strategy.model.getStrategy(strategy.subStratOf).checksum
@@ -571,7 +585,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
           var init_view_step;
 
-          if (bool) {
+          if (isBoolean) {
             $("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" +
                 step.frontId + "']").addClass("selected");
             init_view_step = step.back_step_Id + ".v";
@@ -604,16 +618,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           }
 
           if ($selectedStep.attr("id") !== oldSelectedStepId) {
-            $selectedStep.trigger("stepselect", [step]);
+            $selectedStep.trigger("stepselect", [step, isBoolean]);
           }
-
-          // disable View for selected Step detail box
-          $Strategies.find('.view_step_link').removeClass('disabled');
-          $selectedStep.find('.view_step_link').addClass('disabled');
-
-          // enable Analyze for selected Step detail box
-          $Strategies.find('.analyze_step_link').addClass('disabled');
-          $selectedStep.find('.analyze_step_link').removeClass('disabled');
 
         }
 
@@ -667,66 +673,66 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   }
 
   // will be replaced by wizard
-  function AddStepToStrategy(url, proto) {
-    var strategy = wdk.strategy.model.getStrategyFromBackId(proto);
-    var f_strategyId = strategy.frontId;
-    var cs = strategy.checksum;
-    if (strategy.subStratOf !== null) {
-      cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
-    }
-    url = url + "&strategy_checksum="+cs;
-    var d = wdk.util.parseInputs();
-    $.ajax({
-      url: url,
-      type: "POST",
-      dataType: "json",
-      data: d + "&state=" + ns.stateString,
-      beforeSend: function(){
-        wdk.util.showLoading(f_strategyId);
-      },
-      success: function(data) {
-        if (wdk.strategy.error.ErrorHandler("AddStep", data, strategy, $("div#query_form"))) {
-          if ($("div#query_form").css("display") == "none") {
-            $("div#query_form").remove();
-          }
-          updateStrategies(data);
-        } else {
-          wdk.util.removeLoading(f_strategyId);
-        }
-      }
-    });
-    wdk.step.isInsert = "";
-    wdk.addStepPopup.closeAll(true);
-  }
+  // function AddStepToStrategy(url, proto) {
+  //   var strategy = wdk.strategy.model.getStrategyFromBackId(proto);
+  //   var f_strategyId = strategy.frontId;
+  //   var cs = strategy.checksum;
+  //   if (strategy.subStratOf !== null) {
+  //     cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
+  //   }
+  //   url = url + "&strategy_checksum="+cs;
+  //   var d = wdk.util.parseInputs();
+  //   $.ajax({
+  //     url: url,
+  //     type: "POST",
+  //     dataType: "json",
+  //     data: d + "&state=" + ns.stateString,
+  //     beforeSend: function(){
+  //       wdk.util.showLoading(f_strategyId);
+  //     },
+  //     success: function(data) {
+  //       if (wdk.strategy.error.ErrorHandler("AddStep", data, strategy, $("div#query_form"))) {
+  //         if ($("div#query_form").css("display") == "none") {
+  //           $("div#query_form").remove();
+  //         }
+  //         updateStrategies(data);
+  //       } else {
+  //         wdk.util.removeLoading(f_strategyId);
+  //       }
+  //     }
+  //   });
+  //   wdk.step.isInsert = "";
+  //   wdk.addStepPopup.closeAll(true);
+  // }
 
-  function EditStep(url, proto){
-    var ss = wdk.strategy.model.getStrategyFromBackId(proto);
-    var d = wdk.util.parseInputs();
-    var cs = ss.checksum;
-    if (ss.subStratOf !== null) {
-      cs = wdk.strategy.model.getStrategy(ss.subStratOf).checksum;
-    }
-    url = url+"&strategy_checksum="+cs;
-    $.ajax({
-      url: url,
-      type: "POST",
-      dataType:"json",
-      data: d + "&state=" + ns.stateString,
-      beforeSend: function(){
-        wdk.addStepPopup.closeAll(true);
-        wdk.util.showLoading(ss.frontId);
-      },
-      success: function(data) {
-        if (wdk.strategy.error.ErrorHandler("EditStep", data, ss, $("div#query_form"))) {
-          $("div#query_form").remove();
-          wdk.step.hideDetails();
-          updateStrategies(data);
-        } else {
-          wdk.util.removeLoading(ss.frontId);
-        }
-      }
-    });
-  }
+  // function EditStep(url, proto){
+  //   var ss = wdk.strategy.model.getStrategyFromBackId(proto);
+  //   var d = wdk.util.parseInputs();
+  //   var cs = ss.checksum;
+  //   if (ss.subStratOf !== null) {
+  //     cs = wdk.strategy.model.getStrategy(ss.subStratOf).checksum;
+  //   }
+  //   url = url+"&strategy_checksum="+cs;
+  //   $.ajax({
+  //     url: url,
+  //     type: "POST",
+  //     dataType:"json",
+  //     data: d + "&state=" + ns.stateString,
+  //     beforeSend: function(){
+  //       wdk.addStepPopup.closeAll(true);
+  //       wdk.util.showLoading(ss.frontId);
+  //     },
+  //     success: function(data) {
+  //       if (wdk.strategy.error.ErrorHandler("EditStep", data, ss, $("div#query_form"))) {
+  //         $("div#query_form").remove();
+  //         wdk.step.hideDetails();
+  //         updateStrategies(data);
+  //       } else {
+  //         wdk.util.removeLoading(ss.frontId);
+  //       }
+  //     }
+  //   });
+  // }
 
   function DeleteStep(f_strategyId,f_stepId) {
     var strategy = wdk.strategy.model.getStrategy(f_strategyId);
@@ -1074,10 +1080,10 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   }
 
   ns.init = init;
-  ns.AddStepToStrategy = AddStepToStrategy;
+  //ns.AddStepToStrategy = AddStepToStrategy;
   ns.ChangeFilter = ChangeFilter;
   ns.DeleteStep = DeleteStep;
-  ns.EditStep = EditStep;
+  //ns.EditStep = EditStep;
   ns.ExpandStep = ExpandStep;
   ns.newResults = newResults;
   ns.RenameStep = RenameStep;

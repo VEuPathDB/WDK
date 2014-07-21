@@ -55,13 +55,14 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
 
   function hideDetails() {
     
-    if (ns.openDetail) ns.openDetail.attr("disp","0");
-    ns.openDetail = null;
-    
-    $("body > div.crumb_details").each(function() {
-      $(this).remove();
-    });
-    $("a.crumb_name img").attr("src",wdk.assetsUrl("/wdk/images/plus.gif"));
+    // if (ns.openDetail) ns.openDetail.attr("disp","0");
+    // ns.openDetail = null;
+    // 
+    // $("body > div.crumb_details").each(function() {
+    //   $(this).remove();
+    // });
+    // $("a.crumb_name img").attr("src",wdk.assetsUrl("/wdk/images/plus.gif"));
+    $('.crumb_details').hide();
   }
 
   function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight) {

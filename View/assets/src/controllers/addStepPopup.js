@@ -51,14 +51,12 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
       }
 
       $("body > #query_form").show();
-      $("body > .crumb_details").show();
 
     } else {
       if (panel == 'search_history') wdk.history.updateHistory();
       if (panel == 'basket') wdk.basket.showBasket();
       if (panel == 'public_strat') wdk.publicStrats.showPublicStrats();
       $("body > #query_form").hide();
-      $("body > .crumb_details").hide();
     }
     wdk.stratTabCookie.setCurrentTabCookie('application', panel);
     $(".strategy-description.qtip").qtip("hide");
@@ -196,7 +194,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           url: urlBase,
           type: "POST",
           dataType: "html",
-          data: params + '&' + wdk.util.parseInputs() + "&state=" + wdk.strategy.controller.stateString,
+          data: params + '&' + $(ele).serialize() + "&state=" + wdk.strategy.controller.stateString,
 
           beforeSend: function() {
             //$(".crumb_details").block( {message: "Loading..."} );
@@ -204,8 +202,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           },
 
           success: function(data) {
-            wdk.step.hideDetails();
-            $(".crumb_details").unblock();
+            $(ele).closest('.crumb_details')
+              .hide()
+              .unblock();
 
             if (data.indexOf("{") === 0) {
               data = JSON.parse(data);
