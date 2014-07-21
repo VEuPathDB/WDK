@@ -888,6 +888,7 @@ div.bottom-close{
   float:left;
   position:relative;
   left:50%;
+  list-style: none;
 }
 
 .crumb_details ul.question_name li {
