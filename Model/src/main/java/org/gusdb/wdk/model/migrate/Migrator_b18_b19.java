@@ -45,7 +45,6 @@ public class Migrator_b18_b19 implements Migrator {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
-    StepFactory stepFactory = wdkModel.getStepFactory();
 
     ResultSet rsSteps = null;
     PreparedStatement psUpdate = null;
@@ -69,9 +68,9 @@ public class Migrator_b18_b19 implements Migrator {
 
         // update params
         String paramContent = platform.getClobData(rsSteps, "display_params");
-        Map<String, String> params = stepFactory.parseParamContent(new JSONObject(paramContent));
+        Map<String, String> params = StepFactory.parseParamContent(new JSONObject(paramContent));
         updateParams(stepId, params, leftChildId, rightChildId);
-        paramContent = stepFactory.getParamContent(params).toString();
+        paramContent = StepFactory.getParamContent(params).toString();
 
         // save changes
         platform.setClobData(psUpdate, 1, paramContent, false);
