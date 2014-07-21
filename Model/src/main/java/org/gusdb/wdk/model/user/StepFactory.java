@@ -1325,7 +1325,7 @@ public class StepFactory {
     }
   }
 
-  public JSONObject getParamContent(Map<String, String> params) throws JSONException {
+  public static JSONObject getParamContent(Map<String, String> params) throws JSONException {
     JSONObject jsContent = new JSONObject();
 
     // convert params
@@ -1340,7 +1340,7 @@ public class StepFactory {
     return jsContent;
   }
 
-  public Map<String, String> parseParamContent(JSONObject jsContent) throws WdkModelException {
+  public static Map<String, String> parseParamContent(JSONObject jsContent) throws WdkModelException {
     Map<String, String> params = new LinkedHashMap<String, String>();
     if (jsContent != null) {
       try {
