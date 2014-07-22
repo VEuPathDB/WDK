@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 
 /**
  * A reference to the download Reporter class. the full class name of the
@@ -23,14 +24,14 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class ReporterRef extends WdkModelBase {
 
-  private static final Logger logger = Logger.getLogger(ReporterProperty.class);
+  private static final Logger logger = Logger.getLogger(ReporterRef.class);
 
   private String name;
   private String displayName;
   private String implementation;
   private boolean inReportMaker = true;
-  private List<ReporterProperty> propertyList = new ArrayList<ReporterProperty>();
-  private Map<String, String> properties = new LinkedHashMap<String, String>();
+  private List<WdkModelText> propertyList = new ArrayList<>();
+  private Map<String, String> properties = new LinkedHashMap<>();
 
   private WdkModel wdkModel;
 
@@ -99,7 +100,7 @@ public class ReporterRef extends WdkModelBase {
     this.inReportMaker = inReportMaker;
   }
 
-  public void addProperty(ReporterProperty property) {
+  public void addProperty(WdkModelText property) {
     this.propertyList.add(property);
   }
 
@@ -115,11 +116,11 @@ public class ReporterRef extends WdkModelBase {
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude properties
-    for (ReporterProperty property : propertyList) {
+    for (WdkModelText property : propertyList) {
       if (property.include(projectId)) {
         property.excludeResources(projectId);
         String propName = property.getName();
-        String propValue = property.getValue();
+        String propValue = property.getText();
         if (properties.containsKey(propName))
           throw new WdkModelException("The property " + propName
               + " is duplicated in reporter " + name);

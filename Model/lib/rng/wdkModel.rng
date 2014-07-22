@@ -979,11 +979,7 @@
             </optional>
 
             <zeroOrMore>
-              <element name="property">
-                <attribute name="name" />
-                <ref name="IncludeExclude" />
-                <text />
-              </element>
+              <ref name="property" />
             </zeroOrMore>
           </element>
 
@@ -1185,11 +1181,7 @@
         <attribute name="description" />
       </optional>
       <zeroOrMore>
-        <element name="property">
-          <ref name="IncludeExclude" />
-          <attribute name="name" />
-          <text />
-        </element>
+        <ref name="property" />
       </zeroOrMore>
     </element>
   </define>
@@ -1252,7 +1244,16 @@
       <attribute name="attributeCategory" />
     </optional>
     <zeroOrMore>
-      <ref name="plugin" />
+      <choice>
+        <ref name="plugin" />
+        <element name="filter">
+          <ref name="IncludeExclude" />
+          <attribute name="name" />
+          <zeroOrMore>
+            <ref name="property" />
+          </zeroOrMore>
+        </element>
+      </choice>
     </zeroOrMore>
   </define>
 
