@@ -1352,13 +1352,16 @@ z-index: 1;
   color: #FFF;
   background-image: none;
   background-color: #4F81BD;
-  border-color: #357EBD;
+  border-color: #346792;
+  box-shadow: 0px 0px 1px #245F92;
+  padding: 1px;
+  top: -1px;
 }
 .ui-tabs-nav #add-analysis button:hover,
 .ui-tabs-nav #add-analysis button:active,
 .ui-tabs-nav #add-analysis button:focus {
   background-color: #357EBD;
-  border-color: #245F92;
+  /*border-color: #245F92;*/
 }
 .ui-tabs-nav #add-analysis button .ui-button-text {
   padding: 0 1em;
