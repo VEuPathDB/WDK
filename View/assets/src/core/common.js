@@ -483,16 +483,18 @@ wdk.util.namespace("window.wdk", function(ns, $) {
 
       var save = $(element).data("save");
 
+      // JSHint cannot parse this line, so we need to ignore it
+      /* jshint ignore:start */
       if (typeof save === "string") {
-        save = new Function(save);
-        // try {
-        //   save = (0, eval)("(" + save + ")");
-        // } catch (e) {
-        //   if (console && console.log) {
-        //     console.log(e);
-        //   }
-        // }
+        try {
+          save = (0, eval)("(" + save + ")");
+        } catch (e) {
+          if (console && console.log) {
+            console.log(e);
+          }
+        }
       }
+      /* jshint ignore:end */
 
       $(element).editable({
         save: typeof save === "function" ? save : function(){return true;}
