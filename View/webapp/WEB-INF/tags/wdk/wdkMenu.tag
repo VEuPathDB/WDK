@@ -61,15 +61,15 @@
       <a id="mybasket" onclick="wdk.user.login('/showFavorite.do');"
          href="javascript:void(0)"
          title="Store IDs for easy access to their details page. You can add IDs *only* from the details page, one at a time." 
-        ><span><img style="vertical-align:middle" height="20" 
-              src="<c:url value="/wdk/images/favorite_color.gif"/>"/>&nbsp;My Favorites</span>
+        ><span><imp:image style="vertical-align:middle" height="20" 
+              src="/wdk/images/favorite_color.gif"/>&nbsp;My Favorites</span>
       </a>
   </c:when>
   <c:otherwise>
       <a href="<c:url value="/showFavorite.do"/>"
          title="Store IDs for easy access to their details page. You can add IDs *only* from the details page, one at a time."
-        ><span><img style="vertical-align:middle" height="20" 
-              src="<c:url value="/wdk/images/favorite_color.gif"/>"/>&nbsp;My Favorites</span>
+        ><span><imp:image style="vertical-align:middle" height="20" 
+              src="/wdk/images/favorite_color.gif"/>&nbsp;My Favorites</span>
       </a>
   </c:otherwise>
 </c:choose>

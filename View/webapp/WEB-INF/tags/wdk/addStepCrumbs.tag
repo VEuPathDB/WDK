@@ -26,11 +26,11 @@
 		<c:set var="dispClass" value="active"/>
 	</c:if>
 	<div id="pStep_1" class="${dispClass}">
-		<img class="step-image" src="<c:url value="wdk/images/${stepImage}"/>"/>
+		<imp:image class="step-image" src="/wdk/images/${stepImage}"/>
         <p>Please select a Wizard</p>
 	</div>
 	<c:if test="${stageCount > 1}">
-		<img class="transition" id="${i}-${i+1}" src="<c:url value="wdk/images/sStepTrans.png"/>"/>
+		<imp:image class="transition" id="${i}-${i+1}" src="/wdk/images/sStepTrans.png"/>
 	</c:if>
 	<c:set var="i" value="2"/>
 	<c:forEach var="st" items="${wizard.stages}">
@@ -42,7 +42,7 @@
 			<c:set var="dispClass" value="active"/>
 		</c:if>
 		<div id="pStep_${i}" class="${dispClass}">
-			<img class="step-image" src="<c:url value="wdk/images/${stepImage}"/>"/>
+			<imp:image class="step-image" src="/wdk/images/${stepImage}"/>
             <c:choose>
 				<c:when test="${stage != null}">
 					<p>${st.display}</p>
@@ -54,7 +54,7 @@
 		</div>
 		<c:if test="${st.branched}"><c:set var="i" value="-1"/></c:if>
 		<c:if test="${i < stageCount}">
-			<img class="transition" id="${i}-${i+1}" src="<c:url value="wdk/images/sStepTrans.png"/>"/>
+			<imp:image class="transition" id="${i}-${i+1}" src="/wdk/images/sStepTrans.png"/>
 		</c:if>
 		<c:set var="i" value="${i+1}"/>
 	  </c:if>

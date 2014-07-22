@@ -42,7 +42,9 @@
       <dl>
         <dt class="name_label">Name:</dt>
         <dd class="name_input"><input type="text" name="name"/></dd>
-        <dt class="desc_label">Description (optional):</dt>
+        <dt class="public_label">Public:</dt>
+        <dd class="public_input"><input type="checkbox" name="is_public"/></dd>
+        <dt class="desc_label">Description (<span class="desc-requirement">optional</span>):</dt>
         <dd class="desc_input">
           <textarea name="description" rows="10"><jsp:text/></textarea>
           <div class="char_note"><em>Note: There is a 4,000 character limit.</em></div>

@@ -8,6 +8,9 @@
             <attribute name="smtpServer" />
             <attribute name="supportEmail" />
             <optional>
+                <attribute name="assetsUrl" />
+            </optional>
+            <optional>
                 <attribute name="secretKeyFile" />
             </optional>
             <optional>
@@ -56,7 +59,6 @@
                 
                 <element name="userDb">
                     <attribute name="userSchema" />
-                    <attribute name="wdkEngineSchema" />
                     <ref name="DBBaseContent" />
                 </element>
                 
@@ -147,7 +149,7 @@
                 </optional>
                 <optional>
                     <attribute name="showConnectionsDuration">
-                        <data type="unsignedLong" />
+                        <data type="long" />
                     </attribute>
                 </optional>
             </group>
