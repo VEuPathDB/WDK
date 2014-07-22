@@ -50,22 +50,15 @@
                      answerValue="${wdkAnswer}" />
 </c:if>
 
-
-
-
-
+<!--<div><a href="javascript:wdk.stepAnalysis.showAllAnalyses()">Magic Button</a></div>-->
 
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
-<%-- display view list --%>
-<script>
-$(function() {
-  wdk.resultsPage.configureSummaryViews(this);
-});
-</script>
 
-
-<div id="Summary_Views" class="Summary_Views" strategy="${strategy.strategyId}" step="${step.stepId}"
-     updateUrl="<c:url value='/processSummaryView.do' />">
+<div id="Summary_Views" class="Summary_Views"
+    data-controller="wdk.resultsPage.configureSummaryViews"
+    strategy="${strategy.strategyId}"
+    step="${step.stepId}"
+    updateUrl="${pageContext.request.contextPath}/processSummaryView.do">
   <c:set var="question" value="${wdkStep.question}" />
   <c:set var="views" value="${question.summaryViews}" />
   <jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />
@@ -85,11 +78,66 @@ $(function() {
     <c:forEach items="${views}" var="item">
       <c:set var="view" value="${item.value}" />
       <li id="${view.name}">
-        <a href="<c:url value='/showSummaryView.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}' />"
+        <a href="${pageContext.request.contextPath}/showSummaryView.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}"
            title="${view.description}"
         >${view.display} <span> </span></a>
       </li>
     </c:forEach>
+    <c:forEach items="${wdkStep.appliedAnalyses}" var="analysisEntry">
+      <c:set var="analysisId" value="${analysisEntry.key}"/>
+      <c:set var="analysisCtx" value="${analysisEntry.value}"/>
+      <c:set var="analysis" value="${analysisCtx.stepAnalysis}"/>
+      <li id="step-analysis-${analysisId}">
+        <a href="${pageContext.request.contextPath}/stepAnalysisPane.do?analysisId=${analysisId}" title="${analysis.shortDescription}">
+          ${analysisCtx.displayName} <span> </span>
+        </a>
+        <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
+      </li>
+    </c:forEach>
+    <c:if test="${fn:length(question.stepAnalyses) > 0}">
+      <c:set var="newAnalyses">
+        <c:forEach items="${question.stepAnalyses}" var="analysis">
+          <c:set var="analysisCtx" value="${analysis.value}"/>
+          <c:if test="${analysisCtx.releaseVersion eq wdkModel.model.buildNumber}">
+            <li>${analysisCtx.displayName}</li>
+          </c:if>
+        </c:forEach>
+      </c:set>
+      <li id="choose-step-analysis">
+        <a href="${pageContext.request.contextPath}/showNewAnalysisTab.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}">New Analysis<span> </span>
+        </a>
+        <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
+      </li>
+      <li id="add-analysis">
+        <button title="Choose an analysis tool to apply to the results of your current step.">Analyze Results</button>
+        <c:if test="${not empty newAnalyses}">
+          <div class="analysis-feature-tooltip">
+            <ul>
+              ${newAnalyses}
+            </ul>
+          </div>
+        </c:if>
+      </li>
+    </c:if>
+    <%--
+    <c:if test="${fn:length(question.stepAnalyses) > 0}">
+      <li>
+        <div class="new-analysis">
+          <span class="new-analysis-button"><span class="new-analysis-instr">+ Analyze This Result</span></span>
+          <div class="new-analysis-menu">
+            <ul>
+              <c:forEach items="${question.stepAnalyses}" var="analysisEntry">
+                <c:set var="analysis" value="${analysisEntry.value}"/>
+                <li title="${analysis.description}" data-strategy="${wdkStrategy.strategyId}"
+                    data-step="${wdkStep.stepId}" data-analysis="${analysis.name}">
+                  ${analysis.displayName}</li>
+              </c:forEach>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </c:if>
+    --%>
   </ul>
 </div>
 

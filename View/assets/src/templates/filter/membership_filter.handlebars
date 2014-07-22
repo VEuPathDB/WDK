@@ -1,0 +1,20 @@
+<div class="membership-filter">
+
+  <h3>{{field.display}}</h3>
+
+  {{#if field.description}}
+    <div class="description">
+      <p>{{field.description}}</p>
+      <div class="read-more">
+        <a href="#read-more">read more</a>
+      </div>
+    </div>
+  {{/if}}
+
+  <div class="membership-table-panel">
+    <table> <tbody></tbody> </table>
+  </div>
+
+</div>
+
+{{> field_detail_legend}}

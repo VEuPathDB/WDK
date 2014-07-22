@@ -5,39 +5,18 @@
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:imp="urn:jsptagdir:/WEB-INF/tags/imp">
 
-  <c:set var="urlBase" value="${pageContext.request.contextPath}"/>
-
   <jsp:directive.attribute name="refer" required="false" 
               description="Page calling this tag. The list of WDK recognized refer values are: home, question, summary, record"/>
+  <jsp:directive.attribute name="debug" required="false" description="Use unminified files"/>
 
-
-  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-  <!-- Scripts and styles that are used on the whole site                    -->
-  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-
-  <!-- styles for JS libraries -->
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery-ui.css"/>
-  <!--
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery.multiSelect.css"/>
-  -->
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/datatables.css"/>
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.css"/>
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/wdkCommon.css"/>
-
-
-  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-  <!-- scripts and styles used on the SUMMARY page only                      -->
-  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-  <c:if test="${refer == 'summary'}">
-
-   <!-- Did you know popup -->
-    <link rel="stylesheet" type="text/css" href='${urlBase}/wdk/css/dyk.css'/>
-
-    <link rel="stylesheet" type="text/css" href='${urlBase}/wdk/css/Strategy.css'/>
-
-    <!-- Results Page  -->
-    <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/flexigrid.css"/>
-    <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/wdkFilter.css"/>
-
-  </c:if>
+  <c:choose>
+    <c:when test="${debug eq true}">
+      <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdk.libs.css"/>
+      <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdk.css"/>
+    </c:when>
+    <c:otherwise>
+      <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdk.libs.min.css"/>
+      <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdk.min.css"/>
+    </c:otherwise>
+  </c:choose>
 </jsp:root>
