@@ -9,7 +9,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
       // attach onclick event using jquery instead of onclick attr
       // Moved from this.displayFilters since events were being registered twice.
       // We'll use delegation instead.
-      $('.Workspace').on('click', 'a.link-url', function changeFilter(e) {
+      $('.Workspace').on('click', 'a.link-url', function changeFilter() {
         var $this = $(this);
         var strategyId = $this.attr('strId');
         var stepId = $this.attr('stpId');
@@ -77,11 +77,11 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
         if (layouts.data("loaded") == "true") return;
         
         var countUrl = layouts.data("count-url");
-        $.getJSON("", function(data) {
-          layout.find(".link-url").each(function() {
+        $.getJSON(countUrl, function(data) {
+          layouts.find(".link-url").each(function() {
             var filter = $(this).data("filter");
             var count = data[filter];
-            $(this).html((count == undefined) ? "error" : count);
+            $(this).html((count == -1 || count === undefined) ? "error" : count);
           });
         });
       });

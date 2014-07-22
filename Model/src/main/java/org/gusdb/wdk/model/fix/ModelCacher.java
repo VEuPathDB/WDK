@@ -56,7 +56,7 @@ public class ModelCacher extends BaseCLI {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+   * @see org.gusdb.fgputil.BaseCLI#declareOptions()
    */
   @Override
   protected void declareOptions() {
@@ -77,7 +77,7 @@ public class ModelCacher extends BaseCLI {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wsf.util.BaseCLI#execute()
+   * @see org.gusdb.fgputil.BaseCLI#execute()
    */
   @Override
   protected void execute() throws Exception {

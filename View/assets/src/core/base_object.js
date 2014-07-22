@@ -11,10 +11,10 @@ wdk.namespace('wdk.core', function(ns) {
         if (arguments.length != 1) {
           throw new Error('Object.create implementation only accepts one parameter.');
         }
-        F.prototype = o
-        return new F()
-      }
-    })()
+        F.prototype = o;
+        return new F();
+      };
+    })();
   }
 
   /**
@@ -85,7 +85,7 @@ wdk.namespace('wdk.core', function(ns) {
         target[k] = source[k];
       });
       return target;
-    }, {})
+    }, {});
 
     if (c_protoProps && c_protoProps.hasOwnProperty('constructor')) {
       child = c_protoProps.constructor;

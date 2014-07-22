@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import junit.framework.Assert;
+
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

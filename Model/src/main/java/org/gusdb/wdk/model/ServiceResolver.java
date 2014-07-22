@@ -32,6 +32,14 @@ public class ServiceResolver {
     }
   }
 
+  public static void registerService(Class<?> interfaceClass, String implementationClass, boolean isSingleton) {
+    synchronized(SERVICE_REGISTRY) {
+      // will override an existing registry entry
+      SERVICE_REGISTRY.put(interfaceClass.getName(), new Service(
+          interfaceClass.getName(), implementationClass, isSingleton));
+    }
+  }
+
   private static class Service {
     public final String _interfaceName;
     public final String _implementationName;
@@ -48,22 +56,24 @@ public class ServiceResolver {
 
   @SuppressWarnings("unchecked")
   public static <T> T resolve(Class<T> desiredInterface) {
-    String interfaceName = desiredInterface.getName();
-    Service service = SERVICE_REGISTRY.get(interfaceName);
-    if (service == null) {
-      throw new UnsupportedOperationException("Cannot resolve service " +
-          "implementation for interface: " + interfaceName);
-    }
-    if (service._isSingleton) {
-      synchronized(service) {
-        if (service._singletonInstance == null) {
-          service._singletonInstance = getImplemenation(service);
-        }
-        return (T) service._singletonInstance;
+    synchronized(SERVICE_REGISTRY) {
+      String interfaceName = desiredInterface.getName();
+      Service service = SERVICE_REGISTRY.get(interfaceName);
+      if (service == null) {
+        throw new UnsupportedOperationException("Cannot resolve service " +
+            "implementation for interface: " + interfaceName);
       }
+      if (service._isSingleton) {
+        synchronized(service) {
+          if (service._singletonInstance == null) {
+            service._singletonInstance = getImplemenation(service);
+          }
+          return (T) service._singletonInstance;
+        }
+      }
+      // otherwise, create instance for each request
+      return (T) getImplemenation(service);
     }
-    // otherwise, create instance for each request
-    return (T) getImplemenation(service);
   }
 
   private static Object getImplemenation(Service service) {

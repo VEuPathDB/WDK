@@ -17,7 +17,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     dataTable: null,
 
     constructor: function() {
-      Handlebars.registerHelper('property', function(key, context, options) {
+      Handlebars.registerHelper('property', function(key, context) {
         return context[key];
       });
       wdk.views.View.apply(this, arguments);
@@ -26,6 +26,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
     initialize: function(options) {
       this.defaultColumns = options.defaultColumns;
       this.initTableOnce = _.once(this._initTable.bind(this));
+
+      this.queueRender();
 
       this.listenTo(this.model.filteredData, 'reset', this.queueRender);
     },
@@ -97,7 +99,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       columns.push({
         sClass: 'display',
         sTitle: 'Name',
-        mData: function(row, type, val) {
+        mData: function(row) {
           var html = _this.displayTemplate(row);
           return html;
         }

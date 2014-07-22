@@ -103,6 +103,7 @@ img[data-assets-src][src] {
 	margin-bottom: 11px;
  	text-align: left;
 	margin-left: 5px;
+  line-height: 1;
 }
 
 .h4left {
@@ -247,6 +248,7 @@ img[data-assets-src][src] {
 .qtip-tipsy {
   background: rgb(75, 75, 75);
   background: rgba(75, 75, 75, .97);
+  box-shadow: 0px 0px 3px #c9c9c9;
 }
 .qtip-tipsy .qtip-content a,
 .qtip-tipsy .qtip-content a:link {
@@ -260,13 +262,18 @@ img[data-assets-src][src] {
 }
 
 .wdk-feature-tooltip {
-  background-color: #3f3f3f;
+  background: rgb(63, 63, 63);
+  background: rgba(63, 63, 63, 1);
   padding: 0;
   min-width: 300px;
   -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
   -moz-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
   z-index: 99 !important;
+}
+.wdk-feature-tooltip .qtip-tip {
+  background: rgb(63, 63, 63);
+  background: rgba(63, 63, 63, 1);
 }
 .wdk-feature-tooltip .qtip-content {
   color: #f9f9f9;
@@ -313,6 +320,10 @@ img[data-assets-src][src] {
 
 /***** Styling for the header links *****/
 
+#quick-search {
+  overflow: auto;
+}
+
 #nav-top-div {
   float: right;
 }
@@ -322,6 +333,8 @@ img[data-assets-src][src] {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 12px;
   font-weight: normal;
+  margin: 0;
+  list-style: none;
 }
 #nav-top li {
   float: left;
@@ -648,6 +661,20 @@ ul.menubar {
   line-height: 2;
 }
 
+.param ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.param ul li {
+  margin-top: .4em;
+  margin-bottom: .4em;
+}
+.param .jstree ul li {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .params .invalid-params { padding:10px 5px 5px 100px; font-weight: bold; }
 .params .invalid-params ul { list-style:disc outside none; margin:2px 2px 2px 15px; }
 .params .invalid-params li { color:red; }
@@ -740,10 +767,10 @@ ul#strategy_tabs {
     border-style: solid;
     border-width: 1px;
     float: left;
-    margin-top: 2px;
-    padding:0.24em 1em;
+    padding:0.3em 1em;
     text-align:center;
     text-decoration:none;
+    line-height: 1;
 }
 
 #strategy_tabs #selected a {
@@ -980,6 +1007,7 @@ tr.headerrow th table tbody tr td {
 /*	white-space: nowrap; */
 	vertical-align: middle;
 	font-size: 12px;
+  line-height: 1;
 }
 
 tr.headerInternalRow td {
@@ -1227,6 +1255,10 @@ z-index: 1;
   line-height: 1.4em;
   padding-left: 15px;
 }
+.analysis-menu-tab-pane ul {
+  padding: 0;
+  overflow: auto;
+}
 .analysis-menu-tab-pane h3 {
   margin: 4px 0;
 }
@@ -1320,13 +1352,16 @@ z-index: 1;
   color: #FFF;
   background-image: none;
   background-color: #4F81BD;
-  border-color: #357EBD;
+  border-color: #346792;
+  box-shadow: 0px 0px 1px #245F92;
+  padding: 1px;
+  top: -1px;
 }
 .ui-tabs-nav #add-analysis button:hover,
 .ui-tabs-nav #add-analysis button:active,
 .ui-tabs-nav #add-analysis button:focus {
   background-color: #357EBD;
-  border-color: #245F92;
+  /*border-color: #245F92;*/
 }
 .ui-tabs-nav #add-analysis button .ui-button-text {
   padding: 0 1em;
@@ -1666,8 +1701,8 @@ textarea.favorite-note {
 }
 
 span.wdk-record {        /*to not affect a tr same class in favorites page */
-    font-size:70%;
-    font-weight:normal;
+  font-size:70%;
+  font-weight:normal;
 }
 
 .wdk-record .primaryKey {

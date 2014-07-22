@@ -9,6 +9,11 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
@@ -101,6 +106,34 @@ import org.gusdb.wdk.model.user.User;
  * 
  */
 public class AnswerValue {
+
+  private static class FilterSizeTask implements Runnable {
+
+    private final AnswerValue answer;
+    private final ConcurrentMap<String, Integer> sizes;
+    private final String filterName;
+
+    public FilterSizeTask(AnswerValue answer, ConcurrentMap<String, Integer> sizes, String filterName) {
+      this.answer = answer;
+      this.sizes = sizes;
+      this.filterName = filterName;
+    }
+
+    @Override
+    public void run() {
+      try {
+        int size = answer.getFilterSize(filterName);
+        sizes.put(filterName, size);
+      }
+      catch (WdkModelException | WdkUserException ex) {
+        sizes.put(filterName, -1);
+      }
+    }
+
+  }
+
+  private static final int THREAD_POOL_SIZE = 4;
+  private static final int THREAD_POOL_TIMEOUT = 5; // timeout thread pool, in minutes
 
   private static final Logger logger = Logger.getLogger(AnswerValue.class);
 
@@ -1170,17 +1203,27 @@ public class AnswerValue {
   }
 
   public Map<String, Integer> getFilterSizes() {
-    Map<String, Integer> sizes = new LinkedHashMap<>();
     RecordClass recordClass = question.getRecordClass();
-    for (AnswerFilterInstance filter : recordClass.getFilters()) {
-      try {
-        int size = getFilterSize(filter.getName());
-        sizes.put(filter.getName(), size);
-      }
-      catch (WdkModelException | WdkUserException ex) {
-        sizes.put(filter.getName(), -1);
+    AnswerFilterInstance[] filters = recordClass.getFilters();
+    ConcurrentMap<String, Integer> sizes = new ConcurrentHashMap<>(filters.length);
+
+    // use a thread pool to get filter sizes in parallel
+    ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+    for (AnswerFilterInstance filter : filters) {
+      executor.execute(new FilterSizeTask(this, sizes, filter.getName()));
+    }
+
+    // wait for executor to finish.
+    executor.shutdown();
+    try {
+      if (!executor.awaitTermination(THREAD_POOL_TIMEOUT, TimeUnit.MINUTES)) {
+        executor.shutdownNow();
       }
     }
+    catch (InterruptedException ex) {
+      executor.shutdownNow();
+    }
+
     return sizes;
   }
 

@@ -20,9 +20,9 @@ wdk.namespace('wdk.components', function(ns, $) {
 
         dismissedStorageKey = 'featureTooltip::dismissed::' + key;
 
-    ($el instanceof $) || ($el = $($el));
+    $el = $el instanceof $ ? $el : $($el);
 
-    if (localStorage.getItem(dismissedStorageKey) == true)
+    if (localStorage.getItem(dismissedStorageKey) === '1')
       return;
 
     return $el
@@ -35,11 +35,16 @@ wdk.namespace('wdk.components', function(ns, $) {
                  title
         },
         style: {
-          classes: 'qtip-bootstrap wdk-feature-tooltip'
+          classes: 'qtip-bootstrap wdk-feature-tooltip',
+          tip: {
+            width: 24,
+            height: 16
+          }
         },
         position: {
-          my: 'left top',
-          at: 'right center'
+          my: 'left center',
+          at: 'right center',
+          viewport: false
         },
         hide: {
           event: false
@@ -75,6 +80,6 @@ wdk.namespace('wdk.components', function(ns, $) {
           }
         }
       });
-  }
+  };
 
 });

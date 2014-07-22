@@ -36,7 +36,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     didShow: function() {
       var activeTab = this.$('.tabs').tabs('option', 'active');
-      var id = this.$('.ui-tabs-panel').get(activeTab).id
+      var id = this.$('.ui-tabs-panel').get(activeTab).id;
       this.showSubview(id);
     },
 

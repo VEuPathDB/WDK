@@ -1,3 +1,6 @@
+/* global customShowError, customSampleTab, customHelpTab */
+/* jshint evil:true */
+
 /**
  * This file contains functions used to communicate strategy operations between
  * the client and the server.
@@ -30,8 +33,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     element.find(".resizable-wrapper").resizable({
       handles: 's',
       minHeight: 150,
-      stop: function(event, ui) {
-        wdk.stratTabCookie.setCurrentTabCookie('strategyWindow', $(".resizable-wrapper").height())
+      stop: function() {
+        wdk.stratTabCookie.setCurrentTabCookie('strategyWindow', $(".resizable-wrapper").height());
       }
     });
 
@@ -40,7 +43,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     $.ajaxSetup ({
       cache: false,
       timeout: 1000 * 60 * 5, // was 180000 ms
-      error: function(data, msg, e) {
+      error: function(data, msg) {
         if (msg == "timeout") {
           var c = confirm("This request has timed out.\n" +
               "Would you like to try again? (This request will timeout after " +
@@ -55,17 +58,15 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
               initDisplay();
             }
           }
-        } else if (data.readyState != 0 && data.status != 0) {
+        } else if (data.readyState !== 0 && data.status !== 0) {
           // not timeout, backend throws errors
           try {
             customShowError();
-          } catch(e) {
+          } catch(err) {
             alert("controller.js: a backend error occurred.");
           }
           if (this.url.indexOf("showSummary.do") != -1) {
             wdk.util.removeLoading();
-          } else {
-            //initDisplay();
           }
         }
       }
@@ -81,23 +82,28 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     initDisplay();
 
     // strategyselect event fired when a step in a strategy is selected
-    $("#Strategies").on("strategyselect", ".diagram", function(e, strategy) {
-      // hide editable strategy names and reset trigger
-      $(e.delegateTarget).find(".strategy-name.wdk-editable")
-      .editable("hide");
-      // .editable("option", "trigger", "click");
+    $("#Strategies")
+      .on("strategyselect", ".diagram", function(e, strategy) {
+        $(e.delegateTarget).find(".strategy-name.wdk-editable")
+          .editable("hide");
 
-      if (strategy.Steps.length > 1 && !strategy.hasCustomName()) {
-        // show and turn off trigger
-        $(this).find(".strategy-name.wdk-editable")
-        .editable("show");
-        // .editable("option", "trigger", "manual")
-        // .on("editablehide", function() {
-        //   console.log(this);
-        //   $(this).editable("option", "trigger", "click");
-        // });;
-      }
-    });
+        if (strategy.Steps.length > 1 && !strategy.hasCustomName()) {
+          $(this).find(".strategy-name.wdk-editable").editable("show");
+        }
+      })
+      .on("stepselect", function(e, step, isBoolean) {
+        var stepId = isBoolean ? step.back_boolean_Id : step.back_step_Id;
+        var $detailBoxes = $('.crumb_details');
+        var $detailBox = $('#crumb_details_' + stepId);
+
+        // disable View for selected Step detail box
+        $detailBoxes.find('.view_step_link').removeClass('disabled');
+        $detailBox.find('.view_step_link').addClass('disabled');
+
+        // enable Analyze for selected Step detail box
+        $detailBoxes.find('.analyze_step_link').addClass('disabled');
+        $detailBox.find('.analyze_step_link').removeClass('disabled');
+      });
   }
 
   /**
@@ -108,9 +114,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var allTabName = 'search_history';
     var current = wdk.stratTabCookie.getCurrentTabCookie('application');
 
-    if (!current || current == null) {
+    if (!current || current === null) {
       // no cookie set
-      return (openCount > 0 || allCount == 0 ? openTabName : allTabName);
+      return (openCount > 0 || allCount === 0 ? openTabName : allTabName);
     }
     else {
       // cookie set
@@ -118,7 +124,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         return (allCount > 0 ? allTabName : openTabName);
       }
       else if (current == openTabName) {
-        return (openCount > 0 || allCount == 0 ? openTabName : allTabName);
+        return (openCount > 0 || allCount === 0 ? openTabName : allTabName);
       }
       else {
         return current;
@@ -295,7 +301,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   function removeSubStrategies(currentOrder, newOrder){
     for (var order in ns.strats) {
       if (order.split(".").length > 1 && order.split(".")[0] == currentOrder) {
-        if (newOrder == undefined) {
+        if (newOrder === undefined) {
           delete ns.strats[order];
         } else {
           var n_ord = order.split(".");
@@ -335,7 +341,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
     $("#strategy_messages").hide();
     $("#strategy_results .resizable-wrapper:has(#Strategies)").show();
-    $("#Strategies").html($(s2).html());
+    //$("#Strategies").html($(s2).html());
+    $('#Strategies').html(s2);
     var height = wdk.stratTabCookie.getCurrentTabCookie('strategyWindow');
     var wrapper = $("#strategy_results .resizable-wrapper:has(#Strategies)");
     if (!height && $("#Strategies").parent().parent().height() > 330) {
@@ -351,32 +358,32 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         wrapper.height($("#Strategies").height() + 10);
       }
     }
-    if (view.action != undefined) {
+    if (view.action !== undefined) {
       if (view.action == "share" || view.action == "save") {
         var x = $("a#" + view.action + "_" + view.actionStrat);
         x.click();
       }      
     }
-    if (view.strategy != undefined || view.step != undefined) {
+    if (view.strategy !== undefined || view.step !== undefined) {
       var initStr = wdk.strategy.model.getStrategyFromBackId(view.strategy);
       var initStp = initStr.getStep(view.step, false);
-      if (initStr == false || initStp == null) {
-        NewResults(-1);
+      if (initStr === false || initStp === null) {
+        newResults(-1);
       } else {
         var isVenn = (initStp.back_boolean_Id == view.step);
         var pagerOffset = view.pagerOffset;
-        if (view.action != undefined && view.action.match("^basket")) {
-          NewResults(initStr.frontId, initStp.frontId, isVenn, pagerOffset,
+        if (view.action !== undefined && view.action.match("^basket")) {
+          newResults(initStr.frontId, initStp.frontId, isVenn, pagerOffset,
               ignoreFilters, view.action, deferred);
         } else {
-          NewResults(initStr.frontId, initStp.frontId, isVenn, pagerOffset,
+          newResults(initStr.frontId, initStp.frontId, isVenn, pagerOffset,
               ignoreFilters, null, deferred);
         }
       }
     } else {
-      NewResults(-1);
+      newResults(-1);
     }
-    if (sC == 0) showInstructions();
+    if (sC === 0) showInstructions();
     // add fancy tooltips
     wdk.tooltips.assignTooltips(".filterImg", 0);
     wdk.tooltips.assignTooltips(".step-elem", 0);
@@ -415,7 +422,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       $("div#diagram_" + strategy.frontId + " div#step_" + strategy.getStep(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]).backId.split("_")[1],false).frontId + "_sub", div).css({"border-color":colors[subs.color].step});
       $("div#diagram_" + strategy.frontId, div).after(subs.DIV);
       if (wdk.strategy.model.getSubStrategies(strategy.subStratOrder[j]).length > 0) {
-        displayOpenSubStrategies(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]),d);
+        displayOpenSubStrategies(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]),div);
       }
     }
   }
@@ -445,6 +452,10 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     return openTabContents;
   }
 
+  /*
+
+  The following two functions don't appear to be used, but keeping around in case we need it. dmf
+
   function getInstructionsHtml() {
     var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='" + wdk.assetsUrl('/wdk/images/lookUp2.png') + "' width='45px'/>"; 
     if ($("#tab_strategy_new").length > 0) {
@@ -463,6 +474,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var instr_text2 = "<p style='width: 85px; position: absolute; right: 12px; padding-left: 1px;'>Or Click on '<a href=\"javascript:wdk.addStepPopup.showPanel('search_history')\">All</a>' to view your strategies.</p>";
     return instr_text + "<br>" + instr_text2;
   }
+  */
 
   /**
    * Instantiate Strategy object.
@@ -481,7 +493,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       strat = wdk.strategy.model.getStrategyFromBackId(strategy.id);
       strat.subStratOrder = {};
     }    
-    if (strategy.importId != "") {
+    if (strategy.importId !== "") {
       strat.isDisplay = true;
       strat.checksum = ns.state[ord].checksum;
     } else {
@@ -507,16 +519,6 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     return strat.frontId;
   }
 
-  function unloadStrategy(id) {
-    for (var s in ns.strats) {
-      s = parseInt(s, 10);
-      if (ns.strats[s].frontId == id) {
-        delete ns.strats[s];
-        return;
-      }
-    }
-  }
-
   /**
    * Display results for a particular step.
    *
@@ -524,14 +526,14 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    *
    * @param {Number} f_strategyId Strategy order/frontID
    * @param {Number} f_stepId Step order/frontID
-   * @param {Boolean} bool If Step is a Boolean Step set to `true`; else `false`
+   * @param {Boolean} isBoolean If Step is a Boolean Step set to `true`; else `false`
    * @param {Number} pagerOffset Results offset
    * @param {Boolean} ignoreFilters If `true` don't reload filters; else reload
    *    filters
    * @param {String} action Action to trigger once results are loaded.
    * @param {Object} deferred jQuery.Deffered object created in `updateStrategies`
    */
-  function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters,
+  function newResults(f_strategyId, f_stepId, isBoolean, pagerOffset, ignoreFilters,
       action, deferred) {
 
     if (f_strategyId == -1) {
@@ -548,9 +550,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var url = "showSummary.do";
     var data = {
       strategy: strategy.backId,
-      step: bool ? step.back_boolean_Id : step.back_step_Id,
+      step: isBoolean ? step.back_boolean_Id : step.back_step_Id,
       resultsOnly: true,
-      strategy_checksum: (strategy.checksum != null) ? strategy.checksum :
+      strategy_checksum: (strategy.checksum !== null) ? strategy.checksum :
           wdk.strategy.model.getStrategy(strategy.subStratOf).checksum
     };
 
@@ -581,10 +583,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           // unselect previously selected step
           $Strategies.find(".selected").removeClass("selected");
 
-          var init_view_strat = strategy.backId;
           var init_view_step;
 
-          if (bool) {
+          if (isBoolean) {
             $("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" +
                 step.frontId + "']").addClass("selected");
             init_view_step = step.back_step_Id + ".v";
@@ -595,7 +596,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           }
 
           // insert results HTML into DOM
-          wdk.resultsPage.ResultsToGrid(data, ignoreFilters, $("#strategy_results .Workspace"));
+          wdk.resultsPage.resultsToGrid(data, ignoreFilters, $("#strategy_results .Workspace"));
           // update results pane title
           wdk.resultsPage.updateResultLabels($("#strategy_results .Workspace"), strategy, step);
           
@@ -613,11 +614,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           var $selectedStep = $("#Strategies .diagram").find(".selected");
 
           if ($selectedStrategy.attr("id") !== oldSelectedStrategyId) {
-            $selectedStrategy.trigger("strategyselect", [strategy])
+            $selectedStrategy.trigger("strategyselect", [strategy]);
           }
 
           if ($selectedStep.attr("id") !== oldSelectedStepId) {
-            $selectedStep.trigger("stepselect", [step]);
+            $selectedStep.trigger("stepselect", [step, isBoolean]);
           }
 
         }
@@ -628,7 +629,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       }
     }).then(function() {
       if (deferred) {
-        deferred.resolve()
+        deferred.resolve();
       }
     });
   }
@@ -672,68 +673,66 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   }
 
   // will be replaced by wizard
-  function AddStepToStrategy(url, proto, stpId) {
-    var strategy = wdk.strategy.model.getStrategyFromBackId(proto);
-    var b_strategyId = strategy.backId;
-    var f_strategyId = strategy.frontId;
-    var cs = strategy.checksum;
-    if (strategy.subStratOf != null) {
-      cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
-    }
-    url = url + "&strategy_checksum="+cs;
-    var d = wdk.util.parseInputs();
-    $.ajax({
-      url: url,
-      type: "POST",
-      dataType: "json",
-      data: d + "&state=" + ns.stateString,
-      beforeSend: function(){
-        wdk.util.showLoading(f_strategyId);
-      },
-      success: function(data) {
-        if (wdk.strategy.error.ErrorHandler("AddStep", data, strategy, $("div#query_form"))) {
-          if ($("div#query_form").css("display") == "none") {
-            $("div#query_form").remove();
-          }
-          updateStrategies(data);
-        } else {
-          wdk.util.removeLoading(f_strategyId);
-        }
-      }
-    });
-    wdk.step.isInsert = "";
-    wdk.addStepPopup.closeAll(true);
-  }
+  // function AddStepToStrategy(url, proto) {
+  //   var strategy = wdk.strategy.model.getStrategyFromBackId(proto);
+  //   var f_strategyId = strategy.frontId;
+  //   var cs = strategy.checksum;
+  //   if (strategy.subStratOf !== null) {
+  //     cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
+  //   }
+  //   url = url + "&strategy_checksum="+cs;
+  //   var d = wdk.util.parseInputs();
+  //   $.ajax({
+  //     url: url,
+  //     type: "POST",
+  //     dataType: "json",
+  //     data: d + "&state=" + ns.stateString,
+  //     beforeSend: function(){
+  //       wdk.util.showLoading(f_strategyId);
+  //     },
+  //     success: function(data) {
+  //       if (wdk.strategy.error.ErrorHandler("AddStep", data, strategy, $("div#query_form"))) {
+  //         if ($("div#query_form").css("display") == "none") {
+  //           $("div#query_form").remove();
+  //         }
+  //         updateStrategies(data);
+  //       } else {
+  //         wdk.util.removeLoading(f_strategyId);
+  //       }
+  //     }
+  //   });
+  //   wdk.step.isInsert = "";
+  //   wdk.addStepPopup.closeAll(true);
+  // }
 
-  function EditStep(url, proto, step_number){
-    var ss = wdk.strategy.model.getStrategyFromBackId(proto);
-    var sss = ss.getStep(step_number, false);
-    var d = wdk.util.parseInputs();
-    var cs = ss.checksum;
-    if (ss.subStratOf != null) {
-      cs = wdk.strategy.model.getStrategy(ss.subStratOf).checksum;
-    }
-    url = url+"&strategy_checksum="+cs;
-    $.ajax({
-      url: url,
-      type: "POST",
-      dataType:"json",
-      data: d + "&state=" + ns.stateString,
-      beforeSend: function(obj){
-        wdk.addStepPopup.closeAll(true);
-        wdk.util.showLoading(ss.frontId);
-      },
-      success: function(data) {
-        if (wdk.strategy.error.ErrorHandler("EditStep", data, ss, $("div#query_form"))) {
-          $("div#query_form").remove();
-          wdk.step.hideDetails();
-          updateStrategies(data);
-        } else {
-          wdk.util.removeLoading(ss.frontId);
-        }
-      }
-    });
-  }
+  // function EditStep(url, proto){
+  //   var ss = wdk.strategy.model.getStrategyFromBackId(proto);
+  //   var d = wdk.util.parseInputs();
+  //   var cs = ss.checksum;
+  //   if (ss.subStratOf !== null) {
+  //     cs = wdk.strategy.model.getStrategy(ss.subStratOf).checksum;
+  //   }
+  //   url = url+"&strategy_checksum="+cs;
+  //   $.ajax({
+  //     url: url,
+  //     type: "POST",
+  //     dataType:"json",
+  //     data: d + "&state=" + ns.stateString,
+  //     beforeSend: function(){
+  //       wdk.addStepPopup.closeAll(true);
+  //       wdk.util.showLoading(ss.frontId);
+  //     },
+  //     success: function(data) {
+  //       if (wdk.strategy.error.ErrorHandler("EditStep", data, ss, $("div#query_form"))) {
+  //         $("div#query_form").remove();
+  //         wdk.step.hideDetails();
+  //         updateStrategies(data);
+  //       } else {
+  //         wdk.util.removeLoading(ss.frontId);
+  //       }
+  //     }
+  //   });
+  // }
 
   function DeleteStep(f_strategyId,f_stepId) {
     var strategy = wdk.strategy.model.getStrategy(f_strategyId);
@@ -741,11 +740,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var cs = strategy.checksum;
     var url;
 
-    if (strategy.subStratOf != null) {
+    if (strategy.subStratOf !== null) {
       cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
     }
 
-    if (step.back_boolean_Id == "") {
+    if (step.back_boolean_Id === "") {
       url = "deleteStep.do?strategy=" + strategy.backId + "&step=" +
           step.back_step_Id + "&strategy_checksum=" + cs;
     } else {
@@ -758,7 +757,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       type: "post",
       dataType: "json",
       data: "state=" + ns.stateString,
-      beforeSend: function(obj) {
+      beforeSend: function() {
         wdk.util.showLoading(f_strategyId);
       },
       success: function(data) {
@@ -775,7 +774,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var strategy = wdk.strategy.model.getStrategy(f_strategyId);
     var step = strategy.getStep(f_stepId, true);
     var cs = strategy.checksum;
-    if (strategy.subStratOf != null) {
+    if (strategy.subStratOf !== null) {
       cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
     }
     var url = "expandStep.do?strategy=" + strategy.backId + "&step=" +
@@ -811,7 +810,6 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
   function openStrategy(stratId){
     var url = "showStrategy.do?strategy=" + stratId;
-    var strat = wdk.strategy.model.getStrategyFromBackId(stratId);
     $.ajax({
       url: url,
       dataType: "json",
@@ -845,7 +843,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       strat = wdk.strategy.model.getStrategyFromBackId(stratId);
       stratName = strat.name;
 
-      if (strat.subStratOf != null) {
+      if (strat.subStratOf !== null) {
         var parent = wdk.strategy.model.getStrategy(strat.subStratOf);
         var cs = parent.checksum;
         url = "deleteStep.do?strategy=" + strat.backId + "&step=" +
@@ -884,7 +882,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       stratId = strat.frontId;
     }
     var cs = strat.checksum;
-    if (strat.subStratOf != null) {
+    if (strat.subStratOf !== null) {
       cs = wdk.strategy.model.getStrategy(strat.subStratOf).checksum;
     }
     var url = "closeStrategy.do?strategy=" + strat.backId +
@@ -916,32 +914,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
   }
 
-  // maybe deprecated??
-  function hideStrat(id) {
-    var strat = wdk.strategy.model.getStrategy(id);
-    if (!strat) return;
-    unloadStrategy(id);
-    strat.isDisplay = false;
-    for (var i=0;i<strat.Steps.length;i++) {
-      if (strat.Steps[i].child_Strat_Id != null) {
-        hideStrat(strat.Steps[i].child_Strat_Id);
-      }
-    }
-    if ($("#diagram_" + id + " div.selected").length > 0) {
-      NewResults(-1);
-    }
-    $("#diagram_" + id).hide("slow").remove();
-    if ($("#Strategies div[id^='diagram']").length == 0) {
-      showInstructions();
-      NewResults(-1);
-    }
-  }
-
   function copyStrategy(stratId, fromHist) {
     var ss = wdk.strategy.model.getStrategyOBJ(stratId);
     var result = confirm("Do you want to make a copy of strategy '" +
         ss.name + "'?");
-    if (result == false) return;
+    if (result === false) return;
     var url = "copyStrategy.do?strategy=" + stratId + "&strategy_checksum=" +
         ss.checksum;
     $.ajax({  
@@ -977,7 +954,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         isPublic: strategy.isPublic,
         checkName: checkName,
         save: save,
-        strategy_checksum: (strategy.subStratOf != null) ?
+        strategy_checksum: (strategy.subStratOf !== null) ?
             wdk.strategy.model.getStrategy(strategy.subStratOf).checksum :
             strategy.checksum,
         showHistory: fromHist,
@@ -1009,11 +986,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var b_strategyId = strategyId;
     var strategy = wdk.strategy.model.getStrategyFromBackId(b_strategyId); 
     var f_strategyId = strategy.frontId;
-    if (strategy.subStratOf != null) {
+    if (strategy.subStratOf !== null) {
       ns.strats.splice(wdk.strategy.model.findStrategy(f_strategyId));
     }
     var cs = strategy.checksum;
-    if (strategy.subStratOf != null) {
+    if (strategy.subStratOf !== null) {
       cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
     }
     url += "&strategy_checksum="+cs;
@@ -1045,10 +1022,10 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var step = strategy.getStep(f_stepId, true);
     var cs = strategy.checksum;
     var weight = $(e).siblings("input#weight").val();
-    if (weight == undefined) {
+    if (weight === undefined) {
       weight = $(e).siblings().find("input[name='weight']").val();
     }
-    if(strategy.subStratOf != null) {
+    if(strategy.subStratOf !== null) {
       cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
     }
     var url = "processFilter.do?strategy=" + strategy.backId +
@@ -1102,61 +1079,13 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     return deferred;
   }
 
-  // deprecated?  -  dmf
-  function callSpanLogic() {
-    var cstrt = wdk.strategy.model.getStrategy(wdk.addStepPopup.current_Front_Strategy_Id);
-    var f_strategyId = cstrt.frontId;
-    var b_strategyId = cstrt.backId;
-    var d = wdk.util.parseInputs();
-    var quesName = "";
-    var outputType = "";
-    $("#form_question input[name='value(span_output)']").each(function() {
-      if (this.checked) outputType = $(this).val();
-    });
-    outputType = (outputType.indexOf("A") != -1) ? "a" : "b";
-    outputType = $("#form_question input#type"+outputType.toUpperCase()).val();
-    if (outputType == "GeneRecordClasses.GeneRecordClass") quesName = "SpanQuestions.GenesBySpanLogic";
-    if (outputType == "OrfRecordClasses.OrfRecordClass") quesName = "SpanQuestions.OrfsBySpanLogic";
-    if (outputType == "IsolateRecordClasses.IsolateRecordClass") quesName = "SpanQuestions.IsolatesBySpanLogic";
-    if (outputType == "EstRecordClasses.EstRecordClass") quesName = "SpanQuestions.EstsBySpanLogic";
-    if (outputType == "SnpRecordClasses.SnpRecordClass") quesName = "SpanQuestions.SnpsBySpanLogic";
-    if (outputType == "AssemblyRecordClasses.AssemblyRecordClass") quesName = "SpanQuestions.AssemblyBySpanLogic";
-    if (outputType == "SequenceRecordClasses.SequenceRecordClass") quesName = "SpanQuestions.SequenceBySpanLogic";
-    if (outputType == "SageTagRecordClasses.SageTagRecordClass") quesName = "SpanQuestions.SageTagsBySpanLogic";
-    if (outputType == "DynSpanRecordClasses.DynSpanRecordClass") quesName = "SpanQuestions.DynSpansBySpanLogic";
-    if (outputType == "") return null;
-    $.ajax({
-      url: "processFilter.do?questionFullName=" + quesName + "&strategy=" +
-          cstrt.backId + "&strategy_checksum=" + cstrt.checksum,
-      data: d + "&state=" + ns.stateString,
-      type: "post",
-      dataType: "json",
-      beforeSend: function(){
-        wdk.util.showLoading(f_strategyId);
-      },
-      success: function(data) {
-        if (wdk.strategy.error.ErrorHandler("AddStep", data, cstrt, $("div#query_form"))) {
-          if ($("div#query_form").css("display") == "none") {
-            $("div#query_form").remove();
-          }
-          updateStrategies(data);
-        } else {
-          wdk.util.removeLoading(f_strategyId);
-        }
-      }
-    });
-    wdk.addStepPopup.isSpan = false;
-    wdk.step.isInsert = "";
-    wdk.addStepPopup.closeAll(true);
-  }
-
   ns.init = init;
-  ns.AddStepToStrategy = AddStepToStrategy;
+  //ns.AddStepToStrategy = AddStepToStrategy;
   ns.ChangeFilter = ChangeFilter;
   ns.DeleteStep = DeleteStep;
-  ns.EditStep = EditStep;
+  //ns.EditStep = EditStep;
   ns.ExpandStep = ExpandStep;
-  ns.NewResults = NewResults;
+  ns.newResults = newResults;
   ns.RenameStep = RenameStep;
   ns.SetWeight = SetWeight;
   ns.closeStrategy = closeStrategy;

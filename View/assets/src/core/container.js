@@ -22,7 +22,7 @@ wdk.namespace('wdk.core', function(ns) {
 
   var BaseObject = wdk.core.BaseObject;
 
-  var Container = ns.Container = BaseObject.extend({
+  ns.Container = BaseObject.extend({
     dict: null,
 
     constructor: function() {

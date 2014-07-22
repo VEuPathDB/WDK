@@ -30,7 +30,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
       // remove existing items
       _.values(this.itemViews).forEach(function(view) {
-        _this.removeItem(view.model)
+        _this.removeItem(view.model);
       });
 
       // add new items

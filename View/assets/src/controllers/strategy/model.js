@@ -234,7 +234,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
 
   // Returns a Promise
   Strategy.prototype.update = function() {
-    var checksum = (this.subStratOf != null) ?
+    var checksum = (this.subStratOf !== null) ?
         getStrategy(this.subStratOf).checksum :
         this.checksum;
 
@@ -262,7 +262,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
     var stepName = this.JSON.steps[1].customName;
     var regex = new RegExp("^" + stepName + "(\\(\\d+\\))?$");
     return !regex.test(this.name);
-  }
+  };
 
   /****************************************************
   Step Object and Functions
@@ -411,7 +411,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
   };
 
   getStrategyOBJ = function (backId){
-    if (getStrategyFromBackId(backId) != false) {
+    if (getStrategyFromBackId(backId) !== false) {
       return getStrategyFromBackId(backId);
     } else {
       var json = getStrategyJSON(backId);

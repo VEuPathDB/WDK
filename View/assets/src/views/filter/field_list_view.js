@@ -43,7 +43,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
         return _.map(nodes, function(node) {
           var children = _.chain(fields)
             .where({ parent: node.term })
-            .sortBy(function(c) { return c.filterable ? 0 : 1 }) // push leaves above nodes
+            .sortBy(function(c) { return c.filterable ? 0 : 1; }) // push leaves above nodes
             .value();
 
           return children.length
@@ -91,12 +91,14 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
       // });
     },
 
+    // jshint ignore:start
     filter: function(e) {
       // var str = e.currentTarget.value;
       // this.$('div')
       // .hide()
       // .find(':contains(' + str + ')').show();
     },
+    // jshint ignore:end
 
     selectField: function(field) {
       var term = field.get('term');

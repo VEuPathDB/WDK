@@ -160,8 +160,7 @@ public class StepParamExpander extends BaseCLI {
   private List<String[]> parseClob(WdkModel wdkModel, String clob) throws WdkModelException, JSONException {
     List<String[]> newValues = new ArrayList<String[]>();
     if (clob != null && clob.length() > 0) {
-      StepFactory stepFactory = wdkModel.getStepFactory();
-      Map<String, String> values = stepFactory.parseParamContent(new JSONObject(clob));
+      Map<String, String> values = StepFactory.parseParamContent(new JSONObject(clob));
       for (String paramName : values.keySet()) {
         String value = values.get(paramName);
         String[] terms = value.split(",");
@@ -185,7 +184,7 @@ public class StepParamExpander extends BaseCLI {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+   * @see org.gusdb.fgputil.BaseCLI#declareOptions()
    */
   @Override
   protected void declareOptions() {
@@ -196,7 +195,7 @@ public class StepParamExpander extends BaseCLI {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wsf.util.BaseCLI#execute()
+   * @see org.gusdb.fgputil.BaseCLI#execute()
    */
   @Override
   protected void execute() throws Exception {

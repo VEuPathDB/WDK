@@ -6,9 +6,11 @@ package org.gusdb.wdk.model.query.param;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -88,7 +90,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     EnumParamCache cache = enumParam.getValueCache(user, contextValues);
 
     String[] terms = enumParam.convertToTerms(stableValue);
-    StringBuilder buffer = new StringBuilder();
+    Set<String> internals = new LinkedHashSet<>();
     for (String term : terms) {
       if (!cache.containsTerm(term))
         throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
@@ -97,11 +99,11 @@ public class EnumParamHandler extends AbstractParamHandler {
 
       if (enumParam.getQuote() && !(internal.startsWith("'") && internal.endsWith("'")))
         internal = "'" + internal.replaceAll("'", "''") + "'";
-      if (buffer.length() != 0)
-        buffer.append(", ");
-      buffer.append(internal);
+      
+      internals.add(internal);
     }
-    return buffer.toString();
+    DBPlatform platform = wdkModel.getAppDb().getPlatform();
+    return platform.prepareExpressionList(internals.toArray(new String[0]));
   }
 
   /**

@@ -5,10 +5,9 @@ package org.gusdb.wdk.model;
 
 import java.util.Map;
 
-import junit.framework.Assert;
-
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

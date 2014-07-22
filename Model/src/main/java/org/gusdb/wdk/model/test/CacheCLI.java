@@ -52,7 +52,7 @@ public class CacheCLI extends BaseCLI {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+     * @see org.gusdb.fgputil.BaseCLI#declareOptions()
      */
     @Override
     protected void declareOptions() {
@@ -99,7 +99,7 @@ public class CacheCLI extends BaseCLI {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#invoke()
+     * @see org.gusdb.fgputil.BaseCLI#invoke()
      */
     @Override
     protected void execute() {
