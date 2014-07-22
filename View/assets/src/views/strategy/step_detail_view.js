@@ -18,16 +18,17 @@ wdk.namespace('wdk.views.strategy', function(ns) {
 
   ns.StepDetailView = Backbone.View.extend({
     events: {
-      'click.step .view_step_link'     : 'showResults',
-      'click.step .rename_step_link'   : 'rename',
-      'click.step .analyze_step_link'  : 'analyze',
-      'click.step .edit_step_link'     : 'edit',
-      'click.step .expand_step_link'   : 'expand',
-      'click.step .collapse_step_link' : 'collapse',
-      'click.step .insert_step_link'   : 'insertStep',
-      'click.step .delete_step_link'   : 'delete',
-      'click.step .close_link'         : 'hideDetails',
-      'click.step .weight-button'      : 'setWeight'
+      'click.step .view_step_link'          : 'showResults',
+      'click.step .rename_step_link'        : 'rename',
+      'click.step .analyze_step_link'       : 'analyze',
+      'click.step .edit_step_link'          : 'edit',
+      'click.step .expand_step_link'        : 'expand',
+      'click.step .collapse_step_link'      : 'collapse',
+      'click.step .insert_step_link'        : 'insertStep',
+      'click.step .delete_step_link'        : 'delete',
+      'click.step .close_link'              : 'hideDetails',
+      'click.step .weight-button'           : 'setWeight',
+      'submit.step form[name=questionForm]' : 'updateOperation'
     },
 
     initialize: function(options) {
@@ -165,6 +166,13 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       this.controller.SetWeight(e.currentTarget, this.strategy.frontId,
                            this.model.frontId);
     }),
+
+    updateOperation: preventEvent(function(e) {
+      var url = 'wizard.do?action=revise&step=' + this.model.id + '&';
+
+      wdk.addStepPopup.callWizard(url, e.currentTarget, null, null, 'submit',
+                                  this.strategy.frontId);
+    })
   });
 
 });
