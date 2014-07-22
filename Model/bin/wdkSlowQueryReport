@@ -64,7 +64,7 @@ my $parseLogRecord = sub {
   chomp($logRecord);
 
   my ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $execSeconds, $lastSeconds, $timestamp);
-  if (/(\d+) \[WARN \] \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)\] ([0-9.]*) - (.*):(\d+) - .*QUERY LOG \[(.*)\] execute: ([0-9.]*) last page: ([0-9.]*) seconds/) {
+  if (/(\d+) *\[WARN \] \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)\] ([0-9.]*) - (.*):(\d+) - .*QUERY LOG \[(.*)\] execute: ([0-9.]*) last page: ([0-9.]*) seconds/) {
     ($digits, $day, $mon, $year, $hour, $min, $sec, $ip, $class, $line, $name, $execSeconds, $lastSeconds) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
 
     my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
