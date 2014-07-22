@@ -121,7 +121,12 @@ wdk.namespace('wdk.views.strategy', function(ns) {
     }),
 
     analyze: handleThenHide(function() {
-      $('#add-analysis button').trigger('click');
+      var $button = $('#add-analysis button');
+
+      $button.trigger('click');
+
+      // scroll to section
+      $(window).scrollTop($button.offset().top - 10);
     }),
 
     // aka, revise
