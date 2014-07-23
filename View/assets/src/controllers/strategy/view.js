@@ -197,7 +197,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         stepdiv = singleStep(cStp, prevJsonStep, jsonStep,strat.frontId);
       }
 
-      $(stepdiv).find('>.box').each(function(index, el) {
+      $(stepdiv).find('> div').each(function(index, el) {
         stepDetailView = new StepDetailView({
           el: $(el).find('.crumb_details'),
           model: jsonStep,
@@ -599,7 +599,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         collapseDisabled = "disabled";
       }
       
-      var edit_step = "<a title='" + moEdit + "' class='edit_step_link " +
+      var edit_step = "<a title='" + moEdit + "' class='expand_step_link " +
           disab + "' href='#'>Revise</a>&nbsp;|&nbsp;";
       
       var collapse_step = "<a title='" + sub_collapse_popup +
