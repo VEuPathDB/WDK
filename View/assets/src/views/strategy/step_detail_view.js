@@ -35,6 +35,11 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       var name = this.model.customName;
       var filteredName = "";
 
+      this.controller = options.controller;
+      this.strategy = options.strategy;
+      this.previousStep = options.previousStep;
+      this.isBoolean = options.isBoolean;
+
       if (this.model.filtered) {
         filteredName = "<span class='medium'><b>Applied Filter:&nbsp;</b>" +
           this.model.filterName + "</span><hr>";
@@ -63,11 +68,6 @@ wdk.namespace('wdk.views.strategy', function(ns) {
 
       this.name = name;
       this.collapsedName = collapsedName;
-
-      this.controller = options.controller;
-      this.strategy = options.strategy;
-      this.previousStep = options.previousStep;
-      this.isBoolean = options.isBoolean;
 
       this.render();
     },
@@ -131,11 +131,13 @@ wdk.namespace('wdk.views.strategy', function(ns) {
 
     // aka, revise
     edit: handleThenHide(function(e) {
-      wdk.step.Edit_Step(e.currentTarget, this.model.questionName,
-                         this.model.urlParams,
-                         this.model.isboolean,
-                         this.model.isTransform || this.model.frontId === 1,
-                         this.model.assignedWeight);
+      var step = this.isBoolean ? this.model : this.model.step;
+
+      wdk.step.Edit_Step(e.currentTarget, step.questionName,
+                         step.urlParams,
+                         step.isBoolean,
+                         step.isTransform || step.frontId === 1,
+                         step.assignedWeight);
     }),
 
     expand: handleThenHide(function(e) {
