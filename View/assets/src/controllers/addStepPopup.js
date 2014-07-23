@@ -397,9 +397,11 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
       "font-weight":""
     });
 
-    $(ele).css({
-      "background-color":"#DDDDDD"
-    });
+    if (sectionName) {
+      $(ele).css({
+        "background-color":"#DDDDDD"
+      });
+    }
 
     $("#query_form table#sections-layout td#section-" + (sectionNumber-1) +
         " div").css("background-color","#FFFFFF");
