@@ -131,7 +131,7 @@ wdk.namespace('wdk.views.strategy', function(ns) {
 
     // aka, revise
     edit: handleThenHide(function(e) {
-      var step = this.isBoolean || this.model.istransform
+      var step = this.model.frontId === 1 || this.isBoolean || this.model.istransform
         ? this.model
         : this.model.step;
 
