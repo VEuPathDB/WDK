@@ -25,7 +25,7 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       'click.step .expand_step_link'        : 'expand',
       'click.step .collapse_step_link'      : 'collapse',
       'click.step .insert_step_link'        : 'insertStep',
-      'click.step .delete_step_link'        : 'delete',
+      'click.step .delete_step_link'        : 'destroy',
       'click.step .close_link'              : 'hideDetails',
       'click.step .weight-button'           : 'setWeight',
       'submit.step form[name=questionForm]' : 'updateOperation'
@@ -161,7 +161,7 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       wdk.step.Insert_Step(e.currentTarget, recordName);
     }),
 
-    delete: handleThenHide(function() {
+    destroy: handleThenHide(function() {
       if (this.model.frontId === 1 && this.strategy.nonTransformLength === 1) {
         this.controller.deleteStrategy(this.strategy.backId, false);
       } else {
