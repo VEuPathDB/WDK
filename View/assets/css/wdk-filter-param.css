@@ -211,7 +211,7 @@
   background-color: #f6f6f6;
 }
 .membership-filter .member td {
-  padding: 0 .4em;
+  padding: .2em .4em;
 }
 .membership-filter .member td:first-child {
   width: 2em;
