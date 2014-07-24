@@ -12,7 +12,7 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       'click.strategy [href="#share"]'    : 'share',
       'click.strategy [href="#save"]'     : 'save',
       'click.strategy [href="#copy"]'     : 'copy',
-      'click.strategy [href="#delete"]'   : 'delete',
+      'click.strategy [href="#delete"]'   : 'destroy',
       'click.strategy [href="#describe"]' : 'showDescription'
     },
 
@@ -32,11 +32,11 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       var target = e.currentTarget,
           id = this.model.backId,
           url = wdk.exportBaseURL() + this.model.importId,
-          isSaved = this.model.saved,
+          isSaved = this.model.isSaved,
           isGuest = wdk.user.isGuest();
 
       if (isSaved) {
-        wdk.history.showHistShar(target, id, url);
+        wdk.history.showHistShare(target, id, url);
       } else if (isGuest) {
         wdk.user.login();
       } else {
@@ -59,7 +59,7 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       this.controller.copyStrategy(this.model.backId);
     }),
 
-    delete: preventEvent(function() {
+    destroy: preventEvent(function() {
       this.controller.deleteStrategy(this.model.backId);
     }),
 
