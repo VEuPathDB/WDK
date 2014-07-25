@@ -79,9 +79,11 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
         var countUrl = layouts.data("count-url");
         $.getJSON(countUrl, function(data) {
           layouts.find(".link-url").each(function() {
-            var filter = $(this).data("filter");
-            var count = data[filter];
-            $(this).html((count == -1 || count === undefined) ? "error" : count);
+            if (!$(this).hasClass("loaded")) {
+              var filter = $(this).data("filter");
+              var count = data[filter];
+              $(this).html((count == -1 || count === undefined) ? "error" : count);
+            }
           });
         });
       });
