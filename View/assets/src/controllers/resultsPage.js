@@ -21,6 +21,8 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       load: function(event, ui) {
         addFeatureTooltipOnce($element);
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
+        wdk.basket.checkPageBasket();
+        wdk.util.setDraggable(ui.panel.find("div.attributesList"), ".dragHandle");
       }
     });
     
