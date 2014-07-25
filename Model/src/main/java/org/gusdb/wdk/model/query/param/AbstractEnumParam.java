@@ -133,6 +133,8 @@ public abstract class AbstractEnumParam extends Param {
    * collapse single-child branches if set to true
    */
   private boolean suppressNode = false;
+  
+  private boolean skipValidation = false;
 
   protected abstract EnumParamCache createEnumParamCache(User user, Map<String, String> dependedParamValues)
       throws WdkModelException, WdkUserException;
@@ -207,7 +209,11 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   public boolean isSkipValidation() {
-    return (displayType != null && displayType.equals(DISPLAY_TYPE_AHEAD));
+    return skipValidation;
+  }
+  
+  public void setSkipValidation(boolean skipValidation) {
+    this.skipValidation = skipValidation;
   }
 
   public void setQuote(boolean quote) {
