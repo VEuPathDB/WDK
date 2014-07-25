@@ -235,9 +235,8 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     String displayType = getDisplayType();
     if (displayType == null)
       displayType = "";
-    boolean typeAhead = displayType.equals(AbstractEnumParam.DISPLAY_TYPE_AHEAD);
     for (String term : originalValues) {
-      boolean valid = typeAhead || terms.containsKey(term);
+      boolean valid = terms.containsKey(term);
       values.put(term, valid);
     }
     return values;
