@@ -684,6 +684,10 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           " href='#'>Delete</a>";
     }
 
+    if (!jsonStep.isAnalyzable) {
+      analyze_step = '';
+    }
+
     var close_button = "<a title='" + x_popup +
         "' class='close_link' href='#' " +
         "'><img src=\"" + wdk.assetsUrl('/wdk/images/close.gif') + "\" /></a>";

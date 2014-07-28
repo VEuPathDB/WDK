@@ -615,9 +615,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
           if ($selectedStrategy.attr("id") !== oldSelectedStrategyId) {
             $selectedStrategy.trigger("strategyselect", [strategy]);
-          }
-
-          if ($selectedStep.attr("id") !== oldSelectedStepId) {
+            $selectedStep.trigger("stepselect", [step, isBoolean]);
+          } else if ($selectedStep.attr("id") !== oldSelectedStepId) {
             $selectedStep.trigger("stepselect", [step, isBoolean]);
           }
 
