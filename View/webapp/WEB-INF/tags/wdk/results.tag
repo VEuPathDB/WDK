@@ -94,7 +94,7 @@
         <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
       </li>
     </c:forEach>
-    <c:if test="${fn:length(question.stepAnalyses) > 0}">
+    <c:if test="${strategy ne null and fn:length(question.stepAnalyses) > 0}">
       <c:set var="newAnalyses">
         <c:forEach items="${question.stepAnalyses}" var="analysis">
           <c:set var="analysisCtx" value="${analysis.value}"/>

@@ -27,7 +27,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     });
     
     // if not a child of basket menu, configure analysis tabs
-    if (!$element.closest('#basket-menu').length) {
+    if ($element.has('#add-analysis').length) {
       wdk.stepAnalysis.configureAnalysisViews($element);
     }
     
