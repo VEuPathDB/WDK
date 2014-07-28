@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkIllegalArgumentException;
 import org.gusdb.wdk.model.WdkModel;
@@ -1539,7 +1540,7 @@ public class StepFactory {
   public void verifySameOwnerAndProject(Step step1, Step step2) throws WdkModelException {
     // check that users match
       if (step1.getUser().getUserId() != step2.getUser().getUserId()) {
-        throw new WdkIllegalArgumentException("Cannot align two steps with different " +
+        throw new WdkIllegalArgumentException(getVerificationPrefix() + "Cannot align two steps with different " +
             "owners.  Existing step " + step1.getStepId() + " has owner " +
             step1.getUser().getUserId() + " (" + step1.getUser().getEmail() +
             ")\n  Call made to align the following step (see stack below for " +
@@ -1550,7 +1551,7 @@ public class StepFactory {
       // check that projects both match current project
       String projectId = wdkModel.getProjectId();
       if (!step1.getProjectId().equals(projectId) || !step2.getProjectId().equals(projectId)) {
-        throw new WdkIllegalArgumentException("Cannot align two steps with different " +
+        throw new WdkIllegalArgumentException(getVerificationPrefix() + "Cannot align two steps with different " +
             "projects.  Project IDs don't match during alignment of two " +
             "steps!!\n  Currently loaded model has project " + projectId +
             ".\n  Existing step " + step1.getStepId() + " has project " +
@@ -1568,7 +1569,8 @@ public class StepFactory {
       step2 = getStepById(step2Id);
     }
     catch (Exception e) {
-      throw new WdkIllegalArgumentException("Unable to load step with ID " + step2Id + " to compare owners with another step.", e);
+      throw new WdkIllegalArgumentException(getVerificationPrefix() + "Unable to load step with ID " +
+          step2Id + " to compare owners with another step.", e);
     }
     verifySameOwnerAndProject(step1, step2);
   }
@@ -1576,7 +1578,7 @@ public class StepFactory {
   public void verifySameOwnerAndProject(Strategy strategy, Step step) throws WdkModelException {
     // check that users match
     if (strategy.getUser().getUserId() != step.getUser().getUserId()) {
-      throw new WdkIllegalArgumentException(
+      throw new WdkIllegalArgumentException(getVerificationPrefix() +
           "Cannot assign a root step to a strategy unless they have the same" +
           "owner.  Existing strategy " + strategy.getStrategyId() + " has" +
           "owner " + strategy.getUser().getUserId() + " (" +
@@ -1589,7 +1591,7 @@ public class StepFactory {
     // check that projects both match current project
     String projectId = wdkModel.getProjectId();
     if (!strategy.getProjectId().equals(projectId) || !step.getProjectId().equals(projectId)) {
-      throw new WdkIllegalArgumentException("Cannot assign a root step to a strategy " +
+      throw new WdkIllegalArgumentException(getVerificationPrefix() + "Cannot assign a root step to a strategy " +
           "unless they have the same project.  Project IDs don't match " +
           "during assignment of root step to strategy!!\n  Currently loaded " +
           "model has project " + projectId + ".\n  Root step to be assigned (" +
@@ -1597,5 +1599,11 @@ public class StepFactory {
           "Strategy being assigned step (" + strategy.getStrategyId() +
           ") has project " + strategy.getProjectId());
     }
+  }
+  
+  
+  private String getVerificationPrefix() {
+    return "[IP " + MDCUtil.getIpAddress() + " requested page from " +
+        MDCUtil.getRequestedDomain() + "] ";
   }
 }

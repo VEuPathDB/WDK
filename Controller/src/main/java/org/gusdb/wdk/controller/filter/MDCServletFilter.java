@@ -1,16 +1,24 @@
 package org.gusdb.wdk.controller.filter;
 
-import java.io.*;
-import javax.servlet.*;
-import javax.servlet.http.HttpSession;
+import java.io.IOException;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.log4j.MDC;
+import javax.servlet.http.HttpSession;
+
+import org.gusdb.wdk.model.MDCUtil;
 
 /**
  * A filter that adds (and removes) MDC variables for log4j.  Added to MDC by
  * this filter are:
  * 
  *   ipAddress: IP address of the sender of the current request
+ *   requestedDomain: domain at which this request was received
  *   sessionId: Java session ID of the current request
  * 
  * To use this filter, add the following to web.xml:
@@ -32,9 +40,6 @@ import org.apache.log4j.MDC;
  * @author mheiges
  */
 public class MDCServletFilter implements Filter {
-
-  public static final String LOG4J_IP_ADDRESS_KEY = "ipAddress";
-  public static final String LOG4J_SESSION_ID_KEY = "sessionId";
   
   @Override
   public void init(FilterConfig filterConfig) { }
@@ -46,26 +51,19 @@ public class MDCServletFilter implements Filter {
   public void doFilter(ServletRequest request, ServletResponse response,
       FilterChain chain) throws IOException, ServletException {
     try {
-
-      String ipAddress = request.getRemoteAddr();
-      if (ipAddress != null) {
-        MDC.put(LOG4J_IP_ADDRESS_KEY, ipAddress);
-      }
+      MDCUtil.setIpAddress(request.getRemoteAddr());
+      MDCUtil.setRequestedDomain(request.getServerName());
 
       HttpSession session = ((HttpServletRequest)request).getSession(false);
       if (session != null) {
-        String sessionId = session.getId();
-        if (sessionId != null) {
-          MDC.put(LOG4J_SESSION_ID_KEY, sessionId);
-        }
+        MDCUtil.setSessionId(session.getId());
       }
 
       // Continue processing the rest of the filter chain.
       chain.doFilter(request, response);
     }
     finally {
-      MDC.remove(LOG4J_IP_ADDRESS_KEY);
-      MDC.remove(LOG4J_SESSION_ID_KEY);
+      MDCUtil.clearValues();
     }
   }
 }
