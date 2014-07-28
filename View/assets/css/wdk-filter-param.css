@@ -87,12 +87,15 @@
   background-image: -o-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: linear-gradient(to left, #f6f6f6 0%, #fff 8px);
 }
+.field-list > ul {
+  margin-top: 1em;
+}
 .field-list input {
   width: 90%;
 }
 .field-list h4 {
   cursor: pointer;
-  margin: 1em 0 .5em 0;
+  margin: 1em 0 .5em 4px;
   border: 1px solid transparent;
 }
 .field-list h4:before {
