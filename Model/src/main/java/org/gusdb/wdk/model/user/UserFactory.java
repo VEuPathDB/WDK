@@ -660,9 +660,20 @@ public class UserFactory {
    * @param user
    */
   void saveUser(User user) throws WdkModelException {
-    int userId = user.getUserId();
-    // check if user exists in the database. if not, fail and ask to create
-    // the user first
+    // Two integrity checks:
+    // 1. Check if user exists in the database. if not, fail and ask to create the user first
+    try {
+      getUser(user.getUserId());
+    }
+    catch (WdkModelException e) {
+      throw new WdkModelException("Cannot update user; no user exists with ID " + user.getUserId(), e);
+    }
+    // 2. Check if another user exists with this email (PK will protect us but want better message)
+    User emailUser = getUserByEmail(user.getEmail());
+    if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
+      throw new WdkModelException("This email is already in use by another account.  Please choose another.");
+    }
+    
     PreparedStatement psUser = null;
     String sqlUser = "UPDATE " + userSchema + "users SET is_guest = ?, "
         + "last_active = ?, last_name = ?, first_name = ?, "
@@ -692,7 +703,7 @@ public class UserFactory {
       psUser.setString(14, user.getCountry());
       psUser.setString(15, user.getEmail());
       // psUser.setString(16, user.getOpenId());
-      psUser.setInt(16, userId);
+      psUser.setInt(16, user.getUserId());
       psUser.executeUpdate();
       QueryLogger.logEndStatementExecution(sqlUser, "wdk-user-update-user", start);
 

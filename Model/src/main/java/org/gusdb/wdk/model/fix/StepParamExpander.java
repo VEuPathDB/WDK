@@ -20,7 +20,12 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
+import org.gusdb.wdk.model.query.param.FilterParam;
+import org.gusdb.wdk.model.query.param.FilterParamHandler;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.StepFactory;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -74,6 +79,7 @@ public class StepParamExpander extends BaseCLI {
       int count = 0;
       while (resultSet.next()) {
         int stepId = resultSet.getInt("step_id");
+        String questionName = resultSet.getString("question_name");
         String clob = database.getPlatform().getClobData(resultSet, "display_params");
 
         if (clob == null)
@@ -82,7 +88,7 @@ public class StepParamExpander extends BaseCLI {
         if (!clob.startsWith("{"))
           continue;
 
-        List<String[]> values = parseClob(wdkModel, clob);
+        List<String[]> values = parseClob(wdkModel, questionName, clob);
 
         // insert the values
         for (String[] pair : values) {
@@ -142,7 +148,7 @@ public class StepParamExpander extends BaseCLI {
   private ResultSet prepareSelect(WdkModel wdkModel, Connection connection) throws SQLException {
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
     String schema = userDB.getUserSchema();
-    StringBuffer sql = new StringBuffer("SELECT s.step_id, s.display_params ");
+    StringBuffer sql = new StringBuffer("SELECT s.step_id, s.question_name, s.display_params ");
     sql.append(" FROM " + schema + "steps s, " + schema + "users u ");
     sql.append(" WHERE s.user_id = u.user_id AND u.is_guest = 0");
     sql.append("   AND s.step_id NOT IN (SELECT step_id FROM step_params) ");
@@ -157,13 +163,23 @@ public class StepParamExpander extends BaseCLI {
     return connection.prepareStatement(sql.toString());
   }
 
-  private List<String[]> parseClob(WdkModel wdkModel, String clob) throws WdkModelException, JSONException {
+  private List<String[]> parseClob(WdkModel wdkModel, String questionName, String clob) throws WdkModelException, JSONException {
     List<String[]> newValues = new ArrayList<String[]>();
     if (clob != null && clob.length() > 0) {
       Map<String, String> values = StepFactory.parseParamContent(new JSONObject(clob));
       for (String paramName : values.keySet()) {
         String value = values.get(paramName);
-        String[] terms = value.split(",");
+        String[] terms;
+        if (isFilterParam(wdkModel, questionName, paramName)) {
+          JSONObject jsValue = new JSONObject(value);
+          JSONArray jsTerms = jsValue.getJSONArray(FilterParamHandler.TERMS_KEY);
+          terms = new String[jsTerms.length()];
+          for (int i = 0; i < terms.length; i++) {
+            terms[i] = jsTerms.getString(i);
+          }
+        } else {
+          terms = value.split(",");
+        }
         Set<String> used = new HashSet<>();
         for (String term : terms) {
           if (term.length() > 4000)
@@ -179,6 +195,18 @@ public class StepParamExpander extends BaseCLI {
       }
     }
     return newValues;
+  }
+  
+  private boolean isFilterParam(WdkModel wdkModel, String questionName, String paramName) {
+    try {
+      Question question = wdkModel.getQuestion(questionName);
+      Map<String, Param> params = question.getParamMap();
+      Param param = params.get(paramName);
+      return (param != null && param instanceof FilterParam);
+    }
+    catch (WdkModelException ex) {
+      return false;
+    }
   }
 
   /*

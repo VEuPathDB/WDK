@@ -2,11 +2,10 @@
 wdk.util.namespace("window.wdk.strategy.error", function (ns, $) {
   "use strict";
 
-  var OOSMessage = "Sorry, there was a synchronization problem.\n" +
-      "We have updated the page with the latest information we have.\n" +
-      "Please re-do your last action.";
+  var OOSMessage = "Your last request was sent from a page that is out " +
+      "of date. Please reload the page and try again.";
   var SessionTimeOutMessage = "Your session may have timed out and all " +
-      "of your data has been lost.  By registering and logging in you can " +
+      "your data has been lost.  By registering and logging in you can " +
       "prevent this from happening in the future.";
 
   function ErrorHandler(evt, data, strategy, qform, name, fromHist) {

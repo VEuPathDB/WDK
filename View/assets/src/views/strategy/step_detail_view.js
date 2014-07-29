@@ -25,7 +25,7 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       'click.step .expand_step_link'        : 'expand',
       'click.step .collapse_step_link'      : 'collapse',
       'click.step .insert_step_link'        : 'insertStep',
-      'click.step .delete_step_link'        : 'delete',
+      'click.step .delete_step_link'        : 'destroy',
       'click.step .close_link'              : 'hideDetails',
       'click.step .weight-button'           : 'setWeight',
       'submit.step form[name=questionForm]' : 'updateOperation'
@@ -34,6 +34,11 @@ wdk.namespace('wdk.views.strategy', function(ns) {
     initialize: function(options) {
       var name = this.model.customName;
       var filteredName = "";
+
+      this.controller = options.controller;
+      this.strategy = options.strategy;
+      this.previousStep = options.previousStep;
+      this.isBoolean = options.isBoolean;
 
       if (this.model.filtered) {
         filteredName = "<span class='medium'><b>Applied Filter:&nbsp;</b>" +
@@ -63,11 +68,6 @@ wdk.namespace('wdk.views.strategy', function(ns) {
 
       this.name = name;
       this.collapsedName = collapsedName;
-
-      this.controller = options.controller;
-      this.strategy = options.strategy;
-      this.previousStep = options.previousStep;
-      this.isBoolean = options.isBoolean;
 
       this.render();
     },
@@ -131,11 +131,15 @@ wdk.namespace('wdk.views.strategy', function(ns) {
 
     // aka, revise
     edit: handleThenHide(function(e) {
-      wdk.step.Edit_Step(e.currentTarget, this.model.questionName,
-                         this.model.urlParams,
-                         this.model.isboolean,
-                         this.model.isTransform || this.model.frontId === 1,
-                         this.model.assignedWeight);
+      var step = this.model.frontId === 1 || this.isBoolean || this.model.istransform
+        ? this.model
+        : this.model.step;
+
+      wdk.step.Edit_Step(e.currentTarget, step.questionName,
+                         step.urlParams,
+                         step.isBoolean,
+                         step.isTransform || step.frontId === 1,
+                         step.assignedWeight);
     }),
 
     expand: handleThenHide(function(e) {
@@ -157,7 +161,7 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       wdk.step.Insert_Step(e.currentTarget, recordName);
     }),
 
-    delete: handleThenHide(function() {
+    destroy: handleThenHide(function() {
       if (this.model.frontId === 1 && this.strategy.nonTransformLength === 1) {
         this.controller.deleteStrategy(this.strategy.backId, false);
       } else {

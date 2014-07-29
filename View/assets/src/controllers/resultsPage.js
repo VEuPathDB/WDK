@@ -21,11 +21,13 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       load: function(event, ui) {
         addFeatureTooltipOnce($element);
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
+        wdk.basket.checkPageBasket();
+        wdk.util.setDraggable(ui.panel.find("div.attributesList"), ".dragHandle");
       }
     });
     
     // if not a child of basket menu, configure analysis tabs
-    if (!$element.closest('#basket-menu').length) {
+    if ($element.has('#add-analysis').length) {
       wdk.stepAnalysis.configureAnalysisViews($element);
     }
     
@@ -78,7 +80,9 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       var stratfId = step.parents(".diagram").attr("id");
       stratfId = stratfId.substring(stratfId.indexOf('_') + 1);
       strat = wdk.strategy.model.getStrategy(stratfId).backId;
-      step = wdk.strategy.model.getStep(stratfId, stepfId).back_step_Id;
+      step = step.hasClass('operation')
+        ? wdk.strategy.model.getStep(stratfId, stepfId).back_boolean_Id
+        : wdk.strategy.model.getStep(stratfId, stepfId).back_step_Id;
     } else {
       step = $(table).attr('step');
     }

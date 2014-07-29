@@ -373,12 +373,15 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
     try {
       RecordClassBean recordClass = step.getRecordClass();
+      QuestionBean question = step.getQuestion();
       jsStep.put("dataType", recordClass.getFullName());
       jsStep.put("displayType", recordClass.getDisplayName());
       jsStep.put("shortDisplayType", recordClass.getShortDisplayName());
       jsStep.put("displayTypePlural", recordClass.getDisplayNamePlural());
       jsStep.put("shortDisplayTypePlural",
           recordClass.getShortDisplayNamePlural());
+      jsStep.put("isAnalyzable", question.getStepAnalyses().size() > 0
+          ? true : false);
     } catch (WdkModelException ex) {
       jsStep.put("dataType", "unknown");
       jsStep.put("displayType", "unknown");
