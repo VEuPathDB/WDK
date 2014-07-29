@@ -1776,6 +1776,13 @@ table.dataTable thead th div.DataTables_sort_wrapper {
   padding-right: 0;
 }
 
+/*
+ * since we force the scrollbar for webkit, we need this hack
+ * to prevent the table from scrolling when it isn't necessary
+ */
+.dataTables_scrollBody > table {
+  width: 100% !important;
+}
 
 /* make datatable pagination buttons prettier */
 .dataTables_paginate .ui-button {
