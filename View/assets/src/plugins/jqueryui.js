@@ -1,4 +1,6 @@
-!(function($) {
+(function($) {
+  'use strict';
+
   // Override jQueryUI tabs defaults
   //
   // We add two pieces of functionality:
@@ -45,11 +47,11 @@
 
   $.extend($.ui.tabs.prototype.options, {
     cache: true,
-    beforeLoad: beforeLoad,
-    load: wdk.load
+    beforeLoad: beforeLoad
   });
 
   function beforeLoad(event, ui) {
+    /* jshint validthis:true */
     var $this = $(this);
     if (ui.tab.data("loaded") && $this.tabs("option", "cache")) {
       event.preventDefault();

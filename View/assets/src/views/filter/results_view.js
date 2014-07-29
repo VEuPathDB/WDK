@@ -17,7 +17,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     dataTable: null,
 
     constructor: function() {
-      Handlebars.registerHelper('property', function(key, context, options) {
+      Handlebars.registerHelper('property', function(key, context) {
         return context[key];
       });
       wdk.views.View.apply(this, arguments);
@@ -26,6 +26,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
     initialize: function(options) {
       this.defaultColumns = options.defaultColumns;
       this.initTableOnce = _.once(this._initTable.bind(this));
+
+      this.queueRender();
 
       this.listenTo(this.model.filteredData, 'reset', this.queueRender);
     },
@@ -39,7 +41,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
 
       this.dataTable.fnDraw();
-      this.resizeTable();
+      this.dataTable.fnAdjustColumnSizing(false);
 
       return this;
     },
@@ -54,12 +56,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.dataTable = this.$('.results-table')
         .wdkDataTable(tableConfig)
         .dataTable();
-
-      $(window).on('resize', _.debounce(this.queueResizeTable.bind(this), 100));
-    },
-
-    resizeTable: function() {
-      this.dataTable.fnAdjustColumnSizing(false);
     },
 
     queueRender: function() {
@@ -68,15 +64,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
       else {
         this._doRender = true;
-      }
-    },
-
-    queueResizeTable: function() {
-      if (this.$el.is(':visible')) {
-        this.resizeTable();
-      }
-      else {
-        this._doResizeTable = true;
       }
     },
 
@@ -102,10 +89,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
         this._doRender = false;
         this._doResizeTable = false;
       }
-      if (this._doResizeTable) {
-        this.resizeTable();
-        this._doResizeTable = false;
-      }
     },
 
     generateTableConfig: function() {
@@ -116,7 +99,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       columns.push({
         sClass: 'display',
         sTitle: 'Name',
-        mData: function(row, type, val) {
+        mData: function(row) {
           var html = _this.displayTemplate(row);
           return html;
         }

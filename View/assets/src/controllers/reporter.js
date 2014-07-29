@@ -9,20 +9,20 @@ wdk.util.namespace("wdk.reporter", function(ns, $) {
     $defaultFields = $form.find("[name='selectedFields'][value='default']");
 
     // attach handlers
-    $form.find("input[value='select all']").click(function(e) {
+    $form.find("input[value='select all']").click(function() {
       selectFields(1);
     });
-    $form.find("input[value='clear all']").click(function(e) {
+    $form.find("input[value='clear all']").click(function() {
       selectFields(0);
     });
-    $form.find("input[value='select inverse']").click(function(e) {
+    $form.find("input[value='select inverse']").click(function() {
       selectFields(-1);
     });
 
-    $defaultFields.click(function(e) {
+    $defaultFields.click(function() {
       defaultFields(this.checked);
     });
-    $fields.click(function(e) {
+    $fields.click(function() {
       defaultFields(false);
     });
   };
@@ -40,10 +40,10 @@ wdk.util.namespace("wdk.reporter", function(ns, $) {
 
   var selectFields = function(state) {
     $fields.each(function(idx, cb) {
-      cb.checked = state === -1 ? !cb.checked : Boolean(state)
+      cb.checked = state === -1 ? !cb.checked : Boolean(state);
     });
     $defaultFields.attr("checked", false);
-  }
+  };
 
   ns.init = init;
 

@@ -1,4 +1,5 @@
 wdk.namespace('wdk.models.filter', function(ns) {
+  'use strict';
 
   /**
    * Creates a string description of the filter.
@@ -36,11 +37,11 @@ wdk.namespace('wdk.models.filter', function(ns) {
     condition: function() {
       var condition;
       var attrs = this.attributes;
-      if (attrs.min != null && attrs.max != null) {
+      if (attrs.min !== null && attrs.max !== null) {
         condition = 'between ' + attrs.min + ' and ' + attrs.max;
-      } else if (attrs.min != null) {
+      } else if (attrs.min !== null) {
         condition = 'at least ' + attrs.min;
-      } else if (attrs.max != null) {
+      } else if (attrs.max !== null) {
         condition = 'at most ' + attrs.max;
       }
       return condition;

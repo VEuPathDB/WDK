@@ -14,10 +14,10 @@ wdk.namespace('wdk.core.c_properties', function(ns) {
         if (arguments.length != 1) {
           throw new Error('Object.create implementation only accepts one parameter.');
         }
-        F.prototype = o
-        return new F()
-      }
-    })()
+        F.prototype = o;
+        return new F();
+      };
+    })();
   }
 
   /**

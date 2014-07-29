@@ -10,7 +10,7 @@
         <h3>Analyze your ${question.recordClass.displayName} results with a tool below.</h3>
 
         <div class="sa-selector-container">
-          <ul class="ui-helper-clearfix">
+          <ul>
             <c:forEach items="${question.stepAnalyses}" var="analysisEntry">
               <c:set var="analysis" value="${analysisEntry.value}"/>
               <c:set var="style">

@@ -66,6 +66,8 @@ module.exports = {
     'src/views/filter/filter_expanded_view.js',
     'src/views/filter/filter_view.js',
 
+    'src/views/strategy/**/*.js',
+
     'src/controllers/**/*.js',
 
     'src/app.js'

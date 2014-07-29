@@ -6,6 +6,7 @@
  *     a specified time frame. The timeframe is 0 by default.
  */
 wdk.namespace('wdk.core', function(ns) {
+  'use strict';
 
   var RunLoop = wdk.core.BaseObject.extend({
 

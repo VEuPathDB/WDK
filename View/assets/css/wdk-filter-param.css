@@ -1,5 +1,6 @@
 .filter-param h3 {
   margin: auto;
+  margin-bottom: 1em;
 }
 .filter-param .muted {
   color: #9f9f9f;
@@ -87,12 +88,15 @@
   background-image: -o-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: linear-gradient(to left, #f6f6f6 0%, #fff 8px);
 }
+.field-list > ul {
+  margin-top: 1em;
+}
 .field-list input {
   width: 90%;
 }
 .field-list h4 {
   cursor: pointer;
-  margin: 1em 0 .5em 0;
+  margin: 1em 0 .5em 4px;
   border: 1px solid transparent;
 }
 .field-list h4:before {
@@ -113,6 +117,9 @@
 }
 .field-list > ul ul {
   padding-left: .8em;
+}
+.field-list ul li {
+  margin: 0;
 }
 .field-list li a {
   display: block;
@@ -208,7 +215,7 @@
   background-color: #f6f6f6;
 }
 .membership-filter .member td {
-  padding: 0 .4em;
+  padding: .2em .4em;
 }
 .membership-filter .member td:first-child {
   width: 2em;

@@ -1,5 +1,16 @@
+/* jshint ignore:start */
+
+// FIXME jshint errors
+
 window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   "use strict";
+
+  var controller = wdk.strategy.controller,
+      StrategyView = wdk.views.strategy.StrategyView,
+      StepBoxView = wdk.views.strategy.StepBoxView,
+      StepDetailView = wdk.views.strategy.StepDetailView,
+      preventEvent = wdk.fn.preventEvent,
+      killEvent = wdk.fn.killEvent;
 
   // temp reference to wdk.strategy.model
   var modelNS = wdk.strategy.model;
@@ -36,6 +47,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   //Simple Steps
   var ss_rename_popup = "Rename this search";
   var ss_view_popup = "View the results of this search in the Results area below";
+  var ss_analyze_popup = "Analyze the results of this search in the Results area below";
   var ss_edit_popup = "Revise the parameters of this search and/or its " +
       "combine operation";
   var ss_expand_popup = "Expand this step in a new panel to add nested steps." +
@@ -47,6 +59,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   var sub_rename_popup = "Rename this nested strategy";             
   var sub_view_popup = "View the results of this nested strategy in the " +
       "Results area below";
+  var sub_analyze_popup = "Analyze the results of this nested strategy in " +
+      "the Results area below";
   var sub_edit_popup = "Open this nested step to revise";
   var sub_expand_popup = "Open into a new panel to add or edit nested steps";
   var sub_collapse_popup = "Convert a single-step nested strategy back to a " +
@@ -66,6 +80,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
       if (strat.isDisplay) {
         var div_strat = document.createElement("div");
+
         div_strat.setAttribute("data-step-id", strat.JSON.steps[strat.JSON.steps.length].id);
         div_strat.setAttribute("data-saved", strat.JSON.saved);
         div_strat.setAttribute("data-name", strat.name||"");
@@ -87,8 +102,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         var close_span = document.createElement('span');
         $(close_span)
             .addClass("closeStrategy")
-            .html("<a onclick='wdk.strategy.controller.closeStrategy(" +
-                strat.frontId + ")' href='javascript:void(0)'>"+
+            .html("<a href='#'>"+
                 "<img alt='Click here to close the strategy (it will only be " +
                 "removed from the display)' src='" + wdk.assetsUrl('/wdk/images/close.gif') + "'" +
                 "title='Click here to close the strategy (you can open it from the All tab)'/></a>");
@@ -112,6 +126,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
             .attr("href","javascript:wdk.addStepPopup.openFilter('" + dType + "'," +
                 strat.frontId + "," + lsn + ",true)")
             .attr("onclick","this.blur()")
+            // FIXME CSS
             .attr("onmouseover","jQuery(this).find('span').css('color','pink')")
             .attr("onmouseout","jQuery(this).find('span').css('color','white')")
             .addClass("filter_link redbutton step-elem")
@@ -133,6 +148,13 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         }
 
         has_invalid = false;
+
+        var strategyView = new StrategyView({
+          el: div_strat,
+          model: strat,
+          controller: controller
+        });
+
         return div_strat;
       }
     }
@@ -155,10 +177,13 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   // based on the type of step -- future work
   function createSteps(strat,div_strat){
     var zIndex = 80;
+    var stepBoxViews = [];
+    var stepDetailView;
     var stepdiv;
     var cStp;
     var jsonStep;
     var prevJsonStep;
+
     for (var ind=0; ind < strat.Steps.length; ind++) {  //cStp in strat.Steps
       cStp = strat.getStep(ind+1,true);
       jsonStep = strat.JSON.steps[cStp.frontId];
@@ -171,6 +196,27 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         //Create Single Layered Steps like First Step or Transforms
         stepdiv = singleStep(cStp, prevJsonStep, jsonStep,strat.frontId);
       }
+
+      $(stepdiv).find('> div').each(function(index, el) {
+        stepDetailView = new StepDetailView({
+          el: $(el).find('.crumb_details'),
+          model: jsonStep,
+          controller: controller,
+          strategy: strat,
+          isBoolean: index === 1,
+          previousStep: prevJsonStep
+        });
+
+        stepBoxViews.push(new StepBoxView({
+          el: el,
+          model: jsonStep,
+          controller: controller,
+          strategy: strat,
+          isBoolean: index === 1,
+          previousStep: prevJsonStep,
+          stepDetailView: stepDetailView
+        }));
+      });
 
       $(stepdiv).css({'z-index' : zIndex});
       $(div_strat).append(stepdiv);
@@ -192,7 +238,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     }
 
     if (jsonStep.isValid) {
-      bool_link = "wdk.strategy.controller.NewResults(" + sid + "," +
+      bool_link = "wdk.strategy.controller.newResults(" + sid + "," +
           modelstep.frontId + ", true)";
     }
 
@@ -204,15 +250,15 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var displayType = (jsonStep.results > 1) ? jsonStep.shortDisplayTypePlural : jsonStep.shortDisplayType;
     
     var boolinner = ""+
-        "<div id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonStep.operation + "' class='divlink step-elem' "+
-        "     title=\""+stepBoxTooltip(jsonStep.filterName)+"\" href='javascript:void(0)' style='cursor:pointer' onclick='" + bool_link + "'> " +
+        "<div id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonStep.operation + "' class='divlink results_link step-elem' "+
+        "     title=\""+stepBoxTooltip(jsonStep.filterName)+"\" href='javascript:void(0)' style='cursor:pointer'> " +
         //"     onmouseover=\"jQuery(this).find('.edit-icon').css('display','inline')\" onmouseout=\"jQuery(this).find('.edit-icon').css('display','inline')\">" +
         "  <img style='width:50px;height:26px' src='" + wdk.assetsUrl('/wdk/images/transparent1.gif') + "'>" +
         "  <div style='position:absolute;top:-9px;right:10px;width:19px;height:19px;'></div>"+
-        "  <a href='javascript:void(0)' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px' " +
-        "     onclick='!event.stopPropagation ? event.cancelBubble = true : event.stopPropagation(); wdk.step.showDetails(this)'>" + getEditImage('boolean')+"</a><br/>"+
+        "  <a href='#' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px' " +
+        "     >" + getEditImage('boolean')+"</a><br/>"+
         "  <div class='crumb_details'></div>" +
-        "  <h6 class='resultCount' style='top:1px'>" +
+        "  <h6 class='resultCount'>" +
         "    <span class='operation'>" + jsonStep.results + "&nbsp;" + displayType + "</span>" +
         "  </h6>" +
            filterImg +
@@ -259,10 +305,9 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     var childinner = ""+
     "    <div style='cursor:pointer' title=\""+stepBoxTooltip(childStp.filterName)+"\" class='results_link crumb_name divlink step-elem' "+
-      "         href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'>"+
-	//"         onmouseover=\"jQuery(this).find('.edit-icon').css('display','inline')\" onmouseout=\"jQuery(this).find('.edit-icon').css('display','inline')\">"+
-      "        <a href='javascript:void(0)'"+
-      "           class='edit-icon step-elem' onclick='!event.stopPropagation ? event.cancelBubble = true : event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px'>"+
+      "         href='#'>"+
+      "        <a href='#'"+
+      "           class='edit-icon step-elem' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px'>"+
       getEditImage('top')+"</a>"+
       "      <h4>"+
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
@@ -373,11 +418,9 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     //var editIconWinOffset = modelstep.isTransform ? "right:0px;top:-4px" : "right:-8px;top:-8px";
     var inner = ""+
       "    <div style='cursor:pointer' title=\""+stepBoxTooltip(jsonStep.filterName)+"\" class='results_link crumb_name divlink step-elem' "+
-      "         href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'> "+
-      //"         onmouseover=\"jQuery(this).find('.edit-icon img').attr('src','wdk/images/edit-step-word.png')\" onmouseout=\"jQuery(this).find('.edit-icon img').attr('src','wdk/images/edit-step.png')\">"+
-      //"      <div style='position:absolute;"+editIconWinOffset+";width:19px;height:19px;'></div>"+
-      "      <a href='javascript:void(0)' class='edit-icon step-elem'"+
-      "           onclick='!event.stopPropagation ? event.cancelBubble = true : event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' " +
+      "         href='#'> "+
+      "      <a href='#' class='edit-icon step-elem'"+
+      "           id='stepId_" + modelstep.frontId + "' " +
       "           style='display:inline;position:absolute;"+editIconOffset+"'>"+getEditImage(boxType)+"</a>"+
       "      <h4>"+
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
@@ -439,6 +482,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   function createDetails(modelstep, prevjsonstep, jsonStep, sid) {
     var strat = modelNS.getStrategy(sid);
     var detail_div = document.createElement('div');
+    detail_div.id = 'crumb_details_' + jsonStep.id;
     $(detail_div).addClass("crumb_details").attr("disp","0");
     $(detail_div).attr("style","text-align:center");
 
@@ -489,9 +533,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     if (jsonStep.isboolean && !jsonStep.isCollapsed) {
       var url = "wizard.do?action=revise&step=" + modelstep.back_boolean_Id + "&";
       var oform = "<form id='form_question' class='clear' " +
-          "enctype='multipart/form-data' action='wizard.do' method='post' " +
-          "name='questionForm' onsubmit=\"wdk.addStepPopup.callWizard('" + url +
-          "',this,null,null,'submit', " + strat.frontId + ");\">";
+          "enctype='multipart/form-data' name='questionForm'>";
       var cform = "</form>";
       var stage_input = "<input type='hidden' id='stage' value='process_boolean'/>";
       params_table = "<div class='filter operators'>" +
@@ -531,52 +573,41 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     if (jsonStep.isCollapsed) {
       // substrategy
       var rename_step = "<a title='" + sub_rename_popup +
-          "' class='rename_step_link' href='javascript:void(0)' " +
-          "onclick='wdk.step.Rename_Step(this, " + sid + "," + modelstep.frontId +
-          ");wdk.step.hideDetails(this)'>Rename</a>&nbsp;|&nbsp;";
+          "' class='rename_step_link' href='#'>Rename</a>&nbsp;|&nbsp;";
 
       var view_step = "<a title='" + sub_view_popup + "' " +
-          "class='view_step_link' onclick='wdk.strategy.controller.NewResults(" +
-          sid + "," + modelstep.frontId + ");wdk.step.hideDetails(this)' " +
-          "href='javascript:void(0)'>View</a>&nbsp;|&nbsp;";
+          "class='view_step_link' href='#'>View</a>&nbsp;|&nbsp;";
+
+      var analyze_step = "<a title='" + sub_analyze_popup + "' " +
+          "class='analyze_step_link' href='#'>Analyze</a>&nbsp;|&nbsp;";
+
       var disab = "";
-      var ocExp = "onclick='wdk.strategy.controller.ExpandStep(this," + sid +
-          "," + modelstep.frontId + ",\"" + collapsedName +
-          "\");wdk.step.hideDetails(this)'";
       var oM = "Show Nested Strategy";
       var moExp = sub_expand_popup;
       var moEdit = sub_edit_popup;
 
       if (jsonStep.strategy.order > 0) {
         disab = "disabled";
-        ocExp = "";
         oM = "Already Open Below...";
         moExp = sub_edit_expand_openned;
         moEdit = sub_edit_expand_openned;
       }
 
       var collapseDisabled = "";
-      var ocCol = "onclick='wdk.strategy.controller.ExpandStep(this," + sid +
-          "," + modelstep.frontId + ",\"" + collapsedName +
-          "\", true);wdk.step.hideDetails(this)'";
 
       if (!jsonStep.isUncollapsible) {
         collapseDisabled = "disabled";
-        ocCol = "";
       }
       
-      var edit_step = "<a title='" + moEdit + "' class='edit_step_link " +
-          disab + "' href='javascript:void(0)' " + ocExp +
-          ">Revise</a>&nbsp;|&nbsp;";
+      var edit_step = "<a title='" + moEdit + "' class='expand_step_link " +
+          disab + "' href='#'>Revise</a>&nbsp;|&nbsp;";
       
       var collapse_step = "<a title='" + sub_collapse_popup +
           "' class='collapse_step_link " + collapseDisabled +
-          "' href='javascript:void(0)' " + ocCol +
-          ">Unnest Strategy</a>&nbsp;|&nbsp;";
+          "' href='#'>Unnest Strategy</a>&nbsp;|&nbsp;";
       
       var expand_step = "<a title='" + moExp + "' class='expand_step_link " +
-          disab + "' href='javascript:void(0)' " + ocExp + ">" + oM +
-          "</a>&nbsp;|&nbsp;";
+          disab + "' href='#'>" + oM + "</a>&nbsp;|&nbsp;";
 
     } else {
       // simple step
@@ -587,15 +618,14 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
             "Rename</a>&nbsp;|&nbsp;";
       } else {
         rename_step = "<a title='" + ss_rename_popup +
-            "' class='rename_step_link' href='javascript:void(0)' " +
-            "onclick='wdk.step.Rename_Step(this, " + sid + "," + modelstep.frontId +
-            ");wdk.step.hideDetails(this)'>Rename</a>&nbsp;|&nbsp;";
+            "' class='rename_step_link' href='#'>Rename</a>&nbsp;|&nbsp;";
       }
 
       view_step = "<a title='" + ss_view_popup + "' class='view_step_link' " +
-          "onclick='wdk.strategy.controller.NewResults(" + sid + "," +
-          modelstep.frontId + "," + jsonStep.isboolean +
-          ");wdk.step.hideDetails(this)' href='javascript:void(0)'>View</a>&nbsp;|&nbsp;";
+          "href='#'>View</a>&nbsp;|&nbsp;";
+
+      analyze_step = "<a title='" + ss_analyze_popup + "' " +
+          "class='analyze_step_link' href='#'>Analyze</a>&nbsp;|&nbsp;";
 
       if (modelstep.isTransform || modelstep.frontId == 1) {
         hideOp = true;
@@ -609,9 +639,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       var parms = jsonStep.urlParams;
 
       edit_step = "<a title='" + ss_edit_popup + "'  class='edit_step_link " +
-          disab + "' href='javascript:void(0)' onclick='wdk.step.Edit_Step(this,\"" +
-          questionName + "\",\"" + parms + "\"," + hideQu + "," + hideOp + "," +
-          jsonStep.assignedWeight + ");' id='" + sid + "|" + jsonStep.id + "|" +
+          disab + "' href='#' id='" + sid + "|" + jsonStep.id + "|" +
           modelstep.operation + "'>Revise</a>&nbsp;|&nbsp;";
 
       if (modelstep.frontId == 1 || modelstep.isTransform ||
@@ -621,10 +649,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
             "Make Nested Strategy</a>&nbsp;|&nbsp;";
       } else {
         expand_step = "<a title='" + ss_expand_popup +
-            "' class='expand_step_link' href='javascript:void(0)' " +
-            "onclick='wdk.strategy.controller.ExpandStep(this," + sid + "," +
-            modelstep.frontId + ",\"" + collapsedName +
-            "\");wdk.step.hideDetails(this)'>Make Nested Strategy</a>&nbsp;|&nbsp;";
+            "' class='expand_step_link' href='#' " +
+            ">Make Nested Strategy</a>&nbsp;|&nbsp;";
       }
       
       collapse_step = "";
@@ -633,8 +659,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         prevjsonstep.dataType;      
     var insert_step = "<a title='" + insert_popup +
         "' class='insert_step_link' id='" + sid + "|" + parentid +
-        "' href='javascript:void(0)' onclick='wdk.step.Insert_Step(this,\"" +
-        insertRecName + "\");'>Insert Step Before</a>&nbsp;|&nbsp;";
+        "' href='#'>Insert Step Before</a>&nbsp;|&nbsp;";
     var customMenu = "";
 
     // this code (function in wdkCustomization/js/customStrategy.js)  adds the ortholog link 
@@ -653,23 +678,23 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     if (modelstep.frontId == 1 && strat.nonTransformLength == 1) {
       var delete_step = "<a title='" + delete_popup +
-          "' class='delete_step_link' href='javascript:void(0)' " +
-          "onclick=\"wdk.strategy.controller.deleteStrategy('" + strat.backId +
-          "',false);wdk.step.hideDetails(this)\">Delete</a>";
+          "' class='delete_step_link' href='#'>Delete</a>";
     } else {
       delete_step = "<a title='" + delete_popup + "' class='delete_step_link'" +
-          " href='javascript:void(0)' " +
-          "onclick='wdk.strategy.controller.DeleteStep(" + sid + "," +
-          modelstep.frontId + ");wdk.step.hideDetails(this)'>Delete</a>";
+          " href='#'>Delete</a>";
+    }
+
+    if (!jsonStep.isAnalyzable) {
+      analyze_step = '';
     }
 
     var close_button = "<a title='" + x_popup +
-        "' class='close_link' href='javascript:void(0)' " +
-        "onclick='wdk.step.hideDetails(this)'><img src=\"" + wdk.assetsUrl('/wdk/images/close.gif') + "\" /></a>";
+        "' class='close_link' href='#' " +
+        "'><img src=\"" + wdk.assetsUrl('/wdk/images/close.gif') + "\" /></a>";
 
     var inner = ""+  
         "    <div class='crumb_menu'>" + close_button + rename_step +
-        view_step + edit_step + expand_step + collapse_step + insert_step +
+        view_step + analyze_step + edit_step + expand_step + collapse_step + insert_step +
         customMenu + delete_step + "    </div>"+ name +
         "    <table></table><hr class='clear' />" + filteredName +
         "    <p><b>Results:&nbsp;</b>" + jsonStep.results + "&nbsp;" +
@@ -703,14 +728,12 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var set_weight = "<div name='All_weighting' class='param-group' " +
         "type='ShowHide'><div class='group-title'> "+
         "<img style='position:relative;top:5px;'  class='group-handle' " +
-        "src='" + wdk.assetsUrl('/wdk/images/plus.gif') + "' onclick=''/>Give this search a weight</div>" +
+        "src='" + wdk.assetsUrl('/wdk/images/plus.gif') + "'/>Give this search a weight</div>" +
         "<div class='group-detail' style='display:none;text-align:center'>"+
         "<div class='group-description'>"+
         "<p><input type='text' name='weight' value='" +
         jsonStep.assignedWeight + "'>  </p> "+
-        "<input type='button' value='Assign' " +
-        "onclick='wdk.strategy.controller.SetWeight(this, " + sid + "," +
-        modelstep.frontId + ");wdk.step.hideDetails(this)' >"+
+        "<input class='weight-button' type='button' value='Assign'>"+
         "<p>Optionally give this search a 'weight' (for example 10, 200, -50)." +
         "<br>In a search strategy, unions and intersects will sum the weights," +
         "giving higher scores to items found in multiple searches.</p>"+
@@ -809,21 +832,14 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     if (json.saved) {
       share = "<a id='share_" + id + "' title='Email this URL to your best friend.' " +
-          "href=\"javascript:void(0)\" " +
-          "onclick=\"wdk.history.showHistShare(this, " + id + ", '" + exportURL + "')\">" +
-          "<b style='font-size:120%'>" + "Share</b></a>";
+          "href=\"#share\"><b style='font-size:120%'>Share</b></a>";
     } else if (wdk.user.isGuest()) {
       share = "<a id='share_" + id + "' title='Please LOGIN so you can SAVE " +
-          "and then SHARE (email) your strategy.' href='javascript:void(0)' " +
-          "onclick=\"wdk.user.login();\">" +
+          "and then SHARE (email) your strategy.' href='#share'>" +
           "<b style='font-size:120%'>Share</b></a>";
     } else {
       share = "<a id='share_" + id + "' title='SAVE this strategy so you can " +
-          "SHARE it (email its URL).' href='javascript:void(0)' " +
-          "onclick=\"if (confirm('Before you can share your strategy, " +
-          "you need to save it. Would you like to do that now?')) { " +
-          "wdk.history.showUpdateDialog(this, true, true) }\"><b style='font-size:120%'>" +
-          "Share</b></a>";
+          "SHARE it (email its URL).' href='#share'><b style='font-size:120%'>Share</b></a>";
     }
 
     var save = "";
@@ -833,12 +849,12 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     if (wdk.user.isGuest()) {
       save = "<a id='save_" + id + "' title='Please LOGIN so you can SAVE " +
           "(make a snapshot) your strategy.' class='save_strat_link' " +
-          "href='javascript:void(0)' onclick=\"wdk.user.login();\"><b style='font-size:120%'>" +
+          "href='#save'><b style='font-size:120%'>" +
           sTitle + "</b></a>";
     } else {
       save = "<a id='save_" + id + "' title='A saved strategy is like a " +
           "snapshot, it cannot be changed.' class='save_strat_link' " +
-          "href='javascript:void(0)' onclick=\"wdk.history.showUpdateDialog(this, true, false)\">" +
+          "href='#save'>" +
           "<b style='font-size:120%'>" + sTitle + "</b></a>";
     }
     // save += "<div id='save_strat_div_" + id + "' class='modal_div save_strat'" +
@@ -860,31 +876,22 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     //     "</form>"+
     //     "</div>";
     var copy = "<a title='Create a copy of the strategy.' " +
-        "class='copy_strat_link' href='javascript:void(0)' " +
-        "onclick=\"wdk.strategy.controller.copyStrategy('" + id + "')\">" +
+        "class='copy_strat_link' href='#copy'>" +
         "<b style='font-size:120%'>Duplicate</b></a>";
 
     var rename = "<a id='rename_" + strat.frontId +
-        "' href='javascript:void(0)' title='Click to rename.' " +
-        "onclick=\"$(this).parents('.strategy-data').find('.strategy-name').editable('show')\">" +
+        "' href='#rename' title='Click to rename.'>" +
         "<b style='font-size:120%'>Rename</b></a>";
 
     var deleteStrat = "<a id='delete_" + strat.frontId +
-        "' href='javascript:void(0)' title='Click to delete.' " +
-        "onclick=\"wdk.strategy.controller.deleteStrategy('" + id +
-        "', false)\"><b style='font-size:120%'>Delete</b></a>";
-
-    var descriptionAction = strat.description ?
-      'wdk.history.showDescriptionDialog(this, ' + !strat.isSaved + ', false, ' + strat.isSaved + ');' :
-      'wdk.history.showUpdateDialog(this, ' + !strat.isSaved + ', false);';
-
+        "' href='#delete' title='Click to delete.' " +
+        "><b style='font-size:120%'>Delete</b></a>";
 
     var descriptionText = strat.description ? 'View Description' : 'Add Description';
 
     var description = '<a id="description_' + strat.frontId +
-      '" href="javascript:void(0)" title="View description" ' +
-      'onclick="' + descriptionAction + '"><b style="font-size:120%;">' +
-      descriptionText + '</b></a>';
+      '" href="#describe" title="View description" ' +
+      '><b style="font-size:120%;">' + descriptionText + '</b></a>';
 
     /* FIXME: First attempt at adding 'make public' link on right side of strategy display;
      *        Not called and does not work!  See also publicStrats.js, search 'togglePublicFromLink'
@@ -983,8 +990,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     inval.setAttribute("class","invalidStep");
     var i = document.createElement('img');
     $(i).attr("src",wdk.assetsUrl("/wdk/images/InvalidStep.png"))
-        .attr("style","height:36;width:98;cursor:pointer")
-        .attr("onclick","wdk.strategy.view.reviseInvalidSteps(this)");
+        .attr("style","height:36;width:98;cursor:pointer");
+        //.attr("onclick","wdk.strategy.view.reviseInvalidSteps(this)");
     $(inval).append(i);
     return inval;
   }

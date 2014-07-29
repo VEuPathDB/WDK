@@ -9,7 +9,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
       // attach onclick event using jquery instead of onclick attr
       // Moved from this.displayFilters since events were being registered twice.
       // We'll use delegation instead.
-      $('.Workspace').on('click', 'a.link-url', function changeFilter(e) {
+      $('.Workspace').on('click', 'a.link-url', function changeFilter() {
         var $this = $(this);
         var strategyId = $this.attr('strId');
         var stepId = $this.attr('stpId');
@@ -58,7 +58,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
           var left = position.left;
           var winMinusLeft = winWidth - left;
           if ( winMinusLeft < (popupWidth + 40) ) {
-            left = left - (popupWidth - winMinusLeft + 40);	
+            left = left - (popupWidth - winMinusLeft + 40);  
             detail.css("left", left + "px");
           }
           detail.css("width", popupWidth + "px");
@@ -72,6 +72,23 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
     };
 
     this.loadFilterCount = function() {
+      $(".result-filters").each(function() {
+        var layouts = $(this);
+        if (layouts.data("loaded") == "true") return;
+        
+        var countUrl = layouts.data("count-url");
+        $.getJSON(countUrl, function(data) {
+          layouts.find(".link-url").each(function() {
+            if (!$(this).hasClass("loaded")) {
+              var filter = $(this).data("filter");
+              var count = data[filter];
+              $(this).html((count == -1 || count === undefined) ? "error" : count);
+            }
+          });
+        });
+      });
+      
+    /*
       var links = $('.filter-instance .link-url[countref]');
 
       // TODO generalize the following into a reusable function
@@ -111,6 +128,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
             }
           })
         }, $.Deferred().resolve());
+    */
     };
   }
 

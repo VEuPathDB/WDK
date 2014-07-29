@@ -1,8 +1,8 @@
 #dyk-box,#dyk-shadow{
 	display: none;
 	position:absolute;
-	width:417px;
-	height:87px;
+	width:467px;
+	height:107px; /*dyk.js also contains these values */
 	top:200px;
 	left:313px;
 	z-index:98;
@@ -50,6 +50,8 @@ div#dyk-box ul.tip-box{
 	padding:2px 0 2px;
 	position:absolute;
 	width:100%;
+  margin: 0;
+  list-style: none;
 }
 
 div#dyk-box ul.tip-box li{

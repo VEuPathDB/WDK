@@ -69,7 +69,6 @@
       .tabs({
           active : currentTab,
           load: function(event, ui) {
-            wdk.event.publish("recordload", ui.panel);
             wdk.load();
           }
       });

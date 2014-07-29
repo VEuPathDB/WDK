@@ -31,8 +31,6 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
       det2.addClass("jqDnR");
       det2.find(".crumb_menu").addClass("dragHandle");
       wdk.util.setDraggable(det2, ".dragHandle");
-      var l = 361;
-      var t = 145;
       det2.appendTo("body");
       det2.css({
         top: Math.max($(window).scrollTop() + 50,
@@ -55,15 +53,16 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
     }
   }
 
-  function hideDetails(det) {
+  function hideDetails() {
     
-    if (ns.openDetail != null) ns.openDetail.attr("disp","0");
-    ns.openDetail = null;
-    
-    $("body > div.crumb_details").each(function() {
-      $(this).remove();
-    });
-    $("a.crumb_name img").attr("src",wdk.assetsUrl("/wdk/images/plus.gif"));
+    // if (ns.openDetail) ns.openDetail.attr("disp","0");
+    // ns.openDetail = null;
+    // 
+    // $("body > div.crumb_details").each(function() {
+    //   $(this).remove();
+    // });
+    // $("a.crumb_name img").attr("src",wdk.assetsUrl("/wdk/images/plus.gif"));
+    $('.crumb_details').hide();
   }
 
   function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight) {
@@ -101,13 +100,13 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
     // assign the revise id and operation
     url += "&step=" + reviseId + "&operation=" + operation;
 
-    if ($("#qf_content").length == 0) {
+    if ($("#qf_content").length === 0) {
       if (assignedWeight) {
         url += "&weight=" + assignedWeight;
       }
     }
 
-    wdk.addStepPopup.callWizard(url,ele,null,null,'next')
+    wdk.addStepPopup.callWizard(url,ele,null,null,'next');
     $(this).parent().parent().hide();
   }
 
@@ -126,7 +125,7 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
     var input = document.createElement('input');
 
     $(input).attr("id","new_name_box").attr("value",old_name).blur(function() {
-      wdk.strategy.controller.RenameStep(this,strat,stpId)
+      wdk.strategy.controller.RenameStep(this,strat,stpId);
     }).focus(function() {
       this.select();
     }).keypress(function(event) {

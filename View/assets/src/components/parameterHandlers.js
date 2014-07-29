@@ -24,66 +24,61 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   //==============================================================================
   function initDependentParamHandlers(element) {
+    // jshint loopfunc:true
     var dependedParams = {};
 
-    element.find('div.dependentParam').each(function(i, node) {
+    element.find('div.dependentParam').each(function(index, node) {
       var $node = $(node);
-      $node.find('input, select').prop('disabled', true);
       var name = $node.attr('name');
+      $node.find('input, select').prop('disabled', true);
       // TODO Use a space-delimited list. This is more canonical for multiple values for an attribute
       // and will allow for more concise jQuery selectors: $('[dependson~="param-name"]')
       //
       // the dependson may contain a comma separated list of param names the current param depends on
       var dependedNames = $node.attr('dependson').split(",");
       for (var i=0; i < dependedNames.length; i++) {
-          var dependedName = dependedNames[i];
-          var dependentList = dependedParams[dependedName] ? dependedParams[dependedName] : [];
-          dependentList.push(name);
-          dependedParams[dependedName] = dependentList;
+        var dependedName = dependedNames[i];
+        var dependentList = dependedParams[dependedName] ? dependedParams[dependedName] : [];
+        dependentList.push(name);
+        dependedParams[dependedName] = dependentList;
       }
 
       $node.find('input, select').prop('disabled',false);
     });
 
-      // register change event to dependedParam only once
-      for (var dependedName in dependedParams) {
-          var dependedParam = $("div.param[name='" + dependedName + "']");
-          var dependentDeferreds = [];
-          dependedParam.change(function(e) {
-            e.stopPropagation();
-              var dependedName = $(this).attr("name");
-              // set ready flag to false on all its dependent params
-              var dependentList = dependedParams[dependedName];
-              for (var i = 0; i < dependentList.length; i++) {
-                element.find(".dependentParam[name='" + dependentList[i] + "']")
-                  .find("input, select").prop("disabled", true);
-              }
-              // fire update event
-              var changed = false;
-              for (var i = 0; i <  dependentList.length; i++) {
-                  var dependentName = dependentList[i];
-                  var result =  updateDependentParam(dependentName, element);
-                  if (result) {
-                    // result.then(function() {
-                    //   wdk.event.publish("questionchange");
-                    //   dependedParam.parents("form").change();
-                    // });
-
-                    // stash promises returned by $.ajax
-                    dependentDeferreds.push(result);
-                  }
-              }
-              // trigger form.change only when all deferreds are resolved
-              $.when.apply($, dependentDeferreds).then(function() {
-                wdk.event.publish("questionchange");
-                dependedParam.closest("form").change();
-              });
-          });
-
-          if (dependedParam.is('[data-type="type-ahead"]').length > 0) {
-              dependedParam.change();
+    // register change event to dependedParam only once
+    for (var dependedName in dependedParams) {
+      var dependedParam = $("div.param[name='" + dependedName + "']");
+      var dependentDeferreds = [];
+      dependedParam.change(function(e) {
+        e.stopPropagation();
+        var dependedName = $(this).attr("name");
+        // set ready flag to false on all its dependent params
+        var dependentList = dependedParams[dependedName];
+        var i;
+        for (i = 0; i < dependentList.length; i++) {
+          element.find(".dependentParam[name='" + dependentList[i] + "']")
+          .find("input, select").prop("disabled", true);
+        }
+        // fire update event
+        for (i = 0; i <  dependentList.length; i++) {
+          var dependentName = dependentList[i];
+          var result =  updateDependentParam(dependentName, element);
+          if (result) {
+            // stash promises returned by $.ajax
+            dependentDeferreds.push(result);
           }
+        }
+        // trigger form.change only when all deferreds are resolved
+        $.when.apply($, dependentDeferreds).then(function() {
+          dependedParam.closest("form").change();
+        });
+      });
+
+      if (dependedParam.is('[data-type="type-ahead"]').length > 0) {
+        dependedParam.change();
       }
+    }
   }
 
   //==============================================================================
@@ -91,7 +86,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     element.find('[data-type="type-ahead"]').each(function(i, node) {
       var $node = $(node);
-      var $input = $node.find('input');
       var questionName = element.closest('form').find('input[name="questionFullName"]').val();
       var paramName = $node.attr('name');
 
@@ -128,6 +122,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var name = $node.data('name');
       var defaultColumns = $node.data('default-columns');
       var input = $node.find('input');
+      var previousValue;
 
       defaultColumns = defaultColumns
                        ? defaultColumns.split(/\s+/)
@@ -135,11 +130,11 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       // get previous values
       try {
-        var previousValue = JSON.parse(input.val());
+        previousValue = JSON.parse(input.val());
         if (!( _.isArray(previousValue.filters) &&
                _.isArray(previousValue.values)  &&
                _.isArray(previousValue.ignored) )) {
-          previousValue = null;
+          previousValue = undefined;
           throw new Error('Previous value is malformed.');
         }
       } catch (e) {
@@ -149,6 +144,18 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       // parse data from <script>
       var jsonContainer = $(node).find('script[type="application/json"][id="' + dataId + '"]');
       var spec = JSON.parse(jsonContainer.html());
+
+      // validation
+      [ 'metadata', 'metadataSpec', 'values' ]
+        .forEach(function(prop) {
+          var msg;
+          if (_.isEmpty(spec[prop])) {
+            msg = 'Invalid data: ' + prop + ' may not be empty.';
+            alert(msg);
+            throw new Error(msg);
+          }
+        });
+
       spec = parseFilterData(spec);
       _.extend(spec, { title: name });
 
@@ -174,9 +181,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       // listen for change to filteredData and update input value
       filterService.filteredData.on('reset change', function() {
         var values = filterService.filteredData.where({ ignored: false })
-          .map(function(d) { return d.get('term') });
+          .map(function(d) { return d.get('term'); });
         var ignored = filterService.filteredData.where({ ignored: true })
-          .map(function(d) { return d.get('term') });
+          .map(function(d) { return d.get('term'); });
         var value = {
           values: values,
           ignored: ignored,
@@ -225,70 +232,64 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         metadata = filterData.metadata,
         metadataSpec = filterData.metadataSpec,
         values = filterData.values,
-
-        // metadata properties with type number
-        numericProps = _.keys(metadataSpec)
-          .filter(function(prop) {
-            return metadataSpec[prop].type === 'number';
-          }),
+        unknowns = [],
 
         // unique set of metadata properties found
         // in metadata object values
         metadataTerms = _.values(metadata)
           .map(_.keys)
-          .reduce(function (a, b) { return _.union(a, b) })
+          .reduce(function (a, b) { return _.union(a, b); })
           .filter(function(name) {
             return !!metadataSpec[name];
           }),
-        unknowns = [];
 
-    var data = {
-      fields: _.keys(metadataSpec)
-        .map(function(name) {
-          return _.extend({
-            term: name,
-            display: name,
-            filterable: _.indexOf(metadataTerms, name) > -1 &&
-              metadataSpec[name].leaf === 'true'
-          }, metadataSpec[name]);
-        }),
+        fields = _.keys(metadataSpec)
+          .map(function(name) {
+            return _.extend({
+              term: name,
+              display: name,
+              filterable: _.indexOf(metadataTerms, name) > -1 &&
+                metadataSpec[name].leaf === 'true'
+            }, metadataSpec[name]);
+          }),
 
-      data: values
-        .map(function(d) {
-          // type coercion
-          var mdata = metadata[d.term],
-              missingMsg = '/!\\ ERROR /!\\\n\nMissing metadata for "' + d.term + '".',
-              unknownMsg = '/!\\ ERROR /!\\\n\n"' + d.term + '" only contains UNKNOWN metadata.';
+        data = values
+          .map(function(d) {
+            var mdata = metadata[d.term],
+                missingMsg = 'Missing metadata for "' + d.term + '".';
 
-          if (mdata === undefined) {
-            _.defer(alert, missingMsg);
-            throw new Error(missingMsg);
-          }
-
-          _.each(mdata, function(value, property) {
-            if (value === null || value === '' || value === 'unknown') {
-              mdata[property] = Field.UNKNOWN_VALUE;
-            } else if (metadataSpec[property].type === 'number') {
-              mdata[property] = Number(value);
+            if (mdata === undefined) {
+              _.defer(alert, '/!\\ ERROR /!\\\n\n' + missingMsg);
+              throw new Error(missingMsg);
             }
-          });
 
-          if (_.every(mdata, function(m) { return m === Field.UNKNOWN_VALUE })) {
-            unknowns.push(d);
-          }
+            _.where(fields, { filterable: true })
+              .forEach(function(field) {
+                var property = field.term,
+                    value = mdata[property];
+                if (!value) {
+                  mdata[property] = Field.UNKNOWN_VALUE;
+                } else if (metadataSpec[property].type === 'number') {
+                  // type coercion
+                  mdata[property] = Number(value);
+                }
+              });
 
-          return _.extend(d, {
-            metadata: mdata
+            if (_.every(mdata, function(m) { return m === Field.UNKNOWN_VALUE; })) {
+              unknowns.push(d);
+            }
+
+            return _.extend(d, {
+              metadata: mdata
+            });
           });
-        })
-    };
 
     if (unknowns.length) {
       _.defer(alert, '/!\\ WARNING /!\\\n\nThe following items contian only UNKNOWN values: ' +
         _.pluck(unknowns, 'term').join(', '));
     }
 
-    return data;
+    return { fields: fields, data: data };
   }
 
   //==============================================================================
@@ -301,8 +302,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         isMultiple = displayDiv.data('multiple'),
         maxSelected = displayDiv.data('max-selected'),
         select = $('<select/>').prop('multiple', isMultiple),
-        // Object[] => [{ jqElement, event, handler }, ...]
-        chosenEvents = [],
+        chosenEvents = [], // jshint ignore:line
         chosenOpts = {
           disable_search_threshold: 10,
 
@@ -374,7 +374,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       // only show Clear all if there are selected items
       select.on('change', function() {
         removeAllDiv.toggle(select.find(':selected').length > 0);
-      })
+      });
 
       // attach behavior to Clear all link
       removeAllDiv.hide().appendTo(displayDiv)
@@ -390,6 +390,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     // 2. select options
     // 3. refresh chosen
     function parsePastedInput() {
+      // jshint validthis:true
       var value = this.value,
           unfound = [],
           values;
@@ -400,7 +401,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       // find values in select list, set selected to true, and pop from values
       values.forEach(function(value) {
-        if (value == '') return;
+        if (value === '') return;
 
         if (select.find('option[value="' + value + '"]')
           .prop('selected', true).length !== 1) {
@@ -409,9 +410,10 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       });
       select.trigger('chosen:updated');
 
-      $(this).val(unfound.join(', ') || null).focus()
+      $(this).val(unfound.join(', ') || null).focus();
     }
 
+    // jshint ignore:start
     function cacheChosenEvents(chosenObj) {
       chosenEvents.push({ jqElement: chosenObj.chosen.container, events: {} });
       chosenEvents.push({ jqElement: chosenObj.chosen.search_field, events: {} });
@@ -446,6 +448,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     }
 
     function turnOnChosen(chosenObj) {
+      // jshint loopfunc:true
       if (!select.data('chosen-off')) return;
 
       chosenEvents.forEach(function(eventsObj) {
@@ -476,7 +479,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       // find values in select list, set selected to true, and pop from values
       for (var i = 0; i < values.length; i++) {
-        if (values[i] == '') continue;
+        if (values[i] === '') continue;
 
         if (data.indexOf(value[i]) === -1) {
           unfound.push(values[i]);
@@ -485,10 +488,12 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       return unfound;
     }
+    // jshint ignore:end
 
   }
 
   //==============================================================================
+  // jshint ignore:start
   function createAutoComplete(obj, name, element) {
     element.find("div.ac_results").remove(); // Remove any pre-existing type-ahead results.
     var def = [];
@@ -497,7 +502,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     var term;
     var display;
     var value = '';
-    if( $("term",obj).length != 0 ) {
+    if( $("term",obj).length !== 0 ) {
       $("term",obj).each(function() {
         term = this.getAttribute('id');
         display = this.firstChild.data;
@@ -514,7 +519,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     element.find("#" + name + "_display").autocomplete({
       source: function( request, response ) {
         var result = $.ui.autocomplete.filter(def, request.term);
-        if (result.length == 0) {
+        if (result.length === 0) {
           result.push(wildCardTest.test(request.term) ? wildCard : noMatch);
         } else {
           var matcher = new RegExp("("+$.ui.autocomplete.escapeRegex(request.term)+")", "ig" );
@@ -547,26 +552,30 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     element.find("#" + name + "_display").val(value).removeAttr('disabled');
   }
+  // jshint ignore:end
 
   //==============================================================================
   function updateDependentParam(paramName, element) {
+    // jshint loopfunc:true
     // get the current param
     var dependentParam = element.find("div.dependentParam[name='" + paramName + "']");
     var dependedNames = dependentParam.attr('dependson').split(",");
+    var dependedName;
+    var i;
 
     // check if all the depended params are ready
-    for (var i=0; i < dependedNames.length; i++) {
-        var dependedName = dependedNames[i];
-        var notReady = element.find(".param[name='" + dependedName + "']")
-            .find("input, select").prop("disabled");
-        if (notReady) return;
+    for (i=0; i < dependedNames.length; i++) {
+      dependedName = dependedNames[i];
+      var notReady = element.find(".param[name='" + dependedName + "']")
+        .find("input, select").prop("disabled");
+      if (notReady) return;
     }
   
     var dependedValues = {};
     var hasValue = false;
     // the dependson may contain a comma separated list of param names the current param depends on
-    for (var i=0; i < dependedNames.length; i++) {
-      var dependedName = dependedNames[i];
+    for (i=0; i < dependedNames.length; i++) {
+      dependedName = dependedNames[i];
       var dependedParam = element.find("#" + dependedName + 
           "aaa input[name='array(" + dependedName + ")']:checked, #" + 
           dependedName + "aaa select[name='array(" + dependedName + 
@@ -576,9 +585,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var values = [];
       var needInput = false;
       dependedParam.each(function() {
-          var value = $(this).val();
-          if (value == 'Choose one:') needInput = true;
-          else values.push(value);
+        var value = $(this).val();
+        if (value == 'Choose one:') needInput = true;
+        else values.push(value);
       });
       if (needInput) {
         alert("Please choose a value.");
@@ -597,7 +606,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     // get dependent param and question name, contruct url from them
       var dependentParamSelector = "#" + paramName + 
           "aaa > div.dependentParam[name='" + paramName + "']";
-      var dependentParam = element.find(dependentParamSelector);
+      dependentParam = element.find(dependentParamSelector);
       var questionName = dependentParam.closest("form")
           .find("input:hidden[name=questionFullName]").val();
       var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
@@ -673,16 +682,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
-  function getParamName(inputName, multiValue) {
-    var paramName;
-    if (multiValue) {
-      paramName = inputName.match( /array\(([^\)]+)\)/ );
-    } else {
-      paramName = inputName.match( /value\(([^\)]+)\)/ );
-    }
-    if (paramName) return paramName[1];
-  }
-
   function adjustEnumCountSelect(enumParamId) {
     adjustEnumCountBox(enumParamId, 'option:selected');
   }

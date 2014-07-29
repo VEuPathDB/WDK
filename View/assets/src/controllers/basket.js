@@ -1,3 +1,4 @@
+/* global customBasketPage */
 wdk.util.namespace("window.wdk.basket", function(ns, $) {
   "use strict";
 
@@ -11,7 +12,6 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
       active: index,
       load: function(event, ui) {
         basketTabSelected(event, ui);
-        wdk.load();
       }
     });
   }
@@ -61,7 +61,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
         $("div#basket").html(data);
         $("body").unblock();
       },
-      error: function(data,msg,e){
+      error: function(){
         alert("Error occured in showBasket() function!!");
         $("body").unblock();
       }
@@ -79,7 +79,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
     $.ajax({
       url: url,
       dataType: "html",
-      success: function(data){
+      success: function(){
         $("body").unblock();  //Gets blocked again by the next line anyway
 
         if (!noUpdate) { // For things like moving columns, don't need to refresh
@@ -135,7 +135,6 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
       currentDiv = getCurrentBasketRegion();
     }
 
-    var count = 0;
     var o = {};
     var pkDiv;
     if (type == "recordPage") {
@@ -240,7 +239,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
           $.cookie("refresh_results", "true", { path : '/' });
         }
 
-        if (oldImage != null) {
+        if (oldImage) {
           i.attr("src", oldImage);
         }
       },
@@ -283,7 +282,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
       var allIn = true;
       currentDiv.find(".Results_Div img.basket").each(function() {
         if (!($(this).hasClass("head"))) {
-          if ($(this).attr("value") == 0) {
+          if ($(this).attr("value") === '0') {
             allIn = false;
           }
         }
@@ -346,7 +345,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
       dataType: "json",
       beforeSend: function(){ /* do nothing here */ },
       success: successFunction,
-      error: function(msg){ alert("Error occurred while executing this operation!"); }
+      error: function(){ alert("Error occurred while executing this operation!"); }
     });
   }
 

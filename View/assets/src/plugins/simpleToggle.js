@@ -50,7 +50,7 @@
         .on("click", function(e) {
           e.preventDefault();
           widget.toggle.call(widget);
-        })
+        });
 
       if (widget.options.show) {
         widget.show.call(widget);

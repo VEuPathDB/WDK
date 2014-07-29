@@ -10,11 +10,11 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
   ns.FieldListView = wdk.views.View.extend({
 
     events: {
-      'click a[href="#expand"]': 'expand',
-      'click a[href="#collapse"]': 'collapse',
-      'click li a': 'triggerSelect',
-      'click h4': 'toggleNext',
-      'keyup input': 'filter'
+      'click a[href="#expand"]'   : 'expand',
+      'click a[href="#collapse"]' : 'collapse',
+      'click li a'                : 'triggerSelect',
+      'click h4'                  : 'toggleNext',
+      'keyup input'               : 'filter'
     },
 
     template: wdk.templates['filter/field_list.handlebars'],
@@ -25,6 +25,9 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
     },
 
     render: function() {
+
+      // get all ontology terms starting from `filterable` fields
+      // and traversing upwards by the `parent` attribute
       var prunedFields = _.sortBy(function getFields(fields) {
         return _.where(fields, { filterable: true })
           .reduce(function(acc, field) {
@@ -37,22 +40,62 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
           }, []);
       }(this.model.fields.toJSON()), 'term');
 
-      var root = _.findWhere(prunedFields, { parent: undefined });
+      // get root nodes
+      var rootNodes = _.where(prunedFields, { parent: undefined });
 
+      // construct tree
       var groupedFields = (function appendChildren(nodes, fields) {
         return _.map(nodes, function(node) {
           var children = _.chain(fields)
             .where({ parent: node.term })
-            .sortBy(function(c) { return c.filterable ? 0 : 1 }) // push leaves above nodes
+            .sortBy(function(c) { return c.filterable ? 0 : 1; }) // push leaves above nodes
             .value();
 
           return children.length
             ? { field: node, children: appendChildren(children, fields) }
             : { field: node };
         });
-      }(_.where(prunedFields, { parent: root.term}), prunedFields));
+      }(rootNodes, prunedFields));
 
-      this.$el.html(this.template(groupedFields));
+      // remove top level category if it's the only one
+      groupedFields = (function removeLonelyTop(nodes) {
+        if (nodes.length > 1 || !nodes[0].children) {
+          return nodes;
+        }
+        return removeLonelyTop(nodes[0].children);
+      }(groupedFields));
+
+      // remove nodes with only one child, unless it's terminating
+      groupedFields = (function removeParentsWithSingleChild(nodes) {
+        return nodes.map(function(node) {
+
+          // replace node with first child if only one child
+          while (node.children && node.children.length === 1) {
+            node = node.children[0];
+          }
+
+          // recur if node has children
+          // (will be > 1 child due to above while loop)
+          if (node.children) {
+            node.children = removeParentsWithSingleChild(node.children);
+          }
+
+          // else, return node
+          return node;
+        });
+      }(groupedFields));
+
+      // sort node such that leaves are first
+      groupedFields = _.sortBy(groupedFields, function(node) {
+        return node.field.filterable ? 0 : 1;
+      });
+
+      this.$el.html(this.template({
+        nodes: groupedFields,
+        showExpand: groupedFields.filter(function(node) {
+          return !_.isEmpty(node.children);
+        }).length
+      }));
       return this;
     },
 
@@ -91,12 +134,14 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
       // });
     },
 
+    // jshint ignore:start
     filter: function(e) {
       // var str = e.currentTarget.value;
       // this.$('div')
       // .hide()
       // .find(':contains(' + str + ')').show();
     },
+    // jshint ignore:end
 
     selectField: function(field) {
       var term = field.get('term');

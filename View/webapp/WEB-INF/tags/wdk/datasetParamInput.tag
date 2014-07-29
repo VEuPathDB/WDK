@@ -70,7 +70,7 @@
           Upload a text file:&nbsp;
         </td>
         <td>
-          <html:file styleId="${qa.fileSubParam}" styleClass="file" property="value(${qa.fileSubParam})"/>
+          <html:file styleId="${qa.fileSubParam}" styleClass="file" property="value(${qp.fileSubParam})"/>
 					<div class="type-ahead-help">Maximum size: 10MB. The file should contain the list of IDs. 
 						<c:if test="${fn:length(parsers) gt 1}"> Alternatively, please use other file formats:</c:if>
 					</div>

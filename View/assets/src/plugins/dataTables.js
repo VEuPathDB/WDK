@@ -24,7 +24,7 @@ wdk.util.namespace("window.wdk.plugin", function(ns, $) {
           sorting = $this.data("sorting"),
           dataTableOpts = {
             aoColumns: null,
-            sScrollX: "",
+            sScrollX: "100%",
             sScrollY: "600px",
             bScrollCollapse: true,
             bPaginate: false,
@@ -48,7 +48,7 @@ wdk.util.namespace("window.wdk.plugin", function(ns, $) {
             column.bSortable = Boolean(s);
             // only set sType if a valid type
             if (types.join("@~@").indexOf(s) > -1) column.sType = s;
-          };
+          }
           return column;
         });
       }
