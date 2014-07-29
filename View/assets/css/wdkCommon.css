@@ -597,7 +597,7 @@ ul.menubar {
 }
 
 .param-item {
-  overflow: auto;
+  clear: both;
   padding-top: 5px;
   padding-bottom: 5px;
 }
