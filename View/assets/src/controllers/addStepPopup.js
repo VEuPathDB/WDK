@@ -286,6 +286,10 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
             });
             $("#query_form_overlay").css("z-index", 100).height($("body").height());
 
+            // ensure the Question form is set up before attaching the
+            // following submit handler
+            wdk.load();
+
             // inline-submit should be called last
             // attach submit handler to check that a boolean/span operation is selected
             var $form = $("#query_form").find("#form_question");
