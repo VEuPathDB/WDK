@@ -8,6 +8,10 @@
 .filter-param .hidden {
   display: none;
 }
+.filter-param .toggle-links {
+  font-size: smaller;
+  margin: 0;
+}
 .filter-param, .filter-param *, .filter-items {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -188,7 +192,6 @@
 .membership-table-panel {
   max-height: 500px;
   overflow-y: auto;
-  padding: .5em 0;
 }
 .membership-table-panel.overflowed {
   box-shadow: inset 0 0 3px #ddd;
