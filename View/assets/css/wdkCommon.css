@@ -67,6 +67,7 @@ p {
 
 td { 
     padding: 4px 4px 4px 4px;
+    vertical-align: baseline;
 }
 
 img[data-assets-src] {
