@@ -224,21 +224,29 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   // TODO: mixin
   function registerToggle() {
     // register toggles
-    $(".wdk-toggle").simpleToggle();
+    $(".wdk-toggle").not('[__rendered]')
+      .each(function(index, node) {
+        $(node).simpleToggle().attr('__rendered', true);
+      });
 
     // register expand/collapse links
     // data-container is a selector for a container element
     // data-show is a boolean to show or hide toggles
     // data-animated overrides the built-in animation
-    $(".wdk-toggle-group").click(function(e) {
-      var $this = $(this);
-      var container = $this.closest($this.data("container"));
-      var $toggles = container.find(".wdk-toggle");
+    $(".wdk-toggle-group").not('[__rendered]')
+      .each(function(index, node) {
+        $(node)
+          .click(function(e) {
+            var $this = $(this);
+            var container = $this.closest($this.data("container"));
+            var $toggles = container.find(".wdk-toggle");
 
-      $toggles.simpleToggle("toggle", $this.data("show"));
+            $toggles.simpleToggle("toggle", $this.data("show"));
 
-      e.preventDefault();
-    });
+            e.preventDefault();
+          })
+          .attr('__rendered', true);
+      });
   }
 
   // TODO: mixin
