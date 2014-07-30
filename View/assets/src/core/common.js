@@ -512,6 +512,13 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     });
   }
 
+  function registerButton() {
+    $('.button')
+      .not('[__rendered]')
+        .button()
+        .attr('__rendered', true);
+  }
+
   // TODO: view
   function setUpNavDropDowns() {
     var timer;
@@ -623,7 +630,6 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   function load() {
     resolveAssetsUrls();
     wdk.components.ajaxElement.triggerElements();
-    wdk.util.executeOnloadFunctions("body");
     registerTable();
     registerTooltips();
     registerToggle();
@@ -631,7 +637,8 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     registerSnippet();
     registerTruncate();
     registerEditable();
-    $(".button").button();
+    registerButton();
+    wdk.util.executeOnloadFunctions("body");
     invokeControllers();
   }
 
