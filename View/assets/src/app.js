@@ -5,13 +5,13 @@
   // once the DOM has finished rendering.
   var app = wdk.application = wdk.app = wdk.core.Application.create({
 
-    ready: function() {
+    ready: function wdkReady() {
       wdk.cookieTest();
       wdk.setUpDialogs();
       wdk.setUpPopups();
 
       // call wdk.load trigger DOM-based functions
-      setInterval(wdk.load, 100);
+      setInterval(wdk.load, 200);
     }
 
   });
