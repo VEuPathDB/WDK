@@ -91,7 +91,7 @@ module.exports = {
     // question pages
     'lib/handlebars.js',
     'lib/flexigrid.js',
-    'lib/chosen.jquery.min.js',
+    'lib/select2.min.js',
     'lib/jquery.dataTables.min.js',
     'lib/dataTables.colVis.min.js',
     'lib/jstree/jquery.jstree.js',
