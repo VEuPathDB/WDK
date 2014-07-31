@@ -601,23 +601,19 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   function invokeControllers() {
     // TODO - Add data-action attribute
     // controller is a misnomer here. see issue #14107
-    $("[data-controller]").each(function invokeController(idx, element) {
-      var $element = $(element);
-      var $attrs = $element.data();
-      var controller = $attrs.controller;
+    $("[data-controller]").not('[__invoked]')
+      .each(function invokeController(idx, element) {
+        var $element = $(element);
+        var $attrs = $element.data();
+        var controller = $attrs.controller;
 
-      // convert some-name -> someName
-      // controller = controller.replace(/-(\w)/, function(hyphenLetter) {
-      //   return hyphenLetter.replace(/-/, '').toUpperCase();
-      // });
+        // TODO - Replace with a container. This way we can do some validation,
+        // such as prevent collisions, and inject dependencies. It will also
+        // be quicker to do a dictionary lookup.
+        wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
 
-      // only invoke once
-      if ($attrs._invoked) return;
-
-      wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
-
-      $element.data('_invoked', true);
-    });
+        $element.attr('__invoked', true);
+      });
   }
 
   function resolveAssetsUrls() {
