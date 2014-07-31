@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,12 +15,12 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
+import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FilterParamHandler;
 import org.gusdb.wdk.model.query.param.Param;
@@ -65,16 +66,31 @@ public class StepParamExpander extends BaseCLI {
   }
 
   public void expand(WdkModel wdkModel) throws SQLException, WdkModelException {
-    Connection connection = wdkModel.getUserDb().getDataSource().getConnection();
+    String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+    DatabaseInstance database = wdkModel.getUserDb();
+    DataSource ds = database.getDataSource();
+    Connection connection = null;
+    Statement selectStmt = null;
     ResultSet resultSet = null;
     PreparedStatement psInsert = null;
     try {
       createParamTable(wdkModel);
-
+      connection = ds.getConnection();
       connection.setAutoCommit(false);
-      resultSet = prepareSelect(wdkModel, connection);
+      
+      // create select SQL
+      String sql = new StringBuilder("SELECT s.step_id, s.question_name, s.display_params ")
+        .append(" FROM ").append(userSchema).append("steps s, ").append(userSchema).append("users u ")
+        .append(" WHERE s.user_id = u.user_id AND u.is_guest = 0")
+        .append("   AND s.step_id NOT IN (SELECT step_id FROM step_params) ")
+        .toString();
+
+      selectStmt = connection.createStatement();
+      selectStmt.setFetchSize(1000);
+      long start = System.currentTimeMillis();
+      resultSet = selectStmt.executeQuery(sql);
+      QueryLogger.logEndStatementExecution(sql, "wdk-select-step-params", start);
       psInsert = prepareInsert(connection);
-      DatabaseInstance database = wdkModel.getUserDb();
 
       int count = 0;
       while (resultSet.next()) {
@@ -115,14 +131,9 @@ public class StepParamExpander extends BaseCLI {
       throw new WdkModelException(ex);
     }
     finally {
-      if (resultSet != null) {
-        resultSet.getStatement().close();
-        resultSet.close();
-      }
-      if (psInsert != null)
-        psInsert.close();
-      connection.setAutoCommit(true);
-      connection.close();
+      if (connection != null)
+        connection.setAutoCommit(true);
+      SqlUtils.closeQuietly(psInsert, resultSet, selectStmt, connection);
     }
   }
 
@@ -143,17 +154,6 @@ public class StepParamExpander extends BaseCLI {
 
     SqlUtils.executeUpdate(dataSource, "CREATE INDEX step_params_ix01 " + "ON step_params (step_id)",
         "wdk-create-param-indx");
-  }
-
-  private ResultSet prepareSelect(WdkModel wdkModel, Connection connection) throws SQLException {
-    ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
-    String schema = userDB.getUserSchema();
-    StringBuffer sql = new StringBuffer("SELECT s.step_id, s.question_name, s.display_params ");
-    sql.append(" FROM " + schema + "steps s, " + schema + "users u ");
-    sql.append(" WHERE s.user_id = u.user_id AND u.is_guest = 0");
-    sql.append("   AND s.step_id NOT IN (SELECT step_id FROM step_params) ");
-
-    return SqlUtils.executeQuery(connection, sql.toString(), "wdk-select-step-params", 1000);
   }
 
   private PreparedStatement prepareInsert(Connection connection) throws SQLException {
