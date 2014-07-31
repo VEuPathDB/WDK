@@ -55,7 +55,7 @@
 
 
 
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="wdk.addStepPopup.callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+<html:form styleId="form_question" styleClass="is-${action}" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="wdk.addStepPopup.callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 
 <html:hidden property="stage" styleId="stage" value="${nextStage}" />
 
