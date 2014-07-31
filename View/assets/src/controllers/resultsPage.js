@@ -49,7 +49,8 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         el: analysisFeatureTooltipTarget,
         key: 'new-analysis::' + wdk.VERSION,
         title: 'New tools available!',
-        text: analysisFeatureTooltipTarget.find('.analysis-feature-tooltip')
+        text: analysisFeatureTooltipTarget.find('.analysis-feature-tooltip'),
+        container: $element
       });
 
       analysisFeatureTooltipTarget
