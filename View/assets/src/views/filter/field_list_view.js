@@ -67,7 +67,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
   //
   function removeSingleTopNode(tree) {
     while (tree.length === 1 && tree[0].children) {
-      tree = tree.children[0];
+      tree = tree[0].children;
     }
 
     return tree;
