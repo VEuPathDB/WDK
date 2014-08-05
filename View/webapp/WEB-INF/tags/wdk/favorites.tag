@@ -67,14 +67,14 @@
 		    </tr>
 
                     <c:forEach var="favorite" items="${favorites}">
-                        <c:set var="record" value="${favorite.recordInstance}" />
                         <c:set var="basketColor" value="gray"/>
 						<c:set var="basketValue" value="0"/>
-						<c:if test="${record.inBasket}">
+						<%--
+						<c:if test="${favorite.recordInstance.inBasket}">
 							<c:set var="basketColor" value="color"/>
 							<c:set var="basketValue" value="1"/>
-						</c:if>
-						<c:set var="primaryKey" value="${record.primaryKey}"/>
+						</c:if> --%>
+						<c:set var="primaryKey" value="${favorite.primaryKey}"/>
                         <c:set var="pkValues" value="${primaryKey.values}" />
                         <c:set value="${pkValues['source_id']}" var="id"/>
                         <c:set value="${pkValues['project_id']}" var="pid"/>
@@ -90,11 +90,11 @@
                                      title="Click to remove this item from favorites and reload page"
 				     height="16px" style="vertical-align:text-bottom"
                                      onClick="wdk.favorite.updateFavorite(this, 'remove')"/>&nbsp;
-                                <imp:image class="clickable" src="/wdk/images/basket_${basketColor}.png" 
+                          <%--      <imp:image class="clickable" src="/wdk/images/basket_${basketColor}.png" 
                                      title="Click to add/remove this item from your basket."
 				     height="16px"  style="vertical-align:text-bottom"
                                      onClick="wdk.basket.updateBasket(this,'recordPage', '${id}', '${pid}', '${recordClass.fullName}')" value="${basketValue}"/>&nbsp;
-
+                          --%>
 
     <c:set var="url" value="/showRecord.do?name=${recordClass.fullName}&source_id=${id}" />
 
