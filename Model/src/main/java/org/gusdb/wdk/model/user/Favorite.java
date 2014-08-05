@@ -1,13 +1,13 @@
 package org.gusdb.wdk.model.user;
 
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 
 public class Favorite {
 
     private User user;
     private RecordClass recordClass;
-    private RecordInstance recordInstance;
+    private PrimaryKeyAttributeValue id;
     private String note;
     private String group;
 
@@ -23,13 +23,13 @@ public class Favorite {
         return recordClass;
     }
 
-    public RecordInstance getRecordInstance() {
-        return recordInstance;
+    public PrimaryKeyAttributeValue getPrimaryKey() {
+        return id;
     }
 
-    void setRecordInstance(RecordInstance recordInstance) {
-        this.recordInstance = recordInstance;
-        this.recordClass = recordInstance.getRecordClass();
+    void setPrimaryKeys(PrimaryKeyAttributeValue id) {
+        this.id = id;
+        this.recordClass = id.getAttributeField().getRecordClass();
     }
 
     /**
