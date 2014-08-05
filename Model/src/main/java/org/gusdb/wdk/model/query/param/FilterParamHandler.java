@@ -7,10 +7,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -87,7 +89,7 @@ public class FilterParamHandler extends AbstractParamHandler {
       AbstractEnumParam enumParam = (AbstractEnumParam) param;
       EnumParamCache cache = enumParam.getValueCache(user, contextValues);
 
-      StringBuilder buffer = new StringBuilder();
+      Set<String> internals = new LinkedHashSet<>();
       for (String term : terms) {
         if (!cache.containsTerm(term))
           continue;
@@ -96,11 +98,10 @@ public class FilterParamHandler extends AbstractParamHandler {
 
         if (enumParam.getQuote() && !(internal.startsWith("'") && internal.endsWith("'")))
           internal = "'" + internal.replaceAll("'", "''") + "'";
-        if (buffer.length() != 0)
-          buffer.append(", ");
-        buffer.append(internal);
+        internals.add(internal);
       }
-      return buffer.toString();
+      DBPlatform platform = wdkModel.getAppDb().getPlatform();
+      return platform.prepareExpressionList(internals.toArray(new String[0]));
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);

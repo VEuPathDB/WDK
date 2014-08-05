@@ -67,6 +67,7 @@ p {
 
 td { 
     padding: 4px 4px 4px 4px;
+    vertical-align: baseline;
 }
 
 img[data-assets-src] {
@@ -597,7 +598,7 @@ ul.menubar {
 }
 
 .param-item {
-  overflow: auto;
+  clear: both;
   padding-top: 5px;
   padding-bottom: 5px;
 }
@@ -1797,7 +1798,19 @@ table.dataTable thead th div.DataTables_sort_wrapper {
 }
 
 
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
+     select2 overrides
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+/* move X to right */
+.select2-container-multi .select2-choices .select2-search-choice {
+  padding: 3px 18px 3px 5px;
+}
+.select2-container-multi .select2-search-choice-close {
+  left: auto;
+  right: 3px;
+  top: 2px;
+}
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

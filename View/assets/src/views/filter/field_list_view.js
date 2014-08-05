@@ -1,6 +1,116 @@
 wdk.namespace('wdk.views.filter', function(ns, $) {
   'use strict';
 
+  // # Helper functions
+
+  // Create tree, then prune it so it's easier to read
+  var makeTree = _.compose(removeParentsWithSingleChild, removeSingleTopNode,
+    constructTree);
+
+  // Given a list of fields:
+  // First, find all fields marked as `filterable` (this means
+  //   the field is terminating and data can be filtered by it).
+  // Then, for each field, find all parents.
+  function pruneFields(fields) {
+    return _.where(fields, { filterable: true })
+      .reduce(function(acc, field) {
+        while (field.parent) {
+          acc.push(field);
+          field = _.findWhere(fields, {term: field.parent});
+        }
+        acc.push(field);
+        return _.uniq(acc);
+      }, []);
+  }
+
+  // Convert a list to a tree* based on the `parent` property
+  // given a list of root nodes and a list of all fields
+  //
+  // * More accurately, this will create one or more trees,
+  //   one for each initial sibling field. But we can imagine
+  //   a common, hidden, root node.
+  function constructTree(siblingFields, allFields) {
+    return siblingFields
+      .map(function(field) {
+        var children = _.chain(allFields)
+          .where({ parent: field.term })
+
+          // sort leaves to top
+          .sortBy(function(c) { return c.filterable ? 0 : 1; })
+          .value();
+
+        return children.length
+          ? { field: field, children: constructTree(children, allFields) }
+          : { field: field };
+      });
+  }
+
+  // Remove top level category if it's the only one.
+  //
+  // E.g., turn this:
+  //
+  //    A
+  //     \
+  //      B
+  //       \
+  //        C
+  //       / \
+  //      D   E
+  //     /     \
+  //       ...
+  //
+  // into this:
+  //
+  //      D   E
+  //     /     \
+  //       ...
+  //
+  function removeSingleTopNode(tree) {
+    while (tree.length === 1 && tree[0].children) {
+      tree = tree[0].children;
+    }
+
+    return tree;
+  }
+
+  // Remove nodes with only one child, unless it's terminating.
+  //
+  // E.g., turn this:
+  //
+  //      *
+  //     / \
+  //    A   B
+  //         \
+  //          C
+  //           \
+  //            D
+  //
+  // into this:
+  //
+  //      *
+  //     / \
+  //    A   D
+  //
+  function removeParentsWithSingleChild(tree) {
+    return tree
+      .map(function(node) {
+
+        // replace node with first child if only one child
+        while (node.children && node.children.length === 1) {
+          node = node.children[0];
+        }
+
+        // recur if node has children
+        // (will be > 1 child due to above while loop)
+        if (node.children) {
+          node.children = removeParentsWithSingleChild(node.children);
+        }
+
+        // else, return node
+        return node;
+      });
+  }
+
   /**
    * Renders a list of links
    *
@@ -26,64 +136,17 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
 
     render: function() {
 
+      var fields = this.model.fields.toJSON();
+
       // get all ontology terms starting from `filterable` fields
       // and traversing upwards by the `parent` attribute
-      var prunedFields = _.sortBy(function getFields(fields) {
-        return _.where(fields, { filterable: true })
-          .reduce(function(acc, field) {
-            while (field.parent) {
-              acc.push(field);
-              field = _.findWhere(fields, {term: field.parent});
-            }
-            acc.push(field);
-            return _.uniq(acc);
-          }, []);
-      }(this.model.fields.toJSON()), 'term');
+      var prunedFields = _.sortBy(pruneFields(fields), 'term');
 
-      // get root nodes
-      var rootNodes = _.where(prunedFields, { parent: undefined });
+      // get root tree
+      var parentFields = _.where(prunedFields, { parent: undefined });
 
       // construct tree
-      var groupedFields = (function appendChildren(nodes, fields) {
-        return _.map(nodes, function(node) {
-          var children = _.chain(fields)
-            .where({ parent: node.term })
-            .sortBy(function(c) { return c.filterable ? 0 : 1; }) // push leaves above nodes
-            .value();
-
-          return children.length
-            ? { field: node, children: appendChildren(children, fields) }
-            : { field: node };
-        });
-      }(rootNodes, prunedFields));
-
-      // remove top level category if it's the only one
-      groupedFields = (function removeLonelyTop(nodes) {
-        if (nodes.length > 1 || !nodes[0].children) {
-          return nodes;
-        }
-        return removeLonelyTop(nodes[0].children);
-      }(groupedFields));
-
-      // remove nodes with only one child, unless it's terminating
-      groupedFields = (function removeParentsWithSingleChild(nodes) {
-        return nodes.map(function(node) {
-
-          // replace node with first child if only one child
-          while (node.children && node.children.length === 1) {
-            node = node.children[0];
-          }
-
-          // recur if node has children
-          // (will be > 1 child due to above while loop)
-          if (node.children) {
-            node.children = removeParentsWithSingleChild(node.children);
-          }
-
-          // else, return node
-          return node;
-        });
-      }(groupedFields));
+      var groupedFields = makeTree(parentFields, prunedFields);
 
       // sort node such that leaves are first
       groupedFields = _.sortBy(groupedFields, function(node) {

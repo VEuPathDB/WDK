@@ -224,21 +224,29 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   // TODO: mixin
   function registerToggle() {
     // register toggles
-    $(".wdk-toggle").simpleToggle();
+    $(".wdk-toggle").not('[__rendered]')
+      .each(function(index, node) {
+        $(node).simpleToggle().attr('__rendered', true);
+      });
 
     // register expand/collapse links
     // data-container is a selector for a container element
     // data-show is a boolean to show or hide toggles
     // data-animated overrides the built-in animation
-    $(".wdk-toggle-group").click(function(e) {
-      var $this = $(this);
-      var container = $this.closest($this.data("container"));
-      var $toggles = container.find(".wdk-toggle");
+    $(".wdk-toggle-group").not('[__rendered]')
+      .each(function(index, node) {
+        $(node)
+          .click(function(e) {
+            var $this = $(this);
+            var container = $this.closest($this.data("container"));
+            var $toggles = container.find(".wdk-toggle");
 
-      $toggles.simpleToggle("toggle", $this.data("show"));
+            $toggles.simpleToggle("toggle", $this.data("show"));
 
-      e.preventDefault();
-    });
+            e.preventDefault();
+          })
+          .attr('__rendered', true);
+      });
   }
 
   // TODO: mixin
@@ -504,6 +512,13 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     });
   }
 
+  function registerButton() {
+    $('.button')
+      .not('[__rendered]')
+        .button()
+        .attr('__rendered', true);
+  }
+
   // TODO: view
   function setUpNavDropDowns() {
     var timer;
@@ -586,23 +601,19 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   function invokeControllers() {
     // TODO - Add data-action attribute
     // controller is a misnomer here. see issue #14107
-    $("[data-controller]").each(function invokeController(idx, element) {
-      var $element = $(element);
-      var $attrs = $element.data();
-      var controller = $attrs.controller;
+    $("[data-controller]").not('[__invoked]')
+      .each(function invokeController(idx, element) {
+        var $element = $(element);
+        var $attrs = $element.data();
+        var controller = $attrs.controller;
 
-      // convert some-name -> someName
-      // controller = controller.replace(/-(\w)/, function(hyphenLetter) {
-      //   return hyphenLetter.replace(/-/, '').toUpperCase();
-      // });
+        // TODO - Replace with a container. This way we can do some validation,
+        // such as prevent collisions, and inject dependencies. It will also
+        // be quicker to do a dictionary lookup.
+        wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
 
-      // only invoke once
-      if ($attrs._invoked) return;
-
-      wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
-
-      $element.data('_invoked', true);
-    });
+        $element.attr('__invoked', true);
+      });
   }
 
   function resolveAssetsUrls() {
@@ -615,7 +626,6 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   function load() {
     resolveAssetsUrls();
     wdk.components.ajaxElement.triggerElements();
-    wdk.util.executeOnloadFunctions("body");
     registerTable();
     registerTooltips();
     registerToggle();
@@ -623,7 +633,8 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     registerSnippet();
     registerTruncate();
     registerEditable();
-    $(".button").button();
+    registerButton();
+    wdk.util.executeOnloadFunctions("body");
     invokeControllers();
   }
 
