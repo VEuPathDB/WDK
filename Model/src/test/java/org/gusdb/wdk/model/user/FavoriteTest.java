@@ -43,7 +43,7 @@ public class FavoriteTest {
         List<Favorite> favorites = user.getFavorites().get(recordClass);
         Assert.assertEquals(added.size(), favorites.size());
         for (Favorite favorite : favorites) {
-            RecordClass actual = favorite.getRecordInstance().getRecordClass();
+            RecordClass actual = favorite.getPrimaryKey().getAttributeField().getRecordClass();
             Assert.assertEquals(rcName, actual.getFullName());
         }
     }
@@ -61,8 +61,7 @@ public class FavoriteTest {
         Assert.assertTrue(favorites.containsKey(recordClass));
         List<Favorite> list = favorites.get(recordClass);
         for (Favorite favorite : list) {
-            RecordInstance instance = favorite.getRecordInstance();
-            Map<String, String> values = instance.getPrimaryKey().getValues();
+            Map<String, String> values = favorite.getPrimaryKey().getValues();
 
             for (Map<String, Object> add : more) {
                 Assert.assertEquals(add.size(), values.size());

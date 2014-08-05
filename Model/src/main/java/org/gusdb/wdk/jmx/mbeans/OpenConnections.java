@@ -14,6 +14,10 @@ public class OpenConnections extends BeanBase implements OpenConnectionsMBean {
     return wdkModel.getUserDb().getUnclosedConnectionInfo();
   }
 
+  public String getOpenUserDBConnections() {
+    return showOpenUserDBConnections();
+  }
+
   public void dumpOpenAppDBConnections() {
     LOG.info(wdkModel.getAppDb().getUnclosedConnectionInfo());
   }
@@ -21,5 +25,9 @@ public class OpenConnections extends BeanBase implements OpenConnectionsMBean {
   public String showOpenAppDBConnections() {
     return wdkModel.getAppDb().getUnclosedConnectionInfo();
   }
-  
+
+  public String getOpenAppDBConnections() {
+    return showOpenAppDBConnections();
+  }
+
 }
