@@ -1,9 +1,7 @@
 package org.gusdb.wdk.jmx.mbeans;
 
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-
-import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkModel;
 
 /**
  * MBean for database connection pool statistics, including
