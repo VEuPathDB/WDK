@@ -15,12 +15,36 @@ if (!$targetDir) {
    exit(1);
 }
 
--e $targetDir && die "targetDir $targetDir already exists.  Please provide a non-existent targetDir.\n";
+#-e $targetDir && die "targetDir $targetDir already exists.  Please provide a non-existent targetDir.\n";
 
 my $GUS_HOME = $ENV{GUS_HOME};
 my $CLASSPATH = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
 
-my $cmd = "javadoc -d $targetDir -classpath $CLASSPATH -sourcepath $ENV{PROJECT_HOME}/WDK/Model/src/main/java -$pubpriv org.gusdb.wdk.model org.gusdb.wdk.model.test org.gusdb.wdk.model.test.stress org.gusdb.wdk.model.report org.gusdb.wdk.model.jspwrap org.gusdb.wdk.model.query org.gusdb.wdk.model.query.param org.gusdb.wdk.model.dbms org.gusdb.wdk.model.xml org.gusdb.wdk.model.user org.gusdb.wdk.model.fix org.gusdb.wdk.jmx org.gusdb.wdk.jmx.mbeans org.gusdb.wdk.jmx.mbeans.dbms";
+my $cmd = "javadoc -d $targetDir -classpath $CLASSPATH " .
+  "-sourcepath $ENV{PROJECT_HOME}/WDK/Model/src/main/java:$ENV{PROJECT_HOME}/FgpUtil/Util/src/main/java " .
+  "-$pubpriv " .
+      "org.gusdb.wdk.model " .
+      "org.gusdb.wdk.model.test " .
+      "org.gusdb.wdk.model.test.stress " .
+      "org.gusdb.wdk.model.report " .
+      "org.gusdb.wdk.model.jspwrap " .
+      "org.gusdb.wdk.model.query " .
+      "org.gusdb.wdk.model.query.param " .
+      "org.gusdb.wdk.model.dbms " .
+      "org.gusdb.wdk.model.xml " .
+      "org.gusdb.wdk.model.user " .
+      "org.gusdb.wdk.model.fix " .
+      "org.gusdb.wdk.jmx " .
+      "org.gusdb.wdk.jmx.mbeans " .
+      "org.gusdb.wdk.jmx.mbeans.dbms " .
+      "org.gusdb.fgputil " .
+      "org.gusdb.fgputil.db " .
+      "org.gusdb.fgputil.db.pool " .
+      "org.gusdb.fgputil.db.runner " .
+      "org.gusdb.fgputil.db.platform " .
+      "org.gusdb.fgputil.runtime " .
+      "org.gusdb.fgputil.workflow " .
+      "org.gusdb.fgputil.xml "
+;
 
 system($cmd);
-
