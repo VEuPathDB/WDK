@@ -14,7 +14,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
-import org.gusdb.fgputil.FormatUtil;
 
 public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer {
   
@@ -137,26 +136,6 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
   
   protected InputStream getProvidedInput() {
     return null;
-  }
-
-  /**
-   * Utility method to return multiple param values for the given key as an SQL compatible list
-   * string (i.e. to be placed in an 'in' clause).  Values are assumed to be
-   * Strings, and so are single-quoted.
-   * 
-   * @param paramKey name of parameter
-   * @param formParams form params passed to this plugin
-   * @param errors validation errors object to append additional errors to; note
-   * this value may be null; if so, no errors will be appended
-   * @return SQL compatible list string
-   */
-  public static String getArrayParamValueAsString(String paramKey,
-      Map<String, String[]> formParams, ValidationErrors errors) {
-    String[] values = formParams.get(paramKey);
-    if ((values == null || values.length == 0) && errors != null) {
-      errors.addParamMessage(paramKey, "Missing required parameter.");
-    }
-    return "'" + FormatUtil.join(values, "','") + "'";
   }
 
 }
