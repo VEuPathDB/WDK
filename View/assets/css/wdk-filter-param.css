@@ -178,6 +178,7 @@
 }
 .field-detail .description .read-more.visible {
   display: inline-block;
+  vertical-align: top;
 }
 .membership-filter .text,
 .membership-filter .distribution {
