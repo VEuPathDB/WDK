@@ -316,6 +316,7 @@
 }
 .overview dd {
   padding-right: .8em;
+  margin-left: 0;
 }
 #applied-filters {
   text-align: center;
