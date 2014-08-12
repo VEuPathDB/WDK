@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkModel;
 public abstract class AbstractConnectionPool extends BeanBase {
 
   DatabaseInstance database;
+  private static final Logger LOG = Logger.getLogger(OpenConnections.class);
 
   public AbstractConnectionPool() {
     super();  
@@ -164,7 +165,28 @@ public abstract class AbstractConnectionPool extends BeanBase {
     return database.getConnectionsCurrentlyOpen();
   }
 
-  public String getUnclosedConnectionInfo() {
+  /**
+   * report summary information in string format with stacktraces, if any
+   */
+   public String getUnclosedConnectionInfo() {
     return database.getUnclosedConnectionInfo();
   }
+
+  /**
+   * record information to log file
+   */
+  public void dumpOpenDBConnections() {
+     LOG.info(database.getUnclosedConnectionInfo());
+  }
+
+  /**
+   * report information in string format. This is redundant 
+   * with getUnclosedConnectionInfo() but when used in a GUI
+   * viewer (e.g. jconsole) displays the data in a more 
+   * human-readable format than the attribute field.
+   */
+  public String showOpenDBConnections() {
+    return database.getUnclosedConnectionInfo();
+  }
+
 }

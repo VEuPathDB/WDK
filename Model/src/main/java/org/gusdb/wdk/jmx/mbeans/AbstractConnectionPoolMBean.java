@@ -21,4 +21,7 @@ public interface AbstractConnectionPoolMBean  {
   public int getReturnedCount();
   public int getCurrentlyOpenCount();
   public String getUnclosedConnectionInfo();
+  
+  public void dumpOpenDBConnections();
+  public String showOpenDBConnections();
 }
