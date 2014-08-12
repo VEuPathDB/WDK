@@ -32,6 +32,8 @@ my %dblinkMap = (
     'apicommn'    => 'prodn.login_comment',
     'apicommdevs' => 'devs.login_comment',
     'apicommdevn' => 'devn.login_comment',
+    'icmrcomm'    => 'icemr.login_comment',
+    'prsmcomm'    => 'prism.login_comment',
 );
 
 =head1 METHODS
@@ -498,3 +500,4 @@ sub write_meta_config {
 }
 
 1;
+
