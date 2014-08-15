@@ -79,10 +79,10 @@ public class BackupUser extends BaseCLI {
 
   @Override
   protected void execute() throws Exception {
+		logger.info("\n\n****IN EXECUTE******");
+
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-
     backupSchema = (String) getOptionValue(ARG_BACKUP_SCHEMA);
-
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
     String cutoffDate = (String) getOptionValue(ARG_CUTOFF_DATE);
 
@@ -92,12 +92,13 @@ public class BackupUser extends BaseCLI {
     backupSchema = DBPlatform.normalizeSchema(backupSchema);
     userSchema = DBPlatform.normalizeSchema(userSchema);
 
-    logger.info("Backing up user data from " + userSchema + " to " + backupSchema + "...");
-
+    logger.info("\n\n**********Backing up user data from " + userSchema + " to " + backupSchema + "...");
     backupGuestUsers(userSchema, backupSchema, cutoffDate);
   }
 
   public void backupGuestUsers(String userSchema, String backupSchema, String cutoffDate) throws SQLException {
+		logger.info("\n\n****IN BACKUPGUESTUSERS ******");
+
     Connection connection = wdkModel.getUserDb().getDataSource().getConnection();
     boolean autoCommit = connection.getAutoCommit();
     connection.setAutoCommit(false);
@@ -142,6 +143,7 @@ public class BackupUser extends BaseCLI {
   }
 
   private void backupTable(Statement statement, String table, String columns) throws SQLException {
+		logger.info("\n\n****IN BACKUPTABLE******",table);
     backupTable(statement, table, columns, "user_id");
   }
 
@@ -160,6 +162,7 @@ public class BackupUser extends BaseCLI {
   }
 
   private void removeGuest(Statement statement, String table, String condition) throws SQLException {
+		logger.info("\n\n****IN REMOVEGUEST******",table);
     String fromTable = userSchema + table;
     statement.executeUpdate("DELETE FROM " + fromTable + " WHERE " + condition);
   }
