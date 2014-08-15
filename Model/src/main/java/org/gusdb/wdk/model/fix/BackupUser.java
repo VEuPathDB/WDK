@@ -143,7 +143,7 @@ public class BackupUser extends BaseCLI {
   }
 
   private void backupTable(Statement statement, String table, String columns) throws SQLException {
-		logger.info("\n\n****IN BACKUPTABLE******",table);
+		logger.info("\n\n****IN BACKUPTABLE******  " + table);
     backupTable(statement, table, columns, "user_id");
   }
 
@@ -162,7 +162,7 @@ public class BackupUser extends BaseCLI {
   }
 
   private void removeGuest(Statement statement, String table, String condition) throws SQLException {
-		logger.info("\n\n****IN REMOVEGUEST******",table);
+		logger.info("\n\n****IN REMOVEGUEST****** " + table);
     String fromTable = userSchema + table;
     statement.executeUpdate("DELETE FROM " + fromTable + " WHERE " + condition);
   }
