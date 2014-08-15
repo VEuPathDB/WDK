@@ -26,7 +26,8 @@ module.exports = {
 
   src: [
     // load polyfills
-    'src/core/loader.js',
+    // Moving this responsibility to wdkJavascripts.tag
+    // 'src/core/loader.js',
 
     'src/core/console.js',
     'src/core/namespace.js',
@@ -92,6 +93,9 @@ module.exports = {
     'lib/handlebars.js',
     'lib/flexigrid.js',
     'lib/select2.min.js',
+    'lib/jquery.flot.min.js',
+    'lib/jquery.flot.categories.min.js',
+    'lib/jquery.flot.selection.min.js',
     'lib/jquery.dataTables.min.js',
     'lib/dataTables.colVis.min.js',
     'lib/jstree/jquery.jstree.js',
