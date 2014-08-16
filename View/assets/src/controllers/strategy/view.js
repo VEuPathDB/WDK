@@ -197,7 +197,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         stepdiv = singleStep(cStp, prevJsonStep, jsonStep,strat.frontId);
       }
 
-      $(stepdiv).find('> div').each(function(index, el) {
+      $(stepdiv).find('[id^=step_]').each(function(index, el) {
         stepDetailView = new StepDetailView({
           el: $(el).find('.crumb_details'),
           model: jsonStep,
