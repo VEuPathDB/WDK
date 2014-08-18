@@ -9,7 +9,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
       // attach onclick event using jquery instead of onclick attr
       // Moved from this.displayFilters since events were being registered twice.
       // We'll use delegation instead.
-      $('.Workspace').on('click', 'a.link-url', function changeFilter() {
+      $('.Workspace .result-filters').on('click', 'a.link-url', function changeFilter() {
         var $this = $(this);
         var strategyId = $this.attr('strId');
         var stepId = $this.attr('stpId');
