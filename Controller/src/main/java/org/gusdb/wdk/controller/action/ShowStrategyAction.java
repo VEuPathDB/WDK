@@ -370,6 +370,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         // the root of the sub-strategy should not be collapsed
         jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
         jsStep.put("isUncollapsible", step.isUncollapsible());
+        jsStep.put("hasCompleteAnalyses", step.getHasCompleteAnalyses());
 
     try {
       RecordClassBean recordClass = step.getRecordClass();
