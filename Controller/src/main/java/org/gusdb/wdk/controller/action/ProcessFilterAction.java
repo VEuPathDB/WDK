@@ -77,7 +77,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
       StrategyBean strategy = requestParams.strategy;
       int oldStrategyId = requestParams.strategy.getStrategyId();
 
-      // are we inserting an existing step?
       StepBean newStep = createNewFilterStep(wdkModel, wdkUser, request, requestParams);
       int newStepId = newStep.getStepId();
       int baseNewStepId = newStepId;
@@ -276,19 +275,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
       }
 
       // set the view, if it's not set yet
-      logger.debug("old view: strategy=" + wdkUser.getViewStrategyId() + ", step=" + wdkUser.getViewStepId());
-      String viewStrategyKey = wdkUser.getViewStrategyId();
-      if (viewStrategyKey == null) {
-        viewStrategyKey = requestParams.strategyKey;
-      }
-      if (requestParams.strategyKey.equals(viewStrategyKey)) {
-        int viewStepId = wdkUser.getViewStepId();
-        if (0 == viewStepId || strategy.getStepById(viewStepId) == null) {
-          // the view is not set
-          wdkUser.setViewResults(viewStrategyKey, newStepId, 0);
-          logger.debug("new view: strategy=" + viewStrategyKey + ", step=" + newStepId);
-        }
-      }
+      setView(wdkUser, requestParams, baseNewStepId);
 
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
       StringBuffer url = new StringBuffer(showStrategy.getPath());
@@ -308,6 +295,22 @@ public class ProcessFilterAction extends ProcessQuestionAction {
       logger.error("Error while processing filter.", ex);
       ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
       return null;
+    }
+  }
+
+  private void setView(UserBean wdkUser, RequestParams requestParams, int newStepId) throws WdkModelException {
+    logger.debug("old view: strategy=" + wdkUser.getViewStrategyId() + ", step=" + wdkUser.getViewStepId());
+    String viewStrategyKey = wdkUser.getViewStrategyId();
+    if (viewStrategyKey == null) {
+      viewStrategyKey = requestParams.strategyKey;
+    }
+    if (requestParams.strategyKey.equals(viewStrategyKey)) {
+      int viewStepId = wdkUser.getViewStepId();
+      if (0 == viewStepId || requestParams.strategy.getStepById(viewStepId) == null) {
+        // the view is not set
+        wdkUser.setViewResults(viewStrategyKey, newStepId, 0);
+        logger.debug("new view: strategy=" + viewStrategyKey + ", step=" + newStepId);
+      }
     }
   }
 

@@ -178,6 +178,7 @@
 }
 .field-detail .description .read-more.visible {
   display: inline-block;
+  vertical-align: top;
 }
 .membership-filter .text,
 .membership-filter .distribution {
@@ -316,6 +317,7 @@
 }
 .overview dd {
   padding-right: .8em;
+  margin-left: 0;
 }
 #applied-filters {
   text-align: center;

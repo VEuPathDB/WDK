@@ -607,12 +607,14 @@ wdk.util.namespace("window.wdk", function(ns, $) {
         var $attrs = $element.data();
         var controller = $attrs.controller;
 
-        // TODO - Replace with a container. This way we can do some validation,
-        // such as prevent collisions, and inject dependencies. It will also
-        // be quicker to do a dictionary lookup.
-        wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
-
-        $element.attr('__invoked', true);
+        try {
+          // TODO - Replace with a container. This way we can do some validation,
+          // such as prevent collisions, and inject dependencies. It will also
+          // be quicker to do a dictionary lookup.
+          wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
+        } finally {
+          $element.attr('__invoked', true);
+        }
       });
   }
 

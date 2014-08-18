@@ -487,9 +487,12 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
       return doAjax(ROUTES.renameAnalysis, {
         data: { "analysisId": analysisId, "displayName": newName },
         success: function() {
+          // update name on tab
           $('#step-analysis-' + analysisId + " a").contents().filter(function() {
             return this.nodeType == 3; //Filtering by text node
           }).first()[0].data = newName;
+          // update name inside tab
+          $('.step-analysis-pane[data-analysis-id='+analysisId+']').find('h3[data-bind=displayName]').text(newName);
         },
         error: function() {
           handleAjaxError("Error: Unable to change display name for analysis with id " + analysisId);

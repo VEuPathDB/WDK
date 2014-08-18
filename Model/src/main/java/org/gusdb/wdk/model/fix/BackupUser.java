@@ -79,10 +79,10 @@ public class BackupUser extends BaseCLI {
 
   @Override
   protected void execute() throws Exception {
+		logger.info("****IN EXECUTE******");
+
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-
     backupSchema = (String) getOptionValue(ARG_BACKUP_SCHEMA);
-
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
     String cutoffDate = (String) getOptionValue(ARG_CUTOFF_DATE);
 
@@ -92,12 +92,13 @@ public class BackupUser extends BaseCLI {
     backupSchema = DBPlatform.normalizeSchema(backupSchema);
     userSchema = DBPlatform.normalizeSchema(userSchema);
 
-    logger.info("Backing up user data from " + userSchema + " to " + backupSchema + "...");
-
+    logger.info("**********Backing up user data from " + userSchema + " to " + backupSchema + "...");
     backupGuestUsers(userSchema, backupSchema, cutoffDate);
   }
 
   public void backupGuestUsers(String userSchema, String backupSchema, String cutoffDate) throws SQLException {
+		logger.info("****IN BACKUPGUESTUSERS ******");
+
     Connection connection = wdkModel.getUserDb().getDataSource().getConnection();
     boolean autoCommit = connection.getAutoCommit();
     connection.setAutoCommit(false);
@@ -118,15 +119,14 @@ public class BackupUser extends BaseCLI {
 
       removeGuest(statement, "dataset_values", "dataset_id IN (SELECT dataset_id FROM " + userSchema +
           "datasets WHERE " + deleteCondtion + ")");
-      removeGuest(statement, "favorites", deleteCondtion);
-      removeGuest(statement, "user_baskets", deleteCondtion);
+			// removeGuest(statement, "favorites", deleteCondtion);
+			// removeGuest(statement, "user_baskets", deleteCondtion);
       removeGuest(statement, "datasets", deleteCondtion);
+      removeGuest(statement, "preferences", deleteCondtion);
       removeGuest(statement, "strategies", deleteCondtion);
       removeGuest(statement, "steps", deleteCondtion);
-      removeGuest(statement, "preferences", deleteCondtion);
       removeGuest(statement, "user_roles", deleteCondtion);
       removeGuest(statement, "users", deleteCondtion);
-      removeGuest(statement, "favorites", deleteCondtion);
 
       connection.commit();
     }
@@ -147,6 +147,7 @@ public class BackupUser extends BaseCLI {
 
   private void backupTable(Statement statement, String table, String columns, String keyColumn)
       throws SQLException {
+		logger.info("****IN BACKUPTABLE******  " + table);
     String fromTable = userSchema + table;
     String toTable = backupSchema + table;
 
@@ -160,6 +161,7 @@ public class BackupUser extends BaseCLI {
   }
 
   private void removeGuest(Statement statement, String table, String condition) throws SQLException {
+		logger.info("****IN REMOVEGUEST****** " + table);
     String fromTable = userSchema + table;
     statement.executeUpdate("DELETE FROM " + fromTable + " WHERE " + condition);
   }

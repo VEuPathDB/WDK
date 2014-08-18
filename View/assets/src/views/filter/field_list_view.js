@@ -159,6 +159,24 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
           return !_.isEmpty(node.children);
         }).length
       }));
+
+      var field;
+      if (this.model.filters.length) {
+        // select first filtered field
+        var fieldTerm = this.model.filters.at(0).get('field');
+        field = this.model.fields.get(fieldTerm);
+      } else {
+        // select first field
+        var node = groupedFields[0];
+        while (!node.field.leaf) {
+          node = node.children[0];
+        }
+        field = this.model.fields.get(node.field.term);
+      }
+      _.defer(function() {
+        field.select();
+      }.bind(this));
+
       return this;
     },
 
@@ -211,6 +229,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
       var link = this.$('a[href="#' + term + '"]');
       this.$('li').removeClass('active');
       $(link).parent().addClass('active');
+      $(link).parentsUntil(this.$el.find('>ul')).find('>h4').removeClass('collapsed');
     }
 
   });

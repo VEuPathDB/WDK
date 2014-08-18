@@ -1034,4 +1034,8 @@ public class Step {
   public void setException(Exception ex) {
     this.exception = ex;
   }
+
+  public boolean getHasCompleteAnalyses() throws WdkModelException {
+    return stepFactory.getWdkModel().getStepAnalysisFactory().hasCompleteAnalyses(this);
+  }
 }

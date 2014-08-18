@@ -212,11 +212,11 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     currentDiv.html(data);
 
     // invoke filters
-    var wdkFilter = new wdk.filter.WdkFilter();
+    var wdkFilter = new wdk.filter.WdkFilter(currentDiv);
     
+    wdkFilter.initialize();
+
     if (ignoreFilters) {
-      wdkFilter.addShowHide();
-      wdkFilter.displayFilters();
       oldFilters.each(function() {
         var newFilter = document.getElementById(this.id);
         var count = $(this).text();
@@ -232,11 +232,10 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         }
       });
     } else {
-      //wdkFilter.initialize();
       // Using setTimeout allows the results HTML to be rendered first, and
       // thus the results ajax is fired before the filters ajax. This will make
       // getting results faster when there are lots of filters.
-      setTimeout(wdkFilter.initialize.bind(wdkFilter), 0);
+      _.defer(wdkFilter.loadFilterCount.bind(wdkFilter));
     }
 
     // convert results table to drag-and-drop flex grid

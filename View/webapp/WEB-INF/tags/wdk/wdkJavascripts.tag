@@ -12,6 +12,15 @@
   <!-- needed for wdk.debug.js -->
   <imp:siteInfo/>
 
+  <!-- load polyfills for IE8 -->
+  <![CDATA[ <!--[if lte IE 8]> ]]>
+
+  <imp:script src="/wdk/lib/json3.min.js"/>
+  <imp:script src="/wdk/lib/excanvas.min.js"/>
+
+  <![CDATA[ <![endif]--> ]]>
+  <!-- endload polyfills -->
+
   <c:choose>
     <c:when test="${debug eq true}">
       <!-- load files in individual script tags -->

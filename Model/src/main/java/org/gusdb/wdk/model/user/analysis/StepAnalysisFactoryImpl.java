@@ -93,6 +93,16 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   }
 
   @Override
+  public boolean hasCompleteAnalyses(Step step) throws WdkModelException {
+    for (StepAnalysisContext context : getAppliedAnalyses(step).values()) {
+      if (context.getStatus().equals(ExecutionStatus.COMPLETE)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
   public Object getFormViewModel(StepAnalysisContext context) throws WdkModelException, WdkUserException {
     return getConfiguredAnalyzer(context, _fileStore).getFormViewModel();
   }
