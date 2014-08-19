@@ -1047,12 +1047,15 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       }
     });
 
-    if (step.hasCompleteAnalyses) {
-      $('<div>' +
+    var showAnalysisWarning = hasDownstreamCompleteAnalyses(step, strategy,
+        step.back_boolean_Id === Number(stepId));
+
+    if (showAnalysisWarning) {
+      $('<div style="font-size: 120%;">' +
           '<h3 style="margin: initial;">Warning</h3>' +
-          '<p>You have completed an analysis on this step. Filtering the results ' +
-          'of the step will invalidate that analysis. You will be able to ' +
-          're-run the analysis on the new results.</p>' +
+          '<p>This action will change the result of your step, and steps that ' +
+          'follow. Completed analyes on these steps will be invalidated. You ' +
+          'will be able to re-run the analyses on the new results.</p>' +
           '<p><a href="' + wdk.webappUrl('/analysisTools.jsp') + '" target="_blank">Learn More</a></p>' +
         '</div>')
         .dialog({
@@ -1074,6 +1077,31 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
   }
 
+  // Check if any downstream steps have complete analyses
+  //
+  // Given strategy X (where the bottom row is combined steps):
+  //
+  //     B   D   E
+  //     |   |   |
+  // A - C - E - G
+  //
+  //
+  // * For step C, determine if steps C, E, or G have a complete analysis
+  // * For step D, determine if steps D, E, or G have a complete analysis
+  //
+  // NB: We only need to check combined steps to the right.
+  //
+  // Returns Boolean
+  function hasDownstreamCompleteAnalyses(step, strategy, isBoolean) {
+    var ret = isBoolean
+      ? step.booleanHasCompleteAnalyses
+      : step.hasCompleteAnalyses || step.booleanHasCompleteAnalyses;
+
+    return ret || _(strategy.Steps.slice(strategy.Steps.indexOf(step) + 1))
+      .some(function(downstreamStep) {
+        return downstreamStep.booleanHasCompleteAnalyses;
+      });
+  }
 
   function SetWeight(e, f_strategyId, f_stepId) {
     var strategy = wdk.strategy.model.getStrategy(f_strategyId);
