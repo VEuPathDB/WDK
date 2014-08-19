@@ -12,15 +12,26 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
   //   the field is terminating and data can be filtered by it).
   // Then, for each field, find all parents.
   function pruneFields(fields) {
-    return _.where(fields, { filterable: true })
+    var missing = [];
+    var prunedFields = _.where(fields, { filterable: true })
       .reduce(function(acc, field) {
         while (field.parent) {
           acc.push(field);
           field = _.findWhere(fields, {term: field.parent});
+          if (_.isUndefined(field)) {
+            missing.push(_.last(acc).parent);
+            break;
+          }
         }
         acc.push(field);
-        return _.uniq(acc);
+        return _.chain(acc).uniq().compact().value();
       }, []);
+
+    if (missing.length) {
+      alert('The following properties are missing from the metadata_spec query:\n\n  ' + missing.join('\n  '));
+    }
+
+    return prunedFields;
   }
 
   // Convert a list to a tree* based on the `parent` property
