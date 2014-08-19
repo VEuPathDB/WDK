@@ -1054,8 +1054,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       $('<div style="font-size: 120%;">' +
           '<h3 style="margin: initial;">Warning</h3>' +
           '<p>This action will change the result of your step and steps that ' +
-          'follow. Analyses on these steps will be invalidated. You ' +
-          'will be able to re-run the analyses on the new results.</p>' +
+          'follow. Analyses on these steps will have to be re-run. ' +
+          '</p>' +
           '<p><a href="' + wdk.webappUrl('/analysisTools.jsp') + '" target="_blank">Learn More</a></p>' +
         '</div>')
         .dialog({

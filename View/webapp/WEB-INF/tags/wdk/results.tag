@@ -74,7 +74,7 @@
       <c:set var="index" value="${index + 1}" />
   </c:forEach>
 
-  <ul currentTab="${selectedTab}">
+  <ul style="overflow:visible" currentTab="${selectedTab}">
     <c:forEach items="${views}" var="item">
       <c:set var="view" value="${item.value}" />
       <li id="${view.name}">
@@ -108,6 +108,7 @@
         </a>
         <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
       </li>
+      <img style="position:absolute;top:-11px" src="<c:url value='/assets/wdk/images/beta2-40.png'/>" />
       <li id="add-analysis">
         <button title="Choose an analysis tool to apply to the results of your current step.">Analyze Results</button>
         <c:if test="${not empty newAnalyses}">
