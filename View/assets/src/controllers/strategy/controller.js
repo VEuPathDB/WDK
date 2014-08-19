@@ -1053,8 +1053,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     if (showAnalysisWarning) {
       $('<div style="font-size: 120%;">' +
           '<h3 style="margin: initial;">Warning</h3>' +
-          '<p>This action will change the result of your step, and steps that ' +
-          'follow. Completed analyes on these steps will be invalidated. You ' +
+          '<p>This action will change the result of your step and steps that ' +
+          'follow. Analyses on these steps will be invalidated. You ' +
           'will be able to re-run the analyses on the new results.</p>' +
           '<p><a href="' + wdk.webappUrl('/analysisTools.jsp') + '" target="_blank">Learn More</a></p>' +
         '</div>')
@@ -1062,15 +1062,19 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           modal: true,
           dialogClass: 'no-close',
           width: '500px',
-          buttons: {
-            'Filter The Results': function() {
+          buttons: [{
+            autofocus: true,
+            text: 'Filter the Results',
+            click: function() {
               doUpdate();
               $(this).dialog('close');
-            },
-            'Cancel': function() {
+            }
+          }, {
+            text: 'Cancel',
+            click: function() {
               $(this).dialog('close');
             }
-          }
+          }]
         });
     } else {
       doUpdate();
