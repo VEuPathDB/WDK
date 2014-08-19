@@ -59,7 +59,7 @@
 <%-- 'All' link to display all results, if the result set is not too big --%>
 	<td>
 	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	    <input class="paging-button" style="width:150px" type="button" value="Advanced Paging" onclick="wdk.resultsPage.openAdvancedPaging(this)"/>
+	    <input class="paging-button" style="width:150px;font-weight:normal" type="button" value="Advanced Paging" onclick="wdk.resultsPage.openAdvancedPaging(this)"/>
 			<div class="advanced-paging" title="Advanced Paging">
         <input type="hidden" id="resultSize" class="resultSize" value="${resultSize}" />
         <div class="text">Jump To page:</div>
