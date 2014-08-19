@@ -68,22 +68,19 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
     };
 
     this.loadFilterCount = function() {
-      $el.find(".result-filters").each(function() {
-        var layouts = $(this);
-        if (layouts.data("loaded") == "true") return;
-        
-        var countUrl = layouts.data("count-url");
-        $.getJSON(countUrl, function(data) {
-          layouts.find(".link-url").each(function() {
-            if (!$(this).hasClass("loaded")) {
-              var filter = $(this).data("filter");
-              var count = data[filter];
-              $(this).html((count == -1 || count === undefined) ? "error" : count);
-            }
-          });
+      if ($el.data("loaded") == "true") return;
+
+      var countUrl = $el.data("count-url");
+      $.getJSON(countUrl, function(data) {
+        $el.find(".link-url").each(function() {
+          if (!$(this).hasClass("loaded")) {
+            var filter = $(this).data("filter");
+            var count = data[filter];
+            $(this).html((count == -1 || count === undefined) ? "error" : count);
+          }
         });
       });
-      
+
     /*
       var links = $('.filter-instance .link-url[countref]');
 
