@@ -53,9 +53,12 @@ Otherwise a standard select menu is used.
     data-default-columns="${qp.defaultColumns}"
     data-data-id="filter-param-${qP.name}">
   <html:hidden property="value(${pNam})" />
+  <%--
   <script type="application/json" id="filter-param-${qP.name}">
     ${qP.jsonValues}
   </script>
+  --%>
+  <div class="loading">Loading...</div>
   <div class="filter-param"></div>
 </div>
 

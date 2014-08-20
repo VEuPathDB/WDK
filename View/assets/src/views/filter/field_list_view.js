@@ -13,7 +13,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
   // Then, for each field, find all parents.
   function pruneFields(fields) {
     var missing = [];
-    var prunedFields = _.where(fields, { filterable: true })
+    var prunedFields = _.where(fields, { leaf: 'true' })
       .reduce(function(acc, field) {
         while (field.parent) {
           acc.push(field);
@@ -24,7 +24,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
           }
         }
         acc.push(field);
-        return _.chain(acc).uniq().compact().value();
+        return _.uniq(_.compact(acc));
       }, []);
 
     if (missing.length) {
@@ -47,7 +47,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
           .where({ parent: field.term })
 
           // sort leaves to top
-          .sortBy(function(c) { return c.filterable ? 0 : 1; })
+          .sortBy(function(c) { return c.leaf === 'true' ? 0 : 1; })
           .value();
 
         return children.length
@@ -161,7 +161,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
 
       // sort node such that leaves are first
       groupedFields = _.sortBy(groupedFields, function(node) {
-        return node.field.filterable ? 0 : 1;
+        return node.field.leaf === 'true' ? 0 : 1;
       });
 
       this.$el.html(this.template({
@@ -179,7 +179,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
       } else {
         // select first field
         var node = groupedFields[0];
-        while (!node.field.leaf) {
+        while (node.children) {
           node = node.children[0];
         }
         field = this.model.fields.get(node.field.term);
