@@ -176,17 +176,18 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
         // select first filtered field
         var fieldTerm = this.model.filters.at(0).get('field');
         field = this.model.fields.get(fieldTerm);
-      } else {
-        // select first field
+      } else if (_.where(prunedFields, { leaf: 'true' }).length === 1) {
+        // select first field if only one
         var node = groupedFields[0];
         while (node.children) {
           node = node.children[0];
         }
         field = this.model.fields.get(node.field.term);
       }
-      _.defer(function() {
-        field.select();
-      }.bind(this));
+
+      if (field) {
+        _.defer(function() { field.select(); });
+      }
 
       return this;
     },
