@@ -52,10 +52,22 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function(options) {
       var filters = this.filterService.filters;
+      var filteredData = this.filterService.filteredData;
       this.options = options;
 
+      // Selection does not require rendering...
       this.listenTo(filters, 'add', _.partial(this.handleFilterUpdate, true));
       this.listenTo(filters, 'remove', _.partial(this.handleFilterUpdate, false));
+      this.listenTo(filteredData, 'reset', function(data, options) {
+        var fields = options.filterChangeSet
+          .map(function(filter) {
+            return filter.get('field');
+          });
+
+        if (!_.contains(fields, this.model.get('term'))) {
+          this.render();
+        }
+      });
     },
 
     handleFilterUpdate: function(isSelected, filter, filters, options) {
@@ -84,16 +96,22 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var filterValues = filter ? filter.get('values') : [];
 
       // unfiltered dist
-      var values = field.get('values');
+      //var values = field.get('values');
+      var values = filterService.getFieldValues(field);
       var counts = _.countBy(values);
+
+      // Use _.uniq(values) instead of _.keys(counts)
+      // so that we can handle non-String values.
+      // This is important for "undefined" metadata.
       var names = field.get('type') === 'number'
-        ? _.keys(counts).map(Number).sort(function(a, b) { return a - b; })
-        : _.keys(counts).sort();
+        ? _.uniq(values).map(Number).sort(function(a, b) { return a - b; })
+        : _.uniq(values).sort();
 
       var scale = _.max(counts) + 10;
 
       // filtered dist
-      var fvalues = field.get('filteredValues');
+      //var fvalues = field.get('filteredValues');
+      var fvalues = filterService.getFieldFilteredValues(field);
       var fcounts = _.countBy(fvalues);
 
       this.$el.html(this.template({
