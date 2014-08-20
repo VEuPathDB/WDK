@@ -173,7 +173,7 @@ public abstract class WdkModelBase {
     this.wdkModel = wdkModel;
   }
 
-  protected WdkModel getWdkModel() {
+  public WdkModel getWdkModel() {
     return wdkModel;
   }
 }
