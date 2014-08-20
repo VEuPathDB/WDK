@@ -223,14 +223,6 @@ public class FilterParamHandler extends AbstractParamHandler {
       throws WdkModelException {
     JSONObject jsValue = new JSONObject(stableValue);
     JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
-    StringBuilder buffer = new StringBuilder();
-    for (int i = 0; i < jsFilters.length(); i++) {
-      if (buffer.length() > 0)
-        buffer.append(", ");
-      JSONObject jsFilter = jsFilters.getJSONObject(i);
-      // TODO - need to format the filter values properly.
-      buffer.append(jsFilter);
-    }
-    return buffer.toString();
+    return jsFilters.toString();
   }
 }
