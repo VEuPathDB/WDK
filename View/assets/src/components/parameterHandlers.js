@@ -126,110 +126,135 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     }
 
     filterParams.each(function(i, node) {
-      var $node = $(node);
-      var dataId = $node.data('data-id');
-      var name = $node.data('name');
-      var defaultColumns = $node.data('default-columns');
-      var input = $node.find('input');
-      var previousValue;
+      var $param = $(node);
+      var questionName = form.find('input[name="questionFullName"]').val();
+      var paramName = $param.attr('name');
+      var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
 
-      defaultColumns = defaultColumns
-                       ? defaultColumns.split(/\s+/)
-                       : undefined;
-
-      // get previous values
-      try {
-        previousValue = JSON.parse(input.val());
-        if (!( _.isArray(previousValue.filters) &&
-               _.isArray(previousValue.values)  &&
-               _.isArray(previousValue.ignored) )) {
-          previousValue = undefined;
-          throw new Error('Previous value is malformed.');
-        }
-      } catch (e) {
-        console.warn(e);
-      }
-
-      // parse data from <script>
-      var jsonContainer = $(node).find('script[type="application/json"][id="' + dataId + '"]');
-      var spec = JSON.parse(jsonContainer.html());
-
-      // validation
-      [ 'metadata', 'metadataSpec', 'values' ]
-        .forEach(function(prop) {
-          var msg;
-          if (_.isEmpty(spec[prop])) {
-            msg = 'Invalid data: ' + prop + ' may not be empty.';
-            alert(msg);
-            throw new Error(msg);
-          }
-        });
-
-      spec = parseFilterData(spec);
-      _.extend(spec, { title: name });
-
-      if (previousValue) {
-        _.extend(spec, { filters: previousValue.filters });
-      }
-
-      // instantiate the filter service
-      var filterService = new wdk.models.filter.LocalFilterService(spec, {
-        parse: true,
-        root: 'metadata'
-      });
-
-      $node.data('filterService', filterService);
-
-      // set ignore: true for filteredData not in previousValues.values
-      if (previousValue) {
-        previousValue.ignored.forEach(function(id) {
-          filterService.filteredData.get(id).set('ignored', true);
-        });
-      }
-
-      // listen for change to filteredData and update input value
-      filterService.filteredData.on('reset change', function() {
-        var values = filterService.filteredData.where({ ignored: false })
-          .map(function(d) { return d.get('term'); });
-        var ignored = filterService.filteredData.where({ ignored: true })
-          .map(function(d) { return d.get('term'); });
-        var value = {
-          values: values,
-          ignored: ignored,
-          filters: filterService.filters
-        };
-        input.val(JSON.stringify(value));
-      });
-
-      // create views
-      var itemsView = new wdk.views.filter.FilterItemsView(filterService, { model: filterService.filters });
-      var view = new wdk.views.filter.FilterView({ model: filterService, defaultColumns: defaultColumns });
-
-      // attach views
-      $node.find('.filter-param')
-        .append(itemsView.el)
-        .append(view.el);
-
-      itemsView.render();
-      view.render(); //.collapse(true);
-
-      form.on('submit', function(e) {
-        if (filterService.filteredData.length === 0) {
-          e.preventDefault();
-          e.stopPropagation();
-          $(node).find('.ui-state-error').remove();
-          $(node).prepend(
-            '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">' +
-            'Please select ' + name + ' to continue.' +
-            '</div>'
-          );
-          filterService.filteredData.once('reset', function() {
-            $(node).find('.ui-state-error').remove();
-          });
-        }
-      });
-
+      $.getJSON(sendReqUrl)
+        .then(createFilterParam.bind(null, $param))
+        .done(function(){ $param.find('.loading').hide(); });
     });
+  }
+
+  //==============================================================================
+  function createFilterParam($param, filterData) {
+    var form = $param.closest('form');
+    // var dataId = $param.data('data-id');
+    var name = $param.data('name');
+    console.time('intialize render :: ' + name);
+    var defaultColumns = $param.data('default-columns');
+    var input = $param.find('input');
+    var spec = filterData;
+    var previousValue;
+
+    defaultColumns = defaultColumns
+                     ? defaultColumns.split(/\s+/)
+                     : undefined;
+
+    // get previous values
+    try {
+      previousValue = JSON.parse(input.val());
+      if (!( _.isArray(previousValue.filters) &&
+             _.isArray(previousValue.values)  &&
+             _.isArray(previousValue.ignored) )) {
+        previousValue = undefined;
+        throw new Error('Previous value is malformed.');
+      }
+    } catch (e) {
+      console.warn(e);
+    }
+
+    // parse data from <script>
+    // var jsonContainer = $(node).find('script[type="application/json"][id="' + dataId + '"]');
+    // console.time('parse JSON :: ' + name);
+    // var spec = JSON.parse(jsonContainer.html());
+    // console.timeEnd('parse JSON :: ' + name);
+
+    console.time('validation not null queries :: ' + name);
+    // validation
+    [ 'metadata', 'metadataSpec', 'values' ]
+      .forEach(function(prop) {
+        var msg;
+        if (_.isEmpty(spec[prop])) {
+          msg = 'Invalid data: ' + prop + ' may not be empty.';
+          alert(msg);
+          throw new Error(msg);
+        }
+      });
+    console.timeEnd('validation not null queries :: ' + name);
+
+    console.time('massage data :: ' + name);
+    spec = parseFilterData(spec);
+    console.timeEnd('massage data :: ' + name);
+    _.extend(spec, { title: name });
+
+    if (previousValue) {
+      _.extend(spec, { filters: previousValue.filters });
+    }
+
+    console.time('init filter service :: ' + name);
+    // instantiate the filter service
+    var filterService = new wdk.models.filter.LocalFilterService(spec, {
+      parse: true,
+      root: 'metadata'
+    });
+    console.timeEnd('init filter service :: ' + name);
+
+    $param.data('filterService', filterService);
+
+    // set ignore: true for filteredData not in previousValues.values
+    if (previousValue) {
+      previousValue.ignored.forEach(function(id) {
+        filterService.filteredData.get(id).set('ignored', true);
+      });
+    }
+
+    // listen for change to filteredData and update input value
+    filterService.filteredData.on('reset change', function() {
+      var values = filterService.filteredData.where({ ignored: false })
+        .map(function(d) { return d.get('term'); });
+      var ignored = filterService.filteredData.where({ ignored: true })
+        .map(function(d) { return d.get('term'); });
+      var value = {
+        values: values,
+        ignored: ignored,
+        filters: filterService.filters
+      };
+      input.val(JSON.stringify(value));
+    });
+
+    console.time('init filter views :: ' + name);
+    // create views
+    var itemsView = new wdk.views.filter.FilterItemsView(filterService, { model: filterService.filters });
+    var view = new wdk.views.filter.FilterView({ model: filterService, defaultColumns: defaultColumns });
+    console.timeEnd('init filter views :: ' + name);
+
+    // attach views
+    $param.find('.filter-param')
+      .append(itemsView.el)
+      .append(view.el);
+
+    itemsView.render();
+    view.render(); //.collapse(true);
+
+    form.on('submit', function(e) {
+      if (filterService.filteredData.length === 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        $param.find('.ui-state-error').remove();
+        $param.prepend(
+          '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">' +
+          'Please select ' + name + ' to continue.' +
+          '</div>'
+        );
+        filterService.filteredData.once('reset', function() {
+          $param.find('.ui-state-error').remove();
+        });
+      }
+    });
+
+    console.timeEnd('intialize render :: ' + name);
   }
 
   function updateFilterParam(paramNode, data) {
@@ -237,66 +262,90 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   function parseFilterData(filterData) {
-    var Field = wdk.models.filter.Field,
-        metadata = filterData.metadata,
-        metadataSpec = filterData.metadataSpec,
-        values = filterData.values,
-        unknowns = [],
+    // var Field = wdk.models.filter.Field;
+    var metadata = filterData.metadata;
+    var metadataSpec = filterData.metadataSpec;
+    var values = filterData.values;
+    // var unknowns = [];
 
-        // unique set of metadata properties found
-        // in metadata object values
-        metadataTerms = _.values(metadata)
-          .map(_.keys)
-          .reduce(function (a, b) { return _.union(a, b); })
-          .filter(function(name) {
-            return !!metadataSpec[name];
-          }),
+    // unique set of metadata properties found
+    // in metadata object values
+    // console.time('  v pick unique terms');
+    // FIXME Make this more efficient.
+    //
+    // We need the keys for all 
+    // var metadataTerms = _.values(metadata)
+    //   .map(_.keys)
+    //   .reduce(function (a, b) { return _.union(a, b); })
+    //   .filter(function(name) {
+    //     return !!metadataSpec[name];
+    //   });
+    // var metadataTerms = _.chain(metadata)
+    //   .values()
+    //   .map(Object.keys)
+    //   .flatten()
+    //   .uniq()
+    //   .filter(function(name) { return metadataSpec[name]; })
+    //   .value();
+    // console.timeEnd('  v pick unique terms');
 
-        fields = _.keys(metadataSpec)
-          .map(function(name) {
-            return _.extend({
-              term: name,
-              display: name,
-              filterable: _.indexOf(metadataTerms, name) > -1 &&
-                metadataSpec[name].leaf === 'true'
-            }, metadataSpec[name]);
-          }),
+    // console.time('usedMetadata');
+    // var usedMetadata = _.uniq([].concat.apply([], _.values(metadata).map(_.keys)));
+    // console.timeEnd('usedMetadata');
 
-        data = values
-          .map(function(d) {
-            var mdata = metadata[d.term],
-                missingMsg = 'Missing metadata for "' + d.term + '".';
+    // TODO remove
+    console.time('  v mark leaves');
+    var fields = _.keys(metadataSpec)
+      .map(function(name) {
+        return _.extend({
+          //filterable: _.contains(usedMetadata, name),
+          term: name,
+          display: name
+        }, metadataSpec[name]);
+      });
+    console.timeEnd('  v mark leaves');
 
-            if (mdata === undefined) {
-              _.defer(alert, '/!\\ ERROR /!\\\n\n' + missingMsg);
-              throw new Error(missingMsg);
-            }
+    // TODO remove
+    console.time('  v map data to fields');
+    var data = values
+      .map(function(d) {
+        var mdata = metadata[d.term],
+            missingMsg = 'Missing metadata for "' + d.term + '".';
 
-            _.where(fields, { filterable: true })
-              .forEach(function(field) {
-                var property = field.term,
-                    value = mdata[property];
-                if (!value) {
-                  mdata[property] = Field.UNKNOWN_VALUE;
-                } else if (metadataSpec[property].type === 'number') {
-                  // type coercion
-                  mdata[property] = Number(value);
-                }
-              });
+        if (mdata === undefined) {
+          _.defer(alert, '/!\\ ERROR /!\\\n\n' + missingMsg);
+          throw new Error(missingMsg);
+        }
 
-            if (_.every(mdata, function(m) { return m === Field.UNKNOWN_VALUE; })) {
-              unknowns.push(d);
-            }
+        // FIXME Defer counting unknowns and type coercion to
+        // detail view render time
+        // _.where(fields, { leaf: 'true' })
+        //   .forEach(function(field) {
+        //     var property = field.term,
+        //         value = mdata[property];
+        //     if (!value) {
+        //       mdata[property] = Field.UNKNOWN_VALUE;
+        //     } else if (metadataSpec[property].type === 'number') {
+        //       // type coercion
+        //       mdata[property] = Number(value);
+        //     }
+        //   });
 
-            return _.extend(d, {
-              metadata: mdata
-            });
-          });
+        // if (_.every(mdata, function(m) { return m === Field.UNKNOWN_VALUE; })) {
+        //   unknowns.push(d);
+        // }
 
-    if (unknowns.length) {
-      _.defer(alert, '/!\\ WARNING /!\\\n\nThe following items contian only UNKNOWN values: ' +
-        _.pluck(unknowns, 'term').join(', '));
-    }
+        return _.extend(d, {
+          metadata: mdata
+        });
+      });
+    console.timeEnd('  v map data to fields');
+
+    // TODO remove
+    // if (unknowns.length) {
+    //   _.defer(alert, '/!\\ WARNING /!\\\n\nThe following items contian only UNKNOWN values: ' +
+    //     _.pluck(unknowns, 'term').join(', '));
+    // }
 
     return { fields: fields, data: data };
   }

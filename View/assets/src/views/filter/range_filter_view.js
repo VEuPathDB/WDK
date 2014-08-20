@@ -1,12 +1,6 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
-  var Field = wdk.models.filter.Field;
-
-  var notUnk = function(n) {
-    return n !== Field.UNKNOWN_VALUE && !_.isNaN(n);
-  };
-
   ns.RangeFilterView = wdk.views.View.extend({
 
     plot: null,
@@ -36,9 +30,22 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function(options) {
       var filters = this.filterService.filters;
+      var filteredData = this.filterService.filteredData;
       this.options = options;
+
+      // Selection does not require rendering...
       this.listenTo(filters, 'add', this.addFilter);
       this.listenTo(filters, 'remove', this.removeFilter);
+      this.listenTo(filteredData, 'reset', function(data, options) {
+        var fields = options.filterChangeSet
+          .map(function(filter) {
+            return filter.get('field');
+          });
+
+        if (!_.contains(fields, this.model.get('term'))) {
+          this.render();
+        }
+      });
     },
 
     addFilter: function(filter, filters, options) {
@@ -71,15 +78,19 @@ wdk.namespace('wdk.views.filter', function(ns) {
       });
       var filterValues = filter ? filter.pick('min', 'max') : null;
 
-      var values = field.get('values').filter(notUnk).map(Number);
+      //var values = field.get('values').filter(notUnk).map(Number);
+      var values = _.reject(filterService.getFieldValues(field).map(Number), _.isNaN);
 
-      var distribution = _(values).countBy();
-      var xdata = _(distribution).keys().map(Number);
-      var ydata = _(distribution).values().map(Number);
+      var distribution = _.countBy(values);
+      var xdata = _.keys(distribution).map(Number);
+      var ydata = _.values(distribution).map(Number);
 
-      var fdistribution = _(field.get('filteredValues').filter(notUnk)).countBy();
-      var xfdata = _(fdistribution).keys().map(Number);
-      var yfdata = _(fdistribution).values().map(Number);
+      //var fdistribution = _(field.get('filteredValues').filter(notUnk)).countBy();
+      var fvalues = _.without(filterService.getFieldFilteredValues(field), undefined).map(Number);
+
+      var fdistribution = _.countBy(fvalues);
+      var xfdata = _.keys(fdistribution).map(Number);
+      var yfdata = _.values(fdistribution).map(Number);
 
       var min = this.min = _.min(values);
       var max = this.max = _.max(values);

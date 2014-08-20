@@ -6,6 +6,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
   var Filters = wdk.models.filter.Filters;
   var Fields = wdk.models.filter.Fields;
+  var Field = wdk.models.filter.Field;
 
   var Datum = Backbone.Model.extend({
     idAttribute: 'term',
@@ -18,6 +19,11 @@ wdk.namespace('wdk.models.filter', function(ns) {
     model: Datum
   });
 
+  // FIXME Treat metadata, metadataSpec, and values as separate
+  // entities and operate in such a way.
+  //
+  // Thus, the data object below will contain those three
+  // objects: { values, metadata, metadataSpec }
   /**
    * Base class for FilterService classes.
    *
@@ -60,18 +66,31 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     parse: function(attrs) {
+      console.time('set data');
       this.data.reset(attrs.data);
+      console.timeEnd('set data');
+      console.time('set fields');
       this.fields.reset(attrs.fields);
+      console.timeEnd('set fields');
       this.filters.reset(attrs.filters);
       return { title: attrs.title || 'Items' };
     },
 
     initialize: function() {
       var debounceApplyFilters = _.debounce(this.applyFilters, 100);
+
+      this.filterChangeSet = [];
+
+      this.listenTo(this.filters, 'add remove reset', function appendFilterChangeSet(model) {
+        this.filterChangeSet.push(model);
+      });
+
       this.listenTo(this.filters, 'add remove reset', debounceApplyFilters);
       this.listenTo(this.data, 'reset', this.setFieldValues);
-      this.listenTo(this.filteredData, 'reset', this.setFieldFilteredValues);
-      this.setFieldValues();
+      // this.listenTo(this.filteredData, 'reset', this.setFieldFilteredValues);
+      // console.time('set field values');
+      // this.setFieldValues();
+      // console.timeEnd('set field values');
       this.applyFilters();
     },
 
@@ -87,9 +106,27 @@ wdk.namespace('wdk.models.filter', function(ns) {
     setFieldValues: function() {
       var fs = this;
       this.fields.forEach(function(field) {
+        console.time('set field :: ' + field.get('term'));
         var values = _(fs.data.pluck('metadata')).pluck(field.get('term'));
         field.set('values', values);
+        console.timeEnd('set field :: ' + field.get('term'));
       });
+    },
+
+    getFieldValues: function(field) {
+      var term = field.get('term');
+      return _.pluck(this.data.pluck('metadata'), term)
+        .map(function(v){ return v === undefined ? Field.UNKNOWN_VALUE : v; });
+    },
+
+    getFieldFilteredValues: function(field) {
+      var term = field.get('term');
+
+      return this.getFilteredData({ omit: [term] })
+        .map(function(d) {
+          var value = d.get('metadata')[term];
+          return _.isUndefined(value) ? Field.UNKNOWN_VALUE : value;
+        });
     },
 
     /**
@@ -109,10 +146,15 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
     /**
      * Call getFilteredData and use result to reset filteredData
+     *
+     * TODO Add filterChangeSet to options
      */
     applyFilters: function() {
       var data = this.getFilteredData();
-      this.filteredData.reset(data);
+      this.filteredData.reset(data, {
+        filterChangeSet: this.filterChangeSet
+      });
+      this.filterChangeSet = [];
       return this;
     },
 
@@ -163,9 +205,21 @@ wdk.namespace('wdk.models.filter', function(ns) {
     applyMemberFilter: function(filter, data) {
       var field = filter.get('field');
       var values = filter.get('values');
-      return data.filter(function(d) {
-        return _.contains(values, d.get('metadata')[field].toString());
+
+      console.time('for-loop :: ' + field + ' - ' + values);
+      var d = data.filter(function(d) {
+        var value = d.get('metadata')[field] || Field.UNKNOWN_VALUE;
+        // TODO Use a for loop for efficiency
+        // return _.contains(values, value);
+
+        for (var i = 0, l = values.length; i < l; i++) {
+          if (values[i] === value) return true;
+        }
+
+        return false;
       });
+      console.timeEnd('for-loop :: ' + field + ' - ' + values);
+      return d;
     },
 
     applyRangeFilter: function(filter, data) {

@@ -1,6 +1,7 @@
 .filter-param h3 {
   margin: auto;
   margin-bottom: 1em;
+  text-transform: capitalize;
 }
 .filter-param .muted {
   color: #9f9f9f;
@@ -118,6 +119,7 @@
 .field-list ul {
   padding-bottom: .5em;
   font-weight: bold;
+  text-transform: capitalize;
 }
 .field-list > ul ul {
   padding-left: .8em;
