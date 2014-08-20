@@ -15,12 +15,12 @@ import org.gusdb.wdk.model.user.User;
  */
 public class TimestampParamHandler extends AbstractParamHandler {
 
-  public TimestampParamHandler(){}
-  
+  public TimestampParamHandler() {}
+
   public TimestampParamHandler(TimestampParamHandler handler, Param param) {
     super(handler, param);
   }
-  
+
   /**
    * The raw value is the same as stable value.
    * 
@@ -28,9 +28,8 @@ public class TimestampParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue,
-      Map<String, String> contextValues) {
-    return (String)rawValue;
+  public String toStableValue(User user, Object rawValue, Map<String, String> contextValues) {
+    return (String) rawValue;
   }
 
   /**
@@ -40,9 +39,8 @@ public class TimestampParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public Object toRawValue(User user, String refernceValue,
-      Map<String, String> contextValues) {
-    return refernceValue;
+  public String toRawValue(User user, String stableValue, Map<String, String> contextValues) {
+    return stableValue;
   }
 
   /**
@@ -52,8 +50,7 @@ public class TimestampParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue,
-      Map<String, String> contextValues) {
+  public String toInternalValue(User user, String stableValue, Map<String, String> contextValues) {
     return stableValue;
   }
 
@@ -64,8 +61,7 @@ public class TimestampParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toSignature(User user, String stableValue,
-      Map<String, String> contextValues) {
+  public String toSignature(User user, String stableValue, Map<String, String> contextValues) {
     return stableValue;
   }
 
@@ -95,6 +91,12 @@ public class TimestampParamHandler extends AbstractParamHandler {
   @Override
   public ParamHandler clone(Param param) {
     return new TimestampParamHandler(this, param);
+  }
+
+  @Override
+  public String getDisplayValue(User user, String stableValue, Map<String, String> contextValues)
+      throws WdkModelException {
+    return toRawValue(user, stableValue, contextValues);
   }
 
 }

@@ -61,7 +61,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public Object toRawValue(User user, String stableValue, Map<String, String> contextValues)
+  public Dataset toRawValue(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException {
     int datasetId = Integer.valueOf(stableValue);
     return user.getDataset(datasetId);
@@ -247,5 +247,11 @@ public class DatasetParamHandler extends AbstractParamHandler {
   @Override
   public ParamHandler clone(Param param) {
     return new DatasetParamHandler(this, param);
+  }
+
+  @Override
+  public String getDisplayValue(User user, String stableValue, Map<String, String> contextValues)
+      throws WdkModelException {
+    return toRawValue(user, stableValue, contextValues).getContent();
   }
 }

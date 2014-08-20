@@ -58,7 +58,7 @@ public class FilterParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public Object toRawValue(User user, String stableValue, Map<String, String> contextValues) {
+  public String toRawValue(User user, String stableValue, Map<String, String> contextValues) {
     return stableValue;
   }
 
@@ -188,8 +188,10 @@ public class FilterParamHandler extends AbstractParamHandler {
     }
     else { // stable value set, check if any of them are invalid
       Set<String> invalidValues = new HashSet<>();
-      for (String term : stableValue.split(",")) {
-        term = term.trim();
+      JSONObject jsValue = new JSONObject(stableValue);
+      JSONArray jsTerms = jsValue.getJSONArray(TERMS_KEY);
+      for (int i = 0; i < jsTerms.length(); i++) {
+        String term = jsTerms.getString(i);
         if (displayMap.containsKey(term))
           values.add(term);
         else
@@ -214,5 +216,21 @@ public class FilterParamHandler extends AbstractParamHandler {
   @Override
   public ParamHandler clone(Param param) {
     return new FilterParamHandler(this, param);
+  }
+
+  @Override
+  public String getDisplayValue(User user, String stableValue, Map<String, String> contextValues)
+      throws WdkModelException {
+    JSONObject jsValue = new JSONObject(stableValue);
+    JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
+    StringBuilder buffer = new StringBuilder();
+    for (int i = 0; i < jsFilters.length(); i++) {
+      if (buffer.length() > 0)
+        buffer.append(", ");
+      JSONObject jsFilter = jsFilters.getJSONObject(i);
+      // TODO - need to format the filter values properly.
+      buffer.append(jsFilter);
+    }
+    return buffer.toString();
   }
 }
