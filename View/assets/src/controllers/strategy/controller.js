@@ -1053,8 +1053,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     if (showAnalysisWarning) {
       $('<div style="font-size: 120%;">' +
           '<h3 style="margin: initial;">Warning</h3>' +
-          '<p>This action will change the result of your step and steps that ' +
-          'follow. Analyses on these steps will have to be re-run. ' +
+          '<p>Selecting a different value for the filter (add icon) will change your gene result, and ' +
+          'analyses on this and subsequent steps will have to be re-run. Are you sure?' +
           '</p>' +
           '<p><a href="' + wdk.webappUrl('/analysisTools.jsp') + '" target="_blank">Learn More</a></p>' +
         '</div>')
