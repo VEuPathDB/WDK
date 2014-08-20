@@ -94,6 +94,7 @@
         <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
       </li>
     </c:forEach>
+
     <c:if test="${not empty strategy and fn:length(question.stepAnalyses) > 0}">
       <c:set var="newAnalyses">
         <c:forEach items="${question.stepAnalyses}" var="analysis">
@@ -108,7 +109,6 @@
         </a>
         <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
       </li>
-      <img style="position:absolute;top:-11px" src="<c:url value='/assets/wdk/images/beta2-40.png'/>" />
       <li id="add-analysis">
         <button title="Choose an analysis tool to apply to the results of your current step.">Analyze Results</button>
         <c:if test="${not empty newAnalyses}">
@@ -118,6 +118,7 @@
             </ul>
           </div>
         </c:if>
+        <img style="position:absolute;top:-11px" src="<c:url value='/assets/wdk/images/beta2-40.png'/>" />
       </li>
     </c:if>
     <%--
