@@ -476,6 +476,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             try {
               jsParam.put("value", getRawValue(paramValues, param));
               jsParam.put("internal", !param.getIsVisible());
+              jsParam.put("display", param.getDisplayValue());
             }
             catch (Exception ex) {
 							// instead of throwing exception we print eception in logs. 
@@ -489,6 +490,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
           }
           else {
             jsParam.put("value", stableValue);
+            jsParam.put("display", stableValue);
           }
           jsParams.put(jsParam);
         }

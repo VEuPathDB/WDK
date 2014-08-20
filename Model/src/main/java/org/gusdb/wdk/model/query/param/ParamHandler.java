@@ -78,4 +78,6 @@ public interface ParamHandler {
       throws WdkModelException, WdkUserException;
 
   ParamHandler clone(Param param);
+  
+  String getDisplayValue(User user, String stableValue, Map<String, String> contextValues) throws WdkModelException;
 }
