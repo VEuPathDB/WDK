@@ -107,6 +107,16 @@ public class BackupUser extends BaseCLI {
     String deleteCondtion = "user_id IN (SELECT user_id FROM " + userSchema + "users " +
         " WHERE is_guest = 1 AND register_time < to_date('" + cutoffDate + "', 'yyyy/mm/dd'))";
     try {
+      deleteOutdatedRows(statement, "dataset_values", "dataset_id");
+      deleteOutdatedRows(statement, "datasets");
+      deleteOutdatedRows(statement, "user_roles");
+      deleteOutdatedRows(statement, "preferences");
+      deleteOutdatedRows(statement, "user_baskets");
+      deleteOutdatedRows(statement, "favorites");
+      deleteOutdatedRows(statement, "strategies");
+      deleteOutdatedRows(statement, "steps");
+      deleteOutdatedRows(statement, "users");
+      
       backupTable(statement, "users", userColumns);
       backupTable(statement, "user_roles", roleColumns);
       backupTable(statement, "preferences", prefColumns);
@@ -140,6 +150,20 @@ public class BackupUser extends BaseCLI {
       connection.close();
     }
   }
+  
+  private void deleteOutdatedRows(Statement statement, String table) throws SQLException {
+    deleteOutdatedRows(statement, table, "user_id");
+  }
+ 
+  private void deleteOutdatedRows(Statement statement, String table, String keyColumn) throws SQLException {
+    logger.info("**** IN DELETE OUTDATED ROWS ******  " + table);
+    String fromTable = userSchema + table;
+    String toTable = backupSchema + table;
+
+    // delete duplicate rows from backup table, so that updated data can be copied over.
+    statement.executeUpdate("DELETE FROM " + toTable + " WHERE " + keyColumn + " IN (SELECT " + keyColumn +
+        " FROM " + fromTable + ")");
+  }
 
   private void backupTable(Statement statement, String table, String columns) throws SQLException {
     backupTable(statement, table, columns, "user_id");
@@ -151,11 +175,7 @@ public class BackupUser extends BaseCLI {
     String fromTable = userSchema + table;
     String toTable = backupSchema + table;
 
-    // first, delete duplicate rows from backup table, so that updated data can be copied over.
-    statement.executeUpdate("DELETE FROM " + toTable + " WHERE " + keyColumn + " IN (SELECT " + keyColumn +
-        " FROM " + fromTable + ")");
-
-    // then copy all rows into backup
+    // copy all rows into backup
     statement.executeUpdate("INSERT INTO " + toTable + "(" + columns + ") SELECT " + columns + " FROM " +
         fromTable);
   }
