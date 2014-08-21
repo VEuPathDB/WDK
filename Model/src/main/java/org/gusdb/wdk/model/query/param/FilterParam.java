@@ -53,7 +53,11 @@ public class FilterParam extends FlatVocabParam {
 
   private String metadataSpecQueryRef;
   private Query metadataSpecQuery;
+
   private String defaultColumns;
+
+  // remove non-terminal nodes with a single child
+  private boolean trimMetadataTerms = true;
 
   /**
    * 
@@ -78,6 +82,7 @@ public class FilterParam extends FlatVocabParam {
       this.metadataSpecQuery = param.metadataSpecQuery.clone();
     if (param.defaultColumns != null)
       this.defaultColumns = param.defaultColumns;
+    this.trimMetadataTerms = param.trimMetadataTerms;
   }
 
   /*
@@ -163,6 +168,21 @@ public class FilterParam extends FlatVocabParam {
    */
   public void setDefaultColumns(String defaultColumns) {
     this.defaultColumns = defaultColumns;
+  }
+
+  /**
+   * @return the trimMetadataTerms
+   */
+  public boolean getTrimMetadataTerms() {
+    return trimMetadataTerms;
+  }
+
+  /**
+   * @param trimMetadataTerms
+   *          the metadataQuery to set
+   */
+  public void setTrimMetadataTerms(boolean trimMetadataTerms) {
+    this.trimMetadataTerms = trimMetadataTerms;
   }
 
   @Override

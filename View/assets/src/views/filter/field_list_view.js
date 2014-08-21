@@ -3,10 +3,6 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
 
   // # Helper functions
 
-  // Create tree, then prune it so it's easier to read
-  var makeTree = _.compose(removeParentsWithSingleChild, removeSingleTopNode,
-    constructTree);
-
   // Given a list of fields:
   // First, find all fields marked as `filterable` (this means
   //   the field is terminating and data can be filtered by it).
@@ -140,12 +136,19 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
 
     template: wdk.templates['filter/field_list.handlebars'],
 
-    initialize: function() {
+    initialize: function(options) {
+      this.trimMetadataTerms = options.trimMetadataTerms;
+
       this.listenTo(this.model.fields, 'select', this.selectField);
       this.listenTo(this.model.fields, 'reset', this.render);
     },
 
     render: function() {
+
+      // Create tree, then prune it so it's easier to read
+      var makeTree = this.trimMetadataTerms
+        ? _.compose(removeParentsWithSingleChild, removeSingleTopNode, constructTree)
+        : constructTree;
 
       var fields = this.model.fields.toJSON();
 

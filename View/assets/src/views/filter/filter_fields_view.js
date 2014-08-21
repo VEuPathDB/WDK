@@ -16,8 +16,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     className: 'filters ui-helper-clearfix',
 
-    initialize: function() {
-      this.fieldList = new FieldListView({ model: this.model });
+    initialize: function(options) {
+      this.fieldList = new FieldListView({ model: this.model, trimMetadataTerms: options.trimMetadataTerms });
       this.fieldDetail = new FieldDetailView({ model: this.model });
 
       this.listenTo(this.model.fields, 'select', this.renderDetail);
