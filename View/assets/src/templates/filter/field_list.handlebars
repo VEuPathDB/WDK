@@ -8,12 +8,12 @@
 {{#each nodes}}
   {{#if children}}
   <li>
-    <h4 class="link collapsed">{{field.display}}</h4>
+    <h4 role="treeitem" class="link collapsed">{{field.display}}</h4>
     <div> {{> field_node}} </div>
   </li>
   {{else}}
   <li>
-    <a href="#{{field.term}}">{{field.display}}</a>
+    <a role="treeitem" href="#{{field.term}}">{{field.display}}</a>
   </li>
   {{/if}}
 {{/each}}
