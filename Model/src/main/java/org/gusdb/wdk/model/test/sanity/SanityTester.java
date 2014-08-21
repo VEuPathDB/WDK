@@ -54,6 +54,7 @@ public class SanityTester {
 
   // statistics aggregator class
   public static class Statistics {
+
     public int testCount = 0;
     public int queriesPassed = 0;
     public int queriesFailed = 0;
@@ -165,39 +166,40 @@ public class SanityTester {
   public void runTests() throws Exception {
     for (int i = 0; i < _tests.size(); i++) {
       ElementTest element = _tests.get(i);
-      if (_testFilter.filterOutTest(i))
-        continue;
-      if (_indexOnly) {
-        OUT(" [test: " + i + "] " + element.getTestName() + NL);
+
+      if (_testFilter.filterOutTest(i)) continue;
+
+      OUT(" [test: " + i + "] " + element.getTestName());
+
+      if (_indexOnly) continue;
+
+      // performing test
+      TestResult result = new TestResult();
+      try {
+        result = element.test(_stats);
+        if (result.passed) {
+          result.prefix = "";
+          result.status = " passed.";
+        }
+      }
+      catch (Exception e) {
+        result.returned = " It threw an exception.";
+        result.caughtException = e;
+      }
+
+      // test output
+      if (!result.passed) OUT(BANNER_LINE_TOP);
+      if (result.caughtException != null) {
+        ERR(FormatUtil.getStackTrace(result.caughtException));
       }
       else {
-        TestResult result = new TestResult();
-        try {
-          result = element.test(_stats);
-          if (result.passed) {
-            result.prefix = "";
-            result.status = " passed.";
-          }
-        }
-        catch (Exception e) {
-          result.returned = " It threw an exception.";
-          result.caughtException = e;
-        }
-
-        // test output
-        if (!result.passed) OUT(BANNER_LINE_TOP);
-        if (result.caughtException != null) {
-          ERR(FormatUtil.getStackTrace(result.caughtException));
-        }
-        else {
-          String msg = result.prefix + result.getDurationSecs() +
-              " [test: " + i + "]" + " " + element.getTestName() +
-              result.status + result.returned + result.expected +
-              " [ " + element.getCommand() + " ] " + NL;
-          if (!result.passed || !_failuresOnly) OUT(msg);
-        }
-        if (!result.passed) OUT(BANNER_LINE_BOT + NL);
+        String msg = result.prefix + result.getDurationSecs() +
+            " [test: " + i + "]" + " " + element.getTestName() +
+            result.status + result.returned + result.expected +
+            " [ " + element.getCommand() + " ] " + NL;
+        if (!result.passed || !_failuresOnly) OUT(msg);
       }
+      if (!result.passed) OUT(BANNER_LINE_BOT + NL);
     }
 
     // check the connection usage
