@@ -1,5 +1,8 @@
 package org.gusdb.wdk.controller.action.analysis;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
@@ -9,6 +12,8 @@ import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 
 public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
 
+  private static final Logger LOG = Logger.getLogger(ShowStepAnalysisResultAction.class);
+  
   private static final String ERROR_REASON_TEXT =
       "A run of this analysis encountered an error before it could complete.";
   private static final String INTERRUPTED_REASON_TEXT =
@@ -29,7 +34,14 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
 
     StepAnalysisContext context = getContextFromPassedId();
     String reason = null;
-    
+
+    if (LOG.isDebugEnabled()) { // check first so expensive ops below aren't unnecessarily done
+      LOG.debug("Retrieving results for Step Analysis with" +
+          " ID: " + context.getAnalysisId() +
+          ", hash: " + context.createHash() +
+          ", " + NL + context);
+    }
+
     switch (context.getStatus()) {
       case CREATED:
       case INVALID:
