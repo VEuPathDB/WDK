@@ -9,7 +9,7 @@ my $sysProps = &WDK::Model::CommandHelper::getSystemProps($GUS_HOME, 'wdkSanityT
 my $args = &WDK::Model::CommandHelper::getJavaArgs(@ARGV);
 my $envJvmOpts = $ENV{GUSJVMOPTS};
 
-my $cmd = "java $sysProps $envJvmOpts -classpath $CLASSPATH org.gusdb.wdk.model.test.SanityTester $args";
+my $cmd = "java $sysProps $envJvmOpts -classpath $CLASSPATH org.gusdb.wdk.model.test.sanity.SanityTesterCLI $args";
 
 system($cmd);
 
