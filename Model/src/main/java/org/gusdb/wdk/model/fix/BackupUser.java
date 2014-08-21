@@ -137,12 +137,16 @@ public class BackupUser extends BaseCLI {
       // removeGuest(statement, "user_baskets", deleteCondtion);
       removeGuest(statement, "datasets", deleteCondtion);
       removeGuest(statement, "preferences", deleteCondtion);
+      removeGuest(statement, "user_baskets", deleteCondtion);
+      removeGuest(statement, "favorites", deleteCondtion);
       removeGuest(statement, "strategies", deleteCondtion);
       removeGuest(statement, "step_analysis", "step_id IN (SELECT step_id FROM " + userSchema +
           "steps WHERE " + deleteCondtion + ")");
-      removeGuest(statement, "steps", deleteCondtion);
+      removeGuest(statement, "steps", deleteCondtion + " AND step_id NOT IN (SELECT root_step_id FROM " +
+          userSchema + "strategies)");
       removeGuest(statement, "user_roles", deleteCondtion);
-      removeGuest(statement, "users", deleteCondtion);
+      removeGuest(statement, "users", deleteCondtion + " AND user_id NOT IN (SELECT user_id FROM " +
+          userSchema + "steps)");
 
       connection.commit();
     }
