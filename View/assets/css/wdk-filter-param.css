@@ -103,6 +103,7 @@
   cursor: pointer;
   margin: 1em 0 .5em 4px;
   border: 1px solid transparent;
+  font-weight: normal;
 }
 .field-list h4:before {
   /* down pointing triangle */
