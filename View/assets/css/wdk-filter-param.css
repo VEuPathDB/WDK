@@ -96,6 +96,9 @@
 .field-list > ul {
   margin-top: 1em;
 }
+.field-list > ul > li > a {
+  margin-left: .8em;
+}
 .field-list input {
   width: 90%;
 }
