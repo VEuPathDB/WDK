@@ -2,7 +2,7 @@
   {{#each children}}
   <li data-description="{{field.description}}">
     {{#if children}}
-    <h4 class="collapsed">{{field.display}}</h4>
+    <h4 class="link collapsed">{{field.display}}</h4>
     <div> {{> field_node}} </div>
     {{else}}
     <a href="#{{field.term}}">{{field.display}}</a>
