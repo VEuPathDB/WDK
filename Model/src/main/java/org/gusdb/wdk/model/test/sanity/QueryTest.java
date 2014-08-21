@@ -77,7 +77,9 @@ public class QueryTest implements ElementTest {
 
   @Override
   public String getTestName() {
-    return _queryType.toUpperCase() + " QUERY " + _query.getFullName();
+    return _queryType.toUpperCase() + " QUERY" +
+        (_paramValuesSet == null ? "_TOTAL " : " ") +
+        _query.getFullName();
   }
 
   @Override
@@ -101,7 +103,7 @@ public class QueryTest implements ElementTest {
       maxRows = _paramValuesSet.getMaxRows();
     }
 
-    String queryType = (_paramValuesSet == null ? _queryType + "TOTAL" : _queryType);
+    String queryType = (_paramValuesSet == null ? _queryType + "_TOTAL" : _queryType);
     TestResult result = new TestResult();
     
     int sanityMin = minRows;
@@ -114,7 +116,7 @@ public class QueryTest implements ElementTest {
         result.restartTimer();
         testAttributeQuery_Time(_user, _query, _paramValuesSet, count);
       }
-      else if (queryType.equals(QuerySet.TYPE_TABLE + "TOTAL")) {
+      else if (queryType.equals(QuerySet.TYPE_TABLE + "_TOTAL")) {
         count = testTableQuery_TotalTime(_user, _query);
       }
       else {
