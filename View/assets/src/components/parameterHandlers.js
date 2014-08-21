@@ -144,6 +144,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     var name = $param.data('name');
     console.time('intialize render :: ' + name);
     var defaultColumns = $param.data('default-columns');
+    var trimMetadataTerms = $param.data('trim-metadata-terms');
     var input = $param.find('input');
     var spec = filterData;
     var previousValue;
@@ -227,7 +228,11 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     console.time('init filter views :: ' + name);
     // create views
     var itemsView = new wdk.views.filter.FilterItemsView(filterService, { model: filterService.filters });
-    var view = new wdk.views.filter.FilterView({ model: filterService, defaultColumns: defaultColumns });
+    var view = new wdk.views.filter.FilterView({
+      model: filterService,
+      defaultColumns: defaultColumns,
+      trimMetadataTerms: trimMetadataTerms
+    });
     console.timeEnd('init filter views :: ' + name);
 
     // attach views
