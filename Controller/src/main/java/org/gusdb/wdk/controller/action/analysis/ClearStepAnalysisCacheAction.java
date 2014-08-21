@@ -1,5 +1,7 @@
 package org.gusdb.wdk.controller.action.analysis;
 
+import java.util.Date;
+
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.controller.action.standard.GenericPageAction;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
@@ -14,6 +16,6 @@ public class ClearStepAnalysisCacheAction extends GenericPageAction {
     StepAnalysisFactory analysisMgr = getWdkModel().getModel().getStepAnalysisFactory();
     analysisMgr.clearResultsCache();
     return new ActionResult(ResponseType.text).setStream(
-        IoUtil.getStreamFromString("Results cache successfully cleared."));
+        IoUtil.getStreamFromString("Results cache successfully cleared at " + new Date() + "."));
   }
 }
