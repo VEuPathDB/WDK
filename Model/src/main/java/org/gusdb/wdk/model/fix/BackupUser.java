@@ -42,6 +42,8 @@ public class BackupUser extends BaseCLI {
       + "last_run_time, estimate_size, answer_filter, custom_name, is_deleted, is_valid, collapsed_name, "
       + "is_collapsible, assigned_weight, project_id, project_version, question_name, strategy_id, "
       + "display_params, result_message, prev_step_id";
+  private static final String stepAnalysisColumns = "analysis_id, step_id, display_name, is_new, has_params, "
+      + "invalid_step_reason, context_hash, context";
   private static final String strategyColumns = "strategy_id, user_id, root_step_id, project_id, version, "
       + "is_saved, create_time, last_view_time, last_modify_time, description, signature, name, saved_name, "
       + "is_deleted, is_public, prev_strategy_id";
@@ -79,7 +81,7 @@ public class BackupUser extends BaseCLI {
 
   @Override
   protected void execute() throws Exception {
-		logger.info("****IN EXECUTE******");
+    logger.info("****IN EXECUTE******");
 
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
     backupSchema = (String) getOptionValue(ARG_BACKUP_SCHEMA);
@@ -97,7 +99,7 @@ public class BackupUser extends BaseCLI {
   }
 
   public void backupGuestUsers(String userSchema, String backupSchema, String cutoffDate) throws SQLException {
-		logger.info("****IN BACKUPGUESTUSERS ******");
+    logger.info("****IN BACKUPGUESTUSERS ******");
 
     Connection connection = wdkModel.getUserDb().getDataSource().getConnection();
     boolean autoCommit = connection.getAutoCommit();
@@ -114,13 +116,15 @@ public class BackupUser extends BaseCLI {
       deleteOutdatedRows(statement, "user_baskets");
       deleteOutdatedRows(statement, "favorites");
       deleteOutdatedRows(statement, "strategies");
+      deleteOutdatedRows(statement, "step_analysis", "step_id");
       deleteOutdatedRows(statement, "steps");
       deleteOutdatedRows(statement, "users");
-      
+
       backupTable(statement, "users", userColumns);
       backupTable(statement, "user_roles", roleColumns);
       backupTable(statement, "preferences", prefColumns);
       backupTable(statement, "steps", stepColumns);
+      backupTable(statement, "step_analysis", stepAnalysisColumns, "step_id");
       backupTable(statement, "strategies", strategyColumns);
       backupTable(statement, "datasets", datasetColumns);
       backupTable(statement, "user_baskets", basketColumns);
@@ -129,11 +133,13 @@ public class BackupUser extends BaseCLI {
 
       removeGuest(statement, "dataset_values", "dataset_id IN (SELECT dataset_id FROM " + userSchema +
           "datasets WHERE " + deleteCondtion + ")");
-			// removeGuest(statement, "favorites", deleteCondtion);
-			// removeGuest(statement, "user_baskets", deleteCondtion);
+      // removeGuest(statement, "favorites", deleteCondtion);
+      // removeGuest(statement, "user_baskets", deleteCondtion);
       removeGuest(statement, "datasets", deleteCondtion);
       removeGuest(statement, "preferences", deleteCondtion);
       removeGuest(statement, "strategies", deleteCondtion);
+      removeGuest(statement, "step_analysis", "step_id IN (SELECT step_id FROM " + userSchema +
+          "steps WHERE " + deleteCondtion + ")");
       removeGuest(statement, "steps", deleteCondtion);
       removeGuest(statement, "user_roles", deleteCondtion);
       removeGuest(statement, "users", deleteCondtion);
@@ -150,11 +156,11 @@ public class BackupUser extends BaseCLI {
       connection.close();
     }
   }
-  
+
   private void deleteOutdatedRows(Statement statement, String table) throws SQLException {
     deleteOutdatedRows(statement, table, "user_id");
   }
- 
+
   private void deleteOutdatedRows(Statement statement, String table, String keyColumn) throws SQLException {
     logger.info("**** IN DELETE OUTDATED ROWS ******  " + table);
     String fromTable = userSchema + table;
@@ -171,7 +177,7 @@ public class BackupUser extends BaseCLI {
 
   private void backupTable(Statement statement, String table, String columns, String keyColumn)
       throws SQLException {
-		logger.info("****IN BACKUPTABLE******  " + table);
+    logger.info("****IN BACKUPTABLE******  " + table);
     String fromTable = userSchema + table;
     String toTable = backupSchema + table;
 
@@ -181,7 +187,7 @@ public class BackupUser extends BaseCLI {
   }
 
   private void removeGuest(Statement statement, String table, String condition) throws SQLException {
-		logger.info("****IN REMOVEGUEST****** " + table);
+    logger.info("****IN REMOVEGUEST****** " + table);
     String fromTable = userSchema + table;
     statement.executeUpdate("DELETE FROM " + fromTable + " WHERE " + condition);
   }
