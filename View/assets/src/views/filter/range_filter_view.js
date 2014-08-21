@@ -169,7 +169,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
           position: {
             target: 'mouse',
             viewport: this.$el,
-            my: 'left center'
+            my: 'bottom center'
           },
           show: false,
           hide: {
@@ -269,8 +269,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     handleFormChange: function() {
-      var min = this.$min.val() === '' ? null : this.$min.val();
-      var max = this.$max.val() === '' ? null : this.$max.val();
+      var min = this.$min.val() === '' ? null : Number(this.$min.val());
+      var max = this.$max.val() === '' ? null : Number(this.$max.val());
 
       var filters = this.filterService.filters;
       var field = this.model;
