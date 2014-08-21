@@ -8,7 +8,10 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -23,6 +26,9 @@ import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
 import org.gusdb.wdk.model.user.User;
 
 public class QueryTest implements ElementTest {
+
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(QueryTest.class);
 
   private static Map<QuerySet, Integer> _attributeQueryRowMap = new HashMap<>();
 
@@ -52,9 +58,10 @@ public class QueryTest implements ElementTest {
     if (testRowCountSql == null) return -1;
     ResultSet rs = null;
     try {
-      rs = SqlUtils.executeQuery(
-          querySet.getWdkModel().getAppDb().getDataSource(), testRowCountSql,
-          querySet.getName() + "__sanity-test-row-count");
+      WdkModel model = querySet.getWdkModel();
+      DatabaseInstance appdb = model.getAppDb();
+      DataSource ds = appdb.getDataSource();
+      rs = SqlUtils.executeQuery(ds, testRowCountSql, querySet.getName() + "__sanity-test-row-count");
       if (rs.next())
         return rs.getInt(1);
       else

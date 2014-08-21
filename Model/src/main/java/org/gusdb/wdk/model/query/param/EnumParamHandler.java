@@ -118,7 +118,7 @@ public class EnumParamHandler extends AbstractParamHandler {
   public String toSignature(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException {
     // make sure to get a sorted stable value;
-    String[] rawValue = (String[]) toRawValue(user, stableValue, contextValues);
+    String[] rawValue = toRawValue(user, stableValue, contextValues);
     Arrays.sort(rawValue);
     stableValue = toStableValue(user, rawValue, contextValues);
     return Utilities.encrypt(stableValue);

@@ -3,7 +3,12 @@ package org.gusdb.wdk.model.test.sanity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
+
 public class TestFilter {
+
+  private static final Logger LOG = Logger.getLogger(TestFilter.class);
 
   private static class Range {
 
@@ -23,7 +28,7 @@ public class TestFilter {
     }
 
     private static void check(Integer start, Integer end) throws NumberFormatException {
-      if (start < 0 || end < 0)
+      if ((start != null && start < 0) || (end != null && end < 0))
         throw new NumberFormatException("Filter ranges do not accept negative numbers");
       if (start != null && end != null && start > end) {
         throw new NumberFormatException("Start value (" + start + ") must be less than end value (" + end + ")");
@@ -35,6 +40,11 @@ public class TestFilter {
       if (_start == null) return (number <= _end);
       if (_end == null) return (number >= _start);
       return (number >= _start && number <= _end);
+    }
+
+    @Override
+    public String toString() {
+      return "[ " + _start + ", " + _end + " ]";
     }
   }
   
@@ -48,10 +58,12 @@ public class TestFilter {
 
   private static List<Range> parseFilterString(String listStr) {
     try {
+      LOG.debug("Parsing filter ranges: " + listStr);
       List<Range> ranges = new ArrayList<>();
       if (listStr == null || listStr.trim().isEmpty()) return ranges;
-      listStr = listStr.replaceAll("\\w", "");
-  
+      listStr = listStr.replaceAll("\\s", "");
+
+      LOG.debug("Filter string not empty.  Translated string: " + listStr);
       String[] rangeStrs = listStr.trim().split(",");
       for (String rangeStr : rangeStrs) {
         Range range = new Range();
@@ -74,6 +86,7 @@ public class TestFilter {
               // dash is not last char, add end range value
               range.setEnd(Integer.parseInt(rangeStr.substring(dashIndex + 1)));
         }
+        LOG.debug("Adding range: " + range);
         ranges.add(range);
       }
       return ranges;
