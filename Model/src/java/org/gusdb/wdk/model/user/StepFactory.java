@@ -935,7 +935,7 @@ public class StepFactory {
     sql.append(" WHERE sr." + COLUMN_ROOT_STEP_ID + " = sp." + COLUMN_STEP_ID);
     sql.append(" AND sr." + userColumn + " = sp." + userColumn);
     sql.append(" AND sr." + COLUMN_PROJECT_ID + " = sp." + COLUMN_PROJECT_ID);
-    sql.append(" AND sr.is_deleted = 0 ");
+    sql.append(" AND sr.is_deleted = " + userDb.getPlatform().convertBoolean(false).toString());
     sql.append(" AND sr.").append(COLUMN_SIGNATURE).append(" = ? ");
     sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
     sql.append(" ORDER BY sr." + COLUMN_LAST_MODIFIED_TIME + " DESC");
