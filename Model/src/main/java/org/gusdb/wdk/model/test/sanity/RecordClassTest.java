@@ -24,7 +24,7 @@ public class RecordClassTest implements ElementTest {
 
   @Override
   public String getTestName() {
-    return " RECORD " + _recordClass.getFullName();
+    return "RECORD " + _recordClass.getFullName();
   }
 
   @Override

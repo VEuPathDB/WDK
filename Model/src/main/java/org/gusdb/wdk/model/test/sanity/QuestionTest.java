@@ -25,7 +25,7 @@ public class QuestionTest implements ElementTest {
 
   @Override
   public String getTestName() {
-    return " QUESTION " + _question.getFullName() +
+    return "QUESTION " + _question.getFullName() +
         " (query " + _question.getQuery().getFullName() + ")";
   }
 
