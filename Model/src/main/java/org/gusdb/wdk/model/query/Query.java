@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query;
 
 import java.io.PrintWriter;
@@ -118,7 +115,6 @@ public abstract class Query extends WdkModelBase {
   private boolean doNotTest = false;
   private List<ParamValuesSet> paramValuesSets = new ArrayList<ParamValuesSet>();
 
-  protected WdkModel wdkModel;
   private QuerySet querySet;
 
   private String[] indexColumns;
@@ -174,11 +170,9 @@ public abstract class Query extends WdkModelBase {
     if (query.columnList != null)
       this.columnList = new ArrayList<>(query.columnList);
     this.columnMap = new LinkedHashMap<String, Column>();
-    this.wdkModel = query.wdkModel;
     this.querySet = query.querySet;
     this.doNotTest = query.doNotTest;
     this.paramValuesSets = new ArrayList<ParamValuesSet>(query.paramValuesSets);
-    this.wdkModel = query.wdkModel;
     this.hasWeight = query.hasWeight;
     this.contextQuestion = query.getContextQuestion();
     this.sortingMap = new LinkedHashMap<>(query.sortingMap);
@@ -326,11 +320,6 @@ public abstract class Query extends WdkModelBase {
     return paramValuesSets;
   }
 
-  @Override
-  public WdkModel getWdkModel() {
-    return wdkModel;
-  }
-
   public String getChecksum(boolean extra) throws WdkModelException {
     try {
       JSONObject jsQuery = getJSONContent(extra);
@@ -352,7 +341,7 @@ public abstract class Query extends WdkModelBase {
     // use JSON to construct the string content
     JSONObject jsQuery = new JSONObject();
     jsQuery.put("name", getFullName());
-    jsQuery.put("project", wdkModel.getProjectId());
+    jsQuery.put("project", getWdkModel().getProjectId());
 
     // add context question name
     if (contextQuestion != null)
@@ -438,7 +427,7 @@ public abstract class Query extends WdkModelBase {
     if (resolved)
       return;
 
-    this.wdkModel = wdkModel;
+    super.resolveReferences(wdkModel);
 
     // check if we need to use querySet's cache flag
     if (!setCache)

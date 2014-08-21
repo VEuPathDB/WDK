@@ -205,6 +205,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
             //this.subStratOrder[steps[i].step.strategy.order] = subId;
             st.child_Strat_Id = subId;
           }
+          st.hasCompleteAnalyses = Boolean(steps[i].step.hasCompleteAnalyses);
         } else {
           st = new Step(i, steps[i].id, "", null, steps[i].answerId);
           if (steps[i].istransform) {
@@ -226,6 +227,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
           nstp = steps[parseInt(i, 10) + 1];
           st.nextStepType = (nstp.istransform) ? "transform" : "boolean";
         }
+        st.booleanHasCompleteAnalyses = Boolean(steps[i].hasCompleteAnalyses);
         arr.push(st);
       }
     }
@@ -286,6 +288,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
   Step.prototype.isLast = false;
   Step.prototype.prevStepType = "";
   Step.prototype.nextStepType = "";
+  Step.prototype.hasCompleteAnalyses = false;
 
   /****************************************************
   Utility Functions

@@ -12,16 +12,26 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
   //   the field is terminating and data can be filtered by it).
   // Then, for each field, find all parents.
   function pruneFields(fields) {
-    return _.where(fields, { leaf: 'true' })
+    var missing = [];
+    var prunedFields = _.where(fields, { leaf: 'true' })
       .reduce(function(acc, field) {
         while (field.parent) {
           acc.push(field);
           field = _.findWhere(fields, {term: field.parent});
-          if (typeof field === 'undefined') break;
+          if (_.isUndefined(field)) {
+            missing.push(_.last(acc).parent);
+            break;
+          }
         }
         acc.push(field);
         return _.uniq(_.compact(acc));
       }, []);
+
+    if (missing.length) {
+      alert('The following properties are missing from the metadata_spec query:\n\n  ' + missing.join('\n  '));
+    }
+
+    return prunedFields;
   }
 
   // Convert a list to a tree* based on the `parent` property
@@ -166,17 +176,18 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
         // select first filtered field
         var fieldTerm = this.model.filters.at(0).get('field');
         field = this.model.fields.get(fieldTerm);
-      } else {
-        // select first field
+      } else if (_.where(prunedFields, { leaf: 'true' }).length === 1) {
+        // select first field if only one
         var node = groupedFields[0];
         while (node.children) {
           node = node.children[0];
         }
         field = this.model.fields.get(node.field.term);
       }
-      _.defer(function() {
-        field.select();
-      }.bind(this));
+
+      if (field) {
+        _.defer(function() { field.select(); });
+      }
 
       return this;
     },

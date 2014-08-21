@@ -109,8 +109,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   private DynamicAttributeSet dynamicAttributeSet;
   private Query dynamicAttributeQuery;
 
-  private WdkModel wdkModel;
-
   /**
    * if set to true, if the result of the question has only 1 row, the strategy
    * workspace page will be skipped, and user is redirected to the record page
@@ -187,7 +185,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     this.defaultSortingMap.putAll(question.defaultSortingMap);
     this.summary = question.summary;
     this.defaultSummaryAttributeFields.putAll(question.defaultSummaryAttributeFields);
-    this.wdkModel = question.wdkModel;
 
     this.noSummaryOnSingleRecord = question.noSummaryOnSingleRecord;
     this.shortDisplayName = question.shortDisplayName;

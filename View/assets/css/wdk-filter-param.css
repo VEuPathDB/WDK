@@ -96,6 +96,9 @@
 .field-list > ul {
   margin-top: 1em;
 }
+.field-list > ul > li > a {
+  margin-left: .8em;
+}
 .field-list input {
   width: 90%;
 }
@@ -103,6 +106,7 @@
   cursor: pointer;
   margin: 1em 0 .5em 4px;
   border: 1px solid transparent;
+  font-weight: normal;
 }
 .field-list h4:before {
   /* down pointing triangle */

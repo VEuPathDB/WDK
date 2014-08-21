@@ -28,7 +28,7 @@
             <div> <jsp:text/> </div>
           </div>
         </div>
-        <hr/>
+
         <div class="step-analysis-subpane step-analysis-results-pane">
           <jsp:text/>
         </div>

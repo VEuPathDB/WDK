@@ -212,7 +212,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     currentDiv.html(data);
 
     // invoke filters
-    var wdkFilter = new wdk.filter.WdkFilter(currentDiv);
+    var wdkFilter = new wdk.filter.WdkFilter(currentDiv.find('.result-filters'));
     
     wdkFilter.initialize();
 
