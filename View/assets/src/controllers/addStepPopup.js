@@ -286,6 +286,10 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
             });
             $("#query_form_overlay").css("z-index", 100).height($("body").height());
 
+            // ensure the Question form is set up before attaching the
+            // following submit handler
+            wdk.load();
+
             // inline-submit should be called last
             // attach submit handler to check that a boolean/span operation is selected
             var $form = $("#query_form").find("#form_question");
@@ -397,9 +401,11 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
       "font-weight":""
     });
 
-    $(ele).css({
-      "background-color":"#DDDDDD"
-    });
+    if (sectionName) {
+      $(ele).css({
+        "background-color":"#DDDDDD"
+      });
+    }
 
     $("#query_form table#sections-layout td#section-" + (sectionNumber-1) +
         " div").css("background-color","#FFFFFF");

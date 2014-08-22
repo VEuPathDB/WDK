@@ -224,21 +224,29 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   // TODO: mixin
   function registerToggle() {
     // register toggles
-    $(".wdk-toggle").simpleToggle();
+    $(".wdk-toggle").not('[__rendered]')
+      .each(function(index, node) {
+        $(node).simpleToggle().attr('__rendered', true);
+      });
 
     // register expand/collapse links
     // data-container is a selector for a container element
     // data-show is a boolean to show or hide toggles
     // data-animated overrides the built-in animation
-    $(".wdk-toggle-group").click(function(e) {
-      var $this = $(this);
-      var container = $this.closest($this.data("container"));
-      var $toggles = container.find(".wdk-toggle");
+    $(".wdk-toggle-group").not('[__rendered]')
+      .each(function(index, node) {
+        $(node)
+          .click(function(e) {
+            var $this = $(this);
+            var container = $this.closest($this.data("container"));
+            var $toggles = container.find(".wdk-toggle");
 
-      $toggles.simpleToggle("toggle", $this.data("show"));
+            $toggles.simpleToggle("toggle", $this.data("show"));
 
-      e.preventDefault();
-    });
+            e.preventDefault();
+          })
+          .attr('__rendered', true);
+      });
   }
 
   // TODO: mixin
@@ -483,16 +491,18 @@ wdk.util.namespace("window.wdk", function(ns, $) {
 
       var save = $(element).data("save");
 
+      // JSHint cannot parse this line, so we need to ignore it
+      /* jshint ignore:start */
       if (typeof save === "string") {
-        save = new Function(save);
-        // try {
-        //   save = (0, eval)("(" + save + ")");
-        // } catch (e) {
-        //   if (console && console.log) {
-        //     console.log(e);
-        //   }
-        // }
+        try {
+          save = (0, eval)("(" + save + ")");
+        } catch (e) {
+          if (console && console.log) {
+            console.log(e);
+          }
+        }
       }
+      /* jshint ignore:end */
 
       $(element).editable({
         save: typeof save === "function" ? save : function(){return true;}
@@ -500,6 +510,13 @@ wdk.util.namespace("window.wdk", function(ns, $) {
 
       $(element).data("rendered", true);
     });
+  }
+
+  function registerButton() {
+    $('.button')
+      .not('[__rendered]')
+        .button()
+        .attr('__rendered', true);
   }
 
   // TODO: view
@@ -584,23 +601,21 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   function invokeControllers() {
     // TODO - Add data-action attribute
     // controller is a misnomer here. see issue #14107
-    $("[data-controller]").each(function invokeController(idx, element) {
-      var $element = $(element);
-      var $attrs = $element.data();
-      var controller = $attrs.controller;
+    $("[data-controller]").not('[__invoked]')
+      .each(function invokeController(idx, element) {
+        var $element = $(element);
+        var $attrs = $element.data();
+        var controller = $attrs.controller;
 
-      // convert some-name -> someName
-      // controller = controller.replace(/-(\w)/, function(hyphenLetter) {
-      //   return hyphenLetter.replace(/-/, '').toUpperCase();
-      // });
-
-      // only invoke once
-      if ($attrs._invoked) return;
-
-      wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
-
-      $element.data('_invoked', true);
-    });
+        try {
+          // TODO - Replace with a container. This way we can do some validation,
+          // such as prevent collisions, and inject dependencies. It will also
+          // be quicker to do a dictionary lookup.
+          wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
+        } finally {
+          $element.attr('__invoked', true);
+        }
+      });
   }
 
   function resolveAssetsUrls() {
@@ -613,7 +628,6 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   function load() {
     resolveAssetsUrls();
     wdk.components.ajaxElement.triggerElements();
-    wdk.util.executeOnloadFunctions("body");
     registerTable();
     registerTooltips();
     registerToggle();
@@ -621,7 +635,8 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     registerSnippet();
     registerTruncate();
     registerEditable();
-    $(".button").button();
+    registerButton();
+    wdk.util.executeOnloadFunctions("body");
     invokeControllers();
   }
 

@@ -95,4 +95,8 @@ public class FilterParamBean extends EnumParamBean {
     return filterParam.getDefaultColumns();
   }
 
+  public boolean getTrimMetadataTerms() {
+    return filterParam.getTrimMetadataTerms();
+  }
+
 }

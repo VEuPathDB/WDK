@@ -282,7 +282,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
       var allIn = true;
       currentDiv.find(".Results_Div img.basket").each(function() {
         if (!($(this).hasClass("head"))) {
-          if ($(this).attr("value") === 0) {
+          if ($(this).attr("value") === '0') {
             allIn = false;
           }
         }

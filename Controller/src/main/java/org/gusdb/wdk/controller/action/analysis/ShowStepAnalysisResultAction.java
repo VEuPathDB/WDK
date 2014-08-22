@@ -1,5 +1,8 @@
 package org.gusdb.wdk.controller.action.analysis;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
@@ -9,6 +12,8 @@ import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 
 public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
 
+  private static final Logger LOG = Logger.getLogger(ShowStepAnalysisResultAction.class);
+  
   private static final String ERROR_REASON_TEXT =
       "A run of this analysis encountered an error before it could complete.";
   private static final String INTERRUPTED_REASON_TEXT =
@@ -20,16 +25,24 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
       "The last run of this analysis took too long to complete and was " +
       "cancelled.  If this problem persists, please contact us.";
   private static final String REVISED_REASON_TEXT =
-      "Your previous analysis results are no longer valid because the result " +
-      "set of this step has changed (e.g. because you revised a step or " +
-      "applied a filter).  Please confirm your parameters above and re-run.";
+		"Your previous analysis results are not available because the gene result " +
+    " changed to a different species or strain when you used the filter table " +
+    " above or revised a search strategy step. Please confirm your analysis " +
+    " parameters and re-run.";
   
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
 
     StepAnalysisContext context = getContextFromPassedId();
     String reason = null;
-    
+
+    if (LOG.isDebugEnabled()) { // check first so expensive ops below aren't unnecessarily done
+      LOG.debug("Retrieving results for Step Analysis with" +
+          " ID: " + context.getAnalysisId() +
+          ", hash: " + context.createHash() +
+          ", " + NL + context);
+    }
+
     switch (context.getStatus()) {
       case CREATED:
       case INVALID:

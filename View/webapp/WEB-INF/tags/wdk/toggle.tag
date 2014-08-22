@@ -112,7 +112,7 @@
   <tr>
     <c:choose>
       <c:when test="${noData}">
-        <td><font size="-1" face="Arial,Helvetica"><b>${displayName}</b></font>  <i>none</i></td>
+        <td><b>${displayName}</b>  <i>none</i></td>
       </c:when>
       <c:otherwise>
         <td>
@@ -136,18 +136,18 @@
         <c:choose>
         <c:when test="${fn:contains(userAgent, 'Firefox') || fn:contains(userAgent, 'Red Hat') }">
            <div id="toggle${name}" class="toggle-handle" name="${name}" align="left">
-             <b><font size="-1" face="Arial,Helvetica">${displayName}</font></b>
+             <b>${displayName}</b>
              <a href="javascript:void(0)" onclick="javascript:${showOnClick}wdk.api.toggleLayer('${name}', 'toggle${name}')" title="Show ${displayName}" onmouseover="status='Show ${displayName}';return true" onmouseout="status='';return true">Show</a>
            </div>
         </c:when>
 
         <%--  Netscape/Firefox cannot handle this way of doing it  --%>
         <c:otherwise>
-           <div id="showToggle${name}" class="toggle" name="${name}" align="left"><b><font size="-1" face="Arial,Helvetica">${displayName}</font></b>
+           <div id="showToggle${name}" class="toggle" name="${name}" align="left"><b>${displayName}</b>
              <a href="javascript:void(0)" onclick="javascript:${showOnClick}wdk.api.showLayer('${name}')&amp;&amp;wdk.api.showLayer('hideToggle${name}')&amp;&amp;wdk.api.hideLayer('showToggle${name}')&amp;&amp;wdk.api.storeIntelligentCookie('show${name}',1,365)" title="Show ${displayName}" onmouseover="status='Show ${displayName}';return true" onmouseout="status='';return true">Show</a>
            </div>
 
-           <div id="hideToggle${name}" class="toggle" name="${name}" align="left"><b><font size="-1" face="Arial,Helvetica">${displayName}</font></b>
+           <div id="hideToggle${name}" class="toggle" name="${name}" align="left"><b>${displayName}</b>
               <a href="javascript:void(0)" onclick="javascript:wdk.api.hideLayer('${name}')&amp;&amp;wdk.api.showLayer('showToggle${name}')&amp;&amp;wdk.api.hideLayer('hideToggle${name}')&amp;&amp;wdk.api.storeIntelligentCookie('show${name}',0,365);" title="Hide ${displayName}" onmouseover="status='Hide ${displayName}';return true" onmouseout="status='';return true">Hide</a>
             </div>
         </c:otherwise>
@@ -158,34 +158,26 @@
     </td>
     <c:if test='${displayLink ne null and displayLink ne ""}'>
       <td align="left">
-         <font size="-1" face="Arial,Helvetica">
 				 ${displayLink}
-         </font>
       </td>
     </c:if>
 
     <c:choose>
 	 <c:when  test='${dsLink ne null and dsLink ne ""}'>
 	 <td align="right">
-           <font size="-1" face="Arial,Helvetica">
            [<a href="${dsLink}">Data Sources</a>]
-           </font>
         </td>	
 	</c:when>
 	<c:otherwise>
 	<c:choose>
       <c:when test='${attribution ne null and attribution ne ""}'>
         <td align="right">
-           <font size="-1" face="Arial,Helvetica">
            [<a href="getDataset.do?display=detail&datasets=${attribution}&title=${displayNameParam}">Data Sources</a>]
-           </font>
         </td>
       </c:when>
       <c:when test="${name ne null and name ne '' and ds_ref_table ne null and ds_ref_table ne ''}">
         <td align="right">
-          <font size="-2" face="Arial,Helvetica">
           [<a href="<c:url value='/getDataset.do?recordClass=${wdkRecord.recordClass.fullName}&display=detail&target=${name}' />">Data Sources</a>]
-          </font>
         </td>
       </c:when>
 	</c:choose>

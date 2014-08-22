@@ -501,5 +501,9 @@ public class StepBean {
 	public void setValid(boolean valid){
 		step.setValid(valid);
 	}
+	
+	public boolean getHasCompleteAnalyses() throws WdkModelException {
+	  return step.getHasCompleteAnalyses();
+	}
 
 }

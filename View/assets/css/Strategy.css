@@ -999,6 +999,7 @@ table.history_controls {
   position: absolute;
   height: 100%;
   width: 100%;
+  line-height: 1;
 }
 .diagram .diagramSection.scrollableSteps {
   height: 100%;

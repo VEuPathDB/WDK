@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.test;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -18,9 +20,10 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -43,12 +46,11 @@ import org.gusdb.wdk.model.user.User;
 /**
  * SanityTester.java " [-project project_id]" +
  * 
- * 
  * Main class for running the sanity tests, which is a way to test all Queries
- * and RecordClasss in a wdk model to make sure they work as intended and their
+ * and RecordClasses in a WDK model to make sure they work as intended and their
  * results fall within an expected range, even over the course of code base
  * development. See the usage() method for parameter information, and see the
- * gusDb.org wiki page for the structure and content of the sanity test.
+ * gusdb.org wiki page for the structure and content of the sanity test.
  * 
  * Created: Mon August 23 12:00:00 2004 EST
  * 
@@ -58,61 +60,58 @@ import org.gusdb.wdk.model.user.User;
  */
 public class SanityTester {
 
-  int queriesPassed = 0;
-  int queriesFailed = 0;
-  int recordsPassed = 0;
-  int recordsFailed = 0;
-  int questionsPassed = 0;
-  int questionsFailed = 0;
-  int testCount = 0;
-  boolean[] testFilter;
-  String testFilterString;
-  static final String newline = System.getProperty("line.separator");
+  private static final Logger LOG = Logger.getLogger(SanityTester.class);
 
-  User user;
-  WdkModel wdkModel;
-  boolean verbose;
-  boolean failuresOnly;
-  boolean indexOnly;
-  boolean skipWebSvcQueries;
-  String modelName;
+  private static void OUT (Object... obj) { System.out.println(FormatUtil.join(obj, ", ")); }
+  private static void ERR (Object... obj) { System.err.println(FormatUtil.join(obj, ", ")); }
 
-  public static final String BANNER_LINE_top = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
-  public static final String BANNER_LINE_bot = "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
+  public static final String BEGIN_DATE_FORMAT = "EEE MMM dd HH:mm:ss zzz yyyy";
 
-  private static final Logger logger = Logger.getLogger(SanityTester.class);
+  private static final String BANNER_LINE_top = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
+  private static final String BANNER_LINE_bot = "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
 
-  public SanityTester(String modelName, boolean verbose,
-      String testFilterString, boolean failuresOnly, boolean indexOnly,
-      boolean skipWebSvcQueries) throws WdkModelException {
-    String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-    this.wdkModel = WdkModel.construct(modelName, gusHome);
-    this.verbose = verbose;
-    this.failuresOnly = failuresOnly;
-    this.indexOnly = indexOnly;
-    this.skipWebSvcQueries = skipWebSvcQueries;
-    this.modelName = modelName;
-    this.testFilterString = testFilterString;
-    this.user = wdkModel.getSystemUser();
-    testFilter = parseTestFilter(testFilterString);
+  private WdkModel _wdkModel;
+  private User _user;
+
+  // input parameters
+  private boolean _failuresOnly;
+  private boolean _indexOnly;
+  private boolean _skipWebSvcQueries;
+  private String _testFilterString;
+  private boolean[] _testFilter;
+
+  // statistics aggregators
+  private int _testCount = 0;
+  private int _queriesPassed = 0;
+  private int _queriesFailed = 0;
+  private int _recordsPassed = 0;
+  private int _recordsFailed = 0;
+  private int _questionsPassed = 0;
+  private int _questionsFailed = 0;
+
+  public SanityTester(String modelName, String testFilterString, boolean failuresOnly,
+      boolean indexOnly, boolean skipWebSvcQueries) throws WdkModelException {
+    _wdkModel = WdkModel.construct(modelName, GusHome.getGusHome());
+    _user = _wdkModel.getSystemUser();
+    _failuresOnly = failuresOnly;
+    _indexOnly = indexOnly;
+    _skipWebSvcQueries = skipWebSvcQueries;
+    _testFilterString = testFilterString;
+    _testFilter = parseTestFilter(testFilterString);
   }
 
-  // ------------------------------------------------------------------
-  // Private Methods
-  // ------------------------------------------------------------------
+  public void testQuestionSets() throws WdkModelException {
 
-  private void testQuestionSets() throws WdkModelException {
+    OUT("Sanity Test:  Checking questions" + NL);
 
-    System.out.println("Sanity Test:  Checking questions" + newline);
-
-    for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
+    for (QuestionSet questionSet : _wdkModel.getAllQuestionSets()) {
       if (questionSet.getDoNotTest()) continue;
 
       for (Question question : questionSet.getQuestions()) {
         Query query = question.getQuery();
         if (query.getDoNotTest() || query.getQuerySet().getDoNotTest())
           continue;
-        if (skipWebSvcQueries && query instanceof ProcessQuery) continue;
+        if (_skipWebSvcQueries && query instanceof ProcessQuery) continue;
         for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
           testQuestion(question, paramValuesSet);
         }
@@ -121,11 +120,11 @@ public class SanityTester {
   }
 
   private void testQuestion(Question question, ParamValuesSet paramValuesSet) {
-    if (!checkTestFilter(testCount++)) return;
-    if (indexOnly) {
-      System.out.println(" [test: " + testCount + "]" + " QUESTION "
+    if (!checkTestFilter(_testCount++)) return;
+    if (_indexOnly) {
+      OUT(" [test: " + _testCount + "]" + " QUESTION "
           + question.getFullName() + " (query "
-          + question.getQuery().getFullName() + ")" + newline);
+          + question.getQuery().getFullName() + ")" + NL);
       return;
     }
     long start = System.currentTimeMillis();
@@ -140,7 +139,7 @@ public class SanityTester {
 
     try {
       question.getQuery().setIsCacheable(false);
-      AnswerValue answerValue = question.makeAnswerValue(user,
+      AnswerValue answerValue = question.makeAnswerValue(_user,
           paramValuesSet.getParamValues(), true, 0);
 
       int resultSize = answerValue.getResultSize();
@@ -156,7 +155,7 @@ public class SanityTester {
           sb.append(record.getAttributeValue(attrName));
           sb.append('\t');
         }
-        logger.debug("Record: " + sb.toString());
+        LOG.debug("Record: " + sb.toString());
       }
 
       passed = (resultSize >= sanityMin && resultSize <= sanityMax);
@@ -168,44 +167,45 @@ public class SanityTester {
     } catch (Exception e) {
       returned = " It threw an exception.";
       caughtException = e;
-    } finally {
+    }
+    finally {
       long end = System.currentTimeMillis();
       if (passed) {
-        questionsPassed++;
+        _questionsPassed++;
         prefix = "";
         status = " passed.";
-      } else {
-        questionsFailed++;
       }
-      if (!passed) System.out.println(BANNER_LINE_top);
-      String cmd = " [ wdkSummary -model " + wdkModel.getProjectId()
+      else {
+        _questionsFailed++;
+      }
+      if (!passed) OUT(BANNER_LINE_top);
+      String cmd = " [ wdkSummary -model " + _wdkModel.getProjectId()
           + " -question " + question.getFullName() + " -rows 1 100"
           + " -params " + paramValuesSet.getCmdLineString() + " ] ";
 
-      String msg = prefix + ((end - start) / 1000F) + " [test: " + testCount
+      String msg = prefix + ((end - start) / 1000F) + " [test: " + _testCount
           + "]" + " QUESTION " + question.getFullName() + " (query "
           + question.getQuery().getFullName() + ")" + status + returned
-          + expected + cmd + newline;
-      if (!passed || !failuresOnly) System.out.println(msg);
+          + expected + cmd + NL;
+      if (!passed || !_failuresOnly) OUT(msg);
       if (caughtException != null) caughtException.printStackTrace(System.err);
-      if (!passed) System.out.println(BANNER_LINE_bot + newline);
+      if (!passed) OUT(BANNER_LINE_bot + NL);
 
       // check the connection usage
-      DatabaseInstance database = wdkModel.getAppDb();
+      DatabaseInstance database = _wdkModel.getAppDb();
       if (database.getActiveCount() > 0) {
-        System.err.println("Connection leak (" + database.getActiveCount()
+        ERR("Connection leak (" + database.getActiveCount()
             + ") for question: " + question.getFullName());
       }
     }
   }
 
-  private void testQuerySets(String queryType) throws SQLException,
+  public void testQuerySets(String queryType) throws SQLException,
       WdkModelException {
 
-    System.out.println("Sanity Test:  Checking " + queryType + " queries"
-        + newline);
+    OUT("Sanity Test:  Checking " + queryType + " queries" + NL);
 
-    for (QuerySet querySet : wdkModel.getAllQuerySets()) {
+    for (QuerySet querySet : _wdkModel.getAllQuerySets()) {
       if (!querySet.getQueryType().equals(queryType) || querySet.getDoNotTest())
         continue;
 
@@ -215,12 +215,19 @@ public class SanityTester {
         // discover number of entities expected in each attribute query
         String testRowCountSql = querySet.getTestRowCountSql();
         if (testRowCountSql != null) {
-          ResultSet rs = SqlUtils.executeQuery(
-              wdkModel.getAppDb().getDataSource(), testRowCountSql,
-              querySet.getName() + "__sanity-test-row-count");
-          rs.next();
-          minRows = maxRows = rs.getInt(1);
-          SqlUtils.closeResultSetAndStatement(rs);
+          ResultSet rs = null;
+          try {
+            rs = SqlUtils.executeQuery(
+                _wdkModel.getAppDb().getDataSource(), testRowCountSql,
+                querySet.getName() + "__sanity-test-row-count");
+            if (rs.next())
+              minRows = maxRows = rs.getInt(1);
+            else
+              throw new WdkModelException("Count query '" + testRowCountSql + "' returned zero rows.");
+          }
+          finally {
+            SqlUtils.closeResultSetAndStatement(rs);
+          }
         }
       }
 
@@ -231,12 +238,10 @@ public class SanityTester {
             minRows = paramValuesSet.getMinRows();
             maxRows = paramValuesSet.getMaxRows();
           }
-          testQuery(querySet, query, queryType, minRows, maxRows,
-              paramValuesSet);
+          testQuery(querySet, query, queryType, minRows, maxRows, paramValuesSet);
         }
         if (queryType.equals(QuerySet.TYPE_TABLE)) {
-          testQuery(querySet, query, queryType + "TOTAL", minRows, maxRows,
-              null);
+          testQuery(querySet, query, queryType + "TOTAL", minRows, maxRows, null);
         }
       }
     }
@@ -247,10 +252,10 @@ public class SanityTester {
 
     String typeUpperCase = queryType.toUpperCase();
 
-    if (!checkTestFilter(testCount++)) return;
-    if (indexOnly) {
-      System.out.println(" [test: " + testCount + "] " + typeUpperCase
-          + " QUERY " + query.getFullName() + newline);
+    if (!checkTestFilter(_testCount++)) return;
+    if (_indexOnly) {
+      OUT(" [test: " + _testCount + "] " + typeUpperCase
+          + " QUERY " + query.getFullName() + NL);
       return;
     }
 
@@ -271,11 +276,13 @@ public class SanityTester {
         count = testAttributeQuery_Count(query, paramValuesSet);
         start = System.currentTimeMillis();
         testAttributeQuery_Time(query, paramValuesSet, count);
-      } else if (queryType.equals(QuerySet.TYPE_TABLE + "TOTAL")) {
+      }
+      else if (queryType.equals(QuerySet.TYPE_TABLE + "TOTAL")) {
         count = testTableQuery_TotalTime(query);
-      } else {
+      }
+      else {
         if (queryType.equals(QuerySet.TYPE_TABLE)) {
-          query = RecordClass.prepareQuery(wdkModel, query,
+          query = RecordClass.prepareQuery(_wdkModel, query,
               paramValuesSet.getParamNames());
         }
         params = " -params " + paramValuesSet.getCmdLineString();
@@ -286,32 +293,37 @@ public class SanityTester {
       passed = (count >= sanityMin && count <= sanityMax);
 
       returned = " It returned " + count + " rows. ";
+      
       if (sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS)
         expected = "Expected (" + sanityMin + " - " + sanityMax + ") ";
 
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       returned = " It threw an exception.";
       caughtException = e;
-    } finally {
+    }
+    finally {
       long end = System.currentTimeMillis();
       if (passed) {
-        queriesPassed++;
+        _queriesPassed++;
         prefix = "";
         status = " passed.";
-      } else {
-        queriesFailed++;
       }
-      if (!passed) System.out.println(BANNER_LINE_top);
+      else {
+        _queriesFailed++;
+      }
 
-      String cmd = " [ wdkQuery -model " + wdkModel.getProjectId() + " -query "
+      if (!passed) OUT(BANNER_LINE_top);
+
+      String cmd = " [ wdkQuery -model " + _wdkModel.getProjectId() + " -query "
           + query.getFullName() + params + " ] ";
 
-      String msg = prefix + ((end - start) / 1000F) + " [test: " + testCount
+      String msg = prefix + ((end - start) / 1000F) + " [test: " + _testCount
           + "]" + " " + typeUpperCase + " QUERY " + query.getFullName()
-          + status + returned + expected + cmd + newline;
-      if (!passed || !failuresOnly) System.out.println(msg);
+          + status + returned + expected + cmd + NL;
+      if (!passed || !_failuresOnly) OUT(msg);
       if (caughtException != null) caughtException.printStackTrace(System.err);
-      if (!passed) System.out.println(BANNER_LINE_bot + newline);
+      if (!passed) OUT(BANNER_LINE_bot + NL);
     }
   }
 
@@ -320,16 +332,20 @@ public class SanityTester {
 
     int count = 0;
 
-    QueryInstance instance = query.makeInstance(user,
+    QueryInstance instance = query.makeInstance(_user,
         paramValuesSet.getParamValues(), true, 0,
         new LinkedHashMap<String, String>());
-    ResultList rl = instance.getResults();
-
-    while (rl.next()) {
-      count++;
+    ResultList rl = null;
+    try {
+      rl = instance.getResults();
+      while (rl.next()) {
+        count++;
+      }
+      return count;
     }
-    rl.close();
-    return count;
+    finally {
+      if (rl != null) rl.close();
+    }
   }
 
   private int testAttributeQuery_Count(Query query,
@@ -340,7 +356,7 @@ public class SanityTester {
     // since this attribute query is the original copy from model and it doesn't
     // params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
-    SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
+    SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(_user,
         params, true, 0, new LinkedHashMap<String, String>());
 
     // if (paramValuesSet.getParamValues().size() != 2) {
@@ -352,13 +368,19 @@ public class SanityTester {
         + paramValuesSet.getNamesAsString() + " from ("
         + instance.getUncachedSql() + ") f1) f2";
 
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
-    ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
+    DataSource dataSource = _wdkModel.getAppDb().getDataSource();
+    ResultSet resultSet = null;
+    try {
+      resultSet = SqlUtils.executeQuery(dataSource, sql,
         query.getFullName() + "__sanity-test-count");
-    resultSet.next();
-    int count = resultSet.getInt(1);
-    SqlUtils.closeResultSetAndStatement(resultSet);
-    return count;
+      if (resultSet.next())
+        return resultSet.getInt(1);
+      else
+        throw new WdkModelException("Count query '" + sql + "' returned zero rows.");
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(resultSet);
+    }
   }
 
   private void testAttributeQuery_Time(Query query,
@@ -367,22 +389,27 @@ public class SanityTester {
     Map<String, String> params = new LinkedHashMap<String, String>();
     // params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
-    SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
+    SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(_user,
         params, true, 0, new LinkedHashMap<String, String>());
 
     String sql = "select * from (" + instance.getUncachedSql() + ") f "
         + paramValuesSet.getWhereClause();
 
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
-    ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
+    DataSource dataSource = _wdkModel.getAppDb().getDataSource();
+    ResultSet resultSet = null;
+    try {
+      resultSet = SqlUtils.executeQuery(dataSource, sql,
         query.getFullName() + "__sanity-test-time");
-    if (count > 0 && !resultSet.next()) {
-      String msg = "no row returned for " + query.getFullName()
-          + " using where clause (" + paramValuesSet.getWhereClause() + ")";
-      throw new WdkModelException(msg);
+      if (count > 0 && !resultSet.next()) {
+        String msg = "no row returned for " + query.getFullName()
+            + " using where clause (" + paramValuesSet.getWhereClause() + ")";
+        throw new WdkModelException(msg);
+      }
+      while (resultSet.next()) {} // bring full result over to test speed
     }
-    while (resultSet.next()) {} // bring full result over to test speed
-    SqlUtils.closeResultSetAndStatement(resultSet);
+    finally {
+      SqlUtils.closeResultSetAndStatement(resultSet);
+    }
   }
 
   private int testTableQuery_TotalTime(Query query) throws SQLException, WdkModelException, WdkUserException {
@@ -391,26 +418,28 @@ public class SanityTester {
     Map<String, String> params = new LinkedHashMap<String, String>();
     // params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
-    SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
+    SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(_user,
         params, true, 0, new LinkedHashMap<String, String>());
 
     String sql = instance.getUncachedSql();
-
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
-    ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
-        query.getFullName() + "__sanity-test-total-time");
-    int count = 0;
-    while (resultSet.next())
-      count++; // bring full result over to test speed
-    SqlUtils.closeResultSetAndStatement(resultSet);
-    return count;
+    DataSource dataSource = _wdkModel.getAppDb().getDataSource();
+    ResultSet resultSet = null;
+    try {
+      resultSet = SqlUtils.executeQuery(dataSource, sql,
+          query.getFullName() + "__sanity-test-total-time");
+      int count = 0;
+      while (resultSet.next())
+        count++; // bring full result over to test speed
+      return count;
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(resultSet);
+    }
   }
 
-  private void testRecordSets() {
-
-    System.out.println("Sanity Test:  Checking records" + newline);
-
-    for (RecordClassSet recordClassSet : wdkModel.getAllRecordClassSets()) {
+  public void testRecordSets() {
+    OUT("Sanity Test:  Checking records" + NL);
+    for (RecordClassSet recordClassSet : _wdkModel.getAllRecordClassSets()) {
       for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
         if (recordClass.getDoNotTest()) continue;
         testRecordClass(recordClass, recordClass.getParamValuesSet());
@@ -419,16 +448,16 @@ public class SanityTester {
   }
 
   private boolean checkTestFilter(int testIndex) {
-    return testFilter == null || testFilter[testIndex];
+    return _testFilter == null || _testFilter[testIndex];
   }
 
   private void testRecordClass(RecordClass recordClass,
       ParamValuesSet paramValuesSet) {
 
-    if (!checkTestFilter(testCount++)) return;
-    if (indexOnly) {
-      System.out.println(" [test: " + testCount + "]" + " RECORD "
-          + recordClass.getFullName() + newline);
+    if (!checkTestFilter(_testCount++)) return;
+    if (_indexOnly) {
+      OUT(" [test: " + _testCount + "]" + " RECORD "
+          + recordClass.getFullName() + NL);
       return;
     }
     long start = System.currentTimeMillis();
@@ -443,91 +472,78 @@ public class SanityTester {
       for (String key : paramValues.keySet()) {
         pkValues.put(key, paramValues.get(key));
       }
-      RecordInstance recordInstance = new RecordInstance(user, recordClass,
+      RecordInstance recordInstance = new RecordInstance(_user, recordClass,
           pkValues);
       recordInstance.print();
       passed = true;
 
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       caughtException = e;
-    } finally {
+    }
+    finally {
       long end = System.currentTimeMillis();
       if (passed) {
-        recordsPassed++;
+        _recordsPassed++;
         prefix = "";
         status = " passed.";
-      } else {
-        recordsFailed++;
+      }
+      else {
+        _recordsFailed++;
       }
 
-      if (!passed) System.out.println(BANNER_LINE_top);
-      String cmd = " [ wdkRecord -model " + wdkModel.getProjectId()
+      if (!passed) OUT(BANNER_LINE_top);
+      String cmd = " [ wdkRecord -model " + _wdkModel.getProjectId()
           + " -record " + recordClass.getFullName() + " -primaryKey "
           + paramValuesSet.getCmdLineString() + " ] ";
 
-      String msg = prefix + ((end - start) / 1000F) + " [test: " + testCount
-          + "]" + " RECORD " + recordClass.getFullName() + status + cmd
-          + newline;
-      if (!passed || !failuresOnly) System.out.println(msg);
+      String msg = prefix + ((end - start) / 1000F) + " [test: " + _testCount
+          + "]" + " RECORD " + recordClass.getFullName() + status + cmd + NL;
+      if (!passed || !_failuresOnly) OUT(msg);
       if (caughtException != null) caughtException.printStackTrace(System.err);
-      if (!passed) System.out.println(BANNER_LINE_bot + newline);
+      if (!passed) OUT(BANNER_LINE_bot + NL);
     }
   }
 
-  /**
-   * @param queryResult
-   *          a two-value array where the first entry is the number of queries
-   *          that passed the test and the second is the number of queries that
-   *          failed.
-   * 
-   * @param recordResult
-   *          a two-value array where the first entry is the number of records
-   *          that passed the test and the second is the number of records that
-   *          failed.
-   * 
-   * @param return true if one or more tests failed; false otherwise.
-   */
+  public boolean printSummaryLine() {
 
-  private boolean printSummaryLine() {
-
-    boolean failedOverall = (queriesFailed > 0 || recordsFailed > 0 || questionsFailed > 0);
+    boolean failedOverall = (_queriesFailed > 0 || _recordsFailed > 0 || _questionsFailed > 0);
     String result = failedOverall ? "FAILED" : "PASSED";
 
-    int totalPassed = queriesPassed + recordsPassed + questionsPassed;
-    int totalFailed = queriesFailed + recordsFailed + questionsFailed;
+    int totalPassed = _queriesPassed + _recordsPassed + _questionsPassed;
+    int totalFailed = _queriesFailed + _recordsFailed + _questionsFailed;
 
-    StringBuffer resultLine = new StringBuffer("***Sanity test summary***"
-        + newline);
-    resultLine.append("TestFilter: " + testFilterString + newline);
-    resultLine.append("Total Passed: " + totalPassed + newline);
-    resultLine.append("Total Failed: " + totalFailed + newline);
-    resultLine.append("   " + queriesPassed + " queries passed, "
-        + queriesFailed + " queries failed" + newline);
-    resultLine.append("   " + recordsPassed + " records passed, "
-        + recordsFailed + " records failed" + newline);
-    resultLine.append("   " + questionsPassed + " questions passed, "
-        + questionsFailed + " questions failed" + newline);
-    resultLine.append("Sanity Test " + result + newline);
-    System.out.println(resultLine.toString());
+    StringBuffer resultLine = new StringBuffer("***Sanity test summary***" + NL);
+    resultLine.append("TestFilter: " + _testFilterString + NL);
+    resultLine.append("Total Passed: " + totalPassed + NL);
+    resultLine.append("Total Failed: " + totalFailed + NL);
+    resultLine.append("   " + _queriesPassed + " queries passed, "
+        + _queriesFailed + " queries failed" + NL);
+    resultLine.append("   " + _recordsPassed + " records passed, "
+        + _recordsFailed + " records failed" + NL);
+    resultLine.append("   " + _questionsPassed + " questions passed, "
+        + _questionsFailed + " questions failed" + NL);
+    resultLine.append("Sanity Test " + result + NL);
+    OUT(resultLine.toString());
     return failedOverall;
   }
 
   private static void addOption(Options options, String argName, String desc) {
-
     Option option = new Option(argName, true, desc);
     option.setRequired(true);
     option.setArgName(argName);
     options.addOption(option);
   }
 
-  static Options declareOptions() {
+  public static Options declareOptions() {
     Options options = new Options();
 
     // model name
-    addOption(
-        options,
-        "model",
-        "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml), the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
+    addOption(options, "model",
+        "the name of the model.  This is used to find the Model XML file " +
+        "($GUS_HOME/config/model_name.xml), the Model property file " +
+        "($GUS_HOME/config/model_name.prop) and the Model config file " +
+        "($GUS_HOME/config/model_name-config.xml)");
 
     // verbose
     Option verbose = new Option("verbose",
@@ -554,25 +570,26 @@ public class SanityTester {
     return options;
   }
 
-  static CommandLine parseOptions(String cmdName, Options options, String[] args) {
+  public static CommandLine parseOptions(String cmdName, Options options, String[] args) {
 
     CommandLineParser parser = new BasicParser();
     CommandLine cmdLine = null;
     try {
       // parse the command line arguments
       cmdLine = parser.parse(options, args);
-    } catch (ParseException exp) {
+    }
+    catch (ParseException exp) {
       // oops, something went wrong
-      System.out.println("");
-      System.out.println("Parsing failed.  Reason: " + exp.getMessage());
-      System.out.println("");
+      OUT();
+      OUT("Parsing failed.  Reason: " + exp.getMessage());
+      OUT();
       usage(cmdName, options);
     }
 
     return cmdLine;
   }
 
-  static boolean[] parseTestFilter(String listStr) {
+  private static boolean[] parseTestFilter(String listStr) {
     if (listStr == null) return null;
 
     String[] ranges = listStr.split(",");
@@ -588,7 +605,7 @@ public class SanityTester {
     return filter;
   }
 
-  static void usage(String cmdName, Options options) {
+  public static void usage(String cmdName, Options options) {
 
     String newline = System.getProperty("line.separator");
     String cmdlineSyntax = cmdName
@@ -607,40 +624,36 @@ public class SanityTester {
     System.exit(1);
   }
 
-  // private static Logger logger = Logger.getLogger(SanityTester.class);
+  public WdkModel getWdkModel() {
+    return _wdkModel;
+  }
 
   public static void main(String[] args) throws WdkModelException, SQLException {
-    String cmdName = System.getProperty("cmdName");
 
+    String cmdName = System.getProperty("cmdName");
     Options options = declareOptions();
     CommandLine cmdLine = parseOptions(cmdName, options, args);
 
     String modelName = cmdLine.getOptionValue("model");
-
     String testFilterString = cmdLine.getOptionValue("t");
-
-    boolean verbose = cmdLine.hasOption("verbose");
-
     boolean failuresOnly = cmdLine.hasOption("failuresOnly");
-
     boolean indexOnly = cmdLine.hasOption("indexOnly");
-
     boolean skipWebSvcQueries = cmdLine.hasOption("skipWebSvcQueries");
+    // TODO: determine if verbose mode is desired and add if so
+    //boolean verbose = cmdLine.hasOption("verbose");
 
-    SanityTester sanityTester = new SanityTester(modelName, verbose,
+    SanityTester sanityTester = new SanityTester(modelName,
         testFilterString, failuresOnly, indexOnly, skipWebSvcQueries);
 
-    String dbConnectionUrl = sanityTester.wdkModel.getAppDb().getConfig().getConnectionUrl();
+    String dbConnectionUrl = sanityTester.getWdkModel().getAppDb().getConfig().getConnectionUrl();
 
-    System.out.println("Sanity Test: ");
-    System.out.println(" [Database] " + dbConnectionUrl);
-    SimpleDateFormat sdFormat = new SimpleDateFormat(
-        "EEE MMM dd HH:mm:ss zzz yyyy");
-    System.out.println(" [Time] " + sdFormat.format(new Date()));
-    System.out.println();
+    OUT("Sanity Test: ");
+    OUT(" [Model] " + modelName);
+    OUT(" [Database] " + dbConnectionUrl);
+    OUT(" [Time] " + new SimpleDateFormat(BEGIN_DATE_FORMAT).format(new Date()));
+    OUT();
 
-    // System.out.println(" MODEL: " + modelName + "\n\n");
-
+    
     sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
     sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
     if (!modelName.equals("EuPathDB")) {
@@ -648,11 +661,11 @@ public class SanityTester {
     }
     sanityTester.testQuestionSets();
     sanityTester.testRecordSets();
+    
     if (!indexOnly) {
       if (sanityTester.printSummaryLine()) {
         System.exit(1);
       }
     }
-
   }
 }

@@ -9,7 +9,12 @@
 <c:set var="wdkQuestion" value="${requestScope.question}"/>
 <c:set var="spanOnly" value="false"/>
 <c:set var="checked" value=""/>
-<c:set var="buttonVal" value="Run Step"/>
+<c:set var="buttonVal">
+  <c:choose>
+    <c:when test="${allowBoolean == false || param.operation == 'SPAN'}">Continue...</c:when>
+    <c:otherwise>Run Step</c:otherwise>
+  </c:choose>
+</c:set>
 <c:set var="wdkStrategy" value="${requestScope.wdkStrategy}"/>
 <c:set var="wdkStep" value="${requestScope.wdkStep}"/>
 <c:set var="allowBoolean" value="${requestScope.allowBoolean}"/>
@@ -37,7 +42,7 @@
   <c:when test="${wdkStep.previousStep == null && action == 'revise'}">
     <c:set var="nextStage" value="process_question" />
   </c:when>
-  <c:when test="${allowBoolean == false}">
+  <c:when test="${allowBoolean == false || param.operation == 'SPAN'}">
     <c:set var="nextStage" value="span_from_question" />
   </c:when>
   <c:otherwise>
@@ -55,7 +60,7 @@
 
 
 
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="wdk.addStepPopup.callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+<html:form styleId="form_question" styleClass="is-${action}" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="wdk.addStepPopup.callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 
 <html:hidden property="stage" styleId="stage" value="${nextStage}" />
 

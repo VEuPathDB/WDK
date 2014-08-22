@@ -104,6 +104,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         $detailBoxes.find('.analyze_step_link').addClass('disabled');
         $detailBox.find('.analyze_step_link').removeClass('disabled');
       });
+
+    // update state when analysis status changes
+    wdk.on('analysis:statuschange', fetchStrategies);
   }
 
   /**
@@ -197,15 +200,22 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    * Get state info from server and call updateStrategies
    */
   function initDisplay(){
+    ns.stateString = '';
+
+    // it doesn't make sense for this to be in util
+    wdk.util.showLoading();
+    fetchStrategies();
+  }
+
+  /**
+   * Fetch state info from server
+   */
+  function fetchStrategies() {
     $.ajax({
       url: "showStrategy.do",
       type: "POST",
       dataType: "json",
-      data:"state=",
-      beforeSend: function() {
-        // it doesn't make sense for this to be in util
-        wdk.util.showLoading();
-      },
+      data:"state=" + ns.stateString,
       success: function(data) {
         updateStrategies(data);
       }
@@ -226,10 +236,12 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    */
   function updateStrategies(data, ignoreFilters) {
     var deferred = $.Deferred();
+    var skipDisplay = true;
 
     ns.state = data.state;
     ns.stateString = JSON.stringify(ns.state);
-    removeClosedStrategies();
+    // if a strategy is removed, update display
+    skipDisplay = !removeClosedStrategies();
     for (var newOrdering in ns.state) {
       if (newOrdering == "count") {
         // it appears the span was removed, so this code does nothing.
@@ -242,14 +254,17 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
             // If the checksums are not the same, reload the model.
             // This assumes the strategy object in the response (`data`)
             // matches the current strategy in the global state object.
-            loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+            skipDisplay = false;
           }
         } else {
-          loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+          skipDisplay = false;
         }
+        loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering, skipDisplay);
       }
     }
-    showStrategies(data.currentView, ignoreFilters, data.state.length, deferred);
+    if (!skipDisplay || ns.state.length === 0) {
+      showStrategies(data.currentView, ignoreFilters, data.state.length, deferred);
+    }
     return deferred.promise();
   }
 
@@ -258,6 +273,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    *  array.
    */
   function removeClosedStrategies(){
+    var removedStrategy = false;
+
     for (var currentOrder in ns.strats) {
       if (currentOrder.indexOf(".") == -1) {
         var removeTopStrategy = true;
@@ -285,9 +302,12 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           removeSubStrategies(currentOrder);
           delete ns.strats[currentOrder];
           wdk.history.update_hist(true); //set update flag for history if anything was closed.
+          removedStrategy = true;
         }
       }
     }
+
+    return removedStrategy;
   }
 
   /**
@@ -481,9 +501,10 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    *
    * @param {Object} json Strategy object retreived from server.
    * @param {Number} ord The order in which to display the strategy.
+   * @param {Boolean} skipDisplay Only update the model.
    */
-  function loadModel(json, ord) {
-    wdk.history.update_hist(true); //set update flag for history if anything was opened/changed.
+  function loadModel(json, ord, skipDisplay) {
+    wdk.history.update_hist(!skipDisplay); //set update flag for history if anything was opened/changed.
     var strategy = json;
     var strat = null;
     if (!wdk.strategy.model.isLoaded(strategy.id)) {
@@ -515,7 +536,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     strat.dataType = strategy.steps[strategy.steps.length].dataType;
     strat.displayType = strategy.steps[strategy.steps.length].displayType; //corresponds with record displayName in model e.g. Metabolic Pathway (singular always)
     strat.nonTransformLength = strategy.steps.nonTransformLength;
-    strat.DIV = wdk.strategy.view.displayModel(strat);
+    if (!skipDisplay) {
+      strat.DIV = wdk.strategy.view.displayModel(strat);
+    }
     return strat.frontId;
   }
 
@@ -610,17 +633,24 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
           // trigger custom events
           // in this case, select events
-          var $selectedStrategy = $("#Strategies .diagram").has(".selected");
-          var $selectedStep = $("#Strategies .diagram").find(".selected");
+          // defer this so the DOM has time to finish initializing
+          //
+          // FIXME Figure out how we can avoid deferring the event trigger.
+          // The reason we defer is so that wdk.load() can initialize
+          // any parts of the DOM necessary. In this case, it is calling
+          // the editable() plugin for the strategy name. Custom elements
+          // might help here, but we can't use them with IE8.
+          _.defer(function() {
+            var $selectedStrategy = $("#Strategies .diagram").has(".selected");
+            var $selectedStep = $("#Strategies .diagram").find(".selected");
 
-          if ($selectedStrategy.attr("id") !== oldSelectedStrategyId) {
-            $selectedStrategy.trigger("strategyselect", [strategy]);
-          }
-
-          if ($selectedStep.attr("id") !== oldSelectedStepId) {
-            $selectedStep.trigger("stepselect", [step, isBoolean]);
-          }
-
+            if ($selectedStrategy.attr("id") !== oldSelectedStrategyId) {
+              $selectedStrategy.trigger("strategyselect", [strategy]);
+              $selectedStep.trigger("stepselect", [step, isBoolean]);
+            } else if ($selectedStep.attr("id") !== oldSelectedStepId) {
+              $selectedStep.trigger("stepselect", [step, isBoolean]);
+            }
+          });
         }
 
         wdk.util.removeLoading(f_strategyId);
@@ -985,6 +1015,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var filterElt = filter;
     var b_strategyId = strategyId;
     var strategy = wdk.strategy.model.getStrategyFromBackId(b_strategyId); 
+    var step = wdk.strategy.model.getStepFromBackId(b_strategyId, stepId);
     var f_strategyId = strategy.frontId;
     if (strategy.subStratOf !== null) {
       ns.strats.splice(wdk.strategy.model.findStrategy(f_strategyId));
@@ -994,7 +1025,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
     }
     url += "&strategy_checksum="+cs;
-    $.ajax({
+
+    var doUpdate = $.ajax.bind($, {
       url: url,
       type: "GET",
       dataType: "json",
@@ -1014,8 +1046,68 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         }
       }
     });
+
+    var showAnalysisWarning = hasDownstreamCompleteAnalyses(step, strategy,
+        step.back_boolean_Id === Number(stepId));
+
+    if (showAnalysisWarning) {
+      $('<div style="font-size: 120%;">' +
+          '<h3 style="margin:0;padding:0">Warning</h3>' +
+          '<p><img width="20" alt="filtering icon" src="' + 
+         wdk.assetsUrl('/wdk/images/filter-short.png') + '"/>' + 
+        ' Clicking this will change the gene ' + 
+        ' results that were used to generate your analyses.' + 
+         ' Analysis results for this and subsequent strategy steps will be lost.' +
+          '&nbsp;  <a style="font-size:80%" href="' + wdk.webappUrl('/analysisTools.jsp') + '" target="_blank">(Learn more...)</a></p>' +
+        '</div>')
+        .dialog({
+          modal: true,
+          dialogClass: 'no-close',
+          width: '400px',
+          buttons: [{
+            autofocus: true,
+            text: 'Proceed anyway',
+            click: function() {
+              doUpdate();
+              $(this).dialog('close');
+            }
+          }, {
+            text: 'Cancel',
+            click: function() {
+              $(this).dialog('close');
+            }
+          }]
+        });
+    } else {
+      doUpdate();
+    }
   }
 
+  // Check if any downstream steps have complete analyses
+  //
+  // Given strategy X (where the bottom row is combined steps):
+  //
+  //     B   D   E
+  //     |   |   |
+  // A - C - E - G
+  //
+  //
+  // * For step C, determine if steps C, E, or G have a complete analysis
+  // * For step D, determine if steps D, E, or G have a complete analysis
+  //
+  // NB: We only need to check combined steps to the right.
+  //
+  // Returns Boolean
+  function hasDownstreamCompleteAnalyses(step, strategy, isBoolean) {
+    var ret = isBoolean
+      ? step.booleanHasCompleteAnalyses
+      : step.hasCompleteAnalyses || step.booleanHasCompleteAnalyses;
+
+    return ret || _(strategy.Steps.slice(strategy.Steps.indexOf(step) + 1))
+      .some(function(downstreamStep) {
+        return downstreamStep.booleanHasCompleteAnalyses;
+      });
+  }
 
   function SetWeight(e, f_strategyId, f_stepId) {
     var strategy = wdk.strategy.model.getStrategy(f_strategyId);
@@ -1092,6 +1184,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   ns.copyStrategy = copyStrategy;
   ns.deleteStrategy = deleteStrategy;
   ns.initDisplay = initDisplay;
+  ns.fetchStrategies = fetchStrategies;
   ns.loadModel = loadModel;
   ns.openStrategy = openStrategy;
   ns.saveOrRenameStrategy = saveOrRenameStrategy;
