@@ -77,26 +77,14 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     initialize: function() {
-      var debounceApplyFilters = _.debounce(this.applyFilters, 100);
-
       this.filterChangeSet = [];
-
-      this.listenTo(this.filters, 'add remove reset', function appendFilterChangeSet(model) {
-        this.filterChangeSet.push(model);
-      });
-
-      this.listenTo(this.filters, 'add remove reset', debounceApplyFilters);
-      this.listenTo(this.data, 'reset', this.setFieldValues);
-      // this.listenTo(this.filteredData, 'reset', this.setFieldFilteredValues);
-      // console.time('set field values');
-      // this.setFieldValues();
-      // console.timeEnd('set field values');
+      this.listenTo(this.filters, 'add remove reset', function(m) { this.filterChangeSet.push(m); });
+      this.listenTo(this.filters, 'add remove reset', _.debounce(this.applyFilters, 100));
       this.applyFilters();
     },
 
     reset: function(attrs) {
       this.parse(attrs);
-      this.setFieldValues();
       this.applyFilters();
     },
 
@@ -209,14 +197,14 @@ wdk.namespace('wdk.models.filter', function(ns) {
       console.time('for-loop :: ' + field + ' - ' + values);
       var d = data.filter(function(d) {
         var value = d.get('metadata')[field] || Field.UNKNOWN_VALUE;
-        // TODO Use a for loop for efficiency
-        // return _.contains(values, value);
+        var index = values.length;
 
-        for (var i = 0, l = values.length; i < l; i++) {
-          if (values[i] === value) return true;
+        // Use a for loop for efficiency
+        while(index--) {
+          if (values[index] === value) break;
         }
 
-        return false;
+        return index > -1;
       });
       console.timeEnd('for-loop :: ' + field + ' - ' + values);
       return d;
