@@ -20,6 +20,9 @@ wdk.namespace('wdk.views', function(ns) {
 
       this.$form = this.$el.closest('form');
 
+      // turn off autocompletion
+      this.$form.prop('autocomplete', 'off');
+
       // set up parameter handlers
       // TODO refactor handlers to their own Views
       if (this.$el.data('showParams') === true) {
