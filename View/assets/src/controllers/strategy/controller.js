@@ -1053,11 +1053,12 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     if (showAnalysisWarning) {
       $('<div style="font-size: 120%;">' +
           '<h3 style="margin:0;padding:0">Warning</h3>' +
-          '<p><img width="20" alt="filtering icon" src="' + wdk.assetsUrl('/wdk/images/filter-short.png') + '"/>' +
-          ' Selecting a different value for the filter ' + 
-          ' will change your gene result, and ' +
-          'analyses in the strategy might have to be re-run. Are you sure? ' +
-          '<a style="font-size:80%" href="' + wdk.webappUrl('/analysisTools.jsp') + '" target="_blank">(Learn more...)</a></p>' +
+          '<p><img width="20" alt="filtering icon" src="' + 
+         wdk.assetsUrl('/wdk/images/filter-short.png') + '"/>' + 
+        ' Clicking this will change the gene ' + 
+        ' results that were used to generate your analyses.' + 
+         ' Analysis results for this and subsequent strategy steps will be lost.' +
+          '&nbsp;  <a style="font-size:80%" href="' + wdk.webappUrl('/analysisTools.jsp') + '" target="_blank">(Learn more...)</a></p>' +
         '</div>')
         .dialog({
           modal: true,
