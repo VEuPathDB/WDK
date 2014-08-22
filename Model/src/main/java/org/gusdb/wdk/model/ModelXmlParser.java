@@ -247,7 +247,7 @@ public class ModelXmlParser extends XmlParser {
     return model;
   }
 
-  private ModelConfig getModelConfig(String projectId) throws SAXException,
+  public ModelConfig getModelConfig(String projectId) throws SAXException,
       IOException, WdkModelException {
     ModelConfigParser parser = new ModelConfigParser(gusHome);
     return parser.parseConfig(projectId);

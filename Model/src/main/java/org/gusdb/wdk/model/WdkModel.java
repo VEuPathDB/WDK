@@ -21,6 +21,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.runtime.InstanceManager;
+import org.gusdb.fgputil.runtime.Manageable;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.config.ModelConfig;
@@ -49,6 +51,7 @@ import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
+import org.xml.sax.SAXException;
 
 /**
  * The top level WdkModel object provides a facade to access all the resources and functionalities provided by
@@ -64,8 +67,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   public static final String USER_SCHEMA_VERSION = "5";
 
-  public static final String CONNECTION_APP = "AppDB";
-  public static final String CONNECTION_USER = "UserDB";
+  public static final String DB_INSTANCE_APP = "APP";
+  public static final String DB_INSTANCE_USER = "USER";
 
   public static final String INDENT = "  ";
 
@@ -80,7 +83,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
    *           if unable to construct model
    */
   public static WdkModel construct(String projectId, String gusHome) throws WdkModelException {
-    return new WdkModel().getInstance(projectId, gusHome);
+    return InstanceManager.getInstance(WdkModel.class, gusHome, projectId);
   }
 
   private String gusHome;
@@ -188,7 +191,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     }
   }
 
-  public void doAdditionalStartup() throws WdkModelException {
+  private void doAdditionalStartup() throws WdkModelException {
     // verify the user schema
     modelConfig.getUserDB().checkSchema(this);
 
@@ -196,6 +199,17 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     _myThreadMonitor = ThreadMonitor.start(this);
   }
 
+  public static ModelConfig getModelConfig(String projectId, String gusHome) throws WdkModelException {
+    try {
+      ModelXmlParser parser = new ModelXmlParser(gusHome);
+      return parser.getModelConfig(projectId);
+    }
+    catch (IOException | SAXException e) {
+      throw new WdkModelException("Unable to read model config for gusHome '" +
+          gusHome + "', projectId '" + projectId + "'", e);
+    }
+  }
+  
   /**
    * @param initRecordClassList
    * @return
@@ -467,10 +481,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     // initialize authentication factory
     // set the max active as half of the model's configuration
 
-    appDb = new DatabaseInstance("APP", appDbConfig);
+    appDb = new DatabaseInstance(DB_INSTANCE_APP, appDbConfig);
     appDb.initialize();
 
-    userDb = new DatabaseInstance("USER", userDbConfig);
+    userDb = new DatabaseInstance(DB_INSTANCE_USER, userDbConfig);
     userDb.initialize();
 
     resultFactory = new ResultFactory(this);
@@ -1191,14 +1205,13 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   @Override
   public Connection getConnection(String key) throws WdkModelException, SQLException {
-    if (key.equals(CONNECTION_APP)) {
-      return appDb.getDataSource().getConnection();
-    }
-    else if (key.equals(CONNECTION_USER)) {
-      return userDb.getDataSource().getConnection();
-    }
-    else { // unknown
-      throw new WdkModelException("Invalid DB Connection key.");
+    switch (key) {
+      case DB_INSTANCE_APP:
+        return appDb.getDataSource().getConnection();
+      case DB_INSTANCE_USER:
+        return userDb.getDataSource().getConnection();
+      default: // unknown
+        throw new WdkModelException("Invalid DB Connection key.");
     }
   }
 
