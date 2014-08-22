@@ -21,11 +21,13 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       load: function(event, ui) {
         addFeatureTooltipOnce($element);
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
+        wdk.basket.checkPageBasket();
+        wdk.util.setDraggable(ui.panel.find("div.attributesList"), ".dragHandle");
       }
     });
     
     // if not a child of basket menu, configure analysis tabs
-    if (!$element.closest('#basket-menu').length) {
+    if ($element.has('#add-analysis').length) {
       wdk.stepAnalysis.configureAnalysisViews($element);
     }
     
@@ -47,7 +49,8 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         el: analysisFeatureTooltipTarget,
         key: 'new-analysis::' + wdk.VERSION,
         title: 'New tools available!',
-        text: analysisFeatureTooltipTarget.find('.analysis-feature-tooltip')
+        text: analysisFeatureTooltipTarget.find('.analysis-feature-tooltip'),
+        container: $element
       });
 
       analysisFeatureTooltipTarget
@@ -78,7 +81,9 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       var stratfId = step.parents(".diagram").attr("id");
       stratfId = stratfId.substring(stratfId.indexOf('_') + 1);
       strat = wdk.strategy.model.getStrategy(stratfId).backId;
-      step = wdk.strategy.model.getStep(stratfId, stepfId).back_step_Id;
+      step = step.hasClass('operation')
+        ? wdk.strategy.model.getStep(stratfId, stepfId).back_boolean_Id
+        : wdk.strategy.model.getStep(stratfId, stepfId).back_step_Id;
     } else {
       step = $(table).attr('step');
     }
@@ -207,11 +212,11 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     currentDiv.html(data);
 
     // invoke filters
-    var wdkFilter = new wdk.filter.WdkFilter();
+    var wdkFilter = new wdk.filter.WdkFilter(currentDiv.find('.result-filters'));
     
+    wdkFilter.initialize();
+
     if (ignoreFilters) {
-      wdkFilter.addShowHide();
-      wdkFilter.displayFilters();
       oldFilters.each(function() {
         var newFilter = document.getElementById(this.id);
         var count = $(this).text();
@@ -227,11 +232,10 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         }
       });
     } else {
-      //wdkFilter.initialize();
       // Using setTimeout allows the results HTML to be rendered first, and
       // thus the results ajax is fired before the filters ajax. This will make
       // getting results faster when there are lots of filters.
-      setTimeout(wdkFilter.initialize.bind(wdkFilter), 0);
+      _.defer(wdkFilter.loadFilterCount.bind(wdkFilter));
     }
 
     // convert results table to drag-and-drop flex grid

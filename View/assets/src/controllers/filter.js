@@ -3,28 +3,24 @@
 wdk.util.namespace("window.wdk.filter", function(ns, $) {
   "use strict";
 
-  function WdkFilter() {
+  function WdkFilter($el) {
 
     this.initialize = function() {
-      // attach onclick event using jquery instead of onclick attr
-      // Moved from this.displayFilters since events were being registered twice.
-      // We'll use delegation instead.
-      $('.Workspace').on('click', 'a.link-url', function changeFilter() {
-        var $this = $(this);
-        var strategyId = $this.attr('strId');
-        var stepId = $this.attr('stpId');
-        var url = $this.attr('linkurl');
-        var filterElement = $this.closest('.filter-instance')[0];
-        wdk.strategy.controller.ChangeFilter(strategyId, stepId, url, filterElement);
-      });
-
       this.addShowHide();
       this.displayFilters();
-      this.loadFilterCount();
+
+      $el.on('click', 'a.link-url', function changeFilter(event) {
+        var $target = $(event.currentTarget);
+        var strategyId = $target.attr('strId');
+        var stepId = $target.attr('stpId');
+        var url = $target.attr('linkurl');
+        var filterElement = $target.closest('.filter-instance')[0];
+        wdk.strategy.controller.ChangeFilter(strategyId, stepId, url, filterElement);
+      });
     };
 
     this.addShowHide = function() {
-      $(".filter-layout .layout-info .handle").click(function() {
+      $el.find(".filter-layout .layout-info .handle").click(function() {
         var content = $(this).parents(".filter-layout").children(".layout-detail");
         content.slideToggle("normal");
 
@@ -40,7 +36,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
     };
 
     this.displayFilters = function() {
-      $(".filter-instance").each(function() {
+      $el.find(".filter-instance").each(function() {
         // add mouse over to the link
         var detail = $(this).find(".instance-detail");
         //cris: z-index added to show filter popup over column titles in result
@@ -72,20 +68,19 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
     };
 
     this.loadFilterCount = function() {
-      $(".result-filters").each(function() {
-        var layouts = $(this);
-        if (layouts.data("loaded") == "true") return;
-        
-        var countUrl = layouts.data("count-url");
-        $.getJSON(countUrl, function(data) {
-          layouts.find(".link-url").each(function() {
+      if ($el.data("loaded") == "true") return;
+
+      var countUrl = $el.data("count-url");
+      $.getJSON(countUrl, function(data) {
+        $el.find(".link-url").each(function() {
+          if (!$(this).hasClass("loaded")) {
             var filter = $(this).data("filter");
             var count = data[filter];
             $(this).html((count == -1 || count === undefined) ? "error" : count);
-          });
+          }
         });
       });
-      
+
     /*
       var links = $('.filter-instance .link-url[countref]');
 

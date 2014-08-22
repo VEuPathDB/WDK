@@ -4,7 +4,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
   var MemberView = wdk.views.View.extend({
 
     events: {
-      'click': 'toggleSelected'
+      'click': 'toggleSelected',
     },
 
     className: 'member',
@@ -34,7 +34,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
   ns.MembershipFilterView = wdk.views.View.extend({
 
     events: {
-      'click .read-more a': 'expandDescription'
+      'click .read-more a'         : 'expandDescription',
+      'click [href="#select-all"]' : 'selectAll',
+      'click [href="#clear-all"]'  : 'clearAll'
     },
 
     memberViews: null,
@@ -50,10 +52,22 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function(options) {
       var filters = this.filterService.filters;
+      var filteredData = this.filterService.filteredData;
       this.options = options;
 
+      // Selection does not require rendering...
       this.listenTo(filters, 'add', _.partial(this.handleFilterUpdate, true));
       this.listenTo(filters, 'remove', _.partial(this.handleFilterUpdate, false));
+      this.listenTo(filteredData, 'reset', function(data, options) {
+        var fields = options.filterChangeSet
+          .map(function(filter) {
+            return filter.get('field');
+          });
+
+        if (!_.contains(fields, this.model.get('term'))) {
+          this.render();
+        }
+      });
     },
 
     handleFilterUpdate: function(isSelected, filter, filters, options) {
@@ -82,16 +96,22 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var filterValues = filter ? filter.get('values') : [];
 
       // unfiltered dist
-      var values = field.get('values');
+      //var values = field.get('values');
+      var values = filterService.getFieldValues(field);
       var counts = _.countBy(values);
+
+      // Use _.uniq(values) instead of _.keys(counts)
+      // so that we can handle non-String values.
+      // This is important for "undefined" metadata.
       var names = field.get('type') === 'number'
-        ? _.keys(counts).map(Number).sort(function(a, b) { return a - b; })
-        : _.keys(counts).sort();
+        ? _.uniq(values).map(Number).sort(function(a, b) { return a - b; })
+        : _.uniq(values).sort();
 
       var scale = _.max(counts) + 10;
 
       // filtered dist
-      var fvalues = field.get('filteredValues');
+      //var fvalues = field.get('filteredValues');
+      var fvalues = filterService.getFieldFilteredValues(field);
       var fcounts = _.countBy(fvalues);
 
       this.$el.html(this.template({
@@ -99,7 +119,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         options: this.options
       }));
 
-      var members = new Backbone.Collection();
+      var members = this.members = new Backbone.Collection();
 
       _(names).forEach(function(name) {
         var count = counts[name];
@@ -117,7 +137,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         _this.memberViews.push(memberView);
       });
 
-      members.on('change:selected', function() {
+      members.on('change:selected', _.debounce(function() {
         var type = _this.model.get('type');
         var values = members.where({selected: true}).map(function(member) {
           return type === 'number'
@@ -135,7 +155,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
             values: values
           }, { origin: _this });
         }
-      });
+      }, 50));
 
       // activate Read more link if text is overflowed
       var p = this.$('.description p').get(0);
@@ -155,6 +175,16 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var p = this.$('.description p').toggleClass('expanded');
       e.currentTarget.innerHTML = p.hasClass('expanded') ? 'read less' : 'read more';
       e.preventDefault();
+    },
+
+    selectAll: function(e) {
+      e.preventDefault();
+      this.members.invoke('set', 'selected', true);
+    },
+
+    clearAll: function(e) {
+      e.preventDefault();
+      this.members.invoke('set', 'selected', false);
     },
 
     didRemove: function() {

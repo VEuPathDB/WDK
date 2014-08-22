@@ -89,7 +89,7 @@
 <!--
   <div style="font-size:120%" title="Step in yellow above. You may select a different step by clicking on its result number (inside the step)." class="h4left">&nbsp;My Step Result:</div>
 -->
-  <div class="Workspace">&nbsp;<span class="smaller-font"><i>(if this section is empty after the page is fully loaded, please click the count in a step box to view the step results)</i></span>
+  <div class="Workspace">&nbsp;<span class="smaller-font"><i>(if this section is empty after the page is fully loaded, please click on a step to view its results in this section.)</i></span>
   </div>
 
   <%-- preload background images --%>

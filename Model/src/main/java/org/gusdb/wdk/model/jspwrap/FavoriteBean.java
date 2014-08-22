@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.user.Favorite;
 
 public class FavoriteBean {
@@ -14,8 +15,8 @@ public class FavoriteBean {
      * @return
      * @see org.gusdb.wdk.model.user.Favorite#getRecordInstances()
      */
-    public RecordBean getRecordInstance() {
-        return new RecordBean(null, favorite.getRecordInstance());
+    public PrimaryKeyAttributeValue getPrimaryKey() {
+        return favorite.getPrimaryKey();
     }
 
     /**

@@ -1,6 +1,8 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
+  var Field = wdk.models.filter.Field;
+
   ns.ResultsView = wdk.views.View.extend({
 
     events: {
@@ -107,12 +109,13 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
       // allow all columns to be sortable
       this.model.fields
-        .where({ filterable: true })
+        .where({ leaf: 'true' })
         .forEach(function(field) {
           columns.push({
-            sClass: field.get('term'),
+            sClass: field.get('term').trim().replace(/\s+/g, '-'),
             sTitle: field.get('display'),
             mData: 'metadata.' + field.get('term'),
+            defaultContent: Field.UNKNOWN_VALUE,
             bVisible: defaultColumns
                       ? defaultColumns.indexOf(field.get('term')) > -1
                       : true

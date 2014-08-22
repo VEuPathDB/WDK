@@ -176,7 +176,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           clearTimeout(loadTimer);
           clearTimeout(refreshTimer);
 
-          trigger('remove', {
+          trigger('remove statuschange', {
             name: data.analysisName,
             id: analysisId,
             $el: $(tabElement)
@@ -227,11 +227,16 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     });
   }
 
-  function copyStepAnalysis(analysisId) {
+  function copyStepAnalysis(analysisId, $element) {
     return doAjax(ROUTES.copyAnalysis, {
       data: { "analysisId": analysisId },
       success: function(data) {
         createAnalysisTab(data);
+        trigger('statuschange', {
+          name: $element.data('analysis-name'),
+          id: data.analysisId,
+          $el: $element
+        });
       },
       error: function() {
         handleAjaxError("Error: Unable to create new step analysis from existing with id: " + analysisId);
@@ -265,10 +270,10 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
     // add event handlers
     $element.on('click', '[href="#rename"]',
-        preventEvent(partial(renameStepAnalysis, analysisId)));
+        preventEvent(partial(renameStepAnalysis, analysisId, $element)));
 
     $element.on('click', '[href="#copy"]',
-        preventEvent(partial(copyStepAnalysis, analysisId)));
+        preventEvent(partial(copyStepAnalysis, analysisId, $element)));
 
     // get json representing analysis (params + status, but not result)
     return doAjax(ROUTES.getAnalysis, {
@@ -381,7 +386,8 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         }
 
         if (jqXHR.status === 200) {
-          trigger('resultsload', {
+          // analysis has completed
+          trigger('resultsload statuschange', {
             name: $element.data('analysis-name'),
             id: analysisId,
             $el: $element
@@ -481,15 +487,18 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     });
   }
 
-  function renameStepAnalysis(analysisId) {
+  function renameStepAnalysis(analysisId, $element) {
     var newName = prompt("New name:");
     if (newName) {
       return doAjax(ROUTES.renameAnalysis, {
         data: { "analysisId": analysisId, "displayName": newName },
         success: function() {
+          // update name on tab
           $('#step-analysis-' + analysisId + " a").contents().filter(function() {
             return this.nodeType == 3; //Filtering by text node
           }).first()[0].data = newName;
+          // update name inside tab
+          $element.find('.step-analysis-pane[data-analysis-id='+analysisId+']').find('h3[data-bind=displayName]').text(newName);
         },
         error: function() {
           handleAjaxError("Error: Unable to change display name for analysis with id " + analysisId);
@@ -505,9 +514,16 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   }
 
   // Trigger two wdk events: one generic and one specific to instance
-  function trigger(eventName, pubObject) {
-    var event = 'analysis:' + eventName;
-    event = event + ' ' + event + ':' + pubObject.name;
+  // eventNames is a space-delimited list of names
+  function trigger(eventNames, pubObject) {
+    var event = _.chain(eventNames.trim().split(/\s+/))
+      .map(function(name) {
+        return ['analysis:' + name, 'analysis:' + name + ':' + pubObject.name];
+      })
+      .flatten()
+      .value()
+      .join(' ');
+
     wdk.trigger(event, pubObject);
   }
 

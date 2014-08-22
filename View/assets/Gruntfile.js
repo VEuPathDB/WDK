@@ -38,6 +38,9 @@ module.exports = function(grunt) {
         mangle: {
           except: ['wdk']
         },
+        compress: {
+          drop_console: true
+        },
         report: true,
         sourceMap: 'dist/wdk/wdk.js.map',
         sourceMappingURL: 'wdk.js.map',

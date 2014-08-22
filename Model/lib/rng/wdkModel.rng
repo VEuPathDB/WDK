@@ -468,6 +468,11 @@
       <optional>
         <attribute name="defaultColumns" />
       </optional>
+      <optional>
+        <attribute name="trimMetadataTerms">
+          <data type="boolean" />
+        </attribute>
+      </optional>
       <zeroOrMore>
         <choice>
           <ref name="FlatVocabParamBaseTags" />

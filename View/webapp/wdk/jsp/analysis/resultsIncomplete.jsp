@@ -6,9 +6,9 @@
   <html>
     <body>
       <div class="analysis-incomplete-pane">
-        <h3>Results Unavailable</h3>
+        <h3>Results Unavailable:</h3>
         <p>
-          <em>The results of this analysis are not available for the reason below.  Run this analysis again to receive results.</em>
+        <!--  <em>The results of this analysis are not available for the reason below.  Run this analysis again to receive results.</em> -->
         </p><p>
           ${reason}
         </p>

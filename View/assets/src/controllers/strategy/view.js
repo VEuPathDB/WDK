@@ -197,7 +197,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         stepdiv = singleStep(cStp, prevJsonStep, jsonStep,strat.frontId);
       }
 
-      $(stepdiv).find('>.box').each(function(index, el) {
+      $(stepdiv).find('[id^=step_]').each(function(index, el) {
         stepDetailView = new StepDetailView({
           el: $(el).find('.crumb_details'),
           model: jsonStep,
@@ -533,9 +533,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     if (jsonStep.isboolean && !jsonStep.isCollapsed) {
       var url = "wizard.do?action=revise&step=" + modelstep.back_boolean_Id + "&";
       var oform = "<form id='form_question' class='clear' " +
-          "enctype='multipart/form-data' action='wizard.do' method='post' " +
-          "name='questionForm' onsubmit=\"wdk.addStepPopup.callWizard('" + url +
-          "',this,null,null,'submit', " + strat.frontId + ");\">";
+          "enctype='multipart/form-data' name='questionForm'>";
       var cform = "</form>";
       var stage_input = "<input type='hidden' id='stage' value='process_boolean'/>";
       params_table = "<div class='filter operators'>" +
@@ -601,7 +599,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         collapseDisabled = "disabled";
       }
       
-      var edit_step = "<a title='" + moEdit + "' class='edit_step_link " +
+      var edit_step = "<a title='" + moEdit + "' class='expand_step_link " +
           disab + "' href='#'>Revise</a>&nbsp;|&nbsp;";
       
       var collapse_step = "<a title='" + sub_collapse_popup +
@@ -684,6 +682,10 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     } else {
       delete_step = "<a title='" + delete_popup + "' class='delete_step_link'" +
           " href='#'>Delete</a>";
+    }
+
+    if (!jsonStep.isAnalyzable) {
+      analyze_step = '';
     }
 
     var close_button = "<a title='" + x_popup +
@@ -770,7 +772,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           $(space).addClass("medium param");
           $(space).html("&nbsp;:&nbsp;");
           $(value).addClass("medium param value");
-          $(value).html( this.value );
+          $(value).html( getParamDisplay(this) );
           $(tr).append(prompt);
           $(tr).append(space);
           $(tr).append(value);
@@ -791,6 +793,16 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       });
     }
     return table;
+  }
+
+  function getParamDisplay(param) {
+    if (param.className === 'org.gusdb.wdk.model.jspwrap.FilterParamBean') {
+      var rawFilters = JSON.parse(param.display);
+      var filters = new wdk.models.filter.Filters(rawFilters);
+      return filters.invoke('description').join(', <br>');
+    }
+
+    return param.display;
   }
 
   // HANDLE THE DISPLAY OF THE STRATEGY RECORD TYPE DIV
