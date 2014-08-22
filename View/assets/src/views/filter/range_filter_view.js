@@ -277,7 +277,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
       // bail if values aren't changed
       var oldVals = _.result(this.plot.getSelection(), 'xaxis');
-      if (oldVals && min === oldVals.from.toFixed(2) && max === oldVals.to.toFixed(2)) return;
+      if (oldVals && min === oldVals.from && max === oldVals.to) return;
 
       filters.remove(filters.where({ field: field.get('term') }), { origin: this });
 
