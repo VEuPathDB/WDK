@@ -1,3 +1,4 @@
+/* global Spinner */
 wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   "use strict";
 
@@ -162,7 +163,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
       var analysisId = $(tabElement).attr('id').substring(14);
       return doAjax(ROUTES.deleteAnalysis, {
         data: { "analysisId": analysisId },
-        success: function(data, textStatus, jqXHR) {
+        success: function(data) {
           var $tabContainer = $(button).closest(".ui-tabs");
           var panelId = $(button).closest("li").remove().attr("aria-controls");
           var $panel = $tabContainer.find('#' + panelId);
@@ -175,7 +176,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           clearTimeout(loadTimer);
           clearTimeout(refreshTimer);
 
-          trigger('remove', {
+          trigger('remove statuschange', {
             name: data.analysisName,
             id: analysisId,
             $el: $(tabElement)
@@ -184,7 +185,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           $panel.remove();
           $tabContainer.tabs("refresh");
         },
-        error: function(jqXHR, textStatus, errorThrown) {
+        error: function() {
           handleAjaxError(errorMsg);
         }
       });
@@ -204,7 +205,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
       }
 
       $container.tabs('disable', index);
-      $tabElement.hide()
+      $tabElement.hide();
     });
   }
 
@@ -213,26 +214,31 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     // ask server to create new step analysis with the given params
     return doAjax(ROUTES.createAnalysis, {
       data: { "analysisName": analysisName, "stepId": stepId },
-      success: function (data, textStatus, jqXHR) {
+      success: function (data) {
         if (data.status == "validation") {
           alert(data.message);
         } else {
           createAnalysisTab(data);
         }
       },
-      error: function(jqXHR, textStatus, errorThrown) {
+      error: function() {
         handleAjaxError("Error: Unable to create new step analysis of type: " + analysisName);
       }
     });
   }
 
-  function copyStepAnalysis(analysisId) {
+  function copyStepAnalysis(analysisId, $element) {
     return doAjax(ROUTES.copyAnalysis, {
       data: { "analysisId": analysisId },
-      success: function(data, textStatus, jqXHR) {
+      success: function(data) {
         createAnalysisTab(data);
+        trigger('statuschange', {
+          name: $element.data('analysis-name'),
+          id: data.analysisId,
+          $el: $element
+        });
       },
-      error: function(jqXHR, textStatus, errorThrown) {
+      error: function() {
         handleAjaxError("Error: Unable to create new step analysis from existing with id: " + analysisId);
       }
     });
@@ -264,15 +270,15 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
     // add event handlers
     $element.on('click', '[href="#rename"]',
-        preventEvent(partial(renameStepAnalysis, analysisId)));
+        preventEvent(partial(renameStepAnalysis, analysisId, $element)));
 
     $element.on('click', '[href="#copy"]',
-        preventEvent(partial(copyStepAnalysis, analysisId)));
+        preventEvent(partial(copyStepAnalysis, analysisId, $element)));
 
     // get json representing analysis (params + status, but not result)
     return doAjax(ROUTES.getAnalysis, {
       data: { "analysisId": analysisId },
-      success: function(data, textStatus, jqXHR) {
+      success: function(data) {
         // add name as data attribute
         $element.data('analysis-name', data.analysisName);
 
@@ -301,7 +307,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         // load results
         loadResultsPane($element, analysisId);
       },
-      error: function(jqXHR, textStatus, errorThrown) {
+      error: function() {
         handleAjaxError("Error: Unable to retrieve step analysis json for id: " + analysisId);
       }
     });
@@ -312,7 +318,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     // fetch plugin's form
     return doAjax(ROUTES.getForm, {
       data: { "analysisId": analysisId },
-      success: function(data, textStatus, jqXHR) {
+      success: function(data) {
         // convert returned page into contained DOM elements
         var returnedDomElements = $.parseHTML(data);
 
@@ -353,7 +359,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           $el: $element
         });
       },
-      error: function(jqXHR, textStatus, errorThrown) {
+      error: function() {
         handleAjaxError("Error: Unable to retrieve step analysis form for analysis with id " + analysisId);
       }
     });
@@ -366,7 +372,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     return doAjax(ROUTES.getResult, {
       data: { "analysisId": analysisId },
       success: function(data, textStatus, jqXHR) {
-        if (data == "") {
+        if (data === "") {
           // empty result means no analysis has yet been run
           return;
         }
@@ -380,21 +386,21 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         }
 
         if (jqXHR.status === 200) {
-          trigger('resultsload', {
+          // analysis has completed
+          trigger('resultsload statuschange', {
             name: $element.data('analysis-name'),
             id: analysisId,
             $el: $element
           });
         }
       },
-      error: function(jqXHR, textStatus, errorThrown) {
+      error: function() {
         handleAjaxError("Error: Unable to load results for step analysis with id: " + analysisId);
       }
     });
   }
 
   function runStepAnalysis(form) {
-    var analysisId = $(form).find('input[name=analysisId]').val();
     var $errorsPane = $(form).parents('.step-analysis-subpane').find('.step-analysis-errors-pane');
     var $formPane = $(form).closest('.step-analysis-form-pane');
     // clear any errors from a previous submission
@@ -402,7 +408,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     $.blockUI();
     return doAjax(ROUTES.runAnalysis, {
       data: $(form).serialize(),
-      success: function(data, textStatus, jqXHR) {
+      success: function(data) {
         $.unblockUI();
         if (data.status == "success") {
           $formPane.accordion("option", "active", false);
@@ -413,7 +419,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           // clear results pane so user doesn't see old results with new submitted form
           $(form).parents('.step-analysis-pane').find('.step-analysis-results-pane').empty();
           // display validation errors
-          var errorAnnounce = "<span>Please address the following issues:</span><br/>"
+          var errorAnnounce = "<span>Please address the following issues:</span><br/>";
           var $newErrorList = $("<ul></ul>");
           data.errors.forEach(function(val) {
             $newErrorList.append("<li>"+val+"</li>");
@@ -421,7 +427,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           $errorsPane.append(errorAnnounce).append($newErrorList).append("<hr/>");
         }
       },
-      error: function(jqXHR, textStatus, errorThrown) {
+      error: function() {
         $.unblockUI();
         handleAjaxError("Error: Unable to run step analysis.");
       }
@@ -448,7 +454,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
   function doRefreshCountdown($obj, analysisId, secondsLeft) {
 
-    if (secondsLeft == 0) {
+    if (secondsLeft === 0) {
       var loadTimer = setTimeout(function() {
         // refresh results pane to see if results are present
         loadResultsPane($obj.parents('.step-analysis-pane'), analysisId);
@@ -470,28 +476,31 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
   function showAllAnalyses() {
     return doAjax(ROUTES.getAll, {
-      success: function(data, textStatus, jqXHR) {
+      success: function(data) {
         var jsonDisplay = JSON.stringify(data, undefined, 2);
         var html = "<div><pre>" + jsonDisplay + "</pre></div>";
         $(html).dialog({ modal:true });
       },
-      error: function(jqXHR, textStatus, errorThrown) {
+      error: function() {
         handleAjaxError("Error: Unable to retrieve all analysis json.");
       }
     });
   }
 
-  function renameStepAnalysis(analysisId) {
+  function renameStepAnalysis(analysisId, $element) {
     var newName = prompt("New name:");
-    if (newName != null && newName != '') {
+    if (newName) {
       return doAjax(ROUTES.renameAnalysis, {
         data: { "analysisId": analysisId, "displayName": newName },
-        success: function(data, textStatus, jqXHR) {
+        success: function() {
+          // update name on tab
           $('#step-analysis-' + analysisId + " a").contents().filter(function() {
-              return this.nodeType == 3; //Filtering by text node
+            return this.nodeType == 3; //Filtering by text node
           }).first()[0].data = newName;
+          // update name inside tab
+          $element.find('.step-analysis-pane[data-analysis-id='+analysisId+']').find('h3[data-bind=displayName]').text(newName);
         },
-        error: function(jqXHR, textStatus, errorThrown) {
+        error: function() {
           handleAjaxError("Error: Unable to change display name for analysis with id " + analysisId);
         }
       });
@@ -505,9 +514,16 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
   }
 
   // Trigger two wdk events: one generic and one specific to instance
-  function trigger(eventName, pubObject) {
-    var event = 'analysis:' + eventName;
-    event = event + ' ' + event + ':' + pubObject.name;
+  // eventNames is a space-delimited list of names
+  function trigger(eventNames, pubObject) {
+    var event = _.chain(eventNames.trim().split(/\s+/))
+      .map(function(name) {
+        return ['analysis:' + name, 'analysis:' + name + ':' + pubObject.name];
+      })
+      .flatten()
+      .value()
+      .join(' ');
+
     wdk.trigger(event, pubObject);
   }
 

@@ -11,7 +11,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   "use strict";
 
   // Called when a step is selected and the tabs container is inserted in DOM
-  function configureSummaryViews($element, $attrs) {
+  function configureSummaryViews($element) {
     var addFeatureTooltipOnce = _.once(addFeatureTooltip); // only call once per step selection
     // var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);  
     var currentTab = 0;
@@ -21,11 +21,15 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       load: function(event, ui) {
         addFeatureTooltipOnce($element);
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
+        wdk.basket.checkPageBasket();
+        wdk.util.setDraggable(ui.panel.find("div.attributesList"), ".dragHandle");
       }
     });
     
-    // pretty up analysis tabs and create "new analysis" menu
-    wdk.stepAnalysis.configureAnalysisViews($element);
+    // if not a child of basket menu, configure analysis tabs
+    if ($element.has('#add-analysis').length) {
+      wdk.stepAnalysis.configureAnalysisViews($element);
+    }
     
   }
   
@@ -45,7 +49,8 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         el: analysisFeatureTooltipTarget,
         key: 'new-analysis::' + wdk.VERSION,
         title: 'New tools available!',
-        text: analysisFeatureTooltipTarget.find('.analysis-feature-tooltip')
+        text: analysisFeatureTooltipTarget.find('.analysis-feature-tooltip'),
+        container: $element
       });
 
       analysisFeatureTooltipTarget
@@ -76,7 +81,9 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       var stratfId = step.parents(".diagram").attr("id");
       stratfId = stratfId.substring(stratfId.indexOf('_') + 1);
       strat = wdk.strategy.model.getStrategy(stratfId).backId;
-      step = wdk.strategy.model.getStep(stratfId, stepfId).back_step_Id;
+      step = step.hasClass('operation')
+        ? wdk.strategy.model.getStep(stratfId, stepfId).back_boolean_Id
+        : wdk.strategy.model.getStep(stratfId, stepfId).back_step_Id;
     } else {
       step = $(table).attr('step');
     }
@@ -116,7 +123,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     // determine whether to refresh strategy result or basket result
     var tab = $("#strategy_tabs > li#selected > a").attr("id");
     if (tab == "tab_strategy_results") {
-      GetResultsPage(url, update, true);
+      getResultsPage(url, update, true);
     } else if (tab == "tab_basket") {
       wdk.basket.ChangeBasket(url + "&results_only=true");
     }
@@ -134,7 +141,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
 
   function updateSummary(command) {
     // var info = workspace("#Summary_Views");
-    var info = wdk.findActiveWorkspace().find("#Summary_Views");;
+    var info = wdk.findActiveWorkspace().find("#Summary_Views");
     var url = info.attr("updateUrl");
     var strategyId = info.attr("strategy");
     var stepId = info.attr("step");
@@ -142,19 +149,19 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     var view = $("#Summary_Views > ul > li.ui-tabs-active").attr("id");
     url += "?strategy=" + strategyId + "&strategy_checksum=" +
         strategy.checksum + "&step=" + stepId + "&view=" + view + "&" + command;
-    GetResultsPage(url, true, true, true);
+    getResultsPage(url, true, true, true);
   }
 
-  function GetResultsPage(url, update, ignoreFilters, resultOnly) {
+  function getResultsPage(url, update, ignoreFilters, resultOnly) {
     var s = wdk.util.parseUrlUtil("strategy", url);
     var st = wdk.util.parseUrlUtil("step", url);
     var strat = wdk.strategy.model.getStrategyFromBackId(s[0]);
     var currentDiv = window.wdk.findActiveView();
     var step = null;
-    if (strat == false) {
-      strat = new Object();
-      strat.JSON = new Object();
-      step = new Object();
+    if (!strat) {
+      strat = {};
+      strat.JSON = {};
+      step = {};
       strat.JSON.name = "";
       step.frontId = "n/a";
     } else {
@@ -167,17 +174,17 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       url: url,
       dataType: "html",
       beforeSend: function() {
-        if(strat != false) wdk.util.showLoading(strat.frontId);
+        if(strat) wdk.util.showLoading(strat.frontId);
       },
       success: function(data) {
         if (update && wdk.strategy.error.ErrorHandler("Results", data, strat, null)) {
-          if (resultOnly == undefined) {
+          if (resultOnly === undefined) {
             resultOnly = (url.indexOf('showResult.do') >= 0);
           }
-          ResultsToGrid(data, ignoreFilters, currentDiv, resultOnly);
+          resultsToGrid(data, ignoreFilters, currentDiv, resultOnly);
           updateResultLabels(currentDiv, strat, step);
         }
-        if(strat != false) wdk.util.removeLoading(strat.frontId);
+        if(strat) wdk.util.removeLoading(strat.frontId);
       },
       error : function(data, msg, e) {
         alert("ERROR \n "+ msg + "\n" + e + ". \n" +
@@ -194,10 +201,10 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     }
   }
 
-  function ResultsToGrid(data, ignoreFilters, div, resultOnly) {
+  function resultsToGrid(data, ignoreFilters, div) {
     var oldFilters;
     var currentDiv = div;
-    if (currentDiv == undefined) currentDiv = window.wdk.findActiveView();
+    if (currentDiv === undefined) currentDiv = window.wdk.findActiveView();
     if (ignoreFilters) {
       oldFilters = $("#strategy_results > div.Workspace div.layout-detail div.filter-instance .link-url");
     }
@@ -205,11 +212,11 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     currentDiv.html(data);
 
     // invoke filters
-    var wdkFilter = new wdk.filter.WdkFilter();
+    var wdkFilter = new wdk.filter.WdkFilter(currentDiv.find('.result-filters'));
     
+    wdkFilter.initialize();
+
     if (ignoreFilters) {
-      wdkFilter.addShowHide();
-      wdkFilter.displayFilters();
       oldFilters.each(function() {
         var newFilter = document.getElementById(this.id);
         var count = $(this).text();
@@ -218,18 +225,17 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         // refs #15011
         if (this === newFilter) return;
 
-        if (count == 0 || !/\d+/.test(count)) {
+        if (count === 0 || !/\d+/.test(count)) {
           $(newFilter).replaceWith(this);
         } else {
           $(newFilter).html(count);
         }
       });
     } else {
-      //wdkFilter.initialize();
       // Using setTimeout allows the results HTML to be rendered first, and
       // thus the results ajax is fired before the filters ajax. This will make
       // getting results faster when there are lots of filters.
-      setTimeout(wdkFilter.initialize.bind(wdkFilter), 0);
+      _.defer(wdkFilter.loadFilterCount.bind(wdkFilter));
     }
 
     // convert results table to drag-and-drop flex grid
@@ -278,7 +284,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     gotoPageUrl += "&pager.offset=" + pageOffset;
     gotoPageUrl += "&pageSize=" + pageSize;
     $("div.advanced-paging").hide();
-    GetResultsPage(gotoPageUrl, true, true);
+    getResultsPage(gotoPageUrl, true, true);
   }
 
   function openAttributeList(element){
@@ -305,7 +311,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       $(element).attr("dialog", id);
       list.attr("id", id).dialog({
         autoOpen: false,
-        open: function(event, ui) {
+        open: function() {
           var $this = $(this);
           var dialogHeight = $this.height();
           var viewportHeight = $(window).height();
@@ -316,22 +322,6 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       });
     }
     return $(element).attr("dialog");
-  }
-
-  function toggleAttributes(from) {
-    var strList = $("#" + from + "-list").text();
-    var list = strList.split(',');
-    var state = $("#toggle-" + from).attr('checked');
-    for (var i = 0; i < list.length; i++) {
-      var name = list[i];
-      if (name == '') continue;
-
-      // look for the checkboxes with the attribute name, and toggle them
-      var attribute = $(".Results_Div .attributesList input#" + name);
-      if (attribute.attr("disabled") == false) {
-        attribute.attr('checked', state);
-      }
-    }
   }
 
   function invokeAttributePlugin(ele, stepId, attributeName) {
@@ -348,23 +338,23 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       success: function(data) {
         $.unblockUI();
         // create a place holder for the result
-        if ($("#attribute-plugin-result").length == 0) {
+        if ($("#attribute-plugin-result").length === 0) {
           $("body").append("<div id=\"attribute-plugin-result\"> </div>");
         }
         $("#attribute-plugin-result")
-            .html(data)
-            .dialog({
-              width : 825,
-              maxHeight: 800,
-              title : title,
-              modal : true
-            });
+          .html(data)
+          .dialog({
+            width : 825,
+            maxHeight: 800,
+            title : title,
+            modal : true
+          });
       }
     });
   }
 
-  ns.GetResultsPage = GetResultsPage;
-  ns.ResultsToGrid = ResultsToGrid;
+  ns.getResultsPage = getResultsPage;
+  ns.resultsToGrid = resultsToGrid;
   ns.closeAdvancedPaging = closeAdvancedPaging;
   ns.configureSummaryViews = configureSummaryViews;
   ns.createFlexigridFromTable = createFlexigridFromTable;

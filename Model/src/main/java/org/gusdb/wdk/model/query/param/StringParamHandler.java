@@ -41,7 +41,7 @@ public class StringParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public Object toRawValue(User user, String stableValue, Map<String, String> contextValues) {
+  public String toRawValue(User user, String stableValue, Map<String, String> contextValues) {
     return stableValue;
   }
 
@@ -114,6 +114,12 @@ public class StringParamHandler extends AbstractParamHandler {
   @Override
   public ParamHandler clone(Param param) {
     return new StringParamHandler(this, param);
+  }
+
+  @Override
+  public String getDisplayValue(User user, String stableValue, Map<String, String> contextValues)
+      throws WdkModelException {
+    return toRawValue(user, stableValue, contextValues);
   }
 
 }

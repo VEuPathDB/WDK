@@ -162,4 +162,9 @@ public class AnswerParamHandler extends AbstractParamHandler {
   public ParamHandler clone(Param param) {
     return new AnswerParamHandler(this, param);
   }
+
+  @Override
+  public String getDisplayValue(User user, String stableValue, Map<String, String> contextValues) throws WdkModelException {
+    return toRawValue(user, stableValue, contextValues).getCustomName();
+  }
 }

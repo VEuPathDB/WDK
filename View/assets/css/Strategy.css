@@ -286,6 +286,7 @@ h6.resultCount {
   width:100%;
   bottom: 2px;
   position: relative;
+  margin: 0;
 }
 
 .operation.SPAN {
@@ -887,6 +888,7 @@ div.bottom-close{
   float:left;
   position:relative;
   left:50%;
+  list-style: none;
 }
 
 .crumb_details ul.question_name li {
@@ -997,6 +999,7 @@ table.history_controls {
   position: absolute;
   height: 100%;
   width: 100%;
+  line-height: 1;
 }
 .diagram .diagramSection.scrollableSteps {
   height: 100%;
@@ -1121,7 +1124,8 @@ white-space: nowrap;
  *************************************************/
 .menu_section {
   text-indent:-5px; 
-  margin-left:3px;
+  padding: 0;
+  margin: 0 0 0 3px;
 }
 .menu_section li {
   padding-left: 6px;

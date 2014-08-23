@@ -11,8 +11,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.RequestParams;
 
 /**
- * A wrapper on a {@link Param} that provides simplified access for consumption
- * by a view
+ * A wrapper on a {@link Param} that provides simplified access for consumption by a view
  */
 public abstract class ParamBean<T extends Param> {
 
@@ -96,19 +95,19 @@ public abstract class ParamBean<T extends Param> {
   /**
    * for controller
    */
-  public void validate(UserBean user, String rawOrDependentValue,
-      Map<String, String> contextValues) throws WdkModelException,
-      WdkUserException {
+  public void validate(UserBean user, String rawOrDependentValue, Map<String, String> contextValues)
+      throws WdkModelException, WdkUserException {
     param.validate(user.getUser(), rawOrDependentValue, contextValues);
   }
 
   /**
-   * @throws WdkModelException if unable to set stable value 
+   * @throws WdkModelException
+   *           if unable to set stable value
    */
   public void setStableValue(String stabletValue) throws WdkModelException {
     this.stableValue = stabletValue;
   }
-  
+
   public String getStableValue() {
     return stableValue;
   }
@@ -132,7 +131,7 @@ public abstract class ParamBean<T extends Param> {
    * @param user
    * @param stableValue
    * @return
-   * @throws WdkUserException 
+   * @throws WdkUserException
    * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
@@ -145,12 +144,12 @@ public abstract class ParamBean<T extends Param> {
    * @param user
    * @param independentValue
    * @return
-   * @throws WdkUserException 
+   * @throws WdkUserException
    * @see org.gusdb.wdk.model.query.param.Param#independentValueToRawValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String)
    */
-  public String getStableValue(UserBean user, RequestParams requestParams)
-      throws WdkModelException, WdkUserException {
+  public String getStableValue(UserBean user, RequestParams requestParams) throws WdkModelException,
+      WdkUserException {
     return param.getStableValue(user.getUser(), requestParams);
   }
 
@@ -198,6 +197,9 @@ public abstract class ParamBean<T extends Param> {
       throws WdkModelException, WdkUserException {
     param.prepareDisplay(user.getUser(), requestParams, contextValues);
   }
-  
-  
+
+  public String getDisplayValue() throws WdkModelException {
+    return param.getDisplayValue(user.getUser(), stableValue, contextValues);
+  }
+
 }

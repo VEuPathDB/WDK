@@ -65,6 +65,11 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
+  public boolean hasCompleteAnalyses(Step step) throws WdkModelException {
+    return false;
+  }
+
+  @Override
   public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }

@@ -25,6 +25,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
+import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 
 public class FavoriteFactory {
 
@@ -271,16 +272,15 @@ public class FavoriteFactory {
           Object value = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
           primaryKeys.put(columns[i - 1], value);
         }
-        RecordInstance instance = new RecordInstance(user, recordClass,
-            primaryKeys);
+        PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(recordClass.getPrimaryKeyAttributeField(), primaryKeys);
         Favorite favorite = new Favorite(user);
-        favorite.setRecordInstance(instance);
+        favorite.setPrimaryKeys(pkValue);
         favorite.setNote(rs.getString(COLUMN_RECORD_NOTE));
         favorite.setGroup(rs.getString(COLUMN_RECORD_GROUP));
         list.add(favorite);
       }
       return favorites;
-    } catch (SQLException | WdkUserException e) {
+    } catch (SQLException e) {
       throw new WdkModelException("Cannot get favorites for user "
           + user.getUserId(), e);
     } finally {

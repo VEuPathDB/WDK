@@ -7,7 +7,7 @@ wdk.util.namespace("window.wdk.stratTabCookie", function(ns, $) {
   function getCurrentTabCookie(type) {
     var cookieValue = $.cookie(currentTabCookie);
     var tabStates;
-    if (cookieValue != null) tabStates = cookieValue.split(type + "=")[1];
+    if (cookieValue !== null) tabStates = cookieValue.split(type + "=")[1];
     if (tabStates) {
       return tabStates.split("&")[0];
     }
@@ -16,7 +16,7 @@ wdk.util.namespace("window.wdk.stratTabCookie", function(ns, $) {
   function setCurrentTabCookie(type, value) {
     var oldValue = $.cookie(currentTabCookie);
     var newValue, tabStates;
-    if (oldValue != null) tabStates = oldValue.split(type + "=");
+    if (oldValue !== null) tabStates = oldValue.split(type + "=");
     if (tabStates && tabStates.length > 1) {
       newValue = tabStates[0] + type + "=" + value;
       if (tabStates[1].indexOf("&") >= 0) {

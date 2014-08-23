@@ -5,15 +5,13 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
   //var modelNS = wdk.strategy.model;
 
   var selected = [];
-  var overStepId = 0;
-  var currentStepId = 0;
   var update_hist = true;
   var queryhistloaded = false;
 
   /* Create an array with the values of all the checkboxes in a column */
   /* This function is used to sort datatable columns by checkbox (checked vs. not) */
   $.fn.dataTable.ext.order['dom-checkbox'] = function  ( settings, col ) {
-    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+    return this.api().column( col, {order:'index'} ).nodes().map( function ( td ) {
       return $('input', td).prop('checked') ? '1' : '0';
     } );
   };
@@ -121,7 +119,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
   function updateSelectedList() {
     selected = [];
 
-    $("div.history_panel input:checkbox.strat-selector-box").each(function (i) {
+    $("div.history_panel input:checkbox.strat-selector-box").each(function () {
       if ($(this).attr("checked")) {
         selected.push($(this).attr("id"));
       }
@@ -141,7 +139,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
 
     var std = stratToDelete;
 
-    if (!std && selected.length == 0) {
+    if (!std && selected.length === 0) {
       alert("No strategies were selected!");
       return false;
     }
@@ -183,7 +181,6 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
   }
 
   function performBulkAction(type, stratTD) {
-    var agree;
     var url;
 
     if (type == 'delete') {
@@ -226,7 +223,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     stratTD = undefined;
   }
 
-  function showDescriptionDialog(el, save, fromHist, canEdit) {
+  function showDescriptionDialog(el, save, fromHist) {
     var dialog_container = $('#wdk-dialog-strat-desc');
     var row = $(el).closest('.strategy-data');
     var strat = row.data();
@@ -262,7 +259,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
         if (wdk.user.isGuest()) {
           // TODO Don't use DOM ID to open dialogs
           // For instance, wdk.showLoginForm()
-          $('#wdk-dialog-login-form').dialog('open')
+          $('#wdk-dialog-login-form').dialog('open');
         } else {
           showUpdateDialog(el, save, fromHist, strat.isPublic);
         }
@@ -278,7 +275,6 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
         dialog_container = $("#wdk-dialog-update-strat"),
         title = (save) ? "Save Strategy" : "Update Strategy",
         submitValue = (save) ? "Save strategy" : "Update strategy",
-        type = (save) ? "SaveStrategy" : "RenameStrategy",
         form;
 
     dialog_container.dialog("option", "title", title)
@@ -339,7 +335,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
             "Please revised your description.");
         return false;
       }
-      if ($(this.is_public).prop('checked') && this.description.value.trim().length == 0) {
+      if ($(this.is_public).prop('checked') && this.description.value.trim().length === 0) {
         alert(wdk.publicStrats.publicStratDescriptionWarning);
         return false;
       }

@@ -23,7 +23,7 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
     } else if (document.all) {  // this is the way old msie versions work
       controllingLayer = document.all[controllingLayerName];
     } else if (document.layers) {   // this is the way nn4 works
-     controllingLayer  = document.layers[controllingLayerName];
+      controllingLayer  = document.layers[controllingLayerName];
     }
     var style = controllingLayer.style;
     style.display = style.display? "":"block";   // toggle it
@@ -95,7 +95,7 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
       end = document.cookie.length;
     }
 
-    return unescape(document.cookie.substring(len,end));
+    return decodeURI(document.cookie.substring(len,end));
   }
 
   function setCookie(name, value, days, path, domain, secure) {
@@ -107,7 +107,7 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
 
     var expiresDate = new Date((new Date()).getTime() + 1000 * 60 * 60 * 24 * days);
 
-    document.cookie = name + "=" + escape(value) +
+    document.cookie = name + "=" + encodeURI(value) +
         ( (days) ? ";expires=" + expiresDate.toGMTString() : "") +
         ( (path) ? ";path=" + path : "") + 
         ( (domain) ? ";domain=" + domain : "") +
@@ -127,12 +127,6 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
   var today = new Date();
   var zeroDate = new Date(0,0,0);
   today.setTime(today.getTime() - zeroDate.getTime());
-
-  var todaysDate = new Date(today.getYear(),
-    today.getMonth(),
-    today.getDate(),
-    0, 0, 0);
-  var expiresDate = new Date(todaysDate.getTime() + (8 * 7 * 86400000));
 
   function storeMasterCookie() {
     if (!getCookie('MasterCookie')) {
@@ -175,10 +169,10 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
         "imgSrc = " + imgSrc;
 
     // no need to wait till readyState == 4 'cuz we do not need responseText
-    if (http.readyState == 1 || http.readyState == 0) {
+    if (http.readyState == 1 || http.readyState === 0) {
       var img = document.getElementById(imgId);
       msg += "\nimg before='" + img + "'\n";
-      if(img.src != null && img.src != imgSrc) {
+      if(img.src && img.src != imgSrc) {
         img.src = imgSrc;
       }
       msg += "\nsrc after='" + img.src + "'\n";
@@ -196,7 +190,7 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
     if (!isWorking && http) {
       //if imgSrc is on a different domain, we need to sign the scripts and ask for expanded privilege
       try {
-        netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+        netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead"); // jshint ignore:line
       } catch (e) {
         //alert("cat not enable UniversalBrowserRead: " + e.message);
       }
@@ -207,7 +201,7 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
         http.send(null);
       } catch (e) {
         var img = document.getElementById(imgId);
-        if (img.src != null && img.src != imgSrc) {
+        if (img.src && img.src != imgSrc) {
           img.src = imgSrc;
         }
       }
@@ -242,8 +236,7 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
   function handleHttpResponseImageMapDiv(imgMapDivId) {
     var http = httpObjects[imgMapDivId];
     if (http.readyState == 4) {
-      var div = document.getElementById(imgMapDivId);
-      if (document.getElementById(imgMapDivId).lastChild == null) {
+      if (!document.getElementById(imgMapDivId).lastChild) {
         //document.getElementById(imgMapDivId).innerHTML = http.responseText;
         //TRICKY: this only works on Firefox/Netscape
         dynamiccontent(imgMapDivId, http.responseText);
@@ -291,8 +284,7 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
       $(slot).append(loadingImg);
       //}
  
-      $(slot).load(imgMapSrc, null, 
-          function(responseText, status, XMLHttpRequest) {
+      $(slot).load(imgMapSrc, null, function() {
         $.each(postLoadJS.split(','), function (i, val) {
           if (val.indexOf("wz_tooltip") != -1) {
             $("div[id^=tOoLtIp]").remove(); // previously loaded wz_tooltips
@@ -357,7 +349,7 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
     if (window.XMLHttpRequest) {    // firefox, mozilla, IE7
       request = new XMLHttpRequest();
     } else if (window.ActiveXObject) {    // IE6 or before
-      request = new ActiveXObject("Microsoft.XMLHTTP");
+      request = new ActiveXObject("Microsoft.XMLHTTP"); // jshint ignore:line
     } else {
       return null;
     }

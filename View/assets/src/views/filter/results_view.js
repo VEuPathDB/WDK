@@ -1,6 +1,8 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
+  var Field = wdk.models.filter.Field;
+
   ns.ResultsView = wdk.views.View.extend({
 
     events: {
@@ -17,7 +19,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     dataTable: null,
 
     constructor: function() {
-      Handlebars.registerHelper('property', function(key, context, options) {
+      Handlebars.registerHelper('property', function(key, context) {
         return context[key];
       });
       this.initTableOnce = _.once(this._initTable.bind(this));
@@ -27,6 +29,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
     initialize: function(options) {
       this.defaultColumns = options.defaultColumns;
       this.initTableOnce = _.once(this._initTable.bind(this));
+
+      this.queueRender();
 
       this.listenTo(this.model.filteredData, 'reset', this.queueRender);
     },
@@ -94,7 +98,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       columns.push({
         sClass: 'display',
         sTitle: 'Name',
-        mData: function(row, type, val) {
+        mData: function(row) {
           var html = _this.displayTemplate(row);
           return html;
         }
@@ -102,12 +106,13 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
       // allow all columns to be sortable
       this.model.fields
-        .where({ filterable: true })
+        .where({ leaf: 'true' })
         .forEach(function(field) {
           columns.push({
-            sClass: field.get('term'),
+            sClass: field.get('term').trim().replace(/\s+/g, '-'),
             sTitle: field.get('display'),
             mData: 'metadata.' + field.get('term'),
+            defaultContent: Field.UNKNOWN_VALUE,
             bVisible: defaultColumns
                       ? defaultColumns.indexOf(field.get('term')) > -1
                       : true

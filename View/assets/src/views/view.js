@@ -1,4 +1,4 @@
-wdk.namespace('wdk.views', function(ns, $) {
+wdk.namespace('wdk.views', function(ns) {
   'use strict';
 
   /**

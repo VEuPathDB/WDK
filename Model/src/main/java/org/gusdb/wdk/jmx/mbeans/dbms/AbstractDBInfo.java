@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 
 /**
   * Abstract class for collecting information about databases used by
@@ -25,6 +26,7 @@ public abstract class AbstractDBInfo {
   protected HashMap<String, String> databaseAttributes;
   private static final Logger logger = Logger.getLogger(AbstractDBInfo.class);
   DataSource datasource;
+  DatabaseInstance database;
 
   public AbstractDBInfo() {
     databaseAttributes = new HashMap<String, String>();
@@ -66,6 +68,10 @@ public abstract class AbstractDBInfo {
     this.datasource = datasource;
   }
   
+  public void setDatabase(  DatabaseInstance database) {
+    this.database = database;
+  }
+  
   public void populateDatabaseMetaDataMap(HashMap<String, String> metaDataMap) {
     String sql = getMetaDataSql();
     if (sql == null) return;
@@ -91,8 +97,13 @@ public abstract class AbstractDBInfo {
     }
   }
 
+  public void populateConnectionPoolDataMap(HashMap<String, String> poolMap) {
+      
+      poolMap.put("pool", Integer.toString(database.getIdleCount()));
+  }
+
   public void populateServernameDataMap(HashMap<String, String> servernameDataMap) {
-    String sql = getServerNameSql();
+   String sql = getServerNameSql();
     if (sql == null) return;
     
     Connection connection = null;

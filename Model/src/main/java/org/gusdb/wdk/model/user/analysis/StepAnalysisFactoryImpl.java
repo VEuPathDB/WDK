@@ -93,6 +93,16 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
   }
 
   @Override
+  public boolean hasCompleteAnalyses(Step step) throws WdkModelException {
+    for (StepAnalysisContext context : getAppliedAnalyses(step).values()) {
+      if (context.getStatus().equals(ExecutionStatus.COMPLETE)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
   public Object getFormViewModel(StepAnalysisContext context) throws WdkModelException, WdkUserException {
     return getConfiguredAnalyzer(context, _fileStore).getFormViewModel();
   }
@@ -265,6 +275,9 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       }
     }
 
+    // update stored context with param values (must do even if using cached results)
+    _dataStore.updateContext(context.getAnalysisId(), hash, context.serializeContext());
+
     // Run analysis plugin under the following conditions:
     //   1. if new execution was created (i.e. none existed before or cache was cleared)
     //   2. previous run failed due to error, interruption, etc.
@@ -272,8 +285,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     //
     // NOTE: There is a race condition here in between the check of the store and the creation
     //       (first line inside if).  Use combination of lock and createNewFile() to fix.
-    LOG.info("Checking whether to run vs. use previous result. newlyCreated = " +
-        newlyCreated + ", status = " + context.getStatus());
+    LOG.info("Checking whether to run vs. use previous result. hash = " + hash +
+        ", newlyCreated = " + newlyCreated + ", status = " + context.getStatus());
     if (newlyCreated || context.getStatus().requiresRerun()) {
 
       // ensure empty data and file stores and create dir
@@ -281,9 +294,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
       if (!newlyCreated) {
         _dataStore.resetExecution(hash, initialStatus);
       }
-
-      // update stored context with param values
-      _dataStore.updateContext(context.getAnalysisId(), hash, context.serializeContext());
 
       // set initial status on in-memory context
       context.setStatus(initialStatus);

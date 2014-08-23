@@ -5,9 +5,9 @@
  * the minified file is included for production deployments
  */
 
-@import 'reset.css';
+@import 'normalize.css';
 @import 'jquery-ui.css';
-@import 'chosen.min.css';
+@import 'select2.css';
 @import 'datatables.css';
 @import 'dataTables.colVis.min.css';
 @import 'jquery.qtip.min.css';

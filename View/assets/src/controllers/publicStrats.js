@@ -37,40 +37,40 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
     var lastSortCol = 6;
     var lastSortDir = "desc";
     $("#public_strat table.datatables").dataTable({
-        "bAutoWidth": false,
-        "bJQueryUI": true,
-        "bScrollCollapse": true,
-        "bPaginate": false,
-        "aoColumns": [ { "bSearchable": false, "bVisible": false },
-                       null,
-                       null,
-                       { "bSortable": false },
-                       null,
-                       null,
-                       null ],
-        "aaSorting": [[0, "desc"], [ lastSortCol, lastSortDir ]],
-        // The purpose of the following function is to enable the "Always push to top" checkbox
-        // After the user clicks a sortable column header, we re-sort examples to top if
-        // necessary, but must also detect if this is a direction change for that column.
-        "fnDrawCallback": function() {
-          if ($('#sampleToTopCheckbox').prop('checked') && !drawFromSecondarySort) {
-            var sortSettings = getDataTable().fnSettings().aaSorting;
-            var newSortCol = sortSettings[0][0];
-            var newSortDir = sortSettings[0][1];
-            var secondarySort = undefined;
-            if (newSortCol == lastSortCol && newSortDir == lastSortDir) {
-              // set secondary sort to reverse direction of previous sort
-              newSortDir = (newSortDir == 'asc' ? 'desc' : 'asc');
-              secondarySort = [ newSortCol, newSortDir ];
-            }
-            lastSortCol = newSortCol;
-            lastSortDir = newSortDir;
-            drawFromSecondarySort = true;
-            sortSampleToTop(secondarySort);
-          } else {
-            drawFromSecondarySort = false;
+      "bAutoWidth": false,
+      "bJQueryUI": true,
+      "bScrollCollapse": true,
+      "bPaginate": false,
+      "aoColumns": [ { "bSearchable": false, "bVisible": false },
+        null,
+        null,
+        { "bSortable": false },
+        null,
+        null,
+        null ],
+      "aaSorting": [[0, "desc"], [ lastSortCol, lastSortDir ]],
+      // The purpose of the following function is to enable the "Always push to top" checkbox
+      // After the user clicks a sortable column header, we re-sort examples to top if
+      // necessary, but must also detect if this is a direction change for that column.
+      "fnDrawCallback": function() {
+        if ($('#sampleToTopCheckbox').prop('checked') && !drawFromSecondarySort) {
+          var sortSettings = getDataTable().fnSettings().aaSorting;
+          var newSortCol = sortSettings[0][0];
+          var newSortDir = sortSettings[0][1];
+          var secondarySort;
+          if (newSortCol == lastSortCol && newSortDir == lastSortDir) {
+            // set secondary sort to reverse direction of previous sort
+            newSortDir = (newSortDir == 'asc' ? 'desc' : 'asc');
+            secondarySort = [ newSortCol, newSortDir ];
           }
+          lastSortCol = newSortCol;
+          lastSortDir = newSortDir;
+          drawFromSecondarySort = true;
+          sortSampleToTop(secondarySort);
+        } else {
+          drawFromSecondarySort = false;
         }
+      }
     });
     // make search textbox appear where we want
     $('#public_strat table.datatables').parent().parent().parent().find('.dataTables_filter')
@@ -93,7 +93,7 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
   function togglePublic(checkbox, stratId) {
     var isPublic = $(checkbox).prop('checked');
     var description = $(checkbox).parent().parent().find('.strategy_description div').html();
-    if (description == "Click to add a description" || description.trim() == "") {
+    if (description == "Click to add a description" || description.trim() === "") {
       alert(publicStratDescriptionWarning);
       $(checkbox).prop('checked', !isPublic);
       return;
@@ -104,7 +104,7 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
       url : "processPublicStratStatus.do",
       data : { "stratId" : stratId, "isPublic" : isPublic },
       dataType : "json",
-      success : function(data, textStatus, jqXHR ) {
+      success : function() {
         // set data on row to updated value
         $(checkbox).parents(".strategy-data").data("isPublic", ($(checkbox).prop('checked') ? "true" : "false"));
         // remove spinner; operation complete
@@ -113,7 +113,7 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
         //var publicStatus = isPublic ? "public" : "private";
         //alert("Successfully set strat with ID " + stratId + " to " + publicStatus + ".");
       },
-      error : function(jqXHR, textStatus, errorThrown) {
+      error : function() {
         $(checkbox).parent().find('img').css('display','none');
         alert("We are unable to change the status of this strategy at this time.  " +
               "Please try again later.  If the problem persists, please use the " +

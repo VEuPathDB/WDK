@@ -596,4 +596,8 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   public void addHandler(ParamHandlerReference handlerReference) {
     this.handlerReferences.add(handlerReference);
   }
+  
+  public String getDisplayValue(User user, String stableValue, Map<String, String> contextValues) throws WdkModelException {
+    return handler.getDisplayValue(user, stableValue, contextValues);
+  }
 }

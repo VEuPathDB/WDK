@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jfree.util.Log;
+
 /**
  * This class is the common parent for most of the classes that are represented
  * as a tag in the WDK model.
@@ -36,7 +38,7 @@ public abstract class WdkModelBase {
   private List<PropertyList> propertyLists;
   private Map<String, String[]> propertyListMap;
 
-  private WdkModel wdkModel;
+  protected WdkModel wdkModel;
 
   public WdkModelBase() {
     includeProjects = new LinkedHashSet<String>();
@@ -170,10 +172,11 @@ public abstract class WdkModelBase {
    * @throws WdkModelException if error occurs resolving references
    */
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    Log.info("Am I ever called?");
     this.wdkModel = wdkModel;
   }
 
-  protected WdkModel getWdkModel() {
+  public WdkModel getWdkModel() {
     return wdkModel;
   }
 }

@@ -370,15 +370,19 @@ public class ShowStrategyAction extends ShowQuestionAction {
         // the root of the sub-strategy should not be collapsed
         jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
         jsStep.put("isUncollapsible", step.isUncollapsible());
+        jsStep.put("hasCompleteAnalyses", step.getHasCompleteAnalyses());
 
     try {
       RecordClassBean recordClass = step.getRecordClass();
+      QuestionBean question = step.getQuestion();
       jsStep.put("dataType", recordClass.getFullName());
       jsStep.put("displayType", recordClass.getDisplayName());
       jsStep.put("shortDisplayType", recordClass.getShortDisplayName());
       jsStep.put("displayTypePlural", recordClass.getDisplayNamePlural());
       jsStep.put("shortDisplayTypePlural",
           recordClass.getShortDisplayNamePlural());
+      jsStep.put("isAnalyzable", question.getStepAnalyses().size() > 0
+          ? true : false);
     } catch (WdkModelException ex) {
       jsStep.put("dataType", "unknown");
       jsStep.put("displayType", "unknown");
@@ -472,6 +476,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             try {
               jsParam.put("value", getRawValue(paramValues, param));
               jsParam.put("internal", !param.getIsVisible());
+              jsParam.put("display", param.getDisplayValue());
             }
             catch (Exception ex) {
 							// instead of throwing exception we print eception in logs. 
@@ -485,6 +490,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
           }
           else {
             jsParam.put("value", stableValue);
+            jsParam.put("display", stableValue);
           }
           jsParams.put(jsParam);
         }

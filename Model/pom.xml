@@ -16,7 +16,7 @@
 
     <dependency>
       <groupId>org.gusdb</groupId>
-      <artifactId>wsf-client-api</artifactId>
+      <artifactId>wsf-client</artifactId>
     </dependency>
       
     <dependency>

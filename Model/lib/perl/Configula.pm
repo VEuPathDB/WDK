@@ -34,6 +34,7 @@ my %dblinkMap = (
     'apicommdevn' => 'devn.login_comment',
     'icmrcomm'    => 'icemr.login_comment',
     'prsmcomm'    => 'prism.login_comment',
+    'userdb'      => 'vm.userdb', # standalone virtual machine
 );
 
 =head1 METHODS
@@ -500,4 +501,3 @@ sub write_meta_config {
 }
 
 1;
-

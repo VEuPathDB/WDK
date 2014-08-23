@@ -59,8 +59,10 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
     try {
       AbstractDBInfo dbinfo = DBInfoFactory.getDbInfo(platform);
       dbinfo.setDatasource(datasource);
+      dbinfo.setDatabase(database);
       dbinfo.populateDatabaseMetaDataMap(dbAttrs);
       dbinfo.populateServernameDataMap(dbAttrs);
+      dbinfo.populateConnectionPoolDataMap(dbAttrs);
       dbinfo.populateDblinkList(dblinkList);
     }
     catch (IllegalArgumentException e) {

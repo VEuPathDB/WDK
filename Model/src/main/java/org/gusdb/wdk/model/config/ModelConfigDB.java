@@ -255,4 +255,11 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
         .append("}").append(FormatUtil.NL)
         .toString();
   }
+
+  public boolean isSameConnectionInfoAs(ModelConfigDB config) {
+    return (login.equals(config.login) &&
+        password.equals(config.password) &&
+        connectionUrl.equals(config.connectionUrl) &&
+        platform.equalsIgnoreCase(config.platform));
+  }
 }

@@ -1,3 +1,4 @@
+/* jshint evil:true */
 wdk.util.namespace("window.wdk.favorite", function(ns, $) {
   "use strict";
 
@@ -6,7 +7,7 @@ wdk.util.namespace("window.wdk.favorite", function(ns, $) {
     if (firstType.length > 0) {
       loadFavoriteGroups();
       var current = wdk.stratTabCookie.getCurrentTabCookie("favorites");
-      if (current != null) {
+      if (current) {
         showFavorites(current);
       }
       else {
@@ -28,13 +29,12 @@ wdk.util.namespace("window.wdk.favorite", function(ns, $) {
     var record = getRecord(holder);
     var rcName = $(holder).parents(".wdk-record").attr("recordClass");
     var d = "type=" + rcName + "&action=" + action + "&data=" + record;
-    var noUpdate = true;
     $.ajax({ 
       url: "processFavorite.do",
       data : d,
       dataType: "html",
       type : "post",
-      success: function(data) {
+      success: function() {
         var star = (action == "add") ? "color" : "gray";
         var new_action = (action == "add") ? "remove" : "add";
         var new_title = (action == "add") ? "Click to remove this item from the favorites." : "Click to add this item to the favorites";
@@ -64,7 +64,7 @@ wdk.util.namespace("window.wdk.favorite", function(ns, $) {
   var old_holder = null;
 
   function showInputBox(holder, type, callback) {
-    if (old_holder != null) {
+    if (old_holder) {
       $("input[id$='_Cancel']").click();
     }
 
@@ -75,11 +75,10 @@ wdk.util.namespace("window.wdk.favorite", function(ns, $) {
     $(holder).remove();
     noteSpan.addClass("hidden");
     noteInput.removeClass("hidden");
-    var opacity = $(noteSpan).css("opacity");
     $(cell).append("<input id='" + type + "_Save' type='button' value='Save'/>")
         .append("<input id='" + type + "_Cancel' type='button' value='Cancel'/>");
     $("input#" + type + "_Save", cell).click(function() {
-      eval(callback); 
+      eval(callback);
     });
     $("input#" + type + "_Cancel", cell).click(function() {
       $("input#" + type + "_Save", cell).remove();
@@ -126,7 +125,7 @@ wdk.util.namespace("window.wdk.favorite", function(ns, $) {
       data: d,
       dataType: "html",
       type: "post",
-      success: function(data) {
+      success: function() {
         //$(noteSpan).html(note);
         noteSpan.text(noteInput.val());
         $("input#note_Save", cell).remove();
@@ -152,7 +151,7 @@ wdk.util.namespace("window.wdk.favorite", function(ns, $) {
       data: d,
       dataType: "html",
       type: "post",
-      success: function(data) {
+      success: function() {
         groupSpan.text(groupInput.val());
         groupSpan.css("opacity", 1); // this is for user-defined favorite-group
         $("input#group_Save", cell).remove();
@@ -184,7 +183,7 @@ wdk.util.namespace("window.wdk.favorite", function(ns, $) {
             padding: "3px"
           });
 
-          if (i%2 == 0) {
+          if (i%2 === 0) {
             $(li).css("background-color","#FFFFFF");
           } else {
             $(li).css("background-color","#DDDDDD");
@@ -216,26 +215,14 @@ wdk.util.namespace("window.wdk.favorite", function(ns, $) {
   /***************** Favorite functions to support favorites manipulation from GBrowse ********************/
 
   function performIfItemIsFavorite(projectId, primaryKey, recordType, yesFunction, noFunction) {
-    var stop = (primaryKey == 'PFIT_PFE0020c');
     doAjaxFavoritesRequest('check', projectId, primaryKey, recordType,
         function(result) {
-          if (stop) {
-            var stoppingPoint = true;
-          }
           if (result.countProcessed > 0) {
             yesFunction();
           } else {
             noFunction();
           }
         });
-  }
-
-  function addToFavorites(projectId, primaryKey, recordType, successFunction) {
-    doAjaxFavoritesRequest('add', projectId, primaryKey, recordType, successFunction);
-  }
-
-  function removeFromFavorites(projectId, primaryKey, recordType, successFunction) {
-    doAjaxFavoritesRequest('remove', projectId, primaryKey, recordType, successFunction);
   }
 
   function doAjaxFavoritesRequest(action, projectId, primaryKey, recordType, successFunction) {
@@ -248,7 +235,7 @@ wdk.util.namespace("window.wdk.favorite", function(ns, $) {
       dataType: "json",
       beforeSend: function(){ /* do nothing here */ },
       success: successFunction,
-      error: function(msg){ alert("Error occurred while executing this operation!"); }
+      error: function(){ alert("Error occurred while executing this operation!"); }
     });
   }
 

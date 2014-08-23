@@ -25,7 +25,7 @@ wdk.namespace('wdk.core', function(ns, $) {
    * @extends wdk.core.BaseObject
    *
    */
-  var Application = ns.Application = BaseObject.extend({
+  ns.Application = BaseObject.extend({
 
 
     /**
@@ -157,10 +157,9 @@ wdk.namespace('wdk.core', function(ns, $) {
      * For instance, if a View name is 'my-view', the resolver
      * may look for an object named Some.Namespace.MyView.
      *
-     * @param {Object} node A View's top-level DOM node
      */
-    viewResolver: function(name, defaultView) {
-    },
+    // viewResolver: function(name, defaultView) {
+    // },
 
 
     /**

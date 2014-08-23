@@ -33,7 +33,7 @@ wdk.util.namespace("window.wdk.dyk", function(ns, $) {
   function initDYK(o,co) {
     setTipMax();
 
-    if (co == undefined) co = $.cookie("DYK");
+    if (co === undefined) co = $.cookie("DYK");
 
     if (!o) {
       tips = $("#dyk-box,#dyk-shadow").hide();
@@ -82,10 +82,10 @@ wdk.util.namespace("window.wdk.dyk", function(ns, $) {
           left: lef + "px"
         });
       }*/
-      start:function(e,ui){
+      start:function() {
         $("#dyk-shadow").hide();
       },
-      stop:function(e,ui){
+      stop:function() {
         var lef = $(this).css('left');
         var to = $(this).css('top');
         lef = parseInt(lef.split("px")[0], 10) + 6;
@@ -158,7 +158,8 @@ wdk.util.namespace("window.wdk.dyk", function(ns, $) {
     if (expire) {
       $.cookie("DYK", dykHidePermanent, {
         domain: secondLevelDomain(),
-        path: '/',expires: 300
+        path: '/',
+        expires: 300
       }); // Use different value if user checked "never show again"
     } else {
       $.cookie("DYK",dykHide,{domain: secondLevelDomain(),path: '/'});

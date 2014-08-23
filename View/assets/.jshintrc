@@ -1,0 +1,24 @@
+{
+  "freeze": true,
+  "indent": 2,
+  "latedef": "nofunc",
+  "newcap": true,
+  "noarg": true,
+  "noempty": true,
+  "nonbsp": true,
+  "undef": true,
+  "unused": true,
+  "strict": true,
+  "eqnull": false,
+  "laxbreak": true,
+  "browser": true,
+  "devel": true,
+  "jquery": true,
+  "maxerr": 150,
+  "globals": {
+    "_": true,
+    "wdk": true,
+    "Backbone": true,
+    "Handlebars": true
+  }
+}

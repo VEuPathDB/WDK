@@ -6,8 +6,6 @@ package org.gusdb.wdk.model.query;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
-
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -17,6 +15,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.user.User;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

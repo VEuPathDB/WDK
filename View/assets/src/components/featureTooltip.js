@@ -12,17 +12,20 @@ wdk.namespace('wdk.components', function(ns, $) {
   //   * featureType is the type of feature
   //   * title is the title of the tooltip (see http://qtip2.com/options#content.title)
   //   * text is the content of the tooltip (see http://qtip2.com/options#content.text)
+  //   * container is optional and delegates to position.container
+  //     (see http://qtip2.com/options#position.container)
   ns.createFeatureTooltip = function createFeatureTooltip(opts) {
     var $el = opts.el,
         key = opts.key,
         title = opts.title,
         text = opts.text,
+        container = opts.container,
 
         dismissedStorageKey = 'featureTooltip::dismissed::' + key;
 
-    ($el instanceof $) || ($el = $($el));
+    $el = $el instanceof $ ? $el : $($el);
 
-    if (localStorage.getItem(dismissedStorageKey) == true)
+    if (localStorage.getItem(dismissedStorageKey) === '1')
       return;
 
     return $el
@@ -35,11 +38,17 @@ wdk.namespace('wdk.components', function(ns, $) {
                  title
         },
         style: {
-          classes: 'qtip-bootstrap wdk-feature-tooltip'
+          classes: 'qtip-bootstrap wdk-feature-tooltip',
+          tip: {
+            width: 24,
+            height: 16
+          }
         },
         position: {
-          my: 'left top',
-          at: 'right center'
+          my: 'left center',
+          at: 'right center',
+          viewport: false,
+          container: container
         },
         hide: {
           event: false
@@ -64,7 +73,7 @@ wdk.namespace('wdk.components', function(ns, $) {
             var anchor = $('<div class="dismiss-wrapper">' +
                            '  <a href="#dismiss">Got it!</a>' +
                            '  <label><input type="checkbox" name="remember"/>' +
-                           'Don\'t bother me anymore.</label>' +
+                           ' Don\'t bother me anymore.</label>' +
                            '</div>')
               .on('click', 'a', preventEvent(api.hide.bind(api)))
               .on('change', 'input', function(e) {
@@ -75,6 +84,6 @@ wdk.namespace('wdk.components', function(ns, $) {
           }
         }
       });
-  }
+  };
 
 });

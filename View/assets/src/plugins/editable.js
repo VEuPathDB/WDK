@@ -19,14 +19,8 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
   //
   //   $("selector").editable("show")
 
-  var triggers = ['click', 'hover', 'focus'];
-
   // incremented for each widget created
   var widgetId = 1;
-
-  function attachTrigger(widget, trigger) {
-
-  }
 
   $.widget("wdk.editable", {
 

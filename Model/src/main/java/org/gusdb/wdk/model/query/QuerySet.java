@@ -144,6 +144,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
 
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
+    super.resolveReferences(model);
     for (Query query : queries.values()) {
       query.resolveReferences(model);
     }

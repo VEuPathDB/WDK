@@ -1,10 +1,12 @@
 wdk.namespace('wdk.views', function(ns) {
+  'use strict';
+
   /**
    * @class QuestionView
    * @namespace wdk.views
    * @extends wdk.core.View
    */
-  var QuestionView = ns.QuestionView = Backbone.View.extend({
+  ns.QuestionView = Backbone.View.extend({
 
     delegateViews: null,
 
@@ -14,10 +16,12 @@ wdk.namespace('wdk.views', function(ns) {
     },
 
     initialize: function() {
-      var showParams = this.$el.data('showParams');
       var questionFullName = this.$el.data('questionFullName');
 
       this.$form = this.$el.closest('form');
+
+      // turn off autocompletion
+      this.$form.prop('autocomplete', 'off');
 
       // set up parameter handlers
       // TODO refactor handlers to their own Views

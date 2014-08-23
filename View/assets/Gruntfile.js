@@ -6,7 +6,10 @@ module.exports = function(grunt) {
   grunt.initConfig({
 
     jshint: {
-      all: ['Gruntfile.js', [].concat(wdkFiles.src)]
+      options: {
+        jshintrc: true,
+      },
+      wdk: wdkFiles.src
     },
 
     concat: {
@@ -34,6 +37,9 @@ module.exports = function(grunt) {
       options: {
         mangle: {
           except: ['wdk']
+        },
+        compress: {
+          drop_console: true
         },
         report: true,
         sourceMap: 'dist/wdk/wdk.js.map',
@@ -106,7 +112,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-handlebars');
 
-  grunt.registerTask('dist', ['clean', 'concat', 'handlebars', 'uglify', 'cssmin', 'copy', 'debugScript']);
+  grunt.registerTask('dist', ['jshint', 'clean', 'concat', 'handlebars', 'uglify', 'cssmin', 'copy', 'debugScript']);
 
   grunt.registerTask('default', ['dist']);
 
