@@ -10,28 +10,11 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
   var update_hist = true;
   var queryhistloaded = false;
 
-  /*
-   * @deprecated Url return 500 status
-   */
-  function updateQueryHistory() {
-    $.ajax({
-      url: "showQueryHistory.do?type=step",
-      dataType: "html",
-      beforeSend:function(){
-        $("body").block();
-      },
-      success: function(data){
-        $("div.loading").html(data);
-        $("body").unblock();
-      }
-    });
-  }
-
   /* Create an array with the values of all the checkboxes in a column */
   /* This function is used to sort datatable columns by checkbox (checked vs. not) */
-  $.fn.dataTableExt.afnSortData['dom-checkbox'] = function(oSettings, iColumn) {
-    return $.map(oSettings.oApi._fnGetTrNodes(oSettings), function (tr, i) {
-      return $('td:eq('+iColumn+') input', tr).prop('checked') ? '1' : '0';
+  $.fn.dataTable.ext.order['dom-checkbox'] = function  ( settings, col ) {
+    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+      return $('input', td).prop('checked') ? '1' : '0';
     } );
   };
 
@@ -68,22 +51,20 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
                                null, 
                                { "bSortable": false },
                                { "bSortable": false },
+                               { "sSortDataType": "dom-checkbox" },
                                null,
                                null,
                                null,
-                               null,
-                               { "sSortDataType": "dom-checkbox" } ],
+                               null ],
                 "aaSorting": [[ 6, "desc" ]]
               });
               ui.panel.removeClass("ui-widget ui-widget-content");
-              wdk.load();
             }
           }).removeClass("ui-widget ui-widget-content");
 
           $("#strategy_tabs li a#tab_search_history font.subscriptCount")
               .html("(" + $("#search_history span#totalStrategyCount").html() +
                   ")");
-          //initDisplayType(); // deprecated
           $("body").unblock();
         },
         error: function(data, msg, e) {
@@ -93,130 +74,6 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
               "Otherwise, please contact site support.");
         }
       });
-
-    } else {
-      //initDisplayType(); // deprecated
-    }
-  }
-
-  /*
-   * @deprecated Uses jQuery UI tab API
-   */
-  function initDisplayType() {
-    var currentPanel = wdk.stratTabCookie.getCurrentTabCookie('browse');
-
-    if ($("#search_history #history-menu > ul").length > 0) {
-      if (currentPanel == undefined ||
-          $("#search_history .menubar #tab_" + currentPanel).length == 0) {
-        var typeTab = $("#search_history .menubar a:first");
-
-        if (typeTab.length > 0) {
-          var type = typeTab.attr("id").substr(4);
-          displayHist(type);
-        }
-
-      } else {
-        displayHist(currentPanel);
-      }
-    }
-  }
-
-  /*
-   * @deprecated
-   */
-  function toggleSteps(strat) {
-    var img = $("img#img_" + strat);
-
-    if (img.hasClass("plus")) {
-      $("tbody#steps_" + strat + " tr").each(function() {
-        this.style.display = "";
-      });
-      img[0].src = wdk.assetsUrl("/wdk/images/sqr_bullet_minus.png");
-      img.removeClass("plus");
-      img.addClass("minus");
-    } else {
-      $("tbody#steps_" + strat + " tr").each(function() {
-        this.style.display = "none";
-      });
-      img[0].src = wdk.assetsUrl("/wdk/images/sqr_bullet_plus.png");
-      img.removeClass("minus");
-      img.addClass("plus");
-    }
-  }
-
-  /*
-   * @deprecated
-   */
-  function toggleSteps2(strat) {
-    var img = $("img#img_" + strat);
-
-    if (img.hasClass("plus")) {
-      $("tr#desc_" + strat + " tr").each(function() {
-        this.style.display = "";
-      });
-      $("tr#desc_" + strat).each(function() {
-        this.style.display = "";
-      });
-      img[0].src = wdk.assetsUrl("/wdk/images/sqr_bullet_minus.png");
-      img.removeClass("plus");
-      img.addClass("minus");
-
-    } else {
-      $("tr#desc_" + strat + " tr").each(function() {
-        this.style.display = "none";
-      });
-      $("tr#desc_" + strat).each(function() {
-        this.style.display = "none";
-      });
-      img[0].src = wdk.assetsUrl("/wdk/images/sqr_bullet_plus.png");
-      img.removeClass("minus");
-      img.addClass("plus");
-    }
-  }
-
-  /*
-   * @deprecated
-   */
-  function showHistSave(ele, stratId, save,share) {
-    var perm_popup = $("div#hist_save_rename");
-    var stratName = $("div#text_" + stratId + " span").text();
-    var popup = perm_popup.clone();
-    $(".viewed-popup-box").remove();
-    popup.addClass('viewed-popup-box');
-    $("input[name='name']", popup).attr("value",stratName).attr("size",40);
-    $("input[name='strategy']",popup).attr("value",stratId);
-
-    if (save) {
-      $("form#save_strat_form_hist", popup).attr("action",
-          "javascript:wdk.strategy.controller.saveOrRenameStrategy(" +
-          stratId + ", true, true, true)");
-      $("span.h3left", popup).text("Save As");
-      $("input[type=submit]", popup).attr("value", "Save");
-
-      if (share) {
-        $("span.h3left", popup).text("First you need to Save it!");
-      }
-
-    } else {
-      $("form#save_strat_form_hist", popup).attr("action",
-          "javascript:wdk.strategy.controller.saveOrRenameStrategy(" +
-          stratId + ", true, false, true)");
-      $("span.h3left", popup).text("Rename");
-      $("input[type=submit]", popup).attr("value", "Rename");
-    }
-
-    var btnOffset = $(ele).offset();
-    var prntOffset = $("div#search_history").offset();
-    popup.css("top", (btnOffset.top - prntOffset.top - 40) + "px");
-    popup.css("right", "292px");
-    popup.appendTo(perm_popup.parent()).show();
-
-    $("input[name='name']", popup).focus().select();
-
-    if (save) {
-      $("form#save_strat_form_hist i").css("display","block");
-    } else {
-      $("form#save_strat_form_hist i").css("display","none");
     }
   }
 
@@ -260,44 +117,6 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     selected = [];
   }
 
-  /*
-   * @deprecated - uses jQuery tab API now
-   */
-  function displayHist(type) {
-    $("#search_history .menubar .selected_type").removeClass("selected_type");
-    $(".history_panel").hide();
-    selectNoneHist();
-
-    $("#search_history .menubar li").each(function() {
-      var id = $("a", this).attr("id");
-
-      if (id == 'tab_' + type) {
-        $(this).addClass("selected_type");
-      }
-    });
-
-    // deprecated - was for everything
-    if (type == 'cmplt') {
-      if (!queryhistloaded) {
-        updateQueryHistory();
-        queryhistloaded = true;
-      }
-      $(".history_controls").hide();
-
-    } else {
-      $(".history_controls").show();
-    }
-
-    $("div.panel_" + type).show();
-
-    if ($("div.panel_" + type + " .unsaved-strategies-body").height() > 250) {
-      $("div.panel_" + type + " .unsaved-strategies-body")
-          .addClass('tbody-overflow');
-    }
-
-    wdk.stratTabCookie.setCurrentTabCookie('application', 'search_history');
-    wdk.stratTabCookie.setCurrentTabCookie('browse', type);
-  }
 
   function updateSelectedList() {
     selected = [];
@@ -405,35 +224,6 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     });
 
     stratTD = undefined;
-  }
-
-  /*
-   * @deprecated No references
-   */
-  function displayName(histId) {
-    if (overStepId != histId) {
-      hideAnyName();
-    }
-
-    overStepId = histId;
-    var display = $('#div_' + histId);
-    display.css({ 'top' : (display.parent().position().top + 20)});
-    $('#div_' + histId).show();
-  }
-
-  /*
-   * @deprecated No references
-   */
-  function hideName(histId) {
-    if (overStepId == 0) return;
-    $('#div_' + histId).hide();
-  }
-
-  /*
-   * @deprecated No references
-   */
-  function hideAnyName() {
-    hideName(overStepId);
   }
 
   function showDescriptionDialog(el, save, fromHist, canEdit) {
@@ -580,23 +370,14 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     return update_hist;
   };
 
-  ns.updateQueryHistory = updateQueryHistory;
   ns.updateHistory = updateHistory;
-  ns.initDisplayType = initDisplayType;
-  ns.toggleSteps = toggleSteps;
-  ns.toggleSteps2 = toggleSteps2;
-  ns.showHistSave = showHistSave;
   ns.showHistShare = showHistShare;
   ns.selectAllHist = selectAllHist;
   ns.selectNoneHist = selectNoneHist;
-  ns.displayHist = displayHist;
   ns.updateSelectedList = updateSelectedList;
   ns.downloadStep = downloadStep;
   ns.handleBulkStrategies = handleBulkStrategies;
   ns.performBulkAction = performBulkAction;
-  ns.displayName = displayName;
-  ns.hideName = hideName;
-  ns.hideAnyName = hideAnyName;
   ns.showDescriptionDialog = showDescriptionDialog;
   ns.showUpdateDialog = showUpdateDialog;
 

@@ -20,6 +20,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       Handlebars.registerHelper('property', function(key, context, options) {
         return context[key];
       });
+      this.initTableOnce = _.once(this._initTable.bind(this));
       wdk.views.View.apply(this, arguments);
     },
 
@@ -33,13 +34,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
     render: function() {
       this.initTableOnce();
       this.dataTable.fnClearTable(false);
-
-      if (this.model.filteredData.length) {
-        this.dataTable.fnAddData(this.model.filteredData.toJSON(), false);
-      }
-
+      this.dataTable.fnAddData(this.model.filteredData.toJSON(), false);
       this.dataTable.fnDraw();
-      this.resizeTable();
+      this.dataTable.fnAdjustColumnSizing(false);
 
       return this;
     },
@@ -54,12 +51,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.dataTable = this.$('.results-table')
         .wdkDataTable(tableConfig)
         .dataTable();
-
-      $(window).on('resize', _.debounce(this.queueResizeTable.bind(this), 100));
-    },
-
-    resizeTable: function() {
-      this.dataTable.fnAdjustColumnSizing(false);
     },
 
     queueRender: function() {
@@ -68,15 +59,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
       else {
         this._doRender = true;
-      }
-    },
-
-    queueResizeTable: function() {
-      if (this.$el.is(':visible')) {
-        this.resizeTable();
-      }
-      else {
-        this._doResizeTable = true;
       }
     },
 
@@ -100,10 +82,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
       if (this._doRender) {
         this.render();
         this._doRender = false;
-        this._doResizeTable = false;
-      }
-      if (this._doResizeTable) {
-        this.resizeTable();
         this._doResizeTable = false;
       }
     },

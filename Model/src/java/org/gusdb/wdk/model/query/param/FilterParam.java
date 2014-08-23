@@ -365,8 +365,9 @@ public class FilterParam extends FlatVocabParam {
   @Override
   public String[] getTerms(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException {
-    if (stableValue == null || stableValue.length() == 0) return new String[0];
-    
+    if (stableValue == null || stableValue.length() == 0)
+      return new String[0];
+
     try {
       System.err.println(stableValue);
 	  JSONObject jsStableValue = new JSONObject(stableValue);
@@ -380,6 +381,37 @@ public class FilterParam extends FlatVocabParam {
     catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
-    
+
+  }
+
+  @Override
+  public String getDefault() throws WdkModelException {
+    String defaultValue = super.getDefault();
+    return fixDefaultValue(defaultValue);
+  }
+
+  @Override
+  public String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException {
+    String defaultValue = super.getDefault(user, contextParamValues);
+    return fixDefaultValue(defaultValue);
+  }
+
+  private String fixDefaultValue(String defaultValue) throws WdkModelException {
+    if (defaultValue == null || defaultValue.startsWith("{"))
+      return defaultValue;
+    JSONObject jsStableValue = new JSONObject();
+    JSONArray jsTerms = new JSONArray();
+    if (defaultValue.length() > 0) {
+      for (String term : defaultValue.split(",")) {
+        jsTerms.put(term);
+      }
+    }
+    try {
+      jsStableValue.put(FilterParamHandler.TERMS_KEY, jsTerms);
+    }
+    catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
+    return jsStableValue.toString();
   }
 }

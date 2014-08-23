@@ -53,13 +53,16 @@ h3 {
 	margin-left: 11px;
 }
 
-
 a:link, a:visited {
 	text-decoration: none;
 }
 
 a:hover, a:active {
 	text-decoration: none;
+}
+
+p {
+	margin: 1em 0;
 }
 
 td { 
@@ -230,6 +233,62 @@ img[data-assets-src][src] {
 
 .wdk-toggle-show .wdk-toggle-hidden-icon {
   display: none;
+}
+
+.wdk-data-table {
+  opacity: 0;
+}
+.wdk-data-table.dataTable {
+  opacity: 1;
+}
+
+/* qtip overrides */
+
+.qtip-tipsy {
+  background: rgb(75, 75, 75);
+  background: rgba(75, 75, 75, .97);
+}
+.qtip-tipsy .qtip-content a,
+.qtip-tipsy .qtip-content a:link {
+  color: #efefef;
+  text-decoration: underline;
+}
+.qtip-tipsy .qtip-content a:active,
+.qtip-tipsy .qtip-content a:focus,
+.qtip-tipsy .qtip-content a:hover {
+  color: #ffffff;
+}
+
+.wdk-feature-tooltip {
+  background-color: #3f3f3f;
+  padding: 0;
+  min-width: 300px;
+  -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  -moz-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  z-index: 99 !important;
+}
+.wdk-feature-tooltip .qtip-content {
+  color: #f9f9f9;
+  padding: 1em 2em;
+}
+.wdk-feature-tooltip .qtip-content a {
+  color: #f9f9f9;
+  text-decoration: underline;
+}
+.wdk-feature-tooltip .qtip-title {
+  font-weight: bold;
+}
+.wdk-feature-tooltip ul {
+  list-style: disc;
+  padding: 0 1em;
+}
+.wdk-feature-tooltip .dismiss-wrapper {
+  text-align: center;
+  padding-top: 1em;
+}
+.wdk-feature-tooltip .dismiss-wrapper label {
+  font-size: 75%;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -550,17 +609,18 @@ ul.menubar {
 }
 
 .param-control td {
-  vertical-align: top;
+ /*  vertical-align: top; is messing up the datasetParam not sure where else these are used*/
 }
-
 .param-control .jstree-classic.jstree-focused {
   background: transparent;
 }
 
 .param-group td, .param-group th {
-    padding: 3px;
+  /*  padding: 3px;  we have 4px already by default */
 }
-
+.param-group td.disabled {
+  cursor: default;
+}
 /* css for the tree box enum param */
 .param-group .term-children {
     display: none;
@@ -1035,6 +1095,7 @@ tr.headerRow th {
   padding: 0px 2px 0px 2px;
 }
 #word-cloud #layout .word { padding: 2px; }
+#word-cloud .word-cloud-error { padding: .4em; }
 
 
 
@@ -1052,6 +1113,10 @@ div#Summary_Views {
 div#Summary_Views > .ui-tabs-nav {
 position: relative;
 z-index: 1;
+}
+
+.Summary_Views .ui-tabs-panel {
+  min-height: 25em;
 }
 
 /***~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~***
@@ -1118,11 +1183,19 @@ z-index: 1;
   position:relative;
   width:12px;
   height:12px;
+  /* left:3px; */
   top:2px;
-  left:3px;
   cursor:pointer;
   background-position: -31px -181px;
   background-size: 240px auto;
+  padding-right: 4px;
+}
+
+.step-analysis-pane .toggle-description {
+  cursor: pointer;
+  color: blue;
+  font-style: italic;
+  margin-left: 4px;
 }
 
 .step-analysis-subpane {
@@ -1141,6 +1214,10 @@ z-index: 1;
   text-align:center;
 }
 
+.step-analysis-description {
+  margin: 1em;
+}
+
 .step-analysis-errors-pane {
   color: red;
   font-weight: bold;
@@ -1157,23 +1234,102 @@ z-index: 1;
   max-width: 710px;
   margin: 0 auto;
 }
-.analysis-menu-tab-pane li {
-  float: left;
-  padding: 8px;
-  width: 190px;
-  min-height: 90px;
-  border: 1px dashed black;
-  border-radius: 8px;
-  background-color: lightgrey;
-  margin: 12px;
+.analysis-menu-tab-pane li,
+.analysis-menu-tab-pane li * {
+  box-sizing: border-box;
 }
+.analysis-menu-tab-pane li {
+  position: relative;
+  float: left;
+  width: 210px;
+  height: 140px;
+  border: 1px solid #EEE;
+  border-radius: 4px;
+  box-shadow: 0px 0px 2px #AFAFAF;
+  margin: 12px;
+  background-image: url('../images/analysis-background.png');
+  background-position: top center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+.analysis-menu-tab-pane li.inactive {
+  opacity: .5;
+  filter: alpha(opacity=50);
+}
+.analysis-menu-tab-pane li:active,
+.analysis-menu-tab-pane li:focus,
 .analysis-menu-tab-pane li:hover {
   cursor: pointer;
-  background-color: lightyellow;
+  border-color: #BBB;
+}
+.analysis-menu-tab-pane li.inactive:active,
+.analysis-menu-tab-pane li.inactive:focus,
+.analysis-menu-tab-pane li.inactive:hover {
+  cursor: default;
+  border-color: #EEE;
 }
 .analysis-title {
-  font-size: 1.3em;
-  margin-bottom: 3px;
+  /*font-size: 1.3em;*/
+  font-weight: bold;
+}
+.analysis-title,
+.analysis-description {
+  padding: 8px;
+  text-align: center;
+}
+.analysis-wrapper {
+  width: 100%;
+  height: 100%;
+  background-color: #FAFAFA;
+  color: #000;
+  position: relative;
+  bottom: -112px;
+}
+.analysis-selection-banner {
+  position: absolute;
+  top: 0px;
+}
+.analysis-selection-banner.new-analysis {
+  background-image: url(../images/new-feature.png);
+  width: 30px;
+  height: 15px;
+}
+
+.analysis-feature-tooltip {
+  display: none;
+}
+.analysis-feature-tooltip div:last-child {
+  text-align: right;
+}
+.analysis-feature-tooltip button {
+  font-size: 90%;
+}
+
+/*
+ * default styles for add analysis button and tab
+ * within the tab nav container
+ */
+.ui-tabs-nav #choose-step-analysis {
+  display: none;
+}
+.ui-tabs-nav #add-analysis {
+  margin-left: 1em;
+}
+.ui-tabs-nav #add-analysis button {
+  margin: 0;
+  color: #FFF;
+  background-image: none;
+  background-color: #4F81BD;
+  border-color: #357EBD;
+}
+.ui-tabs-nav #add-analysis button:hover,
+.ui-tabs-nav #add-analysis button:active,
+.ui-tabs-nav #add-analysis button:focus {
+  background-color: #357EBD;
+  border-color: #245F92;
+}
+.ui-tabs-nav #add-analysis button .ui-button-text {
+  padding: 0 1em;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1584,6 +1740,17 @@ table.dataTable thead th div.DataTables_sort_wrapper {
 }
 
 
+/* make datatable pagination buttons prettier */
+.dataTables_paginate .ui-button {
+  padding: .2em 0.4em;
+  margin: 0;
+}
+.dataTables_paginate .ui-button.previous {
+  border-radius: 4px 0 0 4px;
+}
+.dataTables_paginate .ui-button.next {
+  border-radius: 0 4px 4px 0;
+}
 
 
 
@@ -1686,7 +1853,6 @@ span.marker a:link, span.marker a:visited {
 
 #search-lookup_wrapper div.ui-corner-bl { display: none; }
 img#close-table { display: none; }
-
 
 
 /* THE END */

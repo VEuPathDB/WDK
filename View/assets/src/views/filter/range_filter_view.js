@@ -1,11 +1,7 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
-  var Field = wdk.models.filter.Field;
-
-  var notUnk = function(n) {
-    return n !== Field.UNKNOWN_VALUE && !_.isNaN(n);
-  };
+  var notNaN = function(n) { return !_.isNaN(n) };
 
   ns.RangeFilterView = wdk.views.View.extend({
 
@@ -71,13 +67,13 @@ wdk.namespace('wdk.views.filter', function(ns) {
       });
       var filterValues = filter ? filter.pick('min', 'max') : null;
 
-      var values = field.get('values').filter(notUnk).map(Number);
+      var values = field.get('values').filter(notNaN);
 
       var distribution = _(values).countBy();
       var xdata = _(distribution).keys().map(Number);
       var ydata = _(distribution).values().map(Number);
 
-      var fdistribution = _(field.get('filteredValues').filter(notUnk)).countBy();
+      var fdistribution = _(field.get('filteredValues').filter(notNaN)).countBy();
       var xfdata = _(fdistribution).keys().map(Number);
       var yfdata = _(fdistribution).values().map(Number);
 

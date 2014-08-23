@@ -2,35 +2,15 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   "use strict";
 
   var displayTermMap;
-  var oldValues;
   var termDisplayMap;
 
   //==============================================================================
   function init(element) {
-    // TODO - make these flags attached to this namespace
-    var isPopup = window.isPopup;
-    var isEdit = window.isEdit;
-    if (isEdit == undefined) isEdit = false;
-    if (isPopup == undefined) isPopup = false;
-
-    // unset the flags
-    if (window.isPopup != undefined) {
-      window.isPopup = undefined;
-      // delete window.isPopup;
-    }
-    if (window.isEdit != undefined) {
-      window.isEdit = undefined;
-      // delete window.isEdit;
-    }
-
     displayTermMap = [];
     termDisplayMap = [];
-    oldValues = [];
 
-    if (isEdit == undefined) isEdit = false;
-
-    initTypeAhead(isEdit, element);
-    initDependentParamHandlers(isEdit, element);
+    initTypeAhead(element);
+    initDependentParamHandlers(element);
     initFilterParam(element);
 
     element.closest('form').submit(function() {
@@ -43,13 +23,16 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
-  function initDependentParamHandlers(isEdit, element) {
+  function initDependentParamHandlers(element) {
     var dependedParams = {};
 
     element.find('div.dependentParam').each(function(i, node) {
       var $node = $(node);
       $node.find('input, select').prop('disabled', true);
       var name = $node.attr('name');
+      // TODO Use a space-delimited list. This is more canonical for multiple values for an attribute
+      // and will allow for more concise jQuery selectors: $('[dependson~="param-name"]')
+      //
       // the dependson may contain a comma separated list of param names the current param depends on
       var dependedNames = $node.attr('dependson').split(",");
       for (var i=0; i < dependedNames.length; i++) {
@@ -101,33 +84,17 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
               dependedParam.change();
           }
       }
-
-    //If revising, store all of the old param values before triggering the depended 
-    //   param's change function. Only for non-typeahead params
-    if (isEdit) {
-      for (var name in dependedParams) {
-        var vals = [];
-        element.find('.param[name="' + name + '"]')
-          .not('[data-type="type-ahead"]')
-           .find('[name$="(' + name + ')"]').each(function(i, control) {
-              vals.push(control.value);
-          });
-          oldValues[name] = vals;
-      }
-    }
   }
 
   //==============================================================================
-  function initTypeAhead(isEdit, element) {
+  function initTypeAhead(element) {
 
     element.find('[data-type="type-ahead"]').each(function(i, node) {
       var $node = $(node);
       var $input = $node.find('input');
       var questionName = element.closest('form').find('input[name="questionFullName"]').val();
       var paramName = $node.attr('name');
-      if (isEdit) {
-        oldValues[paramName] = $input.val();
-      }
+
       if ($node.hasClass('dependentParam')) {
         updateDependentParam(paramName, element);
       } else {
@@ -366,12 +333,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           width: '35em'
         };
 
-    if (oldValues[paramName]) {
-      values = oldValues[paramName].split(/\s*,\s*/);
-    }
-
     maxSelected = $.isNumeric(maxSelected) ? maxSelected : 1000;
-
 
     $(xmlDOM).find('term').each(function(idx, term) {
       $('<option/>')
@@ -596,11 +558,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       return content;
     };
 
-    if (oldValues[name]) {
-      value = termDisplayMap[name][oldValues[name]]; // Look up the display for the old value
-      if (!value) value = oldValues[name]; // For typeaheads allowing arbitrary input
-      oldValues[name] = null;
-    }
     element.find("#" + name + "_display").val(value).removeAttr('disabled');
   }
 
@@ -689,6 +646,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           dataType: "html",
           success: function(data) {
             var newContent = $(".param",data);
+
             if (newContent.length > 0) {
               dependentParam.html(newContent.html());
             } else {
@@ -696,18 +654,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
               //   calling .html() on response erases javascript, so insert directly
               dependentParam.html(data);
             }
-            if (oldValues[paramName]) {
-              var input = $("select",dependentParam);
-              if (input.length > 0) {
-                input.val(oldValues[paramName]);
-              } else {
-                var allVals = oldValues[paramName];
-                $.each(allVals, function() {
-                  $("input[value='" + this + "']", dependentParam).attr('checked',true);
-                });
-              }
-              oldValues[name] = null;
-            }
+
             element.find(".param[name='" + paramName + "']").attr("ready", "");
             dependentParam.change();
           },

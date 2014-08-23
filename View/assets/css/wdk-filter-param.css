@@ -90,22 +90,18 @@
 .field-list input {
   width: 90%;
 }
-.field-list h4 {
+.field-list > h4 {
   cursor: pointer;
   margin: 1em 0 .5em 0;
-  border: 1px solid transparent;
 }
-.field-list h4:before {
+.field-list > h4:before {
   /* down pointing triangle */
   content: "\25BC  ";
   font-size: 75%;
 }
-.field-list h4.collapsed:before {
+.field-list > h4.collapsed:before {
   /* right pointing triangle */
   content: "\25B6  ";
-}
-.field-list h4.collapsed + div {
-  display:none;
 }
 .field-list ul {
   padding-bottom: .5em;
@@ -124,6 +120,7 @@
   font-weight: normal;
 }
 .field-list li a:hover,
+.field-list li a:focus,
 .field-list li a:active {
   border-left: 2px solid;
 }
@@ -136,7 +133,9 @@
 }
 .field-detail {
   width: 75%;
-  padding: 1em 2em 0;
+  padding-left: 2em;
+  padding-right: 2em;
+  padding-bottom: 3em;
   position: relative;
 }
 .field-detail h4 {

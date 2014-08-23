@@ -1,0 +1,39 @@
+Java Management Extensions for WDK
+
+Requirements
+    Tomcat 6.0.x
+    Not tested with Tomcat 7
+    Not compatible with Tomcat 5
+
+Quick Start
+-----------
+
+In your web.xml add
+  <listener>
+    <listener-class>org.gusdb.wdk.jmx.JmxInitListener</listener-class>
+  </listener>
+
+The JmxInitListener loads the MBeans defined in
+WEB-INF/classes/mbeanset.properties
+
+You supply your own WEB-INF/classes/mbeanset.properties (just as you
+supply your own struts-config.xml and web.xml). A mbeanset.properties file 
+is included that references the WDK MBeans. You can install it as is in your 
+WEB-INF/classes directory. If you write your own custom MBeans, add them
+to your properties file.
+
+mbeanset.properties format is "MBean class = MBean object name"
+    org.gusdb.wdk.jmx.mbeans.UserDB=org.apidb.wdk:group=Databases,type=UserDB
+    
+Oracle's Java packages include a jconsole application that has a 
+browser for MBeans. Of course you can access them through custom programs.
+You will need to enable the JMX remote agent in your Tomcat's JVM if you want
+to access the MBeans with external applications like jconsole. Refer to
+documentation elsewhere for com.sun.management.jmxremote. Java 6 and later
+may not require jmxremote if you only need local access. I have not used this.
+
+
+Recommended Reading
+http://tomcat.apache.org/tomcat-6.0-doc/monitoring.html
+http://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html
+

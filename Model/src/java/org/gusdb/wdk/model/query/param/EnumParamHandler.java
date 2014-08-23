@@ -58,7 +58,8 @@ public class EnumParamHandler extends AbstractParamHandler {
    */
   @Override
   public Object toRawValue(User user, String stableValue, Map<String, String> contextValues) {
-    String[] rawValue = stableValue.split(",");
+    if (stableValue == null) return stableValue;
+    String[] rawValue = stableValue.split(",+");
     for (int i = 0; i < rawValue.length; i++) {
       rawValue[i] = rawValue[i].trim();
     }
@@ -71,6 +72,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    * properly.
    * 
    * @throws WdkModelException
+   * @throws WdkUserException
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#transform(org.gusdb. wdk.model.user.User,
    *      java.lang.String, java.util.Map)
@@ -87,8 +89,13 @@ public class EnumParamHandler extends AbstractParamHandler {
     String[] terms = enumParam.convertToTerms(stableValue);
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
-      if (!cache.containsTerm(term))
-        continue;
+      try {
+        if (!cache.containsTerm(term))
+          throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
+      } catch(WdkUserException ex) {
+        // TODO - need to support user exception here
+        throw new WdkModelException(ex);
+      }
 
       String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
 
@@ -146,7 +153,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     if (rawValue == null || rawValue.length == 0) {
       if (!param.isAllowEmpty())
         throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required.");
-      rawValue = param.getDefault().split(",");
+      rawValue = param.getDefault().split(",+");
     }
 
     return param.getStableValue(user, rawValue, new HashMap<String, String>());
@@ -171,14 +178,14 @@ public class EnumParamHandler extends AbstractParamHandler {
       stableValue = aeParam.getDefault(user, contextValues);
       if (stableValue != null) {
         // don't validate default, just use it as is.
-        for (String term : stableValue.split(",")) {
+        for (String term : stableValue.split(",+")) {
           values.add(term.trim());
         }
       }
     }
     else { // stable value set, check if any of them are invalid
       Set<String> invalidValues = new HashSet<>();
-      for (String term : stableValue.split(",")) {
+      for (String term : stableValue.split(",+")) {
         term = term.trim();
         if (displayMap.containsKey(term))
           values.add(term);

@@ -1527,6 +1527,11 @@
               <data type="positiveInteger" />
             </attribute>
           </optional>
+          <optional>
+            <attribute name="expirationMinutes">
+              <data type="positiveInteger" />
+            </attribute>
+          </optional>
         </element>
         <zeroOrMore>
           <ref name="stepAnalysisPlugin" />
@@ -1539,7 +1544,15 @@
     <element name="stepAnalysisPlugin">
       <attribute name="name" />
       <attribute name="analyzerClass" />
+      <attribute name="releaseVersion" />
       <ref name="stepAnalysisOptions" />
+      <element name="shortDescription">
+        <text />
+      </element>
+      <element name="description">
+        <text />
+      </element>
+      <ref name="stepAnalysisProperties"/>
     </element>
   </define>
   
@@ -1547,6 +1560,20 @@
     <element name="stepAnalysisRef">
       <attribute name="name" />
       <ref name="stepAnalysisOptions" />
+      <optional>
+        <attribute name="releaseVersion" />
+      </optional>
+      <optional>
+        <element name="shortDescription">
+          <text />
+        </element>
+      </optional>
+      <optional>
+        <element name="description">
+          <text />
+        </element>
+      </optional>
+      <ref name="stepAnalysisProperties"/>
     </element>
   </define>
 
@@ -1560,14 +1587,17 @@
     <optional>
       <attribute name="analysisViewName" />
     </optional>
+    <optional>
+      <attribute name="customThumbnail" />
+    </optional>
+  </define>
+
+  <define name="stepAnalysisProperties">
     <zeroOrMore>
       <choice>
         <element name="property">
           <attribute name="name" />
           <attribute name="value" />
-        </element>
-        <element name="description">
-          <text />
         </element>
       </choice>
     </zeroOrMore>
