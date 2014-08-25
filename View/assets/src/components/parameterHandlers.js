@@ -118,23 +118,30 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   //==============================================================================
   function initFilterParam(element) {
     var form = element.closest('form');
-    var filterParams = element.find('[data-type="filter-param"]');
+    var filterParams = element.find('[data-type="filter-param"]').toArray();
 
     if (filterParams.length > 0) {
       // add class to move prompts to left
       element.addClass('move-left');
+
+      // Load filters sequentially, just for Prism branch.
+      // Lazy loading should make this unnecessary.
+      (function load(index) {
+        var node = filterParams[index++];
+
+        if (typeof node == 'undefined') return;
+
+        var $param = $(node);
+        var questionName = form.find('input[name="questionFullName"]').val();
+        var paramName = $param.attr('name');
+        var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
+
+        $.getJSON(sendReqUrl)
+          .then(function(data){ createFilterParam($param, data); })
+          .then(function(){ load(index); })
+          .then(function(){ $param.find('.loading').hide(); });
+      }(0));
     }
-
-    filterParams.each(function(i, node) {
-      var $param = $(node);
-      var questionName = form.find('input[name="questionFullName"]').val();
-      var paramName = $param.attr('name');
-      var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
-
-      $.getJSON(sendReqUrl)
-        .then(createFilterParam.bind(null, $param))
-        .done(function(){ $param.find('.loading').hide(); });
-    });
   }
 
   //==============================================================================
