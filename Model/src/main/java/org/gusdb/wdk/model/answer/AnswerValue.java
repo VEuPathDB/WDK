@@ -112,7 +112,7 @@ public class AnswerValue {
     private final AnswerValue answer;
     private final ConcurrentMap<String, Integer> sizes;
     private final String filterName;
-
+    
     public FilterSizeTask(AnswerValue answer, ConcurrentMap<String, Integer> sizes, String filterName) {
       this.answer = answer;
       this.sizes = sizes;
@@ -156,12 +156,15 @@ public class AnswerValue {
   private Map<PrimaryKeyAttributeValue, RecordInstance> pageRecordInstances;
 
   private Integer resultSize; // size of total result
-  private Map<String, Integer> resultSizesByFilter = new LinkedHashMap<String, Integer>();
+  private Map<String, Integer> resultSizesByFilter = new LinkedHashMap<>();
   private Map<String, Integer> resultSizesByProject;
 
   private Map<String, Boolean> sortingMap;
 
   private AnswerFilterInstance filter;
+
+  
+  private final Map<String, String> filterOptions = new LinkedHashMap<>();
 
   // ------------------------------------------------------------------
   // Constructor
@@ -1345,5 +1348,9 @@ public class AnswerValue {
     this.endIndex = endIndex;
     this.sortedIdSql = null;
     this.pageRecordInstances = null;
+  }
+  
+  public void addFilter(String filterName, String options) {
+    filterOptions.put(filterName, options);
   }
 }
