@@ -9,7 +9,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -192,6 +191,7 @@ public class FilterParam extends FlatVocabParam {
     // resolve property query, the property query should have the same params as vocab query
     if (metadataQueryRef != null) {
       this.metadataQuery = resolveQuery(model, metadataQueryRef, "property query");
+      
       // the propertyQuery must have exactly 3 columns: term, property, and value.
       Map<String, Column> columns = metadataQuery.getColumnMap();
       if (columns.size() != 3 || !columns.containsKey(COLUMN_TERM) || !columns.containsKey(COLUMN_PROPERTY) ||
@@ -205,11 +205,6 @@ public class FilterParam extends FlatVocabParam {
     if (metadataSpecQueryRef != null) {
       // no need to clone metadataSpec query, since it's not overriden in any way here.
       this.metadataSpecQuery = (Query) model.resolveReference(metadataSpecQueryRef);
-      // make sure metadataSpec query don't have any params
-      Param[] params = metadataSpecQuery.getParams();
-      if (params.length > 1 || (params.length == 1 && !params[0].getName().equals(Utilities.PARAM_USER_ID)))
-        throw new WdkModelException("The metadata query " + metadataSpecQueryRef + " in FlatVocabParam " +
-            getFullName() + " cannot have any params.");
 
       // the metadataSpec query must have exactly 3 columns: property, info, data.
       Map<String, Column> columns = metadataSpecQuery.getColumnMap();
@@ -226,14 +221,13 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, Map<String, String>> getMetadataSpec(User user) throws WdkModelException,
+  public Map<String, Map<String, String>> getMetadataSpec(User user, Map<String, String> contextValues) throws WdkModelException,
       WdkUserException {
     if (metadataSpecQuery == null)
       return null;
 
-    // run metadataQuery. By definition, it doesn't have any params
-    Map<String, String> params = new HashMap<>();
-    QueryInstance instance = metadataSpecQuery.makeInstance(user, params, true, 0,
+    // run metadataQuery.
+    QueryInstance instance = metadataSpecQuery.makeInstance(user, contextValues, true, 0,
         new HashMap<String, String>());
     Map<String, Map<String, String>> metadata = new LinkedHashMap<>();
     ResultList resultList = instance.getResults();
@@ -309,7 +303,7 @@ public class FilterParam extends FlatVocabParam {
 
     // create json for the metadata
     JSONObject jsMetadataSpec = new JSONObject();
-    Map<String, Map<String, String>> metadataSpec = getMetadataSpec(user);
+    Map<String, Map<String, String>> metadataSpec = getMetadataSpec(user, contextValues);
     for (String property : metadataSpec.keySet()) {
       JSONObject jsSpec = new JSONObject();
       Map<String, String> spec = metadataSpec.get(property);
