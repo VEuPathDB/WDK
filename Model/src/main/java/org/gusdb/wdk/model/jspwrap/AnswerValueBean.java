@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -400,7 +401,7 @@ public class AnswerValueBean {
     }
 
     public void setFilter(String filterName) {
-        answerValue.setFilter(filterName);
+        answerValue.setFilterInstance(filterName);
     }
 
     public int getFilterSize(String filterName)
@@ -482,4 +483,5 @@ public class AnswerValueBean {
     public boolean getUseCheckboxTree() {
     	return true;
     }
+    
 }

@@ -28,7 +28,7 @@ public class FilterParamBean extends EnumParamBean {
    */
   public Map<String, Map<String, String>> getMetadataSpec(UserBean user) throws WdkModelException,
       WdkUserException {
-    return filterParam.getMetadataSpec(user.getUser());
+    return filterParam.getMetadataSpec(user.getUser(), contextValues);
   }
 
   /**

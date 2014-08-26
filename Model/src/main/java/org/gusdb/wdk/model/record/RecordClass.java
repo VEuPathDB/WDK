@@ -24,6 +24,8 @@ import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.ReporterRef;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.filter.Filter;
+import org.gusdb.wdk.model.filter.StrategyFilter;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wdk.model.query.Query;
@@ -274,6 +276,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private List<StepAnalysisXml> stepAnalysisList = new ArrayList<>();
   private Map<String, StepAnalysis> stepAnalysisMap = new LinkedHashMap<>();
+  
+  private final Map<String, Filter> filters = new LinkedHashMap<String, Filter>();
   
   // ////////////////////////////////////////////////////////////////////
   // Called at model creation time
@@ -675,7 +679,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (StepAnalysis stepAnalysisRef : stepAnalysisMap.values()) {
       ((StepAnalysisXml)stepAnalysisRef).resolveReferences(model);
     }
-
+    
     resolved = true;
   }
 
@@ -832,6 +836,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (AnswerFilterLayout layout : filterLayoutMap.values()) {
       layout.resolveReferences(wdkModel);
     }
+    
+    // ====================================================
+    // resolve the references for the new filters
+    // ====================================================
+    
+    // create a strategy filter for the record class
+    addFilter(new StrategyFilter());
   }
 
   /**
@@ -1225,13 +1236,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return new LinkedHashMap<String, AnswerFilterInstance>(filterMap);
   }
 
-  public AnswerFilterInstance[] getFilters() {
+  public AnswerFilterInstance[] getFilterInstances() {
     AnswerFilterInstance[] instances = new AnswerFilterInstance[filterMap.size()];
     filterMap.values().toArray(instances);
     return instances;
   }
 
-  public AnswerFilterInstance getFilter(String filterName) {
+  public AnswerFilterInstance getFilterInstance(String filterName) {
     if (filterName == null)
       return null;
     AnswerFilterInstance instance = filterMap.get(filterName);
@@ -1612,5 +1623,20 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     writer.println(indent + "</recordClass>");
+  }
+  
+  public void addFilter(Filter filter) {
+    filters.put(filter.getName(), filter);
+  }
+  
+  public Filter getFilter(String fullName) throws WdkModelException {
+    Filter filter = filters.get(fullName);
+    if (filter == null)
+      throw new WdkModelException("Requested filter doesn't exist: " + fullName);
+    return filter;
+  }
+  
+  public Map<String, Filter> getFilters() {
+    return new LinkedHashMap<String, Filter>(filters);
   }
 }

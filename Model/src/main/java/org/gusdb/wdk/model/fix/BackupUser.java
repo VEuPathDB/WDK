@@ -109,6 +109,8 @@ public class BackupUser extends BaseCLI {
     String deleteCondtion = "user_id IN (SELECT user_id FROM " + userSchema + "users " +
         " WHERE is_guest = 1 AND register_time < to_date('" + cutoffDate + "', 'yyyy/mm/dd'))";
     try {
+      deleteDanglingStrategies(statement);
+
       deleteOutdatedRows(statement, "dataset_values", "dataset_id");
       deleteOutdatedRows(statement, "datasets");
       deleteOutdatedRows(statement, "user_roles");
@@ -159,6 +161,14 @@ public class BackupUser extends BaseCLI {
       connection.setAutoCommit(autoCommit);
       connection.close();
     }
+  }
+
+  private void deleteDanglingStrategies(Statement statement) throws SQLException {
+    logger.info("***** DELETE DANGLING STRATEGIES *****");
+    String stratTable = backupSchema + "strategies";
+    statement.executeUpdate("DELETE FROM " + stratTable + " WHERE strategy_id IN " +
+        "  (SELECT sr.strategy_id FROM " + stratTable + " sr, " + backupSchema + "steps st " +
+        "   WHERE sr.root_step_id = st.step_id AND sr.user_id != st.user_id)");
   }
 
   private void deleteOutdatedRows(Statement statement, String table) throws SQLException {
