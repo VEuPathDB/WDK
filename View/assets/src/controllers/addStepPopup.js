@@ -449,8 +449,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
             .addClass("wdk-error")
             .css("text-align", "center")
             .insertBefore($this.find("#operations"));
-          return;
         }
+        return;
       }
     }
     if (inlineSubmit instanceof Function) {
