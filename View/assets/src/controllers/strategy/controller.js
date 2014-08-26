@@ -107,6 +107,15 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
     // update state when analysis status changes
     wdk.on('analysis:statuschange', fetchStrategies);
+
+    // Add delegate submit handler here for question form
+    // The callback is called when the event bubbles up to the body
+    // element, where the event target is the question form. This
+    // allows for a sort of "late binding" so it's called last.
+    // We do this so custom Site submit handlers can cancel a form
+    // submission just by calling event.preventDefault(), or
+    // event.stopPropagation().
+    $(document.body).on('submit', 'form#form_question', wdk.addStepPopup.validateOperations);
   }
 
   /**
