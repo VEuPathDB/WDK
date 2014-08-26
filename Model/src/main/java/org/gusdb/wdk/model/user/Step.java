@@ -661,7 +661,7 @@ public class Step {
 
   public Step createStep(String filterName, int assignedWeight) throws WdkModelException {
     RecordClass recordClass = getQuestion().getRecordClass();
-    AnswerFilterInstance filter = recordClass.getFilter(filterName);
+    AnswerFilterInstance filter = recordClass.getFilterInstance(filterName);
     return createStep(filter, assignedWeight);
   }
 
@@ -836,7 +836,7 @@ public class Step {
 
   public AnswerFilterInstance getFilter() {
     try {
-      return getQuestion().getRecordClass().getFilter(filterName);
+      return getQuestion().getRecordClass().getFilterInstance(filterName);
     }
     catch (WdkModelException ex) {
       return null;

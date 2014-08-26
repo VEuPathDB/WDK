@@ -5,6 +5,12 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 
 public interface Filter {
+  
+  String getName();
+  
+  String getDescription();
+  
+  String getView();
 
   FilterSummary getSummary(AnswerValue answer) throws WdkModelException, WdkUserException;
   

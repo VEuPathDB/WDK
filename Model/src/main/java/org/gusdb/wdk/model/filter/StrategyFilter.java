@@ -55,4 +55,19 @@ public class StrategyFilter implements Filter {
     return buffer.toString();
   }
 
+  @Override
+  public String getName() {
+    return "strategy-filter";
+  }
+
+  @Override
+  public String getDescription() {
+    return "Filter the results by other strategies of the same type.";
+  }
+
+  @Override
+  public String getView() {
+    return "/wdk/jsp/results/strategyFilter.jsp";
+  }
+
 }

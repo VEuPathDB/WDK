@@ -472,7 +472,7 @@ public class User /* implements Serializable */{
     AnswerFilterInstance filter = null;
     RecordClass recordClass = question.getRecordClass();
     if (filterName != null) {
-      filter = recordClass.getFilter(filterName);
+      filter = recordClass.getFilterInstance(filterName);
     } else filter = recordClass.getDefaultFilter();
     return createStep(question, paramValues, filter, deleted, validate,
         assignedWeight);
@@ -1240,7 +1240,7 @@ public class User /* implements Serializable */{
     AnswerFilterInstance filter = null;
     RecordClass recordClass = question.getRecordClass();
     if (filterName != null) {
-      filter = question.getRecordClass().getFilter(filterName);
+      filter = question.getRecordClass().getFilterInstance(filterName);
     } else filter = recordClass.getDefaultFilter();
     return createBooleanStep(leftStep, rightStep, operator, useBooleanFilter,
         filter);

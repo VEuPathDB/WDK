@@ -28,6 +28,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
+import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -906,6 +907,14 @@ public class AnswerValue {
       innerSql = filter.applyFilter(user, innerSql, assignedWeight);
       innerSql = " /* filter applied on id query */ " + innerSql;
     }
+    
+    // apply new filters
+    for (String fullName : filterOptions.keySet()) {
+      Filter filter = question.getFilter(fullName);
+      String options = filterOptions.get(fullName);
+      innerSql = filter.getSql(this, innerSql, options);
+    }
+    
     innerSql = "(" + innerSql + ")";
 
     logger.debug("id sql constructed.");
@@ -1207,7 +1216,7 @@ public class AnswerValue {
 
   public Map<String, Integer> getFilterSizes() {
     RecordClass recordClass = question.getRecordClass();
-    AnswerFilterInstance[] filters = recordClass.getFilters();
+    AnswerFilterInstance[] filters = recordClass.getFilterInstances();
     ConcurrentMap<String, Integer> sizes = new ConcurrentHashMap<>(filters.length);
 
     // use a thread pool to get filter sizes in parallel
@@ -1242,7 +1251,7 @@ public class AnswerValue {
       int assignedWeight = idsQueryInstance.getAssignedWeight();
 
       // ignore invalid filters
-      AnswerFilterInstance filter = recordClass.getFilter(filterName);
+      AnswerFilterInstance filter = recordClass.getFilterInstance(filterName);
       if (filter != null)
         innerSql = filter.applyFilter(user, innerSql, assignedWeight);
 
@@ -1271,10 +1280,10 @@ public class AnswerValue {
     return filter;
   }
 
-  public void setFilter(String filterName) {
+  public void setFilterInstance(String filterName) {
     if (filterName != null) {
       RecordClass recordClass = question.getRecordClass();
-      setFilter(recordClass.getFilter(filterName));
+      setFilterInstance(recordClass.getFilterInstance(filterName));
     }
     else
       this.filter = null;
@@ -1284,7 +1293,7 @@ public class AnswerValue {
    * @param filter
    *          the filter to set
    */
-  public void setFilter(AnswerFilterInstance filter) {
+  public void setFilterInstance(AnswerFilterInstance filter) {
     this.filter = filter;
     reset();
   }
@@ -1352,5 +1361,6 @@ public class AnswerValue {
   
   public void addFilter(String filterName, String options) {
     filterOptions.put(filterName, options);
+    reset();
   }
 }
