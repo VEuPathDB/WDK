@@ -15,16 +15,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     // need to trigger the click event so that the stage is set correctly on revise.
     element.find("#operations input[type='radio']:checked").click();
-
-    // remove invalid values from select2 inputs
-    element.closest('form').on('submit', function() {
-      var $select2Container = element.find('select2-container');
-      var values = $select2Container.next().val();
-
-      if (values) {
-        $select2Container('val', values.split(','));
-      }
-    });
   }
 
   //==============================================================================
@@ -246,7 +236,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     form.on('submit', function(e) {
       if (filterService.filteredData.length === 0) {
         e.preventDefault();
-        e.stopPropagation();
         $param.find('.ui-state-error').remove();
         $param.prepend(
           '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">' +
@@ -402,6 +391,16 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           if (keepOpen) $input.select2('open');
         });
     }
+
+    // remove invalid values from select2 inputs
+    $param.closest('form').on('submit', function() {
+      var $select2Container = $param.find('select2-container');
+      var values = $select2Container.next().val();
+
+      if (values) {
+        $select2Container('val', values.split(','));
+      }
+    });
   }
 
   // TODO Delete chosen-based function when we know select2-based is adequate.
