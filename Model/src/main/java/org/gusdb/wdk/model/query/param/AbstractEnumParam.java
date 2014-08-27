@@ -535,7 +535,7 @@ public abstract class AbstractEnumParam extends Param {
     if (!isSkipValidation()) {
       String[] terms = getTerms(user, stableValue, contextValues);
       logger.debug("param=" + getFullName() + " - validating: " + stableValue +
-          ", with dependedParamValues=" + FormatUtil.prettyPrint(contextValues));
+          ", with contextParamValues=" + FormatUtil.prettyPrint(contextValues));
 
       if (terms.length == 0 && !allowEmpty)
         throw new WdkUserException("At least one value for " + getPrompt() + " must be selected.");
