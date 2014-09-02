@@ -191,7 +191,7 @@ public class FilterParam extends FlatVocabParam {
     // resolve property query, the property query should have the same params as vocab query
     if (metadataQueryRef != null) {
       this.metadataQuery = resolveQuery(model, metadataQueryRef, "property query");
-      
+
       // the propertyQuery must have exactly 3 columns: term, property, and value.
       Map<String, Column> columns = metadataQuery.getColumnMap();
       if (columns.size() != 3 || !columns.containsKey(COLUMN_TERM) || !columns.containsKey(COLUMN_PROPERTY) ||
@@ -221,8 +221,8 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, Map<String, String>> getMetadataSpec(User user, Map<String, String> contextValues) throws WdkModelException,
-      WdkUserException {
+  public Map<String, Map<String, String>> getMetadataSpec(User user, Map<String, String> contextValues)
+      throws WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
       return null;
 
@@ -426,5 +426,16 @@ public class FilterParam extends FlatVocabParam {
       throw new WdkModelException(ex);
     }
     return jsStableValue.toString();
+  }
+
+  @Override
+  public String[] convertToTerms(String stableValue) {
+    JSONObject jsValue = new JSONObject(stableValue);
+    JSONArray jsTerms = jsValue.getJSONArray(FilterParamHandler.TERMS_KEY);
+    String[] terms = new String[jsTerms.length()];
+    for (int i = 0; i < terms.length; i++) {
+      terms[i] = jsTerms.getString(i);
+    }
+    return terms;
   }
 }
