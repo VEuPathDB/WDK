@@ -26,7 +26,7 @@ public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
       "cancelled.  If this problem persists, please contact us.";
   private static final String REVISED_REASON_TEXT =
 		"Your previous analysis results are not available because the gene result " +
-    " changed to a different species or strain when you used the filter table " +
+    " changed when you used the filter table " +
     " above or revised a search strategy step. Please confirm your analysis " +
     " parameters and re-run.";
   
