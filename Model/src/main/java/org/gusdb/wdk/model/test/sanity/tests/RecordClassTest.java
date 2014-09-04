@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.test.sanity;
+package org.gusdb.wdk.model.test.sanity.tests;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
+import org.gusdb.wdk.model.test.sanity.TestResult;
 import org.gusdb.wdk.model.user.User;
 
 public class RecordClassTest implements ElementTest {
