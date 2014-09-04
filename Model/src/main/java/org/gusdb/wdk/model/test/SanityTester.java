@@ -33,6 +33,7 @@ import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
+import org.gusdb.wdk.model.query.QuerySet.QueryType;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
@@ -200,7 +201,7 @@ public class SanityTester {
     }
   }
 
-  public void testQuerySets(String queryType) throws SQLException,
+  public void testQuerySets(QueryType queryType) throws SQLException,
       WdkModelException {
 
     OUT("Sanity Test:  Checking " + queryType + " queries" + NL);
@@ -211,7 +212,7 @@ public class SanityTester {
 
       int minRows = -1;
       int maxRows = -1;
-      if (queryType.equals(QuerySet.TYPE_ATTRIBUTE)) {
+      if (queryType.equals(QueryType.ATTRIBUTE)) {
         // discover number of entities expected in each attribute query
         String testRowCountSql = querySet.getTestRowCountSql();
         if (testRowCountSql != null) {
@@ -234,27 +235,25 @@ public class SanityTester {
       for (Query query : querySet.getQueries()) {
         if (query.getDoNotTest()) continue;
         for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
-          if (!queryType.equals(QuerySet.TYPE_ATTRIBUTE)) {
+          if (!queryType.equals(QueryType.ATTRIBUTE)) {
             minRows = paramValuesSet.getMinRows();
             maxRows = paramValuesSet.getMaxRows();
           }
           testQuery(querySet, query, queryType, minRows, maxRows, paramValuesSet);
         }
-        if (queryType.equals(QuerySet.TYPE_TABLE)) {
-          testQuery(querySet, query, queryType + "TOTAL", minRows, maxRows, null);
+        if (queryType.equals(QueryType.TABLE)) {
+          testQuery(querySet, query, QueryType.TABLE_TOTAL, minRows, maxRows, null);
         }
       }
     }
   }
 
-  private void testQuery(QuerySet querySet, Query query, String queryType,
+  private void testQuery(QuerySet querySet, Query query, QueryType queryType,
       int minRows, int maxRows, ParamValuesSet paramValuesSet) {
-
-    String typeUpperCase = queryType.toUpperCase();
 
     if (!checkTestFilter(_testCount++)) return;
     if (_indexOnly) {
-      OUT(" [test: " + _testCount + "] " + typeUpperCase
+      OUT(" [test: " + _testCount + "] " + queryType
           + " QUERY " + query.getFullName() + NL);
       return;
     }
@@ -272,22 +271,23 @@ public class SanityTester {
     Exception caughtException = null;
 
     try {
-      if (queryType.equals(QuerySet.TYPE_ATTRIBUTE)) {
-        count = testAttributeQuery_Count(query, paramValuesSet);
-        start = System.currentTimeMillis();
-        testAttributeQuery_Time(query, paramValuesSet, count);
-      }
-      else if (queryType.equals(QuerySet.TYPE_TABLE + "TOTAL")) {
-        count = testTableQuery_TotalTime(query);
-      }
-      else {
-        if (queryType.equals(QuerySet.TYPE_TABLE)) {
+      switch (queryType) {
+        case ATTRIBUTE:
+          count = testAttributeQuery_Count(query, paramValuesSet);
+          start = System.currentTimeMillis();
+          testAttributeQuery_Time(query, paramValuesSet, count);
+          break;
+        case TABLE_TOTAL:
+          count = testTableQuery_TotalTime(query);
+          break;
+        case TABLE:
           query = RecordClass.prepareQuery(_wdkModel, query,
               paramValuesSet.getParamNames());
-        }
-        params = " -params " + paramValuesSet.getCmdLineString();
-        start = System.currentTimeMillis();
-        count = testNonAttributeQuery(querySet, query, paramValuesSet);
+          // fall through...
+        case VOCAB:
+          params = " -params " + paramValuesSet.getCmdLineString();
+          start = System.currentTimeMillis();
+          count = testNonAttributeQuery(querySet, query, paramValuesSet);
       }
 
       passed = (count >= sanityMin && count <= sanityMax);
@@ -319,7 +319,7 @@ public class SanityTester {
           + query.getFullName() + params + " ] ";
 
       String msg = prefix + ((end - start) / 1000F) + " [test: " + _testCount
-          + "]" + " " + typeUpperCase + " QUERY " + query.getFullName()
+          + "]" + " " + queryType + " QUERY " + query.getFullName()
           + status + returned + expected + cmd + NL;
       if (!passed || !_failuresOnly) OUT(msg);
       if (caughtException != null) caughtException.printStackTrace(System.err);
@@ -654,10 +654,10 @@ public class SanityTester {
     OUT();
 
     
-    sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
-    sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
+    sanityTester.testQuerySets(QueryType.VOCAB);
+    sanityTester.testQuerySets(QueryType.ATTRIBUTE);
     if (!modelName.equals("EuPathDB")) {
-      sanityTester.testQuerySets(QuerySet.TYPE_TABLE);
+      sanityTester.testQuerySets(QueryType.TABLE);
     }
     sanityTester.testQuestionSets();
     sanityTester.testRecordSets();

@@ -13,11 +13,18 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
+import org.gusdb.wdk.model.query.QuerySet.QueryType;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
+import org.gusdb.wdk.model.test.sanity.tests.AttributeQueryTest;
+import org.gusdb.wdk.model.test.sanity.tests.QuestionTest;
+import org.gusdb.wdk.model.test.sanity.tests.RecordClassTest;
+import org.gusdb.wdk.model.test.sanity.tests.TableQueryTest;
+import org.gusdb.wdk.model.test.sanity.tests.TableTotalQueryTest;
+import org.gusdb.wdk.model.test.sanity.tests.VocabQueryTest;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -107,28 +114,37 @@ public class SanityTester {
   private static List<ElementTest> buildTestSequence(WdkModel wdkModel, User user, boolean skipWebSvcQueries)
       throws WdkModelException {
     List<ElementTest> tests = new ArrayList<>();
-    addQuerySetTests(tests, wdkModel, user, QuerySet.TYPE_VOCAB);
-    addQuerySetTests(tests, wdkModel, user, QuerySet.TYPE_ATTRIBUTE);
-    addQuerySetTests(tests, wdkModel, user, QuerySet.TYPE_TABLE);
+    addQuerySetTests(tests, wdkModel, user, QueryType.VOCAB);
+    addQuerySetTests(tests, wdkModel, user, QueryType.ATTRIBUTE);
+    addQuerySetTests(tests, wdkModel, user, QueryType.TABLE);
     addQuestionSetTests(tests, wdkModel, user, skipWebSvcQueries);
     addRecordSetTests(tests, wdkModel, user);
     return tests;
   }
 
-  private static void addQuerySetTests(List<ElementTest> tests, WdkModel wdkModel, User user, String forQueryType)
+  private static void addQuerySetTests(List<ElementTest> tests, WdkModel wdkModel, User user, QueryType forQueryType)
       throws WdkModelException {
-    if (wdkModel.getProjectId().equals("EuPathDB") && forQueryType.equals(QuerySet.TYPE_TABLE))
+    if (wdkModel.getProjectId().equals("EuPathDB") && forQueryType.equals(QueryType.TABLE))
       return; // do not process table queries for the portal
     for (QuerySet querySet : wdkModel.getAllQuerySets()) {
       if (querySet.getQueryType().equals(forQueryType) && !querySet.getDoNotTest()) {
         for (Query query : querySet.getQueries()) {
           if (!query.getDoNotTest()) {
             for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
-              tests.add(new QueryTest(user, querySet, query, paramValuesSet));
-            }
-            // perform additional test for table queries
-            if (querySet.getQueryType().equals(QuerySet.TYPE_TABLE)) {
-              tests.add(new QueryTest(user, querySet, query, null));
+              switch (querySet.getQueryType()) {
+                case VOCAB:
+                  tests.add(new VocabQueryTest(user, querySet, query, paramValuesSet));
+                  break;
+                case ATTRIBUTE:
+                  tests.add(new AttributeQueryTest(user, querySet, query, paramValuesSet));
+                  break;
+                case TABLE:
+                  tests.add(new TableQueryTest(user, querySet, query, paramValuesSet));
+                  // perform additional test for table queries
+                  tests.add(new TableTotalQueryTest(user, querySet, query, paramValuesSet));
+                case TABLE_TOTAL:
+                  // this should never be a QuerySet's query type; it exists only for sanity tests
+              }
             }
           }
         }

@@ -30,16 +30,15 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
   private Map<String, Query> queries = new LinkedHashMap<String, Query>();
   private String name;
 
-  // for sanity testing
-  private String queryType = "";
-  public static final String TYPE_ATTRIBUTE = "attribute";
-  public static final String TYPE_TABLE = "table";
-  public static final String TYPE_VOCAB = "vocab";
+  /* for sanity testing */
+  public static enum QueryType { VOCAB, ATTRIBUTE, TABLE, TABLE_TOTAL; }
+  private QueryType queryType;
   private boolean doNotTest = false;
   private List<ParamValuesSet> unexcludedDefaultParamValuesSets = new ArrayList<ParamValuesSet>();
   private ParamValuesSet defaultParamValuesSet;
   private List<WdkModelText> unexcludedTestRowCountSqls = new ArrayList<WdkModelText>();
   private String testRowCountSql;
+  /* end sanity testing fields */
 
   private boolean cacheable = false;
 
@@ -93,11 +92,11 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     return array;
   }
 
-  public void setQueryType(String type) {
-    this.queryType = type;
+  public void setQueryType(String type) throws IllegalArgumentException {
+    this.queryType = QueryType.valueOf(type.toUpperCase());
   }
 
-  public String getQueryType() {
+  public QueryType getQueryType() {
     return queryType;
   }
 

@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.test.sanity;
+package org.gusdb.wdk.model.test.sanity.tests;
 
 import java.util.Map;
 
@@ -9,6 +9,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
+import org.gusdb.wdk.model.test.sanity.TestResult;
 import org.gusdb.wdk.model.user.User;
 
 public class QuestionTest implements ElementTest {
@@ -53,8 +54,7 @@ public class QuestionTest implements ElementTest {
       // get the summary attribute list
       Map<String, AttributeField> summary = answerValue.getSummaryAttributeFieldMap();
 
-      // iterate through the page and try every summary attribute of
-      // each record
+      // iterate through the page and try every summary attribute of each record
       for (RecordInstance record : answerValue.getRecordInstances()) {
         StringBuffer sb = new StringBuffer();
         for (String attrName : summary.keySet()) {
