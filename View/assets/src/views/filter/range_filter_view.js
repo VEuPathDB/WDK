@@ -99,8 +99,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }, 0);
       var avg = (sum / _.size(values)).toFixed(2);
 
-      var padding = (max - min) * 0.5;
-      var barWidth = (max - min) * 0.01;
+      var barWidth = (max - min) * 0.005;
 
       var seriesData = [{
         data: _.zip(xdata, ydata),
@@ -121,8 +120,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
           }
         },
         xaxis: {
-          min: min - padding,
-          max: max + padding,
+          min: Math.min(min, 0),
+          max: Math.ceil(max + barWidth),
           tickLength: 0
         },
         grid: {
