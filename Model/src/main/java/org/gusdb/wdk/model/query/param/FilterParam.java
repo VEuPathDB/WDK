@@ -3,12 +3,18 @@
  */
 package org.gusdb.wdk.model.query.param;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.DataSource;
+
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -46,6 +52,8 @@ public class FilterParam extends FlatVocabParam {
 
   private static final String COLUMN_SPEC_PROPERTY = "spec_property";
   private static final String COLUMN_SPEC_VALUE = "spec_value";
+
+  private static final int FETCH_SIZE = 1000;
 
   private String metadataQueryRef;
   private Query metadataQuery;
@@ -281,6 +289,42 @@ public class FilterParam extends FlatVocabParam {
       resultList.close();
     }
     return properties;
+  }
+
+  public Map<String, String> getMetaData(User user, Map<String, String> contextValues, String property)
+      throws WdkModelException, WdkUserException {
+    if (metadataQuery == null)
+      return null;
+
+    // compose a wrapped sql
+    QueryInstance instance = metadataQuery.makeInstance(user, contextValues, true, 0,
+        new HashMap<String, String>());
+    String sql = instance.getSql();
+    sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_PROPERTY + " = ?";
+
+    // run the composed sql, and get the metadata back
+    Map<String, String> metadata = new LinkedHashMap<>();
+    ResultSet resultSet = null;
+    DataSource dataSource = wdkModel.getAppDb().getDataSource();
+    try {
+      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, sql);
+      ps.setFetchSize(FETCH_SIZE);
+      ps.setString(1, property);
+      resultSet = ps.executeQuery();
+      while (resultSet.next()) {
+        String term = resultSet.getString(COLUMN_TERM);
+        String value = resultSet.getString(COLUMN_VALUE);
+        metadata.put(term, value);
+      }
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(resultSet);
+    }
+
+    return metadata;
   }
 
   @Override
