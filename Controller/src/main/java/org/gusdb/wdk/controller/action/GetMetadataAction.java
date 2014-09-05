@@ -51,6 +51,7 @@ public class GetMetadataAction extends GetVocabAction {
         JSONObject jsSample = new JSONObject();
         jsSample.put("sample", sample);
         jsSample.put("value", metadata.get(sample));
+        jsMetadata.put(jsSample);
       }
       
       response.setContentType("application/json");

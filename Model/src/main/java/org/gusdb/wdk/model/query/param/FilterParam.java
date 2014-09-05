@@ -268,8 +268,7 @@ public class FilterParam extends FlatVocabParam {
     if (metadataQuery == null)
       return null;
 
-    QueryInstance instance = metadataQuery.makeInstance(user, contextValues, true, 0,
-        new HashMap<String, String>());
+    QueryInstance instance = metadataQuery.makeInstance(user, contextValues, true, 0, contextValues);
     Map<String, Map<String, String>> properties = new LinkedHashMap<>();
     ResultList resultList = instance.getResults();
     try {
@@ -293,12 +292,28 @@ public class FilterParam extends FlatVocabParam {
 
   public Map<String, String> getMetaData(User user, Map<String, String> contextValues, String property)
       throws WdkModelException, WdkUserException {
+    EnumParamCache cache = createEnumParamCache(user, contextValues);
+    return getMetaData(user, contextValues, property, cache);
+  }
+
+  /**
+   * @param user
+   * @param contextValues
+   * @param property
+   * @param cache
+   *          the cache is needed, to make sure the contextValues are initialized correctly. (it is
+   *          initialized when a cache is created.)
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  public Map<String, String> getMetaData(User user, Map<String, String> contextValues, String property,
+      EnumParamCache cache) throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
       return null;
 
     // compose a wrapped sql
-    QueryInstance instance = metadataQuery.makeInstance(user, contextValues, true, 0,
-        new HashMap<String, String>());
+    QueryInstance instance = metadataQuery.makeInstance(user, contextValues, true, 0, contextValues);
     String sql = instance.getSql();
     sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_PROPERTY + " = ?";
 

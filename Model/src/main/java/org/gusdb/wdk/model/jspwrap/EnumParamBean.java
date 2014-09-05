@@ -110,7 +110,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
   // NOTE: not threadsafe! This class is expected only to be used in a single
   // thread
-  private EnumParamCache getCache() {
+  protected EnumParamCache getCache() {
     if (_cache == null || _dependedValueChanged) {
       _cache = param.getValueCache(user.getUser(), _dependedValues);
       _dependedValueChanged = false;
