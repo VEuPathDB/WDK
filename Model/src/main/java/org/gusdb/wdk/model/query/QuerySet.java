@@ -92,7 +92,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     return array;
   }
 
-  public void setQueryType(String type) throws IllegalArgumentException {
+  public void setQueryType(String type) {
     this.queryType = QueryType.valueOf(type.toUpperCase());
   }
 
