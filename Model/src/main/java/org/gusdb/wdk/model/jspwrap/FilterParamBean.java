@@ -45,6 +45,10 @@ public class FilterParamBean extends EnumParamBean {
     return filterParam.getMetadata(user.getUser(), contextValues);
   }
 
+  public Map<String, String> getMetadata(String property) throws WdkModelException, WdkUserException {
+    return filterParam.getMetaData(user.getUser(), contextValues, property);
+  }
+
   /**
    * @param user
    * @param contextValues
@@ -61,7 +65,7 @@ public class FilterParamBean extends EnumParamBean {
 
   @Override
   public void setStableValue(String stabletValue) throws WdkModelException {
-		//System.err.println("Stable value = " + stableValue + ", and default value = " + getDefault());
+    // System.err.println("Stable value = " + stableValue + ", and default value = " + getDefault());
 
     if (stabletValue == null)
       stabletValue = getDefault();
@@ -70,7 +74,7 @@ public class FilterParamBean extends EnumParamBean {
     // also set the current values
     if (stableValue != null) {
       try {
-				//System.err.println("**********" + getName() + "=" +  stableValue );
+        // System.err.println("**********" + getName() + "=" + stableValue );
         JSONObject jsValue = new JSONObject(stabletValue);
         JSONArray jsTerms = jsValue.getJSONArray(FilterParamHandler.TERMS_KEY);
         String[] terms = new String[jsTerms.length()];
@@ -85,11 +89,10 @@ public class FilterParamBean extends EnumParamBean {
     }
   }
 
-	@Override
-	public String getDefault() throws WdkModelException {
-		return filterParam.getDefault(user.getUser(), contextValues);
-	}
-
+  @Override
+  public String getDefault() throws WdkModelException {
+    return filterParam.getDefault(user.getUser(), contextValues);
+  }
 
   public String getDefaultColumns() {
     return filterParam.getDefaultColumns();
