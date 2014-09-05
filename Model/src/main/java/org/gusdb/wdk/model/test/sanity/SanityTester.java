@@ -44,7 +44,6 @@ import org.gusdb.wdk.model.user.User;
  */
 public class SanityTester {
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(SanityTester.class);
 
   private static final String BANNER_LINE_TOP = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
@@ -127,6 +126,10 @@ public class SanityTester {
     if (wdkModel.getProjectId().equals("EuPathDB") && forQueryType.equals(QueryType.TABLE))
       return; // do not process table queries for the portal
     for (QuerySet querySet : wdkModel.getAllQuerySets()) {
+      if (querySet.getQueryType() == null) {
+        LOG.warn("QuerySet " + querySet.getName() + " does not specify query type.  Skipping...");
+        continue;
+      }
       if (querySet.getQueryType().equals(forQueryType) && !querySet.getDoNotTest()) {
         for (Query query : querySet.getQueries()) {
           if (!query.getDoNotTest()) {
