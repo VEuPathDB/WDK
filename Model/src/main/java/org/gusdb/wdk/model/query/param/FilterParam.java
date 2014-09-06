@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -496,5 +497,15 @@ public class FilterParam extends FlatVocabParam {
       terms[i] = jsTerms.getString(i);
     }
     return terms;
+  }
+
+  @Override
+  public void setContextQuestion(Question question) {
+    super.setContextQuestion(question);
+    // also set context query to the metadata & spec queries
+    if (metadataQuery != null)
+      metadataQuery.setContextQuestion(question);
+    if (metadataSpecQuery != null)
+      metadataSpecQuery.setContextQuestion(question);
   }
 }
