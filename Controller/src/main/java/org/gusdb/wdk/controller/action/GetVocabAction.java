@@ -32,6 +32,7 @@ public class GetVocabAction extends Action {
 
   private static final Logger logger = Logger.getLogger(GetVocabAction.class);
 
+  @Override
   public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
       HttpServletResponse response) throws Exception {
     logger.trace("Entering GetVocabAction...");
