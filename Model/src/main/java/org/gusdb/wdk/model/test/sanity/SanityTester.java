@@ -126,15 +126,14 @@ public class SanityTester {
     if (wdkModel.getProjectId().equals("EuPathDB") && forQueryType.equals(QueryType.TABLE))
       return; // do not process table queries for the portal
     for (QuerySet querySet : wdkModel.getAllQuerySets()) {
-      if (querySet.getQueryType() == null) {
-        LOG.warn("QuerySet " + querySet.getName() + " does not specify query type.  Skipping...");
-        continue;
-      }
-      if (querySet.getQueryType().equals(forQueryType) && !querySet.getDoNotTest()) {
+      QueryType queryType = querySet.getQueryTypeEnum();
+      LOG.debug("Building tests for QuerySet " + querySet.getName() + " (type=" + queryType + "); filtering on " + forQueryType);
+      if (queryType.equals(forQueryType) && !querySet.getDoNotTest()) {
         for (Query query : querySet.getQueries()) {
           if (!query.getDoNotTest()) {
+            LOG.debug("   Building tests for Query " + query.getName() + " using " + query.getParamValuesSets().size() + " ParamValuesSets");
             for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
-              switch (querySet.getQueryType()) {
+              switch (queryType) {
                 case VOCAB:
                   tests.add(new VocabQueryTest(user, querySet, query, paramValuesSet));
                   break;
@@ -145,8 +144,11 @@ public class SanityTester {
                   tests.add(new TableQueryTest(user, querySet, query, paramValuesSet));
                   // perform additional test for table queries
                   tests.add(new TableTotalQueryTest(user, querySet, query, paramValuesSet));
-                case TABLE_TOTAL:
-                  // this should never be a QuerySet's query type; it exists only for sanity tests
+                default:
+                  // TABLE_TOTAL should never be a QuerySet's query type; it exists only for sanity tests.
+                  // All other query types are not sanity testable
+                  LOG.debug("QuerySet " + querySet.getName() + " with type " +
+                      queryType + " is not sanity testable.  Skipping...");
               }
             }
           }
