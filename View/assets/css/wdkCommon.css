@@ -1797,10 +1797,10 @@ table.dataTable thead th div.DataTables_sort_wrapper {
   padding: .2em 0.4em;
   margin: 0;
 }
-.dataTables_paginate .ui-button.previous {
+.dataTables_paginate .ui-button:first-child {
   border-radius: 4px 0 0 4px;
 }
-.dataTables_paginate .ui-button.next {
+.dataTables_paginate .ui-button:last-child {
   border-radius: 0 4px 4px 0;
 }
 
