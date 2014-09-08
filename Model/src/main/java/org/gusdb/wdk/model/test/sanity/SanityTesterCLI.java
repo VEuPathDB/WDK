@@ -22,6 +22,7 @@ public class SanityTesterCLI {
 
   public static void main(String[] args) {
     WdkModel wdkModel = null;
+    long startTime = System.currentTimeMillis();
     int exitCode = 0;
     try {
       String cmdName = System.getProperty("cmdName");
@@ -62,10 +63,11 @@ public class SanityTesterCLI {
     finally {
       wdkModel.releaseResources();
     }
-    
-    System.out.println(new StringBuilder()
-      .append(NL)
-      .append("Sanity Test run complete (exit code ").append(exitCode).append(").")
+
+    System.out.println(new StringBuilder(NL)
+      .append("Sanity Test run completed in ")
+      .append((System.currentTimeMillis() - startTime) / 1000.0F)
+      .append(" seconds (exit code ").append(exitCode).append(").")
       .append(NL).toString());
     
     System.exit(exitCode);
