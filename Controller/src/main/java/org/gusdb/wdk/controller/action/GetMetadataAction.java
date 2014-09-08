@@ -11,10 +11,14 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
+import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.FilterParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.RequestParams;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -44,6 +48,15 @@ public class GetMetadataAction extends GetVocabAction {
     try {
       QuestionBean question = getQuestion(request, wdkModel);
       FilterParamBean param = (FilterParamBean) getParam(request, question);
+
+      // TODO -- the following steps are to make sure the param is initialized properly;
+      //         need further investigation to remove this need, and to improve performance.
+      UserBean user = ActionUtility.getUser(servlet, request);
+      QuestionForm qForm = (QuestionForm) form;
+      RequestParams requestParams = new QuestionRequestParams(request, qForm);
+      param.prepareDisplay(user, requestParams);
+      param.getJsonValues();
+
 
       Map<String, String> metadata = param.getMetadata(property);
       JSONArray jsMetadata = new JSONArray();
