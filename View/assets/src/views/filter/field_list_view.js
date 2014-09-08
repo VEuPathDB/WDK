@@ -139,7 +139,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
     initialize: function(options) {
       this.trimMetadataTerms = options.trimMetadataTerms;
 
-      this.listenTo(this.model.fields, 'select', this.selectField);
+      this.listenTo(this.controller, 'select:field', this.selectField);
       this.listenTo(this.model.fields, 'reset', this.render);
     },
 
@@ -174,22 +174,11 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
         }).length
       }));
 
-      var field;
       if (this.model.filters.length) {
         // select first filtered field
         var fieldTerm = this.model.filters.at(0).get('field');
-        field = this.model.fields.get(fieldTerm);
-      } else if (_.where(prunedFields, { leaf: 'true' }).length === 1) {
-        // select first field if only one
-        var node = groupedFields[0];
-        while (node.children) {
-          node = node.children[0];
-        }
-        field = this.model.fields.get(node.field.term);
-      }
-
-      if (field) {
-        _.defer(function() { field.select(); });
+        var field = this.model.fields.get(fieldTerm);
+        _.defer(function() { this.controller.selectField(field); }.bind(this));
       }
 
       return this;
@@ -205,7 +194,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
 
       var term = link.hash.slice(1);
       var field = this.model.fields.findWhere({term: term});
-      field.select();
+      this.controller.selectField(field);
     },
 
     expand: wdk.fn.preventEvent(function() {

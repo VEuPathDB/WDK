@@ -9,7 +9,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     template: wdk.templates['filter/filter_expanded.handlebars'],
 
     initialize: function(options) {
-      this.listenTo(this.model.filteredData, 'reset change', this.setCount);
+      this.listenTo(this.controller, 'change:selectedData', this.setCount);
 
       this.filterFieldsView = new FilterFieldsView(options);
       this.resultsView = new ResultsView(options);
@@ -26,11 +26,12 @@ wdk.namespace('wdk.views.filter', function(ns) {
           _this.showSubview(ui.newPanel.attr('id'));
         }
       });
+      this.setCount();
       return this;
     },
 
     setCount: function() {
-      var count = this.model.filteredData.where({ ignored: false }).length;
+      var count = this.controller.getSelectedData().length;
       this.$('a[href="#results"] .count').html(count);
     },
 

@@ -38,7 +38,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     handleSelect: function(e) {
       e.preventDefault();
-      this.field.select();
+      this.controller.selectField(this.field);
     },
 
     select: function() {

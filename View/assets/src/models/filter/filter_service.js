@@ -1,3 +1,4 @@
+/*global RSVP*/
 wdk.namespace('wdk.models.filter', function(ns) {
   'use strict';
 
@@ -8,16 +9,16 @@ wdk.namespace('wdk.models.filter', function(ns) {
   var Fields = wdk.models.filter.Fields;
   var Field = wdk.models.filter.Field;
 
-  var Datum = Backbone.Model.extend({
-    idAttribute: 'term',
-    defaults: {
-      ignored: false
-    }
-  });
+  // var Datum = Backbone.Model.extend({
+  //   idAttribute: 'term',
+  //   defaults: {
+  //     ignored: false
+  //   }
+  // });
 
-  var Data = Backbone.Collection.extend({
-    model: Datum
-  });
+  // var Data = Backbone.Collection.extend({
+  //   model: Datum
+  // });
 
   // FIXME Treat metadata, metadataSpec, and values as separate
   // entities and operate in such a way.
@@ -37,47 +38,43 @@ wdk.namespace('wdk.models.filter', function(ns) {
   var FilterService = Backbone.Model.extend({
 
     /**
-     * Collection of unfiltered data
-     */
-    data: null,
-
-    /**
      * Collection of filterable fields
      */
     fields: null,
-
-    /**
-     * Collection of data with filters applied
-     */
-    filteredData: null,
 
     /**
      * Collection of applied Filters
      */
     filters: null,
 
+    defaults: {
+      data: [],
+      filteredData: [],
+      title: 'Items'
+    },
+
     constructor: function() {
-      this.data = new Data();
-      this.filteredData = new Data();
       this.filters = new Filters();
       this.fields = new Fields();
+      // this.data = new Data();
+      // this.filteredData = new Data();
 
       Backbone.Model.apply(this, arguments);
     },
 
     parse: function(attrs) {
-      console.time('set data');
-      this.data.reset(attrs.data);
-      console.timeEnd('set data');
-      console.time('set fields');
       this.fields.reset(attrs.fields);
-      console.timeEnd('set fields');
       this.filters.reset(attrs.filters);
-      return { title: attrs.title || 'Items' };
+      // move these to specific instances
+      // this.data.reset(attrs.data);
+      // this.metadata = attrs.metadata;
+
+      return _.omit(attrs, 'fields', 'filters');
     },
 
     initialize: function() {
       this.filterChangeSet = [];
+
       this.listenTo(this.filters, 'add remove reset', function(m) { this.filterChangeSet.push(m); });
       this.listenTo(this.filters, 'add remove reset', _.debounce(this.applyFilters, 100));
       this.applyFilters();
@@ -89,61 +86,21 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     /**
-     * Pluck out values from data for each field and set to values attribute
-     */
-    setFieldValues: function() {
-      var fs = this;
-      this.fields.forEach(function(field) {
-        console.time('set field :: ' + field.get('term'));
-        var values = _(fs.data.pluck('metadata')).pluck(field.get('term'));
-        field.set('values', values);
-        console.timeEnd('set field :: ' + field.get('term'));
-      });
-    },
-
-    getFieldValues: function(field) {
-      var term = field.get('term');
-      return _.pluck(this.data.pluck('metadata'), term)
-        .map(function(v){ return v === undefined ? Field.UNKNOWN_VALUE : v; });
-    },
-
-    getFieldFilteredValues: function(field) {
-      var term = field.get('term');
-
-      return this.getFilteredData({ omit: [term] })
-        .map(function(d) {
-          var value = d.get('metadata')[term];
-          return _.isUndefined(value) ? Field.UNKNOWN_VALUE : value;
-        });
-    },
-
-    /**
-     * Pluck out values from filtered data for each field and set to values
-     * attribute, omitting filters applied to the field. This is useful for
-     * visualizing the distribution of other fiters with respect to the field.
-     */
-    setFieldFilteredValues: function() {
-      var fs = this;
-      this.fields.forEach(function(field) {
-        var term = field.get('term');
-        var values = fs.getFilteredData({ omit: [term] })
-          .map(function(d) { return d.get('metadata')[term]; });
-        field.set('filteredValues', values);
-      });
-    },
-
-    /**
      * Call getFilteredData and use result to reset filteredData
      *
      * TODO Add filterChangeSet to options
      */
     applyFilters: function() {
-      var data = this.getFilteredData();
-      this.filteredData.reset(data, {
-        filterChangeSet: this.filterChangeSet
-      });
-      this.filterChangeSet = [];
-      return this;
+      var _this = this;
+      _this.getFilteredData({ filters: _this.filters })
+        .then(function(data) {
+          _this.set('filteredData', data, {
+            filterChangeSet: _this.filterChangeSet
+          });
+          _this.filterChangeSet = [];
+        });
+
+      return _this;
     },
 
     /**
@@ -155,22 +112,80 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
   });
 
+  // wrap return value in a Promise
+  var toPromise = function(fn) {
+    return function() {
+      var args = arguments;
+      var _this = this;
+      return new RSVP.Promise(function(resolve, reject) {
+        try { resolve(fn.apply(_this, args)); }
+        catch(e) { reject(e); }
+      });
+    };
+  };
+
   var LocalFilterService = FilterService.extend({
 
+    getFieldDistribution: function(field) {
+      var _this = this;
+      var term = field.get('term');
+      var metadata = this.get('metadata');
+
+      var dataToTermValues = function(data) {
+        return data
+          .map(function(datum) {
+            var value = metadata[datum.term][term];
+            if (_.isUndefined(value)) {
+              return Field.UNKNOWN_VALUE;
+            } else if (field.get('type') == 'number') {
+              return Number(value);
+            }
+            return value;
+          });
+      };
+
+      return this.getFilteredData({ filters: this.filters, omit: [term] })
+        .then(dataToTermValues)
+        .then(function(filteredValues) {
+          var values = dataToTermValues(_this.get('data'));
+          var uniqValues = _.compose(_.sortBy, _.uniq)(values);
+
+          // Key the counts array by position in uniqValues to prevent coercion.
+          // This is important for UNKNOWNs.
+          var counts = _.countBy(values, function(value) {
+            return _.indexOf(uniqValues, value, true);
+          });
+
+          var filteredCounts = _.countBy(filteredValues, function(value) {
+            return _.indexOf(uniqValues, value, true);
+          });
+
+          return uniqValues.map(function(value, index) {
+            return {
+              value: value,
+              count: counts[index],
+              filteredCount: filteredCounts[index]
+            };
+          });
+        });
+    },
+
     /**
-     * Applies filters and returns the raw data
+     * Applies filters and returns a promise which resolves
+     * with a filtered copy of the data.
      *
      * Optionally, provide options to affect the filtering algorithm.
      * Available options are:
+     *   * filters: A list of filters to apply.
      *   * omit: A list of fields to omit. This is useful when you want
      *           a distribution of values caused by other filters.
      *
      * @param {Object} options Options for the filtering algorithm
      */
-    getFilteredData: function(options) {
-      var service = this;
-      var filters = this.filters;
-      var data;
+    getFilteredData: toPromise(function(options) {
+      var _this = this;
+      var filters = options.filters;
+      var values;
 
       if (options && options.omit) {
         filters = filters.reject(function(filter) {
@@ -179,59 +194,59 @@ wdk.namespace('wdk.models.filter', function(ns) {
       }
 
       if (filters.length) {
-        data = filters.reduce(function(data, filter) {
+        values = filters.reduce(function(values, filter) {
           if (filter instanceof MemberFilter) {
-            return service.applyMemberFilter(filter, data);
+            return _this.applyMemberFilter(filter, values);
           } else if (filter instanceof RangeFilter) {
-            return service.applyRangeFilter(filter, data);
+            return _this.applyRangeFilter(filter, values);
           }
-        }, service.data);
+        }, _this.get('data'));
       }
-      return data || [];
-    },
+      return values || [];
+    }),
 
-    applyMemberFilter: function(filter, data) {
+    applyMemberFilter: function(filter, values) {
       var field = filter.get('field');
-      var values = filter.get('values');
+      var filterValues = filter.get('values');
+      var metadata = this.get('metadata');
 
-      console.time('for-loop :: ' + field + ' - ' + values);
-      var d = data.filter(function(d) {
-        var value = d.get('metadata')[field] || Field.UNKNOWN_VALUE;
-        var index = values.length;
+      var ret = values.filter(function(value) {
+        var metadataValue = metadata[value.term][field] || Field.UNKNOWN_VALUE;
+        var index = filterValues.length;
 
         // Use a for loop for efficiency
         while(index--) {
-          if (values[index] === value) break;
+          if (filterValues[index] === metadataValue) break;
         }
 
         return index > -1;
       });
-      console.timeEnd('for-loop :: ' + field + ' - ' + values);
-      return d;
+      return ret;
     },
 
-    applyRangeFilter: function(filter, data) {
+    applyRangeFilter: function(filter, values) {
+      var metadata = this.get('metadata');
       var field = filter.get('field');
       var min = filter.get('min');
       var max = filter.get('max');
       var test;
 
       if (min !== null && max !== null) {
-        test = function(d) {
-          var v = d.get('metadata')[field];
+        test = function(value) {
+          var v = metadata[value.term][field];
           return v >= min && v <= max;
         };
       } else if (min !== null) {
-        test = function(d) {
-          return d.get('metadata')[field] >= min;
+        test = function(value) {
+          return metadata[value.term][field] >= min;
         };
       } else if (max !== null) {
-        test = function(d) {
-          return d.get('metadata')[field] <= max;
+        test = function(value) {
+          return metadata[value.term][field] <= max;
         };
       }
 
-      return data.filter(test);
+      return values.filter(test);
     }
 
   });

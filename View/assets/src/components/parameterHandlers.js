@@ -130,18 +130,14 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   //==============================================================================
   function createFilterParam($param, filterData) {
     var form = $param.closest('form');
-    // var dataId = $param.data('data-id');
     var name = $param.data('name');
     console.time('intialize render :: ' + name);
     var defaultColumns = $param.data('default-columns');
     var trimMetadataTerms = $param.data('trim-metadata-terms');
     var input = $param.find('input');
-    var spec = filterData;
     var previousValue;
 
-    defaultColumns = defaultColumns
-                     ? defaultColumns.split(/\s+/)
-                     : undefined;
+    defaultColumns = defaultColumns ? defaultColumns.split(/\s+/) : [];
 
     // get previous values
     try {
@@ -159,7 +155,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     // parse data from <script>
     // var jsonContainer = $(node).find('script[type="application/json"][id="' + dataId + '"]');
     // console.time('parse JSON :: ' + name);
-    // var spec = JSON.parse(jsonContainer.html());
+    // var filterData = JSON.parse(jsonContainer.html());
     // console.timeEnd('parse JSON :: ' + name);
 
     console.time('validation not null queries :: ' + name);
@@ -167,7 +163,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     [ 'metadata', 'metadataSpec', 'values' ]
       .forEach(function(prop) {
         var msg;
-        if (_.isEmpty(spec[prop])) {
+        if (_.isEmpty(filterData[prop])) {
           msg = 'Invalid data: ' + prop + ' may not be empty.';
           alert(msg);
           throw new Error(msg);
@@ -175,66 +171,41 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       });
     console.timeEnd('validation not null queries :: ' + name);
 
-    console.time('massage data :: ' + name);
-    spec = parseFilterData(spec);
-    console.timeEnd('massage data :: ' + name);
-    _.extend(spec, { title: name });
+    // console.time('massage data :: ' + name);
+    // filterData = parseFilterData(filterData);
+    // console.timeEnd('massage data :: ' + name);
 
-    if (previousValue) {
-      _.extend(spec, { filters: previousValue.filters });
-    }
-
-    console.time('init filter service :: ' + name);
-    // instantiate the filter service
-    var filterService = new wdk.models.filter.LocalFilterService(spec, {
-      parse: true,
-      root: 'metadata'
-    });
-    console.timeEnd('init filter service :: ' + name);
-
-    $param.data('filterService', filterService);
-
-    // set ignore: true for filteredData not in previousValues.values
-    if (previousValue) {
-      previousValue.ignored.forEach(function(id) {
-        filterService.filteredData.get(id).set('ignored', true);
+    var fields = _.keys(filterData.metadataSpec)
+      .map(function(name) {
+        return _.extend({
+          //filterable: _.contains(usedMetadata, name),
+          term: name,
+          display: name,
+          visible: _.contains(defaultColumns, name)
+        }, filterData.metadataSpec[name]);
       });
-    }
 
-    // listen for change to filteredData and update input value
-    filterService.filteredData.on('reset change', function() {
-      var values = filterService.filteredData.where({ ignored: false })
-        .map(function(d) { return d.get('term'); });
-      var ignored = filterService.filteredData.where({ ignored: true })
-        .map(function(d) { return d.get('term'); });
-      var value = {
-        values: values,
-        ignored: ignored,
-        filters: filterService.filters
-      };
+    var filterParam = new wdk.controllers.FilterParam({
+      el: $param,
+      data: filterData.values,
+      metadata: filterData.metadata,
+      fields: fields,
+      filters: previousValue && previousValue.filters,
+      ignored: previousValue && previousValue.ignored,
+      trimMetadataTerms: trimMetadataTerms,
+      defaultColumns: defaultColumns,
+      title: name
+    });
+
+    filterParam.on('change:value', function(filterParam, value) {
       input.val(JSON.stringify(value));
     });
 
-    console.time('init filter views :: ' + name);
-    // create views
-    var itemsView = new wdk.views.filter.FilterItemsView(filterService, { model: filterService.filters });
-    var view = new wdk.views.filter.FilterView({
-      model: filterService,
-      defaultColumns: defaultColumns,
-      trimMetadataTerms: trimMetadataTerms
-    });
-    console.timeEnd('init filter views :: ' + name);
-
-    // attach views
-    $param.find('.filter-param')
-      .append(itemsView.el)
-      .append(view.el);
-
-    itemsView.render();
-    view.render(); //.collapse(true);
+    // $param.append(filterParam.el);
 
     form.on('submit', function(e) {
-      if (filterService.filteredData.length === 0) {
+      var filteredData = filterParam.getSelectedData();
+      if (filteredData.length === 0) {
         e.preventDefault();
         $param.find('.ui-state-error').remove();
         $param.prepend(
@@ -242,7 +213,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           'Please select ' + name + ' to continue.' +
           '</div>'
         );
-        filterService.filteredData.once('reset', function() {
+        filterParam.once('change:value', function() {
           $param.find('.ui-state-error').remove();
         });
       }

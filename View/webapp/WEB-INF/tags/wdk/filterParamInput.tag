@@ -45,7 +45,7 @@ Otherwise a standard select menu is used.
 
 <%-- FIXME change data-name to data-display-name --%>
 <%-- display the param as an advanced filter param --%>
-<div class="param ${dependentClass}"
+<div class="param filter-param ${dependentClass}"
     dependson="${dependedParam}"
     name="${pNam}"
     data-name="${qp.prompt}"
@@ -60,7 +60,6 @@ Otherwise a standard select menu is used.
   </script>
   --%>
   <div class="loading">Loading...</div>
-  <div class="filter-param"></div>
 </div>
 
 <%-- display invalid terms, if any. --%>

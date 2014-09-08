@@ -21,8 +21,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.listenTo(this.model, 'add', this.addItem);
       this.listenTo(this.model, 'remove', this.removeItem);
       this.listenTo(this.model, 'reset', this.render);
-      this.listenTo(this.filterService.fields, 'select', this.toggleSelectItems);
-      this.listenTo(this.filterService.filteredData, 'reset change', this.updateTotal);
+      this.listenTo(this.controller, 'select:field', this.toggleSelectItems);
+      this.listenTo(this.controller, 'change:selectedData', this.updateTotal);
     },
 
     render: function() {
@@ -39,10 +39,15 @@ wdk.namespace('wdk.views.filter', function(ns) {
       });
 
       this.updateTotal();
+
+      return this;
     },
 
     addItem: function(model, options) {
-      var itemView = new FilterItemView(this.filterService, { model: model });
+      var itemView = new FilterItemView(this.filterService, {
+        model: model,
+        controller: this.controller
+      });
       this.$el.append(itemView.$el);
       this.itemViews[model.cid] = itemView;
       if (!options.inRender) {
@@ -60,7 +65,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     updateTotal: function() {
-      var count = this.filterService.filteredData.where({ ignored: false }).length;
+      var data = this.controller.getSelectedData();
+      var count = data.length;
 
       this.$el.attr('data-total', count);
       // if (this.model.length > 0) {

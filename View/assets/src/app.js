@@ -1,5 +1,14 @@
+/*global RSVP */
 (function($) {
   'use strict';
+
+  // Don't allow RSVP to "swallow" errors.
+  // This will cause inspectors to break
+  // here, from which one can look up the
+  // call chain.
+  RSVP.on('error', function(err) {
+    console.assert(false, err);
+  });
 
   // Start the application. The ready callback is invoked
   // once the DOM has finished rendering.
