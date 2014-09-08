@@ -135,8 +135,6 @@ public class BackupUser extends BaseCLI {
 
       removeGuest(statement, "dataset_values", "dataset_id IN (SELECT dataset_id FROM " + userSchema +
           "datasets WHERE " + deleteCondtion + ")");
-      // removeGuest(statement, "favorites", deleteCondtion);
-      // removeGuest(statement, "user_baskets", deleteCondtion);
       removeGuest(statement, "datasets", deleteCondtion);
       removeGuest(statement, "preferences", deleteCondtion);
       removeGuest(statement, "user_baskets", deleteCondtion);
@@ -166,14 +164,9 @@ public class BackupUser extends BaseCLI {
   private void deleteDanglingStrategies(Statement statement) throws SQLException {
     LOG.info("***** DELETE DANGLING STRATEGIES *****");
     String stratTable = backupSchema + "strategies";
-    int count = statement.executeUpdate("DELETE FROM " + stratTable + " WHERE strategy_id IN " +
-        "  (SELECT sr.strategy_id FROM " + stratTable + " sr, " + backupSchema + "steps st " +
-        "   WHERE sr.root_step_id = st.step_id AND sr.user_id != st.user_id)");
-    LOG.info(count + " rows deleted");
-
-    count = statement.executeUpdate("DELETE FROM " + stratTable +
-        "  WHERE root_step_id IN (SELECT step_id FROM " + userSchema + "steps) " +
-        "    AND strategy_id NOT IN (SELECT strategy_id FROM " + userSchema + "strategies)");
+    String stepTable = userSchema + "steps";
+    int count = statement.executeUpdate("DELETE FROM " + stratTable + " WHERE root_step_id IN " +
+        "  (SELECT step_id FROM " + stepTable + ")");
     LOG.info(count + " rows deleted");
   }
 
