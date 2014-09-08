@@ -304,6 +304,10 @@
 .results {
   padding: 1em;
 }
+.results > button {
+  position: absolute;
+  right: 16px;
+}
 .results .table td {
   overflow: hidden;
   white-space: nowrap;
@@ -377,6 +381,8 @@
 .filter-param .summary {
   margin-top: 4px;
 }
+/*
 .filter-param .dataTables_wrapper {
   overflow-x: auto;
 }
+*/

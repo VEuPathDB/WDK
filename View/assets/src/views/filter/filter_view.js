@@ -28,13 +28,13 @@ wdk.namespace('wdk.views.filter', function(ns) {
     initialize: function(options) {
       this.filterCollapsedView = new FilterCollapsedView(options);
       this.filterExpandedView = new FilterExpandedView(options);
-      this.listenTo(this.model.fields, 'select', function() {
+      this.listenTo(this.controller, 'select:field', function() {
         this.collapse(false);
       });
     },
 
     render: function() {
-      this.$el.html(this.template(this.model.attributes));
+      this.$el.html(this.template());
       this.$('.collapsed').append(this.filterCollapsedView.render().el);
       this.$('.expanded').append(this.filterExpandedView.render().el);
       this.collapse(false);

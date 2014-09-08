@@ -3,11 +3,57 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
   var Field = wdk.models.filter.Field;
 
+  Handlebars.registerHelper('property', function(key, context) {
+    return context[key];
+  });
+
+  var ColumnView = wdk.views.View.extend({
+    events: {
+      'change input': 'handleChange'
+    },
+
+    initialize: function() {
+      this.render();
+    },
+
+    render: function() {
+      var checked = this.model.get('visible') ? 'checked' : '';
+      this.$el.html('<input type="checkbox" id="' + this.model.cid + '" ' +
+                    checked + '> ' +
+                    '<label for="' + this.model.cid + '">' +
+                    this.model.get('display') + '</label>');
+      return this;
+    },
+
+    handleChange: function(event) {
+      event.stopPropagation();
+      this.model.set('visible', event.currentTarget.checked);
+    }
+  });
+
+  var ColumnsView = wdk.views.View.extend({
+
+    initialize: function() {
+      this.render();
+    },
+
+    render: function() {
+      var $el = this.$el;
+      this.collection.models.forEach(function(model) {
+        var view = new ColumnView({ model: model });
+        view.render();
+        $el.append(view.el);
+      });
+      return this;
+    }
+  });
+
   ns.ResultsView = wdk.views.View.extend({
 
     events: {
-      'mouseover td' : 'setTitle',
-      'change input' : 'handleChange'
+      'mouseover td'                      : 'setTitle',
+      'change input'                      : 'handleChange',
+      'click [data-action="showColumns"]' : 'showColumns'
     },
 
     template: wdk.templates['filter/results.handlebars'],
@@ -18,32 +64,37 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     dataTable: null,
 
-    constructor: function() {
-      Handlebars.registerHelper('property', function(key, context) {
-        return context[key];
-      });
-      wdk.views.View.apply(this, arguments);
-    },
+    initialize: function() {
+      this.columns = new Backbone.Collection(this.model.fields.where({ leaf: 'true' }));
+      this.columnsDialog = new ColumnsView({ collection: this.columns }).$el
+        .dialog({
+          autoOpen: false,
+          modal: true,
+          title: 'Choose columns to show or hide'
+        });
 
-    initialize: function(options) {
-      this.defaultColumns = options.defaultColumns;
       this.initTableOnce = _.once(this._initTable.bind(this));
 
       this.queueRender();
 
-      this.listenTo(this.model.filteredData, 'reset', this.queueRender);
+      this.listenTo(this.model, 'change:filteredData', this.queueRender);
+      this.listenTo(this.columns, 'change:visible', this.queueRender);
     },
 
     render: function() {
-      this.initTableOnce();
+      console.time('render results');
+      var data = this.model.get('filteredData');
+      // this.initTableOnce();
+      this._initTable();
       this.dataTable.fnClearTable(false);
 
-      if (this.model.filteredData.length) {
-        this.dataTable.fnAddData(this.model.filteredData.toJSON(), false);
+      if (data.length) {
+        this.dataTable.fnAddData(data, false);
       }
 
       this.dataTable.fnDraw();
       this.dataTable.fnAdjustColumnSizing(false);
+      console.timeEnd('render results');
 
       return this;
     },
@@ -54,6 +105,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.$el.html(this.template({
         fields: this.model.fields.toJSON()
       }));
+
+      this.$("button").button();
 
       this.dataTable = this.$('.results-table')
         .wdkDataTable(tableConfig)
@@ -69,6 +122,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }
     },
 
+    showColumns: function(event) {
+      event.preventDefault();
+      this.columnsDialog.dialog('open');
+    },
+
     // Add title attribute for mouseover when the text content overflows
     setTitle: function(e) {
       var td = e.currentTarget;
@@ -79,10 +137,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     handleChange: function(e) {
       var target = e.currentTarget;
-      var item = this.model.filteredData.get(target.value);
-      var ignored = !target.checked;
-      item.set('ignored', ignored);
-      $(target).closest('tr').toggleClass('muted', ignored);
+      this.controller.toggleIgnored(target.value, !target.checked);
+      $(target).closest('tr').toggleClass('muted', !target.checked);
     },
 
     didShow: function() {
@@ -94,46 +150,41 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     generateTableConfig: function() {
-      var _this = this;
-      var columns = [];
-      var defaultColumns = this.defaultColumns;
+      var controller = this.controller;
+      var displayTemplate = this.displayTemplate;
 
-      columns.push({
-        sClass: 'display',
-        sTitle: 'Name',
-        mData: function(row) {
-          var html = _this.displayTemplate(row);
+      var columns = [{
+        className: 'display',
+        title: 'Name',
+        data: function(row) {
+          var html = displayTemplate(_.extend({
+            isIgnored: controller.isIgnored(row)
+          }, row));
           return html;
         }
-      });
-
-      // allow all columns to be sortable
-      this.model.fields
-        .where({ leaf: 'true' })
-        .forEach(function(field) {
-          columns.push({
-            sClass: field.get('term').trim().replace(/\s+/g, '-'),
-            sTitle: field.get('display'),
-            mData: 'metadata.' + field.get('term'),
-            defaultContent: Field.UNKNOWN_VALUE,
-            bVisible: defaultColumns
-                      ? defaultColumns.indexOf(field.get('term')) > -1
-                      : true
-          });
-        });
+      }].concat(this.columns
+        .where({ visible: true })
+        .map(function(column) {
+          return {
+            className: column.get('term').trim().replace(/\s+/g, '-'),
+            title: column.get('display'),
+            data: function(row) {
+              return controller.getMetadata(row, column);
+            },
+            defaultContent: Field.UNKNOWN_VALUE
+          };
+        }));
 
       return {
-        sDom: 'C<"clear">lfrtip',
-        bFilter: false,
-        bDeferRender: true,
-        aoColumns: columns,
-        fnRowCallback: function(tr, d) {
-          $(tr).toggleClass('muted', d.ignored);
-        },
-        oColVis: {
-          buttonText: 'Change columns',
-          sAlign: 'right',
-          aiExclude: [ 0 ] // exclude the name column
+        dom: '<"H"ip>t<"F"ip>',
+        searching: false,
+        deferRender: true,
+        paging: true,
+        pageLength: 20,
+        pagingType: 'full',
+        columns: columns,
+        rowCallback: function(tr, d) {
+          $(tr).toggleClass('muted', controller.isIgnored(d));
         }
       };
     }

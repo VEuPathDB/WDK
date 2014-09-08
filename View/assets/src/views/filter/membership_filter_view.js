@@ -52,22 +52,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function(options) {
       var filters = this.filterService.filters;
-      var filteredData = this.filterService.filteredData;
       this.options = options;
-
-      // Selection does not require rendering...
       this.listenTo(filters, 'add', _.partial(this.handleFilterUpdate, true));
       this.listenTo(filters, 'remove', _.partial(this.handleFilterUpdate, false));
-      this.listenTo(filteredData, 'reset', function(data, options) {
-        var fields = options.filterChangeSet
-          .map(function(filter) {
-            return filter.get('field');
-          });
-
-        if (!_.contains(fields, this.model.get('term'))) {
-          this.render();
-        }
-      });
     },
 
     handleFilterUpdate: function(isSelected, filter, filters, options) {
@@ -90,52 +77,14 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var _this = this;
       var field = this.model;
       var filterService = this.filterService;
-      var filter = filterService.filters.findWhere({
-        field: field.get('term')
-      });
+      var filter = this.controller.getFieldFilter(field);
       var filterValues = filter ? filter.get('values') : [];
-
-      // unfiltered dist
-      //var values = field.get('values');
-      var values = filterService.getFieldValues(field);
-      var counts = _.countBy(values);
-
-      // Use _.uniq(values) instead of _.keys(counts)
-      // so that we can handle non-String values.
-      // This is important for "undefined" metadata.
-      var names = field.get('type') === 'number'
-        ? _.uniq(values).map(Number).sort(function(a, b) { return a - b; })
-        : _.uniq(values).sort();
-
-      var scale = _.max(counts) + 10;
-
-      // filtered dist
-      //var fvalues = field.get('filteredValues');
-      var fvalues = filterService.getFieldFilteredValues(field);
-      var fcounts = _.countBy(fvalues);
+      var members = this.members = new Backbone.Collection();
 
       this.$el.html(this.template({
         field: this.model.attributes,
         options: this.options
       }));
-
-      var members = this.members = new Backbone.Collection();
-
-      _(names).forEach(function(name) {
-        var count = counts[name];
-        var fcount = fcounts[name] || 0;
-        var member = members.add({
-          value: name,
-          count: count,
-          percent: (count / values.length * 100).toFixed(2),
-          distribution: (count / scale * 100).toFixed(2),
-          filteredDistribution: (fcount / scale * 100).toFixed(2),
-          selected: !!(_.contains(filterValues, name))
-        });
-        var memberView = new MemberView({ model: member }).render();
-        _this.$('tbody').append(memberView.$el);
-        _this.memberViews.push(memberView);
-      });
 
       members.on('change:selected', _.debounce(function() {
         var type = _this.model.get('type');
@@ -157,12 +106,43 @@ wdk.namespace('wdk.views.filter', function(ns) {
         }
       }, 50));
 
+
+      var distribution = this.model.get('distribution');
+      var counts = _.pluck(distribution, 'count');
+
+      var scale = _.max(counts) + 10;
+      var size = counts.reduce(function(acc, count){ return acc + count; });
+
+      distribution.forEach(function(valueDist) {
+        var value = valueDist.value;
+        var count = valueDist.count;
+        var fcount = valueDist.filteredCount || 0;
+
+        var member = members.add({
+          value: value,
+          count: count,
+          percent: (count / size * 100).toFixed(2),
+          distribution: (count / scale * 100).toFixed(2),
+          filteredDistribution: (fcount / scale * 100).toFixed(2),
+          selected: !!(_.contains(filterValues, value))
+        });
+
+        var memberView = new MemberView({
+          model: member,
+          controller: _this.controller
+        }).render();
+
+        _this.$('tbody').append(memberView.$el);
+        _this.memberViews.push(memberView);
+      });
+
       // activate Read more link if text is overflowed
       var p = this.$('.description p').get(0);
       if (p && p.scrollWidth > p.clientWidth) {
         this.$('.description .read-more').addClass('visible');
       }
 
+      // add border and scrollbar when members a long
       var panel = this.$('.membership-table-panel');
       if (panel.get(0).scrollHeight > panel.get(0).clientHeight) {
         panel.addClass('overflowed');

@@ -17,16 +17,23 @@ wdk.namespace('wdk.views.filter', function(ns) {
     className: 'filters ui-helper-clearfix',
 
     initialize: function(options) {
-      this.fieldList = new FieldListView({ model: this.model, trimMetadataTerms: options.trimMetadataTerms });
-      this.fieldDetail = new FieldDetailView({ model: this.model });
+      this.fieldList = new FieldListView({
+        model: this.model,
+        controller: this.controller,
+        trimMetadataTerms: options.trimMetadataTerms
+      });
+      this.fieldDetail = new FieldDetailView({
+        model: this.model,
+        controller: this.controller
+      });
 
-      this.listenTo(this.model.fields, 'select', this.renderDetail);
+      this.listenTo(this.controller, 'select:field', this.renderDetail);
 
       this.render();
     },
 
     render: function() {
-      this.$el.html(this.template(this.model.filteredData));
+      this.$el.html(this.template(this.model.attributes.filteredData));
       this.fieldList.setElement(this.$('.field-list')).render();
       this.fieldDetail.setElement(this.$('.field-detail')).render();
     },
