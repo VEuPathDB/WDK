@@ -374,6 +374,8 @@ public class FilterParam extends FlatVocabParam {
     }
     jsParam.put("metadataSpec", jsMetadataSpec);
 
+    /* disable metadata from the initial json, they will be lazy loaded later.
+
     // create json for the properties
     JSONObject jsMetadata = new JSONObject();
     Map<String, Map<String, String>> metadata = getMetadata(user, contextValues);
@@ -386,6 +388,9 @@ public class FilterParam extends FlatVocabParam {
       jsMetadata.put(term, jsProperty);
     }
     jsParam.put("metadata", jsMetadata);
+
+    */
+
   }
 
   @Override
