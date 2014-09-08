@@ -207,7 +207,7 @@ public class SanityTester {
     OUT("Sanity Test:  Checking " + queryType + " queries" + NL);
 
     for (QuerySet querySet : _wdkModel.getAllQuerySets()) {
-      if (!querySet.getQueryType().equals(queryType) || querySet.getDoNotTest())
+      if (!querySet.getQueryTypeEnum().equals(queryType) || querySet.getDoNotTest())
         continue;
 
       int minRows = -1;
@@ -283,11 +283,14 @@ public class SanityTester {
         case TABLE:
           query = RecordClass.prepareQuery(_wdkModel, query,
               paramValuesSet.getParamNames());
-          // fall through...
+          // fall through to vocab...
         case VOCAB:
           params = " -params " + paramValuesSet.getCmdLineString();
           start = System.currentTimeMillis();
           count = testNonAttributeQuery(querySet, query, paramValuesSet);
+          break;
+        default:
+          // do nothing for other types
       }
 
       passed = (count >= sanityMin && count <= sanityMax);

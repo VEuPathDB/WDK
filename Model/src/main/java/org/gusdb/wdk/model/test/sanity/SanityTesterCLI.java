@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.test.sanity;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -20,6 +22,7 @@ public class SanityTesterCLI {
 
   public static void main(String[] args) {
     WdkModel wdkModel = null;
+    int exitCode = 0;
     try {
       String cmdName = System.getProperty("cmdName");
       Options options = declareOptions();
@@ -36,27 +39,36 @@ public class SanityTesterCLI {
       SanityTester sanityTester = new SanityTester(wdkModel, testFilter,
           failuresOnly, indexOnly, skipWebSvcQueries);
 
-      System.out.println("Sanity Test: ");
-      System.out.println(" [Model] " + modelName);
-      System.out.println(" [Database] " + wdkModel.getAppDb().getConfig().getConnectionUrl());
-      System.out.println(" [Time] " + new SimpleDateFormat(BEGIN_DATE_FORMAT).format(new Date()));
-      System.out.println();
+      System.out.println(new StringBuilder()
+        .append(NL)
+        .append("Sanity Test: ").append(NL)
+        .append(" [Model] ").append(modelName).append(NL)
+        .append(" [Database] ").append(wdkModel.getAppDb().getConfig().getConnectionUrl()).append(NL)
+        .append(" [Time] ").append(new SimpleDateFormat(BEGIN_DATE_FORMAT).format(new Date())).append(NL)
+        .toString());
 
       sanityTester.runTests();
       
       if (!indexOnly) {
         if (sanityTester.printSummaryLine()) {
-          System.exit(1);
+          exitCode = 1;
         }
       }
     }
     catch (Exception e) {
       System.err.println(FormatUtil.getStackTrace(e));
-      System.exit(1);
+      exitCode = 1;
     }
     finally {
       wdkModel.releaseResources();
     }
+    
+    System.out.println(new StringBuilder()
+      .append(NL)
+      .append("Sanity Test run complete (exit code ").append(exitCode).append(").")
+      .append(NL).toString());
+    
+    System.exit(exitCode);
   }
 
   private static Options declareOptions() {

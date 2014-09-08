@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.ModelSetI;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -26,13 +27,25 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
  */
 public class QuerySet extends WdkModelBase implements ModelSetI {
 
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(QuerySet.class);
+
   private List<Query> queryList = new ArrayList<Query>();
   private Map<String, Query> queries = new LinkedHashMap<String, Query>();
   private String name;
 
   /* for sanity testing */
-  public static enum QueryType { VOCAB, ATTRIBUTE, TABLE, TABLE_TOTAL; }
-  private QueryType queryType;
+  public static enum QueryType {
+    VOCAB,        // sanity testable
+    ATTRIBUTE,    // sanity testable
+    TABLE,        // sanity testable
+    ID,           // not sanity testable
+    SUMMARY,      // not sanity testable
+    TRANSFORM,    // not sanity testable
+    UNSPECIFIED,  // default value if not set in model; not sanity testable
+    TABLE_TOTAL;  // special type used only by sanity tester; not a valid query type
+  }
+  private QueryType queryType = QueryType.UNSPECIFIED;
   private boolean doNotTest = false;
   private List<ParamValuesSet> unexcludedDefaultParamValuesSets = new ArrayList<ParamValuesSet>();
   private ParamValuesSet defaultParamValuesSet;
@@ -93,10 +106,21 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
   }
 
   public void setQueryType(String type) {
-    this.queryType = QueryType.valueOf(type.toUpperCase());
+    QueryType queryTypeLocal = QueryType.valueOf(type.toUpperCase());
+    if (queryTypeLocal.equals(QueryType.TABLE_TOTAL)) {
+      throw new IllegalArgumentException("QueryType TABLE_TOTAL " +
+          "is an internal value and cannot be specified in the model");
+    }
+    queryType = queryTypeLocal;
   }
 
-  public QueryType getQueryType() {
+  // needed for digester to recognize bean property
+  public String getQueryType() {
+    return queryType.name();
+  }
+
+  // proper method to use to retrive query type
+  public QueryType getQueryTypeEnum() {
     return queryType;
   }
 

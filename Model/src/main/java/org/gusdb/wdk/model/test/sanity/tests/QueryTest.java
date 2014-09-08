@@ -32,7 +32,7 @@ public class QueryTest implements ElementTest {
 
   @Override
   public String getTestName() {
-    return _querySet.getQueryType() + " QUERY " + _query.getFullName();
+    return _querySet.getQueryTypeEnum() + " QUERY " + _query.getFullName();
   }
 
   @Override
