@@ -9,6 +9,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
   ns.FilterView = wdk.views.View.extend({
 
+    className: 'filter-view',
+
     events: {
       'click [data-action="collapse"]': function(e) {
         e.preventDefault();
@@ -20,8 +22,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
         this.collapse(false);
       }
     },
-
-    //className: 'filter',
 
     template: wdk.templates['filter/filter.handlebars'],
 

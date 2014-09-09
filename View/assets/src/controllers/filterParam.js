@@ -1,4 +1,4 @@
-/* global RSVP */
+/* global RSVP, Spinner */
 wdk.namespace('wdk.controllers', function(ns) {
   'use strict';
 
@@ -38,6 +38,24 @@ wdk.namespace('wdk.controllers', function(ns) {
       this.fields = new Fields(options.fields);
       this.trimMetadataTerms = Boolean(options.trimMetadataTerms);
       this.defaultColumns = options.defaultColumns;
+      this.spinner = new Spinner({
+        lines: 11, // The number of lines to draw
+        length: 3, // The length of each line
+        width: 2, // The line thickness
+        radius: 4, // The radius of the inner circle
+        corners: 1, // Corner roundness (0..1)
+        rotate: 0, // The rotation offset
+        direction: 1, // 1: clockwise, -1: counterclockwise
+        color: '#000', // #rgb or #rrggbb or array of colors
+        speed: 1, // Rounds per second
+        trail: 60, // Afterglow percentage
+        shadow: false, // Whether to render a shadow
+        hwaccel: false, // Whether to use hardware acceleration
+        className: 'spinner', // The CSS class to assign to the spinner
+        zIndex: 2e9, // The z-index (defaults to 2000000000)
+        top: '34px', // Top position relative to parent
+        left: '18px' // Left position relative to parent
+      });
       this.filterService = new LocalFilterService({
         data: this.data,
         metadata: this.metadata,
@@ -46,12 +64,12 @@ wdk.namespace('wdk.controllers', function(ns) {
       this.listenTo(this.filterService, 'change:filteredData', this.updateValue);
       this.listenTo(this.filterService, 'change:filteredData', this._setSelectedFieldDistribution);
 
-      var itemsView = new FilterItemsView(this.filterService, {
+      this.itemsView = new FilterItemsView(this.filterService, {
         model: this.filterService.filters,
         controller: this
       });
 
-      var filterView = new FilterView({
+      this.filterView = new FilterView({
         model: this.filterService,
         controller: this,
         defaultColumns: this.defaultColumns,
@@ -71,8 +89,8 @@ wdk.namespace('wdk.controllers', function(ns) {
       RSVP.all(metadataPromises).then(function() {
         this.filterService.filters.reset(options.filters);
         this.$el
-          .append(itemsView.render().el)
-          .append(filterView.render().el);
+          .append(this.itemsView.render().el)
+          .append(this.filterView.render().el);
 
         // select first filtered field
         if (filterFields.length) this.selectField(filterFields[0]);
@@ -86,6 +104,14 @@ wdk.namespace('wdk.controllers', function(ns) {
     update: function(data) {
       this.filterService.reset(data);
       return this;
+    },
+
+    showSpinner: function() {
+      this.filterView.$el.append(this.spinner.spin().el);
+    },
+
+    hideSpinner: function() {
+      this.spinner.stop();
     },
 
     isIgnored: function(datum) {
@@ -146,12 +172,14 @@ wdk.namespace('wdk.controllers', function(ns) {
     // returns a promise that resolves to metadata for a property:
     //     [ { data_term: metadata_value }, ... ]
     getMetadata: function(field) {
+      this.showSpinner();
       return new RSVP.Promise(function(resolve, reject) {
         var term = field.get('term');
         var type = field.get('type');
 
         // if it's cached, return a promise that resolves immediately
         if (this.metadata[term]) {
+          this.hideSpinner();
           resolve(this.metadata[term]);
           return;
         }
@@ -176,6 +204,7 @@ wdk.namespace('wdk.controllers', function(ns) {
                   : type == 'number' ? Number(value) : value;
                 return acc;
               }, {});
+            this.hideSpinner();
             resolve(this.metadata[term]);
           }.bind(this))
           .fail(reject);
