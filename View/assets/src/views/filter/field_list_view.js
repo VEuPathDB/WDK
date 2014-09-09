@@ -174,13 +174,6 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
         }).length
       }));
 
-      if (this.model.filters.length) {
-        // select first filtered field
-        var fieldTerm = this.model.filters.at(0).get('field');
-        var field = this.controller.fields.get(fieldTerm);
-        _.defer(function() { this.controller.selectField(field); }.bind(this));
-      }
-
       return this;
     },
 

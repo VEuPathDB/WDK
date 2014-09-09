@@ -73,6 +73,11 @@ wdk.namespace('wdk.controllers', function(ns) {
         this.$el
           .append(itemsView.render().el)
           .append(filterView.render().el);
+
+        // select first filtered field
+        if (filterFields.length) this.selectField(filterFields[0]);
+
+        this.trigger('ready', this);
       }.bind(this));
     },
 
