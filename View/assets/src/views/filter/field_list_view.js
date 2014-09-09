@@ -140,7 +140,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
       this.trimMetadataTerms = options.trimMetadataTerms;
 
       this.listenTo(this.controller, 'select:field', this.selectField);
-      this.listenTo(this.model.fields, 'reset', this.render);
+      this.listenTo(this.controller.fields, 'reset', this.render);
     },
 
     render: function() {
@@ -150,7 +150,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
         ? _.compose(removeParentsWithSingleChild, removeSingleTopNode, constructTree)
         : constructTree;
 
-      var fields = this.model.fields.toJSON();
+      var fields = this.controller.fields.toJSON();
 
       // get all ontology terms starting from `filterable` fields
       // and traversing upwards by the `parent` attribute
@@ -177,7 +177,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
       if (this.model.filters.length) {
         // select first filtered field
         var fieldTerm = this.model.filters.at(0).get('field');
-        var field = this.model.fields.get(fieldTerm);
+        var field = this.controller.fields.get(fieldTerm);
         _.defer(function() { this.controller.selectField(field); }.bind(this));
       }
 
@@ -193,7 +193,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
       }
 
       var term = link.hash.slice(1);
-      var field = this.model.fields.findWhere({term: term});
+      var field = this.controller.fields.findWhere({term: term});
       this.controller.selectField(field);
     },
 

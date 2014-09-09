@@ -17,8 +17,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
     emptyTemplate: wdk.templates['filter/field_detail_empty.handlebars'],
 
     initialize: function() {
-      this.listenTo(this.model.fields, 'change', this.changeField);
-      this.listenTo(this.model.fields, 'reset', this.renderEmpty);
+      this.listenTo(this.controller.fields, 'change', this.changeField);
+      this.listenTo(this.controller.fields, 'reset', this.renderEmpty);
     },
 
     render: function(field) {
@@ -45,7 +45,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         el: this.el,
         model: field,
         controller: this.controller,
-        title: this.model.get('title')
+        title: this.controller.title
       }).render();
 
       return this;
