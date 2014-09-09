@@ -4,6 +4,7 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -48,12 +49,16 @@ public class SanityTesterCLI {
         .append(" [Time] ").append(new SimpleDateFormat(BEGIN_DATE_FORMAT).format(new Date())).append(NL)
         .toString());
 
-      sanityTester.runTests();
+      List<TestResult> results = sanityTester.runTests();
       
       if (!indexOnly) {
-        if (sanityTester.printSummaryLine()) {
-          exitCode = 1;
+        for (TestResult result : results) {
+          if (!result.isPassed() || !failuresOnly) {
+            System.out.println(result.getResultString());
+          }
         }
+        System.out.println(sanityTester.getSummaryLine());
+        if (sanityTester.isFailedOverall()) exitCode = 1;
       }
     }
     catch (Exception e) {

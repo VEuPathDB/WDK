@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -28,8 +27,6 @@ import org.gusdb.wdk.model.test.sanity.tests.VocabQueryTest;
 import org.gusdb.wdk.model.user.User;
 
 /**
- * SanityTester.java " [-project project_id]" +
- * 
  * Main class for running the sanity tests, which is a way to test all Queries
  * and RecordClasses in a WDK model to make sure they work as intended and their
  * results fall within an expected range, even over the course of code base
@@ -45,12 +42,6 @@ import org.gusdb.wdk.model.user.User;
 public class SanityTester {
 
   private static final Logger LOG = Logger.getLogger(SanityTester.class);
-
-  private static final String BANNER_LINE_TOP = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
-  private static final String BANNER_LINE_BOT = "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
-
-  private static void OUT (Object... obj) { System.out.println(FormatUtil.join(obj, ", ")); }
-  private static void ERR (Object... obj) { System.err.println(FormatUtil.join(obj, ", ")); }
 
   public interface ElementTest {
     public String getTestName();
@@ -68,11 +59,10 @@ public class SanityTester {
     public int recordsFailed = 0;
     public int questionsPassed = 0;
     public int questionsFailed = 0;
+    
+    public String getSummaryLine(TestFilter testFilter) {
 
-    public boolean printSummaryLine(TestFilter testFilter) {
-
-      boolean failedOverall = (queriesFailed > 0 || recordsFailed > 0 || questionsFailed > 0);
-      String result = failedOverall ? "FAILED" : "PASSED";
+      String result = isFailedOverall() ? "FAILED" : "PASSED";
 
       int totalPassed = queriesPassed + recordsPassed + questionsPassed;
       int totalFailed = queriesFailed + recordsFailed + questionsFailed;
@@ -88,8 +78,12 @@ public class SanityTester {
       resultLine.append("   " + questionsPassed + " questions passed, "
           + questionsFailed + " questions failed" + NL);
       resultLine.append("Sanity Test " + result + NL);
-      OUT(resultLine.toString());
-      return failedOverall;
+      
+      return resultLine.toString();
+    }
+
+    public boolean isFailedOverall() {
+      return (queriesFailed > 0 || recordsFailed > 0 || questionsFailed > 0);
     }
   }
 
@@ -184,53 +178,54 @@ public class SanityTester {
     }
   }
 
-  public void runTests() throws Exception {
+  public List<TestResult> runTests() throws Exception {
+    List<TestResult> results = new ArrayList<>();
     for (int i = 0; i < _tests.size(); i++) {
       ElementTest element = _tests.get(i);
 
       if (_testFilter.filterOutTest(i)) continue;
 
-      OUT(" [test: " + i + "] " + element.getTestName());
+      LOG.info(" [test: " + i + "] " + element.getTestName());
 
       if (_indexOnly) continue;
 
       // performing test
-      TestResult result = new TestResult();
+      TestResult result = new TestResult(element);
       try {
         result = element.test(_stats);
-        if (result.passed) {
-          result.prefix = "";
-          result.status = " passed.";
+        if (result.isPassed()) {
+          result.setPrefix("");
+          result.setStatus(" passed.");
         }
       }
       catch (Exception e) {
-        result.returned = " It threw an exception.";
-        result.caughtException = e;
+        result.setReturned(" It threw an exception.");
+        result.setCaughtException(e);
       }
 
-      // test output
-      if (!result.passed) OUT(BANNER_LINE_TOP);
-      if (result.caughtException != null) {
-        ERR(FormatUtil.getStackTrace(result.caughtException));
+      result.setIndex(i);
+      results.add(result);
+
+      // dump test result
+      if (!result.isPassed() || !_failuresOnly) {
+        LOG.info(result.getResultString());
       }
-      else {
-        String msg = result.prefix + result.getDurationSecs() +
-            " [test: " + i + "]" + " " + element.getTestName() +
-            result.status + result.returned + result.expected +
-            " [ " + element.getCommand() + " ] " + NL;
-        if (!result.passed || !_failuresOnly) OUT(msg);
-      }
-      if (!result.passed) OUT(BANNER_LINE_BOT + NL);
     }
 
     // check the connection usage
     if (_appDb.getConnectionsCurrentlyOpen() > 0) {
-      ERR("Detected connections leaks after processing:");
-      ERR(_appDb.getUnclosedConnectionInfo());
+      LOG.error("Detected connections leaks after processing:");
+      LOG.error(_appDb.getUnclosedConnectionInfo());
     }
+    
+    return results;
   }
 
-  public boolean printSummaryLine() {
-    return _stats.printSummaryLine(_testFilter);
+  public String getSummaryLine() {
+    return _stats.getSummaryLine(_testFilter);
+  }
+  
+  public boolean isFailedOverall() {
+    return _stats.isFailedOverall();
   }
 }
