@@ -188,13 +188,15 @@ wdk.namespace('wdk.controllers', function(ns) {
         var counts = countByValues(results.metadata);
         var filteredCounts = countByValues(filteredMetadata);
 
-        return _.keys(counts).map(function(value) {
-          return {
-            value: value,
-            count: Number(counts[value]),
-            filteredCount: filteredCounts[value]
-          };
-        });
+        return _.uniq(_.values(results.metadata))
+          .sort()
+          .map(function(value) {
+            return {
+              value: value,
+              count: Number(counts[value]),
+              filteredCount: filteredCounts[value]
+            };
+          });
       }.bind(this));
     },
 
