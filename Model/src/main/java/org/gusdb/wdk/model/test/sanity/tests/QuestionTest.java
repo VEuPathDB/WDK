@@ -40,7 +40,7 @@ public class QuestionTest implements ElementTest {
   @Override
   public TestResult test(Statistics stats) throws Exception {
 
-    TestResult result = new TestResult();
+    TestResult result = new TestResult(this);
     int sanityMin = _paramValuesSet.getMinRows();
     int sanityMax = _paramValuesSet.getMaxRows();
 
@@ -63,17 +63,17 @@ public class QuestionTest implements ElementTest {
         }
       }
 
-      result.passed = (resultSize >= sanityMin && resultSize <= sanityMax);
+      result.setPassed(resultSize >= sanityMin && resultSize <= sanityMax);
 
-      result.returned = " It returned " + resultSize + " rows. ";
+      result.setReturned(" It returned " + resultSize + " rows. ");
       if (sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS)
-        result.expected = "Expected (" + sanityMin + " - " + sanityMax + ") ";
+        result.setExpected("Expected (" + sanityMin + " - " + sanityMax + ") ");
 
       return result;
     }
     finally {
       result.stopTimer();
-      if (result.passed) {
+      if (result.isPassed()) {
         stats.questionsPassed++;
       }
       else {
