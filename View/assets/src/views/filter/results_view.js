@@ -65,6 +65,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
     dataTable: null,
 
     initialize: function() {
+      this._metadataFetchCount = 0;
+
       this.columns = new Backbone.Collection(this.controller.fields.where({ leaf: 'true' }));
       this.columnsDialog = new ColumnsView({ collection: this.columns }).$el
         .dialog({
@@ -114,7 +116,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     fetchMetadata: function(column) {
-      this.controller.getMetadata(column).then(this.queueRender.bind(this));
+      this._metadataFetchCount++;
+      this.controller.getMetadata(column)
+        .then(function() {
+          if (--this._metadataFetchCount === 0) this.queueRender();
+        }.bind(this));
     },
 
     queueRender: function() {
