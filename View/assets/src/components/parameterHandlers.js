@@ -122,15 +122,16 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
 
       $.getJSON(sendReqUrl)
-        .then(createFilterParam.bind(null, $param))
+        .then(createFilterParam.bind(null, $param, questionName))
         .done(function(){ $param.find('.loading').hide(); });
     });
   }
 
   //==============================================================================
-  function createFilterParam($param, filterData) {
+  function createFilterParam($param, questionName, filterData) {
     var form = $param.closest('form');
-    var name = $param.data('name');
+    var title = $param.data('title');
+    var name = $param.attr('name');
     console.time('intialize render :: ' + name);
     var defaultColumns = $param.data('default-columns');
     var trimMetadataTerms = $param.data('trim-metadata-terms');
@@ -158,18 +159,18 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     // var filterData = JSON.parse(jsonContainer.html());
     // console.timeEnd('parse JSON :: ' + name);
 
-    console.time('validation not null queries :: ' + name);
-    // validation
-    [ 'metadata', 'metadataSpec', 'values' ]
-      .forEach(function(prop) {
-        var msg;
-        if (_.isEmpty(filterData[prop])) {
-          msg = 'Invalid data: ' + prop + ' may not be empty.';
-          alert(msg);
-          throw new Error(msg);
-        }
-      });
-    console.timeEnd('validation not null queries :: ' + name);
+    // console.time('validation not null queries :: ' + name);
+    // // validation
+    // [ 'metadata', 'metadataSpec', 'values' ]
+    //   .forEach(function(prop) {
+    //     var msg;
+    //     if (_.isEmpty(filterData[prop])) {
+    //       msg = 'Invalid data: ' + prop + ' may not be empty.';
+    //       alert(msg);
+    //       throw new Error(msg);
+    //     }
+    //   });
+    // console.timeEnd('validation not null queries :: ' + name);
 
     // console.time('massage data :: ' + name);
     // filterData = parseFilterData(filterData);
@@ -194,7 +195,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       ignored: previousValue && previousValue.ignored,
       trimMetadataTerms: trimMetadataTerms,
       defaultColumns: defaultColumns,
-      title: name
+      title: title,
+      name: name,
+      questionName: questionName
     });
 
     filterParam.on('change:value', function(filterParam, value) {
@@ -223,7 +226,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   function updateFilterParam(paramNode, data) {
-   paramNode.data('filterService').reset(data);
+    paramNode.data('filterService').reset(data);
   }
 
   function parseFilterData(filterData) {
@@ -687,68 +690,68 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     if (!hasValue) return;
     
     // get dependent param and question name, contruct url from them
-      var dependentParamSelector = "#" + paramName + 
-          "aaa > div.dependentParam[name='" + paramName + "']";
-      dependentParam = element.find(dependentParamSelector);
-      var questionName = dependentParam.closest("form")
-          .find("input:hidden[name=questionFullName]").val();
-      var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
-          '&name=' + paramName + '&dependedValue=' + JSON.stringify(dependedValues);
+    var dependentParamSelector = "#" + paramName + 
+        "aaa > div.dependentParam[name='" + paramName + "']";
+    dependentParam = element.find(dependentParamSelector);
+    var questionName = dependentParam.closest("form")
+        .find("input:hidden[name=questionFullName]").val();
+    var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
+        '&name=' + paramName + '&dependedValue=' + JSON.stringify(dependedValues);
 
-      if (dependentParam.is('[data-type="type-ahead"]')) {
-        sendReqUrl = sendReqUrl + '&json=true';
-        // dependentParam.find('.loading').show();
+    if (dependentParam.is('[data-type="type-ahead"]')) {
+      sendReqUrl = sendReqUrl + '&json=true';
+      // dependentParam.find('.loading').show();
 
-        return $.getJSON(sendReqUrl)
-          .then(function(data) {
-            // createAutoComplete(data, paramName);
-            createFilteredSelect(data, paramName, dependentParam);
-          })
-          .done(function() {
-            element.find(".param[name='" + paramName + "']").attr("ready", "");
-            dependentParam
-              .attr('ready', '')
-              .find('input')
-                .removeAttr('disabled')
-                .end()
-              .find('.loading')
-                .hide();
-          });
-
-      } else if (dependentParam.is('[data-type="filter-param"]')) {
-        sendReqUrl = sendReqUrl + '&json=true';
-        return $.getJSON(sendReqUrl)
-          .then(parseFilterData)
-          .then(updateFilterParam.bind(null, dependentParam))
-          .done(function() {
-            dependentParam.find('input').removeAttr('disabled');
-            element.find(".param[name='" + paramName + "']").attr("ready", "");
-          });
-      } else {
-        return $.ajax({
-          url: sendReqUrl,
-          type: "POST",
-          data: {},
-          dataType: "html",
-          success: function(data) {
-            var newContent = $(".param",data);
-
-            if (newContent.length > 0) {
-              dependentParam.html(newContent.html());
-            } else {
-              // this case is specifically for checkbox trees
-              //   calling .html() on response erases javascript, so insert directly
-              dependentParam.html(data);
-            }
-
-            element.find(".param[name='" + paramName + "']").attr("ready", "");
-            dependentParam.change();
-          },
-          error: function (jqXHR, textStatus, errorThrown) {
-            alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
-          }
+      return $.getJSON(sendReqUrl)
+        .then(function(data) {
+          // createAutoComplete(data, paramName);
+          createFilteredSelect(data, paramName, dependentParam);
+        })
+        .done(function() {
+          element.find(".param[name='" + paramName + "']").attr("ready", "");
+          dependentParam
+            .attr('ready', '')
+            .find('input')
+              .removeAttr('disabled')
+              .end()
+            .find('.loading')
+              .hide();
         });
-      }
+
+    } else if (dependentParam.is('[data-type="filter-param"]')) {
+      sendReqUrl = sendReqUrl + '&json=true';
+      return $.getJSON(sendReqUrl)
+        .then(parseFilterData)
+        .then(updateFilterParam.bind(null, dependentParam))
+        .done(function() {
+          dependentParam.find('input').removeAttr('disabled');
+          element.find(".param[name='" + paramName + "']").attr("ready", "");
+        });
+    } else {
+      return $.ajax({
+        url: sendReqUrl,
+        type: "POST",
+        data: {},
+        dataType: "html",
+        success: function(data) {
+          var newContent = $(".param",data);
+
+          if (newContent.length > 0) {
+            dependentParam.html(newContent.html());
+          } else {
+            // this case is specifically for checkbox trees
+            //   calling .html() on response erases javascript, so insert directly
+            dependentParam.html(data);
+          }
+
+          element.find(".param[name='" + paramName + "']").attr("ready", "");
+          dependentParam.change();
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
+        }
+      });
+    }
   }
 
   //==============================================================================

@@ -18,7 +18,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     render: function() {
       var _this = this;
 
-      this.$el.html(this.template(this.model));
+      this.$el.html(this.template(this.controller));
       this.$('#select').append(this.filterFieldsView.el);
       this.$('#results').append(this.resultsView.el);
       this.$('.tabs').tabs({

@@ -65,7 +65,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     dataTable: null,
 
     initialize: function() {
-      this.columns = new Backbone.Collection(this.model.fields.where({ leaf: 'true' }));
+      this.columns = new Backbone.Collection(this.controller.fields.where({ leaf: 'true' }));
       this.columnsDialog = new ColumnsView({ collection: this.columns }).$el
         .dialog({
           autoOpen: false,
@@ -78,7 +78,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.queueRender();
 
       this.listenTo(this.model, 'change:filteredData', this.queueRender);
-      this.listenTo(this.columns, 'change:visible', this.queueRender);
+      this.listenTo(this.columns, 'change:visible', this.fetchMetadata);
     },
 
     render: function() {
@@ -103,7 +103,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var tableConfig = this.generateTableConfig();
 
       this.$el.html(this.template({
-        fields: this.model.fields.toJSON()
+        fields: this.controller.fields.toJSON()
       }));
 
       this.$("button").button();
@@ -111,6 +111,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.dataTable = this.$('.results-table')
         .wdkDataTable(tableConfig)
         .dataTable();
+    },
+
+    fetchMetadata: function(column) {
+      this.controller.getMetadata(column).then(this.queueRender.bind(this));
     },
 
     queueRender: function() {
@@ -165,11 +169,12 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }].concat(this.columns
         .where({ visible: true })
         .map(function(column) {
+          var term = column.get('term');
           return {
-            className: column.get('term').trim().replace(/\s+/g, '-'),
+            className: term.trim().replace(/\s+/g, '-'),
             title: column.get('display'),
             data: function(row) {
-              return controller.getMetadata(row, column);
+              return controller.metadata[term][row.term];
             },
             defaultContent: Field.UNKNOWN_VALUE
           };

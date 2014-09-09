@@ -1,9 +1,16 @@
+/* global RSVP */
 wdk.namespace('wdk.controllers', function(ns) {
   'use strict';
 
+  // imports
   var LocalFilterService = wdk.models.filter.LocalFilterService;
   var FilterItemsView = wdk.views.filter.FilterItemsView;
   var FilterView = wdk.views.filter.FilterView;
+  var Fields = wdk.models.filter.Fields;
+  // var Field = wdk.models.filter.Field;
+
+  // helpers
+  var countByValues = _.compose(_.countBy, _.values);
 
   /**
    * options:
@@ -21,24 +28,21 @@ wdk.namespace('wdk.controllers', function(ns) {
 
     initialize: function(options) {
       this.data = options.data;
-      this.metadata = options.metadata;
-      this.fields = options.fields;
-      this.filters = options.filters;
+      this.metadata = options.metadata || {};
       this.ignored = options.ignored || [];
-      this.title = options.title;
-
-      var trimMetadataTerms = Boolean(options.trimMetadataTerms);
-      var defaultColumns = options.defaultColumns;
-      var filterService = this.filterService = new LocalFilterService({
+      this.title = options.title || 'Items';
+      this.questionName = options.questionName;
+      this.name = options.name;
+      this.fields = new Fields(options.fields);
+      this.trimMetadataTerms = Boolean(options.trimMetadataTerms);
+      this.defaultColumns = options.defaultColumns;
+      this.filterService = new LocalFilterService({
         data: this.data,
         metadata: this.metadata,
-        fields: this.fields,
-        filters: this.filters,
-        title: this.title
-      }, {
-        parse: true,
-        root: 'metadata'
       });
+
+      this.listenTo(this.filterService, 'change:filteredData', this.updateValue);
+      this.listenTo(this.filterService, 'change:filteredData', this._setSelectedFieldDistribution);
 
       var itemsView = new FilterItemsView(this.filterService, {
         model: this.filterService.filters,
@@ -48,19 +52,21 @@ wdk.namespace('wdk.controllers', function(ns) {
       var filterView = new FilterView({
         model: this.filterService,
         controller: this,
-        defaultColumns: defaultColumns,
-        trimMetadataTerms: trimMetadataTerms
+        defaultColumns: this.defaultColumns,
+        trimMetadataTerms: this.trimMetadataTerms
       });
 
-      // map strinigified version of user selections to value attribute of $el
-      filterService.on('change:filteredData', function() {
-        this.updateValue();
-        this._setSelectedFieldDistribution();
-      }.bind(this));
+      var metadataPromises = (options.filters || [])
+        .map(function(filter) {
+          return this.getMetadata(this.fields.get(filter.field));
+        }.bind(this));
 
-      this.$el
-        .append(itemsView.render().el)
-        .append(filterView.render().el);
+      RSVP.all(metadataPromises).then(function() {
+        this.filterService.filters.reset(options.filters);
+        this.$el
+          .append(itemsView.render().el)
+          .append(filterView.render().el);
+      }.bind(this));
     },
 
     // Update the UI with new data. This gets triggered when user changes the
@@ -119,10 +125,76 @@ wdk.namespace('wdk.controllers', function(ns) {
 
     _setSelectedFieldDistribution: function() {
       var field = this.selectedField;
-      return field && this.filterService.getFieldDistribution(field)
+      return field && this.getFieldDistribution(field)
         .then(function(distribution) {
           field.set('distribution', distribution);
         });
+    },
+
+    // returns a promise that resolves to metadata for a property:
+    //     [ { data_term: metadata_value }, ... ]
+    getMetadata: function(field) {
+      return new RSVP.Promise(function(resolve, reject) {
+        var term = field.get('term');
+
+        // if it's cached, return a promise that resolves immediately
+        if (this.metadata[term]) {
+          resolve(this.metadata[term]);
+        }
+
+        var metadataUrl = wdk.webappUrl('getMetadata.do');
+        var metadataUrlParams = {
+          questionFullName: this.questionName,
+          name: this.name,
+          json: true,
+          property: term
+        };
+
+        $.getJSON(metadataUrl, metadataUrlParams)
+          .then(function(metadata) {
+            // cache metadata
+            this.metadata[term] = metadata
+              // tranform to an object keyed by data id for fast lookups
+              // ie, a dictionary
+              .reduce(function(acc, md) {
+                acc[md.sample] = md.value;
+                return acc;
+              }, {});
+            resolve(this.metadata[term]);
+          }.bind(this))
+          .fail(reject);
+      }.bind(this));
+    },
+
+    // returns a promse which resolves to an array of objects:
+    // { value, count, filteredCount }
+    getFieldDistribution: function(field) {
+      var term = field.get('term');
+
+      // Retrieve metadata and filtered data and return a promise
+      return RSVP.hash({
+        metadata: this.getMetadata(field),
+        filteredData: this.filterService.getFilteredData({
+          filters: this.filterService.filters,
+          omit: [ term ]
+        })
+      }).then(function(results) {
+        var filteredMetadata = results.filteredData
+          .reduce(function(acc, fd) {
+            acc[fd.term] = results.metadata[fd.term];
+            return acc;
+          }, {});
+        var counts = countByValues(results.metadata);
+        var filteredCounts = countByValues(filteredMetadata);
+
+        return _.keys(counts).map(function(value) {
+          return {
+            value: value,
+            count: Number(counts[value]),
+            filteredCount: filteredCounts[value]
+          };
+        });
+      }.bind(this));
     },
 
     selectField: function(field) {
@@ -137,11 +209,6 @@ wdk.namespace('wdk.controllers', function(ns) {
       return this.filterService.filters.findWhere({
         field: field.get('term')
       });
-    },
-
-    // return metadata
-    getMetadata: function(datum, field) {
-      return this.metadata[datum.term][field.get('term')];
     }
 
   });
