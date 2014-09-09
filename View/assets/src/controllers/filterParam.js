@@ -153,6 +153,7 @@ wdk.namespace('wdk.controllers', function(ns) {
         // if it's cached, return a promise that resolves immediately
         if (this.metadata[term]) {
           resolve(this.metadata[term]);
+          return;
         }
 
         var metadataUrl = wdk.webappUrl('getMetadata.do');
