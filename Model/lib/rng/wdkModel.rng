@@ -1565,6 +1565,7 @@
     <element name="stepAnalysisRef">
       <attribute name="name" />
       <ref name="stepAnalysisOptions" />
+      <ref name="IncludeExclude" />
       <optional>
         <attribute name="releaseVersion" />
       </optional>
