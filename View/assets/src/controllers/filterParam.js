@@ -7,7 +7,7 @@ wdk.namespace('wdk.controllers', function(ns) {
   var FilterItemsView = wdk.views.filter.FilterItemsView;
   var FilterView = wdk.views.filter.FilterView;
   var Fields = wdk.models.filter.Fields;
-  // var Field = wdk.models.filter.Field;
+  var Field = wdk.models.filter.Field;
 
   // helpers
   var countByValues = _.compose(_.countBy, _.values);
@@ -152,12 +152,13 @@ wdk.namespace('wdk.controllers', function(ns) {
 
         $.getJSON(metadataUrl, metadataUrlParams)
           .then(function(metadata) {
-            // cache metadata
-            this.metadata[term] = metadata
-              // tranform to an object keyed by data id for fast lookups
-              // ie, a dictionary
-              .reduce(function(acc, md) {
-                acc[md.sample] = md.value;
+            metadata = _.indexBy(metadata, 'sample');
+            // cache metadata and transform to a dict
+            this.metadata[term] = this.data
+              .reduce(function(acc, d) {
+                acc[d.term] = metadata[d.term]
+                  ? metadata[d.term].value
+                  : Field.UNKNOWN_VALUE;
                 return acc;
               }, {});
             resolve(this.metadata[term]);
