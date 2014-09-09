@@ -62,31 +62,28 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var filter = this.controller.getFieldFilter(field);
       var filterValues = filter ? filter.pick('min', 'max') : null;
 
-      var distribution = this.model.get('distribution');
+      var distribution = this.model.get('distribution')
+        .filter(function(item) { return _.isNumber(item.value); });
 
       var size = distribution.reduce(function(acc, item) {
         return acc + item.count;
       }, 0);
 
       var series = distribution
-        .filter(function(item) {
-          return !_.isUndefined(item.count) && item.value !== field.constructor.UNKNOWN_VALUE;
-        })
-        .map(function(item) {
-          return [ Number(item.value), Number(item.count) ];
-        });
+        .reduce(function(acc, item) {
+          if (_.isUndefined(item.count)) return acc;
+          return acc.concat([ [ Number(item.value), Number(item.count) ] ]);
+        }, []);
 
       var fSeries = distribution
-        .filter(function(item) {
-          return !_.isUndefined(item.filteredCount) && item.value !== field.constructor.UNKNOWN_VALUE;
-        })
-        .map(function(item) {
-          return [ Number(item.value), Number(item.filteredCount) ];
-        });
+        .reduce(function(acc, item) {
+          if (_.isUndefined(item.filteredCount)) return acc;
+          return acc.concat([ [ Number(item.value), Number(item.filteredCount) ] ]);
+        }, []);
 
-
-      var min = this.min = _.first(series)[0];
-      var max = this.max = _.last(series)[0];
+      var values = _.pluck(distribution, 'value');
+      var min = this.min = _.min(values);
+      var max = this.max = _.max(values);
       var sum = distribution.reduce(function(acc, item) {
         return acc + (item.value * item.count);
       }, 0);
