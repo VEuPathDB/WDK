@@ -122,8 +122,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
 
       $.getJSON(sendReqUrl)
-        .then(createFilterParam.bind(null, $param, questionName))
-        .done(function(){ $param.find('.loading').hide(); });
+        .then(createFilterParam.bind(null, $param, questionName));
     });
   }
 
@@ -204,7 +203,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       input.val(JSON.stringify(value));
     });
 
-    // $param.append(filterParam.el);
+    filterParam.on('ready', function() {
+      $param.find('.loading').hide();
+    });
 
     form.on('submit', function(e) {
       var filteredData = filterParam.getSelectedData();
