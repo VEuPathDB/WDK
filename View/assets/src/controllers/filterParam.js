@@ -11,6 +11,8 @@ wdk.namespace('wdk.controllers', function(ns) {
 
   // helpers
   var countByValues = _.compose(_.countBy, _.values);
+  var numericSort = function(a, b){ return a > b; };
+  var stringSort; // passing this to [].sort() will use the default sort
 
   /**
    * options:
@@ -56,10 +58,15 @@ wdk.namespace('wdk.controllers', function(ns) {
         trimMetadataTerms: this.trimMetadataTerms
       });
 
-      var metadataPromises = (options.filters || [])
+      // load initial metadata
+      var filterFields = (options.filters || [])
         .map(function(filter) {
-          return this.getMetadata(this.fields.get(filter.field));
+          return this.fields.get(filter.field);
         }.bind(this));
+      var defaultFields = (this.defaultColumns || [])
+        .map(this.fields.get.bind(this.fields));
+      var initialFields = _.union(defaultFields, filterFields);
+      var metadataPromises = initialFields.map(this.getMetadata.bind(this));
 
       RSVP.all(metadataPromises).then(function() {
         this.filterService.filters.reset(options.filters);
@@ -136,6 +143,7 @@ wdk.namespace('wdk.controllers', function(ns) {
     getMetadata: function(field) {
       return new RSVP.Promise(function(resolve, reject) {
         var term = field.get('term');
+        var type = field.get('type');
 
         // if it's cached, return a promise that resolves immediately
         if (this.metadata[term]) {
@@ -156,9 +164,10 @@ wdk.namespace('wdk.controllers', function(ns) {
             // cache metadata and transform to a dict
             this.metadata[term] = this.data
               .reduce(function(acc, d) {
-                acc[d.term] = metadata[d.term]
-                  ? metadata[d.term].value
-                  : Field.UNKNOWN_VALUE;
+                var value = _.result(metadata[d.term], 'value');
+                acc[d.term] = _.isUndefined(value)
+                  ? Field.UNKNOWN_VALUE
+                  : type == 'number' ? Number(value) : value;
                 return acc;
               }, {});
             resolve(this.metadata[term]);
@@ -171,6 +180,7 @@ wdk.namespace('wdk.controllers', function(ns) {
     // { value, count, filteredCount }
     getFieldDistribution: function(field) {
       var term = field.get('term');
+      var type = field.get('type');
 
       // Retrieve metadata and filtered data and return a promise
       return RSVP.hash({
@@ -189,7 +199,7 @@ wdk.namespace('wdk.controllers', function(ns) {
         var filteredCounts = countByValues(filteredMetadata);
 
         return _.uniq(_.values(results.metadata))
-          .sort()
+          .sort(type == 'number' ? numericSort : stringSort)
           .map(function(value) {
             return {
               value: value,
