@@ -15,7 +15,7 @@ public class BackupUser extends BaseCLI {
   private static final String ARG_BACKUP_SCHEMA = "backupSchema";
   private static final String ARG_CUTOFF_DATE = "cutoffDate";
 
-  private static final Logger logger = Logger.getLogger(BackupUser.class);
+  private static final Logger LOG = Logger.getLogger(BackupUser.class);
 
   public static void main(String[] args) throws Exception {
     String cmdName = System.getProperty("cmdName");
@@ -28,7 +28,7 @@ public class BackupUser extends BaseCLI {
       throw ex;
     }
     finally {
-      logger.info("WDK User Backup done.");
+      LOG.info("WDK User Backup done.");
       System.exit(0);
     }
   }
@@ -81,7 +81,7 @@ public class BackupUser extends BaseCLI {
 
   @Override
   protected void execute() throws Exception {
-    logger.info("****IN EXECUTE******");
+    LOG.info("****IN EXECUTE******");
 
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
     backupSchema = (String) getOptionValue(ARG_BACKUP_SCHEMA);
@@ -94,12 +94,12 @@ public class BackupUser extends BaseCLI {
     backupSchema = DBPlatform.normalizeSchema(backupSchema);
     userSchema = DBPlatform.normalizeSchema(userSchema);
 
-    logger.info("**********Backing up user data from " + userSchema + " to " + backupSchema + "...");
+    LOG.info("**********Backing up user data from " + userSchema + " to " + backupSchema + "...");
     backupGuestUsers(userSchema, backupSchema, cutoffDate);
   }
 
   public void backupGuestUsers(String userSchema, String backupSchema, String cutoffDate) throws SQLException {
-    logger.info("****IN BACKUPGUESTUSERS ******");
+    LOG.info("****IN BACKUPGUESTUSERS ******");
 
     Connection connection = wdkModel.getUserDb().getDataSource().getConnection();
     boolean autoCommit = connection.getAutoCommit();
@@ -109,16 +109,18 @@ public class BackupUser extends BaseCLI {
     String deleteCondtion = "user_id IN (SELECT user_id FROM " + userSchema + "users " +
         " WHERE is_guest = 1 AND register_time < to_date('" + cutoffDate + "', 'yyyy/mm/dd'))";
     try {
-      deleteOutdatedRows(statement, "dataset_values", "dataset_id");
-      deleteOutdatedRows(statement, "datasets");
-      deleteOutdatedRows(statement, "user_roles");
-      deleteOutdatedRows(statement, "preferences");
-      deleteOutdatedRows(statement, "user_baskets");
-      deleteOutdatedRows(statement, "favorites");
-      deleteOutdatedRows(statement, "strategies");
-      deleteOutdatedRows(statement, "step_analysis", "step_id");
-      deleteOutdatedRows(statement, "steps");
-      deleteOutdatedRows(statement, "users");
+      deleteDanglingStrategies(statement);
+
+      deleteOutdatedRows(statement, "strategies", "strategy_id", "user_id");
+      deleteOutdatedRows(statement, "step_analysis", "step_id", "analysis_id");
+      deleteOutdatedRows(statement, "steps", "step_id", "user_id");
+      deleteOutdatedRows(statement, "dataset_values", "dataset_value_id", "dataset_id");
+      deleteOutdatedRows(statement, "datasets", "dataset_id", "user_id");
+      deleteOutdatedRows(statement, "user_roles", "user_id");
+      deleteOutdatedRows(statement, "preferences", "user_id");
+      deleteOutdatedRows(statement, "user_baskets", "basket_id", "user_id");
+      deleteOutdatedRows(statement, "favorites", "favorite_id", "user_id");
+      deleteOutdatedRows(statement, "users", "user_id");
 
       backupTable(statement, "users", userColumns);
       backupTable(statement, "user_roles", roleColumns);
@@ -133,16 +135,18 @@ public class BackupUser extends BaseCLI {
 
       removeGuest(statement, "dataset_values", "dataset_id IN (SELECT dataset_id FROM " + userSchema +
           "datasets WHERE " + deleteCondtion + ")");
-      // removeGuest(statement, "favorites", deleteCondtion);
-      // removeGuest(statement, "user_baskets", deleteCondtion);
       removeGuest(statement, "datasets", deleteCondtion);
       removeGuest(statement, "preferences", deleteCondtion);
+      removeGuest(statement, "user_baskets", deleteCondtion);
+      removeGuest(statement, "favorites", deleteCondtion);
       removeGuest(statement, "strategies", deleteCondtion);
       removeGuest(statement, "step_analysis", "step_id IN (SELECT step_id FROM " + userSchema +
           "steps WHERE " + deleteCondtion + ")");
-      removeGuest(statement, "steps", deleteCondtion);
+      removeGuest(statement, "steps", deleteCondtion + " AND step_id NOT IN (SELECT root_step_id FROM " +
+          userSchema + "strategies)");
       removeGuest(statement, "user_roles", deleteCondtion);
-      removeGuest(statement, "users", deleteCondtion);
+      removeGuest(statement, "users", deleteCondtion + " AND user_id NOT IN (SELECT user_id FROM " +
+          userSchema + "steps)");
 
       connection.commit();
     }
@@ -157,18 +161,27 @@ public class BackupUser extends BaseCLI {
     }
   }
 
-  private void deleteOutdatedRows(Statement statement, String table) throws SQLException {
-    deleteOutdatedRows(statement, table, "user_id");
+  private void deleteDanglingStrategies(Statement statement) throws SQLException {
+    LOG.info("***** DELETE DANGLING STRATEGIES *****");
+    String stratTable = backupSchema + "strategies";
+    String stepTable = userSchema + "steps";
+    int count = statement.executeUpdate("DELETE FROM " + stratTable + " WHERE root_step_id IN " +
+        "  (SELECT step_id FROM " + stepTable + ")");
+    LOG.info(count + " rows deleted");
   }
 
-  private void deleteOutdatedRows(Statement statement, String table, String keyColumn) throws SQLException {
-    logger.info("**** IN DELETE OUTDATED ROWS ******  " + table);
+  private void deleteOutdatedRows(Statement statement, String table, String... keyColumns)
+      throws SQLException {
+    LOG.info("**** IN DELETE OUTDATED ROWS ******  " + table);
     String fromTable = userSchema + table;
     String toTable = backupSchema + table;
 
-    // delete duplicate rows from backup table, so that updated data can be copied over.
-    statement.executeUpdate("DELETE FROM " + toTable + " WHERE " + keyColumn + " IN (SELECT " + keyColumn +
-        " FROM " + fromTable + ")");
+    for (String keyColumn : keyColumns) {
+      // delete duplicate rows from backup table, so that updated data can be copied over.
+      int count = statement.executeUpdate("DELETE FROM " + toTable + " WHERE " + keyColumn + " IN (SELECT " +
+          keyColumn + " FROM " + fromTable + ")");
+      LOG.info(count + " rows deleted");
+    }
   }
 
   private void backupTable(Statement statement, String table, String columns) throws SQLException {
@@ -177,19 +190,21 @@ public class BackupUser extends BaseCLI {
 
   private void backupTable(Statement statement, String table, String columns, String keyColumn)
       throws SQLException {
-    logger.info("****IN BACKUPTABLE******  " + table);
+    LOG.info("****IN BACKUPTABLE******  " + table);
     String fromTable = userSchema + table;
     String toTable = backupSchema + table;
 
     // copy all rows into backup
-    statement.executeUpdate("INSERT INTO " + toTable + "(" + columns + ") SELECT " + columns + " FROM " +
-        fromTable);
+    int count = statement.executeUpdate("INSERT INTO " + toTable + "(" + columns + ") SELECT " + columns +
+        " FROM " + fromTable);
+    LOG.info(count + " rows inserted");
   }
 
   private void removeGuest(Statement statement, String table, String condition) throws SQLException {
-    logger.info("****IN REMOVEGUEST****** " + table);
+    LOG.info("****IN REMOVEGUEST****** " + table);
     String fromTable = userSchema + table;
-    statement.executeUpdate("DELETE FROM " + fromTable + " WHERE " + condition);
+    int count = statement.executeUpdate("DELETE FROM " + fromTable + " WHERE " + condition);
+    LOG.info(count + " rows deleted");
   }
 
   // <ADD-AG 042111>

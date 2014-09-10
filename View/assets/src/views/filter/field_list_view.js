@@ -3,10 +3,6 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
 
   // # Helper functions
 
-  // Create tree, then prune it so it's easier to read
-  var makeTree = _.compose(removeParentsWithSingleChild, removeSingleTopNode,
-    constructTree);
-
   // Given a list of fields:
   // First, find all fields marked as `filterable` (this means
   //   the field is terminating and data can be filtered by it).
@@ -140,14 +136,21 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
 
     template: wdk.templates['filter/field_list.handlebars'],
 
-    initialize: function() {
-      this.listenTo(this.model.fields, 'select', this.selectField);
-      this.listenTo(this.model.fields, 'reset', this.render);
+    initialize: function(options) {
+      this.trimMetadataTerms = options.trimMetadataTerms;
+
+      this.listenTo(this.controller, 'select:field', this.selectField);
+      this.listenTo(this.controller.fields, 'reset', this.render);
     },
 
     render: function() {
 
-      var fields = this.model.fields.toJSON();
+      // Create tree, then prune it so it's easier to read
+      var makeTree = this.trimMetadataTerms
+        ? _.compose(removeParentsWithSingleChild, removeSingleTopNode, constructTree)
+        : constructTree;
+
+      var fields = this.controller.fields.toJSON();
 
       // get all ontology terms starting from `filterable` fields
       // and traversing upwards by the `parent` attribute
@@ -171,24 +174,6 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
         }).length
       }));
 
-      var field;
-      if (this.model.filters.length) {
-        // select first filtered field
-        var fieldTerm = this.model.filters.at(0).get('field');
-        field = this.model.fields.get(fieldTerm);
-      } else if (_.where(prunedFields, { leaf: 'true' }).length === 1) {
-        // select first field if only one
-        var node = groupedFields[0];
-        while (node.children) {
-          node = node.children[0];
-        }
-        field = this.model.fields.get(node.field.term);
-      }
-
-      if (field) {
-        _.defer(function() { field.select(); });
-      }
-
       return this;
     },
 
@@ -201,8 +186,8 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
       }
 
       var term = link.hash.slice(1);
-      var field = this.model.fields.findWhere({term: term});
-      field.select();
+      var field = this.controller.fields.findWhere({term: term});
+      this.controller.selectField(field);
     },
 
     expand: wdk.fn.preventEvent(function() {

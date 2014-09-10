@@ -1,7 +1,10 @@
 package org.gusdb.wdk.model.test.sanity;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -20,6 +23,8 @@ public class SanityTesterCLI {
 
   public static void main(String[] args) {
     WdkModel wdkModel = null;
+    long startTime = System.currentTimeMillis();
+    int exitCode = 0;
     try {
       String cmdName = System.getProperty("cmdName");
       Options options = declareOptions();
@@ -36,27 +41,41 @@ public class SanityTesterCLI {
       SanityTester sanityTester = new SanityTester(wdkModel, testFilter,
           failuresOnly, indexOnly, skipWebSvcQueries);
 
-      System.out.println("Sanity Test: ");
-      System.out.println(" [Model] " + modelName);
-      System.out.println(" [Database] " + wdkModel.getAppDb().getConfig().getConnectionUrl());
-      System.out.println(" [Time] " + new SimpleDateFormat(BEGIN_DATE_FORMAT).format(new Date()));
-      System.out.println();
+      System.out.println(new StringBuilder()
+        .append(NL)
+        .append("Sanity Test: ").append(NL)
+        .append(" [Model] ").append(modelName).append(NL)
+        .append(" [Database] ").append(wdkModel.getAppDb().getConfig().getConnectionUrl()).append(NL)
+        .append(" [Time] ").append(new SimpleDateFormat(BEGIN_DATE_FORMAT).format(new Date())).append(NL)
+        .toString());
 
-      sanityTester.runTests();
+      List<TestResult> results = sanityTester.runTests();
       
       if (!indexOnly) {
-        if (sanityTester.printSummaryLine()) {
-          System.exit(1);
+        for (TestResult result : results) {
+          if (!result.isPassed() || !failuresOnly) {
+            System.out.println(result.getResultString());
+          }
         }
+        System.out.println(sanityTester.getSummaryLine());
+        if (sanityTester.isFailedOverall()) exitCode = 1;
       }
     }
     catch (Exception e) {
       System.err.println(FormatUtil.getStackTrace(e));
-      System.exit(1);
+      exitCode = 1;
     }
     finally {
       wdkModel.releaseResources();
     }
+
+    System.out.println(new StringBuilder(NL)
+      .append("Sanity Test run completed in ")
+      .append((System.currentTimeMillis() - startTime) / 1000.0F)
+      .append(" seconds (exit code ").append(exitCode).append(").")
+      .append(NL).toString());
+    
+    System.exit(exitCode);
   }
 
   private static Options declareOptions() {

@@ -193,6 +193,11 @@ public abstract class ParamBean<T extends Param> {
     this.contextValues = contextValues;
   }
 
+  public void prepareDisplay(UserBean user, RequestParams requestParams)
+      throws WdkModelException, WdkUserException {
+    param.prepareDisplay(user.getUser(), requestParams, contextValues);
+  }
+
   public void prepareDisplay(UserBean user, RequestParams requestParams, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
     param.prepareDisplay(user.getUser(), requestParams, contextValues);

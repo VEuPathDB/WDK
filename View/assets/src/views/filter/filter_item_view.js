@@ -20,7 +20,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function() {
       var term = this.model.get('field');
-      this.field = this.filterService.fields.findWhere({ term: term });
+      this.field = this.controller.fields.findWhere({ term: term });
       this.render();
     },
 
@@ -38,7 +38,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     handleSelect: function(e) {
       e.preventDefault();
-      this.field.select();
+      this.controller.selectField(this.field);
     },
 
     select: function() {

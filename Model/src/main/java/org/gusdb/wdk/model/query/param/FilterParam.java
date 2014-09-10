@@ -3,13 +3,18 @@
  */
 package org.gusdb.wdk.model.query.param;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.wdk.model.Utilities;
+import javax.sql.DataSource;
+
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -18,6 +23,7 @@ import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,12 +54,18 @@ public class FilterParam extends FlatVocabParam {
   private static final String COLUMN_SPEC_PROPERTY = "spec_property";
   private static final String COLUMN_SPEC_VALUE = "spec_value";
 
+  private static final int FETCH_SIZE = 1000;
+
   private String metadataQueryRef;
   private Query metadataQuery;
 
   private String metadataSpecQueryRef;
   private Query metadataSpecQuery;
+
   private String defaultColumns;
+
+  // remove non-terminal nodes with a single child
+  private boolean trimMetadataTerms = true;
 
   /**
    * 
@@ -78,6 +90,7 @@ public class FilterParam extends FlatVocabParam {
       this.metadataSpecQuery = param.metadataSpecQuery.clone();
     if (param.defaultColumns != null)
       this.defaultColumns = param.defaultColumns;
+    this.trimMetadataTerms = param.trimMetadataTerms;
   }
 
   /*
@@ -165,6 +178,21 @@ public class FilterParam extends FlatVocabParam {
     this.defaultColumns = defaultColumns;
   }
 
+  /**
+   * @return the trimMetadataTerms
+   */
+  public boolean getTrimMetadataTerms() {
+    return trimMetadataTerms;
+  }
+
+  /**
+   * @param trimMetadataTerms
+   *          the metadataQuery to set
+   */
+  public void setTrimMetadataTerms(boolean trimMetadataTerms) {
+    this.trimMetadataTerms = trimMetadataTerms;
+  }
+
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
@@ -172,6 +200,7 @@ public class FilterParam extends FlatVocabParam {
     // resolve property query, the property query should have the same params as vocab query
     if (metadataQueryRef != null) {
       this.metadataQuery = resolveQuery(model, metadataQueryRef, "property query");
+
       // the propertyQuery must have exactly 3 columns: term, property, and value.
       Map<String, Column> columns = metadataQuery.getColumnMap();
       if (columns.size() != 3 || !columns.containsKey(COLUMN_TERM) || !columns.containsKey(COLUMN_PROPERTY) ||
@@ -185,11 +214,6 @@ public class FilterParam extends FlatVocabParam {
     if (metadataSpecQueryRef != null) {
       // no need to clone metadataSpec query, since it's not overriden in any way here.
       this.metadataSpecQuery = (Query) model.resolveReference(metadataSpecQueryRef);
-      // make sure metadataSpec query don't have any params
-      Param[] params = metadataSpecQuery.getParams();
-      if (params.length > 1 || (params.length == 1 && !params[0].getName().equals(Utilities.PARAM_USER_ID)))
-        throw new WdkModelException("The metadata query " + metadataSpecQueryRef + " in FlatVocabParam " +
-            getFullName() + " cannot have any params.");
 
       // the metadataSpec query must have exactly 3 columns: property, info, data.
       Map<String, Column> columns = metadataSpecQuery.getColumnMap();
@@ -206,14 +230,13 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, Map<String, String>> getMetadataSpec(User user) throws WdkModelException,
-      WdkUserException {
+  public Map<String, Map<String, String>> getMetadataSpec(User user, Map<String, String> contextValues)
+      throws WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
       return null;
 
-    // run metadataQuery. By definition, it doesn't have any params
-    Map<String, String> params = new HashMap<>();
-    QueryInstance instance = metadataSpecQuery.makeInstance(user, params, true, 0,
+    // run metadataQuery.
+    QueryInstance instance = metadataSpecQuery.makeInstance(user, contextValues, true, 0,
         new HashMap<String, String>());
     Map<String, Map<String, String>> metadata = new LinkedHashMap<>();
     ResultList resultList = instance.getResults();
@@ -246,8 +269,7 @@ public class FilterParam extends FlatVocabParam {
     if (metadataQuery == null)
       return null;
 
-    QueryInstance instance = metadataQuery.makeInstance(user, contextValues, true, 0,
-        new HashMap<String, String>());
+    QueryInstance instance = metadataQuery.makeInstance(user, contextValues, true, 0, contextValues);
     Map<String, Map<String, String>> properties = new LinkedHashMap<>();
     ResultList resultList = instance.getResults();
     try {
@@ -267,6 +289,58 @@ public class FilterParam extends FlatVocabParam {
       resultList.close();
     }
     return properties;
+  }
+
+  public Map<String, String> getMetaData(User user, Map<String, String> contextValues, String property)
+      throws WdkModelException, WdkUserException {
+    EnumParamCache cache = createEnumParamCache(user, contextValues);
+    return getMetaData(user, contextValues, property, cache);
+  }
+
+  /**
+   * @param user
+   * @param contextValues
+   * @param property
+   * @param cache
+   *          the cache is needed, to make sure the contextValues are initialized correctly. (it is
+   *          initialized when a cache is created.)
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  public Map<String, String> getMetaData(User user, Map<String, String> contextValues, String property,
+      EnumParamCache cache) throws WdkModelException, WdkUserException {
+    if (metadataQuery == null)
+      return null;
+
+    // compose a wrapped sql
+    QueryInstance instance = metadataQuery.makeInstance(user, contextValues, true, 0, contextValues);
+    String sql = instance.getSql();
+    sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_PROPERTY + " = ?";
+
+    // run the composed sql, and get the metadata back
+    Map<String, String> metadata = new LinkedHashMap<>();
+    ResultSet resultSet = null;
+    DataSource dataSource = wdkModel.getAppDb().getDataSource();
+    try {
+      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, sql);
+      ps.setFetchSize(FETCH_SIZE);
+      ps.setString(1, property);
+      resultSet = ps.executeQuery();
+      while (resultSet.next()) {
+        String term = resultSet.getString(COLUMN_TERM);
+        String value = resultSet.getString(COLUMN_VALUE);
+        metadata.put(term, value);
+      }
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(resultSet);
+    }
+
+    return metadata;
   }
 
   @Override
@@ -289,7 +363,7 @@ public class FilterParam extends FlatVocabParam {
 
     // create json for the metadata
     JSONObject jsMetadataSpec = new JSONObject();
-    Map<String, Map<String, String>> metadataSpec = getMetadataSpec(user);
+    Map<String, Map<String, String>> metadataSpec = getMetadataSpec(user, contextValues);
     for (String property : metadataSpec.keySet()) {
       JSONObject jsSpec = new JSONObject();
       Map<String, String> spec = metadataSpec.get(property);
@@ -299,6 +373,8 @@ public class FilterParam extends FlatVocabParam {
       jsMetadataSpec.put(property, jsSpec);
     }
     jsParam.put("metadataSpec", jsMetadataSpec);
+
+    /* disable metadata from the initial json, they will be lazy loaded later.
 
     // create json for the properties
     JSONObject jsMetadata = new JSONObject();
@@ -312,6 +388,9 @@ public class FilterParam extends FlatVocabParam {
       jsMetadata.put(term, jsProperty);
     }
     jsParam.put("metadata", jsMetadata);
+
+    */
+
   }
 
   @Override
@@ -412,5 +491,26 @@ public class FilterParam extends FlatVocabParam {
       throw new WdkModelException(ex);
     }
     return jsStableValue.toString();
+  }
+
+  @Override
+  public String[] convertToTerms(String stableValue) {
+    JSONObject jsValue = new JSONObject(stableValue);
+    JSONArray jsTerms = jsValue.getJSONArray(FilterParamHandler.TERMS_KEY);
+    String[] terms = new String[jsTerms.length()];
+    for (int i = 0; i < terms.length; i++) {
+      terms[i] = jsTerms.getString(i);
+    }
+    return terms;
+  }
+
+  @Override
+  public void setContextQuestion(Question question) {
+    super.setContextQuestion(question);
+    // also set context query to the metadata & spec queries
+    if (metadataQuery != null)
+      metadataQuery.setContextQuestion(question);
+    if (metadataSpecQuery != null)
+      metadataSpecQuery.setContextQuestion(question);
   }
 }

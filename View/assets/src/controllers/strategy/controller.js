@@ -107,6 +107,15 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
     // update state when analysis status changes
     wdk.on('analysis:statuschange', fetchStrategies);
+
+    // Add delegate submit handler here for question form
+    // The callback is called when the event bubbles up to the body
+    // element, where the event target is the question form. This
+    // allows for a sort of "late binding" so it's called last.
+    // We do this so custom Site submit handlers can cancel a form
+    // submission just by calling event.preventDefault(), or
+    // event.stopPropagation().
+    $(document.body).on('submit', 'form#form_question', wdk.addStepPopup.validateOperations);
   }
 
   /**
@@ -1052,19 +1061,21 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
     if (showAnalysisWarning) {
       $('<div style="font-size: 120%;">' +
-          '<h3 style="margin: initial;">Warning</h3>' +
-          '<p>Selecting a different value for the filter (add icon) will change your gene result, and ' +
-          'analyses on this and subsequent steps will have to be re-run. Are you sure?' +
-          '</p>' +
-          '<p><a href="' + wdk.webappUrl('/analysisTools.jsp') + '" target="_blank">Learn More</a></p>' +
+          '<h3 style="margin:0;padding:0">Warning</h3>' +
+          '<p><img width="20" alt="filtering icon" src="' + 
+         wdk.assetsUrl('/wdk/images/filter-short.png') + '"/>' + 
+        ' Clicking this will change the gene ' + 
+        ' results that were used to generate your analyses.' + 
+         ' Analysis results for this and subsequent strategy steps will be lost.' +
+          '&nbsp;  <a style="font-size:80%" href="' + wdk.webappUrl('/analysisTools.jsp') + '" target="_blank">(Learn more...)</a></p>' +
         '</div>')
         .dialog({
           modal: true,
           dialogClass: 'no-close',
-          width: '500px',
+          width: '400px',
           buttons: [{
             autofocus: true,
-            text: 'Filter the Results',
+            text: 'Proceed anyway',
             click: function() {
               doUpdate();
               $(this).dialog('close');

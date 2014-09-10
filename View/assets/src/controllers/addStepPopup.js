@@ -286,16 +286,15 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
             });
             $("#query_form_overlay").css("z-index", 100).height($("body").height());
 
-            // ensure the Question form is set up before attaching the
-            // following submit handler
-            wdk.load();
-
-            // inline-submit should be called last
-            // attach submit handler to check that a boolean/span operation is selected
+            // FIXME Remove onsubmit attributes.
+            // Nasty hack to handle onsubmit attribute.
+            // The onsubmit code is called before other attached
+            // event listeners. So, we cache it, set it to null, and
+            // add it as a data property of the element. Then, in
+            // validateOperation(), we call the code... *shudder*
             var $form = $("#query_form").find("#form_question");
             $form.data("inline-submit", $form.get(0).onsubmit);
             $form.get(0).onsubmit = null;
-            $form.submit(validateOperations);
           }
         });
         break;
@@ -432,12 +431,14 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
    * Don't allow form to submit unless an operation is selected
    */
   function validateOperations(e) {
-   /* jshint validthis:true */
+    /* jshint validthis:true */
+
+    if (e.isDefaultPrevented()) return;
+
     var $this = $(this);
     var bools = $this.find("input[name='boolean']");
     var inlineSubmit = $this.data("inline-submit");
     e.preventDefault();
-    e.stopPropagation();
     if (bools.length) {
       var boolChecked = bools.toArray().reduce(function(memo, input) {
         return memo || input.checked; 
@@ -448,8 +449,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
             .addClass("wdk-error")
             .css("text-align", "center")
             .insertBefore($this.find("#operations"));
-          return;
         }
+        return;
       }
     }
     if (inlineSubmit instanceof Function) {

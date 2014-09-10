@@ -77,7 +77,8 @@ module.exports = {
 
   libs: [
     'lib/es5-shim.min.js',
-    'lib/modernizr.js',
+    // 'lib/modernizr.js', // only used by loader.js above
+    'lib/rsvp.min.js',
     'lib/jquery.js',
     'ENV:DEV!lib/jquery-migrate-1.2.1.js',
     'ENV:PROD!lib/jquery-migrate-1.2.1.min.js',

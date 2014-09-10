@@ -305,15 +305,15 @@ ${rcDisplay} basket
  
 <%-- Initialize Add Step panel --%>
 <script type="text/javascript">
-	rclass = "${recordClass.fullName}";
+	rclass = "${fn:replace(recordClass.fullName, '.', '_')}";
 	sdName = "${recordClass.shortDisplayName}";
 
 	ele = $("li[onclick*='sl_recordclasses']")[0];
 	wdk.addStepPopup.callWizard(null,ele,'sl_recordclasses',2);
   // $("td#section-1 ul.menu_section:first > li:first").click();
 
-  ele = $('li.category[onclick*= "' + sdName + '" ]')[0];
-  wdk.addStepPopup.callWizard(null,ele,'sl_'+ sdName + 'RecordClasses_' + sdName + 'RecordClass' ,3);
+  ele = $('li.category[onclick*= "' + rclass + '" ]')[0];
+  wdk.addStepPopup.callWizard(null,ele,'sl_'+ rclass ,3);
   // $("td#section-2 ul.menu_section:first > li:first").click();
 
 	if( sdName === "Gene" ) {

@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.test.sanity;
+package org.gusdb.wdk.model.test.sanity.tests;
 
 import java.util.Map;
 
@@ -9,6 +9,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
+import org.gusdb.wdk.model.test.sanity.TestResult;
 import org.gusdb.wdk.model.user.User;
 
 public class QuestionTest implements ElementTest {
@@ -25,7 +26,7 @@ public class QuestionTest implements ElementTest {
 
   @Override
   public String getTestName() {
-    return " QUESTION " + _question.getFullName() +
+    return "QUESTION " + _question.getFullName() +
         " (query " + _question.getQuery().getFullName() + ")";
   }
 
@@ -39,7 +40,7 @@ public class QuestionTest implements ElementTest {
   @Override
   public TestResult test(Statistics stats) throws Exception {
 
-    TestResult result = new TestResult();
+    TestResult result = new TestResult(this);
     int sanityMin = _paramValuesSet.getMinRows();
     int sanityMax = _paramValuesSet.getMaxRows();
 
@@ -53,8 +54,7 @@ public class QuestionTest implements ElementTest {
       // get the summary attribute list
       Map<String, AttributeField> summary = answerValue.getSummaryAttributeFieldMap();
 
-      // iterate through the page and try every summary attribute of
-      // each record
+      // iterate through the page and try every summary attribute of each record
       for (RecordInstance record : answerValue.getRecordInstances()) {
         StringBuffer sb = new StringBuffer();
         for (String attrName : summary.keySet()) {
@@ -63,17 +63,17 @@ public class QuestionTest implements ElementTest {
         }
       }
 
-      result.passed = (resultSize >= sanityMin && resultSize <= sanityMax);
+      result.setPassed(resultSize >= sanityMin && resultSize <= sanityMax);
 
-      result.returned = " It returned " + resultSize + " rows. ";
+      result.setReturned(" It returned " + resultSize + " rows. ");
       if (sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS)
-        result.expected = "Expected (" + sanityMin + " - " + sanityMax + ") ";
+        result.setExpected("Expected (" + sanityMin + " - " + sanityMax + ") ");
 
       return result;
     }
     finally {
       result.stopTimer();
-      if (result.passed) {
+      if (result.isPassed()) {
         stats.questionsPassed++;
       }
       else {
