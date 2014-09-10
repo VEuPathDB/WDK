@@ -80,7 +80,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.queueRender();
 
       this.listenTo(this.model, 'change:filteredData', this.queueRender);
-      this.listenTo(this.columns, 'change:visible', this.fetchMetadata);
+      this.listenTo(this.columns, 'change:visible', this.handleColumnVisibility);
     },
 
     render: function() {
@@ -115,12 +115,18 @@ wdk.namespace('wdk.views.filter', function(ns) {
         .dataTable();
     },
 
-    fetchMetadata: function(column) {
+    handleColumnVisibility: function(column, visible) {
+      if (!visible) {
+        this.controller.abortMetadataRequest(column);
+        return this;
+      }
+
       this._metadataFetchCount++;
       this.controller.getMetadata(column)
         .then(function() {
           if (--this._metadataFetchCount === 0) this.queueRender();
         }.bind(this));
+      return this;
     },
 
     queueRender: function() {

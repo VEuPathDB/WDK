@@ -29,6 +29,7 @@ wdk.namespace('wdk.controllers', function(ns) {
     className: 'filter-param',
 
     initialize: function(options) {
+      this.metadataXhrQueue = {};
       this.data = options.data;
       this.metadata = options.metadata || {};
       this.ignored = options.ignored || [];
@@ -192,7 +193,7 @@ wdk.namespace('wdk.controllers', function(ns) {
           property: term
         };
 
-        $.getJSON(metadataUrl, metadataUrlParams)
+        (this.metadataXhrQueue[term] = $.getJSON(metadataUrl, metadataUrlParams))
           .then(function(metadata) {
             metadata = _.indexBy(metadata, 'sample');
             // cache metadata and transform to a dict
@@ -204,10 +205,18 @@ wdk.namespace('wdk.controllers', function(ns) {
                   : type == 'number' ? Number(value) : value;
                 return acc;
               }, {});
-            this.hideSpinner();
             resolve(this.metadata[term]);
           }.bind(this))
-          .fail(reject);
+          .fail(function(err) {
+            if (err.statusText !== 'abort') {
+              // TODO Show user an error message
+              reject(err);
+            }
+          })
+          .always(function() {
+            delete this.metadataXhrQueue[term];
+            this.hideSpinner();
+          }.bind(this));
       }.bind(this));
     },
 
@@ -246,11 +255,18 @@ wdk.namespace('wdk.controllers', function(ns) {
     },
 
     selectField: function(field) {
+      this.abortMetadataRequest(this.selectedField);
       this.selectedField = field;
       this._setSelectedFieldDistribution().then(function() {
         this.trigger('select:field', field);
       }.bind(this));
       return this;
+    },
+
+    abortMetadataRequest: function(field) {
+      if (field) {
+        _.result(this.metadataXhrQueue[field.get('term')], 'abort');
+      }
     },
 
     getFieldFilter: function(field) {
