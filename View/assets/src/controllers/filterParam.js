@@ -207,10 +207,8 @@ wdk.namespace('wdk.controllers', function(ns) {
             resolve(this.metadata[term]);
           }.bind(this))
           .fail(function(err) {
-            if (err.statusText !== 'abort') {
-              // TODO Show user an error message
-              reject(err);
-            }
+            // TODO Show user an error message
+            reject(err);
           })
           .always(function() {
             delete this.metadataXhrQueue[term];
