@@ -173,14 +173,12 @@ wdk.namespace('wdk.controllers', function(ns) {
     // returns a promise that resolves to metadata for a property:
     //     [ { data_term: metadata_value }, ... ]
     getMetadata: function(field) {
-      this.showSpinner();
       return new RSVP.Promise(function(resolve, reject) {
         var term = field.get('term');
         var type = field.get('type');
 
         // if it's cached, return a promise that resolves immediately
         if (this.metadata[term]) {
-          this.hideSpinner();
           resolve(this.metadata[term]);
           return;
         }
@@ -193,6 +191,7 @@ wdk.namespace('wdk.controllers', function(ns) {
           property: term
         };
 
+        this.showSpinner();
         (this.metadataXhrQueue[term] = $.getJSON(metadataUrl, metadataUrlParams))
           .then(function(metadata) {
             metadata = _.indexBy(metadata, 'sample');
@@ -215,7 +214,9 @@ wdk.namespace('wdk.controllers', function(ns) {
           })
           .always(function() {
             delete this.metadataXhrQueue[term];
-            this.hideSpinner();
+            if (_.size(this.metadataXhrQueue) === 0) {
+              this.hideSpinner();
+            }
           }.bind(this));
       }.bind(this));
     },
