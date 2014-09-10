@@ -74,7 +74,6 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
-      var _this = this;
       var field = this.model;
       var filterService = this.filterService;
       var filter = this.controller.getFieldFilter(field);
@@ -87,7 +86,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       }));
 
       members.on('change:selected', _.debounce(function() {
-        var type = _this.model.get('type');
+        var type = this.model.get('type');
         var values = members.where({selected: true}).map(function(member) {
           return type === 'number'
             ? Number(member.get('value'))
@@ -95,16 +94,16 @@ wdk.namespace('wdk.views.filter', function(ns) {
         });
         var filters = filterService.filters;
 
-        filters.remove(filters.where({ field: field.get('term') }), { origin: _this });
+        filters.remove(filters.where({ field: field.get('term') }), { origin: this });
 
         if (values.length) {
           filters.add({
             field: field.get('term'),
             operation: field.get('filter'),
             values: values
-          }, { origin: _this });
+          }, { origin: this });
         }
-      }, 50));
+      }.bind(this), 50));
 
 
       var distribution = this.model.get('distribution');
@@ -113,28 +112,28 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var scale = _.max(counts) + 10;
       var size = counts.reduce(function(acc, count){ return acc + count; });
 
-      distribution.forEach(function(valueDist) {
-        var value = valueDist.value;
-        var count = valueDist.count;
-        var fcount = valueDist.filteredCount || 0;
+      this.memberViews = distribution
+        .map(function(valueDist) {
+          var value = valueDist.value;
+          var count = valueDist.count;
+          var fcount = valueDist.filteredCount || 0;
 
-        var member = members.add({
-          value: value,
-          count: count,
-          percent: (count / size * 100).toFixed(2),
-          distribution: (count / scale * 100).toFixed(2),
-          filteredDistribution: (fcount / scale * 100).toFixed(2),
-          selected: !!(_.contains(filterValues, value))
-        });
+          var member = members.add({
+            value: value,
+            count: count,
+            percent: (count / size * 100).toFixed(2),
+            distribution: (count / scale * 100).toFixed(2),
+            filteredDistribution: (fcount / scale * 100).toFixed(2),
+            selected: !!(_.contains(filterValues, value))
+          });
 
-        var memberView = new MemberView({
-          model: member,
-          controller: _this.controller
-        }).render();
+          return new MemberView({
+            model: member,
+            controller: this.controller
+          }).render();
+        }.bind(this));
 
-        _this.$('tbody').append(memberView.$el);
-        _this.memberViews.push(memberView);
-      });
+      this.$('tbody').append(_.pluck(this.memberViews, 'el'));
 
       // activate Read more link if text is overflowed
       var p = this.$('.description p').get(0);
