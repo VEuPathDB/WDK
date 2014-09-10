@@ -126,7 +126,12 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.controller.getMetadata(column)
         .then(function() {
           if (--this._metadataFetchCount === 0) this.queueRender();
-        }.bind(this));
+        }.bind(this))
+        ['catch'](function(err) {
+          if (err.statusText != 'abort') {
+            throw err;
+          }
+        });
       return this;
     },
 
