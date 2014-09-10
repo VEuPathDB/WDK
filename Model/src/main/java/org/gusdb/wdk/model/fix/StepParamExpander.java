@@ -5,9 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -77,13 +76,12 @@ public class StepParamExpander extends BaseCLI {
       createParamTable(wdkModel);
       connection = ds.getConnection();
       connection.setAutoCommit(false);
-      
+
       // create select SQL
-      String sql = new StringBuilder("SELECT s.step_id, s.question_name, s.display_params ")
-        .append(" FROM ").append(userSchema).append("steps s, ").append(userSchema).append("users u ")
-        .append(" WHERE s.user_id = u.user_id AND u.is_guest = 0")
-        .append("   AND s.step_id NOT IN (SELECT step_id FROM step_params) ")
-        .toString();
+      String sql = new StringBuilder("SELECT s.step_id, s.question_name, s.display_params ").append(" FROM ").append(
+          userSchema).append("steps s, ").append(userSchema).append("users u ").append(
+          " WHERE s.user_id = u.user_id AND u.is_guest = 0").append(
+          "   AND s.step_id NOT IN (SELECT step_id FROM step_params) ").toString();
 
       selectStmt = connection.createStatement();
       selectStmt.setFetchSize(1000);
@@ -104,12 +102,11 @@ public class StepParamExpander extends BaseCLI {
         if (!clob.startsWith("{"))
           continue;
 
-        List<String[]> values = parseClob(wdkModel, questionName, clob);
+        Map<String, String> values = parseClob(wdkModel, questionName, clob);
 
         // insert the values
-        for (String[] pair : values) {
-          String paramName = pair[0].trim();
-          String paramValue = pair[1].trim();
+        for (String paramName : values.keySet()) {
+          String paramValue = values.get(paramName);
 
           psInsert.setInt(1, stepId);
           psInsert.setString(2, paramName);
@@ -163,8 +160,9 @@ public class StepParamExpander extends BaseCLI {
     return connection.prepareStatement(sql.toString());
   }
 
-  private List<String[]> parseClob(WdkModel wdkModel, String questionName, String clob) throws WdkModelException, JSONException {
-    List<String[]> newValues = new ArrayList<String[]>();
+  private Map<String, String> parseClob(WdkModel wdkModel, String questionName, String clob)
+      throws WdkModelException, JSONException {
+    Map<String, String> newValues = new LinkedHashMap<>();
     if (clob != null && clob.length() > 0) {
       Map<String, String> values = StepFactory.parseParamContent(new JSONObject(clob));
       for (String paramName : values.keySet()) {
@@ -177,7 +175,8 @@ public class StepParamExpander extends BaseCLI {
           for (int i = 0; i < terms.length; i++) {
             terms[i] = jsTerms.getString(i);
           }
-        } else {
+        }
+        else {
           terms = value.split(",");
         }
         Set<String> used = new HashSet<>();
@@ -188,7 +187,7 @@ public class StepParamExpander extends BaseCLI {
             continue;
           }
           else {
-            newValues.add(new String[] { paramName, term });
+            newValues.put(paramName.trim(), term.trim());
             used.add(term);
           }
         }
@@ -196,7 +195,7 @@ public class StepParamExpander extends BaseCLI {
     }
     return newValues;
   }
-  
+
   private boolean isFilterParam(WdkModel wdkModel, String questionName, String paramName) {
     try {
       Question question = wdkModel.getQuestion(questionName);
