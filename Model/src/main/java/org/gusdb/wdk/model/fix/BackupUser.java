@@ -126,12 +126,12 @@ public class BackupUser extends BaseCLI {
       backupTable(statement, "user_roles", roleColumns);
       backupTable(statement, "preferences", prefColumns);
       backupTable(statement, "steps", stepColumns);
-      backupTable(statement, "step_analysis", stepAnalysisColumns, "step_id");
+      backupTable(statement, "step_analysis", stepAnalysisColumns, "step_id", "steps");
       backupTable(statement, "strategies", strategyColumns);
       backupTable(statement, "datasets", datasetColumns);
       backupTable(statement, "user_baskets", basketColumns);
       backupTable(statement, "favorites", favoriteColumns);
-      backupTable(statement, "dataset_values", datasetValueColumns, "dataset_id");
+      backupTable(statement, "dataset_values", datasetValueColumns, "dataset_id", "datasets");
 
       removeGuest(statement, "dataset_values", "dataset_id IN (SELECT dataset_id FROM " + userSchema +
           "datasets WHERE " + deleteCondtion + ")");
@@ -185,18 +185,19 @@ public class BackupUser extends BaseCLI {
   }
 
   private void backupTable(Statement statement, String table, String columns) throws SQLException {
-    backupTable(statement, table, columns, "user_id");
+    backupTable(statement, table, columns, "user_id", "users");
   }
 
-  private void backupTable(Statement statement, String table, String columns, String keyColumn)
-      throws SQLException {
+  private void backupTable(Statement statement, String table, String columns, String keyColumn,
+      String keyTable) throws SQLException {
     LOG.info("****IN BACKUPTABLE******  " + table);
     String fromTable = userSchema + table;
     String toTable = backupSchema + table;
+    keyTable = backupSchema + keyTable;
 
     // copy all rows into backup
     int count = statement.executeUpdate("INSERT INTO " + toTable + "(" + columns + ") SELECT " + columns +
-        " FROM " + fromTable);
+        " FROM " + fromTable + " WHERE " + keyColumn + " IN (SELECT " + keyColumn + " FROM " + keyTable + ")");
     LOG.info(count + " rows inserted");
   }
 
