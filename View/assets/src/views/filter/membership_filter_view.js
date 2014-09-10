@@ -20,7 +20,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     render: function() {
       this.$el.html(this.template(this.model.attributes));
-      this.$el.tooltip({ title: this.model.get('value'), placement: 'left', delay: 400 });
+      // this.$el.tooltip({ title: this.model.get('value'), placement: 'left', delay: 400 });
       this.$el.toggleClass('selected', this.model.get('selected'));
       return this;
     },
@@ -130,9 +130,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
           return new MemberView({
             model: member,
             controller: this.controller
-          }).render();
+          });
         }.bind(this));
 
+      _.invoke(this.memberViews, 'render');
       this.$('tbody').append(_.pluck(this.memberViews, 'el'));
 
       // activate Read more link if text is overflowed
