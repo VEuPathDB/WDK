@@ -196,8 +196,10 @@ public class BackupUser extends BaseCLI {
     keyTable = backupSchema + keyTable;
 
     // copy all rows into backup
-    int count = statement.executeUpdate("INSERT INTO " + toTable + "(" + columns + ") SELECT " + columns +
-        " FROM " + fromTable + " WHERE " + keyColumn + " IN (SELECT " + keyColumn + " FROM " + keyTable + ")");
+    String sql = "INSERT INTO " + toTable + "(" + columns + ") SELECT " + columns + " FROM " + fromTable;
+    if (!table.equals("users"))
+      sql += " WHERE " + keyColumn + " IN (SELECT " + keyColumn + " FROM " + keyTable + ")";
+    int count = statement.executeUpdate(sql);
     LOG.info(count + " rows inserted");
   }
 
