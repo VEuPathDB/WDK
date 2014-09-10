@@ -88,7 +88,7 @@ wdk.namespace('wdk.controllers', function(ns) {
       var metadataPromises = initialFields.map(this.getMetadata.bind(this));
 
       RSVP.all(metadataPromises).then(function() {
-        this.filterService.filters.reset(options.filters);
+        this.filterService.filters.set(options.filters);
         this.$el
           .append(this.itemsView.render().el)
           .append(this.filterView.render().el);

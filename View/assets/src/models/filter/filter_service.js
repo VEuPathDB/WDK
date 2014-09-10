@@ -30,8 +30,8 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.filterChangeSet = [];
       this.filters = new Filters();
 
-      this.listenTo(this.filters, 'add remove reset', function(m) { this.filterChangeSet.push(m); });
-      this.listenTo(this.filters, 'add remove reset', _.debounce(this.applyFilters, 100));
+      this.listenTo(this.filters, 'add remove', function(m) { this.filterChangeSet.push(m); });
+      this.listenTo(this.filters, 'add remove', _.debounce(this.applyFilters, 100));
     },
 
     applyFilters: function() {
