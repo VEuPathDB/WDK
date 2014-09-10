@@ -47,6 +47,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var initArgs = [].slice.call(arguments, 1);
       this.filterService = filterService;
       this.memberViews = [];
+      this.members = new Backbone.Collection();
       wdk.views.View.apply(this, initArgs);
     },
 
@@ -55,6 +56,26 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.options = options;
       this.listenTo(filters, 'add', _.partial(this.handleFilterUpdate, true));
       this.listenTo(filters, 'remove', _.partial(this.handleFilterUpdate, false));
+      this.listenTo(this.members, 'change:selected', _.debounce(function() {
+        var type = this.model.get('type');
+        var values = this.members.where({selected: true}).map(function(member) {
+          return type === 'number'
+            ? Number(member.get('value'))
+            : member.get('value');
+        });
+        var filters = this.filterService.filters;
+
+        filters.remove(filters.where({ field: this.model.get('term') }), { origin: this });
+
+        if (values.length) {
+          filters.add({
+            field: this.model.get('term'),
+            operation: this.model.get('filter'),
+            values: values
+          }, { origin: this });
+        }
+      }, 50));
+
     },
 
     handleFilterUpdate: function(isSelected, filter, filters, options) {
@@ -75,36 +96,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     render: function() {
       var field = this.model;
-      var filterService = this.filterService;
       var filter = this.controller.getFieldFilter(field);
       var filterValues = filter ? filter.get('values') : [];
-      var members = this.members = new Backbone.Collection();
-
-      this.$el.html(this.template({
-        field: this.model.attributes,
-        options: this.options
-      }));
-
-      members.on('change:selected', _.debounce(function() {
-        var type = this.model.get('type');
-        var values = members.where({selected: true}).map(function(member) {
-          return type === 'number'
-            ? Number(member.get('value'))
-            : member.get('value');
-        });
-        var filters = filterService.filters;
-
-        filters.remove(filters.where({ field: field.get('term') }), { origin: this });
-
-        if (values.length) {
-          filters.add({
-            field: field.get('term'),
-            operation: field.get('filter'),
-            values: values
-          }, { origin: this });
-        }
-      }.bind(this), 50));
-
 
       var distribution = this.model.get('distribution');
       var counts = _.pluck(distribution, 'count');
@@ -112,13 +105,18 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var scale = _.max(counts) + 10;
       var size = counts.reduce(function(acc, count){ return acc + count; });
 
+      this.$el.html(this.template({
+        field: this.model.attributes,
+        options: this.options
+      }));
+
       this.memberViews = distribution
         .map(function(valueDist) {
           var value = valueDist.value;
           var count = valueDist.count;
           var fcount = valueDist.filteredCount || 0;
 
-          var member = members.add({
+          var member = this.members.add({
             value: value,
             count: count,
             percent: (count / size * 100).toFixed(2),
@@ -168,7 +166,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     didRemove: function() {
-      _.invoke(this.memberViews, 'remove');
+      //_.invoke(this.memberViews, 'remove');
     }
 
   });
