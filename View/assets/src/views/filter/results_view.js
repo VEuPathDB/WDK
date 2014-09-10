@@ -118,7 +118,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     handleColumnVisibility: function(column, visible) {
       if (!visible) {
         this.controller.abortMetadataRequest(column);
-        this._metadataFetchCount--;
+        if (--this._metadataFetchCount === 0) this.queueRender();
         return this;
       }
 
