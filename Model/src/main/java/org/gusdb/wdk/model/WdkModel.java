@@ -478,14 +478,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
-    // initialize authentication factory
-    // set the max active as half of the model's configuration
-
-    appDb = new DatabaseInstance(DB_INSTANCE_APP, appDbConfig);
-    appDb.initialize();
-
-    userDb = new DatabaseInstance(DB_INSTANCE_USER, userDbConfig);
-    userDb.initialize();
+    appDb = new DatabaseInstance(appDbConfig).initialize(DB_INSTANCE_APP);
+    userDb = new DatabaseInstance(userDbConfig).initialize(DB_INSTANCE_USER);
 
     resultFactory = new ResultFactory(this);
     userFactory = new UserFactory(this);
