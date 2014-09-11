@@ -61,25 +61,18 @@ public class SanityTester {
     public int questionsFailed = 0;
     
     public String getSummaryLine(TestFilter testFilter) {
-
       String result = isFailedOverall() ? "FAILED" : "PASSED";
-
       int totalPassed = queriesPassed + recordsPassed + questionsPassed;
       int totalFailed = queriesFailed + recordsFailed + questionsFailed;
-
-      StringBuffer resultLine = new StringBuffer("***Sanity test summary***" + NL);
-      resultLine.append("TestFilter: " + testFilter.getOriginalString() + NL);
-      resultLine.append("Total Passed: " + totalPassed + NL);
-      resultLine.append("Total Failed: " + totalFailed + NL);
-      resultLine.append("   " + queriesPassed + " queries passed, "
-          + queriesFailed + " queries failed" + NL);
-      resultLine.append("   " + recordsPassed + " records passed, "
-          + recordsFailed + " records failed" + NL);
-      resultLine.append("   " + questionsPassed + " questions passed, "
-          + questionsFailed + " questions failed" + NL);
-      resultLine.append("Sanity Test " + result + NL);
-      
-      return resultLine.toString();
+      return new StringBuilder()
+          .append("TestFilter: " + testFilter.getOriginalString() + NL)
+          .append("Total Passed: " + totalPassed + NL)
+          .append("Total Failed: " + totalFailed + NL)
+          .append("   " + queriesPassed + " queries passed, " + queriesFailed + " queries failed" + NL)
+          .append("   " + recordsPassed + " records passed, " + recordsFailed + " records failed" + NL)
+          .append("   " + questionsPassed + " questions passed, " + questionsFailed + " questions failed" + NL)
+          .append("Sanity Test " + result + NL)
+          .toString();
     }
 
     public boolean isFailedOverall() {
@@ -126,7 +119,8 @@ public class SanityTester {
         for (Query query : querySet.getQueries()) {
           if (!query.getDoNotTest()) {
             LOG.debug("   Building tests for Query " + query.getName() + " using " + query.getParamValuesSets().size() + " ParamValuesSets");
-            for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
+            //FIXME for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
+            ParamValuesSet paramValuesSet = query.getDefaultParamValuesSet();
               switch (queryType) {
                 case VOCAB:
                   tests.add(new VocabQueryTest(user, querySet, query, paramValuesSet));
@@ -144,7 +138,7 @@ public class SanityTester {
                   LOG.debug("QuerySet " + querySet.getName() + " with type " +
                       queryType + " is not sanity testable.  Skipping...");
               }
-            }
+            //}
           }
         }
       }
@@ -180,12 +174,12 @@ public class SanityTester {
 
   public List<TestResult> runTests() throws Exception {
     List<TestResult> results = new ArrayList<>();
-    for (int i = 0; i < _tests.size(); i++) {
-      ElementTest element = _tests.get(i);
+    for (int i = 1; i <= _tests.size(); i++) {
+      ElementTest element = _tests.get(i-1);
 
       if (_testFilter.filterOutTest(i)) continue;
 
-      LOG.info(" [test: " + i + "] " + element.getTestName());
+      LOG.info(" [test: " + i + "/" + _tests.size() + "] " + element.getTestName());
 
       if (_indexOnly) continue;
 
@@ -193,13 +187,9 @@ public class SanityTester {
       TestResult result = new TestResult(element);
       try {
         result = element.test(_stats);
-        if (result.isPassed()) {
-          result.setPrefix("");
-          result.setStatus(" passed.");
-        }
       }
       catch (Exception e) {
-        result.setReturned(" It threw an exception.");
+        result.setReturned("Exception thrown");
         result.setCaughtException(e);
       }
 
@@ -208,7 +198,7 @@ public class SanityTester {
 
       // dump test result
       if (!result.isPassed() || !_failuresOnly) {
-        LOG.info(result.getResultString());
+        LOG.info(NL + result.getResultString());
       }
     }
 

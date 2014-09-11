@@ -85,9 +85,8 @@ public class AttributeQueryTest extends QueryTest {
     SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
         params, true, 0, new LinkedHashMap<String, String>());
 
-    String sql = "select count (*) from (select distinct "
-        + paramValuesSet.getNamesAsString() + " from ("
-        + instance.getUncachedSql() + ") f1) f2";
+    String sql = "select count (*) from" +
+        "(select distinct * from (" + instance.getUncachedSql() + "))";
 
     DataSource dataSource = query.getWdkModel().getAppDb().getDataSource();
     ResultSet resultSet = null;

@@ -52,11 +52,15 @@ public class SanityTesterCLI {
       List<TestResult> results = sanityTester.runTests();
       
       if (!indexOnly) {
+        System.out.println(new StringBuilder().append(NL)
+            .append("Sanity Test Complete.  Results Overview:").append(NL).toString());
         for (TestResult result : results) {
           if (!result.isPassed() || !failuresOnly) {
-            System.out.println(result.getResultString());
+            System.out.println(result.getShortResultString());
           }
         }
+        System.out.println(new StringBuilder().append(NL)
+            .append("Results Summary:").append(NL).toString());
         System.out.println(sanityTester.getSummaryLine());
         if (sanityTester.isFailedOverall()) exitCode = 1;
       }

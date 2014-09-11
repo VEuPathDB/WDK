@@ -367,9 +367,8 @@ public class SanityTester {
     // "missing <defaultTestParamValues> for querySet "
     // + query.getQuerySet().getName());
     // }
-    String sql = "select count (*) from (select distinct "
-        + paramValuesSet.getNamesAsString() + " from ("
-        + instance.getUncachedSql() + ") f1) f2";
+    String sql = "select count(*) from " +
+        "(select distinct * from (" + instance.getUncachedSql() + "))";
 
     DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     ResultSet resultSet = null;
