@@ -64,21 +64,15 @@ public class QueryTest implements ElementTest {
 
   @Override
   public TestResult test(Statistics stats) throws Exception {
-
     int sanityMin = getMinRows();
     int sanityMax = getMaxRows();
-
     TestResult result = new TestResult(this);
-    
     try {
+      result.setExpected("Expect [" + sanityMin + " - " + sanityMax + "] rows" +
+          ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
       int count = runQuery(_user, _query, _paramValuesSet, result);
+      result.setReturned(count + " rows returned");
       result.setPassed(count >= sanityMin && count <= sanityMax);
-      result.setReturned(" It returned " + count + " rows. ");
-
-      if (sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) {
-        result.setExpected("Expected (" + sanityMin + " - " + sanityMax + ") ");
-      }
-
       return result;
     }
     finally {

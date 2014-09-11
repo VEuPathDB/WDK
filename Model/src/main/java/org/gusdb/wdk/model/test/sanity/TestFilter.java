@@ -49,18 +49,23 @@ public class TestFilter {
   }
   
   private final String _originalString;
-  private List<Range> _ranges;
+  private final List<Range> _ranges;
   
   public TestFilter(String testFilterString) throws NumberFormatException {
-    _originalString = testFilterString;
-    _ranges = parseFilterString(testFilterString);
+    if (testFilterString == null || testFilterString.trim().isEmpty()) {
+      _originalString = "";
+      _ranges = new ArrayList<>();
+    }
+    else {
+      _originalString = testFilterString;
+      _ranges = parseFilterString(testFilterString);
+    }
   }
 
   private static List<Range> parseFilterString(String listStr) {
     try {
       LOG.debug("Parsing filter ranges: " + listStr);
       List<Range> ranges = new ArrayList<>();
-      if (listStr == null || listStr.trim().isEmpty()) return ranges;
       listStr = listStr.replaceAll("\\s", "");
 
       LOG.debug("Filter string not empty.  Translated string: " + listStr);

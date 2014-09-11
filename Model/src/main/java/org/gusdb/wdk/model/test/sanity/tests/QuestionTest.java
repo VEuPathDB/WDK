@@ -39,16 +39,15 @@ public class QuestionTest implements ElementTest {
 
   @Override
   public TestResult test(Statistics stats) throws Exception {
-
-    TestResult result = new TestResult(this);
     int sanityMin = _paramValuesSet.getMinRows();
     int sanityMax = _paramValuesSet.getMaxRows();
-
+    TestResult result = new TestResult(this);
+    result.setExpected("Expect [" + sanityMin + " - " + sanityMax + "] rows" +
+        ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
     try {
       _question.getQuery().setIsCacheable(false);
       AnswerValue answerValue = _question.makeAnswerValue(_user,
           _paramValuesSet.getParamValues(), true, 0);
-
       int resultSize = answerValue.getResultSize();
 
       // get the summary attribute list
@@ -63,12 +62,8 @@ public class QuestionTest implements ElementTest {
         }
       }
 
+      result.setReturned(resultSize + " rows returned");
       result.setPassed(resultSize >= sanityMin && resultSize <= sanityMax);
-
-      result.setReturned(" It returned " + resultSize + " rows. ");
-      if (sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS)
-        result.setExpected("Expected (" + sanityMin + " - " + sanityMax + ") ");
-
       return result;
     }
     finally {
