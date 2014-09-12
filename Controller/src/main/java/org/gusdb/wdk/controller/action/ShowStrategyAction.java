@@ -160,6 +160,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             WdkModelException {
         logger.debug("output JSON error message: " + ex);
 
+        response.setHeader("Content-Type", "application/json");
+
         JSONObject jsMessage = new JSONObject();
         outputCommon(user, jsMessage);
 
@@ -201,6 +203,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             SQLException, IOException {
         logger.debug("output JSON out-of-sync message...");
 
+        response.setHeader("Content-Type", "application/json");
+
         Map<Integer, StrategyBean> strategies = getModifiedStrategies(user,
                 state);
 
@@ -220,6 +224,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             throws JSONException, NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, IOException {
         logger.debug("output JSON dup-name-error message...");
+
+        response.setHeader("Content-Type", "application/json");
 
         Map<Integer, StrategyBean> strategies = getModifiedStrategies(user,
                 state);
@@ -242,6 +248,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException, IOException {
         logger.debug("output JSON success message without strategy");
+
+        response.setHeader("Content-Type", "application/json");
 
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
