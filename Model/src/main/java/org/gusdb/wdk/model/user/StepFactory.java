@@ -558,6 +558,7 @@ public class StepFactory {
 
   // get left child id, right child id in here
   Step loadStep(User user, int stepId) throws WdkModelException {
+    logger.debug("Loading step#" + stepId + "....");
     ResultSet rsStep = null;
     String sql = "SELECT * FROM " + userSchema + TABLE_STEP + " WHERE " + COLUMN_STEP_ID + " = ?";
     try {
