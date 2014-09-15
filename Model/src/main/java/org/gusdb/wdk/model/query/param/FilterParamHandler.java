@@ -59,6 +59,7 @@ public class FilterParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toRawValue(User user, String stableValue, Map<String, String> contextValues) {
+    stableValue = normalizeStableValue(stableValue);
     return stableValue;
   }
 
@@ -78,6 +79,8 @@ public class FilterParamHandler extends AbstractParamHandler {
     if (stableValue == null || stableValue.length() == 0)
       return stableValue;
 
+    stableValue = normalizeStableValue(stableValue);
+
     try {
       JSONObject jsValue = new JSONObject(stableValue);
       JSONArray jsTerms = jsValue.getJSONArray(TERMS_KEY);
@@ -94,7 +97,7 @@ public class FilterParamHandler extends AbstractParamHandler {
       if (param.isNoTranslation()) {
         return stableValue;
       }
-      
+
       for (String term : terms) {
         if (!cache.containsTerm(term))
           continue;
@@ -124,6 +127,7 @@ public class FilterParamHandler extends AbstractParamHandler {
   @Override
   public String toSignature(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException {
+    stableValue = normalizeStableValue(stableValue);
     // make sure to get a sorted stable value;
     try {
       JSONObject jsValue = new JSONObject(stableValue);
@@ -164,6 +168,7 @@ public class FilterParamHandler extends AbstractParamHandler {
 
       stableValue = param.getDefault();
     }
+    stableValue = normalizeStableValue(stableValue);
     return stableValue;
   }
 
@@ -184,33 +189,27 @@ public class FilterParamHandler extends AbstractParamHandler {
     Set<String> values = new HashSet<>();
     if (stableValue == null) { // stable value not set, use default
       stableValue = aeParam.getDefault(user, contextValues);
-      if (stableValue != null) {
-        // don't validate default, just use it as is.
-        for (String term : stableValue.split(",")) {
-          values.add(term.trim());
-        }
-      }
     }
-    else { // stable value set, check if any of them are invalid
-      Set<String> invalidValues = new HashSet<>();
-      JSONObject jsValue = new JSONObject(stableValue);
-      JSONArray jsTerms = jsValue.getJSONArray(TERMS_KEY);
-      for (int i = 0; i < jsTerms.length(); i++) {
-        String term = jsTerms.getString(i);
-        if (displayMap.containsKey(term))
-          values.add(term);
-        else
-          invalidValues.add(term);
-      }
-      // store the invalid values
-      String[] invalids = invalidValues.toArray(new String[0]);
-      Arrays.sort(invalids);
-      requestParams.setAttribute(param.getName() + Param.INVALID_VALUE_SUFFIX, invalids);
+    stableValue = normalizeStableValue(stableValue);
+    Set<String> invalidValues = new HashSet<>();
+    JSONObject jsValue = new JSONObject(stableValue);
+    JSONArray jsTerms = jsValue.getJSONArray(TERMS_KEY);
+    for (int i = 0; i < jsTerms.length(); i++) {
+      String term = jsTerms.getString(i);
+      if (displayMap.containsKey(term))
+        values.add(term);
+      else
+        invalidValues.add(term);
     }
+    // store the invalid values
+    String[] invalids = invalidValues.toArray(new String[0]);
+    Arrays.sort(invalids);
+    requestParams.setAttribute(param.getName() + Param.INVALID_VALUE_SUFFIX, invalids);
 
     // set the stable & raw value
     if (stableValue != null)
       requestParams.setParam(param.getName(), stableValue);
+
     if (values.size() > 0) {
       String[] rawValue = values.toArray(new String[0]);
       requestParams.setArray(param.getName(), rawValue);
@@ -226,8 +225,31 @@ public class FilterParamHandler extends AbstractParamHandler {
   @Override
   public String getDisplayValue(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException {
+    stableValue = normalizeStableValue(stableValue);
     JSONObject jsValue = new JSONObject(stableValue);
     JSONArray jsFilters = jsValue.getJSONArray(FILTERS_KEY);
     return jsFilters.toString();
+  }
+
+  private String normalizeStableValue(String stableValue) {
+    JSONObject jsValue;
+    if (!stableValue.startsWith("{")) {
+      jsValue = new JSONObject();
+      jsValue.put(FILTERS_KEY, new JSONArray());
+
+      JSONArray jsTerms = new JSONArray();
+      for (String term : stableValue.split(",")) {
+        jsTerms.put(term.trim());
+      }
+      jsValue.put(TERMS_KEY, jsTerms);
+    }
+    else {
+      jsValue = new JSONObject(stableValue);
+      if (!jsValue.has(FILTERS_KEY))
+        jsValue.put(FILTERS_KEY, new JSONArray());
+      if (!jsValue.has(TERMS_KEY))
+        jsValue.put(TERMS_KEY, new JSONArray());
+    }
+    return jsValue.toString();
   }
 }
