@@ -115,6 +115,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
         .dataTable();
     },
 
+    // TODO controller should listen for the column visibility change and do
+    // this. This means the controller will be responsible for calling render.
+    //
+    // As it is, this view has to be concerned with how the controller is
+    // getting metadata.
     handleColumnVisibility: function(column, visible) {
       if (!visible) {
         this.controller.abortMetadataRequest(column);
@@ -126,8 +131,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.controller.getMetadata(column)
         .then(function() {
           if (--this._metadataFetchCount === 0) this.queueRender();
-        }.bind(this))
-        ['catch'](function(err) {
+        }.bind(this),
+        function(err) {
           if (err.statusText != 'abort') {
             throw err;
           }
