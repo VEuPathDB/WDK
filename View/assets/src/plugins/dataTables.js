@@ -23,14 +23,14 @@ wdk.util.namespace("window.wdk.plugin", function(ns, $) {
       var $this = $(this),
           sorting = $this.data("sorting"),
           dataTableOpts = {
-            aoColumns: null,
-            sScrollX: "100%",
-            sScrollY: "600px",
-            bScrollCollapse: true,
-            bPaginate: false,
-            bJQueryUI: true,
-            oLanguage: {
-              sSearch: "Filter:"
+            columns: null,
+            scrollX: "100%",
+            SScrollY: "600px",
+            scrollCollapse: true,
+            paging: false,
+            jQueryUI: true,
+            language: {
+              search: "Filter:"
             }
           };
 

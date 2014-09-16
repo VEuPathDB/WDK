@@ -20,7 +20,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     render: function() {
       this.$el.html(this.template(this.model.attributes));
-      this.$el.tooltip({ title: this.model.get('value'), placement: 'left', delay: 400 });
+      // this.$el.tooltip({ title: this.model.get('value'), placement: 'left', delay: 400 });
       this.$el.toggleClass('selected', this.model.get('selected'));
       return this;
     },
@@ -47,27 +47,35 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var initArgs = [].slice.call(arguments, 1);
       this.filterService = filterService;
       this.memberViews = [];
+      this.members = new Backbone.Collection();
       wdk.views.View.apply(this, initArgs);
     },
 
     initialize: function(options) {
       var filters = this.filterService.filters;
-      var filteredData = this.filterService.filteredData;
       this.options = options;
-
-      // Selection does not require rendering...
       this.listenTo(filters, 'add', _.partial(this.handleFilterUpdate, true));
       this.listenTo(filters, 'remove', _.partial(this.handleFilterUpdate, false));
-      this.listenTo(filteredData, 'reset', function(data, options) {
-        var fields = options.filterChangeSet
-          .map(function(filter) {
-            return filter.get('field');
-          });
+      this.listenTo(this.members, 'change:selected', _.debounce(function() {
+        var type = this.model.get('type');
+        var values = this.members.where({selected: true}).map(function(member) {
+          return type === 'number'
+            ? Number(member.get('value'))
+            : member.get('value');
+        });
+        var filters = this.filterService.filters;
 
-        if (!_.contains(fields, this.model.get('term'))) {
-          this.render();
+        filters.remove(filters.where({ field: this.model.get('term') }), { origin: this });
+
+        if (values.length) {
+          filters.add({
+            field: this.model.get('term'),
+            operation: this.model.get('filter'),
+            values: values
+          }, { origin: this });
         }
-      });
+      }, 50));
+
     },
 
     handleFilterUpdate: function(isSelected, filter, filters, options) {
@@ -87,75 +95,44 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
-      var _this = this;
       var field = this.model;
-      var filterService = this.filterService;
-      var filter = filterService.filters.findWhere({
-        field: field.get('term')
-      });
+      var filter = this.controller.getFieldFilter(field);
       var filterValues = filter ? filter.get('values') : [];
 
-      // unfiltered dist
-      //var values = field.get('values');
-      var values = filterService.getFieldValues(field);
-      var counts = _.countBy(values);
-
-      // Use _.uniq(values) instead of _.keys(counts)
-      // so that we can handle non-String values.
-      // This is important for "undefined" metadata.
-      var names = field.get('type') === 'number'
-        ? _.uniq(values).map(Number).sort(function(a, b) { return a - b; })
-        : _.uniq(values).sort();
+      var distribution = this.model.get('distribution');
+      var counts = _.pluck(distribution, 'count');
 
       var scale = _.max(counts) + 10;
-
-      // filtered dist
-      //var fvalues = field.get('filteredValues');
-      var fvalues = filterService.getFieldFilteredValues(field);
-      var fcounts = _.countBy(fvalues);
+      var size = counts.reduce(function(acc, count){ return acc + count; });
 
       this.$el.html(this.template({
         field: this.model.attributes,
         options: this.options
       }));
 
-      var members = this.members = new Backbone.Collection();
+      this.memberViews = distribution
+        .map(function(valueDist) {
+          var value = valueDist.value;
+          var count = valueDist.count;
+          var fcount = valueDist.filteredCount || 0;
 
-      _(names).forEach(function(name) {
-        var count = counts[name];
-        var fcount = fcounts[name] || 0;
-        var member = members.add({
-          value: name,
-          count: count,
-          percent: (count / values.length * 100).toFixed(2),
-          distribution: (count / scale * 100).toFixed(2),
-          filteredDistribution: (fcount / scale * 100).toFixed(2),
-          selected: !!(_.contains(filterValues, name))
-        });
-        var memberView = new MemberView({ model: member }).render();
-        _this.$('tbody').append(memberView.$el);
-        _this.memberViews.push(memberView);
-      });
+          var member = this.members.add({
+            value: value,
+            count: count,
+            percent: (count / size * 100).toFixed(2),
+            distribution: (count / scale * 100).toFixed(2),
+            filteredDistribution: (fcount / scale * 100).toFixed(2),
+            selected: !!(_.contains(filterValues, value))
+          });
 
-      members.on('change:selected', _.debounce(function() {
-        var type = _this.model.get('type');
-        var values = members.where({selected: true}).map(function(member) {
-          return type === 'number'
-            ? Number(member.get('value'))
-            : member.get('value');
-        });
-        var filters = filterService.filters;
+          return new MemberView({
+            model: member,
+            controller: this.controller
+          });
+        }.bind(this));
 
-        filters.remove(filters.where({ field: field.get('term') }), { origin: _this });
-
-        if (values.length) {
-          filters.add({
-            field: field.get('term'),
-            operation: field.get('filter'),
-            values: values
-          }, { origin: _this });
-        }
-      }, 50));
+      _.invoke(this.memberViews, 'render');
+      this.$('tbody').append(_.pluck(this.memberViews, 'el'));
 
       // activate Read more link if text is overflowed
       var p = this.$('.description p').get(0);
@@ -163,6 +140,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         this.$('.description .read-more').addClass('visible');
       }
 
+      // add border and scrollbar when members a long
       var panel = this.$('.membership-table-panel');
       if (panel.get(0).scrollHeight > panel.get(0).clientHeight) {
         panel.addClass('overflowed');
@@ -188,7 +166,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     didRemove: function() {
-      _.invoke(this.memberViews, 'remove');
+      //_.invoke(this.memberViews, 'remove');
     }
 
   });

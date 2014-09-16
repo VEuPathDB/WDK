@@ -66,6 +66,8 @@ public class ShowRecordViewAction extends Action {
         } else {
             Map<String, RecordView> views = recordClass.getRecordViews();
             view = views.get(viewName);
+            if (view == null)
+              throw new WdkUserException("The view \"" + viewName + "\" doesn't exist in record " + rcName);
         }
 
         // process the view handler

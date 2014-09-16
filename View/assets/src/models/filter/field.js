@@ -5,7 +5,8 @@ wdk.namespace('wdk.models.filter', function(ns) {
     idAttribute: 'term',
 
     defaults: {
-      filteredValues: []
+      filteredValues: [],
+      display: false
     },
 
     select: function() {

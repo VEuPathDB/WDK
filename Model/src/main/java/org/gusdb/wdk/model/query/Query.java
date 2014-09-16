@@ -315,6 +315,14 @@ public abstract class Query extends WdkModelBase {
     paramValuesSets.add(paramValuesSet);
   }
 
+  public ParamValuesSet getDefaultParamValuesSet() throws WdkModelException {
+    ParamValuesSet paramValues = new ParamValuesSet();
+    for (Param param : getParams()) {
+      paramValues.put(param.getName(), param.getDefault());
+    }
+    return paramValues;
+  }
+
   public List<ParamValuesSet> getParamValuesSets() throws WdkModelException {
     updateParamValuesSetsWithDefaults();
     return paramValuesSets;

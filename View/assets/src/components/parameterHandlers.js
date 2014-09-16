@@ -15,16 +15,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     // need to trigger the click event so that the stage is set correctly on revise.
     element.find("#operations input[type='radio']:checked").click();
-
-    // remove invalid values from select2 inputs
-    element.closest('form').on('submit', function() {
-      var $select2Container = element.find('select2-container');
-      var values = $select2Container.next().val();
-
-      if (values) {
-        $select2Container('val', values.split(','));
-      }
-    });
   }
 
   //==============================================================================
@@ -132,26 +122,22 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
 
       $.getJSON(sendReqUrl)
-        .then(createFilterParam.bind(null, $param))
-        .done(function(){ $param.find('.loading').hide(); });
+        .then(createFilterParam.bind(null, $param, questionName));
     });
   }
 
   //==============================================================================
-  function createFilterParam($param, filterData) {
+  function createFilterParam($param, questionName, filterData) {
     var form = $param.closest('form');
-    // var dataId = $param.data('data-id');
-    var name = $param.data('name');
+    var title = $param.data('title');
+    var name = $param.attr('name');
     console.time('intialize render :: ' + name);
     var defaultColumns = $param.data('default-columns');
     var trimMetadataTerms = $param.data('trim-metadata-terms');
     var input = $param.find('input');
-    var spec = filterData;
     var previousValue;
 
-    defaultColumns = defaultColumns
-                     ? defaultColumns.split(/\s+/)
-                     : undefined;
+    defaultColumns = defaultColumns ? defaultColumns.split(/\s+/) : [];
 
     // get previous values
     try {
@@ -169,91 +155,69 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     // parse data from <script>
     // var jsonContainer = $(node).find('script[type="application/json"][id="' + dataId + '"]');
     // console.time('parse JSON :: ' + name);
-    // var spec = JSON.parse(jsonContainer.html());
+    // var filterData = JSON.parse(jsonContainer.html());
     // console.timeEnd('parse JSON :: ' + name);
 
-    console.time('validation not null queries :: ' + name);
-    // validation
-    [ 'metadata', 'metadataSpec', 'values' ]
-      .forEach(function(prop) {
-        var msg;
-        if (_.isEmpty(spec[prop])) {
-          msg = 'Invalid data: ' + prop + ' may not be empty.';
-          alert(msg);
-          throw new Error(msg);
-        }
+    // console.time('validation not null queries :: ' + name);
+    // // validation
+    // [ 'metadata', 'metadataSpec', 'values' ]
+    //   .forEach(function(prop) {
+    //     var msg;
+    //     if (_.isEmpty(filterData[prop])) {
+    //       msg = 'Invalid data: ' + prop + ' may not be empty.';
+    //       alert(msg);
+    //       throw new Error(msg);
+    //     }
+    //   });
+    // console.timeEnd('validation not null queries :: ' + name);
+
+    // console.time('massage data :: ' + name);
+    // filterData = parseFilterData(filterData);
+    // console.timeEnd('massage data :: ' + name);
+
+    var fields = _.keys(filterData.metadataSpec)
+      .map(function(name) {
+        return _.extend({
+          //filterable: _.contains(usedMetadata, name),
+          term: name,
+          display: name,
+          visible: _.contains(defaultColumns, name)
+        }, filterData.metadataSpec[name]);
       });
-    console.timeEnd('validation not null queries :: ' + name);
 
-    console.time('massage data :: ' + name);
-    spec = parseFilterData(spec);
-    console.timeEnd('massage data :: ' + name);
-    _.extend(spec, { title: name });
-
-    if (previousValue) {
-      _.extend(spec, { filters: previousValue.filters });
-    }
-
-    console.time('init filter service :: ' + name);
-    // instantiate the filter service
-    var filterService = new wdk.models.filter.LocalFilterService(spec, {
-      parse: true,
-      root: 'metadata'
+    var filterParam = new wdk.controllers.FilterParam({
+      el: $param,
+      data: filterData.values,
+      metadata: filterData.metadata,
+      fields: fields,
+      filters: previousValue && previousValue.filters,
+      ignored: previousValue && previousValue.ignored,
+      trimMetadataTerms: trimMetadataTerms,
+      defaultColumns: defaultColumns,
+      title: title,
+      name: name,
+      questionName: questionName
     });
-    console.timeEnd('init filter service :: ' + name);
 
-    $param.data('filterService', filterService);
-
-    // set ignore: true for filteredData not in previousValues.values
-    if (previousValue) {
-      previousValue.ignored.forEach(function(id) {
-        filterService.filteredData.get(id).set('ignored', true);
-      });
-    }
-
-    // listen for change to filteredData and update input value
-    filterService.filteredData.on('reset change', function() {
-      var values = filterService.filteredData.where({ ignored: false })
-        .map(function(d) { return d.get('term'); });
-      var ignored = filterService.filteredData.where({ ignored: true })
-        .map(function(d) { return d.get('term'); });
-      var value = {
-        values: values,
-        ignored: ignored,
-        filters: filterService.filters
-      };
+    filterParam.on('change:value', function(filterParam, value) {
       input.val(JSON.stringify(value));
     });
 
-    console.time('init filter views :: ' + name);
-    // create views
-    var itemsView = new wdk.views.filter.FilterItemsView(filterService, { model: filterService.filters });
-    var view = new wdk.views.filter.FilterView({
-      model: filterService,
-      defaultColumns: defaultColumns,
-      trimMetadataTerms: trimMetadataTerms
+    filterParam.on('ready', function() {
+      $param.find('.loading').hide();
     });
-    console.timeEnd('init filter views :: ' + name);
-
-    // attach views
-    $param.find('.filter-param')
-      .append(itemsView.el)
-      .append(view.el);
-
-    itemsView.render();
-    view.render(); //.collapse(true);
 
     form.on('submit', function(e) {
-      if (filterService.filteredData.length === 0) {
+      var filteredData = filterParam.getSelectedData();
+      if (filteredData.length === 0) {
         e.preventDefault();
-        e.stopPropagation();
         $param.find('.ui-state-error').remove();
         $param.prepend(
           '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">' +
           'Please select ' + name + ' to continue.' +
           '</div>'
         );
-        filterService.filteredData.once('reset', function() {
+        filterParam.once('change:value', function() {
           $param.find('.ui-state-error').remove();
         });
       }
@@ -263,7 +227,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   function updateFilterParam(paramNode, data) {
-   paramNode.data('filterService').reset(data);
+    paramNode.data('filterService').reset(data);
   }
 
   function parseFilterData(filterData) {
@@ -402,6 +366,16 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           if (keepOpen) $input.select2('open');
         });
     }
+
+    // remove invalid values from select2 inputs
+    $param.closest('form').on('submit', function() {
+      var $select2Container = $param.find('select2-container');
+      var values = $select2Container.next().val();
+
+      if (values) {
+        $select2Container('val', values.split(','));
+      }
+    });
   }
 
   // TODO Delete chosen-based function when we know select2-based is adequate.
@@ -717,68 +691,68 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     if (!hasValue) return;
     
     // get dependent param and question name, contruct url from them
-      var dependentParamSelector = "#" + paramName + 
-          "aaa > div.dependentParam[name='" + paramName + "']";
-      dependentParam = element.find(dependentParamSelector);
-      var questionName = dependentParam.closest("form")
-          .find("input:hidden[name=questionFullName]").val();
-      var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
-          '&name=' + paramName + '&dependedValue=' + JSON.stringify(dependedValues);
+    var dependentParamSelector = "#" + paramName + 
+        "aaa > div.dependentParam[name='" + paramName + "']";
+    dependentParam = element.find(dependentParamSelector);
+    var questionName = dependentParam.closest("form")
+        .find("input:hidden[name=questionFullName]").val();
+    var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
+        '&name=' + paramName + '&dependedValue=' + JSON.stringify(dependedValues);
 
-      if (dependentParam.is('[data-type="type-ahead"]')) {
-        sendReqUrl = sendReqUrl + '&json=true';
-        // dependentParam.find('.loading').show();
+    if (dependentParam.is('[data-type="type-ahead"]')) {
+      sendReqUrl = sendReqUrl + '&json=true';
+      // dependentParam.find('.loading').show();
 
-        return $.getJSON(sendReqUrl)
-          .then(function(data) {
-            // createAutoComplete(data, paramName);
-            createFilteredSelect(data, paramName, dependentParam);
-          })
-          .done(function() {
-            element.find(".param[name='" + paramName + "']").attr("ready", "");
-            dependentParam
-              .attr('ready', '')
-              .find('input')
-                .removeAttr('disabled')
-                .end()
-              .find('.loading')
-                .hide();
-          });
-
-      } else if (dependentParam.is('[data-type="filter-param"]')) {
-        sendReqUrl = sendReqUrl + '&json=true';
-        return $.getJSON(sendReqUrl)
-          .then(parseFilterData)
-          .then(updateFilterParam.bind(null, dependentParam))
-          .done(function() {
-            dependentParam.find('input').removeAttr('disabled');
-            element.find(".param[name='" + paramName + "']").attr("ready", "");
-          });
-      } else {
-        return $.ajax({
-          url: sendReqUrl,
-          type: "POST",
-          data: {},
-          dataType: "html",
-          success: function(data) {
-            var newContent = $(".param",data);
-
-            if (newContent.length > 0) {
-              dependentParam.html(newContent.html());
-            } else {
-              // this case is specifically for checkbox trees
-              //   calling .html() on response erases javascript, so insert directly
-              dependentParam.html(data);
-            }
-
-            element.find(".param[name='" + paramName + "']").attr("ready", "");
-            dependentParam.change();
-          },
-          error: function (jqXHR, textStatus, errorThrown) {
-            alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
-          }
+      return $.getJSON(sendReqUrl)
+        .then(function(data) {
+          // createAutoComplete(data, paramName);
+          createFilteredSelect(data, paramName, dependentParam);
+        })
+        .done(function() {
+          element.find(".param[name='" + paramName + "']").attr("ready", "");
+          dependentParam
+            .attr('ready', '')
+            .find('input')
+              .removeAttr('disabled')
+              .end()
+            .find('.loading')
+              .hide();
         });
-      }
+
+    } else if (dependentParam.is('[data-type="filter-param"]')) {
+      sendReqUrl = sendReqUrl + '&json=true';
+      return $.getJSON(sendReqUrl)
+        .then(parseFilterData)
+        .then(updateFilterParam.bind(null, dependentParam))
+        .done(function() {
+          dependentParam.find('input').removeAttr('disabled');
+          element.find(".param[name='" + paramName + "']").attr("ready", "");
+        });
+    } else {
+      return $.ajax({
+        url: sendReqUrl,
+        type: "POST",
+        data: {},
+        dataType: "html",
+        success: function(data) {
+          var newContent = $(".param",data);
+
+          if (newContent.length > 0) {
+            dependentParam.html(newContent.html());
+          } else {
+            // this case is specifically for checkbox trees
+            //   calling .html() on response erases javascript, so insert directly
+            dependentParam.html(data);
+          }
+
+          element.find(".param[name='" + paramName + "']").attr("ready", "");
+          dependentParam.change();
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
+        }
+      });
+    }
   }
 
   //==============================================================================

@@ -30,22 +30,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function(options) {
       var filters = this.filterService.filters;
-      var filteredData = this.filterService.filteredData;
       this.options = options;
-
-      // Selection does not require rendering...
       this.listenTo(filters, 'add', this.addFilter);
       this.listenTo(filters, 'remove', this.removeFilter);
-      this.listenTo(filteredData, 'reset', function(data, options) {
-        var fields = options.filterChangeSet
-          .map(function(filter) {
-            return filter.get('field');
-          });
-
-        if (!_.contains(fields, this.model.get('term'))) {
-          this.render();
-        }
-      });
     },
 
     addFilter: function(filter, filters, options) {
@@ -72,41 +59,43 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     render: function() {
       var field = this.model;
-      var filterService = this.filterService;
-      var filter = filterService.filters.findWhere({
-        field: field.get('term')
-      });
+      var filter = this.controller.getFieldFilter(field);
       var filterValues = filter ? filter.pick('min', 'max') : null;
 
-      //var values = field.get('values').filter(notUnk).map(Number);
-      var values = _.reject(filterService.getFieldValues(field).map(Number), _.isNaN);
+      var distribution = this.model.get('distribution')
+        .filter(function(item) { return _.isNumber(item.value); });
 
-      var distribution = _.countBy(values);
-      var xdata = _.keys(distribution).map(Number);
-      var ydata = _.values(distribution).map(Number);
+      var size = distribution.reduce(function(acc, item) {
+        return acc + item.count;
+      }, 0);
 
-      //var fdistribution = _(field.get('filteredValues').filter(notUnk)).countBy();
-      var fvalues = _.without(filterService.getFieldFilteredValues(field), undefined).map(Number);
+      var series = distribution
+        .reduce(function(acc, item) {
+          if (_.isUndefined(item.count)) return acc;
+          return acc.concat([ [ Number(item.value), Number(item.count) ] ]);
+        }, []);
 
-      var fdistribution = _.countBy(fvalues);
-      var xfdata = _.keys(fdistribution).map(Number);
-      var yfdata = _.values(fdistribution).map(Number);
+      var fSeries = distribution
+        .reduce(function(acc, item) {
+          if (_.isUndefined(item.filteredCount)) return acc;
+          return acc.concat([ [ Number(item.value), Number(item.filteredCount) ] ]);
+        }, []);
 
+      var values = _.pluck(distribution, 'value');
       var min = this.min = _.min(values);
       var max = this.max = _.max(values);
-      var sum = _(values).reduce(function(sum, num) {
-        return sum + num;
+      var sum = distribution.reduce(function(acc, item) {
+        return acc + (item.value * item.count);
       }, 0);
-      var avg = (sum / _.size(values)).toFixed(2);
+      var avg = (sum / size).toFixed(2);
 
-      var padding = (max - min) * 0.5;
-      var barWidth = (max - min) * 0.01;
+      var barWidth = (max - min) * 0.005;
 
       var seriesData = [{
-        data: _.zip(xdata, ydata),
+        data: series,
         color: '#000'
       },{
-        data: _.zip(xfdata, yfdata),
+        data: fSeries,
         color: 'red',
         hoverable: false
       }];
@@ -121,8 +110,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
           }
         },
         xaxis: {
-          min: min - padding,
-          max: max + padding,
+          min: Math.min(min, 0),
+          max: Math.ceil(max + barWidth),
           tickLength: 0
         },
         grid: {
@@ -235,7 +224,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
       this.$min.val(min);
       this.$max.val(max);
-      this.setSelectionTotal(null);
+      this.setSelectionTotal();
     },
 
     handlePlotSelected: function(event, ranges) {
@@ -263,7 +252,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.$min.val(null);
       this.$max.val(null);
 
-      this.setSelectionTotal(null);
+      this.setSelectionTotal();
 
       filters.remove(filters.where({ field: field.get('term') }), { origin: this });
     },
@@ -282,7 +271,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       filters.remove(filters.where({ field: field.get('term') }), { origin: this });
 
       if (min === null && max === null) {
-        this.setSelectionTotal(null);
+        this.setSelectionTotal();
       } else {
         var filter = filters.add({
           field: field.get('term'),
@@ -312,9 +301,11 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     setSelectionTotal: function(filter) {
       if (filter) {
-        var selectionTotal = this.filterService.applyRangeFilter(filter,
-          this.filterService.data).length;
-        this.$('.selection-total').html('(' + selectionTotal + ' items selected)');
+        this.filterService.getFilteredData({ filters: [ filter ] })
+          .then(function(filteredData) {
+            this.$('.selection-total')
+              .html('(' + filteredData.length + ' items selected)');
+          }.bind(this));
       } else {
         this.$('.selection-total').empty();
       }

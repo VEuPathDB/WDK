@@ -3,6 +3,7 @@ var filterByFlag = require('./helpers').filterByFlag;
 
 var glob = require('../node_modules/grunt/node_modules/glob');
 var externalRegex = /^(https?:)?\/\//;
+var now = Date.now();
 
 function expandGlob(files, pattern) {
   // var files = [];
@@ -27,6 +28,10 @@ module.exports = function(grunt) {
 
     var scriptLoaderStr = scripts.map(function(script) {
       var line;
+
+      // break the cache always
+      script = script + '?_=' + now;
+
       if (externalRegex.test(script)) {
         line = 'document.writeln(\'<script src="' + script + '">\\x3c/script>\');\n';
       } else {
