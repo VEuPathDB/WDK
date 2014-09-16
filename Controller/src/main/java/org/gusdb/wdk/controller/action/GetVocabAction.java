@@ -18,6 +18,8 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
 import org.gusdb.wdk.controller.form.QuestionForm;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -30,58 +32,23 @@ public class GetVocabAction extends Action {
 
   private static final Logger logger = Logger.getLogger(GetVocabAction.class);
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @seeorg.apache.struts.action.Action#execute(org.apache.struts.action. ActionMapping,
-   * org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest,
-   * javax.servlet.http.HttpServletResponse)
-   */
   @Override
   public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
       HttpServletResponse response) throws Exception {
     logger.trace("Entering GetVocabAction...");
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
     try {
-      String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-      wdkModel.validateQuestionFullName(qFullName);
-      String paramName = request.getParameter("name");
-
-      // the dependent values are a JSON representation of {name: [values],
-      // name: [values],...}
-      Map<String, String> dependedValues = new LinkedHashMap<>();
-      String values = request.getParameter("dependedValue");
-      if (values != null && values.length() > 0) {
-        JSONObject jsValues = new JSONObject(values);
-        @SuppressWarnings("unchecked")
-        Iterator<String> keys = jsValues.keys();
-        while (keys.hasNext()) {
-          String pName = keys.next();
-
-          JSONArray jsArray = jsValues.getJSONArray(pName);
-          StringBuilder buffer = new StringBuilder();
-          for (int i = 0; i < jsArray.length(); i++) {
-            if (buffer.length() > 0)
-              buffer.append(",");
-            buffer.append(jsArray.getString(i));
-          }
-          dependedValues.put(pName, buffer.toString());
-        }
-      }
-
-      boolean getJson = Boolean.valueOf(request.getParameter("json"));
-      boolean getXml = Boolean.valueOf(request.getParameter("xml"));
-      QuestionBean wdkQuestion = wdkModel.getQuestion(qFullName);
-      EnumParamBean param = (EnumParamBean) wdkQuestion.getParamsMap().get(paramName);
-
-      param.setDependedValues(dependedValues);
+      QuestionBean question = getQuestion(request, wdkModel);
+      EnumParamBean param = getParam(request, question);
 
       UserBean user = ActionUtility.getUser(servlet, request);
       QuestionForm qForm = (QuestionForm) form;
       RequestParams requestParams = new QuestionRequestParams(request, qForm);
-      param.prepareDisplay(user, requestParams, dependedValues);
+      param.prepareDisplay(user, requestParams);
       request.setAttribute("vocabParam", param);
 
+      boolean getJson = Boolean.valueOf(request.getParameter("json"));
+      boolean getXml = Boolean.valueOf(request.getParameter("xml"));
       if (getJson) {    // output json string directly
         response.setContentType("application/json");
         PrintWriter writer = response.getWriter();
@@ -108,5 +75,43 @@ public class GetVocabAction extends Action {
       ex.printStackTrace();
       throw ex;
     }
+  }
+  
+  protected QuestionBean getQuestion(HttpServletRequest request, WdkModelBean wdkModel) throws WdkUserException, WdkModelException {
+      String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+      wdkModel.validateQuestionFullName(qFullName);
+      QuestionBean question = wdkModel.getQuestion(qFullName);
+      return question;
+  }
+  
+  protected EnumParamBean getParam(HttpServletRequest request, QuestionBean question) {
+    String paramName = request.getParameter("name");
+
+    // the dependent values are a JSON representation of {name: [values],
+    // name: [values],...}
+    Map<String, String> dependedValues = new LinkedHashMap<>();
+    String values = request.getParameter("dependedValue");
+    if (values != null && values.length() > 0) {
+      JSONObject jsValues = new JSONObject(values);
+      @SuppressWarnings("unchecked")
+      Iterator<String> keys = jsValues.keys();
+      while (keys.hasNext()) {
+        String pName = keys.next();
+
+        JSONArray jsArray = jsValues.getJSONArray(pName);
+        StringBuilder buffer = new StringBuilder();
+        for (int i = 0; i < jsArray.length(); i++) {
+          if (buffer.length() > 0)
+            buffer.append(",");
+          buffer.append(jsArray.getString(i));
+        }
+        dependedValues.put(pName, buffer.toString());
+      }
+    }
+
+    EnumParamBean param = (EnumParamBean) question.getParamsMap().get(paramName);
+    param.setDependedValues(dependedValues);
+    
+    return param;
   }
 }

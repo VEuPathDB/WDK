@@ -16,11 +16,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     emptyTemplate: wdk.templates['filter/field_detail_empty.handlebars'],
 
-    delegateTemplate: wdk.templates['filter/field_detail_delegate.handlebars'],
-
     initialize: function() {
-      this.listenTo(this.model.fields, 'change', this.changeField);
-      this.listenTo(this.model.fields, 'reset', this.renderEmpty);
+      this.listenTo(this.controller.fields, 'change', this.changeField);
+      this.listenTo(this.controller.fields, 'reset', this.renderEmpty);
     },
 
     render: function(field) {
@@ -30,7 +28,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     renderEmpty: function() {
-      this.$el.html(this.emptyTemplate(this.model.attributes));
+      this.$el.html(this.emptyTemplate());
       return this;
     },
 
@@ -46,7 +44,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.delegateView = new Delegate(this.model, {
         el: this.el,
         model: field,
-        title: this.model.get('title')
+        controller: this.controller,
+        title: this.controller.title
       }).render();
 
       return this;

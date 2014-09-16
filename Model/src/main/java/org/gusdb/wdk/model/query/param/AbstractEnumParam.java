@@ -505,20 +505,20 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
 
-  public String[] convertToTerms(String termList) {
+  public String[] convertToTerms(String stableValue) {
     // the input is a list of terms
-    if (termList == null)
+    if (stableValue == null)
       return new String[0];
-
+    
     String[] terms;
     if (multiPick) {
-      terms = termList.split("[,]+");
+      terms = stableValue.split("[,]+");
       for (int i = 0; i < terms.length; i++) {
         terms[i] = terms[i].trim();
       }
     }
     else {
-      terms = new String[] { termList.trim() };
+      terms = new String[] { stableValue.trim() };
     }
     return terms;
   }
@@ -535,7 +535,7 @@ public abstract class AbstractEnumParam extends Param {
     if (!isSkipValidation()) {
       String[] terms = getTerms(user, stableValue, contextValues);
       logger.debug("param=" + getFullName() + " - validating: " + stableValue +
-          ", with dependedParamValues=" + FormatUtil.prettyPrint(contextValues));
+          ", with contextParamValues=" + FormatUtil.prettyPrint(contextValues));
 
       if (terms.length == 0 && !allowEmpty)
         throw new WdkUserException("At least one value for " + getPrompt() + " must be selected.");

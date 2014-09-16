@@ -699,6 +699,7 @@ b.strat_help_title > span {
 #query_form form {
   position: relative;
   margin-top:40px;
+  min-width: 1000px;
 }
 
 #query_form .dragHandle, .attributesList .dragHandle {

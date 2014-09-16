@@ -29,14 +29,17 @@
 }
 .filter-param .collapse-wrapper {
   display: inline-block;
-  position: relative;
-  top: 1.5em;
+  position: absolute;
+  top: .5em;
   left: 50%;
   z-index: 1;
 }
 .filter-param .expanded .ui-tabs-panel {
   padding: 0;
   box-shadow: 1px 1px #DDD;
+}
+.filter-view {
+  position: relative;
 }
 .range-filter .table tr {
   display: inline-block;
@@ -304,6 +307,10 @@
 .results {
   padding: 1em;
 }
+.results > button {
+  position: absolute;
+  right: 16px;
+}
 .results .table td {
   overflow: hidden;
   white-space: nowrap;
@@ -377,6 +384,8 @@
 .filter-param .summary {
   margin-top: 4px;
 }
+/*
 .filter-param .dataTables_wrapper {
   overflow-x: auto;
 }
+*/
