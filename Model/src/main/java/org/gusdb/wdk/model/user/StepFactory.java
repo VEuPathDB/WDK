@@ -1038,6 +1038,15 @@ public class StepFactory {
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);
     }
+    // copy step analysis instances from old step to new step
+    try {
+      wdkModel.getStepAnalysisFactory().copyAnalysisInstances(oldStep, newStep);
+    }
+    catch (WdkUserException e) {
+      // new step should be an exact copy of old, so this is a model exception if it's thrown
+      throw new WdkModelException("New step not analyzable by analysis present on old step.", e);
+    }
+    // create mapping from old step to new step
     stepIdsMap.put(oldStep.getStepId(), newStep.getStepId());
     newStep.setCollapsedName(oldStep.getCollapsedName());
     newStep.setCollapsible(oldStep.isCollapsible());
