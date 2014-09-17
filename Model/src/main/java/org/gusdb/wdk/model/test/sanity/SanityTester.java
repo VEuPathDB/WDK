@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.test.sanity;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +65,7 @@ public class SanityTester {
     public int questionsPassed = 0;
     public int questionsFailed = 0;
     public float questionsDuration = 0;
-    
+
     public String getSummaryLine(TestFilter testFilter) {
       String result = isFailedOverall() ? "FAILED" : "PASSED";
       int totalPassed = queriesPassed + recordsPassed + questionsPassed;
@@ -74,14 +75,18 @@ public class SanityTester {
           .append("TestFilter: " + testFilter.getOriginalString() + NL)
           .append("Total Passed: " + totalPassed + NL)
           .append("Total Failed: " + totalFailed + NL)
-          .append("Setup Duration: " + setupDuration + " seconds" + NL)
-          .append("Test Duration: " + testsDuration + " seconds" + NL)
-          .append("Total Duration: " + (setupDuration + testsDuration) + " seconds" + NL)
-          .append("   Over " + queriesDuration + " seconds, " + queriesPassed + " queries passed, " + queriesFailed + " queries failed" + NL)
-          .append("   Over " + recordsDuration + " seconds, " + recordsPassed + " records passed, " + recordsFailed + " records failed" + NL)
-          .append("   Over " + questionsDuration + " seconds, " + questionsPassed + " questions passed, " + questionsFailed + " questions failed" + NL)
+          .append("Setup Duration: " + fmt(setupDuration) + " seconds" + NL)
+          .append("Test Duration: " + fmt(testsDuration) + " seconds" + NL)
+          .append("Total Duration: " + fmt(setupDuration + testsDuration) + " seconds" + NL)
+          .append("   Over " + fmt(queriesDuration) + " seconds, " + queriesPassed + " queries passed, " + queriesFailed + " queries failed" + NL)
+          .append("   Over " + fmt(questionsDuration) + " seconds, " + questionsPassed + " questions passed, " + questionsFailed + " questions failed" + NL)
+          .append("   Over " + fmt(recordsDuration) + " seconds, " + recordsPassed + " records passed, " + recordsFailed + " records failed" + NL)
           .append("Sanity Test " + result + NL)
           .toString();
+    }
+
+    private static String fmt(float f) {
+      return new DecimalFormat("0.00").format(f);
     }
 
     public boolean isFailedOverall() {
