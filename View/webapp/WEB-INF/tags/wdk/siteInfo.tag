@@ -24,7 +24,7 @@
   var wdkConfig = {
     modelName: '${siteName}',
     version: ${wdkModel.model.buildNumber},
-    assetsUrl: '${applicationScope.assetsUrl}',
+    assetsUrl: '${applicationScope.assetsUrl ne null ? applicationScope.assetsUrl : pageContext.request.contextPath}',
     webappUrl: '${pageContext.request.contextPath}',
     guestUser: ${isGuest},
     exportBaseUrl: '${exportBaseUrl}',
