@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.test.sanity.tests.QuestionTest;
 import org.gusdb.wdk.model.test.sanity.tests.RecordClassTest;
 import org.gusdb.wdk.model.test.sanity.tests.TableQueryTest;
 import org.gusdb.wdk.model.test.sanity.tests.TableTotalQueryTest;
+import org.gusdb.wdk.model.test.sanity.tests.UncreateableTest;
 import org.gusdb.wdk.model.test.sanity.tests.VocabQueryTest;
 import org.gusdb.wdk.model.user.User;
 
@@ -119,26 +120,36 @@ public class SanityTester {
         for (Query query : querySet.getQueries()) {
           if (!query.getDoNotTest()) {
             LOG.debug("   Building tests for Query " + query.getName() + " using " + query.getParamValuesSets().size() + " ParamValuesSets");
-            //FIXME for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
-            ParamValuesSet paramValuesSet = query.getDefaultParamValuesSet();
-              switch (queryType) {
-                case VOCAB:
-                  tests.add(new VocabQueryTest(user, querySet, query, paramValuesSet));
-                  break;
-                case ATTRIBUTE:
-                  tests.add(new AttributeQueryTest(user, querySet, query, paramValuesSet));
-                  break;
-                case TABLE:
-                  tests.add(new TableQueryTest(user, querySet, query, paramValuesSet));
-                  // perform additional test for table queries
-                  tests.add(new TableTotalQueryTest(user, querySet, query, paramValuesSet));
-                default:
-                  // TABLE_TOTAL should never be a QuerySet's query type; it exists only for sanity tests.
-                  // All other query types are not sanity testable
-                  LOG.debug("QuerySet " + querySet.getName() + " with type " +
-                      queryType + " is not sanity testable.  Skipping...");
+            int numParamValuesSets = query.getNumParamValuesSets();
+            try {
+              for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
+                switch (queryType) {
+                  case VOCAB:
+                    tests.add(new VocabQueryTest(user, querySet, query, paramValuesSet));
+                    break;
+                  case ATTRIBUTE:
+                    tests.add(new AttributeQueryTest(user, querySet, query, paramValuesSet));
+                    break;
+                  case TABLE:
+                    tests.add(new TableQueryTest(user, querySet, query, paramValuesSet));
+                    // perform additional test for table queries
+                    tests.add(new TableTotalQueryTest(user, querySet, query, paramValuesSet));
+                  default:
+                    // TABLE_TOTAL should never be a QuerySet's query type; it exists only for sanity tests.
+                    // All other query types are not sanity testable
+                    LOG.debug("QuerySet " + querySet.getName() + " with type " +
+                        queryType + " is not sanity testable.  Skipping...");
+                }
               }
-            //}
+            }
+            catch (Exception e) {
+              // error while generating param values sets
+              LOG.error("Unable to generate paramValuesSets for query " + query.getName(), e);
+              // to keep the index correct, add already failed tests for each of the param values sets we expected
+              for (int i = 0; i < numParamValuesSets; i++) {
+                tests.add(new UncreateableTest(querySet, query, e));
+              }
+            }
           }
         }
       }
@@ -146,15 +157,26 @@ public class SanityTester {
   }
 
   private static void addQuestionSetTests(List<ElementTest> tests, WdkModel wdkModel,
-      User user, boolean skipWebSvcQueries) throws WdkModelException {
+      User user, boolean skipWebSvcQueries) {
     for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
       if (!questionSet.getDoNotTest()) {
         for (Question question : questionSet.getQuestions()) {
           Query query = question.getQuery();
           if (!(skipWebSvcQueries && query instanceof ProcessQuery) &&
               !query.getDoNotTest() && !query.getQuerySet().getDoNotTest()) {
-            for (ParamValuesSet paramValuesSet : question.getQuery().getParamValuesSets()) {
-              tests.add(new QuestionTest(user, question, paramValuesSet));
+            int numParamValuesSets = question.getQuery().getNumParamValuesSets();
+            try {
+              for (ParamValuesSet paramValuesSet : question.getQuery().getParamValuesSets()) {
+                tests.add(new QuestionTest(user, question, paramValuesSet));
+              }
+            }
+            catch (Exception e) {
+              // error while generating param values sets
+              LOG.error("Unable to generate paramValuesSets for question " + question.getName() + " (query=" + question.getQuery().getName() + ")", e);
+              // to keep the index correct, add already failed tests for each of the param values sets we expected
+              for (int i = 0; i < numParamValuesSets; i++) {
+                tests.add(new UncreateableTest(question, e));
+              }
             }
           }
         }
