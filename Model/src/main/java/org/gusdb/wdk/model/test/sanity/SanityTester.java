@@ -69,14 +69,14 @@ public class SanityTester {
       String result = isFailedOverall() ? "FAILED" : "PASSED";
       int totalPassed = queriesPassed + recordsPassed + questionsPassed;
       int totalFailed = queriesFailed + recordsFailed + questionsFailed;
-      float totalDuration = queriesDuration + recordsDuration + questionsDuration;
+      float testsDuration = queriesDuration + recordsDuration + questionsDuration;
       return new StringBuilder()
           .append("TestFilter: " + testFilter.getOriginalString() + NL)
           .append("Total Passed: " + totalPassed + NL)
           .append("Total Failed: " + totalFailed + NL)
           .append("Setup Duration: " + setupDuration + " seconds" + NL)
-          .append("Test Duration: " + totalDuration + " seconds" + NL)
-          .append("Total Duration: " + (setupDuration + totalDuration) + " seconds" + NL)
+          .append("Test Duration: " + testsDuration + " seconds" + NL)
+          .append("Total Duration: " + (setupDuration + testsDuration) + " seconds" + NL)
           .append("   Over " + queriesDuration + " seconds, " + queriesPassed + " queries passed, " + queriesFailed + " queries failed" + NL)
           .append("   Over " + recordsDuration + " seconds, " + recordsPassed + " records passed, " + recordsFailed + " records failed" + NL)
           .append("   Over " + questionsDuration + " seconds, " + questionsPassed + " questions passed, " + questionsFailed + " questions failed" + NL)

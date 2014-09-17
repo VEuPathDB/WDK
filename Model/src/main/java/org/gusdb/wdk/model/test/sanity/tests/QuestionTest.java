@@ -72,6 +72,7 @@ public class QuestionTest implements ElementTest {
     }
     finally {
       result.stopTimer();
+      stats.questionsDuration += result.getDurationSecs();
       if (result.isPassed()) {
         stats.questionsPassed++;
       }
