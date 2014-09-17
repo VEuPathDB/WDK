@@ -67,7 +67,7 @@ public class QueryTest implements ElementTest {
   }
 
   @Override
-  public TestResult test(Statistics stats) throws Exception {
+  public final TestResult test(Statistics stats) throws Exception {
     int sanityMin = getMinRows();
     int sanityMax = getMaxRows();
     TestResult result = new TestResult(this);
@@ -81,6 +81,7 @@ public class QueryTest implements ElementTest {
     }
     finally {
       result.stopTimer();
+      stats.queriesDuration += result.getDurationSecs();
       if (result.isPassed()) {
         stats.queriesPassed++;
       }

@@ -53,6 +53,7 @@ public class RecordClassTest implements ElementTest {
     }
     finally {
       result.stopTimer();
+      stats.recordsDuration += result.getDurationSecs();
       if (result.isPassed()) {
         stats.recordsPassed++;
       }

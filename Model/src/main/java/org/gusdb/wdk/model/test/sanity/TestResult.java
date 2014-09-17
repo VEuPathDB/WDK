@@ -36,7 +36,7 @@ public class TestResult {
   }
 
   public float getDurationSecs() {
-    return (_end <= _start ? -1L : _end - _start) / 1000F;
+    return (_end <= _start ? 0 : _end - _start) / 1000F;
   }
 
   public String getResultString() {
