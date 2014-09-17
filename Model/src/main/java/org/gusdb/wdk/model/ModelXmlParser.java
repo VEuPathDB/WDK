@@ -533,7 +533,7 @@ public class ModelXmlParser extends XmlParser {
 
     // configure general properties
     configureNode(digester, "*/property", WdkModelText.class, "addProperty");
-    digester.addCallMethod("*/property", "setValue", 0);
+    digester.addCallMethod("*/property", "setText", 0);
 
   }
 
