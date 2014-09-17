@@ -24,7 +24,7 @@ module.exports = function(grunt) {
         options: {
           namespace: 'wdk.templates',
           processName: function(filePath) {
-            return filePath.replace(/^src\/templates\//, '');
+            return filePath.replace(/^webapp\/wdk\/js\/templates\//, '');
           }
         },
         files: {
