@@ -53,11 +53,11 @@ public class TestResult {
   public String getShortResultString() {
     return "[test: " + getIndex() + "] " + getStatus(_passed) + " " +
         _test.getTestName() + " | " +
+        getDurationSecs() + " secs" + " | " +
         getExpected() + " | " +
-        getReturned() + " | " +
-        (getCaughtException() != null ?
-            "Threw " + getCaughtException().getClass().getSimpleName() :
-            "Took " + getDurationSecs() + " seconds");
+        getReturned() +
+        (getCaughtException() == null ? "" : " | " +
+            "Threw " + getCaughtException().getClass().getSimpleName());
   }
   
   private static String getStatus(boolean passed) {

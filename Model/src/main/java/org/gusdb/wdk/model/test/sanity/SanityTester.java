@@ -53,25 +53,33 @@ public class SanityTester {
   // statistics aggregator class
   public static class Statistics {
 
+    public float setupDuration = 0;
     public int testCount = 0;
     public int queriesPassed = 0;
     public int queriesFailed = 0;
+    public float queriesDuration = 0;
     public int recordsPassed = 0;
     public int recordsFailed = 0;
+    public float recordsDuration = 0;
     public int questionsPassed = 0;
     public int questionsFailed = 0;
+    public float questionsDuration = 0;
     
     public String getSummaryLine(TestFilter testFilter) {
       String result = isFailedOverall() ? "FAILED" : "PASSED";
       int totalPassed = queriesPassed + recordsPassed + questionsPassed;
       int totalFailed = queriesFailed + recordsFailed + questionsFailed;
+      float totalDuration = queriesDuration + recordsDuration + questionsDuration;
       return new StringBuilder()
           .append("TestFilter: " + testFilter.getOriginalString() + NL)
           .append("Total Passed: " + totalPassed + NL)
           .append("Total Failed: " + totalFailed + NL)
-          .append("   " + queriesPassed + " queries passed, " + queriesFailed + " queries failed" + NL)
-          .append("   " + recordsPassed + " records passed, " + recordsFailed + " records failed" + NL)
-          .append("   " + questionsPassed + " questions passed, " + questionsFailed + " questions failed" + NL)
+          .append("Setup Duration: " + setupDuration + " seconds" + NL)
+          .append("Test Duration: " + totalDuration + " seconds" + NL)
+          .append("Total Duration: " + (setupDuration + totalDuration) + " seconds" + NL)
+          .append("   Over " + queriesDuration + " seconds, " + queriesPassed + " queries passed, " + queriesFailed + " queries failed" + NL)
+          .append("   Over " + recordsDuration + " seconds, " + recordsPassed + " records passed, " + recordsFailed + " records failed" + NL)
+          .append("   Over " + questionsDuration + " seconds, " + questionsPassed + " questions passed, " + questionsFailed + " questions failed" + NL)
           .append("Sanity Test " + result + NL)
           .toString();
     }
@@ -95,7 +103,9 @@ public class SanityTester {
     _failuresOnly = failuresOnly;
     _testFilter = testFilter;
     _stats = new Statistics();
+    long testStart = System.currentTimeMillis();
     _tests = buildTestSequence(wdkModel, wdkModel.getSystemUser(), skipWebSvcQueries);
+    _stats.setupDuration = (System.currentTimeMillis() - testStart) / 1000F;
   }
 
   private static List<ElementTest> buildTestSequence(WdkModel wdkModel, User user, boolean skipWebSvcQueries)
@@ -211,6 +221,7 @@ public class SanityTester {
         result = element.test(_stats);
       }
       catch (Exception e) {
+        result.stopTimer();
         result.setReturned("Exception thrown");
         result.setCaughtException(e);
       }

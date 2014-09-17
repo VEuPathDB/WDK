@@ -47,6 +47,7 @@ public class UncreateableTest implements ElementTest {
     result.setPassed(false);
     result.setReturned("Could not be created");
     result.setCaughtException(_creationException);
+    result.stopTimer();
     return result;
   }
   
