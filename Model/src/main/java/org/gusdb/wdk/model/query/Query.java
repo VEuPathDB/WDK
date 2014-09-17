@@ -495,6 +495,11 @@ public abstract class Query extends WdkModelBase {
     resolved = true;
   }
 
+  public int getNumParamValuesSets() {
+    if (paramValuesSets.isEmpty()) return 1;
+    return paramValuesSets.size();
+  }
+
   private void updateParamValuesSetsWithDefaults() throws WdkModelException {
     ParamValuesSet querySetDefaults = querySet.getDefaultParamValuesSet();
     if (paramValuesSets.isEmpty()) {
