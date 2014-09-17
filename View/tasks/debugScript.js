@@ -19,15 +19,18 @@ function expandGlob(files, pattern) {
 }
 
 module.exports = function(grunt) {
-  grunt.registerTask('debugScript', 'Generate script tags for WDK files to load individually', function() {
+  grunt.registerTask('debugScript', 'Generate script tags for WDK files to load individually', function(dest) {
     var scripts = [].concat(
       filterByFlag('env', 'dev', wdkFiles.libs).reduce(expandGlob, []),
-      'wdk.templates.js',
+      'wdk/wdk.templates.js',
       filterByFlag('env', 'dev', wdkFiles.src).reduce(expandGlob, [])
     );
 
     var scriptLoaderStr = scripts.map(function(script) {
       var line;
+
+      // remove file base
+      script = script.replace(/^webapp\//, '');
 
       // break the cache always
       script = script + '?_=' + now;
@@ -35,13 +38,12 @@ module.exports = function(grunt) {
       if (externalRegex.test(script)) {
         line = 'document.writeln(\'<script src="' + script + '">\\x3c/script>\');\n';
       } else {
-        line = 'document.writeln(\'<script src="\' + wdkConfig.assetsUrl + \'/wdk/' +
-            script + '">\\x3c/script>\');\n';
+        line = 'document.writeln(\'<script src="\' + wdkConfig.assetsUrl + \'' + script + '">\\x3c/script>\');\n';
       }
       return line;
     }).join('');
 
-    grunt.file.write('dist/wdk/wdk.debug.js', scriptLoaderStr);
+    grunt.file.write(dest, scriptLoaderStr);
 
   });
 };

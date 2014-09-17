@@ -15,7 +15,7 @@ module.exports = function(grunt) {
     concat: {
       js: {
         src: helpers.filterByFlag('env', 'prod', wdkFiles.libs),
-        dest: 'dist/wdk/wdk.libs.js'
+        dest: 'dist/wdk/js/wdk.libs.js'
       }
     },
 
@@ -28,7 +28,7 @@ module.exports = function(grunt) {
           }
         },
         files: {
-          'dist/wdk/wdk.templates.js': ['src/templates/**/*.handlebars']
+          'dist/wdk/js/wdk.templates.js': ['webapp/wdk/js/templates/**/*.handlebars']
         }
       }
     },
@@ -42,63 +42,71 @@ module.exports = function(grunt) {
           drop_console: true
         },
         report: true,
-        sourceMap: 'dist/wdk/wdk.js.map',
+        sourceMap: 'dist/wdk/js/wdk.js.map',
         sourceMappingURL: 'wdk.js.map',
         // sourceMapPrefix: 1
       },
       wdk: {
         files: {
-          'dist/wdk/wdk.js': [].concat('dist/wdk/wdk.templates.js', wdkFiles.src),
+          'dist/wdk/js/wdk.js': [].concat('dist/wdk/js/wdk.templates.js', wdkFiles.src),
         }
       }
     },
 
     cssmin: {
       wdk: {
-        src: ['css/wdk.css'],
+        src: ['webapp/wdk/css/wdk.css'],
         dest: 'dist/wdk/css/wdk.min.css',
       },
       libs: {
-        src: ['css/wdk.libs.css'],
+        src: ['webapp/wdk/css/wdk.libs.css'],
         dest: 'dist/wdk/css/wdk.libs.min.css',
       }
     },
 
-    copy: {
-      js: {
-        files: [
-          {
-            expand: true,
-            //cwd: 'js',
-            src: ['src/**', 'lib/**'],
-            dest: 'dist/wdk'
-          }
-        ]
-      },
-      css: {
-        files: [
-          {
-            expand: true,
-            cwd: 'css',
-            src: ['**/*'],
-            dest: 'dist/wdk/css'
-          }
-        ]
-      },
-      images: {
-        files: [
-          {
-            expand: true,
-            cwd: 'images',
-            src: ['**/*'],
-            dest: 'dist/wdk/images'
-          }
-        ]
-      }
-    },
+    // copy: {
+    //   webapp: {
+    //     files: [{
+    //       expand: true,
+    //       cwd: 'webapp',
+    //       src: 'wdk/**',
+    //       dest: 'dist'
+    //     }]
+    //   },
+    //   js: {
+    //     files: [
+    //       {
+    //         expand: true,
+    //         //cwd: 'js',
+    //         src: ['src/**', 'lib/**'],
+    //         dest: 'dist/wdk'
+    //       }
+    //     ]
+    //   },
+    //   css: {
+    //     files: [
+    //       {
+    //         expand: true,
+    //         cwd: 'css',
+    //         src: ['**/*'],
+    //         dest: 'dist/wdk/css'
+    //       }
+    //     ]
+    //   },
+    //   images: {
+    //     files: [
+    //       {
+    //         expand: true,
+    //         cwd: 'images',
+    //         src: ['**/*'],
+    //         dest: 'dist/wdk/images'
+    //       }
+    //     ]
+    //   }
+    // },
 
     clean: {
-      dist: 'dist'
+      wdk: [ 'dist' ]
     }
 
   });
@@ -112,7 +120,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-handlebars');
 
-  grunt.registerTask('dist', ['jshint', 'clean', 'concat', 'handlebars', 'uglify', 'cssmin', 'copy', 'debugScript']);
+  grunt.registerTask('dist', ['jshint', 'clean', 'concat', 'handlebars', 'uglify', 'cssmin', 'debugScript:dist/wdk/js/wdk.debug.js']);
 
   grunt.registerTask('default', ['dist']);
 
