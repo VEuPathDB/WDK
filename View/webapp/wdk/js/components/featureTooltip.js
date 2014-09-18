@@ -34,7 +34,7 @@ wdk.namespace('wdk.components', function(ns, $) {
           text: text,
           // button: 'Got it!',
           title: '<img title="This is a new search!" alt="New feature icon" ' +
-                 'src="' + assetsUrl('/wdk/images/new-feature.png') + '"> ' +
+                 'src="' + assetsUrl('wdk/images/new-feature.png') + '"> ' +
                  title
         },
         style: {

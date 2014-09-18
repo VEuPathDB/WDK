@@ -60,7 +60,7 @@
 
     ui.tab.find("span:last").append('<img style="margin-left:4px; ' +
       'position: relative; top:2px;" src="' +
-      wdk.assetsUrl('/wdk/images/filterLoading.gif') + '"/>');
+      wdk.assetsUrl('wdk/images/filterLoading.gif') + '"/>');
 
     ui.jqXHR
       .done(function() {

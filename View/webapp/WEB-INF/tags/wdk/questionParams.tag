@@ -123,7 +123,7 @@
           <span style="font-weight:bold">Weight</span>
           <imp:image class="help-link" style="cursor:pointer"
             title="Optionally give this search a &quot;weight&quot; (for example 10, 200, -50, integer only). In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches."
-            src="/wdk/images/question.png" />
+            src="wdk/images/question.png" />
         </label>
         <div class="param-control">
           <input type="text" name="weight" maxlength="9" value="${weight}"/>
