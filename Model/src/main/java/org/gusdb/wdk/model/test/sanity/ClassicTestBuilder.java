@@ -39,36 +39,36 @@ public class ClassicTestBuilder implements TestBuilder {
   // statistics aggregator class
   public static class OriginalStatistics extends Statistics {
 
-    public int queriesPassed = 0;
-    public int queriesFailed = 0;
-    public float queriesDuration = 0;
-    public int recordsPassed = 0;
-    public int recordsFailed = 0;
-    public float recordsDuration = 0;
-    public int questionsPassed = 0;
-    public int questionsFailed = 0;
-    public float questionsDuration = 0;
+    private int _queriesPassed = 0;
+    private int _queriesFailed = 0;
+    private float _queriesDuration = 0;
+    private int _recordsPassed = 0;
+    private int _recordsFailed = 0;
+    private float _recordsDuration = 0;
+    private int _questionsPassed = 0;
+    private int _questionsFailed = 0;
+    private float _questionsDuration = 0;
 
     @Override
     public void processResult(ElementTest test, TestResult result) {
       @SuppressWarnings("unused") int a;
       if (test instanceof QueryTest) {
-        queriesDuration += result.getDurationSecs();
-        a = (result.isPassed() ? queriesPassed++ : queriesFailed++);
+        _queriesDuration += result.getDurationSecs();
+        a = (result.isPassed() ? _queriesPassed++ : _queriesFailed++);
       }
       else if (test instanceof QuestionTest) {
-        questionsDuration += result.getDurationSecs();
-        a = (result.isPassed() ? questionsPassed++ : questionsFailed++);
+        _questionsDuration += result.getDurationSecs();
+        a = (result.isPassed() ? _questionsPassed++ : _questionsFailed++);
       }
       else if (test instanceof RecordClassTest) {
-        recordsDuration += result.getDurationSecs();
-        a = (result.isPassed() ? recordsPassed++ : recordsFailed++);
+        _recordsDuration += result.getDurationSecs();
+        a = (result.isPassed() ? _recordsPassed++ : _recordsFailed++);
       }
       else if (test instanceof UncreateableTest) {
         // don't record duration; were unable to generate test
         switch (((UncreateableTest)test).getType()) {
-          case QUERY: queriesFailed++; break;
-          case QUESTION: questionsFailed++; break;
+          case QUERY: _queriesFailed++; break;
+          case QUESTION: _questionsFailed++; break;
         }
       }
     }
@@ -76,9 +76,9 @@ public class ClassicTestBuilder implements TestBuilder {
     @Override
     public String getSummaryLine(TestFilter testFilter) {
       String result = isFailedOverall() ? "FAILED" : "PASSED";
-      int totalPassed = queriesPassed + recordsPassed + questionsPassed;
-      int totalFailed = queriesFailed + recordsFailed + questionsFailed;
-      float testsDuration = queriesDuration + recordsDuration + questionsDuration;
+      int totalPassed = _queriesPassed + _recordsPassed + _questionsPassed;
+      int totalFailed = _queriesFailed + _recordsFailed + _questionsFailed;
+      float testsDuration = _queriesDuration + _recordsDuration + _questionsDuration;
       return new StringBuilder()
           .append("Tests Created: " + _testsCreated + NL)
           .append("Test Filter: " + testFilter.getOriginalString() + NL)
@@ -88,16 +88,16 @@ public class ClassicTestBuilder implements TestBuilder {
           .append("Setup Duration: " + fmt(_setupDuration) + " seconds" + NL)
           .append("Test Duration: " + fmt(testsDuration) + " seconds" + NL)
           .append("Total Duration: " + fmt(_setupDuration + testsDuration) + " seconds" + NL)
-          .append("   Over " + fmt(queriesDuration) + " seconds, " + queriesPassed + " queries passed, " + queriesFailed + " queries failed" + NL)
-          .append("   Over " + fmt(questionsDuration) + " seconds, " + questionsPassed + " questions passed, " + questionsFailed + " questions failed" + NL)
-          .append("   Over " + fmt(recordsDuration) + " seconds, " + recordsPassed + " records passed, " + recordsFailed + " records failed" + NL)
+          .append("   Over " + fmt(_queriesDuration) + " seconds, " + _queriesPassed + " queries passed, " + _queriesFailed + " queries failed" + NL)
+          .append("   Over " + fmt(_questionsDuration) + " seconds, " + _questionsPassed + " questions passed, " + _questionsFailed + " questions failed" + NL)
+          .append("   Over " + fmt(_recordsDuration) + " seconds, " + _recordsPassed + " records passed, " + _recordsFailed + " records failed" + NL)
           .append("Sanity Test " + result + NL)
           .toString();
     }
 
     @Override
     public boolean isFailedOverall() {
-      return (queriesFailed > 0 || recordsFailed > 0 || questionsFailed > 0);
+      return (_queriesFailed > 0 || _recordsFailed > 0 || _questionsFailed > 0);
     }
   }
 

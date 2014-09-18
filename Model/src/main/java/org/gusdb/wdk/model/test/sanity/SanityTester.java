@@ -29,7 +29,7 @@ public class SanityTester {
 
   private static final Logger LOG = Logger.getLogger(SanityTester.class);
 
-  private static final boolean USE_ORIGINAL_TEST_SETUP = false;
+  private static final boolean USE_CLASSIC_TEST_SETUP = true;
 
   public interface ElementTest {
     public String getTestName();
@@ -76,7 +76,7 @@ public class SanityTester {
     _failuresOnly = failuresOnly;
     _testFilter = testFilter;
     long testStart = System.currentTimeMillis();
-    TestBuilder testBuilder = (USE_ORIGINAL_TEST_SETUP ?
+    TestBuilder testBuilder = (USE_CLASSIC_TEST_SETUP ?
         new ClassicTestBuilder() : new TopDownTestBuilder());
     _stats = testBuilder.getNewStatisticsObj();
     _tests = testBuilder.buildTestSequence(wdkModel, wdkModel.getSystemUser(), skipWebSvcQueries);
