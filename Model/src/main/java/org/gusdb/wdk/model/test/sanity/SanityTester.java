@@ -45,6 +45,8 @@ public class SanityTester {
 
   private static final Logger LOG = Logger.getLogger(SanityTester.class);
 
+  private static final boolean SKIP_QUERY_TESTS = true;
+
   public interface ElementTest {
     public String getTestName();
     public TestResult test(Statistics stats) throws Exception;
@@ -121,9 +123,11 @@ public class SanityTester {
   private static List<ElementTest> buildTestSequence(WdkModel wdkModel, User user, boolean skipWebSvcQueries)
       throws WdkModelException {
     List<ElementTest> tests = new ArrayList<>();
-    addQuerySetTests(tests, wdkModel, user, QueryType.VOCAB);
-    addQuerySetTests(tests, wdkModel, user, QueryType.ATTRIBUTE);
-    addQuerySetTests(tests, wdkModel, user, QueryType.TABLE);
+    if (!SKIP_QUERY_TESTS) {
+      addQuerySetTests(tests, wdkModel, user, QueryType.VOCAB);
+      addQuerySetTests(tests, wdkModel, user, QueryType.ATTRIBUTE);
+      addQuerySetTests(tests, wdkModel, user, QueryType.TABLE);
+    }
     addQuestionSetTests(tests, wdkModel, user, skipWebSvcQueries);
     addRecordSetTests(tests, wdkModel, user);
     return tests;
