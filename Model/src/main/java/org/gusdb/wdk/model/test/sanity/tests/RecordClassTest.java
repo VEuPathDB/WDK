@@ -39,27 +39,15 @@ public class RecordClassTest implements ElementTest {
   public TestResult test(Statistics stats) throws Exception {
     TestResult result = new TestResult(this);
     result.setExpected("Expect to create RecordInstance");
-    try {
-      Map<String, String> paramValues = _paramValuesSet.getParamValues();
-      Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-      for (String key : paramValues.keySet()) {
-        pkValues.put(key, paramValues.get(key));
-      }
-      RecordInstance recordInstance = new RecordInstance(_user, _recordClass, pkValues);
-      recordInstance.print();
-      result.setReturned("Created RecordInstance");
-      result.setPassed(true);
-      return result;
+    Map<String, String> paramValues = _paramValuesSet.getParamValues();
+    Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+    for (String key : paramValues.keySet()) {
+      pkValues.put(key, paramValues.get(key));
     }
-    finally {
-      result.stopTimer();
-      stats.recordsDuration += result.getDurationSecs();
-      if (result.isPassed()) {
-        stats.recordsPassed++;
-      }
-      else {
-        stats.recordsFailed++;
-      }
-    }
+    RecordInstance recordInstance = new RecordInstance(_user, _recordClass, pkValues);
+    recordInstance.print();
+    result.setReturned("Created RecordInstance");
+    result.setPassed(true);
+    return result;
   }
 }
