@@ -486,9 +486,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   The following two functions don't appear to be used, but keeping around in case we need it. dmf
 
   function getInstructionsHtml() {
-    var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='" + wdk.assetsUrl('/wdk/images/lookUp2.png') + "' width='45px'/>"; 
+    var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='" + wdk.assetsUrl('wdk/images/lookUp2.png') + "' width='45px'/>"; 
     if ($("#tab_strategy_new").length > 0) {
-      arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='" + wdk.assetsUrl('/wdk/images/lookUp.png') + "' width='45px'/>" + arrow_image;
+      arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='" + wdk.assetsUrl('wdk/images/lookUp.png') + "' width='45px'/>" + arrow_image;
     }
     
     arrow_image += getInstructionsText();
@@ -1063,7 +1063,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       $('<div style="font-size: 120%;">' +
           '<h3 style="margin:0;padding:0">Warning</h3>' +
           '<p><img width="20" alt="filtering icon" src="' + 
-         wdk.assetsUrl('/wdk/images/filter-short.png') + '"/>' + 
+         wdk.assetsUrl('wdk/images/filter-short.png') + '"/>' + 
         ' Clicking this will change the gene ' + 
         ' results that were used to generate your analyses.' + 
          ' Analysis results for this and subsequent strategy steps will be lost.' +

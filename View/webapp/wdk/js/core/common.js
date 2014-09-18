@@ -619,7 +619,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   }
 
   function resolveAssetsUrls() {
-    $('img[data-assets-src]:not([src])').each(function() {
+    $('[data-assets-src]:not([src])').each(function() {
       $(this).attr('src', assetsUrl($(this).data('assets-src')));
     });
   }

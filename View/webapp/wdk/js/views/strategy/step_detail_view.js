@@ -93,7 +93,7 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       }
 
       if (this.$el.hasClass('crumb_name')) {
-        this.$el.children("img").attr("src",wdk.assetsUrl("/wdk/images/minus.gif"));
+        this.$el.children("img").attr("src",wdk.assetsUrl("wdk/images/minus.gif"));
       }
     },
 
