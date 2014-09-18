@@ -34,7 +34,7 @@ public class ClassicTestBuilder implements TestBuilder {
 
   private static final Logger LOG = Logger.getLogger(ClassicTestBuilder.class);
 
-  private static final boolean SKIP_QUERY_TESTS = true;
+  private static final boolean SKIP_QUERY_TESTS = false;
 
   // statistics aggregator class
   public static class OriginalStatistics extends Statistics {
