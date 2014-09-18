@@ -71,24 +71,12 @@ public class QueryTest implements ElementTest {
     int sanityMin = getMinRows();
     int sanityMax = getMaxRows();
     TestResult result = new TestResult(this);
-    try {
-      result.setExpected("Expect [" + sanityMin + " - " + sanityMax + "] rows" +
-          ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
-      int count = runQuery(_user, _query, _paramValuesSet, result);
-      result.setReturned(count + " rows returned");
-      result.setPassed(count >= sanityMin && count <= sanityMax);
-      return result;
-    }
-    finally {
-      result.stopTimer();
-      stats.queriesDuration += result.getDurationSecs();
-      if (result.isPassed()) {
-        stats.queriesPassed++;
-      }
-      else {
-        stats.queriesFailed++;
-      }
-    }
+    result.setExpected("Expect [" + sanityMin + " - " + sanityMax + "] rows" +
+        ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
+    int count = runQuery(_user, _query, _paramValuesSet, result);
+    result.setReturned(count + " rows returned");
+    result.setPassed(count >= sanityMin && count <= sanityMax);
+    return result;
   }
 
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet,

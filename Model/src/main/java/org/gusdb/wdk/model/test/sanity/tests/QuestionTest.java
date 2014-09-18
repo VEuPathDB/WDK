@@ -48,37 +48,25 @@ public class QuestionTest implements ElementTest {
     TestResult result = new TestResult(this);
     result.setExpected("Expect [" + sanityMin + " - " + sanityMax + "] rows" +
         ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
-    try {
-      _question.getQuery().setIsCacheable(false);
-      AnswerValue answerValue = _question.makeAnswerValue(_user,
-          _paramValuesSet.getParamValues(), true, 0);
-      int resultSize = answerValue.getResultSize();
+    _question.getQuery().setIsCacheable(false);
+    AnswerValue answerValue = _question.makeAnswerValue(_user,
+        _paramValuesSet.getParamValues(), true, 0);
+    int resultSize = answerValue.getResultSize();
 
-      // get the summary attribute list
-      Map<String, AttributeField> summary = answerValue.getSummaryAttributeFieldMap();
+    // get the summary attribute list
+    Map<String, AttributeField> summary = answerValue.getSummaryAttributeFieldMap();
 
-      // iterate through the page and try every summary attribute of each record
-      for (RecordInstance record : answerValue.getRecordInstances()) {
-        StringBuffer sb = new StringBuffer();
-        for (String attrName : summary.keySet()) {
-          sb.append(record.getAttributeValue(attrName));
-          sb.append('\t');
-        }
-      }
-
-      result.setReturned(resultSize + " rows returned");
-      result.setPassed(resultSize >= sanityMin && resultSize <= sanityMax);
-      return result;
-    }
-    finally {
-      result.stopTimer();
-      stats.questionsDuration += result.getDurationSecs();
-      if (result.isPassed()) {
-        stats.questionsPassed++;
-      }
-      else {
-        stats.questionsFailed++;
+    // iterate through the page and try every summary attribute of each record
+    for (RecordInstance record : answerValue.getRecordInstances()) {
+      StringBuffer sb = new StringBuffer();
+      for (String attrName : summary.keySet()) {
+        sb.append(record.getAttributeValue(attrName));
+        sb.append('\t');
       }
     }
+
+    result.setReturned(resultSize + " rows returned");
+    result.setPassed(resultSize >= sanityMin && resultSize <= sanityMax);
+    return result;
   }
 }
