@@ -55,6 +55,8 @@ public class SanityTester {
   public static class Statistics {
 
     public float setupDuration = 0;
+    public int testsCreated = 0;
+    public int testsRun = 0;
     public int testCount = 0;
     public int queriesPassed = 0;
     public int queriesFailed = 0;
@@ -72,7 +74,9 @@ public class SanityTester {
       int totalFailed = queriesFailed + recordsFailed + questionsFailed;
       float testsDuration = queriesDuration + recordsDuration + questionsDuration;
       return new StringBuilder()
-          .append("TestFilter: " + testFilter.getOriginalString() + NL)
+          .append("Tests Created: " + testsCreated + NL)
+          .append("Test Filter: " + testFilter.getOriginalString() + NL)
+          .append("Tests Run: " + testsRun + NL)
           .append("Total Passed: " + totalPassed + NL)
           .append("Total Failed: " + totalFailed + NL)
           .append("Setup Duration: " + fmt(setupDuration) + " seconds" + NL)
@@ -111,6 +115,7 @@ public class SanityTester {
     long testStart = System.currentTimeMillis();
     _tests = buildTestSequence(wdkModel, wdkModel.getSystemUser(), skipWebSvcQueries);
     _stats.setupDuration = (System.currentTimeMillis() - testStart) / 1000F;
+    _stats.testsCreated = _tests.size();
   }
 
   private static List<ElementTest> buildTestSequence(WdkModel wdkModel, User user, boolean skipWebSvcQueries)
@@ -223,6 +228,7 @@ public class SanityTester {
       // performing test
       TestResult result = new TestResult(element);
       try {
+        _stats.testsRun++;
         result = element.test(_stats);
       }
       catch (Exception e) {
