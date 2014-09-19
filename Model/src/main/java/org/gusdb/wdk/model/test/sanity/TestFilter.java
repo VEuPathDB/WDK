@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.test.sanity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -111,5 +112,30 @@ public class TestFilter {
 
   public String getOriginalString() {
     return _originalString;
+  }
+
+  public static String getFilterString(List<Integer> idList) {
+    if (idList == null || idList.isEmpty()) return "";
+    idList = new ArrayList<>(idList);
+    Collections.sort(idList);
+    StringBuilder str = new StringBuilder().append(idList.get(0));
+    int last = idList.get(0);
+    boolean lastIsNewRange = true;
+    for (int i = 1; i < idList.size(); i++) {
+      int nextId = idList.get(i);
+      if (nextId == last + 1) {
+        lastIsNewRange = false;
+      }
+      else {
+        if (!lastIsNewRange) {
+          str.append("-").append(last);
+        }
+        str.append(",").append(nextId);
+        lastIsNewRange = true;
+      }
+      last = nextId;
+    }
+    if (!lastIsNewRange) str.append("-").append(last);
+    return str.toString();
   }
 }
