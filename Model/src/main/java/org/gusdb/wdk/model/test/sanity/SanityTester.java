@@ -135,4 +135,13 @@ public class SanityTester {
   public boolean isFailedOverall() {
     return _stats.isFailedOverall();
   }
+
+  public static String getRerunLine(List<TestResult> results) {
+    List<Integer> failedTestIds = new ArrayList<>();
+    for (int i = 0; i < results.size(); i++) {
+      if (!results.get(i).isPassed()) failedTestIds.add(i+1);
+    }
+    return "To re-run failures, use filter string '" +
+        TestFilter.getFilterString(failedTestIds) + "'.";
+  }
 }
