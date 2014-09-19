@@ -5,12 +5,12 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
-import org.gusdb.wdk.model.query.param.EnumParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
@@ -23,6 +23,8 @@ import org.gusdb.wdk.model.test.sanity.tests.UncreateableTest;
 import org.gusdb.wdk.model.user.User;
 
 public class TopDownTestBuilder implements TestBuilder {
+
+  private static final Logger LOG = Logger.getLogger(TopDownTestBuilder.class);
 
   public static class QueryStatistics extends Statistics {
 
@@ -65,7 +67,6 @@ public class TopDownTestBuilder implements TestBuilder {
   public List<ElementTest> buildTestSequence(WdkModel wdkModel, User user, boolean skipWebSvcQueries)
       throws WdkModelException {
     List<ElementTest> tests = new ArrayList<>();
-    /*
     for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
       if (!questionSet.getDoNotTest()) {
         for (Question question : questionSet.getQuestions()) {
@@ -99,7 +100,6 @@ public class TopDownTestBuilder implements TestBuilder {
         }
       }
     }
-    */
     return tests;
   }
 
