@@ -3,16 +3,8 @@ var filterByFlag = require('./helpers').filterByFlag;
 
 var glob = require('../node_modules/grunt/node_modules/glob');
 var externalRegex = /^(https?:)?\/\//;
-var now = Date.now();
 
 function expandGlob(files, pattern) {
-  // var files = [];
-  // if (externalRegex.test(pattern)) {
-  //   files = files.concat(pattern);
-  // } else {
-  //   files = files.concat(glob.sync(pattern));
-  // }
-  // return files
   return externalRegex.test(pattern)
     ? files.concat(pattern)
     : files.concat(glob.sync(pattern));
@@ -31,9 +23,6 @@ module.exports = function(grunt) {
 
       // remove file base
       script = script.replace(/^webapp\//, '');
-
-      // break the cache always
-      script = script + '?_=' + now;
 
       if (externalRegex.test(script)) {
         line = 'document.writeln(\'<script src="' + script + '">\\x3c/script>\');\n';
