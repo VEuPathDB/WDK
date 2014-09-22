@@ -24,8 +24,7 @@
   <c:choose>
     <c:when test="${debug eq true}">
       <!-- load files in individual script tags -->
-      <jsp:useBean id="now" class="java.util.GregorianCalendar"/>
-      <imp:script src="wdk/js/wdk.debug.js?_=${now.timeInMillis}"/>
+      <imp:script src="wdk/js/wdk.debug.js"/>
     </c:when>
     <c:otherwise>
       <!-- WDK libraries and source files -->
