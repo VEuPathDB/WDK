@@ -198,10 +198,10 @@ wdk.namespace('wdk.controllers', function(ns) {
             // cache metadata and transform to a dict
             this.metadata[term] = this.data
               .reduce(function(acc, d) {
-                var value = _.result(metadata[d.term], 'value');
-                acc[d.term] = _.isUndefined(value)
-                  ? Field.UNKNOWN_VALUE
-                  : type == 'number' ? Number(value) : value;
+                var values = _.result(metadata[d.term], 'values');
+                acc[d.term] = _.isUndefined(values)
+                  ? [ Field.UNKNOWN_VALUE ]
+                  : type == 'number' ? values.map(Number) : values;
                 return acc;
               }, {});
             resolve(this.metadata[term]);
@@ -233,15 +233,16 @@ wdk.namespace('wdk.controllers', function(ns) {
           omit: [ term ]
         })
       }).then(function(results) {
+        var counts = _.countBy(_.flatten(_.values(results.metadata)));
         var filteredMetadata = results.filteredData
           .reduce(function(acc, fd) {
             acc[fd.term] = results.metadata[fd.term];
             return acc;
           }, {});
-        var counts = countByValues(results.metadata);
+        // var counts = countByValues(results.metadata);
         var filteredCounts = countByValues(filteredMetadata);
 
-        return _.uniq(_.values(results.metadata))
+        return _.uniq(_.flatten(_.values(results.metadata)))
           .sort(type == 'number' ? numericSort : stringSort)
           .map(function(value) {
             return {
