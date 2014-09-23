@@ -5,7 +5,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
   var MemberFilter = wdk.models.filter.MemberFilter;
   var RangeFilter = wdk.models.filter.RangeFilter;
 
-  var Field = wdk.models.filter.Field;
+  // var Field = wdk.models.filter.Field;
   var Filters = wdk.models.filter.Filters;
 
   /**
@@ -99,12 +99,17 @@ wdk.namespace('wdk.models.filter', function(ns) {
       var metadata = this.get('metadata')[field];
 
       var ret = data.filter(function(datum) {
-        var metadataValue = metadata[datum.term] || Field.UNKNOWN_VALUE;
+        var metadataValues = metadata[datum.term];
         var index = filterValues.length;
+        var vIndex;
 
         // Use a for loop for efficiency
+        outer:
         while(index--) {
-          if (filterValues[index] === metadataValue) break;
+          vIndex = metadataValues.length;
+          while(vIndex--) {
+            if (filterValues[index] === metadataValues[vIndex]) break outer;
+          }
         }
 
         return index > -1;
@@ -119,18 +124,21 @@ wdk.namespace('wdk.models.filter', function(ns) {
       var max = filter.get('max');
       var test;
 
+      var gteTest = _.partial(gte, min);
+      var lteTest = _.partial(lte, max);
+      var withinTest = _.partial(within, min, max);
+
       if (min !== null && max !== null) {
         test = function(datum) {
-          var v = metadata[datum.term];
-          return v >= min && v <= max;
+          return _.some(metadata[datum.term], withinTest);
         };
       } else if (min !== null) {
         test = function(datum) {
-          return metadata[datum.term] >= min;
+          return _.some(metadata[datum.term], gteTest);
         };
       } else if (max !== null) {
         test = function(datum) {
-          return metadata[datum.term] <= max;
+          return _.some(metadata[datum.term], lteTest);
         };
       }
 
@@ -138,6 +146,18 @@ wdk.namespace('wdk.models.filter', function(ns) {
     }
 
   });
+
+  function gte(min, value) {
+    return value >= min;
+  }
+
+  function lte(max, value) {
+    return value <= max;
+  }
+
+  function within(min, max, value) {
+    return gte(min, value) && lte(max, value);
+  }
 
   ns.FilterService = FilterService;
   ns.LocalFilterService = LocalFilterService;

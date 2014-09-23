@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -45,7 +46,7 @@ public class FilterParamBean extends EnumParamBean {
     return filterParam.getMetadata(user.getUser(), contextValues);
   }
 
-  public Map<String, String> getMetadata(String property) throws WdkModelException, WdkUserException {
+  public Map<String, List<String>> getMetadata(String property) throws WdkModelException, WdkUserException {
     return filterParam.getMetaData(user.getUser(), contextValues, property, getCache());
   }
 

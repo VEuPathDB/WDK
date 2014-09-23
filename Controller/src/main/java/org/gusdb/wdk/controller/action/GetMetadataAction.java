@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,12 +59,12 @@ public class GetMetadataAction extends GetVocabAction {
       param.getJsonValues();
 
 
-      Map<String, String> metadata = param.getMetadata(property);
+      Map<String, List<String>> metadata = param.getMetadata(property);
       JSONArray jsMetadata = new JSONArray();
       for (String sample : metadata.keySet()) {
         JSONObject jsSample = new JSONObject();
         jsSample.put("sample", sample);
-        jsSample.put("value", metadata.get(sample));
+        jsSample.put("values", metadata.get(sample));
         jsMetadata.put(jsSample);
       }
       
