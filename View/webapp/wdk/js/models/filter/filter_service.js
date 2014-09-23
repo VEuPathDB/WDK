@@ -126,11 +126,11 @@ wdk.namespace('wdk.models.filter', function(ns) {
         };
       } else if (min !== null) {
         test = function(datum) {
-          return metadata[datum.term][field] >= min;
+          return metadata[datum.term] >= min;
         };
       } else if (max !== null) {
         test = function(datum) {
-          return metadata[datum.term][field] <= max;
+          return metadata[datum.term] <= max;
         };
       }
 
