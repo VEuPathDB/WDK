@@ -15,18 +15,18 @@ wdk.namespace('wdk.components', function(ns, $) {
   //   * container is optional and delegates to position.container
   //     (see http://qtip2.com/options#position.container)
   ns.createFeatureTooltip = function createFeatureTooltip(opts) {
-    var $el = opts.el,
-        key = opts.key,
-        title = opts.title,
-        text = opts.text,
-        container = opts.container,
-
-        dismissedStorageKey = 'featureTooltip::dismissed::' + key;
+    var $el = opts.el;
+    var key = opts.key;
+    var title = opts.title;
+    var text = opts.text;
+    var container = opts.container;
+    var dismissedStorageKey = 'featureTooltip::dismissed::' + key;
+    var sessionId = $.cookie('JSESSIONID');
+    var dismissValue = localStorage.getItem(dismissedStorageKey);
 
     $el = $el instanceof $ ? $el : $($el);
 
-    if (localStorage.getItem(dismissedStorageKey) === '1')
-      return;
+    if (dismissValue == '1' || dismissValue == sessionId) return;
 
     return $el
       .wdkTooltip({
@@ -40,14 +40,14 @@ wdk.namespace('wdk.components', function(ns, $) {
         style: {
           classes: 'qtip-bootstrap wdk-feature-tooltip',
           tip: {
-            width: 24,
-            height: 16
+            width: 48,
+            height: 64
           }
         },
         position: {
           my: 'left center',
           at: 'right center',
-          viewport: false,
+          viewport: true,
           container: container
         },
         hide: {
@@ -65,6 +65,9 @@ wdk.namespace('wdk.components', function(ns, $) {
             } else {
               if (api.cache.remember) {
                 localStorage.setItem(dismissedStorageKey, 1);
+              }
+              else {
+                localStorage.setItem(dismissedStorageKey, sessionId);
               }
               api.destroy();
             }
