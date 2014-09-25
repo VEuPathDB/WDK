@@ -98,9 +98,12 @@
             <div class="bDivBox">
 
               <table  style="width:100%" class="Results_Table" step="${step.stepId}">
+
+<%-- TABLE HEADER ROW --%>
                 <thead>
                   <tr class="headerrow">
-                    <c:if test="${recHasBasket}">
+                    <c:if test="${recHasBasket}">  
+<%--------- BASKET COLUMN  ----------%>
                       <th>
                         <c:choose>
                           <c:when test="${wdkUser.guest}">
@@ -117,7 +120,14 @@
                       </th>
                     </c:if>
                     <c:set var="j" value="0"/>
-                    <c:forEach items="${wdkAnswer.summaryAttributes}" var="sumAttrib">
+                    <c:forEach items="${wdkAnswer.summaryAttributes}" var="sumAttrib">   
+
+<%--------- OTHER COLUMNS  ----------%>
+                    <%--------- SHOW Prim Key COLUMN (j=0) ONLY IF DISPLAYNAME is non empty (in model.xml) ----------%>
+                    <c:if test="${not empty sumAttrib.displayName || j != 0}">    
+                      <%-- FLAG for second loop when showing column values --%>   
+                      <c:if test="${j == 0}"><c:set var="showPrimKey" value="yes"/></c:if>  
+
                       <c:set var="attrName" value="${sumAttrib.name}" />
                       <th id="${attrName}" align="left" valign="middle">
                         <table>
@@ -189,10 +199,14 @@
                           </tr>
                         </table>
                       </th>
-                      <c:set var="j" value="${j+1}"/>
+
+                    </c:if>
+                    <c:set var="j" value="${j+1}"/>
                     </c:forEach>
                   </tr>
                 </thead>
+
+<%-- TABLE RESULT ROWS --%>
                 <tbody class="rootBody">
                   <c:set var="i" value="0"/>
 
@@ -201,7 +215,8 @@
                     <c:set value="${record.primaryKey}" var="primaryKey"/>
                     <c:set var="recNam" value="${record.recordClass.fullName}"/>
                     <tr class="${i % 2 eq 0 ? 'lines' : 'linesalt'}">
-                      <c:if test="${recHasBasket}">
+<%--------- BASKET COLUMN  ----------%>
+                      <c:if test="${recHasBasket}">            
                         <td>
                           <c:set var="basket_img" value="basket_gray.png"/>
                           <c:set var="basketId" value="basket${fn:replace(primaryKey.value,'.','_')}" />
@@ -225,24 +240,15 @@
                           </a>
                         </td>
                       </c:if>
+
+<%------ FOR EACH OTHER COLUMN IN ROW --------%>
                       <c:set var="j" value="0"/>
-
-<%-- FOR EACH COLUMN --%>
-                      <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">
-                        <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
-
-<%--
-<c:choose>
-<c:when test = "${eupathIsolatesQuestion}">
-												<imp:isolateClustal recAttr="${recAttr}" recNam="${recNam}" primaryKey="${primaryKey}"/>
-</c:when>
-<c:otherwise>
---%>
-                         <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
-<%--
-</c:otherwise>
-</c:choose>
---%>
+                      <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">    
+                        <%--------- SHOW Prim Key COLUMN IF showPrimkey defined  ----------%>
+                        <c:if test="${not empty showPrimkey ||  j != 0}"> 
+                          <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
+                          <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
+                        </c:if>    
                         <c:set var="j" value="${j+1}"/>
                       </c:forEach>
                     </tr>
