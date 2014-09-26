@@ -8,7 +8,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.QuerySet.QueryType;
@@ -19,25 +18,20 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
-import org.gusdb.wdk.model.test.sanity.SanityTester.TestBuilder;
-import org.gusdb.wdk.model.test.sanity.tests.AttributeQueryTest;
 import org.gusdb.wdk.model.test.sanity.tests.QueryTest;
 import org.gusdb.wdk.model.test.sanity.tests.QuestionTest;
 import org.gusdb.wdk.model.test.sanity.tests.RecordClassTest;
-import org.gusdb.wdk.model.test.sanity.tests.TableQueryTest;
-import org.gusdb.wdk.model.test.sanity.tests.TableTotalQueryTest;
 import org.gusdb.wdk.model.test.sanity.tests.UncreateableTest;
-import org.gusdb.wdk.model.test.sanity.tests.VocabQueryTest;
 import org.gusdb.wdk.model.user.User;
 
-public class ClassicTestBuilder implements TestBuilder {
+public class ClassicTestBuilder extends TestBuilder {
 
   private static final Logger LOG = Logger.getLogger(ClassicTestBuilder.class);
 
   private static final boolean SKIP_QUERY_TESTS = false;
 
   // statistics aggregator class
-  public static class OriginalStatistics extends Statistics {
+  public static class ClassicStatistics extends Statistics {
 
     private int _queriesPassed = 0;
     private int _queriesFailed = 0;
@@ -103,7 +97,7 @@ public class ClassicTestBuilder implements TestBuilder {
 
   @Override
   public Statistics getNewStatisticsObj() {
-    return new OriginalStatistics();
+    return new ClassicStatistics();
   }
 
   @Override
@@ -111,58 +105,25 @@ public class ClassicTestBuilder implements TestBuilder {
       throws WdkModelException {
     List<ElementTest> tests = new ArrayList<>();
     if (!SKIP_QUERY_TESTS) {
-      addQuerySetTests(tests, wdkModel, user, QueryType.VOCAB);
-      addQuerySetTests(tests, wdkModel, user, QueryType.ATTRIBUTE);
-      addQuerySetTests(tests, wdkModel, user, QueryType.TABLE);
+      addQuerySetTests(tests, wdkModel, user, skipWebSvcQueries, QueryType.VOCAB);
+      addQuerySetTests(tests, wdkModel, user, skipWebSvcQueries, QueryType.ATTRIBUTE);
+      addQuerySetTests(tests, wdkModel, user, skipWebSvcQueries, QueryType.TABLE);
     }
     addQuestionSetTests(tests, wdkModel, user, skipWebSvcQueries);
     addRecordSetTests(tests, wdkModel, user);
     return tests;
   }
 
-  private static void addQuerySetTests(List<ElementTest> tests, WdkModel wdkModel, User user, QueryType forQueryType)
-      throws WdkModelException {
+  private void addQuerySetTests(List<ElementTest> tests, WdkModel wdkModel, User user,
+      boolean skipWebSvcQueries, QueryType forQueryType) throws WdkModelException {
     if (wdkModel.getProjectId().equals("EuPathDB") && forQueryType.equals(QueryType.TABLE))
       return; // do not process table queries for the portal
     for (QuerySet querySet : wdkModel.getAllQuerySets()) {
       QueryType queryType = querySet.getQueryTypeEnum();
       LOG.debug("Building tests for QuerySet " + querySet.getName() + " (type=" + queryType + "); filtering on " + forQueryType);
-      if (queryType.equals(forQueryType) && !querySet.getDoNotTest()) {
-        for (Query query : querySet.getQueries()) {
-          if (!query.getDoNotTest()) {
-            LOG.debug("   Building tests for Query " + query.getName() + " using " + query.getParamValuesSets().size() + " ParamValuesSets");
-            int numParamValuesSets = query.getNumParamValuesSets();
-            try {
-              for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
-                switch (queryType) {
-                  case VOCAB:
-                    tests.add(new VocabQueryTest(user, querySet, query, paramValuesSet));
-                    break;
-                  case ATTRIBUTE:
-                    tests.add(new AttributeQueryTest(user, querySet, query, paramValuesSet));
-                    break;
-                  case TABLE:
-                    tests.add(new TableQueryTest(user, querySet, query, paramValuesSet));
-                    // perform additional test for table queries
-                    tests.add(new TableTotalQueryTest(user, querySet, query, paramValuesSet));
-                  default:
-                    // TABLE_TOTAL should never be a QuerySet's query type; it exists only for sanity tests.
-                    // All other query types are not sanity testable
-                    LOG.debug("QuerySet " + querySet.getName() + " with type " +
-                        queryType + " is not sanity testable.  Skipping...");
-                }
-              }
-            }
-            catch (Exception e) {
-              // error while generating param values sets
-              LOG.error("Unable to generate paramValuesSets for query " + query.getName(), e);
-              // to keep the index correct, add already failed tests for each of the param values sets we expected
-              for (int i = 0; i < numParamValuesSets; i++) {
-                tests.add(new UncreateableTest(querySet, query, e));
-              }
-            }
-          }
-        }
+      if (!queryType.equals(forQueryType) || !SanityTester.isTestable(querySet)) continue;
+      for (Query query : querySet.getQueries()) {
+        addQueryTest(tests, querySet, queryType, query, user, skipWebSvcQueries);
       }
     }
   }
@@ -170,25 +131,22 @@ public class ClassicTestBuilder implements TestBuilder {
   private static void addQuestionSetTests(List<ElementTest> tests, WdkModel wdkModel,
       User user, boolean skipWebSvcQueries) {
     for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
-      if (!questionSet.getDoNotTest()) {
-        for (Question question : questionSet.getQuestions()) {
-          Query query = question.getQuery();
-          if (!(skipWebSvcQueries && query instanceof ProcessQuery) &&
-              !query.getDoNotTest() && !query.getQuerySet().getDoNotTest()) {
-            int numParamValuesSets = question.getQuery().getNumParamValuesSets();
-            try {
-              for (ParamValuesSet paramValuesSet : question.getQuery().getParamValuesSets()) {
-                tests.add(new QuestionTest(user, question, paramValuesSet));
-              }
-            }
-            catch (Exception e) {
-              // error while generating param values sets
-              LOG.error("Unable to generate paramValuesSets for question " + question.getName() + " (query=" + question.getQuery().getName() + ")", e);
-              // to keep the index correct, add already failed tests for each of the param values sets we expected
-              for (int i = 0; i < numParamValuesSets; i++) {
-                tests.add(new UncreateableTest(question, e));
-              }
-            }
+      if (!SanityTester.isTestable(questionSet)) continue;
+      for (Question question : questionSet.getQuestions()) {
+        Query query = question.getQuery();
+        if (!SanityTester.isTestable(query, skipWebSvcQueries)) continue;
+        int numParamValuesSets = question.getQuery().getNumParamValuesSets();
+        try {
+          for (ParamValuesSet paramValuesSet : question.getQuery().getParamValuesSets()) {
+            tests.add(new QuestionTest(user, question, paramValuesSet));
+          }
+        }
+        catch (Exception e) {
+          // error while generating param values sets
+          LOG.error("Unable to generate paramValuesSets for question " + question.getName() + " (query=" + question.getQuery().getName() + ")", e);
+          // to keep the index correct, add already failed tests for each of the param values sets we expected
+          for (int i = 0; i < numParamValuesSets; i++) {
+            tests.add(new UncreateableTest(question, e));
           }
         }
       }
@@ -198,7 +156,7 @@ public class ClassicTestBuilder implements TestBuilder {
   public static void addRecordSetTests(List<ElementTest> tests, WdkModel wdkModel, User user) {
     for (RecordClassSet recordClassSet : wdkModel.getAllRecordClassSets()) {
       for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
-        if (!recordClass.getDoNotTest()) {
+        if (SanityTester.isTestable(recordClass)) {
           tests.add(new RecordClassTest(user, recordClass));
         }
       }

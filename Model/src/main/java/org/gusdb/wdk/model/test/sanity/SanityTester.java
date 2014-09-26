@@ -10,7 +10,8 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.ProcessQuery;
+import org.gusdb.wdk.model.query.Query;
 
 /**
  * Main class for running the sanity tests, which is a way to test all Queries
@@ -33,8 +34,8 @@ public class SanityTester {
 
   public interface ElementTest {
     public String getTestName();
-    public TestResult test(Statistics stats) throws Exception;
     public String getCommand();
+    public TestResult test(Statistics stats) throws Exception;
   }
 
   public static abstract class Statistics {
@@ -54,12 +55,6 @@ public class SanityTester {
     protected static String fmt(float f) {
       return new DecimalFormat("0.00").format(f);
     }
-  }
-
-  public interface TestBuilder {
-    public Statistics getNewStatisticsObj();
-    public List<ElementTest> buildTestSequence(WdkModel wdkModel, User user,
-        boolean skipWebSvcQueries) throws WdkModelException;
   }
 
   private final DatabaseInstance _appDb;
@@ -143,5 +138,14 @@ public class SanityTester {
     }
     return "To re-run failures, use filter string '" +
         TestFilter.getFilterString(failedTestIds) + "'.";
+  }
+
+  public static boolean isTestable(OptionallyTestable testable) {
+    return !testable.getDoNotTest();
+  }
+
+  public static boolean isTestable(Query query, boolean skipWebSvcQueries) {
+    return (!(skipWebSvcQueries && query instanceof ProcessQuery) &&
+            !query.getDoNotTest() && !query.getQuerySet().getDoNotTest());
   }
 }

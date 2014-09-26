@@ -392,7 +392,7 @@ public class RecordInstance extends AttributeValueContainer {
 
     return buf.toString();
   }
-
+  
   public String printSummary() throws WdkModelException, WdkUserException {
 
     StringBuffer buf = new StringBuffer();
@@ -492,7 +492,6 @@ public class RecordInstance extends AttributeValueContainer {
    * @param nonSummaryAttributes
    *          .
    */
-
   private void splitSummaryAttributeValue(
       Map<String, AttributeValue> attributes,
       Map<String, AttributeValue> summaryAttributes,
