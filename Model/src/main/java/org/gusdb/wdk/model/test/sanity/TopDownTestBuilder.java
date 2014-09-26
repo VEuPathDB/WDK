@@ -8,21 +8,23 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
-import org.gusdb.wdk.model.test.sanity.SanityTester.TestBuilder;
 import org.gusdb.wdk.model.test.sanity.tests.QuestionTest;
 import org.gusdb.wdk.model.test.sanity.tests.UncreateableTest;
+import org.gusdb.wdk.model.test.sanity.tests.WrappedTableQueryTest;
 import org.gusdb.wdk.model.user.User;
 
-public class TopDownTestBuilder implements TestBuilder {
+public class TopDownTestBuilder extends TestBuilder {
 
   private static final Logger LOG = Logger.getLogger(TopDownTestBuilder.class);
 
@@ -30,7 +32,7 @@ public class TopDownTestBuilder implements TestBuilder {
 
     private int _numPassed = 0;
     private float _duration = 0;
-    
+
     @Override
     public void processResult(ElementTest test, TestResult result) {
       _numPassed += (result.isPassed() ? 1 : 0);
@@ -68,39 +70,53 @@ public class TopDownTestBuilder implements TestBuilder {
       throws WdkModelException {
     List<ElementTest> tests = new ArrayList<>();
     for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
-      if (!questionSet.getDoNotTest()) {
-        for (Question question : questionSet.getQuestions()) {
-          // Step 1: run vocab queries for any and all params associated with this question
-          Param[] params = question.getParams();
-          for (Param param : params) {
-            if (param instanceof AbstractEnumParam) {
-              AbstractEnumParam enumParam = (AbstractEnumParam)param;
-              enumParam.getDependedParams();
+      if (!SanityTester.isTestable(questionSet)) continue;
+      for (Question question : questionSet.getQuestions()) {
+        // Step 1: run vocab queries for any and all params associated with this question
+        Param[] params = question.getParams();
+        for (Param param : params) {
+          if (param instanceof AbstractEnumParam) {
+            AbstractEnumParam enumParam = (AbstractEnumParam)param;
+            enumParam.getDependedParams();
+          }
+        }
+        
+        Query query = question.getQuery();
+        if (!SanityTester.isTestable(query, skipWebSvcQueries)) continue;
+        int numParamValuesSets = question.getQuery().getNumParamValuesSets();
+        try {
+          for (ParamValuesSet paramValuesSet : question.getQuery().getParamValuesSets()) {
+            tests.add(new QuestionTest(user, question, paramValuesSet));
+          }
+        }
+        catch (Exception e) {
+          // error while generating param values sets
+          LOG.error("Unable to generate paramValuesSets for question " + question.getName() + " (query=" + question.getQuery().getName() + ")", e);
+          // to keep the index correct, add already failed tests for each of the param values sets we expected
+          for (int i = 0; i < numParamValuesSets; i++) {
+            tests.add(new UncreateableTest(question, e));
+          }
+        }
+      }
+    }
+
+    for (RecordClassSet recordClassSet : wdkModel.getAllRecordClassSets()) {
+      for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
+        if (!recordClass.getDoNotTest()) {
+          // add tests for table queries
+          for (Query query : recordClass.getTableQueries().values()) {
+            for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
+              tests.add(new WrappedTableQueryTest(user, query.getQuerySet(), query, paramValuesSet));
             }
           }
-          
-          Query query = question.getQuery();
-          if (!(skipWebSvcQueries && query instanceof ProcessQuery) &&
-              !query.getDoNotTest() && !query.getQuerySet().getDoNotTest()) {
-            int numParamValuesSets = question.getQuery().getNumParamValuesSets();
-            try {
-              for (ParamValuesSet paramValuesSet : question.getQuery().getParamValuesSets()) {
-                tests.add(new QuestionTest(user, question, paramValuesSet));
-              }
-            }
-            catch (Exception e) {
-              // error while generating param values sets
-              LOG.error("Unable to generate paramValuesSets for question " + question.getName() + " (query=" + question.getQuery().getName() + ")", e);
-              // to keep the index correct, add already failed tests for each of the param values sets we expected
-              for (int i = 0; i < numParamValuesSets; i++) {
-                tests.add(new UncreateableTest(question, e));
-              }
-            }
+          // add tests for attribute queries
+          for (Query query : recordClass.getAttributeQueries().values()) {
+            QuerySet querySet = query.getQuerySet();
+            addQueryTest(tests, querySet, querySet.getQueryTypeEnum(), query, user, skipWebSvcQueries);
           }
         }
       }
     }
     return tests;
   }
-
 }
