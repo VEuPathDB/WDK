@@ -1,26 +1,26 @@
 package org.gusdb.wdk.model.filter;
 
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 
-public abstract class ColumnFilter implements Filter {
+public abstract class ColumnFilter extends AbstractFilter {
 
-  private final AttributeField field;
-  
-  public ColumnFilter(AttributeField field) {
-    this.field = field;
+  protected final ColumnAttributeField attribute;
+
+  public ColumnFilter(String name, ColumnAttributeField attribute) {
+    super(name + "-" + attribute.getName());
+    this.attribute = attribute;
   }
 
-  @Override
-  public FilterSummary getSummary(AnswerValue answer) {
-    // TODO Auto-generated method stub
-    return null;
+  protected String getAttributeSql(AnswerValue answer, String idSql) throws WdkModelException,
+      WdkUserException {
+    String queryName = attribute.getColumn().getQuery().toString();
+    WdkModel wdkModel = attribute.getWdkModel();
+    Query query = (Query) wdkModel.resolveReference(queryName);
+    return answer.getAttributeSql(query);
   }
-
-  @Override
-  public String getSql(AnswerValue answer, String idSql, String options) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
 }

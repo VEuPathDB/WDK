@@ -17,7 +17,7 @@ import org.gusdb.wdk.model.WdkModelException;
  * @author Jerric
  * @created Oct 14, 2005
  */
-public class XmlRecordClassSet extends WdkModelBase implements ModelSetI {
+public class XmlRecordClassSet extends WdkModelBase implements ModelSetI<XmlRecordClass> {
 
     private String name;
 
@@ -62,7 +62,7 @@ public class XmlRecordClassSet extends WdkModelBase implements ModelSetI {
      * @see org.gusdb.wdk.model.ModelSetI#getElement(java.lang.String)
      */
     @Override
-    public Object getElement(String elementName) {
+    public XmlRecordClass getElement(String elementName) {
         return recordClasses.get(elementName);
     }
 

@@ -10,13 +10,11 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 public class GetFilterSummaryAction extends Action {
 
@@ -39,12 +37,11 @@ public class GetFilterSummaryAction extends Action {
     if (stepId == null)
       throw new WdkUserException("Required step parameter is missing.");
     
-    WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
     UserBean user = ActionUtility.getUser(servlet, request);
     StepBean step = user.getStep(Integer.valueOf(stepId));
     AnswerValueBean answer = step.getAnswerValue();
     Filter filter = answer.getQuestion().getFilter(filterName);
-    FilterSummary summary = filter.getSummary(answer.getAnswerValue());
+    FilterSummary summary = answer.getFilterSummary(filterName);
     
     request.setAttribute(ATTR_SUMMARY, summary);
     

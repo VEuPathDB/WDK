@@ -17,7 +17,7 @@ import org.gusdb.wdk.model.WdkModelException;
  * @author jerric
  * 
  */
-public class RecordClassSet extends WdkModelBase implements ModelSetI {
+public class RecordClassSet extends WdkModelBase implements ModelSetI<RecordClass> {
 
   private List<RecordClass> recordClassList = new ArrayList<RecordClass>();
   private Map<String, RecordClass> recordClassMap = new LinkedHashMap<String, RecordClass>();
@@ -41,7 +41,7 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
   }
 
   @Override
-  public Object getElement(String name) {
+  public RecordClass getElement(String name) {
     return recordClassMap.get(name);
   }
 
