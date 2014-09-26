@@ -7,7 +7,7 @@ import org.gusdb.wdk.model.user.Strategy;
 public class StrategyFilterSummary implements FilterSummary {
 
   private final Collection<Strategy> strategies;
-  
+
   public StrategyFilterSummary(Collection<Strategy> strategies) {
     this.strategies = strategies;
   }

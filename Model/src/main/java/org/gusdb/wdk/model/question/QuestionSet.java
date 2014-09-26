@@ -21,7 +21,7 @@ import org.gusdb.wdk.model.WdkModelText;
  *          2006) $ $Author$
  */
 
-public class QuestionSet extends WdkModelBase implements ModelSetI {
+public class QuestionSet extends WdkModelBase implements ModelSetI<Question> {
 
     private List<Question> questionList = new ArrayList<Question>();
     private Map<String, Question> questionMap = new LinkedHashMap<String, Question>();
@@ -88,7 +88,7 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
     }
 
     @Override
-    public Object getElement(String name) {
+    public Question getElement(String name) {
         return questionMap.get(name);
     }
 

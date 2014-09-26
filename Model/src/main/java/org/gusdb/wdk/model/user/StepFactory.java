@@ -36,6 +36,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
+import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -85,6 +86,9 @@ public class StepFactory {
   private static final String COLUMN_IS_PUBLIC = "is_public";
 
   static final int COLUMN_NAME_LIMIT = 200;
+  
+  public static final String KEY_PARAMS = "params";
+  public static final String KEY_FILTERS = "filters";
 
   private static final Logger logger = Logger.getLogger(StepFactory.class);
 
@@ -219,7 +223,7 @@ public class StepFactory {
   // parse boolexp to pass left_child_id, right_child_id to loadAnswer
   Step createStep(User user, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
-      int assignedWeight) throws WdkModelException, WdkUserException {
+      int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
 
     // get summary list and sorting list
     String questionName = question.getFullName();
@@ -288,6 +292,8 @@ public class StepFactory {
     PreparedStatement psInsertStep = null;
     try {
       JSONObject jsContent = getParamContent(dependentValues);
+      if (filterOptions != null)
+        jsContent.put(KEY_FILTERS, filterOptions.getJSON().toString());
 
       psInsertStep = SqlUtils.getPreparedStatement(dataSource, sqlInsertStep.toString());
       psInsertStep.setInt(1, stepId);
@@ -619,13 +625,17 @@ public class StepFactory {
       step.setChildStepId(rightStepId);
     }
 
-    Map<String, String> params = null;
-    String dependentParamContent = userDb.getPlatform().getClobData(rsStep, COLUMN_DISPLAY_PARAMS);
-    if (dependentParamContent != null && dependentParamContent.length() > 0) {
-      JSONObject jsContent = new JSONObject(dependentParamContent);
-      params = parseParamContent(jsContent);
+    String paramContent = userDb.getPlatform().getClobData(rsStep, COLUMN_DISPLAY_PARAMS);
+    if (paramContent != null && paramContent.length() > 0) {
+      // parse the param values
+      JSONObject jsContent = new JSONObject(paramContent);
+      Map<String, String> params = parseParamContent(jsContent);
+      step.setParamValues(params);
+      
+      // parse the filters
+      if (jsContent.has(KEY_FILTERS))
+        step.setFilterOptions(new FilterOptionList(jsContent.getJSONArray(KEY_FILTERS)));
     }
-    step.setParamValues(params);
 
     logger.debug("loaded step #" + stepId);
     return step;
@@ -1033,7 +1043,7 @@ public class StepFactory {
     Step newStep;
     try {
       newStep = newUser.createStep(question, paramValues, filter, startIndex, endIndex, deleted, false,
-          assignedWeight);
+          assignedWeight, oldStep.getFilterOptions());
     }
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);
@@ -1357,10 +1367,8 @@ public class StepFactory {
     for (String paramName : params.keySet()) {
       jsParams.put(paramName, params.get(paramName));
     }
-    jsContent.put("params", jsParams);
+    jsContent.put(KEY_PARAMS, jsParams);
 
-    // convert filters -- TODO
-    jsContent.put("filters", new JSONObject());
     return jsContent;
   }
 
@@ -1369,7 +1377,7 @@ public class StepFactory {
     if (jsContent != null) {
       try {
         // read params;
-        JSONObject jsParams = jsContent.has("params") ? jsContent.getJSONObject("params") : jsContent;
+        JSONObject jsParams = jsContent.has(KEY_PARAMS) ? jsContent.getJSONObject(KEY_PARAMS) : jsContent;
         String[] paramNames = JSONObject.getNames(jsParams);
         if (paramNames != null) {
           for (String paramName : paramNames) {

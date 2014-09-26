@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -27,10 +28,6 @@ import org.json.JSONObject;
  * 
  */
 public class Step {
-
-  public static final String INTERNAL_AND = "INTERSECT";
-  public static final String INTERNAL_OR = "UNION";
-  public static final String INTERNAL_NOT = "MINUS";
 
   private static final Logger logger = Logger.getLogger(Step.class);
 
@@ -65,6 +62,7 @@ public class Step {
   private AnswerValue answerValue;
 
   private Map<String, String> paramValues = new LinkedHashMap<String, String>();
+  private FilterOptionList filterOptions;
 
   private int assignedWeight;
 
@@ -73,6 +71,7 @@ public class Step {
 
   private boolean revisable = true;
   private Exception exception;
+  
 
   /**
    * Creates a step object for given user and step ID.  Note that this
@@ -633,7 +632,7 @@ public class Step {
   public Map<String, String> getParamValues() {
     return new LinkedHashMap<String, String>(paramValues);
   }
-
+  
   /**
    * @param paramErrors
    *          the paramErrors to set
@@ -642,6 +641,14 @@ public class Step {
     if (paramValues == null)
       paramValues = new LinkedHashMap<>();
     this.paramValues = new LinkedHashMap<String, String>(paramValues);
+  }
+  
+  public FilterOptionList getFilterOptions() {
+    return filterOptions;
+  }
+  
+  public void setFilterOptions(FilterOptionList filterOptions) {
+    this.filterOptions = filterOptions;
   }
 
   public RecordClass getRecordClass() throws WdkModelException {
@@ -680,7 +687,7 @@ public class Step {
       int startIndex = getAnswerValue().getStartIndex();
       int endIndex = getAnswerValue().getEndIndex();
       Step step = getUser().createStep(question, params, filter, startIndex, endIndex, deleted, false,
-          assignedWeight);
+          assignedWeight, filterOptions);
       step.collapsedName = collapsedName;
       step.customName = customName;
       step.collapsible = collapsible;
@@ -729,7 +736,7 @@ public class Step {
         int pageStart = answerValue.getStartIndex();
         int pageEnd = answerValue.getEndIndex();
         step = getUser().createStep(question, paramValues, filter, pageStart, pageEnd, deleted, false,
-            assignedWeight);
+            assignedWeight, filterOptions);
       }
     }
     catch (WdkUserException ex) {
@@ -868,6 +875,7 @@ public class Step {
       try {
         answerValue = question.makeAnswerValue(user, paramValues, 1, endIndex, sortingMap, getFilter(),
             validate, assignedWeight);
+        answerValue.setFilterOptions(filterOptions);
       }
       catch (WdkUserException ex) {
         throw new WdkModelException(ex);

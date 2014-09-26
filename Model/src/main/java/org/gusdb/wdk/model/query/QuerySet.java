@@ -25,7 +25,7 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
  * @author jerric
  * 
  */
-public class QuerySet extends WdkModelBase implements ModelSetI {
+public class QuerySet extends WdkModelBase implements ModelSetI<Query> {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(QuerySet.class);
@@ -95,7 +95,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
   }
 
   @Override
-  public Object getElement(String name) {
+  public Query getElement(String name) {
     return queries.get(name);
   }
 

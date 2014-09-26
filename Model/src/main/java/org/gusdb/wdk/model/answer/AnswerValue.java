@@ -29,6 +29,9 @@ import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.filter.Filter;
+import org.gusdb.wdk.model.filter.FilterOption;
+import org.gusdb.wdk.model.filter.FilterOptionList;
+import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -113,7 +116,7 @@ public class AnswerValue {
     private final AnswerValue answer;
     private final ConcurrentMap<String, Integer> sizes;
     private final String filterName;
-    
+
     public FilterSizeTask(AnswerValue answer, ConcurrentMap<String, Integer> sizes, String filterName) {
       this.answer = answer;
       this.sizes = sizes;
@@ -164,8 +167,7 @@ public class AnswerValue {
 
   private AnswerFilterInstance filter;
 
-  
-  private final Map<String, String> filterOptions = new LinkedHashMap<>();
+  private FilterOptionList filterOptions;
 
   // ------------------------------------------------------------------
   // Constructor
@@ -896,6 +898,10 @@ public class AnswerValue {
   }
 
   public String getIdSql() throws WdkModelException, WdkUserException {
+    return getIdSql(null);
+  }
+
+  public String getIdSql(String excludeFilter) throws WdkModelException, WdkUserException {
     String innerSql = idsQueryInstance.getSql();
 
     // add comments to id sql
@@ -907,14 +913,17 @@ public class AnswerValue {
       innerSql = filter.applyFilter(user, innerSql, assignedWeight);
       innerSql = " /* filter applied on id query */ " + innerSql;
     }
-    
+
     // apply new filters
-    for (String fullName : filterOptions.keySet()) {
-      Filter filter = question.getFilter(fullName);
-      String options = filterOptions.get(fullName);
-      innerSql = filter.getSql(this, innerSql, options);
+    if (filterOptions != null) {
+      for (FilterOption filterOption : filterOptions.getFilterOptions().values()) {
+        if (excludeFilter == null || !filterOption.getName().equals(excludeFilter)) {
+          Filter filter = question.getFilter(filterOption.getName());
+          innerSql = filter.getSql(this, innerSql, filterOption.getValue());
+        }
+      }
     }
-    
+
     innerSql = "(" + innerSql + ")";
 
     logger.debug("id sql constructed.");
@@ -1358,9 +1367,20 @@ public class AnswerValue {
     this.sortedIdSql = null;
     this.pageRecordInstances = null;
   }
-  
-  public void addFilter(String filterName, String options) {
-    filterOptions.put(filterName, options);
-    reset();
+
+  public void setFilterOptions(FilterOptionList filterOptions) {
+    this.filterOptions = filterOptions;
+  }
+
+  public FilterOptionList getFilterOptions() {
+    return filterOptions;
+  }
+
+  public FilterSummary getFilterSummary(String filterName) throws WdkModelException, WdkUserException {
+    // need to exclude the given filter from the idSql, so that the selection of the current filter won't
+    // affect the background;
+    String idSql = getIdSql(filterName);
+    Filter filter = question.getFilter(filterName);
+    return filter.getSummary(this, idSql);
   }
 }
