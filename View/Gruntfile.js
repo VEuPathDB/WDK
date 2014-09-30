@@ -44,7 +44,7 @@ module.exports = function(grunt) {
         report: true,
         sourceMap: 'dist/wdk/js/wdk.js.map',
         sourceMappingURL: 'wdk.js.map',
-        // sourceMapPrefix: 1
+        sourceMapPrefix: 3
       },
       wdk: {
         files: {
