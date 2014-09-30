@@ -1,5 +1,4 @@
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
-<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
@@ -10,7 +9,7 @@
   <c:choose>
     <c:when test="${rootClassName eq 'org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean'}">
 
-    <img alt="spacer" width="12" height="16" src="<c:url value="/images/booleanBullet.gif" />">
+    <imp:image alt="spacer" width="12" height="16" src="images/booleanBullet.gif"/>
     <nested:write property="operation"/><br>
 
     <nested:nest property="firstChild">
@@ -39,7 +38,7 @@
             <!-- Print out question -->
             <!-- display description -->
             <tr><td colspan="2">
-                <img alt="spacer" width="12" height="16" src="<c:url value="/images/booleanBullet.gif" />">
+                <imp:image alt="spacer" width="12" height="16" src="images/booleanBullet.gif"/>
                 <b>${wdkQ.displayName}</b></td></tr>
 
             <!-- display params -->
@@ -85,7 +84,7 @@
                 <c:set target="${helpQ}" property="${anchorQp}" value="${qP}"/>
                    &nbsp;&nbsp;&nbsp;&nbsp;
                    <a href="#${anchorQp}">
-                   <img src='<c:url value="/images/toHelp.jpg"/>' border="0" alt="Help!"></a>
+                   <imp:image src="images/toHelp.jpg" border="0" alt="Help!"/></a>
                 </td>
                 </tr>
             </c:forEach>
