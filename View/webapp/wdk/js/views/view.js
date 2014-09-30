@@ -16,7 +16,7 @@ wdk.namespace('wdk.views', function(ns) {
     constructor: function(options) {
       var _this = this;
       this.runloop = wdk.core.RunLoop.create(this);
-      this.controller = options.controller;
+      if (options) this.controller = options.controller;
       if (this.mixins) {
         this.mixins.forEach(function(mixin) {
           _this.applyMixin(mixin);
