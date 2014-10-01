@@ -16,8 +16,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
  */
 public abstract class AttributeValue {
 
-  @SuppressWarnings("unused")
-  private static final Logger logger = Logger.getLogger(AttributeValue.class.getName());
+  protected static final Logger logger = Logger.getLogger(AttributeValue.class.getName());
 
   protected AttributeField field;
   protected Object value;

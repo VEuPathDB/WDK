@@ -55,6 +55,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
     if (value == null) {
       Map<String, Object> values = new LinkedHashMap<String, Object>(pkValues);
 
+      try {
       // parse the text and look up other fields, so that primaryKey fields can support macros of other column
       // attributes.
       Map<String, AttributeField> subFields = field.parseFields(field.getText());
@@ -67,6 +68,10 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
       }
 
       value = Utilities.replaceMacros(field.getText(), values);
+      } catch (Exception ex) {
+         logger.error("Failed to substitute sub-fields.", ex);
+         throw new WdkModelException(ex);
+      }
     }
     return value;
   }
@@ -100,12 +105,12 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
    */
   @Override
   public int hashCode() {
-    try {
-      return getValue().hashCode();
+    int hashCode = 0;
+    for(Object value : pkValues.values()) {
+      if (value != null)
+      hashCode ^= value.toString().hashCode();
     }
-    catch (WdkModelException | WdkUserException e) {
-      throw new WdkRuntimeException(e);
-    }
+    return hashCode;
   }
 
   /**
