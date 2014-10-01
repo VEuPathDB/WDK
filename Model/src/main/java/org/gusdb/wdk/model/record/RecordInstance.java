@@ -71,7 +71,7 @@ public class RecordInstance extends AttributeValueContainer {
     pkValues = records.get(0);
 
     PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
-        recordClass.getPrimaryKeyAttributeField(), pkValues);
+        recordClass.getPrimaryKeyAttributeField(), pkValues, this);
     setPrimaryKey(primaryKey);
   }
 
@@ -82,7 +82,7 @@ public class RecordInstance extends AttributeValueContainer {
 
     // the record instance from answer doesn't need the pk value translation
     PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
-        recordClass.getPrimaryKeyAttributeField(), pkValues);
+        recordClass.getPrimaryKeyAttributeField(), pkValues, this);
     setPrimaryKey(primaryKey);
   }
 
