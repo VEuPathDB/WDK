@@ -244,8 +244,8 @@
 <%------ FOR EACH OTHER COLUMN IN ROW --------%>
                       <c:set var="j" value="0"/>
                       <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">    
-                        <%--------- SHOW Prim Key COLUMN IF showPrimkey defined  ----------%>
-                        <c:if test="${not empty showPrimkey ||  j != 0}"> 
+                        <%--------- SHOW Prim Key COLUMN IF showPrimKey defined  ----------%>
+                        <c:if test="${not empty showPrimKey ||  j != 0}"> 
                           <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
                           <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
                         </c:if>    
