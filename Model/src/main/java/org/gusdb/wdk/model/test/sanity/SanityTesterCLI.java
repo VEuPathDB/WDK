@@ -61,8 +61,12 @@ public class SanityTesterCLI {
         }
         System.out.println(new StringBuilder().append(NL)
             .append("Results Summary:").append(NL).toString());
-        System.out.println(sanityTester.getSummaryLine());
-        if (sanityTester.isFailedOverall()) exitCode = 1;
+        System.out.print(sanityTester.getSummaryLine());
+        if (sanityTester.isFailedOverall()) {
+          System.out.println(SanityTester.getRerunLine(results));
+          exitCode = 1;
+        }
+        System.out.println();
       }
     }
     catch (Exception e) {

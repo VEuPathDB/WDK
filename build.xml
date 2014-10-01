@@ -221,7 +221,7 @@
     -->
 
     <echo message="Installing npm packages"/>
-    <exec dir="${projectsDir}/WDK/View/assets"
+    <exec dir="${projectsDir}/WDK/View"
           executable="npm"
           failonerror="true"
           failifexecutionfails="true">
@@ -229,7 +229,7 @@
     </exec>
 
     <echo message="Running npm run dist"/>
-    <exec dir="${projectsDir}/WDK/View/assets"
+    <exec dir="${projectsDir}/WDK/View"
           executable="npm"
           failonerror="true"
           failifexecutionfails="true">
@@ -237,8 +237,8 @@
     </exec>
 
     <echo message="Copying WDK assets to webapp"/>
-    <copy todir="${webappTargetDir}/assets">
-      <fileset dir="${projectsDir}/WDK/View/assets/dist"/>
+    <copy todir="${webappTargetDir}">
+      <fileset dir="${projectsDir}/WDK/View/dist"/>
     </copy>
     <!--
     <ant target="webinstall-javascript">

@@ -164,7 +164,7 @@ public abstract class AbstractEnumParam extends Param {
   private EnumParamCache getEnumParamCache(User user, Map<String, String> contextParamValues) {
     if (contextParamValues == null)
       contextParamValues = new LinkedHashMap<>();
-    if (isDependentParam() && contextParamValues.size() == 0) {
+    if (isDependentParam() && contextParamValues.isEmpty()) {
       try {
         for (Param dependedParam : getDependedParams()) {
 
@@ -173,12 +173,11 @@ public abstract class AbstractEnumParam extends Param {
             dependedParamVal = (dependedParam instanceof AbstractEnumParam)
                 ? ((AbstractEnumParam) dependedParam).getDefault(user, contextParamValues)
                 : dependedParam.getDefault();
-            contextParamValues.put(dependedParam.getName(), dependedParamVal);
+            if (dependedParamVal == null)
+              throw new NoDependedValueException("Attempt made to retrieve values of " +
+                  dependedParam.getName() + " in dependent param " + getName() +
+                  " without setting depended value.");
           }
-          if (dependedParamVal == null)
-            throw new NoDependedValueException("Attempt made to retrieve values of " +
-                dependedParam.getName() + " in dependent param " + getName() +
-                " without setting depended value.");
           contextParamValues.put(dependedParam.getName(), dependedParamVal);
         }
       }

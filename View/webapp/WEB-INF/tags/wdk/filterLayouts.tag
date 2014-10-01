@@ -44,9 +44,9 @@
         
 <!-- ========== open/close icon, filter icon, filter TITLE, explanation =============== -->
         <div title="Results hidden by the filter will not be combined into the next step." class="layout-info">
-            <imp:image class="handle" src="/wdk/images/${image}" />
+            <imp:image class="handle" src="wdk/images/${image}" />
             <span class="display">
-              <imp:image height="14px" src="/wdk/images/filter-short.png"/> 
+              <imp:image height="14px" src="wdk/images/filter-short.png"/> 
               <b>${layout.displayName}</b>&nbsp;&nbsp;
             </span>
         </div>

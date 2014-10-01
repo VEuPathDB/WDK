@@ -86,11 +86,11 @@
                                         <span key="${pk_item.key}">${pk_item.value}</span>
                                     </c:forEach>
                                 </span>
-                                <imp:image class="clickable" src="/wdk/images/favorite_color.gif" 
+                                <imp:image class="clickable" src="wdk/images/favorite_color.gif" 
                                      title="Click to remove this item from favorites and reload page"
 				     height="16px" style="vertical-align:text-bottom"
                                      onClick="wdk.favorite.updateFavorite(this, 'remove')"/>&nbsp;
-                          <%--      <imp:image class="clickable" src="/wdk/images/basket_${basketColor}.png" 
+                          <%--      <imp:image class="clickable" src="wdk/images/basket_${basketColor}.png" 
                                      title="Click to add/remove this item from your basket."
 				     height="16px"  style="vertical-align:text-bottom"
                                      onClick="wdk.basket.updateBasket(this,'recordPage', '${id}', '${pid}', '${recordClass.fullName}')" value="${basketValue}"/>&nbsp;

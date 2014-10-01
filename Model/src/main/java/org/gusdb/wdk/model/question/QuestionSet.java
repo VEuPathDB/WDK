@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 
 /**
  * Question sets are used to organize questions into different groups.
@@ -21,7 +22,7 @@ import org.gusdb.wdk.model.WdkModelText;
  *          2006) $ $Author$
  */
 
-public class QuestionSet extends WdkModelBase implements ModelSetI<Question> {
+public class QuestionSet extends WdkModelBase implements ModelSetI<Question>, OptionallyTestable {
 
     private List<Question> questionList = new ArrayList<Question>();
     private Map<String, Question> questionMap = new LinkedHashMap<String, Question>();
@@ -63,6 +64,7 @@ public class QuestionSet extends WdkModelBase implements ModelSetI<Question> {
 	this.doNotTest = doNotTest;
     }
 
+    @Override
     public boolean getDoNotTest() {
 	return doNotTest;
     }
