@@ -718,6 +718,7 @@ public class AnswerValue {
       }
       PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(pkField, pkValues);
       RecordInstance record = pageRecordInstances.get(primaryKey);
+      primaryKey.setValueContainer(record);
 
       if (record == null) {
         StringBuffer error = new StringBuffer();
