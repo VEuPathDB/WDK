@@ -6,9 +6,11 @@ package org.gusdb.wdk.model.query.param;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -291,7 +293,7 @@ public class FilterParam extends FlatVocabParam {
     return properties;
   }
 
-  public Map<String, String> getMetaData(User user, Map<String, String> contextValues, String property)
+  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextValues, String property)
       throws WdkModelException, WdkUserException {
     EnumParamCache cache = createEnumParamCache(user, contextValues);
     return getMetaData(user, contextValues, property, cache);
@@ -308,7 +310,7 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, String> getMetaData(User user, Map<String, String> contextValues, String property,
+  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextValues, String property,
       EnumParamCache cache) throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
       return null;
@@ -319,7 +321,7 @@ public class FilterParam extends FlatVocabParam {
     sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_PROPERTY + " = ?";
 
     // run the composed sql, and get the metadata back
-    Map<String, String> metadata = new LinkedHashMap<>();
+    Map<String, List<String>> metadata = new LinkedHashMap<>();
     ResultSet resultSet = null;
     DataSource dataSource = wdkModel.getAppDb().getDataSource();
     try {
@@ -330,7 +332,14 @@ public class FilterParam extends FlatVocabParam {
       while (resultSet.next()) {
         String term = resultSet.getString(COLUMN_TERM);
         String value = resultSet.getString(COLUMN_VALUE);
-        metadata.put(term, value);
+        List<String> values = metadata.get(term);
+
+        if (values == null) {
+          values = new ArrayList<String>();
+          metadata.put(term, values);
+        }
+
+        values.add(value);
       }
     }
     catch (SQLException ex) {

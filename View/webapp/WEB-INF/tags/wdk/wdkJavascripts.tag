@@ -15,8 +15,8 @@
   <!-- load polyfills for IE8 -->
   <![CDATA[ <!--[if lte IE 8]> ]]>
 
-  <imp:script src="/wdk/lib/json3.min.js"/>
-  <imp:script src="/wdk/lib/excanvas.min.js"/>
+  <imp:script src="wdk/lib/json3.min.js"/>
+  <imp:script src="wdk/lib/excanvas.min.js"/>
 
   <![CDATA[ <![endif]--> ]]>
   <!-- endload polyfills -->
@@ -24,13 +24,13 @@
   <c:choose>
     <c:when test="${debug eq true}">
       <!-- load files in individual script tags -->
-      <imp:script src="/wdk/wdk.debug.js"/>
+      <imp:script src="wdk/js/wdk.debug.js"/>
     </c:when>
     <c:otherwise>
       <!-- WDK libraries and source files -->
       <!-- see WDK/View/assets/wdkFiles.js for details about these files -->
-      <imp:script src="/wdk/wdk.libs.js"/>
-      <imp:script src="/wdk/wdk.js"/>
+      <imp:script src="wdk/js/wdk.libs.js"/>
+      <imp:script src="wdk/js/wdk.js"/>
     </c:otherwise>
   </c:choose>
 

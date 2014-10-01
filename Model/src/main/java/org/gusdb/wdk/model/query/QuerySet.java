@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 
 /**
  * An object representation of the {@code <querySet>} in the model. A query set
@@ -25,7 +26,7 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
  * @author jerric
  * 
  */
-public class QuerySet extends WdkModelBase implements ModelSetI<Query> {
+public class QuerySet extends WdkModelBase implements ModelSetI<Query>, OptionallyTestable {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(QuerySet.class);
@@ -128,6 +129,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query> {
     this.doNotTest = doNotTest;
   }
 
+  @Override
   public boolean getDoNotTest() {
     return doNotTest;
   }

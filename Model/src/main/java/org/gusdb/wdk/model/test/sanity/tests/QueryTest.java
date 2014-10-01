@@ -32,7 +32,11 @@ public class QueryTest implements ElementTest {
 
   @Override
   public String getTestName() {
-    return _querySet.getQueryTypeEnum() + " QUERY " + _query.getFullName();
+    return getTestName(_querySet, _query);
+  }
+  
+  public static String getTestName(QuerySet querySet, Query query) {
+    return querySet.getQueryTypeEnum() + " QUERY " + query.getFullName();
   }
 
   @Override
@@ -63,27 +67,16 @@ public class QueryTest implements ElementTest {
   }
 
   @Override
-  public TestResult test(Statistics stats) throws Exception {
+  public final TestResult test(Statistics stats) throws Exception {
     int sanityMin = getMinRows();
     int sanityMax = getMaxRows();
     TestResult result = new TestResult(this);
-    try {
-      result.setExpected("Expect [" + sanityMin + " - " + sanityMax + "] rows" +
-          ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
-      int count = runQuery(_user, _query, _paramValuesSet, result);
-      result.setReturned(count + " rows returned");
-      result.setPassed(count >= sanityMin && count <= sanityMax);
-      return result;
-    }
-    finally {
-      result.stopTimer();
-      if (result.isPassed()) {
-        stats.queriesPassed++;
-      }
-      else {
-        stats.queriesFailed++;
-      }
-    }
+    result.setExpected("Expect [" + sanityMin + " - " + sanityMax + "] rows" +
+        ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
+    int count = runQuery(_user, _query, _paramValuesSet, result);
+    result.setReturned(count + " rows returned");
+    result.setPassed(count >= sanityMin && count <= sanityMax);
+    return result;
   }
 
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet,

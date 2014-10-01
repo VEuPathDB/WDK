@@ -36,6 +36,11 @@ public class ModelConfig {
   private String assetsUrl;
 
   /**
+   * the absolute url to this site's webapp
+   */
+  private String webAppUrl;
+
+  /**
    * the recipient of the super slow query log.
    */
   private String adminEmail;
@@ -229,6 +234,14 @@ public class ModelConfig {
     this.assetsUrl = assetsUrl;
   }
 
+  public String getWebAppUrl() {
+    return webAppUrl;
+  }
+
+  public void setWebAppUrl(String webAppUrl) {
+    this.webAppUrl = webAppUrl;
+  }
+  
   /**
    * @return the userDB
    */

@@ -43,6 +43,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
+import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteReference;
 import org.gusdb.wdk.model.user.User;
@@ -82,7 +83,7 @@ import org.gusdb.wdk.model.user.User;
  * 
  * @author jerric
  */
-public class RecordClass extends WdkModelBase implements AttributeFieldContainer {
+public class RecordClass extends WdkModelBase implements AttributeFieldContainer, OptionallyTestable {
 
   // private static final Logger logger = Logger.getLogger(RecordClass.class);
 
@@ -403,6 +404,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     this.doNotTest = doNotTest;
   }
 
+  @Override
   public boolean getDoNotTest() {
     return doNotTest;
   }
@@ -574,7 +576,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Map<String, Query> getAttributeQueries() {
-    return new LinkedHashMap<String, Query>(this.attributeQueries);
+    return new LinkedHashMap<String, Query>(attributeQueries);
   }
 
   AttributeField getAttributeField(String attributeName) throws WdkModelException {
@@ -585,6 +587,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       throw new WdkModelException(message);
     }
     return attributeField;
+  }
+
+  public Map<String, Query> getTableQueries() {
+    return new LinkedHashMap<String, Query>(tableQueries);
   }
 
   TableField getTableField(String tableName) throws WdkModelException {

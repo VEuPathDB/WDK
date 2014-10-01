@@ -26,7 +26,7 @@
   <c:forEach items="${plugins}" var="item">
     <c:set var="plugin" value="${item.value}" />
     <div>
-      <input type="image" id="${divId}" class="jqbutton" src="${assetsUrl}/wdk/images/plugin.png"
+      <input type="image" id="${divId}" class="jqbutton" data-assets-src="wdk/images/plugin.png"
              plugin="${plugin.name}" plugintitle="${plugin.display}"
              title="Analyze/Graph the contents of this column by ${fn:toLowerCase(plugin.display)}"
              onclick="wdk.resultsPage.invokeAttributePlugin(this, '${step.stepId}', '${attribute.name}')" />
@@ -63,7 +63,7 @@
 		  </div>    
     </c:set>
     <input type="image" id="${divId}" class="jqbutton" title="${fn:escapeXml(tipContents)}"
-           src="${assetsUrl}/wdk/images/plugin.png" x-title="Analyze/graph the contents of this column"/>
+           data-assets-src="wdk/images/plugin.png" x-title="Analyze/graph the contents of this column"/>
   </div>
 </c:if>
 
