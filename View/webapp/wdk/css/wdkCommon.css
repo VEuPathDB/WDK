@@ -1236,6 +1236,14 @@ margin: 1em 0 -1px;
   margin-left: 4px;
 }
 
+div.step-analysis-form-pane h3.ui-accordion-header {
+  font-weight: bold;
+  font-size: 120%;
+}
+
+#step-analysis-title {
+  text-align: center;
+}
 .step-analysis-subpane {
   margin: 3px;
   /* border: 1px solid #cccccc;
@@ -1917,6 +1925,8 @@ span.marker a:link, span.marker a:visited {
 
 #search-lookup_wrapper div.ui-corner-bl { display: none; }
 img#close-table { display: none; }
+
+
 
 
 /* THE END */
