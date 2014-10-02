@@ -12,7 +12,7 @@
            [ <a href="#rename">Rename This Analysis</a> |
              <a href="#copy">Copy These Parameter Values</a> ]
           </span>
-          <h3 data-bind="displayName"><jsp:text/></h3>
+          <h2 id="step-analysis-title" data-bind="displayName"><jsp:text/></h2>
           <div class="step-analysis-description">
             <span data-bind="shortDescription"><jsp:text/></span>
             <span class="toggle-description" title="Toggle full description">Read More</span>
