@@ -22,7 +22,7 @@ public class ActionResult implements Iterable<String> {
    * 
    * @author rdoherty
    */
-  public static enum ResultType {
+  private static enum ResultType {
     /** Look up and use the name of an action in the MVC container */
     VIEW_NAME,
     /** Use an explicit path to a JSP */
