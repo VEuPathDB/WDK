@@ -34,7 +34,10 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
    *      returns: instance json for copy
    *  - runAnalysis:
    *      takes:   analysis form submission (including analysisId hidden param)
-   *      returns: instance json
+   *      returns: status + instance json
+   *  - rerunAnalysis:
+   *      takes:   analysis id
+   *      returns: status + instance json
    *  - getAnalysis:
    *      takes:   analysis id
    *      returns: instance json
@@ -71,6 +74,7 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     createAnalysis: { url: '/createStepAnalysis.do', method: 'POST', type: 'json' },
     copyAnalysis:   { url: '/copyStepAnalysis.do',   method: 'POST', type: 'json' },
     runAnalysis:    { url: '/runStepAnalysis.do',    method: 'POST', type: 'json' },
+    rerunAnalysis:  { url: '/rerunStepAnalysis.do',  method: 'POST', type: 'json' },
     renameAnalysis: { url: '/renameStepAnalysis.do', method: 'POST', type: 'json' },
     deleteAnalysis: { url: '/deleteStepAnalysis.do', method: 'POST', type: 'json' },
     getAnalysis:    { url: '/stepAnalysis.do',       method: 'GET',  type: 'json' },
@@ -279,33 +283,57 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
     return doAjax(ROUTES.getAnalysis, {
       data: { "analysisId": analysisId },
       success: function(data) {
-        // add name as data attribute
-        $element.data('analysis-name', data.analysisName);
 
-        // add display name
-        $element.find('[data-bind="displayName"]').text(data.displayName);
+        if (data.status === 'OUT_OF_DATE') {
+          // rerun this analysis automatically using existing param values
+          doAjax(ROUTES.rerunAnalysis, {
+            data: { "analysisId": analysisId },
+            success: function(data) {
+              if (data.status === "success") {
+                // rerun was kicked off successfully; load display
+                loadDisplaySubpanes($element, $attrs);
+              }
+              else if (data.status === "no_params") {
+                handleAjaxError("Error: Cannot re-run an analysis that has never been run.");
+              }
+            },
+            error: function() {
+              handleAjaxError("Error: failure to automatically re-run out-of-date analysis.");
+            }
+          });
+        }
 
-        // add short description
-        $element.find('[data-bind="shortDescription"]').html(data.shortDescription);
+        // if not out-of-date, handle normally
+        else {
 
-        // add description and hide
-        $element.find('[data-bind="description"]').html(data.description).hide();
+          // add name as data attribute
+          $element.data('analysis-name', data.analysisName);
 
-        // add toggle link behavior
-        var descriptionVisible = false;
-        var toggleFunction = function(event) {
-          var $link = $(event.target);
-          $link.parents('.step-analysis-pane').find('[data-bind="description"]').toggle();
-          descriptionVisible = !descriptionVisible;
-          $link.text(descriptionVisible ? 'Read Less' : 'Read More');
-        };
-        $element.find('.toggle-description').click(toggleFunction);
+          // add display name
+          $element.find('[data-bind="displayName"]').text(data.displayName);
 
-        // load form and (if necessary) populate selected values
-        loadAnalysisForm($element, data);
+          // add short description
+          $element.find('[data-bind="shortDescription"]').html(data.shortDescription);
 
-        // load results
-        loadResultsPane($element, analysisId);
+          // add description and hide
+          $element.find('[data-bind="description"]').html(data.description).hide();
+
+          // add toggle link behavior
+          var descriptionVisible = false;
+          var toggleFunction = function(event) {
+            var $link = $(event.target);
+            $link.parents('.step-analysis-pane').find('[data-bind="description"]').toggle();
+            descriptionVisible = !descriptionVisible;
+            $link.text(descriptionVisible ? 'Read Less' : 'Read More');
+          };
+          $element.find('.toggle-description').click(toggleFunction);
+
+          // load form and (if necessary) populate selected values
+          loadAnalysisForm($element, data);
+
+          // load results
+          loadResultsPane($element, analysisId);
+        }
       },
       error: function() {
         handleAjaxError("Error: Unable to retrieve step analysis json for id: " + analysisId);
