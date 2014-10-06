@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -92,7 +93,7 @@ import org.json.JSONObject;
  * @author Jerric Gao
  * 
  */
-public abstract class Query extends WdkModelBase {
+public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   protected static final Logger logger = Logger.getLogger(Query.class);
 
@@ -307,12 +308,21 @@ public abstract class Query extends WdkModelBase {
     this.doNotTest = doNotTest;
   }
 
+  @Override
   public boolean getDoNotTest() {
     return doNotTest;
   }
 
   public void addParamValuesSet(ParamValuesSet paramValuesSet) {
     paramValuesSets.add(paramValuesSet);
+  }
+
+  public ParamValuesSet getDefaultParamValuesSet() throws WdkModelException {
+    ParamValuesSet paramValues = new ParamValuesSet();
+    for (Param param : getParams()) {
+      paramValues.put(param.getName(), param.getDefault());
+    }
+    return paramValues;
   }
 
   public List<ParamValuesSet> getParamValuesSets() throws WdkModelException {
@@ -485,6 +495,11 @@ public abstract class Query extends WdkModelBase {
     }
 
     resolved = true;
+  }
+
+  public int getNumParamValuesSets() {
+    if (paramValuesSets.isEmpty()) return 1;
+    return paramValuesSets.size();
   }
 
   private void updateParamValuesSetsWithDefaults() throws WdkModelException {

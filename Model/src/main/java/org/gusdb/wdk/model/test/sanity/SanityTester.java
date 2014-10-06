@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.test.sanity;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,20 +12,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QuerySet;
-import org.gusdb.wdk.model.query.QuerySet.QueryType;
-import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.question.QuestionSet;
-import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.record.RecordClassSet;
-import org.gusdb.wdk.model.test.sanity.tests.AttributeQueryTest;
-import org.gusdb.wdk.model.test.sanity.tests.QuestionTest;
-import org.gusdb.wdk.model.test.sanity.tests.RecordClassTest;
-import org.gusdb.wdk.model.test.sanity.tests.TableQueryTest;
-import org.gusdb.wdk.model.test.sanity.tests.TableTotalQueryTest;
-import org.gusdb.wdk.model.test.sanity.tests.VocabQueryTest;
-import org.gusdb.wdk.model.user.User;
 
 /**
  * Main class for running the sanity tests, which is a way to test all Queries
@@ -43,47 +30,30 @@ public class SanityTester {
 
   private static final Logger LOG = Logger.getLogger(SanityTester.class);
 
+  private static final boolean USE_CLASSIC_TEST_SETUP = true;
+
   public interface ElementTest {
     public String getTestName();
-    public TestResult test(Statistics stats) throws Exception;
     public String getCommand();
+    public TestResult test(Statistics stats) throws Exception;
   }
 
-  // statistics aggregator class
-  public static class Statistics {
+  public static abstract class Statistics {
 
-    public int testCount = 0;
-    public int queriesPassed = 0;
-    public int queriesFailed = 0;
-    public int recordsPassed = 0;
-    public int recordsFailed = 0;
-    public int questionsPassed = 0;
-    public int questionsFailed = 0;
-    
-    public String getSummaryLine(TestFilter testFilter) {
+    protected float _setupDuration = 0;
+    protected int _testsCreated = 0;
+    protected int _testsRun = 0;
 
-      String result = isFailedOverall() ? "FAILED" : "PASSED";
+    public abstract void processResult(ElementTest test, TestResult result);
+    public abstract String getSummaryLine(TestFilter testFilter);
+    public abstract boolean isFailedOverall();
 
-      int totalPassed = queriesPassed + recordsPassed + questionsPassed;
-      int totalFailed = queriesFailed + recordsFailed + questionsFailed;
+    public void setSetupDuration(float seconds) { _setupDuration = seconds; }
+    public void setNumTestsCreated(int count) { _testsCreated = count; }
+    public void incrementTestsRun() { _testsRun++; }
 
-      StringBuffer resultLine = new StringBuffer("***Sanity test summary***" + NL);
-      resultLine.append("TestFilter: " + testFilter.getOriginalString() + NL);
-      resultLine.append("Total Passed: " + totalPassed + NL);
-      resultLine.append("Total Failed: " + totalFailed + NL);
-      resultLine.append("   " + queriesPassed + " queries passed, "
-          + queriesFailed + " queries failed" + NL);
-      resultLine.append("   " + recordsPassed + " records passed, "
-          + recordsFailed + " records failed" + NL);
-      resultLine.append("   " + questionsPassed + " questions passed, "
-          + questionsFailed + " questions failed" + NL);
-      resultLine.append("Sanity Test " + result + NL);
-      
-      return resultLine.toString();
-    }
-
-    public boolean isFailedOverall() {
-      return (queriesFailed > 0 || recordsFailed > 0 || questionsFailed > 0);
+    protected static String fmt(float f) {
+      return new DecimalFormat("0.00").format(f);
     }
   }
 
@@ -100,107 +70,39 @@ public class SanityTester {
     _indexOnly = indexOnly;
     _failuresOnly = failuresOnly;
     _testFilter = testFilter;
-    _stats = new Statistics();
-    _tests = buildTestSequence(wdkModel, wdkModel.getSystemUser(), skipWebSvcQueries);
-  }
-
-  private static List<ElementTest> buildTestSequence(WdkModel wdkModel, User user, boolean skipWebSvcQueries)
-      throws WdkModelException {
-    List<ElementTest> tests = new ArrayList<>();
-    addQuerySetTests(tests, wdkModel, user, QueryType.VOCAB);
-    addQuerySetTests(tests, wdkModel, user, QueryType.ATTRIBUTE);
-    addQuerySetTests(tests, wdkModel, user, QueryType.TABLE);
-    addQuestionSetTests(tests, wdkModel, user, skipWebSvcQueries);
-    addRecordSetTests(tests, wdkModel, user);
-    return tests;
-  }
-
-  private static void addQuerySetTests(List<ElementTest> tests, WdkModel wdkModel, User user, QueryType forQueryType)
-      throws WdkModelException {
-    if (wdkModel.getProjectId().equals("EuPathDB") && forQueryType.equals(QueryType.TABLE))
-      return; // do not process table queries for the portal
-    for (QuerySet querySet : wdkModel.getAllQuerySets()) {
-      QueryType queryType = querySet.getQueryTypeEnum();
-      LOG.debug("Building tests for QuerySet " + querySet.getName() + " (type=" + queryType + "); filtering on " + forQueryType);
-      if (queryType.equals(forQueryType) && !querySet.getDoNotTest()) {
-        for (Query query : querySet.getQueries()) {
-          if (!query.getDoNotTest()) {
-            LOG.debug("   Building tests for Query " + query.getName() + " using " + query.getParamValuesSets().size() + " ParamValuesSets");
-            for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
-              switch (queryType) {
-                case VOCAB:
-                  tests.add(new VocabQueryTest(user, querySet, query, paramValuesSet));
-                  break;
-                case ATTRIBUTE:
-                  tests.add(new AttributeQueryTest(user, querySet, query, paramValuesSet));
-                  break;
-                case TABLE:
-                  tests.add(new TableQueryTest(user, querySet, query, paramValuesSet));
-                  // perform additional test for table queries
-                  tests.add(new TableTotalQueryTest(user, querySet, query, paramValuesSet));
-                default:
-                  // TABLE_TOTAL should never be a QuerySet's query type; it exists only for sanity tests.
-                  // All other query types are not sanity testable
-                  LOG.debug("QuerySet " + querySet.getName() + " with type " +
-                      queryType + " is not sanity testable.  Skipping...");
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private static void addQuestionSetTests(List<ElementTest> tests, WdkModel wdkModel,
-      User user, boolean skipWebSvcQueries) throws WdkModelException {
-    for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
-      if (!questionSet.getDoNotTest()) {
-        for (Question question : questionSet.getQuestions()) {
-          Query query = question.getQuery();
-          if (!(skipWebSvcQueries && query instanceof ProcessQuery) &&
-              !query.getDoNotTest() && !query.getQuerySet().getDoNotTest()) {
-            for (ParamValuesSet paramValuesSet : question.getQuery().getParamValuesSets()) {
-              tests.add(new QuestionTest(user, question, paramValuesSet));
-            }
-          }
-        }
-      }
-    }
-  }
-
-  public static void addRecordSetTests(List<ElementTest> tests, WdkModel wdkModel, User user) {
-    for (RecordClassSet recordClassSet : wdkModel.getAllRecordClassSets()) {
-      for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
-        if (!recordClass.getDoNotTest()) {
-          tests.add(new RecordClassTest(user, recordClass));
-        }
-      }
-    }
+    long testStart = System.currentTimeMillis();
+    TestBuilder testBuilder = (USE_CLASSIC_TEST_SETUP ?
+        new ClassicTestBuilder() : new TopDownTestBuilder());
+    _stats = testBuilder.getNewStatisticsObj();
+    _tests = testBuilder.buildTestSequence(wdkModel, wdkModel.getSystemUser(), skipWebSvcQueries);
+    _stats.setSetupDuration((System.currentTimeMillis() - testStart) / 1000F);
+    _stats.setNumTestsCreated(_tests.size());
   }
 
   public List<TestResult> runTests() throws Exception {
     List<TestResult> results = new ArrayList<>();
-    for (int i = 0; i < _tests.size(); i++) {
-      ElementTest element = _tests.get(i);
+    for (int i = 1; i <= _tests.size(); i++) {
+      ElementTest element = _tests.get(i-1);
 
       if (_testFilter.filterOutTest(i)) continue;
 
-      LOG.info(" [test: " + i + "] " + element.getTestName());
+      LOG.info(" [test: " + i + "/" + _tests.size() + "] " + element.getTestName());
 
       if (_indexOnly) continue;
 
       // performing test
       TestResult result = new TestResult(element);
       try {
+        _stats.incrementTestsRun();
         result = element.test(_stats);
-        if (result.isPassed()) {
-          result.setPrefix("");
-          result.setStatus(" passed.");
-        }
       }
       catch (Exception e) {
-        result.setReturned(" It threw an exception.");
+        result.setReturned("Exception thrown");
         result.setCaughtException(e);
+      }
+      finally {
+        result.stopTimer();
+        _stats.processResult(element, result);
       }
 
       result.setIndex(i);
@@ -208,7 +110,7 @@ public class SanityTester {
 
       // dump test result
       if (!result.isPassed() || !_failuresOnly) {
-        LOG.info(result.getResultString());
+        LOG.info(NL + result.getResultString());
       }
     }
 
@@ -227,5 +129,23 @@ public class SanityTester {
   
   public boolean isFailedOverall() {
     return _stats.isFailedOverall();
+  }
+
+  public static String getRerunLine(List<TestResult> results) {
+    List<Integer> failedTestIds = new ArrayList<>();
+    for (int i = 0; i < results.size(); i++) {
+      if (!results.get(i).isPassed()) failedTestIds.add(i+1);
+    }
+    return "To re-run failures, use filter string '" +
+        TestFilter.getFilterString(failedTestIds) + "'.";
+  }
+
+  public static boolean isTestable(OptionallyTestable testable) {
+    return !testable.getDoNotTest();
+  }
+
+  public static boolean isTestable(Query query, boolean skipWebSvcQueries) {
+    return (!(skipWebSvcQueries && query instanceof ProcessQuery) &&
+            !query.getDoNotTest() && !query.getQuerySet().getDoNotTest());
   }
 }

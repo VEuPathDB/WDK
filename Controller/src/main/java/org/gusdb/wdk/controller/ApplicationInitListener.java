@@ -89,8 +89,8 @@ public class ApplicationInitListener implements ServletContextListener {
         logger.info("Initialized model object.  Setting on servlet context.");
         servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
 
-        // set assetsUrl attribtue
-        servletContext.setAttribute(CConstants.WDK_ASSETS_URL_KEY, getAssetsUrl(wdkModel, servletContext));
+        // Set assetsUrl attribtue. It will be null if not defined in the model
+        servletContext.setAttribute(CConstants.WDK_ASSETS_URL_KEY, wdkModel.getModel().getModelConfig().getAssetsUrl());
 
         // load wizard
         Wizard wizard = Wizard.loadWizard(gusHome, wdkModel);
@@ -99,18 +99,5 @@ public class ApplicationInitListener implements ServletContextListener {
                 alwaysGoToSummary);
         servletContext.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
         servletContext.setAttribute(CConstants.GUS_HOME_KEY, gusHome);
-    }
-
-    private String getAssetsUrl(WdkModelBean wdkModel, ServletContext servletContext) {
-        String url = wdkModel.getModel().getModelConfig().getAssetsUrl();
-        if (url == null || url.isEmpty()) {
-          // default to [contextPath]/assets
-          url = servletContext.getContextPath() + "/assets";
-        } else if (!url.startsWith("/")) {
-          // if relative, make relative to [contextPath]
-          url = servletContext.getContextPath() + "/" + url;
-        }
-        logger.debug("Assets URL: " + url);
-        return url;
     }
 }

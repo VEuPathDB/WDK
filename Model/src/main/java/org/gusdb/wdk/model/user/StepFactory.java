@@ -92,16 +92,26 @@ public class StepFactory {
     private boolean _nameExists;
     private boolean _isPublic;
     private String _description;
+
     public NameCheckInfo(boolean nameExists, boolean isPublic, String description) {
       _nameExists = nameExists;
       _isPublic = isPublic;
       _description = description;
     }
-    public boolean nameExists() { return _nameExists; }
-    public boolean isPublic() { return _isPublic; }
-    public String getDescription() { return _description; }
+
+    public boolean nameExists() {
+      return _nameExists;
+    }
+
+    public boolean isPublic() {
+      return _isPublic;
+    }
+
+    public String getDescription() {
+      return _description;
+    }
   }
-  
+
   private final WdkModel wdkModel;
   private final String userSchema;
   private final DatabaseInstance userDb;
@@ -170,10 +180,10 @@ public class StepFactory {
         userDb.getPlatform().convertBoolean(true)).toString();
     // does not add any wildcards
     // NOTE: need to include null is_valid values, which should evaluate to 'true'
-    //       because of the way EuPathDb maintains the valid step values between releases
-    isRootStepValidCondition = new StringBuilder(" AND (sp.").append(COLUMN_IS_VALID)
-        .append(" is null OR sp.").append(COLUMN_IS_VALID).append(" = ")
-        .append(userDb.getPlatform().convertBoolean(true)).append(")").toString();
+    // because of the way EuPathDb maintains the valid step values between releases
+    isRootStepValidCondition = new StringBuilder(" AND (sp.").append(COLUMN_IS_VALID).append(
+        " is null OR sp.").append(COLUMN_IS_VALID).append(" = ").append(
+        userDb.getPlatform().convertBoolean(true)).append(")").toString();
 
     // adds wildcard for project
     String aliveByProjectSql = new StringBuilder(basicStratsSql).append(isNotDeletedCondition).append(
@@ -188,11 +198,11 @@ public class StepFactory {
 
     // contains wildcard for project; does not contain ordering
     unsortedPublicStratsSql = new StringBuilder(aliveByProjectSql).append(isPublicCondition).toString();
-    
+
     // contains wildcard for project; does not contain ordering
-    countValidPublicStratsSql = new StringBuilder("select count(1) from ( ")
-        .append(unsortedPublicStratsSql).append(isRootStepValidCondition).append(" )").toString();
-    
+    countValidPublicStratsSql = new StringBuilder("select count(1) from ( ").append(unsortedPublicStratsSql).append(
+        isRootStepValidCondition).append(" )").toString();
+
     // contains wildcards for is_public (boolean) and strat ID (int)
     updatePublicStratStatusSql = new StringBuilder().append("UPDATE ").append(userSchema).append(
         TABLE_STRATEGY).append(" SET ").append(COLUMN_IS_PUBLIC).append(" = ?").append(" WHERE ").append(
@@ -205,7 +215,7 @@ public class StepFactory {
   WdkModel getWdkModel() {
     return wdkModel;
   }
-  
+
   // parse boolexp to pass left_child_id, right_child_id to loadAnswer
   Step createStep(User user, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
@@ -545,9 +555,10 @@ public class StepFactory {
   public Step getStepById(int stepId) throws WdkModelException {
     return loadStep(null, stepId);
   }
-  
+
   // get left child id, right child id in here
   Step loadStep(User user, int stepId) throws WdkModelException {
+    logger.debug("Loading step#" + stepId + "....");
     ResultSet rsStep = null;
     String sql = "SELECT * FROM " + userSchema + TABLE_STEP + " WHERE " + COLUMN_STEP_ID + " = ?";
     try {
@@ -556,11 +567,15 @@ public class StepFactory {
       psStep.setInt(1, stepId);
       rsStep = psStep.executeQuery();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-load-step", start);
+
+      logger.debug("SELECT step#" + stepId + " SQL finished execution, now creating step object...");
       if (!rsStep.next())
         throw new WdkModelException("The Step #" + stepId + " of user " +
             (user == null ? "unspecified" : user.getEmail()) + " doesn't exist.");
 
-      return loadStep(user, rsStep);
+      Step step = loadStep(user, rsStep);
+      logger.debug("Step#" + stepId + " object loaded.");
+      return step;
     }
     catch (SQLException | JSONException ex) {
       throw new WdkModelException("Unable to load step.", ex);
@@ -577,9 +592,7 @@ public class StepFactory {
     int stepId = rsStep.getInt(COLUMN_STEP_ID);
     int userId = rsStep.getInt(Utilities.COLUMN_USER_ID);
 
-    Step step = (user == null ?
-        new Step(this, userId, stepId) :
-        new Step(this, user, stepId));
+    Step step = (user == null ? new Step(this, userId, stepId) : new Step(this, user, stepId));
     step.setQuestionName(rsStep.getString(COLUMN_QUESTION_NAME));
     step.setCreatedTime(rsStep.getTimestamp(COLUMN_CREATE_TIME));
     step.setLastRunTime(rsStep.getTimestamp(COLUMN_LAST_RUN_TIME));
@@ -872,7 +885,8 @@ public class StepFactory {
   public int getPublicStrategyCount() throws WdkModelException {
     ResultSet resultSet = null;
     try {
-      logger.debug("Executing SQL with one param ('" + wdkModel.getProjectId() + "'): " + countValidPublicStratsSql);
+      logger.debug("Executing SQL with one param ('" + wdkModel.getProjectId() + "'): " +
+          countValidPublicStratsSql);
       long start = System.currentTimeMillis();
       PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, countValidPublicStratsSql);
       ps.setString(1, wdkModel.getProjectId());
@@ -1024,6 +1038,15 @@ public class StepFactory {
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);
     }
+    // copy step analysis instances from old step to new step
+    try {
+      wdkModel.getStepAnalysisFactory().copyAnalysisInstances(oldStep, newStep);
+    }
+    catch (WdkUserException e) {
+      // new step should be an exact copy of old, so this is a model exception if it's thrown
+      throw new WdkModelException("New step not analyzable by analysis present on old step.", e);
+    }
+    // create mapping from old step to new step
     stepIdsMap.put(oldStep.getStepId(), newStep.getStepId());
     newStep.setCollapsedName(oldStep.getCollapsedName());
     newStep.setCollapsible(oldStep.isCollapsible());
@@ -1365,9 +1388,10 @@ public class StepFactory {
 
   NameCheckInfo checkNameExists(Strategy strategy, String name, boolean saved) throws WdkModelException {
     ResultSet rsCheckName = null;
-    String sql = "SELECT strategy_id, is_public, description FROM " + userSchema + TABLE_STRATEGY + " WHERE " +
-        Utilities.COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME + " = ? AND " +
-        COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? AND " + COLUMN_STRATEGY_ID + " <> ?";
+    String sql = "SELECT strategy_id, is_public, description FROM " + userSchema + TABLE_STRATEGY +
+        " WHERE " + Utilities.COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME +
+        " = ? AND " + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? AND " + COLUMN_STRATEGY_ID +
+        " <> ?";
     try {
       long start = System.currentTimeMillis();
       PreparedStatement psCheckName = SqlUtils.getPreparedStatement(dataSource, sql);
@@ -1404,20 +1428,12 @@ public class StepFactory {
    * 
    * @param strategy
    * @return
-   * @throws JSONException
    * @throws WdkModelException
    * @throws WdkUserException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
    */
   Strategy copyStrategy(Strategy strategy) throws WdkModelException, WdkUserException {
-    User user = strategy.getUser();
     Step root = strategy.getLatestStep().deepClone();
-    String name = strategy.getName();
-    if (!name.toLowerCase().endsWith(", copy of"))
-      name += ", Copy of";
-    name = getNextName(user, name, false);
-    return createStrategy(user, root, name, null, false, null, false, false);
+    return copyStrategy(strategy, root, strategy.getName());
   }
 
   /**
@@ -1427,20 +1443,23 @@ public class StepFactory {
    * @param strategy
    * @param stepId
    * @return
-   * @throws SQLException
    * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * @throws JSONException
    * @throws WdkUserException
    */
   Strategy copyStrategy(Strategy strategy, int stepId) throws WdkModelException, WdkUserException {
+    Step oldStep = strategy.getStepById(stepId);
+    return copyStrategy(strategy, oldStep, oldStep.getCustomName());
+    
+  }
+
+  private Strategy copyStrategy(Strategy strategy, Step oldTopStep, String oldStrategyName)
+      throws WdkModelException, WdkUserException {
     User user = strategy.getUser();
-    Step step = strategy.getStepById(stepId).deepClone();
-    String name = step.getCustomName();
-    if (!name.toLowerCase().endsWith(", copy of"))
-      name += ", Copy of";
-    name = getNextName(user, name, false);
-    return createStrategy(user, step, name, null, false, null, false, false);
+    Step newTopStep = oldTopStep.deepClone();
+    String newName = oldStrategyName +
+        (!oldStrategyName.toLowerCase().endsWith(", copy of") ? ", Copy of" : "");
+    newName = getNextName(user, newName, false);
+    return createStrategy(user, newTopStep, newName, null, false, null, false, false);
   }
 
   private String getNextName(User user, String oldName, boolean saved) throws WdkModelException {
@@ -1539,31 +1558,32 @@ public class StepFactory {
 
   public void verifySameOwnerAndProject(Step step1, Step step2) throws WdkModelException {
     // check that users match
-      if (step1.getUser().getUserId() != step2.getUser().getUserId()) {
-        throw new WdkIllegalArgumentException(getVerificationPrefix() + "Cannot align two steps with different " +
-            "owners.  Existing step " + step1.getStepId() + " has owner " +
-            step1.getUser().getUserId() + " (" + step1.getUser().getEmail() +
-            ")\n  Call made to align the following step (see stack below for " +
-            "how):\n  Newly aligned step " + step2.getStepId() + " has owner " +
-            step2.getUser().getUserId() + " (" + step2.getUser().getEmail() + ")");
-      }
-      
-      // check that projects both match current project
-      String projectId = wdkModel.getProjectId();
-      if (!step1.getProjectId().equals(projectId) || !step2.getProjectId().equals(projectId)) {
-        throw new WdkIllegalArgumentException(getVerificationPrefix() + "Cannot align two steps with different " +
-            "projects.  Project IDs don't match during alignment of two " +
-            "steps!!\n  Currently loaded model has project " + projectId +
-            ".\n  Existing step " + step1.getStepId() + " has project " +
-            step1.getProjectId() + "\n  Call made to align the following " +
-            "step (see stack below for how):\n  Newly aligned step " +
-            step2.getStepId() + " has project " + step2.getProjectId());
-      }
+    if (step1.getUser().getUserId() != step2.getUser().getUserId()) {
+      throw new WdkIllegalArgumentException(getVerificationPrefix() +
+          "Cannot align two steps with different " + "owners.  Existing step " + step1.getStepId() +
+          " has owner " + step1.getUser().getUserId() + " (" + step1.getUser().getEmail() +
+          ")\n  Call made to align the following step (see stack below for " +
+          "how):\n  Newly aligned step " + step2.getStepId() + " has owner " + step2.getUser().getUserId() +
+          " (" + step2.getUser().getEmail() + ")");
+    }
+
+    // check that projects both match current project
+    String projectId = wdkModel.getProjectId();
+    if (!step1.getProjectId().equals(projectId) || !step2.getProjectId().equals(projectId)) {
+      throw new WdkIllegalArgumentException(getVerificationPrefix() +
+          "Cannot align two steps with different " +
+          "projects.  Project IDs don't match during alignment of two " +
+          "steps!!\n  Currently loaded model has project " + projectId + ".\n  Existing step " +
+          step1.getStepId() + " has project " + step1.getProjectId() +
+          "\n  Call made to align the following " + "step (see stack below for how):\n  Newly aligned step " +
+          step2.getStepId() + " has project " + step2.getProjectId());
+    }
   }
 
   public void verifySameOwnerAndProject(Step step1, int step2Id) throws WdkModelException {
     // some logic sets 0 for step IDs; this is valid but not eligible for this check
-    if (step2Id == 0) return;
+    if (step2Id == 0)
+      return;
     Step step2;
     try {
       step2 = getStepById(step2Id);
@@ -1579,31 +1599,27 @@ public class StepFactory {
     // check that users match
     if (strategy.getUser().getUserId() != step.getUser().getUserId()) {
       throw new WdkIllegalArgumentException(getVerificationPrefix() +
-          "Cannot assign a root step to a strategy unless they have the same" +
-          "owner.  Existing strategy " + strategy.getStrategyId() + " has" +
-          "owner " + strategy.getUser().getUserId() + " (" +
+          "Cannot assign a root step to a strategy unless they have the same" + "owner.  Existing strategy " +
+          strategy.getStrategyId() + " has" + "owner " + strategy.getUser().getUserId() + " (" +
           strategy.getUser().getEmail() + ")\n  Call made to assign the " +
-          "following root step (see stack below for how):\n  Newly assigned" +
-          "step " + step.getStepId() + " has owner " +
-          step.getUser().getUserId() + " (" + step.getUser().getEmail() + ")");
+          "following root step (see stack below for how):\n  Newly assigned" + "step " + step.getStepId() +
+          " has owner " + step.getUser().getUserId() + " (" + step.getUser().getEmail() + ")");
     }
-      
+
     // check that projects both match current project
     String projectId = wdkModel.getProjectId();
     if (!strategy.getProjectId().equals(projectId) || !step.getProjectId().equals(projectId)) {
-      throw new WdkIllegalArgumentException(getVerificationPrefix() + "Cannot assign a root step to a strategy " +
+      throw new WdkIllegalArgumentException(getVerificationPrefix() +
+          "Cannot assign a root step to a strategy " +
           "unless they have the same project.  Project IDs don't match " +
-          "during assignment of root step to strategy!!\n  Currently loaded " +
-          "model has project " + projectId + ".\n  Root step to be assigned (" +
-          step.getStepId() + ") has project " + step.getProjectId() + ".\n  " +
-          "Strategy being assigned step (" + strategy.getStrategyId() +
+          "during assignment of root step to strategy!!\n  Currently loaded " + "model has project " +
+          projectId + ".\n  Root step to be assigned (" + step.getStepId() + ") has project " +
+          step.getProjectId() + ".\n  " + "Strategy being assigned step (" + strategy.getStrategyId() +
           ") has project " + strategy.getProjectId());
     }
   }
-  
-  
+
   private String getVerificationPrefix() {
-    return "[IP " + MDCUtil.getIpAddress() + " requested page from " +
-        MDCUtil.getRequestedDomain() + "] ";
+    return "[IP " + MDCUtil.getIpAddress() + " requested page from " + MDCUtil.getRequestedDomain() + "] ";
   }
 }

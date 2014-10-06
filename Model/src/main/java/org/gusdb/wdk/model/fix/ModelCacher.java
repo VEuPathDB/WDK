@@ -109,6 +109,7 @@ public class ModelCacher extends BaseCLI {
         logger.info("Expanding model for project " + projectId);
         WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
         expand(wdkModel, schema);
+        wdkModel.releaseResources();
         logger.info("=========================== done ============================");
       }
     } else {

@@ -38,25 +38,16 @@ public class RecordClassTest implements ElementTest {
   @Override
   public TestResult test(Statistics stats) throws Exception {
     TestResult result = new TestResult(this);
-    try {
-      Map<String, String> paramValues = _paramValuesSet.getParamValues();
-      Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-      for (String key : paramValues.keySet()) {
-        pkValues.put(key, paramValues.get(key));
-      }
-      RecordInstance recordInstance = new RecordInstance(_user, _recordClass, pkValues);
-      recordInstance.print();
-      result.setPassed(true);
-      return result;
+    result.setExpected("Expect to create RecordInstance");
+    Map<String, String> paramValues = _paramValuesSet.getParamValues();
+    Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+    for (String key : paramValues.keySet()) {
+      pkValues.put(key, paramValues.get(key));
     }
-    finally {
-      result.stopTimer();
-      if (result.isPassed()) {
-        stats.recordsPassed++;
-      }
-      else {
-        stats.recordsFailed++;
-      }
-    }
+    RecordInstance recordInstance = new RecordInstance(_user, _recordClass, pkValues);
+    recordInstance.print();
+    result.setReturned("Created RecordInstance");
+    result.setPassed(true);
+    return result;
   }
 }

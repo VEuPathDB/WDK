@@ -26,8 +26,12 @@ public class QuestionTest implements ElementTest {
 
   @Override
   public String getTestName() {
-    return "QUESTION " + _question.getFullName() +
-        " (query " + _question.getQuery().getFullName() + ")";
+    return getTestName(_question);
+  }
+  
+  public static String getTestName(Question question) {
+    return "QUESTION " + question.getFullName() +
+        " (query " + question.getQuery().getFullName() + ")";
   }
 
   @Override
@@ -39,46 +43,30 @@ public class QuestionTest implements ElementTest {
 
   @Override
   public TestResult test(Statistics stats) throws Exception {
-
-    TestResult result = new TestResult(this);
     int sanityMin = _paramValuesSet.getMinRows();
     int sanityMax = _paramValuesSet.getMaxRows();
+    TestResult result = new TestResult(this);
+    result.setExpected("Expect [" + sanityMin + " - " + sanityMax + "] rows" +
+        ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
+    _question.getQuery().setIsCacheable(false);
+    AnswerValue answerValue = _question.makeAnswerValue(_user,
+        _paramValuesSet.getParamValues(), true, 0);
+    int resultSize = answerValue.getResultSize();
 
-    try {
-      _question.getQuery().setIsCacheable(false);
-      AnswerValue answerValue = _question.makeAnswerValue(_user,
-          _paramValuesSet.getParamValues(), true, 0);
+    // get the summary attribute list
+    Map<String, AttributeField> summary = answerValue.getSummaryAttributeFieldMap();
 
-      int resultSize = answerValue.getResultSize();
-
-      // get the summary attribute list
-      Map<String, AttributeField> summary = answerValue.getSummaryAttributeFieldMap();
-
-      // iterate through the page and try every summary attribute of each record
-      for (RecordInstance record : answerValue.getRecordInstances()) {
-        StringBuffer sb = new StringBuffer();
-        for (String attrName : summary.keySet()) {
-          sb.append(record.getAttributeValue(attrName));
-          sb.append('\t');
-        }
-      }
-
-      result.setPassed(resultSize >= sanityMin && resultSize <= sanityMax);
-
-      result.setReturned(" It returned " + resultSize + " rows. ");
-      if (sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS)
-        result.setExpected("Expected (" + sanityMin + " - " + sanityMax + ") ");
-
-      return result;
-    }
-    finally {
-      result.stopTimer();
-      if (result.isPassed()) {
-        stats.questionsPassed++;
-      }
-      else {
-        stats.questionsFailed++;
+    // iterate through the page and try every summary attribute of each record
+    for (RecordInstance record : answerValue.getRecordInstances()) {
+      StringBuffer sb = new StringBuffer();
+      for (String attrName : summary.keySet()) {
+        sb.append(record.getAttributeValue(attrName));
+        sb.append('\t');
       }
     }
+
+    result.setReturned(resultSize + " rows returned");
+    result.setPassed(resultSize >= sanityMin && resultSize <= sanityMax);
+    return result;
   }
 }

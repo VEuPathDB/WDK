@@ -71,7 +71,7 @@ public class RecordInstance extends AttributeValueContainer {
     pkValues = records.get(0);
 
     PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
-        recordClass.getPrimaryKeyAttributeField(), pkValues);
+        recordClass.getPrimaryKeyAttributeField(), pkValues, this);
     setPrimaryKey(primaryKey);
   }
 
@@ -82,7 +82,7 @@ public class RecordInstance extends AttributeValueContainer {
 
     // the record instance from answer doesn't need the pk value translation
     PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
-        recordClass.getPrimaryKeyAttributeField(), pkValues);
+        recordClass.getPrimaryKeyAttributeField(), pkValues, this);
     setPrimaryKey(primaryKey);
   }
 
@@ -392,7 +392,7 @@ public class RecordInstance extends AttributeValueContainer {
 
     return buf.toString();
   }
-
+  
   public String printSummary() throws WdkModelException, WdkUserException {
 
     StringBuffer buf = new StringBuffer();
@@ -492,7 +492,6 @@ public class RecordInstance extends AttributeValueContainer {
    * @param nonSummaryAttributes
    *          .
    */
-
   private void splitSummaryAttributeValue(
       Map<String, AttributeValue> attributes,
       Map<String, AttributeValue> summaryAttributes,

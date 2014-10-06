@@ -118,7 +118,7 @@
             </ul>
           </div>
         </c:if>
-        <img style="position:absolute;top:-11px" src="<c:url value='/assets/wdk/images/beta2-40.png'/>" />
+        <imp:image style="margin-bottom: -13px; position: relative; top: -12px;" src="wdk/images/beta2-40.png" />
       </li>
     </c:if>
     <%--
