@@ -142,20 +142,12 @@ wdk.namespace('wdk.controllers', function(ns) {
           this.$expand.html(filter.length ? 'Refine selection' : this.expandString);
         });
 
+      // Wait for metadata to load to prevent blank UI sections
       RSVP.all(metadataPromises).then(function() {
+        var defaultSelection = this.fields.where({'leaf': 'true'})[0] || filterFields[0];
+        this.selectField(defaultSelection);
         this.filterService.filters.set(options.filters);
         this.$el.append(itemsView.el, collapsibleView.el);
-
-        var leaves = this.fields.where({ 'leaf': 'true' });
-
-        // select first filtered field
-        if (filterFields.length) {
-          this.selectField(filterFields[0]);
-        }
-        else if (leaves.length === 1) {
-          this.selectField(leaves[0]);
-        }
-
         this.trigger('ready', this);
       }.bind(this));
     },
@@ -313,12 +305,16 @@ wdk.namespace('wdk.controllers', function(ns) {
       }.bind(this));
     },
 
+    // if field, abort current metadata requests
+    // and trigger request for new field
     selectField: function(field) {
-      this.abortMetadataRequest(this.selectedField);
-      this.selectedField = field;
-      this._setSelectedFieldDistribution().then(function() {
-        this.trigger('select:field', field);
-      }.bind(this));
+      if (field) {
+        this.abortMetadataRequest(this.selectedField);
+        this.selectedField = field;
+        this._setSelectedFieldDistribution().then(function() {
+          this.trigger('select:field', field);
+        }.bind(this));
+      }
       return this;
     },
 
