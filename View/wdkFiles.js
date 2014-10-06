@@ -50,6 +50,8 @@ module.exports = {
     'webapp/wdk/js/views/template_view.js',
     'webapp/wdk/js/views/question_view.js',
 
+    'webapp/wdk/js/views/layout/**/*.js',
+
     // filter views
     'webapp/wdk/js/views/filter/field_list_view.js',
     'webapp/wdk/js/views/filter/range_filter_view.js',
@@ -59,9 +61,6 @@ module.exports = {
     'webapp/wdk/js/views/filter/results_view.js',
     'webapp/wdk/js/views/filter/filter_item_view.js',
     'webapp/wdk/js/views/filter/filter_items_view.js',
-    'webapp/wdk/js/views/filter/filter_collapsed_view.js',
-    'webapp/wdk/js/views/filter/filter_expanded_view.js',
-    'webapp/wdk/js/views/filter/filter_view.js',
 
     'webapp/wdk/js/views/strategy/**/*.js',
 

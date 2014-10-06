@@ -23,6 +23,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.listenTo(this.model, 'reset', this.render);
       this.listenTo(this.controller, 'select:field', this.toggleSelectItems);
       this.listenTo(this.controller, 'change:selectedData', this.updateTotal);
+      this.render();
     },
 
     render: function() {
