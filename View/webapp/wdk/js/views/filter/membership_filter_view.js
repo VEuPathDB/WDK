@@ -102,8 +102,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var distribution = this.model.get('distribution');
       var counts = _.pluck(distribution, 'count');
 
-      var scale = _.max(counts) + 10;
       var size = counts.reduce(function(acc, count){ return acc + count; });
+      // var scale = _.max(counts) + 10;
+      var scale = size;
 
       this.$el.html(this.template({
         field: this.model.attributes,
