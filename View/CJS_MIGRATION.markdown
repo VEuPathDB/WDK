@@ -43,12 +43,14 @@ You can convert it to something like this:
 
 ## Partitioning bundles
 
-Some more research needed here. Look at
-https://github.com/substack/browserify-handbook#partition-bundle
-
 Ideally, we can create a single bundle, wdk.core.js, that will create a global
 `require` function that allows core WDK modules to be `require`able from other
 scripts.
+
+Then, we can create additional bundles for certain types of pages: question, record, etc.
+
+Some more research needed here. Look at
+https://github.com/substack/browserify-handbook#partition-bundle
 
 A part of what WDK provides is a way to "register" functions to be called when
 HTML with certain attributes are inserted into the DOM. This implementation should
