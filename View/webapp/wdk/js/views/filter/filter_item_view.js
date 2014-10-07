@@ -1,7 +1,7 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
-  ns.FilterItemView = wdk.views.View.extend({
+  ns.FilterItemView = wdk.views.core.View.extend({
 
     tagName: 'li',
 
@@ -15,7 +15,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     constructor: function(filterService) {
       var restArgs = [].slice.call(arguments, 1);
       this.filterService = filterService;
-      wdk.views.View.apply(this, restArgs);
+      wdk.views.core.View.apply(this, restArgs);
     },
 
     initialize: function() {

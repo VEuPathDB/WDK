@@ -6,7 +6,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
   // When a link is clicked, a 'select' event is triggered by the view.
   // Event handlers will recieve the field model as an argument.
 
-  ns.FieldListView = wdk.views.View.extend({
+  ns.FieldListView = wdk.views.core.View.extend({
 
     events: {
       'click a[href="#expand"]'   : 'expand',

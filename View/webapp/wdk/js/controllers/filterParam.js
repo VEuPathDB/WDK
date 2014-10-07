@@ -13,8 +13,8 @@ wdk.namespace('wdk.controllers', function(ns) {
   var Field = wdk.models.filter.Field;
 
   // views
-  var TabsView = wdk.views.layout.TabsView;
-  var CollapsibleView = wdk.views.layout.CollapsibleView;
+  var TabsView = wdk.views.core.TabsView;
+  var CollapsibleView = wdk.views.core.CollapsibleView;
   var FilterItemsView = wdk.views.filter.FilterItemsView;
   var FilterFieldsView = wdk.views.filter.FilterFieldsView;
   var ResultsView = wdk.views.filter.ResultsView;
@@ -38,7 +38,7 @@ wdk.namespace('wdk.controllers', function(ns) {
    *  - trimMetadataTerms: Boolean, when true remove parents w/ one child
    *  - defaultColumns: Array of field names to show in results view
    */
-  ns.FilterParam = wdk.views.View.extend({
+  ns.FilterParam = wdk.views.core.View.extend({
 
     className: 'filter-param',
 

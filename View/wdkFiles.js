@@ -46,11 +46,8 @@ module.exports = {
 
     'webapp/wdk/js/components/**/*.js',
 
-    'webapp/wdk/js/views/view.js',
-    'webapp/wdk/js/views/template_view.js',
-    'webapp/wdk/js/views/question_view.js',
-
-    'webapp/wdk/js/views/layout/**/*.js',
+    'webapp/wdk/js/views/core/view.js',
+    'webapp/wdk/js/views/core/**/*.js',
 
     // filter views
     'webapp/wdk/js/views/filter/field_list_view.js',
