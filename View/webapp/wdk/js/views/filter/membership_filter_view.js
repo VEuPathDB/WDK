@@ -1,6 +1,10 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
+  // Row in table of available values
+  //
+  // Clicking anywhere on the row will toggle if the
+  // value is selected.
   var MemberView = wdk.views.core.View.extend({
 
     events: {
@@ -15,14 +19,20 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function(options) {
       this.options = options;
-      this.listenTo(this.model, 'change', this.render);
+      this.listenTo(this.model, 'change', this.update);
+      this.render();
     },
 
     render: function() {
       this.$el.html(this.template(this.model.attributes));
-      // this.$el.tooltip({ title: this.model.get('value'), placement: 'left', delay: 400 });
-      this.$el.toggleClass('selected', this.model.get('selected'));
+      this.update();
       return this;
+    },
+
+    update: function() {
+      var selected = this.model.get('selected');
+      this.$('input').prop('checked', selected);
+      this.$el.toggleClass('selected', selected);
     },
 
     toggleSelected: function() {
