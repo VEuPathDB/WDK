@@ -144,7 +144,10 @@ wdk.namespace('wdk.controllers', function(ns) {
 
       // Wait for metadata to load to prevent blank UI sections
       RSVP.all(metadataPromises).then(function() {
-        var defaultSelection = this.fields.where({'leaf': 'true'})[0] || filterFields[0];
+        var leaves = this.fields.where({'leaf': 'true'});
+        var defaultSelection = leaves.length === 1
+          ? leaves[0]
+          : filterFields[0];
         this.selectField(defaultSelection);
         this.filterService.filters.set(options.filters);
         this.$el.append(itemsView.el, collapsibleView.el);
