@@ -1,9 +1,9 @@
-wdk.namespace('wdk.views', function(ns) {
+wdk.namespace('wdk.views.core', function(ns) {
   'use strict';
 
   /**
    * @class QuestionView
-   * @namespace wdk.views
+   * @namespace wdk.views.core
    * @extends wdk.core.View
    */
   ns.QuestionView = Backbone.View.extend({

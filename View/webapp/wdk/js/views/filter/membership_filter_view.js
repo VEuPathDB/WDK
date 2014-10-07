@@ -1,7 +1,7 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
-  var MemberView = wdk.views.View.extend({
+  var MemberView = wdk.views.core.View.extend({
 
     events: {
       'click': 'toggleSelected',
@@ -31,7 +31,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
   });
 
-  ns.MembershipFilterView = wdk.views.View.extend({
+  ns.MembershipFilterView = wdk.views.core.View.extend({
 
     events: {
       'click .read-more a'         : 'expandDescription',
@@ -48,7 +48,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.filterService = filterService;
       this.memberViews = [];
       this.members = new Backbone.Collection();
-      wdk.views.View.apply(this, initArgs);
+      wdk.views.core.View.apply(this, initArgs);
     },
 
     initialize: function(options) {

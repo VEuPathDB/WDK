@@ -10,7 +10,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
    * - A detail view for a specific field.
    *
    */
-  ns.FilterFieldsView = wdk.views.View.extend({
+  ns.FilterFieldsView = wdk.views.core.View.extend({
 
     template: wdk.templates['filter/filter_fields.handlebars'],
 

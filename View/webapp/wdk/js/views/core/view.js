@@ -1,4 +1,4 @@
-wdk.namespace('wdk.views', function(ns) {
+wdk.namespace('wdk.views.core', function(ns) {
   'use strict';
 
   /**
@@ -8,7 +8,7 @@ wdk.namespace('wdk.views', function(ns) {
    * Events are also emitted using `Backbone.Events` methods.
    *
    * @class View
-   * @namespace wdk.views
+   * @namespace wdk.views.core
    * @extends Backbone.View
    */
   var View = ns.View = Backbone.View.extend({

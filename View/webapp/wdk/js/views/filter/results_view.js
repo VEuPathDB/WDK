@@ -7,7 +7,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     return context[key];
   });
 
-  var ColumnView = wdk.views.View.extend({
+  var ColumnView = wdk.views.core.View.extend({
     events: {
       'change input': 'handleChange'
     },
@@ -31,7 +31,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     }
   });
 
-  var ColumnsView = wdk.views.View.extend({
+  var ColumnsView = wdk.views.core.View.extend({
 
     initialize: function() {
       this.render();
@@ -48,7 +48,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     }
   });
 
-  ns.ResultsView = wdk.views.View.extend({
+  ns.ResultsView = wdk.views.core.View.extend({
 
     events: {
       'mouseover td'                      : 'setTitle',
