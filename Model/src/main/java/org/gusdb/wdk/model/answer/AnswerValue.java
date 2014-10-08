@@ -588,53 +588,55 @@ public class AnswerValue {
     DatabaseInstance platform = wdkModel.getAppDb();
     DataSource dataSource = platform.getDataSource();
 
-    ResultSet resultSet = null;
+    ResultList resultList = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql, attributeQuery.getFullName() + "__attr-paged");
+      resultList = new SqlResultList(SqlUtils.executeQuery(dataSource, sql, attributeQuery.getFullName() + "__attr-paged"));
+  
+      // fill in the column attributes
+      PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+      Map<String, AttributeField> fields = question.getAttributeFieldMap();
+      while (resultList.next()) {
+        // get primary key
+        Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+        for (String column : pkField.getColumnRefs()) {
+          pkValues.put(column, resultList.get(column));
+        }
+        PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(pkField, pkValues);
+        RecordInstance record = pageRecordInstances.get(primaryKey);
+  
+        if (record == null) {
+          StringBuffer error = new StringBuffer();
+          error.append("Paged attribute query [");
+          error.append(attributeQuery.getFullName());
+          error.append("] returns rows that doesn't match the paged ");
+          error.append("records. (");
+          for (String pkName : pkValues.keySet()) {
+            error.append(pkName).append(" = ");
+            error.append(pkValues.get(pkName)).append(", ");
+          }
+          error.append(").\nPaged Attribute SQL:\n").append(sql);
+          error.append("\n").append("Paged ID SQL:\n").append(getPagedIdSql());
+          throw new WdkModelException(error.toString());
+        }
+  
+        // fill in the column attributes
+        for (String columnName : attributeQuery.getColumnMap().keySet()) {
+          AttributeField field = fields.get(columnName);
+          if (field != null && (field instanceof ColumnAttributeField)) {
+            // valid attribute field, fill it in
+            Object objValue = resultList.get(columnName);
+            ColumnAttributeValue value = new ColumnAttributeValue((ColumnAttributeField) field, objValue);
+            record.addAttributeValue(value);
+          }
+        }
+        count++;
+      }
     }
     catch (SQLException e) {
       throw new WdkModelException(e);
     }
-    ResultList resultList = new SqlResultList(resultSet);
-
-    // fill in the column attributes
-    PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
-    Map<String, AttributeField> fields = question.getAttributeFieldMap();
-    while (resultList.next()) {
-      // get primary key
-      Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-      for (String column : pkField.getColumnRefs()) {
-        pkValues.put(column, resultList.get(column));
-      }
-      PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(pkField, pkValues);
-      RecordInstance record = pageRecordInstances.get(primaryKey);
-
-      if (record == null) {
-        StringBuffer error = new StringBuffer();
-        error.append("Paged attribute query [");
-        error.append(attributeQuery.getFullName());
-        error.append("] returns rows that doesn't match the paged ");
-        error.append("records. (");
-        for (String pkName : pkValues.keySet()) {
-          error.append(pkName).append(" = ");
-          error.append(pkValues.get(pkName)).append(", ");
-        }
-        error.append(").\nPaged Attribute SQL:\n").append(sql);
-        error.append("\n").append("Paged ID SQL:\n").append(getPagedIdSql());
-        throw new WdkModelException(error.toString());
-      }
-
-      // fill in the column attributes
-      for (String columnName : attributeQuery.getColumnMap().keySet()) {
-        AttributeField field = fields.get(columnName);
-        if (field != null && (field instanceof ColumnAttributeField)) {
-          // valid attribute field, fill it in
-          Object objValue = resultList.get(columnName);
-          ColumnAttributeValue value = new ColumnAttributeValue((ColumnAttributeField) field, objValue);
-          record.addAttributeValue(value);
-        }
-      }
-      count++;
+    finally {
+      if (resultList != null) resultList.close();
     }
 
     if (count != pageRecordInstances.size()) {

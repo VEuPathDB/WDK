@@ -46,8 +46,11 @@ public class SqlResultList implements ResultList {
    */
   @Override
   public void close() throws WdkModelException {
-    SqlUtils.closeResultSetAndStatement(resultSet);
-    resultSetClosed = true;
+    // secondary calls are redundant
+    if (!resultSetClosed) {
+      SqlUtils.closeResultSetAndStatement(resultSet);
+      resultSetClosed = true;
+    }
   }
 
   /*
