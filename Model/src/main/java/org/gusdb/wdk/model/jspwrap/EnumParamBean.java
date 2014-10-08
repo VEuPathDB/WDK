@@ -35,14 +35,12 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   private String[] originalValues;
 
   // if this obj wraps a dependent param, holds depended values
-  private Map<String, String> _dependedValues;
   private boolean _dependedValueChanged = false;
   private EnumParamCache _cache;
 
   public EnumParamBean(AbstractEnumParam param) {
     super(param);
     this.enumParam = param;
-    _dependedValues = new LinkedHashMap<>();
   }
 
   public Boolean getMultiPick() {
@@ -73,21 +71,18 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return param.getCountOnlyLeaves();
   }
 
-  public Map<String, String> getDependedValues() {
-    return _dependedValues;
-  }
-
   public boolean isDependentParam() {
     return param.isDependentParam();
   }
 
-  public void setDependedValues(Map<String, String> dependedValues) {
-    if ((_dependedValues == null && dependedValues != null) ||
-        (_dependedValues != null && !compareValues(_dependedValues, dependedValues))) {
-      _dependedValues = dependedValues;
+  @Override
+  public void setContextValues(Map<String, String> contextValues) {
+    super.setContextValues(contextValues);
+    if ((this.contextValues == null && contextValues != null) ||
+        (this.contextValues != null && !compareValues(this.contextValues, contextValues))) {
+      this.contextValues = contextValues;
       _dependedValueChanged = true;
     }
-    this.contextValues = dependedValues;
   }
 
   private boolean compareValues(Map<String, String> left, Map<String, String> right) {
@@ -112,7 +107,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   // thread
   protected EnumParamCache getCache() {
     if (_cache == null || _dependedValueChanged) {
-      _cache = param.getValueCache(user.getUser(), _dependedValues);
+      _cache = param.getValueCache(user.getUser(), contextValues);
       _dependedValueChanged = false;
     }
     return _cache;
@@ -143,7 +138,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   public String getInternalValue(User user, String dependentValue) throws WdkModelException, WdkUserException {
-    return param.getInternalValue(user, dependentValue, _dependedValues);
+    return param.getInternalValue(user, dependentValue, contextValues);
   }
 
   public Set<ParamBean<?>> getDependedParams() throws WdkModelException {
@@ -282,8 +277,8 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   public void validate(UserBean user, String rawOrDependentValue, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
     logger.debug("Validating param=" + getName() + ", value=" + rawOrDependentValue + ", dependedValue=" +
-        FormatUtil.prettyPrint(_dependedValues));
-    param.validate(user.getUser(), rawOrDependentValue, _dependedValues);
+        FormatUtil.prettyPrint(contextValues));
+    param.validate(user.getUser(), rawOrDependentValue, contextValues);
   }
 
   public boolean isSuppressNode() {
@@ -298,7 +293,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
       stableValue = getDefault();
 
     if (stableValue != null)
-      currentValues = (String[]) param.getRawValue(user.getUser(), stabletValue, _dependedValues);
+      currentValues = (String[]) param.getRawValue(user.getUser(), stabletValue, contextValues);
 
   }
 

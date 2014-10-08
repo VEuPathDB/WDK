@@ -100,9 +100,6 @@ public class QuestionForm extends MapActionForm {
     for (ParamBean<?> param : params.values()) {
       param.setUser(user);
       param.setContextValues(contextValues);
-      if (param instanceof EnumParamBean) {
-        ((EnumParamBean) param).setDependedValues(contextValues);
-      }
     }
 
     // validate params
