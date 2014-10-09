@@ -6,18 +6,17 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 public class HttpRequestData implements RequestData {
-  
+
   private HttpServletRequest _request;
-  
+
   public HttpRequestData(HttpServletRequest request) {
     _request = request;
   }
-  
-  @Deprecated
+
   public HttpServletRequest getUnderlyingRequest() {
     return _request;
   }
-  
+
   @Override
   public String getWebAppBaseUrl() {
     return new StringBuilder()

@@ -440,7 +440,7 @@ ul.menubar {
     width: 98%;
 }
 
-.menubar li {;
+.menubar li {
     float:left;
     padding:0.24em 0;
     margin:0;
@@ -827,7 +827,7 @@ a.redbutton {
    background-attachment: scroll;
    background-color: transparent;
    background-image: url(../images/redboxb.gif);
-   background-position: right top;   
+   background-position: right top;
    background-repeat: no-repeat;
 }
 
@@ -1236,6 +1236,14 @@ margin: 1em 0 -1px;
   margin-left: 4px;
 }
 
+div.step-analysis-form-pane h3.ui-accordion-header {
+  font-weight: bold;
+  font-size: 120%;
+}
+
+#step-analysis-title {
+  text-align: center;
+}
 .step-analysis-subpane {
   margin: 3px;
   /* border: 1px solid #cccccc;
@@ -1910,13 +1918,12 @@ span.marker a:link, span.marker a:visited {
 .mycontent h3 { margin: 15px 0px 0px 0px; padding: 10px; background-color: #EEEEEE; }
 
 
-//
-//
-
 #search-lookup_wrapper div.dataTables_scroll { display: none; }
 
 #search-lookup_wrapper div.ui-corner-bl { display: none; }
 img#close-table { display: none; }
+
+
 
 
 /* THE END */

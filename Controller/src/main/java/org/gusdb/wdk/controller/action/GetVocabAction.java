@@ -110,7 +110,7 @@ public class GetVocabAction extends Action {
     }
 
     EnumParamBean param = (EnumParamBean) question.getParamsMap().get(paramName);
-    param.setDependedValues(dependedValues);
+    param.setContextValues(dependedValues);
     
     return param;
   }

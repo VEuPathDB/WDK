@@ -15,7 +15,6 @@ import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
@@ -100,9 +99,6 @@ public class QuestionForm extends MapActionForm {
     for (ParamBean<?> param : params.values()) {
       param.setUser(user);
       param.setContextValues(contextValues);
-      if (param instanceof EnumParamBean) {
-        ((EnumParamBean) param).setDependedValues(contextValues);
-      }
     }
 
     // validate params

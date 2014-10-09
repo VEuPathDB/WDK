@@ -1,7 +1,7 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
-  ns.RangeFilterView = wdk.views.View.extend({
+  ns.RangeFilterView = wdk.views.core.View.extend({
 
     plot: null,
 
@@ -25,7 +25,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     constructor: function(filterService) {
       var initArgs = [].slice.call(arguments, 1);
       this.filterService = filterService;
-      wdk.views.View.apply(this, initArgs);
+      wdk.views.core.View.apply(this, initArgs);
     },
 
     initialize: function(options) {
@@ -329,7 +329,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     undelegateEvents: function() {
       $(window).off('.range_filter');
-      wdk.views.View.prototype.undelegateEvents.apply(this, arguments);
+      wdk.views.core.View.prototype.undelegateEvents.apply(this, arguments);
     }
 
   });

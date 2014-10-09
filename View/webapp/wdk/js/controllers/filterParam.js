@@ -2,14 +2,28 @@
 wdk.namespace('wdk.controllers', function(ns) {
   'use strict';
 
+
+  //
   // imports
+  //
+
+  // models
   var LocalFilterService = wdk.models.filter.LocalFilterService;
-  var FilterItemsView = wdk.views.filter.FilterItemsView;
-  var FilterView = wdk.views.filter.FilterView;
   var Fields = wdk.models.filter.Fields;
   var Field = wdk.models.filter.Field;
 
+  // views
+  var TabsView = wdk.views.core.TabsView;
+  var CollapsibleView = wdk.views.core.CollapsibleView;
+  var FilterItemsView = wdk.views.filter.FilterItemsView;
+  var FilterFieldsView = wdk.views.filter.FilterFieldsView;
+  var ResultsView = wdk.views.filter.ResultsView;
+
+
+  //
   // helpers
+  //
+
   var countByValues = _.compose(_.countBy, _.values);
   var numericSort = function(a, b){ return a > b; };
   var stringSort; // passing this to [].sort() will use the default sort
@@ -24,7 +38,7 @@ wdk.namespace('wdk.controllers', function(ns) {
    *  - trimMetadataTerms: Boolean, when true remove parents w/ one child
    *  - defaultColumns: Array of field names to show in results view
    */
-  ns.FilterParam = wdk.views.View.extend({
+  ns.FilterParam = wdk.views.core.View.extend({
 
     className: 'filter-param',
 
@@ -65,18 +79,6 @@ wdk.namespace('wdk.controllers', function(ns) {
       this.listenTo(this.filterService, 'change:filteredData', this.updateValue);
       this.listenTo(this.filterService, 'change:filteredData', this._setSelectedFieldDistribution);
 
-      this.itemsView = new FilterItemsView(this.filterService, {
-        model: this.filterService.filters,
-        controller: this
-      });
-
-      this.filterView = new FilterView({
-        model: this.filterService,
-        controller: this,
-        defaultColumns: this.defaultColumns,
-        trimMetadataTerms: this.trimMetadataTerms
-      });
-
       // load initial metadata
       var filterFields = (options.filters || [])
         .map(function(filter) {
@@ -87,15 +89,68 @@ wdk.namespace('wdk.controllers', function(ns) {
       var initialFields = _.union(defaultFields, filterFields);
       var metadataPromises = initialFields.map(this.getMetadata.bind(this));
 
+
+      //
+      // create views
+      //
+
+      // list of selected filters
+      var itemsView = new FilterItemsView(this.filterService, {
+        model: this.filterService.filters,
+        controller: this
+      });
+
+      // main selection ui
+      var filterFieldsView = new FilterFieldsView({
+        model: this.filterService,
+        controller: this,
+        defaultColumns: this.defaultColumns,
+        trimMetadataTerms: this.trimMetadataTerms
+      });
+
+      // results of selection
+      var resultsView = new ResultsView({
+        model: this.filterService,
+        controller: this
+      });
+
+      // use a tabbed interface for selection and results
+      var tabsView = new TabsView({
+        className: 'filter-param-tabs',
+        tabs: [
+          { title: 'Select ' + this.title, view: filterFieldsView },
+          { title: 'View selection (<span class="count">0</span>)', view: resultsView }
+        ]
+      }).listenTo(this, 'change:selectedData', function(ctrl, data) {
+        this.$('.count').text(data.length);
+      });
+
+      // allow the tabbed interface to be collapsed
+      var collapsibleView = new CollapsibleView({
+        className: 'filter-view',
+        expandString: 'Select ' + this.title,
+        collapse: false,
+        collapseTemplate: _.template([
+          '<div class="collapse-wrapper">',
+          '  <a href="#"><%= collapseString %></a>',
+          '</div>'
+        ].join('')),
+        view: tabsView
+        }).listenTo(this, 'select:field', function() {
+          this.collapse(false);
+        }).listenTo(this.filterService.filters, 'add remove', function(filter) {
+          this.$expand.html(filter.length ? 'Refine selection' : this.expandString);
+        });
+
+      // Wait for metadata to load to prevent blank UI sections
       RSVP.all(metadataPromises).then(function() {
+        var leaves = this.fields.where({'leaf': 'true'});
+        var defaultSelection = leaves.length === 1
+          ? leaves[0]
+          : filterFields[0];
+        this.selectField(defaultSelection);
         this.filterService.filters.set(options.filters);
-        this.$el
-          .append(this.itemsView.render().el)
-          .append(this.filterView.render().el);
-
-        // select first filtered field
-        if (filterFields.length) this.selectField(filterFields[0]);
-
+        this.$el.append(itemsView.el, collapsibleView.el);
         this.trigger('ready', this);
       }.bind(this));
     },
@@ -106,9 +161,8 @@ wdk.namespace('wdk.controllers', function(ns) {
       this.filterService.reset(data);
       return this;
     },
-
     showSpinner: function() {
-      this.filterView.$el.append(this.spinner.spin().el);
+      this.$('.filter-param-tabs').append(this.spinner.spin().el);
     },
 
     hideSpinner: function() {
@@ -254,12 +308,16 @@ wdk.namespace('wdk.controllers', function(ns) {
       }.bind(this));
     },
 
+    // if field, abort current metadata requests
+    // and trigger request for new field
     selectField: function(field) {
-      this.abortMetadataRequest(this.selectedField);
-      this.selectedField = field;
-      this._setSelectedFieldDistribution().then(function() {
-        this.trigger('select:field', field);
-      }.bind(this));
+      if (field) {
+        this.abortMetadataRequest(this.selectedField);
+        this.selectedField = field;
+        this._setSelectedFieldDistribution().then(function() {
+          this.trigger('select:field', field);
+        }.bind(this));
+      }
       return this;
     },
 

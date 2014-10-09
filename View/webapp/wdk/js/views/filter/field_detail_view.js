@@ -9,7 +9,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
    *   - RangeFilterView
    *   - MembershipFilterView
    */
-  ns.FieldDetailView = wdk.views.View.extend({
+  ns.FieldDetailView = wdk.views.core.View.extend({
 
     // The active delegate view
     delegateView: null,

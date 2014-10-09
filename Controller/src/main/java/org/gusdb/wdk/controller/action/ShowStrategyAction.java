@@ -520,7 +520,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         	    String dependedValue = getStableValue(paramValues, dependedParam);
         	    dependedValues.put(dependedParam.getName(), dependedValue);
         	  }
-        	  enumParam.setDependedValues(dependedValues);
+        	  enumParam.setContextValues(dependedValues);
         	}
             return enumParam.getRawDisplayValue();
         }
@@ -540,7 +540,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                         String dependedValue = getStableValue(paramValues, dependedParam);
                         dependedValues.put(dependedParam.getName(), dependedValue);
                       }
-                      enumParam.setDependedValues(dependedValues);
+                      enumParam.setContextValues(dependedValues);
                     }
                 }
                 return param.getDefault();
