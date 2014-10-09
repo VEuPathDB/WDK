@@ -491,10 +491,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
         new UnconfiguredStepAnalysisFactory(this) :
         new StepAnalysisFactoryImpl(this));
 
-    // set the exception header
-    WdkModelException.modelName = getProjectId();
-    WdkUserException.modelName = getProjectId();
-
     // exclude resources that are not used by this project
     excludeResources();
 
