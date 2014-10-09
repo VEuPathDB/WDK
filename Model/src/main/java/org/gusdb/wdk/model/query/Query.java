@@ -132,7 +132,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   protected abstract void appendJSONContent(JSONObject jsQuery, boolean extra) throws JSONException;
 
-  public abstract QueryInstance makeInstance(User user, Map<String, String> values, boolean validate,
+  public abstract QueryInstance<? extends Query> makeInstance(User user, Map<String, String> values, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException;
 
   @Override

@@ -31,11 +31,9 @@ import org.json.JSONObject;
  * @author Jerric Gao
  * 
  */
-public class SqlQueryInstance extends QueryInstance {
+public class SqlQueryInstance extends QueryInstance<SqlQuery> {
 
   private static Logger logger = Logger.getLogger(SqlQueryInstance.class);
-
-  private SqlQuery query;
 
   /**
    * @param query

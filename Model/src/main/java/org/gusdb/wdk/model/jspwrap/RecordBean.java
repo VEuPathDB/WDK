@@ -151,9 +151,9 @@ public class RecordBean {
         }
     }
 
-    private class AttributeValueMap implements Map<String, AttributeValue> {
+    private static class AttributeValueMap implements Map<String, AttributeValue> {
 
-        private class AttributeValueEntry implements
+        private static class AttributeValueEntry implements
                 Map.Entry<String, AttributeValue> {
 
             private RecordInstance recordInstance;
@@ -356,9 +356,9 @@ public class RecordBean {
         }
     }
 
-    private class TableValueMap implements Map<String, TableValue> {
+    private static class TableValueMap implements Map<String, TableValue> {
 
-        private class TableValueEntry implements Map.Entry<String, TableValue> {
+        private static class TableValueEntry implements Map.Entry<String, TableValue> {
 
             private RecordInstance recordInstance;
             private String fieldName;

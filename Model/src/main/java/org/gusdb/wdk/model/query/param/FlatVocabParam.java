@@ -221,7 +221,7 @@ public class FlatVocabParam extends AbstractEnumParam {
         ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) + ", context Query: " +
         ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
 
-    QueryInstance instance = vocabQuery.makeInstance(user, values, false, 0, context);
+    QueryInstance<?> instance = vocabQuery.makeInstance(user, values, false, 0, context);
     ResultList result = instance.getResults();
     while (result.next()) {
       Object objTerm = result.get(COLUMN_TERM);
