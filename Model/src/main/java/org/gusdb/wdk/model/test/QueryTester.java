@@ -43,7 +43,7 @@ public class QueryTester {
 
   private String showSql(Query query, Map<String, String> paramHash)
       throws WdkModelException, WdkUserException {
-    QueryInstance instance = query.makeInstance(user, paramHash, true, 0,
+    QueryInstance<?> instance = query.makeInstance(user, paramHash, true, 0,
         new LinkedHashMap<String, String>());
     if (instance instanceof SqlQueryInstance) {
       return ((SqlQueryInstance) instance).getUncachedSql();
@@ -52,7 +52,7 @@ public class QueryTester {
 
   private String showResultTable(Query query, Map<String, String> paramHash)
       throws WdkModelException, WdkUserException {
-    QueryInstance instance = query.makeInstance(user, paramHash, true, 0,
+    QueryInstance<?> instance = query.makeInstance(user, paramHash, true, 0,
         new LinkedHashMap<String, String>());
     ResultFactory resultFactory = wdkModel.getResultFactory();
     CacheFactory cacheFactory = resultFactory.getCacheFactory();
@@ -187,7 +187,7 @@ public class QueryTester {
         String table = tester.showResultTable(query, stableValues);
         System.out.println(table);
       } else {
-        QueryInstance instance = query.makeInstance(tester.user, stableValues,
+        QueryInstance<?> instance = query.makeInstance(tester.user, stableValues,
             true, 0, new LinkedHashMap<String, String>());
         ResultList rs = instance.getResults();
         print(query, rs);

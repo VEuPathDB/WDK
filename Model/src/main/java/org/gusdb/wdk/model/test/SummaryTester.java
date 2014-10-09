@@ -212,7 +212,7 @@ public class SummaryTester {
   private static String getLowLevelQuery(AnswerValue answerValue)
       throws WdkModelException, WdkUserException {
     // QueryInstance instance = answer.getAttributesQueryInstance();
-    QueryInstance instance = answerValue.getIdsQueryInstance();
+    QueryInstance<?> instance = answerValue.getIdsQueryInstance();
     String query = (instance instanceof SqlQueryInstance)
         ? ((SqlQueryInstance) instance).getUncachedSql() : instance.getSql();
     String newline = System.getProperty("line.separator");

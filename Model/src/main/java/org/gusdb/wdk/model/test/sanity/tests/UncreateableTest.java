@@ -9,7 +9,7 @@ import org.gusdb.wdk.model.test.sanity.TestResult;
 
 public class UncreateableTest implements ElementTest {
 
-  public static enum UncreateableTestType { QUESTION, QUERY };
+  public static enum UncreateableTestType { QUESTION, QUERY }
 
   private final String _testName;
   private final Exception _creationException;

@@ -36,8 +36,6 @@ import org.gusdb.wdk.model.record.RecordInstance;
  */
 public class PrimaryKeyAttributeField extends AttributeField {
 
-  private RecordClass recordClass;
-
   private List<WdkModelText> columnRefList = new ArrayList<WdkModelText>();
   private Set<String> columnRefSet = new LinkedHashSet<String>();
 

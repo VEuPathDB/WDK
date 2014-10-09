@@ -21,7 +21,6 @@ import org.gusdb.wdk.model.record.RecordInstance;
  */
 public class PrimaryKeyAttributeValue extends AttributeValue {
 
-  private final PrimaryKeyAttributeField field;
   private final Map<String, Object> pkValues;
   private AttributeValueContainer valueContainer;
   
@@ -32,7 +31,6 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   public PrimaryKeyAttributeValue(PrimaryKeyAttributeField field, Map<String, Object> pkValues,
       AttributeValueContainer valueContainer) {
     super(field);
-    this.field = field;
     this.pkValues = new LinkedHashMap<String, Object>(pkValues);
     this.valueContainer = valueContainer;
   }
@@ -58,7 +56,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
       try {
       // parse the text and look up other fields, so that primaryKey fields can support macros of other column
       // attributes.
-      Map<String, AttributeField> subFields = field.parseFields(field.getText());
+      Map<String, AttributeField> subFields = field.parseFields(((PrimaryKeyAttributeField)field).getText());
       for (String fieldName : subFields.keySet()) {
         if (!values.containsKey(fieldName)) {
           AttributeValue value = valueContainer.getAttributeValue(fieldName);
@@ -67,7 +65,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
         }
       }
 
-      value = Utilities.replaceMacros(field.getText(), values);
+      value = Utilities.replaceMacros(((PrimaryKeyAttributeField)field).getText(), values);
       } catch (Exception ex) {
          logger.error("Failed to substitute sub-fields.", ex);
          throw new WdkModelException(ex);

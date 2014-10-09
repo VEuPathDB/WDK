@@ -21,7 +21,6 @@ import org.gusdb.wdk.model.query.ColumnType;
 
 public class TestDBManager extends BaseCLI {
 
-  private static final String ARG_PROJECT_ID = "model";
   private static final String ARG_CREATE = "new";
   private static final String ARG_DROP = "drop";
   private static final String ARG_TABLE_DIR = "tableDir";
