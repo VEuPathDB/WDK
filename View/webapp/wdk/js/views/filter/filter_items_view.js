@@ -3,7 +3,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
   var FilterItemView = ns.FilterItemView;
 
-  ns.FilterItemsView = wdk.views.View.extend({
+  ns.FilterItemsView = wdk.views.core.View.extend({
     itemViews: null,
 
     className: 'filter-items',
@@ -13,7 +13,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     constructor: function(filterService) {
       var restArgs = [].slice.call(arguments, 1);
       this.filterService = filterService;
-      wdk.views.View.apply(this, restArgs);
+      wdk.views.core.View.apply(this, restArgs);
     },
 
     initialize: function() {
@@ -23,6 +23,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.listenTo(this.model, 'reset', this.render);
       this.listenTo(this.controller, 'select:field', this.toggleSelectItems);
       this.listenTo(this.controller, 'change:selectedData', this.updateTotal);
+      this.render();
     },
 
     render: function() {

@@ -66,6 +66,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
               // stash promises returned by $.ajax
               results.push(result);
             }
+            return results;
           }, []);
 
         // trigger form.change only when all deferreds are resolved

@@ -13,13 +13,13 @@ import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 public class ShowStepAnalysisResultAction extends AbstractStepAnalysisIdAction {
 
   private static final Logger LOG = Logger.getLogger(ShowStepAnalysisResultAction.class);
-  
+
   private static final String ERROR_REASON_TEXT =
       "A run of this analysis encountered an error before it could complete.";
   private static final String INTERRUPTED_REASON_TEXT =
       "A run of this analysis was interrupted before it could complete";
   private static final String OUTOFDATE_REASON_TEXT =
-      "Your previous run of this analysis is out-of-date and results must be " +
+      "Your previous run's results are unavailable and must be " +
       "regenerated.  Please confirm your parameters above and re-run.";
   private static final String EXPIRED_REASON_TEXT =
       "The last run of this analysis took too long to complete and was " +

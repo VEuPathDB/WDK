@@ -1436,20 +1436,12 @@ public class StepFactory {
    * 
    * @param strategy
    * @return
-   * @throws JSONException
    * @throws WdkModelException
    * @throws WdkUserException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
    */
   Strategy copyStrategy(Strategy strategy) throws WdkModelException, WdkUserException {
-    User user = strategy.getUser();
-    Step root = strategy.getLatestStep().deepClone();
-    String name = strategy.getName();
-    if (!name.toLowerCase().endsWith(", copy of"))
-      name += ", Copy of";
-    name = getNextName(user, name, false);
-    return createStrategy(user, root, name, null, false, null, false, false);
+    Step root = strategy.getLatestStep();
+    return copyStrategy(strategy, root, strategy.getName());
   }
 
   /**
@@ -1459,20 +1451,23 @@ public class StepFactory {
    * @param strategy
    * @param stepId
    * @return
-   * @throws SQLException
    * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * @throws JSONException
    * @throws WdkUserException
    */
   Strategy copyStrategy(Strategy strategy, int stepId) throws WdkModelException, WdkUserException {
+    Step oldStep = strategy.getStepById(stepId);
+    return copyStrategy(strategy, oldStep, oldStep.getCustomName());
+    
+  }
+
+  private Strategy copyStrategy(Strategy strategy, Step oldTopStep, String oldStrategyName)
+      throws WdkModelException, WdkUserException {
     User user = strategy.getUser();
-    Step step = strategy.getStepById(stepId).deepClone();
-    String name = step.getCustomName();
-    if (!name.toLowerCase().endsWith(", copy of"))
-      name += ", Copy of";
-    name = getNextName(user, name, false);
-    return createStrategy(user, step, name, null, false, null, false, false);
+    Step newTopStep = oldTopStep.deepClone();
+    String newName = oldStrategyName +
+        (!oldStrategyName.toLowerCase().endsWith(", copy of") ? ", Copy of" : "");
+    newName = getNextName(user, newName, false);
+    return createStrategy(user, newTopStep, newName, null, false, null, false, false);
   }
 
   private String getNextName(User user, String oldName, boolean saved) throws WdkModelException {
