@@ -21,6 +21,7 @@ public class ProcessRegisterAction extends WdkAction {
 
   // since wdk and custom preferences are unknown by this class, must skip validation
   @Override protected boolean shouldValidateParams() { return false; }
+  @Override protected boolean shouldCheckSpam() { return true; }
   @Override protected Map<String, ParamDef> getParamDefs() { return null; }
 
   @Override
