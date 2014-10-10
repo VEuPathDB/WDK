@@ -48,6 +48,9 @@ import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
+import org.gusdb.wdk.model.filter.ColumnFilterReference;
+import org.gusdb.wdk.model.filter.FilterReference;
+import org.gusdb.wdk.model.filter.FilterSet;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
@@ -232,8 +235,7 @@ public class ModelXmlParser extends XmlParser {
     return model;
   }
 
-  public ModelConfig getModelConfig(String projectId) throws SAXException,
-      IOException, WdkModelException {
+  public ModelConfig getModelConfig(String projectId) throws SAXException, IOException, WdkModelException {
     ModelConfigParser parser = new ModelConfigParser(gusHome);
     return parser.parseConfig(projectId);
   }
@@ -498,6 +500,9 @@ public class ModelXmlParser extends XmlParser {
     configureUiConfig(digester);
 
     configureStepAnalysis(digester);
+
+    // configureF all sub nodes of filters
+    configureFilterSet(digester);
 
     return digester;
   }
@@ -913,6 +918,26 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, nodeLocation + "/description", WdkModelText.class, "setDescription");
     digester.addCallMethod(nodeLocation + "/description", "setText", 0);
     configureNode(digester, nodeLocation + "/property", NamedValue.class, "addProperty");
+  }
+
+  private void configureFilterSet(Digester digester) {
+    // load filter set
+    configureNode(digester, "wdkModel/filterSet", FilterSet.class, "addFilterSet");
+
+    // load filter
+    configureNode(digester, "wdkModel/filterSet/filter", FilterReference.class, "addFilter");
+    configureNode(digester, "wdkModel/filterSet/filter/display", WdkModelText.class, "addDisplay");
+    digester.addCallMethod("wdkModel/filterSet/filter/display", "setText", 0);
+    configureNode(digester, "wdkModel/filterSet/filter/description", WdkModelText.class, "addDescription");
+    digester.addCallMethod("wdkModel/filterSet/filter/description", "setText", 0);
+
+    // load column filter
+    configureNode(digester, "wdkModel/filterSet/columnFilter", ColumnFilterReference.class, "addColumnFilter");
+    configureNode(digester, "wdkModel/filterSet/columnFilter/display", WdkModelText.class, "addDisplay");
+    digester.addCallMethod("wdkModel/filterSet/columnFilter/display", "setText", 0);
+    configureNode(digester, "wdkModel/filterSet/columnFilter/description", WdkModelText.class,
+        "addDescription");
+    digester.addCallMethod("wdkModel/filterSet/columnFilter/description", "setText", 0);
   }
 
   public static void main(String[] args) {

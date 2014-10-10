@@ -32,6 +32,7 @@ import org.gusdb.wdk.model.config.QueryMonitor;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.dbms.ResultFactory;
+import org.gusdb.wdk.model.filter.FilterSet;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.Param;
@@ -93,28 +94,31 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
 
-  private List<QuerySet> querySetList = new ArrayList<QuerySet>();
-  private Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
+  private List<QuerySet> querySetList = new ArrayList<>();
+  private Map<String, QuerySet> querySets = new LinkedHashMap<>();
 
-  private List<ParamSet> paramSetList = new ArrayList<ParamSet>();
-  private Map<String, ParamSet> paramSets = new LinkedHashMap<String, ParamSet>();
+  private List<ParamSet> paramSetList = new ArrayList<>();
+  private Map<String, ParamSet> paramSets = new LinkedHashMap<>();
 
-  private List<RecordClassSet> recordClassSetList = new ArrayList<RecordClassSet>();
-  private Map<String, RecordClassSet> recordClassSets = new LinkedHashMap<String, RecordClassSet>();
+  private List<RecordClassSet> recordClassSetList = new ArrayList<>();
+  private Map<String, RecordClassSet> recordClassSets = new LinkedHashMap<>();
 
-  private List<QuestionSet> questionSetList = new ArrayList<QuestionSet>();
-  private Map<String, QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
+  private List<QuestionSet> questionSetList = new ArrayList<>();
+  private Map<String, QuestionSet> questionSets = new LinkedHashMap<>();
 
-  private Map<String, ModelSetI> allModelSets = new LinkedHashMap<String, ModelSetI>();
+  private Map<String, ModelSetI<? extends WdkModelBase>> allModelSets = new LinkedHashMap<>();
 
   private List<GroupSet> groupSetList = new ArrayList<GroupSet>();
-  private Map<String, GroupSet> groupSets = new LinkedHashMap<String, GroupSet>();
+  private Map<String, GroupSet> groupSets = new LinkedHashMap<>();
 
-  private List<XmlQuestionSet> xmlQuestionSetList = new ArrayList<XmlQuestionSet>();
-  private Map<String, XmlQuestionSet> xmlQuestionSets = new LinkedHashMap<String, XmlQuestionSet>();
+  private List<XmlQuestionSet> xmlQuestionSetList = new ArrayList<>();
+  private Map<String, XmlQuestionSet> xmlQuestionSets = new LinkedHashMap<>();
 
-  private List<XmlRecordClassSet> xmlRecordClassSetList = new ArrayList<XmlRecordClassSet>();
-  private Map<String, XmlRecordClassSet> xmlRecordClassSets = new LinkedHashMap<String, XmlRecordClassSet>();
+  private List<XmlRecordClassSet> xmlRecordClassSetList = new ArrayList<>();
+  private Map<String, XmlRecordClassSet> xmlRecordClassSets = new LinkedHashMap<>();
+  
+  private List<FilterSet> filterSetList = new ArrayList<>();
+  private Map<String, FilterSet> filterSets = new LinkedHashMap<>();
 
   private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
   private String displayName;
@@ -390,6 +394,19 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       throw new WdkModelException("The Model does not " + "have a groupSet named " + setName);
     return groupSet;
   }
+  
+  public FilterSet[] getAllFilterSets() {
+    FilterSet[] array = new FilterSet[filterSets.size()];
+    filterSets.values().toArray(array);
+    return array;
+  }
+  
+  public FilterSet getFilterSet(String setName) throws WdkModelException {
+    FilterSet filterSet = filterSets.get(setName);
+    if (filterSet == null)
+      throw new WdkModelException("The Model does not " + "have a filterSet named " + setName);
+    return filterSet;
+  }
 
   public Question getBooleanQuestion(RecordClass recordClass) throws WdkModelException {
     // check if the boolean question already exists
@@ -441,7 +458,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   }
 
   // ModelSetI's
-  private <T extends ModelSetI> void addSet(T set, Map<String, T> setMap) throws WdkModelException {
+  private <T extends ModelSetI<? extends WdkModelBase>> void addSet(T set, Map<String, T> setMap) throws WdkModelException {
     String setName = set.getName();
     if (allModelSets.containsKey(setName)) {
       String err = "WDK Model " + projectId + " already contains a set with name " + setName;
@@ -456,7 +473,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
    * Set whatever resources the model needs. It will pass them to its kids
    */
   public void setResources() throws WdkModelException {
-    for (ModelSetI modelSet : allModelSets.values()) {
+    for (ModelSetI<? extends WdkModelBase> modelSet : allModelSets.values()) {
       modelSet.setResources(this);
     }
   }
@@ -577,7 +594,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     String setName = reference.getSetName();
     String elementName = reference.getElementName();
 
-    ModelSetI set = allModelSets.get(setName);
+    ModelSetI<? extends WdkModelBase> set = allModelSets.get(setName);
 
     if (set == null) {
       String s3 = s + " There is no set called '" + setName + "'";
@@ -612,6 +629,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     // paramSets, and last on questionSets
     for (GroupSet groupSet : groupSets.values()) {
       groupSet.resolveReferences(this);
+    }
+    for (FilterSet filterSet : filterSets.values()) {
+      filterSet.resolveReferences(this);
     }
     for (QuerySet querySet : querySets.values()) {
       querySet.resolveReferences(this);
@@ -753,6 +773,15 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     }
     xmlRecordClassSetList = null;
 
+    // remove filter sets
+    for (FilterSet filterSet : filterSetList) {
+      if (filterSet.include(projectId)) {
+        filterSet.excludeResources(projectId);
+        addSet(filterSet, filterSets);
+      }
+    }
+    filterSetList = null;
+
     // exclude categories
     for (SearchCategory category : this.categoryList) {
       if (category.include(projectId)) {
@@ -868,13 +897,13 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
         showSet("Question", questionSets)).append(showSet("XmlQuestion", xmlQuestionSets)).toString();
   }
 
-  protected String showSet(String setType, Map<String, ? extends ModelSetI> setMap) {
+  protected String showSet(String setType, Map<String, ? extends ModelSetI<? extends WdkModelBase>> setMap) {
     StringBuilder buf = new StringBuilder(NL).append(
         "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo").append(NL).append(
         "ooooooooooooooooooooooooooooo ").append(setType).append(" Sets oooooooooooooooooooooooooo").append(
         NL).append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo").append(NL).append(
         NL);
-    for (ModelSetI set : setMap.values()) {
+    for (ModelSetI<? extends WdkModelBase> set : setMap.values()) {
       buf.append("=========================== ").append(set.getName()).append(
           " ===============================").append(NL).append(NL).append(set).append(NL);
     }
@@ -914,6 +943,13 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       groupSetList.add(groupSet);
     else
       addSet(groupSet, groupSets);
+  }
+
+  public void addFilterSet(FilterSet filterSet) throws WdkModelException {
+    if (filterSetList != null)
+      filterSetList.add(filterSet);
+    else
+      addSet(filterSet, filterSets);
   }
 
   public void addXmlQuestionSet(XmlQuestionSet questionSet) throws WdkModelException {

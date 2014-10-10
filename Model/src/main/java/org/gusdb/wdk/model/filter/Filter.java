@@ -10,13 +10,19 @@ public interface Filter {
   /**
    * @return the unique name of a filter. The name can only contain: [a-zA-Z0-9\.\-_].
    */
-  String getName();
+  String getKey();
   
   String getDisplay();
   
+  void setDisplay(String display);
+  
   String getDescription();
   
+  void setDescription(String description);
+  
   String getView();
+  
+  void setView(String view);
 
   FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException, WdkUserException;
   

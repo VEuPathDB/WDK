@@ -39,7 +39,7 @@ public class ListColumnFilter extends ColumnFilter {
     ResultSet resultSet = null;
     DataSource dataSource = answer.getQuestion().getWdkModel().getAppDb().getDataSource();
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql, getName() + "-summary");
+      resultSet = SqlUtils.executeQuery(dataSource, sql, getKey() + "-summary");
       String value = resultSet.getString(columnName);
       int count = resultSet.getInt(COLUMN_COUNT);
       counts.put(value, count);

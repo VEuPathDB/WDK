@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,6 +29,7 @@ public abstract class ParamBean<T extends Param> {
   public ParamBean(T param) {
     this.param = param;
     truncateLength = Utilities.TRUNCATE_DEFAULT;
+    this.contextValues = new LinkedHashMap<>();
   }
 
   public void setUser(UserBean user) {

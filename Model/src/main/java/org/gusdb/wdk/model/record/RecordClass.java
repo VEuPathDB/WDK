@@ -1632,7 +1632,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
   
   public void addFilter(Filter filter) {
-    filters.put(filter.getName(), filter);
+    filters.put(filter.getKey(), filter);
   }
   
   public Filter getFilter(String fullName) throws WdkModelException {
