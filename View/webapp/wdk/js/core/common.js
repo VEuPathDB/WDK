@@ -222,9 +222,9 @@ wdk.util.namespace("window.wdk", function(ns, $) {
 
 
   // TODO: mixin
-  function registerToggle() {
+  function registerToggle($el) {
     // register toggles
-    $(".wdk-toggle").not('[__rendered]')
+    $el.find(".wdk-toggle").not('[__rendered]')
       .each(function(index, node) {
         $(node).simpleToggle().attr('__rendered', true);
       });
@@ -233,7 +233,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     // data-container is a selector for a container element
     // data-show is a boolean to show or hide toggles
     // data-animated overrides the built-in animation
-    $(".wdk-toggle-group").not('[__rendered]')
+    $el.find(".wdk-toggle-group").not('[__rendered]')
       .each(function(index, node) {
         $(node)
           .click(function(e) {
@@ -250,8 +250,8 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   }
 
   // TODO: mixin
-  function registerCollapsible() {
-    $(".collapsible").each(function() {
+  function registerCollapsible($el) {
+    $el.find(".collapsible").each(function() {
       var $this = $(this);
 
       if ($this.attr("rendered")) {
@@ -289,24 +289,24 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   }
 
   // TODO: view
-  function registerTable() {
+  function registerTable($el) {
     // register data tables on wdk table
-    $(".wdk-table.datatables").not('.dataTable').dataTable({
+    $el.find(".wdk-table.datatables").not('.dataTable').dataTable({
       "bJQueryUI": true
     });
 
     // also register other tables
-    $("table.wdk-data-table").not(".dataTable").wdkDataTable();
+    $el.find("table.wdk-data-table").not(".dataTable").wdkDataTable();
   }
 
   // TODO: mixin
-  function registerTooltips() {
-    $(".wdk-tooltip").not('[data-hasqtip]').wdkTooltip();
+  function registerTooltips($el) {
+    $el.find(".wdk-tooltip").not('[data-hasqtip]').wdkTooltip();
   }
 
   // TODO: mixin
-  function registerSnippet() {
-    $(".snippet").each(function(idx, node) {
+  function registerSnippet($el) {
+    $el.find(".snippet").each(function(idx, node) {
       var $node = $(node),
           defaultHeight = $node.height(); // jshint ignore:line
 
@@ -387,10 +387,10 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   }
 
   // TODO: mixin
-  function registerTruncate() {
+  function registerTruncate($el) {
     var SHOW_CHARS = 120;
 
-    $(".truncate").each(function(idx, node) {
+    $el.find(".truncate").each(function(idx, node) {
       var $node = $(node);
 
       if ($node.data("rendered")) {
@@ -481,12 +481,12 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   }
 
   // TODO: mixin
-  function registerEditable() {
+  function registerEditable($el) {
     // all elements with className wdk-editable, eg:
     //   <span class="wdk-editable"
     //       data-change="someFunction">edit me</span>
 
-    $(".wdk-editable").each(function(idx, element) {
+    $el.find(".wdk-editable").each(function(idx, element) {
       if ($(element).data("rendered")) return;
 
       var save = $(element).data("save");
@@ -512,8 +512,8 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     });
   }
 
-  function registerButton() {
-    $('.button')
+  function registerButton($el) {
+    $el.find('.button')
       .not('[__rendered]')
         .button()
         .attr('__rendered', true);
@@ -598,10 +598,10 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   }
 
   // TODO: replace with views
-  function invokeControllers() {
+  function invokeControllers($el) {
     // TODO - Add data-action attribute
     // controller is a misnomer here. see issue #14107
-    $("[data-controller]").not('[__invoked]')
+    $el.find("[data-controller]").not('[__invoked]')
       .each(function invokeController(idx, element) {
         var $element = $(element);
         var $attrs = $element.data();
@@ -612,32 +612,49 @@ wdk.util.namespace("window.wdk", function(ns, $) {
           // such as prevent collisions, and inject dependencies. It will also
           // be quicker to do a dictionary lookup.
           wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
+        } catch (e) {
+          console.error(e);
         } finally {
           $element.attr('__invoked', true);
         }
       });
   }
 
-  function resolveAssetsUrls() {
-    $('[data-assets-src]:not([src])').each(function() {
+  // TODO Convert global refs to event names
+  function triggerControllerEvents($el) {
+    $el.find("[data-controller]").not('[__triggered]')
+      .each(function(index, el) {
+        var $el = $(el);
+        $el.trigger($el.data('controller'));
+        $el.attr('__triggered', true);
+      });
+  }
+
+  function resolveAssetsUrls($el) {
+    $el.find('[data-assets-src]:not([src])').each(function() {
       $(this).attr('src', assetsUrl($(this).data('assets-src')));
     });
   }
 
   // when a portion (or all) of the DOM is loaded...
-  function load() {
-    resolveAssetsUrls();
-    wdk.components.ajaxElement.triggerElements();
-    registerTable();
-    registerTooltips();
-    registerToggle();
-    registerCollapsible();
-    registerSnippet();
-    registerTruncate();
-    registerEditable();
-    registerButton();
-    wdk.util.executeOnloadFunctions("body");
-    invokeControllers();
+  function load($el) {
+    $el = $el || $('body');
+
+    console.log('load', $el[0]);
+
+    resolveAssetsUrls($el);
+    wdk.components.ajaxElement.triggerElements($el);
+    registerTable($el);
+    registerTooltips($el);
+    registerToggle($el);
+    registerCollapsible($el);
+    registerSnippet($el);
+    registerTruncate($el);
+    registerEditable($el);
+    registerButton($el);
+    wdk.util.executeOnloadFunctions($el);
+    triggerControllerEvents($el);
+    invokeControllers($el);
   }
 
   _.extend(ns, {

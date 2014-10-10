@@ -17,8 +17,8 @@ wdk.namespace('wdk.components.ajaxElement', function(ns, $) {
   }
 
   // scan DOM for <wdk-ajax> elements and call load
-  function triggerElements() {
-    $('wdk-ajax:not([triggered])')
+  function triggerElements($el) {
+    $el.find('wdk-ajax:not([triggered])')
       // load if [immediate]
       .filter('[immediate]')
         .each(function(i, e) { loadUrl(e); })
