@@ -18,7 +18,7 @@ public final class SpamUtils {
   private static final Logger LOG = Logger.getLogger(SpamUtils.class.getName());
 
   /* Elapsed time in seconds */
-  private static int MINIMUM_ELAPSED_TIME = 5;
+  private static int MINIMUM_ELAPSED_TIME = 2;
 
   /* placeholders
    public static void checkHoneyPot(ParamGroup params) { }
