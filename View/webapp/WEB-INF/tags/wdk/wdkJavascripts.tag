@@ -30,7 +30,7 @@
       <!-- WDK libraries and source files -->
       <!-- see WDK/View/assets/wdkFiles.js for details about these files -->
       <imp:script src="/wdk/wdk.libs.js"/>
-      <imp:script src="/wdk/wdk.js"/>
+      <imp:script src="/wdk/wdk.js?_=v22.1"/>
     </c:otherwise>
   </c:choose>
 

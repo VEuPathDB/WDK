@@ -264,6 +264,21 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
 
   }
 
+  // Adds a form element whose value will be the elapsed
+  // time since the form was loaded.
+  //
+  // This works in coordination with org.gusdb.wdk.controller.actionutils.WdkAction.shouldCheckSpam()
+  function addSpamTimestamp(form) {
+    var $__ts = $('<input type="hidden" name="__ts"/>');
+    $(form).append($__ts);
+
+    (function setElapsedTime($input, start, now) {
+      $input.val(Math.floor((now - start) / 1000));
+      setTimeout(setElapsedTime.bind(this, $input, start, _.now()), 1000);
+    }($__ts, _.now(), _.now()));
+  }
+
+
   ns.getDisplayType = getDisplayType;
   ns.initShowHide = initShowHide;
   ns.parseUrlUtil = parseUrlUtil;
@@ -280,5 +295,6 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
   ns.submitError = submitError;
   ns.toggleErrorDetails = toggleErrorDetails;
   ns.elementNearViewport = elementNearViewport;
+  ns.addSpamTimestamp = addSpamTimestamp;
 
 });
