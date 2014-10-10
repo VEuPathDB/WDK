@@ -1,62 +1,32 @@
 package org.gusdb.wdk.model.filter;
 
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 
-public class FilterReference extends WdkModelBase {
+public class FilterReference extends AbstractFilterReference {
 
-  private String name;
-  private String display;
-  private String description;
-  private String view;
-  private String className;
-  private Class<Filter> filterClass;
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getDisplay() {
-    return display;
-  }
-
-  public void setDisplay(String display) {
-    this.display = display;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public String getView() {
-    return view;
-  }
-
-  public void setView(String view) {
-    this.view = view;
-  }
-
-  public String getClassName() {
-    return className;
-  }
-
-  public void setClassName(String className) {
-    this.className = className;
-  }
+  private Class<? extends Filter> _class;
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
-    
-    
+
+    try {
+      _class = Class.forName(getImplementation()).asSubclass(Filter.class);
+    }
+    catch (ClassNotFoundException | ClassCastException ex) {
+      throw new WdkModelException(ex);
+    }
+  }
+
+  public Filter getFilter() throws WdkModelException {
+    try {
+      Filter filter = _class.newInstance();
+      initializeFilter(filter);
+      return filter;
+    }
+    catch (InstantiationException | IllegalAccessException ex) {
+      throw new WdkModelException(ex);
+    }
   }
 }

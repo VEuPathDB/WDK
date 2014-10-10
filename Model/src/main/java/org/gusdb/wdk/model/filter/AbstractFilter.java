@@ -13,7 +13,7 @@ public abstract class AbstractFilter implements Filter {
   }
 
   @Override
-  public String getName() {
+  public String getKey() {
     return name;
   }
   
@@ -22,6 +22,7 @@ public abstract class AbstractFilter implements Filter {
     return display;
   }
   
+  @Override  
   public void setDisplay(String display) {
     this.display = display;
   }
@@ -31,6 +32,7 @@ public abstract class AbstractFilter implements Filter {
     return description;
   }
   
+  @Override  
   public void setDescription(String description) {
     this.description = description;
   }
@@ -40,6 +42,7 @@ public abstract class AbstractFilter implements Filter {
     return view;
   }
 
+  @Override  
   public void setView(String view) {
     this.view = view;
   }

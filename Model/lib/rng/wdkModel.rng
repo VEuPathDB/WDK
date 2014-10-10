@@ -44,6 +44,8 @@
 
           <ref name="groupSet" />
 
+          <ref name="filterSet" />
+
           <ref name="xmlQuestionSet" />
 
           <ref name="xmlRecordClassSet" />
@@ -1291,6 +1293,14 @@
   <define name="columnAttribute">
     <element name="columnAttribute">
       <ref name="AttributeFieldContent" />
+      <zeroOrMore>
+        <choice>
+          <element name="filter">
+            <ref name="IncludeExclude" />
+            <attribute name="ref" />
+          </element>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
 
@@ -1485,6 +1495,48 @@
         </element>
       </zeroOrMore>
     </element>
+  </define>
+
+
+  <!-- filter set -->
+  <define name="filterSet">
+    <element name="filterSet">
+      <attribute name="name" />
+      <ref name="IncludeExclude" />
+      <zeroOrMore>
+        <ref name="filter" />
+        <ref name="columnFilter" />
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="filter">
+    <element name="filter">
+      <ref name="filterBaseContent" />
+   </define>
+
+  <define name="columnFilter">
+    <element name="columnFilter">
+      <ref name="filterBaseContent" />
+   </define>
+  
+  <define name="filterBaseContent">
+     <ref name="IncludeExclude" />
+	 <attribute name="name" />
+	 <attribute name="view" />
+	 <attribute name="implementation" />
+     <zeroOrMore>
+        <choice>
+	      <element name="display">
+	        <ref name="IncludeExclude" />
+	        <text />
+	      </element>
+	      <element name="description">
+	        <ref name="IncludeExclude" />
+	        <text />
+	      </element>
+	    </choice>
+     </zeroOrMore>
   </define>
 
   <define name="summaryView">

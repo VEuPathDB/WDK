@@ -10,12 +10,12 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 
-public class FilterSet extends WdkModelBase implements ModelSetI<FilterReference> {
+public class FilterSet extends WdkModelBase implements ModelSetI<AbstractFilterReference> {
 
-  private List<FilterReference> filterReferencesList = new ArrayList<>();
-  private Map<String, FilterReference> filterReferenceMap = null;
-  
-  private String name;
+  private List<AbstractFilterReference> _filterReferencesList = new ArrayList<>();
+  private Map<String, AbstractFilterReference> _filterReferenceMap = null;
+
+  private String _name;
 
   public FilterSet(FilterSet base) {
     super(base);
@@ -23,16 +23,20 @@ public class FilterSet extends WdkModelBase implements ModelSetI<FilterReference
 
   @Override
   public String getName() {
-    return name;
+    return _name;
   }
 
   @Override
-  public FilterReference getElement(String elementName) {
-    return filterReferenceMap.get(elementName);
+  public AbstractFilterReference getElement(String elementName) {
+    return _filterReferenceMap.get(elementName);
   }
-  
+
   public void addFilter(FilterReference reference) {
-    filterReferencesList.add(reference);
+    _filterReferencesList.add(reference);
+  }
+
+  public void addColumnFilter(ColumnFilterReference reference) {
+    _filterReferencesList.add(reference);
   }
 
   @Override
@@ -43,27 +47,31 @@ public class FilterSet extends WdkModelBase implements ModelSetI<FilterReference
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
-    
-    filterReferenceMap = new LinkedHashMap<>();
-    for (FilterReference reference :filterReferencesList) {
+
+    _filterReferenceMap = new LinkedHashMap<>();
+    for (AbstractFilterReference reference : _filterReferencesList) {
       if (reference.include(projectId)) {
         reference.excludeResources(projectId);
-        
+
         // check if the reference of the same project already exists
-        if (filterReferenceMap.containsKey(reference.getName()))
-          throw new WdkModelException("Filter reference " + reference.getName() + " is duplicated for project " + projectId);
-        
-        filterReferenceMap.put(reference.getName(), reference);
+        if (_filterReferenceMap.containsKey(reference.getName()))
+          throw new WdkModelException("Filter reference " + reference.getName() +
+              " is duplicated for project " + projectId);
+
+        _filterReferenceMap.put(reference.getName(), reference);
       }
     }
-    filterReferencesList.clear();
-    filterReferencesList = null;
+    _filterReferencesList.clear();
+    _filterReferencesList = null;
   }
-  
+
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    // TODO Auto-generated method stub
     super.resolveReferences(wdkModel);
+
+    for (AbstractFilterReference filterReference : _filterReferenceMap.values()) {
+      filterReference.resolveReferences(wdkModel);
+    }
   }
-  
+
 }
