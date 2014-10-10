@@ -740,6 +740,14 @@ public class Step {
     step.customName = customName;
     step.collapsible = collapsible;
     step.update(false);
+    
+    try {
+      stepFactory.getWdkModel().getStepAnalysisFactory().copyAnalysisInstances(this, step);
+    }
+    catch (WdkUserException e) {
+      // means copied answer is no longer valid for this type of analysis; this should probably not happen
+      throw new WdkModelException("Cannot copy analysis instances during step copy", e);
+    }
     return step;
   }
 
