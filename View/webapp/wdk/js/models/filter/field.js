@@ -182,7 +182,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
       var prunedFields = _.sortBy(pruneFields(fields), 'term');
 
       // get root tree
-      var parentFields = _.where(prunedFields, { parent: undefined });
+      var parentFields = _.reject(prunedFields, 'parent');
 
       // construct tree
       var groupedFields = makeTree(parentFields, prunedFields);
