@@ -638,9 +638,9 @@ wdk.util.namespace("window.wdk", function(ns, $) {
 
   // when a portion (or all) of the DOM is loaded...
   function load($el) {
-    $el = $el || $('body');
+    $el = $el || $(document);
 
-    console.log('load', $el[0]);
+    console.log('load', $el);
 
     resolveAssetsUrls($el);
     wdk.components.ajaxElement.triggerElements($el);

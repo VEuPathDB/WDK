@@ -4,6 +4,9 @@
 
   var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
 
+  // uncomment next line to enable query string flag to force loadOnInterval
+  // if (/\b__interval=true\b/.test(location.search)) MutationObserver = false;
+
   // Don't allow RSVP to "swallow" errors.
   // This will cause inspectors to break
   // here, from which one can look up the
@@ -79,22 +82,25 @@
     return observer;
   }
 
+  function rafLoad($target) {
+    requestAnimationFrame(_.partial(wdk.load, $target));
+  }
+
   var throttledLoad = _.throttle(wdk.load, 100);
 
-  var throttledRafLoad = _.throttle(function($target) {
-    requestAnimationFrame(_.partial(wdk.load,$target));
-  }, 100);
+  var throttledRafLoad = _.throttle(rafLoad, 100);
 
   // get unique set of targets with addedNodes
   function loadUniqueMutationTargets(mutations) {
-    _.uniq(mutations.reduce(function(acc, mutation) {
+    var targets = _.uniq(mutations.reduce(function(acc, mutation) {
       return mutation.addedNodes.length > 0
         ? acc.concat([ mutation.target ])
         : acc;
-    }, []))
-    .forEach(function(target) {
-      throttledRafLoad($(target));
-    });
+    }, []));
+    //.forEach(function(target) {
+    //  rafLoad($(target));
+    //});
+    if (targets.length > 0) rafLoad($(targets));
   }
 
 }(jQuery));
