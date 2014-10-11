@@ -1,5 +1,10 @@
 /* global Spinner */
 
+// TODO Use customElement API (not supported by IE8)
+
+// FIXME Move visible logic to a utility function and remove immediate attribute flag.
+// Instead, use add a manual flag: when true, don't load ajax immediately. Defaults to false.
+
 wdk.namespace('wdk.components.ajaxElement', function(ns, $) {
   'use strict';
 
