@@ -57,6 +57,18 @@ wdk.namespace('wdk.models.filter', function(ns) {
     };
   };
 
+  function gte(min, value) {
+    return value >= min;
+  }
+
+  function lte(max, value) {
+    return value <= max;
+  }
+
+  function within(min, max, value) {
+    return gte(min, value) && lte(max, value);
+  }
+
   var LocalFilterService = FilterService.extend({
 
     /**
@@ -65,15 +77,17 @@ wdk.namespace('wdk.models.filter', function(ns) {
      *
      * Optionally, provide options to affect the filtering algorithm.
      * Available options are:
-     *   * filters: A list of filters to apply.
+     *   * filters: A Backbone Collection of filters to apply.
      *   * omit: A list of fields to omit. This is useful when you want
      *           a distribution of values caused by other filters.
      *
      * @param {Object} options Options for the filtering algorithm
      */
     getFilteredData: toPromise(function(options) {
+
+      // TODO Create composite filter function to apply once
+
       var filters = options.filters;
-      var data;
 
       if (options && options.omit) {
         filters = filters.reject(function(filter) {
@@ -81,17 +95,85 @@ wdk.namespace('wdk.models.filter', function(ns) {
         });
       }
 
-      if (filters.length) {
-        data = filters.reduce(function(data, filter) {
+      // Map filters to a list of predicate functions to call on each data item
+      var predicates = filters
+        .map(function(filter) {
           if (filter instanceof MemberFilter) {
-            return this.applyMemberFilter(filter, data);
+            return this.getMemberPredicate(filter);
           } else if (filter instanceof RangeFilter) {
-            return this.applyRangeFilter(filter, data);
+            return this.getRangePredicate(filter);
           }
-        }.bind(this), this.get('data'));
-      }
-      return data || [];
+        }, this);
+
+      // Filter data by applying each predicate above to each data item.
+      return filters.length === 0
+        ? []
+        : _.filter(this.get('data'), function(datum) {
+          return _.every(predicates, function(predicate) {
+            return predicate(datum);
+          });
+        });
+
+      // if (filters.length) {
+      //   data = filters.reduce(function(data, filter) {
+      //     if (filter instanceof MemberFilter) {
+      //       return this.applyMemberFilter(filter, data);
+      //     } else if (filter instanceof RangeFilter) {
+      //       return this.applyRangeFilter(filter, data);
+      //     }
+      //   }.bind(this), this.get('data'));
+      // }
+      // return data || [];
     }),
+
+    // returns a function to apply to data item
+    // fn(data) // (true | false)
+    getMemberPredicate: function(filter) {
+      var field = filter.get('field');
+      var metadata = this.get('metadata')[field];
+
+      return function memberPredicate(datum) {
+        var filterValues = filter.get('values');
+        var metadataValues = metadata[datum.term];
+        var index = filterValues.length;
+        var vIndex;
+
+        // Use a for loop for efficiency
+        outer:
+        while(index--) {
+          vIndex = metadataValues.length;
+          while(vIndex--) {
+            if (filterValues[index] === metadataValues[vIndex]) break outer;
+          }
+        }
+
+        return (index > -1);
+      };
+    },
+
+    getRangePredicate: function(filter) {
+      var field = filter.get('field');
+      var metadata = this.get('metadata')[field];
+      var min = filter.get('min');
+      var max = filter.get('max');
+
+      if (min !== null && max !== null) {
+        return function rangePredicate(datum) {
+          return within(min, max, metadata[datum.term]);
+        };
+      }
+      if (min !== null) {
+        return function rangePredicate(datum) {
+          return gte(min, metadata[datum.term]);
+        };
+      }
+      if (max !== null) {
+        return function rangePredicate(datum) {
+          return lte(max, metadata[datum.term]);
+        };
+      }
+      throw new Error('Could not determine range predicate.');
+    },
 
     applyMemberFilter: function(filter, data) {
       var field = filter.get('field');
@@ -146,18 +228,6 @@ wdk.namespace('wdk.models.filter', function(ns) {
     }
 
   });
-
-  function gte(min, value) {
-    return value >= min;
-  }
-
-  function lte(max, value) {
-    return value <= max;
-  }
-
-  function within(min, max, value) {
-    return gte(min, value) && lte(max, value);
-  }
 
   ns.FilterService = FilterService;
   ns.LocalFilterService = LocalFilterService;
