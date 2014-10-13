@@ -92,7 +92,9 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
       String value = left.get(name);
       if (!right.containsKey(name))
         return false;
-      if (!right.get(name).equals(value))
+
+      String rightValue = right.get(name);
+      if (rightValue == null || !rightValue.equals(value))
         return false;
     }
     return true;
