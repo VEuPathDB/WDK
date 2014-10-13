@@ -643,7 +643,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     console.log('load', $el);
 
     resolveAssetsUrls($el);
-    wdk.components.ajaxElement.triggerElements($el);
+    wdk.components.wdkAjax.init($el);
     registerTable($el);
     registerTooltips($el);
     registerToggle($el);
