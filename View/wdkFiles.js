@@ -73,7 +73,8 @@ module.exports = {
     'webapp/wdk/lib/jquery.js',
     'ENV:DEV!webapp/wdk/lib/jquery-migrate-1.2.1.js',
     'ENV:PROD!webapp/wdk/lib/jquery-migrate-1.2.1.min.js',
-    'webapp/wdk/lib/underscore-min.js',
+    //'webapp/wdk/lib/underscore-min.js',
+    'webapp/wdk/lib/lodash.compat.min.js',
     'webapp/wdk/lib/backbone-min.js',
     'webapp/wdk/lib/jquery-ui.js',
 
