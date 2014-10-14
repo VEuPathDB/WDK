@@ -18,8 +18,8 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
     template: wdk.templates['filter/field_list.handlebars'],
 
     constructor: function(options) {
-      _.extend(this.events, options.events);
-      wdk.views.core.View.apply(this, arguments);
+      _.extend(options.events, this.events);
+      wdk.views.core.View.call(this, options);
     },
 
     initialize: function(options) {
