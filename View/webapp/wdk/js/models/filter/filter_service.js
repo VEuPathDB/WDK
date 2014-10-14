@@ -69,6 +69,15 @@ wdk.namespace('wdk.models.filter', function(ns) {
     return gte(min, value) && lte(max, value);
   }
 
+  var passes = _.curry(function passes(value, fn) {
+    return fn(value);
+  });
+
+  var passesAll = _.curry(function passesAll(fns, value) {
+    var passesWithValue = passes(value);
+    return _.every(fns, passesWithValue);
+  });
+
   var LocalFilterService = FilterService.extend({
 
     /**
@@ -108,11 +117,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
       // Filter data by applying each predicate above to each data item.
       return filters.length === 0
         ? []
-        : _.filter(this.get('data'), function(datum) {
-          return _.every(predicates, function(predicate) {
-            return predicate(datum);
-          });
-        });
+        : _.filter(this.get('data'), passesAll(predicates));
 
       // if (filters.length) {
       //   data = filters.reduce(function(data, filter) {
