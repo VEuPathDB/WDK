@@ -206,6 +206,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       SqlUtils.executeUpdate(dataSource, buffer.toString(), query.getFullName()
           + "__create-cache");
     } catch (SQLException e) {
+      logger.error("Failed to run sql:\n" + buffer);
       throw new WdkModelException("Unable to create cache.", e);
     }
   }
