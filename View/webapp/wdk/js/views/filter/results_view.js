@@ -29,7 +29,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this._metadataFetchCount = 0;
 
       this.columnsDialog = new FieldListView({
-        className: 'filter-results-columns',
+        className: 'filter-results field-list',
         collection: this.controller.fields,
         controller: this.controller,
         fieldTemplate: function(field) {
