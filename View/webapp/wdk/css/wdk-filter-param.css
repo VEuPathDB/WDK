@@ -137,6 +137,9 @@
 .field-list li a, .field-list li label {
   font-weight: normal;
 }
+.field-list li label {
+  margin-left: .4em;
+}
 .field-list li a {
   display: block;
   padding: 5px 4px;
@@ -388,6 +391,10 @@
 }
 .filter-results ul {
   list-style: none;
+  padding-left: 1em;
+}
+.filter-results.field-list h4 {
+  margin-left: 0;
 }
 /*
 .filter-param .dataTables_wrapper {
