@@ -43,9 +43,6 @@ wdk.namespace('wdk.models.filter', function(ns) {
       .map(function(field) {
         var children = _.chain(allFields)
           .where({ parent: field.term })
-
-          // sort leaves to top
-          .sortBy(function(c) { return c.leaf === 'true' ? 0 : 1; })
           .value();
 
         return children.length
@@ -120,6 +117,21 @@ wdk.namespace('wdk.models.filter', function(ns) {
       });
   }
 
+  // Sort tree such that terminal nodes are before non-terminal nodes
+  function sortTree(tree) {
+    return _(tree)
+      .map(function(node) {
+        if (node.children) {
+          node.children = sortTree(node.children);
+        }
+        return node;
+      })
+      .sortBy(function(node) {
+        return Boolean(node.children);
+      })
+      .value();
+  }
+
 
   //
   // Model and Collection
@@ -181,8 +193,8 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
       // Create tree, then prune it so it's easier to read
       var makeTree = options.trimMetadataTerms
-        ? _.compose(removeParentsWithSingleChild, removeSingleTopNode, constructTree)
-        : constructTree;
+        ? _.compose(sortTree, removeParentsWithSingleChild, removeSingleTopNode, constructTree)
+        : _.compose(sortTree, constructTree);
 
       // get all ontology terms starting from `filterable` fields
       // and traversing upwards by the `parent` attribute
