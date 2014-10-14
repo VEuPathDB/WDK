@@ -19,6 +19,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     initialize: function() {
       this.listenTo(this.controller.fields, 'change', this.changeField);
       this.listenTo(this.controller.fields, 'reset', this.renderEmpty);
+      this.render();
     },
 
     render: function(field) {

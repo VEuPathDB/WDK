@@ -5,7 +5,7 @@
     <h4 role="treeitem" class="link collapsed">{{field.display}}</h4>
     <div> {{> field_node}} </div>
     {{else}}
-    <a role="treeitem" href="#{{field.term}}">{{field.display}}</a>
+    <div role="treeitem"> {{{fieldTemplate field}}} </div>
     {{/if}}
   </li>
   {{/each}}
