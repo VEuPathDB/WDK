@@ -160,8 +160,15 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
     model: Field,
 
+    initialize: function(models, options) {
+      this.trimMetadataTerms = options.trimMetadataTerms;
+    },
+
     // See static property getTree
-    getTree: function(options) {
+    getTree: function() {
+      var options = {
+        trimMetadataTerms: this.trimMetadataTerms
+      };
       return Fields.getTree(options, this.toJSON());
     }
 

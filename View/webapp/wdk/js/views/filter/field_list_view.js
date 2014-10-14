@@ -18,17 +18,13 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
 
     template: wdk.templates['filter/field_list.handlebars'],
 
-    initialize: function(options) {
-      this.trimMetadataTerms = options.trimMetadataTerms;
-
+    initialize: function() {
       this.listenTo(this.controller, 'select:field', this.selectField);
       this.listenTo(this.controller.fields, 'reset', this.render);
     },
 
     render: function() {
-      var groupedFields = this.controller.fields.getTree({
-        trimMetadataTerms: this.trimMetadataTerms
-      });
+      var groupedFields = this.controller.fields.getTree();
 
       this.$el.html(this.template({
         nodes: groupedFields,
