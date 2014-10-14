@@ -386,6 +386,9 @@
 .filter-param .summary {
   margin-top: 4px;
 }
+.filter-results-columns ul {
+  list-style: none;
+}
 /*
 .filter-param .dataTables_wrapper {
   overflow-x: auto;
