@@ -21,6 +21,7 @@
 }
 .filter-param .ui-tabs {
   border: none;
+  background: transparent;
 }
 .filter-param .collapse {
   position: absolute;
@@ -37,6 +38,7 @@
 .filter-param .ui-tabs-panel {
   padding: 0;
   box-shadow: 1px 1px #DDD;
+  background-color: white;
 }
 .filter-view {
   position: relative;
