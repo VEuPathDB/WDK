@@ -976,6 +976,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
             wdk.history.update_hist(true);
             wdk.history.updateHistory();
           }
+          wdk.util.removeLoading(ss.frontId);
         }
       }
     });
