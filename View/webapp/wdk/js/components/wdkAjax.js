@@ -15,9 +15,9 @@ wdk.namespace('wdk.components.wdkAjax', function(ns, $) {
   //
   // EXAMPLE
   //
-  //    load(myElement).then(function(el, jqXHR) {
-  //      ...
-  //    });
+  //     load(myElement).then(function(el, jqXHR) {
+  //       ...
+  //     });
   //
   function load(el) {
     var spinner = new Spinner().spin();

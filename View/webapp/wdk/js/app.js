@@ -55,9 +55,8 @@
   }, 100));
 
 
-  //
-  // functions
-  //
+  // Helper functions
+  // ----------------
 
   // call wdk.load using setInterval
   /* jshint unused:false */

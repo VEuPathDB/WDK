@@ -55,15 +55,15 @@ wdk.namespace('wdk.models.filter', function(ns) {
   //
   // E.g., turn this:
   //
-  //    A
-  //     \
-  //      B
-  //       \
-  //        C
-  //       / \
-  //      D   E
-  //     /     \
-  //       ...
+  //     A
+  //      \
+  //       B
+  //        \
+  //         C
+  //        / \
+  //       D   E
+  //      /     \
+  //        ...
   //
   // into this:
   //
@@ -83,19 +83,19 @@ wdk.namespace('wdk.models.filter', function(ns) {
   //
   // E.g., turn this:
   //
-  //      *
-  //     / \
-  //    A   B
-  //         \
-  //          C
-  //           \
-  //            D
+  //       *
+  //      / \
+  //     A   B
+  //          \
+  //           C
+  //            \
+  //             D
   //
   // into this:
   //
-  //      *
-  //     / \
-  //    A   D
+  //       *
+  //      / \
+  //     A   D
   //
   function removeParentsWithSingleChild(tree) {
     return tree
