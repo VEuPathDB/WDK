@@ -22,12 +22,11 @@ wdk.namespace('wdk.components', function(ns, $) {
     var text = opts.text;
     var container = opts.container;
     var dismissedStorageKey = 'featureTooltip::dismissed::' + key;
-    var ignorePref = localStorage.getItem(dismissedStorageKey);
-    var sessionId = $.cookie('JSESSIONID');
+    var ignorePref = wdk.user.getPreference(dismissedStorageKey);
 
     $el = $el instanceof $ ? $el : $($el);
 
-    if (ignorePref == '1' || ignorePref == sessionId) return;
+    if (ignorePref) return;
 
     return $el
       .wdkTooltip({
@@ -64,12 +63,7 @@ wdk.namespace('wdk.components', function(ns, $) {
             if (e.originalEvent.type === 'tooltipsolo') {
               e.preventDefault();
             } else {
-              if (api.cache.remember) {
-                localStorage.setItem(dismissedStorageKey, 1);
-              }
-              else {
-                localStorage.setItem(dismissedStorageKey, sessionId);
-              }
+              wdk.user.setPreference(dismissedStorageKey, true, !api.cache.remember);
               api.destroy();
             }
           },
