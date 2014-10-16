@@ -126,7 +126,7 @@ public class SanityTester {
   public String getSummaryLine() {
     return _stats.getSummaryLine(_testFilter);
   }
-  
+
   public boolean isFailedOverall() {
     return _stats.isFailedOverall();
   }
@@ -145,7 +145,7 @@ public class SanityTester {
   }
 
   public static boolean isTestable(Query query, boolean skipWebSvcQueries) {
-    return (!(skipWebSvcQueries && query instanceof ProcessQuery) &&
-            !query.getDoNotTest() && !query.getQuerySet().getDoNotTest());
+    return (isTestable(query) && isTestable(query.getQuerySet()) &&
+            !(skipWebSvcQueries && query instanceof ProcessQuery));
   }
 }
