@@ -612,8 +612,6 @@ wdk.util.namespace("window.wdk", function(ns, $) {
           // such as prevent collisions, and inject dependencies. It will also
           // be quicker to do a dictionary lookup.
           wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
-        } catch (e) {
-          console.error(e);
         } finally {
           $element.attr('__invoked', true);
         }
