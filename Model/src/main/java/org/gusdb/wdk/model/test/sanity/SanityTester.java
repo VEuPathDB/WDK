@@ -133,8 +133,8 @@ public class SanityTester {
 
   public static String getRerunLine(List<TestResult> results) {
     List<Integer> failedTestIds = new ArrayList<>();
-    for (int i = 0; i < results.size(); i++) {
-      if (!results.get(i).isPassed()) failedTestIds.add(i+1);
+    for (TestResult result : results) {
+      if (!result.isPassed()) failedTestIds.add(result.getIndex());
     }
     return "To re-run failures, use filter string '" +
         TestFilter.getFilterString(failedTestIds) + "'.";
