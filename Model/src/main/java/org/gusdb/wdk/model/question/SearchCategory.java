@@ -29,7 +29,6 @@ public class SearchCategory extends WdkModelBase {
 
   private static final Logger logger = Logger.getLogger(SearchCategory.class);
 
-  private WdkModel wdkModel;
   private String name;
   private String displayName;
   private String shortDisplayName;

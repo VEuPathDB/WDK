@@ -31,11 +31,9 @@ import org.json.JSONObject;
  * @author Jerric Gao
  * 
  */
-public class SqlQueryInstance extends QueryInstance {
+public class SqlQueryInstance extends QueryInstance<SqlQuery> {
 
   private static Logger logger = Logger.getLogger(SqlQueryInstance.class);
-
-  private SqlQuery query;
 
   /**
    * @param query
@@ -208,6 +206,7 @@ public class SqlQueryInstance extends QueryInstance {
       SqlUtils.executeUpdate(dataSource, buffer.toString(), query.getFullName()
           + "__create-cache");
     } catch (SQLException e) {
+      logger.error("Failed to run sql:\n" + buffer);
       throw new WdkModelException("Unable to create cache.", e);
     }
   }

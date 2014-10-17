@@ -501,8 +501,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
-    appDb = new DatabaseInstance(appDbConfig).initialize(DB_INSTANCE_APP);
-    userDb = new DatabaseInstance(userDbConfig).initialize(DB_INSTANCE_USER);
+    appDb = new DatabaseInstance(appDbConfig, DB_INSTANCE_APP);
+    userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER);
 
     resultFactory = new ResultFactory(this);
     userFactory = new UserFactory(this);
@@ -512,10 +512,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     favoriteFactory = new FavoriteFactory(this);
     stepAnalysisFactory = (stepAnalysisPlugins == null ? new UnconfiguredStepAnalysisFactory(this)
         : new StepAnalysisFactoryImpl(this));
-
-    // set the exception header
-    WdkModelException.modelName = getProjectId();
-    WdkUserException.modelName = getProjectId();
 
     // exclude resources that are not used by this project
     excludeResources();
@@ -544,11 +540,11 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   private static void releaseDb(DatabaseInstance db) {
     try {
-      logger.info("Releasing database resources for DB: " + db.getName());
+      logger.info("Releasing database resources for DB: " + db.getIdentifier());
       db.close();
     }
     catch (Exception e) {
-      logger.error("Exception caught while trying to shut down DB instance " + "with name '" + db.getName() +
+      logger.error("Exception caught while trying to shut down DB instance " + "with name '" + db.getIdentifier() +
           "'.  Ignoring.", e);
     }
   }

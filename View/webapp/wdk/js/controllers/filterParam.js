@@ -50,8 +50,9 @@ wdk.namespace('wdk.controllers', function(ns) {
       this.title = options.title || 'Items';
       this.questionName = options.questionName;
       this.name = options.name;
-      this.fields = new Fields(options.fields);
-      this.trimMetadataTerms = Boolean(options.trimMetadataTerms);
+      this.fields = new Fields(options.fields, {
+        trimMetadataTerms: Boolean(options.trimMetadataTerms)
+      });
       this.defaultColumns = options.defaultColumns;
       this.spinner = new Spinner({
         lines: 11, // The number of lines to draw

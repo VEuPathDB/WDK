@@ -238,7 +238,7 @@ public class FilterParam extends FlatVocabParam {
       return null;
 
     // run metadataQuery.
-    QueryInstance instance = metadataSpecQuery.makeInstance(user, contextValues, true, 0,
+    QueryInstance<?> instance = metadataSpecQuery.makeInstance(user, contextValues, true, 0,
         new HashMap<String, String>());
     Map<String, Map<String, String>> metadata = new LinkedHashMap<>();
     ResultList resultList = instance.getResults();
@@ -271,7 +271,7 @@ public class FilterParam extends FlatVocabParam {
     if (metadataQuery == null)
       return null;
 
-    QueryInstance instance = metadataQuery.makeInstance(user, contextValues, true, 0, contextValues);
+    QueryInstance<?> instance = metadataQuery.makeInstance(user, contextValues, true, 0, contextValues);
     Map<String, Map<String, String>> properties = new LinkedHashMap<>();
     ResultList resultList = instance.getResults();
     try {
@@ -316,7 +316,7 @@ public class FilterParam extends FlatVocabParam {
       return null;
 
     // compose a wrapped sql
-    QueryInstance instance = metadataQuery.makeInstance(user, contextValues, true, 0, contextValues);
+    QueryInstance<?> instance = metadataQuery.makeInstance(user, contextValues, true, 0, contextValues);
     String sql = instance.getSql();
     sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_PROPERTY + " = ?";
 

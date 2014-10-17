@@ -335,7 +335,7 @@ public class SanityTester {
 
     int count = 0;
 
-    QueryInstance instance = query.makeInstance(_user,
+    QueryInstance<?> instance = query.makeInstance(_user,
         paramValuesSet.getParamValues(), true, 0,
         new LinkedHashMap<String, String>());
     ResultList rl = null;

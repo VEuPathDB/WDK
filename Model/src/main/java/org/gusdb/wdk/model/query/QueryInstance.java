@@ -35,7 +35,7 @@ import org.json.JSONObject;
  * @author Jerric Gao
  * 
  */
-public abstract class QueryInstance {
+public abstract class QueryInstance<T extends Query> {
 
   public abstract void createCache(String tableName, int instanceId) throws WdkModelException, WdkUserException;
 
@@ -51,7 +51,7 @@ public abstract class QueryInstance {
 
   protected User user;
   private int instanceId;
-  protected Query query;
+  protected T query;
   protected WdkModel wdkModel;
   protected Map<String, String> stableValues;
   protected String resultMessage;
@@ -61,7 +61,7 @@ public abstract class QueryInstance {
 
   protected Map<String, String> context;
 
-  protected QueryInstance(User user, Query query, Map<String, String> stableValues, boolean validate,
+  protected QueryInstance(User user, T query, Map<String, String> stableValues, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
     this.user = user;
     this.query = query;

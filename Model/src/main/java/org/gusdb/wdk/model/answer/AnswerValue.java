@@ -150,7 +150,7 @@ public class AnswerValue {
   private ResultFactory resultFactory;
   private Question question;
 
-  private QueryInstance idsQueryInstance;
+  private QueryInstance<?> idsQueryInstance;
 
   private int startIndex;
   private int endIndex;
@@ -184,7 +184,7 @@ public class AnswerValue {
    * @param endIndex
    *          The index of the last <code>RecordInstance</code> in the page, inclusive.
    */
-  public AnswerValue(User user, Question question, QueryInstance idsQueryInstance, int startIndex,
+  public AnswerValue(User user, Question question, QueryInstance<?> idsQueryInstance, int startIndex,
       int endIndex, Map<String, Boolean> sortingMap, AnswerFilterInstance filter) {
     this.user = user;
     this.question = question;
@@ -363,7 +363,7 @@ public class AnswerValue {
     return displayParamsMap;
   }
 
-  public QueryInstance getIdsQueryInstance() {
+  public QueryInstance<?> getIdsQueryInstance() {
     return idsQueryInstance;
   }
 
@@ -764,7 +764,7 @@ public class AnswerValue {
     Map<String, String> params = new LinkedHashMap<String, String>();
     String userId = Integer.toString(user.getUserId());
     params.put(Utilities.PARAM_USER_ID, userId);
-    QueryInstance queryInstance = tableQuery.makeInstance(user, params, true, 0,
+    QueryInstance<?> queryInstance = tableQuery.makeInstance(user, params, true, 0,
         new LinkedHashMap<String, String>());
     String tableSql = queryInstance.getSql();
     StringBuffer sql = new StringBuffer("SELECT tq.* FROM (");
@@ -802,7 +802,7 @@ public class AnswerValue {
       Map<String, String> params = new LinkedHashMap<String, String>();
       String userId = Integer.toString(user.getUserId());
       params.put(Utilities.PARAM_USER_ID, userId);
-      QueryInstance queryInstance;
+      QueryInstance<?> queryInstance;
       try {
         queryInstance = attributeQuery.makeInstance(user, params, true, 0,
             new LinkedHashMap<String, String>());

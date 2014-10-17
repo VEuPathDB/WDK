@@ -64,8 +64,6 @@ public class AnswerFilterInstance extends WdkModelBase {
   private SqlQuery filterQuery;
   private AnswerParam answerParam;
 
-  private WdkModel wdkModel;
-
   /**
    * @return the name
    */
@@ -288,7 +286,7 @@ public class AnswerFilterInstance extends WdkModelBase {
 
   public ResultList getResults(AnswerValue answerValue) throws WdkModelException, WdkUserException {
     // use only the id query sql as input
-    QueryInstance idInstance = answerValue.getIdsQueryInstance();
+    QueryInstance<?> idInstance = answerValue.getIdsQueryInstance();
     String sql = idInstance.getSql();
     int assignedWeight = idInstance.getAssignedWeight();
     sql = applyFilter(answerValue.getUser(), sql, assignedWeight);

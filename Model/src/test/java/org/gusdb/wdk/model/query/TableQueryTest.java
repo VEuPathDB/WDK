@@ -48,7 +48,7 @@ public class TableQueryTest {
                             continue;
                         int min = valueSet.getMinRows();
                         int max = valueSet.getMaxRows();
-                        QueryInstance instance = query.makeInstance(user,
+                        QueryInstance<?> instance = query.makeInstance(user,
                                 values, true, 0,
                                 new LinkedHashMap<String, String>());
                         int result = instance.getResultSize();

@@ -134,7 +134,7 @@ public class ProcessQuery extends Query {
    * @see org.gusdb.wdk.model.query.Query#makeInstance()
    */
   @Override
-  public QueryInstance makeInstance(User user, Map<String, String> values,
+  public ProcessQueryInstance makeInstance(User user, Map<String, String> values,
       boolean validate, int assignedWeight, Map<String, String> context)
       throws WdkModelException, WdkUserException {
     return new ProcessQueryInstance(user, this, values, validate,

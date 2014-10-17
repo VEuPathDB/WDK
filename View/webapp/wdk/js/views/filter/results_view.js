@@ -3,49 +3,10 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
   var Field = wdk.models.filter.Field;
 
+  var FieldListView = ns.FieldListView;
+
   Handlebars.registerHelper('property', function(key, context) {
     return context[key];
-  });
-
-  var ColumnView = wdk.views.core.View.extend({
-    events: {
-      'change input': 'handleChange'
-    },
-
-    initialize: function() {
-      this.render();
-    },
-
-    render: function() {
-      var checked = this.model.get('visible') ? 'checked' : '';
-      this.$el.html('<input type="checkbox" id="' + this.model.cid + '" ' +
-                    checked + '> ' +
-                    '<label for="' + this.model.cid + '">' +
-                    this.model.get('display') + '</label>');
-      return this;
-    },
-
-    handleChange: function(event) {
-      event.stopPropagation();
-      this.model.set('visible', event.currentTarget.checked);
-    }
-  });
-
-  var ColumnsView = wdk.views.core.View.extend({
-
-    initialize: function() {
-      this.render();
-    },
-
-    render: function() {
-      var $el = this.$el;
-      this.collection.models.forEach(function(model) {
-        var view = new ColumnView({ model: model });
-        view.render();
-        $el.append(view.el);
-      });
-      return this;
-    }
   });
 
   ns.ResultsView = wdk.views.core.View.extend({
@@ -67,20 +28,38 @@ wdk.namespace('wdk.views.filter', function(ns) {
     initialize: function() {
       this._metadataFetchCount = 0;
 
-      this.columns = new Backbone.Collection(this.controller.fields.where({ leaf: 'true' }));
-      this.columnsDialog = new ColumnsView({ collection: this.columns }).$el
-        .dialog({
-          autoOpen: false,
-          modal: true,
-          title: 'Choose columns to show or hide'
-        });
+      this.columnsDialog = new FieldListView({
+        className: 'filter-results field-list',
+        collection: this.controller.fields,
+        controller: this.controller,
+        fieldTemplate: function(field) {
+          var checked = field.visible ? 'checked' : '';
+          return [
+            '<label>',
+            '<input type="checkbox"' + checked + ' value="' + field.term + '"/>',
+            field.display,
+            '</label>'
+          ].join(' ');
+        },
+        events: {
+          'change input': function(event) {
+             event.stopPropagation();
+             var field = this.controller.fields.get(event.target.value);
+             field.set('visible', event.currentTarget.checked);
+          }.bind(this)
+        }
+      }).$el.dialog({
+        autoOpen: false,
+        modal: true,
+        title: 'Choose columns to show or hide'
+      });
 
       this.initTableOnce = _.once(this._initTable.bind(this));
 
       this.queueRender();
 
       this.listenTo(this.model, 'change:filteredData', this.queueRender);
-      this.listenTo(this.columns, 'change:visible', this.handleColumnVisibility);
+      this.listenTo(this.controller.fields, 'change:visible', this.handleColumnVisibility);
     },
 
     render: function() {
@@ -189,7 +168,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
           }, row));
           return html;
         }
-      }].concat(this.columns
+      }].concat(this.controller.fields
         .where({ visible: true })
         .map(function(column) {
           var term = column.get('term');
