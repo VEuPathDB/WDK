@@ -1088,6 +1088,12 @@
             <attribute name="questionRef" />
             <ref name="IncludeExclude" />
           </element>
+
+		  <!-- reference to step filter -->
+          <element name="filterRef">
+            <ref name="IncludeExclude" />
+            <attribute name="name" />
+          </element>
         </choice>
       </zeroOrMore>
     </element>
@@ -1295,9 +1301,9 @@
       <ref name="AttributeFieldContent" />
       <zeroOrMore>
         <choice>
-          <element name="filter">
+          <element name="filterRef">
             <ref name="IncludeExclude" />
-            <attribute name="ref" />
+            <attribute name="name" />
           </element>
         </choice>
       </zeroOrMore>
@@ -1504,14 +1510,14 @@
       <attribute name="name" />
       <ref name="IncludeExclude" />
       <zeroOrMore>
-        <ref name="filter" />
+        <ref name="stepFilter" />
         <ref name="columnFilter" />
       </zeroOrMore>
     </element>
   </define>
 
-  <define name="filter">
-    <element name="filter">
+  <define name="stepFilter">
+    <element name="stepFilter">
       <ref name="filterBaseContent" />
    </define>
 

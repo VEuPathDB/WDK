@@ -17,13 +17,23 @@ import org.json.JSONObject;
 
 public class ListColumnFilter extends ColumnFilter {
 
-  public static final String NAME_PREFIX = "list-column-filter";
+  public static final String FILTER_NAME = "WdkListColumnFilter";
 
   private static final String COLUMN_COUNT = "counts";
   private static final String KEY_VALUES = "values";
+  
+  public static ColumnFilterDefinition getDefinition() {
+    ColumnFilterDefinition definition = new ColumnFilterDefinition();
+    definition.setName(FILTER_NAME);
+    definition.setDisplay("Filter By ");
+    definition.setDescription("Filter the result by the list of values in the column ");
+    definition.setView("/wdk/jsp/results/listColumnFilter.jsp");
+
+    return definition;
+  }
 
   public ListColumnFilter(ColumnAttributeField attribute) {
-    super(NAME_PREFIX, attribute);
+    super(FILTER_NAME, attribute);
   }
 
   @Override

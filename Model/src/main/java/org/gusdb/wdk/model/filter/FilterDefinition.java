@@ -7,7 +7,7 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 
-public abstract class AbstractFilterReference extends WdkModelBase {
+public abstract class FilterDefinition extends WdkModelBase {
 
   private String _name;
   private String _display;
