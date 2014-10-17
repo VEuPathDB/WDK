@@ -3,18 +3,18 @@ package org.gusdb.wdk.model.filter;
 
 public abstract class AbstractFilter implements Filter {
 
-  private final String name;
+  private final String key;
   private String display;
   private String description;
   private String view;
   
-  public AbstractFilter(String name) {
-    this.name = name;
+  public AbstractFilter(String key) {
+    this.key = key;
   }
 
   @Override
   public String getKey() {
-    return name;
+    return key;
   }
   
   @Override

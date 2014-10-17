@@ -116,7 +116,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   private List<XmlRecordClassSet> xmlRecordClassSetList = new ArrayList<>();
   private Map<String, XmlRecordClassSet> xmlRecordClassSets = new LinkedHashMap<>();
-  
+
   private List<FilterSet> filterSetList = new ArrayList<>();
   private Map<String, FilterSet> filterSets = new LinkedHashMap<>();
 
@@ -142,7 +142,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   private ExampleStratsAuthor exampleStratsAuthor;
 
   private StepAnalysisPlugins stepAnalysisPlugins;
-  
+
   /**
    * xmlSchemaURL is used by the XmlQuestions. This is the only place where XmlQuestion can find it.
    */
@@ -172,7 +172,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   private String buildNumber;
 
   private ThreadMonitor _myThreadMonitor;
-  
+
+  public WdkModel() throws WdkModelException {
+    // add default sets
+    addFilterSet(FilterSet.getWdkFilterSet());
+  }
+
   @Override
   public WdkModel getInstance(String projectId, String gusHome) throws WdkModelException {
     StackTraceElement[] stackTrace = new Throwable().getStackTrace();
@@ -209,11 +214,11 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       return parser.getModelConfig(projectId);
     }
     catch (IOException | SAXException e) {
-      throw new WdkModelException("Unable to read model config for gusHome '" +
-          gusHome + "', projectId '" + projectId + "'", e);
+      throw new WdkModelException("Unable to read model config for gusHome '" + gusHome + "', projectId '" +
+          projectId + "'", e);
     }
   }
-  
+
   /**
    * @param initRecordClassList
    * @return
@@ -394,13 +399,13 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       throw new WdkModelException("The Model does not " + "have a groupSet named " + setName);
     return groupSet;
   }
-  
+
   public FilterSet[] getAllFilterSets() {
     FilterSet[] array = new FilterSet[filterSets.size()];
     filterSets.values().toArray(array);
     return array;
   }
-  
+
   public FilterSet getFilterSet(String setName) throws WdkModelException {
     FilterSet filterSet = filterSets.get(setName);
     if (filterSet == null)
@@ -458,7 +463,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   }
 
   // ModelSetI's
-  private <T extends ModelSetI<? extends WdkModelBase>> void addSet(T set, Map<String, T> setMap) throws WdkModelException {
+  private <T extends ModelSetI<? extends WdkModelBase>> void addSet(T set, Map<String, T> setMap)
+      throws WdkModelException {
     String setName = set.getName();
     if (allModelSets.containsKey(setName)) {
       String err = "WDK Model " + projectId + " already contains a set with name " + setName;
@@ -504,9 +510,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
-    stepAnalysisFactory = (stepAnalysisPlugins == null ?
-        new UnconfiguredStepAnalysisFactory(this) :
-        new StepAnalysisFactoryImpl(this));
+    stepAnalysisFactory = (stepAnalysisPlugins == null ? new UnconfiguredStepAnalysisFactory(this)
+        : new StepAnalysisFactoryImpl(this));
 
     // set the exception header
     WdkModelException.modelName = getProjectId();
@@ -527,7 +532,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
     // create boolean questions
     createBooleanQuestions();
-    
+
   }
 
   public void releaseResources() {
@@ -580,7 +585,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   public StepFactory getStepFactory() {
     return stepFactory;
   }
-  
+
   public StepAnalysisFactory getStepAnalysisFactory() {
     return stepAnalysisFactory;
   }
@@ -817,7 +822,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       }
     }
     macroList = null;
-    
+
     if (stepAnalysisPlugins != null) {
       stepAnalysisPlugins.excludeResources(projectId);
     }
@@ -1160,7 +1165,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
         if (systemUser == null) {
           systemUser = userFactory.createSystemUser();
         }
-      } finally {
+      }
+      finally {
         systemUserLock.unlock();
       }
     }
@@ -1246,15 +1252,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   }
 
   public void logStepAnalysisPlugins() {
-    StringBuilder sb = new StringBuilder()
-      .append("*******************************************\n")
-      .append("Included Step Analysis Plugin Configuration:\n")
-      .append(stepAnalysisPlugins.toString())
-      .append("*******************************************\n")
-      .append("Step Analysis Plugins per Question:\n");
+    StringBuilder sb = new StringBuilder().append("*******************************************\n").append(
+        "Included Step Analysis Plugin Configuration:\n").append(stepAnalysisPlugins.toString()).append(
+        "*******************************************\n").append("Step Analysis Plugins per Question:\n");
     for (QuestionSet questionSet : getQuestionSets().values()) {
       for (Question question : questionSet.getQuestions()) {
-        Map<String,StepAnalysis> sas = question.getStepAnalyses();
+        Map<String, StepAnalysis> sas = question.getStepAnalyses();
         if (!sas.isEmpty()) {
           sb.append("Plugins for Question:" + question.getFullName() + "\n");
           for (StepAnalysis sa : sas.values()) {

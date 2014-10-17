@@ -10,12 +10,27 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 
-public class FilterSet extends WdkModelBase implements ModelSetI<AbstractFilterReference> {
+public class FilterSet extends WdkModelBase implements ModelSetI<FilterDefinition> {
 
-  private List<AbstractFilterReference> _filterReferencesList = new ArrayList<>();
-  private Map<String, AbstractFilterReference> _filterReferenceMap = null;
+  public static final String WDK_FILTER_SET = "WdkFilters";
+
+  public static FilterSet getWdkFilterSet() {
+    FilterSet filterSet = new FilterSet();
+    filterSet.setName(WDK_FILTER_SET);
+    
+    // also create the default filters provided by WDK
+    filterSet.addStepFilter(StrategyFilter.getDefinition());
+    filterSet.addColumnFilter(ListColumnFilter.getDefinition());
+    
+    return filterSet;
+  }
+
+  private List<FilterDefinition> _filterDefinitionList = new ArrayList<>();
+  private Map<String, FilterDefinition> _filterDefinitionMap = null;
 
   private String _name;
+
+  public FilterSet() {}
 
   public FilterSet(FilterSet base) {
     super(base);
@@ -25,18 +40,22 @@ public class FilterSet extends WdkModelBase implements ModelSetI<AbstractFilterR
   public String getName() {
     return _name;
   }
+  
+  public void setName(String name) {
+    _name = name;
+  }
 
   @Override
-  public AbstractFilterReference getElement(String elementName) {
-    return _filterReferenceMap.get(elementName);
+  public FilterDefinition getElement(String elementName) {
+    return _filterDefinitionMap.get(elementName);
   }
 
-  public void addFilter(FilterReference reference) {
-    _filterReferencesList.add(reference);
+  public void addStepFilter(StepFilterDefinition definition) {
+    _filterDefinitionList.add(definition);
   }
 
-  public void addColumnFilter(ColumnFilterReference reference) {
-    _filterReferencesList.add(reference);
+  public void addColumnFilter(ColumnFilterDefinition definition) {
+    _filterDefinitionList.add(definition);
   }
 
   @Override
@@ -48,29 +67,29 @@ public class FilterSet extends WdkModelBase implements ModelSetI<AbstractFilterR
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
 
-    _filterReferenceMap = new LinkedHashMap<>();
-    for (AbstractFilterReference reference : _filterReferencesList) {
-      if (reference.include(projectId)) {
-        reference.excludeResources(projectId);
+    _filterDefinitionMap = new LinkedHashMap<>();
+    for (FilterDefinition definition : _filterDefinitionList) {
+      if (definition.include(projectId)) {
+        definition.excludeResources(projectId);
 
         // check if the reference of the same project already exists
-        if (_filterReferenceMap.containsKey(reference.getName()))
-          throw new WdkModelException("Filter reference " + reference.getName() +
+        if (_filterDefinitionMap.containsKey(definition.getName()))
+          throw new WdkModelException("Filter reference " + definition.getName() +
               " is duplicated for project " + projectId);
 
-        _filterReferenceMap.put(reference.getName(), reference);
+        _filterDefinitionMap.put(definition.getName(), definition);
       }
     }
-    _filterReferencesList.clear();
-    _filterReferencesList = null;
+    _filterDefinitionList.clear();
+    _filterDefinitionList = null;
   }
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
 
-    for (AbstractFilterReference filterReference : _filterReferenceMap.values()) {
-      filterReference.resolveReferences(wdkModel);
+    for (FilterDefinition definition : _filterDefinitionMap.values()) {
+      definition.resolveReferences(wdkModel);
     }
   }
 

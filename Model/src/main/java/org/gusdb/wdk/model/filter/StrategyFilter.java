@@ -10,18 +10,25 @@ import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
-public class StrategyFilter extends AbstractFilter {
+public class StrategyFilter extends StepFilter {
 
-  public static final String FILTER_NAME = "strategy-filter";
+  public static final String FILTER_NAME = "WdkStrategyFilter";
   
   public static final String KEY_STRATEGY = "strategy";
   
+  public static StepFilterDefinition getDefinition() {
+    StepFilterDefinition definition = new StepFilterDefinition();
+    definition.setName(FILTER_NAME);
+    definition.setDisplay("Filter By Strategy");
+    definition.setDescription("Filter the results by other strategies of the same type.");
+    definition.setImplementation(StrategyFilter.class.getName());
+    definition.setView("/wdk/jsp/results/strategyFilter.jsp");
+    
+    return definition;
+  }
+  
   public StrategyFilter() {
     super(FILTER_NAME);
-    // set default info
-    setDisplay("Filter By Strategy");
-    setDescription("Filter the results by other strategies of the same type.");
-    setView("/wdk/jsp/results/strategyFilter.jsp");
   }
   
   /**

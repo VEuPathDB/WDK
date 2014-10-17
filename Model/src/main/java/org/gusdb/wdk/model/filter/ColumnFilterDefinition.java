@@ -7,7 +7,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 
-public class ColumnFilterReference extends AbstractFilterReference {
+public class ColumnFilterDefinition extends FilterDefinition {
 
   private Class<? extends ColumnFilter> _class;
 
