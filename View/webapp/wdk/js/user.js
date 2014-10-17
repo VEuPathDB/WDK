@@ -145,4 +145,45 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
       }
   };
 
+
+  // User preferences
+  // ----------------
+
+  // Preference store - can be localStorage OR cookie
+  var hasLocalStorage = Boolean(window.localStorage);
+  var sessionId = $.cookie('JSESSIONID');
+
+  // Returns the value for key, null if it doesn't exist
+  ns.getPreference = function getPreference(key) {
+    if (hasLocalStorage) {
+      var item = JSON.parse(localStorage.getItem(key));
+      if (item) {
+        if (!item.session || item.session === sessionId) {
+          return item.value;
+        }
+      }
+      return null;
+    }
+    return $.cookie(key);
+  };
+
+  // Set the value of a preference.
+  // Defaults to indefinite storage (1 year is using cookie fallback).
+  //
+  // - key: {String} Preference name
+  // - value: {Any} Preference value
+  // - session [optional]: {Boolean} Is preferenec session-only
+  ns.setPreference = function setPreference(key, value, session) {
+    if (hasLocalStorage) {
+      localStorage.setItem(key, JSON.stringify({
+        value: value,
+        session: !!session && sessionId
+      }));
+    }
+    else {
+      $.cookie(key, value, session ? undefined : { expires: 365 });
+    }
+    return value;
+  };
+
 });

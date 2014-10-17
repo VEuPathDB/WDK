@@ -33,8 +33,6 @@ public class ReporterRef extends WdkModelBase {
   private List<WdkModelText> propertyList = new ArrayList<>();
   private Map<String, String> properties = new LinkedHashMap<>();
 
-  private WdkModel wdkModel;
-
   @Override
   public WdkModel getWdkModel() {
     return wdkModel;

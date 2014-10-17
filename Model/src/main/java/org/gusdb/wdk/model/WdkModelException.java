@@ -12,13 +12,9 @@ import java.util.Map;
  */
 public class WdkModelException extends WdkException {
 
-  public static String modelName;
-
-  /**
-     * 
-     */
   private static final long serialVersionUID = 877548355767390313L;
-  Map<String, String> paramErrors = null;
+
+  private Map<String, String> paramErrors = null;
 
   public WdkModelException(Map<String, String> paramErrors) {
     super();

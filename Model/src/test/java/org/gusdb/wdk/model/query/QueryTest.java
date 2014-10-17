@@ -102,7 +102,7 @@ public class QueryTest {
       Map<String, String> stableValues = query.getStableValues(user, rawValues);
 
       // try to make a query instance
-      QueryInstance instance = query.makeInstance(user, stableValues, true, 0,
+      QueryInstance<?> instance = query.makeInstance(user, stableValues, true, 0,
           new LinkedHashMap<String, String>());
       int rows = instance.getResultSize();
 

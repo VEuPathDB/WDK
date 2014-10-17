@@ -109,8 +109,6 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   protected ParamSet paramSet;
 
-  protected WdkModel wdkModel;
-
   private List<ParamConfiguration> noTranslations;
 
   /**

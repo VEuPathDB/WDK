@@ -40,13 +40,12 @@ import org.json.JSONObject;
  * 
  * @author Jerric Gao
  */
-public class ProcessQueryInstance extends QueryInstance {
+public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
 
   private static final Logger logger = Logger.getLogger(ProcessQueryInstance.class);
 
   private static WsfClientFactory _wsfClientFactory = ServiceResolver.resolve(WsfClientFactory.class);
 
-  private ProcessQuery query;
   private int signal;
 
   public ProcessQueryInstance(User user, ProcessQuery query, Map<String, String> values, boolean validate,

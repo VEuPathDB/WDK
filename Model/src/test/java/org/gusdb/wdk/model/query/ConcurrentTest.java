@@ -44,7 +44,7 @@ public class ConcurrentTest {
         public void run() {
             System.out.println("start test thread: #" + id);
             try {
-                QueryInstance instance = query.makeInstance(user, values, true,
+                QueryInstance<?> instance = query.makeInstance(user, values, true,
                         0, new LinkedHashMap<String, String>());
                 ResultList resultList = instance.getResults();
                 resultList.next();

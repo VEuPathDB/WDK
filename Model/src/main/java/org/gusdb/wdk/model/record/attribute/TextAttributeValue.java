@@ -22,11 +22,12 @@ import org.gusdb.wdk.model.WdkUserException;
 public class TextAttributeValue extends AttributeValue {
 
   private AttributeValueContainer container;
-  private TextAttributeField field;
+
   /**
    * The text will be used in the download report.
    */
   private String text;
+
   /**
    * The display will be used in the summary and record page display. if a
    * display is not specified in the model, the text will be used as display.
@@ -40,7 +41,6 @@ public class TextAttributeValue extends AttributeValue {
   public TextAttributeValue(TextAttributeField field,
       AttributeValueContainer container) {
     super(field);
-    this.field = field;
     this.container = container;
   }
 
@@ -52,7 +52,7 @@ public class TextAttributeValue extends AttributeValue {
   @Override
   public Object getValue() throws WdkModelException, WdkUserException {
     if (this.text == null) {
-      String text = field.getText();
+      String text = ((TextAttributeField)field).getText();
       Map<String, AttributeField> subFields = field.parseFields(text);
       Map<String, Object> values = new LinkedHashMap<String, Object>();
       for (String subField : subFields.keySet()) {
@@ -68,7 +68,7 @@ public class TextAttributeValue extends AttributeValue {
   @Override
   public String getDisplay() throws WdkModelException, WdkUserException {
     if (this.display == null) {
-      String content = field.getDisplay();
+      String content = ((TextAttributeField)field).getDisplay();
       Map<String, AttributeField> subFields = field.parseFields(content);
       Map<String, Object> values = new LinkedHashMap<String, Object>();
       for (String subField : subFields.keySet()) {

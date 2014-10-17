@@ -15,14 +15,8 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
  */
 public class TableFieldBean extends FieldBean {
 
-	private TableField field;
-
-	/**
-	 * 
-	 */
 	public TableFieldBean(TableField field) {
 		super(field);
-		this.field = field;
 	}
 
 	/*
@@ -31,7 +25,7 @@ public class TableFieldBean extends FieldBean {
 	 * @see org.gusdb.wdk.model.TableField#getAttributeFieldMap()
 	 */
 	public Map<String, AttributeFieldBean> getAttributeFieldMap() {
-		AttributeField[] fields = field.getAttributeFields();
+		AttributeField[] fields = ((TableField)field).getAttributeFields();
 		Map<String, AttributeFieldBean> fieldBeans = new LinkedHashMap<String, AttributeFieldBean>(
 				fields.length);
 		for (AttributeField attributeField : fields) {
@@ -47,7 +41,7 @@ public class TableFieldBean extends FieldBean {
 	 * @see org.gusdb.wdk.model.TableField#getAttributeFields()
 	 */
 	public AttributeFieldBean[] getAttributeFields() {
-		AttributeField[] fields = field.getAttributeFields();
+		AttributeField[] fields = ((TableField)field).getAttributeFields();
 		AttributeFieldBean[] fieldBeans = new AttributeFieldBean[fields.length];
 		for (int i = 0; i < fields.length; i++) {
 			fieldBeans[i] = new AttributeFieldBean(fields[i]);
@@ -59,7 +53,7 @@ public class TableFieldBean extends FieldBean {
 	 * @return
 	 */
 	public String getDescription() {
-		return field.getDescription();
+		return ((TableField)field).getDescription();
 	}
 
 }

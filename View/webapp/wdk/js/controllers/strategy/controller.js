@@ -649,7 +649,6 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           // any parts of the DOM necessary. In this case, it is calling
           // the editable() plugin for the strategy name. Custom elements
           // might help here, but we can't use them with IE8.
-          _.defer(function() {
             var $selectedStrategy = $("#Strategies .diagram").has(".selected");
             var $selectedStep = $("#Strategies .diagram").find(".selected");
 
@@ -659,7 +658,6 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
             } else if ($selectedStep.attr("id") !== oldSelectedStepId) {
               $selectedStep.trigger("stepselect", [step, isBoolean]);
             }
-          });
         }
 
         wdk.util.removeLoading(f_strategyId);
@@ -976,6 +974,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
             wdk.history.update_hist(true);
             wdk.history.updateHistory();
           }
+          wdk.util.removeLoading(ss.frontId);
         }
       }
     });
