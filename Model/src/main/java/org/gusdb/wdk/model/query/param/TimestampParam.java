@@ -118,7 +118,7 @@ public class TimestampParam extends Param {
   }
 
   @Override
-  protected void applySuggection(ParamSuggestion suggest) {
+  protected void applySuggestion(ParamSuggestion suggest) {
     // do nothing
   }
 
