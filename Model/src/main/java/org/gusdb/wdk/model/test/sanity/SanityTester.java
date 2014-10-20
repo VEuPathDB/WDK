@@ -141,7 +141,7 @@ public class SanityTester {
   }
 
   public static boolean isTestable(OptionallyTestable testable) {
-    return !testable.getDoNotTest();
+    return true; //!testable.getDoNotTest();
   }
 
   public static boolean isTestable(Query query, boolean skipWebSvcQueries) {

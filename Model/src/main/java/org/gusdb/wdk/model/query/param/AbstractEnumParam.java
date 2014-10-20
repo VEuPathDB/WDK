@@ -11,7 +11,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -62,6 +64,8 @@ import org.json.JSONObject;
  *         is used.
  */
 public abstract class AbstractEnumParam extends Param {
+
+  private static final Logger LOG = Logger.getLogger(AbstractEnumParam.class);
 
   /**
    * @author jerric
@@ -370,7 +374,16 @@ public abstract class AbstractEnumParam extends Param {
    * @throws WdkModelException
    */
   public String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException {
-    return getEnumParamCache(user, contextParamValues).getDefaultValue();
+    if (isDependentParam() && !contextParamValues.isEmpty()) {
+      LOG.debug("Default value requested for param " + getName() + " with context values " +
+          FormatUtil.prettyPrint(contextParamValues, Style.SINGLE_LINE));
+      String value = getEnumParamCache(user, contextParamValues).getDefaultValue();
+      LOG.debug("Returning default value of '" + value + "' for dependent param " + getName());
+      return value;
+    }
+    else {
+      return getEnumParamCache(user, contextParamValues).getDefaultValue();
+    }
   }
 
   public EnumParamCache getValueCache(User user) {

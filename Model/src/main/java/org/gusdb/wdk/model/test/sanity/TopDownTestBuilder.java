@@ -17,6 +17,8 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
+import org.gusdb.wdk.model.test.ParamValuesFactory;
+import org.gusdb.wdk.model.test.ParamValuesFactory.ValuesSetWrapper;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
 import org.gusdb.wdk.model.test.sanity.tests.QuestionTest;
@@ -83,18 +85,20 @@ public class TopDownTestBuilder extends TestBuilder {
         
         Query query = question.getQuery();
         if (!SanityTester.isTestable(query, skipWebSvcQueries)) continue;
-        int numParamValuesSets = question.getQuery().getNumParamValuesSets();
-        try {
-          for (ParamValuesSet paramValuesSet : question.getQuery().getParamValuesSets()) {
-            tests.add(new QuestionTest(user, question, paramValuesSet));
+        
+        for (ValuesSetWrapper valuesSetWrapper : ParamValuesFactory.getValuesSetsNoError(user, question.getQuery())) {
+          if (valuesSetWrapper.isCreated()) {
+            try {
+              tests.add(new QuestionTest(user, question, valuesSetWrapper.getValuesSet()));
+            }
+            catch (Exception e) {
+              // error while generating param values sets
+              LOG.error("Unable to generate paramValuesSets for question " + question.getName() + " (query=" + question.getQuery().getName() + ")", e);
+              tests.add(new UncreateableTest(question, e));
+            }
           }
-        }
-        catch (Exception e) {
-          // error while generating param values sets
-          LOG.error("Unable to generate paramValuesSets for question " + question.getName() + " (query=" + question.getQuery().getName() + ")", e);
-          // to keep the index correct, add already failed tests for each of the param values sets we expected
-          for (int i = 0; i < numParamValuesSets; i++) {
-            tests.add(new UncreateableTest(question, e));
+          else {
+            tests.add(new UncreateableTest(question, valuesSetWrapper.getException()));
           }
         }
       }
@@ -105,8 +109,11 @@ public class TopDownTestBuilder extends TestBuilder {
         if (!recordClass.getDoNotTest()) {
           // add tests for table queries
           for (Query query : recordClass.getTableQueries().values()) {
-            for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
-              tests.add(new WrappedTableQueryTest(user, query.getQuerySet(), query, paramValuesSet));
+            for (ValuesSetWrapper valuesSetWrapper : ParamValuesFactory.getValuesSetsNoError(user, query)) {
+              tests.add(new QueryTestBuilder(user, query.getQuerySet(), query, valuesSetWrapper) {
+                @Override public ElementTest getTypedQueryTest(ParamValuesSet paramValuesSet) throws WdkModelException {
+                  return new WrappedTableQueryTest(user, querySet, query, paramValuesSet);
+                }}.getQueryTest());
             }
           }
           // add tests for attribute queries
