@@ -82,6 +82,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   //==============================================================================
   function initTypeAhead(element) {
+    var keepPreviousValue = element.closest('form').is('.is-revise');
+
     element.find('[data-type="type-ahead"]')
       .each(function(i, node) {
         var $param = $(node);
@@ -89,14 +91,14 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         var paramName = $param.attr('name');
 
         if ($param.hasClass('dependentParam')) {
-          updateDependentParam($param, element);
+          updateDependentParam($param, element, keepPreviousValue);
         } else {
           var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
 
           $.getJSON(sendReqUrl)
             .then(function(data) {
               // createAutoComplete(data, paramName, element);
-              createFilteredSelect(data, paramName, $param);
+              createFilteredSelect(data, paramName, $param, keepPreviousValue);
             })
             .done(function() {
               $param.find('.loading').hide();
@@ -344,14 +346,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     return { fields: fields, data: data };
   }
 
-  function createFilteredSelect(vocab, paramName, $param) {
-
-    // FIXME Using a class to determin if we are revising is a hack.
-    // Need to consider a cleaner solution.
-    //
-    // The class is set by the Wizard JSP
-    var isNew = !$param.closest('form').is('.is-revise');
-
+  function createFilteredSelect(vocab, paramName, $param, keepPreviousValue) {
     var $input = $param.find('input[name="value(' + paramName + ')"]'),
         keepOpen = false,
         format = function(item) { return item.display; },
@@ -359,9 +354,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           return currentSearchTerm;
         };
 
-    if (isNew) {
-      $input.val('');
-    }
+    if (!keepPreviousValue) $input.val('');
 
     $input.select2({
       placeholder: 'Begin typing to see suggestions...',
@@ -667,7 +660,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   // jshint ignore:end
 
   //==============================================================================
-  function updateDependentParam(dependentParam, element) {
+  function updateDependentParam(dependentParam, element, keepPreviousValue) {
     // jshint loopfunc:true
     // get the current param
     var paramName = dependentParam.attr('name');
@@ -731,7 +724,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         return $.getJSON(sendReqUrl)
           .then(function(data) {
             // createAutoComplete(data, paramName);
-            createFilteredSelect(data, paramName, dependentParam);
+            createFilteredSelect(data, paramName, dependentParam, keepPreviousValue);
           })
           .done(function() {
             element.find(".param[name='" + paramName + "']").attr("ready", "");
