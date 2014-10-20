@@ -113,10 +113,6 @@ public abstract class AbstractEnumParam extends Param {
   public static final String DISPLAY_TYPE_AHEAD = "typeAhead";
   public static final String DISPLAY_TREE_BOX = "treeBox";
 
-  static final String SELECT_MODE_NONE = "none";
-  static final String SELECT_MODE_ALL = "all";
-  static final String SELECT_MODE_FIRST = "first";
-
   protected boolean multiPick = false;
   protected boolean quote = true;
 
@@ -131,7 +127,7 @@ public abstract class AbstractEnumParam extends Param {
   /**
    * this property is only used by abstractEnumParams, but have to be initialized from suggest.
    */
-  protected String selectMode;
+  protected SelectMode selectMode;
 
   /**
    * collapse single-child branches if set to true
@@ -605,14 +601,14 @@ public abstract class AbstractEnumParam extends Param {
    * @param selectMode
    *          the selectMode to set
    */
-  public void setSelectMode(String selectMode) {
+  public void setSelectMode(SelectMode selectMode) {
     this.selectMode = selectMode;
   }
 
   /**
    * @return the selectMode
    */
-  public String getSelectMode() {
+  public SelectMode getSelectModeEnum() {
     return selectMode;
   }
 
@@ -656,8 +652,8 @@ public abstract class AbstractEnumParam extends Param {
 
     // single pick can only select one value
     if (selectMode == null || !multiPick)
-      selectMode = SELECT_MODE_FIRST;
-    if (selectMode.equalsIgnoreCase(SELECT_MODE_ALL)) {
+      selectMode = SelectMode.FIRST;
+    if (selectMode.equals(SelectMode.ALL)) {
       StringBuilder builder = new StringBuilder();
       for (String term : cache.getTerms()) {
         if (builder.length() > 0)
@@ -666,7 +662,7 @@ public abstract class AbstractEnumParam extends Param {
       }
       cache.setDefaultValue(builder.toString());
     }
-    else if (selectMode.equalsIgnoreCase(SELECT_MODE_FIRST)) {
+    else if (selectMode.equals(SelectMode.FIRST)) {
       StringBuilder builder = new StringBuilder();
       Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
       if (cache.getTermTreeListRef().size() > 0)
@@ -685,8 +681,8 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   @Override
-  protected void applySuggection(ParamSuggestion suggest) {
-    selectMode = ((EnumParamSuggestion) suggest).getSelectMode();
+  protected void applySuggestion(ParamSuggestion suggest) {
+    selectMode = ((EnumParamSuggestion) suggest).getSelectModeEnum();
   }
 
   /**
