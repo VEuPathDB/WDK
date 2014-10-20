@@ -267,7 +267,9 @@ public class FlatVocabParam extends AbstractEnumParam {
     }
     initTreeMap(cache);
     applySelectMode(cache);
-    logger.trace("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
+    logger.debug("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
+    logger.debug("Returning cache with default value '" + cache.getDefaultValue() +
+        "' out of possible terms: " + FormatUtil.arrayToString(cache.getTerms().toArray()));
     return cache;
   }
 

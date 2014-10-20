@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -12,14 +13,24 @@ import org.gusdb.wdk.model.WdkModelException;
  * will be used in the sanity test.
  * 
  * @author jerric
- * 
  */
 public class ParamValuesSet extends WdkModelBase {
+
+  public static final int MAXROWS = 1000000000;
+
   private String name;
   private Integer minRows;
   private Integer maxRows;
-  public static final int MAXROWS = 1000000000;
   private Map<String, String> paramValues = new LinkedHashMap<String, String>();
+
+  public ParamValuesSet() { }
+
+  public ParamValuesSet(ParamValuesSet valuesSet) {
+    name = valuesSet.name;
+    minRows = valuesSet.minRows;
+    maxRows = valuesSet.maxRows;
+    paramValues = new LinkedHashMap<>(valuesSet.paramValues);
+  }
 
   public void setName(String name) {
     this.name = name;
@@ -60,15 +71,11 @@ public class ParamValuesSet extends WdkModelBase {
   }
 
   public void updateWithDefaults(ParamValuesSet defaults) {
-    if (defaults == null)
-      return;
+    if (defaults == null) return;
     if (minRows == null)
       minRows = defaults.getMinRows();
-    Map<String, String> map = defaults.getParamValues();
-    for (String paramName : map.keySet()) {
-      if (!paramValues.containsKey(paramName)) {
-        paramValues.put(paramName, map.get(paramName));
-      }
+    for (Entry<String, String> entry : defaults.getParamValues().entrySet()) {
+      updateWithDefault(entry.getKey(), entry.getValue());
     }
   }
 
@@ -77,9 +84,6 @@ public class ParamValuesSet extends WdkModelBase {
       paramValues.put(paramName, defaultValue);
     }
   }
-
-  @Override
-  public void excludeResources(String projectId) throws WdkModelException {}
 
   @Override
   public String toString() {
@@ -115,5 +119,9 @@ public class ParamValuesSet extends WdkModelBase {
   }
 
   @Override
-  public void resolveReferences(WdkModel wodkModel) throws WdkModelException {}
+  public void excludeResources(String projectId) throws WdkModelException {}
+
+  @Override
+  public void resolveReferences(WdkModel wdkModel) throws WdkModelException {}
+
 }

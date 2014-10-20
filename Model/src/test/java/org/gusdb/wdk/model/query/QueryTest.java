@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
+import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class QueryTest {
           Query query = ((FlatVocabParam) param).getQuery();
           String queryName = query.getFullName();
           if (!testedQueries.contains(queryName)) {
-            testQuery(query);
+            testQuery(user, query);
             testedQueries.add(queryName);
           }
         }
@@ -60,7 +61,7 @@ public class QueryTest {
           Query flatQuery = ((FlatVocabParam) param).getQuery();
           String queryName = flatQuery.getFullName();
           if (!testedQueries.contains(queryName)) {
-            testQuery(flatQuery);
+            testQuery(user, flatQuery);
             testedQueries.add(queryName);
           }
         }
@@ -82,17 +83,17 @@ public class QueryTest {
 
         String queryName = query.getFullName();
         if (!testedQueries.contains(queryName)) {
-          testQuery(query);
+          testQuery(user, query);
           testedQueries.add(queryName);
         }
       }
     }
   }
 
-  private void testQuery(Query query) throws Exception {
+  private void testQuery(User user, Query query) throws Exception {
     // try all sample values
     int setCount = 1;
-    for (ParamValuesSet valueSet : query.getParamValuesSets()) {
+    for (ParamValuesSet valueSet : ParamValuesFactory.getParamValuesSets(user, query)) {
       logger.debug("Testing query [" + query.getFullName() + "] value set #"
           + setCount + "...");
 
