@@ -24,11 +24,11 @@
       
 <pg:index>
   <pg:first>
-    <a href="javascript:wdk.resultsPage.GetResultsPage('${pageUrl}',true,true)">First</a>
+    <a href="javascript:wdk.resultsPage.getResultsPage('${pageUrl}',true,true)">First</a>
   </pg:first>
 
   <pg:prev>
-    <a href="javascript:wdk.resultsPage.GetResultsPage('${pageUrl}',true,true)">Previous</a>
+    <a href="javascript:wdk.resultsPage.getResultsPage('${pageUrl}',true,true)">Previous</a>
   </pg:prev>
 
   <pg:pages>
@@ -39,18 +39,18 @@
           <b>${pageNumber}</b>
         </c:when>
         <c:otherwise>
-          <a href="javascript:wdk.resultsPage.GetResultsPage('${pageUrl}',true,true)">${pageNumber}</a>
+          <a href="javascript:wdk.resultsPage.getResultsPage('${pageUrl}',true,true)">${pageNumber}</a>
         </c:otherwise>
       </c:choose>
     </c:if>
   </pg:pages>
 
   <pg:next>
-    <a href="javascript:wdk.resultsPage.GetResultsPage('${pageUrl}',true,true)">Next</a>
+    <a href="javascript:wdk.resultsPage.getResultsPage('${pageUrl}',true,true)">Next</a>
   </pg:next>
 
   <pg:last>
-    <a href="javascript:wdk.resultsPage.GetResultsPage('${pageUrl}',true,true)">Last</a>
+    <a href="javascript:wdk.resultsPage.getResultsPage('${pageUrl}',true,true)">Last</a>
     
   </pg:last>
 </pg:index>
@@ -59,7 +59,7 @@
 <%-- 'All' link to display all results, if the result set is not too big --%>
 	<td>
 	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	    <input class="paging-button" style="width:150px" type="button" value="Advanced Paging" onclick="wdk.resultsPage.openAdvancedPaging(this)"/>
+	    <input class="paging-button" style="width:150px;font-weight:normal" type="button" value="Advanced Paging" onclick="wdk.resultsPage.openAdvancedPaging(this)"/>
 			<div class="advanced-paging" title="Advanced Paging">
         <input type="hidden" id="resultSize" class="resultSize" value="${resultSize}" />
         <div class="text">Jump To page:</div>

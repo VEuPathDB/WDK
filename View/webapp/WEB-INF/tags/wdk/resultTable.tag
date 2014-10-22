@@ -98,9 +98,12 @@
             <div class="bDivBox">
 
               <table  style="width:100%" class="Results_Table" step="${step.stepId}">
+
+<%-- TABLE HEADER ROW --%>
                 <thead>
                   <tr class="headerrow">
-                    <c:if test="${recHasBasket}">
+                    <c:if test="${recHasBasket}">  
+<%--------- BASKET COLUMN  ----------%>
                       <th>
                         <c:choose>
                           <c:when test="${wdkUser.guest}">
@@ -112,12 +115,19 @@
                           </c:otherwise>
                         </c:choose>
                         <a id="basketPage" href="javascript:void(0)" onclick="${basketClick}">
-                          <imp:image title="${basketTitle}" class="head basket" src="/wdk/images/basket_gray.png" height="16" width="16" value="0"/>
+                          <imp:image title="${basketTitle}" class="head basket" src="wdk/images/basket_gray.png" height="16" width="16" value="0"/>
                         </a>
                       </th>
                     </c:if>
                     <c:set var="j" value="0"/>
-                    <c:forEach items="${wdkAnswer.summaryAttributes}" var="sumAttrib">
+                    <c:forEach items="${wdkAnswer.summaryAttributes}" var="sumAttrib">   
+
+<%--------- OTHER COLUMNS  ----------%>
+                    <%--------- SHOW Prim Key COLUMN (j=0) ONLY IF DISPLAYNAME is non empty (in model.xml) ----------%>
+                    <c:if test="${not empty sumAttrib.displayName || j != 0}">    
+                      <%-- FLAG for second loop when showing column values --%>   
+                      <c:if test="${j == 0}"><c:set var="showPrimKey" value="yes"/></c:if>  
+
                       <c:set var="attrName" value="${sumAttrib.name}" />
                       <th id="${attrName}" align="left" valign="middle">
                         <table>
@@ -128,16 +138,16 @@
                                   <td style="padding:0;">
                                     <c:choose>
                                       <c:when test="${!sumAttrib.sortable}">
-                                        <%-- img src="/wdk/images/results_arrw_up_blk.png" border="0" alt="Sort up"/ --%>
+                                        <%-- img src="wdk/images/results_arrw_up_blk.png" border="0" alt="Sort up"/ --%>
                                       </c:when>
                                       <c:when test="${attrName eq sortingAttrNames[0] and sortingAttrOrders[0]}">
-                                        <imp:image src="/wdk/images/results_arrw_up_gr.png"  alt="Sort up" title="Result is sorted by ${sumAttrib}" />
+                                        <imp:image src="wdk/images/results_arrw_up_gr.png"  alt="Sort up" title="Result is sorted by ${sumAttrib}" />
                                       </c:when>
                                       <c:otherwise>
                                         <%-- display sorting buttons --%>
                                         <c:set var="resultsAction" value="javascript:wdk.resultsPage.sortResult('${attrName}', 'asc')" />
                                         <a href="${resultsAction}" title="Sort by ${sumAttrib}">
-                                          <imp:image src="/wdk/images/results_arrw_up.png" alt="Sort up" border="0" />
+                                          <imp:image src="wdk/images/results_arrw_up.png" alt="Sort up" border="0" />
                                         </a>
                                       </c:otherwise>
                                     </c:choose>
@@ -147,16 +157,16 @@
                                   <td style="padding:0;">
                                     <c:choose>
                                       <c:when test="${!sumAttrib.sortable}">
-                                        <%-- img src="/wdk/images/results_arrw_dwn_blk.png" border="0" / --%>
+                                        <%-- img src="wdk/images/results_arrw_dwn_blk.png" border="0" / --%>
                                       </c:when>
                                       <c:when test="${attrName eq sortingAttrNames[0] and not sortingAttrOrders[0]}">
-                                        <imp:image src="/wdk/images/results_arrw_dwn_gr.png" alt="Sort down" title="Result is sorted by ${sumAttrib}" />
+                                        <imp:image src="wdk/images/results_arrw_dwn_gr.png" alt="Sort down" title="Result is sorted by ${sumAttrib}" />
                                       </c:when>
                                       <c:otherwise>
                                         <%-- display sorting buttons --%>
                                         <c:set var="resultsAction" value="javascript:wdk.resultsPage.sortResult('${attrName}', 'desc')" />
                                         <a href="${resultsAction}" title="Sort by ${sumAttrib}">
-                                          <imp:image src="/wdk/images/results_arrw_dwn.png" alt="Sort down" border="0" />
+                                          <imp:image src="wdk/images/results_arrw_dwn.png" alt="Sort down" border="0" />
                                         </a>
                                       </c:otherwise>
                                     </c:choose>
@@ -171,7 +181,7 @@
                             <%-- <c:if test="${j != 0}">
                               <div style="float:left;">
                                 <a href="javascript:void(0)">
-                                  <imp:image src="/wdk/images/results_grip.png" alt="" border="0" /></a>
+                                  <imp:image src="wdk/images/results_grip.png" alt="" border="0" /></a>
                               </div>
                             </c:if> --%>
                             <c:if test="${sumAttrib.removable}">
@@ -179,7 +189,7 @@
                                 <%-- display remove attribute button --%>
                                 <c:set var="resultsAction" value="javascript:wdk.resultsPage.removeAttribute('${attrName}')" />
                                 <a href="${resultsAction}" title="Remove ${sumAttrib} column">
-                                  <imp:image src="/wdk/images/results_x.png" alt="Remove" border="0" />
+                                  <imp:image src="wdk/images/results_x.png" alt="Remove" border="0" />
                                 </a>
                               </td>
                             </c:if>
@@ -189,10 +199,14 @@
                           </tr>
                         </table>
                       </th>
-                      <c:set var="j" value="${j+1}"/>
+
+                    </c:if>
+                    <c:set var="j" value="${j+1}"/>
                     </c:forEach>
                   </tr>
                 </thead>
+
+<%-- TABLE RESULT ROWS --%>
                 <tbody class="rootBody">
                   <c:set var="i" value="0"/>
 
@@ -201,7 +215,8 @@
                     <c:set value="${record.primaryKey}" var="primaryKey"/>
                     <c:set var="recNam" value="${record.recordClass.fullName}"/>
                     <tr class="${i % 2 eq 0 ? 'lines' : 'linesalt'}">
-                      <c:if test="${recHasBasket}">
+<%--------- BASKET COLUMN  ----------%>
+                      <c:if test="${recHasBasket}">            
                         <td>
                           <c:set var="basket_img" value="basket_gray.png"/>
                           <c:set var="basketId" value="basket${fn:replace(primaryKey.value,'.','_')}" />
@@ -221,28 +236,19 @@
                             </c:otherwise>
                           </c:choose>
                           <a id="${basketId}" href="javascript:void(0)" onclick="${basketClick}">
-                            <imp:image title="${basketTitle}" class="basket" value="${is_basket}" src="/wdk/images/${basket_img}" width="16" height="16"/>
+                            <imp:image title="${basketTitle}" class="basket" value="${is_basket}" src="wdk/images/${basket_img}" width="16" height="16"/>
                           </a>
                         </td>
                       </c:if>
+
+<%------ FOR EACH OTHER COLUMN IN ROW --------%>
                       <c:set var="j" value="0"/>
-
-<%-- FOR EACH COLUMN --%>
-                      <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">
-                        <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
-
-<%--
-<c:choose>
-<c:when test = "${eupathIsolatesQuestion}">
-												<imp:isolateClustal recAttr="${recAttr}" recNam="${recNam}" primaryKey="${primaryKey}"/>
-</c:when>
-<c:otherwise>
---%>
-                         <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
-<%--
-</c:otherwise>
-</c:choose>
---%>
+                      <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">    
+                        <%--------- SHOW Prim Key COLUMN IF showPrimKey defined  ----------%>
+                        <c:if test="${not empty showPrimKey ||  j != 0}"> 
+                          <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
+                          <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
+                        </c:if>    
                         <c:set var="j" value="${j+1}"/>
                       </c:forEach>
                     </tr>

@@ -130,7 +130,7 @@ $("img#close-table").live("click", function () {
 	title='Enter a keyword; searches that contain the keyword in its name, category or description will be listed'>
 
 <a style="position:absolute;top:8px;right:50px;" href='javascript:void(0)'>
-	<imp:image id="close-table" style='vertical-align:middle' src='/wdk/images/close.gif'/>
+	<imp:image id="close-table" style='vertical-align:middle' src='wdk/images/close.gif'/>
 </a>
 
   <table id="search-lookup" class="datatables" width="100%" style="display:none">

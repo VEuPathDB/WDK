@@ -27559,7 +27559,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+     * @see org.gusdb.fgputil.BaseCLI#declareOptions()
      */
     @Override</source-code>
           </source-codes>
@@ -27611,7 +27611,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#invoke()
+     * @see org.gusdb.fgputil.BaseCLI#invoke()
      */
     @Override</source-code>
           </source-codes>
@@ -29941,7 +29941,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+     * @see org.gusdb.fgputil.BaseCLI#declareOptions()
      */
     @Override</source-code>
           </source-codes>
@@ -29970,7 +29970,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#invoke()
+     * @see org.gusdb.fgputil.BaseCLI#invoke()
      */
     @Override</source-code>
           </source-codes>
@@ -53069,7 +53069,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+     * @see org.gusdb.fgputil.BaseCLI#declareOptions()
      */
     @Override</source-code>
           </source-codes>
@@ -53092,7 +53092,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#execute()
+     * @see org.gusdb.fgputil.BaseCLI#execute()
      */
     @Override</source-code>
           </source-codes>
@@ -53373,7 +53373,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+     * @see org.gusdb.fgputil.BaseCLI#declareOptions()
      */
     @Override</source-code>
           </source-codes>
@@ -53399,7 +53399,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#execute()
+     * @see org.gusdb.fgputil.BaseCLI#execute()
      */
     @Override</source-code>
           </source-codes>
@@ -53978,7 +53978,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+     * @see org.gusdb.fgputil.BaseCLI#declareOptions()
      */
     @Override</source-code>
           </source-codes>
@@ -53995,7 +53995,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#execute()
+     * @see org.gusdb.fgputil.BaseCLI#execute()
      */
     @Override</source-code>
           </source-codes>
@@ -54145,7 +54145,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+     * @see org.gusdb.fgputil.BaseCLI#declareOptions()
      */
     @Override</source-code>
           </source-codes>
@@ -54164,7 +54164,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#execute()
+     * @see org.gusdb.fgputil.BaseCLI#execute()
      */
     @Override</source-code>
           </source-codes>
@@ -54583,7 +54583,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+     * @see org.gusdb.fgputil.BaseCLI#declareOptions()
      */
     @Override</source-code>
           </source-codes>
@@ -54600,7 +54600,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#execute()
+     * @see org.gusdb.fgputil.BaseCLI#execute()
      */
     @Override</source-code>
           </source-codes>
@@ -54666,7 +54666,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+     * @see org.gusdb.fgputil.BaseCLI#declareOptions()
      */
     @Override</source-code>
           </source-codes>
@@ -54685,7 +54685,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#execute()
+     * @see org.gusdb.fgputil.BaseCLI#execute()
      */
     @Override</source-code>
           </source-codes>
@@ -55319,7 +55319,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#declareOptions()
+     * @see org.gusdb.fgputil.BaseCLI#declareOptions()
      */
     @Override</source-code>
           </source-codes>
@@ -55336,7 +55336,7 @@
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wsf.util.BaseCLI#execute()
+     * @see org.gusdb.fgputil.BaseCLI#execute()
      */
     @Override</source-code>
           </source-codes>

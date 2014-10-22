@@ -74,7 +74,7 @@
       <c:set var="index" value="${index + 1}" />
   </c:forEach>
 
-  <ul currentTab="${selectedTab}">
+  <ul style="overflow:visible" currentTab="${selectedTab}">
     <c:forEach items="${views}" var="item">
       <c:set var="view" value="${item.value}" />
       <li id="${view.name}">
@@ -88,13 +88,14 @@
       <c:set var="analysisCtx" value="${analysisEntry.value}"/>
       <c:set var="analysis" value="${analysisCtx.stepAnalysis}"/>
       <li id="step-analysis-${analysisId}">
-        <a href="${pageContext.request.contextPath}/stepAnalysisPane.do?analysisId=${analysisId}" title="${analysis.description}">
+        <a href="${pageContext.request.contextPath}/stepAnalysisPane.do?analysisId=${analysisId}" title="${analysis.shortDescription}">
           ${analysisCtx.displayName} <span> </span>
         </a>
         <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
       </li>
     </c:forEach>
-    <c:if test="${fn:length(question.stepAnalyses) > 0}">
+
+    <c:if test="${not empty strategy and fn:length(question.stepAnalyses) > 0}">
       <c:set var="newAnalyses">
         <c:forEach items="${question.stepAnalyses}" var="analysis">
           <c:set var="analysisCtx" value="${analysis.value}"/>
@@ -109,7 +110,7 @@
         <span class="ui-icon ui-icon-circle-close ui-closable-tab step-analysis-close-icon"></span>
       </li>
       <li id="add-analysis">
-        <button title="Choose an analysis tool to apply to the results of your current step.">Analysis Tools</button>
+        <button title="Choose an analysis tool to apply to the results of your current step.">Analyze Results</button>
         <c:if test="${not empty newAnalyses}">
           <div class="analysis-feature-tooltip">
             <ul>
@@ -117,6 +118,7 @@
             </ul>
           </div>
         </c:if>
+        <imp:image style="margin-bottom: -13px; position: relative; top: -12px;" src="wdk/images/beta2-40.png" />
       </li>
     </c:if>
     <%--

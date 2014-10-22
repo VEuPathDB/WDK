@@ -12,10 +12,10 @@
 		<h1 style="font-size:130%;margin-top:4px;" id="query_form_title">${title}</h1>
 	</div>
 	<a class="back" href="javascript:wdk.addStepPopup.backStage()">
-		<imp:image src="/wdk/images/backbutton.png" alt='Close'/>
+		<imp:image src="wdk/images/backbutton.png" alt='Close'/>
 	</a>
 	<a class='close_window' href='javascript:wdk.addStepPopup.closeAll()'>
-		<imp:image src="/wdk/images/closebutton.png" alt='Close'/>
+		<imp:image src="wdk/images/closebutton.png" alt='Close'/>
 	</a>
 </span>
 <div id="errors"></div>

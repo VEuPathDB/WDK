@@ -12,10 +12,10 @@
 <c:choose>
   <c:when test="${question.new}">
     <imp:image alt="New feature icon" title="This is a new search!" 
-         src="/wdk/images/new-feature.png" />
+         src="wdk/images/new-feature.png" />
   </c:when>
   <c:when test="${question.revised}">
     <imp:image alt="Revised feature icon" title="This search has been revised. Changes might include new or changed parameters, upgrades to the underlying search logic, or new or updated data." 
-         src="/wdk/images/revised-small.png" />
+         src="wdk/images/revised-small.png" />
   </c:when>
 </c:choose>
