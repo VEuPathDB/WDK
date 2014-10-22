@@ -14,7 +14,10 @@ import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
  * 
  */
 public abstract class ModelConfigDB implements ConnectionPoolConfig {
-  
+
+  protected static final boolean DEFAULT_READ_ONLY = false;
+  protected static final boolean DEFAULT_AUTO_COMMIT = true;
+
   protected static final String CONFIG_TABLE = "config";
   protected static final String CONFIG_NAME_COLUMN = "config_name";
   protected static final String CONFIG_VALUE_COLUMN = "config_value";
@@ -31,6 +34,8 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   private short maxIdle = 1;
   private short minIdle = 0;
   private long maxWait = 50;
+  private boolean defaultReadOnly = DEFAULT_READ_ONLY;
+  private boolean defaultAutoCommit = DEFAULT_AUTO_COMMIT;
 
   /**
    * display DB connection count periodically in the log. This is used to
@@ -178,6 +183,24 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    */
   public void setMaxWait(long maxWait) {
     this.maxWait = maxWait;
+  }
+
+  @Override
+  public boolean getDefaultAutoCommit() {
+    return defaultAutoCommit;
+  }
+
+  public void setDefaultAutoCommit(boolean defaultAutoCommit) {
+    this.defaultAutoCommit = defaultAutoCommit;
+  }
+
+  @Override
+  public boolean getDefaultReadOnly() {
+    return defaultReadOnly;
+  }
+
+  public void setDefaultReadOnly(boolean defaultReadOnly) {
+    this.defaultReadOnly = defaultReadOnly;
   }
 
   /**
