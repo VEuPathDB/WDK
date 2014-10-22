@@ -15,7 +15,7 @@
 	</ul>
 		
 	<div id="closing-items">
-			<input style="vertical-align:bottom" id="stay-closed-check" type="checkbox" name="stayClosed" />
+			<input id="stay-closed-check" type="checkbox" name="stayClosed" />
 			<span style="font-size:90%">Never show me this again</span>
 			<input style="font-size:85%" id="close" type="button" value="Close" />
 	</div>

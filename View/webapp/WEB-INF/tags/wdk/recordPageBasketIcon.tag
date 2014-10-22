@@ -19,23 +19,18 @@
     });
   </script>
 </c:if>
-<style type="text/css">
-	img {vertical-align:bottom;}
-</style>
-
 
 <span class="wdk-record" recordClass="${wdkRecord.recordClass.fullName}">
     <c:choose>
         <c:when test="${wdkUser.guest}">
           <c:if test="${wdkRecord.recordClass.useBasket}">
           <a class="basket" href="javascript:void(0)" onclick="wdk.user.login();"> Add to Basket
-            <imp:image src="/wdk/images/basket_gray.png" width='${imagesize}' value="0" title="Please log in to access the basket."/>
+            <imp:image src="wdk/images/basket_gray.png" width='${imagesize}' title="Please log in to access the basket."/>
           </a>
-          &nbsp;&nbsp;&nbsp;&nbsp;
           </c:if>
 
           <a class="favorite" href="javascript:void(0)" onclick="wdk.user.login();">Add to Favorites
-            <imp:image src="/wdk/images/favorite_gray.gif" width='${imagesize}' value="0" title="Please log in to access the favorites."/>
+            <imp:image src="wdk/images/favorite_gray.gif" width='${imagesize}' title="Please log in to access the favorites."/>
           </a>
          </c:when>
 
@@ -50,9 +45,8 @@
             <a href="javascript:void(0)" onclick="jQuery(this).next().click();" id="basketrp">${action} Basket</a>
 	    <a id="${basketId}" class="basket" href="javascript:void(0)" 
 		onClick="wdk.basket.updateBasket(this, 'recordPage', '${id}', '${pid}', '${wdkRecord.recordClass.fullName}')">
-            <imp:image src="/wdk/images/basket_${image}.png" width='${imagesize}' value="${imagevalue}" title="${imagetitle}"/>
+            <imp:image src="wdk/images/basket_${image}.png" width='${imagesize}' value="${imagevalue}" title="${imagetitle}"/>
             </a>
-            &nbsp;&nbsp;&nbsp;&nbsp;
           </c:if>
 <%--End of Block --%>
 
@@ -63,7 +57,7 @@
             <c:set var="imagetitle" value="Click to ${favorite ? 'Remove this item from' : 'Add this item to'} Favorites."/>
  <%-- This block must remain together --%>
            <a href="javascript:void(0)" onclick="jQuery(this).next().click()" id="favoritesrp">${actionWritten} Favorites</a> 
-	    <imp:image id="${favoriteId}" class="clickable" src="/wdk/images/favorite_${image}.gif"  width='${imagesize}' 
+	    <imp:image id="${favoriteId}" class="clickable" src="wdk/images/favorite_${image}.gif"  width='${imagesize}' 
                  title="${imagetitle}" onClick="wdk.favorite.updateFavorite(this, '${action}')" />
 <%-- End block--%>
         </c:otherwise>

@@ -30,7 +30,10 @@
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkFilter.css' />">
 -->
 
-<c:forEach items="${recordClass.filterLayouts}" var="layout">
+<c:url var="countUrl" value="/showResultSize.do?step=${stepId}" />
+
+<div class="result-filters" data-count-url="${countUrl}">
+  <c:forEach items="${recordClass.filterLayouts}" var="layout">
     <div class="filter-layout" id="${layout.name}">
         <c:set var="image" value="plus.gif" />
         <c:set var="show" value="none" />
@@ -41,9 +44,9 @@
         
 <!-- ========== open/close icon, filter icon, filter TITLE, explanation =============== -->
         <div title="Results hidden by the filter will not be combined into the next step." class="layout-info">
-            <imp:image class="handle" src="/wdk/images/${image}" />
+            <imp:image class="handle" src="wdk/images/${image}" />
             <span class="display">
-              <imp:image height="14px" src="/wdk/images/filter-short.png"/> 
+              <imp:image height="14px" src="wdk/images/filter-short.png"/> 
               <b>${layout.displayName}</b>&nbsp;&nbsp;
             </span>
         </div>
@@ -60,7 +63,8 @@
             <c:remove var="filter_layout" scope="request"/>
         </div>
     </div>
-</c:forEach>
+  </c:forEach>
+</div>
 
 <c:remove var="answer_value" scope="request"/>
 <c:remove var="strategy_id" scope="request"/>

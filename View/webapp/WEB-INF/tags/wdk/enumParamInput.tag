@@ -53,7 +53,7 @@ Otherwise a standard select menu is used.
           <imp:enumCountWarning enumParam="${qP}" initialCount="${initialCount}"/>
           <c:set var="changeCode" value="window.wdk.parameterHandlers.adjustEnumCountBoxes('${qP.name}aaa')"/>
           <c:set var="i" value="0"/>
-          <table border="1" cellspacing="0"><tr><td>
+          <table><tr><td>
             <ul>
               <c:forEach items="${qP.displayMap}" var="entity" varStatus="loop">
                 <c:if test="${i == 0}"><c:set var="checked" value="checked"/></c:if>
@@ -92,9 +92,11 @@ Otherwise a standard select menu is used.
 
       <%-- use a type ahead --%>
       <c:when test="${displayType eq 'typeAhead'}">
-        <div class="param ${dependentClass}" data-type="type-ahead" dependson="${dependedParam}" name="${pNam}">
-          <div id="${pNam}_display" data-multiple="true"></div>
-          <html:hidden property="value(${pNam})" />
+          <div class="param ${dependentClass}" data-type="type-ahead"
+              data-multiple="true" dependson="${dependedParam}" name="${pNam}">
+          <div class="loading">Loading...</div>
+          <html:hidden property="value(${pNam})" style="width:450px"/>
+            <!-- <input type="hidden" style="width:450px" name="value(${pNam})"/> -->
           <div class="type-ahead-help" style="margin:2px;">
             Begin typing to see suggestions to choose from (CTRL or CMD click to select multiple)<br/>
             Or paste a list of IDs separated by a comma, new-line, white-space, or semi-colon.<br/>
@@ -138,9 +140,10 @@ Otherwise a standard select menu is used.
       
         <%-- use a type ahead --%>
         <c:when test="${displayType eq 'typeAhead'}">
-          <div class="param ${dependentClass}" data-type="type-ahead" dependson="${dependedParam}" name="${pNam}">
-            <div id="${pNam}_display" data-multiple="false"></div>
-            <html:hidden property="value(${pNam})" />
+          <div class="param ${dependentClass}" data-multiple="false" data-type="type-ahead"
+              dependson="${dependedParam}" name="${pNam}">
+            <div class="loading">Loading...</div>
+            <html:hidden property="value(${pNam})" style="width:450px"/>
             <div class="type-ahead-help" style="margin:2px;">
               Begin typing to see suggestions from which to choose<br/>
               <%-- Or use * as a wildcard, like this: *your-term* --%>
