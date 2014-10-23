@@ -6,7 +6,6 @@ package org.gusdb.wdk.model.report;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -56,6 +55,7 @@ public class JSONReporter extends Reporter {
     private String tableCache;
     private String recordIdColumn;
 
+    @SuppressWarnings("unused")
     private boolean hasEmptyTable = false;
 
     private String sqlInsert;
@@ -86,9 +86,6 @@ public class JSONReporter extends Reporter {
                     + PROPERTY_RECORD_ID_COLUMN + ", is missing");
     }
 
-    /*
-     * 
-     */
     @Override
     public void configure(Map<String, String> config) {
         super.configure(config);
@@ -96,8 +93,7 @@ public class JSONReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_EMPTY_TABLE)) {
             String value = config.get(FIELD_HAS_EMPTY_TABLE);
-            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
-                    : false;
+            hasEmptyTable = value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true");
         }
     }
 
