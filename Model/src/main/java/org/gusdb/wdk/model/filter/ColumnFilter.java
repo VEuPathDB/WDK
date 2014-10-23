@@ -14,11 +14,12 @@ public abstract class ColumnFilter extends AbstractFilter {
   public ColumnFilter(String name, ColumnAttributeField attribute) {
     super(name + "-" + attribute.getName());
     this.attribute = attribute;
+    setDisplay(getDisplay() + attribute.getDisplayName());
   }
 
   protected String getAttributeSql(AnswerValue answer, String idSql) throws WdkModelException,
       WdkUserException {
-    String queryName = attribute.getColumn().getQuery().toString();
+    String queryName = attribute.getColumn().getQuery().getFullName();
     WdkModel wdkModel = attribute.getWdkModel();
     Query query = (Query) wdkModel.resolveReference(queryName);
     return answer.getAttributeSql(query);

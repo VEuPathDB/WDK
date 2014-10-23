@@ -3,6 +3,41 @@
 wdk.util.namespace("window.wdk.filter", function(ns, $) {
   "use strict";
 
+  function WdkFilterNew($el) {
+    
+    this.initialize = function() {
+      $el.accordion({
+        collapsible: true
+      });
+      
+      // initialize filter list
+      $el.find(".filter").each(function() {
+        var filter = $(this);
+        filter.qtip({
+          content: { text: filter.find(".description") }
+        });
+        filter.click(function() {
+          var detail = $el.find(".filter-detail");
+          detail.data("filter", filter.attr("id");
+          detail.find(".description").html(filter.find(".description"));
+          detail.find(".filter-summary").load("getFilterSummary.do?step=" 
+                   + $el.data("step") + "&filter=" + filter.attr("id"));
+        });
+      });
+
+      // initialize filter submit button
+      var detail = $el.find(".filter-detail");
+      detail.find(".filter-controls .submit").click(function() {
+        var form = detail.find(".filter-form");
+        var params = form.find("input").serializeArray();
+      });
+    };
+
+  }
+
+
+
+
   function WdkFilter($el) {
 
     this.initialize = function() {
@@ -126,5 +161,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
   }
 
   ns.WdkFilter = WdkFilter;
+  ns.WdkFilterNew = WdkFilterNew;
+
 
 });

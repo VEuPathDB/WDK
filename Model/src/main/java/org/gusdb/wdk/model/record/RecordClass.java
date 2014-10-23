@@ -1670,11 +1670,30 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     _stepFilters.put(filter.getKey(), filter);
   }
 
-  public StepFilter getFilter(String fullName) throws WdkModelException {
-    StepFilter filter = _stepFilters.get(fullName);
+  public Filter getFilter(String key) throws WdkModelException {
+    Filter filter = getStepFilter(key);
+    if (filter == null)
+      filter = getColumnFilter(key);
     if (filter == null)
       throw new WdkModelException("Requested Step Filter doesn't exist: " + fullName);
     return filter;
+  }
+
+  public StepFilter getStepFilter(String key) throws WdkModelException {
+    return _stepFilters.get(key);
+  }
+
+  public ColumnFilter getColumnFilter(String key) {
+    for (AttributeField attribute : getAttributeFields()) {
+      if (attribute instanceof ColumnAttributeField) {
+        ColumnAttributeField columnAttribute = (ColumnAttributeField) attribute;
+        for (ColumnFilter filter : columnAttribute.getColumnFilters()) {
+          if (filter.getKey().equals(key))
+            return filter;
+        }
+      }
+    }
+    return null;
   }
 
   public Map<String, StepFilter> getStepFilters() {
