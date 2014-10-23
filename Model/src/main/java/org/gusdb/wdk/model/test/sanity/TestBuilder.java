@@ -9,6 +9,8 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.QuerySet.QueryType;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.test.ParamValuesFactory;
+import org.gusdb.wdk.model.test.ParamValuesFactory.ValuesSetWrapper;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
 import org.gusdb.wdk.model.test.sanity.tests.AttributeQueryTest;
@@ -27,38 +29,71 @@ public abstract class TestBuilder {
   public abstract List<ElementTest> buildTestSequence(WdkModel wdkModel, User user,
       boolean skipWebSvcQueries) throws WdkModelException;
 
-  protected void addQueryTest(List<ElementTest> tests, QuerySet querySet, QueryType queryType,
-      Query query, User user, boolean skipWebSvcQueries) throws WdkModelException {
-    if (!SanityTester.isTestable(query, skipWebSvcQueries)) return;
-    LOG.debug("   Building tests for Query " + query.getName() + " using " + query.getParamValuesSets().size() + " ParamValuesSets");
-    int numParamValuesSets = query.getNumParamValuesSets();
-    try {
-      for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
-        switch (queryType) {
-          case VOCAB:
-            tests.add(new VocabQueryTest(user, querySet, query, paramValuesSet));
-            break;
-          case ATTRIBUTE:
-            tests.add(new AttributeQueryTest(user, querySet, query, paramValuesSet));
-            break;
-          case TABLE:
-            tests.add(new TableQueryTest(user, querySet, query, paramValuesSet));
-            // perform additional test for table queries
-            tests.add(new TableTotalQueryTest(user, querySet, query, paramValuesSet));
-          default:
-            // TABLE_TOTAL should never be a QuerySet's query type; it exists only for sanity tests.
-            // All other query types are not sanity testable
-            LOG.debug("QuerySet " + querySet.getName() + " with type " +
-                queryType + " is not sanity testable.  Skipping...");
+  public static abstract class QueryTestBuilder {
+
+    protected User user;
+    protected QuerySet querySet;
+    protected Query query;
+    private ValuesSetWrapper valuesSetWrapper;
+
+    public abstract ElementTest getTypedQueryTest(ParamValuesSet paramValuesSet) throws WdkModelException;
+
+    public QueryTestBuilder(User user, QuerySet querySet, Query query, ValuesSetWrapper valuesSetWrapper) {
+      this.user = user;
+      this.querySet = querySet;
+      this.query = query;
+      this.valuesSetWrapper = valuesSetWrapper;
+    }
+
+    public ElementTest getQueryTest() {
+      if (valuesSetWrapper.isCreated()) {
+        try {
+          return getTypedQueryTest(valuesSetWrapper.getValuesSet());
+        }
+        catch (Exception e) {
+          return new UncreateableTest(querySet, query, e);
         }
       }
+      else {
+        return new UncreateableTest(querySet, query, valuesSetWrapper.getException());
+      }
     }
-    catch (Exception e) {
-      // error while generating param values sets
-      LOG.error("Unable to generate paramValuesSets for query " + query.getName(), e);
-      // to keep the index correct, add already failed tests for each of the param values sets we expected
-      for (int i = 0; i < numParamValuesSets; i++) {
-        tests.add(new UncreateableTest(querySet, query, e));
+  }
+
+  protected void addQueryTest(List<ElementTest> tests, QuerySet querySet, QueryType queryType,
+      Query query, User user, boolean skipWebSvcQueries) {
+    if (!SanityTester.isTestable(query, skipWebSvcQueries)) return;
+    LOG.debug("   Building tests for Query " + query.getName());
+    for (ValuesSetWrapper valuesSetWrapper : ParamValuesFactory.getValuesSetsNoError(user, query)) {
+      switch (queryType) {
+        case VOCAB:
+          tests.add(new QueryTestBuilder(user, querySet, query, valuesSetWrapper) {
+            @Override public ElementTest getTypedQueryTest(ParamValuesSet paramValuesSet) throws WdkModelException {
+              return new VocabQueryTest(user, querySet, query, paramValuesSet);
+            }}.getQueryTest());
+          break;
+        case ATTRIBUTE:
+          tests.add(new QueryTestBuilder(user, querySet, query, valuesSetWrapper) {
+            @Override public ElementTest getTypedQueryTest(ParamValuesSet paramValuesSet) throws WdkModelException {
+              return new AttributeQueryTest(user, querySet, query, paramValuesSet);
+            }}.getQueryTest());
+          break;
+        case TABLE:
+          tests.add(new QueryTestBuilder(user, querySet, query, valuesSetWrapper) {
+            @Override public ElementTest getTypedQueryTest(ParamValuesSet paramValuesSet) throws WdkModelException {
+              return new TableQueryTest(user, querySet, query, paramValuesSet);
+            }}.getQueryTest());
+          // perform additional test for table queries
+          tests.add(new QueryTestBuilder(user, querySet, query, valuesSetWrapper) {
+            @Override public ElementTest getTypedQueryTest(ParamValuesSet paramValuesSet) throws WdkModelException {
+              return new TableTotalQueryTest(user, querySet, query, paramValuesSet);
+            }}.getQueryTest());
+          break;
+        default:
+          // TABLE_TOTAL should never be a QuerySet's query type; it exists only for sanity tests.
+          // All other query types are not sanity testable
+          LOG.debug("QuerySet " + querySet.getName() + " with type " +
+              queryType + " is not sanity testable.  Skipping...");
       }
     }
   }

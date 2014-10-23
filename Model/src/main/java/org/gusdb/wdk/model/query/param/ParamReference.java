@@ -70,7 +70,7 @@ public class ParamReference extends Reference {
     Boolean quote = paramRef.getQuote();
     Boolean multiPick = paramRef.isMultiPick();
     String displayType = paramRef.getDisplayType();
-    String selectMode = paramRef.getSelectMode();
+    SelectMode selectMode = paramRef.getSelectModeEnum();
     String queryRef = paramRef.getQueryRef();
     Boolean suppressNode = paramRef.getSuppressNode();
     Integer minSelectedCount = paramRef.getMinSelectedCount();
@@ -177,7 +177,7 @@ public class ParamReference extends Reference {
   private String emptyValue;
   private String displayType;
   private Boolean visible;
-  private String selectMode;
+  private SelectMode selectMode;
   private Boolean noTranslation;
   private Boolean suppressNode;
   private Integer minSelectedCount;
@@ -317,6 +317,10 @@ public class ParamReference extends Reference {
    * @return the selectMode
    */
   public String getSelectMode() {
+    return selectMode.name();
+  }
+
+  public SelectMode getSelectModeEnum() {
     return selectMode;
   }
 
@@ -325,7 +329,7 @@ public class ParamReference extends Reference {
    *          the selectMode to set
    */
   public void setSelectMode(String selectMode) {
-    this.selectMode = selectMode;
+    this.selectMode = SelectMode.valueOf(selectMode.toUpperCase());
   }
 
   /**

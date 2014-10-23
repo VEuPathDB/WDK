@@ -143,7 +143,7 @@ Otherwise a standard select menu is used.
           <div class="param ${dependentClass}" data-multiple="false" data-type="type-ahead"
               dependson="${dependedParam}" name="${pNam}">
             <div class="loading">Loading...</div>
-            <input type="hidden" style="width:450px" name="value(${pNam})"/>
+            <html:hidden property="value(${pNam})" style="width:450px"/>
             <div class="type-ahead-help" style="margin:2px;">
               Begin typing to see suggestions from which to choose<br/>
               <%-- Or use * as a wildcard, like this: *your-term* --%>

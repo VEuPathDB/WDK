@@ -11,11 +11,12 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.QuerySet.QueryType;
-import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
+import org.gusdb.wdk.model.test.ParamValuesFactory;
+import org.gusdb.wdk.model.test.ParamValuesFactory.ValuesSetWrapper;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
 import org.gusdb.wdk.model.test.sanity.tests.QueryTest;
@@ -115,7 +116,7 @@ public class ClassicTestBuilder extends TestBuilder {
   }
 
   private void addQuerySetTests(List<ElementTest> tests, WdkModel wdkModel, User user,
-      boolean skipWebSvcQueries, QueryType forQueryType) throws WdkModelException {
+      boolean skipWebSvcQueries, QueryType forQueryType) {
     if (wdkModel.getProjectId().equals("EuPathDB") && forQueryType.equals(QueryType.TABLE))
       return; // do not process table queries for the portal
     for (QuerySet querySet : wdkModel.getAllQuerySets()) {
@@ -135,18 +136,19 @@ public class ClassicTestBuilder extends TestBuilder {
       for (Question question : questionSet.getQuestions()) {
         Query query = question.getQuery();
         if (!SanityTester.isTestable(query, skipWebSvcQueries)) continue;
-        int numParamValuesSets = question.getQuery().getNumParamValuesSets();
-        try {
-          for (ParamValuesSet paramValuesSet : question.getQuery().getParamValuesSets()) {
-            tests.add(new QuestionTest(user, question, paramValuesSet));
+        for (ValuesSetWrapper valuesSetWrapper : ParamValuesFactory.getValuesSetsNoError(user, question.getQuery())) {
+          if (valuesSetWrapper.isCreated()) {
+            try {
+              tests.add(new QuestionTest(user, question, valuesSetWrapper.getValuesSet()));
+            }
+            catch (Exception e) {
+              // error while generating param values sets
+              LOG.error("Unable to generate paramValuesSets for question " + question.getName() + " (query=" + question.getQuery().getName() + ")", e);
+              tests.add(new UncreateableTest(question, e));
+            }
           }
-        }
-        catch (Exception e) {
-          // error while generating param values sets
-          LOG.error("Unable to generate paramValuesSets for question " + question.getName() + " (query=" + question.getQuery().getName() + ")", e);
-          // to keep the index correct, add already failed tests for each of the param values sets we expected
-          for (int i = 0; i < numParamValuesSets; i++) {
-            tests.add(new UncreateableTest(question, e));
+          else {
+            tests.add(new UncreateableTest(question, valuesSetWrapper.getException()));
           }
         }
       }
