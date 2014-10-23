@@ -25,6 +25,7 @@ public class ListColumnFilter extends ColumnFilter {
   public static ColumnFilterDefinition getDefinition() {
     ColumnFilterDefinition definition = new ColumnFilterDefinition();
     definition.setName(FILTER_NAME);
+    definition.setImplementation(ListColumnFilter.class.getName());
     definition.setDisplay("Filter By ");
     definition.setDescription("Filter the result by the list of values in the column ");
     definition.setView("/wdk/jsp/results/listColumnFilter.jsp");
@@ -50,9 +51,11 @@ public class ListColumnFilter extends ColumnFilter {
     DataSource dataSource = answer.getQuestion().getWdkModel().getAppDb().getDataSource();
     try {
       resultSet = SqlUtils.executeQuery(dataSource, sql, getKey() + "-summary");
-      String value = resultSet.getString(columnName);
-      int count = resultSet.getInt(COLUMN_COUNT);
-      counts.put(value, count);
+      if (resultSet.next()) {
+        String value = resultSet.getString(columnName);
+        int count = resultSet.getInt(COLUMN_COUNT);
+        counts.put(value, count);
+      }
     }
     catch (SQLException ex) {
       throw new WdkModelException(ex);

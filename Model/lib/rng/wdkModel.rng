@@ -1519,12 +1519,14 @@
   <define name="stepFilter">
     <element name="stepFilter">
       <ref name="filterBaseContent" />
-   </define>
+    </element>
+  </define>
 
   <define name="columnFilter">
     <element name="columnFilter">
       <ref name="filterBaseContent" />
-   </define>
+    </element>
+  </define>
   
   <define name="filterBaseContent">
      <ref name="IncludeExclude" />

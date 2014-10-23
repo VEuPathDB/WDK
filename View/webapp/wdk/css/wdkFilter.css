@@ -1,5 +1,25 @@
 /* WDK filter related styles */
 
+/* ==============================================
+ *
+ * This section is for the new filters.
+ *
+ * ============================================== */
+
+.wdk-filters { margin:2px; }
+.wdk-filters .filter-list { float:left; width:300px; }
+.wdk-filters .filter-detail { border-left:3px solid gray; }
+.wdk-filters .filter .description { display:none; }
+
+
+/* ==============================================
+ *
+ * The section below is the style of older filters, and it maybe deprecated in the future.
+ *
+ * ============================================== */
+
+
+
 .filter-layout .layout-info > .handle {
     cursor: pointer;
     position:relative;
