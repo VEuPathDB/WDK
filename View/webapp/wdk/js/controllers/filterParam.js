@@ -24,7 +24,7 @@ wdk.namespace('wdk.controllers', function(ns) {
   // helpers
   //
 
-  var countByValues = _.compose(_.countBy, _.values);
+  var countByValues = _.compose(_.countBy, _.flatten, _.values);
   var numericSort = function(a, b){ return a > b; };
   var stringSort; // passing this to [].sort() will use the default sort
 
@@ -288,13 +288,12 @@ wdk.namespace('wdk.controllers', function(ns) {
           omit: [ term ]
         })
       }).then(function(results) {
-        var counts = _.countBy(_.flatten(_.values(results.metadata)));
         var filteredMetadata = results.filteredData
           .reduce(function(acc, fd) {
             acc[fd.term] = results.metadata[fd.term];
             return acc;
           }, {});
-        // var counts = countByValues(results.metadata);
+        var counts = countByValues(results.metadata);
         var filteredCounts = countByValues(filteredMetadata);
 
         return _.uniq(_.flatten(_.values(results.metadata)))
