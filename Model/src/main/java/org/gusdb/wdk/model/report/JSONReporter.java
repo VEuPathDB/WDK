@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.report;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -32,7 +33,10 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONWriter;
 
 /**
  * @author Cary P.
@@ -109,13 +113,7 @@ public class JSONReporter extends Reporter {
      */
     @Override
     public String getHttpContentType() {
-        if (format.equalsIgnoreCase("text")) {
-            return "text/plain";
-        } else if (format.equalsIgnoreCase("pdf")) {
-            return "application/pdf";
-        } else { // use the default content type defined in the parent class
-            return "text/plain";// return super.getHttpContentType();
-        }
+      return "application/json";
     }
 
     /*
@@ -136,6 +134,7 @@ public class JSONReporter extends Reporter {
         }
     }
 
+    // FIXME Use JSON library to create JSON
     /*
      * (non-Javadoc)
      * 
@@ -146,7 +145,8 @@ public class JSONReporter extends Reporter {
     protected void write(OutputStream out) throws WdkModelException,
             SQLException, NoSuchAlgorithmException, JSONException,
             WdkUserException {
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+        OutputStreamWriter streamWriter = new OutputStreamWriter(out);
+        JSONWriter writer = new JSONWriter(streamWriter);
 
         // get the columns that will be in the report
         Set<Field> fields = validateColumns();
@@ -207,16 +207,28 @@ public class JSONReporter extends Reporter {
             AnswerValue av = this.getAnswerValue();
             // get page based answers with a maximum size (defined in
             // PageAnswerIterator)
-            writer.print("{\"response\" :{");
-            writer.print("\"recordset\": {\"id\":\"" + av.getChecksum()
-                    + "\",\"count\":\"" + this.getResultSize()
-                    + "\", \"type\":\""
-                    + av.getQuestion().getRecordClass().getDisplayName()
-                    + "\", \"records\":[");
+            writer
+              .object()
+                .key("response")
+                .object()
+                  .key("recordset")
+                  .object()
+                    .key("id")
+                    .value(av.getChecksum())
+                    .key("count")
+                    .value(this.getResultSize())
+                    .key("type")
+                    .value(av.getQuestion().getRecordClass().getDisplayName())
+                    .key("records")
+                    .array();
+
             for (AnswerValue pageAnswer : this) {
                 for (RecordInstance record : pageAnswer.getRecordInstances()) {
-                    if (recordCount > 0) writer.print(",");
-                    writer.print("{\"id\":\"" + record.getPrimaryKey() + "\"");
+                    writer
+                      .object()
+                        .key("id")
+                        .value(record.getPrimaryKey());
+
                     // print out attributes of the record first
                     formatAttributes(record, attributes, writer);
                     // print out tables
@@ -225,13 +237,22 @@ public class JSONReporter extends Reporter {
                     // writer.flush();
                     // count the records processed so far
                     recordCount++;
-                    writer.print("}");
+                    writer.endObject();
+                    streamWriter.flush();
                 }
             }
-            writer.print("]}");
-            writer.print("}}");
-            writer.flush();
+
+            writer
+                    .endArray() // records
+                  .endObject()
+                .endObject()
+              .endObject();
+            streamWriter.flush();
+            streamWriter.close();
             logger.info("Totally " + recordCount + " records dumped");
+        }
+        catch (IOException ioe) {
+            logger.error(ioe);
         }
         finally {
             SqlUtils.closeStatement(psQuery);
@@ -251,8 +272,7 @@ public class JSONReporter extends Reporter {
         String tablesList = config.get(TABLE_SELECTED_COLUMNS);
         if (fieldsList == null) fieldsList = "none";
         if (tablesList == null) tablesList = "none";
-        logger.info("fieldsList = " + fieldsList + "    tablesList = "
-                + tablesList);
+        logger.info("fieldsList = " + fieldsList + "    tablesList = " + tablesList);
         if (fieldsList.equals("all") && tablesList.equals("all")) {
             logger.info("all all");
             columns.addAll(fieldMap.values());
@@ -295,63 +315,74 @@ public class JSONReporter extends Reporter {
     }
 
     private void formatAttributes(RecordInstance record,
-            Set<AttributeField> attributes, PrintWriter writer)
+            Set<AttributeField> attributes, JSONWriter writer)
             throws WdkModelException, WdkUserException {
-        // print out attributes of the record first
-        if (attributes.size() > 0) writer.print(", \"fields\":[");
-        int c = 0;
-        for (AttributeField field : attributes) {
-            if (c > 0) writer.print(",");
-            AttributeValue value = record.getAttributeValue(field.getName());
-            writer.print("{\"name\":\"" + field.getName() + "\", \"value\":\""
-                    + value + "\"}");
-            c++;
+        if (attributes.size() > 0) {
+            writer.key("fields").array();
+            for (AttributeField field : attributes) {
+                AttributeValue value = record.getAttributeValue(field.getName());
+                writer.object()
+                    .key("name")
+                    .value(field.getName())
+                    .key("value")
+                    .value(value)
+                .endObject();
+            }
+            writer.endArray();
         }
-        if (attributes.size() > 0) writer.print("]");
-        // print out attributes of the record first
-        // writer.print();
-        writer.flush();
     }
 
     private void formatTables(RecordInstance record, Set<TableField> tables,
-            PrintWriter writer, AnswerValue answerValue,
+            JSONWriter writer, AnswerValue answerValue,
             PreparedStatement psInsert, PreparedStatement psQuery)
             throws WdkModelException, SQLException, WdkUserException {
         DBPlatform platform = getQuestion().getWdkModel().getAppDb().getPlatform();
         RecordClass recordClass = record.getRecordClass();
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
+        // Add the following to the writer:
+        //
+        // { tables: [
+        //   { name: String, rows: [
+        //     { fields: [
+        //       { name: String, value: String },
+        //       ...
+        //     ]}
+        //   ]}
+        // ]};
+
+        JSONArray tablesArray = new JSONArray();
+
         // print out tables of the record
         boolean needUpdate = false;
-        if (tables.size() > 0) writer.print(", \"tables\":[");
-        int c = 0;
         for (TableField table : tables) {
-            if (c > 0) writer.print(",");
+            // we will be writing this object to the cache
+            JSONObject tableObject = new JSONObject()
+              .put("name", table.getDisplayName());
+            JSONArray rowsArray = new JSONArray();
             TableValue tableValue = record.getTableValue(table.getName());
-
             AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
 
             // output table header
-            StringBuffer sb = new StringBuffer();
-            sb.append("{\"name\":\"" + table.getDisplayName() + "\",\"rows\":[");
             int tableSize = 0;
             for (Map<String, AttributeValue> row : tableValue) {
-                if (tableSize > 0) sb.append(",");
-                sb.append("{\"fields\":[");
-                int f = 0;
+                JSONObject rowObject = new JSONObject();
+                JSONArray fieldsArray = new JSONArray();
                 for (AttributeField field : fields) {
                     String fieldName = field.getName();
-                    if (f > 0) sb.append(",");
                     AttributeValue value = row.get(fieldName);
-                    sb.append("{\"name\":\"" + fieldName + "\", \"value\":\""
-                            + value.getValue() + "\"}");
-                    f++;
+                    JSONObject fieldObject = new JSONObject()
+                      .put("name", fieldName)
+                      .put("value", value.getValue());
+                    fieldsArray.put(fieldObject);
                 }
-                tableSize++;
-                sb.append("]}");
+                rowObject.put("fields", fieldsArray);
+                rowsArray.put(rowObject);
             }
-            sb.append("]}");
-            String content = sb.toString();
+            tableObject.put("rows", rowsArray);
+            tablesArray.put(tableObject);
+
+            String content = tableObject.toString();
             // check if the record has been cached
             if (tableCache != null) {
                 Map<String, String> pkValues = record.getPrimaryKey().getValues();
@@ -381,15 +412,13 @@ public class JSONReporter extends Reporter {
                 }
                 SqlUtils.closeResultSetOnly(rs);
             }
-
-            // write to the stream
-            if (hasEmptyTable || tableSize > 0) {
-                writer.print(content);
-                writer.flush();
-            }
-            c++;
         }
-        if (tables.size() > 0) writer.print("]");
+
+        // write to the stream
+        writer
+            .key("tables")
+            .value(tablesArray);
+
         if (tableCache != null && needUpdate) {
             long start = System.currentTimeMillis();
             psInsert.executeBatch();

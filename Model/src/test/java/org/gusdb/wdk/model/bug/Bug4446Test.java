@@ -6,6 +6,8 @@ import java.util.Random;
 
 
 
+
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
@@ -18,6 +20,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
@@ -100,7 +103,7 @@ public class Bug4446Test {
         Question question = questions[random.nextInt(questions.length)];
 
         // create a step from the question, using the default values
-        List<ParamValuesSet> paramValueSets = question.getQuery().getParamValuesSets();
+        List<ParamValuesSet> paramValueSets = ParamValuesFactory.getParamValuesSets(user, question.getQuery());
         ParamValuesSet paramValueSet = paramValueSets.get(random.nextInt(paramValueSets.size()));
         Map<String, String> values = paramValueSet.getParamValues();
 

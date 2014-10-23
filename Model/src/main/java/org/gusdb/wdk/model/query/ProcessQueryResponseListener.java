@@ -62,7 +62,7 @@ public class ProcessQueryResponseListener implements WsfResponseListener {
    * @param row
    * @return
    */
-  private Object[] getObjects(String[] row) {
+  private Object[] getObjects(String[] row) throws ClientModelException {
     Object[] objects = new Object[columns.size()];
     int colIndex = 0;
     for (int i = 0; i < columns.size(); i++) {
@@ -76,8 +76,8 @@ public class ProcessQueryResponseListener implements WsfResponseListener {
 
       // truncate string value if it won't fit into column
       if (type == ColumnType.STRING && value != null && value.length() > column.getWidth()) {
-        LOG.warn("Column [" + column.getName() + "] value truncated.");
-        value = value.substring(0, column.getWidth() - 3) + "...";
+        throw new ClientModelException("Actual value is too big for column [" + column.getName() + "]: " + value);
+        // value = value.substring(0, column.getWidth() - 3) + "...";
       }
 
       if (!type.equals(ColumnType.STRING) && value != null && value.isEmpty()) {

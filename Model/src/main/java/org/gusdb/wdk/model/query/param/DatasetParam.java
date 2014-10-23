@@ -186,7 +186,7 @@ public class DatasetParam extends Param {
   }
 
   @Override
-  protected void applySuggection(ParamSuggestion suggest) {
+  protected void applySuggestion(ParamSuggestion suggest) {
     defaultType = ((DatasetParamSuggestion) suggest).getDefaultType();
   }
 

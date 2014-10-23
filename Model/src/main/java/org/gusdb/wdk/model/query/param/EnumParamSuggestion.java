@@ -1,15 +1,15 @@
 package org.gusdb.wdk.model.query.param;
 
+import org.gusdb.wdk.model.query.param.SelectMode;
+
 public class EnumParamSuggestion extends ParamSuggestion {
 
   /**
    * only used by abstractEnumParam
    */
-  private String selectMode = AbstractEnumParam.SELECT_MODE_ALL;
+  private SelectMode selectMode = SelectMode.ALL;
 
-  public EnumParamSuggestion() {
-    // TODO Auto-generated constructor stub
-  }
+  public EnumParamSuggestion() { }
 
   public EnumParamSuggestion(EnumParamSuggestion suggestion) {
     super(suggestion);
@@ -20,6 +20,10 @@ public class EnumParamSuggestion extends ParamSuggestion {
    * @return the selectMode
    */
   public String getSelectMode() {
+    return selectMode.toString();
+  }
+
+  public SelectMode getSelectModeEnum() {
     return selectMode;
   }
 
@@ -28,7 +32,7 @@ public class EnumParamSuggestion extends ParamSuggestion {
    *          the selectMode to set
    */
   public void setSelectMode(String selectMode) {
-    this.selectMode = selectMode;
+    this.selectMode = SelectMode.valueOf(selectMode.toUpperCase());
   }
 
 }
