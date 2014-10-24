@@ -24,6 +24,10 @@ public class FilterOptionList {
     FilterOption option = new FilterOption(filterName, filterValue);
     options.put(filterName, option);
   }
+  
+  public void removeFilterOption(String filterName) {
+    options.remove(filterName);
+  }
 
   public Map<String, FilterOption> getFilterOptions() {
     return new LinkedHashMap<>(options);

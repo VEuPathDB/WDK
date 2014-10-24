@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.FilterParam;
@@ -19,6 +20,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class StepBean {
 
@@ -505,5 +507,17 @@ public class StepBean {
 	public boolean getHasCompleteAnalyses() throws WdkModelException {
 	  return step.getHasCompleteAnalyses();
 	}
+
+  public FilterOptionList getFilterOptions() {
+    return step.getFilterOptions();
+  }
+
+  public void addFilterOption(String filterName, JSONObject filterValue) {
+    step.addFilterOption(filterName, filterValue);
+  }
+
+  public void removeFilterOption(String filterName) {
+    step.removeFilterOption(filterName);
+  }
 
 }
