@@ -86,7 +86,7 @@ public class StepFactory {
   private static final String COLUMN_IS_PUBLIC = "is_public";
 
   static final int COLUMN_NAME_LIMIT = 200;
-  
+
   public static final String KEY_PARAMS = "params";
   public static final String KEY_FILTERS = "filters";
 
@@ -631,7 +631,7 @@ public class StepFactory {
       JSONObject jsContent = new JSONObject(paramContent);
       Map<String, String> params = parseParamContent(jsContent);
       step.setParamValues(params);
-      
+
       // parse the filters
       if (jsContent.has(KEY_FILTERS))
         step.setFilterOptions(new FilterOptionList(jsContent.getJSONArray(KEY_FILTERS)));
@@ -1457,7 +1457,7 @@ public class StepFactory {
   Strategy copyStrategy(Strategy strategy, int stepId) throws WdkModelException, WdkUserException {
     Step oldStep = strategy.getStepById(stepId);
     return copyStrategy(strategy, oldStep, oldStep.getCustomName());
-    
+
   }
 
   private Strategy copyStrategy(Strategy strategy, Step oldTopStep, String oldStrategyName)
@@ -1630,13 +1630,27 @@ public class StepFactory {
   private String getVerificationPrefix() {
     return "[IP " + MDCUtil.getIpAddress() + " requested page from " + MDCUtil.getRequestedDomain() + "] ";
   }
-  
-  public int saveStepParams(Step step) {
+
+  public int saveStepParams(Step step) throws WdkModelException {
     JSONObject jsContent = getParamContent(step.getParamValues());
     FilterOptionList filterOptions = step.getFilterOptions();
     if (filterOptions != null)
       jsContent.put(KEY_FILTERS, filterOptions.getJSON().toString());
 
-    PreparedStatement psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_DISPLAY_PARAMS + " WHERE " + COLUMN_STEP_ID )
+    PreparedStatement psUpdate = null;
+    try {
+      psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + userSchema + TABLE_STEP + " SET " +
+          COLUMN_DISPLAY_PARAMS + " = ? WHERE " + COLUMN_STEP_ID + " = ?");
+      userDb.getPlatform().setClobData(psUpdate, 1, jsContent.toString(), false);
+      psUpdate.setInt(2, step.getStepId());
+      int result = psUpdate.executeUpdate();
+      return result;
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
+    finally {
+      SqlUtils.closeStatement(psUpdate);
+    }
   }
 }

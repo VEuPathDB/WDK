@@ -14,11 +14,9 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.filter.Filter;
-import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.json.JSONObject;
 
 public class RemoveFilterAction extends Action {
 
