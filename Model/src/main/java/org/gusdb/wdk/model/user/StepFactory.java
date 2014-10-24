@@ -1630,4 +1630,13 @@ public class StepFactory {
   private String getVerificationPrefix() {
     return "[IP " + MDCUtil.getIpAddress() + " requested page from " + MDCUtil.getRequestedDomain() + "] ";
   }
+  
+  public int saveStepParams(Step step) {
+    JSONObject jsContent = getParamContent(step.getParamValues());
+    FilterOptionList filterOptions = step.getFilterOptions();
+    if (filterOptions != null)
+      jsContent.put(KEY_FILTERS, filterOptions.getJSON().toString());
+
+    PreparedStatement psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_DISPLAY_PARAMS + " WHERE " + COLUMN_STEP_ID )
+  }
 }

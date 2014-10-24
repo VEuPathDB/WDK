@@ -650,6 +650,14 @@ public class Step {
   public void setFilterOptions(FilterOptionList filterOptions) {
     this.filterOptions = filterOptions;
   }
+  
+  public void addFilterOption(String filterName, JSONObject filterValue) {
+    this.filterOptions.addFilterOption(filterName, filterValue);
+  }
+  
+  public void removeFilterOption(String filterName) {
+    this.filterOptions.removeFilterOption(filterName);
+  }
 
   public RecordClass getRecordClass() throws WdkModelException {
     return getQuestion().getRecordClass();
