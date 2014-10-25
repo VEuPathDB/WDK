@@ -75,6 +75,7 @@ wdk.namespace('wdk.views.strategy', function(ns) {
     render: function() {
       wdk.util.setDraggable(this.$el, ".crumb_menu");
 
+      $('#strategy_results').find('[id="' + this.el.id + '"]').remove();
       this.$el.appendTo('#strategy_results');
       this.$el.css({
         top: 10,

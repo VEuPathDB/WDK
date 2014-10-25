@@ -243,7 +243,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    *   Otherwise they will be reloaded.
    * @returns {jQuery.Deffered} Promise
    */
-  function updateStrategies(data, ignoreFilters) {
+  function updateStrategies(data, ignoreFilters, forceRedraw) {
     var deferred = $.Deferred();
     var skipDisplay = true;
 
@@ -268,7 +268,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         } else {
           skipDisplay = false;
         }
-        loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering, skipDisplay);
+        var strategy = data.strategies[ns.state[newOrdering].checksum];
+        skipDisplay = skipDisplay && !forceRedraw;
+        if (strategy) {
+          loadModel(strategy, newOrdering, skipDisplay);
+        }
       }
     }
     if (!skipDisplay || ns.state.length === 0) {
@@ -701,7 +705,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           // strat.checksum += '_';
           // endkludge
 
-          updateStrategies(data);
+          updateStrategies(data, false, true);
         } else {
           wdk.util.removeLoading(s);
         }
