@@ -137,6 +137,8 @@ public abstract class QueryInstance {
     if (checksum == null) {
       JSONObject jsQuery = getJSONContent();
       checksum = Utilities.encrypt(jsQuery.toString());
+			logger.debug("****TO GENERATE CHECKSUM" + js.toString());
+
     }
     return checksum;
   }
