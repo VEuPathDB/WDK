@@ -297,7 +297,7 @@ img[data-assets-src][src] {
 }
 .wdk-feature-tooltip .dismiss-wrapper label {
   font-size: 75%;
-  margin-left: .5em;
+  margin-right: .5em;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
