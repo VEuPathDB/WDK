@@ -15,6 +15,7 @@ import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.json.JSONObject;
@@ -43,10 +44,14 @@ public class ApplyFilterAction extends Action {
     UserBean user = ActionUtility.getUser(servlet, request);
     StepBean step = user.getStep(Integer.valueOf(stepId));
     AnswerValueBean answer = step.getAnswerValue();
-    Filter filter = answer.getQuestion().getFilter(filterName);
+    QuestionBean question = answer.getQuestion();
+    Filter filter = question.getFilter(filterName);
+    if (filter == null) 
+      throw new WdkUserException("Filter \"" + filterName 
+           + "\" cannot be found in question: " + question.getFullName());
     step.addFilterOption(filter.getKey(), new JSONObject(options));
     
-    ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+    ActionForward showStrategy = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
     StringBuffer url = new StringBuffer(showStrategy.getPath());
     String state = request.getParameter(CConstants.WDK_STATE_KEY);
     url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
