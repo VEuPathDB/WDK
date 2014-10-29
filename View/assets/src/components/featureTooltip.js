@@ -63,20 +63,15 @@ wdk.namespace('wdk.components', function(ns, $) {
             if (e.originalEvent.type === 'tooltipsolo') {
               e.preventDefault();
             } else {
-              if (api.cache.remember) {
-                localStorage.setItem(dismissedStorageKey, 1);
-              }
-              else {
-                localStorage.setItem(dismissedStorageKey, sessionId);
-              }
+              localStorage.setItem(dismissedStorageKey, api.cache.remember ? 1 : sessionId);
               api.destroy();
             }
           },
           show: function(e, api) {
             var anchor = $('<div class="dismiss-wrapper">' +
-                           '  <a href="#dismiss">Got it!</a>' +
                            '  <label><input type="checkbox" name="remember"/>' +
-                           ' Don\'t bother me anymore.</label>' +
+                           ' Never show me this again.</label>' +
+                           '  <a href="#close">Close</a>' +
                            '</div>')
               .on('click', 'a', preventEvent(api.hide.bind(api)))
               .on('change', 'input', function(e) {
@@ -84,6 +79,7 @@ wdk.namespace('wdk.components', function(ns, $) {
               });
 
             api.elements.content.append(anchor);
+            localStorage.setItem(dismissedStorageKey, api.cache.remember ? 1 : sessionId);
           }
         }
       });
