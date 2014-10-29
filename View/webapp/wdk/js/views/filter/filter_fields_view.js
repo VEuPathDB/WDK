@@ -27,12 +27,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
         events: {
           'click li a': function(event) {
             event.preventDefault();
-
             var link = event.currentTarget;
-            if ($(link).parent().hasClass('active')) {
-              return;
-            }
-
             var term = link.hash.slice(1);
             var field = this.controller.fields.findWhere({term: term});
             this.controller.selectField(field);
