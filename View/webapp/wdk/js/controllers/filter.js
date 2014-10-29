@@ -18,7 +18,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
         });
         filter.click(function() {
           var detail = $el.find(".filter-detail");
-          detail.data("filter", filter.attr("id");
+          detail.find("input[name=filter]").val(filter.attr("id"));
           detail.find(".description").html(filter.find(".description"));
           detail.find(".filter-summary").load("getFilterSummary.do?step=" 
                    + $el.data("step") + "&filter=" + filter.attr("id"));
@@ -26,13 +26,24 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
       });
 
       // initialize filter submit button
-      var detail = $el.find(".filter-detail");
-      detail.find(".filter-controls .submit").click(function() {
-        var form = detail.find(".filter-form");
-        var params = form.find("input").serializeArray();
+      var form = $el.find(".filter-detail .filter-form");
+      form.submit(function() {
+        var options = form.serializeArray();
+        var jsOptions = { };
+        $.each(options, function() {
+        if (jsOptions[this.name] !== undefined) {
+            if (!jsOptions[this.name].push) {
+                jsOptions[this.name] = [jsOptions[this.name]];
+            }
+            jsOptions[this.name].push(this.value || '');
+        } else {
+            jsOptions[this.name] = this.value || '';
+        }
+    });
+
+        form.find(".options").val(jsOptions);
       });
     };
-
   }
 
 

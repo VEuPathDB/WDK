@@ -62,7 +62,7 @@ public class Step {
   private AnswerValue answerValue;
 
   private Map<String, String> paramValues = new LinkedHashMap<String, String>();
-  private FilterOptionList filterOptions;
+  private FilterOptionList filterOptions = new FilterOptionList();
 
   private int assignedWeight;
 
