@@ -311,7 +311,7 @@ wdk.namespace('wdk.controllers', function(ns) {
     // if field, abort current metadata requests
     // and trigger request for new field
     selectField: function(field) {
-      if (field) {
+      if (field && field !== this.selectedField) {
         this.abortMetadataRequest(this.selectedField);
         this.selectedField = field;
         this._setSelectedFieldDistribution().then(function() {
