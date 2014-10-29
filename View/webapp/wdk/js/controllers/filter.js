@@ -24,25 +24,6 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
                    + $el.data("step") + "&filter=" + filter.attr("id"));
         });
       });
-
-      // initialize filter submit button
-      var form = $el.find(".filter-detail .filter-form");
-      form.submit(function() {
-        var options = form.serializeArray();
-        var jsOptions = { };
-        $.each(options, function() {
-        if (jsOptions[this.name] !== undefined) {
-            if (!jsOptions[this.name].push) {
-                jsOptions[this.name] = [jsOptions[this.name]];
-            }
-            jsOptions[this.name].push(this.value || '');
-        } else {
-            jsOptions[this.name] = this.value || '';
-        }
-    });
-
-        form.find(".options").val(jsOptions);
-      });
     };
   }
 
