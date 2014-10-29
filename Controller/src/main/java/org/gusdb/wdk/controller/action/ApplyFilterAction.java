@@ -1,6 +1,8 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
+import java.util.Enumeration;
+import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,12 +20,12 @@ import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class ApplyFilterAction extends Action {
 
   public static final String PARAM_FILTER = "filter";
-  public static final String PARAM_OPTIONS = "options";
   public static final String PARAM_STEP = "step";
   
   private static final Logger LOG = Logger.getLogger(ApplyFilterAction.class);
@@ -39,7 +41,7 @@ public class ApplyFilterAction extends Action {
     String stepId = request.getParameter(PARAM_STEP);
     if (stepId == null)
       throw new WdkUserException("Required step parameter is missing.");
-    String options = request.getParameter(PARAM_OPTIONS);
+    JSONObject options = prepareOptions(request);
     
     UserBean user = ActionUtility.getUser(servlet, request);
     StepBean step = user.getStep(Integer.valueOf(stepId));
@@ -49,7 +51,7 @@ public class ApplyFilterAction extends Action {
     if (filter == null) 
       throw new WdkUserException("Filter \"" + filterName 
            + "\" cannot be found in question: " + question.getFullName());
-    step.addFilterOption(filter.getKey(), new JSONObject(options));
+    step.addFilterOption(filter.getKey(), options);
     
     ActionForward showStrategy = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
     StringBuffer url = new StringBuffer(showStrategy.getPath());
@@ -60,5 +62,24 @@ public class ApplyFilterAction extends Action {
     forward.setRedirect(true);
     LOG.debug("Leaving ApplyFilterAction.");
     return forward;
+  }
+  
+  private JSONObject prepareOptions(HttpServletRequest request) {
+    JSONObject jsOptions = new JSONObject();
+    Enumeration<String> names = request.getParameterNames();
+    while (names.hasMoreElements()) {
+      String name = names.nextElement();
+      String[] values = request.getParameterValues(name);
+      if (values.length > 1) {
+        JSONArray jsValues = new JSONArray();
+        for (String value : values) {
+          jsValues.put(value);
+        }
+        jsOptions.put(name, jsValues);
+      } else {
+        jsOptions.put(name, request.getParameter(name));
+      }
+    }
+    return jsOptions;
   }
 }
