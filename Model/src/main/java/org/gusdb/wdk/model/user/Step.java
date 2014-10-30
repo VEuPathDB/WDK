@@ -1062,4 +1062,8 @@ public class Step {
   public boolean getHasCompleteAnalyses() throws WdkModelException {
     return stepFactory.getWdkModel().getStepAnalysisFactory().hasCompleteAnalyses(this);
   }
+  
+  public void saveParams() throws WdkModelException {
+    stepFactory.saveStepParams(this);
+  }
 }

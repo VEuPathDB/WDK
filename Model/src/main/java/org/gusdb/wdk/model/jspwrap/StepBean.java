@@ -520,4 +520,7 @@ public class StepBean {
     step.removeFilterOption(filterName);
   }
 
+  public void saveParams() throws WdkModelException {
+    step.saveParams();
+  }
 }
