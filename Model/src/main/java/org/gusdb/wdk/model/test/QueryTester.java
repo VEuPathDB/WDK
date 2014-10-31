@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.test;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.cli.BasicParser;
@@ -43,7 +44,7 @@ public class QueryTester {
 
   private String showSql(Query query, Map<String, String> paramHash)
       throws WdkModelException, WdkUserException {
-    QueryInstance instance = query.makeInstance(user, paramHash, true, 0,
+    QueryInstance<?> instance = query.makeInstance(user, paramHash, true, 0,
         new LinkedHashMap<String, String>());
     if (instance instanceof SqlQueryInstance) {
       return ((SqlQueryInstance) instance).getUncachedSql();
@@ -52,7 +53,7 @@ public class QueryTester {
 
   private String showResultTable(Query query, Map<String, String> paramHash)
       throws WdkModelException, WdkUserException {
-    QueryInstance instance = query.makeInstance(user, paramHash, true, 0,
+    QueryInstance<?> instance = query.makeInstance(user, paramHash, true, 0,
         new LinkedHashMap<String, String>());
     ResultFactory resultFactory = wdkModel.getResultFactory();
     CacheFactory cacheFactory = resultFactory.getCacheFactory();
@@ -80,7 +81,7 @@ public class QueryTester {
     System.out.println("");
   }
 
-  static Map<String, String> parseParamArgs(String[] params,
+  static Map<String, String> parseParamArgs(User user, String[] params,
       boolean useDefaults, Query query) throws WdkModelException {
 
     Map<String, String> h = new LinkedHashMap<String, String>();
@@ -92,8 +93,9 @@ public class QueryTester {
     for (int i = 0; i < params.length; i += 2) {
       h.put(params[i], params[i + 1]);
     }
-    if (useDefaults && !query.getParamValuesSets().isEmpty()) {
-      ParamValuesSet pvs = query.getParamValuesSets().get(0);
+    List<ParamValuesSet> paramValuesSets = ParamValuesFactory.getParamValuesSets(user, query);
+    if (useDefaults && !paramValuesSets.isEmpty()) {
+      ParamValuesSet pvs = paramValuesSets.get(0);
       Map<String, String> map = pvs.getParamValues();
       for (String paramName : map.keySet()) {
         if (!h.containsKey(paramName)) {
@@ -173,7 +175,7 @@ public class QueryTester {
     if (showParams) {
       tester.displayParams(query);
     } else {
-      Map<String, String> rawValues = QueryTester.parseParamArgs(params,
+      Map<String, String> rawValues = QueryTester.parseParamArgs(tester.user, params,
           useDefaults, query);
       Map<String, String> stableValues = query.getStableValues(tester.user,
           rawValues);
@@ -187,7 +189,7 @@ public class QueryTester {
         String table = tester.showResultTable(query, stableValues);
         System.out.println(table);
       } else {
-        QueryInstance instance = query.makeInstance(tester.user, stableValues,
+        QueryInstance<?> instance = query.makeInstance(tester.user, stableValues,
             true, 0, new LinkedHashMap<String, String>());
         ResultList rs = instance.getResults();
         print(query, rs);

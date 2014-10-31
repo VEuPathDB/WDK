@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
+import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -110,7 +111,7 @@ public class UnitTestHelper {
 
     public static Step createNormalStep(User user) throws WdkModelException, WdkUserException {
         Question question = getNormalQuestion();
-        List<ParamValuesSet> paramValueSets = question.getQuery().getParamValuesSets();
+        List<ParamValuesSet> paramValueSets = ParamValuesFactory.getParamValuesSets(user, question.getQuery());
         ParamValuesSet paramValueSet = paramValueSets.get(random.nextInt(paramValueSets.size()));
         Map<String, String> params = paramValueSet.getParamValues();
         return user.createStep(question, params, (String) null, false, false, 0);

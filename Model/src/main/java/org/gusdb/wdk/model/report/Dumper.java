@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.cli.BasicParser;
@@ -20,6 +21,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -72,7 +74,7 @@ public class Dumper {
 
         // prepare parameters
         Map<String, String> params = parseListArgs("params", questionParams);
-        fillInParams(params, question);
+        fillInParams(user, params, question);
 
         // load config
         Map<String, String> config = parseListArgs("config", reporterConfig);
@@ -98,18 +100,19 @@ public class Dumper {
         }
     }
 
-    static void fillInParams(Map<String, String> params, Question question)
-            throws WdkModelException {
-        Query query = question.getQuery();
-        if (!query.getParamValuesSets().isEmpty()) {
-            ParamValuesSet pvs = query.getParamValuesSets().get(0);
-            Map<String, String> map = pvs.getParamValues();
-            for (String paramName : map.keySet()) {
-                if (!params.containsKey(paramName)) {
-                    params.put(paramName, map.get(paramName));
-                }
-            }
+    static void fillInParams(User user, Map<String, String> params, Question question)
+        throws WdkModelException {
+      Query query = question.getQuery();
+      List<ParamValuesSet> paramValuesSets = ParamValuesFactory.getParamValuesSets(user, query);
+      if (!paramValuesSets.isEmpty()) {
+        ParamValuesSet pvs = paramValuesSets.get(0);
+        Map<String, String> map = pvs.getParamValues();
+        for (String paramName : map.keySet()) {
+          if (!params.containsKey(paramName)) {
+            params.put(paramName, map.get(paramName));
+          }
         }
+      }
     }
 
     static void addOption(Options options, String argName, boolean hasArg,

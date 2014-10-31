@@ -126,26 +126,26 @@ public class SanityTester {
   public String getSummaryLine() {
     return _stats.getSummaryLine(_testFilter);
   }
-  
+
   public boolean isFailedOverall() {
     return _stats.isFailedOverall();
   }
 
   public static String getRerunLine(List<TestResult> results) {
     List<Integer> failedTestIds = new ArrayList<>();
-    for (int i = 0; i < results.size(); i++) {
-      if (!results.get(i).isPassed()) failedTestIds.add(i+1);
+    for (TestResult result : results) {
+      if (!result.isPassed()) failedTestIds.add(result.getIndex());
     }
     return "To re-run failures, use filter string '" +
         TestFilter.getFilterString(failedTestIds) + "'.";
   }
 
   public static boolean isTestable(OptionallyTestable testable) {
-    return !testable.getDoNotTest();
+    return true; //!testable.getDoNotTest();
   }
 
   public static boolean isTestable(Query query, boolean skipWebSvcQueries) {
-    return (!(skipWebSvcQueries && query instanceof ProcessQuery) &&
-            !query.getDoNotTest() && !query.getQuerySet().getDoNotTest());
+    return (isTestable(query) && isTestable(query.getQuerySet()) &&
+            !(skipWebSvcQueries && query instanceof ProcessQuery));
   }
 }

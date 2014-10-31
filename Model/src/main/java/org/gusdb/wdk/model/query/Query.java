@@ -42,7 +42,7 @@ import org.json.JSONObject;
  * </p>
  * 
  * <p>
- * Dependending on how many answerParams a query might have, a query can be called as a normal query (without
+ * Depending on how many answerParams a query might have, a query can be called as a normal query (without
  * any answerParam), or a combined query (with one or more answerParams). If a query has exactly one
  * answerParam, it is also called a transform query; in the transform query, the type of the answerParam can
  * be different from the type of the results the query returns. And there is another special kind of combined
@@ -132,7 +132,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   protected abstract void appendJSONContent(JSONObject jsQuery, boolean extra) throws JSONException;
 
-  public abstract QueryInstance makeInstance(User user, Map<String, String> values, boolean validate,
+  public abstract QueryInstance<? extends Query> makeInstance(User user, Map<String, String> values, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException;
 
   @Override
@@ -317,16 +317,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     paramValuesSets.add(paramValuesSet);
   }
 
-  public ParamValuesSet getDefaultParamValuesSet() throws WdkModelException {
-    ParamValuesSet paramValues = new ParamValuesSet();
-    for (Param param : getParams()) {
-      paramValues.put(param.getName(), param.getDefault());
-    }
-    return paramValues;
-  }
-
-  public List<ParamValuesSet> getParamValuesSets() throws WdkModelException {
-    updateParamValuesSetsWithDefaults();
+  public List<ParamValuesSet> getRawParamValuesSets() {
     return paramValuesSets;
   }
 
@@ -495,27 +486,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     }
 
     resolved = true;
-  }
-
-  public int getNumParamValuesSets() {
-    if (paramValuesSets.isEmpty()) return 1;
-    return paramValuesSets.size();
-  }
-
-  private void updateParamValuesSetsWithDefaults() throws WdkModelException {
-    ParamValuesSet querySetDefaults = querySet.getDefaultParamValuesSet();
-    if (paramValuesSets.isEmpty()) {
-      paramValuesSets.add(new ParamValuesSet());
-    }
-    for (ParamValuesSet paramValuesSet : paramValuesSets) {
-      paramValuesSet.updateWithDefaults(querySetDefaults);
-
-      for (Param param : getParams()) {
-        String paramName = param.getName();
-        String defaultValue = param.getDefault();
-        paramValuesSet.updateWithDefault(paramName, defaultValue);
-      }
-    }
   }
 
   /**

@@ -7,7 +7,7 @@ wdk.util.namespace("wdk", function(ns) {
 
   var question = {
     init: function(el) {
-      new wdk.views.QuestionView({ el: el });
+      new wdk.views.core.QuestionView({ el: el });
       wdk.onloadQuestion();
     }
   };

@@ -111,7 +111,7 @@ public class SqlQuery extends Query {
    * @see org.gusdb.wdk.model.query.Query#makeInstance()
    */
   @Override
-  public QueryInstance makeInstance(User user, Map<String, String> values,
+  public SqlQueryInstance makeInstance(User user, Map<String, String> values,
       boolean validate, int assignedWeight, Map<String, String> context)
       throws WdkModelException, WdkUserException {
     return new SqlQueryInstance(user, this, values, validate, assignedWeight,

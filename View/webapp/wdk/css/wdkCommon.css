@@ -297,7 +297,7 @@ img[data-assets-src][src] {
 }
 .wdk-feature-tooltip .dismiss-wrapper label {
   font-size: 75%;
-  margin-left: .5em;
+  margin-right: .5em;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -440,7 +440,7 @@ ul.menubar {
     width: 98%;
 }
 
-.menubar li {;
+.menubar li {
     float:left;
     padding:0.24em 0;
     margin:0;
@@ -827,7 +827,7 @@ a.redbutton {
    background-attachment: scroll;
    background-color: transparent;
    background-image: url(../images/redboxb.gif);
-   background-position: right top;   
+   background-position: right top;
    background-repeat: no-repeat;
 }
 
@@ -1917,9 +1917,6 @@ span.marker a:link, span.marker a:visited {
 .mycontent li { padding-bottom: 3px; }
 .mycontent h3 { margin: 15px 0px 0px 0px; padding: 10px; background-color: #EEEEEE; }
 
-
-//
-//
 
 #search-lookup_wrapper div.dataTables_scroll { display: none; }
 

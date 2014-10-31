@@ -44,7 +44,7 @@ public class ResultFactory {
     return cacheFactory;
   }
 
-  public String getCachedSql(QueryInstance queryInstance)
+  public String getCachedSql(QueryInstance<?> queryInstance)
       throws WdkModelException, WdkUserException {
     // get query info
     Query query = queryInstance.getQuery();
@@ -100,7 +100,7 @@ public class ResultFactory {
     return sql.toString();
   }
 
-  public ResultList getCachedResults(QueryInstance queryInstance)
+  public ResultList getCachedResults(QueryInstance<?> queryInstance)
       throws WdkModelException, WdkUserException {
     String sql = getCachedSql(queryInstance);
     // get the resultList
@@ -115,7 +115,7 @@ public class ResultFactory {
   }
   }
 
-  private int getInstanceId(QueryInfo queryInfo, QueryInstance instance)
+  private int getInstanceId(QueryInfo queryInfo, QueryInstance<?> instance)
       throws WdkModelException, WdkUserException {
     // get the query instance id; null if not exist
     String checksum = instance.getChecksum();
@@ -150,7 +150,7 @@ public class ResultFactory {
     }
   }
 
-  private int createCache(QueryInfo queryInfo, QueryInstance instance)
+  private int createCache(QueryInfo queryInfo, QueryInstance<?> instance)
       throws WdkModelException, SQLException, WdkUserException {
     DataSource dataSource = database.getDataSource();
     int instanceId = platform.getNextId(dataSource, null, CacheFactory.TABLE_INSTANCE);
@@ -261,7 +261,7 @@ public class ResultFactory {
     }
   }
 
-  private void createCacheInstance(QueryInfo queryInfo, QueryInstance instance,
+  private void createCacheInstance(QueryInfo queryInfo, QueryInstance<?> instance,
       int instanceId) throws WdkModelException, WdkUserException {
     StringBuffer sql = new StringBuffer("INSERT INTO ");
     sql.append(CacheFactory.TABLE_INSTANCE).append(" (");

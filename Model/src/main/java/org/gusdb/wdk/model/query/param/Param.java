@@ -74,7 +74,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   public abstract String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException;
 
-  protected abstract void applySuggection(ParamSuggestion suggest);
+  protected abstract void applySuggestion(ParamSuggestion suggest);
 
   /**
    * The input the method can be either raw data or dependent data
@@ -108,8 +108,6 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   protected boolean allowEmpty;
 
   protected ParamSet paramSet;
-
-  protected WdkModel wdkModel;
 
   private List<ParamConfiguration> noTranslations;
 
@@ -367,7 +365,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
         allowEmpty = suggest.isAllowEmpty();
         emptyValue = suggest.getEmptyValue();
 
-        applySuggection(suggest);
+        applySuggestion(suggest);
 
         hasSuggest = true;
 

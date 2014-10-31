@@ -21,6 +21,7 @@
 }
 .filter-param .ui-tabs {
   border: none;
+  background: transparent;
 }
 .filter-param .collapse {
   position: absolute;
@@ -34,9 +35,10 @@
   left: 50%;
   z-index: 1;
 }
-.filter-param .expanded .ui-tabs-panel {
+.filter-param .ui-tabs-panel {
   padding: 0;
   box-shadow: 1px 1px #DDD;
+  background-color: white;
 }
 .filter-view {
   position: relative;
@@ -80,12 +82,13 @@
   -o-transform: rotate(-90deg);
   transform: rotate(-90deg);
 }
-.field-list, .field-detail {
+.filters .field-list,
+.filters .field-detail {
   float: left;
   min-height: 25em;
   padding-top: 20px;
 }
-.field-list {
+.filters .field-list {
   width: 25%;
   max-height: 35em;
   overflow-y: auto;
@@ -101,9 +104,6 @@
 }
 .field-list > ul > li > a {
   margin-left: .8em;
-}
-.field-list input {
-  width: 90%;
 }
 .field-list h4 {
   cursor: pointer;
@@ -134,6 +134,12 @@
 .field-list ul li {
   margin: 0;
 }
+.field-list li a, .field-list li label {
+  font-weight: normal;
+}
+.field-list li label {
+  margin-left: .4em;
+}
 .field-list li a {
   display: block;
   padding: 5px 4px;
@@ -141,7 +147,6 @@
   border: 1px solid transparent;
   border-left: 2px solid transparent;
   text-decoration: none;
-  font-weight: normal;
 }
 .field-list li a:hover,
 .field-list li a:focus,
@@ -383,6 +388,13 @@
 }
 .filter-param .summary {
   margin-top: 4px;
+}
+.filter-results ul {
+  list-style: none;
+  padding-left: 1em;
+}
+.filter-results.field-list h4 {
+  margin-left: 0;
 }
 /*
 .filter-param .dataTables_wrapper {

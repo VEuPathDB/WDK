@@ -1261,6 +1261,10 @@
     </zeroOrMore>
   </define>
 
+
+  <!-- if displayName is empty ("") this column will be skipped by the jsp, but then no access to a recordpage -->
+  <!-- in the text element we may add any attribute defined in record.xml -->
+  <!--    we need to add display like we have for textAttributes -->
   <define name="primaryKeyAttribute">
     <element name="primaryKeyAttribute">
       <ref name="AttributeFieldContent" />
@@ -1282,12 +1286,15 @@
     </element>
   </define>
 
+  <!--  columnAttribute needs to be defined inside an attributeQueryRef -->
   <define name="columnAttribute">
     <element name="columnAttribute">
       <ref name="AttributeFieldContent" />
     </element>
   </define>
 
+  <!--  textAttribute can be defined outside an attributeQueryRef using macros representing other attributes -->
+  <!--  both textAttribute and columnAttribute can be used as columns in a question (summaryAttributes) -->
   <define name="textAttribute">
     <element name="textAttribute">
       <ref name="AttributeFieldContent" />

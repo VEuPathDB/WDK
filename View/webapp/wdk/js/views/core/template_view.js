@@ -1,7 +1,7 @@
-wdk.namespace('wdk.views', function(ns) {
+wdk.namespace('wdk.views.core', function(ns) {
   'use strict';
 
-  ns.TemplateView = wdk.views.View.extend({
+  ns.TemplateView = wdk.views.core.View.extend({
 
     /**
      * The name of the template to use. The name can refer to a file

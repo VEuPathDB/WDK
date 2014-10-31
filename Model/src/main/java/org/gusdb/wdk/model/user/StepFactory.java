@@ -1432,7 +1432,7 @@ public class StepFactory {
    * @throws WdkUserException
    */
   Strategy copyStrategy(Strategy strategy) throws WdkModelException, WdkUserException {
-    Step root = strategy.getLatestStep().deepClone();
+    Step root = strategy.getLatestStep();
     return copyStrategy(strategy, root, strategy.getName());
   }
 

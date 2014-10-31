@@ -9,7 +9,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
    *   - RangeFilterView
    *   - MembershipFilterView
    */
-  ns.FieldDetailView = wdk.views.View.extend({
+  ns.FieldDetailView = wdk.views.core.View.extend({
 
     // The active delegate view
     delegateView: null,
@@ -19,6 +19,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     initialize: function() {
       this.listenTo(this.controller.fields, 'change', this.changeField);
       this.listenTo(this.controller.fields, 'reset', this.renderEmpty);
+      this.render();
     },
 
     render: function(field) {

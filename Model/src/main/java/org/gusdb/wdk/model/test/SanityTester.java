@@ -113,7 +113,7 @@ public class SanityTester {
         if (query.getDoNotTest() || query.getQuerySet().getDoNotTest())
           continue;
         if (_skipWebSvcQueries && query instanceof ProcessQuery) continue;
-        for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
+        for (ParamValuesSet paramValuesSet : ParamValuesFactory.getParamValuesSets(_user, query)) {
           testQuestion(question, paramValuesSet);
         }
       }
@@ -234,7 +234,7 @@ public class SanityTester {
 
       for (Query query : querySet.getQueries()) {
         if (query.getDoNotTest()) continue;
-        for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
+        for (ParamValuesSet paramValuesSet : ParamValuesFactory.getParamValuesSets(_user, query)) {
           if (!queryType.equals(QueryType.ATTRIBUTE)) {
             minRows = paramValuesSet.getMinRows();
             maxRows = paramValuesSet.getMaxRows();
@@ -335,7 +335,7 @@ public class SanityTester {
 
     int count = 0;
 
-    QueryInstance instance = query.makeInstance(_user,
+    QueryInstance<?> instance = query.makeInstance(_user,
         paramValuesSet.getParamValues(), true, 0,
         new LinkedHashMap<String, String>());
     ResultList rl = null;

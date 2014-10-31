@@ -1,5 +1,5 @@
 describe('wdk.views.core', function() {
-  var View = wdk.views.View;
+  var View = wdk.views.core.View;
 
   describe('View', function() {
 

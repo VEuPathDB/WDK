@@ -86,6 +86,7 @@ public class SummaryTester {
       String modelName = cmdLine.getOptionValue("model");
       String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
       WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
+      User user = wdkModel.getSystemUser();
 
       QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
       Question question = questionSet.getQuestion(questionName);
@@ -93,7 +94,7 @@ public class SummaryTester {
 
       Map<String, String> paramValues = new LinkedHashMap<String, String>();
       if (haveParams) {
-        paramValues = QueryTester.parseParamArgs(params, useDefaults, query);
+        paramValues = QueryTester.parseParamArgs(user, params, useDefaults, query);
       }
 
       // get filter
@@ -106,7 +107,6 @@ public class SummaryTester {
               + filterName);
       }
 
-      User user = wdkModel.getSystemUser();
       // this is suspicious
       // Query query = question.getQuery();
       // query.setIsCacheable(new Boolean(true));
@@ -212,7 +212,7 @@ public class SummaryTester {
   private static String getLowLevelQuery(AnswerValue answerValue)
       throws WdkModelException, WdkUserException {
     // QueryInstance instance = answer.getAttributesQueryInstance();
-    QueryInstance instance = answerValue.getIdsQueryInstance();
+    QueryInstance<?> instance = answerValue.getIdsQueryInstance();
     String query = (instance instanceof SqlQueryInstance)
         ? ((SqlQueryInstance) instance).getUncachedSql() : instance.getSql();
     String newline = System.getProperty("line.separator");

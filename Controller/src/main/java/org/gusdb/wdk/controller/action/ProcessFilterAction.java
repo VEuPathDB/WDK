@@ -352,52 +352,54 @@ public class ProcessFilterAction extends ProcessQuestionAction {
       newStep.setCollapsedName("Copy of " + insertStrat.getName());
       newStep.update(false);
     }
-    else if (requestParams.hasQuestion) { // no: get question
-
-      // validate & parse params
-      Map<String, String> params = prepareParams(wdkUser, request, requestParams.qForm);
-
-      if (requestParams.isRevise) { // TODO need investigation of this code
-        /* StepBean oldStep = */ 
-        requestParams.strategy.getStepById(requestParams.reviseStepId);
-      }
-
-      if (!requestParams.hasQuestion) throw new WdkUserException(
-          "The required question name is not provided, cannot process operation.");
-      
-      QuestionBean wdkQuestion = wdkModel.getQuestion(requestParams.qFullName);
-      newStep = ShowSummaryAction.summaryPaging(request, wdkQuestion,
-          params, requestParams.filterName, false, requestParams.weight);
-
-      // We only set isTransform = true if we're running a new query &
-      // it's a transform If we're inserting a strategy, it has to be
-      // a boolean (given current operations, at least)
-      requestParams.isTransform = newStep.getIsTransform() || (newStep.isCombined() && !newStep.getIsBoolean());
-    }
     else {
-      // revise, but just change filter or weight.
-      logger.debug("change filter: " + requestParams.filterName);
-      // change the filter of an existing step, which can be a child
-      // step, or a boolean step
-      oldStep = requestParams.strategy.getStepById(requestParams.reviseStepId);
-      if (requestParams.hasFilter) {
-        newStep = oldStep.createStep(requestParams.filterName, oldStep.getAssignedWeight());
-      }
-      else if (requestParams.hasWeight) {
-        newStep = oldStep.createStep(oldStep.getFilterName(), requestParams.weight);
+      if (requestParams.hasQuestion) { // no: get question
+
+        // validate & parse params
+        Map<String, String> params = prepareParams(wdkUser, request, requestParams.qForm);
+
+        if (requestParams.isRevise) { // TODO need investigation of this code
+          oldStep = requestParams.strategy.getStepById(requestParams.reviseStepId);
+        }
+
+        if (!requestParams.hasQuestion) throw new WdkUserException(
+            "The required question name is not provided, cannot process operation.");
+
+        QuestionBean wdkQuestion = wdkModel.getQuestion(requestParams.qFullName);
+        newStep = ShowSummaryAction.summaryPaging(request, wdkQuestion,
+            params, requestParams.filterName, false, requestParams.weight);
+
+        // We only set isTransform = true if we're running a new query &
+        // it's a transform If we're inserting a strategy, it has to be
+        // a boolean (given current operations, at least)
+        requestParams.isTransform = newStep.getIsTransform() || (newStep.isCombined() && !newStep.getIsBoolean());
       }
       else {
-        newStep = oldStep.getChildStep();
+        // revise, but just change filter or weight.
+        logger.debug("change filter: " + requestParams.filterName);
+        // change the filter of an existing step, which can be a child
+        // step, or a boolean step
+        oldStep = requestParams.strategy.getStepById(requestParams.reviseStepId);
+        if (requestParams.hasFilter) {
+          newStep = oldStep.createStep(requestParams.filterName, oldStep.getAssignedWeight());
+        }
+        else if (requestParams.hasWeight) {
+          newStep = oldStep.createStep(oldStep.getFilterName(), requestParams.weight);
+        }
+        else {
+          newStep = oldStep.getChildStep();
+        }
+
+        // reset pager info in session
+        wdkUser.setViewResults(wdkUser.getViewStrategyId(), wdkUser.getViewStepId(), 0);
       }
-      
-      // reset pager info in session
-      wdkUser.setViewResults(wdkUser.getViewStrategyId(), wdkUser.getViewStepId(), 0);
+
+      // only have to do this when deepClone() is not used to create new step
+      if (oldStep != null) {
+        wdkModel.getModel().getStepAnalysisFactory().copyAnalysisInstances(oldStep.getStep(), newStep.getStep());
+      }
     }
-    
-    if (oldStep != null) {
-      wdkModel.getModel().getStepAnalysisFactory().copyAnalysisInstances(oldStep.getStep(), newStep.getStep());
-    }
-    
+
     return newStep;
   }
 

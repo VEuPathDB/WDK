@@ -1,7 +1,11 @@
 wdk.namespace('wdk.views.filter', function(ns) {
   'use strict';
 
-  var MemberView = wdk.views.View.extend({
+  // Row in table of available values
+  //
+  // Clicking anywhere on the row will toggle if the
+  // value is selected.
+  var MemberView = wdk.views.core.View.extend({
 
     events: {
       'click': 'toggleSelected',
@@ -15,14 +19,20 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     initialize: function(options) {
       this.options = options;
-      this.listenTo(this.model, 'change', this.render);
+      this.listenTo(this.model, 'change', this.update);
+      this.render();
     },
 
     render: function() {
       this.$el.html(this.template(this.model.attributes));
-      // this.$el.tooltip({ title: this.model.get('value'), placement: 'left', delay: 400 });
-      this.$el.toggleClass('selected', this.model.get('selected'));
+      this.update();
       return this;
+    },
+
+    update: function() {
+      var selected = this.model.get('selected');
+      this.$('input').prop('checked', selected);
+      this.$el.toggleClass('selected', selected);
     },
 
     toggleSelected: function() {
@@ -31,7 +41,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
   });
 
-  ns.MembershipFilterView = wdk.views.View.extend({
+  ns.MembershipFilterView = wdk.views.core.View.extend({
 
     events: {
       'click .read-more a'         : 'expandDescription',
@@ -48,7 +58,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
       this.filterService = filterService;
       this.memberViews = [];
       this.members = new Backbone.Collection();
-      wdk.views.View.apply(this, initArgs);
+      wdk.views.core.View.apply(this, initArgs);
     },
 
     initialize: function(options) {
@@ -102,8 +112,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
       var distribution = this.model.get('distribution');
       var counts = _.pluck(distribution, 'count');
 
-      var scale = _.max(counts) + 10;
       var size = counts.reduce(function(acc, count){ return acc + count; });
+      // var scale = _.max(counts) + 10;
+      var scale = size;
 
       this.$el.html(this.template({
         field: this.model.attributes,
