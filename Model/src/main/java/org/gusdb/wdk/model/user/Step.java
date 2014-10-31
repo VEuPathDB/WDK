@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.wdk.events.WdkEvents.StepCopiedEvent;
+import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
