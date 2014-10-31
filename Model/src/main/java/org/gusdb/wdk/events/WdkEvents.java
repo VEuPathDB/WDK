@@ -10,7 +10,6 @@ public class WdkEvents {
   public static class StepRevisedEvent extends Event {
     private final Step _revisedStep;
     public StepRevisedEvent(Step revisedStep) {
-      super(StepRevisedEvent.class.getName());
       _revisedStep = revisedStep;
     }
     public Step getRevisedStep() {
@@ -21,7 +20,6 @@ public class WdkEvents {
   public static class StepCopiedEvent extends Event {
     private final Step _fromStep, _toStep;
     public StepCopiedEvent(Step fromStep, Step toStep) {
-      super(StepCopiedEvent.class.getName());
       _fromStep = fromStep;
       _toStep = toStep;
     }
