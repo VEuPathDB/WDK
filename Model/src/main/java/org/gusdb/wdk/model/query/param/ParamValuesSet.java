@@ -22,6 +22,7 @@ public class ParamValuesSet extends WdkModelBase {
   private Integer minRows;
   private Integer maxRows;
   private Map<String, String> paramValues = new LinkedHashMap<String, String>();
+  private Map<String, SelectMode> paramSelectModes = new LinkedHashMap<String, SelectMode>();
 
   public ParamValuesSet() { }
 
@@ -30,6 +31,7 @@ public class ParamValuesSet extends WdkModelBase {
     minRows = valuesSet.minRows;
     maxRows = valuesSet.maxRows;
     paramValues = new LinkedHashMap<>(valuesSet.paramValues);
+    paramSelectModes = new LinkedHashMap<>(valuesSet.paramSelectModes);
   }
 
   public void setName(String name) {
@@ -56,12 +58,21 @@ public class ParamValuesSet extends WdkModelBase {
     return maxRows == null ? MAXROWS : maxRows;
   }
 
-  public void put(String name, String value) {
-    paramValues.put(name, value);
+  public void addParamValue(ParamValue paramValue) {
+    if (paramValue.getValue() == null) {
+      paramSelectModes.put(paramValue.getName(), paramValue.getSelectModeEnum());
+    }
+    else {
+      paramValues.put(paramValue.getName(), paramValue.getValue());
+    }
   }
 
   public Map<String, String> getParamValues() {
     return paramValues;
+  }
+
+  public Map<String, SelectMode> getParamSelectModes() {
+    return paramSelectModes;
   }
 
   public String[] getParamNames() {
@@ -77,6 +88,9 @@ public class ParamValuesSet extends WdkModelBase {
     for (Entry<String, String> entry : defaults.getParamValues().entrySet()) {
       updateWithDefault(entry.getKey(), entry.getValue());
     }
+    for (Entry<String, SelectMode> entry : defaults.paramSelectModes.entrySet()) {
+      updateWithDefaultSelectMode(entry.getKey(), entry.getValue());
+    }
   }
 
   public void updateWithDefault(String paramName, String defaultValue) {
@@ -85,9 +99,10 @@ public class ParamValuesSet extends WdkModelBase {
     }
   }
 
-  @Override
-  public String toString() {
-    return paramValues.toString();
+  private void updateWithDefaultSelectMode(String paramName, SelectMode defaultSelectMode) {
+    if (!paramSelectModes.containsKey(paramName) && defaultSelectMode != null) {
+      paramSelectModes.put(paramName, defaultSelectMode);
+    }
   }
 
   public String getCmdLineString() {
