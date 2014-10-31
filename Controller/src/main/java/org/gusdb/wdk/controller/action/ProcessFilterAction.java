@@ -11,9 +11,11 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.form.QuestionForm;
+import org.gusdb.wdk.events.WdkEvents.StepCopiedEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -396,7 +398,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
       // only have to do this when deepClone() is not used to create new step
       if (oldStep != null) {
-        wdkModel.getModel().getStepAnalysisFactory().copyAnalysisInstances(oldStep.getStep(), newStep.getStep());
+        Events.triggerAndWait(new StepCopiedEvent(oldStep.getStep(), newStep.getStep()),
+            new WdkModelException("Unable to execute all operations subsequent to step copy."));
       }
     }
 

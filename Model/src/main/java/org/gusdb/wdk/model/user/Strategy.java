@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.events.Events;
+import org.gusdb.wdk.events.WdkEvents.StepCopiedEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -372,9 +374,9 @@ public class Strategy {
       newStep.setCollapsible(targetStep.isCollapsible());
       newStep.setCollapsedName(targetStep.getCollapsedName());
       newStep.update(false);
-      
-      // must copy all analysis instance configurations from target step to new step
-      stepFactory.getWdkModel().getStepAnalysisFactory().copyAnalysisInstances(targetStep, newStep);
+
+      Events.triggerAndWait(new StepCopiedEvent(targetStep, newStep),
+          new WdkModelException("Unable to execute all operations subsequent to step copy."));
 
       newStepId = newStep.getStepId();
       targetStepId = targetStep.getStepId();
