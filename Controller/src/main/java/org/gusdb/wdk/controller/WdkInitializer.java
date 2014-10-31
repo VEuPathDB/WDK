@@ -5,7 +5,6 @@ import java.io.IOException;
 import javax.servlet.ServletContext;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.controller.wizard.Wizard;
 import org.gusdb.wdk.model.Utilities;
@@ -19,9 +18,6 @@ public class WdkInitializer {
   private static final Logger logger = Logger.getLogger(ApplicationInitListener.class);
 
   public static void initializeWdk(ServletContext servletContext) {
-
-    // start up events framework
-    Events.init();
 
     logger.info("Initializing WDK web application");
 
@@ -46,9 +42,6 @@ public class WdkInitializer {
         logger.info("Releasing resources for WDK Model.");
         wdkModel.getModel().releaseResources();
       }
-      
-      // shut down events
-      Events.shutDown();
     }
     catch (Exception ex) {
       throw new RuntimeException(ex);

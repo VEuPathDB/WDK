@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.runtime.InstanceManager;
 import org.gusdb.fgputil.runtime.Manageable;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
@@ -171,6 +172,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   
   @Override
   public WdkModel getInstance(String projectId, String gusHome) throws WdkModelException {
+    Events.init();
     StackTraceElement[] stackTrace = new Throwable().getStackTrace();
     int index = stackTrace.length - 1;
     String tip = "";
@@ -514,6 +516,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     releaseDb(appDb);
     releaseDb(userDb);
     ThreadMonitor.shutDown(_myThreadMonitor);
+    Events.shutDown();
   }
 
   private static void releaseDb(DatabaseInstance db) {
