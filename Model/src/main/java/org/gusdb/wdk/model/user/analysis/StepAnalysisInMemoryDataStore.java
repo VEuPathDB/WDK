@@ -121,6 +121,17 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   }
 
   @Override
+  public void setInvalidStepReason(int analysisId, String invalidStepReason) throws WdkModelException {
+    synchronized(ANALYSIS_INFO_MAP) {
+      if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
+        ANALYSIS_INFO_MAP.get(analysisId).invalidStepReason = invalidStepReason;
+        return;
+      }
+      throw new WdkModelException("No analysis exists with id: " + analysisId);
+    }
+  }
+
+  @Override
   public void updateContext(int analysisId, String contextHash, String serializedContext) throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {

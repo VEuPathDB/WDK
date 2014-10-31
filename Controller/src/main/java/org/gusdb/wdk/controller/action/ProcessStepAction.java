@@ -12,11 +12,13 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.WdkOutOfSyncException;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.controller.form.WizardForm;
+import org.gusdb.wdk.events.WdkEvents.StepCopiedEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -198,8 +200,8 @@ public class ProcessStepAction extends Action {
       newStep = step.createStep(filterName, weight);
     }
 
-    // must copy all analysis instance configurations from old step to new step
-    wdkModel.getModel().getStepAnalysisFactory().copyAnalysisInstances(step.getStep(), newStep.getStep());
+    Events.triggerAndWait(new StepCopiedEvent(step.getStep(), newStep.getStep()),
+        new WdkModelException("Unable to execute all operations subsequent to step copy."));
     
     // set custom name to the new step
     if (customName != null) {

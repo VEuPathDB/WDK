@@ -59,6 +59,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private String UPDATE_NAME_SQL;
   private String UPDATE_NEW_FLAG_SQL;
   private String UPDATE_HAS_PARAMS_FLAG_SQL;
+  private String UPDATE_INVALID_STEP_REASON;
   private String UPDATE_CONTEXT_SQL;
   private String DELETE_ANALYSIS_SQL;
   private String GET_ANALYSIS_IDS_BY_STEP_SQL;
@@ -154,6 +155,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         "UPDATE " + table + " SET IS_NEW = ? WHERE ANALYSIS_ID = ?";
     UPDATE_HAS_PARAMS_FLAG_SQL =
         "UPDATE " + table + " SET HAS_PARAMS = ? WHERE ANALYSIS_ID = ?";
+    UPDATE_INVALID_STEP_REASON =
+        "UPDATE " + table + " SET INVALID_STEP_REASON = ? WHERE ANALYSIS_ID = ?";
     UPDATE_CONTEXT_SQL =
         "UPDATE " + table + " SET CONTEXT_HASH = ?, CONTEXT = ? WHERE ANALYSIS_ID = ?";
     DELETE_ANALYSIS_SQL =
@@ -290,6 +293,20 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     try {
       int changed = new SQLRunner(_userDs, UPDATE_HAS_PARAMS_FLAG_SQL).executeUpdate(
           new Object[] { hasParams, analysisId }, new Integer[] { _userBoolType, Types.INTEGER });
+      if (changed == 0) {
+        throw new WdkModelException("Could not find analysis with id " + analysisId);
+      }
+    }
+    catch (SQLRunnerException e) {
+      throw new WdkModelException("Unable to complete operation.", e);
+    }
+  }
+
+  @Override
+  public void setInvalidStepReason(int analysisId, String invalidStepReason) throws WdkModelException {
+    try {
+      int changed = new SQLRunner(_userDs, UPDATE_INVALID_STEP_REASON).executeUpdate(
+          new Object[] { invalidStepReason, analysisId }, new Integer[] { Types.VARCHAR, Types.INTEGER });
       if (changed == 0) {
         throw new WdkModelException("Could not find analysis with id " + analysisId);
       }
