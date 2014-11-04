@@ -21,7 +21,7 @@ public class ListColumnFilter extends ColumnFilter {
 
   private static final String COLUMN_COUNT = "counts";
   private static final String KEY_VALUES = "values";
-  
+
   public static ColumnFilterDefinition getDefinition() {
     ColumnFilterDefinition definition = new ColumnFilterDefinition();
     definition.setName(FILTER_NAME);
@@ -38,8 +38,8 @@ public class ListColumnFilter extends ColumnFilter {
   }
 
   @Override
-  public FilterSummary getSummary(AnswerValue answer, String idSql)
-      throws WdkModelException, WdkUserException {
+  public FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException,
+      WdkUserException {
     String attributeSql = getAttributeSql(answer, idSql);
     String columnName = attribute.getName();
 
@@ -75,13 +75,22 @@ public class ListColumnFilter extends ColumnFilter {
     StringBuilder sql = new StringBuilder("SELECT * ");
     sql.append(" FROM (" + attributeSql + ") ");
     sql.append(" WHERE " + columnName + " IN (");
-    
-    JSONArray jsValues = jsValue.getJSONArray(KEY_VALUES);
-    for (int i = 0; i < jsValues.length(); i++) {
-      if (i > 0) sql.append(", ");
-      
-      String value = jsValues.getString(i);
-      // escape quotes
+
+    Object objValues = jsValue.get(KEY_VALUES);
+    if (objValues instanceof JSONArray) { // multi values
+      JSONArray jsValues = (JSONArray) objValues;
+      for (int i = 0; i < jsValues.length(); i++) {
+        if (i > 0)
+          sql.append(", ");
+
+        String value = jsValues.getString(i);
+        // escape quotes
+        value = "'" + value.replaceAll("'", "''") + "'";
+        sql.append(value);
+      }
+    }
+    else { // single value
+      String value = objValues.toString();
       value = "'" + value.replaceAll("'", "''") + "'";
       sql.append(value);
     }
