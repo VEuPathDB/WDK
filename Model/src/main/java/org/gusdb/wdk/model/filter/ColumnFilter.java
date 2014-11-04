@@ -22,6 +22,14 @@ public abstract class ColumnFilter extends AbstractFilter {
     String queryName = attribute.getColumn().getQuery().getFullName();
     WdkModel wdkModel = attribute.getWdkModel();
     Query query = (Query) wdkModel.resolveReference(queryName);
-    return answer.getAttributeSql(query);
+    String attributeSql = answer.getAttributeSql(query);
+    String[] pkColumns = answer.getQuestion().getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
+    StringBuilder sql = new StringBuilder("SELECT aq.* ");
+    sql.append(" FROM (" + idSql + ") idq, (" + attributeSql + ") aq ");
+    for (int i = 0; i < pkColumns.length; i++) {
+      sql.append((i == 0) ? " WHERE " : " AND ");
+      sql.append(" idq." + pkColumns[i] + " = aq." + pkColumns[i]);
+    }
+    return sql.toString();
   }
 }
