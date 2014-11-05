@@ -16,10 +16,10 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionServlet;
-import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.actionutil.QuestionRequestParams;
+import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -78,13 +78,13 @@ public class ShowQuestionAction extends Action {
     String customViewFile3 = baseFilePath + File.separator + "question.form.jsp";
 
     String fileToInclude = null;
-    if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
+    if (WdkAction.resourceExists(customViewFile1, svltCtx)) {
       fileToInclude = customViewFile1;
     }
-    else if (ApplicationInitListener.resourceExists(customViewFile2, svltCtx)) {
+    else if (WdkAction.resourceExists(customViewFile2, svltCtx)) {
       fileToInclude = customViewFile2;
     }
-    else if (ApplicationInitListener.resourceExists(customViewFile3, svltCtx)) {
+    else if (WdkAction.resourceExists(customViewFile3, svltCtx)) {
       fileToInclude = customViewFile3;
     }
 

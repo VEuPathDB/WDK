@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -44,7 +44,7 @@ public class ShowQuestionSetsFlatAction extends ShowQuestionSetsAction {
                 + CConstants.WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE;
 
         ActionForward forward = null;
-        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+        if (WdkAction.resourceExists(customViewFile, svltCtx)) {
             forward = new ActionForward(customViewFile);
         } else {
             forward = mapping.findForward(CConstants.SHOW_QUESTIONSETSFLAT_MAPKEY);

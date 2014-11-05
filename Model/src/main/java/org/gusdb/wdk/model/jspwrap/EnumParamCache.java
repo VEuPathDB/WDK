@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
+import org.gusdb.wdk.model.query.param.SelectMode;
 
 public class EnumParamCache {
 	
@@ -34,6 +35,25 @@ public class EnumParamCache {
 	public void setDefaultValue(String defaultValue) {
 		_defaultValue = defaultValue;
 	}
+
+	/**
+	 * Determines and returns the sanity default for this param in the
+	 * following way: if sanitySelectMode is not null, use it to choose
+	 * params; if it is, use default (i.e. however param normally gets default)
+	 * 
+	 * @param sanitySelectMode select mode form model (ParamValuesSet)
+	 * @return default value for this param, based on cached vocab values
+	 */
+	public String getSanityDefaultValue(SelectMode sanitySelectMode) {
+	  if (sanitySelectMode != null) {
+	    return AbstractEnumParam.getDefaultWithSelectMode(
+	        getTerms(), sanitySelectMode, _source.getMultiPick(),
+	        getTermTreeListRef().isEmpty() ? null : getTermTreeListRef().get(0));
+	  }
+	  String defaultVal;
+	  return (((defaultVal = _source.getSanityDefault()) != null) ?
+	    defaultVal : getDefaultValue());
+	  }
 
 	public void addTermValues(String term, String internalVal, String displayVal, String parentTerm) {
 		if (internalVal == null || displayVal == null /*|| parentTerm == null*/ ) {

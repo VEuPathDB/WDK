@@ -13,8 +13,8 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -40,7 +40,7 @@ public class ShowQuestionSetsAction extends Action {
                 + CConstants.WDK_CUSTOM_QUESTIONSETS_PAGE;
 
         ActionForward forward = null;
-        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+        if (WdkAction.resourceExists(customViewFile, svltCtx)) {
             forward = new ActionForward(customViewFile);
         } else {
             forward = mapping.findForward(CConstants.SHOW_QUESTIONSETS_MAPKEY);
