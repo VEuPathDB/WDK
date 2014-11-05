@@ -8,6 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.events.Events;
+import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -755,14 +757,10 @@ public class Step {
     step.customName = customName;
     step.collapsible = collapsible;
     step.update(false);
-    
-    try {
-      stepFactory.getWdkModel().getStepAnalysisFactory().copyAnalysisInstances(this, step);
-    }
-    catch (WdkUserException e) {
-      // means copied answer is no longer valid for this type of analysis; this should probably not happen
-      throw new WdkModelException("Cannot copy analysis instances during step copy", e);
-    }
+
+    Events.triggerAndWait(new StepCopiedEvent(this, step),
+        new WdkModelException("Unable to execute all operations subsequent to step copy."));
+
     return step;
   }
 

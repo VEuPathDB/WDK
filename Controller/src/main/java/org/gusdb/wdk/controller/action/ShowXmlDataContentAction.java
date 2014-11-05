@@ -10,9 +10,9 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.wdk.controller.actionutil.ActionUtility;
-import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.jspwrap.XmlAnswerBean;
 import org.gusdb.wdk.model.jspwrap.XmlQuestionBean;
@@ -69,9 +69,9 @@ public class ShowXmlDataContentAction extends Action {
     String customViewFile2 = customViewDir + File.separator
         + xmlAnswer.getRecordClass().getFullName() + ".jsp";
     ActionForward forward = null;
-    if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
+    if (WdkAction.resourceExists(customViewFile1, svltCtx)) {
       forward = new ActionForward(customViewFile1);
-    } else if (ApplicationInitListener.resourceExists(customViewFile2, svltCtx)) {
+    } else if (WdkAction.resourceExists(customViewFile2, svltCtx)) {
       forward = new ActionForward(customViewFile2);
     } else {
       forward = new ActionForward(defaultViewFile);
