@@ -79,6 +79,9 @@ public class ShowSummaryViewAction extends Action {
             }
         }
 
+        AnswerValueBean answer = step.getAnswerValue();
+        answer.getRecords();
+
         logger.debug("summary view: " + view.getName());
         request.setAttribute(ATTR_VIEW, view);
 

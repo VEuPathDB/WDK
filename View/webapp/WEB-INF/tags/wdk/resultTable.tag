@@ -16,16 +16,17 @@
   <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
   <c:set var="recHasBasket" value="${wdkAnswer.question.recordClass.useBasket}" />
   <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
-<!--
   <c:catch var="answerValueRecords_exception">
     <c:set var="answerRecords" value="${wdkAnswer.records}" />
   </c:catch>
--->
   <c:set var="wdkView" value="${requestScope.wdkView}" />
 
   <c:set var="displayName" value="${step.recordClass.displayName}"/>
 
   <c:set var="isBasket" value="${fn:contains(step.questionName, 'ByRealtimeBasket')}"/>
+
+  <div>size=${wdkAnswer.resultSize}</div>
+  <pre>${wdkAnswer.idSql}</pre>
 
   <c:choose>
     <c:when test='${answerValueRecords_exception ne null and isBasket}'>

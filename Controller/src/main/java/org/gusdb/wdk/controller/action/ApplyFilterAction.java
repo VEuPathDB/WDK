@@ -47,15 +47,24 @@ public class ApplyFilterAction extends Action {
       AnswerValueBean answer = step.getAnswerValue();
       QuestionBean question = answer.getQuestion();
       Filter filter = question.getFilter(filterName);
+
+      LOG.debug("Got filter: " + filter.getKey() + ", options=" + options);
+
       if (filter == null)
         throw new WdkUserException("Filter \"" + filterName + "\" cannot be found in question: " +
             question.getFullName());
       step.addFilterOption(filter.getKey(), options);
+      step.saveParams();
+
+      LOG.debug("Step param saved.");
 
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
+
+      LOG.debug("Foward to " + CConstants.SHOW_APPLICATION_MAPKEY + ", " + showStrategy);
+
       StringBuffer url = new StringBuffer(showStrategy.getPath());
-      String state = request.getParameter(CConstants.WDK_STATE_KEY);
-      url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+      // String state = request.getParameter(CConstants.WDK_STATE_KEY);
+      // url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
 
       ActionForward forward = new ActionForward(url.toString());
       forward.setRedirect(true);
@@ -64,6 +73,7 @@ public class ApplyFilterAction extends Action {
     }
     catch (Exception ex) {
       LOG.error(ex.getMessage(), ex);
+      ex.printStackTrace();
       throw ex;
     }
   }
@@ -73,6 +83,8 @@ public class ApplyFilterAction extends Action {
     Enumeration<String> names = request.getParameterNames();
     while (names.hasMoreElements()) {
       String name = names.nextElement();
+      if (name.equals(PARAM_FILTER) || name.equals(PARAM_STEP))
+        continue;
       String[] values = request.getParameterValues(name);
       if (values.length > 1) {
         JSONArray jsValues = new JSONArray();

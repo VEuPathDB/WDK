@@ -293,7 +293,7 @@ public class StepFactory {
     try {
       JSONObject jsContent = getParamContent(dependentValues);
       if (filterOptions != null)
-        jsContent.put(KEY_FILTERS, filterOptions.getJSON().toString());
+        jsContent.put(KEY_FILTERS, filterOptions.getJSON());
 
       psInsertStep = SqlUtils.getPreparedStatement(dataSource, sqlInsertStep.toString());
       psInsertStep.setInt(1, stepId);
@@ -1635,7 +1635,7 @@ public class StepFactory {
     JSONObject jsContent = getParamContent(step.getParamValues());
     FilterOptionList filterOptions = step.getFilterOptions();
     if (filterOptions != null)
-      jsContent.put(KEY_FILTERS, filterOptions.getJSON().toString());
+      jsContent.put(KEY_FILTERS, filterOptions.getJSON());
 
     PreparedStatement psUpdate = null;
     try {

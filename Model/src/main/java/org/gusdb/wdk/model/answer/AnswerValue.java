@@ -584,8 +584,8 @@ public class AnswerValue {
     for (Column column : attributeQuery.getColumns()) {
       logger.trace("column: '" + column.getName() + "'");
     }
-    if (attributeQuery instanceof SqlQuery)
-      logger.debug("SQL: \n" + ((SqlQuery) attributeQuery).getSql());
+    // if (attributeQuery instanceof SqlQuery)
+    //   logger.debug("SQL: \n" + ((SqlQuery) attributeQuery).getSql());
 
     String sql = getPagedAttributeSql(attributeQuery);
     int count = 0;
@@ -906,6 +906,7 @@ public class AnswerValue {
   }
 
   public String getIdSql(String excludeFilter) throws WdkModelException, WdkUserException {
+    try {
     String innerSql = idsQueryInstance.getSql();
 
     // add comments to id sql
@@ -930,9 +931,14 @@ public class AnswerValue {
 
     innerSql = "(" + innerSql + ")";
 
-    logger.debug("id sql constructed.");
+    logger.debug("id sql constructed:\n" + innerSql);
 
     return innerSql;
+    } catch (WdkModelException | WdkUserException ex) {
+      logger.error(ex.getMessage(), ex);
+      ex.printStackTrace();
+      throw ex;
+    }
   }
 
   private void prepareSortingSqls(Map<String, String> sqls, Collection<String> orders)
@@ -1014,6 +1020,7 @@ public class AnswerValue {
     logger.debug("Initializing paged records......");
     this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
+    try {
     String sql = getPagedIdSql();
     WdkModel wdkModel = question.getWdkModel();
     DatabaseInstance platform = wdkModel.getAppDb();
@@ -1066,6 +1073,11 @@ public class AnswerValue {
           pageRecordInstances.size() + " records\n" +
           "Check that the ID query returns no nulls or duplicates, " + "and that the attribute-query join " +
           "does not change the row count.");
+    }
+    } catch (WdkModelException | WdkUserException ex) {
+      logger.error(ex.getMessage(), ex);
+      ex.printStackTrace();
+      throw ex;
     }
 
     logger.debug("Paged records initialized.");
@@ -1374,6 +1386,7 @@ public class AnswerValue {
 
   public void setFilterOptions(FilterOptionList filterOptions) {
     this.filterOptions = filterOptions;
+    reset();
   }
 
   public FilterOptionList getFilterOptions() {

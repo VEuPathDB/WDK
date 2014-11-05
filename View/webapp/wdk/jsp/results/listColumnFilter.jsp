@@ -14,7 +14,7 @@
   </div>
   <c:forEach items="${summary.counts}" var="item">
     <div class="item-count">
-      <input type="checkbox" value="${item.key}" />
+      <input name="values" type="checkbox" value="${item.key}" />
       <span class="item">${item.key}</span>
       <span class="count">(${item.value})</span>
     </div>

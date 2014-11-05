@@ -210,7 +210,12 @@ public class AnswerValueBean {
      * @throws WdkUserException 
      */
     public Iterator<RecordBean> getRecords() throws WdkModelException, WdkUserException {
+      try {
     	return new RecordBeanList(answerValue.getRecordInstances());
+      } catch (WdkModelException | WdkUserException ex) {
+        logger.error(ex.getMessage(), ex);
+        throw ex;
+      }
     }
 
     public void setDownloadConfigMap(Map<?, ?> downloadConfigMap) {
@@ -488,5 +493,7 @@ public class AnswerValueBean {
       return answerValue.getFilterSummary(filterName);
     }
     
-    
+    public String getIdSql() throws WdkModelException, WdkUserException {
+      return answerValue.getIdSql();
+    }    
 }
