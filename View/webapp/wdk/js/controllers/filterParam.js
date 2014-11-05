@@ -79,6 +79,7 @@ wdk.namespace('wdk.controllers', function(ns) {
       });
 
       this.listenTo(this.filterService, 'change:filteredData', this.updateValue);
+      this.listenTo(this.filterService.filters, 'add remove', this.updateValue);
       this.listenTo(this.filterService, 'change:filteredData', this._setSelectedFieldDistribution);
 
       // load initial metadata
@@ -205,7 +206,7 @@ wdk.namespace('wdk.controllers', function(ns) {
     // Trigger events with selected values.
     // value - serialization of param
     // selectedData - just the values selected
-    updateValue: function() {
+    updateValue: _.debounce(function() {
       var data = this.getSelectedData();
       var value = {
         values: _.pluck(data, 'term'),
@@ -215,7 +216,7 @@ wdk.namespace('wdk.controllers', function(ns) {
       this.trigger('change:value', this, value);
       this.trigger('change:selectedData', this, data);
       return this;
-    },
+    }, 200),
 
     _setSelectedFieldDistribution: function() {
       var field = this.selectedField;
