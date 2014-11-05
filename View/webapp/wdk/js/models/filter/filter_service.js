@@ -25,10 +25,11 @@ wdk.namespace('wdk.models.filter', function(ns) {
       metadata: []
     },
 
-    initialize: function() {
+    initialize: function(options) {
       // track which filters are being applied
       this.filterChangeSet = [];
       this.filters = new Filters();
+      this.set('filteredData', options.data);
 
       this.listenTo(this.filters, 'add remove', function(m) { this.filterChangeSet.push(m); });
       this.listenTo(this.filters, 'add remove', _.debounce(this.applyFilters, 100));
@@ -115,9 +116,10 @@ wdk.namespace('wdk.models.filter', function(ns) {
         }, this);
 
       // Filter data by applying each predicate above to each data item.
-      return filters.length === 0
-        ? []
-        : _.filter(this.get('data'), passesAll(predicates));
+      // return filters.length === 0
+      //   ? []
+      //   : _.filter(this.get('data'), passesAll(predicates));
+      return _.filter(this.get('data'), passesAll(predicates));
 
       // if (filters.length) {
       //   data = filters.reduce(function(data, filter) {
