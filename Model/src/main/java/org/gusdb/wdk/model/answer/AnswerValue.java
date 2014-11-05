@@ -36,7 +36,6 @@ import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
@@ -266,16 +265,19 @@ public class AnswerValue {
   }
 
   public int getResultSize() throws WdkModelException, WdkUserException {
-    logger.debug("getting result size: cache=" + resultSize + ", isCached=" + idsQueryInstance.isCached());
     if (resultSize == null || !idsQueryInstance.isCached()) {
-      if (filter == null) {
-        resultSize = idsQueryInstance.getResultSize();
+      String idSql = getIdSql();
+      DataSource dataSource = question.getWdkModel().getAppDb().getDataSource();
+      try {
+        Object count = SqlUtils.executeScalar(dataSource, "SELECT count(*) FROM (" + idSql + ")",
+            question.getFullName() + "__count");
+        resultSize = (Integer) count;
       }
-      else {
-        resultSize = getFilterSize(filter.getName());
-        resultSizesByFilter.put(filter.getName(), resultSize);
+      catch (SQLException ex) {
+        throw new WdkModelException(ex);
       }
     }
+    logger.debug("getting result size: cache=" + resultSize + ", isCached=" + idsQueryInstance.isCached());
     return resultSize;
   }
 
@@ -585,7 +587,7 @@ public class AnswerValue {
       logger.trace("column: '" + column.getName() + "'");
     }
     // if (attributeQuery instanceof SqlQuery)
-    //   logger.debug("SQL: \n" + ((SqlQuery) attributeQuery).getSql());
+    // logger.debug("SQL: \n" + ((SqlQuery) attributeQuery).getSql());
 
     String sql = getPagedAttributeSql(attributeQuery);
     int count = 0;
@@ -596,12 +598,13 @@ public class AnswerValue {
 
     ResultList resultList = null;
     try {
-      resultList = new SqlResultList(SqlUtils.executeQuery(dataSource, sql, attributeQuery.getFullName() + "__attr-paged"));
-  
+      resultList = new SqlResultList(SqlUtils.executeQuery(dataSource, sql, attributeQuery.getFullName() +
+          "__attr-paged"));
+
       // fill in the column attributes
       PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
       Map<String, AttributeField> fields = question.getAttributeFieldMap();
-      
+
       while (resultList.next()) {
         // get primary key
         Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
@@ -610,7 +613,7 @@ public class AnswerValue {
         }
         PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(pkField, pkValues);
         RecordInstance record = pageRecordInstances.get(primaryKey);
-  
+
         if (record == null) {
           StringBuffer error = new StringBuffer();
           error.append("Paged attribute query [");
@@ -625,7 +628,7 @@ public class AnswerValue {
           error.append("\n").append("Paged ID SQL:\n").append(getPagedIdSql());
           throw new WdkModelException(error.toString());
         }
-  
+
         // fill in the column attributes
         for (String columnName : attributeQuery.getColumnMap().keySet()) {
           AttributeField field = fields.get(columnName);
@@ -643,7 +646,8 @@ public class AnswerValue {
       throw new WdkModelException(e);
     }
     finally {
-      if (resultList != null) resultList.close();
+      if (resultList != null)
+        resultList.close();
     }
 
     if (count != pageRecordInstances.size()) {
@@ -907,34 +911,35 @@ public class AnswerValue {
 
   public String getIdSql(String excludeFilter) throws WdkModelException, WdkUserException {
     try {
-    String innerSql = idsQueryInstance.getSql();
+      String innerSql = idsQueryInstance.getSql();
 
-    // add comments to id sql
-    innerSql = " /* the ID query */" + innerSql;
+      // add comments to id sql
+      innerSql = " /* the ID query */" + innerSql;
 
-    int assignedWeight = idsQueryInstance.getAssignedWeight();
-    // apply filter
-    if (filter != null) {
-      innerSql = filter.applyFilter(user, innerSql, assignedWeight);
-      innerSql = " /* filter applied on id query */ " + innerSql;
-    }
+      int assignedWeight = idsQueryInstance.getAssignedWeight();
+      // apply filter
+      if (filter != null) {
+        innerSql = filter.applyFilter(user, innerSql, assignedWeight);
+        innerSql = " /* filter applied on id query */ " + innerSql;
+      }
 
-    // apply new filters
-    if (filterOptions != null) {
-      for (FilterOption filterOption : filterOptions.getFilterOptions().values()) {
-        if (excludeFilter == null || !filterOption.getName().equals(excludeFilter)) {
-          Filter filter = question.getFilter(filterOption.getName());
-          innerSql = filter.getSql(this, innerSql, filterOption.getValue());
+      // apply new filters
+      if (filterOptions != null) {
+        for (FilterOption filterOption : filterOptions.getFilterOptions().values()) {
+          if (excludeFilter == null || !filterOption.getName().equals(excludeFilter)) {
+            Filter filter = question.getFilter(filterOption.getName());
+            innerSql = filter.getSql(this, innerSql, filterOption.getValue());
+          }
         }
       }
+
+      innerSql = "(" + innerSql + ")";
+
+      logger.debug("id sql constructed:\n" + innerSql);
+
+      return innerSql;
     }
-
-    innerSql = "(" + innerSql + ")";
-
-    logger.debug("id sql constructed:\n" + innerSql);
-
-    return innerSql;
-    } catch (WdkModelException | WdkUserException ex) {
+    catch (WdkModelException | WdkUserException ex) {
       logger.error(ex.getMessage(), ex);
       ex.printStackTrace();
       throw ex;
@@ -1021,60 +1026,61 @@ public class AnswerValue {
     this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
     try {
-    String sql = getPagedIdSql();
-    WdkModel wdkModel = question.getWdkModel();
-    DatabaseInstance platform = wdkModel.getAppDb();
-    DataSource dataSource = platform.getDataSource();
-    ResultSet resultSet;
-    try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql, idsQueryInstance.getQuery().getFullName() +
-          "__id-paged");
-    }
-    catch (SQLException e) {
-      throw new WdkModelException(e);
-    }
-    ResultList resultList = new SqlResultList(resultSet);
-    RecordClass recordClass = question.getRecordClass();
-    PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
-    while (resultList.next()) {
-      // get primary key. the primary key is supposed to be translated to
-      // the current ones from the id query, and no more translation
-      // needed.
-      //
-      // If this assumption is false, then we need to join the alias query
-      // into the paged id query as well.
-      Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-      for (String column : pkField.getColumnRefs()) {
-        Object value = resultList.get(column);
-        pkValues.put(column, value);
+      String sql = getPagedIdSql();
+      WdkModel wdkModel = question.getWdkModel();
+      DatabaseInstance platform = wdkModel.getAppDb();
+      DataSource dataSource = platform.getDataSource();
+      ResultSet resultSet;
+      try {
+        resultSet = SqlUtils.executeQuery(dataSource, sql, idsQueryInstance.getQuery().getFullName() +
+            "__id-paged");
       }
-      RecordInstance record = new RecordInstance(this, pkValues);
-      pageRecordInstances.put(record.getPrimaryKey(), record);
-    }
-
-    // check if the number of records is expected
-    int resultSize = getResultSize();
-    int expected = Math.min(endIndex, resultSize) - startIndex + 1;
-
-    if (expected != pageRecordInstances.size()) {
-      StringBuffer buffer = new StringBuffer();
-      for (String name : getSummaryAttributeFieldMap().keySet()) {
-        if (buffer.length() > 0)
-          buffer.append(", ");
-        buffer.append(name);
+      catch (SQLException e) {
+        throw new WdkModelException(e);
       }
-      logger.debug("resultSize: " + resultSize + ", start: " + startIndex + ", end: " + endIndex);
-      logger.debug("expected: " + expected + ", actual: " + pageRecordInstances.size());
-      logger.debug("Paged ID SQL:\n" + sql);
-      throw new WdkModelException("The number of results returned " + "by the id query " +
-          idsQueryInstance.getQuery().getFullName() +
-          " changes when it is joined to the query (or queries) " + "for attribute set (" + buffer + ").\n" +
-          "id query: " + expected + " records\n" + "join(id query, attribute query): " +
-          pageRecordInstances.size() + " records\n" +
-          "Check that the ID query returns no nulls or duplicates, " + "and that the attribute-query join " +
-          "does not change the row count.");
+      ResultList resultList = new SqlResultList(resultSet);
+      RecordClass recordClass = question.getRecordClass();
+      PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
+      while (resultList.next()) {
+        // get primary key. the primary key is supposed to be translated to
+        // the current ones from the id query, and no more translation
+        // needed.
+        //
+        // If this assumption is false, then we need to join the alias query
+        // into the paged id query as well.
+        Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+        for (String column : pkField.getColumnRefs()) {
+          Object value = resultList.get(column);
+          pkValues.put(column, value);
+        }
+        RecordInstance record = new RecordInstance(this, pkValues);
+        pageRecordInstances.put(record.getPrimaryKey(), record);
+      }
+
+      // check if the number of records is expected
+      int resultSize = getResultSize();
+      int expected = Math.min(endIndex, resultSize) - startIndex + 1;
+
+      if (expected != pageRecordInstances.size()) {
+        StringBuffer buffer = new StringBuffer();
+        for (String name : getSummaryAttributeFieldMap().keySet()) {
+          if (buffer.length() > 0)
+            buffer.append(", ");
+          buffer.append(name);
+        }
+        logger.debug("resultSize: " + resultSize + ", start: " + startIndex + ", end: " + endIndex);
+        logger.debug("expected: " + expected + ", actual: " + pageRecordInstances.size());
+        logger.debug("Paged ID SQL:\n" + sql);
+        throw new WdkModelException("The number of results returned " + "by the id query " +
+            idsQueryInstance.getQuery().getFullName() +
+            " changes when it is joined to the query (or queries) " + "for attribute set (" + buffer +
+            ").\n" + "id query: " + expected + " records\n" + "join(id query, attribute query): " +
+            pageRecordInstances.size() + " records\n" +
+            "Check that the ID query returns no nulls or duplicates, " +
+            "and that the attribute-query join " + "does not change the row count.");
+      }
     }
-    } catch (WdkModelException | WdkUserException ex) {
+    catch (WdkModelException | WdkUserException ex) {
       logger.error(ex.getMessage(), ex);
       ex.printStackTrace();
       throw ex;
