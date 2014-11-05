@@ -155,13 +155,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
     // static properties
 
-    // Use String as constructor so that the following is true:
-    //
-    //     'Uknown' !== Field.UNKNOWN_VALUE
-    //
-    // This will make it possible to differentiate between this
-    // and a valid value of 'Unknown'.
-    UNKNOWN_VALUE: new String('Unknown') // jshint ignore:line
+    UNKNOWN_VALUE: 'Unknown'
 
   });
 
