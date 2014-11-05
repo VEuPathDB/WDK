@@ -239,6 +239,9 @@
     <optional>
       <attribute name="default" />
     </optional>
+    <optional>
+      <attribute name="sanityDefault" />
+    </optional>
   </define>
 
   <define name="ParamBaseTags">
@@ -644,21 +647,28 @@
     </optional>
     <zeroOrMore>
       <element name="testParamValues">
-        <optional>
-          <attribute name="minRows" />
-        </optional>
-        <zeroOrMore>
-          <element name="paramValue">
-            <attribute name="name" />
-            <text />
-          </element>
-        </zeroOrMore>
-        <ref name="IncludeExclude" />
+        <ref name="testParamValuesRef" />
       </element>
     </zeroOrMore>
     <zeroOrMore>
       <ref name="paramRef" />
     </zeroOrMore>
+  </define>
+
+  <define name="testParamValuesRef">
+    <optional>
+      <attribute name="minRows" />
+    </optional>
+    <zeroOrMore>
+      <element name="paramValue">
+        <attribute name="name" />
+        <choice>
+          <ref name="SelectModeContents" />
+          <text />
+        </choice>
+      </element>
+    </zeroOrMore>
+    <ref name="IncludeExclude" />
   </define>
 
   <define name="paramRef">
@@ -763,16 +773,7 @@
       <ref name="IncludeExclude" />
       <zeroOrMore>
         <element name="defaultTestParamValues">
-          <optional>
-            <attribute name="minRows" />
-          </optional>
-          <oneOrMore>
-            <element name="paramValue">
-              <attribute name="name" />
-              <text />
-            </element>
-          </oneOrMore>
-          <ref name="IncludeExclude" />
+          <ref name="testParamValuesRef" />
         </element>
       </zeroOrMore>
       <zeroOrMore>
@@ -960,16 +961,7 @@
           </element>
 
           <element name="testParamValues">
-            <optional>
-              <attribute name="minRows" />
-            </optional>
-            <oneOrMore>
-              <element name="paramValue">
-                <attribute name="name" />
-                <text />
-              </element>
-            </oneOrMore>
-            <ref name="IncludeExclude" />
+            <ref name="testParamValuesRef" />
           </element>
 
           <element name="reporter">

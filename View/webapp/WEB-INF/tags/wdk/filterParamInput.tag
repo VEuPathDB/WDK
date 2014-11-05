@@ -48,6 +48,7 @@ Otherwise a standard select menu is used.
 <div class="param filter-param ${dependentClass}"
     dependson="${dependedParam}"
     name="${pNam}"
+    data-is-allow-empty="${qp.isAllowEmpty}"
     data-title="${qp.prompt}"
     data-type="filter-param"
     data-default-columns="${qp.defaultColumns}"

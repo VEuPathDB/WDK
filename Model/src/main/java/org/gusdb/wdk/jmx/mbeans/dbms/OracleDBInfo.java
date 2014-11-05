@@ -67,10 +67,7 @@ public class OracleDBInfo extends AbstractDBInfo {
 
   @Override
   protected String getDbLinkValidationSql(String dblink) {
-    StringBuffer sql = new StringBuffer();
-    sql.append(" select 1 from dual@" + dblink);
-    return sql.toString();
+    return new StringBuilder("select 1 from dual@").append(dblink).toString();
   }
-
 
 }

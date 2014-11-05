@@ -72,6 +72,7 @@ import org.gusdb.wdk.model.query.param.ParamHandlerReference;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamSuggestion;
+import org.gusdb.wdk.model.query.param.ParamValue;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.RecordClassReference;
 import org.gusdb.wdk.model.query.param.StringParam;
@@ -811,12 +812,17 @@ public class ModelXmlParser extends XmlParser {
   }
 
   private void configureParamValuesSet(Digester digester, String path, String addMethodName) {
+    configureNode(digester, path, ParamValuesSet.class, addMethodName);
+    configureNode(digester, path + "/paramValue", ParamValue.class, "addParamValue");
+    digester.addCallMethod(path + "/paramValue", "setValue", 0);
+    /*
     digester.addObjectCreate(path, ParamValuesSet.class);
     digester.addSetProperties(path);
     digester.addCallMethod(path + "/paramValue", "put", 2);
     digester.addCallParam(path + "/paramValue", 0, "name");
     digester.addCallParam(path + "/paramValue", 1);
     digester.addSetNext(path, addMethodName);
+    */
   }
 
   private void configureXmlRecordClassSet(Digester digester) {

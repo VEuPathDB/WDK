@@ -133,6 +133,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   function createFilterParam($param, questionName, filterData) {
     var form = $param.closest('form');
     var title = $param.data('title');
+    var isAllowEmpty = $param.data('isAllowEmpty');
     var name = $param.attr('name');
     console.time('intialize render :: ' + name);
     var defaultColumns = $param.data('default-columns');
@@ -212,17 +213,18 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     form.on('submit', function(e) {
       var filteredData = filterParam.getSelectedData();
-      if (filteredData.length === 0) {
+      if (!isAllowEmpty && filteredData.length === 0) {
         e.preventDefault();
         $param.find('.ui-state-error').remove();
         $param.prepend(
           '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">' +
-          'Please select ' + name + ' to continue.' +
+          'Please select ' + title + ' to continue.' +
           '</div>'
         );
         filterParam.once('change:value', function() {
           $param.find('.ui-state-error').remove();
         });
+        $('html, body').animate({ scrollTop: $param.offset().top - 100 }, 200);
       }
     });
 

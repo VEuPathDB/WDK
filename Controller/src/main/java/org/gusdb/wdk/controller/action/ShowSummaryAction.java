@@ -17,9 +17,9 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -332,9 +332,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
             return new ActionForward(path, true);
         }
 
-        if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
+        if (WdkAction.resourceExists(customViewFile1, svltCtx)) {
             forward = new ActionForward(customViewFile1);
-        } else if (ApplicationInitListener.resourceExists(customViewFile2,
+        } else if (WdkAction.resourceExists(customViewFile2,
                 svltCtx)) {
             forward = new ActionForward(customViewFile2);
         } else {
