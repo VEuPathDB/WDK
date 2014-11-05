@@ -25,7 +25,6 @@
     <form class="filter-form" action="<c:url value='/applyFilter.do' />">
       <input type="hidden" name="step" value="${step.stepId}" />
       <input type="hidden" name="filter" value="" />
-      <input type="hidden" name="options" value="" />
       <div class="filter-summary"> </div>
       <div class="filter-controls">
         <input type="submit" value="Apply Filter">
