@@ -3,9 +3,8 @@ wdk.namespace('wdk.controllers', function(ns) {
   'use strict';
 
 
-  //
-  // imports
-  //
+  // Imports
+  // -------
 
   // models
   var LocalFilterService = wdk.models.filter.LocalFilterService;
@@ -20,24 +19,26 @@ wdk.namespace('wdk.controllers', function(ns) {
   var ResultsView = wdk.views.filter.ResultsView;
 
 
-  //
-  // helpers
-  //
+  // Helpers
+  // -------
 
   var countByValues = _.compose(_.countBy, _.flatten, _.values);
   var numericSort = function(a, b){ return a > b; };
   var stringSort; // passing this to [].sort() will use the default sort
 
-  /**
-   * options:
-   *  - data: Array of data objects to filter
-   *  - fields: Array of metadata terms
-   *  - filters: Array of filter objects
-   *  - ignored: Array of data ids to ignore
-   *  - title: String name used in UI
-   *  - trimMetadataTerms: Boolean, when true remove parents w/ one child
-   *  - defaultColumns: Array of field names to show in results view
-   */
+
+  // FilterParam
+  // -----------
+
+  // options:
+  //   - data: Array of data objects to filter
+  //   - fields: Array of metadata terms
+  //   - filters: Array of filter objects
+  //   - ignored: Array of data ids to ignore
+  //   - title: String name used in UI. Defaults to "Items".
+  //   - trimMetadataTerms: Boolean, when true remove parents w/ one child
+  //   - defaultColumns: Array of field names to show in results view
+  // 
   ns.FilterParam = wdk.views.core.View.extend({
 
     className: 'filter-param',
@@ -91,17 +92,16 @@ wdk.namespace('wdk.controllers', function(ns) {
       var metadataPromises = initialFields.map(this.getMetadata.bind(this));
 
 
-      //
-      // create views
-      //
+      // Create views
+      // ------------
 
-      // list of selected filters
+      // List of selected filters
       var itemsView = new FilterItemsView(this.filterService, {
         model: this.filterService.filters,
         controller: this
       });
 
-      // main selection ui
+      // Main selection UI
       var filterFieldsView = new FilterFieldsView({
         model: this.filterService,
         controller: this,
@@ -109,13 +109,13 @@ wdk.namespace('wdk.controllers', function(ns) {
         trimMetadataTerms: this.trimMetadataTerms
       });
 
-      // results of selection
+      // Results of selection
       var resultsView = new ResultsView({
         model: this.filterService,
         controller: this
       });
 
-      // use a tabbed interface for selection and results
+      // Use a tabbed interface for selection and results
       var tabsView = new TabsView({
         className: 'filter-param-tabs',
         tabs: [
@@ -126,7 +126,7 @@ wdk.namespace('wdk.controllers', function(ns) {
         this.$('.count').text(data.length);
       });
 
-      // allow the tabbed interface to be collapsed
+      // Allow the tabbed interface to be collapsed
       var collapsibleView = new CollapsibleView({
         className: 'filter-view',
         expandString: 'Select ' + this.title,
