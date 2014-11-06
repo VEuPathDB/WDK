@@ -6,6 +6,7 @@
 
   <import file="${projectsDir}/WSF/build.xml" />
 
+
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -14,7 +15,6 @@
     <available file="${projectsDir}/WSF" type="dir"  property="WSF.present" />
     <antcall target="WSF-Checkout"/>
   </target>
-
 
   <target name="WSF-Checkout" unless="WSF.present">
     <ant target="defaultProjectCheckout" inheritAll="false">
@@ -26,7 +26,7 @@
 
     
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-ChildUpdate">
@@ -34,6 +34,7 @@
       <property name="project" value="WSF"/>
     </ant>
   </target>
+
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
@@ -44,11 +45,18 @@
                                            WDK/Model-Installation,
                                            WDK/Controller-Installation,
                                            WDK/View-Installation">
-
     <ant target="defaultProjectInstall">
       <property name="project" value="WDK"/>
     </ant>
   </target>
+
+  <target name="WDK-MavenInstallation">
+    <ant target="mavenBuildProject">
+      <property name="project" value="WDK"/>
+    </ant>
+    <property name="alreadyBuilt" value="true"/>
+  </target>
+
 
   <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
 
@@ -64,24 +72,6 @@
   </target>
 
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
-
-  <target name="WDK-MavenInstallation">
-    <ant target="mavenCleanInstall">
-      <property name="project" value="WDK"/>
-    </ant>
-    <ant target="deployMavenArtifacts">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Model"/>
-    </ant>
-    <ant target="deployMavenArtifacts">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Controller"/>
-    </ant>
-    <ant target="deployMavenArtifacts">
-      <property name="project" value="WDK"/>
-      <property name="component" value="View"/>
-    </ant>
-  </target>
 
   <target name="WDK/Controller-Installation">
     <ant target="defaultComponentInstall">
