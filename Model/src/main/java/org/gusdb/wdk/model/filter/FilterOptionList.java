@@ -3,6 +3,8 @@ package org.gusdb.wdk.model.filter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.question.Question;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -10,21 +12,27 @@ public class FilterOptionList {
 
   private final Map<String, FilterOption> options = new LinkedHashMap<>();
 
-  public FilterOptionList() {}
+  private final Question question;
 
-  public FilterOptionList(JSONArray jsOptions) {
+  public FilterOptionList(Question question) {
+    this.question = question;
+  }
+
+  public FilterOptionList(Question question, JSONArray jsOptions) throws WdkModelException {
+    this(question);
     for (int i = 0; i < jsOptions.length(); i++) {
       JSONObject jsFilterOption = jsOptions.getJSONObject(i);
-      FilterOption option = new FilterOption(jsFilterOption);
-      options.put(option.getName(), option);
+      FilterOption option = new FilterOption(question, jsFilterOption);
+      options.put(option.getKey(), option);
     }
   }
 
-  public void addFilterOption(String filterName, JSONObject filterValue) {
-    FilterOption option = new FilterOption(filterName, filterValue);
+  public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
+    Filter filter = question.getFilter(filterName);
+    FilterOption option = new FilterOption(filter, filterValue);
     options.put(filterName, option);
   }
-  
+
   public void removeFilterOption(String filterName) {
     options.remove(filterName);
   }
@@ -40,7 +48,7 @@ public class FilterOptionList {
     }
     return jsOptions;
   }
-  
+
   public FilterOption getFilterOption(String filterName) {
     return options.get(filterName);
   }

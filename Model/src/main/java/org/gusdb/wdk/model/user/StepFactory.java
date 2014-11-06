@@ -635,8 +635,10 @@ public class StepFactory {
       step.setParamValues(params);
 
       // parse the filters
-      if (jsContent.has(KEY_FILTERS))
-        step.setFilterOptions(new FilterOptionList(jsContent.getJSONArray(KEY_FILTERS)));
+      if (jsContent.has(KEY_FILTERS)) {
+        Question question = step.getQuestion();
+        step.setFilterOptions(new FilterOptionList(question, jsContent.getJSONArray(KEY_FILTERS)));
+      }
     }
 
     logger.debug("loaded step #" + stepId);

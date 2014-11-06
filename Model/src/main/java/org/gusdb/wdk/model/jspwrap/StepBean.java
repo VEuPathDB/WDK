@@ -508,15 +508,15 @@ public class StepBean {
 	  return step.getHasCompleteAnalyses();
 	}
 
-  public FilterOptionList getFilterOptions() {
+  public FilterOptionList getFilterOptions() throws WdkModelException {
     return step.getFilterOptions();
   }
 
-  public void addFilterOption(String filterName, JSONObject filterValue) {
+  public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
     step.addFilterOption(filterName, filterValue);
   }
 
-  public void removeFilterOption(String filterName) {
+  public void removeFilterOption(String filterName) throws WdkModelException {
     step.removeFilterOption(filterName);
   }
 
