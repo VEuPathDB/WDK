@@ -77,7 +77,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
         filters.remove(filters.where({ field: this.model.get('term') }), { origin: this });
 
-        if (values.length) {
+        if (values.length !== this.members.length) {
           filters.add({
             field: this.model.get('term'),
             operation: this.model.get('filter'),
@@ -88,7 +88,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     },
 
-    handleFilterUpdate: function(isSelected, filter, filters, options) {
+    handleFilterUpdate: function(doSelect, filter, filters, options) {
       var update = options.origin !== this &&
         filter.get('field') === this.model.get('term');
       var values = filter.get('values');
@@ -97,9 +97,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
         // set selected to true or false
         this.memberViews.forEach(function renderViews(memberView) {
           var member = memberView.model;
-          if (values.indexOf(member.get('value')) > -1) {
-            member.set('selected', isSelected);
-          }
+          var selected = values.length === 0 ||
+            (doSelect && _.contains(values, member.get('value')));
+          member.set('selected', selected);
         });
       }
     },
@@ -133,7 +133,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
             percent: (count / size * 100).toFixed(2),
             distribution: (count / scale * 100).toFixed(2),
             filteredDistribution: (fcount / scale * 100).toFixed(2),
-            selected: !!(_.contains(filterValues, value))
+            selected: !filter || !!(_.contains(filterValues, value))
           });
 
           return new MemberView({
