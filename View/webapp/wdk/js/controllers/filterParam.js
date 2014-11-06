@@ -73,87 +73,111 @@ wdk.namespace('wdk.controllers', function(ns) {
         top: '34px', // Top position relative to parent
         left: '18px' // Left position relative to parent
       });
-      this.filterService = new LocalFilterService({
-        data: this.data,
-        metadata: this.metadata,
-      });
 
-      this.listenTo(this.filterService, 'change:filteredData', this.updateValue);
-      this.listenTo(this.filterService.filters, 'add remove', this.updateValue);
-      this.listenTo(this.filterService, 'change:filteredData', this._setSelectedFieldDistribution);
 
-      // load initial metadata
+      // Load initial metadata
+      // ---------------------
+
       var filterFields = (options.filters || [])
         .map(function(filter) {
           return this.fields.get(filter.field);
         }.bind(this));
-      var defaultFields = (this.defaultColumns || [])
-        .map(this.fields.get.bind(this.fields));
+      var defaultFields = _.map(this.defaultColumns, this.fields.get, this.fields);
       var initialFields = _.union(defaultFields, filterFields);
-      var metadataPromises = initialFields.map(this.getMetadata.bind(this));
+      var metadataPromises = _.map(initialFields, this.getMetadata, this);
 
-
-      // Create views
-      // ------------
-
-      // List of selected filters
-      var itemsView = new FilterItemsView(this.filterService, {
-        model: this.filterService.filters,
-        controller: this
-      });
-
-      // Main selection UI
-      var filterFieldsView = new FilterFieldsView({
-        model: this.filterService,
-        controller: this,
-        defaultColumns: this.defaultColumns,
-        trimMetadataTerms: this.trimMetadataTerms
-      });
-
-      // Results of selection
-      var resultsView = new ResultsView({
-        model: this.filterService,
-        controller: this
-      });
-
-      // Use a tabbed interface for selection and results
-      var tabsView = new TabsView({
-        className: 'filter-param-tabs',
-        tabs: [
-          { title: 'Select ' + this.title, view: filterFieldsView },
-          { title: 'View selection (<span class="count">0</span>)', view: resultsView }
-        ]
-      }).listenTo(this, 'change:selectedData', function(ctrl, data) {
-        this.$('.count').text(data.length);
-      });
-
-      // Allow the tabbed interface to be collapsed
-      var collapsibleView = new CollapsibleView({
-        className: 'filter-view',
-        expandString: 'Select ' + this.title,
-        collapse: false,
-        collapseTemplate: _.template([
-          '<div class="collapse-wrapper">',
-          '  <a href="#"><%= collapseString %></a>',
-          '</div>'
-        ].join('')),
-        view: tabsView
-        }).listenTo(this, 'select:field', function() {
-          this.collapse(false);
-        }).listenTo(this.filterService.filters, 'add remove', function(filter) {
-          this.$expand.html(filter.length ? 'Refine selection' : this.expandString);
-        });
 
       // Wait for metadata to load to prevent blank UI sections
       RSVP.all(metadataPromises).then(function() {
+
+        // Create FilterService instance
+        // -----------------------------
+
+        this.filterService = new LocalFilterService({
+          data: this.data,
+          metadata: this.metadata
+        });
+        this.filterService.filters.set(options.filters);
+
+
+        // Set up listeners
+        // ----------------
+
+        var debouncedUpdateValue = _.debounce(this.updateValue.bind(this), 200);
+        this.listenTo(this.filterService.filters, 'add remove', debouncedUpdateValue);
+        this.listenTo(this.filterService, 'change:filteredData', debouncedUpdateValue);
+        this.listenTo(this.filterService, 'change:filteredData', this._setSelectedFieldDistribution);
+        debouncedUpdateValue();
+
+
+        // Create views
+        // ------------
+
+        // List of selected filters
+        var itemsView = new FilterItemsView(this.filterService, {
+          model: this.filterService.filters,
+          controller: this
+        });
+
+        // Main selection UI
+        var filterFieldsView = new FilterFieldsView({
+          model: this.filterService,
+          controller: this,
+          defaultColumns: this.defaultColumns,
+          trimMetadataTerms: this.trimMetadataTerms
+        });
+
+        // Results of selection
+        var resultsView = new ResultsView({
+          model: this.filterService,
+          controller: this
+        });
+
+        // Use a tabbed interface for selection and results
+        var tabsView = new TabsView({
+          className: 'filter-param-tabs',
+          tabs: [
+            { title: 'Select ' + this.title, view: filterFieldsView },
+            { title: 'View selection (<span class="count">0</span>)', view: resultsView }
+          ]
+        }).listenTo(this, 'change:selectedData', function(ctrl, data) {
+          this.$('.count').text(data.length);
+        });
+
+        // Allow the tabbed interface to be collapsed
+        var collapsibleView = new CollapsibleView({
+          className: 'filter-view',
+          expandString: 'Select ' + this.title,
+          collapse: false,
+          collapseTemplate: _.template([
+            '<div class="collapse-wrapper">',
+            '  <a href="#"><%= collapseString %></a>',
+            '</div>'
+          ].join('')),
+          view: tabsView
+          }).listenTo(this, 'select:field', function() {
+            this.collapse(false);
+          }).listenTo(this.filterService.filters, 'add remove', function(filter) {
+            this.$expand.html(filter.length ? 'Refine selection' : this.expandString);
+          });
+
+
+        // Set default values
+        // ---------------------------
+
         var leaves = this.fields.where({'leaf': 'true'});
         var defaultSelection = leaves.length === 1
           ? leaves[0]
           : filterFields[0];
         this.selectField(defaultSelection);
-        this.filterService.filters.set(options.filters);
+
+
+        // Append view to DOM and trigger 'ready'
+        // --------------------------------------
+
         this.$el.append(itemsView.el, collapsibleView.el);
         this.trigger('ready', this);
+
       }.bind(this));
     },
 
@@ -206,7 +230,7 @@ wdk.namespace('wdk.controllers', function(ns) {
     // Trigger events with selected values.
     // value - serialization of param
     // selectedData - just the values selected
-    updateValue: _.debounce(function() {
+    updateValue: function() {
       var data = this.getSelectedData();
       var value = {
         values: _.pluck(data, 'term'),
@@ -216,7 +240,7 @@ wdk.namespace('wdk.controllers', function(ns) {
       this.trigger('change:value', this, value);
       this.trigger('change:selectedData', this, data);
       return this;
-    }, 200),
+    },
 
     _setSelectedFieldDistribution: function() {
       var field = this.selectedField;
