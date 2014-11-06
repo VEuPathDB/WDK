@@ -64,8 +64,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
     initialize: function(options) {
       var filters = this.filterService.filters;
       this.options = options;
-      this.listenTo(filters, 'add', _.partial(this.handleFilterUpdate, true));
-      this.listenTo(filters, 'remove', _.partial(this.handleFilterUpdate, false));
+      this.listenTo(filters, 'add', this.addFilter);
+      this.listenTo(filters, 'remove', this.removeFilter);
       this.listenTo(this.members, 'change:selected', _.debounce(function() {
         var type = this.model.get('type');
         var values = this.members.where({selected: true}).map(function(member) {
@@ -88,18 +88,26 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     },
 
-    handleFilterUpdate: function(doSelect, filter, filters, options) {
+    addFilter: function(filter, filters, options) {
       var update = options.origin !== this &&
         filter.get('field') === this.model.get('term');
-      var values = filter.get('values');
 
       if (update) {
-        // set selected to true or false
-        this.memberViews.forEach(function renderViews(memberView) {
+        this.memberViews.forEach(function(memberView) {
           var member = memberView.model;
-          var selected = values.length === 0 ||
-            (doSelect && _.contains(values, member.get('value')));
-          member.set('selected', selected);
+          member.set('selected', _.contains(filter.get('values'), member.get('value')));
+        });
+      }
+    },
+
+    removeFilter: function(filter, filters, options) {
+      var update = options.origin !== this &&
+        filter.get('field') === this.model.get('term');
+
+      if (update) {
+        this.memberViews.forEach(function(memberView) {
+          var member = memberView.model;
+          member.set('selected', true);
         });
       }
     },

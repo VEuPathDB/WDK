@@ -26,13 +26,14 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     initialize: function() {
+      var debouncedApplyFilters = _.debounce(this.applyFilters.bind(this), 100);
+
       // track which filters are being applied
       this.filterChangeSet = [];
       this.filters = new Filters();
-      this.applyFilters();
-
       this.listenTo(this.filters, 'add remove', function(m) { this.filterChangeSet.push(m); });
-      this.listenTo(this.filters, 'add remove', _.debounce(this.applyFilters, 100));
+      this.listenTo(this.filters, 'add remove', debouncedApplyFilters);
+      debouncedApplyFilters();
     },
 
     applyFilters: function() {
