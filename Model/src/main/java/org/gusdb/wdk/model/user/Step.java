@@ -64,7 +64,7 @@ public class Step {
   private AnswerValue answerValue;
 
   private Map<String, String> paramValues = new LinkedHashMap<String, String>();
-  private FilterOptionList filterOptions = new FilterOptionList();
+  private FilterOptionList filterOptions;
 
   private int assignedWeight;
 
@@ -645,20 +645,25 @@ public class Step {
     this.paramValues = new LinkedHashMap<String, String>(paramValues);
   }
   
-  public FilterOptionList getFilterOptions() {
+  public FilterOptionList getFilterOptions() throws WdkModelException {
+    if (filterOptions == null) {
+      filterOptions = new FilterOptionList(getQuestion());
+    }
     return filterOptions;
   }
   
   public void setFilterOptions(FilterOptionList filterOptions) {
     this.filterOptions = filterOptions;
+    if (answerValue != null)
+      answerValue.setFilterOptions(filterOptions);
   }
   
-  public void addFilterOption(String filterName, JSONObject filterValue) {
-    this.filterOptions.addFilterOption(filterName, filterValue);
+  public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
+    getFilterOptions().addFilterOption(filterName, filterValue);
   }
   
-  public void removeFilterOption(String filterName) {
-    this.filterOptions.removeFilterOption(filterName);
+  public void removeFilterOption(String filterName) throws WdkModelException {
+    getFilterOptions().removeFilterOption(filterName);
   }
 
   public RecordClass getRecordClass() throws WdkModelException {

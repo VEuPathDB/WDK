@@ -926,8 +926,8 @@ public class AnswerValue {
       // apply new filters
       if (filterOptions != null) {
         for (FilterOption filterOption : filterOptions.getFilterOptions().values()) {
-          if (excludeFilter == null || !filterOption.getName().equals(excludeFilter)) {
-            Filter filter = question.getFilter(filterOption.getName());
+          if (excludeFilter == null || !filterOption.getKey().equals(excludeFilter)) {
+            Filter filter = question.getFilter(filterOption.getKey());
             innerSql = filter.getSql(this, innerSql, filterOption.getValue());
           }
         }
