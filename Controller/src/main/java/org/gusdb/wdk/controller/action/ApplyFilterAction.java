@@ -1,6 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
 import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
@@ -50,19 +49,14 @@ public class ApplyFilterAction extends Action {
 
       LOG.debug("Got filter: " + filter.getKey() + ", options=" + options);
 
-      if (filter == null)
-        throw new WdkUserException("Filter \"" + filterName + "\" cannot be found in question: " +
-            question.getFullName());
       step.addFilterOption(filter.getKey(), options);
       step.saveParams();
 
-      LOG.debug("Step param saved.");
+      ActionForward showApplication = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
 
-      ActionForward showStrategy = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
+      LOG.debug("Foward to " + CConstants.SHOW_APPLICATION_MAPKEY + ", " + showApplication);
 
-      LOG.debug("Foward to " + CConstants.SHOW_APPLICATION_MAPKEY + ", " + showStrategy);
-
-      StringBuffer url = new StringBuffer(showStrategy.getPath());
+      StringBuffer url = new StringBuffer(showApplication.getPath());
       // String state = request.getParameter(CConstants.WDK_STATE_KEY);
       // url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
 
