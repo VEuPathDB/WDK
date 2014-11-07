@@ -69,11 +69,6 @@ public class ParamValuesFactory {
     ParamValuesSet paramValuesSet = new ParamValuesSet(valuesSet);
     ParamValuesSet querySetDefaults = query.getQuerySet().getDefaultParamValuesSet();
     paramValuesSet.updateWithDefaults(querySetDefaults);
-    // set user_id on queries that need it; query instance would do this for us, but
-    //    doing it here makes the code below easier
-    if (query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
-      paramValuesSet.updateWithDefault(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
-    }
     Map<String, String> contextParamValues = paramValuesSet.getParamValues();
     try {
       populateRemainingValues(paramValuesSet, contextParamValues, query.getParams(),
@@ -125,11 +120,13 @@ public class ParamValuesFactory {
       Map<String, String> contextParamValues, Param[] params, List<Param> remainingParams,
       User user) throws WdkModelException {
     LOG.info("Call made to populate remaining values, with current values = " + NL + printParamMap(params, contextParamValues));
-    if (remainingParams.isEmpty()) {
+    if (remainingParams.isEmpty() || (remainingParams.size() == 1 &&
+        remainingParams.iterator().next().getName().equals(Utilities.COLUMN_USER_ID))) {
       // all values populated
       LOG.info("All values populated.");
       return;
     }
+    Set<Param> paramsToRemove = new HashSet<>();
     for (Param param : remainingParams) {
       String paramName = param.getName();
       String defaultValue = null;
@@ -184,21 +181,25 @@ public class ParamValuesFactory {
         if (defaultValue == null) {
           defaultValue = param.getDefault();
         }
-        
-        if (defaultValue == null) {
+
+        // throw if value cannot be populated, unless param is user_id
+        if (defaultValue == null && !paramName.equals(Utilities.COLUMN_USER_ID)) {
           throw new WdkModelException("Unable to populate independent param " +
               param.getName() + " with default value.");
         }
       }
 
       if (defaultValue != null) {
-        remainingParams.remove(param);
+        paramsToRemove.add(param);
         contextParamValues.put(paramName, defaultValue);
         paramValuesSet.updateWithDefault(paramName, defaultValue);
         LOG.info("Value for " + (isDependent ? "in" : "") + "dependent param " +
             param.getName() + " set to " + defaultValue);
       }
     }
+
+    // remove params from 'remaining' list that we have populated
+    remainingParams.removeAll(paramsToRemove);
 
     // populated all the params we could on this pass; call again to populate more params
     populateRemainingValues(paramValuesSet, contextParamValues, params, remainingParams, user);
