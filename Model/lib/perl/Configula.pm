@@ -144,7 +144,7 @@ sub new {
     $self->{'userDb_password'} = $self->std_password($self->{'euparc'}, $self->{'userDb_login'}, $self->{'userDb_database'});;
 
     if ( ! $self->{'userDb_password'} ) {
-      die "Did not find password for $appDb_login in $self->{'euparc'} . Quitting with no changes made.\n";
+      die "Did not find password for $self->{'userDb_login'} in $self->{'euparc'} . Quitting with no changes made.\n";
     }
     
     # webapp_nover is always valid thanks to apache redirects, and
