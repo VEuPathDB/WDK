@@ -1,7 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -44,11 +42,15 @@ public class RemoveFilterAction extends Action {
     AnswerValueBean answer = step.getAnswerValue();
     Filter filter = answer.getQuestion().getFilter(filterName);
     step.removeFilterOption(filter.getKey());
+    step.saveParams();
     
-    ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-    StringBuffer url = new StringBuffer(showStrategy.getPath());
-    String state = request.getParameter(CConstants.WDK_STATE_KEY);
-    url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+    ActionForward showApplication = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
+
+    LOG.debug("Foward to " + CConstants.SHOW_APPLICATION_MAPKEY + ", " + showApplication);
+
+    StringBuffer url = new StringBuffer(showApplication.getPath());
+    // String state = request.getParameter(CConstants.WDK_STATE_KEY);
+    // url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
 
     ActionForward forward = new ActionForward(url.toString());
     forward.setRedirect(true);
