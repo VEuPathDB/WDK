@@ -647,7 +647,7 @@ public class Step {
   
   public FilterOptionList getFilterOptions() throws WdkModelException {
     if (filterOptions == null) {
-      filterOptions = new FilterOptionList(getQuestion());
+      filterOptions = new FilterOptionList(this);
     }
     return filterOptions;
   }
@@ -702,7 +702,7 @@ public class Step {
       int startIndex = getAnswerValue().getStartIndex();
       int endIndex = getAnswerValue().getEndIndex();
       Step step = getUser().createStep(question, params, filter, startIndex, endIndex, deleted, false,
-          assignedWeight, filterOptions);
+          assignedWeight, getFilterOptions());
       step.collapsedName = collapsedName;
       step.customName = customName;
       step.collapsible = collapsible;
@@ -751,7 +751,7 @@ public class Step {
         int pageStart = answerValue.getStartIndex();
         int pageEnd = answerValue.getEndIndex();
         step = getUser().createStep(question, paramValues, filter, pageStart, pageEnd, deleted, false,
-            assignedWeight, filterOptions);
+            assignedWeight, getFilterOptions());
       }
     }
     catch (WdkUserException ex) {
@@ -894,7 +894,7 @@ public class Step {
       try {
         answerValue = question.makeAnswerValue(user, paramValues, 1, endIndex, sortingMap, getFilter(),
             validate, assignedWeight);
-        answerValue.setFilterOptions(filterOptions);
+        answerValue.setFilterOptions(getFilterOptions());
       }
       catch (WdkUserException ex) {
         throw new WdkModelException(ex);

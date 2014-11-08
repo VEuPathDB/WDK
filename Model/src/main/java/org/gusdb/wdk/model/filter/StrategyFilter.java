@@ -52,9 +52,7 @@ public class StrategyFilter extends StepFilter {
    */
   @Override
   public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException, WdkUserException {
-    int strategyId = jsValue.getInt(KEY_STRATEGY);
-    User user = answer.getUser();
-    Strategy strategy = user.getStrategy(strategyId);
+    Strategy strategy = getStrategy(answer, jsValue);
     AnswerValue rootAnswer = strategy.getLatestStep().getAnswerValue();
 
     // make sure both answers are of the same type.
@@ -74,4 +72,15 @@ public class StrategyFilter extends StepFilter {
     return buffer.toString();
   }
 
+  @Override
+  public String getDisplayValue(AnswerValue answerValue, JSONObject jsValue) throws WdkModelException, WdkUserException {
+    Strategy strategy = getStrategy(answerValue, jsValue);
+    return strategy.getName();
+  }
+
+  private Strategy getStrategy(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException {
+    int strategyId = jsValue.getInt(KEY_STRATEGY);
+    User user = answer.getUser();
+    return user.getStrategy(strategyId);
+  }
 }
