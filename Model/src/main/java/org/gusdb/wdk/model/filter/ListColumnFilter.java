@@ -30,7 +30,6 @@ public class ListColumnFilter extends ColumnFilter {
     ColumnFilterDefinition definition = new ColumnFilterDefinition();
     definition.setName(FILTER_NAME);
     definition.setImplementation(ListColumnFilter.class.getName());
-    definition.setDisplay("Filter By ");
     definition.setDescription("Filter the result by the list of values in the column ");
     definition.setView("/wdk/jsp/results/listColumnFilter.jsp");
 
