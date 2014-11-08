@@ -636,8 +636,7 @@ public class StepFactory {
 
       // parse the filters
       if (jsContent.has(KEY_FILTERS)) {
-        Question question = step.getQuestion();
-        step.setFilterOptions(new FilterOptionList(question, jsContent.getJSONArray(KEY_FILTERS)));
+        step.setFilterOptions(new FilterOptionList(step, jsContent.getJSONArray(KEY_FILTERS)));
       }
     }
 

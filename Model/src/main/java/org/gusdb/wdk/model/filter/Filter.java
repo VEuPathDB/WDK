@@ -23,6 +23,8 @@ public interface Filter {
   String getView();
   
   void setView(String view);
+  
+  String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException;
 
   FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException, WdkUserException;
   

@@ -1,7 +1,8 @@
 package org.gusdb.wdk.model.filter;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
 public class FilterOption {
@@ -9,36 +10,43 @@ public class FilterOption {
   public static final String KEY_NAME = "name";
   public static final String KEY_VALUE = "value";
 
-  private final Filter filter;
-  private final JSONObject value;
+  private final Step _step;
+  private final Filter _filter;
+  private final JSONObject _value;
 
-  public FilterOption(Question question, JSONObject jsFilterOption) throws WdkModelException {
+  public FilterOption(Step step, JSONObject jsFilterOption) throws WdkModelException {
     String name = jsFilterOption.getString(KEY_NAME);
-    this.value = jsFilterOption.getJSONObject(KEY_VALUE);
-    this.filter = question.getFilter(name);
+    this._step = step;
+    this._value = jsFilterOption.getJSONObject(KEY_VALUE);
+    this._filter = step.getQuestion().getFilter(name);
   }
 
-  public FilterOption(Filter filter, JSONObject value) {
-    this.filter = filter;
-    this.value = value;
+  public FilterOption(Step step, Filter filter, JSONObject value) {
+    this._step = step;
+    this._filter = filter;
+    this._value = value;
   }
 
   public String getKey() {
-    return filter.getKey();
+    return _filter.getKey();
   }
   
   public Filter getFilter() {
-    return filter;
+    return _filter;
   }
 
   public JSONObject getValue() {
-    return value;
+    return _value;
+  }
+  
+  public String getDisplayValue() throws WdkModelException, WdkUserException {
+    return _filter.getDisplayValue(_step.getAnswerValue(), _value);
   }
 
   public JSONObject getJSON() {
     JSONObject jsFilterOption = new JSONObject();
-    jsFilterOption.put(KEY_NAME, filter.getKey());
-    jsFilterOption.put(KEY_VALUE, value);
+    jsFilterOption.put(KEY_NAME, _filter.getKey());
+    jsFilterOption.put(KEY_VALUE, _value);
     return jsFilterOption;
   }
 }
