@@ -14,7 +14,14 @@ public abstract class ColumnFilter extends AbstractFilter {
   public ColumnFilter(String name, ColumnAttributeField attribute) {
     super(name + "-" + attribute.getName());
     this.attribute = attribute;
-    setDisplay(getDisplay() + attribute.getDisplayName());
+  }
+
+  @Override
+  public String getDisplay() {
+    String display = super.getDisplay();
+    if (display == null || display.length() == 0)
+      display = attribute.getDisplayName();
+    return display;
   }
 
   protected String getAttributeSql(AnswerValue answer, String idSql) throws WdkModelException,
