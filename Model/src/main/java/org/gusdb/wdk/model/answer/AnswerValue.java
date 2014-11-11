@@ -53,6 +53,7 @@ import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.TabularReporter;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONObject;
 
 /**
  * <p>
@@ -167,6 +168,8 @@ public class AnswerValue {
   private AnswerFilterInstance filter;
 
   private FilterOptionList filterOptions;
+
+  private String _checksum;
 
   // ------------------------------------------------------------------
   // Constructor
@@ -397,10 +400,23 @@ public class AnswerValue {
    * @throws WdkUserException
    */
   public String getChecksum() throws WdkModelException, WdkUserException {
-    String checksum = idsQueryInstance.getChecksum();
-    if (filter != null)
-      checksum += ":" + filter.getName();
-    return checksum;
+    if (_checksum != null) {
+      JSONObject jsContent = new JSONObject();
+      jsContent.put("query-checksum", idsQueryInstance.getChecksum());
+
+      // add the old filter into the content; the old filter will be deprecated in the future releases, and
+      // this line will be removed.
+      if (filter != null)
+        jsContent.put("old-filter", filter.getName());
+
+      // new filters have been applied, get the content for it
+      if (filterOptions != null)
+        jsContent.put("filters", filterOptions.getJSON());
+
+      // encrypt the content to make step-independent checksum
+      _checksum = Utilities.encrypt(jsContent.toString());
+    }
+    return _checksum;
   }
 
   /**
@@ -1335,6 +1351,7 @@ public class AnswerValue {
     resultSize = null;
     resultSizesByFilter.clear();
     resultSizesByProject = null;
+    _checksum = null;
   }
 
   /**
