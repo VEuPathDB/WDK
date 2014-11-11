@@ -30,7 +30,6 @@ import org.gusdb.wdk.model.filter.FilterDefinition;
 import org.gusdb.wdk.model.filter.FilterReference;
 import org.gusdb.wdk.model.filter.StepFilter;
 import org.gusdb.wdk.model.filter.StepFilterDefinition;
-import org.gusdb.wdk.model.filter.StrategyFilter;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wdk.model.query.Query;
@@ -865,8 +864,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     _filterReferences.clear();
 
-    // create a strategy filter for the record class
-    addStepFilter(new StrategyFilter());
   }
 
   /**

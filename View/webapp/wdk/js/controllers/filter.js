@@ -6,10 +6,14 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
   function WdkFilterNew($el) {
     
     this.initialize = function() {
-      $el.accordion({
+      $el.find(".filters-panel").accordion({
         collapsible: true
       });
-      
+
+      // initialize current filters
+      this.initCurrentFilters();      
+
+
       // initialize filter list
       $el.find(".filter").each(function() {
         var filter = $(this);
@@ -17,12 +21,24 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
           content: { text: filter.find(".description") }
         });
         filter.click(function() {
+          $el.find(".filter.highlight").removeClass("highlight");
+          filter.addClass("highlight");
+ 
           var detail = $el.find(".filter-detail");
           detail.find("input[name=filter]").val(filter.attr("id"));
           detail.find(".description").html(filter.find(".description"));
-          detail.find(".filter-summary").load("getFilterSummary.do?step=" 
-                   + $el.data("step") + "&filter=" + filter.attr("id"));
+          var url = "getFilterSummary.do?step=" + $el.data("step") + "&filter=" + filter.attr("id");
+          var summary = detail.find(".filter-summary");
+          summary.load(url, function() {
+            $el.find(".filters-panel").accordion("refresh");
+          });
         });
+      });
+    };
+
+    this.initCurrentFilters = function() {
+      $el.find(".current-filters .option").each(function() {
+        // var key = $(this).attr("id");
       });
     };
   }

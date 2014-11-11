@@ -12,7 +12,7 @@ public class ListColumnFilterSummary implements FilterSummary {
     int max = Integer.MIN_VALUE;
     for (int count : counts.values()) {
       if (count > max)
-        count = max;
+        max = count;
     }
     this._maxCount = max;
   }
