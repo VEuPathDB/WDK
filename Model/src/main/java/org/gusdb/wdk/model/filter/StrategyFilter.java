@@ -19,7 +19,7 @@ public class StrategyFilter extends StepFilter {
   public static StepFilterDefinition getDefinition() {
     StepFilterDefinition definition = new StepFilterDefinition();
     definition.setName(FILTER_NAME);
-    definition.setDisplay("Filter By Strategy");
+    definition.setDisplay("Existing Strategy");
     definition.setDescription("Filter the results by other strategies of the same type.");
     definition.setImplementation(StrategyFilter.class.getName());
     definition.setView("/wdk/jsp/results/strategyFilter.jsp");
