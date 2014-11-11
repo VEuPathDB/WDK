@@ -23,12 +23,16 @@ public class StrategyFilter extends StepFilter {
     definition.setDescription("Filter the results by other strategies of the same type.");
     definition.setImplementation(StrategyFilter.class.getName());
     definition.setView("/wdk/jsp/results/strategyFilter.jsp");
-    
+   
     return definition;
   }
   
   public StrategyFilter() {
     super(FILTER_NAME);
+  }
+
+  public void setDisplay(String display) {
+    super.setDisplay(display);
   }
   
   /**

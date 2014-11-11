@@ -274,7 +274,7 @@ public class AnswerValue {
       try {
         Object count = SqlUtils.executeScalar(dataSource, "SELECT count(*) FROM (" + idSql + ")",
             question.getFullName() + "__count");
-        resultSize = (Integer) count;
+        resultSize = Integer.valueOf(count.toString());
       }
       catch (SQLException ex) {
         throw new WdkModelException(ex);
@@ -400,7 +400,7 @@ public class AnswerValue {
    * @throws WdkUserException
    */
   public String getChecksum() throws WdkModelException, WdkUserException {
-    if (_checksum != null) {
+    if (_checksum == null) {
       JSONObject jsContent = new JSONObject();
       jsContent.put("query-checksum", idsQueryInstance.getChecksum());
 
@@ -951,7 +951,7 @@ public class AnswerValue {
 
       innerSql = "(" + innerSql + ")";
 
-      logger.debug("id sql constructed:\n" + innerSql);
+      logger.trace("id sql constructed:\n" + innerSql);
 
       return innerSql;
     }

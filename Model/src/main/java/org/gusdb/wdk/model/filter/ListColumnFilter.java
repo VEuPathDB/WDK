@@ -75,10 +75,18 @@ public class ListColumnFilter extends ColumnFilter {
       WdkUserException {
     String attributeSql = getAttributeSql(answer, idSql);
     String columnName = attribute.getName();
-    StringBuilder sql = new StringBuilder("SELECT * ");
-    sql.append(" FROM (" + attributeSql + ") ");
-    sql.append(" WHERE " + columnName + " IN (");
+    StringBuilder sql = new StringBuilder("SELECT idq.* ");
 
+    // need to join with idsql here to get extra (dynamic) columns from idq
+    String[] pkColumns = answer.getQuestion().getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
+    sql.append(" FROM (" + idSql + ") idq, (" + attributeSql + ") aq ");
+    for (int i = 0; i < pkColumns.length; i++) {
+      sql.append((i == 0) ? " WHERE " : " AND ");
+      sql.append(" idq." + pkColumns[i] + " = aq." + pkColumns[i]);
+    }
+    sql.append(" AND " + columnName + " IN (");
+
+    // put the filter values as join conditions
     List<String> values = getValues(jsValue);
     for (int i = 0; i < values.size(); i++) {
       if (i > 0)

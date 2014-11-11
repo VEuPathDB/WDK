@@ -25,9 +25,6 @@
 
   <c:set var="isBasket" value="${fn:contains(step.questionName, 'ByRealtimeBasket')}"/>
 
-  <div>size=${wdkAnswer.resultSize}</div>
-  <pre>${wdkAnswer.idSql}</pre>
-
   <c:choose>
     <c:when test='${answerValueRecords_exception ne null and isBasket}'>
       <div class="ui-widget">
