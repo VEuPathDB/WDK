@@ -211,9 +211,10 @@ public class StrategyBean {
 
     /**
      * @return
+     * @throws WdkModelException 
      * @see org.gusdb.wdk.model.user.Strategy#getEstimateSize()
      */
-    public int getEstimateSize() {
+    public int getEstimateSize() throws WdkModelException {
         return strategy.getEstimateSize();
     }
 

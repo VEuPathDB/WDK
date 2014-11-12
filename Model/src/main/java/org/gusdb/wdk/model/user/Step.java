@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -31,9 +32,11 @@ import org.json.JSONObject;
  */
 public class Step {
 
+  public static final int RESET_SIZE_FLAG = -1;
+  
   private static final Logger logger = Logger.getLogger(Step.class);
-
-  private StepFactory stepFactory;
+  
+  private final StepFactory stepFactory;
   private User user;
   private int userId;
   private int stepId;
@@ -323,8 +326,19 @@ public class Step {
 
   /**
    * @return Size estimate of this step's result
+   * @throws WdkUserException 
+   * @throws WdkModelException 
    */
-  public int getEstimateSize() {
+  public int getEstimateSize() throws WdkModelException {
+    if (estimateSize == RESET_SIZE_FLAG) {   
+      // The flag indicates if the size has been reset, and need to be calculated again.
+      try {
+        estimateSize = getAnswerValue().getResultSize();
+      }
+      catch (WdkUserException ex) {
+        throw new WdkModelException(ex);
+      }
+    }
     return estimateSize;
   }
 
@@ -1068,5 +1082,15 @@ public class Step {
   
   public void saveParams() throws WdkModelException {
     stepFactory.saveStepParams(this);
+    
+    // then we also need to traverse back to the root and reset the estimate size along the path.
+    List<Integer> stepIds = new ArrayList<>();
+    stepIds.add(stepId);
+    Step parent = getParentOrNextStep();
+    while (parent != null) {
+      stepIds.add(parent.getStepId());
+      parent = parent.getParentOrNextStep();
+    }
+    stepFactory.resetEstimateSizes(stepIds);
   }
 }
