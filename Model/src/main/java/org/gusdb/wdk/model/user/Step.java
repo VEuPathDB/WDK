@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -1084,13 +1083,6 @@ public class Step {
     stepFactory.saveStepParams(this);
     
     // then we also need to traverse back to the root and reset the estimate size along the path.
-    List<Integer> stepIds = new ArrayList<>();
-    stepIds.add(stepId);
-    Step parent = getParentOrNextStep();
-    while (parent != null) {
-      stepIds.add(parent.getStepId());
-      parent = parent.getParentOrNextStep();
-    }
-    stepFactory.resetEstimateSizes(stepIds);
+    stepFactory.resetEstimateSizes(stepId);
   }
 }
