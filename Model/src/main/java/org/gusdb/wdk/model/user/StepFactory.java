@@ -1636,10 +1636,11 @@ public class StepFactory {
     if (filterOptions != null)
       jsContent.put(KEY_FILTERS, filterOptions.getJSON());
 
+    String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " +
+        COLUMN_DISPLAY_PARAMS + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
     PreparedStatement psUpdate = null;
     try {
-      psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + userSchema + TABLE_STEP + " SET " +
-          COLUMN_DISPLAY_PARAMS + " = ? WHERE " + COLUMN_STEP_ID + " = ?");
+      psUpdate = SqlUtils.getPreparedStatement(dataSource, sql);
       userDb.getPlatform().setClobData(psUpdate, 1, jsContent.toString(), false);
       psUpdate.setInt(2, step.getStepId());
       int result = psUpdate.executeUpdate();
@@ -1650,6 +1651,28 @@ public class StepFactory {
     }
     finally {
       SqlUtils.closeStatement(psUpdate);
+    }
+  }
+  
+  public int resetEstimateSizes(List<Integer> stepIds) throws WdkModelException  {
+    // prepare the sql that will reset the estimate size of given steps;
+    StringBuilder sql = new StringBuilder("UPDATE ");
+    sql.append(userSchema + TABLE_STEP);
+    sql.append(" SET " + COLUMN_ESTIMATE_SIZE + " = " + Step.RESET_SIZE_FLAG);
+    sql.append(" WHERE " + COLUMN_STEP_ID + " IN (");
+    for (int i = 0; i < stepIds.size(); i++) {
+      if (i > 0)
+        sql.append(", ");
+      sql.append(stepIds.get(i));
+    }
+    sql.append(")");
+    
+    // execute the update
+    try {
+      return SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-step-reset-size");
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
     }
   }
 }

@@ -108,7 +108,7 @@ public class Strategy {
   public boolean getIsPublic() {
     return isPublic;
   }
-    
+
   public void setIsPublic(boolean isPublic) {
     this.isPublic = isPublic;
   }
@@ -182,31 +182,30 @@ public class Strategy {
     return getLatestStep().getStepByDisplayId(id);
   }
 
-  public void update(boolean overwrite) throws WdkModelException,
-      WdkUserException, SQLException {
+  public void update(boolean overwrite) throws WdkModelException, WdkUserException, SQLException {
     stepFactory.updateStrategy(user, this, overwrite);
   }
 
   public RecordClass getRecordClass() throws WdkModelException {
-    if (latestStep == null && recordClass != null) return recordClass;
+    if (latestStep == null && recordClass != null)
+      return recordClass;
     return getLatestStep().getRecordClass();
   }
 
-  public Map<Integer, Integer> addStep(int targetStepId, Step step)
-      throws WdkModelException, WdkUserException, SQLException {
+  public Map<Integer, Integer> addStep(int targetStepId, Step step) throws WdkModelException,
+      WdkUserException, SQLException {
     return updateStepTree(targetStepId, step);
   }
 
-  public Map<Integer, Integer> editOrInsertStep(int targetStepId, Step step)
-      throws WdkModelException, WdkUserException, SQLException {
-    logger.debug("Edit/Insert - target: " + targetStepId + ", new step: "
-        + step.getStepId());
+  public Map<Integer, Integer> editOrInsertStep(int targetStepId, Step step) throws WdkModelException,
+      WdkUserException, SQLException {
+    logger.debug("Edit/Insert - target: " + targetStepId + ", new step: " + step.getStepId());
 
     return updateStepTree(targetStepId, step);
   }
 
-  public Map<Integer, Integer> deleteStep(int stepId, boolean isBranch)
-      throws WdkModelException, WdkUserException, SQLException {
+  public Map<Integer, Integer> deleteStep(int stepId, boolean isBranch) throws WdkModelException,
+      WdkUserException, SQLException {
     Step step = getStepById(stepId);
     int targetStepId = step.getStepId();
 
@@ -223,28 +222,33 @@ public class Strategy {
           if (!isBranch) {
             logger.debug("Step is only non-transform step in main strategy...");
             this.setDeleted(true);
-          } else {
+          }
+          else {
             logger.debug("Step is only non-transform step in branch...");
             step = step.getParentStep();
             targetStepId = step.getStepId();
             step = step.getPreviousStep();
           }
 
-        } else {
+        }
+        else {
           logger.debug("Moving to second step to replace first step...");
           targetStepId = step.getNextStep().getStepId();
           step = step.getNextStep().getChildStep();
         }
-      } else if (isBranch) {
+      }
+      else if (isBranch) {
         logger.debug("Step is only step in a branch...");
         step = step.getParentStep();
         targetStepId = step.getStepId();
         step = step.getPreviousStep();
-      } else {
+      }
+      else {
         logger.debug("Step is only step in main strategy...");
         this.setDeleted(true);
       }
-    } else {
+    }
+    else {
       logger.debug("Moving to previous step to replace non-first step...");
       step = step.getPreviousStep();
     }
@@ -253,12 +257,13 @@ public class Strategy {
     return updateStepTree(targetStepId, step);
   }
 
-  public Map<Integer, Integer> moveStep(int moveFromId, int moveToId,
-      String branch) throws WdkModelException, WdkUserException, SQLException {
+  public Map<Integer, Integer> moveStep(int moveFromId, int moveToId, String branch)
+      throws WdkModelException, WdkUserException, SQLException {
     Step targetStep;
     if (branch == null) {
       targetStep = getLatestStep();
-    } else {
+    }
+    else {
       targetStep = getLatestStep().getStepByDisplayId(Integer.parseInt(branch));
     }
 
@@ -275,7 +280,8 @@ public class Strategy {
 
     if (stubIx < 0) {
       step = null;
-    } else {
+    }
+    else {
       step = targetStep.getStep(stubIx);
     }
 
@@ -283,32 +289,36 @@ public class Strategy {
       if (i == moveToIx) {
         if (step == null) {
           step = moveFromStep.getChildStep();
-        } else {
+        }
+        else {
           // assuming boolean, will need to add case for
           // non-boolean op
           Step rightStep = moveFromStep.getChildStep();
-          moveFromStep = user.createBooleanStep(step, rightStep,
-              moveFromStep.getOperation(), false, moveFromStep.getFilterName());
+          moveFromStep = user.createBooleanStep(step, rightStep, moveFromStep.getOperation(), false,
+              moveFromStep.getFilterName());
           step = moveFromStep;
         }
         // again, assuming boolean, will need to add case for
         // non-boolean
         Step rightStep = moveToStep.getChildStep();
-        moveToStep = user.createBooleanStep(step, rightStep,
-            moveToStep.getOperation(), false, moveToStep.getFilterName());
+        moveToStep = user.createBooleanStep(step, rightStep, moveToStep.getOperation(), false,
+            moveToStep.getFilterName());
         step = moveToStep;
-      } else if (i == moveFromIx) {
+      }
+      else if (i == moveFromIx) {
         // do nothing; this step was moved, so we just ignore it.
-      } else {
+      }
+      else {
         newStep = targetStep.getStep(i);
         if (step == null) {
           step = newStep.getChildStep();
-        } else {
+        }
+        else {
           // again, assuming boolean, will need to add case for
           // non-boolean
           Step rightStep = newStep.getChildStep();
-          newStep = user.createBooleanStep(step, rightStep,
-              newStep.getOperation(), false, newStep.getFilterName());
+          newStep = user.createBooleanStep(step, rightStep, newStep.getOperation(), false,
+              newStep.getFilterName());
           step = moveToStep;
         }
       }
@@ -317,10 +327,9 @@ public class Strategy {
     return updateStepTree(targetStepId, step);
   }
 
-  private Map<Integer, Integer> updateStepTree(int targetStepId, Step newStep)
-      throws WdkModelException, WdkUserException, SQLException {
-    logger.debug("update step tree - target=" + targetStepId + ", newStep="
-        + newStep.getStepId());
+  private Map<Integer, Integer> updateStepTree(int targetStepId, Step newStep) throws WdkModelException,
+      WdkUserException, SQLException {
+    logger.debug("update step tree - target=" + targetStepId + ", newStep=" + newStep.getStepId());
     Map<Integer, Integer> stepIdsMap = new HashMap<Integer, Integer>();
     Step root = getLatestStep();
     Step targetStep = root.getStepByDisplayId(targetStepId);
@@ -337,9 +346,9 @@ public class Strategy {
       Step parentStep = root.getStepByChildId(targetStepId);
       Step nextStep = root.getStepByPreviousId(targetStepId);
 
-      logger.debug("target: " + targetStep.getStepId() + ", parent: "
-          + parentStep + ", next: " + nextStep);
-      if (parentStep == null && nextStep == null) break;
+      logger.debug("target: " + targetStep.getStepId() + ", parent: " + parentStep + ", next: " + nextStep);
+      if (parentStep == null && nextStep == null)
+        break;
 
       targetStep = (parentStep != null) ? parentStep : nextStep;
 
@@ -352,7 +361,8 @@ public class Strategy {
       Set<String> invalidParams = new LinkedHashSet<>();
       Map<String, Param> params = question.getParamMap();
       for (String paramName : values.keySet()) {
-        if (!params.containsKey(paramName)) invalidParams.add(paramName);
+        if (!params.containsKey(paramName))
+          invalidParams.add(paramName);
       }
       for (String paramName : invalidParams) {
         values.remove(paramName);
@@ -361,22 +371,23 @@ public class Strategy {
       String paramName;
       if (parentStep != null) {
         paramName = targetStep.getChildStepParam();
-      } else {
+      }
+      else {
         paramName = targetStep.getPreviousStepParam();
       }
       values.put(paramName, Integer.toString(newStepId));
 
       // replace newStep with new pnStep, and iterate to the parent/next
       // node
-      newStep = user.createStep(question, values, targetStep.getFilter(),
-          false, false, targetStep.getAssignedWeight());
+      newStep = user.createStep(question, values, targetStep.getFilter(), false, false,
+          targetStep.getAssignedWeight());
       newStep.setCustomName(targetStep.getBaseCustomName());
       newStep.setCollapsible(targetStep.isCollapsible());
       newStep.setCollapsedName(targetStep.getCollapsedName());
       newStep.update(false);
 
-      Events.triggerAndWait(new StepCopiedEvent(targetStep, newStep),
-          new WdkModelException("Unable to execute all operations subsequent to step copy."));
+      Events.triggerAndWait(new StepCopiedEvent(targetStep, newStep), new WdkModelException(
+          "Unable to execute all operations subsequent to step copy."));
 
       newStepId = newStep.getStepId();
       targetStepId = targetStep.getStepId();
@@ -396,10 +407,9 @@ public class Strategy {
   }
 
   /**
-   * checksum of a strategy is different from signature in that signature is
-   * stable and it will never change after the strategy is created, while
-   * checksum depends on many properties of a strategy, and it will change when
-   * the strategies properties are changed.
+   * checksum of a strategy is different from signature in that signature is stable and it will never change
+   * after the strategy is created, while checksum depends on many properties of a strategy, and it will
+   * change when the strategies properties are changed.
    * 
    * @return
    * @throws JSONException
@@ -438,7 +448,8 @@ public class Strategy {
 
       JSONObject stepContent = getLatestStep().getJSONContent(this.strategyId, forChecksum);
       jsStrategy.put("latestStep", stepContent);
-    } catch (JSONException ex) {
+    }
+    catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
     return jsStrategy;
@@ -452,8 +463,10 @@ public class Strategy {
    * @throws WdkUserException
    */
   public boolean isValid() throws WdkModelException {
-    if (latestStep == null) getLatestStep();
-    if (latestStep != null) valid = latestStep.isValid();
+    if (latestStep == null)
+      getLatestStep();
+    if (latestStep != null)
+      valid = latestStep.isValid();
     return valid;
   }
 
@@ -465,7 +478,8 @@ public class Strategy {
    * @return the lastRunTime
    */
   public Date getLastRunTime() {
-    if (latestStep != null) lastRunTime = latestStep.getLastRunTime();
+    if (latestStep != null)
+      lastRunTime = latestStep.getLastRunTime();
     return lastRunTime;
   }
 
@@ -493,10 +507,9 @@ public class Strategy {
   }
 
   /**
-   * checksum of a strategy is different from signature in that signature is
-   * stable and it will never change after the strategy is created, while
-   * checksum depends on many properties of a strategy, and it will change when
-   * the strategies properties are changed.
+   * checksum of a strategy is different from signature in that signature is stable and it will never change
+   * after the strategy is created, while checksum depends on many properties of a strategy, and it will
+   * change when the strategies properties are changed.
    * 
    * @return the signature
    */
@@ -527,8 +540,9 @@ public class Strategy {
     this.description = description;
   }
 
-  public int getEstimateSize() {
-    if (latestStep != null) estimateSize = latestStep.getEstimateSize();
+  public int getEstimateSize() throws WdkModelException {
+    if (latestStep != null)
+      estimateSize = latestStep.getEstimateSize();
     return estimateSize;
   }
 
