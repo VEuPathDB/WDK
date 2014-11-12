@@ -121,15 +121,17 @@ public class ListColumnFilter extends ColumnFilter {
 
   private List<String> getValues(JSONObject jsValue) {
     List<String> values = new ArrayList<>();
-    Object objValues = jsValue.get(KEY_VALUES);
-    if (objValues instanceof JSONArray) { // multi values
-      JSONArray jsValues = (JSONArray) objValues;
-      for (int i = 0; i < jsValues.length(); i++) {
-        values.add(jsValues.getString(i));
+    if (jsValue.has(KEY_VALUES)) { 
+      Object objValues = jsValue.get(KEY_VALUES);
+      if (objValues instanceof JSONArray) { // multi values
+        JSONArray jsValues = (JSONArray) objValues;
+        for (int i = 0; i < jsValues.length(); i++) {
+          values.add(jsValues.getString(i));
+        }
       }
-    }
-    else { // single value
-      values.add(objValues.toString());
+      else { // single value
+        values.add(objValues.toString());
+      }
     }
     return values;
   }
