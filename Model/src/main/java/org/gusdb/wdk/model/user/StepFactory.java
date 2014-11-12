@@ -1052,8 +1052,8 @@ public class StepFactory {
       throw new WdkModelException(ex);
     }
 
-    Events.triggerAndWait(new StepCopiedEvent(oldStep, newStep),
-        new WdkModelException("Unable to execute all operations subsequent to step copy."));
+    Events.triggerAndWait(new StepCopiedEvent(oldStep, newStep), new WdkModelException(
+        "Unable to execute all operations subsequent to step copy."));
 
     // create mapping from old step to new step
     stepIdsMap.put(oldStep.getStepId(), newStep.getStepId());
@@ -1636,8 +1636,8 @@ public class StepFactory {
     if (filterOptions != null)
       jsContent.put(KEY_FILTERS, filterOptions.getJSON());
 
-    String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " +
-        COLUMN_DISPLAY_PARAMS + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
+    String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_DISPLAY_PARAMS + " = ? WHERE " +
+        COLUMN_STEP_ID + " = ?";
     PreparedStatement psUpdate = null;
     try {
       psUpdate = SqlUtils.getPreparedStatement(dataSource, sql);
@@ -1653,23 +1653,28 @@ public class StepFactory {
       SqlUtils.closeStatement(psUpdate);
     }
   }
-  
-  public int resetEstimateSizes(List<Integer> stepIds) throws WdkModelException  {
-    // prepare the sql that will reset the estimate size of given steps;
-    StringBuilder sql = new StringBuilder("UPDATE ");
-    sql.append(userSchema + TABLE_STEP);
-    sql.append(" SET " + COLUMN_ESTIMATE_SIZE + " = " + Step.RESET_SIZE_FLAG);
-    sql.append(" WHERE " + COLUMN_STEP_ID + " IN (");
-    for (int i = 0; i < stepIds.size(); i++) {
-      if (i > 0)
-        sql.append(", ");
-      sql.append(stepIds.get(i));
-    }
-    sql.append(")");
-    
+
+  public int resetEstimateSizes(int fromStepId) throws WdkModelException {
+    // TODO - This part of the code only works in Oracle, and it should be refactored as platform dependent
+    // method into FgpUtil, and the PosgreSQL version should also be provided there.
+    String sql = "UPDATE userlogins5.steps SET estimate_size = " + Step.RESET_SIZE_FLAG +
+        "  WHERE step_id IN (SELECT step_id FROM userlogins5.steps " +
+        "                    START WITH step_id = " + fromStepId +
+        "                    CONNECT BY left_child_id = PRIOR step_id OR right_child_id = PRIOR step_id)";
+
+    // PosgreSQL version
+//    String sql = "UPDATE userlogins5.steps SET estimate_size = " + Step.RESET_SIZE_FLAG +
+//        "  WHERE step_id IN (WITH RECURSIVE parent_steps (step_id, left_child_id, right_child_id) " +
+//        "                      SELECT step_id, left_child_id, right_child_id FROM userlogins5.steps " +
+//        "                      WHERE step_id = " + fromStepId +
+//        "                    UNION                          " +
+//        "                      SELECT s.step_id, s.left_child_id, s.right_child_id " +
+//        "                      FROM userlogins5.steps s, parent_steps ps " +
+//        "                      WHERE ps.left_child_id = s.step_id OR ps.right_child_id = s.step_id )";
+
     // execute the update
     try {
-      return SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-step-reset-size");
+      return SqlUtils.executeUpdate(dataSource, sql, "wdk-step-reset-size");
     }
     catch (SQLException ex) {
       throw new WdkModelException(ex);
