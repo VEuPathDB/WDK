@@ -7,7 +7,8 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
     
     this.initialize = function() {
       $el.find(".filters-panel").accordion({
-        collapsible: true
+        collapsible: true,
+        active: false,
       });
 
       // initialize current filters

@@ -88,12 +88,16 @@ public class ListColumnFilter extends ColumnFilter {
 
     // put the filter values as join conditions
     List<String> values = getValues(jsValue);
-    for (int i = 0; i < values.size(); i++) {
-      if (i > 0)
-        sql.append(", ");
-      // escape quotes
-      String value = "'" + values.get(i).replaceAll("'", "''") + "'";
-      sql.append(value);
+    if (values.size() > 0) {
+      for (int i = 0; i < values.size(); i++) {
+        if (i > 0)
+          sql.append(", ");
+        // escape quotes
+        String value = "'" + values.get(i).replaceAll("'", "''") + "'";
+        sql.append(value);
+      }
+    } else { // no filter value selected, use default one;
+      sql.append("''");
     }
     sql.append(")");
     return sql.toString();

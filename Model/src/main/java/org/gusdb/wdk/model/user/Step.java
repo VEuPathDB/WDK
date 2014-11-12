@@ -783,6 +783,10 @@ public class Step {
   }
 
   public boolean isFiltered() {
+    // first check if new filter has been applied
+    if (filterOptions != null && filterOptions.isFiltered())
+      return true;
+
     AnswerFilterInstance filter = getFilter();
     if (filter == null)
       return false;
