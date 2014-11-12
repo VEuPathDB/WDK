@@ -27,6 +27,10 @@ public class FilterOptionList {
     }
   }
 
+  public boolean isFiltered() {
+    return (_options.size() > 0);
+  }
+
   public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
     Filter filter = _step.getQuestion().getFilter(filterName);
     FilterOption option = new FilterOption(_step, filter, filterValue);

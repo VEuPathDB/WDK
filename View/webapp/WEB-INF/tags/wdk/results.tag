@@ -44,11 +44,13 @@
 
 <!-- ================ FILTERS DEFINED IN MODEL.XML =============== -->
 
+<%--
 <c:if test="${strategy != null}">
   <imp:filterLayouts strategyId="${strategy.strategyId}" 
                      stepId="${step.stepId}"
                      answerValue="${wdkAnswer}" />
 </c:if>
+--%>
 
 <!-- ================ New filter architecture ================= -->
 
