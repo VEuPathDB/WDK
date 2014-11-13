@@ -3,47 +3,47 @@ package org.gusdb.wdk.model.filter;
 
 public abstract class AbstractFilter implements Filter {
 
-  private final String key;
-  private String display;
-  private String description;
-  private String view;
+  private final String _key;
+  private String _display;
+  private String _description;
+  private String _view;
   
   public AbstractFilter(String key) {
-    this.key = key;
+    this._key = key;
   }
 
   @Override
   public String getKey() {
-    return key;
+    return _key;
   }
   
   @Override
   public String getDisplay() {
-    return display;
+    return _display;
   }
   
   @Override  
   public void setDisplay(String display) {
-    this.display = display;
+    this._display = display;
   }
 
   @Override
   public String getDescription() {
-    return description;
+    return _description;
   }
   
   @Override  
   public void setDescription(String description) {
-    this.description = description;
+    this._description = description;
   }
 
   @Override
   public String getView() {
-    return view;
+    return _view;
   }
 
   @Override  
   public void setView(String view) {
-    this.view = view;
+    this._view = view;
   }
 }
