@@ -39,7 +39,12 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
 
     this.initCurrentFilters = function() {
       $el.find(".current-filters .option").each(function() {
-        // var key = $(this).attr("id");
+        var key = $(this).attr("id");
+        $(this).find("input").change(function() {
+          var disabled = this.checked : "false" : "true";
+          var url = $(this).data("url") + "&disabled=" + disabled;
+          window.location = url;
+        });
       });
     };
   }

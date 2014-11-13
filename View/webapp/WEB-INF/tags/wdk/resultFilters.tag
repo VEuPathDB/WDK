@@ -16,7 +16,8 @@
       <c:set var="filter" value="${option.filter}" />
       <div class="option" id="${filter.key}" title="${filter.description}">
         <input type="checkbox" checked="checked"
-               title="Uncheck to disable this filter" />
+               title="Uncheck to disable this filter"
+               data-url="<c:url value='/toggleFilter.do?step=${step.stepId}&filter=${filter.key}' />" />
         <span class="name">${filter.display}</span>
         :
         <span class="value">${option.displayValue}</span>
