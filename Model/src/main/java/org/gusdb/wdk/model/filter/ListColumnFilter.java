@@ -116,6 +116,8 @@ public class ListColumnFilter extends ColumnFilter {
         buffer.append(", ");
       buffer.append(value);
     }
+    if (values.size() == 0)
+      buffer.append("(none selected)");
     return buffer.toString();
   }
 

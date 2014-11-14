@@ -10,12 +10,15 @@
 
 
 <div class="wdk-filters" data-step="${step.stepId}">
+
   <div class="current-filters">
     <c:forEach items="${step.filterOptions.filterOptions}" var="entity">
       <c:set var="option" value="${entity.value}" />
       <c:set var="filter" value="${option.filter}" />
-      <div class="option" id="${filter.key}" title="${filter.description}">
-        <input type="checkbox" checked="checked"
+      <div class="option ${option.disabled ? 'disabled' : ''}" 
+           id="${filter.key}" title="${filter.description}">
+        <c:set var="checked"><c:if test="${!option.disabled}">checked="checked"</c:if></c:set>
+        <input type="checkbox" ${checked}
                title="Uncheck to disable this filter"
                data-url="<c:url value='/toggleFilter.do?step=${step.stepId}&filter=${filter.key}' />" />
         <span class="name">${filter.display}</span>

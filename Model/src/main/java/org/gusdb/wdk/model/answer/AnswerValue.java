@@ -942,9 +942,11 @@ public class AnswerValue {
       // apply new filters
       if (filterOptions != null) {
         for (FilterOption filterOption : filterOptions.getFilterOptions().values()) {
-          if (excludeFilter == null || !filterOption.getKey().equals(excludeFilter) || !filterOption.isDisabled()) {
-            Filter filter = question.getFilter(filterOption.getKey());
-            innerSql = filter.getSql(this, innerSql, filterOption.getValue());
+          if (excludeFilter == null || !filterOption.getKey().equals(excludeFilter)) {
+            if (!filterOption.isDisabled()) {
+              Filter filter = question.getFilter(filterOption.getKey());
+              innerSql = filter.getSql(this, innerSql, filterOption.getValue());
+            }
           }
         }
       }
