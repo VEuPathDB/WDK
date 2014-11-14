@@ -14,14 +14,15 @@ public class FilterOption {
   private final Step _step;
   private final Filter _filter;
   private final JSONObject _value;
-  private boolean _disabled;
+  private boolean _disabled = false;
 
   public FilterOption(Step step, JSONObject jsFilterOption) throws WdkModelException {
     String name = jsFilterOption.getString(KEY_NAME);
     this._step = step;
     this._value = jsFilterOption.getJSONObject(KEY_VALUE);
     this._filter = step.getQuestion().getFilter(name);
-    this._disabled = jsFilterOption.getBoolean(KEY_DISABLED);
+    if (jsFilterOption.has(KEY_DISABLED))
+      this._disabled = jsFilterOption.getBoolean(KEY_DISABLED);
   }
 
   public FilterOption(Step step, Filter filter, JSONObject value) {
@@ -59,6 +60,7 @@ public class FilterOption {
     JSONObject jsFilterOption = new JSONObject();
     jsFilterOption.put(KEY_NAME, _filter.getKey());
     jsFilterOption.put(KEY_VALUE, _value);
+    jsFilterOption.put(KEY_DISABLED, _disabled);
     return jsFilterOption;
   }
 }
