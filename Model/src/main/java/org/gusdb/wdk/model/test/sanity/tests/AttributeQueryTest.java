@@ -79,8 +79,6 @@ public class AttributeQueryTest extends QueryTest {
       throws SQLException, WdkModelException, WdkUserException {
 
     Map<String, String> params = new LinkedHashMap<String, String>();
-    // put user id into the param
-    // params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
     SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
         params, true, 0, new LinkedHashMap<String, String>());

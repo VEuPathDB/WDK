@@ -107,7 +107,7 @@ public class SanityTesterCLI {
     options.addOption(filter);
 
     Option failuresOnly = new Option("failuresOnly",
-        "Only print failures only.");
+        "Only print failures.");
     options.addOption(failuresOnly);
 
     Option indexOnly = new Option("indexOnly",

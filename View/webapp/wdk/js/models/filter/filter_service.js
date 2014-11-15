@@ -11,11 +11,10 @@ wdk.namespace('wdk.models.filter', function(ns) {
   /**
    * Base class for FilterService classes.
    *
-   * A subclass should only need to implement an
-   * `applyFilters` method. This method's job is to apply
-   * added filters to the data. This may be done locally
-   * using JavaScript functions, or it may use a remote
-   * service to retrieve filtered results.
+   * A subclass should only need to implement a getFilteredData() method.
+   * This method's job is to apply added filters to the data. This may be done
+   * locally using JavaScript functions, or it may use a remote service to
+   * retrieve filtered results.
    *
    */
   var FilterService = Backbone.Model.extend({
@@ -26,13 +25,14 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     initialize: function() {
+      var debouncedApplyFilters = _.debounce(this.applyFilters.bind(this), 100);
+
       // track which filters are being applied
       this.filterChangeSet = [];
       this.filters = new Filters();
-      this.applyFilters();
-
       this.listenTo(this.filters, 'add remove', function(m) { this.filterChangeSet.push(m); });
-      this.listenTo(this.filters, 'add remove', _.debounce(this.applyFilters, 100));
+      this.listenTo(this.filters, 'add remove', debouncedApplyFilters);
+      debouncedApplyFilters();
     },
 
     applyFilters: function() {

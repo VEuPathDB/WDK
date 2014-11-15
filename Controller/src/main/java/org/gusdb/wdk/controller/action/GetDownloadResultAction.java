@@ -119,7 +119,6 @@ public class GetDownloadResultAction extends Action {
         }
         catch (Exception ex) {
             logger.error("downloading failed", ex);
-            ex.printStackTrace();
             throw ex;
         }
     }
