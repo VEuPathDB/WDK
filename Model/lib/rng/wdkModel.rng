@@ -845,7 +845,12 @@
           <data type="boolean" />
         </attribute>
       </optional>
-      <oneOrMore>
+      <optional>
+        <attribute name="useDBLink">
+          <data type="boolean" />
+        </attribute>
+      </optional>
+     <oneOrMore>
         <choice>
           <ref name="sqlColumns" />
 
