@@ -92,7 +92,7 @@
   width: 25%;
   max-height: 35em;
   overflow-y: auto;
-  padding-left: 10px;
+  padding-left: 18px;
   box-shadow: inset -1px 0px 0px #eee;
   background-image: -webkit-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: -moz-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
@@ -101,35 +101,40 @@
 }
 .field-list > ul {
   margin-top: 1em;
+  margin-right: .2em;
 }
 .field-list > ul > li > a {
   margin-left: .8em;
 }
 .field-list h4 {
   cursor: pointer;
-  margin: 1em 0 .5em 4px;
+  margin: 0;
+  padding: 5px 4px;
   border: 1px solid transparent;
   font-weight: normal;
+  position: relative;
 }
 .field-list h4:before {
   /* down pointing triangle */
-  content: "\25BC  ";
-  font-size: 75%;
+  content: "\25BC";
+  margin-right: .4em;
+  position: absolute;
+  left: -1.2em;
+  font-size: 80%;
 }
 .field-list h4.collapsed:before {
   /* right pointing triangle */
-  content: "\25B6  ";
+  content: "\25B6";
 }
 .field-list h4.collapsed + div {
   display:none;
 }
 .field-list ul {
-  padding-bottom: .5em;
   font-weight: bold;
   text-transform: capitalize;
 }
 .field-list > ul ul {
-  padding-left: .8em;
+  padding-left: 1em;
 }
 .field-list ul li {
   margin: 0;
@@ -154,11 +159,15 @@
   border-left: 2px solid;
 }
 .field-list li.active a {
+  /*
   background-color: white;
-  border-left: 2px solid;
   border-right: 1px solid white;
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
+  */
+  background-color: #fafafa;
+  border: 1px solid #f3f3f3;
+  border-left: 2px solid;
 }
 .field-detail {
   width: 75%;
