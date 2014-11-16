@@ -126,7 +126,7 @@
   /* right pointing triangle */
   content: "\25B6";
 }
-.field-list h4.collapsed + ul {
+.field-list h4.collapsed + div {
   display:none;
 }
 .field-list ul {
