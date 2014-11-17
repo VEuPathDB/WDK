@@ -119,7 +119,7 @@
   content: "\25BC";
   margin-right: .4em;
   position: absolute;
-  left: -1.2em;
+  left: -1em;
   font-size: 80%;
 }
 .field-list h4.collapsed:before {
@@ -134,7 +134,7 @@
   text-transform: capitalize;
 }
 .field-list > ul ul {
-  padding-left: 1em;
+  padding-left: 1.2em;
 }
 .field-list ul li {
   margin: 0;
