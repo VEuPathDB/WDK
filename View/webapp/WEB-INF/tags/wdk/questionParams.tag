@@ -88,7 +88,7 @@
                 <imp:dynamicParamGroup paramGroup="${paramGroup}" />
               </c:when>
               <c:otherwise>
-                <imp:questionParamGroup paramGroup="${paramGroup}" groupDescription="${groupDescription}/>
+                <imp:questionParamGroup paramGroup="${paramGroup}" groupDescription="${groupDescription}" />
               </c:otherwise>
             </c:choose>
 
