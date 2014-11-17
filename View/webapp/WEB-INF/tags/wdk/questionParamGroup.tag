@@ -9,7 +9,13 @@
               description="Parameter group"
               type="java.util.Map"
 %>
+<%@ attribute name="groupDescription"
+              required="false"
+              description="Group description"
+              type="java.lang.String"
+%>
 
+<div style="margin:0 0 1em 2em">${groupDescription}</div>
 
 <!-- get params from group -->
 
