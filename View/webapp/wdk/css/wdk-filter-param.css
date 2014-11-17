@@ -12,6 +12,7 @@
 .filter-param .toggle-links {
   font-size: smaller;
   margin: 0;
+  position: absolute;
 }
 .filter-param, .filter-param *, .filter-items {
   -webkit-box-sizing: border-box;
@@ -68,19 +69,25 @@
 }
 .chart-title {
   color: #666;
+  font-weight: bold;
 }
 .chart-title.x-axis {
   text-align: center;
 }
 .chart-title.y-axis {
   position: absolute;
-  left: -3.5em;
-  top: 14em;
+  left: -1em;
+  top: 20em;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);
   -o-transform: rotate(-90deg);
   transform: rotate(-90deg);
+  -webkit-transform-origin: 0;
+  -moz-transform-origin: 0;
+  -ms-transform-origin: 0;
+  -o-transform-origin: 0;
+  transform-origin: 0;
 }
 .filters .field-list,
 .filters .field-detail {
@@ -230,6 +237,9 @@
   width: 100%;
 }
 
+.membership-filter th {
+  border: none;
+}
 .membership-filter .member {
   margin: .4em 0;
   height: 1em;
