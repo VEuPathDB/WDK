@@ -13,6 +13,9 @@
   font-size: smaller;
   margin: 0;
 }
+.filter-param .membership-filter .toggle-links {
+  position: absolute;
+}
 .filter-param, .filter-param *, .filter-items {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -68,19 +71,25 @@
 }
 .chart-title {
   color: #666;
+  font-weight: bold;
 }
 .chart-title.x-axis {
   text-align: center;
 }
 .chart-title.y-axis {
   position: absolute;
-  left: -3.5em;
-  top: 14em;
+  left: -1em;
+  top: 20em;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);
   -o-transform: rotate(-90deg);
   transform: rotate(-90deg);
+  -webkit-transform-origin: 0;
+  -moz-transform-origin: 0;
+  -ms-transform-origin: 0;
+  -o-transform-origin: 0;
+  transform-origin: 0;
 }
 .filters .field-list,
 .filters .field-detail {
@@ -92,7 +101,8 @@
   width: 25%;
   max-height: 35em;
   overflow-y: auto;
-  padding-left: 18px;
+  padding-left: 8px;
+  padding-right: 8px;
   box-shadow: inset -1px 0px 0px #eee;
   background-image: -webkit-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: -moz-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
@@ -101,7 +111,6 @@
 }
 .field-list > ul {
   margin-top: 1em;
-  margin-right: .2em;
 }
 .field-list > ul > li > a {
   margin-left: .8em;
@@ -109,7 +118,7 @@
 .field-list h4 {
   cursor: pointer;
   margin: 0;
-  padding: 5px 4px;
+  padding: .5em 0;
   border: 1px solid transparent;
   font-weight: normal;
   position: relative;
@@ -117,10 +126,9 @@
 .field-list h4:before {
   /* down pointing triangle */
   content: "\25BC";
-  margin-right: .4em;
-  position: absolute;
-  left: -1.2em;
   font-size: 80%;
+  display: inline-block;
+  width: 1.2em;
 }
 .field-list h4.collapsed:before {
   /* right pointing triangle */
@@ -134,7 +142,7 @@
   text-transform: capitalize;
 }
 .field-list > ul ul {
-  padding-left: 1em;
+  padding-left: 1.2em;
 }
 .field-list ul li {
   margin: 0;
@@ -143,20 +151,22 @@
   font-weight: normal;
 }
 .field-list li label {
-  margin-left: .4em;
+  padding: .4em 1em;
+  display: inline-block;
 }
 .field-list li a {
   display: block;
-  padding: 5px 4px;
-  border-radius: 2px;
+  padding: .5em 1em;
+  /* border-radius: 2px;
+  border-left: 2px solid transparent;*/
   border: 1px solid transparent;
-  border-left: 2px solid transparent;
   text-decoration: none;
 }
 .field-list li a:hover,
 .field-list li a:focus,
 .field-list li a:active {
-  border-left: 2px solid;
+  /* border-left: 2px solid; */
+  background-color: #f9f9f9;
 }
 .field-list li.active a {
   /*
@@ -165,9 +175,10 @@
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
   */
-  background-color: #fafafa;
-  border: 1px solid #f3f3f3;
-  border-left: 2px solid;
+  background-color: #ececec;
+  border: 1px solid #e0e0e0;
+  font-weight: bold;
+  /* border-left: 2px solid; */
 }
 .field-detail {
   width: 75%;
@@ -228,6 +239,9 @@
   width: 100%;
 }
 
+.membership-filter th {
+  border: none;
+}
 .membership-filter .member {
   margin: .4em 0;
   height: 1em;
