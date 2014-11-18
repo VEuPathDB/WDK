@@ -14,7 +14,7 @@
   margin: 0;
 }
 .filter-param .membership-filter .toggle-links {
-  position: absolute;
+  /* position: absolute; */
 }
 .filter-param, .filter-param *, .filter-items {
   -webkit-box-sizing: border-box;
