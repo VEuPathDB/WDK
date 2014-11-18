@@ -342,7 +342,7 @@ wdk.namespace('wdk.controllers', function(ns) {
 
     abortMetadataRequest: function(field) {
       if (field) {
-        _.result(this.metadataXhrQueue[field.get('term')], 'abort');
+        return _.result(this.metadataXhrQueue[field.get('term')], 'abort');
       }
     },
 
