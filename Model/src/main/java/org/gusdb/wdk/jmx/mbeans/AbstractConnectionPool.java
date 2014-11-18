@@ -84,18 +84,6 @@ public abstract class AbstractConnectionPool extends BeanBase {
   }
 
   /**
-   * Returns the minimum amount of time an object may sit idle in the pool 
-   * before it is eligible for eviction by the idle object evictor (if any),
-   * with the extra condition that at least "minIdle" amount of object remain in the pool.
-   * This value is managed by the connection pool library.
-   *
-   * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getSoftMinEvictableIdleTimeMillis()
-   */
-  public long getSoftMinEvictableIdleTimeMillis() {
-    return database.getSoftMinEvictableIdleTimeMillis();
-  }
-
-  /**
    * Returns the number of milliseconds to sleep between runs of the idle object evictor thread.
    * This value is managed by the connection pool library.
    *
