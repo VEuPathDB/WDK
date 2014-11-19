@@ -24,6 +24,12 @@ public class ParamValuesFactory {
 
   private static final Logger LOG = Logger.getLogger(ParamValuesFactory.class);
 
+  private static final String PARAM_NAME_MACRO = "{param_name}";
+  private static final String UNPOPULATABLE_DEP_PARAM_MSG = "Unable to populate " +
+      "dependent param " + PARAM_NAME_MACRO + ", even though all dependencies met.";
+  private static final String UNPOPULATABLE_INDEP_PARAM_MSG = "Unable to populate " +
+      "independent param " + PARAM_NAME_MACRO + " with default value.";
+
   public static class ValuesSetWrapper {
     private ParamValuesSet _valuesSet;
     private Exception _exception;
@@ -105,7 +111,7 @@ public class ParamValuesFactory {
 
   private static String getDependedValues(Param param) throws WdkModelException {
     return (param instanceof AbstractEnumParam && ((AbstractEnumParam)param).isDependentParam()) ?
-        "depends on [" + joinParamNames(((AbstractEnumParam)param).getDependedParams()) + "]" : "independent";
+        "depends on " + joinParamNames(((AbstractEnumParam)param).getDependedParams()) : "independent";
   }
 
   private static String joinParamNames(Set<Param> params) {
@@ -142,15 +148,17 @@ public class ParamValuesFactory {
       // The following handled by AbstractEnumParam.getDefault(...)
       //   6. "Normal" default value defined in Param
       //   7. Value captured via SelectMode defined in Param
-      if (param instanceof AbstractEnumParam && ((AbstractEnumParam)param).isDependentParam()) {
+      if (param instanceof AbstractEnumParam) {
         AbstractEnumParam enumParam = (AbstractEnumParam)param;
-        isDependent = true;
+        isDependent = enumParam.isDependentParam();
 
         // find depended params and see if all values are populated yet (should be no circular dependencies)
-        if (allDependenciesMet(enumParam, contextParamValues)) {
+        if (!isDependent || allDependenciesMet(enumParam, contextParamValues)) {
 
           // all dependencies met, try to populate value
+          LOG.info("Param select modes: " + FormatUtil.prettyPrint(paramValuesSet.getParamSelectModes()));
           SelectMode sanitySelectMode = paramValuesSet.getParamSelectModes().get(param.getName());
+          LOG.info("Trying to find default for " + param.getName() + " with sanitySelectMode=" + sanitySelectMode);
           if (sanitySelectMode != null ) {
             // ParamValuesSet defined a select mode; use it to fetch value
             // dependencies met; fetch value with sanity select mode
@@ -163,10 +171,10 @@ public class ParamValuesFactory {
               defaultValue = enumParam.getDefault(user, contextParamValues);
             }
           }
-          
+
           if (defaultValue == null) {
-            throw new WdkModelException("Unable to populate dependent param " +
-                param.getName() + ", even though all dependencies met.");
+            throw new WdkModelException((isDependent ? UNPOPULATABLE_DEP_PARAM_MSG :
+              UNPOPULATABLE_INDEP_PARAM_MSG).replace(PARAM_NAME_MACRO, param.getName()));
           }
         }
       }
@@ -184,8 +192,7 @@ public class ParamValuesFactory {
 
         // throw if value cannot be populated, unless param is user_id
         if (defaultValue == null && !paramName.equals(Utilities.COLUMN_USER_ID)) {
-          throw new WdkModelException("Unable to populate independent param " +
-              param.getName() + " with default value.");
+          throw new WdkModelException(UNPOPULATABLE_INDEP_PARAM_MSG.replace(PARAM_NAME_MACRO, param.getName()));
         }
       }
 
