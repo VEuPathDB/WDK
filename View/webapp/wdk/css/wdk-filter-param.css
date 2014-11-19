@@ -226,6 +226,17 @@
 .membership-filter .distribution {
   width: 9%;
 }
+
+/* fixed header */
+.membership-wrapper {
+  padding-top: 1.2em;
+  position: relative;
+}
+.membership-filter th div {
+  position: absolute;
+  top: 0;
+}
+
 .membership-table-panel {
   max-height: 500px;
   overflow-y: auto;
