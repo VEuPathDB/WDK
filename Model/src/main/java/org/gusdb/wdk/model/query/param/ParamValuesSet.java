@@ -2,7 +2,9 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -12,14 +14,29 @@ import org.gusdb.wdk.model.WdkModelException;
  * will be used in the sanity test.
  * 
  * @author jerric
- * 
  */
 public class ParamValuesSet extends WdkModelBase {
+
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(ParamValuesSet.class);
+  
+  public static final int MAXROWS = 1000000000;
+
   private String name;
   private Integer minRows;
   private Integer maxRows;
-  public static final int MAXROWS = 1000000000;
   private Map<String, String> paramValues = new LinkedHashMap<String, String>();
+  private Map<String, SelectMode> paramSelectModes = new LinkedHashMap<String, SelectMode>();
+
+  public ParamValuesSet() { }
+
+  public ParamValuesSet(ParamValuesSet valuesSet) {
+    name = valuesSet.name;
+    minRows = valuesSet.minRows;
+    maxRows = valuesSet.maxRows;
+    paramValues = new LinkedHashMap<>(valuesSet.paramValues);
+    paramSelectModes = new LinkedHashMap<>(valuesSet.paramSelectModes);
+  }
 
   public void setName(String name) {
     this.name = name;
@@ -45,12 +62,21 @@ public class ParamValuesSet extends WdkModelBase {
     return maxRows == null ? MAXROWS : maxRows;
   }
 
-  public void put(String name, String value) {
-    paramValues.put(name, value);
+  public void addParamValue(ParamValue paramValue) {
+    if (paramValue.getValue().isEmpty()) {
+      paramSelectModes.put(paramValue.getName(), paramValue.getSelectModeEnum());
+    }
+    else {
+      paramValues.put(paramValue.getName(), paramValue.getValue());
+    }
   }
 
   public Map<String, String> getParamValues() {
     return paramValues;
+  }
+
+  public Map<String, SelectMode> getParamSelectModes() {
+    return paramSelectModes;
   }
 
   public String[] getParamNames() {
@@ -60,15 +86,14 @@ public class ParamValuesSet extends WdkModelBase {
   }
 
   public void updateWithDefaults(ParamValuesSet defaults) {
-    if (defaults == null)
-      return;
+    if (defaults == null) return;
     if (minRows == null)
       minRows = defaults.getMinRows();
-    Map<String, String> map = defaults.getParamValues();
-    for (String paramName : map.keySet()) {
-      if (!paramValues.containsKey(paramName)) {
-        paramValues.put(paramName, map.get(paramName));
-      }
+    for (Entry<String, String> entry : defaults.getParamValues().entrySet()) {
+      updateWithDefault(entry.getKey(), entry.getValue());
+    }
+    for (Entry<String, SelectMode> entry : defaults.paramSelectModes.entrySet()) {
+      updateWithDefaultSelectMode(entry.getKey(), entry.getValue());
     }
   }
 
@@ -78,12 +103,10 @@ public class ParamValuesSet extends WdkModelBase {
     }
   }
 
-  @Override
-  public void excludeResources(String projectId) throws WdkModelException {}
-
-  @Override
-  public String toString() {
-    return paramValues.toString();
+  private void updateWithDefaultSelectMode(String paramName, SelectMode defaultSelectMode) {
+    if (!paramSelectModes.containsKey(paramName) && defaultSelectMode != null) {
+      paramSelectModes.put(paramName, defaultSelectMode);
+    }
   }
 
   public String getCmdLineString() {
@@ -115,5 +138,9 @@ public class ParamValuesSet extends WdkModelBase {
   }
 
   @Override
-  public void resolveReferences(WdkModel wodkModel) throws WdkModelException {}
+  public void excludeResources(String projectId) throws WdkModelException {}
+
+  @Override
+  public void resolveReferences(WdkModel wdkModel) throws WdkModelException {}
+
 }

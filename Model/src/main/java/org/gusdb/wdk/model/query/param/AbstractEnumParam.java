@@ -11,7 +11,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -63,6 +65,8 @@ import org.json.JSONObject;
  */
 public abstract class AbstractEnumParam extends Param {
 
+  private static final Logger LOG = Logger.getLogger(AbstractEnumParam.class);
+
   /**
    * @author jerric
    * 
@@ -109,10 +113,6 @@ public abstract class AbstractEnumParam extends Param {
   public static final String DISPLAY_TYPE_AHEAD = "typeAhead";
   public static final String DISPLAY_TREE_BOX = "treeBox";
 
-  static final String SELECT_MODE_NONE = "none";
-  static final String SELECT_MODE_ALL = "all";
-  static final String SELECT_MODE_FIRST = "first";
-
   protected boolean multiPick = false;
   protected boolean quote = true;
 
@@ -127,7 +127,7 @@ public abstract class AbstractEnumParam extends Param {
   /**
    * this property is only used by abstractEnumParams, but have to be initialized from suggest.
    */
-  protected String selectMode;
+  protected SelectMode selectMode;
 
   /**
    * collapse single-child branches if set to true
@@ -370,7 +370,21 @@ public abstract class AbstractEnumParam extends Param {
    * @throws WdkModelException
    */
   public String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException {
-    return getEnumParamCache(user, contextParamValues).getDefaultValue();
+    if (isDependentParam() && !contextParamValues.isEmpty()) {
+      LOG.debug("Default value requested for param " + getName() + " with context values " +
+          FormatUtil.prettyPrint(contextParamValues, Style.SINGLE_LINE));
+      String value = getEnumParamCache(user, contextParamValues).getDefaultValue();
+      LOG.debug("Returning default value of '" + value + "' for dependent param " + getName());
+      return value;
+    }
+    else {
+      return getEnumParamCache(user, contextParamValues).getDefaultValue();
+    }
+  }
+
+  public String getSanityDefault(User user, Map<String, String> contextParamValues,
+      SelectMode sanitySelectMode) {
+    return getEnumParamCache(user, contextParamValues).getSanityDefaultValue(sanitySelectMode);
   }
 
   public EnumParamCache getValueCache(User user) {
@@ -592,21 +606,21 @@ public abstract class AbstractEnumParam extends Param {
    * @param selectMode
    *          the selectMode to set
    */
-  public void setSelectMode(String selectMode) {
+  public void setSelectMode(SelectMode selectMode) {
     this.selectMode = selectMode;
   }
 
   /**
    * @return the selectMode
    */
-  public String getSelectMode() {
+  public SelectMode getSelectModeEnum() {
     return selectMode;
   }
 
   /**
-   * Builds the default value of the "current" enum values
+   * Builds the default value (and sanity default value) of the "current" enum values
    */
-  protected void applySelectMode(EnumParamCache cache) throws WdkModelException {
+  protected final void applySelectMode(EnumParamCache cache) throws WdkModelException {
     logger.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " +
         super.getDefault());
     String defaultFromModel = super.getDefault();
@@ -633,7 +647,6 @@ public abstract class AbstractEnumParam extends Param {
             // wrong.
             logger.warn(errorMessage);
             throw new WdkModelException(errorMessage);
-
           }
         }
       }
@@ -641,23 +654,34 @@ public abstract class AbstractEnumParam extends Param {
       return;
     }
 
+    String defaultFromSelectMode = getDefaultWithSelectMode(
+        cache.getTerms(), selectMode, multiPick,
+        cache.getTermTreeListRef().isEmpty() ? null :
+          cache.getTermTreeListRef().get(0));
+
+    if (defaultFromSelectMode != null) {
+      cache.setDefaultValue(defaultFromSelectMode);
+    }
+  }
+
+  public static String getDefaultWithSelectMode(Set<String> terms, SelectMode selectMode, boolean isMultiPick, EnumParamTermNode firstTreeNode) {
     // single pick can only select one value
-    if (selectMode == null || !multiPick)
-      selectMode = SELECT_MODE_FIRST;
-    if (selectMode.equalsIgnoreCase(SELECT_MODE_ALL)) {
+    if (selectMode == null || !isMultiPick)
+      selectMode = SelectMode.FIRST;
+    if (selectMode.equals(SelectMode.ALL)) {
       StringBuilder builder = new StringBuilder();
-      for (String term : cache.getTerms()) {
+      for (String term : terms) {
         if (builder.length() > 0)
           builder.append(",");
         builder.append(term);
       }
-      cache.setDefaultValue(builder.toString());
+      return builder.toString();
     }
-    else if (selectMode.equalsIgnoreCase(SELECT_MODE_FIRST)) {
+    else if (selectMode.equals(SelectMode.FIRST)) {
       StringBuilder builder = new StringBuilder();
       Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
-      if (cache.getTermTreeListRef().size() > 0)
-        stack.push(cache.getTermTreeListRef().get(0));
+      if (firstTreeNode != null)
+        stack.push(firstTreeNode);
       while (!stack.empty()) {
         EnumParamTermNode node = stack.pop();
         if (builder.length() > 0)
@@ -667,13 +691,14 @@ public abstract class AbstractEnumParam extends Param {
           stack.push(child);
         }
       }
-      cache.setDefaultValue(builder.toString());
+      return builder.toString();
     }
+    return null;
   }
 
   @Override
-  protected void applySuggection(ParamSuggestion suggest) {
-    selectMode = ((EnumParamSuggestion) suggest).getSelectMode();
+  protected void applySuggestion(ParamSuggestion suggest) {
+    selectMode = ((EnumParamSuggestion) suggest).getSelectModeEnum();
   }
 
   /**

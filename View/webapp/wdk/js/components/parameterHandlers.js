@@ -83,6 +83,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   //==============================================================================
   function initTypeAhead(element) {
+    var keepPreviousValue = element.closest('form').is('.is-revise');
+
     element.find('[data-type="type-ahead"]')
       .each(function(i, node) {
         var $param = $(node);
@@ -90,14 +92,14 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         var paramName = $param.attr('name');
 
         if ($param.hasClass('dependentParam')) {
-          updateDependentParam($param, element);
+          updateDependentParam($param, element, keepPreviousValue);
         } else {
           var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
 
           $.getJSON(sendReqUrl)
             .then(function(data) {
               // createAutoComplete(data, paramName, element);
-              createFilteredSelect(data, paramName, $param);
+              createFilteredSelect(data, paramName, $param, keepPreviousValue);
             })
             .done(function() {
               $param.find('.loading').hide();
@@ -129,8 +131,13 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   //==============================================================================
   function createFilterParam($param, questionName, filterData) {
+    var filterParam = $param.data('filterParam');
+
+    if (filterParam) filterParam.remove();
+
     var form = $param.closest('form');
     var title = $param.data('title');
+    var isAllowEmpty = $param.data('isAllowEmpty');
     var name = $param.attr('name');
     console.time('intialize render :: ' + name);
     var defaultColumns = $param.data('default-columns');
@@ -186,8 +193,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         }, filterData.metadataSpec[name]);
       });
 
-    var filterParam = new wdk.controllers.FilterParam({
-      el: $param,
+    filterParam = new wdk.controllers.FilterParam({
       data: filterData.values,
       metadata: filterData.metadata,
       fields: fields,
@@ -200,6 +206,12 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       questionName: questionName
     });
 
+    $param.append(filterParam.el);
+
+    // This is a circular reference and potential memory leak, although jQuery seems to make this safe.
+    // See http://stackoverflow.com/questions/10092619/precise-explanation-of-javascript-dom-circular-reference-issue
+    $param.data('filterParam', filterParam);
+
     filterParam.on('change:value', function(filterParam, value) {
       input.val(JSON.stringify(value));
     });
@@ -210,124 +222,25 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     form.on('submit', function(e) {
       var filteredData = filterParam.getSelectedData();
-      if (filteredData.length === 0) {
+      if (!isAllowEmpty && filteredData.length === 0) {
         e.preventDefault();
         $param.find('.ui-state-error').remove();
         $param.prepend(
           '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">' +
-          'Please select ' + name + ' to continue.' +
+          'Please select ' + title + ' to continue.' +
           '</div>'
         );
         filterParam.once('change:value', function() {
           $param.find('.ui-state-error').remove();
         });
+        $('html, body').animate({ scrollTop: $param.offset().top - 100 }, 200);
       }
     });
 
     console.timeEnd('intialize render :: ' + name);
   }
 
-  function updateFilterParam(paramNode, data) {
-    paramNode.data('filterService').reset(data);
-  }
-
-  function parseFilterData(filterData) {
-    // var Field = wdk.models.filter.Field;
-    var metadata = filterData.metadata;
-    var metadataSpec = filterData.metadataSpec;
-    var values = filterData.values;
-    // var unknowns = [];
-
-    // unique set of metadata properties found
-    // in metadata object values
-    // console.time('  v pick unique terms');
-    // FIXME Make this more efficient.
-    //
-    // We need the keys for all 
-    // var metadataTerms = _.values(metadata)
-    //   .map(_.keys)
-    //   .reduce(function (a, b) { return _.union(a, b); })
-    //   .filter(function(name) {
-    //     return !!metadataSpec[name];
-    //   });
-    // var metadataTerms = _.chain(metadata)
-    //   .values()
-    //   .map(Object.keys)
-    //   .flatten()
-    //   .uniq()
-    //   .filter(function(name) { return metadataSpec[name]; })
-    //   .value();
-    // console.timeEnd('  v pick unique terms');
-
-    // console.time('usedMetadata');
-    // var usedMetadata = _.uniq([].concat.apply([], _.values(metadata).map(_.keys)));
-    // console.timeEnd('usedMetadata');
-
-    // TODO remove
-    console.time('  v mark leaves');
-    var fields = _.keys(metadataSpec)
-      .map(function(name) {
-        return _.extend({
-          //filterable: _.contains(usedMetadata, name),
-          term: name,
-          display: name
-        }, metadataSpec[name]);
-      });
-    console.timeEnd('  v mark leaves');
-
-    // TODO remove
-    console.time('  v map data to fields');
-    var data = values
-      .map(function(d) {
-        var mdata = metadata[d.term],
-            missingMsg = 'Missing metadata for "' + d.term + '".';
-
-        if (mdata === undefined) {
-          _.defer(alert, '/!\\ ERROR /!\\\n\n' + missingMsg);
-          throw new Error(missingMsg);
-        }
-
-        // FIXME Defer counting unknowns and type coercion to
-        // detail view render time
-        // _.where(fields, { leaf: 'true' })
-        //   .forEach(function(field) {
-        //     var property = field.term,
-        //         value = mdata[property];
-        //     if (!value) {
-        //       mdata[property] = Field.UNKNOWN_VALUE;
-        //     } else if (metadataSpec[property].type === 'number') {
-        //       // type coercion
-        //       mdata[property] = Number(value);
-        //     }
-        //   });
-
-        // if (_.every(mdata, function(m) { return m === Field.UNKNOWN_VALUE; })) {
-        //   unknowns.push(d);
-        // }
-
-        return _.extend(d, {
-          metadata: mdata
-        });
-      });
-    console.timeEnd('  v map data to fields');
-
-    // TODO remove
-    // if (unknowns.length) {
-    //   _.defer(alert, '/!\\ WARNING /!\\\n\nThe following items contian only UNKNOWN values: ' +
-    //     _.pluck(unknowns, 'term').join(', '));
-    // }
-
-    return { fields: fields, data: data };
-  }
-
-  function createFilteredSelect(vocab, paramName, $param) {
-
-    // FIXME Using a class to determin if we are revising is a hack.
-    // Need to consider a cleaner solution.
-    //
-    // The class is set by the Wizard JSP
-    var isNew = !$param.closest('form').is('.is-revise');
-
+  function createFilteredSelect(vocab, paramName, $param, keepPreviousValue) {
     var $input = $param.find('input[name="value(' + paramName + ')"]'),
         keepOpen = false,
         format = function(item) { return item.display; },
@@ -335,9 +248,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           return currentSearchTerm;
         };
 
-    if (isNew) {
-      $input.val('');
-    }
+    if (!keepPreviousValue) $input.val('');
 
     $input.select2({
       placeholder: 'Begin typing to see suggestions...',
@@ -643,7 +554,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   // jshint ignore:end
 
   //==============================================================================
-  function updateDependentParam(dependentParam, element) {
+  function updateDependentParam(dependentParam, element, keepPreviousValue) {
     // jshint loopfunc:true
     // get the current param
     var paramName = dependentParam.attr('name');
@@ -707,7 +618,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       return $.getJSON(sendReqUrl)
         .then(function(data) {
           // createAutoComplete(data, paramName);
-          createFilteredSelect(data, paramName, dependentParam);
+          createFilteredSelect(data, paramName, dependentParam, keepPreviousValue);
         })
         .done(function() {
           element.find(".param[name='" + paramName + "']").attr("ready", "");
@@ -723,8 +634,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     } else if (dependentParam.is('[data-type="filter-param"]')) {
       sendReqUrl = sendReqUrl + '&json=true';
       return $.getJSON(sendReqUrl)
-        .then(parseFilterData)
-        .then(updateFilterParam.bind(null, dependentParam))
+        .then(createFilterParam.bind(null, dependentParam, questionName))
         .done(function() {
           dependentParam.find('input').removeAttr('disabled');
           element.find(".param[name='" + paramName + "']").attr("ready", "");

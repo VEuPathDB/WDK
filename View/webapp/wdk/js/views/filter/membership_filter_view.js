@@ -64,8 +64,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
     initialize: function(options) {
       var filters = this.filterService.filters;
       this.options = options;
-      this.listenTo(filters, 'add', _.partial(this.handleFilterUpdate, true));
-      this.listenTo(filters, 'remove', _.partial(this.handleFilterUpdate, false));
+      this.listenTo(filters, 'add', this.addFilter);
+      this.listenTo(filters, 'remove', this.removeFilter);
       this.listenTo(this.members, 'change:selected', _.debounce(function() {
         var type = this.model.get('type');
         var values = this.members.where({selected: true}).map(function(member) {
@@ -77,7 +77,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
         filters.remove(filters.where({ field: this.model.get('term') }), { origin: this });
 
-        if (values.length) {
+        if (values.length !== this.members.length) {
           filters.add({
             field: this.model.get('term'),
             operation: this.model.get('filter'),
@@ -88,18 +88,26 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     },
 
-    handleFilterUpdate: function(isSelected, filter, filters, options) {
+    addFilter: function(filter, filters, options) {
       var update = options.origin !== this &&
         filter.get('field') === this.model.get('term');
-      var values = filter.get('values');
 
       if (update) {
-        // set selected to true or false
-        this.memberViews.forEach(function renderViews(memberView) {
+        this.memberViews.forEach(function(memberView) {
           var member = memberView.model;
-          if (values.indexOf(member.get('value')) > -1) {
-            member.set('selected', isSelected);
-          }
+          member.set('selected', _.contains(filter.get('values'), member.get('value')));
+        });
+      }
+    },
+
+    removeFilter: function(filter, filters, options) {
+      var update = options.origin !== this &&
+        filter.get('field') === this.model.get('term');
+
+      if (update) {
+        this.memberViews.forEach(function(memberView) {
+          var member = memberView.model;
+          member.set('selected', true);
         });
       }
     },
@@ -133,7 +141,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
             percent: (count / size * 100).toFixed(2),
             distribution: (count / scale * 100).toFixed(2),
             filteredDistribution: (fcount / scale * 100).toFixed(2),
-            selected: !!(_.contains(filterValues, value))
+            selected: !filter || !!(_.contains(filterValues, value))
           });
 
           return new MemberView({

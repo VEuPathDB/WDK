@@ -348,7 +348,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     Map<String, String> context = new LinkedHashMap<String, String>();
     context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
 
-    QueryInstance qi = query.makeInstance(user, dependentValues, validate,
+    QueryInstance<?> qi = query.makeInstance(user, dependentValues, validate,
         assignedWeight, context);
     AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart,
         pageEnd, sortingAttributes, filter);

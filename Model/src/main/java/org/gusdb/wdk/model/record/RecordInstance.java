@@ -153,7 +153,7 @@ public class RecordInstance extends AttributeValueContainer {
 
     ResultList resultList = null;
     try {
-      QueryInstance instance = query.makeInstance(user, paramValues, true, 0,
+      QueryInstance<?> instance = query.makeInstance(user, paramValues, true, 0,
           new LinkedHashMap<String, String>());
       resultList = instance.getResults();
 

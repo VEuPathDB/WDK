@@ -71,7 +71,7 @@ public class TestResult {
   public void setCaughtException(Exception e) { _caughtException = e; }
 
   public boolean isPassed()              { return _passed; }
-  private int getIndex()                 { return _index; }
+  public int getIndex()                  { return _index; }
   private String getExpected()           { return _expected; }
   private String getReturned()           { return _returned; }
   private Exception getCaughtException() { return _caughtException; }

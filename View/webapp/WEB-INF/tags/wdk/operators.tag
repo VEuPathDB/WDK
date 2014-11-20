@@ -76,8 +76,8 @@ Set operations (intersect, union and minus) are not available (grayed out) becau
 
                 <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
-            <c:set var="checked"><c:if test="${param.operation == 'NOT'}">checked="checked"</c:if></c:set>
-            <td style="${opaque}"  title="${minusHelp}" class="opcheck"><input onclick="wdk.addStepPopup.changeButtonText(this)" name="boolean" value="NOT" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
+            <c:set var="checked"><c:if test="${param.operation == 'MINUS'}">checked="checked"</c:if></c:set>
+            <td style="${opaque}"  title="${minusHelp}" class="opcheck"><input onclick="wdk.addStepPopup.changeButtonText(this)" name="boolean" value="MINUS" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
             <td style="${opaque}" title="${minusHelp}" class="operation MINUS"></td>
             <td style="${opaque}" title="${minusHelp}" >&nbsp;<span class="current_step_num">${currentStepId}</span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="new_step_num">${newStepId}</span></td>
       </tr>

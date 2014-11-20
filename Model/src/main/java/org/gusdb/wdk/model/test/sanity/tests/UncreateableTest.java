@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.test.sanity.tests;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.question.Question;
@@ -9,7 +10,9 @@ import org.gusdb.wdk.model.test.sanity.TestResult;
 
 public class UncreateableTest implements ElementTest {
 
-  public static enum UncreateableTestType { QUESTION, QUERY };
+  public static final Logger LOG = Logger.getLogger(UncreateableTest.class);
+  
+  public static enum UncreateableTestType { QUESTION, QUERY }
 
   private final String _testName;
   private final Exception _creationException;
@@ -38,6 +41,7 @@ public class UncreateableTest implements ElementTest {
 
   @Override
   public TestResult test(Statistics stats) throws Exception {
+    LOG.error("Test unable to initialize", _creationException);
     TestResult result = new TestResult(this);
     result.setPassed(false);
     result.setReturned("Could not be created");

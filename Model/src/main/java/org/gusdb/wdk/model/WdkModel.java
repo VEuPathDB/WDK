@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.runtime.InstanceManager;
 import org.gusdb.fgputil.runtime.Manageable;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
@@ -171,6 +172,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   
   @Override
   public WdkModel getInstance(String projectId, String gusHome) throws WdkModelException {
+    Events.init();
     StackTraceElement[] stackTrace = new Throwable().getStackTrace();
     int index = stackTrace.length - 1;
     String tip = "";
@@ -478,8 +480,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
-    appDb = new DatabaseInstance(appDbConfig).initialize(DB_INSTANCE_APP);
-    userDb = new DatabaseInstance(userDbConfig).initialize(DB_INSTANCE_USER);
+    appDb = new DatabaseInstance(appDbConfig, DB_INSTANCE_APP);
+    userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER);
 
     resultFactory = new ResultFactory(this);
     userFactory = new UserFactory(this);
@@ -490,10 +492,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     stepAnalysisFactory = (stepAnalysisPlugins == null ?
         new UnconfiguredStepAnalysisFactory(this) :
         new StepAnalysisFactoryImpl(this));
-
-    // set the exception header
-    WdkModelException.modelName = getProjectId();
-    WdkUserException.modelName = getProjectId();
 
     // exclude resources that are not used by this project
     excludeResources();
@@ -518,15 +516,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     releaseDb(appDb);
     releaseDb(userDb);
     ThreadMonitor.shutDown(_myThreadMonitor);
+    Events.shutDown();
   }
 
   private static void releaseDb(DatabaseInstance db) {
     try {
-      logger.info("Releasing database resources for DB: " + db.getName());
+      logger.info("Releasing database resources for DB: " + db.getIdentifier());
       db.close();
     }
     catch (Exception e) {
-      logger.error("Exception caught while trying to shut down DB instance " + "with name '" + db.getName() +
+      logger.error("Exception caught while trying to shut down DB instance " + "with name '" + db.getIdentifier() +
           "'.  Ignoring.", e);
     }
   }

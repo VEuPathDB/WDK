@@ -1,6 +1,8 @@
 package org.gusdb.wdk.controller.actionutil;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +25,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.fgputil.IoUtil;
-import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.WdkValidationException;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Count;
@@ -33,6 +34,7 @@ import org.gusdb.wdk.controller.actionutil.ParameterValidator.SecondaryValidator
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkResourceChecker;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -71,6 +73,9 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
 
   // internal site URLs often contain this parameter from the auth service
   private static final String AUTH_TICKET = "auth_tkt";
+
+  // timestamp param for spam checking
+  private static final String SPAM_TIMESTAMP = "__ts";
 
   // default max upload file size
   private static final int DEFAULT_MAX_UPLOAD_SIZE_MB = 10;
@@ -223,6 +228,13 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
     else {
       params = buildParamGroup(paramMap, uploads);
     }
+
+    if (shouldCheckSpam()) {
+      String ts = paramMap.get(SPAM_TIMESTAMP) == null
+        ? ""
+        : paramMap.get(SPAM_TIMESTAMP)[0];
+      SpamUtils.verifyTimeStamp(ts);
+    }
     return params;
   }
   
@@ -233,6 +245,15 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
    */
   protected int getMaxUploadSize() {
     return DEFAULT_MAX_UPLOAD_SIZE_MB;
+  }
+
+  /**
+   * Should the request be verified as not spam?
+   *
+   * This can be overridden by subclasses.
+   */
+  protected boolean shouldCheckSpam() {
+    return false;
   }
   
   private ParamGroup buildParamGroup(Map<String, String[]> parameters, Map<String, FileItem> uploads) {
@@ -452,9 +473,20 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
    */
   @Override
   public boolean wdkResourceExists(String name) {
-    return ApplicationInitListener.resourceExists(name, _servlet.getServletContext());
+    return resourceExists(name, _servlet.getServletContext());
   }
-  
+
+  public static boolean resourceExists(String path, ServletContext servletContext)
+      throws WdkRuntimeException {
+    try {
+      URL url = servletContext.getResource(path);
+      return url != null;
+    }
+    catch (MalformedURLException e) {
+      throw new WdkRuntimeException("Malformed URL passed", e);
+    }
+  }
+
   /**
    * Returns requested response type.  This is a "global" parameter that may
    * or may not be honored by the child action; however, it is always available.
@@ -477,6 +509,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
     
     // now add params that we may expect from any request (i.e. global params)
     definedParams.put(AUTH_TICKET, new ParamDef(Required.OPTIONAL));
+    definedParams.put(SPAM_TIMESTAMP, new ParamDef(shouldCheckSpam() ? Required.REQUIRED : Required.OPTIONAL));
     definedParams.put("_", new ParamDef(Required.OPTIONAL));
     definedParams.put(CConstants.WDK_RESPONSE_TYPE_KEY, new ParamDef(Required.OPTIONAL));
     

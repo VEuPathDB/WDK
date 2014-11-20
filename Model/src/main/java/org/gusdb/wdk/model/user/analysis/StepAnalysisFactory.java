@@ -24,8 +24,6 @@ public interface StepAnalysisFactory {
 
   public StepAnalysisContext copyContext(StepAnalysisContext context) throws WdkModelException;
 
-  public void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException, WdkUserException;
-
   public StepAnalysisContext runAnalysis(StepAnalysisContext context) throws WdkModelException;
 
   /**

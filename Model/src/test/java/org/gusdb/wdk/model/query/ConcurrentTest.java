@@ -11,6 +11,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Test;
 
@@ -44,7 +45,7 @@ public class ConcurrentTest {
         public void run() {
             System.out.println("start test thread: #" + id);
             try {
-                QueryInstance instance = query.makeInstance(user, values, true,
+                QueryInstance<?> instance = query.makeInstance(user, values, true,
                         0, new LinkedHashMap<String, String>());
                 ResultList resultList = instance.getResults();
                 resultList.next();
@@ -63,7 +64,8 @@ public class ConcurrentTest {
     @Test
     public void testConcurrentQuery() throws Exception {
         Query query = UnitTestHelper.getNormalQuestion().getQuery();
-        ParamValuesSet paramValues = query.getParamValuesSets().get(0);
+        ParamValuesSet paramValues = ParamValuesFactory.getParamValuesSets(
+            UnitTestHelper.getModel().getSystemUser(), query).get(0);
         Map<String, String> values = paramValues.getParamValues();
         List<TestThread> threads = new ArrayList<TestThread>();
         for (int i = 1; i <= 3; i++) {

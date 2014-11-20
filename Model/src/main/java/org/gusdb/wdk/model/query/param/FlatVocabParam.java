@@ -221,7 +221,7 @@ public class FlatVocabParam extends AbstractEnumParam {
         ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) + ", context Query: " +
         ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
 
-    QueryInstance instance = vocabQuery.makeInstance(user, values, false, 0, context);
+    QueryInstance<?> instance = vocabQuery.makeInstance(user, values, false, 0, context);
     ResultList result = instance.getResults();
     while (result.next()) {
       Object objTerm = result.get(COLUMN_TERM);
@@ -267,7 +267,9 @@ public class FlatVocabParam extends AbstractEnumParam {
     }
     initTreeMap(cache);
     applySelectMode(cache);
-    logger.trace("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
+    logger.debug("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
+    logger.debug("Returning cache with default value '" + cache.getDefaultValue() +
+        "' out of possible terms: " + FormatUtil.arrayToString(cache.getTerms().toArray()));
     return cache;
   }
 

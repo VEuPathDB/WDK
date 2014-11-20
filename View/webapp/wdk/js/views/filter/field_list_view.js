@@ -11,46 +11,39 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
     events: {
       'click a[href="#expand"]'   : 'expand',
       'click a[href="#collapse"]' : 'collapse',
-      'click li a'                : 'triggerSelect',
       'click h4'                  : 'toggleNext',
       'keyup input'               : 'filter'
     },
 
     template: wdk.templates['filter/field_list.handlebars'],
 
-    initialize: function(options) {
-      this.trimMetadataTerms = options.trimMetadataTerms;
+    constructor: function(options) {
+      _.extend(options.events, this.events);
+      wdk.views.core.View.call(this, options);
+    },
 
+    initialize: function(options) {
+      this.fieldTemplate = options.fieldTemplate;
       this.listenTo(this.controller, 'select:field', this.selectField);
-      this.listenTo(this.controller.fields, 'reset', this.render);
+      this.listenTo(this.collection, 'reset', this.render);
+      this.render();
     },
 
     render: function() {
-      var groupedFields = this.controller.fields.getTree({
-        trimMetadataTerms: this.trimMetadataTerms
-      });
+      var groupedFields = this.collection.getTree();
 
       this.$el.html(this.template({
         nodes: groupedFields,
         showExpand: groupedFields.filter(function(node) {
           return !_.isEmpty(node.children);
         }).length
+      }, {
+        helpers: {
+          fieldTemplate: this.fieldTemplate
+        }
       }));
 
       return this;
-    },
-
-    triggerSelect: function(e) {
-      e.preventDefault();
-
-      var link = e.currentTarget;
-      if ($(link).parent().hasClass('active')) {
-        return;
-      }
-
-      var term = link.hash.slice(1);
-      var field = this.controller.fields.findWhere({term: term});
-      this.controller.selectField(field);
     },
 
     expand: wdk.fn.preventEvent(function() {
@@ -79,7 +72,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
       var term = field.get('term');
       var link = this.$('a[href="#' + term + '"]');
       this.$('li').removeClass('active');
-      $(link).parent().addClass('active');
+      $(link).closest('li').addClass('active');
       $(link).parentsUntil(this.$el.find('>ul')).find('>h4').removeClass('collapsed');
     }
 

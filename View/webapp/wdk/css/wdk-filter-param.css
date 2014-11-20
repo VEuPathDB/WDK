@@ -13,6 +13,9 @@
   font-size: smaller;
   margin: 0;
 }
+.filter-param .membership-filter .toggle-links {
+  /* position: absolute; */
+}
 .filter-param, .filter-param *, .filter-items {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -21,6 +24,7 @@
 }
 .filter-param .ui-tabs {
   border: none;
+  background: transparent;
 }
 .filter-param .collapse {
   position: absolute;
@@ -37,6 +41,7 @@
 .filter-param .ui-tabs-panel {
   padding: 0;
   box-shadow: 1px 1px #DDD;
+  background-color: white;
 }
 .filter-view {
   position: relative;
@@ -66,30 +71,39 @@
 }
 .chart-title {
   color: #666;
+  font-weight: bold;
 }
 .chart-title.x-axis {
   text-align: center;
 }
 .chart-title.y-axis {
   position: absolute;
-  left: -3.5em;
-  top: 14em;
+  left: -1em;
+  top: 20em;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);
   -o-transform: rotate(-90deg);
   transform: rotate(-90deg);
+  -webkit-transform-origin: 0;
+  -moz-transform-origin: 0;
+  -ms-transform-origin: 0;
+  -o-transform-origin: 0;
+  transform-origin: 0;
 }
-.field-list, .field-detail {
+.filters .field-list,
+.filters .field-detail {
   float: left;
   min-height: 25em;
   padding-top: 20px;
 }
-.field-list {
+.filters .field-list {
   width: 25%;
-  max-height: 35em;
+  min-height: 36em;
+  max-height: 55em;
   overflow-y: auto;
-  padding-left: 10px;
+  padding-left: 8px;
+  padding-right: 8px;
   box-shadow: inset -1px 0px 0px #eee;
   background-image: -webkit-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
   background-image: -moz-linear-gradient(to left, #f6f6f6 0%, #fff 8px);
@@ -102,58 +116,71 @@
 .field-list > ul > li > a {
   margin-left: .8em;
 }
-.field-list input {
-  width: 90%;
-}
 .field-list h4 {
   cursor: pointer;
-  margin: 1em 0 .5em 4px;
+  margin: 0;
+  padding: .5em 0;
   border: 1px solid transparent;
-  font-weight: normal;
+  /* font-weight: normal; */
+  position: relative;
 }
 .field-list h4:before {
   /* down pointing triangle */
-  content: "\25BC  ";
-  font-size: 75%;
+  content: "\25BC";
+  font-size: 80%;
+  display: inline-block;
+  width: 1.2em;
 }
 .field-list h4.collapsed:before {
   /* right pointing triangle */
-  content: "\25B6  ";
+  content: "\25B6";
 }
 .field-list h4.collapsed + div {
   display:none;
 }
 .field-list ul {
-  padding-bottom: .5em;
   font-weight: bold;
   text-transform: capitalize;
 }
 .field-list > ul ul {
-  padding-left: .8em;
+  padding-left: 1.2em;
 }
 .field-list ul li {
   margin: 0;
 }
+.field-list li a, .field-list li label {
+  font-weight: normal;
+}
+.field-list li label {
+  padding: .4em 1em;
+  display: inline-block;
+}
 .field-list li a {
   display: block;
-  padding: 5px 4px;
-  border-radius: 2px;
+  padding: .5em 1em;
+  /* border-radius: 2px;
+  border-left: 2px solid transparent;*/
   border: 1px solid transparent;
-  border-left: 2px solid transparent;
   text-decoration: none;
-  font-weight: normal;
 }
 .field-list li a:hover,
 .field-list li a:focus,
 .field-list li a:active {
-  border-left: 2px solid;
+  /* border-left: 2px solid; */
+  background-color: #f6f6f6;
+  border: 1px solid #f0f0f0;
 }
 .field-list li.active a {
+  /*
   background-color: white;
-  border-left: 2px solid;
   border-right: 1px solid white;
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
+  */
+  background-color: #ececec;
+  border: 1px solid #e0e0e0;
+  font-weight: bold;
+  /* border-left: 2px solid; */
 }
 .field-detail {
   width: 75%;
@@ -199,6 +226,17 @@
 .membership-filter .distribution {
   width: 9%;
 }
+
+/* fixed header */
+.membership-wrapper {
+  padding-top: 1.2em;
+  position: relative;
+}
+.membership-filter th div {
+  position: absolute;
+  top: 0;
+}
+
 .membership-table-panel {
   max-height: 500px;
   overflow-y: auto;
@@ -214,6 +252,9 @@
   width: 100%;
 }
 
+.membership-filter th {
+  border: none;
+}
 .membership-filter .member {
   margin: .4em 0;
   height: 1em;
@@ -383,6 +424,13 @@
 }
 .filter-param .summary {
   margin-top: 4px;
+}
+.filter-results ul {
+  list-style: none;
+  padding-left: 1em;
+}
+.filter-results.field-list h4 {
+  margin-left: 0;
 }
 /*
 .filter-param .dataTables_wrapper {

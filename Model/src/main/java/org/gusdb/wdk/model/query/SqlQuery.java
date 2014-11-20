@@ -15,6 +15,8 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,6 +48,7 @@ public class SqlQuery extends Query {
   private List<WdkModelText> sqlMacroList;
   private Map<String, String> sqlMacroMap;
   private boolean clobRow;
+  private boolean _useDBLink = false;
 
   private List<WdkModelText> dependentTableList;
   private Map<String, String> dependentTableMap;
@@ -65,6 +68,7 @@ public class SqlQuery extends Query {
     this.clobRow = query.clobRow;
     this.sql = query.sql;
     this.cached = query.cached;
+    this._useDBLink = query._useDBLink;
 
     if (query.sqlList != null) this.sqlList = new ArrayList<>(query.sqlList);
     if (query.sqlMacroMap != null)
@@ -92,6 +96,14 @@ public class SqlQuery extends Query {
   public String getSql() {
     return replaceMacros(sql);
   }
+  
+  public boolean isUseDBLink() {
+    return _useDBLink;
+  }
+
+  public void setUseDBLink(boolean useDBLink) {
+    _useDBLink = useDBLink;
+  }
 
   /**
    * this method is called by other WDK objects. It is not called by the model
@@ -111,7 +123,7 @@ public class SqlQuery extends Query {
    * @see org.gusdb.wdk.model.query.Query#makeInstance()
    */
   @Override
-  public QueryInstance makeInstance(User user, Map<String, String> values,
+  public SqlQueryInstance makeInstance(User user, Map<String, String> values,
       boolean validate, int assignedWeight, Map<String, String> context)
       throws WdkModelException, WdkUserException {
     return new SqlQueryInstance(user, this, values, validate, assignedWeight,
@@ -270,5 +282,19 @@ public class SqlQuery extends Query {
     String[] array = new String[dependentTableMap.size()];
     dependentTableMap.keySet().toArray(array);
     return array;
+  }
+  
+  @Override
+  public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    if (resolved) return;
+    super.resolveReferences(wdkModel);
+    
+    // set the dblink flag if any of the params is a datasetParam;
+    for (Param param : getParams()) {
+      if (param instanceof DatasetParam) {
+        _useDBLink = true;
+        break;
+      }
+    }
   }
 }

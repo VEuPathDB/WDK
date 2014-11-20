@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,13 +43,13 @@ public class TableQueryTest {
                     Query query = table.getQuery();
                     if (query.getDoNotTest())
                         continue;
-                    for (ParamValuesSet valueSet : query.getParamValuesSets()) {
+                    for (ParamValuesSet valueSet : ParamValuesFactory.getParamValuesSets(user, query)) {
                         Map<String, String> values = valueSet.getParamValues();
                         if (values.size() == 0)
                             continue;
                         int min = valueSet.getMinRows();
                         int max = valueSet.getMaxRows();
-                        QueryInstance instance = query.makeInstance(user,
+                        QueryInstance<?> instance = query.makeInstance(user,
                                 values, true, 0,
                                 new LinkedHashMap<String, String>());
                         int result = instance.getResultSize();

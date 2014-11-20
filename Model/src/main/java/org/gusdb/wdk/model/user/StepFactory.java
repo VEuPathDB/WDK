@@ -25,6 +25,8 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.events.Events;
+import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkIllegalArgumentException;
@@ -1038,14 +1040,10 @@ public class StepFactory {
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);
     }
-    // copy step analysis instances from old step to new step
-    try {
-      wdkModel.getStepAnalysisFactory().copyAnalysisInstances(oldStep, newStep);
-    }
-    catch (WdkUserException e) {
-      // new step should be an exact copy of old, so this is a model exception if it's thrown
-      throw new WdkModelException("New step not analyzable by analysis present on old step.", e);
-    }
+
+    Events.triggerAndWait(new StepCopiedEvent(oldStep, newStep),
+        new WdkModelException("Unable to execute all operations subsequent to step copy."));
+
     // create mapping from old step to new step
     stepIdsMap.put(oldStep.getStepId(), newStep.getStepId());
     newStep.setCollapsedName(oldStep.getCollapsedName());
@@ -1432,7 +1430,7 @@ public class StepFactory {
    * @throws WdkUserException
    */
   Strategy copyStrategy(Strategy strategy) throws WdkModelException, WdkUserException {
-    Step root = strategy.getLatestStep().deepClone();
+    Step root = strategy.getLatestStep();
     return copyStrategy(strategy, root, strategy.getName());
   }
 

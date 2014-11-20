@@ -16,13 +16,26 @@ wdk.namespace('wdk.views.filter', function(ns) {
 
     className: 'filters ui-helper-clearfix',
 
-    initialize: function(options) {
+    initialize: function() {
       this.fieldList = new FieldListView({
-        model: this.model,
+        className: 'field-list',
+        collection: this.controller.fields,
         controller: this.controller,
-        trimMetadataTerms: options.trimMetadataTerms
+        fieldTemplate: function(field) {
+          return '<a href="#' + field.term + '">' + field.display + '</a>';
+        },
+        events: {
+          'click li a': function(event) {
+            event.preventDefault();
+            var link = event.currentTarget;
+            var term = link.hash.slice(1);
+            var field = this.controller.fields.findWhere({term: term});
+            this.controller.selectField(field);
+          }.bind(this)
+        }
       });
       this.fieldDetail = new FieldDetailView({
+        className: 'field-detail',
         model: this.model,
         controller: this.controller
       });
@@ -33,9 +46,7 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     render: function() {
-      this.$el.html(this.template(this.model.attributes.filteredData));
-      this.fieldList.setElement(this.$('.field-list')).render();
-      this.fieldDetail.setElement(this.$('.field-detail')).render();
+      this.$el.append(this.fieldList.el, this.fieldDetail.el);
     },
 
     renderDetail: function(field) {

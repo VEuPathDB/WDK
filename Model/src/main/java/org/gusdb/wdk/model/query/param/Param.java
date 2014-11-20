@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.query.param;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -74,7 +76,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   public abstract String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException;
 
-  protected abstract void applySuggection(ParamSuggestion suggest);
+  protected abstract void applySuggestion(ParamSuggestion suggest);
 
   /**
    * The input the method can be either raw data or dependent data
@@ -99,6 +101,10 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   private String defaultValue;
   private String emptyValue;
 
+  // sometimes different values are desired for normal operation vs. sanity test;
+  //   in that case, this value will be used if it exists
+  private String sanityDefaultValue;
+
   protected boolean visible;
   protected boolean readonly;
 
@@ -108,8 +114,6 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   protected boolean allowEmpty;
 
   protected ParamSet paramSet;
-
-  protected WdkModel wdkModel;
 
   private List<ParamConfiguration> noTranslations;
 
@@ -136,6 +140,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     allowEmpty = false;
     emptyValue = null;
     defaultValue = null;
+    sanityDefaultValue = null;
     handlerReferences = new ArrayList<>();
   }
 
@@ -146,6 +151,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     this.prompt = param.prompt;
     this.help = param.help;
     this.defaultValue = param.defaultValue;
+    this.sanityDefaultValue = param.sanityDefaultValue;
     this.visible = param.visible;
     this.readonly = param.readonly;
     this.group = param.group;
@@ -240,6 +246,17 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     return defaultValue;
   }
 
+  public void setSanityDefault(String sanityDefaultValue) {
+    this.sanityDefaultValue = sanityDefaultValue;
+  }
+
+  public final String getSanityDefault() {
+    if (sanityDefaultValue == null && isAllowEmpty() && getEmptyValue() != null) {
+      return getEmptyValue();
+    }
+    return sanityDefaultValue;
+  }
+
   /**
    * @return Returns the readonly.
    */
@@ -317,14 +334,17 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   @Override
   public String toString() {
-    String newline = System.getProperty("line.separator");
-    String classnm = this.getClass().getName();
-    StringBuffer buf = new StringBuffer(classnm + ": name='" + name + "'" + newline + "  prompt='" + prompt +
-        "'" + newline + "  help='" + help + "'" + newline + "  default='" + defaultValue + "'" + newline +
-        "  readonly=" + readonly + newline + "  visible=" + visible + newline + "  noTranslation=" +
-        noTranslation + newline);
+    StringBuilder buf = new StringBuilder(getClass().getName())
+      .append(": name='").append(name).append("'").append(NL)
+      .append("  prompt='").append(prompt).append("'").append(NL)
+      .append("  help='").append(help).append("'").append(NL)
+      .append("  default='").append(defaultValue).append("'").append(NL)
+      .append("  sanityDefault='").append(sanityDefaultValue).append("'").append(NL)
+      .append("  readonly=").append(readonly).append(NL)
+      .append("  visible=").append(visible).append(NL)
+      .append("  noTranslation=").append(noTranslation).append(NL);
     if (group != null)
-      buf.append("  group=" + group.getName() + newline);
+      buf.append("  group='").append(group.getName()).append("'").append(NL);
 
     return buf.toString();
   }
@@ -367,7 +387,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
         allowEmpty = suggest.isAllowEmpty();
         emptyValue = suggest.getEmptyValue();
 
-        applySuggection(suggest);
+        applySuggestion(suggest);
 
         hasSuggest = true;
 

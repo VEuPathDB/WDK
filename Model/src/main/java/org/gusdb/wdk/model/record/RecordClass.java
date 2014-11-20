@@ -173,8 +173,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return newQuery;
   }
 
-  private WdkModel wdkModel;
-
   private RecordClassSet recordClassSet;
 
   private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<AttributeQueryReference>();
@@ -1550,7 +1548,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       oldValues.put(oldParam, value);
     }
 
-    QueryInstance instance = aliasQuery.makeInstance(user, oldValues, true, 0,
+    QueryInstance<?> instance = aliasQuery.makeInstance(user, oldValues, true, 0,
         new LinkedHashMap<String, String>());
     ResultList resultList = null;
     try {

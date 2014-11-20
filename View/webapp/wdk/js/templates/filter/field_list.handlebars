@@ -13,7 +13,7 @@
   </li>
   {{else}}
   <li>
-    <a role="treeitem" href="#{{field.term}}">{{field.display}}</a>
+    <div role="treeitem"> {{{fieldTemplate field}}} </div>
   </li>
   {{/if}}
 {{/each}}

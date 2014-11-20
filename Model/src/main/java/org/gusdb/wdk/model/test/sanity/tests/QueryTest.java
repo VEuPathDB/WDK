@@ -82,7 +82,7 @@ public class QueryTest implements ElementTest {
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet,
       TestResult result) throws Exception {
     int count = 0;
-    QueryInstance instance = query.makeInstance(_user,
+    QueryInstance<?> instance = query.makeInstance(_user,
         paramValuesSet.getParamValues(), true, 0,
         new LinkedHashMap<String, String>());
     ResultList resultList = null;

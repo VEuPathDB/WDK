@@ -270,7 +270,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
   // private User user;
   private PrimaryKeyAttributeValue primaryKey;
   private TableField tableField;
-  QueryInstance instance;
+  QueryInstance<?> instance;
 
   private List<Map<String, AttributeValue>> rows;
 
