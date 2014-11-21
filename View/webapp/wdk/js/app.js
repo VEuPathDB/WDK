@@ -96,9 +96,6 @@
         ? acc.concat([ mutation.target ])
         : acc;
     }, []));
-    //.forEach(function(target) {
-    //  rafLoad($(target));
-    //});
     if (targets.length > 0) rafLoad($(targets));
   }
 

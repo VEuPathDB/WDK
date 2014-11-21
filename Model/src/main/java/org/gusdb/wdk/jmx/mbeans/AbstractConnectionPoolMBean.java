@@ -10,7 +10,6 @@ public interface AbstractConnectionPoolMBean  {
   public int getMinIdle();
   public int getMaxIdle();
   public long getMinEvictableIdleTimeMillis();
-  public long getSoftMinEvictableIdleTimeMillis();
   public long getTimeBetweenEvictionRunsMillis();
   public boolean getTestOnBorrow();
   public boolean getTestOnReturn();

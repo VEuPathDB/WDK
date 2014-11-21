@@ -181,12 +181,6 @@ wdk.namespace('wdk.controllers', function(ns) {
       }.bind(this));
     },
 
-    // Update the UI with new data. This gets triggered when user changes the
-    // value of a dependent parameter, so we can skip the init stuff.
-    update: function(data) {
-      this.filterService.reset(data);
-      return this;
-    },
     showSpinner: function() {
       this.$('.filter-param-tabs').append(this.spinner.spin().el);
     },
@@ -348,7 +342,7 @@ wdk.namespace('wdk.controllers', function(ns) {
 
     abortMetadataRequest: function(field) {
       if (field) {
-        _.result(this.metadataXhrQueue[field.get('term')], 'abort');
+        return _.result(this.metadataXhrQueue[field.get('term')], 'abort');
       }
     },
 
