@@ -549,6 +549,7 @@ ul.menubar {
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 .param-group {
   min-height: 0px; /* IE7 fix */
+  margin: 4px;
 }
 
 .param-group.empty {
