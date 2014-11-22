@@ -1,41 +1,42 @@
-/*
-DROP SEQUENCE IF EXISTS wdkuser.categories_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.datasets_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.dataset_values_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.migration_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.favorites_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.user_baskets_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.steps_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.strategies_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.users_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.step_analysis_pkseq;
 
-DROP TABLE IF EXISTS wdkuser.categories;
-DROP TABLE IF EXISTS wdkuser.favorites;
-DROP TABLE IF EXISTS wdkuser.user_baskets;
-DROP TABLE IF EXISTS wdkuser.strategies;
-DROP TABLE IF EXISTS wdkuser.step_analysis;
-DROP TABLE IF EXISTS wdkuser.steps;
-DROP TABLE IF EXISTS wdkuser.dataset_values;
-DROP TABLE IF EXISTS wdkuser.datasets;
-DROP TABLE IF EXISTS wdkuser.preferences;
-DROP TABLE IF EXISTS wdkuser.user_roles;
-DROP TABLE IF EXISTS wdkuser.users;
-DROP TABLE IF EXISTS wdkuser.config;
-*/
+--DROP SEQUENCE IF EXISTS wdkuser.categories_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.datasets_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.dataset_values_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.migration_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.favorites_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.user_baskets_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.steps_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.strategies_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.users_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.step_analysis_pkseq;
+
+--DROP TABLE IF EXISTS wdkuser.categories;
+--DROP TABLE IF EXISTS wdkuser.favorites;
+--DROP TABLE IF EXISTS wdkuser.user_baskets;
+--DROP TABLE IF EXISTS wdkuser.strategies;
+--DROP TABLE IF EXISTS wdkuser.step_analysis;
+--DROP TABLE IF EXISTS wdkuser.steps;
+--DROP TABLE IF EXISTS wdkuser.dataset_values;
+--DROP TABLE IF EXISTS wdkuser.datasets;
+--DROP TABLE IF EXISTS wdkuser.preferences;
+--DROP TABLE IF EXISTS wdkuser.user_roles;
+--DROP TABLE IF EXISTS wdkuser.users;
+--DROP TABLE IF EXISTS wdkuser.config;
 
 
-/* =========================================================================
-   create schema ("schemata"?)
-   ========================================================================= */
+
+-- =========================================================================
+-- create schema ("schemata"?)
+-- =========================================================================
 
 -- CREATE SCHEMA IF NOT EXISTS wdkuser;
 CREATE SCHEMA wdkuser;
 
 
-/* =========================================================================
-   create sequences
-   ========================================================================= */
+-- =========================================================================
+-- create sequences
+-- =========================================================================
+
 CREATE SEQUENCE wdkuser.users_pkseq INCREMENT BY 1 START WITH 1;
 
 
@@ -66,9 +67,9 @@ CREATE SEQUENCE wdkuser.categories_pkseq INCREMENT BY 1 START WITH 1;
 CREATE SEQUENCE wdkuser.step_analysis_pkseq INCREMENT BY 1 START WITH 1;
 
 
-/* =========================================================================
-   tables in user schema
-   ========================================================================= */
+-- =========================================================================
+-- tables in user schema
+-- ========================================================================= */
 
 CREATE TABLE wdkuser.config
 (
@@ -262,7 +263,7 @@ CREATE TABLE wdkuser.dataset_values
 CREATE INDEX wdkuser.dataset_values_idx01 ON wdkuser.dataset_values (dataset_id, data1);
 
 
-/* cannot create composite primary key, since the columns might contain null values */
+-- cannot create composite primary key, since the columns might contain null values
 CREATE TABLE wdkuser.user_baskets
 (
   basket_id NUMERIC(12) NOT NULL,
