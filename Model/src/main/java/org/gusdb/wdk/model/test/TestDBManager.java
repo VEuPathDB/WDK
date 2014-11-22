@@ -14,9 +14,11 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.config.ModelConfig;
+import org.gusdb.wdk.model.config.ModelConfigDB;
+import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.query.ColumnType;
 
 public class TestDBManager extends BaseCLI {
@@ -26,16 +28,14 @@ public class TestDBManager extends BaseCLI {
   private static final String ARG_TABLE_DIR = "tableDir";
 
   public static void main(String[] args) throws Exception {
-    String cmdName = System.getProperty("cmdName");
-    TestDBManager testDb = new TestDBManager(cmdName);
+    TestDBManager testDb = new TestDBManager(System.getProperty("cmdName"));
     try {
       testDb.invoke(args);
-    } finally {
+    }
+    finally {
       System.exit(0);
     }
   }
-
-  private WdkModel wdkModel;
 
   protected TestDBManager(String command) {
     super((command == null) ? "wdkTestDb" : command,
@@ -59,34 +59,38 @@ public class TestDBManager extends BaseCLI {
   }
 
   @Override
-  protected void execute() {
+  protected void execute() throws Exception {
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
 
     boolean newCache = (Boolean) getOptionValue(ARG_CREATE);
     boolean dropCache = (Boolean) getOptionValue(ARG_DROP);
 
-    String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+    String gusHome = GusHome.getGusHome();
     String tableDir = (String) getOptionValue(ARG_TABLE_DIR);
     if (tableDir == null)
       tableDir = gusHome + "/data/WDKTemplateSite/Model/testTables";
     String[] tables = getTableNames(tableDir);
 
+    ModelConfigParser parser = new ModelConfigParser(gusHome);
+    ModelConfig modelConf = parser.parseConfig(projectId);
+    ModelConfigDB dbConfig = modelConf.getAppDB();
+    dbConfig.setMaxActive((short)1); // only need one
+
+    DatabaseInstance appDb = null;
     try {
-      // read config info
-      wdkModel = WdkModel.construct(projectId, gusHome);
-      DatabaseInstance appDb = wdkModel.getAppDb();
+      appDb = new DatabaseInstance(dbConfig);
 
       long start = System.currentTimeMillis();
-      if (newCache) createTables(appDb, tables);
-      else if (dropCache) dropTables(appDb, tables);
+      if (newCache)
+        createTables(appDb, tables);
+      else if (dropCache)
+        dropTables(appDb, tables);
       long end = System.currentTimeMillis();
-      System.out.println("Command succeeded in " + ((end - start) / 1000.0)
-          + " seconds");
-    } catch (Exception e) {
-      System.err.println("FAILED");
-      System.err.println("");
-      e.printStackTrace();
-      System.exit(1);
+
+      System.out.println("Command succeeded in " + ((end - start) / 1000.0) + " seconds");
+    }
+    finally {
+      SqlUtils.closeQuietly(appDb);
     }
   }
 
@@ -118,6 +122,7 @@ public class TestDBManager extends BaseCLI {
       if ("CVS".equals(tableName) || tableName.startsWith(".")) continue;
 
       BufferedReader reader = new BufferedReader(new FileReader(nextTable));
+      PreparedStatement ps = null;
       try {
         String firstLine = reader.readLine();
         if (firstLine == null)
@@ -144,7 +149,7 @@ public class TestDBManager extends BaseCLI {
           columnIds.put(columnId++, column);
         }
         sql.append(") VALUES (").append(sqlPiece).append(")");
-        PreparedStatement ps = SqlUtils.getPreparedStatement(
+        ps = SqlUtils.getPreparedStatement(
             database.getDataSource(), sql.toString());
 
         System.err.println("Loading table " + tableName
@@ -168,11 +173,13 @@ public class TestDBManager extends BaseCLI {
           }
           ps.executeUpdate();
         }
-        SqlUtils.closeStatement(ps);
-      } catch (SQLException ex) {
+      }
+      catch (SQLException ex) {
         System.err.println("Create table " + tableName + " failed");
         ex.printStackTrace();
-      } finally {
+      }
+      finally {
+        SqlUtils.closeStatement(ps);
         reader.close();
       }
     }
