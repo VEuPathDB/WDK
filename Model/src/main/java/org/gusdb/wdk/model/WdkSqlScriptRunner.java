@@ -36,7 +36,6 @@ public class WdkSqlScriptRunner {
       ModelConfig modelConf = parser.parseConfig(projectId);
       ModelConfigDB dbConfig = (whichDb.equals(DbType.APP) ?
           modelConf.getAppDB() : modelConf.getUserDB());
-      dbConfig.setMaxActive((short)1); // only need one
 
       db = new DatabaseInstance(dbConfig);
       conn = db.getDataSource().getConnection();

@@ -74,7 +74,6 @@ public class TestDBManager extends BaseCLI {
     ModelConfigParser parser = new ModelConfigParser(gusHome);
     ModelConfig modelConf = parser.parseConfig(projectId);
     ModelConfigDB dbConfig = modelConf.getAppDB();
-    dbConfig.setMaxActive((short)1); // only need one
 
     DatabaseInstance appDb = null;
     try {
