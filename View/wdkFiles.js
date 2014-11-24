@@ -29,7 +29,7 @@ module.exports = {
     'webapp/wdk/js/core/namespace.js',
     'webapp/wdk/js/core/fn.js',
     'webapp/wdk/js/core/c_properties.js',
-    'webapp/wdk/js/core/base_object.js',
+    'webapp/wdk/js/core/base_class.js',
     'webapp/wdk/js/core/runloop.js',
     'webapp/wdk/js/core/container.js',
     'webapp/wdk/js/core/application.js',
