@@ -22,17 +22,17 @@
 
 <script>
   var wdkConfig = {
-    modelName: '${siteName}',
+    modelName: '${fn:replace(siteName, "'", "\\'")}',
     version: ${wdkModel.model.buildNumber},
     assetsUrl: '${applicationScope.assetsUrl}',
-    webappUrl: '${pageContext.request.contextPath}',
+    webappUrl: '${fn:replace(pageContext.request.contextPath, "'", "\\'")}',
     guestUser: ${isGuest},
-    exportBaseUrl: '${exportBaseUrl}',
+    exportBaseUrl: '${fn:replace(exportBaseUrl, "'", "\\'")}',
     wdkUser: {
-      id: '${wdkUser.userId}',
-      name: '${wdkUser.firstName} ${wdkUser.lastName}',
-      country: '${wdkUser.country}',
-      email: '${wdkUser.email}',
+      id: '${fn:replace(wdkUser.userId, "'", "\\'")}',
+      name: '${fn:replace(wdkUser.firstName, "'", "\\'")} ${fn:replace(wdkUser.lastName, "'", "\\'")}',
+      country: '${fn:replace(wdkUser.country, "'", "\\'")}',
+      email: '${fn:replace(wdkUser.email, "'", "\\'")}',
       isGuest: ${isGuest}
     }
   };
