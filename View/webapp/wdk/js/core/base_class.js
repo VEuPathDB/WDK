@@ -19,10 +19,10 @@ wdk.namespace('wdk.core', function(ns) {
 
   /**
    *
-   * @class BaseObject
+   * @class BaseClass
    * @namespace wdk.core
    */
-  var BaseObject = ns.BaseObject = function () { };
+  var BaseClass = ns.BaseClass = function () { };
 
 
   /**
@@ -31,7 +31,7 @@ wdk.namespace('wdk.core', function(ns) {
    * @method create
    * @static
    */
-  BaseObject.create = function create(opts) {
+  BaseClass.create = function create(opts) {
     var klass = this;
     var o = Object.create(klass.prototype);
     klass.apply(o, arguments);
@@ -55,7 +55,7 @@ wdk.namespace('wdk.core', function(ns) {
    * properties:
    *
    * ```
-   * var MyObject = BaseObject.extend({
+   * var MyObject = BaseClass.extend({
    *   say: function() {
    *     return 'I am first';
    *   }
@@ -74,7 +74,7 @@ wdk.namespace('wdk.core', function(ns) {
    *   prototype
    * @static
    */
-  BaseObject.extend = function extend() {
+  BaseClass.extend = function extend() {
     var args = Array.prototype.slice.call(arguments);
     var parent = this;
     var child;
@@ -118,7 +118,7 @@ wdk.namespace('wdk.core', function(ns) {
    * reopenClass allows static properties to be added to a class.
    *
    */
-  BaseObject.reopenClass = function reopenClass(c_staticProps) {
+  BaseClass.reopenClass = function reopenClass(c_staticProps) {
     var klass = this;
     if (c_staticProps) {
       // copy new static props
@@ -129,7 +129,7 @@ wdk.namespace('wdk.core', function(ns) {
     return this;
   };
 
-  BaseObject.applyMixin = function applyMixin(mixin) {
+  BaseClass.applyMixin = function applyMixin(mixin) {
     var klass = this;
     Object.keys(mixin).forEach(function(k) {
       klass[k] = mixin[k];

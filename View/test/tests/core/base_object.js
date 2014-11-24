@@ -1,12 +1,12 @@
-describe('wdk.core.base_object', function() {
-  var BaseObject = wdk.core.BaseObject;
+describe('wdk.core.base_class', function() {
+  var BaseClass = wdk.core.BaseClass;
 
-  describe('BaseObject', function() {
+  describe('BaseClass', function() {
 
     describe('extend', function() {
       it('should preserve inheritance', function() {
 
-        var Foo = BaseObject.extend();
+        var Foo = BaseClass.extend();
         var Bar = Foo.extend();
 
         var foo = Foo.create();
@@ -19,7 +19,7 @@ describe('wdk.core.base_object', function() {
       });
 
       it('should allow a single prototype object to be specified', function() {
-        var A = BaseObject.extend({
+        var A = BaseClass.extend({
           say: function() { return 'first arg' }
         });
         var a = A.create();
@@ -27,7 +27,7 @@ describe('wdk.core.base_object', function() {
       });
 
       it('should allow a variable number of prototype objects to be specified', function() {
-        var A = BaseObject.extend({
+        var A = BaseClass.extend({
           say: function() { return 'first arg' }
         }, {
           tell: function() { return 'second arg' }
@@ -43,7 +43,7 @@ describe('wdk.core.base_object', function() {
 
     describe('create', function() {
       it('should call a user-defined constructor', function() {
-        var A = BaseObject.extend({
+        var A = BaseClass.extend({
           constructor: function(name) {
             this.name = name;
           }
@@ -55,7 +55,7 @@ describe('wdk.core.base_object', function() {
       });
 
       it('should apply late mixins', function() {
-        var A = BaseObject.extend();
+        var A = BaseClass.extend();
         var Mixin = {
           say: function() {
             return 'I am from a mixin';
@@ -65,7 +65,7 @@ describe('wdk.core.base_object', function() {
           mixins: [Mixin]
         });
 
-        var B = BaseObject.extend({
+        var B = BaseClass.extend({
           constructor: function() {
             this.constructor.applyMixin.call(this, Mixin)
           }
@@ -80,7 +80,7 @@ describe('wdk.core.base_object', function() {
     describe('reopenClass', function() {
       var A, B;
       beforeEach(function() {
-        A = BaseObject.extend();
+        A = BaseClass.extend();
         B = A.extend();
 
         A.reopenClass({
