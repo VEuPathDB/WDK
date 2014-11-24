@@ -8,7 +8,7 @@
 wdk.namespace('wdk.core', function(ns) {
   'use strict';
 
-  var RunLoop = wdk.core.BaseObject.extend({
+  var RunLoop = wdk.core.BaseClass.extend({
 
     constructor: function(defaultContext) {
       this.defaultContext = defaultContext || window;

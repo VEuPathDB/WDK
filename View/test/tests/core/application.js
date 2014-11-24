@@ -1,7 +1,7 @@
 describe('wdk.core.application', function() {
 
   var Application = wdk.core.Application;
-  var BaseObject = wdk.core.BaseObject;
+  var BaseClass = wdk.core.BaseClass;
   var mockDom, TestApp;
 
   beforeEach(function() {
@@ -25,7 +25,7 @@ describe('wdk.core.application', function() {
 
     describe('registerView', function() {
       it('should register views', function(done) {
-        var MyView = BaseObject.extend({
+        var MyView = BaseClass.extend({
           type: 'view'
         });
 
@@ -40,7 +40,7 @@ describe('wdk.core.application', function() {
       });
 
       it('should initialize matched views', function(done) {
-        var MyView = BaseObject.extend({
+        var MyView = BaseClass.extend({
           type: 'view',
           constructor: function() {
             done();
@@ -54,7 +54,7 @@ describe('wdk.core.application', function() {
       // not sure we should provide this -- seems like an anti-pattern
       xit('should use default view when unmatched', function(done) {
         var app = TestApp.create();
-        var DefaultView = BaseObject.extend({
+        var DefaultView = BaseClass.extend({
           type: 'view',
           constructor: function() {
             done();

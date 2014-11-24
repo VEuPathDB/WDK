@@ -20,9 +20,9 @@
 wdk.namespace('wdk.core', function(ns) {
   'use strict';
 
-  var BaseObject = wdk.core.BaseObject;
+  var BaseClass = wdk.core.BaseClass;
 
-  ns.Container = BaseObject.extend({
+  ns.Container = BaseClass.extend({
     dict: null,
 
     constructor: function() {
