@@ -392,8 +392,12 @@
 }
 .filter-items li > div {
   padding: 2px 4px;
-  background-color: #efefef;
-  border: 1px solid #ccc;
+  background-color: #fafafa;
+  border: 1px solid #c8c8c8;
+}
+.filter-items li.selected > div {
+  background-color: #ececec;
+  font-weight: bold;
 }
 .filter-items li .select {
   display: inline-block;
@@ -401,10 +405,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.filter-items li.selected > div {
-  border-color: #A7A7A7;
-  background-color: #FDFDFD;
 }
 .filter-items .remove {
   display: inline-block;
