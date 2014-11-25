@@ -10,11 +10,11 @@
 
 
  <record id="dialog.IE-warning">
-   <attribute name="title">Notice for IE7/6/5 users</attribute>
+   <attribute name="title">Notice for IE8/7/6/5 users</attribute>
         <attribute name="content">
             <![CDATA[
 <p>Portions of the website are known to be incompatible with your version of
-  Internet Explorer. If possible, upgrade to IE8 or later,
+  Internet Explorer. If possible, upgrade to IE9 or later,
   or use another browser such as Chrome or Firefox.</p>
 <p>If you are unable or not allowed to upgrade your browser, please
   <a href="contact.do"
