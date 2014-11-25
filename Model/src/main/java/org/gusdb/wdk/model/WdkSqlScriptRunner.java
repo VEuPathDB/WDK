@@ -19,18 +19,21 @@ public class WdkSqlScriptRunner {
   private static enum DbType { APP, USER }
 
   public static void main(String[] args) {
-    if (args.length != 3) {
-      System.out.println("USAGE: fgpJava " + WdkSqlScriptRunner.class.getName() + " <project_id> [APP|USER] <sql_file>");
+    if (args.length != 3 && args.length != 5) {
+      System.out.println("USAGE: fgpJava " + WdkSqlScriptRunner.class.getName() + " <project_id> [APP|USER] <sql_file> [<auto_commit> <stopOnError>]");
       System.exit(1);
     }
     BufferedReader sqlReader = null;
     DatabaseInstance db = null;
     Connection conn = null;
     try {
+      // get configuration
+      String gusHome = GusHome.getGusHome();
       String projectId = args[0];
       DbType whichDb = DbType.valueOf(args[1]);
       sqlReader = new BufferedReader(new FileReader(args[2]));
-      String gusHome = GusHome.getGusHome();
+      boolean autoCommit = (args.length == 5 ? Boolean.parseBoolean(args[3]) : true);
+      boolean stopOnError = (args.length == 5 ? Boolean.parseBoolean(args[4]) : true);
 
       ModelConfigParser parser = new ModelConfigParser(gusHome);
       ModelConfig modelConf = parser.parseConfig(projectId);
@@ -40,7 +43,7 @@ public class WdkSqlScriptRunner {
       db = new DatabaseInstance(dbConfig);
       conn = db.getDataSource().getConnection();
 
-      SqlScriptRunner runner = new SqlScriptRunner(db.getDataSource().getConnection(), true, false);
+      SqlScriptRunner runner = new SqlScriptRunner(db.getDataSource().getConnection(), autoCommit, stopOnError);
       runner.setLogWriter(new PrintWriter(System.err));
       runner.runScript(sqlReader);
     }
