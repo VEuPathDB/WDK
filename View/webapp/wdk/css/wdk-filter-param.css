@@ -383,7 +383,7 @@
 .filter-items[data-total]:before {
   content: attr(data-total) " selected ";
   font-weight: bold;
-  line-height: 2em;
+  line-height: 2.7em;
 }
 .filter-items li {
   display: inline-block;
