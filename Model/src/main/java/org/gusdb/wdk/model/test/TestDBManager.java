@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.BaseCLI;
+import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -74,6 +75,7 @@ public class TestDBManager extends BaseCLI {
     ModelConfigParser parser = new ModelConfigParser(gusHome);
     ModelConfig modelConf = parser.parseConfig(projectId);
     ModelConfigDB dbConfig = modelConf.getAppDB();
+    QueryLogger.initialize(modelConf.getQueryMonitor());
 
     DatabaseInstance appDb = null;
     try {
