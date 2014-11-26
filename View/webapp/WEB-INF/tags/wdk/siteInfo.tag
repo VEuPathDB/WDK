@@ -20,10 +20,14 @@
   </c:choose>
 </c:set>
 
+<c:set var="buildNumber" value="${wdkModel.model.buildNumber}"/>
+<!-- Don't let empty build number cause JS syntax error -->
+<c:set var="buildNumber" value="${empty buildNumber ? '\\'\\'' : buildNumber}"/>
+
 <script>
   var wdkConfig = {
     modelName: '${fn:replace(siteName, "'", "\\'")}',
-    version: ${wdkModel.model.buildNumber},
+    version: ${buildNumber},
     assetsUrl: '${applicationScope.assetsUrl ne null ? applicationScope.assetsUrl : pageContext.request.contextPath}',
     webappUrl: '${fn:replace(pageContext.request.contextPath, "'", "\\'")}',
     guestUser: ${isGuest},
