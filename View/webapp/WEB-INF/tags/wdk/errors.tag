@@ -9,12 +9,11 @@
 <c:set var="exp" scope="request" value="${requestScope['org.apache.struts.action.EXCEPTION']}"/>
 <c:set var="pex" scope="request" value="${pageContext.exception}"/>
 
-<c:if test="${err != null || exp != null || pex != null }">
-  <br/>
-</c:if>
+<c:if test="${err ne null}">${err}<br/></c:if>
+<c:if test="${exp ne null}">${exp}<br/></c:if>
+<c:if test="${pex ne null}">${pex}<br/></c:if>
 
 <!-- html:errors/ -->
-
 <logic:messagesPresent> 
   <em><b>Please correct the following error(s):</b></em><br/>
   <ul>
@@ -26,8 +25,9 @@
 
 <c:set var="site" value="${initParam.wdkDevelopmentSite}"/>
 <c:set var="isDev" value="${site eq 'Yes' or site eq 'yes' or site eq 'YES'}"/>
+<c:set var="showStackTrace" value="${(isDev or showStackTrace eq 'true') and showStackTrace ne 'false'}"/>
 
-<c:if test="${(isDev or showStackTrace eq 'true') and showStackTrace ne 'false'}">
+<c:if test="${showStackTrace}">
 
   <c:if test="${pex ne null}">
     <b>${pex.message}</b><br/>
