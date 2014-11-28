@@ -71,7 +71,7 @@ wdk.namespace('wdk.controllers', function(ns) {
         className: 'spinner', // The CSS class to assign to the spinner
         zIndex: 2e9, // The z-index (defaults to 2000000000)
         top: '34px', // Top position relative to parent
-        left: '18px' // Left position relative to parent
+        left: '-222px' // Left position relative to parent
       });
 
 
