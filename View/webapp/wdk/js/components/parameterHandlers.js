@@ -125,12 +125,12 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
 
       $.getJSON(sendReqUrl)
-        .then(createFilterParam.bind(null, $param, questionName));
+        .then(createFilterParam.bind(null, $param, questionName, {}));
     });
   }
 
   //==============================================================================
-  function createFilterParam($param, questionName, filterData) {
+  function createFilterParam($param, questionName, dependedValue, filterData) {
     var filterParam = $param.data('filterParam');
 
     if (filterParam) filterParam.remove();
@@ -203,7 +203,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       defaultColumns: defaultColumns,
       title: title,
       name: name,
-      questionName: questionName
+      questionName: questionName,
+      dependedValue: dependedValue
     });
 
     $param.append(filterParam.el);
@@ -634,7 +635,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     } else if (dependentParam.is('[data-type="filter-param"]')) {
       sendReqUrl = sendReqUrl + '&json=true';
       return $.getJSON(sendReqUrl)
-        .then(createFilterParam.bind(null, dependentParam, questionName))
+        .then(createFilterParam.bind(null, dependentParam, questionName, dependedValues))
         .done(function() {
           dependentParam.find('input').removeAttr('disabled');
           element.find(".param[name='" + paramName + "']").attr("ready", "");
