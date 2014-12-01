@@ -50,6 +50,7 @@ wdk.namespace('wdk.controllers', function(ns) {
       this.ignored = options.ignored || [];
       this.title = options.title || 'Items';
       this.questionName = options.questionName;
+      this.dependedValue = options.dependedValue;
       this.name = options.name;
       this.fields = new Fields(options.fields, {
         trimMetadataTerms: Boolean(options.trimMetadataTerms)
@@ -260,6 +261,7 @@ wdk.namespace('wdk.controllers', function(ns) {
         var metadataUrl = wdk.webappUrl('getMetadata.do');
         var metadataUrlParams = {
           questionFullName: this.questionName,
+          dependedValue: JSON.stringify(this.dependedValue),
           name: this.name,
           json: true,
           property: term
