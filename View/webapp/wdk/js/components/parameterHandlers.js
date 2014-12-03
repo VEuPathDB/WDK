@@ -112,6 +112,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   function initFilterParam(element) {
     var form = element.closest('form');
     var filterParams = element.find('[data-type="filter-param"]');
+    var keepPreviousValue = element.closest('form').is('.is-revise');
 
     if (filterParams.length > 0) {
       // add class to move prompts to left
@@ -120,12 +121,17 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     filterParams.each(function(i, node) {
       var $param = $(node);
-      var questionName = form.find('input[name="questionFullName"]').val();
-      var paramName = $param.attr('name');
-      var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
+      if ($param.hasClass('dependentParam')) {
+        updateDependentParam($param, element, keepPreviousValue);
+      }
+      else {
+        var questionName = form.find('input[name="questionFullName"]').val();
+        var paramName = $param.attr('name');
+        var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
 
-      $.getJSON(sendReqUrl)
-        .then(createFilterParam.bind(null, $param, questionName, {}));
+        $.getJSON(sendReqUrl)
+          .then(createFilterParam.bind(null, $param, questionName, {}));
+      }
     });
   }
 
