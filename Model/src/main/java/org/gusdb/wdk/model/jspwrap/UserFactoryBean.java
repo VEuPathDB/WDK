@@ -167,9 +167,10 @@ public class UserFactoryBean {
     /**
      * @param signature
      * @return
+     * @throws WdkUserException 
      * @see org.gusdb.wdk.model.user.UserFactory#loadUserBySignature(java.lang.String)
      */
-    public UserBean getUser(String signature) throws WdkModelException {
+    public UserBean getUser(String signature) throws WdkModelException, WdkUserException {
         User user = userFactory.getUser(signature);
         return new UserBean(user);
     }
@@ -188,7 +189,7 @@ public class UserFactoryBean {
         this.signature = signature;
     }
 
-    public UserBean getUser() throws WdkModelException {
+    public UserBean getUser() throws WdkModelException, WdkUserException {
         return (signature == null) ? null : getUser(signature);
     }
 }
