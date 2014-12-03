@@ -14,6 +14,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -37,13 +38,13 @@ public class GetDownloadResultAction extends Action {
             throws Exception {
         try {
             // get answer
-            String histIdstr = request.getParameter(CConstants.WDK_STEP_ID_KEY);
-            if (histIdstr == null) {
-                histIdstr = (String) request.getAttribute(CConstants.WDK_STEP_ID_KEY);
+            String stepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
+            if (stepId == null) {
+                stepId = (String) request.getAttribute(CConstants.WDK_STEP_ID_KEY);
             }
-            if (histIdstr == null)
-                throw new Exception(
-                        "no userAnswer id is given for which to download the result");
+            if (stepId == null)
+                throw new WdkUserException(
+                        "no step id is given for which to download the result");
 
             String signature = request.getParameter("signature");
             UserBean wdkUser;
@@ -54,7 +55,7 @@ public class GetDownloadResultAction extends Action {
                 wdkUser = ActionUtility.getUser(servlet, request);
             }
 
-            int histId = Integer.parseInt(histIdstr);
+            int histId = Integer.parseInt(stepId);
             StepBean userAnswer = wdkUser.getStep(histId);
             AnswerValueBean wdkAnswerValue = userAnswer.getAnswerValue();
 
