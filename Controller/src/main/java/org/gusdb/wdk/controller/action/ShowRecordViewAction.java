@@ -12,7 +12,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
@@ -46,13 +45,8 @@ public class ShowRecordViewAction extends Action {
         throw new WdkUserException("Required name parameter is missing. "
             + "A full recordClass name is needed.");
 
-      RecordClassBean recordClass = null;
-      try {
-        recordClass = wdkModel.findRecordClass(rcName);
-      }
-      catch (WdkModelException ex) {
-        throw new WdkUserException(ex);
-      }
+      wdkModel.validateRecordClassName(rcName);
+      RecordClassBean recordClass = wdkModel.findRecordClass(rcName);
       String[] pkColumns = recordClass.getPrimaryKeyColumns();
 
       Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
