@@ -137,17 +137,20 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   //==============================================================================
   function createFilterParam($param, questionName, dependedValue, filterData) {
-    var filterParam = $param.data('filterParam');
+    var $data = $param.data();
+    var filterParam = $data.filterParam;
 
     if (filterParam) filterParam.remove();
 
     var form = $param.closest('form');
-    var title = $param.data('title');
-    var isAllowEmpty = $param.data('isAllowEmpty');
+    var title = $data.title;
+    // var isAllowEmpty = $param.data('isAllowEmpty');
+    var minSelectedCount = $data.minSelectedCount;
+    var maxSelectedCount = $data.maxSelectedCount;
     var name = $param.attr('name');
     console.time('intialize render :: ' + name);
-    var defaultColumns = $param.data('default-columns');
-    var trimMetadataTerms = $param.data('trim-metadata-terms');
+    var defaultColumns = $data.defaultColumns;
+    var trimMetadataTerms = $data.trimMetadataTerms;
     var input = $param.find('input');
     var previousValue;
 
@@ -228,15 +231,23 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     });
 
     form.on('submit', function(e) {
-      var filteredData = filterParam.getSelectedData();
-      if (!isAllowEmpty && filteredData.length === 0) {
+      var filteredDataCount = filterParam.getSelectedData().length;
+      var min = minSelectedCount === -1 ? 1 : minSelectedCount;
+      var max = maxSelectedCount === -1 ? Infinity : minSelectedCount;
+      var condition = max === Infinity
+        ? 'at least <b>' + min + '</b>'
+        : 'between <b>' + min + '</b> and <b>' + max + '</b>';
+
+      //if (!isAllowEmpty && filteredDataCount === 0) {
+      if (filteredDataCount < min || filteredDataCount > max) {
         e.preventDefault();
         $param.find('.ui-state-error').remove();
-        $param.prepend(
-          '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">' +
-          'Please select ' + title + ' to continue.' +
-          '</div>'
-        );
+        $param.prepend([
+          '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">',
+           'You have selected <b>', filteredDataCount, '</b>', title + '.',
+           'Please select', condition, title, 'to continue.',
+           '</div>'
+        ].join(' '));
         filterParam.once('change:value', function() {
           $param.find('.ui-state-error').remove();
         });
