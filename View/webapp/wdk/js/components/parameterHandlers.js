@@ -593,11 +593,12 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     // the dependson may contain a comma separated list of param names the current param depends on
     for (i=0; i < dependedNames.length; i++) {
       dependedName = dependedNames[i];
-      var dependedParam = element.find("#" + dependedName + 
-          "aaa input[name='array(" + dependedName + ")']:checked, #" + 
-          dependedName + "aaa select[name='array(" + dependedName + 
-          ")']");
-          
+      var dependedParam = element.find([
+        "#" + dependedName + "aaa input[name='array(" + dependedName + ")']:checked", // checkbox
+        "#" + dependedName + "aaa select[name='array(" + dependedName + ")']",        // select
+        'input[type=hidden][name="value(' + dependedName + ')"]'                      // hidden
+      ].join(','));
+
       // get the selected values from depended param
       var values = [];
       var needInput = false;
