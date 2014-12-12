@@ -34,6 +34,8 @@ my %dblinkMap = (
     'apicommdevn' => 'devn.login_comment',
     'icmrcomm'    => 'icemr.login_comment',
     'prsmcomm'    => 'prism.login_comment',
+    'rm15873'     => 'rm15873.login_comment',
+    'rm9972'      => 'rm9972.login_comment',
     'userdb'      => 'vm.userdb', # standalone virtual machine
 );
 
