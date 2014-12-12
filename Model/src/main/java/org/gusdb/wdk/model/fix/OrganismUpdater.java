@@ -121,7 +121,7 @@ public class OrganismUpdater {
 				if (jsParams.has("params")) 
 						jsParams = jsParams.getJSONObject("params");
 
-        if (changeParams(jsParams, clobKeys)) {
+        if (jsParams!=null && changeParams(jsParams, clobKeys)) {
           content = jsParams.toString();
           platform.setClobData(psUpdate, 1, content, false);
           psUpdate.setInt(2, stepId);
@@ -149,7 +149,10 @@ logger.info("THE END:   " + count + " steps modified\n\n");
 
   private boolean changeParams(JSONObject jsParams, Set<String> clobKeys) throws JSONException {
     boolean updated = false;
-    for (String name : JSONObject.getNames(jsParams)) {
+    String[] names = JSONObject.getNames(jsParams);
+    if ( names == null) return updated;
+
+    for (String name : names) {
       for (int i = 0; i < lenParamOrg; i++) {
         if (name.equals(PARAM_ORGANISM[i])) {
           String organisms = jsParams.getString(name);
