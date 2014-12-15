@@ -49,7 +49,7 @@ public class GuestRemover extends BaseCLI {
   private String userSchema;
 
   public GuestRemover(String command) {
-    super((command != null) ? command : "wdkGuestRemoer",
+    super((command != null) ? command : "wdkGuestRemover",
         "This command removes expired guest user data from user DB.");
   }
 
