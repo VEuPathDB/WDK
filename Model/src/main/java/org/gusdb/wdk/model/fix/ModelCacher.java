@@ -29,7 +29,7 @@ import org.gusdb.wdk.model.question.QuestionSet;
  */
 public class ModelCacher extends BaseCLI {
 
-  public static final String ARG_KEEP_CACHE = "keep-cache";
+  public static final String ARG_KEEP_CACHE = "keepCache";
 
   private static final Logger logger = Logger.getLogger(ModelCacher.class);
 
@@ -310,8 +310,8 @@ public class ModelCacher extends BaseCLI {
   }
 
   private boolean questionExists(Question question, PreparedStatement psSelect) throws SQLException {
-    psSelect.setString(2, question.getFullName());
-    psSelect.setString(3, question.getWdkModel().getProjectId());
+    psSelect.setString(1, question.getFullName());
+    psSelect.setString(2, question.getWdkModel().getProjectId());
     ResultSet resultSet = null;
     try {
       resultSet = psSelect.executeQuery();
