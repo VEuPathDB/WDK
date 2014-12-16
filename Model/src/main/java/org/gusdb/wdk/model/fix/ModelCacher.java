@@ -29,6 +29,8 @@ import org.gusdb.wdk.model.question.QuestionSet;
  */
 public class ModelCacher extends BaseCLI {
 
+	// option to keep the apicomm local question/params cache hat is used to check for invalid steps
+	// (it is not the WDK cache, though it could make sense to add another flag for it)
   public static final String ARG_KEEP_CACHE = "keepCache";
 
   private static final Logger logger = Logger.getLogger(ModelCacher.class);
@@ -159,7 +161,7 @@ public class ModelCacher extends BaseCLI {
       sql = "INSERT INTO " + schema + "wdk_enum_params " + "(param_id, param_value) VALUES (?, ?)";
       psEnum = connection.prepareStatement(sql);
 
-      // check if question exisits
+      // check if question exists
       sql = "SELECT count(*) FROM " + schema + "wdk_questions WHERE question_name = ? AND project_id = ?";
       psSelect = connection.prepareStatement(sql);
 
