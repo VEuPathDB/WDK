@@ -78,7 +78,7 @@ public class GuestRemover extends BaseCLI {
     userSchema = DBPlatform.normalizeSchema(userSchema);
 
     LOG.info("********** Looking up guest users... **********");
-    String guestSql = lookupGuests(projectId, cutoffDate);
+    String guestSql = lookupGuests(userSchema, cutoffDate);
 
     LOG.info("********** Deleting guest users... **********");
     removeGuests(guestSql);
