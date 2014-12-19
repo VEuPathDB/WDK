@@ -17,7 +17,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.RequestParams;
@@ -69,7 +68,7 @@ public class QuestionForm extends MapActionForm {
     try {
       wdkQuestion = getQuestion();
     }
-    catch (WdkModelException ex) {
+    catch (WdkUserException | WdkModelException ex) {
       ActionMessage message = new ActionMessage("mapped.properties", ex.getMessage());
       errors.add(ActionErrors.GLOBAL_MESSAGE, message);
       return errors;
@@ -138,7 +137,7 @@ public class QuestionForm extends MapActionForm {
           "Unable to validate params in request."));
     }
 
-    logger.debug("finish validation...\n\n\n\n\n");
+    logger.debug("finish validation...\n\n");
     return errors;
   }
 
@@ -155,21 +154,13 @@ public class QuestionForm extends MapActionForm {
     this.questionFullName = question.getFullName();
   }
 
-  public QuestionBean getQuestion() throws WdkModelException {
+  public QuestionBean getQuestion() throws WdkModelException, WdkUserException {
     if (question == null) {
       if (questionFullName == null)
         return null;
-      int dotI = questionFullName.indexOf('.');
-      String qSetName = questionFullName.substring(0, dotI);
-      String qName = questionFullName.substring(dotI + 1, questionFullName.length());
-
-      WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
-          CConstants.WDK_MODEL_KEY);
-
-      QuestionSetBean wdkQuestionSet = wdkModel.getQuestionSetsMap().get(qSetName);
-      if (wdkQuestionSet == null)
-        return null;
-      question = wdkQuestionSet.getQuestionsMap().get(qName);
+      WdkModelBean wdkModel = ActionUtility.getWdkModel(getServlet());
+      wdkModel.validateQuestionFullName(questionFullName);
+      question = wdkModel.getQuestion(questionFullName);
     }
     return question;
   }
@@ -214,8 +205,7 @@ public class QuestionForm extends MapActionForm {
     this.customName = customName;
   }
 
-  public Map<String, String> getInvalidParams() throws WdkModelException {
-    QuestionBean question = getQuestion();
+  public Map<String, String> getInvalidParams() {
     Map<String, ParamBean<?>> params = question.getParamsMap();
     Map<String, String> invalidParams = new LinkedHashMap<String, String>();
     for (String param : values.keySet()) {
