@@ -1,19 +1,34 @@
 package org.gusdb.wdk.service;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.ws.rs.core.Application;
 
-import org.gusdb.wdk.service.services.RecordsService;
+import org.gusdb.fgputil.SetBuilder;
+import org.gusdb.wdk.service.filter.MethodRewritingFilter;
+import org.gusdb.wdk.service.provider.ExceptionMapper;
+import org.gusdb.wdk.service.service.ProjectService;
+import org.gusdb.wdk.service.service.RecordsService;
+import org.gusdb.wdk.service.service.UserService;
 
 public class WdkServiceApplication extends Application {
 
   @Override
   public Set<Class<?>> getClasses() {
-    Set<Class<?>> classes = new HashSet<>();
-    classes.add(RecordsService.class);
-    return classes;
+    return new SetBuilder<Class<?>>()
+
+    // add provider classes
+    .add(ExceptionMapper.class)
+
+    // add filter classes
+    .add(MethodRewritingFilter.class)
+
+    // add service classes
+    .add(ProjectService.class)
+    .add(UserService.class)
+    .add(RecordsService.class)
+
+    .toSet();
   }
 
 }
