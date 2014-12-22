@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.services;
+package org.gusdb.wdk.service.service;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
