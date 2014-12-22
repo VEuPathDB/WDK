@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.service;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -13,16 +14,24 @@ public abstract class WdkService {
 
   @Context
   private HttpServletRequest _request;
+
+  @Context
+  private UriInfo _uriInfo;
+
   private WdkModel _wdkModel;
 
   protected WdkModel getWdkModel() {
     return _wdkModel;
   }
 
+  protected UriInfo getUriInfo() {
+    return _uriInfo;
+  }
+
   protected int getCurrentUserId() {
     return ((UserBean)_request.getSession().getAttribute("wdkUser")).getUser().getUserId();
   }
-  
+
   protected User getCurrentUser() {
     return ((UserBean)_request.getSession().getAttribute("wdkUser")).getUser();
   }

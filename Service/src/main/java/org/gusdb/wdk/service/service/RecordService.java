@@ -12,7 +12,7 @@ import org.json.JSONObject;
 public class RecordService extends WdkService {
 
   @GET
-  @Path("/dataset")
+  @Path("dataset")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getInfo() {
     JSONObject json = new JSONObject();
