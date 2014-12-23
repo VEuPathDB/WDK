@@ -23,6 +23,6 @@ public class ProjectService extends WdkService {
     json.put("releaseDate", wdkModel.getReleaseDate());
     json.put("introduction", wdkModel.getIntroduction());
     json.put("webAppUrl", wdkModel.getModelConfig().getWebAppUrl());
-    return Response.ok(json).build();
+    return Response.ok(json.toString()).build();
   }
 }

@@ -40,6 +40,6 @@ public class UserService extends WdkService {
     if (isOwner) {
       json.put("email", user.getEmail());
     }
-    return Response.ok(json).build();
+    return Response.ok(json.toString()).build();
   }
 }
