@@ -1,8 +1,10 @@
 package org.gusdb.wdk.service.service;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -14,6 +16,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -30,7 +33,7 @@ public class SampleService extends WdkService {
   private static final Logger LOG = Logger.getLogger(SampleService.class);
 
   private static AtomicLong ID_SEQUENCE = new AtomicLong(1);
-  private static Map<Long, JSONObject> STATE = new HashMap<>();
+  private static Map<Long, JSONObject> STATE = new LinkedHashMap<>();
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
@@ -51,9 +54,14 @@ public class SampleService extends WdkService {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getIds() {
-    JSONArray ids = new JSONArray(STATE.keySet());
-    return Response.ok(ids.toString()).build();
+  public Response getIds(@QueryParam("offset") Long offset, @QueryParam("numRecords") Long numRecords) {
+    List<Long> ids = new ArrayList<>(STATE.keySet());
+    if (offset == null || offset < 0) offset = 0L;
+    long maxNumRecords = ids.size() - offset;
+    numRecords = (numRecords == null ? maxNumRecords :
+      numRecords < 0 ? 0 : Math.min(numRecords, maxNumRecords));
+    ids = ids.subList(offset.intValue(), Long.valueOf(offset + numRecords).intValue());
+    return Response.ok(new JSONArray(ids).toString()).build();
   }
 
   @GET
