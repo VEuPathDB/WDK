@@ -1,24 +1,70 @@
 
-var EntryList = React.createClass({
-  showAddForm: function(event) {
-    alert("Will add new");
+var ActionCreator = {
+  deleteRecord: function(id) {
+    alert("Deleting record " + id);
+    // do ajaxy stuff, then alert dispatcher
   },
-  modifyRecord: function(event) {
-    alert("Will modify record " + $(event.target).data("id"));
+  modifyRecord: function(id, value) {
+    alert("Modifying record " + id + " with new value:\n" + value);
+    // do ajaxy stuff, then alert dispatcher
+  },
+  addRecord: function(value) {
+    alert("Creating new record with value:\n" + value);
+    // do ajaxy stuff, then alert dispatcher
+  }
+}
+
+var EntryList = React.createClass({
+  doRecord: function(event) {
+    var op = jQuery(event.target).data("op"));
+    var id = jQuery(event.target).data("id"));
+    var input = document.createElement("textarea");
+    input.cols = "80";
+    input.rows = "40";
+    input.value = (op == "add" ? "" : this.props.data[id]);
+    jQuery(input).dialog({
+      title: (op == "add" ? "Add" : "Modify") + " Record",
+      modal: true,
+      buttons: [
+        {
+          text: "OK",
+          click: function() {
+            var value = jQuery(this).find("textarea").val();
+            if (op == "add")
+              ActionCreator.addRecord(value);
+            }
+            else {
+              ActionCreator.modifyRecord(id, value);
+            }
+          }
+        }, 
+        {
+          text: "Cancel",
+          click: function() { jQuery(this).dialog("close"); }
+        }
+      ]
+    });
   },
   deleteRecord: function(event) {
-    alert("Will delete record " + $(event.target).data("id"));
+    var id = $(event.target).data("id");
+    if (confirm("Are you sure you want to delete record " + id + "?")) {
+      ActionCreator.deleteRecord(id);
+    }
   },
   render: function() {
     var component = this;
     var data = component.props.data;
     var getRecord = function(key) {
+      var displayVal = JSON.stringify(data[key]);
+      if (displayVal.length > 20) {
+        displayVal = displayVal.substring(0, 17) + "...";
+      }
       return (
         <tr key={key}>
           <td>{key}</td>
-          <td style={{border: "1px solid black"}}><pre>{JSON.stringify(data[key], undefined, 2)}</pre></td>
+          <td><pre>{displayVal}</pre></td>
           <td>
-            <input type="button" value="Modify" data-id={key} onClick={component.modifyRecord}/>
+            <input type="button" value="Modify" data-id={key} data-op="modify" onClick={component.doRecord}/>
             <input type="button" value="Delete" data-id={key} onClick={component.deleteRecord}/>
           </td>
         </tr>
@@ -32,7 +78,7 @@ var EntryList = React.createClass({
           {Object.keys(data).map(getRecord)}
         </table>
         <hr/>
-        <input type="button" value="Add Record" onClick={this.showAddForm}/>
+        <input type="button" value="Add Record" data-op="add" onClick={component.doRecord}/>
       </div>
     );
   }
