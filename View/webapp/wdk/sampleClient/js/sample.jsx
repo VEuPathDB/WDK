@@ -89,7 +89,9 @@ var EntryList = React.createClass({
     };
     return (
       <div>
-        State:<br/>
+        <h3>JSON Record Store</h3>
+        <div>Each entry must be valid JSON</div>
+        <hr/>
         <table>
           <tr>
             <th>ID</th>
