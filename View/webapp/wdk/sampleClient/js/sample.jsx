@@ -1,28 +1,7 @@
 
-var Model = {
-  model: {},
-  initialize: function(initialValue) {
-    Model.model = initialValue;
-  },
-  get: function() {
-    return Model.model;
-  }
-}
-
-var ActionCreator = {
-  deleteRecord: function(id) {
-    alert("Deleting record " + id);
-    // do ajaxy stuff, then alert dispatcher
-  },
-  modifyRecord: function(id, value) {
-    alert("Modifying record " + id + " with new value:\n" + value);
-    // do ajaxy stuff, then alert dispatcher
-  },
-  addRecord: function(value) {
-    alert("Creating new record with value:\n" + value);
-    // do ajaxy stuff, then alert dispatcher
-  }
-}
+//**************************************************
+// Primary Rendering Component
+//**************************************************
 
 var EntryList = React.createClass({
   doRecord: function(event) {
@@ -107,6 +86,113 @@ var EntryList = React.createClass({
   }
 });
 
+//**************************************************
+// Dispatcher
+//**************************************************
+
+var AppDispatcher = new Dispatcher();
+
+// types of actions sent through the dispatcher
+var ActionType = {
+  ADD_ACTION: "addAction",
+  MODIFY_ACTION: "modifyAction",
+  DELETE_ACTION: "deleteAction"
+}
+
+//**************************************************
+// Model
+//**************************************************
+
+var Model = {
+
+  model: {},
+
+  registeredCallbacks: [],
+
+  register: function(callback) {
+    registeredCallbacks.push(callback);
+  },
+
+  updateRegisteredViews: function() {
+    registeredCallbacks.each(function(func) { func(this); });
+  },
+
+  handleEvent: function(payload) {
+    // update the model here
+    switch(payload.actionType) {
+      case ActionType.ADD_ACTION:
+        alert("Updating model with add action");
+        break;
+      case ActionType.MODIFY_ACTION:
+        alert("Updating model with modify action");
+        break;
+      case ActionType.DELETE_ACTION:
+        alert("Updating model with delete action");
+        break;
+      default:
+        // this model does not support other actions
+    }
+
+    // then alert registered views of change
+    Model.updateRegisteredViews();
+  },
+
+  initialize: function(initialValue) {
+    Model.model = initialValue;
+    AppDispatcher.register(Model.handleEvent);
+  },
+
+  get: function() {
+    return Model.model;
+  }
+}
+
+//**************************************************
+// Controller-View (wraps primary page component)
+//**************************************************
+
+var ControllerView = React.createClass({
+  getInitialState: function() {
+    return this.props.model.get();
+  },
+  componentDidMount: function() {
+    this.props.model.register(this.update());
+  },
+  update: function() {
+    alert("Controller-View is being updated");
+    this.setState(this.props.model.get());
+  },
+  render: function() {
+    return ( <EntryList data={this.state}/> );
+  }
+});
+
+//**************************************************
+// Action-Creator functions interact with the server
+//**************************************************
+
+var ActionCreator = {
+  deleteRecord: function(id) {
+    alert("Deleting record " + id);
+    // do ajaxy stuff
+    AppDispatcher.dispatch({ actionType: ActionTypes.DELETE_ACTION });
+  },
+  modifyRecord: function(id, value) {
+    alert("Modifying record " + id + " with new value:\n" + value);
+    // do ajaxy stuff
+    AppDispatcher.dispatch({ actionType: ActionTypes.MODIFY_ACTION });
+  },
+  addRecord: function(value) {
+    alert("Creating new record with value:\n" + value);
+    // do ajaxy stuff
+    AppDispatcher.dispatch({ actionType: ActionTypes.ADD_ACTION });
+  }
+}
+
+//**************************************************
+// Page Initialization
+//**************************************************
+
 var Sample = {
   serviceUrl: "http://rdoherty.plasmodb.org/plasmo.rdoherty/service/",
   loadPage: function() {
@@ -116,15 +202,17 @@ var Sample = {
       data: { expandRecords: true },
       dataType: "json",
       success: function(data) {
+        // initialize the model with the fetched state
         Model.initialize(data);
-        React.render(<EntryList data={Model.get()}/>, document.body);
+        // create top-level view-controller
+        React.render(<ControllerView model={Model}/>, document.body);
       },
       error: function(jqXHR, textStatus, errorThrown ) {
         alert("Error: Unable to load initial data");
       }
     });
   }
-
 };
 
 Sample.loadPage();
+
