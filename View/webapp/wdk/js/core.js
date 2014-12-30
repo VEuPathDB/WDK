@@ -1,0 +1,10 @@
+require('./core/console');
+require('./core/namespace');
+require('./core/fn');
+require('./core/c_properties');
+require('./core/base_class');
+require('./core/runloop');
+require('./core/container');
+require('./core/application');
+require('./core/common');
+require('./core/util');

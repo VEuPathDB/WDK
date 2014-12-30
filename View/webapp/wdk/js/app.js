@@ -1,4 +1,13 @@
 /*global RSVP */
+
+require('./core');
+require('./user');
+require('./models');
+require('./plugins');
+require('./components');
+require('./views');
+require('./controllers');
+
 (function($) {
   'use strict';
 
