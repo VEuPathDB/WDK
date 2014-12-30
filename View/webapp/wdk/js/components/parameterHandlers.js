@@ -223,15 +223,20 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     $param.data('filterParam', filterParam);
 
     filterParam.on('change:value', function(filterParam, value) {
-      input.val(JSON.stringify(value));
+      input.val(JSON.stringify({
+        values: _.pluck(value.filteredData, 'term'),
+        ignored: value.ignored,
+        filters: _.map(value.filters, _.partialRight(_.omit, 'selection'))
+      }));
     });
 
-    filterParam.on('ready', function() {
+    // filterParam.on('ready', function() {
       $param.find('.loading').hide();
-    });
+    // });
 
     form.on('submit', function(e) {
-      var filteredDataCount = filterParam.getSelectedData().length;
+      var filteredData = JSON.parse(input.val()).values;
+      var filteredDataCount = filteredData.length;
       var min = minSelectedCount === -1 ? 1 : minSelectedCount;
       var max = maxSelectedCount === -1 ? Infinity : minSelectedCount;
       var condition = max === Infinity

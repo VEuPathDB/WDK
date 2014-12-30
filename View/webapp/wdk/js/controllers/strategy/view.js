@@ -797,9 +797,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
   function getParamDisplay(param) {
     if (param.className === 'org.gusdb.wdk.model.jspwrap.FilterParamBean') {
-      var rawFilters = JSON.parse(param.display);
-      var filters = new wdk.models.filter.Filters(rawFilters);
-      return filters.invoke('description').join(', <br>');
+      var filters = JSON.parse(param.display);
+      return _.pluck(filters, 'display').join(', <br>');
     }
 
     return param.display;
