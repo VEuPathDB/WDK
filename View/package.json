@@ -9,7 +9,7 @@
   "scripts": {
     "build-js": "./scripts/concatLibs && ./node_modules/.bin/webpack -d",
     "build-css": "./scripts/buildCss",
-    "clean": "rm -r ./dist",
+    "clean": "rm -rf ./dist",
     "dist": "npm run clean && npm run build-js && npm run build-css"
   },
   "private": true,
