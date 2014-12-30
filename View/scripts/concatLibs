@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+LIBS_DIR=$DIR/../webapp/wdk/lib
+LIBS=$LIBS_DIR/manifest.txt
+DEST=$DIR/../dist/wdk/js/wdk.libs.js
+
+mkdir -p $(dirname "$DEST")
+
+if [ -e $DEST ]; then
+  rm $DEST
+fi
+
+while read lib
+do
+  cat "$LIBS_DIR/$lib" >> $DEST
+  echo "" >> $DEST
+done <$LIBS
