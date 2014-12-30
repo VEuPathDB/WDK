@@ -16,33 +16,32 @@ var ActionCreator = {
 
 var EntryList = React.createClass({
   doRecord: function(event) {
-    var op = jQuery(event.target).data("op"));
-    var id = jQuery(event.target).data("id"));
+    var op = jQuery(event.target).data("op");
+    var id = jQuery(event.target).data("id");
+    var div = document.createElement("div");
+    var form = document.createElement("form");
     var input = document.createElement("textarea");
     input.cols = "80";
-    input.rows = "40";
-    input.value = (op == "add" ? "" : this.props.data[id]);
-    jQuery(input).dialog({
+    input.rows = "20";
+    input.value = (op == "add" ? "" : JSON.stringify(this.props.data[id], undefined, 2));
+    form.appendChild(input);
+    div.appendChild(form);
+    jQuery(div).dialog({
       title: (op == "add" ? "Add" : "Modify") + " Record",
       modal: true,
-      buttons: [
-        {
+      buttons: [{
           text: "OK",
           click: function() {
             var value = jQuery(this).find("textarea").val();
             if (op == "add")
               ActionCreator.addRecord(value);
-            }
-            else {
+            else
               ActionCreator.modifyRecord(id, value);
-            }
           }
-        }, 
-        {
+        },{
           text: "Cancel",
           click: function() { jQuery(this).dialog("close"); }
-        }
-      ]
+        }]
     });
   },
   deleteRecord: function(event) {
