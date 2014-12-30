@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+SRC=$DIR/../webapp/wdk/css/wdk.css
+LIBS=$DIR/../webapp/wdk/css/wdk.libs.css
+DEST_SRC=$DIR/../dist/wdk/css/wdk.min.css
+DEST_LIBS=$DIR/../dist/wdk/css/wdk.libs.min.css
+CLEANCSS=$DIR/../node_modules/.bin/cleancss
+OPTS="--source-map --skip-rebase"
+
+mkdir -p $( dirname "$DEST_SRC" )
+
+$CLEANCSS $OPTS -o $DEST_SRC $SRC && $CLEANCSS $OPTS -o $DEST_LIBS $LIBS

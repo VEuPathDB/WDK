@@ -2,18 +2,19 @@
   "name": "wdk",
   "version": "0.1.0",
   "devDependencies": {
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-copy": "~0.4.1",
-    "grunt-contrib-uglify": "~0.2.7",
-    "grunt-cli": "~0.1.11",
-    "grunt": "~0.4.1",
-    "grunt-contrib-clean": "~0.5.0",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-handlebars": "~0.6.1",
-    "grunt-contrib-cssmin": "~0.9.0"
+    "clean-css": "^3.0.1",
+    "jsx-loader": "^0.12.2",
+    "webpack": "^1.4.14"
   },
   "scripts": {
-    "dist": "./node_modules/.bin/grunt --no-color dist"
+    "build-js": "./scripts/concatLibs && ./node_modules/.bin/webpack -d",
+    "build-css": "./scripts/buildCss",
+    "clean": "rm -r ./dist",
+    "dist": "npm run clean && npm run build-js && npm run build-css"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "flux": "^2.0.1",
+    "react": "^0.12.2"
+  }
 }
