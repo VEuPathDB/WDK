@@ -28,7 +28,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @Path("/sample")
-@Produces(MediaType.APPLICATION_JSON)
 public class SampleService extends WdkService {
 
   private static final Logger LOG = Logger.getLogger(SampleService.class);
@@ -49,6 +48,7 @@ public class SampleService extends WdkService {
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
   public Response createElement(String body) {
     // parse request body to ensure it is JSON
     try {
@@ -56,7 +56,9 @@ public class SampleService extends WdkService {
       long nextId = ID_SEQUENCE.getAndIncrement();
       STATE.put(nextId, json);
       String newUri = getUriInfo().getAbsolutePath() + "/" + nextId;
-      return Response.created(URI.create(newUri)).build();
+      json = new JSONObject();
+      json.put("id", nextId);
+      return Response.created(URI.create(newUri)).entity(json.toString()).build();
     }
     catch (JSONException e) {
       LOG.info("Passed request body deemed unacceptable", e);
@@ -65,6 +67,7 @@ public class SampleService extends WdkService {
   }
 
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   public Response getIds(
       @QueryParam("offset") Long offset,
       @QueryParam("numRecords") Long numRecords,
@@ -93,6 +96,7 @@ public class SampleService extends WdkService {
 
   @GET
   @Path("{id}")
+  @Produces(MediaType.APPLICATION_JSON)
   public Response getById(@PathParam("id") long id) {
     JSONObject obj = STATE.get(id);
     return (obj == null ?
