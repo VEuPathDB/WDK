@@ -235,7 +235,7 @@ var ActionCreator = {
   },
   resetData: function() {
     jQuery.ajax({
-      type: "POST",
+      type: "GET",
       url: ServiceUrl + "sample/reset",
       data: { expandRecords: true },
       success: function(data, textStatus, jqXHR) {

@@ -131,7 +131,7 @@ public class SampleService extends WdkService {
     return Response.ok().build();
   }
 
-  @POST
+  @GET
   @Path("reset")
   @Produces(MediaType.APPLICATION_JSON)
   public Response resetData(
