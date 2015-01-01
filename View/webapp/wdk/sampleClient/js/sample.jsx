@@ -1,5 +1,11 @@
 
 //**************************************************
+// Define the depended service
+//**************************************************
+
+var ServiceUrl = "http://rdoherty.plasmodb.org/plasmo.rdoherty/service/";
+
+//**************************************************
 // Primary Rendering Component
 //**************************************************
 
@@ -19,25 +25,29 @@ var EntryList = React.createClass({
       title: (op == "add" ? "Add" : "Modify") + " Record",
       modal: true,
       width: "60%",
-      buttons: [{
+      buttons: [
+        {
           text: "OK",
           click: function() {
             var value = jQuery(this).find("textarea").val();
             try {
-              JSON.parse(value);
-              jQuery(this).dialog("close");
-              if (op == "add")
-                ActionCreator.addRecord(value);
-              else
-                ActionCreator.modifyRecord(id, value);
+              value = JSON.parse(value);
             }
             catch (e) {
               alert("JSON not properly formatted.\n\n" + e + "\n\nPlease try again.");
+              return;
             }
+            jQuery(this).dialog("close");
+            if (op == "add")
+              ActionCreator.addRecord(value);
+            else
+              ActionCreator.modifyRecord(id, value);
           }
         },{
           text: "Cancel",
-          click: function() { jQuery(this).dialog("close"); }
+          click: function() {
+            jQuery(this).dialog("close");
+          }
         }]
     });
   },
@@ -45,6 +55,11 @@ var EntryList = React.createClass({
     var id = jQuery(event.target).data("id");
     if (confirm("Are you sure you want to delete record " + id + "?")) {
       ActionCreator.deleteRecord(id);
+    }
+  },
+  resetData: function(event) {
+    if (confirm("Are you sure you want to restore the above data to its original state?")) {
+      ActionCreator.resetData();
     }
   },
   render: function() {
@@ -81,6 +96,7 @@ var EntryList = React.createClass({
         </table>
         <hr/>
         <input type="button" value="Add Record" data-op="add" onClick={component.doRecord}/>
+        <input type="button" value="Reset Data" onClick={component.resetData}/>
       </div>
     );
   }
@@ -90,13 +106,14 @@ var EntryList = React.createClass({
 // Dispatcher
 //**************************************************
 
-var AppDispatcher = new Dispatcher();
+var Dispatcher = new Flux.Dispatcher();
 
 // types of actions sent through the dispatcher
 var ActionType = {
   ADD_ACTION: "addAction",
   MODIFY_ACTION: "modifyAction",
-  DELETE_ACTION: "deleteAction"
+  DELETE_ACTION: "deleteAction",
+  RESET_ACTION: "resetAction"
 }
 
 //**************************************************
@@ -110,36 +127,38 @@ var Model = {
   registeredCallbacks: [],
 
   register: function(callback) {
-    registeredCallbacks.push(callback);
+    Model.registeredCallbacks.push(callback);
   },
 
   updateRegisteredViews: function() {
-    registeredCallbacks.each(function(func) { func(this); });
+    Model.registeredCallbacks.forEach(function(func) { func(this); });
   },
 
-  handleEvent: function(payload) {
+  handleAction: function(payload) {
     // update the model here
+    // data in form { id: int, value: string }
     switch(payload.actionType) {
       case ActionType.ADD_ACTION:
-        alert("Updating model with add action");
+        Model.model[payload.data.id] = payload.data.value;
         break;
       case ActionType.MODIFY_ACTION:
-        alert("Updating model with modify action");
+        Model.model[payload.data.id] = payload.data.value;
         break;
       case ActionType.DELETE_ACTION:
-        alert("Updating model with delete action");
+        delete Model.model[payload.data.id];
         break;
+      case ActionType.RESET_ACTION:
+        Model.model = payload.data;
       default:
         // this model does not support other actions
     }
-
     // then alert registered views of change
     Model.updateRegisteredViews();
   },
 
   initialize: function(initialValue) {
     Model.model = initialValue;
-    AppDispatcher.register(Model.handleEvent);
+    Dispatcher.register(Model.handleAction);
   },
 
   get: function() {
@@ -156,11 +175,12 @@ var ControllerView = React.createClass({
     return this.props.model.get();
   },
   componentDidMount: function() {
-    this.props.model.register(this.update());
+    this.props.model.register(this.update);
   },
   update: function() {
-    alert("Controller-View is being updated");
-    this.setState(this.props.model.get());
+    var newModel = this.props.model.get();
+    alert("Updating view with model: " + JSON.stringify(newModel));
+    this.setState(newModel);
   },
   render: function() {
     return ( <EntryList data={this.state}/> );
@@ -172,20 +192,59 @@ var ControllerView = React.createClass({
 //**************************************************
 
 var ActionCreator = {
-  deleteRecord: function(id) {
-    alert("Deleting record " + id);
-    // do ajaxy stuff
-    AppDispatcher.dispatch({ actionType: ActionTypes.DELETE_ACTION });
+  addRecord: function(value) {
+    jQuery.ajax({
+      type: "POST",
+      url: ServiceUrl + "sample",
+      contentType: 'application/json; charset=UTF-8',
+      data: JSON.stringify(value),
+      dataType: "json",
+      success: function(data, textStatus, jqXHR) {
+        Dispatcher.dispatch({ actionType: ActionType.ADD_ACTION, data: { id: data.id, value: value }});
+      },
+      error: function(jqXHR, textStatus, errorThrown ) {
+        alert("Error: Unable to create new record");
+      }
+    });
   },
   modifyRecord: function(id, value) {
-    alert("Modifying record " + id + " with new value:\n" + value);
-    // do ajaxy stuff
-    AppDispatcher.dispatch({ actionType: ActionTypes.MODIFY_ACTION });
+    jQuery.ajax({
+      type: "PUT",
+      url: ServiceUrl + "sample/" + id,
+      contentType: 'application/json; charset=UTF-8',
+      data: JSON.stringify(value),
+      success: function(data, textStatus, jqXHR) {
+        Dispatcher.dispatch({ actionType: ActionType.MODIFY_ACTION, data: { id: id, value: value }});
+      },
+      error: function(jqXHR, textStatus, errorThrown ) {
+        alert("Error: Unable to update record with ID " + id);
+      }
+    });
   },
-  addRecord: function(value) {
-    alert("Creating new record with value:\n" + value);
-    // do ajaxy stuff
-    AppDispatcher.dispatch({ actionType: ActionTypes.ADD_ACTION });
+  deleteRecord: function(id) {
+    jQuery.ajax({
+      type: "DELETE",
+      url: ServiceUrl + "sample/" + id,
+      success: function(data, textStatus, jqXHR) {
+        Dispatcher.dispatch({ actionType: ActionType.DELETE_ACTION, data: { id: id }});
+      },
+      error: function(jqXHR, textStatus, errorThrown ) {
+        alert("Error: Unable to delete record with ID " + id);
+      }
+    });
+  },
+  resetData: function() {
+    jQuery.ajax({
+      type: "POST",
+      url: ServiceUrl + "sample/reset",
+      data: { expandRecords: true },
+      success: function(data, textStatus, jqXHR) {
+        Dispatcher.dispatch({ actionType: ActionType.RESET_ACTION, data: data });
+      },
+      error: function(jqXHR, textStatus, errorThrown ) {
+        alert("Error: Unable to reset record data");
+      }
+    });
   }
 }
 
@@ -194,11 +253,10 @@ var ActionCreator = {
 //**************************************************
 
 var Sample = {
-  serviceUrl: "http://rdoherty.plasmodb.org/plasmo.rdoherty/service/",
   loadPage: function() {
     jQuery.ajax({
       type: "GET",
-      url: Sample.serviceUrl + "sample",
+      url: ServiceUrl + "sample",
       data: { expandRecords: true },
       dataType: "json",
       success: function(data) {
