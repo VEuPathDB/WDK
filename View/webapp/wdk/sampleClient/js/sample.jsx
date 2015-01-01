@@ -6,97 +6,106 @@
 var ServiceUrl = "http://rdoherty.plasmodb.org/plasmo.rdoherty/service/";
 
 //**************************************************
-// Primary Rendering Component
+// Primary Rendering Components
 //**************************************************
 
-var EntryList = React.createClass({
-  doRecord: function(event) {
-    var op = jQuery(event.target).data("op");
-    var id = jQuery(event.target).data("id");
-    var div = document.createElement("div");
-    var form = document.createElement("form");
-    var input = document.createElement("textarea");
-    input.cols = "50";
-    input.rows = "10";
-    input.value = (op == "add" ? "" : JSON.stringify(this.props.data[id], undefined, 2));
-    form.appendChild(input);
-    div.appendChild(form);
-    jQuery(div).dialog({
-      title: (op == "add" ? "Add" : "Modify") + " Record",
-      modal: true,
-      width: "60%",
-      buttons: [
-        {
-          text: "OK",
-          click: function() {
-            var value = jQuery(this).find("textarea").val();
-            try {
-              value = JSON.parse(value);
-            }
-            catch (e) {
-              alert("JSON not properly formatted.\n\n" + e + "\n\nPlease try again.");
-              return;
-            }
-            jQuery(this).dialog("close");
-            if (op == "add")
-              ActionCreator.addRecord(value);
-            else
-              ActionCreator.modifyRecord(id, value);
+var doRecord = function(title, value, opFunction) {
+  var div = document.createElement("div");
+  var form = document.createElement("form");
+  var input = document.createElement("textarea");
+  input.cols = "50";
+  input.rows = "10";
+  input.value = value;
+  form.appendChild(input);
+  div.appendChild(form);
+  jQuery(div).dialog({
+    title: title,
+    modal: true,
+    width: "60%",
+    buttons:
+      [{
+        text: "OK",
+        click: function() {
+          var value = jQuery(this).find("textarea").val();
+          try {
+            value = JSON.parse(value);
           }
-        },{
-          text: "Cancel",
-          click: function() {
-            jQuery(this).dialog("close");
+          catch (e) {
+            alert("JSON not properly formatted.\n\n" + e + "\n\nPlease try again.");
+            return;
           }
-        }]
-    });
+          jQuery(this).dialog("close");
+          opFunction(value);
+        }
+      },{
+        text: "Cancel",
+        click: function() {
+          jQuery(this).dialog("close");
+        }
+      }]
+  });
+}
+
+var Entry = React.createClass({
+  modifyRecord: function(event) {
+    var id = this.props.id;
+    doRecord("Modify Record", JSON.stringify(this.props.data, undefined, 2),
+      function(value) { ActionCreator.modifyRecord(id, value); });
   },
   deleteRecord: function(event) {
-    var id = jQuery(event.target).data("id");
-    if (confirm("Are you sure you want to delete record " + id + "?")) {
-      ActionCreator.deleteRecord(id);
+    if (confirm("Are you sure you want to delete record " + this.props.id + "?")) {
+      ActionCreator.deleteRecord(this.props.id);
     }
   },
-  resetData: function(event) {
+  render: function() {
+    var displayVal = JSON.stringify(this.props.data);
+    if (displayVal.length > 40) {
+      displayVal = displayVal.substring(0, 37) + "...";
+    }
+    return (
+      <tr>
+        <td>{this.props.id}</td>
+        <td><pre>{displayVal}</pre></td>
+        <td>
+          <input type="button" value="Modify" onClick={this.modifyRecord}/>
+          <input type="button" value="Delete" onClick={this.deleteRecord}/>
+        </td>
+      </tr>
+    );
+  }
+});
+
+var EntryList = React.createClass({
+  addRecord: function() {
+    doRecord("Add Record", "", function(value) { ActionCreator.addRecord(value); });
+  },
+  resetData: function() {
     if (confirm("Are you sure you want to restore the above data to its original state?")) {
       ActionCreator.resetData();
     }
   },
   render: function() {
-    var component = this;
-    var data = component.props.data;
-    var getRecord = function(key) {
-      var displayVal = JSON.stringify(data[key]);
-      if (displayVal.length > 40) {
-        displayVal = displayVal.substring(0, 37) + "...";
-      }
-      return (
-        <tr key={key}>
-          <td>{key}</td>
-          <td><pre>{displayVal}</pre></td>
-          <td>
-            <input type="button" value="Modify" data-id={key} data-op="modify" onClick={component.doRecord}/>
-            <input type="button" value="Delete" data-id={key} onClick={component.deleteRecord}/>
-          </td>
-        </tr>
-      );
-    };
+    var keys = Object.keys(this.props.data);
+    var dataMap = this.props.data;
     return (
       <div>
         <h3>JSON Record Store</h3>
         <div>Each entry must be valid JSON</div>
         <hr/>
         <table>
-          <tr>
-            <th>ID</th>
-            <th>Record Preview</th>
-            <th>Operations</th>
-          </tr>
-          {Object.keys(data).map(getRecord)}
+          <tbody>
+            <tr>
+              <th>ID</th>
+              <th>Record Preview</th>
+              <th>Operations</th>
+            </tr>
+            {keys.map(function(key) {
+              return ( <Entry key={key} id={key} data={dataMap[key]}/> );})}
+          </tbody>
         </table>
         <hr/>
-        <input type="button" value="Add Record" data-op="add" onClick={component.doRecord}/>
-        <input type="button" value="Reset Data" onClick={component.resetData}/>
+        <input type="button" value="Add Record" onClick={this.addRecord}/>
+        <input type="button" value="Reset Data" onClick={this.resetData}/>
       </div>
     );
   }
@@ -110,10 +119,10 @@ var Dispatcher = new Flux.Dispatcher();
 
 // types of actions sent through the dispatcher
 var ActionType = {
-  ADD_ACTION: "addAction",
+  ADD_ACTION:    "addAction",
   MODIFY_ACTION: "modifyAction",
   DELETE_ACTION: "deleteAction",
-  RESET_ACTION: "resetAction"
+  RESET_ACTION:  "resetAction"
 }
 
 //**************************************************
@@ -178,9 +187,7 @@ var ControllerView = React.createClass({
     this.props.model.register(this.update);
   },
   update: function() {
-    var newModel = this.props.model.get();
-    alert("Updating view with model: " + JSON.stringify(newModel));
-    this.setState(newModel);
+    this.setState(this.props.model.get());
   },
   render: function() {
     return ( <EntryList data={this.state}/> );
