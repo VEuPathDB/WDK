@@ -23,6 +23,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.JsonType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,18 +33,12 @@ public class SampleService extends WdkService {
 
   private static final Logger LOG = Logger.getLogger(SampleService.class);
 
-  private static AtomicLong ID_SEQUENCE = new AtomicLong(1);
-  private static Map<Long, JSONObject> STATE = new LinkedHashMap<>();
+  private static AtomicLong ID_SEQUENCE;
+  private static Map<Long, JsonType> STATE = new LinkedHashMap<>();
 
-  // add some initial data for now
+  // set initial data
   static {
-    int numSamples = 5;
-    JSONObject json;
-    for (int i = 1; i <= numSamples; i++) {
-     json = new JSONObject();
-     json.put("value", "some value for record #" + i);
-     STATE.put(ID_SEQUENCE.getAndIncrement(), json);
-    }
+    resetData();
   }
 
   @POST
@@ -52,13 +47,13 @@ public class SampleService extends WdkService {
   public Response createElement(String body) {
     // parse request body to ensure it is JSON
     try {
-      JSONObject json = new JSONObject(body);
+      JsonType input = new JsonType(body);
       long nextId = ID_SEQUENCE.getAndIncrement();
-      STATE.put(nextId, json);
+      STATE.put(nextId, input);
       String newUri = getUriInfo().getAbsolutePath() + "/" + nextId;
-      json = new JSONObject();
-      json.put("id", nextId);
-      return Response.created(URI.create(newUri)).entity(json.toString()).build();
+      JSONObject output = new JSONObject();
+      output.put("id", nextId);
+      return Response.created(URI.create(newUri)).entity(output.toString()).build();
     }
     catch (JSONException e) {
       LOG.info("Passed request body deemed unacceptable", e);
@@ -77,7 +72,9 @@ public class SampleService extends WdkService {
     if (expandRecords) {
       JSONObject json = new JSONObject();
       for (Long id : ids) {
-        json.put(String.valueOf(id), STATE.get(id));
+        Object obj = STATE.get(id).getNativeObject();
+        LOG.info("Adding object of type " + obj.getClass().getName() + ": " + obj.toString());
+        json.put(String.valueOf(id), obj);
       }
       return Response.ok(json.toString()).build();
     }
@@ -98,7 +95,7 @@ public class SampleService extends WdkService {
   @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getById(@PathParam("id") long id) {
-    JSONObject obj = STATE.get(id);
+    JsonType obj = STATE.get(id);
     return (obj == null ?
         Response.status(Status.NOT_FOUND).build() :
         Response.ok(obj.toString()).build()
@@ -112,7 +109,7 @@ public class SampleService extends WdkService {
     // parse request body to ensure it is JSON
     try {
       if (STATE.containsKey(id)) {
-        JSONObject json = new JSONObject(body);
+        JsonType json = new JsonType(body);
         STATE.put(id, json);
         return Response.ok().build();
       }
@@ -132,5 +129,28 @@ public class SampleService extends WdkService {
   public Response deleteById(@PathParam("id") long id) {
     STATE.remove(id);
     return Response.ok().build();
+  }
+
+  @POST
+  @Path("reset")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response resetData(
+      @QueryParam("offset") Long offset,
+      @QueryParam("numRecords") Long numRecords,
+      @QueryParam("expandRecords") Boolean expandRecords) {
+    resetData();
+    return getIds(offset, numRecords, expandRecords);
+  }
+
+  private static void resetData() {
+    ID_SEQUENCE = new AtomicLong(1);
+    STATE.clear();
+    int numSamples = 5;
+    JSONObject json;
+    for (int i = 1; i <= numSamples; i++) {
+     json = new JSONObject();
+     json.put("value", "some value for record #" + i);
+     STATE.put(ID_SEQUENCE.getAndIncrement(), new JsonType(json));
+    }
   }
 }
