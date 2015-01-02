@@ -187,7 +187,7 @@ var ControllerView = React.createClass({
     this.props.model.register(this.update);
   },
   update: function() {
-    this.setState(this.props.model.get());
+    this.replaceState(this.props.model.get());
   },
   render: function() {
     return ( <EntryList data={this.state}/> );
