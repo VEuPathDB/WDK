@@ -3,7 +3,8 @@
 // Define the depended service
 //**************************************************
 
-var ServiceUrl = "http://rdoherty.plasmodb.org/plasmo.rdoherty/service/";
+var ServiceUrl = window.location.href.substring(0,
+  window.location.href.indexOf('wdk/sampleClient/sample.html')) + "service/";
 
 //**************************************************
 // Primary Rendering Components
