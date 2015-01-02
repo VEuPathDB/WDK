@@ -4,7 +4,7 @@
 //**************************************************
 
 var ServiceUrl = window.location.href.substring(0,
-  window.location.href.indexOf('wdk/sampleClient/sample.html')) + "service/";
+  window.location.href.indexOf('wdk/sampleClient/sample.html')) + "service/sample";
 
 //**************************************************
 // Primary Rendering Components
@@ -205,7 +205,7 @@ var ActionCreator = {
   addRecord: function(value) {
     jQuery.ajax({
       type: "POST",
-      url: ServiceUrl + "sample",
+      url: ServiceUrl,
       contentType: 'application/json; charset=UTF-8',
       data: JSON.stringify(value),
       dataType: "json",
@@ -220,7 +220,7 @@ var ActionCreator = {
   modifyRecord: function(id, value) {
     jQuery.ajax({
       type: "PUT",
-      url: ServiceUrl + "sample/" + id,
+      url: ServiceUrl + "/" + id,
       contentType: 'application/json; charset=UTF-8',
       data: JSON.stringify(value),
       success: function(data, textStatus, jqXHR) {
@@ -234,7 +234,7 @@ var ActionCreator = {
   deleteRecord: function(id) {
     jQuery.ajax({
       type: "DELETE",
-      url: ServiceUrl + "sample/" + id,
+      url: ServiceUrl + "/" + id,
       success: function(data, textStatus, jqXHR) {
         Dispatcher.dispatch({ actionType: ActionType.DELETE_ACTION, data: { id: id }});
       },
@@ -246,7 +246,7 @@ var ActionCreator = {
   resetData: function() {
     jQuery.ajax({
       type: "GET",
-      url: ServiceUrl + "sample/reset",
+      url: ServiceUrl + "/reset",
       data: { expandRecords: true },
       success: function(data, textStatus, jqXHR) {
         Dispatcher.dispatch({ actionType: ActionType.RESET_ACTION, data: data });
@@ -266,7 +266,7 @@ var Sample = {
   loadPage: function() {
     jQuery.ajax({
       type: "GET",
-      url: ServiceUrl + "sample",
+      url: ServiceUrl,
       data: { expandRecords: true },
       dataType: "json",
       success: function(data) {
