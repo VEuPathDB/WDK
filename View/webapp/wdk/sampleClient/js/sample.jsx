@@ -93,12 +93,14 @@ var EntryList = React.createClass({
         <div>Each entry must be valid JSON</div>
         <hr/>
         <table>
-          <tbody>
+          <thead>
             <tr>
               <th>ID</th>
               <th>Record Preview</th>
               <th>Operations</th>
             </tr>
+          </thead>
+          <tbody>
             {keys.map(function(key) {
               return ( <Entry key={key} id={key} data={dataMap[key]}/> );})}
           </tbody>
