@@ -843,7 +843,7 @@ b.strat_help_title > span {
   margin: 4px;
   margin-left: auto;
   margin-right: auto;
-  width: 95%;
+  width: 100%;   /* 95%; refs #17752 */
   padding: 0;
 }
 
