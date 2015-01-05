@@ -15,6 +15,7 @@
   "private": true,
   "dependencies": {
     "flux": "^2.0.1",
+    "immutable": "^3.4.1",
     "react": "^0.12.2"
   }
 }
