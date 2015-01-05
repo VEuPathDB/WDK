@@ -13,14 +13,4 @@ var { Dispatcher } = require('flux');
  * See {@link http://facebook.github.io/flux/docs/dispatcher.html#content} for
  * full API.
  */
-module.exports = _.assign(new Dispatcher(), {
-  handleServerAction: function(action) {
-    var payload = { source: 'SERVER_ACTION', action };
-    this.dispatch(payload);
-  },
-
-  handleViewAction: function(action) {
-    var payload = { source: 'VIEW_ACTION', action };
-    this.dispatch(payload);
-  }
-});
+module.exports = new Dispatcher();
