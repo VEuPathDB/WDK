@@ -7,7 +7,7 @@ module.exports = {
   module: {
     loaders: [
       // { test: /\.js$/, loader: '6to5-loader?modules=commonInterop', exclude: /node_modules/ }
-      { test: /\.js$/, loader: 'jsx-loader?harmony', exclude: /node_modules/ }
+      { test: /\.js$/, loader: 'jsx-loader?stripTypes,harmony', exclude: /node_modules/ }
     ]
   }
 };
