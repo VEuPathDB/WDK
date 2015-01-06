@@ -706,12 +706,16 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     $(detail_div).html(inner);
 
     if (!jsonStep.isValid) {
-      $(".crumb_menu a:not(.edit_step_link,.delete_step_link,.close_link)",
-          detail_div).removeAttr('onclick').addClass('disabled');
+      $(detail_div).find('.crumb_menu a')
+        .not('.edit_step_link')
+        .not('.delete_step_link')
+        .not('.close_link')
+        .not('.expand_step_link')
+        .addClass('disabled');
     }
     if (jsonStep.invalidQuestion == 'true') {
-      $(".crumb_menu a.edit_step_link",
-          detail_div).removeAttr('onclick').addClass('disabled');
+      $(detail_div).find('.crumb_menu a.edit_step_link')
+        .addClass('disabled');
     }
 
     $("table", detail_div).replaceWith(params_table);
