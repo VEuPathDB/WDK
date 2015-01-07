@@ -13,11 +13,11 @@ class AnswerStore extends Store {
 
   constructor() {
     super();
-    this._records = Immutable.fromJS([]);
+    this._answer = Immutable.fromJS({ records: [], total: 0 });
   }
 
   getRecords() {
-    return this._records;
+    return this._answer;
   }
 
   handleDispatch(action) {
@@ -30,7 +30,7 @@ class AnswerStore extends Store {
 
       case ActionTypes.Answer.LOADED:
         this._loading = false;
-        this._records = this._records.mergeDeep(action.records);
+        this._records = this._records.mergeDeep(action.answer);
         this.emitChange();
         break;
 
