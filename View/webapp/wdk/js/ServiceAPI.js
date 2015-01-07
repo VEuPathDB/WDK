@@ -16,7 +16,7 @@ var serviceBaseUrl = '/service/';
 function request(type, url, data) {
   var contentType = 'applicaton/json;',
       dataType = 'json';
-  url = service + url;
+  url = serviceBaseUrl + url;
 
   // FIXME Wrap jQuery deferred in Promise
   return $.ajax({ type, url, data, contentType, dataType });
