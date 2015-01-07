@@ -2,17 +2,14 @@ var ActionType = require('../ActionType');
 var Dispatcher = require('../Dispatcher');
 var ServiceAPI = require('../ServiceAPI');
 
-// TODO Should we wrap records with Immutable here?
+
+/* Type defs */
+
 type record = any;
-function dispatchLoaded(records: Array<record>) {
-  Dispatcher.dispatch({ type: ActionType.Answer.LOADED, records });
-}
-
-function dispatchLoading() {
-  Dispatcher.dispatch({ type: ActionType.Answer.LOADING });
-}
-
-// The service will use default values for unspecified opts
+type answer = {
+  total: number;
+  records: Array<record>;
+};
 type recordsOpts = {
   filters:      ?any;
   columns:      ?Array<string>;
@@ -21,12 +18,28 @@ type recordsOpts = {
   sortBy:       ?string;
   reverseSort:  ?boolean;
 };
-function getRecords(questionName: string, params: ?any, opts: ?recordsOpts) {
+
+
+/* helpers */
+
+function dispatchLoaded(answer: answer) {
+  Dispatcher.dispatch({ type: ActionType.Answer.LOADED, answer });
+}
+
+function dispatchLoading() {
+  Dispatcher.dispatch({ type: ActionType.Answer.LOADING });
+}
+
+
+/* actions */
+
+function loadAnswer(questionName: string, params: ?any, opts: ?recordsOpts) {
   dispatchLoading();
   var data = _.assign({ questionName, params }, opts);
   ServiceAPI.post('/answer', data).then(dispatchLoaded);
 }
 
+
 module.exports = {
-  getRecords
+  loadAnswer
 };
