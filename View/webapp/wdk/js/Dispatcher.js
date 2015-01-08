@@ -1,11 +1,4 @@
-/* global _ */
-
-/**
- * Flux Dispatcher for WDK
- * @module dispatcher
- */
-
-var { Dispatcher } = require('flux');
+var flux = require('flux');
 
 /**
  * Singleton instance of dispatcher.
@@ -13,4 +6,4 @@ var { Dispatcher } = require('flux');
  * See {@link http://facebook.github.io/flux/docs/dispatcher.html#content} for
  * full API.
  */
-module.exports = new Dispatcher();
+module.exports = new flux.Dispatcher();
