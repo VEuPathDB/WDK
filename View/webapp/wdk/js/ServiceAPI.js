@@ -1,4 +1,6 @@
-/* global $, _ */
+"use strict";
+
+/* global $, _, RSVP */
 
 /**
  * Functions to interface with the WDK REST API.
@@ -18,8 +20,14 @@ function request(type, url, data) {
       dataType = 'json';
   url = serviceBaseUrl + url;
 
-  // FIXME Wrap jQuery deferred in Promise
-  return $.ajax({ type, url, data, contentType, dataType });
+  return new RSVP.Promise(function(resolve, reject) {
+    $.ajax({ type, url, data, contentType, dataType })
+      .then(function(data) {
+        resolve(data);
+      }, function(jqXHR, textStatus, error) {
+        reject(error);
+      });
+  });
 }
 
 // TODO It might be nice to expose the exact REST API available here. For
