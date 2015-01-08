@@ -2,7 +2,8 @@ module.exports = {
 
   Answer: {
     LOADING: 'LOADING',
-    LOADED: 'LOADED'
+    LOAD_SUCCESS: 'LOAD_SUCCESS',
+    LOAD_ERROR: 'LOAD_ERROR'
   }
 
 };

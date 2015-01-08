@@ -1,29 +1,18 @@
+"use strict";
+
 var ActionType = require('../ActionType');
 var Dispatcher = require('../Dispatcher');
 var ServiceAPI = require('../ServiceAPI');
 
 
-/* Type defs */
-
-type record = any;
-type answer = {
-  total: number;
-  records: Array<record>;
-};
-type recordsOpts = {
-  filters:      ?any;
-  columns:      ?Array<string>;
-  offset:       ?number;
-  numRecords:   ?number;
-  sortBy:       ?string;
-  reverseSort:  ?boolean;
-};
-
-
 /* helpers */
 
-function dispatchLoaded(answer: answer) {
-  Dispatcher.dispatch({ type: ActionType.Answer.LOADED, answer });
+function dispatchLoadSuccess(answer) {
+  Dispatcher.dispatch({ type: ActionType.Answer.LOAD_SUCCESS, answer });
+}
+
+function dispatchLoadError(error) {
+  Dispatcher.dispatch({ type: ActionType.Answer.LOAD_ERROR, error });
 }
 
 function dispatchLoading() {
@@ -33,10 +22,65 @@ function dispatchLoading() {
 
 /* actions */
 
-function loadAnswer(questionName: string, params: ?any, opts: ?recordsOpts) {
+/**
+ * Retrieve's an Answer resource and dispatches an action with the resource.
+ *
+ * TODO Validate options?
+ * TODO Implement caching?
+ *
+ *
+ * Actions:
+ *
+ *   - { type: ActionType.Answer.LOADING, answer: answerResource }
+ *     Answer resource is being loaded
+ *
+ *   - { type: ActionType.Answer.LOAD_SUCCESS, answer: answerResource }
+ *     Answer resource has been loaded successfully
+ *
+ *   - { type: ActionType.Answer.LOAD_ERROR, error: reason }
+ *     Answer resource could not be loaded
+ *
+ *
+ * Options:
+ *
+ *   - params: Object of key-value pairs for Question params.
+ *   - filters: Object of key-value pairs for Question filters.
+ *   - displayInfo: Object with display details (see Request data format below).
+ *
+ *
+ * Usage:
+ *
+ *    loadAnswer('GeneRecords.GenesByTaxon', { params: { ... }, filters: { ... }, displayInfo: { ... } });
+ *
+ *
+ * Request data format:
+ *
+ *     {
+ *       “questionDefinition”: {
+ *         “questionName”: String,
+ *         “params”: [ {
+ *           “name”: String, “value”: Any
+ *         } ],
+ *         “filters”: [ {
+ *           “name”: String, value: Any
+ *         } ]
+ *       },
+ *       displayInfo: {
+ *         pagination: { offset: Number, numRecords: Number },
+ *         columns: [ columnName: String ],
+ *         sorting: [ { columnName: String, direction: Enum[ASC,DESC] } ]
+ *       }
+ *     }
+ *
+ * @param {string} questionName Fully qualified WDK Question name.
+ * @param {object} opts Addition data to include in request.
+ */
+function loadAnswer(questionName, opts) {
+  var { params, filters, displayInfo } = opts;
+  var questionDefinition = { questionName, params, filters };
+  var data = { questionDefinition, displayInfo };
   dispatchLoading();
-  var data = _.assign({ questionName, params }, opts);
-  ServiceAPI.post('/answer', data).then(dispatchLoaded);
+  ServiceAPI.post('/answer', data).then(dispatchLoadSuccess, dispatchLoadError);
 }
 
 
