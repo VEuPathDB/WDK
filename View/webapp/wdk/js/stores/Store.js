@@ -1,6 +1,5 @@
-import _ from 'lodash.compat.min';
-import EventEmitter from 'events';
-import Dispatcher from '../Dispatcher';
+var EventEmitter = require('events').EventEmitter;
+var Dispatcher = require('../Dispatcher');
 
 /**
  * Create a Store.
@@ -64,7 +63,7 @@ import Dispatcher from '../Dispatcher';
 var eventMap = createMap();
 var specMap = createMap();
 
-export default class Store {
+module.exports = class Store {
   constructor(spec) {
     var { dispatchHandler, getState } = spec;
     ensureFunction(dispatchHandler, "dispatchHandler");
