@@ -72,8 +72,8 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     render: function() {
       var treeOpts = _.pick(this.props, 'trimMetadataTerms');
       var fieldsToTreeNodes = _.partial(Fields.getTree, treeOpts);
-
-      var { fields, trimMetadataTerms, ...restProps } = this.props;
+      var { fields, trimMetadataTerms } = this.props;
+      var restProps = _.omit(this.props, 'fields', 'trimMetadataTerms');
 
       var treeNodes = fieldsToTreeNodes(fields);
 
@@ -347,7 +347,8 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     render: function() {
-      var { treeNodes, ...restProps } = this.props;
+      var { treeNodes } = this.props;
+      var restProps = _.omit(this.props, 'treeNodes');
       return (
         <ul role="tree">
           {treeNodes.map(node => {
@@ -379,7 +380,8 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     render: function() {
-      var { node, ...restProps } = this.props;
+      var { node } = this.props;
+      var restProps = _.omit(this.props, 'node');
       var { ItemComponent } = this.props;
 
       var className = _.result(this.props.selectedField, 'term') === node.field.term
