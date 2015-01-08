@@ -1,43 +1,28 @@
-var Immutable = require('immutable');
 var Store = require('./Store');
+var ActionType = require('./ActionType');
 
+/* TODO Figure out how to integrate Immutable.js */
 
-/**
- * Contains the list of records being viewed.
- *
- * Records can be sorted, paged, etc.
- *
- * TODO Store multiple record lists...
- */
-class AnswerStore extends Store {
+var answer, isLoading;
 
-  constructor() {
-    super();
-    this._answer = Immutable.fromJS({ records: [], total: 0 });
-  }
-
-  getRecords() {
-    return this._answer;
-  }
-
-  handleDispatch(action) {
+module.exports = new Store({
+  dispatchHandler(action, emitChange) {
     switch(action.type) {
 
-      case ActionTypes.Answer.LOADING:
-        this._loading = true;
-        this.emitChange();
+      case ActionType.Answer.LOADING:
+        isLoading = true;
+        emitChange();
         break;
 
-      case ActionTypes.Answer.LOADED:
-        this._loading = false;
-        this._records = this._records.mergeDeep(action.answer);
-        this.emitChange();
+      case ActionType.Answer.LOADED:
+        isLoading = false;
+        answer = action.answer;
+        emitChange();
         break;
 
     }
+  },
+  getState() {
+    return { isLoading, answer: _.clone(answer) };
   }
-
-}
-
-
-module.exports = new AnswerStore();
+});
