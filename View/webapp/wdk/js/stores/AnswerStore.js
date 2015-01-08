@@ -1,5 +1,5 @@
 var Store = require('./Store');
-var ActionType = require('./ActionType');
+var ActionType = require('../ActionType');
 
 /* TODO Figure out how to integrate Immutable.js */
 
