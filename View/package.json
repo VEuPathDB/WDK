@@ -4,6 +4,7 @@
   "devDependencies": {
     "clean-css": "^3.0.1",
     "jsx-loader": "^0.12.2",
+    "traceur-loader": "^0.6.3",
     "webpack": "^1.4.14"
   },
   "scripts": {
