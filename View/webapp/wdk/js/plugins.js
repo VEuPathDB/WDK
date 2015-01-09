@@ -1,7 +1,7 @@
-require('./plugins/blockUI');
-require('./plugins/dataTables');
-require('./plugins/editable');
-require('./plugins/jqueryui');
-require('./plugins/jstree');
-require('./plugins/qtip');
-require('./plugins/simpleToggle');
+import './plugins/blockUI';
+import './plugins/dataTables';
+import './plugins/editable';
+import './plugins/jqueryui';
+import './plugins/jstree';
+import './plugins/qtip';
+import './plugins/simpleToggle';

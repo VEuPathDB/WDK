@@ -1,4 +1,4 @@
-require('./models/filter/field');
-require('./models/filter/filter');
-require('./models/filter/new_filter_service');
-require('./models/filter/lazy_filter_service');
+import './models/filter/field';
+import './models/filter/filter';
+import './models/filter/new_filter_service';
+import './models/filter/lazy_filter_service';
