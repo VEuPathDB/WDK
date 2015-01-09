@@ -1,7 +1,7 @@
-require('./components/attributeFilter');
-require('./components/checkboxTree');
-require('./components/datasetParam');
-require('./components/featureTooltip');
-require('./components/parameterHandlers');
-require('./components/tooltips');
-require('./components/wdkAjax');
+import './components/attributeFilter';
+import './components/checkboxTree';
+import './components/datasetParam';
+import './components/featureTooltip';
+import './components/parameterHandlers';
+import './components/tooltips';
+import './components/wdkAjax';

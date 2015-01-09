@@ -15,7 +15,7 @@ var serviceBaseUrl = '/service/';
  *     var getRecords = _.partial(request, 'GET', '/records');
  *
  */
-function request(type, url, data) {
+export function requestResource(type, url, data) {
   var contentType = 'applicaton/json;',
       dataType = 'json';
   url = serviceBaseUrl + url;
@@ -42,9 +42,8 @@ function request(type, url, data) {
 //
 // For now, we will leave things like this up to the ActionCreators.
 
-exports.request = request;
-exports.get = _.partial(request, 'GET');
-exports.post = _.partial(request, 'POST');
-exports.put = _.partial(request, 'PUT');
-exports.patch = _.partial(request, 'PATCH');
-exports.delete = _.partial(request, 'DELETE');
+export var getResource = _.partial(requestResource, 'GET');
+export var postResource = _.partial(requestResource, 'POST');
+export var putResource = _.partial(requestResource, 'PUT');
+export var patchResource = _.partial(requestResource, 'PATCH');
+export var deleteResource = _.partial(requestResource, 'DELETE');

@@ -1,8 +1,8 @@
 "use strict";
 
-var ActionType = require('../ActionType');
-var Dispatcher = require('../Dispatcher');
-var ServiceAPI = require('../ServiceAPI');
+import ActionType from '../ActionType';
+import Dispatcher from '../Dispatcher';
+import * as ServiceAPI from '../ServiceAPI';
 
 
 /* helpers */
@@ -75,15 +75,11 @@ function dispatchLoading() {
  * @param {string} questionName Fully qualified WDK Question name.
  * @param {object} opts Addition data to include in request.
  */
-function loadAnswer(questionName, opts) {
+export function loadAnswer(questionName, opts) {
+  opts = opts || {};
   var { params, filters, displayInfo } = opts;
   var questionDefinition = { questionName, params, filters };
   var data = { questionDefinition, displayInfo };
   dispatchLoading();
-  ServiceAPI.post('/answer', data).then(dispatchLoadSuccess, dispatchLoadError);
+  ServiceAPI.postResource('/answer', data).then(dispatchLoadSuccess, dispatchLoadError);
 }
-
-
-module.exports = {
-  loadAnswer
-};

@@ -1,7 +1,8 @@
+import React from 'react';
+
 wdk.namespace('wdk.components.attributeFilter', function(ns) {
   'use strict';
 
-  var React = require('react');
   var { PropTypes } = React;
   var { Fields } = wdk.models.filter;
 

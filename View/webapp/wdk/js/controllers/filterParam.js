@@ -1,3 +1,5 @@
+import React from 'react';
+
 /* global Spinner */
 wdk.namespace('wdk.controllers', function(ns) {
   'use strict';
@@ -5,8 +7,6 @@ wdk.namespace('wdk.controllers', function(ns) {
 
   // Imports
   // -------
-
-  var React = require('react');
 
   var { AttributeFilter } = wdk.components.attributeFilter;
 

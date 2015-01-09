@@ -1,11 +1,12 @@
-var Store = require('./Store');
-var ActionType = require('../ActionType');
+import Store from './Store';
+import ActionType from '../ActionType';
+
 
 /* TODO Figure out how to integrate Immutable.js */
 
 var answer, isLoading, error;
 
-module.exports = new Store({
+export default new Store({
   dispatchHandler(action, emitChange) {
     switch(action.type) {
 

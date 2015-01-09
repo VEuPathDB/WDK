@@ -1,5 +1,6 @@
-var EventEmitter = require('events').EventEmitter;
-var Dispatcher = require('../Dispatcher');
+import EventEmitter from 'events';
+import Dispatcher from '../Dispatcher';
+
 
 /**
  * Create a Store.
@@ -57,59 +58,31 @@ var Dispatcher = require('../Dispatcher');
  * @param {object} spec
  */
 
-// This is a source of memory leaks. However, since stores are typically
-// singletons, it's not too much of a concern. Eventually, these should
-// be WeakMaps.
-var eventMap = createMap();
-var specMap = createMap();
-
-module.exports = class Store {
+export default class Store {
   constructor(spec) {
-    var { dispatchHandler, getState } = spec;
-    ensureFunction(dispatchHandler, "dispatchHandler");
-    ensureFunction(getState, "getState");
-
-    var emitter = new EventEmitter();
-    eventMap.put(this, emitter);
-    specMap.put(this, spec);
-    Dispatcher.register(action => {
-      dispatchHandler(action, function emitChange() {
-        emitter.emit('change', getState());
-      });
-    });
-  }
-
-  subscribe(callback) {
-    var emitter = eventMap.get(this);
-    emitter.on('change', callback);
-  }
-
-  unsubscribe(callback) {
-    var emitter = eventMap.get(this);
-    emitter.removeListener('change', callback);
-  }
-
-  getState() {
-    var spec = specMap.get(this);
-    return spec.getState();
+    _.assign(this, createStore(spec));
   }
 }
 
+function createStore(spec) {
+  var { dispatchHandler, getState } = spec;
+  ensureFunction(dispatchHandler, "dispatchHandler");
+  ensureFunction(getState, "getState");
 
-function createMap() {
-  var items = [];
+  var emitter = new EventEmitter();
+  Dispatcher.register(action => {
+    dispatchHandler(action, function emitChange() {
+      emitter.emit('change', getState());
+    });
+  });
+
   return {
-    get(key) {
-      var mapItem = _.find(items, item => item.key === key);
-      if (mapItem) return mapItem.value;
+    getState,
+    subscribe(callback) {
+      emitter.on('change', callback);
     },
-    put(key, value) {
-      var mapItem = this.get(key);
-      if (!mapItem) {
-        mapItem = { key, value: undefined };
-        items.push(mapItem);
-      }
-      mapItem.value = value;
+    unsubscribe(callback) {
+      emitter.removeListener('change', callback);
     }
   };
 }
