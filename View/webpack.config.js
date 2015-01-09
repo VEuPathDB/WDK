@@ -1,4 +1,5 @@
 module.exports = {
+  cache: true,
   context: __dirname + '/webapp/wdk/js',
   entry: './app.js',
   output: {
@@ -6,8 +7,8 @@ module.exports = {
   },
   module: {
     loaders: [
-      // { test: /\.js$/, loader: '6to5-loader?modules=commonInterop', exclude: /node_modules/ }
-      { test: /\.js$/, loader: 'jsx-loader?stripTypes,harmony', exclude: /node_modules/ }
+      { test: /^(?!.*(bower_components|node_modules))+.+\.js$/, loader: 'traceur?runtime' },
+      { test: /^(?!.*(bower_components|node_modules))+.+\.js$/, loader: 'jsx-loader' },
     ]
   }
 };
