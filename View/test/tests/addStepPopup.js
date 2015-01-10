@@ -1,3 +1,5 @@
+import 'wdk/controllers/addStepPopup';
+
 describe("wdk.addStepPopup", function() {
 
   describe("validateOperations", function() {

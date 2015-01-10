@@ -1,3 +1,6 @@
+import 'wdk/core/application';
+import 'wdk/core/base_class';
+
 describe('wdk.core.application', function() {
 
   var Application = wdk.core.Application;

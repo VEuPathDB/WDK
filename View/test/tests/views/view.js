@@ -1,3 +1,5 @@
+import 'wdk/views/core/view';
+
 describe('wdk.views.core', function() {
   var View = wdk.views.core.View;
 

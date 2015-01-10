@@ -1,3 +1,5 @@
+import 'wdk/core/c_properties';
+
 describe('wdk.core.c_properties', function() {
 
   var create = wdk.core.c_properties.create;

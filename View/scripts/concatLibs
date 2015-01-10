@@ -1,18 +1,28 @@
 #!/usr/bin/env bash
 
+DEST=$1
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 LIBS_DIR=$DIR/../webapp/wdk/lib
 LIBS=$LIBS_DIR/manifest.txt
-DEST=$DIR/../dist/wdk/js/wdk.libs.js
+# DEST=$DIR/../dist/wdk/js/wdk.libs.js
 
-mkdir -p $(dirname "$DEST")
-
-if [ -e $DEST ]; then
-  rm $DEST
+if [ -n "$DEST" ]; then
+  mkdir -p $(dirname "$DEST")
+  if [ -e $DEST ]; then
+    rm $DEST
+  fi
 fi
+
 
 while read lib
 do
-  cat "$LIBS_DIR/$lib" >> $DEST
-  echo "" >> $DEST
+  # If output not defined, print to STDOUT
+  # I'm sure this can be prettier
+  if [ -n "$DEST" ]; then
+    cat "$LIBS_DIR/$lib" >> $DEST
+    echo "" >> $DEST
+  else
+    cat "$LIBS_DIR/$lib"
+    echo ""
+  fi
 done <$LIBS
