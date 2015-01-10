@@ -84,13 +84,13 @@ export default class Store {
       emitter.removeListener('change', callback);
       thisunSubscribe.apply(this, arguments);
     };
+
+    this.getState = getState;
   }
 
   subscribe(callback) { }
 
   unsubscribe(callback) { }
-
-  getState() { }
 }
 
 

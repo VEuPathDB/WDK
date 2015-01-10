@@ -16,6 +16,8 @@ describe('wdk/stores/Store', function() {
     });
 
     Dispatcher.dispatch(myAction);
+
+    expect(store.getState()).to.equal('my state');
   });
 
   it('should throw if passed an incomplete spec', function() {
