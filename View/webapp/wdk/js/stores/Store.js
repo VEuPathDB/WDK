@@ -73,7 +73,6 @@ export default class Store {
 
     var thisSubscribe = this.subscribe;
     var thisUnsubscribe = this.unsubscribe;
-    var thisGetState = this.getState;
 
     this.subscribe = function(callback) {
       emitter.on('change', callback);
@@ -82,7 +81,7 @@ export default class Store {
 
     this.unsubscribe = function(callback) {
       emitter.removeListener('change', callback);
-      thisunSubscribe.apply(this, arguments);
+      thisUnsubscribe.apply(this, arguments);
     };
 
     this.getState = getState;
