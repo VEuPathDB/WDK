@@ -75,8 +75,7 @@ function dispatchLoading() {
  * @param {string} questionName Fully qualified WDK Question name.
  * @param {object} opts Addition data to include in request.
  */
-export function loadAnswer(questionName, opts) {
-  opts = opts || {};
+export function loadAnswer(questionName, opts = {}) {
   var { params, filters, displayInfo } = opts;
   var questionDefinition = { questionName, params, filters };
   var data = { questionDefinition, displayInfo };
