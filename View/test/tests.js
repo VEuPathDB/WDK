@@ -12,3 +12,7 @@ import './tests/views/view';
 import './tests/views/template_view';
 
 import './tests/addStepPopup';
+
+// import './tests/actions/AnswerActions';
+
+import './tests/stores/Store';
