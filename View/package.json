@@ -12,8 +12,8 @@
     "build-css": "./scripts/buildCss",
     "clean": "rm -rf ./dist",
     "dist": "npm run clean && npm run build-js && npm run build-css",
-    "test": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack --config webpack-test.config.js",
-    "test-server": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack-dev-server --config webpack-test.config.js"
+    "test": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack -d --config webpack-test.config.js",
+    "test-server": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack-dev-server -d --config webpack-test.config.js"
   },
   "private": true,
   "dependencies": {
