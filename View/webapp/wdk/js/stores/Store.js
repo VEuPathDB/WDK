@@ -60,32 +60,39 @@ import Dispatcher from '../Dispatcher';
 
 export default class Store {
   constructor(spec) {
-    _.assign(this, createStore(spec));
-  }
-}
+    var { dispatchHandler, getState } = spec;
+    ensureFunction(dispatchHandler, "dispatchHandler");
+    ensureFunction(getState, "getState");
 
-function createStore(spec) {
-  var { dispatchHandler, getState } = spec;
-  ensureFunction(dispatchHandler, "dispatchHandler");
-  ensureFunction(getState, "getState");
-
-  var emitter = new EventEmitter();
-  Dispatcher.register(action => {
-    dispatchHandler(action, function emitChange() {
-      emitter.emit('change', getState());
+    var emitter = new EventEmitter();
+    Dispatcher.register(action => {
+      dispatchHandler(action, function emitChange() {
+        emitter.emit('change', getState());
+      });
     });
-  });
 
-  return {
-    getState,
-    subscribe(callback) {
+    var thisSubscribe = this.subscribe;
+    var thisUnsubscribe = this.unsubscribe;
+    var thisGetState = this.getState;
+
+    this.subscribe = function(callback) {
       emitter.on('change', callback);
-    },
-    unsubscribe(callback) {
+      thisSubscribe.apply(this, arguments);
+    };
+
+    this.unsubscribe = function(callback) {
       emitter.removeListener('change', callback);
-    }
-  };
+      thisunSubscribe.apply(this, arguments);
+    };
+  }
+
+  subscribe(callback) { }
+
+  unsubscribe(callback) { }
+
+  getState() { }
 }
+
 
 function ensureFunction(fn, name) {
   var message = "Store " + name + " " + fn + " is not a function";
