@@ -8,10 +8,12 @@
     "webpack": "^1.4.14"
   },
   "scripts": {
-    "build-js": "./scripts/concatLibs && ./node_modules/.bin/webpack -d",
+    "build-js": "./scripts/concatLibs ./dist/wdk/js/wdk.libs.js && webpack -d",
     "build-css": "./scripts/buildCss",
     "clean": "rm -rf ./dist",
-    "dist": "npm run clean && npm run build-js && npm run build-css"
+    "dist": "npm run clean && npm run build-js && npm run build-css",
+    "test": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack --config webpack-test.config.js",
+    "test-server": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack-dev-server --config webpack-test.config.js"
   },
   "private": true,
   "dependencies": {

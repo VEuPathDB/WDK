@@ -1,3 +1,6 @@
+import 'wdk/core/container';
+import 'wdk/core/base_class';
+
 describe('wdk.core.container', function() {
 
   var BaseClass = wdk.core.BaseClass;

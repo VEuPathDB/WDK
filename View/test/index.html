@@ -31,22 +31,14 @@
       };
       var expect = chai.expect;
     </script>
-    <script src="../dist/wdk/js/wdk.libs.js"></script>
-    <script src="../dist/wdk/js/wdk.js"></script>
 
-    <!-- include spec files here... -->
-    <script src="tests/core/c_properties.js"></script>
-    <script src="tests/core/base_object.js"></script>
-    <script src="tests/core/container.js"></script>
-    <script src="tests/core/runloop.js"></script>
-    <script src="tests/core/application.js"></script>
+    <!-- include libraries -->
+    <script src="./dist/wdk.libs.js"></script>
 
-    <script src="tests/models/filter.js"></script>
+    <!-- include tests -->
+    <script src="./dist/tests.js"></script>
 
-    <script src="tests/views/view.js"></script>
-    <script src="tests/views/template_view.js"></script>
-
-    <script src="tests/addStepPopup.js"></script>
+    <!-- run tests -->
     <script>
       mocha.run();
     </script>

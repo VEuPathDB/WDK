@@ -1,3 +1,5 @@
+import 'wdk/core/runloop';
+
 describe('wdk.core.runloop', function() {
 
   var runloop;
