@@ -61,35 +61,35 @@
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'AnswerParam'}">
-                      <div class="param-control">
+                      <div class="param-control" id="${qP.name}aaa">
                           <imp:answerParamInput qp="${qP}" />
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'DatasetParam'}">
-                      <div class="param-control">
+                      <div class="param-control" id="${qP.name}aaa">
                           <imp:datasetParamInput qp="${qP}" />
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'StringParam'}">
-                      <div class="param-control">
+                      <div class="param-control" id="${qP.name}aaa">
                           <imp:stringParamInput qp="${qP}" />
                       </div>
                   </c:when>
                   <c:otherwise>
                       <c:choose>
                           <c:when test="${isReadonly}">
-                              <div class="param-control">
+                              <div class="param-control" id="${qP.name}aaa">
                                   <bean:write name="qForm" property="value(${pNam})"/>
                                   <html:hidden property="value(${pNam})"/>
                               </div>
                           </c:when>
                           <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.StringParamBean' and qP.multiLine}">
-                              <div class="param-control">
+                              <div class="param-control" id="${qP.name}aaa">
                                   <html:textarea styleId="${pNam}" property="value(${pNam})" rows="4" cols="50"/>
                               </div>
                           </c:when>
                           <c:otherwise>
-                              <div class="param-control">
+                              <div class="param-control" id="${qP.name}aaa">
                                 <div class="ui-state-error ui-corner-all">
                                   Unknown param type
                                 </div>

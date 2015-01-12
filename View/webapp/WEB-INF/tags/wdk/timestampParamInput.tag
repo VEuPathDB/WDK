@@ -21,4 +21,8 @@ Otherwise a standard select menu is used.
 
 <c:set var="qP" value="${qp}"/>
 
+<div class="param timestampParam" name="${pNam}">
+
 <html:hidden property="value(${qP.name})" value="${qP.default}"/>
+
+</div>
