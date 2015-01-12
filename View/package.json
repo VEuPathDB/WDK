@@ -8,7 +8,7 @@
     "webpack": "^1.4.14"
   },
   "scripts": {
-    "build-js": "./scripts/concatLibs ./dist/wdk/js/wdk.libs.js && webpack -d",
+    "build-js": "./scripts/concatLibs ./dist/wdk/js/wdk.libs.js && webpack --devtool eval",
     "build-css": "./scripts/buildCss",
     "clean": "rm -rf ./dist",
     "dist": "npm run clean && npm run build-js && npm run build-css",
