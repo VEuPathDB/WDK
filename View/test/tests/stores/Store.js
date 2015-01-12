@@ -1,6 +1,6 @@
 import assert from 'assert';
-import Store from 'wdk/stores/Store';
-import Dispatcher from 'wdk/Dispatcher';
+import Store from 'wdk/flux/stores/Store';
+import Dispatcher from 'wdk/flux/Dispatcher';
 
 describe('wdk/stores/Store', function() {
    
