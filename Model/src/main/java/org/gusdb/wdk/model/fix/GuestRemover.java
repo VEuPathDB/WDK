@@ -25,7 +25,8 @@ public class GuestRemover extends BaseCLI {
 
   private static final String GUEST_TABLE = "wdk_guests";
 
-  private static final int PAGE_SIZE = 100;
+	// 1000 makes the process too slow; 10000 is good but it is considered “long transaction” which will affect the replication.
+  private static final int PAGE_SIZE = 9000;
 
   private static final Logger LOG = Logger.getLogger(GuestRemover.class);
 
@@ -40,7 +41,7 @@ public class GuestRemover extends BaseCLI {
       throw ex;
     }
     finally {
-      LOG.info("WDK User Backup done.");
+      LOG.info("WDK User Remover done.");
       System.exit(0);
     }
   }
@@ -124,12 +125,14 @@ public class GuestRemover extends BaseCLI {
     deleteByBatch(dataSource, "strategies", userClause);
     deleteByBatch(dataSource, "step_analysis", " step_id IN (SELECT step_id FROM " + userSchema + "steps WHERE " +
         userClause + ")");
-
     deleteByBatch(dataSource, "steps", userClause + " AND step_id NOT IN (SELECT root_step_id FROM " +
         userSchema + "strategies)");
     deleteByBatch(dataSource, "user_roles", userClause);
-    deleteByBatch(dataSource, "users", userClause + " AND user_id NOT IN (SELECT user_id FROM " + userSchema +
-        "steps)");
+
+    //deleteByBatch(dataSource, "users", userClause + " AND user_id NOT IN (SELECT user_id FROM " + userSchema +  "steps)");
+		// jan 12 2015: the second condition makes the delete very slow (40sec for 10000 rows) 
+		// and it should not be needed since steps from users in GUEST_TABLE should have been already removed from the steps table 
+		deleteByBatch(dataSource, "users", userClause);
 
     // also delete guest data from GBrowse
     removeGBrowseGuests(dataSource);
