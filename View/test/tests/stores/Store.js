@@ -1,3 +1,4 @@
+import assert from 'assert';
 import Store from 'wdk/stores/Store';
 import Dispatcher from 'wdk/Dispatcher';
 
@@ -8,7 +9,7 @@ describe('wdk/stores/Store', function() {
 
     var store = new Store({
       dispatchHandler(action) {
-        expect(action).to.equal(myAction);
+        assert(action == myAction)
       },
       getState() {
         return 'my state';
@@ -17,23 +18,17 @@ describe('wdk/stores/Store', function() {
 
     Dispatcher.dispatch(myAction);
 
-    expect(store.getState()).to.equal('my state');
+    assert(store.getState() == 'my state');
   });
 
   it('should throw if passed an incomplete spec', function() {
-    var errors = [];
+    var dispatchHandler = () => {};
+    var getState = () => {};
 
-    try { var store = new Store(); }
-    catch (error) { errors.push(error); }
-
-    try { var store = new Store({ getState() {}}); }
-    catch (error) { errors.push(error); }
-
-    try { var store = new Store({ dispatchHandler() {}}); }
-    catch (error) { errors.push(error); }
-
-    expect(errors).to.have.length(3);
-    errors.forEach((e) => expect(e).to.be.instanceof(TypeError));
+    assert.throws(() => new Store(), TypeError);
+    assert.throws(() => new Store({ dispatchHandler }), TypeError);
+    assert.throws(() => new Store({ getState }), TypeError);
+    assert.doesNotThrow(() => new Store({ getState, dispatchHandler }));
   });
 
   it('preserves class semantics', function() {
@@ -55,8 +50,8 @@ describe('wdk/stores/Store', function() {
     store.subscribe(noop, 'a');
     store.subscribe(noop, 'b');
 
-    expect(messages).to.include('a');
-    expect(messages).to.include('b');
+    assert(messages.indexOf('a') > -1);
+    assert(messages.indexOf('b') > -1);
 
   })
    

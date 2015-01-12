@@ -1,9 +1,7 @@
-import 'wdk/core/c_properties';
+import assert from 'assert';
+import { create, extend } from 'wdk/core/c_properties';
 
 describe('wdk.core.c_properties', function() {
-
-  var create = wdk.core.c_properties.create;
-  var extend = wdk.core.c_properties.extend;
 
   describe('properties attached to contructors', function() {
 
@@ -18,9 +16,9 @@ describe('wdk.core.c_properties', function() {
       var foo = Foo.create();
       var bar = Bar.create();
 
-      expect(foo instanceof Foo).to.equal(true);
-      expect(bar instanceof Bar).to.equal(true);
-      expect(bar instanceof Foo).to.equal(true);
+      assert(foo instanceof Foo);
+      assert(bar instanceof Bar);
+      assert(bar instanceof Foo);
 
     });
 
