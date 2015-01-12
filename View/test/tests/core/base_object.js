@@ -1,3 +1,4 @@
+import assert from 'assert';
 import 'wdk/core/base_class';
 
 describe('wdk.core.base_class', function() {
@@ -14,9 +15,9 @@ describe('wdk.core.base_class', function() {
         var foo = Foo.create();
         var bar = Bar.create();
 
-        expect(foo instanceof Foo).to.equal(true);
-        expect(bar instanceof Bar).to.equal(true);
-        expect(bar instanceof Foo).to.equal(true);
+        assert(foo instanceof Foo);
+        assert(bar instanceof Bar);
+        assert(bar instanceof Foo);
 
       });
 
@@ -25,7 +26,7 @@ describe('wdk.core.base_class', function() {
           say: function() { return 'first arg' }
         });
         var a = A.create();
-        expect(a.say()).to.equal('first arg');
+        assert(a.say() === 'first arg');
       });
 
       it('should allow a variable number of prototype objects to be specified', function() {
@@ -37,8 +38,8 @@ describe('wdk.core.base_class', function() {
 
         var a = A.create();
 
-        expect(a.say()).to.equal('first arg');
-        expect(a.tell()).to.equal('second arg');
+        assert(a.say() === 'first arg');
+        assert(a.tell() === 'second arg');
       });
 
     });
@@ -53,7 +54,7 @@ describe('wdk.core.base_class', function() {
 
         var a = A.create('Dave');
 
-        expect(a.name).to.equal('Dave');
+        assert(a.name === 'Dave');
       });
 
       it('should apply late mixins', function() {
@@ -74,8 +75,8 @@ describe('wdk.core.base_class', function() {
         });
         var b = B.create();
 
-        expect(a.say()).to.equal('I am from a mixin');
-        expect(b.say()).to.equal('I am from a mixin');
+        assert(a.say() === 'I am from a mixin');
+        assert(b.say() === 'I am from a mixin');
       });
     });
 
@@ -93,11 +94,11 @@ describe('wdk.core.base_class', function() {
       });
 
       it('should allow static properties to be added', function() {
-        expect(A.say()).to.equal('I am A');
+        assert(A.say() === 'I am A');
       });
 
       it('should not pollute the prototype chain', function() {
-        expect(typeof B.say).to.equal('undefined');
+        assert(typeof B.say === 'undefined');
       });
 
     });

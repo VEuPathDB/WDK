@@ -1,3 +1,4 @@
+import assert from 'assert';
 import 'wdk/core/runloop';
 
 describe('wdk.core.runloop', function() {
@@ -20,8 +21,8 @@ describe('wdk.core.runloop', function() {
       function deferred() {
         values.push('deferred');
 
-        expect(values[0]).to.equal('undeferred');
-        expect(values[1]).to.equal('deferred');
+        assert(values[0] === 'undeferred');
+        assert(values[1] === 'deferred');
         done();
       }
 
@@ -38,7 +39,7 @@ describe('wdk.core.runloop', function() {
         runloop.defer(function() {
           callCount++;
           if (i === RUNS) {
-            expect(callCount).to.equal(RUNS);
+            assert(callCount === RUNS);
             done();
           }
         });
@@ -51,9 +52,9 @@ describe('wdk.core.runloop', function() {
         runloop.defer(function() {
           runloop.defer(function() {
             order.push('inner');
-            expect(order.indexOf('outter')).to.equal(0);
-            expect(order.indexOf('middle')).to.equal(1);
-            expect(order.indexOf('inner')).to.equal(2);
+            assert(order.indexOf('outter') === 0);
+            assert(order.indexOf('middle') === 1);
+            assert(order.indexOf('inner') === 2);
             done();
           });
           order.push('middle');
@@ -67,7 +68,7 @@ describe('wdk.core.runloop', function() {
       var deferComplete = false;
 
         setTimeout(function() {
-          expect(deferComplete).to.not.equal(true);
+          assert(!deferComplete);
           done()
         }, timeout - 1);
 
@@ -97,7 +98,7 @@ describe('wdk.core.runloop', function() {
       }
 
       setTimeout(function() {
-        expect(callCount).to.equal(1);
+        assert(callCount === 1);
         done();
       }, 300);
 
@@ -108,7 +109,7 @@ describe('wdk.core.runloop', function() {
       var deferOnceDone = false;
 
       setTimeout(function() {
-        expect(deferOnceDone).to.not.equal(true);
+        assert(!deferOnceDone);
         done();
       }, timeout - 1);
 

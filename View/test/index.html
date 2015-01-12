@@ -21,15 +21,14 @@
     <div id="mocha"></div>
     <div id="test-fixture"></div>
     <script src="mocha.js"></script>
-    <script src="chai.js"></script>
+    <script src="sinon-1.12.2.js"></script>
 
     <!-- include wdk libs and src files -->
     <script>
       mocha.setup('bdd');
-      var wdkConfig = {
-        assetsUrl: '../webapp'
-      };
-      var expect = chai.expect;
+      // var wdkConfig = {
+      //   assetsUrl: '../webapp'
+      // };
     </script>
 
     <!-- include libraries -->
