@@ -46,7 +46,23 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var dependedParam = $("div.param[name='" + dependedName + "']");
       dependedParam.change(function(e) {
         e.stopPropagation();
-        var dependedName = $(this).attr("name");
+        onDependedParamChange(dependedParam, element, dependedParams);
+      });
+
+      // also register keyup event for text input
+      dependedParam.keyup(_.debounce(function(e) {
+        e.stopPropagation();
+        onDependedParamChange(dependedParam, element, dependedParams);        
+      }, 1000));
+
+      if (dependedParam.is('[data-type="type-ahead"]').length > 0) {
+        dependedParam.change();
+      }
+    }
+  }
+
+  function onDependedParamChange(dependedParam, dependentElement, dependedParams) {
+        var dependedName = dependedParam.attr("name");
 
         // map list of names to elements
         // then reduce to a list of $.ajax deferred objects
@@ -55,13 +71,13 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
             // return dependentParam reference
             // and set ready flag to false on all its dependent params
-            return element.find(".dependentParam[name='" + dependentName + "']")
+            return dependentElement.find(".dependentParam[name='" + dependentName + "']")
               .find("input, select")
                 .prop("disabled", true)
                 .end();
           })
           .reduce(function(results, $dependentParam) {
-            var result =  updateDependentParam($dependentParam, element);
+            var result =  updateDependentParam($dependentParam, dependentElement);
             if (result) {
               // stash promises returned by $.ajax
               results.push(result);
@@ -73,12 +89,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         $.when.apply($, dependentDeferreds).then(function() {
           dependedParam.closest("form").change();
         });
-      });
-
-      if (dependedParam.is('[data-type="type-ahead"]').length > 0) {
-        dependedParam.change();
-      }
-    }
   }
 
   //==============================================================================
@@ -599,9 +609,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     for (i=0; i < dependedNames.length; i++) {
       dependedName = dependedNames[i];
       var dependedParam = element.find([
-        "#" + dependedName + "aaa input[name='array(" + dependedName + ")']:checked", // checkbox
-        "#" + dependedName + "aaa select[name='array(" + dependedName + ")']",        // select
-        'input[type=hidden][name="value(' + dependedName + ')"]'                      // hidden
+        "#" + dependedName + "aaa input[name='value(" + dependedName + ")']",         // any single input
+        "#" + dependedName + "aaa input[name='array(" + dependedName + ")']",         // any array input
+        "#" + dependedName + "aaa select[name='array(" + dependedName + ")']"         // select
       ].join(','));
 
       // get the selected values from depended param
