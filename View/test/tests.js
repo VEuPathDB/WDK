@@ -16,3 +16,5 @@ import './tests/addStepPopup';
 import './tests/actions/AnswerActions';
 
 import './tests/stores/Store';
+
+import './tests/components/Answer';
