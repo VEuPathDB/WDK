@@ -107,6 +107,7 @@ public class GuestRemover extends BaseCLI {
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + GUEST_TABLE + " AS SELECT user_id FROM " +
         userSchema + "users " + " WHERE is_guest = 1 AND register_time < to_date('" + cutoffDate +
         "', 'yyyy/mm/dd')", "backup-create-guest-table");
+		SqlUtils.executeUpdate(dataSource,"CREATE UNIQUE INDEX " + GUEST_TABLE + "_ix01 ON " + GUEST_TABLE + " (user_id)", "create-guest-index");
 
     return "SELECT user_id FROM " + GUEST_TABLE;
   }
