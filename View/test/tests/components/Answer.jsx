@@ -36,6 +36,7 @@ describe('Answer component', () => {
   it('should render a table with questions', () => {
     var html = React.renderToStaticMarkup(<Answer questionName="MyQuestion" answer={answerResource} />);
     assert(/<table>.*<\/table>/.test(html));
+    console.log(html);
   });
 
   it('should render one row per record', () => {
