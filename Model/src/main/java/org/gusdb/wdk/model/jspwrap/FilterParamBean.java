@@ -65,18 +65,18 @@ public class FilterParamBean extends EnumParamBean {
   }
 
   @Override
-  public void setStableValue(String stabletValue) throws WdkModelException {
+  public void setStableValue(String stableValue) throws WdkModelException {
     // System.err.println("Stable value = " + stableValue + ", and default value = " + getDefault());
 
-    if (stabletValue == null)
-      stabletValue = getDefault();
-    this.stableValue = stabletValue;
+    if (stableValue == null)
+      stableValue = getDefault();
+    this.stableValue = stableValue;
 
     // also set the current values
     if (stableValue != null) {
       try {
         // System.err.println("**********" + getName() + "=" + stableValue );
-        JSONObject jsValue = new JSONObject(stabletValue);
+        JSONObject jsValue = new JSONObject(stableValue);
         JSONArray jsTerms = jsValue.getJSONArray(FilterParamHandler.TERMS_KEY);
         String[] terms = new String[jsTerms.length()];
         for (int i = 0; i < terms.length; i++) {
