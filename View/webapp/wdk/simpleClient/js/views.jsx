@@ -18,7 +18,12 @@ var ViewController = React.createClass({
   },
   // render is simply a wrapper around EntryList, passing latest state
   render: function() {
-    var topDivStyle = { width: "45%", display: "inline-block" };
+    var topDivStyle = {
+      width: "45%",
+      display: "inline-block",
+      border: "1px solid blue",
+      margin:"10px"
+    };
     return (
       <div>
         <div>
@@ -49,7 +54,7 @@ var QuestionSelect = React.createClass({
         <select value={this.props.selectedQuestion} onChange={this.props.onChange}>
           <option key={Store.NO_QUESTION_SELECTED} value={Store.NO_QUESTION_SELECTED}>Select a Search</option> );
           {this.props.questions.map(function(question) {
-            return ( <option key={question.name} value={question.name}>{question.name}</option> );
+            return ( <option key={question} value={question}>{question}</option> );
           })}
         </select>
       </div>
@@ -65,17 +70,27 @@ var QuestionForm = React.createClass({
     var paramName = jQuery(event.target).data("name");
     this.props.ac.setParamValue(paramName, event.target.value);
   },
+  tryToSetPaging(newPageNum, newPageSize) {
+    // check to ensure integers
+    if (!Util.isPositiveInteger(newPageNum) || !Util.isPositiveInteger(newPageSize)) {
+      alert("You can only type integers in this field");
+    }
+    else {
+      this.props.ac.setPagination({ pageNum: newPageNum, pageSize: newPageSize });
+    }
+  },
   changePageNum: function(event) {
-    this.props.ac.setPagination({ pageNum: event.target.value, pageSize: this.props.data.pagination.pageSize });
+    this.tryToSetPaging(event.target.value, this.props.data.pagination.pageSize);
   },
   changePageSize: function(event) {
-    this.props.ac.setPagination({ pageNum: this.props.data.pagination.pageNum, pageSize: event.target.value });
+    this.tryToSetPaging(this.props.data.pagination.pageNum, event.target.value);
   },
   submitRequest: function() {
     this.props.ac.loadResults(this.props.data);
   },
   render: function() {
     var store = this.props.data;
+    var changeParamFunction = this.changeParamValue;
     if (store.selectedQuestion == Store.NO_QUESTION_SELECTED) {
       return (
         <div>
@@ -99,7 +114,7 @@ var QuestionForm = React.createClass({
               return (
                 <tr key={param.name}>
                   <td>{param.displayName}</td>
-                  <td><input type="text" data-name={param.name} value={param.value} onChange={this.changeParamValue}/></td>
+                  <td><input type="text" data-name={param.name} value={param.value} onChange={changeParamFunction}/></td>
                 </tr>
               );
             })}
@@ -132,6 +147,9 @@ var QuestionJson = React.createClass({
 
 var AnswerResults = React.createClass({
   render: function() {
+    if (this.props.data.results == null) {
+      return ( <div></div> );
+    }
     var formattedJson = JSON.stringify(this.props.data.results, null, 2);
     return ( <div><pre>{formattedJson}</pre></div> );
   }
