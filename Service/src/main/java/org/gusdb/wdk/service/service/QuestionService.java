@@ -43,7 +43,7 @@ public class QuestionService extends WdkService {
   }
 
   @GET
-  @Path("/{questionName}/param")
+  @Path("/{questionName}/params")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getParamsForQuestion(@PathParam("questionName") String questionName)
       throws JSONException, WdkModelException, WdkUserException {
@@ -100,6 +100,7 @@ public class QuestionService extends WdkService {
       throws JSONException, WdkModelException {
     JSONObject pJson = new JSONObject();
     pJson.put("name", param.getFullName());
+    pJson.put("displayName", param.getName());
     pJson.put("prompt", param.getPrompt());
     pJson.put("help", param.getHelp());
     pJson.put("defaultValue", param.getDefault());

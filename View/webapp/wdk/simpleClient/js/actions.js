@@ -25,9 +25,11 @@ var Util = (function() {
     getAnswerRequestJson: getAnswerRequestJson
   };
 
-  function getAnswerRequestJson(questionName, params, pagination) {
-    var paramPack = params.map(function(param) {
-      return { name: param.name, value: param.value }; });
+  function getAnswerRequestJson(questionName, paramMap, pagination) {
+    var paramPack = Object.keys(paramMap).map(function(paramName) {
+      var param = paramMap[paramName];
+      return { name: param.name, value: param.value };
+    });
     var offset = (pagination.pageNum - 1) * pagination.pageSize;
     var numRecords = pagination.pageSize;
     if (offset < 0) offset = 0;
@@ -60,7 +62,7 @@ var ActionCreator = function(serviceUrl, dispatcher) {
   var exports = {
     setQuestion: setQuestion,
     setParamValue: setParamValue,
-    setPaging: setPaging,
+    setPagination: setPagination,
     loadResults: loadResults
   };
 
@@ -69,22 +71,30 @@ var ActionCreator = function(serviceUrl, dispatcher) {
   var _dispatcher = dispatcher;
 
   function setQuestion(questionName) {
-    jQuery.ajax({
-      type: "GET",
-      url: _serviceUrl + "/question/" + questionName + "/params",
-      success: function(data, textStatus, jqXHR) {
-        _dispatcher.dispatch({
-          actionType: ActionType.CHANGE_QUESTION_ACTION,
-          data: {
-            questionName: questionName,
-            params: data
-          }
-        });
-      },
-      error: function(jqXHR, textStatus, errorThrown ) {
-        alert("Error: Unable to load params for question " + questionName);
+    var action = {
+      actionType: ActionType.CHANGE_QUESTION_ACTION,
+      data: {
+        questionName: questionName,
+        params: []
       }
-    });
+    };
+    // no need to load params when user selects none
+    if (questionName == Store.NO_QUESTION_SELECTED) {
+      _dispatcher.dispatch(action);
+    }
+    else {
+      jQuery.ajax({
+        type: "GET",
+        url: _serviceUrl + "/question/" + questionName + "/params",
+        success: function(data, textStatus, jqXHR) {
+          action.data.params = data;
+          _dispatcher.dispatch(action);
+        },
+        error: function(jqXHR, textStatus, errorThrown ) {
+          alert("Error: Unable to load params for question " + questionName);
+        }
+      });
+    }
   }
 
   function setParamValue(paramName, value) {
@@ -106,7 +116,7 @@ var ActionCreator = function(serviceUrl, dispatcher) {
       type: "POST",
       url: _serviceUrl + "/answer",
       contentType: 'application/json; charset=UTF-8',
-      data: Util.getAnswerRequestJson(data.selectedQuestion, data.params, data.pagination),
+      data: Util.getAnswerRequestJson(data.selectedQuestion, data.paramValues, data.pagination),
       dataType: "json",
       success: function(data, textStatus, jqXHR) {
         _dispatcher.dispatch({ actionType: ActionType.CHANGE_RESULTS_ACTION, data: { results: data }});
