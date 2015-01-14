@@ -9,6 +9,7 @@ import org.gusdb.wdk.service.filter.MethodRewritingFilter;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.service.ProjectService;
 import org.gusdb.wdk.service.service.AnswerService;
+import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.gusdb.wdk.service.service.SampleService;
 import org.gusdb.wdk.service.service.UserService;
@@ -28,6 +29,7 @@ public class WdkServiceApplication extends Application {
     // add service classes
     .add(ProjectService.class)
     .add(UserService.class)
+    .add(QuestionService.class)
     .add(RecordService.class)
     .add(AnswerService.class)
 
