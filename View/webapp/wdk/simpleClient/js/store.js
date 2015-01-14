@@ -14,10 +14,10 @@ var Store = function(dispatcher, initialValue) {
   // private data
   var _data = {
     questions: initialValue,
-    selectedQuestion: this.NO_QUESTION_SELECTED,
+    selectedQuestion: Store.NO_QUESTION_SELECTED,
     paramOrdering: [],
     paramValues: {},
-    results: {},
+    results: null,
     pagination: { pageNum: 1, pageSize: 10 }
   };
   var _registeredCallbacks = [];
@@ -52,7 +52,7 @@ var Store = function(dispatcher, initialValue) {
           _data.paramValues[param.name].value = param.defaultValue;
         });
         // clear results
-        _data.results = {};
+        _data.results = null;
         break;
       case ActionType.CHANGE_PARAM_ACTION:
         // data is { paramName: String, value: Any }

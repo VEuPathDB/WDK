@@ -22,8 +22,13 @@ var Util = (function() {
 
   // public methods
   var exports = {
+    isPositiveInteger: isPositiveInteger,
     getAnswerRequestJson: getAnswerRequestJson
   };
+
+  function isPositiveInteger(str) {
+    return /^(0|[1-9]\d*)$/.test(str);
+  }
 
   function getAnswerRequestJson(questionName, paramMap, pagination) {
     var paramPack = Object.keys(paramMap).map(function(paramName) {
