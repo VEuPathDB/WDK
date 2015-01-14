@@ -14,7 +14,7 @@ var Store = function(dispatcher, initialValue) {
   // private data
   var _data = {
     questions: initialValue,
-    selectedQuestion: null,
+    selectedQuestion: this.NO_QUESTION_SELECTED,
     paramOrdering: [],
     paramValues: {},
     results: {},
@@ -77,4 +77,7 @@ var Store = function(dispatcher, initialValue) {
 
   return exports;
 }
+
+// public constants
+Store.NO_QUESTION_SELECTED = "_none_";
 

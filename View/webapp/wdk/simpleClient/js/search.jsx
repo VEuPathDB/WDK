@@ -3,7 +3,8 @@
 // Define the depended service
 //**************************************************
 
-var ServiceUrl = window.location.href + "service";
+var ServiceUrl = window.location.href.substring(0,
+  window.location.href.indexOf("wdk/simpleClient/search.html")) + "service";
 
 //**************************************************
 // Page Initialization
@@ -35,7 +36,6 @@ var Page = (function() {
     jQuery.ajax({
       type: "GET",
       url: serviceUrl + "/question",
-      data: { expandRecords: true },
       dataType: "json",
       success: function(data) {
         wireApplication(serviceUrl, data);
