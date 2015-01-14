@@ -125,6 +125,8 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   private Question contextQuestion;
 
   private Map<String, Boolean> sortingMap;
+  
+  private WdkModel wdkModel;
 
   // =========================================================================
   // Abstract methods
@@ -197,6 +199,9 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
    * @return the cached
    */
   public boolean isCached() {
+    // first check if global caching is turned off, if off, then return false; otherwise, use query's own 
+    // settings.
+    if (!wdkModel.getModelConfig().isCaching()) return false;
     return this.cached;
   }
 
@@ -428,6 +433,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     if (resolved)
       return;
 
+    this.wdkModel = wdkModel;
     super.resolveReferences(wdkModel);
 
     // check if we need to use querySet's cache flag

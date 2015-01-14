@@ -35,6 +35,15 @@
                     <data type="unsignedShort" />
                 </attribute>
             </optional>
+            <!-- enable or disable global caching. default enabled, and then each individual sqlQuery can 
+                 control their own cache behavior. if global caching is disabled, then caching on sqlQuery 
+                 will always be disabled, regardless of the individual setting on the query.
+                 Please note that this flag has no effect on processQueries, which is always cached. -->
+            <optional>
+                <attribute name="caching">
+                    <data type="boolean" />
+                </attribute>
+            </optional>
             
             <interleave>
             
