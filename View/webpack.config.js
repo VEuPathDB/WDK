@@ -15,7 +15,7 @@ module.exports = {
   module: {
     loaders: [
       { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: 'traceur?runtime' },
-      { test: /^(?!.*(bower_components|node_modules))+.+\.jsx$/, loader: 'jsx-loader' },
+      { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: 'jsx-loader' },
     ]
   },
   debug: node_env !== 'production',
