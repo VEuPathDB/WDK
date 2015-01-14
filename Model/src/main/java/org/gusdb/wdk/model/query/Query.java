@@ -126,8 +126,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   private Map<String, Boolean> sortingMap;
   
-  private WdkModel wdkModel;
-
   // =========================================================================
   // Abstract methods
   // =========================================================================
@@ -433,7 +431,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     if (resolved)
       return;
 
-    this.wdkModel = wdkModel;
     super.resolveReferences(wdkModel);
 
     // check if we need to use querySet's cache flag
