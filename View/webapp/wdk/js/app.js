@@ -8,6 +8,10 @@ import './components';
 import './views';
 import './controllers';
 
+import React from 'react';
+import Router from 'react-router';
+import { routes } from './flux/router';
+
 (function($) {
   'use strict';
 
@@ -29,6 +33,21 @@ import './controllers';
   var app = wdk.application = wdk.app = wdk.core.Application.create({
 
     ready: function wdkReady() {
+
+      /**
+       * XXX This is transitional code and will be deprecated
+       *
+       * The current use case is to move pages piecemeal into
+       * the new architecture. For instance, the Datasets page
+       * used by EuPathDB sites will point to a specific Answer
+       * page: /answer/DataQuestions.AllDatasets.
+       */
+      $('[data-route]').each((index, el) => {
+        var route = el.getAttribute('data-route');
+        // run the router
+        Router.run(routes, route, Handler => React.render(<Handler/>, el));
+      });
+
       wdk.cookieTest();
       wdk.setUpDialogs();
       wdk.setUpPopups();
