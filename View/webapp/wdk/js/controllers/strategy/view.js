@@ -582,7 +582,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "class='analyze_step_link' href='#'>Analyze</a>&nbsp;|&nbsp;";
 
       var disab = "";
-      var oM = "Show Nested Strategy";
+      var oM = "Open Nested Strategy";
       var moExp = sub_expand_popup;
       var moEdit = sub_edit_popup;
 
