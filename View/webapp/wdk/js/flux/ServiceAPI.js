@@ -1,13 +1,13 @@
 "use strict";
 
-/* global $, _, RSVP */
+/* global $, _ */
 
 /**
  * Functions to interface with the WDK REST API.
  */
 
 // FIXME Determine base URL
-var serviceBaseUrl = '/service/';
+var serviceBaseUrl = wdk.webappUrl('/service');
 
 /**
  * The order of the args allows us to create functions like
@@ -20,7 +20,7 @@ export function requestResource(type, url, data) {
       dataType = 'json';
   url = serviceBaseUrl + url;
 
-  return new RSVP.Promise(function(resolve, reject) {
+  return new Promise(function(resolve, reject) {
     $.ajax({ type, url, data, contentType, dataType })
       .then(function(data) {
         resolve(data);
