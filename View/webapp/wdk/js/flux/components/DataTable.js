@@ -1,15 +1,14 @@
 /**
- * Generic table with UI features.
+ * Generic table with UI features:
  *
- * Features:
  *   - Sort columns
  *   - Reorder columns
  *   - Show/Hide columns
  *   - Paging
  *
- * NB: A View-Controller will need to pass handlers to this component.
  *
- * Handlers:
+ * NB: A View-Controller will need to pass handlers to this component:
+ *
  *   - onSort(columnName: string, direction: string(asc|desc))
  *   - onReorder(columnName: string, newPosition: number)
  *   - onShowColumns(columnNames: Array<string>)
@@ -28,7 +27,7 @@ var sortClassMap = {
   desc: 'ui-icon ui-icon-arrowthick-1-s'
 };
 
-export default React.createClass({
+var DataTable = React.createClass({
 
   propTypes: {
     meta: PropTypes.object.isRequired,
@@ -116,8 +115,11 @@ export default React.createClass({
               // TODO Handle display records inline, which might just be a dump of attrs and tables
               return (
                 <tr key={record.id}>
-                  {record.attributes.map(attribute => {
-                    return <td>{formatAttribute(attribute)}</td>
+                  {_.map(meta.attributes, attribute => {
+                    var value = record.attributes[attribute.name];
+                    return (
+                      <td>{formatAttribute(attribute, value)}</td>
+                      );
                   })}
                 </tr>
               );
@@ -131,9 +133,13 @@ export default React.createClass({
 });
 
 // TODO Look up or inject custom formatters
-function formatAttribute(attribute) {
+function formatAttribute(attribute, value) {
   switch(attribute.type) {
-    case 'text': return attribute.value
-    case 'link': return <a href={attribute.url}>{attribute.display}</a>
+    case 'text': return value
+    case 'link': return <a href={value.url}>{value.display}</a>
+    default: throw new TypeError(`Unkonwn type "${attribute.type}"` +
+                                 ` for attribute ${attribute.name}`);
   }
 }
+
+export default DataTable;

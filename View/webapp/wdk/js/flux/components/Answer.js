@@ -8,7 +8,7 @@ import DataTable from './DataTable';
 
 var PropTypes = React.PropTypes;
 
-export default React.createClass({
+var Answer = React.createClass({
 
   propTypes: {
     questionName: PropTypes.string.isRequired
@@ -26,3 +26,5 @@ export default React.createClass({
   }
 
 });
+
+export default Answer;
