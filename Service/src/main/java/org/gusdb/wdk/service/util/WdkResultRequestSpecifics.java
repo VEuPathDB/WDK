@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.util;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -38,24 +39,30 @@ public class WdkResultRequestSpecifics {
     public Direction getDirection() { return _direction; }
   }
   
+  /*
+  {
+    "pagination": {
+      "offset": 0,
+      "numRecords": 10
+    },
+    "columns": null,
+    "sorting": null
+  }
+  */
   public static WdkResultRequestSpecifics createFromJson(JSONObject specJson, WdkModelBean wdkModelBean) {
-    // TODO Auto-generated method stub
-    return null;
+    return new WdkResultRequestSpecifics();
   }
 
   public List<SortItem> getSorting() {
-    // TODO Auto-generated method stub
-    return null;
+    return Collections.<SortItem>emptyList();
   }
 
   public int getOffset() {
-    // TODO Auto-generated method stub
     return 0;
   }
 
   public int getNumRecords() {
-    // TODO Auto-generated method stub
-    return 0;
+    return 10;
   }
 
 }

@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.service;
 
 import java.util.Collections;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -44,15 +45,17 @@ public class AnswerService extends WdkService {
   private static final Logger LOG = Logger.getLogger(AnswerService.class);
 
   @POST
+  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response buildResult(String body) throws WdkModelException {
     try {
+      LOG.info("POST submission to /answer with body:\n" + body);
       JSONObject json = new JSONObject(body);
-      
+
       // expect two parts to this request
       // 1. Parse result request (question, params, etc.)
       JSONObject questionDefJson = json.getJSONObject("questionDefinition");
-      WdkResultRequest request = WdkResultRequest.createFromJson(questionDefJson, getWdkModelBean());
+      WdkResultRequest request = WdkResultRequest.createFromJson(getCurrentUser(), questionDefJson, getWdkModelBean());
       
       // 2. Parse request specifics (columns, pagination, etc.)
       JSONObject specJson = json.getJSONObject("displayInfo");

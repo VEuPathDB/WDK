@@ -5,13 +5,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.beans.FilterValue;
+import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.jspwrap.FilterBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.service.util.WdkResultRequestSpecifics.SortItem;
 
 public class WdkResultFactory {
@@ -24,15 +25,14 @@ public class WdkResultFactory {
 
   public AnswerValueBean createResult(WdkResultRequest request, WdkResultRequestSpecifics specifics) throws WdkModelException {
     try {
-      QuestionBean questionBean = request.getQuestion();
+      Question question = request.getQuestion();
       // FIXME: for now just past name of first filter if one exists
-      List<FilterBean> filters = request.getFilterValues();
+      List<FilterValue> filters = request.getFilterValues();
       String filter = (filters.isEmpty() ? null : filters.iterator().next().getName());
       int startIndex = specifics.getOffset();
       int endIndex = startIndex + specifics.getNumRecords();
-      questionBean.makeAnswerValue(_user, convertParams(request.getParamValues()), startIndex, endIndex,
+      return new QuestionBean(question).makeAnswerValue(_user, convertParams(request.getParamValues()), startIndex, endIndex,
           convertSorting(specifics.getSorting()), filter, true, 0);
-      return request.getQuestion().getAnswerValue();
     }
     catch (WdkUserException e) {
       throw new WdkModelException(e);
@@ -41,20 +41,18 @@ public class WdkResultFactory {
 
   public AnswerValueBean createResult(WdkResultRequest request) throws WdkModelException {
     try {
-      QuestionBean questionBean = request.getQuestion();
-      questionBean.makeAnswerValue(_user, convertParams(request.getParamValues()), true, 0);
-      return request.getQuestion().getAnswerValue();
+      Question question = request.getQuestion();
+      return new QuestionBean(question).makeAnswerValue(_user, convertParams(request.getParamValues()), true, 0);
     }
     catch (WdkUserException e) {
       throw new WdkModelException(e);
     }
   }
 
-  private Map<String, String> convertParams(Map<String, ParamBean<?>> params) {
+  private Map<String, String> convertParams(Map<String, ParamValue> params) {
     Map<String, String> conversion = new HashMap<>();
-    for (ParamBean<?> param : params.values()) {
-      // FIXME: use getValue().toString() once implemented (or whatever is appropriate
-      conversion.put(param.getName(), param.getStableValue());
+    for (ParamValue param : params.values()) {
+      conversion.put(param.getName(), param.getObjectValue().toString());
     }
     return conversion;
   }
