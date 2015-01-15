@@ -29,8 +29,10 @@ public class WdkResultFactory {
       // FIXME: for now just past name of first filter if one exists
       List<FilterValue> filters = request.getFilterValues();
       String filter = (filters.isEmpty() ? null : filters.iterator().next().getName());
-      int startIndex = specifics.getOffset();
-      int endIndex = startIndex + specifics.getNumRecords();
+      // FIXME: looks like index starts at 1 and end index is inclusive;
+      //   would much rather see 0-based start and have end index be exclusive
+      int startIndex = specifics.getOffset() + 1;
+      int endIndex = startIndex + specifics.getNumRecords() - 1;
       return new QuestionBean(question).makeAnswerValue(_user, convertParams(request.getParamValues()), startIndex, endIndex,
           convertSorting(specifics.getSorting()), filter, true, 0);
     }

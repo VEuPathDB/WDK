@@ -59,7 +59,7 @@ public class WdkResultRequest {
       for (Param expectedParam : expectedParams.values()) {
         String paramName = expectedParam.getName();
         ParamValue value;
-        if (!contextValues.containsKey(expectedParam)) {
+        if (!contextValues.containsKey(paramName)) {
           if (!expectedParam.isAllowEmpty()) {
             throw new WdkUserException("Required parameter '" + paramName + "' is missing.");
           }
