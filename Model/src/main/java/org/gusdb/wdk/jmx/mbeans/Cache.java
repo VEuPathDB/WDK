@@ -118,4 +118,28 @@ public class Cache extends BeanBase implements CacheMBean   {
         // TODO: something
     }
   }
+
+  /**
+   * 
+   * @return whether global caching is turned on or not.
+   *
+   * @see org.gusdb.wdk.model.config.ModelConfig#isCaching
+   */
+  @Override
+  public boolean getWdkIsCaching() {
+    return wdkModel.getModelConfig().isCaching();
+  }
+
+  /**
+   * MBean operation to toggle global WDK database caching true/false.
+   * Disabling the caching can be useful when benchmarking
+   * database and system tunings.
+   *
+   * @see org.gusdb.wdk.model.config.ModelConfig#setCaching
+   */
+  @Override
+  public void toggleWdkIsCaching() {
+    boolean isCaching = wdkModel.getModelConfig().isCaching();
+    wdkModel.getModelConfig().setCaching( ! isCaching );
+  }
 }
