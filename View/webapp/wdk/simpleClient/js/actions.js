@@ -121,7 +121,7 @@ var ActionCreator = function(serviceUrl, dispatcher) {
       type: "POST",
       url: _serviceUrl + "/answer",
       contentType: 'application/json; charset=UTF-8',
-      data: Util.getAnswerRequestJson(data.selectedQuestion, data.paramValues, data.pagination),
+      data: JSON.stringify(Util.getAnswerRequestJson(data.selectedQuestion, data.paramValues, data.pagination)),
       dataType: "json",
       success: function(data, textStatus, jqXHR) {
         _dispatcher.dispatch({ actionType: ActionType.CHANGE_RESULTS_ACTION, data: { results: data }});
