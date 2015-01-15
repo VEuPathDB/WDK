@@ -16,29 +16,9 @@ var ViewController = React.createClass({
   update: function(store) {
     this.replaceState(store.get());
   },
-  // render is simply a wrapper around EntryList, passing latest state
+  // render wraps the top-level component, passing latest state
   render: function() {
-    var topDivStyle = {
-      width: "45%",
-      display: "inline-block",
-      border: "1px solid blue",
-      margin:"10px"
-    };
-    return (
-      <div>
-        <div>
-          <div style={topDivStyle}>
-            <h2>Choose a Search, then enter paramenters:</h2>
-            <QuestionForm data={this.state} ac={this.props.ac}/>
-          </div>
-          <div style={topDivStyle}>
-            <h3>To run this search programmatically, POST the JSON below to {ServiceUrl}/answer</h3>
-            <QuestionJson data={this.state}/>
-          </div>
-        </div>
-        <AnswerResults data={this.state}/>
-      </div>
-    );
+    return ( <SearchPage data={this.state} ac={this.props.ac}/> );
   }
 });
 
@@ -62,10 +42,47 @@ var QuestionSelect = React.createClass({
   }
 });
 
-var QuestionForm = React.createClass({
+var SearchPage = React.createClass({
   changeQuestion: function(event) {
     this.props.ac.setQuestion(event.target.value);
   },
+  render: function() {
+    var style = {
+      "width": "45%",
+      "display": "inline-block",
+      "border": "2px solid blue",
+      "border-radius": "10px",
+      "padding": "5px",
+      "margin": "10px",
+      "vertical-align": "top",
+      "height": "250px",
+      "overflow": "scroll",
+      "overflow-x": "hidden"
+    };
+    var store = this.props.data;
+    return (
+      <div>
+        <h3>Choose a Search</h3>
+        <QuestionSelect questions={store.questions} selectedQuestion={store.selectedQuestion} onChange={this.changeQuestion}/>
+        <div>
+          <div style={style}>
+            <QuestionForm data={store} ac={this.props.ac}/>
+          </div>
+          <div style={style}>
+            <strong>To run this search programmatically...</strong><br/>
+            POST the JSON below to:<br/>
+            {ServiceUrl}/answer<br/>
+            <hr/>
+            <QuestionJson data={store}/>
+          </div>
+        </div>
+        <AnswerResults results={store.results}/>
+      </div>
+    );
+  }
+});
+
+var QuestionForm = React.createClass({
   changeParamValue: function(event) {
     var paramName = jQuery(event.target).data("name");
     this.props.ac.setParamValue(paramName, event.target.value);
@@ -92,15 +109,11 @@ var QuestionForm = React.createClass({
     var store = this.props.data;
     var changeParamFunction = this.changeParamValue;
     if (store.selectedQuestion == Store.NO_QUESTION_SELECTED) {
-      return (
-        <div>
-          <QuestionSelect questions={store.questions} selectedQuestion={store.selectedQuestion} onChange={this.changeQuestion}/>
-        </div>
-      );
+      // don't display anything if no question selected
+      return ( <div/> );
     }
     return (
       <div>
-        <QuestionSelect questions={store.questions} selectedQuestion={store.selectedQuestion} onChange={this.changeQuestion}/>
         <table>
           <thead>
             <tr>
@@ -147,10 +160,10 @@ var QuestionJson = React.createClass({
 
 var AnswerResults = React.createClass({
   render: function() {
-    if (this.props.data.results == null) {
+    if (this.props.results == null) {
       return ( <div></div> );
     }
-    var formattedJson = JSON.stringify(this.props.data.results, null, 2);
+    var formattedJson = JSON.stringify(this.props.results, null, 2);
     return ( <div><pre>{formattedJson}</pre></div> );
   }
 });
