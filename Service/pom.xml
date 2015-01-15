@@ -82,4 +82,14 @@
 -->
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.enunciate</groupId>
+        <artifactId>maven-enunciate-plugin</artifactId>
+        <version>1.28</version>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>
