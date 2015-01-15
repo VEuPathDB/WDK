@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
+import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -90,7 +91,9 @@ public class WdkResultRequest {
     Map<String, Object> contextValues = new HashMap<>();
     for (int i = 0; i < paramsJson.length(); i++) {
       JSONObject param = paramsJson.getJSONObject(i);
-      contextValues.put(param.getString("name"), param.get("value"));
+      String name = param.getString("name");
+      contextValues.put(name, param.get("value"));
+      Log.info("Added request parameter '" + name + "', value = " + contextValues.get(name).toString());
     }
     return contextValues;
   }
