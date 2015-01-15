@@ -11,7 +11,7 @@
     "build-js": "./scripts/concatLibs ./dist/wdk/js/wdk.libs.js && webpack",
     "build-css": "./scripts/buildCss",
     "clean": "rm -rf ./dist",
-    "dist": "npm run clean && npm run build-js && npm run build-css",
+    "dist": "npm run build-js && npm run build-css",
     "test": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack -d --config webpack-test.config.js",
     "test-server": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack-dev-server -d --config webpack-test.config.js"
   },
@@ -20,6 +20,7 @@
     "flux": "^2.0.1",
     "immutable": "^3.4.1",
     "lodash": "^2.4.1",
-    "react": "^0.12.2"
+    "react": "^0.12.2",
+    "react-router": "^0.11.6"
   }
 }
