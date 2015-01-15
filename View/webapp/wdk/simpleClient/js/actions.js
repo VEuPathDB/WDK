@@ -27,7 +27,7 @@ var Util = (function() {
   };
 
   function isPositiveInteger(str) {
-    return /^(0|[1-9]\d*)$/.test(str);
+    return /^([1-9]\d*)$/.test(str);
   }
 
   function getAnswerRequestJson(questionName, paramMap, pagination) {

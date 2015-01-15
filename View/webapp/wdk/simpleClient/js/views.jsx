@@ -87,10 +87,10 @@ var QuestionForm = React.createClass({
     var paramName = jQuery(event.target).data("name");
     this.props.ac.setParamValue(paramName, event.target.value);
   },
-  tryToSetPaging(newPageNum, newPageSize) {
+  tryToSetPaging: function(newPageNum, newPageSize) {
     // check to ensure integers
     if (!Util.isPositiveInteger(newPageNum) || !Util.isPositiveInteger(newPageSize)) {
-      alert("You can only type integers in this field");
+      alert("You can only type positive integers in this field");
     }
     else {
       this.props.ac.setPagination({ pageNum: newPageNum, pageSize: newPageSize });

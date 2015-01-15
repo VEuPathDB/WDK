@@ -99,7 +99,7 @@ public class QuestionService extends WdkService {
   private JSONObject getParamJson(Param param)
       throws JSONException, WdkModelException {
     JSONObject pJson = new JSONObject();
-    pJson.put("name", param.getFullName());
+    pJson.put("name", param.getName());
     pJson.put("displayName", param.getName());
     pJson.put("prompt", param.getPrompt());
     pJson.put("help", param.getHelp());
