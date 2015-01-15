@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.beans.FilterValue;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
@@ -15,13 +16,14 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
-import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class WdkResultRequest {
 
+  private static final Logger LOG = Logger.getLogger(WdkResultRequest.class);
+  
   /**
    * Input Format:
    * {
@@ -93,7 +95,7 @@ public class WdkResultRequest {
       JSONObject param = paramsJson.getJSONObject(i);
       String name = param.getString("name");
       contextValues.put(name, param.get("value"));
-      Log.info("Added request parameter '" + name + "', value = " + contextValues.get(name).toString());
+      LOG.info("Added request parameter '" + name + "', value = " + contextValues.get(name).toString());
     }
     return contextValues;
   }
