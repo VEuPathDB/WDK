@@ -16,13 +16,14 @@ var serviceBaseUrl = wdk.webappUrl('/service');
  *
  */
 export function requestResource(type, url, data) {
-  var contentType = 'applicaton/json;',
-      dataType = 'json';
-  url = serviceBaseUrl + url;
-
   return new Promise(function(resolve, reject) {
-    $.ajax({ type, url, data, contentType, dataType })
-      .then(function(data) {
+    $.ajax({
+      type,
+      url: serviceBaseUrl + url,
+      contentType: 'application/json',
+      dataType: 'json',
+      data: type === 'GET' ? data : JSON.stringify(data)
+    }).then(function(data) {
         resolve(data);
       }, function(jqXHR, textStatus, error) {
         reject(error);

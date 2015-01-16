@@ -76,7 +76,15 @@ function dispatchLoading() {
  * @param {object} opts Addition data to include in request.
  */
 export function loadAnswer(questionName, opts = {}) {
-  var { params, filters, displayInfo } = opts;
+  var { params, filters, displayInfo } = _.defaults(opts, {
+    params: [],
+    filters: [],
+    displayInfo: {
+      pagination: { offset: 0, numRecords: 10 },
+      columns: null,
+      sorting: null
+    }
+  });
   var questionDefinition = { questionName, params, filters };
   var data = { questionDefinition, displayInfo };
   dispatchLoading();

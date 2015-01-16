@@ -15,12 +15,19 @@ var Answer = React.createClass({
   },
 
   render() {
-    var { questionName, answer: { meta, records } } = this.props;
+    var content;
+    var { questionName, answer, isLoading } = this.props;
+
+    if (isLoading) {
+      content = <div>Loading...</div>
+    } else {
+      content = <DataTable {...this.props.answer}/>
+    }
 
     return (
       <div>
         <h1>{questionName}</h1>
-        <DataTable {...this.props.answer}/>
+        {content}
       </div>
     );
   }
