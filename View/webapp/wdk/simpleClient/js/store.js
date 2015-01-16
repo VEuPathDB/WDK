@@ -18,6 +18,7 @@ var Store = function(dispatcher, initialValue) {
     paramOrdering: [],
     paramValues: {},
     results: null,
+    resultStats: null,
     pagination: { pageNum: 1, pageSize: 10 },
     isLoading: false
   };
@@ -54,6 +55,7 @@ var Store = function(dispatcher, initialValue) {
         });
         // clear results
         _data.results = null;
+        _data.resultStats = null;
         break;
       case ActionType.CHANGE_PARAM_ACTION:
         // data is { paramName: String, value: Any }
@@ -66,6 +68,7 @@ var Store = function(dispatcher, initialValue) {
       case ActionType.CHANGE_RESULTS_ACTION:
         // data is { results: Any }
         _data.results = payload.data.results;
+        _data.resultStats = { pageNum: _data.pagination.pageNum };
         break;
       case ActionType.SET_LOADING_ACTION:
         // data is Boolean
