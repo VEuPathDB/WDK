@@ -187,19 +187,23 @@ var AnswerResults = React.createClass({
           </strong>
         </div>
         <table style={{"border-collapse":"collapse"}}>
-          <tr>
-            {meta.attributes.map(function(attrib) {
-              return ( <th style={headerStyle}>{attrib.displayName}</th> ); })}
-          </tr>
-          {records.map(function(record) { return (
+          <thead>
             <tr>
-              {meta.attributes.map(function(attrib) { return (
-                <td style={cellStyle}>
-                  <HtmlDiv style={cellDivStyle} contents={record.attributes[attrib.name]}/>
-                </td>
-              );})}
+              {meta.attributes.map(function(attrib) {
+                return ( <th style={headerStyle}>{attrib.displayName}</th> ); })}
             </tr>
-          );})}
+          </thead>
+          <tbody>
+            {records.map(function(record) { return (
+              <tr>
+                {meta.attributes.map(function(attrib) { return (
+                  <td style={cellStyle}>
+                    <HtmlDiv style={cellDivStyle} contents={record.attributes[attrib.name]}/>
+                  </td>
+                );})}
+              </tr>
+            );})}
+          </tbody>
         </table>
       </div>
     );
