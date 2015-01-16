@@ -79,7 +79,7 @@ var SearchPage = React.createClass({
             <QuestionJson data={store}/>
           </div>
         </div>
-        <AnswerResults results={store.results} pagination={store.pagination}/>
+        <AnswerResults results={store.results} resultStats={store.resultStats}/>
       </div>
     );
   }
@@ -92,11 +92,14 @@ var QuestionForm = React.createClass({
   },
   tryToSetPaging: function(newPageNum, newPageSize) {
     // check to ensure integers
-    if (!Util.isPositiveInteger(newPageNum) || !Util.isPositiveInteger(newPageSize)) {
+    if ((newPageNum != "" && !Util.isPositiveInteger(newPageNum)) ||
+        (newPageSize != "" && !Util.isPositiveInteger(newPageSize))) {
       alert("You can only type positive integers in this field");
     }
     else {
-      this.props.ac.setPagination({ pageNum: parseInt(newPageNum), pageSize: parseInt(newPageSize) });
+      newPageNum = (newPageNum == "" ? null : parseInt(newPageNum));
+      newPageSize = (newPageSize == "" ? null : parseInt(newPageSize));
+      this.props.ac.setPagination({ pageNum: newPageNum, pageSize: newPageSize });
     }
   },
   changePageNum: function(event) {
@@ -106,7 +109,13 @@ var QuestionForm = React.createClass({
     this.tryToSetPaging(this.props.data.pagination.pageNum, event.target.value);
   },
   submitRequest: function() {
-    this.props.ac.loadResults(this.props.data);
+    var store = this.props.data;
+    if (store.pagination.pageNum == null || store.pagination.pageSize == null) {
+      alert("You must fill in values for 'Page Size' and 'Page to Display'");
+    }
+    else {
+      this.props.ac.loadResults(store);
+    }
   },
   render: function() {
     var store = this.props.data;
@@ -115,6 +124,10 @@ var QuestionForm = React.createClass({
       // don't display anything if no question selected
       return ( <div/> );
     }
+    var pageNum = store.pagination.pageNum;
+    var pageSize = store.pagination.pageSize;
+    if (pageNum == null) pageNum = "";
+    if (pageSize == null) pageSize = "";
     return (
       <div>
         <table>
@@ -139,11 +152,11 @@ var QuestionForm = React.createClass({
         <hr/>
         <div>
           <label>Page To Display:</label>
-          <input type="text" value={store.pagination.pageNum} onChange={this.changePageNum}/>
+          <input type="text" value={pageNum} onChange={this.changePageNum}/>
         </div>
         <div>
           <label>Page Size:</label>
-          <input type="text" value={store.pagination.pageSize} onChange={this.changePageSize}/>
+          <input type="text" value={pageSize} onChange={this.changePageSize}/>
         </div>
         <hr/>
         <input type="button" value="Submit Request" onClick={this.submitRequest}/>
@@ -183,7 +196,7 @@ var AnswerResults = React.createClass({
         <div style={{"margin":"20px 0"}}>
           <strong>
             Query returned {meta.count} total records of type {meta.class}.<br/>
-            Showing {pagination.pageSize} records on page {pagination.pageNum}.
+            Showing {records.length} records on page {this.props.resultStats.pageNum}.
           </strong>
         </div>
         <table style={{"border-collapse":"collapse"}}>
