@@ -11,7 +11,8 @@ var ActionType = {
   CHANGE_QUESTION_ACTION: "changeQuestionAction",
   CHANGE_PARAM_ACTION:    "changeParamAction",
   CHANGE_PAGING_ACTION:   "changePagingAction",
-  CHANGE_RESULTS_ACTION:  "changeResultsAction"
+  CHANGE_RESULTS_ACTION:  "changeResultsAction",
+  SET_LOADING_ACTION:     "setLoadingAction"
 };
 
 //**************************************************
@@ -75,6 +76,10 @@ var ActionCreator = function(serviceUrl, dispatcher) {
   var _serviceUrl = serviceUrl;
   var _dispatcher = dispatcher;
 
+  function setLoading(loading) {
+    _dispatcher.dispatch({ actionType: ActionType.SET_LOADING_ACTION, data: loading });
+  }
+
   function setQuestion(questionName) {
     var action = {
       actionType: ActionType.CHANGE_QUESTION_ACTION,
@@ -116,7 +121,18 @@ var ActionCreator = function(serviceUrl, dispatcher) {
     });
   }
 
+  function convertAttributesToMap(data) {
+    data.records.forEach(function(record) {
+      var newAttributes = {};
+      record.attributes.forEach(function(attrib) {
+        newAttributes[attrib.name] = attrib.value;
+      });
+      record.attributes = newAttributes;
+    });
+  }
+
   function loadResults(data) {
+    setLoading(true);
     jQuery.ajax({
       type: "POST",
       url: _serviceUrl + "/answer",
@@ -124,10 +140,13 @@ var ActionCreator = function(serviceUrl, dispatcher) {
       data: JSON.stringify(Util.getAnswerRequestJson(data.selectedQuestion, data.paramValues, data.pagination)),
       dataType: "json",
       success: function(data, textStatus, jqXHR) {
+        setLoading(false);
+        convertAttributesToMap(data);
         _dispatcher.dispatch({ actionType: ActionType.CHANGE_RESULTS_ACTION, data: { results: data }});
       },
       error: function(jqXHR, textStatus, errorThrown ) {
         // TODO: dispatch a CHANGE_RESULTS_ACTION with the specific error (i.e. probably user input problem)
+        setLoading(false);
         alert("Error: Unable to load results");
       }
     });

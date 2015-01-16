@@ -47,7 +47,7 @@ var SearchPage = React.createClass({
     this.props.ac.setQuestion(event.target.value);
   },
   render: function() {
-    var style = {
+    var midDivStyle = {
       "width": "45%",
       "display": "inline-block",
       "border": "2px solid blue",
@@ -56,27 +56,30 @@ var SearchPage = React.createClass({
       "margin": "10px",
       "vertical-align": "top",
       "height": "250px",
-      "overflow": "scroll",
-      "overflow-x": "hidden"
+      "overflow": "scroll"
     };
     var store = this.props.data;
+    var loadingStyle = ( !store.isLoading ? {"display":"none"} :
+      {"height":"60px","float":"right","margin-right":"60px"} );
     return (
       <div>
-        <h3>Choose a Search</h3>
+        <h3>Choose a Search<img style={loadingStyle} src="images/loading.gif"/></h3>
         <QuestionSelect questions={store.questions} selectedQuestion={store.selectedQuestion} onChange={this.changeQuestion}/>
         <div>
-          <div style={style}>
+          <div style={midDivStyle}>
             <QuestionForm data={store} ac={this.props.ac}/>
           </div>
-          <div style={style}>
+          <div style={midDivStyle}>
             <strong>To run this search programmatically...</strong><br/>
-            POST the JSON below to:<br/>
-            {ServiceUrl}/answer<br/>
+            <span style={{"font-size":"0.8em"}}>
+              POST the JSON below to:<br/>
+              {ServiceUrl}/answer
+            </span>
             <hr/>
             <QuestionJson data={store}/>
           </div>
         </div>
-        <AnswerResults results={store.results}/>
+        <AnswerResults results={store.results} pagination={store.pagination}/>
       </div>
     );
   }
@@ -158,13 +161,48 @@ var QuestionJson = React.createClass({
   }
 });
 
+var HtmlDiv = React.createClass({
+  render: function() {
+    return ( <div style={this.props.style} dangerouslySetInnerHTML={{__html: this.props.contents}}/> );
+  }
+});
+
 var AnswerResults = React.createClass({
   render: function() {
     if (this.props.results == null) {
       return ( <div></div> );
     }
-    var formattedJson = JSON.stringify(this.props.results, null, 2);
-    return ( <div><pre>{formattedJson}</pre></div> );
+    var records = this.props.results.records;
+    var meta = this.props.results.meta;
+    var pagination = this.props.pagination;
+    var headerStyle = { "border":"1px solid blue", "background-color":"peachpuff" };
+    var cellStyle = { "border":"1px solid blue", "font-size":"0.8em", "vertical-align":"top" };
+    var cellDivStyle = { "overflow":"scroll", "overflow-x":"hidden", "overflow-y":"auto", "height":"50px" };
+    return (
+      <div>
+        <div style={{"margin":"20px 0"}}>
+          <strong>
+            Query returned {meta.count} total records of type {meta.class}.<br/>
+            Showing {pagination.pageSize} records on page {pagination.pageNum}.
+          </strong>
+        </div>
+        <table style={{"border-collapse":"collapse"}}>
+          <tr>
+            {meta.attributes.map(function(attrib) {
+              return ( <th style={headerStyle}>{attrib.displayName}</th> ); })}
+          </tr>
+          {records.map(function(record) { return (
+            <tr>
+              {meta.attributes.map(function(attrib) { return (
+                <td style={cellStyle}>
+                  <HtmlDiv style={cellDivStyle} contents={record.attributes[attrib.name]}/>
+                </td>
+              );})}
+            </tr>
+          );})}
+        </table>
+      </div>
+    );
   }
 });
 
