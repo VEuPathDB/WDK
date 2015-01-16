@@ -18,7 +18,8 @@ var Store = function(dispatcher, initialValue) {
     paramOrdering: [],
     paramValues: {},
     results: null,
-    pagination: { pageNum: 1, pageSize: 10 }
+    pagination: { pageNum: 1, pageSize: 10 },
+    isLoading: false
   };
   var _registeredCallbacks = [];
 
@@ -61,10 +62,14 @@ var Store = function(dispatcher, initialValue) {
       case ActionType.CHANGE_PAGING_ACTION:
         // data is { pageNum: Number, pageSize: Number }
         _data.pagination = payload.data;
+        break;
       case ActionType.CHANGE_RESULTS_ACTION:
         // data is { results: Any }
         _data.results = payload.data.results;
         break;
+      case ActionType.SET_LOADING_ACTION:
+        // data is Boolean
+        _data.isLoading = payload.data;
       default:
         // this store does not support other actions
     }
