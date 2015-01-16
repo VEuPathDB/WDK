@@ -113,12 +113,17 @@ var DataTable = React.createClass({
           <tbody>
             {records.map(record => {
               // TODO Handle display records inline, which might just be a dump of attrs and tables
+
+              var attributes = _.reduce(record.attributes, (acc, attribute) => {
+                return acc[attribute.name] = attribute.value, acc;
+              }, {});
+
               return (
                 <tr key={record.id}>
                   {_.map(meta.attributes, attribute => {
-                    var value = record.attributes[attribute.name];
+                    var value = attributes[attribute.name];
                     return (
-                      <td>{formatAttribute(attribute, value)}</td>
+                      <td dangerouslySetInnerHTML={{__html: formatAttribute(attribute, value)}}/>
                       );
                   })}
                 </tr>
@@ -137,8 +142,11 @@ function formatAttribute(attribute, value) {
   switch(attribute.type) {
     case 'text': return value
     case 'link': return <a href={value.url}>{value.display}</a>
-    default: throw new TypeError(`Unkonwn type "${attribute.type}"` +
-                                 ` for attribute ${attribute.name}`);
+
+    // FIXME Throw on unknown types
+    default: return value;
+    // default: throw new TypeError(`Unkonwn type "${attribute.type}"` +
+    //                              ` for attribute ${attribute.name}`);
   }
 }
 
