@@ -96,7 +96,7 @@ var QuestionForm = React.createClass({
       alert("You can only type positive integers in this field");
     }
     else {
-      this.props.ac.setPagination({ pageNum: newPageNum, pageSize: newPageSize });
+      this.props.ac.setPagination({ pageNum: parseInt(newPageNum), pageSize: parseInt(newPageSize) });
     }
   },
   changePageNum: function(event) {
