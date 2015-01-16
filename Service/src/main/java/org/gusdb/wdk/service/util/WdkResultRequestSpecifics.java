@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.Column;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class WdkResultRequestSpecifics {
@@ -49,20 +50,29 @@ public class WdkResultRequestSpecifics {
     "sorting": null
   }
   */
-  public static WdkResultRequestSpecifics createFromJson(JSONObject specJson, WdkModelBean wdkModelBean) {
-    return new WdkResultRequestSpecifics();
+  public static WdkResultRequestSpecifics createFromJson(
+      JSONObject specJson, WdkModelBean wdkModelBean) throws JSONException {
+    WdkResultRequestSpecifics specs = new WdkResultRequestSpecifics();
+    JSONObject paging = specJson.getJSONObject("pagination");
+    specs._offset = paging.getInt("offset");
+    specs._numRecords = paging.getInt("numRecords");
+    return specs;
   }
 
+  private int _offset;
+  private int _numRecords;
+
+  // TODO: support sorting
   public List<SortItem> getSorting() {
     return Collections.<SortItem>emptyList();
   }
 
   public int getOffset() {
-    return 0;
+    return _offset;
   }
 
   public int getNumRecords() {
-    return 10;
+    return _numRecords;
   }
 
 }
