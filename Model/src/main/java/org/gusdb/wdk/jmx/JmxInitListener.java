@@ -2,6 +2,7 @@ package org.gusdb.wdk.jmx;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -19,22 +20,28 @@ import org.apache.log4j.Logger;
  */
 public final class JmxInitListener implements ServletContextListener {
 
-  @SuppressWarnings("unused")
-  private static final Logger logger = Logger.getLogger(JmxInitListener.class);
-  MBeanRegistration registration;
-  
+  private static final Logger LOG = Logger.getLogger(JmxInitListener.class);
+
+  private MBeanRegistration _registration;
+
   @Override
   public void contextInitialized(ServletContextEvent sce) {
     ContextThreadLocal.set(sce.getServletContext());
-    registration = new MBeanRegistration();
-    registration.init();
-    ContextThreadLocal.unset();
-
+    try {
+      _registration = new MBeanRegistration();
+      _registration.init();
+    }
+    catch (Exception e) {
+      LOG.error("Unable to complete WDK MBean registration", e);
+    }
+    finally {
+      ContextThreadLocal.unset();
+    }
   }
 
   @Override
   public void contextDestroyed(ServletContextEvent sce) {
-    registration.destroy();
+    _registration.destroy();
   }
 
 }

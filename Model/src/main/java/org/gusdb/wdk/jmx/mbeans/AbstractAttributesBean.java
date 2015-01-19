@@ -17,23 +17,18 @@ import javax.management.MBeanOperationInfo;
 import javax.management.ReflectionException;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.jmx.BeanBase;
 
 /**
- * Abstract class for a dynamic MBean that represents configuration
- * data as stored in instantiated WDK class objects. AbstractConfig does not
- * read from configuration files. The WDK representation may differ from
- * settings in the original configuration file. In particular, values may
- * be added or removed.
+ * Abstract class for a dynamic MBean that represents data as stored in
+ * instantiated WDK class objects. AbstractConfig does not read from
+ * configuration files, but from Java class accessors.
  */
-public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
+public abstract class AbstractAttributesBean extends BeanBase implements DynamicMBean {
 
-  private HashMap<String, String> props;
-  private static final Logger logger = Logger.getLogger(AbstractConfig.class);
+  private static final Logger LOG = Logger.getLogger(AbstractAttributesBean.class);
 
-  public AbstractConfig() {
-    super();
-    props = new HashMap<String, String>();
-  }
+  private HashMap<String, String> _props = new HashMap<String, String>();
 
   /**
    * Initialize a HashMap by acquiring a configuration object
@@ -48,7 +43,7 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
   public AttributeList getAttributes(String[] names) {
     AttributeList list = new AttributeList();
     for (String name : names) {
-      String value = props.get(name);
+      String value = _props.get(name);
       if (value != null)
         list.add(new Attribute(name, value));
     }
@@ -60,7 +55,7 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
    */
   @Override
   public String getAttribute(String name) throws AttributeNotFoundException {
-    String value = props.get(name);
+    String value = _props.get(name);
     if (value != null)
       return value;
     else
@@ -78,8 +73,8 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
       Attribute attr = (Attribute)itr.next();
       String name = attr.getName();
       Object value = attr.getValue();
-      if (props.get(name) != null && value instanceof String) {
-          props.put(name, (String) value);
+      if (_props.get(name) != null && value instanceof String) {
+          _props.put(name, (String) value);
           retlist.add(new Attribute(name, value));
       }
     }
@@ -94,14 +89,14 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
             throws InvalidAttributeValueException, MBeanException, 
                    AttributeNotFoundException {
     String name = attribute.getName();
-    if (props.get(name) == null)
+    if (_props.get(name) == null)
         throw new AttributeNotFoundException(name);
     Object value = attribute.getValue();
     if (!(value instanceof String)) {
         throw new InvalidAttributeValueException(
                 "Attribute value not a string: " + value);
     }
-    props.put(name, (String) value);
+    _props.put(name, (String) value);
   }
 
   /**
@@ -110,7 +105,7 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
   @Override
   public MBeanInfo getMBeanInfo() {
     ArrayList<String> names = new ArrayList<String>();
-    for (Object name : props.keySet()) {
+    for (Object name : _props.keySet()) {
       names.add((String) name);
     }
     MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[names.size()];
@@ -218,14 +213,14 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
                   key.toLowerCase().contains("passwd") )
                   && value instanceof String
                ) { value = "*****"; }
-            logger.debug("config key '" + key + 
+            LOG.debug("config key '" + key + 
                          "', config value '" + value + "'");
             String prefix = (section != null) ? "[" + section + "] " : "";
-            props.put(prefix + key, value.toString());
+            _props.put(prefix + key, value.toString());
           }
         }
     } catch (Exception e) {
-      logger.fatal(e);
+      LOG.fatal(e);
     }
   }
   

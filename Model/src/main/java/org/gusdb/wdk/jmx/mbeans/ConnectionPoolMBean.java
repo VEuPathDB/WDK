@@ -1,6 +1,6 @@
 package org.gusdb.wdk.jmx.mbeans;
 
-public interface AbstractConnectionPoolMBean  {
+public interface ConnectionPoolMBean  {
 
   public String getPoolOwnerClassname();
 

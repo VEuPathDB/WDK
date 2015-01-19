@@ -12,16 +12,15 @@ package org.gusdb.wdk.jmx.mbeans;
  * @see org.gusdb.wdk.model.config.ModelConfigUserDB
  * @see org.gusdb.wdk.model.config.ModelConfigAppDB
  */
-public class ModelConfig extends AbstractConfig {
+public class ModelConfig extends AbstractAttributesBean {
 
   public ModelConfig() {
-    super();
     init();
   }
 
   @Override
   protected void init() {
-    org.gusdb.wdk.model.config.ModelConfig       modelConfig       = wdkModel.getModelConfig();
+    org.gusdb.wdk.model.config.ModelConfig       modelConfig       = getWdkModel().getModelConfig();
     org.gusdb.wdk.model.config.QueryMonitor      queryMonitor      = modelConfig.getQueryMonitor();
     org.gusdb.wdk.model.config.ModelConfigUserDB modelConfigUserDB = modelConfig.getUserDB();
     org.gusdb.wdk.model.config.ModelConfigAppDB  modelConfigAppDB  = modelConfig.getAppDB();
