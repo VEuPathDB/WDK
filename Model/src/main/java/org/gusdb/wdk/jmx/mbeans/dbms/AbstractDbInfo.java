@@ -15,21 +15,18 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 
-/**
-  * Abstract class for collecting information about databases used by
-  * the WDK. Subclasses define the database-specific SQL for querying
-  * metadata. The DataSource for querying is provided by the instantiated
-  * WDK model.
-  */
-public abstract class AbstractDBInfo {
+public abstract class AbstractDbInfo implements DbInfo {
 
-  protected HashMap<String, String> databaseAttributes;
-  private static final Logger logger = Logger.getLogger(AbstractDBInfo.class);
-  DataSource datasource;
-  DatabaseInstance database;
+  private static final Logger logger = Logger.getLogger(AbstractDbInfo.class);
 
-  public AbstractDBInfo() {
-    databaseAttributes = new HashMap<String, String>();
+  private final DatabaseInstance _database;
+  private final DataSource _dataSource;
+  private final HashMap<String, String> _databaseAttributes;
+
+  public AbstractDbInfo(DatabaseInstance db) {
+    _database = db;
+    _dataSource = db.getDataSource();
+    _databaseAttributes = new HashMap<String, String>();
   }
 
   /**
@@ -41,7 +38,7 @@ public abstract class AbstractDBInfo {
    */
   protected abstract String getMetaDataSql();
   /**
-   * Returns SQL to retreive the database host IP and/or host name.
+   * Returns SQL to retrieve the database host IP and/or host name.
    * This should probably be deprecated in favor of inclusion in getMetaDataSql().
    */
   protected abstract String getServerNameSql();
@@ -56,22 +53,11 @@ public abstract class AbstractDBInfo {
    */
   protected abstract String getDbLinkValidationSql(String dblink);
 
-  protected void setDatabaseAttributes(HashMap<String, String> databaseAttributes) {
-    this.databaseAttributes = databaseAttributes;
-  }
-
   public HashMap<String, String> getDatabaseAttributes() {
-    return databaseAttributes;
+    return _databaseAttributes;
   }
 
-  public void setDatasource(DataSource datasource) {
-    this.datasource = datasource;
-  }
-  
-  public void setDatabase(  DatabaseInstance database) {
-    this.database = database;
-  }
-  
+  @Override
   public void populateDatabaseMetaDataMap(HashMap<String, String> metaDataMap) {
     String sql = getMetaDataSql();
     if (sql == null) return;
@@ -80,9 +66,9 @@ public abstract class AbstractDBInfo {
     PreparedStatement ps = null;
     logger.debug("querying database for misc. information");    
     try {
-      ps = SqlUtils.getPreparedStatement(datasource, sql);
+      ps = SqlUtils.getPreparedStatement(_dataSource, sql);
       rs = ps.executeQuery();
-     if (rs.next()) {
+      if (rs.next()) {
         ResultSetMetaData rsmd = rs.getMetaData();
         int numColumns = rsmd.getColumnCount();
         for (int i=1; i<numColumns+1; i++) {
@@ -90,33 +76,36 @@ public abstract class AbstractDBInfo {
           metaDataMap.put(columnName, rs.getString(columnName) );
         }
       }
-    } catch (SQLException sqle) {
+    }
+    catch (SQLException sqle) {
       logger.error(sqle);
-    } finally {
-        SqlUtils.closeResultSetAndStatement(rs);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(rs);
     }
   }
 
+  @Override
   public void populateConnectionPoolDataMap(HashMap<String, String> poolMap) {
-      
-      poolMap.put("pool", Integer.toString(database.getIdleCount()));
+    poolMap.put("pool", Integer.toString(_database.getIdleCount()));
   }
 
+  @Override
   public void populateServernameDataMap(HashMap<String, String> servernameDataMap) {
-   String sql = getServerNameSql();
+    String sql = getServerNameSql();
     if (sql == null) return;
-    
+
     Connection connection = null;
     ResultSet rs = null;
     PreparedStatement ps = null;
     logger.debug("querying database for servername information");    
 
     try {
-      connection = datasource.getConnection();
+      connection = _dataSource.getConnection();
       String dbVendor = connection.getMetaData().getDatabaseProductName();
-      ps = SqlUtils.getPreparedStatement(datasource, sql);
+      ps = SqlUtils.getPreparedStatement(_dataSource, sql);
       rs = ps.executeQuery();
-     if (rs.next()) {
+      if (rs.next()) {
         ResultSetMetaData rsmd = rs.getMetaData();
         int numColumns = rsmd.getColumnCount();
         for (int i=1; i<numColumns+1; i++) {
@@ -128,22 +117,26 @@ public abstract class AbstractDBInfo {
         // if no SQLException was caught then an ACL for UTL_INADDR must be in place.
         servernameDataMap.put("is_allowed_utl_inaddr", "true");
       }
-    } catch (SQLException e) {
-        if ( e.getMessage().startsWith("ORA-24247") ) {
-          // oracle user needs an ACL for UTL_INADDR
-          servernameDataMap.put("is_allowed_utl_inaddr", "false");
-        }
-        logger.error("Failed attempting\n" + sql + "\n" + e);
-    } finally {
-        SqlUtils.closeResultSetAndStatement(rs);
-        try {
-            if (connection != null) connection.close();
-        } catch(SQLException ex) {
-            logger.error(ex);
-        }
-    }  
+    }
+    catch (SQLException e) {
+      if ( e.getMessage().startsWith("ORA-24247") ) {
+        // oracle user needs an ACL for UTL_INADDR
+        servernameDataMap.put("is_allowed_utl_inaddr", "false");
+      }
+      logger.error("Failed attempting\n" + sql + "\n" + e);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(rs);
+      try {
+        if (connection != null) connection.close();
+      }
+      catch(SQLException ex) {
+        logger.error(ex);
+      }
+    }
   }
 
+  @Override
   public void populateDblinkList(ArrayList<Map<String, String>> dblinkList) {
     String sql = getDblinkSql();
     if (sql == null) return;
@@ -152,9 +145,9 @@ public abstract class AbstractDBInfo {
     PreparedStatement ps = null;
 
     try {
-      ps = SqlUtils.getPreparedStatement(datasource, sql);
+      ps = SqlUtils.getPreparedStatement(_dataSource, sql);
       rs = ps.executeQuery();
-     while (rs.next()) {
+      while (rs.next()) {
         HashMap<String, String> map = new HashMap<String, String>();
         ResultSetMetaData rsmd = rs.getMetaData();
         int numColumns = rsmd.getColumnCount();
@@ -164,19 +157,22 @@ public abstract class AbstractDBInfo {
         }
         dblinkList.add(map);
       }
-    } catch (SQLException sqle) {
+    }
+    catch (SQLException sqle) {
       logger.error(sqle);
-    } catch (Exception e) {
-        logger.error("NPE ", e);
-    } finally {
-        SqlUtils.closeResultSetAndStatement(rs);
+    }
+    catch (Exception e) {
+      logger.error("NPE ", e);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(rs);
     }
 
     updateDblinkListWithValidity(dblinkList);
   }
-  
+
   public void updateDblinkListWithValidity(ArrayList<Map<String, String>> dblinkList) {
-    
+
     for (Map<String,String> map : dblinkList) {
       String sql = getDbLinkValidationSql(map.get("db_link"));
       if (sql == null) return;
@@ -186,22 +182,22 @@ public abstract class AbstractDBInfo {
       String columnName = "isValid";
 
       try {
-        ps = SqlUtils.getPreparedStatement(datasource, sql);
+        ps = SqlUtils.getPreparedStatement(_dataSource, sql);
         rs = ps.executeQuery();
-        
+
         while (rs.next()) {
           map.put(columnName, "1" );
         }
-      } catch (SQLException sqle) {
-          //logger.info("FAILED " + sqle + " " + sql);
-          map.put(columnName, "0" );
-      } catch (Exception e) {
-          logger.error("NPE ", e);
-      } finally {
-          SqlUtils.closeResultSetAndStatement(rs);
       }
-        
+      catch (SQLException sqle) {
+        map.put(columnName, "0" );
+      }
+      catch (Exception e) {
+        logger.error(e);
+      }
+      finally {
+        SqlUtils.closeResultSetAndStatement(rs);
+      }
     }
   }
-
 }

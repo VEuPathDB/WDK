@@ -15,24 +15,20 @@ import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.ReflectionException;
-import javax.sql.DataSource;
 
 import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.jmx.mbeans.dbms.AbstractDBInfo;
-import org.gusdb.wdk.jmx.mbeans.dbms.DBInfoFactory;
-import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.jmx.BeanBase;
+import org.gusdb.wdk.jmx.mbeans.dbms.DbInfo;
+import org.gusdb.wdk.jmx.mbeans.dbms.DbInfoFactory;
 
-public abstract class AbstractDB extends BeanBase implements DynamicMBean {
+public class DbEnvironment extends BeanBase implements DynamicMBean {
 
-  private HashMap<String, String> dbAttrs;
-
-  HashMap<String, String> metaDataMap;
-  HashMap<String, String> servernameDataMap;
-  ArrayList<Map<String, String>> dblinkList;
-  DatabaseInstance database;
-  DataSource datasource;
   private static final String DBLINKLISTKEY = "DblinkList";
+
+  private DatabaseInstance _database;
+  private HashMap<String, String> _dbAttrs;
+  private ArrayList<Map<String, String>> _dblinkList;
 
   /**
     ServletContext sc
@@ -41,33 +37,28 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
     DBInfo class is used to generate mbean attributes. For example, when WDK DBPlatform of class
     org.gusdb.wdk.model.dbms.Oracle is found a OracleDBinfo is needed to provide mbean attributes.
   */
-  public AbstractDB() {
-    super();
-    database = getDb(wdkModel);
-    datasource = database.getDataSource();
+  public DbEnvironment(DatabaseInstance database) {
+    _database = database;
+    //_dataSource = database.getDataSource();
     init();
   }
 
-  protected abstract DatabaseInstance getDb(WdkModel model);
-  
   private void init() {
-    dbAttrs = new HashMap<String, String>();
-    dblinkList = new ArrayList<Map<String, String>>();
-    SupportedPlatform platform = database.getConfig().getPlatformEnum();
-    dbAttrs.put("platform", platform.name());
+    _dbAttrs = new HashMap<String, String>();
+    _dblinkList = new ArrayList<Map<String, String>>();
+    SupportedPlatform platform = _database.getConfig().getPlatformEnum();
+    _dbAttrs.put("platform", platform.name());
     
     try {
-      AbstractDBInfo dbinfo = DBInfoFactory.getDbInfo(platform);
-      dbinfo.setDatasource(datasource);
-      dbinfo.setDatabase(database);
-      dbinfo.populateDatabaseMetaDataMap(dbAttrs);
-      dbinfo.populateServernameDataMap(dbAttrs);
-      dbinfo.populateConnectionPoolDataMap(dbAttrs);
-      dbinfo.populateDblinkList(dblinkList);
+      DbInfo dbinfo = DbInfoFactory.getDbInfo(_database);
+      dbinfo.populateDatabaseMetaDataMap(_dbAttrs);
+      dbinfo.populateServernameDataMap(_dbAttrs);
+      dbinfo.populateConnectionPoolDataMap(_dbAttrs);
+      dbinfo.populateDblinkList(_dblinkList);
     }
     catch (IllegalArgumentException e) {
       // No DBInfo implementation created yet for this vendor
-      dbAttrs.put("WARN", "no MBean support for this database platform");
+      _dbAttrs.put("WARN", "no MBean support for this database platform");
     }
 
   }
@@ -77,9 +68,9 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
       AttributeList list = new AttributeList();
       for (String name : names) {
          if (name.equals(DBLINKLISTKEY)) {
-           list.add(new Attribute(name, dblinkList));
+           list.add(new Attribute(name, _dblinkList));
          } else {
-           Object value = dbAttrs.get(name);
+           Object value = _dbAttrs.get(name);
            if (value != null)
               list.add(new Attribute(name, value));
         }
@@ -91,22 +82,22 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
   public void setAttribute(Attribute attribute) 
   throws InvalidAttributeValueException, MBeanException, AttributeNotFoundException {
     String name = attribute.getName();
-    if (dbAttrs.get(name) == null)
+    if (_dbAttrs.get(name) == null)
         throw new AttributeNotFoundException(name);
     Object value = attribute.getValue();
     if (!(value instanceof String)) {
         throw new InvalidAttributeValueException(
                 "Attribute value not a string: " + value);
     }
-    dbAttrs.put(name, (String) value);
+    _dbAttrs.put(name, (String) value);
   }
 
   @Override
   public Object getAttribute(String name) throws AttributeNotFoundException {
     if (name.equals(DBLINKLISTKEY)) {
-        return dblinkList;
+        return _dblinkList;
     }
-    Object value = dbAttrs.get(name);
+    Object value = _dbAttrs.get(name);
     if (value != null)
       return value;
     else
@@ -121,8 +112,8 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
       Attribute attr = (Attribute)itr.next();
       String name = attr.getName();
       Object value = attr.getValue();
-      if (dbAttrs.get(name) != null && value instanceof String) {
-          dbAttrs.put(name, (String) value);
+      if (_dbAttrs.get(name) != null && value instanceof String) {
+          _dbAttrs.put(name, (String) value);
           retlist.add(new Attribute(name, value));
       }
     }
@@ -133,7 +124,7 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
   public MBeanInfo getMBeanInfo() {
     ArrayList<String> names = new ArrayList<String>();
 
-    for (Object name : dbAttrs.keySet()) {
+    for (Object name : _dbAttrs.keySet()) {
       names.add((String) name);
     }
     names.add(DBLINKLISTKEY);
@@ -187,6 +178,6 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
 
   public void refresh() { init(); }
 
-  public ArrayList<Map<String,String>> getDblinkList() { return dblinkList; }
+  public ArrayList<Map<String,String>> getDblinkList() { return _dblinkList; }
 
 }

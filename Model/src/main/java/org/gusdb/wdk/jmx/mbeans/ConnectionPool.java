@@ -1,8 +1,8 @@
 package org.gusdb.wdk.jmx.mbeans;
 
-import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.WdkModel;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.wdk.jmx.BeanBase;
 
 /**
  * MBean for database connection pool statistics, including
@@ -10,17 +10,15 @@ import org.apache.log4j.Logger;
  * counts of connections the application borrows and returns to the pool.
  *
  */
-public abstract class AbstractConnectionPool extends BeanBase {
+public class ConnectionPool extends BeanBase implements ConnectionPoolMBean {
 
-  DatabaseInstance database;
   private static final Logger LOG = Logger.getLogger(OpenConnections.class);
 
-  public AbstractConnectionPool() {
-    super();  
-    this.database = getDb(wdkModel);
+  private DatabaseInstance _database;
+  
+  public ConnectionPool(DatabaseInstance database) {
+    this._database = database;
   }
-
-  protected abstract DatabaseInstance getDb(WdkModel model);
 
   /**
    * Return the name of the class that is initiating and managing
@@ -28,8 +26,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    * the source of the data, distinct from any other connection pools
    * that may exist elsewhere in the application.
    */
+  @Override
   public String getPoolOwnerClassname() {
-    return database.getClass().getName();
+    return _database.getClass().getName();
   }
   
 
@@ -38,8 +37,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getActiveCount()
    */
+  @Override
   public int getNumActive() {
-    return database.getActiveCount();
+    return _database.getActiveCount();
   }
 
   /**
@@ -47,8 +47,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getIdleCount()
    */
+  @Override
   public int getNumIdle() {
-    return database.getIdleCount();
+    return _database.getIdleCount();
   }
 
   /**
@@ -58,8 +59,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getMinIdle()
    */
+  @Override
   public int getMinIdle() {
-    return database.getMinIdle();
+    return _database.getMinIdle();
   }
 
   /**
@@ -68,8 +70,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getMaxIdle()
    */
+  @Override
   public int getMaxIdle() {
-    return database.getMaxIdle();
+    return _database.getMaxIdle();
   }
 
   /**
@@ -79,8 +82,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getMinEvictableIdleTimeMillis()
    */
+  @Override
   public long getMinEvictableIdleTimeMillis() {
-    return database.getMinEvictableIdleTimeMillis();
+    return _database.getMinEvictableIdleTimeMillis();
   }
 
   /**
@@ -89,8 +93,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getTimeBetweenEvictionRunsMillis()
    */
+  @Override
   public long getTimeBetweenEvictionRunsMillis() {
-    return database.getTimeBetweenEvictionRunsMillis();
+    return _database.getTimeBetweenEvictionRunsMillis();
   }
 
 
@@ -100,8 +105,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getTestOnBorrow()
    */
-	public boolean getTestOnBorrow() {
-    return database.getTestOnBorrow();
+	@Override
+  public boolean getTestOnBorrow() {
+    return _database.getTestOnBorrow();
 	}
 	
   /**
@@ -110,8 +116,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getTestOnReturn()
    */
+  @Override
   public boolean getTestOnReturn() {
-    return database.getTestOnReturn();
+    return _database.getTestOnReturn();
   }
 
   /**
@@ -120,8 +127,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getTestWhileIdle()
    */
+  @Override
   public boolean getTestWhileIdle() {
-    return database.getTestWhileIdle();
+    return _database.getTestWhileIdle();
   }
 
   /**
@@ -130,8 +138,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getNumConnectionsOpened
    */
+  @Override
   public int getBorrowedCount() {
-    return database.getNumConnectionsOpened();
+    return _database.getNumConnectionsOpened();
   }
   
   /**
@@ -140,8 +149,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getNumConnectionsClosed
    */
+  @Override
   public int getReturnedCount() {
-    return database.getNumConnectionsClosed();
+    return _database.getNumConnectionsClosed();
   }
 
   /**
@@ -150,22 +160,25 @@ public abstract class AbstractConnectionPool extends BeanBase {
    *
    * @see org.gusdb.fgputil.db.pool.DatabaseInstance#getNumConnectionsClosed
    */
+  @Override
   public int getCurrentlyOpenCount() {
-    return database.getConnectionsCurrentlyOpen();
+    return _database.getConnectionsCurrentlyOpen();
   }
 
   /**
    * report summary information in string format with stacktraces, if any
    */
-   public String getUnclosedConnectionInfo() {
-    return database.getUnclosedConnectionInfo();
+   @Override
+  public String getUnclosedConnectionInfo() {
+    return _database.getUnclosedConnectionInfo();
   }
 
   /**
    * record information to log file
    */
+  @Override
   public void dumpOpenDBConnections() {
-     LOG.info(database.getUnclosedConnectionInfo());
+     LOG.info(_database.getUnclosedConnectionInfo());
   }
 
   /**
@@ -174,8 +187,9 @@ public abstract class AbstractConnectionPool extends BeanBase {
    * viewer (e.g. jconsole) displays the data in a more 
    * human-readable format than the attribute field.
    */
+  @Override
   public String showOpenDBConnections() {
-    return database.getUnclosedConnectionInfo();
+    return _database.getUnclosedConnectionInfo();
   }
 
 }
