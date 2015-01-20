@@ -1,6 +1,6 @@
 import React from 'react';
 import Router from 'react-router';
-import { routes } from './flux/router';
+import { appRoutes } from './flux/router';
 import { config as configService } from './flux/ServiceAPI';
 
 var wdk = window.wdk = {
@@ -12,7 +12,7 @@ var wdk = window.wdk = {
     if (spec) {
       this.config(spec);
     }
-    Router.run(routes, Handler => React.render(<Handler/>, document.body));
+    Router.run(appRoutes, Handler => React.render(<Handler/>, document.body));
   }
 };
 
