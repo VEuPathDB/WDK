@@ -83,6 +83,7 @@ var DataTable = React.createClass({
 
     return (
       <div className="wdk-DataTable-Wrapper">
+        <p>Showing {records.length} of {meta.count} {meta['class']} records</p>
         <table>
           <thead>
             <tr ref="headerRow">
@@ -123,7 +124,8 @@ var DataTable = React.createClass({
                   {_.map(meta.attributes, attribute => {
                     var value = attributes[attribute.name];
                     return (
-                      <td dangerouslySetInnerHTML={{__html: formatAttribute(attribute, value)}}/>
+                      <td key={attribute.name}
+                        dangerouslySetInnerHTML={{__html: formatAttribute(attribute, value)}}/>
                       );
                   })}
                 </tr>

@@ -6,6 +6,12 @@ export default {
     'LOAD_ERROR'
   ),
 
+  QuestionList: mirrorProps(
+    'LOADING',
+    'LOAD_SUCCESS',
+    'LOAD_ERROR'
+  ),
+
   Project: mirrorProps(
     'LOADING',
     'LOAD_SUCCESS',

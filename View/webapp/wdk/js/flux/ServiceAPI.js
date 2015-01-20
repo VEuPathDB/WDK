@@ -6,8 +6,11 @@
  * Functions to interface with the WDK REST API.
  */
 
-// FIXME Determine base URL
-var serviceBaseUrl = wdk.webappUrl('/service');
+var serviceUrl;
+
+export function config(spec) {
+  serviceUrl = spec.serviceUrl;
+}
 
 /**
  * The order of the args allows us to create functions like
@@ -15,11 +18,11 @@ var serviceBaseUrl = wdk.webappUrl('/service');
  *     var getRecords = _.partial(request, 'GET', '/records');
  *
  */
-export function requestResource(type, url, data) {
+export function requestResource(type, resourcePath, data) {
   return new Promise(function(resolve, reject) {
     $.ajax({
       type,
-      url: serviceBaseUrl + url,
+      url: serviceUrl + resourcePath,
       contentType: 'application/json',
       dataType: 'json',
       data: type === 'GET' ? data : JSON.stringify(data)

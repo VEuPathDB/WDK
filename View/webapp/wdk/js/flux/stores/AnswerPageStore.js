@@ -25,6 +25,7 @@ export default new Store({
       case ActionType.Answer.LOAD_ERROR:
         isLoading = false;
         error = action.error;
+        emitChange();
         break;
 
     }

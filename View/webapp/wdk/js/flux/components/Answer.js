@@ -16,20 +16,11 @@ var Answer = React.createClass({
 
   render() {
     var content;
-    var { questionName, answer, isLoading } = this.props;
+    var { answer, questionName, error, isLoading } = this.props;
 
-    if (isLoading) {
-      content = <div>Loading...</div>
-    } else {
-      content = <DataTable {...this.props.answer}/>
-    }
-
-    return (
-      <div>
-        <h1>{questionName}</h1>
-        {content}
-      </div>
-    );
+    if (isLoading) return <div>Loading...</div>;
+    else if (error) return <div>There was an error: {error}</div>;
+    else return <DataTable {...answer}/>;
   }
 
 });
