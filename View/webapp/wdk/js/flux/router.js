@@ -1,25 +1,29 @@
 import React from 'react';
 import Router from 'react-router';
+import App from './App';
 import IndexPage from './pages/IndexPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AnswerPage from './pages/AnswerPage';
+import QuestionListPage from './pages/QuestionListPage';
+import TestPage from './pages/TestPage';
 
 var { Route, RouteHandler, DefaultRoute, NotFoundRoute } = Router;
+
+export default Router.create({ routes });
 
 /**
  * Example of a "wholistic" routes definition. App defines the basic page
  * layout.
- *
- * var routes = (
- *   <Route name="app" path="/" handler={App}>
- *     <Route name="answer" path="answer/:questionName" handler={AnswerPage}/>
- *     <Route name="user" handler={User}/>
- *     <Route name="project" handler={Project}/>
- *     <DefaultRoute handler={IndexPage}/>
- *     <NotFoundRoute handler={NotFoundPage}/>
- *   </Route>
- * );
  */
+ export var routes = (
+   <Route name="app" path="/" handler={App}>
+     <Route name="answer" path="answer/:questionName" handler={AnswerPage}/>
+     <Route name="question-list" handler={QuestionListPage}/>
+     <DefaultRoute handler={IndexPage}/>
+     <NotFoundRoute handler={NotFoundPage}/>
+   </Route>
+ );
+ 
 
 /**
  * This is a transitional routes definition. Notice that there is not top-level
@@ -32,10 +36,8 @@ var { Route, RouteHandler, DefaultRoute, NotFoundRoute } = Router;
  *     });
  *
  */
-export var routes = [
+export var transitionalRoutes = [
   <Route name="answer" path="answer/:questionName" handler={AnswerPage}/>,
   <DefaultRoute handler={IndexPage}/>,
   <NotFoundRoute handler={NotFoundPage}/>,
 ];
-
-export default Router.create({ routes });
