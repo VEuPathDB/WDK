@@ -353,13 +353,13 @@ public class UserFactory {
   }
 
   // FIXME: should probably be renamed getUserBySignature
-  public User getUser(String signature) throws WdkModelException {
+  public User getUser(String signature) throws WdkModelException, WdkUserException {
     User user = getUserByFields(new String[] { "signature", signature },
         "wdk-user-get-id-by-signature");
     if (user == null) {
       // signature is rarely sent in by user; if User cannot be found, it's
       // probably an error
-      throw new WdkModelException("Unable to find user with signature: "
+      throw new WdkUserException("Unable to find user with signature: "
           + signature);
     }
     return user;

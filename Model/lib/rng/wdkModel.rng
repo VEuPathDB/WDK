@@ -847,7 +847,12 @@
           <data type="boolean" />
         </attribute>
       </optional>
-      <oneOrMore>
+      <optional>
+        <attribute name="useDBLink">
+          <data type="boolean" />
+        </attribute>
+      </optional>
+     <oneOrMore>
         <choice>
           <ref name="sqlColumns" />
 
@@ -1157,6 +1162,16 @@
                 <ref name="textAttribute" />
               </choice>
             </zeroOrMore>
+          </element>
+          
+          <element name="suggestion">
+            <ref name="IncludeExclude" />
+            <optional>
+               <attribute name="newBuild" />
+            </optional>
+            <optional>                  
+               <attribute name="reviseBuild" />
+            </optional>
           </element>
 
           <ref name="paramRef" />

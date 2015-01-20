@@ -72,7 +72,7 @@ wdk.namespace('wdk.views.filter', function(ns, $) {
       var term = field.get('term');
       var link = this.$('a[href="#' + term + '"]');
       this.$('li').removeClass('active');
-      $(link).parent().addClass('active');
+      $(link).closest('li').addClass('active');
       $(link).parentsUntil(this.$el.find('>ul')).find('>h4').removeClass('collapsed');
     }
 

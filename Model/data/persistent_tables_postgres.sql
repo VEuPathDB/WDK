@@ -1,41 +1,42 @@
-/*
-DROP SEQUENCE IF EXISTS wdkuser.categories_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.datasets_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.dataset_values_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.migration_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.favorites_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.user_baskets_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.steps_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.strategies_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.users_pkseq;
-DROP SEQUENCE IF EXISTS wdkuser.step_analysis_pkseq;
 
-DROP TABLE IF EXISTS wdkuser.categories;
-DROP TABLE IF EXISTS wdkuser.favorites;
-DROP TABLE IF EXISTS wdkuser.user_baskets;
-DROP TABLE IF EXISTS wdkuser.strategies;
-DROP TABLE IF EXISTS wdkuser.step_analysis;
-DROP TABLE IF EXISTS wdkuser.steps;
-DROP TABLE IF EXISTS wdkuser.dataset_values;
-DROP TABLE IF EXISTS wdkuser.datasets;
-DROP TABLE IF EXISTS wdkuser.preferences;
-DROP TABLE IF EXISTS wdkuser.user_roles;
-DROP TABLE IF EXISTS wdkuser.users;
-DROP TABLE IF EXISTS wdkuser.config;
-*/
+--DROP SEQUENCE IF EXISTS wdkuser.categories_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.datasets_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.dataset_values_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.migration_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.favorites_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.user_baskets_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.steps_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.strategies_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.users_pkseq;
+--DROP SEQUENCE IF EXISTS wdkuser.step_analysis_pkseq;
+
+--DROP TABLE IF EXISTS wdkuser.categories;
+--DROP TABLE IF EXISTS wdkuser.favorites;
+--DROP TABLE IF EXISTS wdkuser.user_baskets;
+--DROP TABLE IF EXISTS wdkuser.strategies;
+--DROP TABLE IF EXISTS wdkuser.step_analysis;
+--DROP TABLE IF EXISTS wdkuser.steps;
+--DROP TABLE IF EXISTS wdkuser.dataset_values;
+--DROP TABLE IF EXISTS wdkuser.datasets;
+--DROP TABLE IF EXISTS wdkuser.preferences;
+--DROP TABLE IF EXISTS wdkuser.user_roles;
+--DROP TABLE IF EXISTS wdkuser.users;
+--DROP TABLE IF EXISTS wdkuser.config;
 
 
-/* =========================================================================
-   create schema ("schemata"?)
-   ========================================================================= */
+
+-- =========================================================================
+-- create schema ("schemata"?)
+-- =========================================================================
 
 -- CREATE SCHEMA IF NOT EXISTS wdkuser;
 CREATE SCHEMA wdkuser;
 
 
-/* =========================================================================
-   create sequences
-   ========================================================================= */
+-- =========================================================================
+-- create sequences
+-- =========================================================================
+
 CREATE SEQUENCE wdkuser.users_pkseq INCREMENT BY 1 START WITH 1;
 
 
@@ -66,9 +67,9 @@ CREATE SEQUENCE wdkuser.categories_pkseq INCREMENT BY 1 START WITH 1;
 CREATE SEQUENCE wdkuser.step_analysis_pkseq INCREMENT BY 1 START WITH 1;
 
 
-/* =========================================================================
-   tables in user schema
-   ========================================================================= */
+-- =========================================================================
+-- tables in user schema
+-- ========================================================================= */
 
 CREATE TABLE wdkuser.config
 (
@@ -110,8 +111,8 @@ CREATE TABLE wdkuser.users
 );
 
 
-CREATE INDEX wdkuser.users_idx01 ON wdkuser.users (is_guest);
-CREATE INDEX wdkuser.users_idx02 ON wdkuser.users (prev_user_id);
+CREATE INDEX users_idx01 ON wdkuser.users (is_guest);
+CREATE INDEX users_idx02 ON wdkuser.users (prev_user_id);
 
 
 CREATE TABLE wdkuser.user_roles
@@ -167,12 +168,12 @@ CREATE TABLE wdkuser.steps
       REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.steps_idx01 ON wdkuser.steps (user_id, left_child_id, right_child_id);
-CREATE INDEX wdkuser.steps_idx02 ON wdkuser.steps (project_id, question_name, user_id);
-CREATE INDEX wdkuser.steps_idx03 ON wdkuser.steps (is_deleted, user_id, project_id);
-CREATE INDEX wdkuser.steps_idx04 ON wdkuser.steps (is_valid, user_id, project_id);
-CREATE INDEX wdkuser.steps_idx05 ON wdkuser.steps (last_run_time, user_id, project_id);
-CREATE INDEX wdkuser.steps_idx06 ON wdkuser.steps (strategy_id, user_id, project_id);
+CREATE INDEX steps_idx01 ON wdkuser.steps (user_id, left_child_id, right_child_id);
+CREATE INDEX steps_idx02 ON wdkuser.steps (project_id, question_name, user_id);
+CREATE INDEX steps_idx03 ON wdkuser.steps (is_deleted, user_id, project_id);
+CREATE INDEX steps_idx04 ON wdkuser.steps (is_valid, user_id, project_id);
+CREATE INDEX steps_idx05 ON wdkuser.steps (last_run_time, user_id, project_id);
+CREATE INDEX steps_idx06 ON wdkuser.steps (strategy_id, user_id, project_id);
 
 
 CREATE TABLE wdkuser.strategies
@@ -201,11 +202,11 @@ CREATE TABLE wdkuser.strategies
          REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.strategies_idx01 ON wdkuser.strategies (signature, project_id);
-CREATE INDEX wdkuser.strategies_idx02 ON wdkuser.strategies (user_id, project_id, is_deleted, is_saved);
-CREATE INDEX wdkuser.strategies_idx03 ON wdkuser.strategies (root_step_id, project_id, user_id, is_saved, is_deleted);
-CREATE INDEX wdkuser.strategies_idx04 ON wdkuser.strategies (is_deleted, is_saved, name, project_id, user_id);
-CREATE INDEX wdkuser.strategies_idx05 ON wdkuser.strategies (project_id, is_public, is_saved, is_deleted);
+CREATE INDEX strategies_idx01 ON wdkuser.strategies (signature, project_id);
+CREATE INDEX strategies_idx02 ON wdkuser.strategies (user_id, project_id, is_deleted, is_saved);
+CREATE INDEX strategies_idx03 ON wdkuser.strategies (root_step_id, project_id, user_id, is_saved, is_deleted);
+CREATE INDEX strategies_idx04 ON wdkuser.strategies (is_deleted, is_saved, name, project_id, user_id);
+CREATE INDEX strategies_idx05 ON wdkuser.strategies (project_id, is_public, is_saved, is_deleted);
 
 
 CREATE TABLE wdkuser.datasets (
@@ -218,7 +219,7 @@ CREATE TABLE wdkuser.datasets (
   upload_file VARCHAR(2000),
   parser VARCHAR(50) NOT NULL,
   category_id NUMERIC(12),
-  content CLOB,
+  content TEXT,
   prev_dataset_id NUMERIC(12),
   migration_id NUMERIC(12),
   CONSTRAINT "datasets_pk" PRIMARY KEY (dataset_id),
@@ -259,10 +260,10 @@ CREATE TABLE wdkuser.dataset_values
       REFERENCES wdkuser.datasets (dataset_id)
 );
 
-CREATE INDEX wdkuser.dataset_values_idx01 ON wdkuser.dataset_values (dataset_id, data1);
+CREATE INDEX dataset_values_idx01 ON wdkuser.dataset_values (dataset_id, data1);
 
 
-/* cannot create composite primary key, since the columns might contain null values */
+-- cannot create composite primary key, since the columns might contain null values
 CREATE TABLE wdkuser.user_baskets
 (
   basket_id NUMERIC(12) NOT NULL,
@@ -283,7 +284,7 @@ CREATE TABLE wdkuser.user_baskets
       REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.user_baskets_idx01 ON wdkuser.user_baskets (project_id, record_class);
+CREATE INDEX user_baskets_idx01 ON wdkuser.user_baskets (project_id, record_class);
 
 
 CREATE TABLE wdkuser.favorites
@@ -305,7 +306,7 @@ CREATE TABLE wdkuser.favorites
       REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.favorites_idx01 ON wdkuser.favorites (record_class, project_id);
+CREATE INDEX favorites_idx01 ON wdkuser.favorites (record_class, project_id);
 
 
 CREATE TABLE wdkuser.categories
@@ -334,10 +335,11 @@ CREATE TABLE wdkuser.step_analysis
   has_params           NUMERIC(1),
   invalid_step_reason  VARCHAR(1024),
   context_hash         VARCHAR(96),
-  context              CLOB,
+  context              TEXT,
   CONSTRAINT "step_analysis_pk" PRIMARY KEY (analysis_id),
   CONSTRAINT "step_analysis_fk01" FOREIGN KEY (step_id)
       REFERENCES wdkuser.steps (step_id)
 );
 
-CREATE INDEX wdkuser.step_analysis_idx01 ON wdkuser.step_analysis (step_id);
+CREATE INDEX step_analysis_idx01 ON wdkuser.step_analysis (step_id);
+

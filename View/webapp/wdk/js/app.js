@@ -1,4 +1,17 @@
 /*global RSVP */
+
+import './core';
+import './user';
+import './models';
+import './plugins';
+import './components';
+import './views';
+import './controllers';
+
+import React from 'react';
+import Router from 'react-router';
+import { routes } from './flux/router';
+
 (function($) {
   'use strict';
 
@@ -20,6 +33,21 @@
   var app = wdk.application = wdk.app = wdk.core.Application.create({
 
     ready: function wdkReady() {
+
+      /**
+       * XXX This is transitional code and will be deprecated
+       *
+       * The current use case is to move pages piecemeal into
+       * the new architecture. For instance, the Datasets page
+       * used by EuPathDB sites will point to a specific Answer
+       * page: /answer/DataQuestions.AllDatasets.
+       */
+      $('[data-route]').each((index, el) => {
+        var route = el.getAttribute('data-route');
+        // run the router
+        Router.run(routes, route, Handler => React.render(<Handler/>, el));
+      });
+
       wdk.cookieTest();
       wdk.setUpDialogs();
       wdk.setUpPopups();
@@ -96,9 +124,6 @@
         ? acc.concat([ mutation.target ])
         : acc;
     }, []));
-    //.forEach(function(target) {
-    //  rafLoad($(target));
-    //});
     if (targets.length > 0) rafLoad($(targets));
   }
 

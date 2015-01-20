@@ -5,24 +5,25 @@ wdk.namespace('wdk.models.filter', function(ns) {
   var MemberFilter = wdk.models.filter.MemberFilter;
   var RangeFilter = wdk.models.filter.RangeFilter;
 
-  // var Field = wdk.models.filter.Field;
+  var Field = wdk.models.filter.Field;
   var Filters = wdk.models.filter.Filters;
 
   /**
    * Base class for FilterService classes.
    *
-   * A subclass should only need to implement an
-   * `applyFilters` method. This method's job is to apply
-   * added filters to the data. This may be done locally
-   * using JavaScript functions, or it may use a remote
-   * service to retrieve filtered results.
+   * A subclass should only need to implement a getFilteredData() method.
+   * This method's job is to apply added filters to the data. This may be done
+   * locally using JavaScript functions, or it may use a remote service to
+   * retrieve filtered results.
    *
    */
   var FilterService = Backbone.Model.extend({
-    defaults: {
-      data: [],
-      filteredData: [],
-      metadata: []
+    defaults: function() {
+      return {
+        data: [],
+        filteredData: [],
+        metadata: []
+      };
     },
 
     initialize: function() {
@@ -47,6 +48,13 @@ wdk.namespace('wdk.models.filter', function(ns) {
       return this;
     }
   });
+
+  // Helpers
+  // -------
+
+  var countByValues = _.compose(_.countBy, _.flatten, _.values);
+  var numericSort = function(a, b){ return a > b; };
+  var stringSort; // passing this to [].sort() will use the default sort
 
   // wrap return value in a Promise
   var toPromise = function(fn) {
@@ -81,6 +89,114 @@ wdk.namespace('wdk.models.filter', function(ns) {
   });
 
   var LocalFilterService = FilterService.extend({
+
+    initialize: function() {
+      this._metadata = {};
+      this._metadataXhrQueue = {};
+      FilterService.prototype.initialize.apply(this, arguments);
+    },
+
+    // Fetches fields and calls callback with fields array
+    getFields: function(callback) {
+    },
+
+    // Returns a promise that resolves with an object:
+    //
+    //     { field_term: metadata }
+    //
+    // This method is used for filtering and displaying results,
+    // and it provides a way to lazy-load data.
+    getFieldMetadata: function(fields) {
+      var promises = _.reduce(fields, function(acc, field) {
+        var term = field.get('term');
+        acc[term] = this._getMetadata(field);
+        return acc;
+      }, {}, this);
+      return RSVP.hash(promises);
+    },
+
+    // returns a promse which resolves to an array of objects:
+    // { value, count, filteredCount }
+    getFieldDistribution: function(field) {
+      var term = field.get('term');
+      var type = field.get('type');
+
+      // Retrieve metadata and filtered data and return a promise
+      return RSVP.hash({
+        metadata: this._getMetadata(field),
+        filteredData: this.getFilteredData({
+          filters: this.filters,
+          omit: [ term ]
+        })
+      }).then(function(results) {
+        var filteredMetadata = results.filteredData
+          .reduce(function(acc, fd) {
+            acc[fd.term] = results.metadata[fd.term];
+            return acc;
+          }, {});
+        var counts = countByValues(results.metadata);
+        var filteredCounts = countByValues(filteredMetadata);
+
+        return _.uniq(_.flatten(_.values(results.metadata)))
+          .sort(type == 'number' ? numericSort : stringSort)
+          .map(function(value) {
+            return {
+              value: value,
+              count: Number(counts[value]),
+              filteredCount: filteredCounts[value]
+            };
+          });
+      }.bind(this));
+    },
+
+    // returns a promise that resolves to metadata for a property:
+    //     [ { data_term: metadata_value }, ... ]
+    _getMetadata: function(field) {
+      return new RSVP.Promise(function(resolve, reject) {
+        var term = field.get('term');
+        var type = field.get('type');
+
+        // if it's cached, return a promise that resolves immediately
+        if (this._metadata[term]) {
+          resolve(this._metadata[term]);
+          return;
+        }
+
+        var metadataUrl = wdk.webappUrl('getMetadata.do');
+        var metadataUrlParams = {
+          questionFullName: this.questionName,
+          name: this.name,
+          json: true,
+          property: term
+        };
+
+        this.showSpinner();
+        (this._metadataXhrQueue[term] = $.getJSON(metadataUrl, metadataUrlParams))
+          .then(function(metadata) {
+            metadata = _.indexBy(metadata, 'sample');
+            // cache metadata and transform to a dict
+            this._metadata[term] = this.data
+              .reduce(function(acc, d) {
+                var values = _.result(metadata[d.term], 'values');
+                acc[d.term] = _.isUndefined(values)
+                  ? [ Field.UNKNOWN_VALUE ]
+                  : type == 'number' ? values.map(Number) : values;
+                return acc;
+              }, {});
+            resolve(this._metadata[term]);
+          }.bind(this))
+          .fail(function(err) {
+            // TODO Show user an error message
+            reject(err);
+          })
+          .always(function() {
+            delete this._metadataXhrQueue[term];
+            if (_.size(this._metadataXhrQueue) === 0) {
+              this.hideSpinner();
+            }
+          }.bind(this));
+      }.bind(this));
+    },
 
     /**
      * Applies filters and returns a promise which resolves

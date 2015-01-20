@@ -1,9 +1,12 @@
+import assert from 'assert';
+import 'wdk/controllers/addStepPopup';
+
 describe("wdk.addStepPopup", function() {
 
   describe("validateOperations", function() {
 
     it( "is a function", function() {
-      expect(wdk.addStepPopup.validateOperations instanceof Function).to.equal(true);
+      assert(wdk.addStepPopup.validateOperations instanceof Function);
     });
 
     it( "executes inline onsubmit", function(done) {

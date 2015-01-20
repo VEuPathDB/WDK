@@ -22,9 +22,21 @@ is included that references the WDK MBeans. You can install it as is in your
 WEB-INF/classes directory. If you write your own custom MBeans, add them
 to your properties file.
 
-mbeanset.properties format is "MBean class = MBean object name"
-    org.gusdb.wdk.jmx.mbeans.UserDB=org.apidb.wdk:group=Databases,type=UserDB
-    
+mbeanset.properties format is "<mbean_class> = <mbean_object_name>"
+
+For example: org.gusdb.wdk.jmx.mbeans.Cache = org.gusdb.wdk:type=Cache
+
+Your mbean_class can be one of two types:
+
+1. Any class you want to expose as an MBean.  WDK provides the abstract
+   org.gusdb.wdk.jmx.mbeans.BeanBase class, which you can optionally subclass.
+   It provides handles on the loaded WDK model and application servlet context.
+
+2. An implementation of NamedMBeanFactory.  This allows you to dynamically build
+   multiple instances of the same class and name them at runtime.  Typically,
+   the mbean_object_name for a bean factory in mbeanset.properties will be
+   parameterized.  It is up to the factory to decide what substitution will occur.
+
 Oracle's Java packages include a jconsole application that has a 
 browser for MBeans. Of course you can access them through custom programs.
 You will need to enable the JMX remote agent in your Tomcat's JVM if you want

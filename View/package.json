@@ -2,18 +2,25 @@
   "name": "wdk",
   "version": "0.1.0",
   "devDependencies": {
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-copy": "~0.4.1",
-    "grunt-contrib-uglify": "~0.2.7",
-    "grunt-cli": "~0.1.11",
-    "grunt": "~0.4.1",
-    "grunt-contrib-clean": "~0.5.0",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-handlebars": "~0.6.1",
-    "grunt-contrib-cssmin": "~0.9.0"
+    "clean-css": "^3.0.1",
+    "jsx-loader": "^0.12.2",
+    "traceur-loader": "^0.6.3",
+    "webpack": "^1.4.14"
   },
   "scripts": {
-    "dist": "./node_modules/.bin/grunt --no-color dist"
+    "build-js": "./scripts/concatLibs ./dist/wdk/js/wdk.libs.js && webpack",
+    "build-css": "./scripts/buildCss",
+    "clean": "rm -rf ./dist",
+    "dist": "npm run build-js && npm run build-css",
+    "test": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack -d --config webpack-test.config.js",
+    "test-server": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack-dev-server -d --config webpack-test.config.js"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "flux": "^2.0.1",
+    "immutable": "^3.4.1",
+    "lodash": "^2.4.1",
+    "react": "^0.12.2",
+    "react-router": "^0.11.6"
+  }
 }

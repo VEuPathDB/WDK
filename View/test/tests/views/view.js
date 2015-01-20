@@ -1,3 +1,6 @@
+import assert from 'assert';
+import 'wdk/views/core/view';
+
 describe('wdk.views.core', function() {
   var View = wdk.views.core.View;
 
@@ -30,8 +33,8 @@ describe('wdk.views.core', function() {
 
       var anotherView = AnotherView.create();
 
-      expect(myView.say()).to.equal('mixin');
-      expect(anotherView.say()).to.equal('mixin');
+      assert(myView.say() === 'mixin');
+      assert(anotherView.say() === 'mixin');
     });
 
   });

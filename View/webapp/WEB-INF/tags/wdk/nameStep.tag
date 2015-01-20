@@ -3,11 +3,10 @@
 	<!-- placeholder was: ${wdkQuestion.shortDisplayName} -->
 
 	<input style="width:15em"
-         title="Give this search a custom name (15 character limit). The name will appear in this search's step box."
+         title="Give this search strategy a custom name. The name will appear in the first step box (truncated to 15 characters)."
          type="text" 
 					placeholder="Give this search a name" 
 					name="customName" 
-					maxlength="15" 
 					value="${customName}"
 	/>
 </div>

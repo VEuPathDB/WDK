@@ -20,19 +20,23 @@
   </c:choose>
 </c:set>
 
+<c:set var="buildNumber" value="${wdkModel.model.buildNumber}"/>
+<!-- Don't let empty build number cause JS syntax error -->
+<c:set var="buildNumber" value="${empty buildNumber ? '\\'\\'' : buildNumber}"/>
+
 <script>
   var wdkConfig = {
-    modelName: '${siteName}',
-    version: ${wdkModel.model.buildNumber},
+    modelName: '${fn:replace(siteName, "'", "\\'")}',
+    version: ${buildNumber},
     assetsUrl: '${applicationScope.assetsUrl ne null ? applicationScope.assetsUrl : pageContext.request.contextPath}',
-    webappUrl: '${pageContext.request.contextPath}',
+    webappUrl: '${fn:replace(pageContext.request.contextPath, "'", "\\'")}',
     guestUser: ${isGuest},
-    exportBaseUrl: '${exportBaseUrl}',
+    exportBaseUrl: '${fn:replace(exportBaseUrl, "'", "\\'")}',
     wdkUser: {
-      id: '${wdkUser.userId}',
-      name: '${wdkUser.firstName} ${wdkUser.lastName}',
-      country: '${wdkUser.country}',
-      email: '${wdkUser.email}',
+      id: '${fn:replace(wdkUser.userId, "'", "\\'")}',
+      name: '${fn:replace(wdkUser.firstName, "'", "\\'")} ${fn:replace(wdkUser.lastName, "'", "\\'")}',
+      country: '${fn:replace(wdkUser.country, "'", "\\'")}',
+      email: '${fn:replace(wdkUser.email, "'", "\\'")}',
       isGuest: ${isGuest}
     }
   };
