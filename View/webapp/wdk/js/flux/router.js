@@ -9,21 +9,7 @@ import TestPage from './pages/TestPage';
 
 var { Route, RouteHandler, DefaultRoute, NotFoundRoute } = Router;
 
-export default Router.create({ routes });
-
-/**
- * Example of a "wholistic" routes definition. App defines the basic page
- * layout.
- */
- export var routes = (
-   <Route name="app" path="/" handler={App}>
-     <Route name="answer" path="answer/:questionName" handler={AnswerPage}/>
-     <Route name="question-list" handler={QuestionListPage}/>
-     <DefaultRoute handler={IndexPage}/>
-     <NotFoundRoute handler={NotFoundPage}/>
-   </Route>
- );
- 
+// export default Router.create({ routes });
 
 /**
  * This is a transitional routes definition. Notice that there is not top-level
@@ -36,8 +22,20 @@ export default Router.create({ routes });
  *     });
  *
  */
-export var transitionalRoutes = [
+export var routes = [
   <Route name="answer" path="answer/:questionName" handler={AnswerPage}/>,
+  <Route name="question-list" handler={QuestionListPage}/>,
   <DefaultRoute handler={IndexPage}/>,
   <NotFoundRoute handler={NotFoundPage}/>,
 ];
+
+
+/**
+ * Example of a "wholistic" routes definition. App defines the basic page
+ * layout.
+ */
+export var appRoutes = (
+  <Route name="app" path="/" handler={App}>
+    {routes}
+  </Route>
+);

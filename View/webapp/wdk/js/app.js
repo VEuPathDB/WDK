@@ -10,7 +10,7 @@ import './controllers';
 
 import React from 'react';
 import Router from 'react-router';
-import { transitionalRoutes } from './flux/router';
+import { routes } from './flux/router';
 import { config as configService } from './flux/ServiceAPI';
 
 var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
@@ -48,7 +48,7 @@ var app = wdk.application = wdk.app = wdk.core.Application.create({
     $('[data-route]').each((index, el) => {
       var route = el.getAttribute('data-route');
       // run the router
-      Router.run(transitionalRoutes, route,
+      Router.run(routes, route,
         (Handler, state) => React.render(<Handler {...state} />, el));
     });
 
