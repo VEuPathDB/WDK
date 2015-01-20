@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -16,6 +17,9 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class ParamValuesSet extends WdkModelBase {
 
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(ParamValuesSet.class);
+  
   public static final int MAXROWS = 1000000000;
 
   private String name;
@@ -59,7 +63,7 @@ public class ParamValuesSet extends WdkModelBase {
   }
 
   public void addParamValue(ParamValue paramValue) {
-    if (paramValue.getValue() == null) {
+    if (paramValue.getValue().isEmpty()) {
       paramSelectModes.put(paramValue.getName(), paramValue.getSelectModeEnum());
     }
     else {

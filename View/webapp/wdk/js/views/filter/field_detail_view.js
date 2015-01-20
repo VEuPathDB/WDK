@@ -29,7 +29,9 @@ wdk.namespace('wdk.views.filter', function(ns) {
     },
 
     renderEmpty: function() {
-      this.$el.html(this.emptyTemplate());
+      this.$el.html(this.emptyTemplate({
+        title: this.controller.title
+      }));
       return this;
     },
 

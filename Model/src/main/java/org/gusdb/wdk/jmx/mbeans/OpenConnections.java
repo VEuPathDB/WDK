@@ -1,6 +1,7 @@
 package org.gusdb.wdk.jmx.mbeans;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.jmx.BeanBase;
 
 public class OpenConnections extends BeanBase implements OpenConnectionsMBean {
 
@@ -8,12 +9,12 @@ public class OpenConnections extends BeanBase implements OpenConnectionsMBean {
 
   @Override
   public void dumpOpenUserDBConnections() {
-     LOG.info(wdkModel.getUserDb().getUnclosedConnectionInfo());
+     LOG.info(getWdkModel().getUserDb().getUnclosedConnectionInfo());
   }
 
   @Override
   public String showOpenUserDBConnections() {
-    return wdkModel.getUserDb().getUnclosedConnectionInfo();
+    return getWdkModel().getUserDb().getUnclosedConnectionInfo();
   }
 
   @Override
@@ -23,12 +24,12 @@ public class OpenConnections extends BeanBase implements OpenConnectionsMBean {
 
   @Override
   public void dumpOpenAppDBConnections() {
-    LOG.info(wdkModel.getAppDb().getUnclosedConnectionInfo());
+    LOG.info(getWdkModel().getAppDb().getUnclosedConnectionInfo());
   }
 
   @Override
   public String showOpenAppDBConnections() {
-    return wdkModel.getAppDb().getUnclosedConnectionInfo();
+    return getWdkModel().getAppDb().getUnclosedConnectionInfo();
   }
 
   @Override

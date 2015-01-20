@@ -1,7 +1,7 @@
 wdk.namespace('wdk.core', function(ns, $) {
   'use strict';
 
-  var BaseObject = ns.BaseObject;
+  var BaseClass = ns.BaseClass;
   var Container = ns.Container;
   var RunLoop = ns.RunLoop;
 
@@ -22,10 +22,10 @@ wdk.namespace('wdk.core', function(ns, $) {
    *
    * @class Application
    * @namespace wdk.core
-   * @extends wdk.core.BaseObject
+   * @extends wdk.core.BaseClass
    *
    */
-  ns.Application = BaseObject.extend({
+  ns.Application = BaseClass.extend({
 
 
     /**

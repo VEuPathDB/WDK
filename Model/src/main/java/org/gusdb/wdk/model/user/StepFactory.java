@@ -313,7 +313,7 @@ public class StepFactory {
       psInsertStep.executeUpdate();
     }
     catch (SQLException | JSONException ex) {
-      throw new WdkModelException("Error while creating step", ex);
+      throw new WdkModelException("Error while creating step: " + ex.getMessage(), ex);
     }
     finally {
       SqlUtils.closeStatement(psInsertStep);

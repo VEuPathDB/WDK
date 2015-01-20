@@ -82,6 +82,7 @@ import org.gusdb.wdk.model.question.CategoryQuestionRef;
 import org.gusdb.wdk.model.question.DynamicAttributeSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
+import org.gusdb.wdk.model.question.QuestionSuggestion;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
 import org.gusdb.wdk.model.record.NestedRecord;
@@ -570,6 +571,9 @@ public class ModelXmlParser extends XmlParser {
     // reporter
     configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter", ReporterRef.class,
         "addReporterRef");
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter/property", ReporterProperty.class,
+        "addProperty");
+    digester.addCallMethod("wdkModel/recordClassSet/recordClass/reporter/property", "setValue", 0);
 
     // filter layouts
     configureNode(digester, "wdkModel/recordClassSet/recordClass/answerFilterLayout",
@@ -720,6 +724,8 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, path, DatasetParam.class, "addParam");
     configureParamContent(digester, path, DatasetParamSuggestion.class);
     configureNode(digester, path + "/parser", DatasetParserReference.class, "addParserReference");
+    configureNode(digester, path + "/parser/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod(path + "/parser/property", "setText", 0);
 
     // enum param
     path = "wdkModel/paramSet/enumParam";
@@ -749,6 +755,8 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, paramPath + "/noTranslation", ParamConfiguration.class, "addNoTranslation");
 
     configureNode(digester, paramPath + "/handler", ParamHandlerReference.class, "addHandler");
+    configureNode(digester, paramPath + "/handler/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod(paramPath + "/handler/property", "setText", 0);
   }
 
   private void configureQuestionSet(Digester digester) {
@@ -794,6 +802,9 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/questionSet/question/summaryView/description", WdkModelText.class,
         "addDescription");
     digester.addCallMethod("wdkModel/questionSet/question/summaryView/description", "setText", 0);
+
+    configureNode(digester, "wdkModel/questionSet/question/suggestion", QuestionSuggestion.class,
+        "addSuggestion");
   }
 
   private void configureXmlQuestionSet(Digester digester) {
@@ -816,13 +827,10 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, path + "/paramValue", ParamValue.class, "addParamValue");
     digester.addCallMethod(path + "/paramValue", "setValue", 0);
     /*
-    digester.addObjectCreate(path, ParamValuesSet.class);
-    digester.addSetProperties(path);
-    digester.addCallMethod(path + "/paramValue", "put", 2);
-    digester.addCallParam(path + "/paramValue", 0, "name");
-    digester.addCallParam(path + "/paramValue", 1);
-    digester.addSetNext(path, addMethodName);
-    */
+     * digester.addObjectCreate(path, ParamValuesSet.class); digester.addSetProperties(path);
+     * digester.addCallMethod(path + "/paramValue", "put", 2); digester.addCallParam(path + "/paramValue", 0,
+     * "name"); digester.addCallParam(path + "/paramValue", 1); digester.addSetNext(path, addMethodName);
+     */
   }
 
   private void configureXmlRecordClassSet(Digester digester) {
@@ -894,6 +902,8 @@ public class ModelXmlParser extends XmlParser {
     String prefix = "*/" + attribute + "/plugin";
     // configure plugins for
     configureNode(digester, prefix, AttributePluginReference.class, "addAttributePluginReference");
+    configureNode(digester, prefix + "/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod(prefix + "/property", "setText", 0);
 
   }
 

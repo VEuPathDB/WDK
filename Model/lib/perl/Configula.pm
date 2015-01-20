@@ -34,6 +34,8 @@ my %dblinkMap = (
     'apicommdevn' => 'devn.login_comment',
     'icmrcomm'    => 'icemr.login_comment',
     'prsmcomm'    => 'prism.login_comment',
+    'rm15873'     => 'rm15873.login_comment',
+    'rm9972'      => 'rm9972.login_comment',
     'userdb'      => 'vm.userdb', # standalone virtual machine
 );
 
@@ -142,15 +144,17 @@ sub new {
     
     $self->{'userDb_login'} = $self->{'userDb_login'} || 'uga_fed';
     $self->{'userDb_password'} = $self->std_password($self->{'euparc'}, $self->{'userDb_login'}, $self->{'userDb_database'});;
-    
+
     if ( ! $self->{'userDb_password'} ) {
-      die "Did not find password for $appDb_login in $self->{'euparc'} . Quitting with no changes made.\n";
+      die "Did not find password for $self->{'userDb_login'} in $self->{'euparc'} . Quitting with no changes made.\n";
     }
     
     # webapp_nover is always valid thanks to apache redirects, and
     # is especially desired for production sites
     $self->{'webServiceUrl'} = 'http://' . $self->{'target_site'} . '/' . $self->{'webapp_nover'} . '/services/WsfService';
     
+    $self->{'google_analytics_id'} = $self->google_analytics_id($self->{'euparc'}, $self->{'canonical_hostname'});
+ 
     $self->sanity_check();
     
     return $self;
@@ -295,6 +299,20 @@ sub std_password {
       $rc->{database}->{user}->{$login}->{password};
 }
 
+
+# retreive google analytics id from users ~/.euparc
+sub google_analytics_id {
+  my ($self, $euparc, $site) = @_;
+
+  ($site) = map{ lc } ($site);
+
+  my $rc = XMLin($euparc,
+    KeyAttr => [ site => 'hostname'],
+  );
+  
+  return $rc->{'sites'}->{'site'}->{$site}->{'google_analytics_id'};
+}
+
 # return 'class' of host, e.g. qa, beta, integrate or hostname.
 # return empty string if no hostname (e.g. toxodb.org)
 # This is not always the hostname. A site with 'q1' hostname is a 'qa' class.
@@ -322,7 +340,6 @@ sub base_domain {
 #  integrate.toxodb.org to integrate.toxodb.org (no conversion)
 sub canonical_hostname {
   my ($self, $target_site) = @_;
- # my $host_class = $self->host_class($target_site);
   return  $self->{'host_class_prefix'} . $self->base_domain($target_site);
 }
 

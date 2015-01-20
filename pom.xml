@@ -11,6 +11,7 @@
     <module>Model</module>
     <module>Controller</module>
     <module>View</module>
+    <module>Service</module>
   </modules>
   
   <dependencyManagement>

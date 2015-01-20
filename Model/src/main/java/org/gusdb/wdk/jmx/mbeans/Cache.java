@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.wdk.jmx.BeanBase;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 
 /**
@@ -21,7 +22,7 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
  *
  * @see org.gusdb.wdk.model.WdkModel#getAppDb()
  */
-public class Cache extends BeanBase implements CacheMBean   {
+public class Cache extends BeanBase implements CacheMBean {
 
   private static final Logger logger = Logger.getLogger(Cache.class);
 	
@@ -30,7 +31,7 @@ public class Cache extends BeanBase implements CacheMBean   {
   
   public Cache() {
     super();
-    DatabaseInstance platform = wdkModel.getAppDb();
+    DatabaseInstance platform = getWdkModel().getAppDb();
     platformName = platform.getPlatform().getClass().getSimpleName();
     dataSource = platform.getDataSource();
   }
@@ -112,10 +113,34 @@ public class Cache extends BeanBase implements CacheMBean   {
   @Override
   public void resetWdkCache() {
     try {
-      CacheFactory factory = wdkModel.getResultFactory().getCacheFactory();      
+      CacheFactory factory = getWdkModel().getResultFactory().getCacheFactory();
       factory.resetCache(true, true);
     } catch (Exception e) {
         // TODO: something
     }
+  }
+
+  /**
+   * 
+   * @return whether global caching is turned on or not.
+   *
+   * @see org.gusdb.wdk.model.config.ModelConfig#isCaching
+   */
+  @Override
+  public boolean getWdkIsCaching() {
+    return getWdkModel().getModelConfig().isCaching();
+  }
+
+  /**
+   * MBean operation to toggle global WDK database caching true/false.
+   * Disabling the caching can be useful when benchmarking
+   * database and system tunings.
+   *
+   * @see org.gusdb.wdk.model.config.ModelConfig#setCaching
+   */
+  @Override
+  public void toggleWdkIsCaching() {
+    boolean isCaching = getWdkModel().getModelConfig().isCaching();
+    getWdkModel().getModelConfig().setCaching( ! isCaching );
   }
 }

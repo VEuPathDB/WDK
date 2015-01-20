@@ -47,6 +47,7 @@
     <%-- detemine starting display style by displayType of the group --%>
     <c:set var="groupName" value="${group.displayName}" />
     <c:set var="displayType" value="${group.displayType}" />
+    <c:set var="groupDescription" value="${group.description}" />
 
     <c:choose>
       <c:when test="${group.name eq 'advancedParams'}">
@@ -87,7 +88,7 @@
                 <imp:dynamicParamGroup paramGroup="${paramGroup}" />
               </c:when>
               <c:otherwise>
-                <imp:questionParamGroup paramGroup="${paramGroup}" />
+                <imp:questionParamGroup paramGroup="${paramGroup}" groupDescription="${groupDescription}" />
               </c:otherwise>
             </c:choose>
 

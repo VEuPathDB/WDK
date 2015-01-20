@@ -251,6 +251,9 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   }
 
   public final String getSanityDefault() {
+    if (sanityDefaultValue == null && isAllowEmpty() && getEmptyValue() != null) {
+      return getEmptyValue();
+    }
     return sanityDefaultValue;
   }
 

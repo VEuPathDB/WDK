@@ -28,15 +28,11 @@ public class ProcessQuestionSetsFlatAction extends ShowQuestionAction {
         WdkModelBean wdkModel = ActionUtility.getWdkModel(getServlet());
         
         QuestionForm qForm = (QuestionForm) form;
-        // System.err.println("DEBUG: PQSFA: qFullName from form: " +
-        // qSetForm.getQuestionFullName());
         String questionName = qForm.getQuestionFullName();
-        QuestionBean wdkQuestion =wdkModel.getQuestion(questionName);
-        // System.err.println("DEBUG: PQSFA: qFullName from question: " +
-        // wdkQuestion.getFullName());
+        wdkModel.validateQuestionFullName(questionName);
+        QuestionBean wdkQuestion = wdkModel.getQuestion(questionName);
 
-        ShowQuestionAction.prepareQuestionForm(wdkQuestion, servlet, request,
-                qForm);
+        ShowQuestionAction.prepareQuestionForm(wdkQuestion, servlet, request, qForm);
 
         request.setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
         request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);

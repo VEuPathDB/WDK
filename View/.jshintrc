@@ -12,13 +12,11 @@
   "eqnull": false,
   "laxbreak": true,
   "browser": true,
+  "node": true,
   "devel": true,
   "jquery": true,
   "maxerr": 150,
   "globals": {
-    "_": true,
-    "wdk": true,
-    "Backbone": true,
-    "Handlebars": true
+    "wdk": true
   }
 }

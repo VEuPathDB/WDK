@@ -6,4 +6,6 @@ package org.gusdb.wdk.jmx.mbeans;
 public interface CacheMBean {
   public String getcache_table_count();
   public void resetWdkCache();
+  public boolean getWdkIsCaching();
+  public void toggleWdkIsCaching();
 }

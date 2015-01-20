@@ -19,8 +19,6 @@ wdk.namespace('wdk.views.core', function(ns, $) {
 
   ns.CollapsibleView = Backbone.View.extend({
 
-    template: wdk.templates['filter/filter.handlebars'],
-
     collapseString: 'Collapse',
 
     expandString: 'Expand',

@@ -154,6 +154,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   private String reviseBuild;
   
   private final Map<String, Filter> filters = new LinkedHashMap<>();
+  
+  
+  private List<QuestionSuggestion> _suggestions = new ArrayList<>();
+
 
   // /////////////////////////////////////////////////////////////////////
   // setters called at initialization
@@ -237,6 +241,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       return false; // current release is not set
     else
       return (currentBuild.equals(reviseBuild));
+  }
+  
+  public void addSuggestion(QuestionSuggestion suggestion) {
+    this._suggestions.add(suggestion);
   }
 
   @Override
@@ -900,6 +908,15 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
     }
     stepAnalysisList = null;
+    
+    // excluding suggestions
+    for (QuestionSuggestion suggestion : _suggestions) {
+      if (suggestion.include(projectId)) {
+        suggestion.excludeResources(projectId);
+        this.newBuild = suggestion.getNewBuild();
+        this.reviseBuild = suggestion.getReviseBuild();
+      }
+    }
   }
 
   /**

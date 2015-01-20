@@ -113,5 +113,5 @@ wdk.namespace('wdk.views.core', function(ns) {
 
   });
 
-  View.create = wdk.core.BaseObject.create;
+  View.create = wdk.core.BaseClass.create;
 });

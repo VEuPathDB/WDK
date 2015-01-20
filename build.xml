@@ -44,6 +44,7 @@
                                            WDK-MavenInstallation,
                                            WDK/Model-Installation,
                                            WDK/Controller-Installation,
+                                           WDK/Service-Installation,
                                            WDK/View-Installation">
     <ant target="defaultProjectInstall">
       <property name="project" value="WDK"/>
@@ -176,6 +177,13 @@
     </ant>
   </target>
 
+  <target name="WDK/Service-Installation">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="WDK"/>
+      <property name="component" value="Service"/>
+    </ant>
+  </target>
+
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooo  Web Installation  oooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -215,7 +223,7 @@
           executable="npm"
           failonerror="true"
           failifexecutionfails="true">
-      <arg line="install --registry ${npmRegistry}"/>
+      <arg line="rebuild"/>
     </exec>
 
     <echo message="Running npm run dist"/>
