@@ -4,9 +4,12 @@ var node_env = process.env.NODE_ENV || 'development';
 module.exports = {
   cache: true,
   context: __dirname + '/webapp/wdk/js',
-  entry: './app.js',
+  entry: {
+    'wdk': './app.js',
+    'wdk-3.0': './wdk-3.0'
+  },
   output: {
-    filename: 'dist/wdk/js/wdk.js'
+    filename: 'dist/wdk/js/[name].js'
   },
   resolve: {
     // adding .jsx; the rest are defaults (this overwrites, so we're including them)
