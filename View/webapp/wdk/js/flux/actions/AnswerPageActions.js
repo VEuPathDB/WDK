@@ -80,7 +80,7 @@ export function loadAnswer(questionName, opts = {}) {
     params: [],
     filters: [],
     displayInfo: {
-      pagination: { offset: 0, numRecords: 10 },
+      pagination: { offset: 0, numRecords: 100 },
       columns: null,
       sorting: null
     }
@@ -88,5 +88,16 @@ export function loadAnswer(questionName, opts = {}) {
   var questionDefinition = { questionName, params, filters };
   var data = { questionDefinition, displayInfo };
   dispatchLoading();
-  ServiceAPI.postResource('/answer', data).then(dispatchLoadSuccess, dispatchLoadError);
+  ServiceAPI.postResource('/answer', data)
+    .then(dispatchLoadSuccess, dispatchLoadError)
+    // catch errors caused by Store callbacks
+    .catch(err => console.assert(false, err));
+}
+
+export function moveColumn(columnName, newPosition) {
+  Dispatcher.dispatch({
+    type: ActionType.Answer.MOVE_COLUMN,
+    columnName,
+    newPostition
+  });
 }
