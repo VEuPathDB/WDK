@@ -2,7 +2,7 @@
  * Generic table with UI features:
  *
  *   - Sort columns
- *   - Reorder columns
+ *   - Move columns
  *   - Show/Hide columns
  *   - Paging
  *
@@ -10,7 +10,7 @@
  * NB: A View-Controller will need to pass handlers to this component:
  *
  *   - onSort(columnName: string, direction: string(asc|desc))
- *   - onReorder(columnName: string, newPosition: number)
+ *   - onMoveColumn(columnName: string, newPosition: number)
  *   - onShowColumns(columnNames: Array<string>)
  *   - onHideColumns(columnNames: Array<string>)
  *   - onNewPage(offset: number, numRecords: number)
@@ -27,14 +27,14 @@ var sortClassMap = {
   desc: 'ui-icon ui-icon-arrowthick-1-s'
 };
 
-var DataTable = React.createClass({
+var RecordTable = React.createClass({
 
   propTypes: {
     meta: PropTypes.object.isRequired,
     displayInfo: PropTypes.object.isRequired,
     records: PropTypes.array.isRequired,
     onSort: PropTypes.func,
-    onReorder: PropTypes.func,
+    onMoveColumn: PropTypes.func,
     onShowColumns: PropTypes.func,
     onHideColumns: PropTypes.func,
     onNewPage: PropTypes.func
@@ -43,7 +43,7 @@ var DataTable = React.createClass({
   getDefaultProps() {
     return {
       onSort: noop,
-      onReorder: noop,
+      onMoveColumn: noop,
       onShowColumns: noop,
       onHideColumns: noop,
       onNewPage: noop,
@@ -59,9 +59,6 @@ var DataTable = React.createClass({
     this.props.onSort(name);
   },
 
-  handleReorder() {
-  },
-
   handleShowColumns() {
   },
 
@@ -73,6 +70,42 @@ var DataTable = React.createClass({
   handleNewPage() {
   },
 
+  componentDidMount() {
+    var { onMoveColumn } = this.props;
+
+    if (onMoveColumn !== noop) {
+      // Only set up column reordering if a callback is provided.
+      //
+      // We are using jQueryUI's .sortable() method to implement
+      // visual drag-n-drop of table headings for reordering columns.
+      // However, we prevent jQueryUI from actually altering the DOM.
+      // Instead, we:
+      //   1. Get the new position of the header item (jQueryUI has actually
+      //      updated the DOM at this point).
+      //   2. Cancel the sort event (.sortable("cancel")).
+      //   3. Call the Action to update the column order, allowing React to
+      //      update the DOM when it rerenders the component.
+      //
+      // A future iteration may be to use HTML5's draggable, thus removing the
+      // jQueryUI dependency.
+      var $headerRow = $(this.refs.headerRow.getDOMNode());
+      $headerRow.sortable({
+        items: '> th',
+        helper: 'clone',
+        opacity: .7,
+        placeholder: 'ui-state-highlight',
+        stop(e, ui) {
+          var { item } = ui;
+          var column = item.data('column');
+          var newPosition = item.index();
+          // We want to let React update the position, so we'll cancel.
+          $headerRow.sortable('cancel');
+          onMoveColumn(column, newPosition);
+        }
+      });
+    }
+  },
+
   render() {
     var { meta, records, displayInfo: { sorting } } = this.props;
 
@@ -82,9 +115,9 @@ var DataTable = React.createClass({
     });
 
     return (
-      <div className="wdk-DataTable-Wrapper">
+      <div className="wdk-RecordTable-Wrapper">
         <p>Showing {records.length} of {meta.count} {meta['class']} records</p>
-        <table>
+        <table className="wdk-RecordTable">
           <thead>
             <tr ref="headerRow">
               {_.map(meta.attributes, attribute => {
@@ -97,6 +130,7 @@ var DataTable = React.createClass({
 
                 return (
                   <th key={attribute.name}
+                    data-column={attribute.name}
                     className={[attribute.name, attribute.className].join(' ')}
                     title={'Sort table by ' + attribute.displayName}
                     onClick={this.handleSort} >
@@ -152,4 +186,4 @@ function formatAttribute(attribute, value) {
   }
 }
 
-export default DataTable;
+export default RecordTable;

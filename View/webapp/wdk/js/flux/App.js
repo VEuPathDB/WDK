@@ -10,7 +10,7 @@ var App = React.createClass({
     return (
       <div>
         <h1>WDK 3.0</h1>
-        <RouteHandler/>
+        <RouteHandler {...this.props}/>
       </div>
     );
   }
