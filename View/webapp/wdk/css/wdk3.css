@@ -1,0 +1,29 @@
+body {
+  font-family: sans-serif;
+}
+
+.wdk-RecordTable {
+  border: 1px solid #cccccc;
+  border-collapse: collapse;
+}
+
+.wdk-RecordTable td, .wdk-RecordTable th {
+  padding: .5em;
+}
+.wdk-RecordTable td {
+  border: 1px dotted #cccccc;
+}
+
+.wdk-RecordTable th {
+  border: 1px solid #cccccc;
+  font-weight: bold;
+  background-color: #f3f3f3;
+  white-space: nowrap;
+  text-align: left;
+  text-transform: capitalize;
+  cursor: pointer;
+}
+
+.wdk-RecordTable th .ui-icon {
+  display: inline-block;
+}
