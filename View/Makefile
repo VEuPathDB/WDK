@@ -4,7 +4,7 @@ SHELL        := /bin/bash
 wdk_bundle    := dist/wdk/js/wdk.js
 wdk3_bundle   := dist/wdk/js/wdk-3.0.js
 libs_bundle   := dist/wdk/js/wdk.libs.js
-css_bundle    := dist/wdk/css/wdk.css
+css_bundle    := dist/wdk/css/wdk.min.css
 test_bundle   := test/dist/tests.js
 
 wdk_sources  := webapp/wdk/js/app.js $(shell find webapp/wdk/js -name '*.js')
