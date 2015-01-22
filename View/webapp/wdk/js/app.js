@@ -45,7 +45,7 @@ var app = wdk.application = wdk.app = wdk.core.Application.create({
      * used by EuPathDB sites will point to a specific Answer
      * page: /answer/DataQuestions.AllDatasets.
      */
-    $('[data-route]').each((index, el) => {
+    jQuery('[data-route]').each((index, el) => {
       var route = el.getAttribute('data-route');
       // run the router
       Router.run(routes, route,
