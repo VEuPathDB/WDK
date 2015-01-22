@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.util;
+package org.gusdb.wdk.service.request;
 
 import java.util.Collections;
 import java.util.List;
@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.query.Column;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class WdkResultRequestSpecifics {
+public class WdkAnswerRequestSpecifics {
 
   public static enum Direction {
     ASC(true),
@@ -50,9 +50,9 @@ public class WdkResultRequestSpecifics {
     "sorting": null
   }
   */
-  public static WdkResultRequestSpecifics createFromJson(
+  public static WdkAnswerRequestSpecifics createFromJson(
       JSONObject specJson, WdkModelBean wdkModelBean) throws JSONException {
-    WdkResultRequestSpecifics specs = new WdkResultRequestSpecifics();
+    WdkAnswerRequestSpecifics specs = new WdkAnswerRequestSpecifics();
     JSONObject paging = specJson.getJSONObject("pagination");
     specs._offset = paging.getInt("offset");
     specs._numRecords = paging.getInt("numRecords");

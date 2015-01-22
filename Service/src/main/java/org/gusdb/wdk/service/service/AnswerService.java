@@ -13,10 +13,10 @@ import javax.ws.rs.core.Variant;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.service.util.AnswerFormatterJson;
-import org.gusdb.wdk.service.util.RequestMisformatException;
-import org.gusdb.wdk.service.util.WdkResultRequest;
-import org.gusdb.wdk.service.util.WdkResultRequestSpecifics;
+import org.gusdb.wdk.service.request.RequestMisformatException;
+import org.gusdb.wdk.service.request.WdkAnswerRequest;
+import org.gusdb.wdk.service.request.WdkAnswerRequestSpecifics;
+import org.gusdb.wdk.service.stream.AnswerStreamer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,8 +34,9 @@ JSON input format:
   },
   displayInfo: {
     pagination: { offset: Number, numRecords: Number },
-    columns: [ columnName: String ],
-    sorting: [ { columnName: String, direction: Enum[ASC,DESC] } ]
+    attributes: [ attributeName: String ],
+    tables: [ tableName: String ],
+    sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
   }
 }
 */
@@ -55,15 +56,15 @@ public class AnswerService extends WdkService {
       // expect two parts to this request
       // 1. Parse result request (question, params, etc.)
       JSONObject questionDefJson = json.getJSONObject("questionDefinition");
-      WdkResultRequest request = WdkResultRequest.createFromJson(getCurrentUser(), questionDefJson, getWdkModelBean());
+      WdkAnswerRequest request = WdkAnswerRequest.createFromJson(getCurrentUser(), questionDefJson, getWdkModelBean());
       
       // 2. Parse request specifics (columns, pagination, etc.)
       JSONObject specJson = json.getJSONObject("displayInfo");
-      WdkResultRequestSpecifics requestSpecifics = WdkResultRequestSpecifics.createFromJson(specJson, getWdkModelBean());
+      WdkAnswerRequestSpecifics requestSpecifics = WdkAnswerRequestSpecifics.createFromJson(specJson, getWdkModelBean());
 
       // seemed to parse ok; create answer and format
       AnswerValueBean answerValue = getResultFactory().createResult(request, requestSpecifics);
-      return Response.ok(new AnswerFormatterJson().getAnswerAsStream(answerValue)).build();
+      return Response.ok(AnswerStreamer.getAnswerAsStream(answerValue)).build();
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.info("Passed request body deemed unacceptable", e);

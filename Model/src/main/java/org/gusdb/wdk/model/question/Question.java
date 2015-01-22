@@ -576,6 +576,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return getAttributeFieldMap(FieldScope.ALL);
   }
 
+  @Override
+  public AttributeField[] getAttributeFields() {
+    AttributeField[] array = {};
+    return getAttributeFieldMap(FieldScope.ALL).values().toArray(array);
+  }
+
   public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
     Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
 

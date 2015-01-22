@@ -1,11 +1,6 @@
-package org.gusdb.wdk.service.util;
+package org.gusdb.wdk.service.formatter;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Map.Entry;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.StreamingOutput;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -57,10 +52,9 @@ JSON output format:
   } ]
 }
 */
-public class AnswerFormatterJson implements AnswerFormatter<JSONObject> {
+public class AnswerFormatter {
 
-  @Override
-  public JSONObject formatAnswer(AnswerValueBean answerValue) throws WdkModelException {
+  public static JSONObject formatAnswer(AnswerValueBean answerValue) throws WdkModelException {
     try {
       JSONObject parent = new JSONObject();
       parent.put("meta", getMetaData(answerValue));
@@ -77,7 +71,7 @@ public class AnswerFormatterJson implements AnswerFormatter<JSONObject> {
     }
   }
 
-  private JSONObject getMetaData(AnswerValueBean answerValue)
+  public static JSONObject getMetaData(AnswerValueBean answerValue)
       throws WdkModelException, WdkUserException {
     JSONObject meta = new JSONObject();
     meta.put("count", answerValue.getResultSize());
@@ -93,7 +87,7 @@ public class AnswerFormatterJson implements AnswerFormatter<JSONObject> {
     return meta;
   }
 
-  private JSONObject getRecordJson(RecordInstance record)
+  public static JSONObject getRecordJson(RecordInstance record)
       throws WdkModelException, WdkUserException {
     JSONObject json = new JSONObject();
     json.put("id", record.getPrimaryKey().getValue());
@@ -109,23 +103,6 @@ public class AnswerFormatterJson implements AnswerFormatter<JSONObject> {
     // FIXME: tables not yet supported
     json.put("tables", tables);
     return json;
-  }
-
-  @Override
-  public String getAnswerAsString(AnswerValueBean answerValue) throws WdkModelException {
-    return formatAnswer(answerValue).toString();
-  }
-
-  @Override
-  public StreamingOutput getAnswerAsStream(AnswerValueBean answerValue) throws WdkModelException {
-    // currently do not support real streaming; need to implement in AnswerValueBean
-    final String result = getAnswerAsString(answerValue);
-    return new StreamingOutput() {
-      @Override
-      public void write(OutputStream stream) throws IOException, WebApplicationException {
-        stream.write(result.getBytes());
-      }
-    };
   }
 
 }

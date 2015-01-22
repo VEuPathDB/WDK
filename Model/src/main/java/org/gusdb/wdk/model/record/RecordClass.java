@@ -467,6 +467,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return fields;
   }
 
+  @Override
   public AttributeField[] getAttributeFields() {
     Map<String, AttributeField> attributes = getAttributeFieldMap();
     AttributeField[] array = new AttributeField[attributes.size()];
