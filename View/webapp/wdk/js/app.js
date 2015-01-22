@@ -78,12 +78,12 @@ wdk.questionView = function registerQuestionView() {
 
 // Global event handlers
 // need to call draw on dataTables that are children of a tab panel
-$(document).on('tabsactivate', function() {
-  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+jQuery(document).on('tabsactivate', function() {
+  jQuery(jQuery.fn.dataTable.tables(true)).DataTable().columns.adjust();
 });
 
-$(window).on('resize', _.throttle(function() {
-  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+jQuery(window).on('resize', _.throttle(function() {
+  jQuery(jQuery.fn.dataTable.tables(true)).DataTable().columns.adjust();
 }, 100));
 
 
@@ -106,7 +106,7 @@ function loadOnMutation() {
 
   observer.observe(target, config);
 
-  $(window).on('beforeunload', function() {
+  jQuery(window).on('beforeunload', function() {
     observer.disconnect();
   });
 
@@ -128,5 +128,5 @@ function loadUniqueMutationTargets(mutations) {
       ? acc.concat([ mutation.target ])
       : acc;
   }, []));
-  if (targets.length > 0) rafLoad($(targets));
+  if (targets.length > 0) rafLoad(jQuery(targets));
 }
