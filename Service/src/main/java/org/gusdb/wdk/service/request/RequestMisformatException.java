@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.util;
+package org.gusdb.wdk.service.request;
 
 
 public class RequestMisformatException extends Exception {

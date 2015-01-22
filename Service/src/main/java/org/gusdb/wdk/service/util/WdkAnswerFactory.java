@@ -13,17 +13,19 @@ import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.service.util.WdkResultRequestSpecifics.SortItem;
+import org.gusdb.wdk.service.request.WdkAnswerRequest;
+import org.gusdb.wdk.service.request.WdkAnswerRequestSpecifics;
+import org.gusdb.wdk.service.request.WdkAnswerRequestSpecifics.SortItem;
 
-public class WdkResultFactory {
+public class WdkAnswerFactory {
 
   private final UserBean _user;
 
-  public WdkResultFactory(UserBean user) {
+  public WdkAnswerFactory(UserBean user) {
     _user = user;
   }
 
-  public AnswerValueBean createResult(WdkResultRequest request, WdkResultRequestSpecifics specifics) throws WdkModelException {
+  public AnswerValueBean createResult(WdkAnswerRequest request, WdkAnswerRequestSpecifics specifics) throws WdkModelException {
     try {
       Question question = request.getQuestion();
       // FIXME: for now just past name of first filter if one exists
@@ -41,7 +43,7 @@ public class WdkResultFactory {
     }
   }
 
-  public AnswerValueBean createResult(WdkResultRequest request) throws WdkModelException {
+  public AnswerValueBean createResult(WdkAnswerRequest request) throws WdkModelException {
     try {
       Question question = request.getQuestion();
       return new QuestionBean(question).makeAnswerValue(_user, convertParams(request.getParamValues()), true, 0);
@@ -58,7 +60,7 @@ public class WdkResultFactory {
     }
     return conversion;
   }
-  
+
   private Map<String, Boolean> convertSorting(List<SortItem> sorting) {
     Map<String, Boolean> conversion = new LinkedHashMap<>();
     for (SortItem sort : sorting) {

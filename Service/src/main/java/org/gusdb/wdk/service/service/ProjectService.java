@@ -15,7 +15,10 @@ public class ProjectService extends WdkService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response getProjectInfo() {
-    WdkModel wdkModel = getWdkModel();
+    return Response.ok(getProjectJson(getWdkModel()).toString()).build();
+  }
+
+  private static JSONObject getProjectJson(WdkModel wdkModel) {
     JSONObject json = new JSONObject();
     json.put("projectId", wdkModel.getProjectId());
     json.put("version", wdkModel.getVersion());
@@ -23,6 +26,6 @@ public class ProjectService extends WdkService {
     json.put("releaseDate", wdkModel.getReleaseDate());
     json.put("introduction", wdkModel.getIntroduction());
     json.put("webAppUrl", wdkModel.getModelConfig().getWebAppUrl());
-    return Response.ok(json.toString()).build();
+    return json;
   }
 }

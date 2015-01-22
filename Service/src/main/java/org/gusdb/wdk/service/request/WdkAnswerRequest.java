@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.util;
+package org.gusdb.wdk.service.request;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,9 +20,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class WdkResultRequest {
+public class WdkAnswerRequest {
 
-  private static final Logger LOG = Logger.getLogger(WdkResultRequest.class);
+  private static final Logger LOG = Logger.getLogger(WdkAnswerRequest.class);
   
   /**
    * Input Format:
@@ -41,13 +41,13 @@ public class WdkResultRequest {
    * @return
    * @throws RequestMisformatException
    */
-  public static WdkResultRequest createFromJson(User user, JSONObject json, WdkModelBean model) throws RequestMisformatException {
+  public static WdkAnswerRequest createFromJson(User user, JSONObject json, WdkModelBean model) throws RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
       String questionFullName = json.getString("questionName");
       model.validateQuestionFullName(questionFullName);
       Question question = model.getModel().getQuestion(questionFullName);
-      WdkResultRequest request = new WdkResultRequest(question);
+      WdkAnswerRequest request = new WdkAnswerRequest(question);
 
       // parse param values and validate
       JSONArray paramsJson = json.getJSONArray("params");
@@ -104,7 +104,7 @@ public class WdkResultRequest {
   private Map<String, ParamValue> _params = new HashMap<>();
   private List<FilterValue> _filters = new ArrayList<>();
 
-  private WdkResultRequest(Question question) {
+  private WdkAnswerRequest(Question question) {
     _question = question;
   }
 
