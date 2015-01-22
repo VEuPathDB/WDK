@@ -109,7 +109,7 @@ public class ProcessQuestionAction extends Action {
       return forward;
     }
     catch (Exception ex) {
-      logger.error(ex, ex);
+      logger.error("Error while processing question", ex);
 
       ActionMessages messages = new ActionErrors();
       ActionMessage message = new ActionMessage("mapped.properties", (qFullName == null ||
@@ -117,6 +117,7 @@ public class ProcessQuestionAction extends Action {
       messages.add(ActionErrors.GLOBAL_MESSAGE, message);
       saveErrors(request, messages);
       ActionForward forward = mapping.getInputForward();
+      logger.error("ProcessQuestionAction error forward = " + forward.getPath());
       return forward;
     }
   }
