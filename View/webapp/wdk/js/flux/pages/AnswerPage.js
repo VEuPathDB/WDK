@@ -13,6 +13,19 @@
  * The third case is similar forwarding one action to another based on some
  * set of criteria, such as forwarding to a login screen for authentication.
  *
+ * The router is initialized in the file ../../wdk-3.0.js with the lines:
+ *
+ *     Router.run(appRoutes, (Handler, state) => React.render(
+ *       <Handler {...state}/>, document.body
+ *     ));
+ *
+ * The first argument is the set of route rules. The second argument is a
+ * function which is called everytime route rules are processed. This function
+ * will render `Handler`, which is the component registered for the matched
+ * route, and it will pass `state` as a set of props (`this.props` in this
+ * component).
+ *
+ * See https://github.com/rackt/react-router/blob/master/docs/api/run.md#callbackhandler-state
  *
  * The primary responsibility of the AnswerPage is to call an ActionCreator to
  * load the Answer resource from the REST service, and to update the page when
@@ -42,6 +55,12 @@ export default React.createClass({
    * a component. If a type doesn't match, React will log a warning in the
    * browser console. These checks are skipped in production builds.
    *
+   * In this case, we're using shape for both `query` and `params` to describe
+   * what properties each of those objects are expected to have. You might also
+   * notice that query.numrecs and query.offset are strings, instead of numbers.
+   * This is becuase these values are parsed out from the URL, which is a
+   * string. They will be converted to numbers in loadAnswerStore() below.
+   *
    * See http://facebook.github.io/react/docs/reusable-components.html#prop-validation
    */
   propTypes: {
@@ -56,10 +75,14 @@ export default React.createClass({
 
   /**
    * mixins are used to share behaviors between otherwise unrelated components.
+   * React will use each object in the provided array to attach additional
+   * behavior to instances of the component class.
    *
    * The store mixin is used to reduce some boiler-plate which is necessary to
    * update the state of the component based on changes to a store. In this
    * case, we create a store mixin based on the AnswerStore.
+   *
+   * See http://facebook.github.io/react/docs/component-specs.html#mixins
    */
   mixins: [ StoreMixin(AnswerStore) ],
 
