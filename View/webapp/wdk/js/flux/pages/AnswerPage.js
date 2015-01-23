@@ -89,8 +89,9 @@ export default React.createClass({
 
   /**
    * loadAnswerStore will call the loadAnswer action creator. Props are
-   * receieved from the router. The props will include the params and query
-   * related to the URL.
+   * receieved from the router. (Typically they are acquired by the router
+   * from attributes in the JSX tag that called it.)  The props will include the 
+   * params and query related to the URL.
    *
    * See more at https://github.com/rackt/react-router/blob/master/docs/api/run.md#state
    *
@@ -127,7 +128,7 @@ export default React.createClass({
    * AnswerStore emits a change (see StoreMixin(AnswerStore) above).
    *
    * This render method is fairly simple. It will get the question name
-   * from the props received from the router, and assign it to a local variable
+   * from the props received from the router (stored in this.props), and assign it to a local variable
    * named `questionName`. It will then display a heading2 element with the
    * question name as its content, and then it will render the Answer component
    * as a child. This component will pass the question name, along with it's own
@@ -145,6 +146,8 @@ export default React.createClass({
      *
      * See http://facebook.github.io/react/docs/transferring-props.html#transferring-with-...-in-jsx
      * and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator
+     *
+     * to understand the embedded XML, see: https://facebook.github.io/react/docs/jsx-in-depth.html
      */
     return (
       <div>
