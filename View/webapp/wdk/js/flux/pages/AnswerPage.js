@@ -134,6 +134,8 @@ export default React.createClass({
    * state, as properties to the Answer component.
    */
   render() {
+
+    /* use "destructuring" syntax to assign this.props.params.questionName to questionName */
     var { questionName } = this.props.params;
 
     /**
