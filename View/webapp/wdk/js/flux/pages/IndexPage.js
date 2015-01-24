@@ -1,13 +1,10 @@
 import React from 'react';
 import Router from 'react-router';
 
+// Link is a component used to create links to other routes.
 var { Link } = Router;
 
-export default React.createClass({
-
-  displayName: 'IndexPage',
-
-  mixins: [ Router.Navigation ],
+var IndexPage = React.createClass({
 
   render() {
     return (
@@ -23,3 +20,5 @@ export default React.createClass({
   }
 
 });
+
+export default IndexPage;

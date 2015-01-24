@@ -1,9 +1,17 @@
 export default {
 
+  App: mirrorProps(
+    'LOADING',
+    'ERROR'
+  ),
+
   Answer: mirrorProps(
+    'INIT',
     'LOADING',
     'LOAD_SUCCESS',
-    'LOAD_ERROR'
+    'LOAD_ERROR',
+    'MOVE_COLUMN',
+    'CHANGE_ATTRIBUTES'
   ),
 
   QuestionList: mirrorProps(

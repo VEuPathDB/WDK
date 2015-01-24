@@ -65,9 +65,11 @@ export default class Store {
     ensureFunction(getState, "getState");
 
     var emitter = new EventEmitter();
-    Dispatcher.register(action => {
+    this.dispatchToken = Dispatcher.register(action => {
       dispatchHandler(action, function emitChange() {
         emitter.emit('change', getState());
+      }, function waitFor(tokens) {
+        Dispatcher.waitFor(tokens)
       });
     });
 

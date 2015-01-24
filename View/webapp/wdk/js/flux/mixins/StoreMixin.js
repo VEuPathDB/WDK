@@ -1,23 +1,27 @@
 import React from 'react';
 
-export default function createStoreMixin(store) {
+export default function createStoreMixin(...stores) {
 
   return {
 
     setStateFromStore() {
-      this.setState(store.getState());
+      stores
+        .forEach(store => this.setState(store.getState()));
     },
 
     getInitialState() {
-      return store.getState();
+      return stores
+        .reduce((state, store) => _.assign(state, store.getState()), {});
     },
 
     componentWillMount() {
-      store.subscribe(this.setStateFromStore);
+      stores
+        .forEach(store => store.subscribe(this.setStateFromStore));
     },
 
     componentWillUnmount() {
-      store.unsubscribe(this.setStateFromStore);
+      stores
+        .forEach(store => store.unsubscribe(this.setStateFromStore));
     }
 
   };

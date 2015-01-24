@@ -2,31 +2,35 @@
  * Renders a set of Records associated with an Answer in a table.
  */
 
-
 import React from 'react';
-import DataTable from './DataTable';
+import _ from 'lodash';
+import RecordTable from './RecordTable';
+import Loading from './Loading';
 
 var PropTypes = React.PropTypes;
 
 var Answer = React.createClass({
 
   propTypes: {
-    questionName: PropTypes.string.isRequired
-  },
-
-  handleMoveColumn(column, newPosition) {
-    // TODO Trigger record action
-    console.log(`You moved ${column} to column #${newPosition}.`);
+    questionName: PropTypes.string.isRequired,
+    answerEvents: PropTypes.shape({
+      onSort: PropTypes.func,
+      onMoveColumn: PropTypes.func,
+      onChangeColumns: PropTypes.func,
+      onNewPage: PropTypes.func
+    })
   },
 
   render() {
-    var content;
-    var { answer, questionName, error, isLoading } = this.props;
+    var { answer, error, isLoading, displayInfo, answerEvents } = this.props;
 
-    if (isLoading) return <div>Loading...</div>;
-    else if (error) return <div>There was an error: {error}</div>;
-    else if (answer) return <DataTable {...answer} onMoveColumn={this.handleMoveColumn}/>;
-    else return <div>There is nothing to show</div>;
+    return (
+      <div className="wdkAnswer">
+        {isLoading ? <Loading/> : ''}
+        {error ? <div className="wdkAnswerError">{error}</div> : ''}
+        {!_.isEmpty(answer) ? <RecordTable {...answer} {...answerEvents} displayInfo={displayInfo}/> : ''}
+      </div>
+    );
   }
 
 });
