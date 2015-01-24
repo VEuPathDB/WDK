@@ -5,9 +5,8 @@ import IndexPage from './pages/IndexPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AnswerPage from './pages/AnswerPage';
 import QuestionListPage from './pages/QuestionListPage';
-import TestPage from './pages/TestPage';
 
-var { Route, RouteHandler, DefaultRoute, NotFoundRoute } = Router;
+var { Route, DefaultRoute, NotFoundRoute } = Router;
 
 // export default Router.create({ routes });
 

@@ -34,11 +34,13 @@
  */
 
 /** Import object/functions from other modules */
+import _ from 'lodash';
 import React from 'react';
+import Router from 'react-router';
 import Answer from '../components/Answer';
-import AnswerStore from '../stores/AnswerStore';
-import StoreMixin from '../mixins/StoreMixin';
-import { loadAnswer } from '../actions/AnswerPageActions';
+import AnswerPageStore from '../stores/AnswerPageStore';
+import createStoreMixin from '../mixins/StoreMixin';
+import * as AnswerPageActions from '../actions/AnswerPageActions';
 
 /**
  * Export the React component class for AnswerPage.
@@ -84,11 +86,11 @@ export default React.createClass({
    *
    * See http://facebook.github.io/react/docs/component-specs.html#mixins
    */
-  mixins: [ StoreMixin(AnswerStore) ],
+  mixins: [ createStoreMixin(AnswerPageStore), Router.Navigation ],
 
 
   /**
-   * loadAnswerStore will call the loadAnswer action creator. Props are
+   * loadAnswerPage will call the loadAnswer action creator. Props are
    * receieved from the router. (Typically they are acquired by the router
    * from attributes in the JSX tag that called it.)  The props will include the 
    * params and query related to the URL.
@@ -103,24 +105,109 @@ export default React.createClass({
    *
    * See http://facebook.github.io/react/docs/component-specs.html#mounting-componentdidmount
    */
-  loadAnswerStore(props) {
+  loadAnswerPage(props) {
     var { params, query } = props;
-    var numRecords = Number(query.numrecs) || 100;
-    var offset = Number(query.offset) || 0;
-    var displayInfo = { pagination: { numRecords, offset } };
-    loadAnswer(params.questionName, { displayInfo });
+
+    if (!query.numrecs || !query.offset) {
+      this.replaceWith('answer', params, _.defaults({
+        numrecs: query.numrecs || 100,
+        offset: query.offset || 0
+      }, query));
+    } else {
+      var pagination = {
+        numRecords: Number(query.numrecs),
+        offset: Number(query.offset)
+      };
+      var sorting = [{
+        columnName: query.sortBy,
+        direction: query.sortDir
+      }];
+      var displayInfo = { pagination, sorting };
+      AnswerPageActions.loadAnswer(params.questionName, { displayInfo });
+    }
   },
 
 
-  /** See loadAnswerStore() */
+  /** See loadAnswerPage() */
   componentDidMount() {
-    this.loadAnswerStore(this.props);
+    AnswerPageActions.initialize();
+    this.loadAnswerPage(this.props);
   },
 
 
-  /** See loadAnswerStore() */
+  /** See loadAnswerPage() */
   componentWillReceiveProps(newProps) {
-    this.loadAnswerStore(newProps);
+    if (this.props.params.questionName !== newProps.params.questionName) {
+      AnswerPageActions.initialize();
+    }
+    this.loadAnswerPage(newProps);
+  },
+
+
+  /**
+   * This is a collection of event handlers that will be passed to the Answer
+   * component (which will, in turn, pass these to the RecordTable component.
+   * In our render() method, we will bind these methods to the component
+   * instance so that we can use `this` as expected. Normally, React will do
+   * this for us, but since we are nesting methods within a property, we have
+   * to do this ourselves. This is all really simply for brevity in code when
+   * we pass these handers to the Answer component. I will also make
+   * refactoring a little easier in the future.
+   */
+  answerEvents: {
+
+    onSort(attribute) {
+      var { params, query } = this.props;
+      var { displayInfo: { sorting } } = this.state;
+      var sortColumn = sorting[0];
+      var direction;
+
+      if (sortColumn.columnName === attribute.name) {
+        direction = sortColumn.direction === 'ASC' ? 'DESC' : 'ASC';
+      } else {
+        direction = 'ASC';
+      }
+
+      // This method is provided by the Router.Navigation mixin. It will update
+      // the URL, which will trigger a new Route event, which will cause this
+      // component to get new props, which will cause this component to call
+      // loadAnswer() with the sorting configuration.
+      this.replaceWith('answer', params, _.defaults({
+        sortBy: attribute.name,
+        sortDir: direction
+      }, query));
+
+      // This is an alternative way, which is to call loadAnswer.
+      // The appeal of the above is that if the user clicks the browser refresh
+      // button, they won't lose their sorting. We can also acheive that by
+      // saving the display info to localStorage and reloading it when the page
+      // is reloaded.
+      //
+      // var opts = {
+      //   displayInfo: {
+      //     sorting: [ { columnName: attribute.name, direction } ],
+      //     attributes,
+      //     pagination: {
+      //       offset: 0,
+      //       numRecords: 100
+      //     }
+      //   }
+      // };
+      // AnswerPageActions.loadAnswer(questionName, opts);
+    },
+
+    onMoveColumn(columnName, newPosition) {
+      AnswerPageActions.moveColumn(columnName, newPosition);
+    },
+
+    onChangeColumns(attributes) {
+      AnswerPageActions.changeAttributes(attributes);
+    },
+
+    onNewPage(offset, numRecords) {
+      console.log(offset, numRecords);
+    }
+
   },
 
   /**
@@ -138,6 +225,12 @@ export default React.createClass({
 
     /* use "destructuring" syntax to assign this.props.params.questionName to questionName */
     var { questionName } = this.props.params;
+    var { isLoading, error, answer, displayInfo } = this.state;
+    // var answer = this.state.answers[questionName];
+    // var displayInfo = this.state.displayInfo[questionName];
+
+    // Bind methods to `this`
+    var answerEvents = _.mapValues(this.answerEvents, te => _.bind(te, this));
 
     /**
      * {...this.state} is JSX short-hand syntax to pass each key-value pair of
@@ -152,7 +245,13 @@ export default React.createClass({
     return (
       <div>
         <h2>{questionName}</h2>
-        <Answer questionName={questionName} {...this.state}/>
+        <Answer
+          questionName={questionName}
+          answer={answer}
+          answerEvents={answerEvents}
+          isLoading={isLoading}
+          error={error}
+          displayInfo={displayInfo}/>
       </div>
     );
   }

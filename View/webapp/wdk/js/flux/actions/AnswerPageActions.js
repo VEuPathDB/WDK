@@ -7,15 +7,18 @@ import * as ServiceAPI from '../ServiceAPI';
 
 /* helpers */
 
-function dispatchLoadSuccess(answer) {
-  Dispatcher.dispatch({ type: ActionType.Answer.LOAD_SUCCESS, answer });
+function dispatchLoadSuccess(answer, requestData) {
+  // Dispatcher.dispatch({ type: ActionType.App.LOADING, isLoading: false });
+  Dispatcher.dispatch({ type: ActionType.Answer.LOAD_SUCCESS, answer, requestData });
 }
 
 function dispatchLoadError(error) {
+  // Dispatcher.dispatch({ type: ActionType.App.ERROR, error });
   Dispatcher.dispatch({ type: ActionType.Answer.LOAD_ERROR, error });
 }
 
 function dispatchLoading() {
+  // Dispatcher.dispatch({ type: ActionType.App.LOADING, isLoading: true });
   Dispatcher.dispatch({ type: ActionType.Answer.LOADING });
 }
 
@@ -86,18 +89,36 @@ export function loadAnswer(questionName, opts = {}) {
     }
   });
   var questionDefinition = { questionName, params, filters };
-  var data = { questionDefinition, displayInfo };
+  var requestData = { questionDefinition, displayInfo };
   dispatchLoading();
-  ServiceAPI.postResource('/answer', data)
-    .then(dispatchLoadSuccess, dispatchLoadError)
+  ServiceAPI.postResource('/answer', requestData)
+    .then(function(answer) {
+      dispatchLoadSuccess(answer, requestData);
+    }, function(error) {
+      dispatchLoadError(error);
+    })
     // catch errors caused by Store callbacks
     .catch(err => console.assert(false, err));
 }
 
+export function initialize() {
+  Dispatcher.dispatch({ type: ActionType.Answer.INIT });
+}
+
 export function moveColumn(columnName, newPosition) {
+  console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
+  console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
   Dispatcher.dispatch({
     type: ActionType.Answer.MOVE_COLUMN,
     columnName,
-    newPostition
+    newPosition
+  });
+}
+
+export function changeAttributes(attributes) {
+  console.assert(Array.isArray(attributes), `attributes ${attributes} should be an array.`);
+  Dispatcher.dispatch({
+    type: ActionType.Answer.CHANGE_ATTRIBUTES,
+    attributes
   });
 }
