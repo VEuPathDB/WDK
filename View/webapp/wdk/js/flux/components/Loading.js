@@ -5,16 +5,16 @@ var Loading = React.createClass({
 
   componentDidMount() {
     var opts = {
-      lines: 15, // The number of lines to draw
+      lines: 17, // The number of lines to draw
       length: 0, // The length of each line
-      width: 4, // The line thickness
-      radius: 13, // The radius of the inner circle
+      width: 3, // The line thickness
+      radius: 8, // The radius of the inner circle
       corners: 1, // Corner roundness (0..1)
       rotate: 0, // The rotation offset
       direction: 1, // 1: clockwise, -1: counterclockwise
       color: '#000', // #rgb or #rrggbb or array of colors
-      speed: 1.5, // Rounds per second
-      trail: 36, // Afterglow percentage
+      speed: 1, // Rounds per second
+      trail: 100, // Afterglow percentage
       shadow: false, // Whether to render a shadow
       hwaccel: false, // Whether to use hardware acceleration
       className: 'spinner', // The CSS class to assign to the spinner
@@ -27,7 +27,7 @@ var Loading = React.createClass({
   },
 
   render() {
-    return <div style={{ position: 'relative' }} />
+    return <div style={{ position: 'absolute', top: '2em', left: '10em' }} />
   }
 });
 
