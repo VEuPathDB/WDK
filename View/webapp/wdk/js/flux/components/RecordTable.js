@@ -180,7 +180,7 @@ var RecordTable = React.createClass({
     var lastRec = Math.min(pagination.offset + pagination.numRecords, meta.count);
 
     return (
-      <div className="wdk-RecordTable-Wrapper">
+      <div>
         <div className="wdk-RecordTable-AttributeSelectorWrapper">
           <button onClick={this.handleOpenAttributeSelectorClick}>Add Columns</button>
           <Dialog
@@ -210,57 +210,59 @@ var RecordTable = React.createClass({
 
         <p>Showing {firstRec} - {lastRec} of {meta.count} {meta['class']} records</p>
 
-        <table className="wdk-RecordTable">
-          <thead>
-            <tr ref="headerRow">
-              {_.map(visibleAttributes, attribute => {
-                var sortClass = sortColumn.columnName === attribute.name
-                  ? sortClassMap[sortColumn.direction]
-                  : 'ui-icon ui-icon-blank';
+        <div className="wdk-RecordTable-Wrapper">
+          <table className="wdk-RecordTable">
+            <thead>
+              <tr ref="headerRow">
+                {_.map(visibleAttributes, attribute => {
+                  var sortClass = sortColumn.columnName === attribute.name
+                    ? sortClassMap[sortColumn.direction]
+                    : 'ui-icon ui-icon-blank';
 
-                var sort = _.partial(this.handleSort, attribute);
-                var hide = _.partial(this.handleHideColumn, attribute);
+                  var sort = _.partial(this.handleSort, attribute);
+                  var hide = _.partial(this.handleHideColumn, attribute);
+
+                  return (
+                    <th key={attribute.name}
+                      data-column={attribute.name}
+                      className={[attribute.name, attribute.className].join(' ')}
+                      title={'Sort table by ' + attribute.displayName}
+                      onClick={sort} >
+                      <div className="wdk-RecordTable-headerWrapper">
+                        <span className="ui-icon ui-icon-close"
+                          style={{position: 'absolute', right: 0}}
+                          title="Hide column"
+                          onClick={hide}/>
+                        <span>{attribute.displayName}</span>
+                        <span className={sortClass} style={{marginRight: '1em'}}/>
+                      </div>
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {records.map(record => {
+                // TODO Handle display records inline, which might just be a dump of attrs and tables
+                // or it will be an option that will fetch the record via ajax.
+
+                var attributes = _.indexBy(record.attributes, 'name');
 
                 return (
-                  <th key={attribute.name}
-                    data-column={attribute.name}
-                    className={[attribute.name, attribute.className].join(' ')}
-                    title={'Sort table by ' + attribute.displayName}
-                    onClick={sort} >
-                    <div className="wdk-RecordTable-headerWrapper">
-                      <span className="ui-icon ui-icon-close"
-                        style={{position: 'absolute', right: 0}}
-                        title="Hide column"
-                        onClick={hide}/>
-                      <span>{attribute.displayName}</span>
-                      <span className={sortClass} style={{marginRight: '1em'}}/>
-                    </div>
-                  </th>
+                  <tr key={record.id}>
+                    {_.map(visibleAttributes, attribute => {
+                      var value = attributes[attribute.name].value;
+                      return (
+                        <td key={attribute.name}
+                          dangerouslySetInnerHTML={{__html: formatAttribute(attribute, value)}}/>
+                        );
+                    })}
+                  </tr>
                 );
               })}
-            </tr>
-          </thead>
-          <tbody>
-            {records.map(record => {
-              // TODO Handle display records inline, which might just be a dump of attrs and tables
-              // or it will be an option that will fetch the record via ajax.
-
-              var attributes = _.indexBy(record.attributes, 'name');
-
-              return (
-                <tr key={record.id}>
-                  {_.map(visibleAttributes, attribute => {
-                    var value = attributes[attribute.name].value;
-                    return (
-                      <td key={attribute.name}
-                        dangerouslySetInnerHTML={{__html: formatAttribute(attribute, value)}}/>
-                      );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
