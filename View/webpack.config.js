@@ -2,7 +2,7 @@ var webpack = require('webpack');
 var node_env = process.env.NODE_ENV || 'development';
 
 module.exports = {
-  cache: true,
+  bail: true,
   resolve: {
     // adding .jsx; the rest are defaults (this overwrites, so we're including them)
     extensions: ["", ".webpack.js", ".web.js", ".js", ".jsx"]

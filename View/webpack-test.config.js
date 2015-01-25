@@ -1,4 +1,5 @@
 module.exports = {
+  bail: true,
   resolve: {
     alias: {
       'wdk': __dirname + '/webapp/wdk/js'
