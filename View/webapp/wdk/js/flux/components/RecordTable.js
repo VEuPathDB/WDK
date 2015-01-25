@@ -229,7 +229,7 @@ var RecordTable = React.createClass({
                     onClick={sort} >
                     <div className="wdk-RecordTable-headerWrapper">
                       <span className="ui-icon ui-icon-close"
-                        style={{position: 'absolute', right: '.5em'}}
+                        style={{position: 'absolute', right: 0}}
                         title="Hide column"
                         onClick={hide}/>
                       <span>{attribute.displayName}</span>
