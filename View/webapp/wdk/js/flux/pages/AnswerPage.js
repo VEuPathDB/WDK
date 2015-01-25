@@ -130,16 +130,12 @@ export default React.createClass({
 
   /** See loadAnswerPage() */
   componentDidMount() {
-    AnswerPageActions.initialize();
     this.loadAnswerPage(this.props);
   },
 
 
   /** See loadAnswerPage() */
   componentWillReceiveProps(newProps) {
-    if (this.props.params.questionName !== newProps.params.questionName) {
-      AnswerPageActions.initialize();
-    }
     this.loadAnswerPage(newProps);
   },
 
@@ -224,10 +220,7 @@ export default React.createClass({
   render() {
 
     /* use "destructuring" syntax to assign this.props.params.questionName to questionName */
-    var { questionName } = this.props.params;
-    var { isLoading, error, answer, displayInfo } = this.state;
-    // var answer = this.state.answers[questionName];
-    // var displayInfo = this.state.displayInfo[questionName];
+    var { isLoading, error, answer, displayInfo, questionDefinition: { questionName } } = this.state;
 
     // Bind methods to `this`
     var answerEvents = _.mapValues(this.answerEvents, te => _.bind(te, this));

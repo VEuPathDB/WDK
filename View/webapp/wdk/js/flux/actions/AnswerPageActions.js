@@ -1,5 +1,4 @@
-"use strict";
-
+import _ from 'lodash';
 import ActionType from '../ActionType';
 import Dispatcher from '../Dispatcher';
 import * as ServiceAPI from '../ServiceAPI';
@@ -12,14 +11,14 @@ function dispatchLoadSuccess(answer, requestData) {
   Dispatcher.dispatch({ type: ActionType.Answer.LOAD_SUCCESS, answer, requestData });
 }
 
-function dispatchLoadError(error) {
+function dispatchLoadError(error, requestData) {
   // Dispatcher.dispatch({ type: ActionType.App.ERROR, error });
-  Dispatcher.dispatch({ type: ActionType.Answer.LOAD_ERROR, error });
+  Dispatcher.dispatch({ type: ActionType.Answer.LOAD_ERROR, error, requestData });
 }
 
-function dispatchLoading() {
+function dispatchLoading(requestData) {
   // Dispatcher.dispatch({ type: ActionType.App.LOADING, isLoading: true });
-  Dispatcher.dispatch({ type: ActionType.Answer.LOADING });
+  Dispatcher.dispatch({ type: ActionType.Answer.LOADING, requestData });
 }
 
 
@@ -90,12 +89,12 @@ export function loadAnswer(questionName, opts = {}) {
   });
   var questionDefinition = { questionName, params, filters };
   var requestData = { questionDefinition, displayInfo };
-  dispatchLoading();
+  dispatchLoading(requestData);
   ServiceAPI.postResource('/answer', requestData)
     .then(function(answer) {
       dispatchLoadSuccess(answer, requestData);
     }, function(error) {
-      dispatchLoadError(error);
+      dispatchLoadError(error, requestData);
     })
     // catch errors caused by Store callbacks
     .catch(err => console.assert(false, err));

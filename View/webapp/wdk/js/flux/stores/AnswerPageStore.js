@@ -24,6 +24,9 @@ var state = Immutable.fromJS({
   questionDefinition: {}
 });
 
+/** Used to roll back on loading errors */
+var previousState;
+
 export default new Store({
 
   /**
@@ -32,16 +35,18 @@ export default new Store({
   dispatchHandler(action, emitChange) {
     switch(action.type) {
 
-      case ActionType.Answer.INIT:
-        state = state.merge({
-          answer: {},
-          questionDefinition: {},
-          displayInfo: {}
-        });
-        emitChange();
-        break;
-
       case ActionType.Answer.LOADING:
+        var { requestData: { questionDefinition: { questionName } } } = action;
+
+        if(state.getIn(['questionDefinition', 'questionName']) !== questionName) {
+          previousState = state;
+          state = state.merge({
+            answer: {},
+            questionDefinition: {},
+            displayInfo: {}
+          });
+        }
+
         state = state.merge({
           isLoading: true,
           error: null
@@ -78,8 +83,7 @@ export default new Store({
         break;
 
       case ActionType.Answer.LOAD_ERROR:
-        state = state.merge({
-          isLoading: false,
+        state = previousState.merge({
           error: action.error
         });
         emitChange();
