@@ -49,7 +49,7 @@ $(wdk3_bundle): $(wdk3_sources)
 
 
 # =============================================================================
-# Contentate libs into a single file, separated by newline
+# Concatenate libs into a single file, separated by newline
 # =============================================================================
 
 $(libs_bundle): $(libs_sources)
