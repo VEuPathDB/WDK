@@ -27,7 +27,9 @@ var Loading = React.createClass({
   },
 
   render() {
-    return <div style={{ position: 'absolute', top: '2em', left: '10em' }} />
+    return (
+      <div style={{ position: 'absolute', top: '2em', left: '10em' }} />
+    );
   }
 });
 

@@ -69,7 +69,7 @@ export default class Store {
       dispatchHandler(action, function emitChange() {
         emitter.emit('change', getState());
       }, function waitFor(tokens) {
-        Dispatcher.waitFor(tokens)
+        Dispatcher.waitFor(tokens);
       });
     });
 
@@ -89,9 +89,9 @@ export default class Store {
     this.getState = getState;
   }
 
-  subscribe(callback) { }
+  subscribe() { }
 
-  unsubscribe(callback) { }
+  unsubscribe() { }
 }
 
 

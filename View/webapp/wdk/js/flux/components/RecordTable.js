@@ -25,8 +25,8 @@ import Dialog from './Dialog';
 /** TODO Look up or inject custom formatters */
 function formatAttribute(attribute, value) {
   switch(attribute.type) {
-    case 'text': return value
-    case 'link': return <a href={value.url}>{value.display}</a>
+    case 'text': return value;
+    case 'link': return (<a href={value.url}>{value.display}</a>);
 
     /** FIXME Throw on unknown types when we have that info from service */
     default: return value;
@@ -156,7 +156,7 @@ var RecordTable = React.createClass({
       $headerRow.sortable({
         items: '> th',
         helper: 'clone',
-        opacity: .7,
+        opacity: 0.7,
         placeholder: 'ui-state-highlight',
         stop(e, ui) {
           var { item } = ui;
@@ -192,15 +192,17 @@ var RecordTable = React.createClass({
               <ul className="wdk-RecordTable-AttributeSelector">
                 {_.map(meta.attributes, attribute => {
                   var { name, displayName } = attribute;
-                  return <li key={name}>
-                    <input type="checkbox"
-                      id={'column-select-' + name}
-                      name="pendingAttribute"
-                      value={name}
-                      onChange={this.togglePendingAttribute}
-                      checked={visibleNames.indexOf(name) > -1}/>
-                    <label htmlFor={'column-select-' + name}> {displayName} </label>
-                  </li>
+                  return (
+                    <li key={name}>
+                      <input type="checkbox"
+                        id={'column-select-' + name}
+                        name="pendingAttribute"
+                        value={name}
+                        onChange={this.togglePendingAttribute}
+                        checked={visibleNames.indexOf(name) > -1}/>
+                      <label htmlFor={'column-select-' + name}> {displayName} </label>
+                    </li>
+                  );
                 })}
               </ul>
               <button>Update</button>
