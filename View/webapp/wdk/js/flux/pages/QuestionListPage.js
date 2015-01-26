@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';
 import QuestionListStore from '../stores/QuestionListStore';
@@ -12,6 +11,10 @@ export default React.createClass({
 
   mixins: [ createStoreMixin(QuestionListStore) ],
 
+  componentDidMount() {
+    loadQuestions();
+  },
+
   render() {
     var { questions, error } = this.state;
 
@@ -23,21 +26,15 @@ export default React.createClass({
       return (
         <div>
           <ol>
-            {_.map(questions, question => (
+            {questions.map(question => (
               <li>
-                {question} -
+                {question + ' - '}
                 <Link to="answer" params={{ questionName: question }}>answer page</Link>
               </li>
             ))}
           </ol>
         </div>
       );
-    }
-  },
-
-  statics: {
-    willTransitionTo() {
-      loadQuestions();
     }
   }
 
