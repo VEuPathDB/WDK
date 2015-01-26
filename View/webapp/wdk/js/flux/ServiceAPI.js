@@ -46,6 +46,7 @@ export function requestResource(type, resourcePath, data) {
 //
 // For now, we will leave things like this up to the ActionCreators.
 
+// _.partial is from the lodash utilities library.  It prepends the second argument.
 export var getResource = _.partial(requestResource, 'GET');
 export var postResource = _.partial(requestResource, 'POST');
 export var putResource = _.partial(requestResource, 'PUT');
