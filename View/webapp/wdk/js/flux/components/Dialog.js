@@ -1,7 +1,5 @@
 import React from 'react';
 
-var $ = window.jQuery;
-
 /**
  * Adapted from http://jsbin.com/vepidi/1/edit?html,js,output
  *

@@ -1,5 +1,3 @@
-"use strict";
-
 import ActionType from '../ActionType';
 import Dispatcher from '../Dispatcher';
 import * as ServiceAPI from '../ServiceAPI';

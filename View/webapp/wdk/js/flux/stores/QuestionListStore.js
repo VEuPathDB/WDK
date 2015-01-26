@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import Store from './Store';
 import ActionType from '../ActionType';
 
