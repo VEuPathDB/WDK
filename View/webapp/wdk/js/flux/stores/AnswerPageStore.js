@@ -8,7 +8,7 @@
 
 import Immutable from 'immutable';
 import Store from './Store';
-import ActionType from '../ActionType';
+import * as ActionType from '../ActionType';
 
 
 /**
@@ -35,7 +35,7 @@ export default new Store({
   dispatchHandler(action, emitChange) {
     switch(action.type) {
 
-      case ActionType.Answer.LOADING:
+      case ActionType.ANSWER_LOADING:
         var { requestData: { questionDefinition: { questionName } } } = action;
 
         if(state.getIn(['questionDefinition', 'questionName']) !== questionName) {
@@ -54,7 +54,7 @@ export default new Store({
         emitChange();
         break;
 
-      case ActionType.Answer.LOAD_SUCCESS:
+      case ActionType.ANSWER_LOAD_SUCCESS:
         state = state.withMutations(state => {
           var { answer, requestData } = action;
 
@@ -82,14 +82,14 @@ export default new Store({
         emitChange();
         break;
 
-      case ActionType.Answer.LOAD_ERROR:
+      case ActionType.ANSWER_LOAD_ERROR:
         state = previousState.merge({
           error: action.error
         });
         emitChange();
         break;
 
-      case ActionType.Answer.MOVE_COLUMN:
+      case ActionType.ANSWER_MOVE_COLUMN:
         // Reorder state.displayInfo.visibleAttributes
         state = state.withMutations(state => {
           var { columnName, newPosition } = action;
@@ -103,7 +103,7 @@ export default new Store({
         emitChange();
         break;
 
-      case ActionType.Answer.CHANGE_ATTRIBUTES:
+      case ActionType.ANSWER_CHANGE_ATTRIBUTES:
         state = state.setIn(['displayInfo', 'attributes'], Immutable.fromJS(action.attributes));
         emitChange();
         break;

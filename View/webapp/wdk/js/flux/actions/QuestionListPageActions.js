@@ -1,4 +1,4 @@
-import ActionType from '../ActionType';
+import * as ActionType from '../ActionType';
 import Dispatcher from '../Dispatcher';
 import * as ServiceAPI from '../ServiceAPI';
 
@@ -6,15 +6,15 @@ import * as ServiceAPI from '../ServiceAPI';
 /* helpers */
 
 function dispatchLoadSuccess(questions) {
-  Dispatcher.dispatch({ type: ActionType.QuestionList.LOAD_SUCCESS, questions });
+  Dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOAD_SUCCESS, questions });
 }
 
 function dispatchLoadError(error) {
-  Dispatcher.dispatch({ type: ActionType.QuestionList.LOAD_ERROR, error });
+  Dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOAD_ERROR, error });
 }
 
 function dispatchLoading() {
-  Dispatcher.dispatch({ type: ActionType.QuestionList.LOADING });
+  Dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOADING });
 }
 
 
