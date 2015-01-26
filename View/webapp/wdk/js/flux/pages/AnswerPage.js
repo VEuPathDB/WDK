@@ -119,7 +119,7 @@ export default React.createClass({
         offset: Number(query.offset)
       };
       var sorting = [{
-        columnName: query.sortBy,
+        attributeName: query.sortBy,
         direction: query.sortDir
       }];
       var displayInfo = { pagination, sorting };
@@ -158,7 +158,7 @@ export default React.createClass({
       var sortColumn = sorting[0];
       var direction;
 
-      if (sortColumn.columnName === attribute.name) {
+      if (sortColumn.attributeName === attribute.name) {
         direction = sortColumn.direction === 'ASC' ? 'DESC' : 'ASC';
       } else {
         direction = 'ASC';
