@@ -1,0 +1,55 @@
+/* apply a natural box layout model to all elements, but allowing components to change */
+/* See http://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: sans-serif;
+}
+
+.wdkAnswerLoading {
+  position: absolute;
+  left: 50%;
+}
+
+.wdk-RecordTable-Wrapper {
+  overflow-x: auto;
+}
+
+.wdk-RecordTable {
+  border: 1px solid #cccccc;
+  border-collapse: collapse;
+}
+
+.wdk-RecordTable td, .wdk-RecordTable th {
+  padding: .5em;
+  min-width: 100px;
+}
+.wdk-RecordTable td {
+  border: 1px dotted #cccccc;
+}
+
+.wdk-RecordTable-headerWrapper {
+  position: relative;
+}
+
+.wdk-RecordTable th {
+  border: 1px solid #cccccc;
+  font-weight: bold;
+  background-color: #f3f3f3;
+  white-space: nowrap;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wdk-RecordTable th .ui-icon {
+  display: inline-block;
+}
+
+.wdk-RecordTable-AttributeSelectorWrapper {
+  float: right;
+}

@@ -44,6 +44,7 @@
                                            WDK-MavenInstallation,
                                            WDK/Model-Installation,
                                            WDK/Controller-Installation,
+                                           WDK/Service-Installation,
                                            WDK/View-Installation">
     <ant target="defaultProjectInstall">
       <property name="project" value="WDK"/>
@@ -173,6 +174,13 @@
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="View"/>
+    </ant>
+  </target>
+
+  <target name="WDK/Service-Installation">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="WDK"/>
+      <property name="component" value="Service"/>
     </ant>
   </target>
 

@@ -1,18 +1,22 @@
+import assert from 'assert';
+import 'wdk/core/container';
+import 'wdk/core/base_class';
+
 describe('wdk.core.container', function() {
 
-  var BaseObject = wdk.core.BaseObject;
+  var BaseClass = wdk.core.BaseClass;
   var container = wdk.core.Container.create();
 
   describe('Container', function() {
     it('should register and return factories', function() {
-      var Factory = BaseObject.extend();
+      var Factory = BaseClass.extend();
       container.register('my-factory', Factory);
 
       var retrievedFactory = container.get('my-factory');
       var instance = retrievedFactory.create();
 
-      expect(retrievedFactory).to.equal(Factory)
-      expect(instance instanceof Factory).to.equal(true);
+      assert(retrievedFactory === Factory)
+      assert(instance instanceof Factory === true);
     });
 
     it('should throw an error on re-register', function() {
@@ -22,7 +26,7 @@ describe('wdk.core.container', function() {
       } catch(e) {
         err = e;
       }
-      expect(err instanceof TypeError).to.equal(true);
+      assert(err instanceof TypeError);
     });
 
     it('should throw an error on undefined factory', function() {
@@ -32,7 +36,7 @@ describe('wdk.core.container', function() {
       } catch(e) {
         err = e;
       }
-      expect(err instanceof TypeError).to.equal(true);
+      assert(err instanceof TypeError);
     });
 
   });

@@ -1159,6 +1159,16 @@
               </choice>
             </zeroOrMore>
           </element>
+          
+          <element name="suggestion">
+            <ref name="IncludeExclude" />
+            <optional>
+               <attribute name="newBuild" />
+            </optional>
+            <optional>                  
+               <attribute name="reviseBuild" />
+            </optional>
+          </element>
 
           <ref name="paramRef" />
 

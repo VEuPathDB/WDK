@@ -15,7 +15,6 @@
       <imp:stylesheet rel="stylesheet" type="text/css" href="wdk/css/wdk.css"/>
     </c:when>
     <c:otherwise>
-      <imp:stylesheet rel="stylesheet" type="text/css" href="wdk/css/wdk.libs.min.css"/>
       <imp:stylesheet rel="stylesheet" type="text/css" href="wdk/css/wdk.min.css"/>
     </c:otherwise>
   </c:choose>

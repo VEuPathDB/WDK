@@ -1,8 +1,29 @@
+import assert from 'assert';
+import Application from 'wdk/core/application';
+
+
+// polyfill Class.create
+Function.prototype.create = function(...args) {
+  return new this(...args);
+}
+
+
 describe('wdk.core.application', function() {
 
-  var Application = wdk.core.Application;
-  var BaseObject = wdk.core.BaseObject;
   var mockDom, TestApp;
+
+  class DefaultView {
+    constructor(done) {
+      this.type = 'view';
+      if (done) done();
+    }
+  }
+
+  class MyView {
+    constructor() {
+      this.type = 'view';
+    }
+  }
 
   beforeEach(function() {
     var htmlString = '<div>' +
@@ -19,20 +40,16 @@ describe('wdk.core.application', function() {
     describe('constructor', function() {
       it('should use body as the default rootElement', function() {
         var app = Application.create();
-        expect(app.rootElement).to.equal('body');
+        assert(app.rootElement === 'body')
       });
     });
 
     describe('registerView', function() {
       it('should register views', function(done) {
-        var MyView = BaseObject.extend({
-          type: 'view'
-        });
-
         var app = TestApp.create({
           ready: function() {
             var View = app.getView('my-view');
-            expect(View).to.equal(MyView);
+            assert(View === MyView);
             done();
           }
         });
@@ -40,27 +57,17 @@ describe('wdk.core.application', function() {
       });
 
       it('should initialize matched views', function(done) {
-        var MyView = BaseObject.extend({
-          type: 'view',
-          constructor: function() {
-            done();
-          }
+        var app = TestApp.create({
+          ready: done
         });
-
-        var app = TestApp.create();
         app.registerView('my-view', MyView);
       });
 
       // not sure we should provide this -- seems like an anti-pattern
       xit('should use default view when unmatched', function(done) {
-        var app = TestApp.create();
-        var DefaultView = BaseObject.extend({
-          type: 'view',
-          constructor: function() {
-            done();
-          }
+        var app = TestApp.create({
+          ready: done
         });
-
         app.registerView('default-view', DefaultView);
       });
     });
@@ -71,7 +78,7 @@ describe('wdk.core.application', function() {
       it('should initialize the rootElement on app ready', function(done) {
         TestApp.create({
           ready: function() {
-            expect(this.rootElement.attr('__initialized')).to.equal('true');
+            assert(this.rootElement.attr('__initialized'));
             done();
           }
         });
@@ -81,13 +88,13 @@ describe('wdk.core.application', function() {
         var element = document.createElement('div');
         var app = TestApp.create();
         app.initializeDOM(element);
-        expect(element.getAttribute('__initialized')).to.equal('true');
+        assert(element.getAttribute('__initialized'));
       });
 
       it('should accept an HTML string as an argument', function() {
         var app = TestApp.create();
         var $el = app.initializeDOM('<div></div>');
-        expect($el.attr('__initialized')).to.equal('true');
+        assert($el.attr('__initialized'));
       });
 
     });
@@ -105,7 +112,7 @@ describe('wdk.core.application', function() {
       it('should be called after views are initialized', function(done) {
         TestApp.create({
           ready: function() {
-            expect(this.rootElement.attr('__initialized')).to.equal('true');
+            assert(this.rootElement.attr('__initialized'));
             done();
           }
         });

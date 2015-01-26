@@ -3,6 +3,7 @@ package org.gusdb.wdk.jmx.mbeans;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -13,13 +14,12 @@ import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.ReflectionException;
-import org.apache.log4j.Logger;
+
+import org.gusdb.wdk.jmx.BeanBase;
 
 public class Properties extends BeanBase implements DynamicMBean {
 
-  Map<String, String> props;
-  @SuppressWarnings("unused")
-private static final Logger logger = Logger.getLogger(Properties.class.getName());
+  private Map<String, String> props;
 
   public Properties() {
     super();
@@ -129,9 +129,7 @@ private static final Logger logger = Logger.getLogger(Properties.class.getName()
     throw new ReflectionException(new NoSuchMethodException(name));
   }
 
-  protected void init() {
-    props = wdkModel.getProperties();
+  private void init() {
+    props = getWdkModel().getProperties();
   }
-
-
 }

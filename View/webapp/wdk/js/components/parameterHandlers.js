@@ -46,7 +46,23 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var dependedParam = $("div.param[name='" + dependedName + "']");
       dependedParam.change(function(e) {
         e.stopPropagation();
-        var dependedName = $(this).attr("name");
+        onDependedParamChange(dependedParam, element, dependedParams);
+      });
+
+      // also register keyup event for text input
+      dependedParam.keyup(_.debounce(function(e) {
+        e.stopPropagation();
+        onDependedParamChange(dependedParam, element, dependedParams);        
+      }, 1000));
+
+      if (dependedParam.is('[data-type="type-ahead"]').length > 0) {
+        dependedParam.change();
+      }
+    }
+  }
+
+  function onDependedParamChange(dependedParam, dependentElement, dependedParams) {
+        var dependedName = dependedParam.attr("name");
 
         // map list of names to elements
         // then reduce to a list of $.ajax deferred objects
@@ -55,13 +71,13 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
             // return dependentParam reference
             // and set ready flag to false on all its dependent params
-            return element.find(".dependentParam[name='" + dependentName + "']")
+            return dependentElement.find(".dependentParam[name='" + dependentName + "']")
               .find("input, select")
                 .prop("disabled", true)
                 .end();
           })
           .reduce(function(results, $dependentParam) {
-            var result =  updateDependentParam($dependentParam, element);
+            var result =  updateDependentParam($dependentParam, dependentElement);
             if (result) {
               // stash promises returned by $.ajax
               results.push(result);
@@ -73,12 +89,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         $.when.apply($, dependentDeferreds).then(function() {
           dependedParam.closest("form").change();
         });
-      });
-
-      if (dependedParam.is('[data-type="type-ahead"]').length > 0) {
-        dependedParam.change();
-      }
-    }
   }
 
   //==============================================================================
@@ -112,6 +122,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   function initFilterParam(element) {
     var form = element.closest('form');
     var filterParams = element.find('[data-type="filter-param"]');
+    var keepPreviousValue = element.closest('form').is('.is-revise');
 
     if (filterParams.length > 0) {
       // add class to move prompts to left
@@ -120,28 +131,36 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     filterParams.each(function(i, node) {
       var $param = $(node);
-      var questionName = form.find('input[name="questionFullName"]').val();
-      var paramName = $param.attr('name');
-      var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
+      if ($param.hasClass('dependentParam')) {
+        updateDependentParam($param, element, keepPreviousValue);
+      }
+      else {
+        var questionName = form.find('input[name="questionFullName"]').val();
+        var paramName = $param.attr('name');
+        var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
 
-      $.getJSON(sendReqUrl)
-        .then(createFilterParam.bind(null, $param, questionName));
+        $.getJSON(sendReqUrl)
+          .then(createFilterParam.bind(null, $param, questionName, {}));
+      }
     });
   }
 
   //==============================================================================
-  function createFilterParam($param, questionName, filterData) {
-    var filterParam = $param.data('filterParam');
+  function createFilterParam($param, questionName, dependedValue, filterData) {
+    var $data = $param.data();
+    var filterParam = $data.filterParam;
 
     if (filterParam) filterParam.remove();
 
     var form = $param.closest('form');
-    var title = $param.data('title');
-    var isAllowEmpty = $param.data('isAllowEmpty');
+    var title = $data.title;
+    // var isAllowEmpty = $param.data('isAllowEmpty');
+    var minSelectedCount = $data.minSelectedCount;
+    var maxSelectedCount = $data.maxSelectedCount;
     var name = $param.attr('name');
     console.time('intialize render :: ' + name);
-    var defaultColumns = $param.data('default-columns');
-    var trimMetadataTerms = $param.data('trim-metadata-terms');
+    var defaultColumns = $data.defaultColumns;
+    var trimMetadataTerms = $data.trimMetadataTerms;
     var input = $param.find('input');
     var previousValue;
 
@@ -203,7 +222,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       defaultColumns: defaultColumns,
       title: title,
       name: name,
-      questionName: questionName
+      questionName: questionName,
+      dependedValue: dependedValue
     });
 
     $param.append(filterParam.el);
@@ -213,23 +233,36 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     $param.data('filterParam', filterParam);
 
     filterParam.on('change:value', function(filterParam, value) {
-      input.val(JSON.stringify(value));
+      input.val(JSON.stringify({
+        values: _.pluck(value.filteredData, 'term'),
+        ignored: value.ignored,
+        filters: _.map(value.filters, _.partialRight(_.omit, 'selection'))
+      }));
     });
 
-    filterParam.on('ready', function() {
+    // filterParam.on('ready', function() {
       $param.find('.loading').hide();
-    });
+    // });
 
     form.on('submit', function(e) {
-      var filteredData = filterParam.getSelectedData();
-      if (!isAllowEmpty && filteredData.length === 0) {
+      var filteredData = JSON.parse(input.val()).values;
+      var filteredDataCount = filteredData.length;
+      var min = minSelectedCount === -1 ? 1 : minSelectedCount;
+      var max = maxSelectedCount === -1 ? Infinity : minSelectedCount;
+      var condition = max === Infinity
+        ? 'at least <b>' + min + '</b>'
+        : 'between <b>' + min + '</b> and <b>' + max + '</b>';
+
+      //if (!isAllowEmpty && filteredDataCount === 0) {
+      if (filteredDataCount < min || filteredDataCount > max) {
         e.preventDefault();
         $param.find('.ui-state-error').remove();
-        $param.prepend(
-          '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">' +
-          'Please select ' + title + ' to continue.' +
-          '</div>'
-        );
+        $param.prepend([
+          '<div class="ui-state-error ui-corner-all" style="padding: .3em .4em;">',
+           'You have selected <b>', filteredDataCount, '</b>', title + '.',
+           'Please select', condition, title, 'to continue.',
+           '</div>'
+        ].join(' '));
         filterParam.once('change:value', function() {
           $param.find('.ui-state-error').remove();
         });
@@ -575,11 +608,12 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     // the dependson may contain a comma separated list of param names the current param depends on
     for (i=0; i < dependedNames.length; i++) {
       dependedName = dependedNames[i];
-      var dependedParam = element.find("#" + dependedName + 
-          "aaa input[name='array(" + dependedName + ")']:checked, #" + 
-          dependedName + "aaa select[name='array(" + dependedName + 
-          ")']");
-          
+      var dependedParam = element.find([
+        "#" + dependedName + "aaa input[name='value(" + dependedName + ")']",         // any single input
+        "#" + dependedName + "aaa input[name='array(" + dependedName + ")']",         // any array input
+        "#" + dependedName + "aaa select[name='array(" + dependedName + ")']"         // select
+      ].join(','));
+
       // get the selected values from depended param
       var values = [];
       var needInput = false;
@@ -634,7 +668,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     } else if (dependentParam.is('[data-type="filter-param"]')) {
       sendReqUrl = sendReqUrl + '&json=true';
       return $.getJSON(sendReqUrl)
-        .then(createFilterParam.bind(null, dependentParam, questionName))
+        .then(createFilterParam.bind(null, dependentParam, questionName, dependedValues))
         .done(function() {
           dependentParam.find('input').removeAttr('disabled');
           element.find(".param[name='" + paramName + "']").attr("ready", "");

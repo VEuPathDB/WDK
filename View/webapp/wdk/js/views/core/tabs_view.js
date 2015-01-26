@@ -26,7 +26,7 @@ wdk.namespace('wdk.views.core', function(ns) {
       var nav = frag.find('ul');
       this.tabs.forEach(function(tab) {
         var id = this._createId(tab);
-        nav.append('<li><a href="#' + id + '">' + tab.title + '</li>');
+        nav.append('<li><a href="#' + id + '">' + tab.title + '</a></li>');
         frag.append($('<div id="' + id + '"/>').append(tab.view.el));
       }.bind(this));
       this.$el.append(frag.tabs({

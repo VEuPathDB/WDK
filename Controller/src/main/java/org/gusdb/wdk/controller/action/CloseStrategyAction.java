@@ -37,7 +37,11 @@ public class CloseStrategyAction extends Action {
             String[] stratIdstr = (strStratKeys == null || strStratKeys.length() == 0) ?
                 new String[0] : strStratKeys.split(",");
             String currentStrategyKey = wdkUser.getViewStrategyId();
-            boolean changeViewStrategy = false;
+
+            // Check if currentStrategyId is null. This can happen if the only
+            // open strategy has an invalid step. Setting this to true will
+            // short-circuit the nested if statement below.
+            boolean changeViewStrategy = currentStrategyKey == null;
 
             if (stratIdstr.length != 0) {
                 for (int i = 0; i < stratIdstr.length; ++i) {

@@ -343,7 +343,7 @@ public abstract class AbstractEnumParam extends Param {
       String vocab = "";
       if ((param instanceof FlatVocabParam)) {
         Query query = ((FlatVocabParam) param).getQuery();
-        vocab = (query != null) ? query.getFullName() : "unavailable";
+        vocab = (query != null) ? query.getFullName() : "N/A";
       }
       logger.trace("param " + getName() + " depends on " + param.getName() + "(" + vocab + ")");
     }
