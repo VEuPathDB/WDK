@@ -78,7 +78,7 @@ function dispatchLoading(requestData) {
  * @param {object} opts Addition data to include in request.
  */
 export function loadAnswer(questionName, opts = {}) {
-  var { params, filters, displayInfo } = _.defaults(opts, {
+  var { params, filters, displayInfo } = _.defaults(opts, {   // _.defaults is from the lodash utiliies library
     params: [],
     filters: [],
     displayInfo: {
