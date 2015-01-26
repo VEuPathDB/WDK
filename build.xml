@@ -215,7 +215,7 @@
           executable="npm"
           failonerror="true"
           failifexecutionfails="true">
-      <arg line="install --registry ${npmRegistry}"/>
+      <arg line="install --cache-min 999999"/>
     </exec>
 
     <echo message="Running npm run dist"/>
