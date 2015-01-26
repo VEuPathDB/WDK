@@ -66,8 +66,8 @@ function dispatchLoading(requestData) {
  *       },
  *       displayInfo: {
  *         pagination: { offset: Number, numRecords: Number },
- *         columns: [ columnName: String ],
- *         sorting: [ { columnName: String, direction: Enum[ASC,DESC] } ]
+ *         attributes: [ attributeName: String ],
+ *         sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
  *       }
  *     }
  *

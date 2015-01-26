@@ -72,6 +72,9 @@ var RecordTable = React.createClass({
     };
   },
 
+  /**
+   * If this is changed, be sure to update handleAttributeSelectorClose()
+   */
   getInitialState() {
     return {
       pendingVisibleAttributes: this.props.displayInfo.attributes,
@@ -109,12 +112,10 @@ var RecordTable = React.createClass({
   },
 
   handleAttributeSelectorClose() {
-    this.setState({
-      attributeSelectorOpen: false
-    });
+    this.setState(this.getInitialState());
   },
 
-  handleAttributeSelector(e) {
+  handleAttributeSelectorSubmit(e) {
     e.preventDefault();
     e.stopPropagation();
     this.props.onChangeColumns(this.state.pendingVisibleAttributes);
@@ -188,7 +189,7 @@ var RecordTable = React.createClass({
             open={this.state.attributeSelectorOpen}
             onClose={this.handleAttributeSelectorClose}
             title="Choose columns to shoe or hide">
-            <form onSubmit={this.handleAttributeSelector} ref="attributeSelector">
+            <form onSubmit={this.handleAttributeSelectorSubmit} ref="attributeSelector">
               <ul className="wdk-RecordTable-AttributeSelector">
                 {_.map(meta.attributes, attribute => {
                   var { name, displayName } = attribute;
@@ -217,7 +218,7 @@ var RecordTable = React.createClass({
             <thead>
               <tr ref="headerRow">
                 {_.map(visibleAttributes, attribute => {
-                  var sortClass = sortColumn.columnName === attribute.name
+                  var sortClass = sortColumn.attributeName === attribute.name
                     ? sortClassMap[sortColumn.direction]
                     : 'ui-icon ui-icon-blank';
 
