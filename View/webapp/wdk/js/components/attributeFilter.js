@@ -1,3 +1,4 @@
+/* global _ */
 import React from 'react';
 
 wdk.namespace('wdk.components.attributeFilter', function(ns) {
@@ -49,16 +50,21 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                       onClick={handleSelectClick}
                       href={'#' + filter.field}
                       title={filter.display}>{filter.display}</a>
+                    {/* Use String.fromCharCode to avoid conflicts with
+                        character ecoding. Other methods detailed at
+                        http://facebook.github.io/react/docs/jsx-gotchas.html#html-entities
+                        cause JSX to encode. String.fromCharCode ensures that
+                        the encoding is done in the browser */}
                     <span className="remove"
                       onClick={handleRemoveClick}
-                      title="remove restriction">{'\u00d7'}</span>
+                      title="remove restriction">{String.fromCharCode(215)}</span>
                   </div>
                 </li>
-              )
+              );
             })}
           </ul>
         </div>
-      )
+      );
     }
   });
 
@@ -73,7 +79,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     render: function() {
       var treeOpts = _.pick(this.props, 'trimMetadataTerms');
       var fieldsToTreeNodes = _.partial(Fields.getTree, treeOpts);
-      var { fields, trimMetadataTerms } = this.props;
+      var { fields } = this.props;
       var restProps = _.omit(this.props, 'fields', 'trimMetadataTerms');
 
       var treeNodes = fieldsToTreeNodes(fields);
@@ -83,7 +89,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
           <div className="toggle-links"> </div>
           <FieldTree {...restProps} ItemComponent={PanelItem} treeNodes={treeNodes}/>
         </div>
-      )
+      );
     }
   });
 
@@ -99,7 +105,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     getDefaultProps: function() {
       return {
         displayName: 'Items'
-      }
+      };
     },
 
     render: function() {
@@ -133,7 +139,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
               )
           }
         </div>
-      )
+      );
     }
   });
 
@@ -187,33 +193,31 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             <button disabled={page === numPages} value={numPages} onClick={this.changePage}>Last</button>
           </div>
           <div>Page: <select value={page} onChange={this.changePage}>
-                       {_.range(1, numPages + 1).map(p =>
-                         <option value={p}>{p}</option>
-                       )}
+                       {_.range(1, numPages + 1).map(p => <option value={p}>{p}</option>)}
                      </select>
           </div>
           <table>
             <thead>
               <tr>
                 <th>Name</th>
-                {_.map(fields, field => {
-                  return <th key={field.term}>{field.display}</th>
-                })}
+                {_.map(fields, field => <th key={field.term}>{field.display}</th> )}
               </tr>
             </thead>
             <tbody>
               {_.map(filteredData.slice(first, last), item => {
-                return <tr key={item.term}>
-                  <td>{item.display}</td>
-                  {_.map(fields, field => {
-                    return <td key={field.term + '-' + item.term}>{metadata[field.term][item.term]}</td>
-                  })}
-                </tr>
+                return (
+                  <tr key={item.term}>
+                    <td>{item.display}</td>
+                    {_.map(fields, field => {
+                      return (<td key={field.term + '-' + item.term}>{metadata[field.term][item.term]}</td>);
+                    })}
+                  </tr>
+                );
               })}
             </tbody>
           </table>
         </div>
-      )
+      );
     }
   });
 
@@ -335,7 +339,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             </div>
           </div>
         </div>
-      )
+      );
     }
   });
 
@@ -353,10 +357,10 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       return (
         <ul role="tree">
           {treeNodes.map(node => {
-            return <TreeNode key={node.field.term} node={node} {...restProps}/>
+            return (<TreeNode key={node.field.term} node={node} {...restProps}/>);
           }, this)}
         </ul>
-      )
+      );
     }
   });
 
@@ -374,7 +378,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       };
     },
 
-    handleToggleClick: function(event) {
+    handleToggleClick: function() {
       this.setState({
         isCollapsed: !this.state.isCollapsed
       });
@@ -399,7 +403,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                 <div key={node.field.term + '-children'}>
                   <ul>
                     {_.map(node.children, child => {
-                      return <TreeNode key={child.field.term} node={child} {...restProps}/>
+                      return (<TreeNode key={child.field.term} node={child} {...restProps}/>);
                     }, this)}
                   </ul>
                 </div>
@@ -407,7 +411,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             : <div role="treeitem"><ItemComponent {...restProps} field={node.field}/></div>
           }
         </li>
-      )
+      );
     }
 
   });
@@ -425,7 +429,10 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     render: function() {
-      return <a onClick={this.handleClick} href={"#" + this.props.field.term}>{this.props.field.display}</a>
+      return (
+        <a onClick={this.handleClick} href={"#" + this.props.field.term}>
+        {this.props.field.display}</a>
+      );
     }
 
   });
@@ -469,55 +476,59 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       var dist = this.props.distribution;
       var total = _.reduce(dist, (acc, item) => acc + item.count, 0);
 
-      return <div className="membership-filter">
+      return (
+        <div className="membership-filter">
 
-        <div className="membership-wrapper">
-          <div className="membership-table-panel">
-            <table>
-              <thead>
-                <tr>
-                  <th colSpan="2">
-                    <div className="toggle-links">
-                      <a href="#select-all" onClick={this.handleSelectAll}>select all</a>
-                      {' | '}
-                      <a href="#clear-all" onClick={this.handleRemoveAll}>clear all</a>
-                    </div>
-                  </th>
-                  <th colSpan="3">
-                    <div>{this.props.displayName}</div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {_.map(this.props.distribution, item => {
-                  // compute frequency, percentage, filteredPercentage
-                  var percentage = (item.count / total) * 100;
-                  var filteredPercentage = (item.filteredCount / total) * 100;
-                  var isChecked = !this.props.filter || _.contains(this.props.filter.values, item.value);
-                  var trClassNames = 'member' + (isChecked ? ' selected' : '');
-
-                  return <tr key={item.value} className={trClassNames} onClick={this.handleClick}>
-                    <td><input value={item.value} type="checkbox" checked={isChecked} onChange={this.handleChange}/></td>
-                    <td><span className="value">{item.value}</span></td>
-                    <td><span className="frequency">{item.count}</span></td>
-                    <td><span className="percent">{percentage.toFixed(2) + '%'}</span></td>
-                    <td><div className="bar">
-                      <div className="fill" style={{ width: percentage + '%' }}/>
-                      <div className="fill filtered" style={{ width: filteredPercentage + '%' }}/>
-                    </div></td>
+          <div className="membership-wrapper">
+            <div className="membership-table-panel">
+              <table>
+                <thead>
+                  <tr>
+                    <th colSpan="2">
+                      <div className="toggle-links">
+                        <a href="#select-all" onClick={this.handleSelectAll}>select all</a>
+                        {' | '}
+                        <a href="#clear-all" onClick={this.handleRemoveAll}>clear all</a>
+                      </div>
+                    </th>
+                    <th colSpan="3">
+                      <div>{this.props.displayName}</div>
+                    </th>
                   </tr>
-                }, this)}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {_.map(this.props.distribution, item => {
+                    // compute frequency, percentage, filteredPercentage
+                    var percentage = (item.count / total) * 100;
+                    var filteredPercentage = (item.filteredCount / total) * 100;
+                    var isChecked = !this.props.filter || _.contains(this.props.filter.values, item.value);
+                    var trClassNames = 'member' + (isChecked ? ' selected' : '');
+
+                    return (
+                      <tr key={item.value} className={trClassNames} onClick={this.handleClick}>
+                        <td><input value={item.value} type="checkbox" checked={isChecked} onChange={this.handleChange}/></td>
+                        <td><span className="value">{item.value}</span></td>
+                        <td><span className="frequency">{item.count}</span></td>
+                        <td><span className="percent">{percentage.toFixed(2) + '%'}</span></td>
+                        <td><div className="bar">
+                          <div className="fill" style={{ width: percentage + '%' }}/>
+                          <div className="fill filtered" style={{ width: filteredPercentage + '%' }}/>
+                        </div></td>
+                      </tr>
+                    );
+                  }, this)}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
+      );
     }
   });
 
 
   var unwrapXaxisRange = function unwrap(flotRanges) {
-    var { from, to } = flotRanges.xaxis
+    var { from, to } = flotRanges.xaxis;
     var min = Number(from.toFixed(2));
     var max = Number(to.toFixed(2));
     return { min, max };
@@ -548,15 +559,15 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       var doPlotSelection = false;
       var prevMin = this.refs.min.getDOMNode().value;
       var prevMax = this.refs.max.getDOMNode().value;
+      var min = null;
+      var max = null;
 
       prevMin = prevMin === '' ? null : Number(prevMin);
       prevMax = prevMax === '' ? null : Number(prevMax);
 
       if (this.props.filter) {
-        var { min, max } = this.props.filter.values;
-      }
-      else {
-        min = max = null;
+        min = this.props.filter.values.min;
+        max = this.props.filter.values.max;
       }
 
       if (!_.isEqual(prevProps.distribution, this.props.distribution)) {
@@ -630,11 +641,8 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     }, 50),
 
     createPlot: function() {
-      var { field, filter, distribution } = this.props;
-
+      var { distribution } = this.props;
       var dist = _.filter(distribution, item => _.isNumber(item.value));
-
-      var size = _.reduce(dist, (acc, item) => acc + item.count, 0);
 
       var series = _.reduce(dist, (acc, item) => {
         if (_.isUndefined(item.count)) return acc;
@@ -649,8 +657,6 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       var values = _.pluck(dist, 'value');
       var min = _.min(values);
       var max = _.max(values);
-      var sum = _.reduce(dist, (acc, item) => acc + (item.value * item.count), 0);
-      var avg = (sum / size).toFixed(2);
 
       var barWidth = (max - min) * 0.005;
 
@@ -761,38 +767,39 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       var distMin = _.min(values);
       var distMax = _.max(values);
       var distAvg = (sum / size).toFixed(2);
+      var { min, max } = this.props.filter ? this.props.filter.values : {};
+      var selectionTotal = this.prop.filter
+        ? " (" + this.props.filter.selection.length + " selected) "
+        : '';
 
-      if (this.props.filter) {
-        var { min, max } = this.props.filter.values;
-        var selectionTotal = " (" + this.props.filter.selection.length + " selected) ";
-      }
+      return (
+        <div className="range-filter">
+          <div className="overview">
+            <dl className="ui-helper-clearfix">
+              <dt>Avg</dt>
+              <dd>{distAvg}</dd>
+              <dt>Min</dt>
+              <dd>{distMin}</dd>
+              <dt>Max</dt>
+              <dd>{distMax}</dd>
+            </dl>
+          </div>
 
-      return <div className="range-filter">
-        <div className="overview">
-          <dl className="ui-helper-clearfix">
-            <dt>Avg</dt>
-            <dd>{distAvg}</dd>
-            <dt>Min</dt>
-            <dd>{distMin}</dd>
-            <dt>Max</dt>
-            <dd>{distMax}</dd>
-          </dl>
+          <div>
+            {'Between '}
+            <input onChange={this.handleChange} ref="min" type="text" size="6" placeholder={distMin} defaultValue={min}/>
+            {' and '}
+            <input onChange={this.handleChange} ref="max" type="text" size="6" placeholder={distMax} defaultValue={max}/>
+            <span className="selection-total">{selectionTotal}</span>
+          </div>
+
+          <div>
+            <div className="chart"></div>
+            <div className="chart-title x-axis">{field.display} ({field.units})</div>
+            <div className="chart-title y-axis">{this.props.displayName}</div>
+          </div>
         </div>
-
-        <div>
-          {'Between '}
-          <input onChange={this.handleChange} ref="min" type="text" size="6" placeholder={distMin} defaultValue={min}/>
-          {' and '}
-          <input onChange={this.handleChange} ref="max" type="text" size="6" placeholder={distMax} defaultValue={max}/>
-          <span className="selection-total">{selectionTotal}</span>
-        </div>
-
-        <div>
-          <div className="chart"></div>
-          <div className="chart-title x-axis">{field.display} ({field.units})</div>
-          <div className="chart-title y-axis">{this.props.displayName}</div>
-        </div>
-      </div>
+      );
     }
   });
 
