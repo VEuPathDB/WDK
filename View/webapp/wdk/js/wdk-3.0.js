@@ -1,3 +1,7 @@
+// Include the 6to5 polyfill. This adds global objects expected in parts of our
+// code base, such as Promise.
+import '6to5/polyfill';
+
 import React from 'react';
 import Router from 'react-router';
 import { appRoutes } from './flux/router';
