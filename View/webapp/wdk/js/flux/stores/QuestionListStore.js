@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import Store from './Store';
-import ActionType from '../ActionType';
+import * as ActionType from '../ActionType';
 
 
 /* TODO Figure out how to integrate Immutable.js */
@@ -11,19 +11,19 @@ export default new Store({
   dispatchHandler(action, emitChange) {
     switch(action.type) {
 
-      case ActionType.QuestionList.LOADING:
+      case ActionType.QUESTION_LIST_LOADING:
         isLoading = true;
         error = null;
         emitChange();
         break;
 
-      case ActionType.QuestionList.LOAD_SUCCESS:
+      case ActionType.QUESTION_LIST_LOAD_SUCCESS:
         isLoading = false;
         questions = action.questions;
         emitChange();
         break;
 
-      case ActionType.QuestionList.LOAD_ERROR:
+      case ActionType.QUESTION_LIST_LOAD_ERROR:
         isLoading = false;
         error = action.error;
         emitChange();

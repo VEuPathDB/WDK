@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import ActionType from '../ActionType';
+import * as ActionType from '../ActionType';
 import Dispatcher from '../Dispatcher';
 import * as ServiceAPI from '../ServiceAPI';
 
@@ -7,18 +7,15 @@ import * as ServiceAPI from '../ServiceAPI';
 /* helpers */
 
 function dispatchLoadSuccess(answer, requestData) {
-  // Dispatcher.dispatch({ type: ActionType.App.LOADING, isLoading: false });
-  Dispatcher.dispatch({ type: ActionType.Answer.LOAD_SUCCESS, answer, requestData });
+  Dispatcher.dispatch({ type: ActionType.ANSWER_LOAD_SUCCESS, answer, requestData });
 }
 
 function dispatchLoadError(error, requestData) {
-  // Dispatcher.dispatch({ type: ActionType.App.ERROR, error });
-  Dispatcher.dispatch({ type: ActionType.Answer.LOAD_ERROR, error, requestData });
+  Dispatcher.dispatch({ type: ActionType.ANSWER_LOAD_ERROR, error, requestData });
 }
 
 function dispatchLoading(requestData) {
-  // Dispatcher.dispatch({ type: ActionType.App.LOADING, isLoading: true });
-  Dispatcher.dispatch({ type: ActionType.Answer.LOADING, requestData });
+  Dispatcher.dispatch({ type: ActionType.ANSWER_LOADING, requestData });
 }
 
 
@@ -33,13 +30,13 @@ function dispatchLoading(requestData) {
  *
  * Actions:
  *
- *   - { type: ActionType.Answer.LOADING, answer: answerResource }
+ *   - { type: ActionType.ANSWER_LOADING, answer: answerResource }
  *     Answer resource is being loaded
  *
- *   - { type: ActionType.Answer.LOAD_SUCCESS, answer: answerResource }
+ *   - { type: ActionType.ANSWER_LOAD_SUCCESS, answer: answerResource }
  *     Answer resource has been loaded successfully
  *
- *   - { type: ActionType.Answer.LOAD_ERROR, error: reason }
+ *   - { type: ActionType.ANSWER_LOAD_ERROR, error: reason }
  *     Answer resource could not be loaded
  *
  *
@@ -101,14 +98,14 @@ export function loadAnswer(questionName, opts = {}) {
 }
 
 export function initialize() {
-  Dispatcher.dispatch({ type: ActionType.Answer.INIT });
+  Dispatcher.dispatch({ type: ActionType.ANSWER_INIT });
 }
 
 export function moveColumn(columnName, newPosition) {
   console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
   console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
   Dispatcher.dispatch({
-    type: ActionType.Answer.MOVE_COLUMN,
+    type: ActionType.ANSWER_MOVE_COLUMN,
     columnName,
     newPosition
   });
@@ -117,7 +114,7 @@ export function moveColumn(columnName, newPosition) {
 export function changeAttributes(attributes) {
   console.assert(Array.isArray(attributes), `attributes ${attributes} should be an array.`);
   Dispatcher.dispatch({
-    type: ActionType.Answer.CHANGE_ATTRIBUTES,
+    type: ActionType.ANSWER_CHANGE_ATTRIBUTES,
     attributes
   });
 }
