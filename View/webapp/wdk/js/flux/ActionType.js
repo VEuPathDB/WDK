@@ -17,6 +17,8 @@
  *
  *     import * as ActionType from './ActionType';
  *     // do something with ActionType.ANSWER_LOADING;
+ *
+ * @module ActionType
  */
 
 export const APP_LOADING = 'appLoading';

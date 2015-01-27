@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';
 import QuestionListStore from '../stores/QuestionListStore';
@@ -26,7 +27,7 @@ export default React.createClass({
       return (
         <div>
           <ol>
-            {questions.map(question => (
+            {_.map(questions, question => (
               <li>
                 {question + ' - '}
                 <Link to="answer" params={{ questionName: question }}>answer page</Link>
