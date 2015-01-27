@@ -1,6 +1,6 @@
 import React from 'react';
 import Router from 'react-router';
-import App from './App';
+import App from './controllers/App';
 import IndexPage from './controllers/IndexPage';
 import NotFoundPage from './controllers/NotFoundPage';
 import AnswerPage from './controllers/AnswerPage';

@@ -1,8 +1,9 @@
+/**
+ * Rendered whenever a URL does not match a route
+ */
 import React from 'react';
 
-export default React.createClass({
-
-  displayName: 'NotFoundPage',
+var NotFoundPage = React.createClass({
 
   render() {
     return (
@@ -14,3 +15,5 @@ export default React.createClass({
   }
 
 });
+
+export default NotFoundPage;

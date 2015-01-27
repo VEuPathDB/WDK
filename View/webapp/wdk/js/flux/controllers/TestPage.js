@@ -3,9 +3,10 @@ import Router from 'react-router';
 
 var { Link, RouteHandler } = Router;
 
-export default React.createClass({
-  displayName: 'TestPage',
+var TestPage = React.createClass({
+
   mixins: [ Router.Navigation ],
+
   render() {
     // redirect (replacing history) to answer
     // this is just for demo purposes
@@ -22,3 +23,5 @@ export default React.createClass({
     );
   }
 });
+
+export default TestPage;

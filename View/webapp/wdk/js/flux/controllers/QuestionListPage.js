@@ -6,9 +6,7 @@ import { loadQuestions } from '../actions/QuestionListPageActions';
 import createStoreMixin from '../mixins/StoreMixin';
 var { Link } = Router;
 
-export default React.createClass({
-
-  displayName: 'QuestionListPage',
+var QuestionListPage = React.createClass({
 
   mixins: [ createStoreMixin(QuestionListStore) ],
 
@@ -40,3 +38,5 @@ export default React.createClass({
   }
 
 });
+
+export default QuestionListPage;
