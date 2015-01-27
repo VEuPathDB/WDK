@@ -77,8 +77,8 @@ export default class Store {
       get() { return dispatchToken; }
     });
 
-    var thisSubscribe = this.subscribe;
-    var thisUnsubscribe = this.unsubscribe;
+    var thisSubscribe = this.subscribe || noop;
+    var thisUnsubscribe = this.unsubscribe || noop;
 
     /**
      * Register a callback function to be invoked when the Store's internal
@@ -115,6 +115,7 @@ export default class Store {
   }
 }
 
+function noop() {}
 
 function ensureFunction(fn, name) {
   var message = "Store " + name + " " + fn + " is not a function";
