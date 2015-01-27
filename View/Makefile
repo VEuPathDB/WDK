@@ -8,7 +8,7 @@ css_bundle    := dist/wdk/css/wdk.min.css
 test_bundle   := test/dist/tests.js
 
 wdk_sources  := webapp/wdk/js/app.js $(shell find webapp/wdk/js -name '*.js')
-wdk3_sources := webapp/wdk/js/wdk-3.0.js $(shell find webapp/wdk/js/flux -name '*.js')
+wdk3_sources := webapp/wdk/js/flux/bootstrap.js $(shell find webapp/wdk/js/flux -name '*.js')
 libs_sources := webapp/wdk/lib/rsvp.min.js \
                 webapp/wdk/lib/jquery.js \
                 webapp/wdk/lib/jquery-migrate-1.2.1.min.js \
@@ -45,7 +45,7 @@ $(wdk_bundle): $(wdk_sources)
 	webpack $< $@
 
 $(wdk3_bundle): $(wdk3_sources)
-	webpack $< $@
+	webpack $< $@ --output-library wdk --output-library-target umd
 
 
 # =============================================================================
