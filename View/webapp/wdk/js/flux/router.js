@@ -1,10 +1,10 @@
 import React from 'react';
 import Router from 'react-router';
 import App from './App';
-import IndexPage from './pages/IndexPage';
-import NotFoundPage from './pages/NotFoundPage';
-import AnswerPage from './pages/AnswerPage';
-import QuestionListPage from './pages/QuestionListPage';
+import IndexPage from './controllers/IndexPage';
+import NotFoundPage from './controllers/NotFoundPage';
+import AnswerPage from './controllers/AnswerPage';
+import QuestionListPage from './controllers/QuestionListPage';
 
 var { Route, DefaultRoute, NotFoundRoute } = Router;
 
