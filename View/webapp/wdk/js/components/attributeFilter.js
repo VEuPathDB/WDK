@@ -768,7 +768,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       var distMax = _.max(values);
       var distAvg = (sum / size).toFixed(2);
       var { min, max } = this.props.filter ? this.props.filter.values : {};
-      var selectionTotal = this.prop.filter
+      var selectionTotal = this.props.filter
         ? " (" + this.props.filter.selection.length + " selected) "
         : '';
 
