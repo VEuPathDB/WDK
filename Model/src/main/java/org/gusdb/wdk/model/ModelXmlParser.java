@@ -85,6 +85,8 @@ import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.QuestionSuggestion;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
+import org.gusdb.wdk.model.record.BooleanReference;
+import org.gusdb.wdk.model.record.CountReference;
 import org.gusdb.wdk.model.record.NestedRecord;
 import org.gusdb.wdk.model.record.NestedRecordList;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -571,7 +573,7 @@ public class ModelXmlParser extends XmlParser {
     // reporter
     configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter", ReporterRef.class,
         "addReporterRef");
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter/property", ReporterProperty.class,
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter/property", WdkModelText.class,
         "addProperty");
     digester.addCallMethod("wdkModel/recordClassSet/recordClass/reporter/property", "setValue", 0);
 
@@ -651,6 +653,13 @@ public class ModelXmlParser extends XmlParser {
 
     configureNode(digester, "wdkModel/recordClassSet/recordClass/filterRef", FilterReference.class,
         "addFilterReference");
+    
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/count", CountReference.class,
+        "setCountReference");
+    
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/boolean", BooleanReference.class,
+        "setBooleanReference");
+
 }
 
   private void configureQuerySet(Digester digester) {

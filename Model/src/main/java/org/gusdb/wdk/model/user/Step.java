@@ -148,7 +148,12 @@ public class Step {
   public int getResultSize() throws WdkModelException {
     if (!isValid()) {
       try {
-        estimateSize = getAnswerValue().getResultSize();
+        CountPlugin countPlugin = getRecordClass().getCountPlugin();
+        if (countPlugin == null) {  // no count plugin needed
+          estimateSize = getAnswerValue().getResultSize();
+        } else {    // will use count plugin the get counts
+          estimateSize = countPlugin.count(this);
+        }
       }
       catch (Exception ex) {
         logger.error("Exception when estimating result size.", ex);
