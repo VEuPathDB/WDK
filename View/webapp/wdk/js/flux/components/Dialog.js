@@ -93,9 +93,9 @@ var Dialog = React.createClass({
       this.node
     );
     if (this.props.open)
-      this.dialog.open();
+      jQuery(this.node).dialog('open');
     else
-      this.dialog.close();
+      jQuery(this.node).dialog('close');
   },
 
   componentDidUpdate() {
@@ -108,7 +108,6 @@ var Dialog = React.createClass({
    * we will call handlePropsChanged() to finish off the rendering.
    */
   componentDidMount() {
-    this.node = this.getDOMNode();
     var options = {
       modal: this.props.modal,
       close: this.props.onClose,
@@ -116,7 +115,8 @@ var Dialog = React.createClass({
       title: this.props.title,
       autoOpen: false
     };
-    this.dialog = $(this.node).dialog(options).dialog('instance');
+    this.node = this.getDOMNode();
+    jQuery(this.node).dialog(options);
     this.handlePropsChanged();
   },
 
@@ -125,7 +125,7 @@ var Dialog = React.createClass({
    * which will cause its componentWillUnmount hook to be called.
    */
   componentWillUnmount() {
-    this.dialog.destroy();
+    jQuery(this.node).dialog('destroy');
   },
 
   /**
