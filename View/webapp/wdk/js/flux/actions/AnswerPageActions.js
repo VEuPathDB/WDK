@@ -1,22 +1,69 @@
 import _ from 'lodash';
-import * as ActionType from '../ActionType';
+import Immutable from 'immutable';
 import Dispatcher from '../Dispatcher';
-import * as ServiceAPI from '../ServiceAPI';
+import {
+  postResource
+} from '../ServiceAPI';
+import {
+  ANSWER_LOADING,
+  ANSWER_LOAD_SUCCESS,
+  ANSWER_LOAD_ERROR,
+  ANSWER_MOVE_COLUMN,
+  ANSWER_CHANGE_ATTRIBUTES
+} from '../ActionType';
 
 
-/* helpers */
+/**
+ * Action definitions.
+ *
+ * Actions are defined using Immutable.Record, which defines
+ * a class that enforces a specific set of keys. Immutable.Record itself
+ * returns a constructor. The argument passed to Immutable.Record is the
+ * definiton of the keys, and default values. When an instance of one of these
+ * Records is created, only keys present in the definition will be set, and any
+ * keys which are missing will be set to the default values.
+ *
+ *
+ * In practice, a Record instance can be used just like a plain JavaScript
+ * object. A key difference is that properties cannot be set directly. E.g.,
+ *
+ *     var action = new LoadingAnswerAction({ answer: responseData });
+ *     action.type === ANSWER_LOADING; // returns true
+ *     action.type = 'some evil string'; // throws Error
+ *
+ *
+ * Read more about Records here http://facebook.github.io/immutable-js/docs/#/Record
+ */
 
-function dispatchLoadSuccess(answer, requestData) {
-  Dispatcher.dispatch({ type: ActionType.ANSWER_LOAD_SUCCESS, answer, requestData });
-}
+var Record = Immutable.Record;
 
-function dispatchLoadError(error, requestData) {
-  Dispatcher.dispatch({ type: ActionType.ANSWER_LOAD_ERROR, error, requestData });
-}
+var AnswerLoadingAction = new Record({
+  type: ANSWER_LOADING,
+  requestData: {}
+});
 
-function dispatchLoading(requestData) {
-  Dispatcher.dispatch({ type: ActionType.ANSWER_LOADING, requestData });
-}
+var AnswerLoadSuccessAction = new Record({
+  type: ANSWER_LOAD_SUCCESS,
+  requestData: {},
+  answer: {}
+});
+
+var AnswerLoadErrorAction = new Record({
+  type: ANSWER_LOAD_ERROR,
+  requestData: {},
+  error: {}
+});
+
+var AnswerMoveColumnAction = new Record({
+  type: ANSWER_MOVE_COLUMN,
+  columnName: '',
+  newPosition: -1
+});
+
+var AnswerChangeAttributesAction = new Record({
+  type: ANSWER_CHANGE_ATTRIBUTES,
+  attributes: []
+});
 
 
 /* actions */
@@ -30,13 +77,13 @@ function dispatchLoading(requestData) {
  *
  * Actions:
  *
- *   - { type: ActionType.ANSWER_LOADING, answer: answerResource }
+ *   - { type: ANSWER_LOADING, requestData: requestData }
  *     Answer resource is being loaded
  *
- *   - { type: ActionType.ANSWER_LOAD_SUCCESS, answer: answerResource }
+ *   - { type: ANSWER_LOAD_SUCCESS, answer: answerResource, requestData: requestData }
  *     Answer resource has been loaded successfully
  *
- *   - { type: ActionType.ANSWER_LOAD_ERROR, error: reason }
+ *   - { type: ANSWER_LOAD_ERROR, error: reason }
  *     Answer resource could not be loaded
  *
  *
@@ -86,35 +133,49 @@ export function loadAnswer(questionName, opts = {}) {
   });
   var questionDefinition = { questionName, params, filters };
   var requestData = { questionDefinition, displayInfo };
-  dispatchLoading(requestData);
-  ServiceAPI.postResource('/answer', requestData)
-    .then(function(answer) {
-      dispatchLoadSuccess(answer, requestData);
-    }, function(error) {
-      dispatchLoadError(error, requestData);
-    })
-    // catch errors caused by Store callbacks
-    .catch(err => console.assert(false, err));
-}
 
-export function initialize() {
-  Dispatcher.dispatch({ type: ActionType.ANSWER_INIT });
+  var action = new AnswerLoadingAction({ requestData: requestData });
+
+  Dispatcher.dispatch(action);
+
+  postResource('/answer', requestData)
+    .then(function(answer) {
+      var action = new AnswerLoadSuccessAction({
+        requestData: requestData,
+        answer: answer
+      });
+      Dispatcher.dispatch(action);
+    }, function(error) {
+      var action = new AnswerLoadErrorAction({
+        requestData: requestData,
+        error: error
+      });
+      Dispatcher.dispatch(action);
+    })
+    // Catch errors caused by Store callbacks.
+    // This is a last-ditch effort to alert developers that there was an error
+    // with how to Store handled the action.
+    .catch(err => console.assert(false, err));
 }
 
 export function moveColumn(columnName, newPosition) {
   console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
   console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
-  Dispatcher.dispatch({
-    type: ActionType.ANSWER_MOVE_COLUMN,
-    columnName,
-    newPosition
+
+  var action = new AnswerMoveColumnAction({
+    columnName: columnName,
+    newPosition: newPosition
   });
+
+  Dispatcher.dispatch(action);
 }
 
 export function changeAttributes(attributes) {
   console.assert(Array.isArray(attributes), `attributes ${attributes} should be an array.`);
-  Dispatcher.dispatch({
-    type: ActionType.ANSWER_CHANGE_ATTRIBUTES,
-    attributes
+
+  var action = new AnswerChangeAttributesAction({
+    attributes: attributes
   });
+
+  Dispatcher.dispatch(action);
 }
