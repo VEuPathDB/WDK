@@ -24,7 +24,6 @@
 export const APP_LOADING = 'appLoading';
 export const APP_ERROR = 'appError';
 
-export const ANSWER_INIT = 'answerInit';
 export const ANSWER_LOADING = 'answerLoading';
 export const ANSWER_LOAD_SUCCESS = 'answerLoadSuccess';
 export const ANSWER_LOAD_ERROR = 'answerLoadError';
