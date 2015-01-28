@@ -21,25 +21,29 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
-JSON input format:
-{
-  “questionDefinition”: {
-    “questionName”: String,
-    “params”: [ {
-      “name”: String, “value”: Any
-    } ],
-    “filters”: [ {
-      “name”: String, value: Any
-    } ]
-  },
-  displayInfo: {
-    pagination: { offset: Number, numRecords: Number },
-    attributes: [ attributeName: String ],
-    tables: [ tableName: String ],
-    sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
-  }
-}
-*/
+ * JSON input format:<br/>
+ * <pre>
+ * {@code
+ * {
+ *   “questionDefinition”: {
+ *     “questionName”: String,
+ *     “params”: [ {
+ *       “name”: String, “value”: Any
+ *     } ],
+ *     “filters”: [ {
+ *       “name”: String, value: Any
+ *     } ]
+ *   },
+ *   displayInfo: {
+ *     pagination: { offset: Number, numRecords: Number },
+ *     attributes: [ attributeName: String ],
+ *     tables: [ tableName: String ],
+ *     sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
+ *   }
+ * }
+ * }
+ * </pre>
+ */
 @Path("/answer")
 public class AnswerService extends WdkService {
 
