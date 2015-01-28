@@ -66,32 +66,27 @@ var AnswerChangeAttributesAction = new Record({
 });
 
 
-/* actions */
+/**
+ * ActionCreators
+ *
+ * ActionCreators define the public interface of a set of actions. An
+ * ActionCreator's role is to make calls to external APIs, to create
+ * instances of Actions, and to dispatch the Actions on the Dispatcher.
+ * One or more Stores will handle the dispatched Action.
+ *
+ * ActionCreators do not return a value. This is by design. This allows an
+ * ActionCreator to do asynchronous work transparently. Once an Action is
+ * dispatched, the handling of the Action will be synchronous.
+ */
 
 /**
  * Retrieve's an Answer resource and dispatches an action with the resource.
  *
- * TODO Validate options?
- * TODO Implement caching?
+ * Actions dispatched:
  *
- *
- * Actions:
- *
- *   - { type: ANSWER_LOADING, requestData: requestData }
- *     Answer resource is being loaded
- *
- *   - { type: ANSWER_LOAD_SUCCESS, answer: answerResource, requestData: requestData }
- *     Answer resource has been loaded successfully
- *
- *   - { type: ANSWER_LOAD_ERROR, error: reason }
- *     Answer resource could not be loaded
- *
- *
- * Options:
- *
- *   - params: Object of key-value pairs for Question params.
- *   - filters: Object of key-value pairs for Question filters.
- *   - displayInfo: Object with display details (see Request data format below).
+ *   - AnswerLoadingAction
+ *   - AnswerLoadSuccessAction
+ *   - AnswerLoadErrorAction
  *
  *
  * Usage:
@@ -99,7 +94,7 @@ var AnswerChangeAttributesAction = new Record({
  *    loadAnswer('GeneRecords.GenesByTaxon', { params: { ... }, filters: { ... }, displayInfo: { ... } });
  *
  *
- * Request data format:
+ * Request data format, POSTed to service:
  *
  *     {
  *       “questionDefinition”: {
@@ -120,6 +115,10 @@ var AnswerChangeAttributesAction = new Record({
  *
  * @param {string} questionName Fully qualified WDK Question name.
  * @param {object} opts Addition data to include in request.
+ * Options properties of `opts`:
+ *   - params: Object of key-value pairs for Question params.
+ *   - filters: Object of key-value pairs for Question filters.
+ *   - displayInfo: Object with display details (see Request data format below).
  */
 export function loadAnswer(questionName, opts = {}) {
   var { params, filters, displayInfo } = _.defaults(opts, {   // _.defaults is from the lodash utiliies library
