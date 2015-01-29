@@ -130,6 +130,21 @@ public class AnswerFilterLayoutBean {
         return beanMap;
     }
 
+ /**
+     * @return
+     * @see org.gusdb.wdk.model.answer.AnswerFilterLayout#getsortedFamilyCountMap()
+     */
+
+    public Map<String, Integer> getSuperFamilyCountMap() {
+        Map<String, Integer> beanMap = new LinkedHashMap<String, Integer>();
+        Map<String, Integer> superFamilyCountMap = layout.getSuperFamilyCountMap();
+        for (String name : superFamilyCountMap.keySet()) {
+            Integer count = superFamilyCountMap.get(name);
+            beanMap.put(name, new Integer(count));
+        }
+        return beanMap;
+    }
+
 
     /**
      * @return
