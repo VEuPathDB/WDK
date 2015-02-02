@@ -1,4 +1,41 @@
+// TODO Break this into two stores: Answers and UI
+import Immutable from 'immutable';
+import Store from './Store';
+import * as ActionType from '../ActionType';
+
 /**
+ * This module is exporting a store class (not an instance).
+ *
+ * `new Store(...)` is returning a class. The class constructor is called during
+ * runtime to create a singleton instance. An instance of this store can be
+ * retreived by a Controller View  using the `lookup` function that is passed to
+ * it via `props`, e.g.:
+ *
+ *     // Some Controller View
+ *     ...
+ *
+ *     componentDidMount() {
+ *       var customStore = this.props.lookup(CustomStore);
+ *       // do stuff with customStore...
+ *     }
+ *
+ *     ...
+ *
+ *
+ * The class will contain three methods and one property:
+ *
+ *   - subscribe(callback)   // register a funtion to be called when emitChange is called
+ *   - unsubscribe(callback) // unregister a function
+ *   - getState()            // get the current state of the store
+ *
+ *
+ * The spec object passed to Store is used to define the behavior of this store
+ * when an action is dispatched. All methods on the spec object are called with
+ * the spec object as the receiver, so `this` in methods will refer to the spec
+ * object. This makes it possible to factor out action handlers into specific
+ * methods on your spec object.
+ *
+ *
  * This store retains the UI state for the AnswerPage, including the current
  * Answer resource being displayed.. UI state includes things like loading
  * state, error state, table sorting options, etc.
@@ -20,28 +57,24 @@
  * Map -> Object, List -> Array, etc).
  */
 
-import Immutable from 'immutable';
-import Store from './Store';
-import * as ActionType from '../ActionType';
-
-
-/**
- * The state of the store. We're using Immutable.js here, but not to its
- * fullest extent. This is sort of a trial run. So far, the interface is very
- * intuitive. -dmf
- */
-var state = Immutable.fromJS({
-  isLoading: false,
-  error: null,
-  answer: {},
-  displayInfo: {},
-  questionDefinition: {}
-});
-
-/** Used to roll back on loading errors */
-var previousState;
 
 export default new Store({
+
+  /**
+   * The state of the store. We're using Immutable.js here, but not to its
+   * fullest extent. This is sort of a trial run. So far, the interface is very
+   * intuitive. -dmf
+   */
+  state: Immutable.fromJS({
+    isLoading: false,
+    error: null,
+    answer: {},
+    displayInfo: {},
+    questionDefinition: {}
+  }),
+
+  /** Used to roll back on loading errors */
+  previousState: null,
 
   /**
    * Handle dispatched actions. Hopefully most of this is self explanatory.
@@ -67,18 +100,18 @@ export default new Store({
          * `state.get('questionDefinition').get('questionName')`, but without
          * creating intermediate copies.
          */
-        if(state.getIn(['questionDefinition', 'questionName']) !== questionName) {
+        if(this.state.getIn(['questionDefinition', 'questionName']) !== questionName) {
           /*
            * Cache previous state. It will be used to replace the state
            * if we handle ANSWER_LOAD_ERROR.
            */
-          previousState = state;
+          this.previousState = this.state;
 
           /*
            * Clear the current state. This helps keep the UI more consistent
            * by not showing unrelated results when loading.
            */
-          state = state.merge({
+          this.state = this.state.merge({
             answer: {},
             questionDefinition: {},
             displayInfo: {}
@@ -88,7 +121,7 @@ export default new Store({
         /*
          * Finally, set isLoading to true and error to null.
          */
-        state = state.merge({
+        this.state = this.state.merge({
           isLoading: true,
           error: null
         });
@@ -142,7 +175,7 @@ export default new Store({
          * and 'questionDefinition' in `state`. `displayInfo` and
          * `questionDefinition` are defined on `requestData`.
          */
-        state = state.merge({ isLoading: false, answer }, requestData);
+        this.state = this.state.merge({ isLoading: false, answer }, requestData);
 
         emitChange();
         break;
@@ -150,7 +183,7 @@ export default new Store({
       case ActionType.ANSWER_LOAD_ERROR:
 
         /* rollback to the previous state, and add the error message */
-        state = previousState.merge({
+        this.state = this.previousState.merge({
           error: action.error
         });
 
@@ -170,7 +203,7 @@ export default new Store({
         var keyPath = [ 'displayInfo', 'attributes' ];
 
         /* list of attributes we will be altering */
-        var attributes = state.getIn(keyPath);
+        var attributes = this.state.getIn(keyPath);
 
         /* The current position of the attribute being moved */
         var currentPosition = attributes.findIndex(function(attribute) {
@@ -187,7 +220,7 @@ export default new Store({
         newAttributes = newAttributes.splice(newPosition, 0, attribute);
 
         /* Set the attributes to the new list */
-        state = state.setIn(keyPath, newAttributes);
+        this.state = this.state.setIn(keyPath, newAttributes);
 
         emitChange();
         break;
@@ -200,7 +233,7 @@ export default new Store({
         var newList = Immutable.fromJS(action.attributes);
 
         /* set state.displayInfo.attributes to the new list */
-        state = state.setIn(['displayInfo', 'attributes'], newList);
+        this.state = this.state.setIn(['displayInfo', 'attributes'], newList);
 
         emitChange();
         break;
@@ -214,7 +247,7 @@ export default new Store({
      * explore returning `state` as-is. This will require updating any modules
      * that work with the store (AnswerPage, etc).
      */
-    return state.toJS();
+    return this.state.toJS();
   }
 
 });
