@@ -39,8 +39,8 @@ import React from 'react';
 import Router from 'react-router';
 import Answer from '../components/Answer';
 import AnswerPageStore from '../stores/AnswerPageStore';
+import AnswerPageActions from '../actions/AnswerPageActions';
 import createStoreMixin from '../mixins/StoreMixin';
-import * as AnswerPageActions from '../actions/AnswerPageActions';
 
 /**
  * Export the React component class for AnswerPage.
@@ -86,10 +86,11 @@ var AnswerPage = React.createClass({
   mixins: [ createStoreMixin(AnswerPageStore), Router.Navigation ],
 
 
+
   /**
    * loadAnswerPage will call the loadAnswer action creator. Props are
    * receieved from the router. (Typically they are acquired by the router
-   * from attributes in the JSX tag that called it.)  The props will include the 
+   * from attributes in the JSX tag that called it.) The props will include the
    * params and query related to the URL.
    *
    * See more at https://github.com/rackt/react-router/blob/master/docs/api/run.md#state
@@ -120,13 +121,14 @@ var AnswerPage = React.createClass({
         direction: query.sortDir
       }];
       var displayInfo = { pagination, sorting };
-      AnswerPageActions.loadAnswer(params.questionName, { displayInfo });
+      this.actions.loadAnswer(params.questionName, { displayInfo });
     }
   },
 
 
   /** See loadAnswerPage() */
   componentDidMount() {
+    this.actions = this.props.lookup(AnswerPageActions);
     this.loadAnswerPage(this.props);
   },
 
@@ -190,11 +192,11 @@ var AnswerPage = React.createClass({
     },
 
     onMoveColumn(columnName, newPosition) {
-      AnswerPageActions.moveColumn(columnName, newPosition);
+      this.actions.moveColumn(columnName, newPosition);
     },
 
     onChangeColumns(attributes) {
-      AnswerPageActions.changeAttributes(attributes);
+      this.actions.changeAttributes(attributes);
     },
 
     onNewPage(offset, numRecords) {
@@ -220,7 +222,7 @@ var AnswerPage = React.createClass({
     var { isLoading, error, answer, displayInfo, questionDefinition: { questionName } } = this.state;
 
     // Bind methods to `this`
-    var answerEvents = _.mapValues(this.answerEvents, te => _.bind(te, this));
+    var answerEvents = _.mapValues(this.answerEvents, event => _.bind(event, this));
 
     /**
      * {...this.state} is JSX short-hand syntax to pass each key-value pair of

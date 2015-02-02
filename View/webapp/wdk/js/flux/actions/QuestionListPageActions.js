@@ -1,28 +1,29 @@
-import * as ActionType from '../ActionType';
+import di from 'di';
 import Dispatcher from '../Dispatcher';
-import * as ServiceAPI from '../ServiceAPI';
+import ServiceAPI from '../ServiceAPI';
+import * as ActionType from '../ActionType';
 
+export default class QuestionListPageActions {
 
-/* helpers */
+  constructor(dispatcher, serviceAPI) {
+    this.dispatcher = dispatcher;
+    this.serviceAPI = serviceAPI;
+  }
 
-function dispatchLoadSuccess(questions) {
-  Dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOAD_SUCCESS, questions });
+  loadQuestions() {
+    var { dispatcher, serviceAPI } = this;
+
+    dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOADING });
+
+    serviceAPI.getResource('/question')
+      .then(questions => {
+        dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOAD_SUCCESS, questions });
+      }, error => {
+        dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOAD_ERROR, error });
+      })
+      .catch(err => console.assert(false, err));
+  }
+
 }
 
-function dispatchLoadError(error) {
-  Dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOAD_ERROR, error });
-}
-
-function dispatchLoading() {
-  Dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOADING });
-}
-
-
-/* actions */
-
-export function loadQuestions() {
-  dispatchLoading();
-  ServiceAPI.getResource('/question')
-  .then(dispatchLoadSuccess, dispatchLoadError)
-  .catch(err => console.assert(false, err));
-}
+di.annotate(QuestionListPageActions, new di.Inject(Dispatcher, ServiceAPI));
