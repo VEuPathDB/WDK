@@ -1,9 +1,9 @@
 import Immutable from 'immutable';
-import Store from './Store';
+import createStore from '../utils/createStore';
 import * as ActionType from '../ActionType';
 
 
-export default new Store ({
+export default createStore ({
 
   state: Immutable.fromJS({
     questions: [],
