@@ -1,26 +1,25 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.List;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.question.QuestionSet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class QuestionFormatter {
 
-  public static JSONArray getQuestionsJson(QuestionSet[] questionSets, boolean expandQuestions, boolean expandParams)
+  public static JSONArray getQuestionsJson(List<Question> questions, boolean expandQuestions, boolean expandParams)
       throws JSONException, WdkModelException {
     JSONArray json = new JSONArray();
-    for (QuestionSet qSet : questionSets) {
-      for (Question q : qSet.getQuestions()) {
-        if (expandQuestions) {
-          json.put(getQuestionJson(q, expandParams));
-        }
-        else {
-          json.put(q.getFullName());
-        }
+    for (Question q : questions) {
+      if (expandQuestions) {
+        json.put(getQuestionJson(q, expandParams));
+      }
+      else {
+        json.put(q.getFullName());
       }
     }
     return json;
