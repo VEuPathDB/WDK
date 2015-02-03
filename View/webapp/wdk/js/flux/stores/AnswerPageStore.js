@@ -1,6 +1,6 @@
 // TODO Break this into two stores: Answers and UI
 import Immutable from 'immutable';
-import Store from './Store';
+import createStore from '../utils/createStore';
 import * as ActionType from '../ActionType';
 
 /**
@@ -58,7 +58,7 @@ import * as ActionType from '../ActionType';
  */
 
 
-export default new Store({
+export default createStore({
 
   /**
    * The state of the store. We're using Immutable.js here, but not to its

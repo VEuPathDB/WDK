@@ -1,8 +1,6 @@
-import di from 'di';
 import _ from 'lodash';
 import Immutable from 'immutable';
-import Dispatcher from '../Dispatcher';
-import ServiceAPI from '../ServiceAPI';
+import createActionCreators from '../utils/createActionCreators';
 import {
   ANSWER_LOADING,
   ANSWER_LOAD_SUCCESS,
@@ -78,12 +76,7 @@ var AnswerChangeAttributesAction = new Record({
  * dispatched, the handling of the Action will be synchronous.
  */
 
-export default class AnswerPageActions {
-
-  constructor(dispatcher, serviceAPI) {
-    this.dispatcher = dispatcher;
-    this.serviceAPI = serviceAPI;
-  }
+export default createActionCreators({
 
   /**
    * Retrieve's an Answer resource and dispatches an action with the resource.
@@ -127,7 +120,7 @@ export default class AnswerPageActions {
    *   - displayInfo: Object with display details (see Request data format below).
    */
   loadAnswer(questionName, opts = {}) {
-    var dispatcher = this.dispatcher;
+    var dispatch = this.dispatch;
     var { params, filters, displayInfo } = _.defaults(opts, {   // _.defaults is from the lodash utiliies library
       params: [],
       filters: [],
@@ -142,7 +135,7 @@ export default class AnswerPageActions {
 
     var action = new AnswerLoadingAction({ requestData: requestData });
 
-    dispatcher.dispatch(action);
+    dispatch(action);
 
     this.serviceAPI.postResource('/answer', requestData)
       .then(answer => {
@@ -150,19 +143,19 @@ export default class AnswerPageActions {
           requestData: requestData,
           answer: answer
         });
-        dispatcher.dispatch(action);
+        dispatch(action);
       }, error => {
         var action = new AnswerLoadErrorAction({
           requestData: requestData,
           error: error
         });
-        dispatcher.dispatch(action);
+        dispatch(action);
       })
       // Catch errors caused by Store callbacks.
       // This is a last-ditch effort to alert developers that there was an error
       // with how to Store handled the action.
       .catch(err => console.assert(false, err));
-  }
+  },
 
   moveColumn(columnName, newPosition) {
     console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
@@ -173,8 +166,8 @@ export default class AnswerPageActions {
       newPosition: newPosition
     });
 
-    this.dispatcher.dispatch(action);
-  }
+    this.dispatch(action);
+  },
 
   changeAttributes(attributes) {
     console.assert(Array.isArray(attributes), `attributes ${attributes} should be an array.`);
@@ -183,9 +176,7 @@ export default class AnswerPageActions {
       attributes: attributes
     });
 
-    this.dispatcher.dispatch(action);
+    this.dispatch(action);
   }
 
-}
-
-di.annotate(AnswerPageActions, new di.Inject(Dispatcher, ServiceAPI));
+});

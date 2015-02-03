@@ -11,9 +11,10 @@ import '6to5/polyfill';
 
 import di from 'di';
 import _ from 'lodash';
+import Flux from 'flux';
 import React from 'react';
 import Router from 'react-router';
-import ServiceAPI from './ServiceAPI';
+import createServiceAPI from './utils/createServiceAPI';
 import { appRoutes } from './router';
 
 /**
@@ -42,12 +43,13 @@ var wdk = {
     // Create a provider for a configured ServiceAPI.
     // This will cause injector.get(ServiceAPI) to
     // return the result of getServiceAPI().
-    var getServiceAPI = function getServiceAPI() {
-      return new ServiceAPI(serviceUrl);
-    };
-    di.annotate(getServiceAPI, new di.Provide(ServiceAPI));
+    var serviceAPIProvider = _.partial(createServiceAPI, serviceUrl);
+    di.annotate(serviceAPIProvider, new di.Provide('serviceAPI'));
 
-    var injector = new di.Injector([ getServiceAPI ]);
+    var dispatcherProvider = function() { return new Flux.Dispatcher() };
+    di.annotate(dispatcherProvider, new di.Provide('dispatcher'));
+
+    var injector = new di.Injector([ serviceAPIProvider, dispatcherProvider ]);
 
     // This is passed to Controller Views. This will also be exposed on the wdk
     // object this module exports. A companion `register` function will also be
