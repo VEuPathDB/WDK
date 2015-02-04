@@ -60,6 +60,11 @@ public class ParamReference extends Reference {
     if (help != null)
       param.setHelp(help);
 
+		// set visibleHelp if exists
+    String visibleHelp = paramRef.getVisibleHelp();
+    if (visibleHelp != null)
+      param.setVisibleHelp(visibleHelp);
+
     // set prompt if any
     String prompt = paramRef.getPrompt();
     if (prompt != null)
@@ -187,6 +192,9 @@ public class ParamReference extends Reference {
 
   private List<WdkModelText> helps = new ArrayList<WdkModelText>();
   private String help;
+
+	private List<WdkModelText> visibleHelps = new ArrayList<WdkModelText>();
+  private String visibleHelp;
 
   // this property only applies to timestamp param.
   private Long interval;
@@ -417,6 +425,14 @@ public class ParamReference extends Reference {
     return help;
   }
 
+ public void addVisibleHelp(WdkModelText visibleHelp) {
+    this.visibleHelps.add(visibleHelp);
+  }
+
+  public String getVisibleHelp() {
+    return visibleHelp;
+  }
+
   public void setPrompt(String prompt) {
     this.prompt = prompt;
   }
@@ -454,5 +470,17 @@ public class ParamReference extends Reference {
       }
     }
     helps = null;
-  }
+
+ for (WdkModelText visibleHelp : visibleHelps) {
+      if (visibleHelp.include(projectId)) {
+        if (this.visibleHelp != null)
+          throw new WdkModelException("More than one <visibleHelp> are "
+              + "defined in the paramRef '" + this.getTwoPartName());
+
+        visibleHelp.excludeResources(projectId);
+        this.visibleHelp = visibleHelp.getText();
+      }
+    }
+    visibleHelps = null;
+	 }
 }

@@ -1,14 +1,11 @@
 package org.gusdb.wdk.service.service;
 
-import java.util.Collections;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Variant;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -21,25 +18,27 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
-JSON input format:
-{
-  “questionDefinition”: {
-    “questionName”: String,
-    “params”: [ {
-      “name”: String, “value”: Any
-    } ],
-    “filters”: [ {
-      “name”: String, value: Any
-    } ]
-  },
-  displayInfo: {
-    pagination: { offset: Number, numRecords: Number },
-    attributes: [ attributeName: String ],
-    tables: [ tableName: String ],
-    sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
-  }
-}
-*/
+ * JSON input format:<br/>
+ * <pre>
+ * {
+ *   “questionDefinition”: {
+ *     “questionName”: String,
+ *     “params”: [ {
+ *       “name”: String, “value”: Any
+ *     } ],
+ *     “filters”: [ {
+ *       “name”: String, value: Any
+ *     } ]
+ *   },
+ *   displayInfo: {
+ *     pagination: { offset: Number, numRecords: Number },
+ *     attributes: [ attributeName: String ],
+ *     tables: [ tableName: String ],
+ *     sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
+ *   }
+ * }
+ * </pre>
+ */
 @Path("/answer")
 public class AnswerService extends WdkService {
 
@@ -56,11 +55,13 @@ public class AnswerService extends WdkService {
       // expect two parts to this request
       // 1. Parse result request (question, params, etc.)
       JSONObject questionDefJson = json.getJSONObject("questionDefinition");
-      WdkAnswerRequest request = WdkAnswerRequest.createFromJson(getCurrentUser(), questionDefJson, getWdkModelBean());
+      WdkAnswerRequest request = WdkAnswerRequest.createFromJson(
+          getCurrentUser(), questionDefJson, getWdkModelBean());
       
       // 2. Parse request specifics (columns, pagination, etc.)
       JSONObject specJson = json.getJSONObject("displayInfo");
-      WdkAnswerRequestSpecifics requestSpecifics = WdkAnswerRequestSpecifics.createFromJson(specJson, getWdkModelBean());
+      WdkAnswerRequestSpecifics requestSpecifics = WdkAnswerRequestSpecifics.createFromJson(
+          specJson, request.getQuestion().getRecordClass());
 
       // seemed to parse ok; create answer and format
       AnswerValueBean answerValue = getResultFactory().createResult(request, requestSpecifics);
@@ -68,7 +69,7 @@ public class AnswerService extends WdkService {
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.info("Passed request body deemed unacceptable", e);
-      return Response.notAcceptable(Collections.<Variant>emptyList()).build();
+      return BAD_REQUEST_RESPONSE;
     }
   }
 }

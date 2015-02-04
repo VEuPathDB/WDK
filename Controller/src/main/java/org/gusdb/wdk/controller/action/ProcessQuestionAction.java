@@ -88,6 +88,10 @@ public class ProcessQuestionAction extends Action {
       // the question is already validated in the question form, don't need to do it again.
       String filterName = request.getParameter(CConstants.WDK_FILTER_KEY);
       StepBean step = wdkUser.createStep(wdkQuestion, params, filterName, false, false, weight);
+      if (step.getException() != null) {
+        // exception occurred loading initial results for this step
+        throw step.getException();
+      }
       step.setCustomName(customName);
       step.update(false);
 

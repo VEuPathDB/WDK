@@ -1,4 +1,4 @@
-/*global RSVP */
+/*global RSVP, _ */
 
 import './core';
 import './user';
@@ -10,8 +10,8 @@ import './controllers';
 
 import React from 'react';
 import Router from 'react-router';
+import HeadlessLocation from './flux/utils/HeadlessLocation';
 import { routes } from './flux/router';
-import { config as configService } from './flux/ServiceAPI';
 
 var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
 
@@ -24,11 +24,6 @@ var MutationObserver = window.MutationObserver || window.WebKitMutationObserver 
 // call chain.
 RSVP.on('error', function(err) {
   console.assert(false, err);
-});
-
-// Set the serviceUrl
-configService({
-  serviceUrl: wdk.webappUrl('/service')
 });
 
 // Start the application. The ready callback is invoked
@@ -44,12 +39,19 @@ var app = wdk.application = wdk.app = wdk.core.Application.create({
      * the new architecture. For instance, the Datasets page
      * used by EuPathDB sites will point to a specific Answer
      * page: /answer/DataQuestions.AllDatasets.
+     *
+     * We are using a custom Location object to handle route changes.
+     * Typically, the browser's history is used to maintain a stack of routes
+     * by augmenting the URL (either by changing the hash property or by using
+     * the pushState API). A HeadlessLocation instance will maintain this stack
+     * internally and keep the URL bar clean.
      */
     jQuery('[data-route]').each((index, el) => {
       var route = el.getAttribute('data-route');
-      // run the router
-      Router.run(routes, route,
-        (Handler, state) => React.render(<Handler {...state} />, el));
+      var location = new HeadlessLocation(route);
+      Router.run(routes, location, function(Handler, state) {
+        React.render(<Handler {...state} />, el);
+      });
     });
 
     wdk.cookieTest();

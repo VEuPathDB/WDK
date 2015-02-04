@@ -1,28 +1,20 @@
+import createActionCreators from '../utils/createActionCreators';
 import * as ActionType from '../ActionType';
-import Dispatcher from '../Dispatcher';
-import * as ServiceAPI from '../ServiceAPI';
 
+export default createActionCreators({
 
-/* helpers */
+  loadQuestions() {
+    var { dispatch, serviceAPI } = this;
 
-function dispatchLoadSuccess(questions) {
-  Dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOAD_SUCCESS, questions });
-}
+    dispatch({ type: ActionType.QUESTION_LIST_LOADING });
 
-function dispatchLoadError(error) {
-  Dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOAD_ERROR, error });
-}
+    serviceAPI.getResource('/question')
+      .then(questions => {
+        dispatch({ type: ActionType.QUESTION_LIST_LOAD_SUCCESS, questions });
+      }, error => {
+        dispatch({ type: ActionType.QUESTION_LIST_LOAD_ERROR, error });
+      })
+      .catch(err => console.assert(false, err));
+  }
 
-function dispatchLoading() {
-  Dispatcher.dispatch({ type: ActionType.QUESTION_LIST_LOADING });
-}
-
-
-/* actions */
-
-export function loadQuestions() {
-  dispatchLoading();
-  ServiceAPI.getResource('/question')
-  .then(dispatchLoadSuccess, dispatchLoadError)
-  .catch(err => console.assert(false, err));
-}
+});
