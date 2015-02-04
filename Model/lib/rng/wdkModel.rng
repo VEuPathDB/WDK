@@ -244,6 +244,10 @@
 
   <define name="ParamBaseTags">
     <choice>
+      <element name="visibleHelp">
+        <ref name="IncludeExclude" />
+        <text />
+      </element>
       <element name="help">
         <ref name="IncludeExclude" />
         <text />
