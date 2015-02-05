@@ -1,21 +1,22 @@
-import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';
-import QuestionListStore from '../stores/QuestionListStore';
-import QuestionListPageActions from '../actions/QuestionListPageActions';
-import createStoreMixin from '../mixins/StoreMixin';
+import createStoreMixin from '../mixins/createStoreMixin';
+import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
 var { Link } = Router;
-var storeMixin = createStoreMixin(QuestionListStore);
-// var actionsMixin = createActionsMixin(QuestionListPageActions);
+var storeMixin = createStoreMixin('questionListStore');
+var actionsMixin = createActionCreatorsMixin('questionListPageActions');
 
 var QuestionListPage = React.createClass({
 
-  mixins: [ storeMixin ],
+  mixins: [ storeMixin, actionsMixin ],
+
+  getStateFromStores(stores) {
+    return stores.questionListStore.getState();
+  },
 
   componentDidMount() {
-    var actions = this.props.lookup(QuestionListPageActions);
-    actions.loadQuestions();
+    this.questionListPageActions.loadQuestions();
   },
 
   render() {
@@ -29,7 +30,7 @@ var QuestionListPage = React.createClass({
       return (
         <div>
           <ol>
-            {_.map(questions, question => (
+            {questions.map(question => (
               <li key={question}>
                 {question + ' - '}
                 <Link to="answer" params={{ questionName: question }}>answer page</Link>

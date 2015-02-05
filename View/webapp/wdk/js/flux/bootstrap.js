@@ -16,6 +16,8 @@ import React from 'react';
 import Router from 'react-router';
 import createServiceAPI from './utils/createServiceAPI';
 import { appRoutes } from './router';
+import * as stores from './stores';
+import * as actions from './actions';
 
 /**
  * TODO Provide a more comprehensive configuration module. Possibly look into
@@ -31,7 +33,7 @@ var wdk = {
     this._spec = this._spec || {};
 
     if (spec) {
-      _.assign(this._spec, spec);
+      Object.assign(this._spec, spec);
     }
 
     var serviceUrl = this._spec.serviceUrl;
@@ -43,13 +45,31 @@ var wdk = {
     // Create a provider for a configured ServiceAPI.
     // This will cause injector.get(ServiceAPI) to
     // return the result of getServiceAPI().
-    var serviceAPIProvider = _.partial(createServiceAPI, serviceUrl);
+    var serviceAPIProvider = function() { return createServiceAPI(serviceUrl) };
     di.annotate(serviceAPIProvider, new di.Provide('serviceAPI'));
 
+    // Wrap Flux.Dispatcher so we don't pollute its static properties
     var dispatcherProvider = function() { return new Flux.Dispatcher() };
     di.annotate(dispatcherProvider, new di.Provide('dispatcher'));
 
-    var injector = new di.Injector([ serviceAPIProvider, dispatcherProvider ]);
+    var storeProviders = Object.keys(stores).map(name => {
+      var store = stores[name];
+      di.annotate(store, new di.Provide(name));
+      return store;
+    });
+
+    var actionCreatorsProviders = Object.keys(actions).map(name => {
+      var action = actions[name];
+      di.annotate(action, new di.Provide(name));
+      return action;
+    });
+
+    var injector = new di.Injector([
+      serviceAPIProvider,
+      dispatcherProvider,
+      ...storeProviders,
+      ...actionCreatorsProviders
+    ]);
 
     // This is passed to Controller Views. This will also be exposed on the wdk
     // object this module exports. A companion `register` function will also be
@@ -58,8 +78,10 @@ var wdk = {
       return injector.get(token);
     };
 
-    Router.run(appRoutes, function runRoute(Handler, state){
-      React.render( <Handler {...state} lookup={lookup} />, document.body);
+    Router.run(appRoutes, function runRoute(Handler){
+      React.withContext( { lookup }, function() {
+        React.render( <Handler/>, document.body);
+      });
     });
   },
 

@@ -16,9 +16,11 @@
  *   - onNewPage(offset: number, numRecords: number)
  */
 
-import React from 'react';
 import _ from 'lodash';
+import React from 'react';
 import Dialog from './Dialog';
+
+var $ = window.jQuery;
 
 /* Helper functions */
 
@@ -77,14 +79,14 @@ var RecordTable = React.createClass({
    */
   getInitialState() {
     return {
-      pendingVisibleAttributes: this.props.displayInfo.attributes,
+      pendingVisibleAttributes: this.props.displayInfo.visibleAttributes,
       attributeSelectorOpen: false
     };
   },
 
   componentWillReceiveProps(nextProps) {
     this.setState({
-      pendingVisibleAttributes: nextProps.displayInfo.attributes
+      pendingVisibleAttributes: nextProps.displayInfo.visibleAttributes
     });
   },
 
@@ -99,7 +101,8 @@ var RecordTable = React.createClass({
 
   handleHideColumn(attribute, e) {
     e.stopPropagation(); // prevent click event from bubbling to sort handler
-    this.props.onChangeColumns(_.without(this.props.displayInfo.attributes, attribute));
+    var attributes = this.props.displayInfo.visibleAttributes;
+    this.props.onChangeColumns(attributes.filter(attr => attr !== attribute));
   },
 
   handleNewPage() {
@@ -128,10 +131,9 @@ var RecordTable = React.createClass({
   togglePendingAttribute() {
     var form = this.refs.attributeSelector.getDOMNode();
     var { attributes } = this.props.meta;
-    var pendingVisibleAttributes = _(form.pendingAttribute)
+    var pendingVisibleAttributes = [].slice.call(form.pendingAttribute)
       .filter(a => a.checked)
-      .map(a => _.find(attributes, { name: a.value }))
-      .value();
+      .map(a => attributes.filter(attr => attr.name === a.value)[0]);
     this.setState({ pendingVisibleAttributes });
   },
 
@@ -173,10 +175,8 @@ var RecordTable = React.createClass({
 
   render() {
     /** creates variables: meta, records, sorting, and visibleAttributes */
-    var { meta, records, displayInfo: { pagination, sorting, attributes: visibleAttributes } } = this.props;
-    var sortColumn = sorting[0];
+    var { meta, records, displayInfo: { pagination, sorting, visibleAttributes } } = this.props;
     var visibleNames = this.state.pendingVisibleAttributes.map(a => a.name);
-
     var firstRec = pagination.offset + 1;
     var lastRec = Math.min(pagination.offset + pagination.numRecords, meta.count);
 
@@ -191,7 +191,7 @@ var RecordTable = React.createClass({
             title="Choose columns to shoe or hide">
             <form onSubmit={this.handleAttributeSelectorSubmit} ref="attributeSelector">
               <ul className="wdk-RecordTable-AttributeSelector">
-                {_.map(meta.attributes, attribute => {
+                {meta.attributes.map(attribute => {
                   var { name, displayName } = attribute;
                   return (
                     <li key={name}>
@@ -211,19 +211,21 @@ var RecordTable = React.createClass({
           </Dialog>
         </div>
 
-        <p>Showing {firstRec} - {lastRec} of {meta.count} {meta['class']} records</p>
+        <p> Showing {firstRec} - {lastRec} of {meta.count} {meta['class']} records </p>
 
         <div className="wdk-RecordTable-Wrapper">
           <table className="wdk-RecordTable">
             <thead>
               <tr ref="headerRow">
-                {_.map(visibleAttributes, attribute => {
-                  var sortClass = sortColumn.attributeName === attribute.name
-                    ? sortClassMap[sortColumn.direction]
+                {visibleAttributes.map(attribute => {
+                  var tmpl = { attributeName: attribute.name };
+                  var sortSpec = _.find(sorting, tmpl);
+                  var sortClass = sortSpec
+                    ? sortClassMap[sortSpec.direction]
                     : 'ui-icon ui-icon-blank';
 
-                  var sort = _.partial(this.handleSort, attribute);
-                  var hide = _.partial(this.handleHideColumn, attribute);
+                  var sort = this.handleSort.bind(this, attribute);
+                  var hide = this.handleHideColumn.bind(this, attribute);
 
                   return (
                     <th key={attribute.name}
@@ -249,11 +251,14 @@ var RecordTable = React.createClass({
                 // TODO Handle display records inline, which might just be a dump of attrs and tables
                 // or it will be an option that will fetch the record via ajax.
 
-                var attributes = _.indexBy(record.attributes, 'name');
+                var attributes = record.attributes.reduce((attrs, attr) => {
+                  attrs[attr.name] = attr;
+                  return attrs;
+                }, {});
 
                 return (
                   <tr key={record.id}>
-                    {_.map(visibleAttributes, attribute => {
+                    {visibleAttributes.map(attribute => {
                       var value = attributes[attribute.name].value;
                       return (
                         <td key={attribute.name}
