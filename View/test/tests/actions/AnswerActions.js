@@ -7,6 +7,9 @@ describe('AnswerActions', function() {
 
     before(function() {
       sinon.stub($, 'ajax');
+      $.ajax.returns(new Promise(function(resolve) {
+        resolve(true);
+      }));
     });
 
     after(function() {
@@ -15,7 +18,7 @@ describe('AnswerActions', function() {
 
     it('should trigger a POST request', function() {
       AnswerActions.loadAnswer('MyQuestion');
-      assert($.ajax.calledWithMatch({ type: 'POST' }))
+      assert($.ajax.calledWithMatch({ type: 'POST' }), `$.ajax called with ${$.ajax.args[0]}`)
     });
 
   })

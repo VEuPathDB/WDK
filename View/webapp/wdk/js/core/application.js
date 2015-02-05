@@ -228,3 +228,5 @@ wdk.namespace('wdk.core', function(ns, $) {
   });
 
 });
+
+export default wdk.core.Application;

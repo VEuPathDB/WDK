@@ -60,7 +60,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
   var toPromise = function(fn) {
     return function() {
       var args = arguments;
-      return new RSVP.Promise(function(resolve, reject) {
+      return new Promise(function(resolve, reject) {
         try { resolve(fn.apply(this, args)); }
         catch(e) { reject(e); }
       }.bind(this));
@@ -152,7 +152,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
     // returns a promise that resolves to metadata for a property:
     //     [ { data_term: metadata_value }, ... ]
     _getMetadata: function(field) {
-      return new RSVP.Promise(function(resolve, reject) {
+      return new Promise(function(resolve, reject) {
         var term = field.get('term');
         var type = field.get('type');
 
