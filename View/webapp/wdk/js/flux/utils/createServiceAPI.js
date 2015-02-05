@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 var $ = window.jQuery;
 
 /**
@@ -29,8 +27,10 @@ export default function createServiceAPI(serviceUrl) {
    * @returns {Promise} The returned Promise will resolve with the response, or
    * reject with the error string.
    */
-  var requestResource = _.curry(function requestResource(type, resourcePath, data) {
-    var promise = new Promise((resolve, reject) => {
+  function requestResource(type, resourcePath, data) {
+    if (arguments.length === 0) return requestResource;
+    if (arguments.length === 1) return requestResource.bind(null, type);
+    return new Promise((resolve, reject) => {
       $.ajax({
         type,
         url: serviceUrl + resourcePath,
@@ -42,12 +42,9 @@ export default function createServiceAPI(serviceUrl) {
         resolve(data);
       }, function(jqXHR, textStatus, error) {
         reject(error);
-      })
+      });
     });
-
-    promise.catch(error => console.assert(false, error));
-    return promise;
-  }, 2);
+  }
 
   return {
     requestResource:  requestResource,

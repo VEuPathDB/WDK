@@ -68,9 +68,18 @@ export default createStore({
   state: Immutable.fromJS({
     isLoading: false,
     error: null,
-    answer: {},
-    displayInfo: {},
-    questionDefinition: {}
+    answer: { records: null },
+    displayInfo: {
+      sorting: null,
+      pagination: null,
+      attributes: null,
+      tables: null
+    },
+    questionDefinition: {
+      questionName: null,
+      params: null,
+      filters: null
+    }
   }),
 
   /** Used to roll back on loading errors */
@@ -145,29 +154,14 @@ export default createStore({
         var requestData = action.requestData;
 
         /*
-         * Currently, there isn't a "sort" action creator. We just call
-         * loadAnswer() with the sorting configuration. That info is
-         * captured here and stored in this store's state.
-         * If not sorting is provided, we will sort by the first attribute.
-         * This should probably come from the server, as configured in the
-         * model.
-         */
-        if (!requestData.displayInfo.sorting) {
-          requestData.displayInfo.sorting = [{
-            columnName: answer.meta.attributes[0].name,
-            direction: 'ASC'
-          }];
-        }
-
-        /*
          * If state.displayInfo.attributes isn't defined we want to use the
          * defaults. For now, we will just show whatever is in
          * answer.meta.attributes by default. This is probably wrong.
          * We probably also want to persist the user's choice somehow. Using
          * localStorage is one possble solution.
          */
-        if (!requestData.displayInfo.attributes) {
-          requestData.displayInfo.attributes = answer.meta.attributes;
+        if (!requestData.displayInfo.visibleAttributes) {
+          requestData.displayInfo.visibleAttributes = answer.meta.attributes;
         }
 
         /*
@@ -200,7 +194,7 @@ export default createStore({
         var newPosition = action.newPosition;
 
         /* used with setIn http://facebook.github.io/immutable-js/docs/#/Map/setIn */
-        var keyPath = [ 'displayInfo', 'attributes' ];
+        var keyPath = [ 'displayInfo', 'visibleAttributes' ];
 
         /* list of attributes we will be altering */
         var attributes = this.state.getIn(keyPath);
@@ -233,7 +227,7 @@ export default createStore({
         var newList = Immutable.fromJS(action.attributes);
 
         /* set state.displayInfo.attributes to the new list */
-        this.state = this.state.setIn(['displayInfo', 'attributes'], newList);
+        this.state = this.state.setIn(['displayInfo', 'visibleAttributes'], newList);
 
         emitChange();
         break;
