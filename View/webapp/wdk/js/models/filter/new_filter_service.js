@@ -1,3 +1,5 @@
+/* global RSVP */
+
 // TODO How does this class relate to Flux?
 //
 // All of the implementation here should actually be in the "Store" (for the

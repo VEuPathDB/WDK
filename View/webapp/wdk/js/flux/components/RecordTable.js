@@ -1,8 +1,3 @@
-import _ from 'lodash';
-import React from 'react';
-import FixedDataTable from 'fixed-data-table';
-import Dialog from './Dialog';
-
 /**
  * Generic table with UI features:
  *
@@ -21,9 +16,37 @@ import Dialog from './Dialog';
  *   - onNewPage(offset: number, numRecords: number)
  */
 
+import _ from 'lodash';
+import React from 'react';
+import Dialog from './Dialog';
+
 var $ = window.jQuery;
-var { Table, Column } = FixedDataTable;
-var { PropTypes } = React.PropTypes;
+
+/* Helper functions */
+
+/** TODO Look up or inject custom formatters */
+function formatAttribute(attribute, value) {
+  switch(attribute.type) {
+    case 'text': return value;
+    case 'link': return (<a href={value.url}>{value.display}</a>);
+
+    /** FIXME Throw on unknown types when we have that info from service */
+    default: return value;
+    /*
+    default: throw new TypeError(`Unkonwn type "${attribute.type}"` +
+                                 ` for attribute ${attribute.name}`);
+    */
+  }
+}
+
+/**
+ * Function that doesn't do anything. This is the default for many
+ * optional handlers. We can do an equality check as a form of feature
+ * detection. E.g., if onSort === noop, then we won't enable sorting.
+ */
+var noop = () => {};
+
+var PropTypes = React.PropTypes;
 
 var sortClassMap = {
   ASC:  'ui-icon ui-icon-arrowthick-1-n',
@@ -191,54 +214,67 @@ var RecordTable = React.createClass({
         <p> Showing {firstRec} - {lastRec} of {meta.count} {meta['class']} records </p>
 
         <div className="wdk-RecordTable-Wrapper">
-          <Table
-            width={600}
-            maxHeight={600}
-            rowsCount={records.length}
-            rowHeight={50}
-            rowGetter={this.getRow}
-            headerHeight={50}>
+          <table className="wdk-RecordTable">
+            <thead>
+              <tr ref="headerRow">
+                {visibleAttributes.map(attribute => {
+                  var tmpl = { attributeName: attribute.name };
+                  var sortSpec = _.find(sorting, tmpl);
+                  var sortClass = sortSpec
+                    ? sortClassMap[sortSpec.direction]
+                    : 'ui-icon ui-icon-blank';
 
-            {visibleAttributes.map((attribute, idx) => {
-              var cellClassName = attribute.name + ' ' + attribute.className;
-              return (
-                <Column
-                  label={attribute.displayName}
-                  dataKey={attribute.name}
-                  width={100}
-                  cellClassName={cellClassName}/>
-              );
-            })}
-          </Table>
+                  var sort = this.handleSort.bind(this, attribute);
+                  var hide = this.handleHideColumn.bind(this, attribute);
+
+                  return (
+                    <th key={attribute.name}
+                      data-column={attribute.name}
+                      className={[attribute.name, attribute.className].join(' ')}
+                      title={'Sort table by ' + attribute.displayName}
+                      onClick={sort} >
+                      <div className="wdk-RecordTable-headerWrapper">
+                        <span className="ui-icon ui-icon-close"
+                          style={{position: 'absolute', right: 0}}
+                          title="Hide column"
+                          onClick={hide}/>
+                        <span>{attribute.displayName}</span>
+                        <span className={sortClass} style={{marginRight: '1em'}}/>
+                      </div>
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {records.map(record => {
+                // TODO Handle display records inline, which might just be a dump of attrs and tables
+                // or it will be an option that will fetch the record via ajax.
+
+                var attributes = record.attributes.reduce((attrs, attr) => {
+                  attrs[attr.name] = attr;
+                  return attrs;
+                }, {});
+
+                return (
+                  <tr key={record.id}>
+                    {visibleAttributes.map(attribute => {
+                      var value = attributes[attribute.name].value;
+                      return (
+                        <td key={attribute.name}
+                          dangerouslySetInnerHTML={{__html: formatAttribute(attribute, value)}}/>
+                        );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
     );
   }
 
 });
-
-/* Helper functions */
-
-/** TODO Look up or inject custom formatters */
-function formatAttribute(attribute, value) {
-  switch(attribute.type) {
-    case 'text': return value;
-    case 'link': return (<a href={value.url}>{value.display}</a>);
-
-    /** FIXME Throw on unknown types when we have that info from service */
-    default: return value;
-    /*
-    default: throw new TypeError(`Unkonwn type "${attribute.type}"` +
-                                 ` for attribute ${attribute.name}`);
-    */
-  }
-}
-
-/**
- * Function that doesn't do anything. This is the default for many
- * optional handlers. We can do an equality check as a form of feature
- * detection. E.g., if onSort === noop, then we won't enable sorting.
- */
-function noop(){}
 
 export default RecordTable;
