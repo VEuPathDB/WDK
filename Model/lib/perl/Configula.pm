@@ -37,6 +37,8 @@ my %dblinkMap = (
     'rm15873'     => 'rm15873.login_comment',
     'rm9972'      => 'rm9972.login_comment',
     'userdb'      => 'vm.userdb', # standalone virtual machine
+    'apicommx'    => 'apicommx.login_comment', # SSD testing
+    'apicommy'    => 'apicommy.login_comment', # SSD testing
 );
 
 =head1 METHODS
