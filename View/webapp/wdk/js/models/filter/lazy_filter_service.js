@@ -1,6 +1,9 @@
+/* global RSVP */
+
 wdk.namespace('wdk.models.filter', function(ns) {
   'use strict';
 
+  var Promise = window.Promise || RSVP.Promise;
   var FilterService = wdk.models.filter.FilterService;
 
   // Helper filtering functions

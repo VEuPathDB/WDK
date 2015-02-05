@@ -3,7 +3,7 @@ import Store from 'wdk/flux/stores/Store';
 import Dispatcher from 'wdk/flux/Dispatcher';
 
 describe('wdk/stores/Store', function() {
-
+   
   it('should handle basic dispatching', function() {
     var myAction = 'my action';
 
@@ -54,5 +54,5 @@ describe('wdk/stores/Store', function() {
     assert(messages.indexOf('b') > -1);
 
   })
-
+   
 });
