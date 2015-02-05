@@ -7,7 +7,6 @@
  */
 
 import React from 'react';
-import _ from 'lodash';
 import RecordTable from './RecordTable';
 import Loading from './Loading';
 
@@ -58,7 +57,7 @@ var Answer = React.createClass({
       <div className="wdkAnswer">
         {isLoading ? <Loading/> : ''}
         {error ? <div className="wdkAnswerError">{error}</div> : ''}
-        {!_.isEmpty(answer) ? <RecordTable {...answer} {...answerEvents} displayInfo={displayInfo}/> : ''}
+        {answer && answer.records ? <RecordTable {...answer} {...answerEvents} displayInfo={displayInfo}/> : ''}
       </div>
     );
   }

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import Immutable from 'immutable';
 import createActionCreators from '../utils/createActionCreators';
 import {
@@ -32,6 +31,9 @@ import {
  * Read more about Records here http://facebook.github.io/immutable-js/docs/#/Record
  */
 
+// XXX Would it make sense to use Records for ActionTypes? This would have the
+// nice effect of enforcing a data type for an action payload. It bears more
+// thought as it might be in opposition to some underlying Flux ideology.
 var Record = Immutable.Record;
 
 var AnswerLoadingAction = new Record({
@@ -96,13 +98,13 @@ export default createActionCreators({
    * Request data format, POSTed to service:
    *
    *     {
-   *       “questionDefinition”: {
-   *         “questionName”: String,
-   *         “params”: [ {
-   *           “name”: String, “value”: Any
+   *       "questionDefinition": {
+   *         "questionName": String,
+   *         "params": [ {
+   *           "name": String, “value”: Any
    *         } ],
-   *         “filters”: [ {
-   *           “name”: String, value: Any
+   *         "filters": [ {
+   *           “name": String, value: Any
    *         } ]
    *       },
    *       displayInfo: {
@@ -121,22 +123,41 @@ export default createActionCreators({
    */
   loadAnswer(questionName, opts = {}) {
     var dispatch = this.dispatch;
-    var { params, filters, displayInfo } = _.defaults(opts, {   // _.defaults is from the lodash utiliies library
-      params: [],
-      filters: [],
-      displayInfo: {
-        pagination: { offset: 0, numRecords: 100 },
-        columns: null,
-        sorting: null
-      }
-    });
+    var { params = [], filters = [], displayInfo } = opts;
+
+    // default values for pagination and sorting
+    var defaultPagination= { offset: 0, numRecords: 100 };
+    var defaultSorting= [{ attributeName: 'primary_key', direction: 'ASC' }];
+
+    // Set defaults if not defined in `opts`
+    displayInfo.pagination = displayInfo.pagination || defaultPagination;
+    displayInfo.sorting = displayInfo.sorting || defaultSorting;
+
+    // FIXME Set attributes to whatever we're soring on. This is required by
+    // the service, but it doesn't appear to have any effect at this time. I
+    // think what we want is for the service to use default attributes defined
+    // in the model XML. We also need a way to ask for all attributes (and
+    // tables). An alternative is to get the list of available attributes from a
+    // preferences service.
+    displayInfo.attributes = displayInfo.sorting.map(s => s.attributeName);
+    displayInfo.tables = [];
+
+    // Build XHR request data
     var questionDefinition = { questionName, params, filters };
     var requestData = { questionDefinition, displayInfo };
 
     var action = new AnswerLoadingAction({ requestData: requestData });
-
     dispatch(action);
 
+    // Call `serviceAPI.postResource` to get the Answer resource. `serviceAPI`
+    // is an instance of a configuered serviceAPI object that is injected at
+    // runtime.
+    //
+    // `serviceAPI.postResource` returns a JavaScript `Promise`. The first
+    // argument to `.then` is a success handler, in which we dispatch a
+    // loadSuccess action. The second argument is an error handler, in which we
+    // dispatch a loadError action. The `.catch` method is used to handle any
+    // uncaught errors thrown in the success or error handlers.
     this.serviceAPI.postResource('/answer', requestData)
       .then(answer => {
         var action = new AnswerLoadSuccessAction({
@@ -153,7 +174,7 @@ export default createActionCreators({
       })
       // Catch errors caused by Store callbacks.
       // This is a last-ditch effort to alert developers that there was an error
-      // with how to Store handled the action.
+      // with how a Store handled the action.
       .catch(err => console.assert(false, err));
   },
 
