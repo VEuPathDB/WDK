@@ -1,3 +1,7 @@
+import _ from 'lodash';
+import React from 'react';
+import Dialog from './Dialog';
+
 /**
  * Generic table with UI features:
  *
@@ -16,37 +20,9 @@
  *   - onNewPage(offset: number, numRecords: number)
  */
 
-import _ from 'lodash';
-import React from 'react';
-import Dialog from './Dialog';
-
 var $ = window.jQuery;
 
-/* Helper functions */
-
-/** TODO Look up or inject custom formatters */
-function formatAttribute(attribute, value) {
-  switch(attribute.type) {
-    case 'text': return value;
-    case 'link': return (<a href={value.url}>{value.display}</a>);
-
-    /** FIXME Throw on unknown types when we have that info from service */
-    default: return value;
-    /*
-    default: throw new TypeError(`Unkonwn type "${attribute.type}"` +
-                                 ` for attribute ${attribute.name}`);
-    */
-  }
-}
-
-/**
- * Function that doesn't do anything. This is the default for many
- * optional handlers. We can do an equality check as a form of feature
- * detection. E.g., if onSort === noop, then we won't enable sorting.
- */
-var noop = () => {};
-
-var PropTypes = React.PropTypes;
+var { PropTypes } = React.PropTypes;
 
 var sortClassMap = {
   ASC:  'ui-icon ui-icon-arrowthick-1-n',
@@ -276,5 +252,29 @@ var RecordTable = React.createClass({
   }
 
 });
+
+/* Helper functions */
+
+/** TODO Look up or inject custom formatters */
+function formatAttribute(attribute, value) {
+  switch(attribute.type) {
+    case 'text': return value;
+    case 'link': return (<a href={value.url}>{value.display}</a>);
+
+    /** FIXME Throw on unknown types when we have that info from service */
+    default: return value;
+    /*
+    default: throw new TypeError(`Unkonwn type "${attribute.type}"` +
+                                 ` for attribute ${attribute.name}`);
+    */
+  }
+}
+
+/**
+ * Function that doesn't do anything. This is the default for many
+ * optional handlers. We can do an equality check as a form of feature
+ * detection. E.g., if onSort === noop, then we won't enable sorting.
+ */
+function noop(){}
 
 export default RecordTable;
