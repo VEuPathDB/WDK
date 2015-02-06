@@ -746,6 +746,12 @@
           <text />
         </element>
       </zeroOrMore>
+      <zeroOrMore>
+        <element name="visibleHelp">
+          <ref name="IncludeExclude" />
+          <text />
+        </element>
+      </zeroOrMore>
     </element>
   </define>
 
