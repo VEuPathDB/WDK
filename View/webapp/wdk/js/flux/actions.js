@@ -1,7 +1,7 @@
 import answerPageActions from './actions/answerPageActions';
 import questionListPageActions from './actions/questionListPageActions';
 
-export {
+export default {
   answerPageActions,
   questionListPageActions
 };

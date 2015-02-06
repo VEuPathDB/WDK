@@ -10,9 +10,9 @@
 </head>
 <body>
   <script>
-    var app = wdk.createApplication({
-      serviceUrl: '../service'
+    wdk.createApplication({
+      serviceUrl: '../service',
+      rootElement: document.body
     });
-    app.run();
   </script>
 </body>
