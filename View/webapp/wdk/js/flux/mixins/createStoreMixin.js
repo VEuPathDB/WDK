@@ -12,13 +12,13 @@ export default function createStoreMixin(...storeNames) {
   return {
 
     contextTypes: {
-      lookup: React.PropTypes.func.isRequired
+      getStore: React.PropTypes.func.isRequired
     },
 
     getInitialState() {
       // fill cache of store instances
       _stores = storeNames.reduce((stores, storeName) => {
-        stores[storeName] = this.context.lookup(storeName);
+        stores[storeName] = this.context.getStore(storeName);
         return stores;
       }, {});
 

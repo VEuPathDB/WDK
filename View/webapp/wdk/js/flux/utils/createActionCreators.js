@@ -1,18 +1,3 @@
-import di from 'di';
-
-/*
-
-   What is desirable?
-
-   var MyActions = createActions({
-
-      loadAnswer: function(questionName) {
-        this.dispatch(message);
-      };
-   });
-
-*/
-
 /**
  * Created an ActionCreators factory function.
  *
@@ -38,7 +23,7 @@ export default function createActionCreators(baseObject) {
   // A factory function that returns a proxy to `baseObject`.
   // The application dispatcher and serviceAPI will be injected by the injector
   // at runtime.
-  var createWdkActions = function createWdkActions(dispatcher, serviceAPI) {
+  return function createWdkActions(dispatcher, serviceAPI) {
 
     // Create context argument in which to call action creators
     var context = {
@@ -69,7 +54,4 @@ export default function createActionCreators(baseObject) {
 
     return proxyObject;
   };
-
-  di.annotate(createWdkActions, new di.Inject('dispatcher', 'serviceAPI'));
-  return createWdkActions;
 };
