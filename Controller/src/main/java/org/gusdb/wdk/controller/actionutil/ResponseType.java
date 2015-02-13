@@ -15,7 +15,7 @@ public enum ResponseType {
   /* page part types */
   html           ("text/html", "page", ".html"),
   html_part      ("text/html", "page", ".html"),
-  javascript     ("application/javascript", "script", ".js"),
+  javascript     ("application/javascript", "script", ".js", ".jsx"),
   css            ("text/css", "styles", ".css"),
 
   /* service types */
