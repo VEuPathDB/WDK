@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.util;
+package org.gusdb.wdk.service.factory;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
