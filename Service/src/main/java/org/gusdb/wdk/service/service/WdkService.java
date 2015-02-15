@@ -13,7 +13,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.util.WdkAnswerFactory;
+import org.gusdb.wdk.service.factory.WdkAnswerFactory;
 
 public abstract class WdkService {
 
