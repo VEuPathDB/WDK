@@ -9,6 +9,7 @@ html {
 
 body {
   font-family: sans-serif;
+  font-size: 14px;
 }
 
 .wdkAnswerLoading {
@@ -17,11 +18,12 @@ body {
 }
 
 .wdk-RecordTable-Wrapper {
+  position: relative;
   overflow-x: auto;
+  padding: 0 5px 5px 0;
 }
 
 .wdk-RecordTable {
-  border: 1px solid #cccccc;
   border-collapse: collapse;
 }
 
@@ -31,6 +33,10 @@ body {
 }
 .wdk-RecordTable td {
   border: 1px dotted #cccccc;
+}
+
+.wdk-RecordTable td {
+
 }
 
 .wdk-RecordTable-headerWrapper {
@@ -50,6 +56,34 @@ body {
   display: inline-block;
 }
 
+.wdk-RecordTable-attributeValue {
+  line-height: 1.4;
+}
+
+.wdk-RecordTable-headerWrapper .ui-icon-close {
+  visibility: hidden;
+  cursor: pointer;
+  float: right;
+}
+
+.wdk-RecordTable-headerWrapper:hover .ui-icon-close {
+  visibility: visible;
+}
+
+.wdk-RecordTable-headerWrapper .ui-icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: .5em;
+}
+
 .wdk-RecordTable-AttributeSelectorWrapper {
   float: right;
+}
+
+.wdk-Record h4 {
+  text-decoration: underline;
+}
+
+.wdk-Record-attributes {
+  padding: 0 1em;
 }
