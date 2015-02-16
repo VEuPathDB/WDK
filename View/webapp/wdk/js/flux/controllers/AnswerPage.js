@@ -52,7 +52,7 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
 // Define the React Component class.
 // See http://facebook.github.io/react/docs/top-level-api.html#react.createclass
-var AnswerPage = React.createClass({
+const AnswerPage = React.createClass({
 
   // mixins are used to share behaviors between otherwise unrelated components.
   // React will use each object in the provided array to attach additional
@@ -100,8 +100,9 @@ var AnswerPage = React.createClass({
   fetchAnswer() {
 
     // These methods are provided by the `Router.State` mixin
-    var params = this.getParams();
-    var query = this.getQuery();
+    const path = this.getPath();
+    const params = this.getParams();
+    const query = this.getQuery();
 
     if (!query.numrecs || !query.offset) {
       // Replace the current undefined URL query params with default values
@@ -115,19 +116,19 @@ var AnswerPage = React.createClass({
       // call will cause the Route Handler for 'answer' (this component) to be
       // rendered again. Since `query.numrecs` and `query.offset` are now set,
       // the else block below will get executed again.
-      this.replaceWith('answer', params, query);
+      this.replaceWith(path, params, query);
 
     } else {
 
       // Get pagination info from `query`
-      var pagination = {
+      const pagination = {
         numRecords: Number(query.numrecs),
         offset: Number(query.offset)
       };
 
       // Get sorting info from `query`
       // FIXME make this one query param: sorting={attributeName}__{direction}
-      var sorting = query.sortBy && query.sortDir
+      const sorting = query.sortBy && query.sortDir
         ? [{
             attributeName: query.sortBy,
             direction: query.sortDir
@@ -136,19 +137,30 @@ var AnswerPage = React.createClass({
 
       // Combine `pagination` and `sorting` into a single object:
       //
-      //     var displayInfo = {
+      //     const displayInfo = {
       //       pagination: pagination,
       //       sorting: sorting
       //     };
       //
-      var displayInfo = {
+      const displayInfo = {
         pagination,
         sorting,
         visibleAttributes: this.state.displayInfo.visibleAttributes
       };
 
+      // TODO Add params to loadAnswer call
+      const answerParams = wrap(query.param).map(p => {
+        const parts = p.split('__');
+        return { name: parts[0], value: parts[1] };
+      });
+
+      const opts = {
+        displayInfo,
+        params: answerParams
+      };
+
       // Call the AnswerCreator to fetch the Answer resource
-      this.answerPageActions.loadAnswer(params.questionName, { displayInfo });
+      this.answerPageActions.loadAnswer(params.questionName, opts);
     }
   },
 
@@ -181,25 +193,11 @@ var AnswerPage = React.createClass({
     // This will cause `this.componentWillReceiveProps` to be called. See the
     // comment below for an alternative way calling `loadAnswer` directly. Yet
     // another way would be to have a `sortAnswer` action creator.
-    onSort(attribute) {
+    onSort(attribute, direction) {
 
       // These methods are provided by the mixin `Router.State`.
-      var params = this.getParams();
-      var query = this.getQuery();
-
-      // Create a local var `sorting` using descturing.
-      var { displayInfo: { sorting } } = this.state;
-
-      var sortAttribute = sorting[0];
-      var direction;
-
-      // Determine the sort direction. If the attribute is the same, then
-      // we will reverse the direction... otherwise, we will default to `ASC`.
-      if (sortAttribute.attributeName === attribute.name) {
-        direction = sortAttribute.direction === 'ASC' ? 'DESC' : 'ASC';
-      } else {
-        direction = 'ASC';
-      }
+      const params = this.getParams();
+      const query = this.getQuery();
 
       // Update the query object with the new values.
       // See https://lodash.com/docs#assign
@@ -218,7 +216,7 @@ var AnswerPage = React.createClass({
       // saving the display info to localStorage and reloading it when the page
       // is reloaded.
       //
-      // var opts = {
+      // const opts = {
       //   displayInfo: {
       //     sorting: [ { columnName: attribute.name, direction } ],
       //     attributes,
@@ -250,6 +248,33 @@ var AnswerPage = React.createClass({
     // This is a stub... yet to be completed
     onNewPage(offset, numRecords) {
       console.log(offset, numRecords);
+    },
+
+    onRecordClick(record) {
+      // Methods provided by Router.State mixin
+      const path = this.getPath();
+      const params = this.getParams();
+      const query = this.getQuery();
+
+      // update query with format and position
+      query.format = 'list';
+      query.position = _.indexOf(this.state.answer.records, record);
+
+      // Method provided by Router.Navigation mixin
+      this.transitionTo(path, params, query);
+    },
+
+    onToggleFormat() {
+      // Methods provided by Router.State mixin
+      const path = this.getPath();
+      const params = this.getParams();
+      const query = this.getQuery();
+
+      // update query with format and position
+      query.format = query.format === 'table' ? 'list' : 'table';
+
+      // Method provided by Router.Navigation mixin
+      this.transitionTo(path, params, query);
     }
 
   },
@@ -264,16 +289,24 @@ var AnswerPage = React.createClass({
   render() {
 
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
-    var { isLoading, error, answer, displayInfo, questionDefinition: { questionName } } = this.state;
+    const { isLoading, error, answer, displayInfo, questionDefinition: { questionName } } = this.state;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
     // this component.
-    var answerEvents = Object.keys(this.answerEvents)
+    const answerEvents = Object.keys(this.answerEvents)
     .reduce((events, key) => {
       events[key] = this.answerEvents[key].bind(this);
       return events;
     }, {});
+
+    // Valid formats are 'table' and 'list'
+    // TODO validation
+    const format = this.getQuery().format || 'table';
+
+    // List position of "selected" record (this is used to keep the same
+    // record at the top when transitioning between formats.
+    const position = Number(this.getQuery().position) || 0;
 
     // `{...this.state}` is JSX short-hand syntax to pass each key-value pair of
     // this.state as a property to the component. It intentionally resembles
@@ -287,6 +320,8 @@ var AnswerPage = React.createClass({
       <div>
         <h2>{questionName}</h2>
         <Answer
+          format={format}
+          position={position}
           questionName={questionName}
           answer={answer}
           answerEvents={answerEvents}
@@ -301,3 +336,9 @@ var AnswerPage = React.createClass({
 
 // Export the React Component class we just created.
 export default AnswerPage;
+
+function wrap(value) {
+  if (typeof value === 'undefined') return [];
+  if (!Array.isArray(value)) return [ value ];
+  return value;
+}
