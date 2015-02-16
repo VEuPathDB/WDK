@@ -1,4 +1,8 @@
-/*global RSVP, _ */
+/*global RSVP, _, jQuery */
+
+// Include the 6to5 polyfill. This adds global objects expected in parts of our
+// code base, such as Promise, and the runtime needed for generators.
+import '6to5/polyfill';
 
 import './core';
 import './user';
@@ -13,7 +17,7 @@ import Router from 'react-router';
 import HeadlessLocation from './flux/utils/HeadlessLocation';
 import { routes } from './flux/router';
 
-var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver; // jshint ignore:line
 
 // uncomment next line to enable query string flag to force loadOnInterval
 // if (/\b__interval=true\b/.test(location.search)) MutationObserver = false;
