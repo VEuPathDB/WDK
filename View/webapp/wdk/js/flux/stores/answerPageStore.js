@@ -98,140 +98,157 @@ export default createStore({
     switch(action.type) {
 
       case ActionType.ANSWER_LOADING:
-        var questionName = action.requestData.questionDefinition.questionName;
-
-        /*
-         * If the loading answer is for a different question, we want to remove
-         * the current question. We will save it in case we have an error so that
-         * we can roll back the state of the store.
-         *
-         * `state.getIn(...)` is another way to write
-         * `state.get('questionDefinition').get('questionName')`, but without
-         * creating intermediate copies.
-         */
-        if(this.state.getIn(['questionDefinition', 'questionName']) !== questionName) {
-          /*
-           * Cache previous state. It will be used to replace the state
-           * if we handle ANSWER_LOAD_ERROR.
-           */
-          this.previousState = this.state;
-
-          /*
-           * Clear the current state. This helps keep the UI more consistent
-           * by not showing unrelated results when loading.
-           */
-          this.state = this.state.merge({
-            answer: {},
-            questionDefinition: {},
-            displayInfo: {}
-          });
-        }
-
-        /*
-         * Finally, set isLoading to true and error to null.
-         */
-        this.state = this.state.merge({
-          isLoading: true,
-          error: null
-        });
-
-        /*
-         * This will cause subscribed functions to be called.
-         */
-        emitChange();
+        this.handleAnswerLoading(action, emitChange);
         break;
 
       case ActionType.ANSWER_LOAD_SUCCESS:
-
-        /* Answer resource */
-        var answer = action.answer;
-
-        /*
-         * requestData is an object with the keys `displayInfo` and
-         * `questionDefinition`. We will be merging these keys into `state`
-         * below.
-         */
-        var requestData = action.requestData;
-
-        /*
-         * If state.displayInfo.attributes isn't defined we want to use the
-         * defaults. For now, we will just show whatever is in
-         * answer.meta.attributes by default. This is probably wrong.
-         * We probably also want to persist the user's choice somehow. Using
-         * localStorage is one possble solution.
-         */
-        if (!requestData.displayInfo.visibleAttributes) {
-          requestData.displayInfo.visibleAttributes = answer.meta.attributes;
-        }
-
-        /*
-         * This will update the keys 'isLoading', 'answer', 'displayInfo',
-         * and 'questionDefinition' in `state`. `displayInfo` and
-         * `questionDefinition` are defined on `requestData`.
-         */
-        this.state = this.state.merge({ isLoading: false, answer }, requestData);
-
-        emitChange();
+        this.handleAnswerLoadSuccess(action, emitChange);
         break;
 
       case ActionType.ANSWER_LOAD_ERROR:
-
-        /* rollback to the previous state, and add the error message */
-        this.state = this.previousState.merge({
-          error: action.error
-        });
-
-        emitChange();
+        this.handleAnswerLoadError(action, emitChange);
         break;
 
       case ActionType.ANSWER_MOVE_COLUMN:
-
-        /* The name of the attribute being moved. */
-        /* FIXME Should be attributeName */
-        var columnName = action.columnName;
-
-        /* The new position for the attribute */
-        var newPosition = action.newPosition;
-
-        /* used with setIn http://facebook.github.io/immutable-js/docs/#/Map/setIn */
-        var keyPath = [ 'displayInfo', 'visibleAttributes' ];
-
-        /* list of attributes we will be altering */
-        var attributes = this.state.getIn(keyPath);
-
-        /* The current position of the attribute being moved */
-        var currentPosition = attributes.findIndex(function(attribute) {
-          return attribute.get('name') === columnName;
-        });
-
-        /* The attribute being moved */
-        var attribute = attributes.get(currentPosition);
-
-        /* Make a temporary copy of attributes with the one being moved removed */
-        var newAttributes = attributes.delete(currentPosition);
-
-        /* Splice the attribute being moved into the new position */
-        newAttributes = newAttributes.splice(newPosition, 0, attribute);
-
-        /* Set the attributes to the new list */
-        this.state = this.state.setIn(keyPath, newAttributes);
-
-        emitChange();
+        this.handleAnswerMoveColumn(action, emitChange);
         break;
 
       case ActionType.ANSWER_CHANGE_ATTRIBUTES:
-        /*
-         * Create new Immutable list of attribtues. We have to use fromJS so
-         * that we create Immutable data structures for nested attribute keys.
-         */
-        var newList = Immutable.fromJS(action.attributes);
-
-        /* set state.displayInfo.attributes to the new list */
-        this.state = this.state.setIn(['displayInfo', 'visibleAttributes'], newList);
-
-        emitChange();
+        this.handleAnswerChangeAttributes(action, emitChange);
         break;
     }
+  },
+
+  handleAnswerLoading(action, emitChange) {
+    var questionName = action.requestData.questionDefinition.questionName;
+
+    /*
+     * If the loading answer is for a different question, we want to remove
+     * the current question. We will save it in case we have an error so that
+     * we can roll back the state of the store.
+     *
+     * `state.getIn(...)` is another way to write
+     * `state.get('questionDefinition').get('questionName')`, but without
+     * creating intermediate copies.
+     */
+    if(this.state.getIn(['questionDefinition', 'questionName']) !== questionName) {
+      /*
+       * Cache previous state. It will be used to replace the state
+       * if we handle ANSWER_LOAD_ERROR.
+       */
+      this.previousState = this.state;
+
+      /*
+       * Clear the current state. This helps keep the UI more consistent
+       * by not showing unrelated results when loading.
+       */
+      this.state = this.state.merge({
+        answer: {},
+        questionDefinition: {},
+        displayInfo: {}
+      });
+    }
+
+    /*
+     * Finally, set isLoading to true and error to null.
+     */
+    this.state = this.state.merge({
+      isLoading: true,
+      error: null
+    });
+
+    /*
+     * This will cause subscribed functions to be called.
+     */
+    emitChange();
+  },
+
+  handleAnswerLoadSuccess(action, emitChange) {
+    /* Answer resource */
+    var answer = action.answer;
+
+    /*
+     * requestData is an object with the keys `displayInfo` and
+     * `questionDefinition`. We will be merging these keys into `state`
+     * below.
+     */
+    var requestData = action.requestData;
+
+    /*
+     * If state.displayInfo.attributes isn't defined we want to use the
+     * defaults. For now, we will just show whatever is in
+     * answer.meta.attributes by default. This is probably wrong.
+     * We probably also want to persist the user's choice somehow. Using
+     * localStorage is one possble solution.
+     */
+    if (!requestData.displayInfo.visibleAttributes) {
+      requestData.displayInfo.visibleAttributes = answer.meta.attributes;
+    }
+
+    /*
+     * This will update the keys 'isLoading', 'answer', 'displayInfo',
+     * and 'questionDefinition' in `state`. `displayInfo` and
+     * `questionDefinition` are defined on `requestData`.
+     */
+    this.state = this.state.merge({ isLoading: false, answer }, requestData);
+
+    emitChange();
+  },
+
+  handleAnswerLoadError(action, emitChange) {
+    /* rollback to the previous state, and add the error message */
+    this.state = this.previousState.merge({
+      error: action.error
+    });
+
+    emitChange();
+  },
+
+  handleAnswerMoveColumn(action, emitChange) {
+    /* The name of the attribute being moved. */
+    /* FIXME Should be attributeName */
+    var columnName = action.columnName;
+
+    /* The new position for the attribute */
+    var newPosition = action.newPosition;
+
+    /* used with setIn http://facebook.github.io/immutable-js/docs/#/Map/setIn */
+    var keyPath = [ 'displayInfo', 'visibleAttributes' ];
+
+    /* list of attributes we will be altering */
+    var attributes = this.state.getIn(keyPath);
+
+    /* The current position of the attribute being moved */
+    var currentPosition = attributes.findIndex(function(attribute) {
+      return attribute.get('name') === columnName;
+    });
+
+    /* The attribute being moved */
+    var attribute = attributes.get(currentPosition);
+
+    /* Make a temporary copy of attributes with the one being moved removed */
+    var newAttributes = attributes.delete(currentPosition);
+
+    /* Splice the attribute being moved into the new position */
+    newAttributes = newAttributes.splice(newPosition, 0, attribute);
+
+    /* Set the attributes to the new list */
+    this.state = this.state.setIn(keyPath, newAttributes);
+
+    emitChange();
+  },
+
+  handleAnswerChangeAttributes(action, emitChange) {
+    /*
+     * Create new Immutable list of attribtues. We have to use fromJS so
+     * that we create Immutable data structures for nested attribute keys.
+     */
+    var newList = Immutable.fromJS(action.attributes);
+
+    /* set state.displayInfo.attributes to the new list */
+    this.state = this.state.setIn(['displayInfo', 'visibleAttributes'], newList);
+
+    emitChange();
   },
 
   getState() {
