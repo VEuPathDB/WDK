@@ -7,7 +7,6 @@
  * existing web site.
  */
 
-import Router from 'react-router';
 import LocationActions from 'react-router/modules/actions/LocationActions';
 
 class HeadlessLocation {
@@ -49,7 +48,6 @@ class HeadlessLocation {
     this._actionType = LocationActions.PUSH;
     this._paths.push(path);
     this.handlePathChange();
-    Router.History.length++;
   }
 
   replace(path) {
@@ -62,7 +60,6 @@ class HeadlessLocation {
     this._actionType = LocationActions.POP;
     this._paths.pop();
     this.handlePathChange();
-    Router.History.length--;
   }
 
   getCurrentPath() {
