@@ -53,6 +53,10 @@ public class WdkModelBean implements ConnectionContainer {
         return wdkModel.getVersion();
     }
 
+    public String getBuild() {
+        return wdkModel.getBuildNumber();
+    }
+
     public String getDisplayName() {
         return wdkModel.getDisplayName();
     }
