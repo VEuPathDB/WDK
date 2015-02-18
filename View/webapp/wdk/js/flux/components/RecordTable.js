@@ -21,19 +21,21 @@ import Dialog from './Dialog';
  *   - onNewPage(offset: number, numRecords: number)
  */
 
-const primaryKeyName = 'primary_key';
-const cellClassName = 'wdk-RecordTable-cell';
-
 const $ = window.jQuery;
 const { Table, Column, ColumnGroup } = FixedDataTable;
 const { PropTypes } = React;
 
-const isColumnResizing = false;
-
-const sortClassMap = {
+// Constants
+const PRIMARY_KEY_NAME = 'primary_key';
+const CELL_CLASS_NAME = 'wdk-RecordTable-cell';
+const SORT_CLASS_MAP = {
   ASC:  'ui-icon ui-icon-arrowthick-1-n',
   DESC: 'ui-icon ui-icon-arrowthick-1-s'
 };
+
+// Bookkeeping for `Table`
+const isColumnResizing = false;
+
 
 const RecordTable = React.createClass({
 
@@ -64,7 +66,7 @@ const RecordTable = React.createClass({
     return Object.assign({
       tableHeight: 0,
       columnWidths: this.props.meta.attributes.reduce((widths, attr) => {
-        widths[attr.name] = attr.name === primaryKeyName ? 400 : 200;
+        widths[attr.name] = attr.name === PRIMARY_KEY_NAME ? 400 : 200;
         return widths;
       }, {})
     }, this._getInitialAttributeSelectorState());
@@ -201,10 +203,10 @@ const RecordTable = React.createClass({
    * @param {any} attribute Value returned by `getRow`.
    */
   renderCell(attribute, attributeName, attributes, index) {
-    if (attribute.name === primaryKeyName) {
-      let href = '#' + attribute.value;
-      let record = this.props.records[index];
-      let handlePrimaryKeyClick = _.partial(this.handlePrimaryKeyClick, record);
+    if (attribute.name === PRIMARY_KEY_NAME) {
+      const href = '#' + attribute.value;
+      const record = this.props.records[index];
+      const handlePrimaryKeyClick = _.partial(this.handlePrimaryKeyClick, record);
       return (
         <div className="wdk-RecordTable-attributeValue">
           <a
@@ -231,14 +233,14 @@ const RecordTable = React.createClass({
    * @param {any} attribute Value of `label` prop of `Column`.
    */
   renderHeader(attribute) {
-    let { sorting } = this.props.displayInfo;
-    // let sortSpec = _.find(sorting, { attributeName: attribute.name });
-    let sortSpec = sorting[0];
-    let sortClass = sortSpec.attributeName === attribute.name
-      ? sortClassMap[sortSpec.direction] : '';
+    const { sorting } = this.props.displayInfo;
+    // const sortSpec = _.find(sorting, { attributeName: attribute.name });
+    const sortSpec = sorting[0];
+    const sortClass = sortSpec.attributeName === attribute.name
+      ? SORT_CLASS_MAP[sortSpec.direction] : '';
 
-    let sort = _.partial(this.handleSort, attribute);
-    let hide = _.partial(this.handleHideColumn, attribute);
+    const sort = _.partial(this.handleSort, attribute);
+    const hide = _.partial(this.handleHideColumn, attribute);
 
     return (
       <div onClick={sort} className="wdk-RecordTable-headerWrapper">
@@ -265,10 +267,11 @@ const RecordTable = React.createClass({
     });
   },
 
+  // TODO Find a better way to specify row height
   render() {
     // creates variables: meta, records, and visibleAttributes
-    let { meta, records, displayInfo: {  visibleAttributes } } = this.props;
-    let visibleNames = this.state.pendingVisibleAttributes.map(a => a.name);
+    const { meta, records, displayInfo: {  visibleAttributes } } = this.props;
+    const { pendingVisibleAttributes } = this.state;
 
     return (
       <div>
@@ -282,33 +285,21 @@ const RecordTable = React.createClass({
             open={this.state.attributeSelectorOpen}
             onClose={this.handleAttributeSelectorClose}
             title="Choose columns to shoe or hide">
-            <form onSubmit={this.handleAttributeSelectorSubmit} ref="attributeSelector">
-              <ul className="wdk-RecordTable-AttributeSelector">
-                {meta.attributes.map(attribute => {
-                  const { name, displayName } = attribute;
-                  return (
-                    <li key={name}>
-                      <input type="checkbox"
-                        id={'column-select-' + name}
-                        name="pendingAttribute"
-                        value={name}
-                        onChange={this.togglePendingAttribute}
-                        checked={visibleNames.indexOf(name) > -1}/>
-                      <label htmlFor={'column-select-' + name}> {displayName} </label>
-                    </li>
-                  );
-                })}
-              </ul>
-              <button>Update</button>
-            </form>
+            <AttributeSelector
+              ref="attributeSelector"
+              attributes={meta.attributes}
+              selectedAttributes={pendingVisibleAttributes}
+              onSubmit={this.handleAttributeSelectorSubmit}
+              onChange={this.togglePendingAttribute}
+            />
           </Dialog>
 
         <Table
           ref="table"
-          width={window.innerWidth - 20}
+          width={window.innerWidth - 45}
           maxHeight={this.state.tableHeight}
           rowsCount={records.length}
-          rowHeight={30}
+          rowHeight={28}
           rowGetter={this.getRow}
           scrollTop={0}
           scrollLeft={0}
@@ -327,16 +318,16 @@ const RecordTable = React.createClass({
             width={getRowNumberColumnWidth(records.length)}
             align="right"
             cellRenderer={rowNumberRenderer}
-            cellClassName={cellClassName + " wdk-RecordTable-rowNumber"}
+            cellClassName={CELL_CLASS_NAME + " wdk-RecordTable-rowNumber"}
           />
           */}
 
           {visibleAttributes.map(attribute => {
-            let isPk = attribute.name === primaryKeyName;
-            let cellClassNames = attribute.name + ' ' + attribute.className +
-              ' ' + cellClassName;
-            let width = this.state.columnWidths[attribute.name];
-            let flexGrow = isPk ? 2 : 1;
+            const isPk = attribute.name === PRIMARY_KEY_NAME;
+            const cellClassNames = attribute.name + ' ' + attribute.className +
+              ' ' + CELL_CLASS_NAME;
+            const width = this.state.columnWidths[attribute.name];
+            const flexGrow = isPk ? 2 : 1;
 
             return (
               <Column
@@ -360,28 +351,106 @@ const RecordTable = React.createClass({
 
 });
 
-/* Helper functions */
 
-function formatHeader(value) {
-  return capitalize(value.replace(/_/g, ' '));
-}
+const AttributeSelector = React.createClass({
 
-function capitalize(value) {
-  return value[0].toUpperCase() + value.slice(1);
-}
+  propTypes: {
+    attributes: PropTypes.array.isRequired,
+    selectedAttributes: PropTypes.array,
+    onSubmit: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired
+  },
 
-/** TODO Look up or inject custom formatters */
-function formatAttribute(attribute) {
-  return attribute.value;
+  render() {
+    return (
+      <form onSubmit={this.props.onSubmit}>
+        <ul className="wdk-RecordTable-AttributeSelector">
+          {this.props.attributes.map(this._renderItem)}
+        </ul>
+        <button>Update</button>
+      </form>
+    );
+  },
 
+  _renderItem(attribute) {
+    const isChecked = this._isChecked(attribute);
+    return (
+      <AttributeSelectorItem
+        isChecked={isChecked}
+        attribute={attribute}
+        onChange={this.props.onChange}
+        selectedAttributes={this.props.selectedAttributes}
+      />
+    );
+  },
+
+  // XXX Seems like lodash would provide a method for this...
+  _isChecked(attribute) {
+    let index = 0;
+    let testAttribute;
+    const { selectedAttributes } = this.props;
+    while (testAttribute = selectedAttributes[index++]) {
+      if (_.isEqual(testAttribute, attribute))
+        return true;
+    }
+    return false;
+  }
+
+});
+
+
+const AttributeSelectorItem = React.createClass({
+
+  propTypes: {
+    attribute: PropTypes.object.isRequired,
+    isChecked: PropTypes.bool,
+    onChange: PropTypes.func.isRequired
+  },
+
+  render() {
+    const { name, displayName } = this.props.attribute;
+    return (
+      <li key={name}>
+        <input type="checkbox"
+          id={'column-select-' + name}
+          name="pendingAttribute"
+          value={name}
+          onChange={this.props.onChange}
+          checked={this.props.isChecked}/>
+        <label htmlFor={'column-select-' + name}> {displayName} </label>
+      </li>
+    );
+  }
+
+});
+
+
+/**
+ * Capitalize the first character of `value`
+ *
+ * @param {string} value
+ */
+const capitalize = value => value[0].toUpperCase() + value.slice(1);
+
+/**
+ * Replace '_' with ' ' and capitalize the first character of `value`
+ *
+ * @param {string} value
+ */
+const formatHeader = value => capitalize(value.replace(/_/g, ' '));
+
+// TODO Look up or inject custom formatters
+const formatAttribute = attribute => {
   // FIXME Add type to attribute definition
   // let { value, type } = attribute;
   // switch(type) {
   //   case 'text': return value;
   //   case 'link': return (<a href={value.url}>{value.display}</a>);
-  //   default: throw new TypeError(`Unkonwn type "${attribute.type}"` +
-  //                                ` for attribute ${attribute.name}`);
+  //   default: throw new TypeError(
+  //     `Unkonwn type "${attribute.type}" for attribute ${attribute.name}`
+  //   );
   // }
+  return attribute.value;
 }
 
 /**
@@ -390,7 +459,7 @@ function formatAttribute(attribute) {
  * @param {number} rowIndex
  */
 const getRow = function(rowIndex) {
-  let rowData = this.props.records[rowIndex].attributes;
+  const rowData = this.props.records[rowIndex].attributes;
   return _.indexBy(rowData, 'name');
 };
 const rowNumberRenderer = (_, __, ___, rowIndex) => rowIndex + 1;
@@ -401,6 +470,7 @@ const getRowNumberColumnWidth = length => String(length).length * 16;
  * optional handlers. We can do an equality check as a form of feature
  * detection. E.g., if onSort === noop, then we won't enable sorting.
  */
-function noop(){}
+const noop = () => {};
+
 
 export default RecordTable;
