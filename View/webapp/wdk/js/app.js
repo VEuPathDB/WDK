@@ -12,10 +12,7 @@ import './components';
 import './views';
 import './controllers';
 
-import React from 'react';
-import Router from 'react-router';
-import HeadlessLocation from './flux/utils/HeadlessLocation';
-import { routes } from './flux/router';
+import wdkFlux from './flux/main';
 
 var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver; // jshint ignore:line
 
@@ -52,9 +49,11 @@ var app = wdk.application = wdk.app = wdk.core.Application.create({
      */
     jQuery('[data-route]').each((index, el) => {
       var route = el.getAttribute('data-route');
-      var location = new HeadlessLocation(route);
-      Router.run(routes, location, function(Handler, state) {
-        React.render(<Handler {...state} />, el);
+      wdkFlux.createApplication({
+        location: 'none',
+        defaultRoute: route,
+        serviceUrl: wdk.webappUrl('/service'),
+        rootElement: el
       });
     });
 
