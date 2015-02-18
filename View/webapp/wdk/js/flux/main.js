@@ -16,9 +16,10 @@ import Router from 'react-router';
 
 import createServiceAPI from './utils/createServiceAPI';
 import createObjectCache from './utils/createObjectCache';
+import HeadlessLocation from './utils/HeadlessLocation';
 import stores from './stores';
 import actionCreators from './actions';
-import { appRoutes } from './router';
+import { routes } from './router';
 
 /**
  * Starts a WDK application instance based on the provided configuration.
@@ -28,7 +29,7 @@ import { appRoutes } from './router';
  * @param {element} config.rootElement Root element to render application
  */
 function createApplication(config) {
-  var { serviceUrl, rootElement } = config;
+  const { serviceUrl, rootElement } = config;
 
   if (typeof serviceUrl !== 'string') {
     throw new Error(`Application serviceUrl ${serviceUrl} must be a string.`);
@@ -38,10 +39,13 @@ function createApplication(config) {
     throw new Error(`Application rootElement ${rootElement} must be a DOM element.`);
   }
 
-  var dispatcher = new Flux.Dispatcher();
-  var serviceAPI = createServiceAPI(serviceUrl);
-  var storeCache = createObjectCache(stores, dispatcher);
-  var actionCreatorsCache = createObjectCache(actionCreators, dispatcher, serviceAPI);
+  const location = config.location === 'none'
+    ? new HeadlessLocation(config.defaultRoute || '/')
+    : Router.HashLocation;
+  const dispatcher = new Flux.Dispatcher();
+  const serviceAPI = createServiceAPI(serviceUrl);
+  const storeCache = createObjectCache(stores, dispatcher);
+  const actionCreatorsCache = createObjectCache(actionCreators, dispatcher, serviceAPI);
 
   // This is used below in `React.withContext`. Properties of this object will
   // be available in React components that declare them using the
@@ -63,7 +67,7 @@ function createApplication(config) {
   //     // ...
   //
   // See `./mixins/createStoreMixin` for an example of its usage.
-  var reactContext = {
+  const reactContext = {
     getStore(name) {
       return storeCache.get(name);
     },
@@ -72,12 +76,13 @@ function createApplication(config) {
     }
   };
 
-  Router.run(appRoutes, function runRoute(Handler){
+  const router = Router.run(routes, location, function runRoute(Handler){
     React.withContext(reactContext, function() {
       React.render( <Handler/>, rootElement);
     });
   });
+  console.log(router);
 }
 
 // expose libraries, e.g. wdk._ or wdk.React
-export default { createApplication, appRoutes, _, React, Router };
+export default { createApplication, routes, _, React, Router };
