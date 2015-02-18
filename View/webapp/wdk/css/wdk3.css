@@ -4,9 +4,11 @@
 html {
   box-sizing: border-box;
 }
+/* Unfortunately, this does not play well with legacy WDK CSS
 *, *:before, *:after {
   box-sizing: inherit;
 }
+*/
 
 body {
   font-family: sans-serif;
