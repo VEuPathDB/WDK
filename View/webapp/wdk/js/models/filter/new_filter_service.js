@@ -182,16 +182,20 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.updateFilters();
     },
 
-    // filter is optional. If supplied, calculate it's selection
+    // Filter is optional. If supplied, calculate it's selection.
+    // If @selectedField is undefined, skip updating @distributionMap.
     updateFilters: function(filter) {
       var promises = {
         filteredData: this.getFilteredData(this.filters),
-        distribution: this.getFieldDistribution(this.selectedField),
+        distribution: this.selectedField &&
+          this.getFieldDistribution(this.selectedField),
         filterSelection: filter && this.getFilteredData([filter])
       };
 
       RSVP.hash(promises).then(function(results) {
-        this.distributionMap[this.selectedField.term] = results.distribution;
+        if (results.distribution) {
+          this.distributionMap[this.selectedField.term] = results.distribution;
+        }
         if (filter) {
           filter.selection = results.filterSelection;
         }
