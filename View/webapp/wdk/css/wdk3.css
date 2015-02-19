@@ -20,6 +20,12 @@ body {
   left: 50%;
 }
 
+.wdk-Loading {
+  position: absolute;
+  top: 2em;
+  left: 50%;
+}
+
 .wdk-RecordTable-Wrapper {
   position: relative;
   overflow-x: auto;
@@ -60,7 +66,7 @@ body {
 }
 
 .wdk-RecordTable-attributeValue {
-  line-height: 1.4;
+  line-height: 1.6;
 }
 
 .wdk-RecordTable-headerWrapper .ui-icon-close {
