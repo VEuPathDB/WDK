@@ -1,7 +1,9 @@
 // Import modules
+import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';
 import Answer from '../components/Answer';
+import Loading from '../components/Loading';
 import createStoreMixin from '../mixins/createStoreMixin';
 import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
@@ -100,7 +102,7 @@ const AnswerPage = React.createClass({
   fetchAnswer() {
 
     // These methods are provided by the `Router.State` mixin
-    const path = this.getPath();
+    const path = 'answer';
     const params = this.getParams();
     const query = this.getQuery();
 
@@ -252,7 +254,7 @@ const AnswerPage = React.createClass({
 
     onRecordClick(record) {
       // Methods provided by Router.State mixin
-      const path = this.getPath();
+      const path = 'answer';
       const params = this.getParams();
       const query = this.getQuery();
 
@@ -266,12 +268,13 @@ const AnswerPage = React.createClass({
 
     onToggleFormat() {
       // Methods provided by Router.State mixin
-      const path = this.getPath();
+      const path = 'answer';
       const params = this.getParams();
       const query = this.getQuery();
 
       // update query with format and position
-      query.format = query.format === 'table' ? 'list' : 'table';
+      query.format = !query.format || query.format === 'table'
+        ? 'list' : 'table';
 
       // Method provided by Router.Navigation mixin
       this.transitionTo(path, params, query);
@@ -316,18 +319,33 @@ const AnswerPage = React.createClass({
     // and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator
     //
     // to understand the embedded XML, see: https://facebook.github.io/react/docs/jsx-in-depth.html
+    const components = [];
+
+    if (isLoading) components.push(
+      <Loading/>
+    );
+
+    if (error) components.push(
+      <div>
+        <h3>An Unexpected Error Occurred</h3>
+        <div className="wdkAnswerError">{error}</div>
+      </div>
+    );
+
+    if (answer.records) components.push(
+      <Answer
+        format={format}
+        position={position}
+        questionName={questionName}
+        answer={answer}
+        answerEvents={answerEvents}
+        displayInfo={displayInfo}/>
+    );
+
     return (
       <div>
         <h2>{questionName}</h2>
-        <Answer
-          format={format}
-          position={position}
-          questionName={questionName}
-          answer={answer}
-          answerEvents={answerEvents}
-          isLoading={isLoading}
-          error={error}
-          displayInfo={displayInfo}/>
+        {components}
       </div>
     );
   }
@@ -337,6 +355,17 @@ const AnswerPage = React.createClass({
 // Export the React Component class we just created.
 export default AnswerPage;
 
+
+/**
+ * wrap - Wrap `value` in array.
+ *
+ * If `value` is undefined, return an empty aray.
+ * Else, if `value` is an array, return it.
+ * Otherwise, return `[value]`.
+ *
+ * @param  {any} value The value to wrap
+ * @return {array}
+ */
 function wrap(value) {
   if (typeof value === 'undefined') return [];
   if (!Array.isArray(value)) return [ value ];
