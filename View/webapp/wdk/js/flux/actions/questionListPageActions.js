@@ -8,7 +8,7 @@ export default createActionCreators({
 
     dispatch({ type: ActionType.QUESTION_LIST_LOADING });
 
-    serviceAPI.getResource('/question')
+    serviceAPI.getResource('/question?expandQuestions=true')
       .then(questions => {
         dispatch({ type: ActionType.QUESTION_LIST_LOAD_SUCCESS, questions });
       }, error => {
