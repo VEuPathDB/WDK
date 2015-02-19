@@ -28,7 +28,7 @@ import { routes } from './router';
  * @param {string} config.serviceUrl Base URL for the RESTful WDK Service
  * @param {element} config.rootElement Root element to render application
  */
-function createApplication(config) {
+const createApplication = function createApplication(config) {
   const { serviceUrl, rootElement } = config;
 
   if (typeof serviceUrl !== 'string') {
@@ -81,7 +81,6 @@ function createApplication(config) {
       React.render( <Handler/>, rootElement);
     });
   });
-  console.log(router);
 }
 
 // expose libraries, e.g. wdk._ or wdk.React
