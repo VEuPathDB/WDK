@@ -2,6 +2,10 @@ import _ from 'lodash';
 import React from 'react';
 import FixedDataTable from 'fixed-data-table';
 import Dialog from './Dialog';
+import {
+  formatAttributeName,
+  formatAttributeValue
+} from '../utils/stringUtils';
 
 /**
  * Generic table with UI features:
@@ -64,7 +68,6 @@ const RecordTable = React.createClass({
    */
   getInitialState() {
     return Object.assign({
-      tableHeight: 0,
       columnWidths: this.props.meta.attributes.reduce((widths, attr) => {
         widths[attr.name] = attr.name === PRIMARY_KEY_NAME ? 400 : 200;
         return widths;
@@ -120,13 +123,6 @@ const RecordTable = React.createClass({
         }
       });
     }
-
-    this._updateTableHeight();
-    $(window).on('resize', this._updateTableHeight);
-  },
-
-  componentWillUnmount() {
-    $(window).off('resize', this._updateTableHeight);
   },
 
   handleSort(attribute) {
@@ -212,7 +208,7 @@ const RecordTable = React.createClass({
           <a
             href={href}
             onClick={handlePrimaryKeyClick}
-            dangerouslySetInnerHTML={{__html: formatAttribute(attribute) }}
+            dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute) }}
           />
         </div>
       );
@@ -221,7 +217,7 @@ const RecordTable = React.createClass({
       return (
         <div
           className="wdk-RecordTable-attributeValue"
-          dangerouslySetInnerHTML={{__html: formatAttribute(attribute) }}
+          dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute) }}
         />
       );
     }
@@ -244,7 +240,7 @@ const RecordTable = React.createClass({
 
     return (
       <div onClick={sort} className="wdk-RecordTable-headerWrapper">
-        <span>{formatHeader(attribute.displayName)}</span>
+        <span>{formatAttributeName(attribute.displayName)}</span>
         <span className={sortClass}/>
         <span className="ui-icon ui-icon-close"
           title="Hide column"
@@ -258,13 +254,6 @@ const RecordTable = React.createClass({
       pendingVisibleAttributes: this.props.displayInfo.visibleAttributes,
       attributeSelectorOpen: false
     };
-  },
-
-  _updateTableHeight() {
-    const table = this.refs.table.getDOMNode();
-    this.setState({
-      tableHeight: window.innerHeight - table.offsetTop - 10
-    });
   },
 
   // TODO Find a better way to specify row height
@@ -297,7 +286,7 @@ const RecordTable = React.createClass({
         <Table
           ref="table"
           width={window.innerWidth - 45}
-          maxHeight={this.state.tableHeight}
+          maxHeight={this.props.height - 32}
           rowsCount={records.length}
           rowHeight={28}
           rowGetter={this.getRow}
@@ -417,41 +406,13 @@ const AttributeSelectorItem = React.createClass({
           value={name}
           onChange={this.props.onChange}
           checked={this.props.isChecked}/>
-        <label htmlFor={'column-select-' + name}> {displayName} </label>
+        <label htmlFor={'column-select-' + name}> {formatAttributeName(displayName)} </label>
       </li>
     );
   }
 
 });
 
-
-/**
- * Capitalize the first character of `value`
- *
- * @param {string} value
- */
-const capitalize = value => value[0].toUpperCase() + value.slice(1);
-
-/**
- * Replace '_' with ' ' and capitalize the first character of `value`
- *
- * @param {string} value
- */
-const formatHeader = value => capitalize(value.replace(/_/g, ' '));
-
-// TODO Look up or inject custom formatters
-const formatAttribute = attribute => {
-  // FIXME Add type to attribute definition
-  // let { value, type } = attribute;
-  // switch(type) {
-  //   case 'text': return value;
-  //   case 'link': return (<a href={value.url}>{value.display}</a>);
-  //   default: throw new TypeError(
-  //     `Unkonwn type "${attribute.type}" for attribute ${attribute.name}`
-  //   );
-  // }
-  return attribute.value;
-}
 
 /**
  * Return the attributes for the row at index `rowIndex`
@@ -471,6 +432,5 @@ const getRowNumberColumnWidth = length => String(length).length * 16;
  * detection. E.g., if onSort === noop, then we won't enable sorting.
  */
 const noop = () => {};
-
 
 export default RecordTable;
