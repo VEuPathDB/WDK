@@ -48,7 +48,8 @@ const RecordList = React.createClass({
     onSort: PropTypes.func,
     onMoveColumn: PropTypes.func,
     onChangeColumns: PropTypes.func,
-    onNewPage: PropTypes.func
+    onNewPage: PropTypes.func,
+    height: PropTypes.number.isRequired
   },
 
   getDefaultProps() {
@@ -125,23 +126,27 @@ const RecordList = React.createClass({
   },
 
   render() {
-    /** creates variables: meta, records, sorting, and visibleAttributes */
-    const { meta, records, displayInfo: { pagination, sorting, visibleAttributes } } = this.props;
-    const visibleNames = this.state.pendingVisibleAttributes.map(a => a.name);
-    const firstRec = pagination.offset + 1;
-    const lastRec = Math.min(pagination.offset + pagination.numRecords, meta.count);
-    const sortSpec = sorting[0];
-
+    const { records } = this.props;
     return (
-      <div className="wdk-RecordList">
-        {records.map(record => {
-          const attrs = _.indexBy(record.attributes, 'name');
-          return (
-            <div className="wdk-RecordList-Record" style={{margin: '3em 0'}}>
-              <Record record={record} attributes={meta.attributes}/>
-            </div>
-          );
-        })}
+      <div
+        className="wdk-RecordList"
+        style={{
+          height: this.props.height,
+          overflow: 'auto',
+          boxShadow: '0 2px 2px -1px rgba(0, 0, 0, 0.19) inset'
+        }}
+      >
+        {records.map(this._renderRecord)}
+      </div>
+    );
+  },
+
+  _renderRecord(record) {
+    const { meta } = this.props;
+    const attrs = _.indexBy(record.attributes, 'name');
+    return (
+      <div className="wdk-RecordList-Record" style={{margin: '3em 0'}}>
+        <Record record={record} attributes={meta.attributes}/>
       </div>
     );
   }

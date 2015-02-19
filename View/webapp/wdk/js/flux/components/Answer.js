@@ -9,7 +9,6 @@
 import React from 'react';
 import RecordTable from './RecordTable';
 import RecordList from './RecordList';
-import Loading from './Loading';
 
 const PropTypes = React.PropTypes;
 
@@ -43,6 +42,21 @@ const Answer = React.createClass({
     position: PropTypes.number
   },
 
+  getInitialState() {
+    return {
+      height: 0
+    };
+  },
+
+  componentDidMount() {
+    this._updateHeight();
+    $(window).on('resize', this._updateHeight);
+  },
+
+  componentWillUnmount() {
+    $(window).off('resize', this._updateHeight);
+  },
+
   /**
    * Render various aspects of state:
    *   - Show spinner of loading.
@@ -55,36 +69,50 @@ const Answer = React.createClass({
    *      provide a good mechanism for displaying otherwise unhandled errors.
    */
   render() {
-    const { answer, error, isLoading, displayInfo, answerEvents, format, position } = this.props;
+    const { answer, displayInfo, answerEvents, format, position } = this.props;
     const Records = format === 'list' ? RecordList : RecordTable;
 
     return (
       <div className="wdkAnswer">
-        {isLoading ? <Loading/> : null}
-        {error ? <div className="wdkAnswerError">{error}</div> : null}
-        {answer && answer.records ? (
-          <div>
-            <AnswerOverview
-              format={format}
-              answer={answer}
-              displayInfo={displayInfo}
-              onSort={answerEvents.onSort}
-              onToggleFormat={answerEvents.onToggleFormat}
-            />
-            <Records
-              {...answer}
-              {...answerEvents}
-              displayInfo={displayInfo}
-              position={position}
-            />
-          </div>
-        ) : null}
+        <div>
+          <AnswerOverview
+            format={format}
+            answer={answer}
+            displayInfo={displayInfo}
+            onSort={answerEvents.onSort}
+            onToggleFormat={answerEvents.onToggleFormat}
+          />
+          <Records
+            ref="records"
+            height={this.state.height}
+            {...answer}
+            {...answerEvents}
+            displayInfo={displayInfo}
+            position={position}
+          />
+        </div>
       </div>
     );
+  },
+
+  _updateHeight() {
+    if (this.refs.records) {
+      const node = this.refs.records.getDOMNode();
+      const nodeOffsetTop = getOffsetTop(node);
+      const calculatedHeight = window.innerHeight - nodeOffsetTop - 20;
+      const minHeight = 335;
+      this.setState({
+        height: Math.max(calculatedHeight, minHeight)
+      });
+    }
   }
 
 });
 
+/**
+ * Overview information with filter box and sorting that is common to both
+ * table and list views.
+ */
 const AnswerOverview = React.createClass({
 
   propTypes: {
@@ -144,5 +172,12 @@ const AnswerOverview = React.createClass({
   }
 
 });
+
+/**
+ * Calculate the offset of `node` relative to the top of the document.
+ */
+const getOffsetTop = (node, sum = 0) => node.offsetTop === 0
+  ? sum
+  : getOffsetTop(node.offsetParent, sum + node.offsetTop);
 
 export default Answer;
