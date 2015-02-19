@@ -182,7 +182,9 @@ export default createStore({
      * localStorage is one possble solution.
      */
     if (!requestData.displayInfo.visibleAttributes) {
-      requestData.displayInfo.visibleAttributes = answer.meta.attributes;
+      requestData.displayInfo.visibleAttributes = answer.meta.attributes.filter(
+        attr => answer.meta.summaryAttributes.indexOf(attr.name) > -1
+      );
     }
 
     /*
