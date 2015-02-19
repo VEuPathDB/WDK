@@ -31,9 +31,9 @@ var QuestionListPage = React.createClass({
         <div>
           <ol>
             {questions.map(question => (
-              <li key={question}>
-                {question + ' - '}
-                <Link to="answer" params={{ questionName: question }}>answer page</Link>
+              <li key={question.name}>
+                {question.displayName + ' - '}
+                <Link to="answer" params={{ questionName: question.name }}>answer page</Link>
               </li>
             ))}
           </ol>
