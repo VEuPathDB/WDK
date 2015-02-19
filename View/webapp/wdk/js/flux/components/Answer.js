@@ -70,27 +70,30 @@ const Answer = React.createClass({
    */
   render() {
     const { answer, displayInfo, answerEvents, format, position } = this.props;
+    const { meta } = answer;
+    const { pagination } = displayInfo;
+    const firstRec = pagination.offset + 1;
+    const lastRec = Math.min(pagination.offset + pagination.numRecords,
+                             meta.count);
     const Records = format === 'list' ? RecordList : RecordTable;
 
     return (
       <div className="wdkAnswer">
         <div>
-          <AnswerOverview
-            format={format}
-            answer={answer}
-            displayInfo={displayInfo}
-            onSort={answerEvents.onSort}
-            onToggleFormat={answerEvents.onToggleFormat}
-          />
-          <Records
-            ref="records"
-            height={this.state.height}
-            {...answer}
-            {...answerEvents}
-            displayInfo={displayInfo}
-            position={position}
-          />
+          <input style={{ padding: '.5em', width: '25em'}}
+            placeholder="Find records: Not currently working"/>
         </div>
+        <p>
+          Showing {firstRec} - {lastRec} of {meta.count} {meta.class} records
+        </p>
+        <Records
+          ref="records"
+          height={this.state.height}
+          {...answer}
+          {...answerEvents}
+          displayInfo={displayInfo}
+          position={position}
+        />
       </div>
     );
   },
