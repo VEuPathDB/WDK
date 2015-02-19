@@ -126,6 +126,7 @@ var Dialog = React.createClass({
    */
   componentWillUnmount() {
     jQuery(this.node).dialog('destroy');
+    React.unmountComponentAtNode(this.getDOMNode());
   },
 
   /**
