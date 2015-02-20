@@ -187,6 +187,9 @@ export default createStore({
       );
     }
 
+    answer.meta.attributes = answer.meta.attributes
+      .filter(attr => attr.name != 'wdk_weight');
+
     /*
      * This will update the keys 'isLoading', 'answer', 'displayInfo',
      * and 'questionDefinition' in `state`. `displayInfo` and
