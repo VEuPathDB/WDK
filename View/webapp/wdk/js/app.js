@@ -1,8 +1,8 @@
 /*global RSVP, _, jQuery */
 
-// Include the 6to5 polyfill. This adds global objects expected in parts of our
+// Include the babel polyfill. This adds global objects expected in parts of our
 // code base, such as Promise, and the runtime needed for generators.
-import '6to5/polyfill';
+import 'babel/polyfill';
 
 import './core';
 import './user';

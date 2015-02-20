@@ -2,10 +2,10 @@
   "name": "wdk",
   "version": "0.1.0",
   "devDependencies": {
-    "6to5": "^2.13.3",
-    "6to5-loader": "^2.0.0",
+    "babel": "^4.3.0",
+    "babel-core": "^4.3.0",
+    "babel-loader": "^4.0.0",
     "clean-css": "^3.0.1",
-    "di": "^2.0.0-pre-12",
     "webpack": "^1.4.14"
   },
   "scripts": {
