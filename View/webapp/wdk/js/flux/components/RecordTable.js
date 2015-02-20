@@ -38,7 +38,7 @@ const SORT_CLASS_MAP = {
 };
 
 // Bookkeeping for `Table`
-const isColumnResizing = false;
+let isColumnResizing = false;
 
 
 const RecordTable = React.createClass({
