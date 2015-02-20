@@ -4,19 +4,19 @@ import createStoreMixin from '../mixins/createStoreMixin';
 import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
 var { Link } = Router;
-var storeMixin = createStoreMixin('questionListStore');
-var actionsMixin = createActionCreatorsMixin('questionListPageActions');
+var storeMixin = createStoreMixin('questionStore');
+var actionsMixin = createActionCreatorsMixin('questionActions');
 
 var QuestionListPage = React.createClass({
 
   mixins: [ storeMixin, actionsMixin ],
 
   getStateFromStores(stores) {
-    return stores.questionListStore.getState();
+    return stores.questionStore.getState();
   },
 
   componentDidMount() {
-    this.questionListPageActions.loadQuestions();
+    this.questionActions.loadQuestions();
   },
 
   render() {

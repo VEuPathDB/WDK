@@ -63,14 +63,14 @@ const AnswerPage = React.createClass({
   // See http://facebook.github.io/react/docs/component-specs.html#mixins
   mixins: [
 
-    // Registers a callback with the `answerPageStore`. The callback will use
+    // Registers a callback with the `answerStore`. The callback will use
     // `getStateFromStores` (defined below) in the callback. This mixin will also
     // use `getStateFromStores` in `getInitialState`.
-    createStoreMixin('answerPageStore'),
+    createStoreMixin('answerStore'),
 
     // Adds a property to this component with the same name as the action
-    // creators. In this case, `this.answerPageActions`.
-    createActionCreatorsMixin('answerPageActions'),
+    // creators. In this case, `this.answerActions`.
+    createActionCreatorsMixin('answerActions'),
 
     // Adds methods to handle navigating to other routes. We use
     // `replaceWith()` in this component.
@@ -90,7 +90,7 @@ const AnswerPage = React.createClass({
   // See http://facebook.github.io/react/docs/component-specs.html#getinitialstate
   // and http://facebook.github.io/react/docs/component-api.html#setstate
   getStateFromStores(stores) {
-    return stores.answerPageStore.getState();
+    return stores.answerStore.getState();
   },
 
 
@@ -162,7 +162,7 @@ const AnswerPage = React.createClass({
       };
 
       // Call the AnswerCreator to fetch the Answer resource
-      this.answerPageActions.loadAnswer(params.questionName, opts);
+      this.answerActions.loadAnswer(params.questionName, opts);
     }
   },
 
@@ -228,7 +228,7 @@ const AnswerPage = React.createClass({
       //     }
       //   }
       // };
-      // AnswerPageActions.loadAnswer(questionName, opts);
+      // AnswerActions.loadAnswer(questionName, opts);
     },
 
     // Call the `moveColumn` action creator. This will cause the state of
@@ -236,7 +236,7 @@ const AnswerPage = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onMoveColumn(columnName, newPosition) {
-      this.answerPageActions.moveColumn(columnName, newPosition);
+      this.answerActions.moveColumn(columnName, newPosition);
     },
 
     // Call the `changeAttributes` action creator. This will cause the state of
@@ -244,7 +244,7 @@ const AnswerPage = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onChangeColumns(attributes) {
-      this.answerPageActions.changeAttributes(attributes);
+      this.answerActions.changeAttributes(attributes);
     },
 
     // This is a stub... yet to be completed

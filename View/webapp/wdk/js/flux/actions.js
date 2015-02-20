@@ -1,7 +1,7 @@
-import answerPageActions from './actions/answerPageActions';
-import questionListPageActions from './actions/questionListPageActions';
+import answerActions from './actions/answerActions';
+import questionActions from './actions/questionActions';
 
 export default {
-  answerPageActions,
-  questionListPageActions
+  answerActions,
+  questionActions
 };
