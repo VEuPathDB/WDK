@@ -34,6 +34,10 @@ export const QUESTION_LIST_LOADING = 'questionListLoading';
 export const QUESTION_LIST_LOAD_SUCCESS = 'questionListLoadSuccess';
 export const QUESTION_LIST_LOAD_ERROR = 'questionListLoadError';
 
+export const RECORD_CLASS_LOADING = 'recordClassLoading';
+export const RECORD_CLASS_LOAD_SUCCESS = 'recordClassLoadSuccess';
+export const RECORD_CLASS_LOAD_ERROR = 'recordClassLoadError';
+
 export const PROJECT_LOADING = 'projectLoading';
 export const PROJECT_LOAD_SUCCESS = 'projectLoadSuccess';
 export const PROJECT_LOAD_ERROR = 'projectLoadError';
