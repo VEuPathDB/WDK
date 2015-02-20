@@ -1,7 +1,7 @@
-import answerPageStore from './stores/answerPageStore';
-import questionListStore from './stores/questionListStore';
+import answerStore from './stores/answerStore';
+import questionStore from './stores/questionStore';
 
 export default {
-  answerPageStore,
-  questionListStore
+  answerStore,
+  questionStore
 };
