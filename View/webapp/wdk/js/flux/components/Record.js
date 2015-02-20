@@ -9,17 +9,15 @@ import {
  */
 
 const hasValue = _.property('value');
-const hasLength = _.property('length');
 const notPk = attr => attr.name != 'primary_key';
-const and = (...fns) => (arg) => fns.reduce((pass, fn) => pass && fn(arg), true);
 
 /**
  * Creates a predicate function based on predicate functions `funcs`.
  *
  * `value` to each fn and
  */
-const passesAll = function passesAll(...funcs) {
-  return function predicate(value) {
+const passesAll = (...funcs) => {
+  return value => {
     return funcs.reduce(function(pass, func) {
       return pass && func(value);
     }, true);
@@ -32,13 +30,14 @@ const Record = React.createClass({
   },
 
   render() {
-    const { record } = this.props;
-    const { attributes, tables } = record;
+    const { record, attributes } = this.props;
+    const recordAttributes = _.indexBy(record.attributes, 'name');
     return (
       <div className="wdk-Record">
-        <h3 dangerouslySetInnerHTML={{__html: record.id}}/>
+        <h1 dangerouslySetInnerHTML={{__html: record.id}}/>
         <div className="wdk-Record-attributes">
           {attributes
+            .map(attr => recordAttributes[attr.name])
             .filter(passesAll(notPk, hasValue))
             .map(this._renderAttribute)}
         </div>
@@ -62,14 +61,17 @@ const Record = React.createClass({
 
   _renderTable(table) {
     const { name, rows } = table;
-    return (
-      <div>
-        <h4>{formatAttributeName(name)}</h4>
-        <ul>
-          {rows.filter(hasLength).map(this._renderTableRow)}
-        </ul>
-      </div>
-    );
+    if (rows.length) {
+      return (
+        <div>
+          <h4>{formatAttributeName(name)}</h4>
+          <ul>
+            {rows.map(this._renderTableRow)}
+          </ul>
+        </div>
+      );
+    }
+    return null;
   },
 
   _renderTableRow(attributes) {
@@ -82,7 +84,7 @@ const Record = React.createClass({
 
   _renderTableRowAttribute(attribute) {
     return (
-      <p>{attribute.name}: {attribute.value}</p>
+      <p>{formatAttributeName(attribute.name)}: {attribute.value}</p>
     );
   }
 });

@@ -77,78 +77,39 @@ const RecordList = React.createClass({
     });
   },
 
-  handleSort(e) {
-    const attribute = _.find(this.props.meta.attributes, { name: e.target.value });
-    this.props.onSort(attribute);
-  },
-
-  // TODO remove
-  handleChangeColumns(attributes) {
-    this.props.onChangeColumns(attributes);
-  },
-
-  handleHideColumn(attribute, e) {
-    e.stopPropagation(); // prevent click event from bubbling to sort handler
-    const attributes = this.props.displayInfo.visibleAttributes;
-    this.props.onChangeColumns(attributes.filter(attr => attr !== attribute));
-  },
-
-  handleNewPage() {
-  },
-
-  handleOpenAttributeSelectorClick() {
-    this.setState({
-      attributeSelectorOpen: !this.state.attributeSelectorOpen
-    });
-  },
-
-  handleAttributeSelectorClose() {
-    this.setState(this.getInitialState());
-  },
-
-  handleAttributeSelectorSubmit(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    this.props.onChangeColumns(this.state.pendingVisibleAttributes);
-    this.setState({
-      attributeSelectorOpen: false
-    });
-  },
-
-  /** filter unchecked checkboxes and map to attributes */
-  togglePendingAttribute() {
-    const form = this.refs.attributeSelector.getDOMNode();
-    const { attributes } = this.props.meta;
-    const pendingVisibleAttributes = [].slice.call(form.pendingAttribute)
-      .filter(a => a.checked)
-      .map(a => attributes.filter(attr => attr.name === a.value)[0]);
-    this.setState({ pendingVisibleAttributes });
+  componentDidMount() {
+    this._scrollToTarget();
   },
 
   render() {
     const { records } = this.props;
     return (
       <div
+        ref="recordList"
         className="wdk-RecordList"
-        style={{
-          height: this.props.height,
-          overflow: 'auto',
-          boxShadow: '0 2px 2px -1px rgba(0, 0, 0, 0.19) inset'
-        }}
+        style={{ height: this.props.height }}
       >
         {records.map(this._renderRecord)}
       </div>
     );
   },
 
-  _renderRecord(record) {
-    const { meta } = this.props;
+  _renderRecord(record, index) {
+    const { meta, position } = this.props;
     const attrs = _.indexBy(record.attributes, 'name');
+    const refName = index == position ? 'target' : null;
+
     return (
-      <div className="wdk-RecordList-Record" style={{margin: '3em 0'}}>
+      <div ref={refName} className="wdk-RecordList-Record" >
         <Record record={record} attributes={meta.attributes}/>
       </div>
     );
+  },
+
+  _scrollToTarget() {
+    const recordListNode = this.refs.recordList.getDOMNode();
+    const targetNode = this.refs.target.getDOMNode();
+    recordListNode.scrollTop = targetNode.offsetTop - 30;
   }
 
 });
