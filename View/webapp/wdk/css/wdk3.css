@@ -100,10 +100,9 @@ body {
 .wdk-RecordList-Record {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
   background: white;
-  margin: 2em auto;
+  margin: 2em 1em;
   padding: .5em;
   word-wrap: break-word;
-  max-width: 1000px;
 }
 
 .wdk-Record {
