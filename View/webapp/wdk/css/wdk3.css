@@ -89,10 +89,27 @@ body {
   float: right;
 }
 
-.wdk-Record h4 {
-  text-decoration: underline;
+.wdk-RecordList {
+  position: relative;
+  overflow: auto;
+  box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.19) inset;
+  background: #eaeaea;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.wdk-Record-attributes {
+.wdk-RecordList-Record {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+  background: white;
+  margin: 2em auto;
+  padding: .5em;
+  word-wrap: break-word;
+  max-width: 1000px;
+}
+
+.wdk-Record {
   padding: 0 1em;
+}
+
+.wdk-Record h4 {
+  text-decoration: underline;
 }
