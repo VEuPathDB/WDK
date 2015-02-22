@@ -69,6 +69,7 @@ export default createStore({
     isLoading: false,
     error: null,
     answer: { records: null },
+    answers: {},
     displayInfo: {
       sorting: null,
       pagination: null,
@@ -173,6 +174,11 @@ export default createStore({
      * below.
      */
     var requestData = action.requestData;
+    var questionName = requestData.questionDefinition.questionName;
+    var previousQuestionName = this.previousState.getIn([
+      'questionDefinition',
+      'questionName'
+    ]);
 
     /*
      * If state.displayInfo.attributes isn't defined we want to use the
@@ -181,7 +187,7 @@ export default createStore({
      * We probably also want to persist the user's choice somehow. Using
      * localStorage is one possble solution.
      */
-    if (!requestData.displayInfo.visibleAttributes) {
+    if (!requestData.displayInfo.visibleAttributes || previousQuestionName !== questionName) {
       requestData.displayInfo.visibleAttributes = answer.meta.attributes.filter(
         attr => answer.meta.summaryAttributes.indexOf(attr.name) > -1
       );
@@ -195,7 +201,12 @@ export default createStore({
      * and 'questionDefinition' in `state`. `displayInfo` and
      * `questionDefinition` are defined on `requestData`.
      */
-    this.state = this.state.merge({ isLoading: false, answer }, requestData);
+    this.state = this.state.merge({
+      isLoading: false,
+      answers: {
+        [questionName]: answer
+      },
+    }, requestData);
 
     emitChange();
   },

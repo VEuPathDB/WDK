@@ -5,7 +5,9 @@ import {
   ANSWER_LOAD_SUCCESS,
   ANSWER_LOAD_ERROR,
   ANSWER_MOVE_COLUMN,
-  ANSWER_CHANGE_ATTRIBUTES
+  ANSWER_CHANGE_ATTRIBUTES,
+  QUESTION_LOAD_SUCCESS,
+  RECORD_CLASS_LOAD_SUCCESS
 } from '../ActionType';
 
 
@@ -62,6 +64,16 @@ var AnswerMoveColumnAction = new Record({
 var AnswerChangeAttributesAction = new Record({
   type: ANSWER_CHANGE_ATTRIBUTES,
   attributes: []
+});
+
+var QuestionLoadSuccessAction = new Record({
+  type: QUESTION_LOAD_SUCCESS,
+  question: null
+});
+
+var RecordClassLoadSuccessAction = new Record({
+  type: RECORD_CLASS_LOAD_SUCCESS,
+  recordClass: null
 });
 
 
@@ -121,6 +133,12 @@ export default createActionCreators({
    *   - filters: Object of key-value pairs for Question filters.
    *   - displayInfo: Object with display details (see Request data format below).
    */
+  // We will make requests for the following resources:
+  // - question
+  // - answer
+  // - recordClass
+  //
+  // Once all are loaded, we will dispatch the load action
   loadAnswer(questionName, opts = {}) {
     var dispatch = this.dispatch;
     var { params = [], filters = [], displayInfo } = opts;
@@ -158,24 +176,39 @@ export default createActionCreators({
     // loadSuccess action. The second argument is an error handler, in which we
     // dispatch a loadError action. The `.catch` method is used to handle any
     // uncaught errors thrown in the success or error handlers.
-    this.serviceAPI.postResource('/answer', requestData)
-      .then(answer => {
-        var action = new AnswerLoadSuccessAction({
-          requestData: requestData,
-          answer: answer
-        });
-        dispatch(action);
-      }, error => {
-        var action = new AnswerLoadErrorAction({
-          requestData: requestData,
-          error: error
-        });
-        dispatch(action);
-      })
-      // Catch errors caused by Store callbacks.
-      // This is a last-ditch effort to alert developers that there was an error
-      // with how a Store handled the action.
-      .catch(err => console.assert(false, err));
+    var answerPromise = this.serviceAPI.postResource('/answer', requestData);
+    var questionPromise = this.serviceAPI.getResource('/question/' + questionName);
+
+    var combinedPromise = questionPromise.then(question => {
+      var recordClassPromise = this.serviceAPI.getResource('/record/' + question.class);
+      return Promise.all([question, recordClassPromise, answerPromise]);
+    });
+
+    combinedPromise.then(responses => {
+      var [ question, recordClass, answer ] = responses;
+
+      var questionAction = new QuestionLoadSuccessAction({ question });
+      dispatch(questionAction);
+
+      var recordClassAction = new RecordClassLoadSuccessAction({ recordClass });
+      dispatch(recordClassAction);
+
+      var answerAction = new AnswerLoadSuccessAction({
+        requestData: requestData,
+        answer: answer
+      });
+      dispatch(answerAction);
+    }, error => {
+      var action = new AnswerLoadErrorAction({
+        requestData: requestData,
+        error: error
+      });
+      dispatch(action);
+    })
+    // Catch errors caused by Store callbacks.
+    // This is a last-ditch effort to alert developers that there was an error
+    // with how a Store handled the action.
+    .catch(err => console.assert(false, err));
   },
 
   moveColumn(columnName, newPosition) {

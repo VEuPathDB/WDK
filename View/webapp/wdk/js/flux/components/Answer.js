@@ -69,7 +69,7 @@ const Answer = React.createClass({
    *      provide a good mechanism for displaying otherwise unhandled errors.
    */
   render() {
-    const { answer, displayInfo, answerEvents, format, position } = this.props;
+    const { answer, recordClass, displayInfo, answerEvents, format, position } = this.props;
     const { meta } = answer;
     const { pagination } = displayInfo;
     const firstRec = pagination.offset + 1;
@@ -84,7 +84,7 @@ const Answer = React.createClass({
             placeholder="Find records: Not currently working"/>
         </div>
         <p>
-          Showing {firstRec} - {lastRec} of {meta.count} {meta.class} records
+          Showing {firstRec} - {lastRec} of {meta.count} {recordClass.displayName} records
         </p>
         <Records
           ref="records"
