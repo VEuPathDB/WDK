@@ -15,7 +15,8 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 // primary role of the Controller-View is to set up some state for a tree of
 // React components. The Controller-View will pass objects to child components
 // as `props`. Typically, these child components are reusable in the sense that
-// they do not communcate directly with Stores.
+// they do not communcate directly with Stores; communication with these
+// components happens solely through `props`, either as data or as callbacks.
 //
 //
 // A Route Handler is rendered when the URL matches a route rule. The route
@@ -30,9 +31,9 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 //      In this component, we make use of this.replaceWith, which is provided
 //      by the Router.Navigation mixin. This is similar forwarding one action
 //      to another based on some set of criteria, such as forwarding to a login
-//      screen for authentication.
+//      screen for authentication. When this happens, the URL will also change.
 //
-// The router is initialized in the file ../bootsrap.js with something like:
+// The router is initialized in the file ../main.js with something like:
 //
 //     Router.run(appRoutes, function handleRoute(Handler, state) {
 //       React.render( <Handler {...state}/>, document.body);
@@ -57,16 +58,21 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 const AnswerPage = React.createClass({
 
   // mixins are used to share behaviors between otherwise unrelated components.
+  // A mixin is simply an object with properties that are added (copied) to the
+  // object literal we are currently defining (and passing to
+  // React.createClass). The concept is not unique to React.
+  //
   // React will use each object in the provided array to attach additional
   // behavior to instances of the component class.
   //
   // See http://facebook.github.io/react/docs/component-specs.html#mixins
   mixins: [
 
-    // Registers a callback with the `answerStore`. The callback will use
-    // `getStateFromStores` (defined below) in the callback. This mixin will also
-    // use `getStateFromStores` in `getInitialState`.
-    createStoreMixin('answerStore'),
+    // Registers a callback with the `answerStore`, `questionStore`, and
+    // `recordClassStore`. The callback will use `getStateFromStores` (defined
+    //  below) in the callback. This mixin will also use `getStateFromStores` in
+    // `getInitialState`.
+    createStoreMixin('answerStore', 'questionStore', 'recordClassStore'),
 
     // Adds a property to this component with the same name as the action
     // creators. In this case, `this.answerActions`.
@@ -89,8 +95,38 @@ const AnswerPage = React.createClass({
   // state changes.
   // See http://facebook.github.io/react/docs/component-specs.html#getinitialstate
   // and http://facebook.github.io/react/docs/component-api.html#setstate
+  //
+  // XXX: An alternative is to define a callback function for each store. This
+  // would require a change to `createStoreMixin`.
   getStateFromStores(stores) {
-    return stores.answerStore.getState();
+    const { questionName } = this.getParams();
+
+    const {
+      answers,
+      isLoading,
+      error,
+      displayInfo,
+      questionDefinition
+    } = stores.answerStore.getState();
+    const answer = answers[questionName];
+
+    const { questions } = stores.questionStore.getState();
+    const question = _.find(questions, { name: questionName });
+
+    const { recordClasses } = stores.recordClassStore.getState();
+    const recordClass = question
+      ? _.find(recordClasses, { fullName: question.class })
+      : null;
+
+    return {
+      answer,
+      question,
+      recordClass,
+      isLoading,
+      error,
+      displayInfo,
+      questionDefinition
+    };
   },
 
 
@@ -109,7 +145,7 @@ const AnswerPage = React.createClass({
     if (!query.numrecs || !query.offset) {
       // Replace the current undefined URL query params with default values
       Object.assign(query, {
-        numrecs: query.numrecs || 100,
+        numrecs: query.numrecs || 500,
         offset: query.offset || 0
       });
 
@@ -282,8 +318,9 @@ const AnswerPage = React.createClass({
 
   },
 
-  // This is called initially by the router, and subsequently any time the
-  // AnswerStore emits a change (via the mixin `createStoreMixin`).
+  // `render` is called when React.renderComponent is first invoked, and anytime
+  // `props` or `state` changes. This latter will happen when any stores are
+  // changed.
   //
   // This render method is fairly simple. It will create several local
   // references to properties of `this.state`. It will then create an H2
@@ -292,16 +329,16 @@ const AnswerPage = React.createClass({
   render() {
 
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
-    const { isLoading, error, answer, displayInfo, questionDefinition: { questionName } } = this.state;
+    const { isLoading, error, answer, question, recordClass, displayInfo } = this.state;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
     // this component.
     const answerEvents = Object.keys(this.answerEvents)
-    .reduce((events, key) => {
-      events[key] = this.answerEvents[key].bind(this);
-      return events;
-    }, {});
+      .reduce((events, key) => {
+        events[key] = this.answerEvents[key].bind(this);
+        return events;
+      }, {});
 
     // Valid formats are 'table' and 'list'
     // TODO validation
@@ -332,19 +369,22 @@ const AnswerPage = React.createClass({
       </div>
     );
 
-    if (answer.records) components.push(
-      <Answer
-        format={format}
-        position={position}
-        questionName={questionName}
-        answer={answer}
-        answerEvents={answerEvents}
-        displayInfo={displayInfo}/>
+    if (answer && question && recordClass) components.push(
+      <div>
+        <h2>{question.displayName}</h2>
+        <Answer
+          format={format}
+          position={position}
+          recordClass={recordClass}
+          answer={answer}
+          answerEvents={answerEvents}
+          displayInfo={displayInfo}
+        />
+      </div>
     );
 
     return (
       <div>
-        <h2>{questionName}</h2>
         {components}
       </div>
     );
