@@ -92,9 +92,8 @@ body {
 .wdk-RecordList {
   position: relative;
   overflow: auto;
-  box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.19) inset;
   background: #eaeaea;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .wdk-RecordList-Record {
