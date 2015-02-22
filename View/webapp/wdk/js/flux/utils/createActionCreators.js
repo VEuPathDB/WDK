@@ -54,4 +54,4 @@ export default function createActionCreators(baseObject) {
 
     return proxyObject;
   };
-};
+}
