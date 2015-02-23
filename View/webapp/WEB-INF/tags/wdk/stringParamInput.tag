@@ -24,6 +24,8 @@ Provides form input element for a given StringParam.
   </c:if>
 --%>
 
+<script type="x-wdk/validation"><![CDATA[ ${qP.regex} ]]></script>
+
 <c:choose>
   <c:when test="${qP.isVisible == false}">
     <html:hidden property="value(${pNam})"/>
