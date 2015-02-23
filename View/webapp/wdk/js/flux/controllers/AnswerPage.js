@@ -1,7 +1,9 @@
 // Import modules
+import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';
 import Answer from '../components/Answer';
+import Loading from '../components/Loading';
 import createStoreMixin from '../mixins/createStoreMixin';
 import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
@@ -13,7 +15,8 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 // primary role of the Controller-View is to set up some state for a tree of
 // React components. The Controller-View will pass objects to child components
 // as `props`. Typically, these child components are reusable in the sense that
-// they do not communcate directly with Stores.
+// they do not communcate directly with Stores; communication with these
+// components happens solely through `props`, either as data or as callbacks.
 //
 //
 // A Route Handler is rendered when the URL matches a route rule. The route
@@ -28,9 +31,9 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 //      In this component, we make use of this.replaceWith, which is provided
 //      by the Router.Navigation mixin. This is similar forwarding one action
 //      to another based on some set of criteria, such as forwarding to a login
-//      screen for authentication.
+//      screen for authentication. When this happens, the URL will also change.
 //
-// The router is initialized in the file ../bootsrap.js with something like:
+// The router is initialized in the file ../main.js with something like:
 //
 //     Router.run(appRoutes, function handleRoute(Handler, state) {
 //       React.render( <Handler {...state}/>, document.body);
@@ -52,23 +55,28 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
 // Define the React Component class.
 // See http://facebook.github.io/react/docs/top-level-api.html#react.createclass
-var AnswerPage = React.createClass({
+const AnswerPage = React.createClass({
 
   // mixins are used to share behaviors between otherwise unrelated components.
+  // A mixin is simply an object with properties that are added (copied) to the
+  // object literal we are currently defining (and passing to
+  // React.createClass). The concept is not unique to React.
+  //
   // React will use each object in the provided array to attach additional
   // behavior to instances of the component class.
   //
   // See http://facebook.github.io/react/docs/component-specs.html#mixins
   mixins: [
 
-    // Registers a callback with the `answerPageStore`. The callback will use
-    // `getStateFromStores` (defined below) in the callback. This mixin will also
-    // use `getStateFromStores` in `getInitialState`.
-    createStoreMixin('answerPageStore'),
+    // Registers a callback with the `answerStore`, `questionStore`, and
+    // `recordClassStore`. The callback will use `getStateFromStores` (defined
+    //  below) in the callback. This mixin will also use `getStateFromStores` in
+    // `getInitialState`.
+    createStoreMixin('answerStore', 'questionStore', 'recordClassStore'),
 
     // Adds a property to this component with the same name as the action
-    // creators. In this case, `this.answerPageActions`.
-    createActionCreatorsMixin('answerPageActions'),
+    // creators. In this case, `this.answerActions`.
+    createActionCreatorsMixin('answerActions'),
 
     // Adds methods to handle navigating to other routes. We use
     // `replaceWith()` in this component.
@@ -87,8 +95,38 @@ var AnswerPage = React.createClass({
   // state changes.
   // See http://facebook.github.io/react/docs/component-specs.html#getinitialstate
   // and http://facebook.github.io/react/docs/component-api.html#setstate
+  //
+  // XXX: An alternative is to define a callback function for each store. This
+  // would require a change to `createStoreMixin`.
   getStateFromStores(stores) {
-    return stores.answerPageStore.getState();
+    const { questionName } = this.getParams();
+
+    const {
+      answers,
+      isLoading,
+      error,
+      displayInfo,
+      questionDefinition
+    } = stores.answerStore.getState();
+    const answer = answers[questionName];
+
+    const { questions } = stores.questionStore.getState();
+    const question = _.find(questions, { name: questionName });
+
+    const { recordClasses } = stores.recordClassStore.getState();
+    const recordClass = question
+      ? _.find(recordClasses, { fullName: question.class })
+      : null;
+
+    return {
+      answer,
+      question,
+      recordClass,
+      isLoading,
+      error,
+      displayInfo,
+      questionDefinition
+    };
   },
 
 
@@ -100,13 +138,14 @@ var AnswerPage = React.createClass({
   fetchAnswer() {
 
     // These methods are provided by the `Router.State` mixin
-    var params = this.getParams();
-    var query = this.getQuery();
+    const path = 'answer';
+    const params = this.getParams();
+    const query = this.getQuery();
 
     if (!query.numrecs || !query.offset) {
       // Replace the current undefined URL query params with default values
       Object.assign(query, {
-        numrecs: query.numrecs || 100,
+        numrecs: query.numrecs || 500,
         offset: query.offset || 0
       });
 
@@ -115,19 +154,19 @@ var AnswerPage = React.createClass({
       // call will cause the Route Handler for 'answer' (this component) to be
       // rendered again. Since `query.numrecs` and `query.offset` are now set,
       // the else block below will get executed again.
-      this.replaceWith('answer', params, query);
+      this.replaceWith(path, params, query);
 
     } else {
 
       // Get pagination info from `query`
-      var pagination = {
+      const pagination = {
         numRecords: Number(query.numrecs),
         offset: Number(query.offset)
       };
 
       // Get sorting info from `query`
       // FIXME make this one query param: sorting={attributeName}__{direction}
-      var sorting = query.sortBy && query.sortDir
+      const sorting = query.sortBy && query.sortDir
         ? [{
             attributeName: query.sortBy,
             direction: query.sortDir
@@ -136,19 +175,30 @@ var AnswerPage = React.createClass({
 
       // Combine `pagination` and `sorting` into a single object:
       //
-      //     var displayInfo = {
+      //     const displayInfo = {
       //       pagination: pagination,
       //       sorting: sorting
       //     };
       //
-      var displayInfo = {
+      const displayInfo = {
         pagination,
         sorting,
         visibleAttributes: this.state.displayInfo.visibleAttributes
       };
 
+      // TODO Add params to loadAnswer call
+      const answerParams = wrap(query.param).map(p => {
+        const parts = p.split('__');
+        return { name: parts[0], value: parts[1] };
+      });
+
+      const opts = {
+        displayInfo,
+        params: answerParams
+      };
+
       // Call the AnswerCreator to fetch the Answer resource
-      this.answerPageActions.loadAnswer(params.questionName, { displayInfo });
+      this.answerActions.loadAnswer(params.questionName, opts);
     }
   },
 
@@ -181,25 +231,11 @@ var AnswerPage = React.createClass({
     // This will cause `this.componentWillReceiveProps` to be called. See the
     // comment below for an alternative way calling `loadAnswer` directly. Yet
     // another way would be to have a `sortAnswer` action creator.
-    onSort(attribute) {
+    onSort(attribute, direction) {
 
       // These methods are provided by the mixin `Router.State`.
-      var params = this.getParams();
-      var query = this.getQuery();
-
-      // Create a local var `sorting` using descturing.
-      var { displayInfo: { sorting } } = this.state;
-
-      var sortAttribute = sorting[0];
-      var direction;
-
-      // Determine the sort direction. If the attribute is the same, then
-      // we will reverse the direction... otherwise, we will default to `ASC`.
-      if (sortAttribute.attributeName === attribute.name) {
-        direction = sortAttribute.direction === 'ASC' ? 'DESC' : 'ASC';
-      } else {
-        direction = 'ASC';
-      }
+      const params = this.getParams();
+      const query = this.getQuery();
 
       // Update the query object with the new values.
       // See https://lodash.com/docs#assign
@@ -218,7 +254,7 @@ var AnswerPage = React.createClass({
       // saving the display info to localStorage and reloading it when the page
       // is reloaded.
       //
-      // var opts = {
+      // const opts = {
       //   displayInfo: {
       //     sorting: [ { columnName: attribute.name, direction } ],
       //     attributes,
@@ -228,7 +264,7 @@ var AnswerPage = React.createClass({
       //     }
       //   }
       // };
-      // AnswerPageActions.loadAnswer(questionName, opts);
+      // AnswerActions.loadAnswer(questionName, opts);
     },
 
     // Call the `moveColumn` action creator. This will cause the state of
@@ -236,7 +272,7 @@ var AnswerPage = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onMoveColumn(columnName, newPosition) {
-      this.answerPageActions.moveColumn(columnName, newPosition);
+      this.answerActions.moveColumn(columnName, newPosition);
     },
 
     // Call the `changeAttributes` action creator. This will cause the state of
@@ -244,18 +280,47 @@ var AnswerPage = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onChangeColumns(attributes) {
-      this.answerPageActions.changeAttributes(attributes);
+      this.answerActions.changeAttributes(attributes);
     },
 
     // This is a stub... yet to be completed
     onNewPage(offset, numRecords) {
       console.log(offset, numRecords);
+    },
+
+    onRecordClick(record) {
+      // Methods provided by Router.State mixin
+      const path = 'answer';
+      const params = this.getParams();
+      const query = this.getQuery();
+
+      // update query with format and position
+      query.format = 'list';
+      query.position = _.indexOf(this.state.answer.records, record);
+
+      // Method provided by Router.Navigation mixin
+      this.transitionTo(path, params, query);
+    },
+
+    onToggleFormat() {
+      // Methods provided by Router.State mixin
+      const path = 'answer';
+      const params = this.getParams();
+      const query = this.getQuery();
+
+      // update query with format and position
+      query.format = !query.format || query.format === 'table'
+        ? 'list' : 'table';
+
+      // Method provided by Router.Navigation mixin
+      this.transitionTo(path, params, query);
     }
 
   },
 
-  // This is called initially by the router, and subsequently any time the
-  // AnswerStore emits a change (via the mixin `createStoreMixin`).
+  // `render` is called when React.renderComponent is first invoked, and anytime
+  // `props` or `state` changes. This latter will happen when any stores are
+  // changed.
   //
   // This render method is fairly simple. It will create several local
   // references to properties of `this.state`. It will then create an H2
@@ -264,16 +329,24 @@ var AnswerPage = React.createClass({
   render() {
 
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
-    var { isLoading, error, answer, displayInfo, questionDefinition: { questionName } } = this.state;
+    const { isLoading, error, answer, question, recordClass, displayInfo } = this.state;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
     // this component.
-    var answerEvents = Object.keys(this.answerEvents)
-    .reduce((events, key) => {
-      events[key] = this.answerEvents[key].bind(this);
-      return events;
-    }, {});
+    const answerEvents = Object.keys(this.answerEvents)
+      .reduce((events, key) => {
+        events[key] = this.answerEvents[key].bind(this);
+        return events;
+      }, {});
+
+    // Valid formats are 'table' and 'list'
+    // TODO validation
+    const format = this.getQuery().format || 'table';
+
+    // List position of "selected" record (this is used to keep the same
+    // record at the top when transitioning between formats.
+    const position = Number(this.getQuery().position) || 0;
 
     // `{...this.state}` is JSX short-hand syntax to pass each key-value pair of
     // this.state as a property to the component. It intentionally resembles
@@ -283,16 +356,36 @@ var AnswerPage = React.createClass({
     // and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator
     //
     // to understand the embedded XML, see: https://facebook.github.io/react/docs/jsx-in-depth.html
-    return (
+    const components = [];
+
+    if (isLoading) components.push(
+      <Loading/>
+    );
+
+    if (error) components.push(
       <div>
-        <h2>{questionName}</h2>
+        <h3>An Unexpected Error Occurred</h3>
+        <div className="wdkAnswerError">{error}</div>
+      </div>
+    );
+
+    if (answer && question && recordClass) components.push(
+      <div>
+        <h2>{question.displayName}</h2>
         <Answer
-          questionName={questionName}
+          format={format}
+          position={position}
+          recordClass={recordClass}
           answer={answer}
           answerEvents={answerEvents}
-          isLoading={isLoading}
-          error={error}
-          displayInfo={displayInfo}/>
+          displayInfo={displayInfo}
+        />
+      </div>
+    );
+
+    return (
+      <div>
+        {components}
       </div>
     );
   }
@@ -301,3 +394,20 @@ var AnswerPage = React.createClass({
 
 // Export the React Component class we just created.
 export default AnswerPage;
+
+
+/**
+ * wrap - Wrap `value` in array.
+ *
+ * If `value` is undefined, return an empty aray.
+ * Else, if `value` is an array, return it.
+ * Otherwise, return `[value]`.
+ *
+ * @param  {any} value The value to wrap
+ * @return {array}
+ */
+function wrap(value) {
+  if (typeof value === 'undefined') return [];
+  if (!Array.isArray(value)) return [ value ];
+  return value;
+}

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.answer;
 
 import java.util.ArrayList;
@@ -27,7 +24,6 @@ import org.gusdb.wdk.model.record.RecordClass;
  */
 public class AnswerFilterLayout extends WdkModelBase {
 
-  @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(AnswerFilterLayout.class);
   
   private RecordClass recordClass;

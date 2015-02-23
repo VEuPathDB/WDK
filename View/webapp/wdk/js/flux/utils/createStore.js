@@ -1,4 +1,3 @@
-import di from 'di';
 import EventEmitter from 'events';
 
 /**
@@ -55,7 +54,7 @@ export default function createStore(spec) {
   // A flux store constructor that will get the application dispatcher
   // injected by the injection system. It will also call the `spec` methods
   // described above.
-  var createWdkStore = function createWdkStore(dispatcher) {
+  return function createWdkStore(dispatcher) {
     var specCopy = Object.create(spec);
     var emitter = new EventEmitter();
 
@@ -104,13 +103,6 @@ export default function createStore(spec) {
 
     };
   };
-
-  // Annotate `createWdkStore` as needing the dispatcher service injected.
-  // This tells the injector system to pass the dispatcher as the first
-  // argument to `createWdkStore`.
-  di.annotate(createWdkStore, new di.Inject('dispatcher'));
-
-  return createWdkStore;
 }
 
 function ensureFunction(fn, name) {

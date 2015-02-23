@@ -8,11 +8,11 @@
 
 import React from 'react';
 import RecordTable from './RecordTable';
-import Loading from './Loading';
+import RecordList from './RecordList';
 
-var PropTypes = React.PropTypes;
+const PropTypes = React.PropTypes;
 
-var Answer = React.createClass({
+const Answer = React.createClass({
 
   // Some of the objects below can be further detailed. Some of this will be
   // obviated when we better incorporate JSON-schema and validate in the
@@ -35,8 +35,26 @@ var Answer = React.createClass({
       onSort: PropTypes.func,
       onMoveColumn: PropTypes.func,
       onChangeColumns: PropTypes.func,
-      onNewPage: PropTypes.func
-    })
+      onNewPage: PropTypes.func,
+      onAttributeClick: PropTypes.func
+    }),
+    format: PropTypes.string,
+    position: PropTypes.number
+  },
+
+  getInitialState() {
+    return {
+      height: 0
+    };
+  },
+
+  componentDidMount() {
+    this._updateHeight();
+    $(window).on('resize', this._updateHeight);
+  },
+
+  componentWillUnmount() {
+    $(window).off('resize', this._updateHeight);
   },
 
   /**
@@ -51,17 +69,118 @@ var Answer = React.createClass({
    *      provide a good mechanism for displaying otherwise unhandled errors.
    */
   render() {
-    var { answer, error, isLoading, displayInfo, answerEvents } = this.props;
+    const { answer, recordClass, displayInfo, answerEvents, format, position } = this.props;
+    const { meta } = answer;
+    const { pagination } = displayInfo;
+    const firstRec = pagination.offset + 1;
+    const lastRec = Math.min(pagination.offset + pagination.numRecords,
+                             meta.count);
+    const Records = format === 'list' ? RecordList : RecordTable;
 
     return (
       <div className="wdkAnswer">
-        {isLoading ? <Loading/> : ''}
-        {error ? <div className="wdkAnswerError">{error}</div> : ''}
-        {answer && answer.records ? <RecordTable {...answer} {...answerEvents} displayInfo={displayInfo}/> : ''}
+        <div>
+          <input style={{ padding: '.5em', width: '25em'}}
+            placeholder="Find records: Not currently working"/>
+        </div>
+        <p>
+          Showing {firstRec} - {lastRec} of {meta.count} {recordClass.displayName} records
+        </p>
+        <Records
+          ref="records"
+          height={this.state.height}
+          {...answer}
+          {...answerEvents}
+          displayInfo={displayInfo}
+          position={position}
+        />
+      </div>
+    );
+  },
+
+  _updateHeight() {
+    if (this.refs.records) {
+      const node = this.refs.records.getDOMNode();
+      const nodeOffsetTop = getOffsetTop(node);
+      const calculatedHeight = window.innerHeight - nodeOffsetTop - 20;
+      const minHeight = 335;
+      this.setState({
+        height: Math.max(calculatedHeight, minHeight)
+      });
+    }
+  }
+
+});
+
+/**
+ * Overview information with filter box and sorting that is common to both
+ * table and list views.
+ */
+const AnswerOverview = React.createClass({
+
+  propTypes: {
+    format: PropTypes.string,
+    answer: PropTypes.object,
+    displayInfo: PropTypes.object,
+    onSort: PropTypes.func,
+    onToggleFormat: PropTypes.func
+  },
+
+  handleToggleFormat(event) {
+    event.preventDefault();
+    this.props.onToggleFormat();
+  },
+
+  handleSort() {
+    const { sortSelect, directionSelect } = this.refs;
+    const attrName = sortSelect.getDOMNode().value;
+    const sortDir = directionSelect.getDOMNode().value;
+    const attr = _.find(this.props.answer.meta.attributes, { name: attrName });
+    this.props.onSort(attr, sortDir);
+  },
+
+  render() {
+    const {format, answer, displayInfo} = this.props;
+    const {meta} = answer;
+    const {pagination, sorting} = displayInfo;
+    const sortSpec = sorting[0];
+    const firstRec = pagination.offset + 1;
+    const lastRec = Math.min(pagination.offset + pagination.numRecords,
+                           meta.count);
+    const newFormat = format === 'table' ? 'List' : 'Table';
+    return (
+      <div>
+        <input style={{ padding: '.5em', width: '25em'}}
+          placeholder="Find Datasets: Not currently working"/>
+
+        <b> Order by: </b>
+        <select ref="sortSelect" onChange={this.handleSort} value={sortSpec.attributeName}>
+          {meta.attributes.map(attr => {
+            return (
+              <option value={attr.name}>{attr.displayName}</option>
+              );
+          })}
+        </select>
+        <b> direction: </b>
+        <select ref="directionSelect" onChange={this.handleSort} value={sortSpec.direction}>
+          <option value="ASC">Ascending</option>
+          <option value="DESC">Descending</option>
+        </select>
+        <p>
+          Showing {firstRec} - {lastRec} of {meta.count} {meta.class} records
+          <a style={{marginLeft: '1em'}} href="#" onClick={this.handleToggleFormat}>Show as {newFormat}</a>
+        </p>
       </div>
     );
   }
 
 });
+
+/**
+ * Calculate the offset of `node` relative to the top of the document.
+ */
+const getOffsetTop = (node, sum = 0) => node.offsetTop === 0
+  ? sum
+  : getOffsetTop(node.offsetParent, sum + node.offsetTop);
 
 export default Answer;

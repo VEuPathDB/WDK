@@ -223,7 +223,7 @@
           executable="npm"
           failonerror="true"
           failifexecutionfails="true">
-      <arg line="install --cache-min 999999"/>
+      <arg line="install"/>
     </exec>
 
     <echo message="Running npm run dist"/>
