@@ -160,30 +160,64 @@ export default createActionCreators({
     displayInfo.attributes = displayInfo.sorting.map(s => s.attributeName);
     displayInfo.tables = [];
 
-    // Build XHR request data
+    // Build XHR request data for '/answer'
     var questionDefinition = { questionName, params, filters };
     var requestData = { questionDefinition, displayInfo };
 
+    // Dispatch loading action.
     var action = new AnswerLoadingAction({ requestData: requestData });
     dispatch(action);
 
-    // Call `serviceAPI.postResource` to get the Answer resource. `serviceAPI`
-    // is an instance of a configuered serviceAPI object that is injected at
-    // runtime.
+    // The next section of code deals with composing Promises. Simply put, a
+    // Promise is a container for an asynchronous operation, such as an Ajax
+    // request. Promises can be combined in various ways to allow what would
+    // otherwise require complex bookkeeping to be expressed in a more
+    // declarative way.
     //
-    // `serviceAPI.postResource` returns a JavaScript `Promise`. The first
-    // argument to `.then` is a success handler, in which we dispatch a
-    // loadSuccess action. The second argument is an error handler, in which we
-    // dispatch a loadError action. The `.catch` method is used to handle any
-    // uncaught errors thrown in the success or error handlers.
-    var answerPromise = this.serviceAPI.postResource('/answer', requestData);
+    // Ultimately, the code below will be making a request for the question and
+    // answer resource in parallel. When the question request is complete, we
+    // will then make the request for the recordClass resource. Once these
+    // three requests are complete, we will dispatch three related actions.
+
+    // First, create a Promise for the question resource (the ajax request will
+    // be made as soon as possible (which will more-or-less be when the current
+    // method's execution is complete).
     var questionPromise = this.serviceAPI.getResource('/question/' + questionName);
 
+    // Then, create a Promise for the answer resource.
+    var answerPromise = this.serviceAPI.postResource('/answer', requestData);
+
+    // This is the "tricky" part. This code block says, "When the question
+    // Promise is fulfilled, create a Promise for the record resource.
+    // Then, using `Promise.all`, create yet another Promise that is fulfilled
+    // when all three Promises are fulfilled." It takes advantage of two
+    // important properties of Promises:
+    //
+    //   1. `Promise.prototype.then` itself returns a Promise. The value that
+    //      Promise is fulfilled with is determined by the return value. If the
+    //      value is another Promise, it will fulfill with what ever value that
+    //      Promise fulfills with; otherwise it will fulfill with the
+    //      non-Promise value.
+    //
+    //   2. `Promise.all` accepts an array of Promises or values, and returns a
+    //      Promise that is fulfilled with the an array whose elements are the
+    //      values that each Promise in the array is fulfilled with, or the
+    //      non-Promise element of the array.
+    //
+    //   Thus, `combinedPromise` is a Promise which is fulfilled with the
+    //   question resource, the recordClass resource, and the answer resource as
+    //   an array.
     var combinedPromise = questionPromise.then(question => {
       var recordClassPromise = this.serviceAPI.getResource('/record/' + question.class);
+
+      // Note that `question` is not a Promise, but is the value with which
+      // `questionPromise` was fulfilled. This value will simply be passed to
+      // any fulfilled handlers (see this in action below).
       return Promise.all([question, recordClassPromise, answerPromise]);
     });
 
+    // Finally, we register a callback for when the combinedPromise is
+    // fulfilled. We are simply dispatching actions based on the values.
     combinedPromise.then(responses => {
       var [ question, recordClass, answer ] = responses;
 
