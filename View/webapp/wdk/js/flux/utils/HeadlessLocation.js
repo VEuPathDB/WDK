@@ -7,7 +7,7 @@
  * existing web site.
  */
 
-import LocationActions from 'react-router/modules/actions/LocationActions';
+import LocationActions from 'react-router/lib/actions/LocationActions';
 
 class HeadlessLocation {
 
