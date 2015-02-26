@@ -12,7 +12,6 @@ import React from 'react';
 import Router from 'react-router';
 import HeadlessLocation from './flux/utils/HeadlessLocation';
 import { routes } from './flux/router';
-import { config as configService } from './flux/ServiceAPI';
 
 var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
 
@@ -25,11 +24,6 @@ var MutationObserver = window.MutationObserver || window.WebKitMutationObserver 
 // call chain.
 RSVP.on('error', function(err) {
   console.assert(false, err);
-});
-
-// Set the serviceUrl
-configService({
-  serviceUrl: wdk.webappUrl('/service')
 });
 
 // Start the application. The ready callback is invoked
