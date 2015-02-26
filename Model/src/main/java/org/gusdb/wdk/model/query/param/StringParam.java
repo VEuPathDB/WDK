@@ -146,6 +146,9 @@ public class StringParam extends Param {
     super.resolveReferences(model);
     if (regex == null)
       regex = model.getModelConfig().getParamRegex();
+    if (regex == null & isNumber()) {
+      regex = "\\d+(\\.\\d+)?";
+    }
   }
 
   /*
