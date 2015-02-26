@@ -839,7 +839,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var json = strat.JSON;
     var id = strat.backId;
     var name = json.name;
-    var append = json.saved ? "" : append = "<span class='append'>*</span>";
+    var append = json.saved ? "" : append = "<span title='Indicates this strategy is work in progress, it is not a snapshot; you may continue changing steps in it (aka unsaved)' class='append'>*</span>";
     var exportURL = wdk.exportBaseURL() + json.importId;
     var share = "";
 

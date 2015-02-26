@@ -1,4 +1,8 @@
-/*global RSVP, _ */
+/*global RSVP, _, jQuery */
+
+// Include the babel polyfill. This adds global objects expected in parts of our
+// code base, such as Promise, and the runtime needed for generators.
+import 'babel/polyfill';
 
 import './core';
 import './user';
@@ -8,12 +12,9 @@ import './components';
 import './views';
 import './controllers';
 
-import React from 'react';
-import Router from 'react-router';
-import HeadlessLocation from './flux/utils/HeadlessLocation';
-import { routes } from './flux/router';
+import wdkFlux from './flux/main';
 
-var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver; // jshint ignore:line
 
 // uncomment next line to enable query string flag to force loadOnInterval
 // if (/\b__interval=true\b/.test(location.search)) MutationObserver = false;
@@ -48,9 +49,11 @@ var app = wdk.application = wdk.app = wdk.core.Application.create({
      */
     jQuery('[data-route]').each((index, el) => {
       var route = el.getAttribute('data-route');
-      var location = new HeadlessLocation(route);
-      Router.run(routes, location, function(Handler, state) {
-        React.render(<Handler {...state} />, el);
+      wdkFlux.createApplication({
+        location: 'none',
+        defaultRoute: route,
+        serviceUrl: wdk.webappUrl('/service'),
+        rootElement: el
       });
     });
 

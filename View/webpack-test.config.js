@@ -15,5 +15,6 @@ module.exports = {
     loaders: [
       { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: '6to5-loader' }
     ]
-  }
+  },
+  devtool: 'inline-source-map'
 };

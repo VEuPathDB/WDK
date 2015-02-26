@@ -8,7 +8,7 @@ css_bundle    := dist/wdk/css/wdk.min.css
 test_bundle   := test/dist/tests.js
 
 wdk_sources  := webapp/wdk/js/app.js $(shell find webapp/wdk/js -name '*.js')
-wdk3_sources := webapp/wdk/js/flux/bootstrap.js $(shell find webapp/wdk/js/flux -name '*.js')
+wdk3_sources := webapp/wdk/js/flux/main.js $(shell find webapp/wdk/js/flux -name '*.js')
 libs_sources := webapp/wdk/lib/rsvp.min.js \
                 webapp/wdk/lib/jquery.js \
                 webapp/wdk/lib/jquery-migrate-1.2.1.min.js \
@@ -28,7 +28,7 @@ libs_sources := webapp/wdk/lib/rsvp.min.js \
                 webapp/wdk/lib/dataTables.colVis.min.js \
                 webapp/wdk/lib/jstree/jquery.jstree.js \
                 webapp/wdk/lib/spin.min.js
-css_sources  := webapp/wdk/css/wdk.css webapp/wdk/css/wdk.libs.css
+css_sources  := webapp/wdk/css/wdk.css
 test_sources := test/tests.js $(shell find test/tests -name '*.js')
 
 
@@ -61,7 +61,7 @@ $(libs_bundle): $(libs_sources)
 # Combine CSS files and add source maps
 # =============================================================================
 
-$(css_bundle): $(css_libs) $(css_sources)
+$(css_bundle): $(css_sources)
 	mkdir -p $(dir $@)
 	cleancss --source-map --skip-rebase -o $@ $^
 

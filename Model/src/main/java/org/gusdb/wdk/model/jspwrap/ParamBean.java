@@ -54,6 +54,10 @@ public abstract class ParamBean<T extends Param> {
     return param.getHelp();
   }
 
+	public String getVisibleHelp() {
+    return param.getVisibleHelp();
+  }
+
   public String getDefault() throws WdkModelException {
     return param.getDefault();
   }

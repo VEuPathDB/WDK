@@ -37,49 +37,66 @@
 </c:if>
 
 <!-- =================== ALL PARAM GROUPS ====================================
-        I think there is only one or  two groups in most of our queries;
-        the first includes all the visible ones, the second is the advanced group
+        groups are defined in a groupSet in the model after the parameters;
+        currently displayType can only be "ShowHide", "dynamic" or "empty" (rng file)
+        parameters are associated (or not) to a group in the query;
+        if a parameter does not have a groupRef, and visible = true, then WDK sets it in a group called "empty";
+        if a parameter does not have a groupRef, and visible = false, then WDK sets it in a group called "hidden";
+        first parameter shown in page is first on query; that determines the first group,;
+        all parameters in that group will follow;
+        the last group to show is always the advanced group (paramGroups.advancedParams)
 ======================================================================================= -->
 <c:forEach items="${paramGroups}" var="paramGroupItem">
     <c:set var="group" value="${paramGroupItem.key}" />
     <c:set var="paramGroup" value="${paramGroupItem.value}" />
-  
+
+<%-- debug 
+   <p>questionParams.tag: we are in a group: ${group.name}</p>
+--%>
+
     <%-- detemine starting display style by displayType of the group --%>
     <c:set var="groupName" value="${group.displayName}" />
     <c:set var="displayType" value="${group.displayType}" />
     <c:set var="groupDescription" value="${group.description}" />
 
-    <c:choose>
-      <c:when test="${group.name eq 'advancedParams'}">
+    <c:choose>        
+      <%-- ADVANCED GROUP, visible in all search pages, added at end in seacrh page (below)  --%>
+      <c:when test="${group.name eq 'advancedParams'}">   
         <c:set var="advancedGroup" value="${group}"/>
         <c:set var="advancedParamGroup" value="${paramGroup}"/>
       </c:when>
 
-      <c:otherwise>  <!-- REGULAR SET OF PARAMS -->
-        <%-- if displayType is empty, then do not make collapsible --%>
+      <%-- OTHER GROUPS --%>
+      <c:otherwise>  
         <c:set var="paramClass" value=""/>
         <c:set var="groupDisplay" value=""/>
 
+        <%-- displayType in a group must be equal to "ShowHide", "dynamic" or "empty" (defined in rng file) --%>
         <c:choose>
-          <%-- hide group if not visible -- based on visible attribute of params --%>
+
+          <%-- PARAMS IN NO GROUP, and visible = false are in this group... why do we need a div?--%>
           <c:when test="${displayType eq 'hidden'}">
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType}">
           </c:when>
+
+          <%-- PARAMS IN NO GROUP, and visible, with displayType empty or dynamicnn--%>
           <c:when test="${displayType eq 'empty' or displayType eq 'dynamic'}">
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType} content-pane">
               <!-- <div class="group-title h4left">Parameters</div> -->
           </c:when>
-          <c:otherwise>  <%-- REGULAR SET OF PARAMS --%>
+
+          <c:otherwise> <%-- OTHER GROUPS other than dynamic... ShowHide?  --%>
             <c:if test="${group.visible ne true}">
               <c:set var="groupDisplay" value="hidden"/>
             </c:if>
+
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType} collapsible content-pane">
               <div class="group-title h4left" title="Click to expand or collapse">${groupName}</div>
+
           </c:otherwise>
         </c:choose>
 
           <div class="group-detail ${groupDisplay}">
-
           <c:set var="paramCount" value="${fn:length(paramGroup)}"/>
 
             <%-- display parameter list --%>
@@ -99,7 +116,6 @@
     </c:choose>
 
 </c:forEach> <%-- end of foreach on paramGroups --%>
-
 
 
 <!-- =================== ADVANCED PARAM SECTION, ====================================

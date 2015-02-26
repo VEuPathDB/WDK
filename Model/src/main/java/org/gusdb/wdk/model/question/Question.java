@@ -512,7 +512,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   }
 
   /**
-   * if true, when the result has only one record, we will skip the strategy
+   * if true, when the result has only one record, we will skip the results
    * page and redirect user to the record page.
    * 
    * @return the noSummaryOnSingleRecord

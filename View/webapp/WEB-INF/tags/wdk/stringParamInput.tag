@@ -18,6 +18,13 @@ Provides form input element for a given StringParam.
 <c:set var="length" value="${qP.length}"/>
 
 <div class="param stringParam" name="${pNam}">
+<%--
+  <c:if test="${not empty qP.visibleHelp}">
+    <p style="margin-top:3px">${qP.visibleHelp}</p>
+  </c:if>
+--%>
+
+<script type="x-wdk/validation"><![CDATA[ ${qP.regex} ]]></script>
 
 <c:choose>
   <c:when test="${qP.isVisible == false}">
