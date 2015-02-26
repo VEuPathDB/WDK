@@ -16,7 +16,7 @@
               type="java.lang.String"
 %>
 
-<input type="button" onclick="wdk.resultsPage.openAttributeList(this);" class="addAttributesButton" value="Add Columns" />
+<input type="button" onclick="wdk.resultsPage.openAttributeList(this);" class="addAttributesButton" value="More Data" />
 
 <div class="attributesList formPopup" title="Select Columns">
 

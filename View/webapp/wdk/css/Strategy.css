@@ -516,6 +516,10 @@ div.transform a.crumb_name img{
   z-index: 1;
 }
 
+span.append {
+  font-size: 20px;
+}
+
 /*
 .diagram .strategy-name.wdk-editable {
 padding-bottom: 5px;

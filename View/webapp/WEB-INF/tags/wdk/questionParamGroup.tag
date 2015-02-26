@@ -15,7 +15,7 @@
               type="java.lang.String"
 %>
 
-<div style="margin:0 0 1em 2em">${groupDescription}</div>
+<div id="grp-descr">${groupDescription}</div>
 
 <!-- get params from group -->
 
@@ -44,7 +44,12 @@
       </c:when>
       <c:otherwise> <%-- visible param --%>
           <%-- an individual param (can not use fullName, w/ '.', for mapped props) --%>
+
           <div class="param-item">
+          <c:if test="${not empty qP.visibleHelp}">
+            <p>${qP.visibleHelp}</p>
+          </c:if>
+
             <label>
               <span style="font-weight:bold">${qP.prompt}</span>
               <imp:image class="help-link" style="cursor:pointer" title="${fn:escapeXml(qP.help)}" src="wdk/images/question.png" />

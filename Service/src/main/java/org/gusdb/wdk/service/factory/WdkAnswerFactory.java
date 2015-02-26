@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.util;
+package org.gusdb.wdk.service.factory;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -64,7 +64,7 @@ public class WdkAnswerFactory {
   private Map<String, Boolean> convertSorting(List<SortItem> sorting) {
     Map<String, Boolean> conversion = new LinkedHashMap<>();
     for (SortItem sort : sorting) {
-      conversion.put(sort.getColumn().getName(), sort.getDirection().getBoolValue());
+      conversion.put(sort.getAttributeField().getName(), sort.getDirection().getBoolValue());
     }
     return conversion;
   }

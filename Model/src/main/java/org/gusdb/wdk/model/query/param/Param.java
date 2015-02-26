@@ -96,6 +96,10 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   private List<WdkModelText> helps;
   protected String help;
 
+	// requested by PRISM, array will contain different values for diffeent projects
+  private List<WdkModelText> visibleHelps;
+  protected String visibleHelp;
+
   // both default value and empty values will be used to construct default raw value. these values themselves
   // are neither valid raw values nor stable values.
   private String defaultValue;
@@ -135,6 +139,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     readonly = false;
     group = Group.Empty();
     helps = new ArrayList<WdkModelText>();
+    visibleHelps = new ArrayList<WdkModelText>();
     suggestions = new ArrayList<ParamSuggestion>();
     noTranslations = new ArrayList<ParamConfiguration>();
     allowEmpty = false;
@@ -150,6 +155,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     this.name = param.name;
     this.prompt = param.prompt;
     this.help = param.help;
+    this.visibleHelp = param.visibleHelp;
     this.defaultValue = param.defaultValue;
     this.sanityDefaultValue = param.sanityDefaultValue;
     this.visible = param.visible;
@@ -232,6 +238,20 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   void setHelp(String help) {
     this.help = help;
+  }
+
+public void addVisibleHelp(WdkModelText visibleHelp) {
+    this.visibleHelps.add(visibleHelp);
+  }
+
+  public String getVisibleHelp() {
+		// if (visibleHelp == null)
+		// return getHelp(); //should return empty???
+    return visibleHelp;
+  }
+
+  void setVisibleHelp(String visibleHelp) {
+    this.visibleHelp = visibleHelp;
   }
 
   public void setDefault(String defaultValue) {
@@ -338,6 +358,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
       .append(": name='").append(name).append("'").append(NL)
       .append("  prompt='").append(prompt).append("'").append(NL)
       .append("  help='").append(help).append("'").append(NL)
+      .append("  visibleHelp='").append(visibleHelp).append("'").append(NL)
       .append("  default='").append(defaultValue).append("'").append(NL)
       .append("  sanityDefault='").append(sanityDefaultValue).append("'").append(NL)
       .append("  readonly=").append(readonly).append(NL)
@@ -358,7 +379,23 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
 
-    // exclude helps
+    // exclude visibleHelps
+    boolean hasVisibleHelp = false;
+    for (WdkModelText visibleHelp : visibleHelps) {
+      if (visibleHelp.include(projectId)) {
+        if (hasVisibleHelp) {
+          throw new WdkModelException("The param " + getFullName() + " has more than one visibleHelp for project " +
+              projectId);
+        }
+        else {
+          this.visibleHelp = visibleHelp.getText();
+          hasVisibleHelp = true;
+        }
+      }
+    }
+    visibleHelps = null;
+
+ // exclude helps
     boolean hasHelp = false;
     for (WdkModelText help : helps) {
       if (help.include(projectId)) {
@@ -371,7 +408,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
           hasHelp = true;
         }
       }
-    }
+	  }
     helps = null;
 
     // exclude suggestions

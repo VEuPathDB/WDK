@@ -1,9 +1,9 @@
 import Immutable from 'immutable';
-import Store from './Store';
+import createStore from '../utils/createStore';
 import * as ActionType from '../ActionType';
 
 
-export default new Store ({
+export default createStore ({
 
   state: Immutable.fromJS({
     questions: [],
@@ -13,6 +13,12 @@ export default new Store ({
 
   dispatchHandler(action, emitChange) {
     switch(action.type) {
+
+      case ActionType.QUESTION_LOAD_SUCCESS:
+        var questions = this.state.get('questions');
+        this.state = this.state.set('questions',  questions.push(action.question));
+        emitChange();
+        break;
 
       case ActionType.QUESTION_LIST_LOADING:
         this.state = this.state.merge({

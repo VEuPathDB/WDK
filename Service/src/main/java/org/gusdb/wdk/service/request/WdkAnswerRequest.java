@@ -1,7 +1,6 @@
 package org.gusdb.wdk.service.request;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +11,7 @@ import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
@@ -48,37 +48,8 @@ public class WdkAnswerRequest {
       model.validateQuestionFullName(questionFullName);
       Question question = model.getModel().getQuestion(questionFullName);
       WdkAnswerRequest request = new WdkAnswerRequest(question);
-
-      // parse param values and validate
-      JSONArray paramsJson = json.getJSONArray("params");
-      Map<String, Param> expectedParams = question.getParamMap();
-      Map<String, Object> contextValues = getContextValues(paramsJson);
-
-      // loop through expected params and build valid list of values from request
-      Map<String, ParamValue> validatedValues = new HashMap<>();
-      for (Param expectedParam : expectedParams.values()) {
-        String paramName = expectedParam.getName();
-        ParamValue value;
-        if (!contextValues.containsKey(paramName)) {
-          if (!expectedParam.isAllowEmpty()) {
-            throw new WdkUserException("Required parameter '" + paramName + "' is missing.");
-          }
-          else {
-            value = new ParamValue(expectedParam, expectedParam.getEmptyValue());
-          }
-        }
-        else {
-          value = new ParamValue(expectedParam, contextValues.get(paramName));
-        }
-        validatedValues.put(paramName, value);
-
-      }
-      request.setParamValues(validatedValues);
-      
-      // parse filter values and validate
-      // TODO: parse filters; for now filters are unsupported
-      request.setFilterValues(Collections.<FilterValue>emptyList());
-      
+      request.setParamValues(parseParamValues(json.getJSONArray("params"), question, model));
+      request.setFilterValues(parseFilterValues(json.getJSONArray("filters"), question, model));
       return request;
     }
     catch (JSONException | WdkUserException e) {
@@ -89,13 +60,59 @@ public class WdkAnswerRequest {
     }
   }
 
-  private static Map<String, Object> getContextValues(JSONArray paramsJson) {
+  private static List<FilterValue> parseFilterValues(JSONArray jsonArray,
+      Question question, WdkModelBean model) throws WdkUserException {
+    // parse filter values and validate
+    Map<String, Object> inputValueMap = getContextValues(jsonArray);
+    List<FilterValue> filterValues = new ArrayList<>();
+    for (String filterName : inputValueMap.keySet()) {
+      AnswerFilterInstance filter = question.getRecordClass().getFilter(filterName);
+      if (filter == null) {
+        throw new WdkUserException("Filter name " + filterName +
+            " does not exist for record class " + question.getRecordClass().getFullName());
+      }
+      filterValues.add(new FilterValue(filter, inputValueMap.get(filterName)));
+    }
+    return filterValues;
+  }
+
+  private static Map<String, ParamValue> parseParamValues(JSONArray paramsJson,
+      Question question, WdkModelBean model) throws WdkUserException {
+    // parse param values and validate
+    Map<String, Param> expectedParams = question.getParamMap();
+    Map<String, Object> contextValues = getContextValues(paramsJson);
+
+    // loop through expected params and build valid list of values from request
+    Map<String, ParamValue> paramValues = new HashMap<>();
+    for (Param expectedParam : expectedParams.values()) {
+      String paramName = expectedParam.getName();
+      ParamValue value;
+      if (!contextValues.containsKey(paramName)) {
+        if (!expectedParam.isAllowEmpty()) {
+          throw new WdkUserException("Required parameter '" + paramName + "' is missing.");
+        }
+        else {
+          value = new ParamValue(expectedParam, expectedParam.getEmptyValue());
+        }
+      }
+      else {
+        value = new ParamValue(expectedParam, contextValues.get(paramName));
+      }
+      paramValues.put(paramName, value);
+
+    }
+    return paramValues;
+  }
+
+  private static Map<String, Object> getContextValues(
+      JSONArray namedObjectArrayJson) throws JSONException {
     Map<String, Object> contextValues = new HashMap<>();
-    for (int i = 0; i < paramsJson.length(); i++) {
-      JSONObject param = paramsJson.getJSONObject(i);
-      String name = param.getString("name");
-      contextValues.put(name, param.get("value"));
-      LOG.info("Added request parameter '" + name + "', value = " + contextValues.get(name).toString());
+    for (int i = 0; i < namedObjectArrayJson.length(); i++) {
+      JSONObject obj = namedObjectArrayJson.getJSONObject(i);
+      String name = obj.getString("name");
+      contextValues.put(name, obj.get("value"));
+      LOG.info("Added request parameter '" + name +
+          "', value = " + contextValues.get(name).toString());
     }
     return contextValues;
   }

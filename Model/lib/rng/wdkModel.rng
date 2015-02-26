@@ -244,6 +244,10 @@
 
   <define name="ParamBaseTags">
     <choice>
+      <element name="visibleHelp">
+        <ref name="IncludeExclude" />
+        <text />
+      </element>
       <element name="help">
         <ref name="IncludeExclude" />
         <text />
@@ -738,6 +742,12 @@
       </optional>
       <zeroOrMore>
         <element name="help">
+          <ref name="IncludeExclude" />
+          <text />
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="visibleHelp">
           <ref name="IncludeExclude" />
           <text />
         </element>

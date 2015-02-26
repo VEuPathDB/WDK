@@ -3,12 +3,9 @@
  */
 package org.gusdb.wdk.model.query.param;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -120,35 +117,47 @@ public class FilterParamHandler extends AbstractParamHandler {
    * the signature is a checksum of sorted stable value.
    * 
    * @throws WdkModelException
+   * @throws WdkUserException 
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
   public String toSignature(User user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     stableValue = normalizeStableValue(stableValue);
-    // make sure to get a sorted stable value;
     try {
       JSONObject jsValue = new JSONObject(stableValue);
-      JSONObject jsNewValue = new JSONObject();
-      jsNewValue.put(TERMS_KEY, sort(jsValue.getJSONArray(TERMS_KEY)));
-      jsNewValue.put(FILTERS_KEY, sort(jsValue.getJSONArray(FILTERS_KEY)));
-      return Utilities.encrypt(jsNewValue.toString());
+      JSONArray jsTerms = jsValue.getJSONArray(TERMS_KEY);
+      String[] terms = new String[jsTerms.length()];
+      for (int i = 0; i < terms.length; i++) {
+        terms[i] = jsTerms.getString(i);
+      }
+
+      AbstractEnumParam enumParam = (AbstractEnumParam) param;
+      EnumParamCache cache = enumParam.getValueCache(user, contextValues);
+
+      Set<String> internals = new LinkedHashSet<>();
+      // return stable values, instead of list of terms
+      if (param.isNoTranslation()) {
+        return stableValue;
+      }
+
+      for (String term : terms) {
+        if (!cache.containsTerm(term))
+          throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
+
+        String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
+        internals.add(internal);
+      }
+      String[] array = internals.toArray(new String[0]);
+      Arrays.sort(array);
+      return Utilities.encrypt(Arrays.toString(array));
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
 
-  }
-
-  private JSONArray sort(JSONArray jsArray) throws JSONException {
-    List<String> values = new ArrayList<>(jsArray.length());
-    for (int i = 0; i < jsArray.length(); i++) {
-      values.add(jsArray.get(i).toString());
-    }
-    Collections.sort(values);
-    return new JSONArray(values);
   }
 
   /**
