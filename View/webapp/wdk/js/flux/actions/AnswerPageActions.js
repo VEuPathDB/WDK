@@ -1,9 +1,8 @@
+import di from 'di';
 import _ from 'lodash';
 import Immutable from 'immutable';
 import Dispatcher from '../Dispatcher';
-import {
-  postResource
-} from '../ServiceAPI';
+import ServiceAPI from '../ServiceAPI';
 import {
   ANSWER_LOADING,
   ANSWER_LOAD_SUCCESS,
@@ -79,102 +78,114 @@ var AnswerChangeAttributesAction = new Record({
  * dispatched, the handling of the Action will be synchronous.
  */
 
-/**
- * Retrieve's an Answer resource and dispatches an action with the resource.
- *
- * Actions dispatched:
- *
- *   - AnswerLoadingAction
- *   - AnswerLoadSuccessAction
- *   - AnswerLoadErrorAction
- *
- *
- * Usage:
- *
- *    loadAnswer('GeneRecords.GenesByTaxon', { params: { ... }, filters: { ... }, displayInfo: { ... } });
- *
- *
- * Request data format, POSTed to service:
- *
- *     {
- *       “questionDefinition”: {
- *         “questionName”: String,
- *         “params”: [ {
- *           “name”: String, “value”: Any
- *         } ],
- *         “filters”: [ {
- *           “name”: String, value: Any
- *         } ]
- *       },
- *       displayInfo: {
- *         pagination: { offset: Number, numRecords: Number },
- *         attributes: [ attributeName: String ],
- *         sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
- *       }
- *     }
- *
- * @param {string} questionName Fully qualified WDK Question name.
- * @param {object} opts Addition data to include in request.
- * Options properties of `opts`:
- *   - params: Object of key-value pairs for Question params.
- *   - filters: Object of key-value pairs for Question filters.
- *   - displayInfo: Object with display details (see Request data format below).
- */
-export function loadAnswer(questionName, opts = {}) {
-  var { params, filters, displayInfo } = _.defaults(opts, {   // _.defaults is from the lodash utiliies library
-    params: [],
-    filters: [],
-    displayInfo: {
-      pagination: { offset: 0, numRecords: 100 },
-      columns: null,
-      sorting: null
-    }
-  });
-  var questionDefinition = { questionName, params, filters };
-  var requestData = { questionDefinition, displayInfo };
+export default class AnswerPageActions {
 
-  var action = new AnswerLoadingAction({ requestData: requestData });
+  constructor(dispatcher, serviceAPI) {
+    this.dispatcher = dispatcher;
+    this.serviceAPI = serviceAPI;
+  }
 
-  Dispatcher.dispatch(action);
+  /**
+   * Retrieve's an Answer resource and dispatches an action with the resource.
+   *
+   * Actions dispatched:
+   *
+   *   - AnswerLoadingAction
+   *   - AnswerLoadSuccessAction
+   *   - AnswerLoadErrorAction
+   *
+   *
+   * Usage:
+   *
+   *    loadAnswer('GeneRecords.GenesByTaxon', { params: { ... }, filters: { ... }, displayInfo: { ... } });
+   *
+   *
+   * Request data format, POSTed to service:
+   *
+   *     {
+   *       “questionDefinition”: {
+   *         “questionName”: String,
+   *         “params”: [ {
+   *           “name”: String, “value”: Any
+   *         } ],
+   *         “filters”: [ {
+   *           “name”: String, value: Any
+   *         } ]
+   *       },
+   *       displayInfo: {
+   *         pagination: { offset: Number, numRecords: Number },
+   *         attributes: [ attributeName: String ],
+   *         sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
+   *       }
+   *     }
+   *
+   * @param {string} questionName Fully qualified WDK Question name.
+   * @param {object} opts Addition data to include in request.
+   * Options properties of `opts`:
+   *   - params: Object of key-value pairs for Question params.
+   *   - filters: Object of key-value pairs for Question filters.
+   *   - displayInfo: Object with display details (see Request data format below).
+   */
+  loadAnswer(questionName, opts = {}) {
+    var dispatcher = this.dispatcher;
+    var { params, filters, displayInfo } = _.defaults(opts, {   // _.defaults is from the lodash utiliies library
+      params: [],
+      filters: [],
+      displayInfo: {
+        pagination: { offset: 0, numRecords: 100 },
+        columns: null,
+        sorting: null
+      }
+    });
+    var questionDefinition = { questionName, params, filters };
+    var requestData = { questionDefinition, displayInfo };
 
-  postResource('/answer', requestData)
-    .then(function(answer) {
-      var action = new AnswerLoadSuccessAction({
-        requestData: requestData,
-        answer: answer
-      });
-      Dispatcher.dispatch(action);
-    }, function(error) {
-      var action = new AnswerLoadErrorAction({
-        requestData: requestData,
-        error: error
-      });
-      Dispatcher.dispatch(action);
-    })
-    // Catch errors caused by Store callbacks.
-    // This is a last-ditch effort to alert developers that there was an error
-    // with how to Store handled the action.
-    .catch(err => console.assert(false, err));
+    var action = new AnswerLoadingAction({ requestData: requestData });
+
+    dispatcher.dispatch(action);
+
+    this.serviceAPI.postResource('/answer', requestData)
+      .then(answer => {
+        var action = new AnswerLoadSuccessAction({
+          requestData: requestData,
+          answer: answer
+        });
+        dispatcher.dispatch(action);
+      }, error => {
+        var action = new AnswerLoadErrorAction({
+          requestData: requestData,
+          error: error
+        });
+        dispatcher.dispatch(action);
+      })
+      // Catch errors caused by Store callbacks.
+      // This is a last-ditch effort to alert developers that there was an error
+      // with how to Store handled the action.
+      .catch(err => console.assert(false, err));
+  }
+
+  moveColumn(columnName, newPosition) {
+    console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
+    console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
+
+    var action = new AnswerMoveColumnAction({
+      columnName: columnName,
+      newPosition: newPosition
+    });
+
+    this.dispatcher.dispatch(action);
+  }
+
+  changeAttributes(attributes) {
+    console.assert(Array.isArray(attributes), `attributes ${attributes} should be an array.`);
+
+    var action = new AnswerChangeAttributesAction({
+      attributes: attributes
+    });
+
+    this.dispatcher.dispatch(action);
+  }
+
 }
 
-export function moveColumn(columnName, newPosition) {
-  console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
-  console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
-
-  var action = new AnswerMoveColumnAction({
-    columnName: columnName,
-    newPosition: newPosition
-  });
-
-  Dispatcher.dispatch(action);
-}
-
-export function changeAttributes(attributes) {
-  console.assert(Array.isArray(attributes), `attributes ${attributes} should be an array.`);
-
-  var action = new AnswerChangeAttributesAction({
-    attributes: attributes
-  });
-
-  Dispatcher.dispatch(action);
-}
+di.annotate(AnswerPageActions, new di.Inject(Dispatcher, ServiceAPI));

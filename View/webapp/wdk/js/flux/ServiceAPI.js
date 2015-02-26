@@ -1,54 +1,71 @@
-"use strict";
-
-/* global $, _ */
+/* global $ */
 
 /**
- * Functions to interface with the WDK REST API.
+ * Methods to interface with the WDK REST API.
+ *
+ * @class ServiceAPI
  */
 
-var serviceUrl;
+export default class ServiceAPI {
 
-export function config(spec) {
-  serviceUrl = spec.serviceUrl;
+  constructor(serviceUrl) {
+    if (typeof serviceUrl !== 'string') {
+      throw new TypeError(`serviceUrl ${serviceUrl} must be a string.`);
+    }
+    this.serviceUrl = serviceUrl;
+  }
+
+  /**
+   * Request a resource from the WDK Service.
+   *
+   * @param {string} type Can be one of 'GET', 'POST', 'PUT', 'PATCH', or
+   * 'DELETE'
+   * @param {string} resourcePath The service path to a resource, e.g. '/answer'
+   * @param {object} data Data to include in request. For GET, these will be
+   * added to the URL as query params. For all others, it will be included as
+   * raw JSON in the body.
+   * @returns {Promise} The returned Promise will resolve with the response, or
+   * reject with the error string.
+   */
+  requestResource(type, resourcePath, data) {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type,
+        url: this.serviceUrl + resourcePath,
+        contentType: 'application/json',
+        dataType: 'json',
+        data: type === 'GET' ? data : JSON.stringify(data)
+      }).then(function(data) {
+          resolve(data);
+        }, function(jqXHR, textStatus, error) {
+          reject(error);
+        });
+    });
+  }
+
+  /** see requestResource */
+  getResource(...args) {
+    return this.requestResource('GET', ...args);
+  }
+
+  /** see requestResource */
+  postResource(...args) {
+    return this.requestResource('POST', ...args);
+  }
+
+  /** see requestResource */
+  putResource(...args) {
+    return this.requestResource('PUT', ...args);
+  }
+
+  /** see requestResource */
+  patchResource(...args) {
+    return this.requestResource('PATCH', ...args);
+  }
+
+  /** see requestResource */
+  deleteResource(...args) {
+    return this.requestResource('DELETE', ...args);
+  }
+
 }
-
-/**
- * The order of the args allows us to create functions like
- *
- *     var getRecords = _.partial(request, 'GET', '/records');
- *
- */
-export function requestResource(type, resourcePath, data) {
-  return new Promise(function(resolve, reject) {
-    $.ajax({
-      type,
-      url: serviceUrl + resourcePath,
-      contentType: 'application/json',
-      dataType: 'json',
-      data: type === 'GET' ? data : JSON.stringify(data)
-    }).then(function(data) {
-        resolve(data);
-      }, function(jqXHR, textStatus, error) {
-        reject(error);
-      });
-  });
-}
-
-// TODO It might be nice to expose the exact REST API available here. For
-// example, if we only support GET (by POST) for /answer, then we can export
-//
-//     exports.getAnswer = _.partial('POST', '/answer');
-//
-// which can be used like this
-//
-//     getAnswer({ questionName: 'MyQuestion', params: { param1: 'value1' }})
-//       .then(function(answer) { /* ... */ });
-//
-// For now, we will leave things like this up to the ActionCreators.
-
-// _.partial is from the lodash utilities library.  It prepends the second argument.
-export var getResource = _.partial(requestResource, 'GET');
-export var postResource = _.partial(requestResource, 'POST');
-export var putResource = _.partial(requestResource, 'PUT');
-export var patchResource = _.partial(requestResource, 'PATCH');
-export var deleteResource = _.partial(requestResource, 'DELETE');

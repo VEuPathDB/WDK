@@ -70,9 +70,9 @@ public class Bug4446Test {
                 + strategy.getLatestStep().getCustomName());
 
         // now revise the previous step of the boolean
-        Step newStep = UnitTestHelper.createNormalStep(user);
-        int targetId = booleanStep.getPreviousStepId();
-        strategy.editOrInsertStep(targetId, newStep);
+        Step previousStep = booleanStep.getPreviousStep();
+        // TODO - change the param values of the previousStep
+        previousStep.saveParamFilters();
 
         // check the custom name, see if it is preserved
         Step newTransformStep = strategy.getLatestStep();

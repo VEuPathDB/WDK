@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -255,11 +256,11 @@ public class StepBean {
         return new StepBean(user, step.getStep(index));
     }
 
-    public StepBean[] getAllSteps() throws WdkModelException {
-        Step[] steps = step.getAllSteps();
-        StepBean[] beans = new StepBean[steps.length];
-        for (int i = 0; i < steps.length; ++i) {
-            beans[i] = new StepBean(user, steps[i]);
+    public StepBean[] getMainBranch() throws WdkModelException {
+        List<Step> steps = step.getMainBranch();
+        StepBean[] beans = new StepBean[steps.size()];
+        for (int i = 0; i < steps.size(); ++i) {
+            beans[i] = new StepBean(user, steps.get(i));
         }
         return beans;
     }
@@ -505,5 +506,25 @@ public class StepBean {
 	public boolean getHasCompleteAnalyses() throws WdkModelException {
 	  return step.getHasCompleteAnalyses();
 	}
+
+  public void setQuestionName(String questionName) {
+    step.setQuestionName(questionName);
+  }
+
+  public void setParamValues(Map<String, String> paramValues) {
+    step.setParamValues(paramValues);
+  }
+
+  public void setParamValue(String paramName, String paramValue) {
+    step.setParamValue(paramName, paramValue);
+  }
+
+  public void setFilterName(String filterName) {
+    step.setFilterName(filterName);
+  }
+
+  public void saveParamFilters() throws WdkModelException {
+    step.saveParamFilters();
+  }
 
 }
