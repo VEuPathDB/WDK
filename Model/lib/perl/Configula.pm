@@ -354,6 +354,7 @@ sub webapp_domain_map {
       'micro'     => 'microsporidiadb.org',
       'piro'      => 'piroplasmadb.org',
       'plasmo'    => 'plasmodb.org',
+      'schisto'   => 'schistodb.net',
       'toxo'      => 'toxodb.org',
       'trichdb'   => 'trichdb.org',
       'tritrypdb' => 'tritrypdb.org',
