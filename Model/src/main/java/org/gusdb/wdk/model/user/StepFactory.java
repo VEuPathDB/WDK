@@ -120,31 +120,35 @@ public class StepFactory {
   }
 
   private final WdkModel wdkModel;
-  private final String userSchema;
-  private final DatabaseInstance userDb;
-  private final DataSource dataSource;
+  private String userSchema;
+  private DatabaseInstance userDb;
+  private DataSource dataSource;
 
   // define SQL snippet "constants" to avoid building SQL each time
-  private final String modTimeSortSql;
-  private final String basicStratsSql;
-  private final String isNotDeletedCondition;
-  private final String byProjectCondition;
-  private final String byUserCondition;
-  private final String bySignatureCondition;
-  private final String isPublicCondition;
-  private final String isRootStepValidCondition;
-  private final String byStratIdCondition;
-  private final String isSavedCondition;
-  private final String byLastViewedCondition;
-  private final String stratsByUserSql;
-  private final String stratBySignatureSql;
-  private final String unsortedPublicStratsSql;
-  private final String countValidPublicStratsSql;
-  private final String updatePublicStratStatusSql;
+  private String modTimeSortSql;
+  private String basicStratsSql;
+  private String isNotDeletedCondition;
+  private String byProjectCondition;
+  private String byUserCondition;
+  private String bySignatureCondition;
+  private String isPublicCondition;
+  private String isRootStepValidCondition;
+  private String byStratIdCondition;
+  private String isSavedCondition;
+  private String byLastViewedCondition;
+  private String stratsByUserSql;
+  private String stratBySignatureSql;
+  private String unsortedPublicStratsSql;
+  private String countValidPublicStratsSql;
+  private String updatePublicStratStatusSql;
 
   public StepFactory(WdkModel wdkModel) {
     this.wdkModel = wdkModel;
-    this.userDb = wdkModel.getUserDb();
+    initialize();
+  }
+  
+  protected void initialize() {
+    userDb = wdkModel.getUserDb();
     dataSource = userDb.getDataSource();
 
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();

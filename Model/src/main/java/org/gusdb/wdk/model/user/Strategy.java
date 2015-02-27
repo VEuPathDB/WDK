@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
@@ -42,7 +43,7 @@ public class Strategy {
   private Date lastRunTime;
   private RecordClass recordClass;
 
-  Strategy(StepFactory factory, User user, int strategyId) {
+  public Strategy(StepFactory factory, User user, int strategyId) {
     this.stepFactory = factory;
     this.user = user;
     this.strategyId = strategyId;
@@ -197,46 +198,49 @@ public class Strategy {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<Integer, Integer> insertStepBefore(Step newStep, int targetId) throws WdkModelException, WdkUserException {
+  public Map<Integer, Integer> insertStepBefore(Step newStep, int targetId) throws WdkModelException,
+      WdkUserException {
     Step targetStep = getStepById(targetId);
     stepFactory.verifySameOwnerAndProject(this, targetStep);
-    
+
     Map<Integer, Integer> rootMap = new HashMap<>();
-    
+
     // make sure the previousStep of the target is now the previousStep of newStep
-    Step previousOld = targetStep.getPreviousStep(), previousNew = newStep.getPreviousStep();
     if (targetStep.isFirstStep()) { // inserting before first step will cause the first step being replaced by
       // the new step, while old first step will become the child of this new step
-      if (newStep.getChildStep().getStepId() != targetId)
+      if (newStep.getChildStep() == null || newStep.getChildStep().getStepId() != targetId)
         throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " before step #" +
             targetId + " since it will corrupt the structure of the strategy #" + strategyId);
 
       // if the first step has any step upstream, will link it to the new step
-      if (targetStep.getNextStep() != null) {   // insert the new step in the same strategy panel
-        Step nextStep = targetStep.getNextStep();
-
+      Step nextStep = getNext(targetStep);
+      if (nextStep != null) { // insert the new step in the same strategy panel
         nextStep.checkPreviousAllowed(newStep);
         nextStep.setPreviousStep(newStep);
-      } else if (targetStep.getParentStep() != null) {  
-        // add the new step as the last one in a nested strategy
-        Step parentStep = targetStep.getParentStep();
-        
-        // copy information from target step
-        newStep.setCollapsible(targetStep.isCollapsible());
-        newStep.setCollapsedName(targetStep.getCollapsedName());
-        targetStep.setCollapsible(false);
-        
-        // check and set the newStep as the child of the parent, to replace the target step
-        parentStep.checkChildAllowed(newStep);
-        parentStep.setChildStep(newStep);
-        parentStep.saveParamFilters();
-        rootMap.put(targetId, newStep.getStepId());
-      } else {  // target is at the end of the strategy, set newStep as the end of the strategy
-        setLatestStep(newStep);
-        update(false);
-        rootMap.put(targetId, newStep.getStepId());
       }
-    } else { // target is not the first, then the previousStep of the target will become the previous of the
+      else { // the target is the only step in the strategy/nested strategy.
+        Step parentStep = getParent(targetStep);
+        if (parentStep != null) {
+          // add the new step as the last one in a nested strategy
+          // copy information from target step
+          newStep.setCollapsible(targetStep.isCollapsible());
+          newStep.setCollapsedName(targetStep.getCollapsedName());
+          targetStep.setCollapsible(false);
+
+          // check and set the newStep as the child of the parent, to replace the target step
+          parentStep.checkChildAllowed(newStep);
+          parentStep.setChildStep(newStep);
+          parentStep.saveParamFilters();
+          rootMap.put(targetId, newStep.getStepId());
+        }
+        else { // target is at the end of the strategy, set newStep as the end of the strategy
+          setLatestStep(newStep);
+          update(false);
+          rootMap.put(targetId, newStep.getStepId());
+        }
+      }
+    }
+    else { // target is not the first, then the previousStep of the target will become the previous of the
       // new step.
       if (targetStep.getPreviousStepId() != newStep.getPreviousStepId())
         throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " before step #" +
@@ -271,7 +275,7 @@ public class Strategy {
 
     Step targetStep = getStepById(targetId);
 
-    Step parentStep = targetStep.getParentStep(), nextStep = targetStep.getNextStep();
+    Step nextStep = getNext(targetStep);
     if (nextStep != null) { // insert in the middle of a strategy
       // make sure the next step can take the newStep as previousStep
       nextStep.checkPreviousAllowed(newStep);
@@ -282,6 +286,7 @@ public class Strategy {
       nextStep.saveParamFilters();
     }
     else { // newStep will be the last one in main/nested strategy
+      Step parentStep =getParent(targetStep);
       if (parentStep != null) {
         // make sure the parent step can take the newStep as childStep
         parentStep.checkChildAllowed(newStep);
@@ -353,8 +358,9 @@ public class Strategy {
 
     // loop while the current step is marked to be deleted.
     while (step != null && deletes.contains(step)) {
-      if (step.getNextStep() != null) { // go to the next step in the same panel.
-        step = step.getNextStep();
+      Step nextStep = getNext(step);
+      if (nextStep != null) { // go to the next step in the same panel.
+        step = nextStep;
         if (previousStep == null) {
           if (step.isCombined() && !step.isTransform()) {
             // a two-input combined step, since there is no previousStep, the child of it will become new
@@ -373,7 +379,7 @@ public class Strategy {
         }
       }
       else { // no next step exists, the current step must be a root of main/nested strategy.
-        Step parentStep = step.getParentStep();
+        Step parentStep = getParent(step);
         if (parentStep != null) { // found a parent, which means we are deleting in a nested strategy.
           if (previousStep != null) { // make the previous step in the nested strategy a new root there.
             // get the collapsing info from old root of the nested strategy.
@@ -767,4 +773,59 @@ public class Strategy {
     this.recordClass = recordClass;
   }
 
+  /**
+   * Get the parent of the given step in the context of the strategy, which maybe different from the parent
+   * set in the step itself (in the case that the step is updated, but the strategy tree hasn't been updated).
+   * 
+   * @param step
+   * @return the parent of the step, or null if the step doesn't have parent, or doesn't belong to the
+   *         strategy.
+   * @throws WdkModelException
+   */
+  private Step getParent(Step step) throws WdkModelException {
+    // use a stack to store the previous steps to be examined.
+    Stack<Step> stack = new Stack<>();
+    stack.push(getLatestStep());
+    while (!stack.isEmpty()) {
+      Step s = stack.pop();
+      Step parent = null;
+      while (s != null) {
+        if (s.getPreviousStep() != null)
+          stack.push(s.getPreviousStep());
+        if (s.getStepId() == step.getStepId())
+          return parent;
+        parent = s;
+        s = s.getChildStep();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get the next of the given step, which could be different from the next stored in the step itself (in the
+   * case that step is updated, but strategy hasn't been updated).
+   * 
+   * @param step
+   * @return return the next of the given step, or null if the step doesn't have next, or if the step doesn't
+   *         belong the the strategy.
+   * @throws WdkModelException
+   */
+  private Step getNext(Step step) throws WdkModelException {
+    // use a stack to store the child steps to be examined.
+    Stack<Step> stack = new Stack<>();
+    stack.push(getLatestStep());
+    while (!stack.isEmpty()) {
+      Step s = stack.pop();
+      Step next = null;
+      while (s != null) {
+        if (s.getChildStep() != null)
+          stack.push(s.getChildStep());
+        if (s.getStepId() == step.getStepId())
+          return next;
+        next = s;
+        s = s.getPreviousStep();
+      }
+    }
+    return null;
+  }
 }
