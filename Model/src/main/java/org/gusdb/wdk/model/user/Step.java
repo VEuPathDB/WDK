@@ -111,7 +111,7 @@ public class Step {
    * @throws NullPointerException
    *           if user is null
    */
-  Step(StepFactory stepFactory, User user, int stepId) {
+  public Step(StepFactory stepFactory, User user, int stepId) {
     this.stepFactory = stepFactory;
     this.user = user;
     this.userId = user.getUserId();
@@ -200,7 +200,7 @@ public class Step {
       childStepId = childStep.getStepId();
 
       // also update the param value
-      String paramName = getChildStepParam();
+      String paramName = getChildStepParamName();
       paramValues.put(paramName, Integer.toString(childStepId));
     }
     else
@@ -223,7 +223,7 @@ public class Step {
       previousStep.nextStep = this;
       previousStepId = previousStep.getStepId();
 
-      String paramName = getPreviousStepParam();
+      String paramName = getPreviousStepParamName();
       paramValues.put(paramName, Integer.toString(previousStepId));
     }
     else
@@ -596,13 +596,12 @@ public class Step {
     stack.push(this);
     while (!stack.isEmpty()) {
       Step step = stack.pop();
+      list.add(step);
       Step previousStep = step.getPreviousStep(), childStep = step.getChildStep();
       if (previousStep != null) {
-        list.add(previousStep);
         stack.push(previousStep);
       }
       if (childStep != null) {
-        list.add(childStep);
         stack.push(childStep);
       }
     }
@@ -1026,6 +1025,23 @@ public class Step {
   public boolean isRevisable() {
     return revisable;
   }
+  
+  /**
+   * Get the answerParam that take the previousStep as input, which is the first answerParam in the param list.
+   * 
+   * @return an AnswerParam
+   * @throws WdkModelException
+   */
+  public AnswerParam getPreviousStepParam() throws WdkModelException {
+    Param[] params = getQuestion().getParams();
+    for (Param param : params) {
+      if (param instanceof AnswerParam) {
+        return(AnswerParam)param;
+      }
+    }
+    return null;
+
+  }
 
   /**
    * The previous step param is always the first answerParam.
@@ -1033,11 +1049,19 @@ public class Step {
    * @return
    * @throws WdkModelException
    */
-  public String getPreviousStepParam() throws WdkModelException {
+  public String getPreviousStepParamName() throws WdkModelException {
+    AnswerParam param = getPreviousStepParam();
+    return (param == null) ? null : param.getName();
+  }
+  
+  public AnswerParam getChildStepParam() throws WdkModelException {
     Param[] params = getQuestion().getParams();
+    int index = 0;
     for (Param param : params) {
       if (param instanceof AnswerParam) {
-        return param.getName();
+        index++;
+        if (index == 2)
+          return (AnswerParam)param;
       }
     }
     return null;
@@ -1049,17 +1073,9 @@ public class Step {
    * @return
    * @throws WdkModelException
    */
-  public String getChildStepParam() throws WdkModelException {
-    Param[] params = getQuestion().getParams();
-    int index = 0;
-    for (Param param : params) {
-      if (param instanceof AnswerParam) {
-        index++;
-        if (index == 2)
-          return param.getName();
-      }
-    }
-    return null;
+  public String getChildStepParamName() throws WdkModelException {
+    AnswerParam param = getChildStepParam();
+    return (param == null) ? null : param.getName();
   }
 
   public int getFrontId() throws WdkUserException, WdkModelException, SQLException, JSONException {
@@ -1139,7 +1155,11 @@ public class Step {
     }
 
   }
-
+  
+  public String getType() throws WdkModelException {
+    return getRecordClass().getFullName();
+  }
+  
   /**
    * Check id the given step can be assigned as the previous step of the current one. If it's not allowed, a
    * WdkUserException will be thrown out
@@ -1154,9 +1174,8 @@ public class Step {
       throw new WdkUserException("The step #" + getStepId() + " cannot take any step as its previousStep.");
 
     // make sure the current step can take the newStep as previousStep
-    String type = previousStep.getRecordClass().getFullName();
-    Map<String, Param> params = getQuestion().getParamMap();
-    AnswerParam param = (AnswerParam) params.get(getPreviousStepParam());
+    String type = previousStep.getType();
+    AnswerParam param = getPreviousStepParam();
     if (!param.allowRecordClass(type))
       throw new WdkUserException("The new step#" + previousStep.getStepId() + " of type " + type +
           " is not compatible with the next step#" + getStepId());
@@ -1176,9 +1195,8 @@ public class Step {
       throw new WdkUserException("The step #" + getStepId() + " cannot take any step as its childStep.");
 
     // make sure the current step can take the newStep as childStep
-    String type = childStep.getRecordClass().getFullName();
-    Map<String, Param> params = getQuestion().getParamMap();
-    AnswerParam param = (AnswerParam) params.get(getChildStepParam());
+    String type = childStep.getType();
+    AnswerParam param = getChildStepParam();
     if (!param.allowRecordClass(type))
       throw new WdkUserException("The new step#" + childStep.getStepId() + " of type " + type +
           " is not compatible with the parent step#" + getStepId());
