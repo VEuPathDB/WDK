@@ -802,11 +802,11 @@ public class StepFactory {
       psStep = SqlUtils.getPreparedStatement(dataSource, sql);
       psStep.setString(1, step.getQuestionName());
       psStep.setString(2, step.getFilterName());
-      if (leftId == 0)
+      if (leftId != 0)
         psStep.setInt(3, leftId);
       else
         psStep.setObject(3, null);
-      if (childId == 0)
+      if (childId != 0)
         psStep.setInt(4, childId);
       else
         psStep.setObject(4, null);
