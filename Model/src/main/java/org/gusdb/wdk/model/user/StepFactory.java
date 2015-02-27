@@ -24,6 +24,9 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.platform.Oracle;
+import org.gusdb.fgputil.db.platform.PostgreSQL;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.events.StepCopiedEvent;
@@ -88,6 +91,8 @@ public class StepFactory {
 
   static final int COLUMN_NAME_LIMIT = 200;
 
+  public static final int UNKNOWN_SIZE = -1;
+
   private static final Logger logger = Logger.getLogger(StepFactory.class);
 
   public static class NameCheckInfo {
@@ -115,31 +120,35 @@ public class StepFactory {
   }
 
   private final WdkModel wdkModel;
-  private final String userSchema;
-  private final DatabaseInstance userDb;
-  private final DataSource dataSource;
+  private String userSchema;
+  private DatabaseInstance userDb;
+  private DataSource dataSource;
 
   // define SQL snippet "constants" to avoid building SQL each time
-  private final String modTimeSortSql;
-  private final String basicStratsSql;
-  private final String isNotDeletedCondition;
-  private final String byProjectCondition;
-  private final String byUserCondition;
-  private final String bySignatureCondition;
-  private final String isPublicCondition;
-  private final String isRootStepValidCondition;
-  private final String byStratIdCondition;
-  private final String isSavedCondition;
-  private final String byLastViewedCondition;
-  private final String stratsByUserSql;
-  private final String stratBySignatureSql;
-  private final String unsortedPublicStratsSql;
-  private final String countValidPublicStratsSql;
-  private final String updatePublicStratStatusSql;
+  private String modTimeSortSql;
+  private String basicStratsSql;
+  private String isNotDeletedCondition;
+  private String byProjectCondition;
+  private String byUserCondition;
+  private String bySignatureCondition;
+  private String isPublicCondition;
+  private String isRootStepValidCondition;
+  private String byStratIdCondition;
+  private String isSavedCondition;
+  private String byLastViewedCondition;
+  private String stratsByUserSql;
+  private String stratBySignatureSql;
+  private String unsortedPublicStratsSql;
+  private String countValidPublicStratsSql;
+  private String updatePublicStratStatusSql;
 
   public StepFactory(WdkModel wdkModel) {
     this.wdkModel = wdkModel;
-    this.userDb = wdkModel.getUserDb();
+    initialize();
+  }
+  
+  protected void initialize() {
+    userDb = wdkModel.getUserDb();
     dataSource = userDb.getDataSource();
 
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -332,6 +341,13 @@ public class StepFactory {
     return step;
   }
 
+  void deleteStepAndChildren(int stepId) throws WdkModelException, SQLException {
+    String selectSql = selectStepAndChildren(stepId);
+    int count = SqlUtils.executeUpdate(dataSource, "DELETE FROM " + userSchema + "steps WHERE step_id IN (" +
+        selectSql + ")", "wdk-step-delete-children");
+    logger.debug(count + " steps deleted from id: " + stepId);
+  }
+
   void deleteStep(int stepId) throws WdkModelException {
     PreparedStatement psHistory = null;
     String sql;
@@ -365,12 +381,13 @@ public class StepFactory {
 
   boolean isStepDepended(int stepId) throws WdkModelException {
     try {
-      StringBuffer sql = new StringBuffer("SELECT count(*) FROM ");
-      sql.append(userSchema).append(TABLE_STEP);
-      sql.append(" WHERE ").append(COLUMN_LEFT_CHILD_ID + " = " + stepId);
-      sql.append(" OR ").append(COLUMN_RIGHT_CHILD_ID + " = " + stepId);
+      String sql = "SELECT count(*) FROM (                                      " +
+          "   SELECT step_id FROM " + userSchema + "steps                       " +
+          "   WHERE left_child_id = " + stepId + " OR right_child_id = " + stepId +
+          " UNION                                                               " +
+          "   SELECT root_step_id FROM " + userSchema + "strategies WHERE root_step_id = " + stepId + ")";
 
-      Object result = SqlUtils.executeScalar(dataSource, sql.toString(), "wdk-step-factory-check-depended");
+      Object result = SqlUtils.executeScalar(dataSource, sql, "wdk-step-factory-check-depended");
       int count = Integer.parseInt(result.toString());
       return (count > 0);
     }
@@ -769,6 +786,46 @@ public class StepFactory {
     }
   }
 
+  void saveStepParamFilters(Step step) throws WdkModelException {
+    logger.debug("Saving params/filters of step #" + step.getStepId());
+    PreparedStatement psStep = null;
+    String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_QUESTION_NAME + " = ?, " +
+        COLUMN_ANSWER_FILTER + " = ?, " + COLUMN_LEFT_CHILD_ID + " = ?, " + COLUMN_RIGHT_CHILD_ID + " = ?, " +
+        COLUMN_DISPLAY_PARAMS + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
+
+    DBPlatform platform = wdkModel.getUserDb().getPlatform();
+    JSONObject jsContent = getParamContent(step.getParamValues());
+    int leftId = step.getPreviousStepId();
+    int childId = step.getChildStepId();
+    try {
+      long start = System.currentTimeMillis();
+      psStep = SqlUtils.getPreparedStatement(dataSource, sql);
+      psStep.setString(1, step.getQuestionName());
+      psStep.setString(2, step.getFilterName());
+      if (leftId != 0)
+        psStep.setInt(3, leftId);
+      else
+        psStep.setObject(3, null);
+      if (childId != 0)
+        psStep.setInt(4, childId);
+      else
+        psStep.setObject(4, null);
+      platform.setClobData(psStep, 5, jsContent.toString(), false);
+      psStep.setInt(6, step.getStepId());
+      int result = psStep.executeUpdate();
+      QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-save-step-params", start);
+      if (result == 0)
+        throw new WdkModelException("The Step #" + step.getStepId() + " cannot be found.");
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Could not update step.", e);
+    }
+    finally {
+      SqlUtils.closeStatement(psStep);
+    }
+
+  }
+
   Map<Integer, Strategy> loadStrategies(User user, Map<Integer, Strategy> invalidStrategies)
       throws WdkModelException {
     Map<Integer, Strategy> userStrategies = new LinkedHashMap<Integer, Strategy>();
@@ -1041,8 +1098,8 @@ public class StepFactory {
       throw new WdkModelException(ex);
     }
 
-    Events.triggerAndWait(new StepCopiedEvent(oldStep, newStep),
-        new WdkModelException("Unable to execute all operations subsequent to step copy."));
+    Events.triggerAndWait(new StepCopiedEvent(oldStep, newStep), new WdkModelException(
+        "Unable to execute all operations subsequent to step copy."));
 
     // create mapping from old step to new step
     stepIdsMap.put(oldStep.getStepId(), newStep.getStepId());
@@ -1133,7 +1190,7 @@ public class StepFactory {
   }
 
   // This function only updates the strategies table
-  void updateStrategy(User user, Strategy strategy, boolean overwrite) throws SQLException,
+  void updateStrategy(User user, Strategy strategy, boolean overwrite) throws 
       WdkModelException, WdkUserException {
     logger.debug("Updating strategy internal#=" + strategy.getStrategyId() + ", overwrite=" + overwrite);
 
@@ -1148,9 +1205,9 @@ public class StepFactory {
       if (overwrite) {
         String sql = "SELECT " + COLUMN_STRATEGY_ID + ", " + COLUMN_SIGNATURE + " FROM " + userSchema +
             TABLE_STRATEGY + " WHERE " + userIdColumn + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND " +
-            COLUMN_NAME + " = ? AND " + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? "; // AND
-                                                                                                     // " + COLUMN_DISPLAY_ID + "
-                                                                                                     // <> ?";
+            COLUMN_NAME + " = ? AND " + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? "; 
+        // AND " + COLUMN_DISPLAY_ID + " <> ?";
+        
         // If we're overwriting, need to look up saved strategy id by
         // name (only if the saved strategy is not the one we're
         // updating, i.e. the saved strategy id != this strategy id)
@@ -1221,6 +1278,9 @@ public class StepFactory {
       if (result == 0)
         throw new WdkUserException("The strategy #" + strategy.getStrategyId() + " of user " +
             user.getEmail() + " cannot be found.");
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
     }
     finally {
       SqlUtils.closeStatement(psStrategy);
@@ -1447,7 +1507,7 @@ public class StepFactory {
   Strategy copyStrategy(Strategy strategy, int stepId) throws WdkModelException, WdkUserException {
     Step oldStep = strategy.getStepById(stepId);
     return copyStrategy(strategy, oldStep, oldStep.getCustomName());
-    
+
   }
 
   private Strategy copyStrategy(Strategy strategy, Step oldTopStep, String oldStrategyName)
@@ -1619,5 +1679,86 @@ public class StepFactory {
 
   private String getVerificationPrefix() {
     return "[IP " + MDCUtil.getIpAddress() + " requested page from " + MDCUtil.getRequestedDomain() + "] ";
+  }
+
+  /**
+   * This method will reset the estimate size of the step and all other steps that depends on it.
+   * 
+   * @param fromStep
+   * @return
+   * @throws WdkModelException
+   */
+  int resetStepCounts(Step fromStep) throws WdkModelException {
+    String selectSql = selectStepAndParents(fromStep.getStepId());
+    String sql = "UPDATE " + userSchema + "steps SET estimate_size = " + UNKNOWN_SIZE +
+        "  WHERE step_id IN (" + selectSql + ")";
+    try {
+      return SqlUtils.executeUpdate(userDb.getDataSource(), sql, "wdk-step-reset-count-recursive");
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
+  }
+
+  /**
+   * TODO - consider refactor this code into platform.
+   * 
+   * @param stepId
+   * @return
+   * @throws WdkModelException
+   */
+  private String selectStepAndParents(int stepId) throws WdkModelException {
+    DBPlatform platform = userDb.getPlatform();
+    String sql;
+    String stepTable = userSchema + "steps";
+    if (platform instanceof Oracle) {
+      sql = "SELECT step_id FROM " + stepTable + " START WITH step_id = " + stepId +
+          "  CONNECT BY (PRIOR step_id = left_child_id OR PRIOR step_id = right_child_id)";
+    }
+    else if (platform instanceof PostgreSQL) {
+      sql = "WITH RECURSIVE parent_steps (step_id, left_child_id, right_child_id) AS (" +
+          "      SELECT step_id, left_child_id, right_child_id FROM   " + stepTable +
+          "      WHERE step_id = " + stepId +
+          "    UNION ALL                                                                    " +
+          "      SELECT s.step_id, s.left_child_id, s.right_child_id                        " +
+          "      FROM " + stepTable + " s, parent_steps ps " +
+          "      WHERE s.left_child_id = ps.step_id OR s.right_child_id = ps.step_id)" +
+          "  SELECT step_id FROM parent_steps";
+    }
+    else {
+      throw new WdkModelException("Unsupported platform type: " + platform.getClass().getName());
+    }
+    return sql;
+  }
+
+  /**
+   * TODO - consider refactor this code into platform.
+   * 
+   * @param stepId
+   * @return
+   * @throws WdkModelException
+   */
+  public String selectStepAndChildren(int stepId) throws WdkModelException {
+    DBPlatform platform = userDb.getPlatform();
+    String sql;
+    String stepTable = userSchema + "steps";
+    if (platform instanceof Oracle) {
+      sql = "SELECT step_id FROM " + stepTable + " START WITH step_id = " + stepId +
+          "  CONNECT BY (step_id = PRIOR left_child_id OR step_id = PRIOR right_child_id)";
+    }
+    else if (platform instanceof PostgreSQL) {
+      sql = "WITH RECURSIVE parent_steps (step_id, left_child_id, right_child_id) AS (" +
+          "      SELECT step_id, left_child_id, right_child_id FROM   " + stepTable +
+          "      WHERE step_id = " + stepId +
+          "    UNION ALL                                                                    " +
+          "      SELECT s.step_id, s.left_child_id, s.right_child_id                        " +
+          "      FROM " + stepTable + " s, parent_steps ps " +
+          "      WHERE ps.left_child_id = s.step_id OR ps.right_child_id = s.step_id)" +
+          "  SELECT step_id FROM parent_steps";
+    }
+    else {
+      throw new WdkModelException("Unsupported platform type: " + platform.getClass().getName());
+    }
+    return sql;
   }
 }
