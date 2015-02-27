@@ -230,8 +230,8 @@ public class Step {
       previousStepId = 0;
   }
 
-  public boolean isFirstStep() {
-    return (previousStepId == 0);
+  public boolean isFirstStep() throws WdkModelException {
+    return (null == getPreviousStepParam());
   }
 
   public User getUser() throws WdkModelException {

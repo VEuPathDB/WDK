@@ -124,7 +124,7 @@ public class StepBean {
         return step.getOperation();
     }
 
-    public boolean getIsFirstStep() {
+    public boolean getIsFirstStep() throws WdkModelException {
         return step.isFirstStep();
     }
     public AnswerValueBean getAnswerValue() throws WdkModelException, WdkUserException {

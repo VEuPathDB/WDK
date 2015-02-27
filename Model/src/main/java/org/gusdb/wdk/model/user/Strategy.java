@@ -217,6 +217,7 @@ public class Strategy {
       if (nextStep != null) { // insert the new step in the same strategy panel
         nextStep.checkPreviousAllowed(newStep);
         nextStep.setPreviousStep(newStep);
+        nextStep.saveParamFilters();
       }
       else { // the target is the only step in the strategy/nested strategy.
         Step parentStep = getParent(targetStep);
