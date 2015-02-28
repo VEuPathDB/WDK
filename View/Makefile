@@ -45,7 +45,7 @@ $(wdk_bundle): $(wdk_sources)
 	webpack $< $@
 
 $(wdk3_bundle): $(wdk3_sources)
-	webpack $< $@ --output-library wdk --output-library-target umd
+	webpack $< $@ --output-library Wdk --output-library-target umd
 
 
 # =============================================================================
