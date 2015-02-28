@@ -10,9 +10,25 @@ html {
 }
 */
 
+/*
 body {
   font-family: sans-serif;
   font-size: 14px;
+}
+*/
+
+main {
+  position: relative;
+  min-height: 200px;
+}
+h1 {
+  text-align: left;
+}
+h3 {
+  margin: 22px 0 8px 0;
+}
+h4 {
+  margin: 10px 0 8px 0;
 }
 
 .wdkAnswerLoading {
@@ -24,6 +40,18 @@ body {
   position: absolute;
   top: 2em;
   left: 50%;
+}
+
+.wdk-Answer-filter {
+  float: right;
+  margin-right: 1.5em;
+}
+.wdk-Answer-filterButton {
+  border: none;
+  background: transparent;
+  color: #5F0F47;
+  vertical-align: middle;
+  padding: 6px;
 }
 
 .wdk-RecordTable-Wrapper {
@@ -87,6 +115,15 @@ body {
 
 .wdk-RecordTable-AttributeSelectorWrapper {
   float: right;
+}
+
+.wdk-RecordTable-AttributeSelector {
+  list-style: none;
+}
+
+.wdk-RecordTable-AttributeSelectorButtonWrapper {
+  text-align: center;
+  padding: 4px;
 }
 
 .wdk-RecordList {

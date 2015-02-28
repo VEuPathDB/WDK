@@ -1,3 +1,4 @@
+/* global $ */
 /**
  * Renders a set of WDK records in a table using the RecordTable component.
  *
@@ -6,11 +7,19 @@
  * AnswerPage, but will also be used for Step results.
  */
 
+import find from 'lodash/collection/find';
 import React from 'react';
 import RecordTable from './RecordTable';
 import RecordList from './RecordList';
 
 const PropTypes = React.PropTypes;
+
+/**
+ * Calculate the offset of `node` relative to the top of the document.
+ */
+const getOffsetTop = (node, sum = 0) => node.offsetTop === 0
+  ? sum
+  : getOffsetTop(node.offsetParent, sum + node.offsetTop);
 
 const Answer = React.createClass({
 
@@ -57,6 +66,12 @@ const Answer = React.createClass({
     $(window).off('resize', this._updateHeight);
   },
 
+  handleFilter(e) {
+    e.preventDefault();
+    var value = this.refs.filterInput.getDOMNode().value;
+    this.props.answerEvents.onFilter(value);
+  },
+
   /**
    * Render various aspects of state:
    *   - Show spinner of loading.
@@ -69,19 +84,37 @@ const Answer = React.createClass({
    *      provide a good mechanism for displaying otherwise unhandled errors.
    */
   render() {
-    const { answer, recordClass, displayInfo, answerEvents, format, position } = this.props;
+    const {
+      answer,
+      recordClass,
+      displayInfo,
+      answerEvents,
+      format,
+      position,
+      filterTerm,
+      filteredRecords
+    } = this.props;
     const { meta } = answer;
     const { pagination } = displayInfo;
     const firstRec = pagination.offset + 1;
     const lastRec = Math.min(pagination.offset + pagination.numRecords,
-                             meta.count);
+                             meta.count, filteredRecords.length);
     const Records = format === 'list' ? RecordList : RecordTable;
 
     return (
-      <div className="wdkAnswer">
-        <div>
-          <input style={{ padding: '.5em', width: '25em'}}
-            placeholder="Find records: Not currently working"/>
+      <div className="wdk-Answer">
+        <div className="wdk-Answer-filter">
+          <form onSubmit={this.handleFilter}>
+            <input
+              ref="filterInput"
+              style={{ padding: '.5em', width: '25em'}}
+              defaultValue={filterTerm}
+              placeholder={`Filter ${recordClass.displayName}`}
+            />
+            <button className="wdk-Answer-filterButton">
+              <i className="fa fa-search fa-lg"/>
+            </button>
+          </form>
         </div>
         <p>
           Showing {firstRec} - {lastRec} of {meta.count} {recordClass.displayName} records
@@ -89,7 +122,8 @@ const Answer = React.createClass({
         <Records
           ref="records"
           height={this.state.height}
-          {...answer}
+          meta={meta}
+          records={filteredRecords}
           {...answerEvents}
           displayInfo={displayInfo}
           position={position}
@@ -116,6 +150,7 @@ const Answer = React.createClass({
  * Overview information with filter box and sorting that is common to both
  * table and list views.
  */
+/*
 const AnswerOverview = React.createClass({
 
   propTypes: {
@@ -135,7 +170,7 @@ const AnswerOverview = React.createClass({
     const { sortSelect, directionSelect } = this.refs;
     const attrName = sortSelect.getDOMNode().value;
     const sortDir = directionSelect.getDOMNode().value;
-    const attr = _.find(this.props.answer.meta.attributes, { name: attrName });
+    const attr = find(this.props.answer.meta.attributes, { name: attrName });
     this.props.onSort(attr, sortDir);
   },
 
@@ -175,12 +210,6 @@ const AnswerOverview = React.createClass({
   }
 
 });
-
-/**
- * Calculate the offset of `node` relative to the top of the document.
- */
-const getOffsetTop = (node, sum = 0) => node.offsetTop === 0
-  ? sum
-  : getOffsetTop(node.offsetParent, sum + node.offsetTop);
+*/
 
 export default Answer;

@@ -26,7 +26,7 @@ import {
  */
 
 const $ = window.jQuery;
-const { Table, Column, ColumnGroup } = FixedDataTable;
+const { Table, Column } = FixedDataTable;
 const { PropTypes } = React;
 
 // Constants
@@ -40,6 +40,99 @@ const SORT_CLASS_MAP = {
 // Bookkeeping for `Table`
 let isColumnResizing = false;
 
+
+/**
+ * Return the attributes for the row at index `rowIndex`
+ *
+ * @param {number} rowIndex
+ */
+const getRow = function(rowIndex) {
+  const rowData = this.props.records[rowIndex].attributes;
+  return _.indexBy(rowData, 'name');
+};
+const rowNumberRenderer = (_, __, ___, rowIndex) => rowIndex + 1;
+const getRowNumberColumnWidth = length => String(length).length * 16;
+
+/**
+ * Function that doesn't do anything. This is the default for many
+ * optional handlers. We can do an equality check as a form of feature
+ * detection. E.g., if onSort === noop, then we won't enable sorting.
+ */
+const noop = () => {};
+
+
+const AttributeSelectorItem = React.createClass({
+
+  propTypes: {
+    attribute: PropTypes.object.isRequired,
+    isChecked: PropTypes.bool,
+    onChange: PropTypes.func.isRequired
+  },
+
+  render() {
+    const { name, displayName } = this.props.attribute;
+    return (
+      <li key={name}>
+        <input type="checkbox"
+          id={'column-select-' + name}
+          name="pendingAttribute"
+          value={name}
+          onChange={this.props.onChange}
+          checked={this.props.isChecked}/>
+        <label htmlFor={'column-select-' + name}> {formatAttributeName(displayName)} </label>
+      </li>
+    );
+  }
+
+});
+
+const AttributeSelector = React.createClass({
+
+  propTypes: {
+    attributes: PropTypes.array.isRequired,
+    selectedAttributes: PropTypes.array,
+    onSubmit: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired
+  },
+
+  render() {
+    return (
+      <form onSubmit={this.props.onSubmit}>
+        <div className="wdk-RecordTable-AttributeSelectorButtonWrapper">
+          <button>Update Columns</button>
+        </div>
+        <ul className="wdk-RecordTable-AttributeSelector">
+          {this.props.attributes.map(this._renderItem)}
+        </ul>
+        <div className="wdk-RecordTable-AttributeSelectorButtonWrapper">
+          <button>Update Columns</button>
+        </div>
+      </form>
+    );
+  },
+
+  _renderItem(attribute) {
+    const isChecked = this._isChecked(attribute);
+    return (
+      <AttributeSelectorItem
+        isChecked={isChecked}
+        attribute={attribute}
+        onChange={this.props.onChange}
+        selectedAttributes={this.props.selectedAttributes}
+      />
+    );
+  },
+
+  // XXX Seems like lodash would provide a method for this...
+  _isChecked(attribute) {
+    const { selectedAttributes } = this.props;
+    for (let index = 0; index < selectedAttributes.length; index++) {
+      if (_.isEqual(attribute, selectedAttributes[index])) return true;
+    }
+    return false;
+  }
+
+});
 
 const RecordTable = React.createClass({
 
@@ -266,14 +359,14 @@ const RecordTable = React.createClass({
       <div>
 
         <p>
-          <button onClick={this.handleOpenAttributeSelectorClick}>More data</button>
+          <button onClick={this.handleOpenAttributeSelectorClick}>Add Columns</button>
         </p>
 
           <Dialog
             modal={true}
             open={this.state.attributeSelectorOpen}
             onClose={this.handleAttributeSelectorClose}
-            title="Choose columns to shoe or hide">
+            title="Select Columns">
             <AttributeSelector
               ref="attributeSelector"
               attributes={meta.attributes}
@@ -298,18 +391,6 @@ const RecordTable = React.createClass({
           isColumnResizing={isColumnResizing}
           onColumnResizeEndCallback={this.handleColumnResize}
         >
-
-        {/*
-          <Column
-            fixed={true}
-            label=""
-            dataKey="#"
-            width={getRowNumberColumnWidth(records.length)}
-            align="right"
-            cellRenderer={rowNumberRenderer}
-            cellClassName={CELL_CLASS_NAME + " wdk-RecordTable-rowNumber"}
-          />
-          */}
 
           {visibleAttributes.map(attribute => {
             const isPk = attribute.name === PRIMARY_KEY_NAME;
@@ -339,98 +420,5 @@ const RecordTable = React.createClass({
   }
 
 });
-
-
-const AttributeSelector = React.createClass({
-
-  propTypes: {
-    attributes: PropTypes.array.isRequired,
-    selectedAttributes: PropTypes.array,
-    onSubmit: PropTypes.func.isRequired,
-    onChange: PropTypes.func.isRequired
-  },
-
-  render() {
-    return (
-      <form onSubmit={this.props.onSubmit}>
-        <ul className="wdk-RecordTable-AttributeSelector">
-          {this.props.attributes.map(this._renderItem)}
-        </ul>
-        <button>Update</button>
-      </form>
-    );
-  },
-
-  _renderItem(attribute) {
-    const isChecked = this._isChecked(attribute);
-    return (
-      <AttributeSelectorItem
-        isChecked={isChecked}
-        attribute={attribute}
-        onChange={this.props.onChange}
-        selectedAttributes={this.props.selectedAttributes}
-      />
-    );
-  },
-
-  // XXX Seems like lodash would provide a method for this...
-  _isChecked(attribute) {
-    let index = 0;
-    let testAttribute;
-    const { selectedAttributes } = this.props;
-    while (testAttribute = selectedAttributes[index++]) {
-      if (_.isEqual(testAttribute, attribute))
-        return true;
-    }
-    return false;
-  }
-
-});
-
-
-const AttributeSelectorItem = React.createClass({
-
-  propTypes: {
-    attribute: PropTypes.object.isRequired,
-    isChecked: PropTypes.bool,
-    onChange: PropTypes.func.isRequired
-  },
-
-  render() {
-    const { name, displayName } = this.props.attribute;
-    return (
-      <li key={name}>
-        <input type="checkbox"
-          id={'column-select-' + name}
-          name="pendingAttribute"
-          value={name}
-          onChange={this.props.onChange}
-          checked={this.props.isChecked}/>
-        <label htmlFor={'column-select-' + name}> {formatAttributeName(displayName)} </label>
-      </li>
-    );
-  }
-
-});
-
-
-/**
- * Return the attributes for the row at index `rowIndex`
- *
- * @param {number} rowIndex
- */
-const getRow = function(rowIndex) {
-  const rowData = this.props.records[rowIndex].attributes;
-  return _.indexBy(rowData, 'name');
-};
-const rowNumberRenderer = (_, __, ___, rowIndex) => rowIndex + 1;
-const getRowNumberColumnWidth = length => String(length).length * 16;
-
-/**
- * Function that doesn't do anything. This is the default for many
- * optional handlers. We can do an equality check as a form of feature
- * detection. E.g., if onSort === noop, then we won't enable sorting.
- */
-const noop = () => {};
 
 export default RecordTable;

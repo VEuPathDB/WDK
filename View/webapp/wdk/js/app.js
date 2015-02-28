@@ -129,7 +129,7 @@ var throttledRafLoad = _.throttle(rafLoad, 100);
 // get unique set of targets with addedNodes
 function loadUniqueMutationTargets(mutations) {
   var targets = _.uniq(mutations.reduce(function(acc, mutation) {
-    return mutation.addedNodes.length > 0
+    return mutation.addedNodes.length > 0 && !mutation.target.getAttribute('data-reactid')
       ? acc.concat([ mutation.target ])
       : acc;
   }, []));

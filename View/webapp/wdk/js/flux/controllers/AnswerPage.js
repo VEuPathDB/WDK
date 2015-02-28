@@ -3,6 +3,7 @@ import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';
 import Answer from '../components/Answer';
+import Record from '../components/Record';
 import Loading from '../components/Loading';
 import createStoreMixin from '../mixins/createStoreMixin';
 import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
@@ -57,6 +58,10 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 // See http://facebook.github.io/react/docs/top-level-api.html#react.createclass
 const AnswerPage = React.createClass({
 
+  contextTypes: {
+    getRecordComponent: React.PropTypes.func.isRequired
+  },
+
   // mixins are used to share behaviors between otherwise unrelated components.
   // A mixin is simply an object with properties that are added (copied) to the
   // object literal we are currently defining (and passing to
@@ -81,12 +86,7 @@ const AnswerPage = React.createClass({
     // Adds methods to handle navigating to other routes. We use
     // `replaceWith()` in this component.
     // See https://github.com/rackt/react-router/blob/master/docs/api/mixins/Navigation.md
-    Router.Navigation,
-
-    // Adds methods to get properties of the current state of the Router.
-    // We use it to get the current `params` and `query` objects.
-    // See https://github.com/rackt/react-router/blob/master/docs/api/mixins/State.md
-    Router.State
+    Router.Navigation
   ],
 
 
@@ -99,14 +99,16 @@ const AnswerPage = React.createClass({
   // XXX: An alternative is to define a callback function for each store. This
   // would require a change to `createStoreMixin`.
   getStateFromStores(stores) {
-    const { questionName } = this.getParams();
+    const { questionName } = this.props.params;
 
     const {
       answers,
       isLoading,
       error,
       displayInfo,
-      questionDefinition
+      questionDefinition,
+      filterTerm,
+      filteredRecords
     } = stores.answerStore.getState();
     const answer = answers[questionName];
 
@@ -125,7 +127,9 @@ const AnswerPage = React.createClass({
       isLoading,
       error,
       displayInfo,
-      questionDefinition
+      questionDefinition,
+      filterTerm,
+      filteredRecords
     };
   },
 
@@ -135,12 +139,12 @@ const AnswerPage = React.createClass({
   // URL by setting the query params to some default values. Otherwise, we will
   // call the `loadAnswer` action creator based on the `params` and `query`
   // objects.
-  fetchAnswer() {
+  fetchAnswer(props) {
 
     // These methods are provided by the `Router.State` mixin
     const path = 'answer';
-    const params = this.getParams();
-    const query = this.getQuery();
+    const params = props.params;
+    const query = props.query;
 
     if (!query.numrecs || !query.offset) {
       // Replace the current undefined URL query params with default values
@@ -205,14 +209,39 @@ const AnswerPage = React.createClass({
 
   // When the component first mounts, fetch the answer.
   componentDidMount() {
-    this.fetchAnswer();
+    this.fetchAnswer(this.props);
   },
 
 
-  // This is called anytime this component is rendered. That includes when we
-  // call `this.replaceWith(...)` in `this.fetchAnswer()`.
-  componentWillReceiveProps() {
-    this.fetchAnswer();
+  // This is called anytime the component gets new props, just before they are
+  // actually passed to the component instance. In our case, this is when any
+  // part of the URL changes. We will first check if a new answer resource needs
+  // to be fetched. If not, then we will check if the filter needs to be updated.
+  componentWillReceiveProps(nextProps) {
+
+    // current query and params
+    const { query, params } = this.props;
+
+    // incoming query and params
+    const { query: nextQuery, params: nextParams } = nextProps;
+
+    // query keys to compare to determine if we need to fetch a new answer
+    const queryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
+
+    // _.pick will create an object with keys from queryKeys, and values from
+    // the source object (query and nextQuery).
+    const answerQuery = _.pick(query, queryKeys);
+    const nextAnswerQuery = _.pick(nextQuery, queryKeys);
+
+    // fetch answer if the query has changed, or if the question name has changed
+    if (!_.isEqual(answerQuery, nextAnswerQuery) || params.questionName != nextParams.questionName) {
+      this.fetchAnswer(nextProps);
+    }
+
+    // filter answer if the filter terms have changed
+    else if (query.filterTerm != nextQuery.filterTerm) {
+      this.answerActions.filterAnswer(nextParams.questionName, nextQuery.filterTerm);
+    }
   },
 
 
@@ -233,20 +262,19 @@ const AnswerPage = React.createClass({
     // another way would be to have a `sortAnswer` action creator.
     onSort(attribute, direction) {
 
-      // These methods are provided by the mixin `Router.State`.
-      const params = this.getParams();
-      const query = this.getQuery();
-
       // Update the query object with the new values.
       // See https://lodash.com/docs#assign
-      Object.assign(query, { sortBy: attribute.name, sortDir: direction });
+      const query = Object.assign({}, this.props.query, {
+        sortBy: attribute.name,
+        sortDir: direction
+      });
 
       // This method is provided by the `Router.Navigation` mixin. It will
       // update the URL, which will trigger a new Route event, which will cause
       // this `this.componentWillReceiveProps` to be called, which will cause
       // this component to call `this.fetchAnswer()` with the sorting
       // configuration.
-      this.replaceWith('answer', params, query);
+      this.replaceWith('answer', this.props.params, query);
 
       // This is an alternative way, which is to call loadAnswer.
       // The appeal of the above is that if the user clicks the browser refresh
@@ -288,11 +316,11 @@ const AnswerPage = React.createClass({
       console.log(offset, numRecords);
     },
 
-    onRecordClick(record) {
+    xonRecordClick(record) {
       // Methods provided by Router.State mixin
       const path = 'answer';
-      const params = this.getParams();
-      const query = this.getQuery();
+      const params = this.props.params;
+      const query = this.props.query;
 
       // update query with format and position
       query.format = 'list';
@@ -302,11 +330,25 @@ const AnswerPage = React.createClass({
       this.transitionTo(path, params, query);
     },
 
+    // FIXME This will be removed when the record service is serving up records
+    onRecordClick(record) {
+      const { id } = record;
+      const path = 'answer';
+
+      // update query with format and position
+      const query = Object.assign({}, this.props.query, {
+        expandedRecord: _.findIndex(this.state.answer.records, { id })
+      });
+
+      // Method provided by Router.Navigation mixin
+      this.transitionTo(path, this.props.params, query);
+    },
+
     onToggleFormat() {
       // Methods provided by Router.State mixin
       const path = 'answer';
-      const params = this.getParams();
-      const query = this.getQuery();
+      const params = this.props.params;
+      const query = this.props.query;
 
       // update query with format and position
       query.format = !query.format || query.format === 'table'
@@ -314,6 +356,11 @@ const AnswerPage = React.createClass({
 
       // Method provided by Router.Navigation mixin
       this.transitionTo(path, params, query);
+    },
+
+    onFilter(terms) {
+      const query = Object.assign({}, this.props.query, { filterTerm: terms });
+      this.transitionTo('answer', this.props.params, query);
     }
 
   },
@@ -329,7 +376,16 @@ const AnswerPage = React.createClass({
   render() {
 
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
-    const { isLoading, error, answer, question, recordClass, displayInfo } = this.state;
+    const {
+      isLoading,
+      error,
+      answer,
+      question,
+      recordClass,
+      displayInfo,
+      filterTerm,
+      filteredRecords
+    } = this.state;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
@@ -342,11 +398,13 @@ const AnswerPage = React.createClass({
 
     // Valid formats are 'table' and 'list'
     // TODO validation
-    const format = this.getQuery().format || 'table';
+    const format = this.props.query.format || 'table';
+
+    const expandedRecord = this.props.query.expandedRecord;
 
     // List position of "selected" record (this is used to keep the same
     // record at the top when transitioning between formats.
-    const position = Number(this.getQuery().position) || 0;
+    const position = Number(this.props.query.position) || 0;
 
     // `{...this.state}` is JSX short-hand syntax to pass each key-value pair of
     // this.state as a property to the component. It intentionally resembles
@@ -369,19 +427,37 @@ const AnswerPage = React.createClass({
       </div>
     );
 
-    if (answer && question && recordClass) components.push(
-      <div>
-        <h2>{question.displayName}</h2>
-        <Answer
-          format={format}
-          position={position}
-          recordClass={recordClass}
-          answer={answer}
-          answerEvents={answerEvents}
-          displayInfo={displayInfo}
+
+    // FIXME This will be removed when the record service is serving up records
+    if (answer && expandedRecord != null) {
+      const RecordComponent = this.context.getRecordComponent(answer.meta.class, Record)
+        || Record;
+
+      components.push(
+        <RecordComponent
+          record={answer.records[expandedRecord]}
+          attributes={answer.meta.attributes}
         />
-      </div>
-    );
+      );
+    }
+
+    else if (answer && question && recordClass) {
+      components.push(
+        <div>
+          <h1>{question.displayName}</h1>
+          <Answer
+            format={format}
+            position={position}
+            recordClass={recordClass}
+            answer={answer}
+            answerEvents={answerEvents}
+            displayInfo={displayInfo}
+            filterTerm={filterTerm}
+            filteredRecords={filteredRecords}
+          />
+        </div>
+      );
+    }
 
     return (
       <div>
