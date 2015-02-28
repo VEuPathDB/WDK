@@ -8,7 +8,7 @@
   "nonbsp": true,
   "undef": true,
   "unused": true,
-  "eqnull": false,
+  "eqnull": true,
   "laxbreak": true,
   "browser": true,
   "node": true,
