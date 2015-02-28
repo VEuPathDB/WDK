@@ -29,6 +29,7 @@ export const ANSWER_LOAD_SUCCESS = 'answerLoadSuccess';
 export const ANSWER_LOAD_ERROR = 'answerLoadError';
 export const ANSWER_MOVE_COLUMN = 'answerMoveColumn';
 export const ANSWER_CHANGE_ATTRIBUTES = 'answerChangeAttributes';
+export const ANSWER_FILTER = 'answerFilter';
 
 export const QUESTION_LIST_LOADING = 'questionListLoading';
 export const QUESTION_LIST_LOAD_SUCCESS = 'questionListLoadSuccess';

@@ -6,6 +6,7 @@ import {
   ANSWER_LOAD_ERROR,
   ANSWER_MOVE_COLUMN,
   ANSWER_CHANGE_ATTRIBUTES,
+  ANSWER_FILTER,
   QUESTION_LOAD_SUCCESS,
   RECORD_CLASS_LOAD_SUCCESS
 } from '../ActionType';
@@ -64,6 +65,12 @@ var AnswerMoveColumnAction = new Record({
 var AnswerChangeAttributesAction = new Record({
   type: ANSWER_CHANGE_ATTRIBUTES,
   attributes: []
+});
+
+var AnswerFilterAction = new Record({
+  type: ANSWER_FILTER,
+  questionName: null,
+  terms: ''
 });
 
 var QuestionLoadSuccessAction = new Record({
@@ -264,6 +271,14 @@ export default createActionCreators({
       attributes: attributes
     });
 
+    this.dispatch(action);
+  },
+
+  filterAnswer(questionName, terms) {
+    var action = new AnswerFilterAction({
+      questionName: questionName,
+      terms: terms
+    });
     this.dispatch(action);
   }
 

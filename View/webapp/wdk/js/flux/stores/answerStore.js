@@ -1,4 +1,5 @@
 // TODO Break this into two stores: Answers and UI
+import curry from 'lodash/function/curry';
 import Immutable from 'immutable';
 import createStore from '../utils/createStore';
 import * as ActionType from '../ActionType';
@@ -58,6 +59,52 @@ import * as ActionType from '../ActionType';
  */
 
 
+// Split terms on whitespace, unless wrapped in quotes
+var parseSearchTerms = function parseSearchTerms(terms) {
+  var match = terms.match(/\w+|"[\w\s]*"/g) || [];
+  return match.map(function(term) {
+    // remove wrapping quotes from phrases
+    return term.replace(/(^")|("$)/g, '');
+  });
+}
+
+
+// Search record for a term.
+//
+// The approach here is pretty basic and probably ineffecient:
+//   - Convert all attribute values to an array of values.
+//   - Convert all table values to a flat array of values.
+//   - Combine the above arrays into a single array.
+//   - Join the array with a control character.
+//   - Search the resulting string for the index of 'term'.
+//   - return (index !== -1).
+//
+// There is much room for performance tuning here.
+var isTermInRecord = curry(function isTermInRecord(term, record) {
+  var attributeValues = record
+    .get('attributes')
+    .map(function(attribute) {
+      return attribute.get('value');
+    });
+
+  var tableValues = record
+    .get('tables')
+    .flatMap(function(table) {
+      return table
+        .get('rows')
+        .flatMap(function(row) {
+          return row.map(function(attribute) {
+            return attribute.get('value');
+          });
+        });
+    });
+
+  var clob = attributeValues.concat(tableValues).join('\0');
+
+  return clob.toLowerCase().indexOf(term.toLowerCase()) !== -1;
+});
+
+
 export default createStore({
 
   /**
@@ -69,6 +116,8 @@ export default createStore({
     isLoading: false,
     error: null,
     answer: { records: null },
+    filterTerm: '',
+    filteredRecords: [],
     answers: {},
     displayInfo: {
       sorting: null,
@@ -116,6 +165,10 @@ export default createStore({
 
       case ActionType.ANSWER_CHANGE_ATTRIBUTES:
         this.handleAnswerChangeAttributes(action, emitChange);
+        break;
+
+      case ActionType.ANSWER_FILTER:
+        this.handleAnswerFilter(action, emitChange);
         break;
     }
   },
@@ -206,6 +259,7 @@ export default createStore({
       answers: {
         [questionName]: answer
       },
+      filteredRecords: answer.records
     }, requestData);
 
     emitChange();
@@ -264,6 +318,22 @@ export default createStore({
     /* set state.displayInfo.attributes to the new list */
     this.state = this.state.setIn(['displayInfo', 'visibleAttributes'], newList);
 
+    emitChange();
+  },
+
+  handleAnswerFilter(action, emitChange) {
+    this.state = this.state.withMutations(function(state) {
+      var terms = action.terms;
+      var questionName = action.questionName;
+      var parsedTerms = parseSearchTerms(terms);
+      var records = state.getIn(['answers', questionName, 'records']);
+      var filteredRecords = parsedTerms.reduce(function(records, term) {
+        return records.filter(isTermInRecord(term));
+      }, records);
+
+      state.set('filterTerms', terms);
+      state.set('filteredRecords', filteredRecords);
+    });
     emitChange();
   },
 
