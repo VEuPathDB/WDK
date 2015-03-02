@@ -63,6 +63,10 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   function onDependedParamChange(dependedParam, dependentElement, dependedParams) {
         var dependedName = dependedParam.attr("name");
+        var $form = dependedParam.closest("form");
+        var $submitButton = $form.find('input[type=submit]');
+
+        $submitButton.prop('disabled', true);
 
         // map list of names to elements
         // then reduce to a list of $.ajax deferred objects
@@ -87,7 +91,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
         // trigger form.change only when all deferreds are resolved
         $.when.apply($, dependentDeferreds).then(function() {
-          dependedParam.closest("form").change();
+          $form.change();
+          $submitButton.prop('disabled', false);
         });
   }
 
