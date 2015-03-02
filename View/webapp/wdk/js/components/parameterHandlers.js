@@ -666,11 +666,19 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         });
 
     } else if (dependentParam.is('[data-type="filter-param"]')) {
+
+      // Hide current param and show loading
+      dependentParam
+        .find('.filter-param').hide().end()
+        .find('.loading').show();
+
       sendReqUrl = sendReqUrl + '&json=true';
       return $.getJSON(sendReqUrl)
         .then(createFilterParam.bind(null, dependentParam, questionName, dependedValues))
         .done(function() {
-          dependentParam.find('input').removeAttr('disabled');
+          dependentParam
+            .find('input').removeAttr('disabled').end()
+            .find('.loading').hide();
           element.find(".param[name='" + paramName + "']").attr("ready", "");
         });
     } else {
