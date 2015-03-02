@@ -147,7 +147,7 @@ public class StringParam extends Param {
     if (regex == null)
       regex = model.getModelConfig().getParamRegex();
     if (regex == null & isNumber()) {
-      regex = "\\d+(\\.\\d+)?";
+      regex = "[+-]?\\d+(\\.\\d+)?([eE]\\d+)?";
     }
   }
 
