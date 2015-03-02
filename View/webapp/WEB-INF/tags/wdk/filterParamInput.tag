@@ -62,7 +62,9 @@ Otherwise a standard select menu is used.
     ${qP.jsonValues}
   </script>
   --%>
-  <div class="loading">Loading...</div>
+  <div class="loading">
+    <imp:image src="wdk/images/wizard-busy.gif"/>
+  </div>
 </div>
 
 <%-- display invalid terms, if any. --%>
