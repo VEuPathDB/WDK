@@ -20,7 +20,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   //==============================================================================
   function initDependentParamHandlers(element) {
     // jshint loopfunc:true
-    var dependedParams = {};
+
+    // map of depended param => dependent params
+    var dependentParams = Object.create(null);
 
     element.find('div.dependentParam').each(function(index, node) {
       var $dependentParam = $(node);
@@ -33,26 +35,26 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var dependedNames = $dependentParam.attr('dependson').split(",");
       for (var i=0; i < dependedNames.length; i++) {
         var dependedName = dependedNames[i];
-        var dependentList = dependedParams[dependedName] ? dependedParams[dependedName] : [];
+        var dependentList = dependentParams[dependedName] ? dependentParams[dependedName] : [];
         dependentList.push(name);
-        dependedParams[dependedName] = dependentList;
+        dependentParams[dependedName] = dependentList;
       }
 
       $dependentParam.find('input, select').prop('disabled',false);
     });
 
     // register change event to dependedParam only once
-    for (var dependedName in dependedParams) {
+    for (var dependedName in dependentParams) {
       var dependedParam = $("div.param[name='" + dependedName + "']");
       dependedParam.change(function(e) {
         e.stopPropagation();
-        onDependedParamChange(dependedParam, element, dependedParams);
+        onDependedParamChange(dependedParam, element, dependentParams);
       });
 
       // also register keyup event for text input
       dependedParam.keyup(_.debounce(function(e) {
         e.stopPropagation();
-        onDependedParamChange(dependedParam, element, dependedParams);        
+        onDependedParamChange(dependedParam, element, dependentParams);        
       }, 1000));
 
       if (dependedParam.is('[data-type="type-ahead"]').length > 0) {
@@ -61,7 +63,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     }
   }
 
-  function onDependedParamChange(dependedParam, dependentElement, dependedParams) {
+  function onDependedParamChange(dependedParam, dependentElement, dependentParams) {
         var dependedName = dependedParam.attr("name");
         var $form = dependedParam.closest("form");
         var $submitButton = $form.find('input[type=submit]');
@@ -70,7 +72,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
         // map list of names to elements
         // then reduce to a list of $.ajax deferred objects
-        var dependentDeferreds = dependedParams[dependedName]
+        var dependentDeferreds = dependentParams[dependedName]
           .map(function(dependentName) {
 
             // return dependentParam reference
