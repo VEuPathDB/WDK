@@ -39,14 +39,24 @@ public class Step {
 
   private static final Logger logger = Logger.getLogger(Step.class);
 
-  private StepFactory stepFactory;
+  // injected during Step object creation
+  private final StepFactory stepFactory;
+  // lazy loaded, but every step has a user
   private User user;
+  // in DB, owning user id
   private int userId;
+  // in DB, Primary key
   private int stepId;
+  // in DB, set during step creation
   private Date createdTime;
+  // in DB, last time Answer generated, written to DB each time
   private Date lastRunTime;
+  // in DB, set by user
   private String customName;
+  // in DB, for soft delete
   private boolean deleted = false;
+
+  // nested step
   private boolean collapsible = false;
   private String collapsedName = null;
 
@@ -54,29 +64,71 @@ public class Step {
   private String projectVersion;
   private String questionName;
 
+  // Steps within the "main branch" strategy flow
+  //  Next Step must be combined step (e.g. transform or boolean/span-logic (two-answer function))
   private Step nextStep = null;
+  //  Previous step could be first step (=leaf), or combined step
   private Step previousStep = null;
+
+  // Parent step must be a boolean
   private Step parentStep = null;
+  // Child can be a "normal" leaf, or collapsible version of leaf, boolean, or transform
   private Step childStep = null;
 
+  // Probably should be marked deprecated
+  //  Jerric says can be retrieved from param values
   private String booleanExpression;
 
+  // in DB, set during maintenance (true or null = valid, false = invalid)
   private boolean valid = true;
+  // set during runtime so we don't recheck validity over and over as we check the tree
   private boolean validityChecked = false;
 
+  /**
+   * First set when step was created and answer generated, size stored in DB.
+   * So can use this to show step size without pulling records from cache.
+   * Size == -1 means must rerun step (and recache results), get size and store in step table.
+   * Can be out of date for releases since we don't rerun strategies on release.
+   * Should be reset on step table every time we rerun step.
+   * EstimateSize is set to -1 when step is revised (in place)- also all steps affected by
+   *   this step are also changed to -1 so the values are set when those steps are rerun
+   * (i.e. value of -1 means step is "dirty" (modified but not run))
+   */
   private int estimateSize = 0;
 
+  // name of (non-parameterized) filter instance applied to this step (if any), DB value of null = no filter
+  //   if any filters exist on a recordclass, model must have a "default" filter; usually this is
+  //   a filter that simply returns all the results.  The default filter is automatically applied to a step.
+  //   This affects the UI- if no filter OR the default filter is applied, the filter icon does not appear
   private String filterName;
+
+  // AnswerValue for this step (see AnswerValue)
   private AnswerValue answerValue;
 
+  // Map of param name (without set name) to stable value (always a string), which are:
+  //   StringParam: unquoted raw value
+  //   TimestampParam: millisecs since 1970 (or whatever)
+  //   DatasetParam: Dataset ID (PK int column in Datasets table in apicomm)
+  //   AbstractEnumParam: unsorted string representation of term list (comma-delimited)
+  //     EnumParam: (inherited)
+  //     FlatVocabParam: (inherited)
+  //       FilterParam: JSON string representing all filters applied (see FilterParam)
+  //   AnswerParam: Step ID
   private Map<String, String> paramValues = new LinkedHashMap<String, String>();
 
+  // only applied to leaf steps, user-defined
+  // during booleans, weights of records are modified (per boolean-specific logic, see BooleanQuery)
   private int assignedWeight;
 
+  // in DB, for those steps unloaded (i.e. previous and child steps are lazy loaded)
   private int previousStepId;
   private int childStepId;
 
+  // This value may or may not be used by the UI, but it is not changed.  isRevisable always returns true
   private boolean revisable = true;
+
+  // Set if exception occurs during step loading (but we don't want to bubble the exception up)
+  // This allows the UI to show a "broken" step but not hose the whole strategy
   private Exception exception;
 
   /**
