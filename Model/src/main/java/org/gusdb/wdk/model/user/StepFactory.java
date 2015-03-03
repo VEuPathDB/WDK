@@ -1701,13 +1701,13 @@ public class StepFactory {
   }
 
   /**
-   * TODO - consider refactor this code into platform.
+   * Generates an SQL that will return the step and all the steps along the path back to the root.
    * 
    * @param stepId
-   * @return
+   * @return an SQL that returns a step_id column.
    * @throws WdkModelException
    */
-  private String selectStepAndParents(int stepId) throws WdkModelException {
+  public String selectStepAndParents(int stepId) throws WdkModelException {
     DBPlatform platform = userDb.getPlatform();
     String sql;
     String stepTable = userSchema + "steps";
