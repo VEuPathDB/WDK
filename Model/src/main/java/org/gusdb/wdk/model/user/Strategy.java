@@ -179,6 +179,14 @@ public class Strategy {
     return getLatestStep().getStepByDisplayId(id);
   }
 
+  /**
+   * @param overwrite
+   *          if true, it will overwrite the strategy even if it's already saved; if false, we will create a
+   *          new unsaved copy if the strategy is already saved.
+   *          
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
   public void update(boolean overwrite) throws WdkModelException, WdkUserException {
     stepFactory.updateStrategy(user, this, overwrite);
   }
@@ -193,7 +201,7 @@ public class Strategy {
    * Insert a new step before the target. The new step will become the previous step of the target, and the
    * old previousStep of the target should become the previousStep of the new step.
    * 
-   * @param newStep
+   * @param newStep the newStep
    * @param targetId
    * @throws WdkModelException
    * @throws WdkUserException
@@ -226,7 +234,9 @@ public class Strategy {
           // copy information from target step
           newStep.setCollapsible(targetStep.isCollapsible());
           newStep.setCollapsedName(targetStep.getCollapsedName());
+          newStep.update(false);    // don't need to update LastRunTime
           targetStep.setCollapsible(false);
+          targetStep.update(false);
 
           // check and set the newStep as the child of the parent, to replace the target step
           parentStep.checkChildAllowed(newStep);
@@ -236,7 +246,7 @@ public class Strategy {
         }
         else { // target is at the end of the strategy, set newStep as the end of the strategy
           setLatestStep(newStep);
-          update(false);
+          update(false);    // don't overwrite a saved strategy.
           rootMap.put(targetId, newStep.getStepId());
         }
       }
@@ -257,10 +267,14 @@ public class Strategy {
   }
 
   /**
-   * Inserting a step after the target. This is used when we add steps in main and nested strategy.
+   * Inserting a step after the target. This is used when we add steps in main and nested strategy. The
+   * newStep will become the next step of the target.
    * 
    * @param newStep
+   *          The next step has to be a combined step, with the target as the previous step of it.
    * @param targetId
+   *          a target step id that can live anywhere in the step tree.
+   * @return a map of oldStepId to newStepId that are roots of the strategy or nested strategy.
    * @throws WdkModelException
    * @throws WdkUserException
    */
@@ -287,21 +301,23 @@ public class Strategy {
       nextStep.saveParamFilters();
     }
     else { // newStep will be the last one in main/nested strategy
-      Step parentStep =getParent(targetStep);
+      Step parentStep = getParent(targetStep);
       if (parentStep != null) {
         // make sure the parent step can take the newStep as childStep
         parentStep.checkChildAllowed(newStep);
       }
 
       // copy over collapsing info
-      newStep.setCollapsible(previousStep.isCollapsible());
-      newStep.setCollapsedName(previousStep.getCollapsedName());
-      newStep.update(false);
+      if (previousStep.isCollapsible()) {
+        newStep.setCollapsible(previousStep.isCollapsible());
+        newStep.setCollapsedName(previousStep.getCollapsedName());
+        newStep.update(false);
 
-      // reset the colllapsing infom
-      previousStep.setCollapsible(false);
-      previousStep.setCollapsedName(null);
-      previousStep.update(false);
+        // reset the colllapsing infom
+        previousStep.setCollapsible(false);
+        previousStep.setCollapsedName(null);
+        previousStep.update(false);
+      }
 
       rootMap.put(previousStep.getStepId(), newStep.getStepId());
 
@@ -313,7 +329,7 @@ public class Strategy {
       }
       else { // a step is inserted at the end of main strategy
         setLatestStep(newStep);
-        update(true);
+        update(false);
       }
     }
     return rootMap;
