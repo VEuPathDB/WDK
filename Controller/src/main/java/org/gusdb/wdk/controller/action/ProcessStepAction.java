@@ -1,7 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -161,7 +160,7 @@ public class ProcessStepAction extends Action {
 
   private void reviseStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
       UserBean user, StrategyBean strategy, StepBean step, String customName) throws NumberFormatException,
-      WdkUserException, WdkModelException, SQLException {
+      WdkUserException, WdkModelException {
     logger.debug("Revising step...");
 
     // current step has to exist for revise
@@ -190,7 +189,7 @@ public class ProcessStepAction extends Action {
 
   private Map<Integer, Integer> insertStep(HttpServletRequest request, QuestionForm form,
       WdkModelBean wdkModel, UserBean user, StrategyBean strategy, StepBean step, String customName)
-      throws WdkUserException, WdkModelException, SQLException {
+      throws WdkUserException, WdkModelException {
     logger.debug("Inserting step...");
 
     // current step has to exist for insert
@@ -242,7 +241,7 @@ public class ProcessStepAction extends Action {
 
   private Map<Integer, Integer> addStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
       UserBean user, StrategyBean strategy, String customName) throws WdkUserException,
-      NumberFormatException, WdkModelException, SQLException {
+      NumberFormatException, WdkModelException {
     logger.debug("Adding step...");
 
     // get root step

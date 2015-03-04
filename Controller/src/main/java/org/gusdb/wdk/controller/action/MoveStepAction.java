@@ -42,7 +42,7 @@ public class MoveStepAction extends ProcessFilterAction {
 
       // Make sure strategy, step, and moveto are defined
       String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-      String strBranchId = null;
+      //String strBranchId = null;
       String strMoveFromId = request.getParameter("movefrom");
       String op = request.getParameter("op");
       String strMoveToId = request.getParameter("moveto");
@@ -62,7 +62,7 @@ public class MoveStepAction extends ProcessFilterAction {
       }
 
       if (strStratId.indexOf("_") > 0) {
-        strBranchId = strStratId.split("_")[1];
+        //strBranchId = strStratId.split("_")[1];
         strStratId = strStratId.split("_")[0];
       }
 
@@ -75,10 +75,9 @@ public class MoveStepAction extends ProcessFilterAction {
         return null;
       }
 
-      int oldStrategyId = strategy.getStrategyId();
-
-      int moveFromId = Integer.valueOf(strMoveFromId);
-      int moveToId = Integer.valueOf(strMoveToId);
+      //int oldStrategyId = strategy.getStrategyId();
+      //int moveFromId = Integer.valueOf(strMoveFromId);
+      //int moveToId = Integer.valueOf(strMoveToId);
 
       // Map<Integer, Integer> stepIdsMap = strategy.moveStep(moveFromId,
       // moveToId, strBranchId);
