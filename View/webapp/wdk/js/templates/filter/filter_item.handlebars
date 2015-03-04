@@ -1,4 +1,10 @@
 <div class="ui-corner-all">
-  <a class="select" href="#{{field.term}}">{{field.display}} is {{filter}}</a>
+  <a class="select" href="#{{field.term}}" title="{{filter}}">
+    {{#if filter}}
+      {{field.display}} is {{filter}}
+    {{else}}
+      No {{field.display}} selected
+    {{/if}}
+  </a>
   <span title="remove quality" class="remove">&#215;</span>
 </div>

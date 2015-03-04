@@ -48,7 +48,7 @@ Otherwise a standard select menu is used.
     <%-- multiPick is true, use checkboxes or scroll pane --%>
     <c:choose>
       <c:when test="${displayType eq 'checkBox' or (displayType eq null and fn:length(qP.vocab) lt 15)}"><!-- use checkboxes -->
-        <div class="param param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+        <div class="param enumParam param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
           <c:set var="initialCount" value="${fn:length(qP.currentValues)}"/>
           <imp:enumCountWarning enumParam="${qP}" initialCount="${initialCount}"/>
           <c:set var="changeCode" value="window.wdk.parameterHandlers.adjustEnumCountBoxes('${qP.name}aaa')"/>

@@ -36,7 +36,7 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
     // don't use # shortcut for id lookup here...special characters
     // in element id cause problems, and for some reason escaping
     // with \\ (as spec'd in jquery docs) is not working.
-    $("div[id='" + textLayerName + "'] a").text(content);
+    $("div[id='" + textLayerName + "'] a:first").text(content);
     return true;
   }
 

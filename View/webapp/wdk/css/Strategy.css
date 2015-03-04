@@ -516,6 +516,10 @@ div.transform a.crumb_name img{
   z-index: 1;
 }
 
+span.append {
+  font-size: 20px;
+}
+
 /*
 .diagram .strategy-name.wdk-editable {
 padding-bottom: 5px;
@@ -699,7 +703,6 @@ b.strat_help_title > span {
 #query_form form {
   position: relative;
   margin-top:40px;
-  min-width: 1000px;
 }
 
 #query_form .dragHandle, .attributesList .dragHandle {
@@ -844,7 +847,7 @@ b.strat_help_title > span {
   margin: 4px;
   margin-left: auto;
   margin-right: auto;
-  width: 95%;
+  width: 100%;   /* 95%; refs #17752 */
   padding: 0;
 }
 

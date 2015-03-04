@@ -29,7 +29,7 @@
 </c:choose>
 <c:set var="noAction" value="${requestScope.action == null || requestScope.action == ''}" />
 
-<div id="${qp.name}" class="param datasetParam"
+<div id="${qp.name}" class="param datasetParam" name="${pNam}"
      data-controller="wdk.components.datasetParam.init">
 
   <table id="${qp.name}">

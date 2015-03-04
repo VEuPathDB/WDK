@@ -1,7 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
-import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +26,13 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
+/**
+ * Process regular or transform questions in the context of Wizard. any other types of combined steps won't be
+ * using this action.
+ * 
+ * @author jerric
+ *
+ */
 public class ProcessStepAction extends Action {
 
   public static final String PARAM_STRATEGY = "strategy";
@@ -39,9 +46,8 @@ public class ProcessStepAction extends Action {
   private static final Logger logger = Logger.getLogger(ProcessStepAction.class);
 
   @Override
-  public ActionForward execute(ActionMapping mapping, ActionForm form,
-      HttpServletRequest request, HttpServletResponse response)
-      throws Exception {
+  public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+      HttpServletResponse response) throws Exception {
     logger.debug("Entering ProcessStepAction...");
 
     // get user & model
@@ -68,24 +74,24 @@ public class ProcessStepAction extends Action {
 
       QuestionForm questionForm = (QuestionForm) form;
 
-      Map<Integer, Integer> stepIdsMap;
+      Map<Integer, Integer> rootMap;
       String action = request.getParameter(PARAM_ACTION);
       if (action.equals(WizardForm.ACTION_REVISE)) {
-        // revise a boolean step
-        stepIdsMap = reviseStep(request, questionForm, wdkModel, user,
-            strategy, step, customName);
-      } else if (action.equals(WizardForm.ACTION_INSERT)) {
-        stepIdsMap = insertStep(request, questionForm, wdkModel, user,
-            strategy, step, customName);
-      } else { // add a boolean step
-        stepIdsMap = addStep(request, questionForm, wdkModel, user, strategy,
-            customName);
+        // revise the given step with the question & params information.
+        reviseStep(request, questionForm, wdkModel, user, strategy, step, customName);
+        rootMap = new HashMap<>();
+      }
+      else if (action.equals(WizardForm.ACTION_INSERT)) {
+        // insert a step.
+        rootMap = insertStep(request, questionForm, wdkModel, user, strategy, step, customName);
+      }
+      else { // add a boolean step
+        rootMap = addStep(request, questionForm, wdkModel, user, strategy, customName);
       }
 
       // the strategy id might change due to editting on saved strategies.
       // New unsaved strategy is created.
-      user.replaceActiveStrategy(oldStrategyId, strategy.getStrategyId(),
-          stepIdsMap);
+      user.replaceActiveStrategy(oldStrategyId, strategy.getStrategyId(), rootMap);
 
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
       StringBuffer url = new StringBuffer(showStrategy.getPath());
@@ -95,12 +101,14 @@ public class ProcessStepAction extends Action {
       forward.setRedirect(true);
       System.out.println("Leaving ProcessStepAction...");
       return forward;
-    } catch (WdkOutOfSyncException ex) {
+    }
+    catch (WdkOutOfSyncException ex) {
       logger.error(ex);
       ex.printStackTrace();
       ShowStrategyAction.outputOutOfSyncJSON(wdkModel, user, response, state);
       return null;
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       logger.error(ex);
       ex.printStackTrace();
       ShowStrategyAction.outputErrorJSON(user, response, ex);
@@ -108,14 +116,13 @@ public class ProcessStepAction extends Action {
     }
   }
 
-  private StrategyBean getStrategy(HttpServletRequest request, UserBean user)
-      throws WdkModelException, WdkUserException {
+  private StrategyBean getStrategy(HttpServletRequest request, UserBean user) throws WdkModelException,
+      WdkUserException {
 
     // get current strategy
     String strategyKey = request.getParameter(PARAM_STRATEGY);
     if (strategyKey == null || strategyKey.length() == 0)
-      throw new WdkUserException("No strategy was specified for "
-          + "processing!");
+      throw new WdkUserException("No strategy was specified for " + "processing!");
 
     // did we get strategyId_stepId?
     int pos = strategyKey.indexOf("_");
@@ -125,18 +132,17 @@ public class ProcessStepAction extends Action {
     StrategyBean strategy = user.getStrategy(Integer.parseInt(strStratId));
     String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
     if (checksum != null && !strategy.getChecksum().equals(checksum))
-      throw new WdkOutOfSyncException("strategy checksum: "
-          + strategy.getChecksum() + ", but the input checksum: " + checksum);
+      throw new WdkOutOfSyncException("strategy checksum: " + strategy.getChecksum() +
+          ", but the input checksum: " + checksum);
 
     return strategy;
   }
 
-  private StepBean getRootStep(HttpServletRequest request, UserBean user,
-      StrategyBean strategy) throws WdkUserException, WdkModelException {
+  private StepBean getRootStep(HttpServletRequest request, UserBean user, StrategyBean strategy)
+      throws WdkUserException, WdkModelException {
     String strategyKey = request.getParameter(PARAM_STRATEGY);
     if (strategyKey == null || strategyKey.length() == 0)
-      throw new WdkUserException("No strategy was specified for "
-          + "processing!");
+      throw new WdkUserException("No strategy was specified for " + "processing!");
     int pos = strategyKey.indexOf("_");
 
     // load branch root, if exists
@@ -144,104 +150,66 @@ public class ProcessStepAction extends Action {
     if (pos > 0) {
       int branchRootId = Integer.valueOf(strategyKey.substring(pos + 1));
       rootStep = strategy.getStepById(branchRootId);
-    } else {
+    }
+    else {
       rootStep = strategy.getLatestStep();
     }
 
     return rootStep;
   }
 
-  private Map<Integer, Integer> reviseStep(HttpServletRequest request,
-      QuestionForm form, WdkModelBean wdkModel, UserBean user,
-      StrategyBean strategy, StepBean step, String customName)
-      throws NumberFormatException, WdkUserException, WdkModelException,
-      SQLException {
+  private void reviseStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
+      UserBean user, StrategyBean strategy, StepBean step, String customName) throws NumberFormatException,
+      WdkUserException, WdkModelException {
     logger.debug("Revising step...");
 
     // current step has to exist for revise
     if (step == null)
-      throw new WdkUserException("Required param " + PARAM_STEP
-          + " is missing.");
-
-    StepBean newStep;
-
-    // get the weight, or use the current step's.
-    Integer weight = getWeight(request);
-    if (weight == null)
-      weight = step.getAssignedWeight();
+      throw new WdkUserException("Required param " + PARAM_STEP + " is missing.");
 
     // check if the question name exists
     String questionName = request.getParameter(PARAM_QUESTION);
+    String filterName = request.getParameter(PARAM_FILTER);
     if (questionName != null && questionName.length() > 0) {
       // revise a step with a new question
-      QuestionBean question = wdkModel.getQuestion(questionName);
-      Map<String, String> params = ProcessQuestionAction.prepareParams(user,
-          request, form);
-      // reuse the filter of the current step
-      // but only if it's valid for the revised recordclass, and if the step
-      // uses the same question as the assigned question
-      String filterName = step.getFilterName();
-      if (!step.getQuestionName().equals(questionName) || !question.getRecordClass().getFilterMap().containsKey(filterName)) {
-        filterName = null;
-      }
-
-      newStep = user.createStep(question, params, filterName, false, true,
-          weight);
-    } else {
-      // just revise the current step with a new filter or new weight
-
-      // get filter from request, if having any
-      String filterName = request.getParameter(PARAM_FILTER);
-      if (filterName == null || filterName.length() == 0)
-        filterName = step.getFilterName();
-
-      newStep = step.createStep(filterName, weight);
+      Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, form);
+      step.setQuestionName(questionName);
+      step.setParamValues(params);
     }
-
-    // must copy all analysis instance configurations from old step to new step
-    wdkModel.getModel().getStepAnalysisFactory().copyAnalysisInstances(step.getStep(), newStep.getStep());
-    
-    // set custom name to the new step
-    if (customName != null) {
-      newStep.setCustomName(customName);
-      newStep.update(false);
+    else if (filterName != null && filterName.length() > 0) {
+      // just revise the current step with a new filter
+      step.setFilterName(filterName);
     }
-
-    // the new step is to replace the current one.
-    Map<Integer, Integer> changeMap = strategy.editOrInsertStep(
-        step.getStepId(), newStep);
-    return changeMap;
+    else { // missing required params
+      throw new WdkUserException("Required parameter " + PARAM_QUESTION + " or " + PARAM_FILTER +
+          " is missing");
+    }
+    step.saveParamFilters();
   }
 
-  private Map<Integer, Integer> insertStep(HttpServletRequest request,
-      QuestionForm form, WdkModelBean wdkModel, UserBean user,
-      StrategyBean strategy, StepBean step, String customName)
-      throws WdkUserException, WdkModelException,
-      SQLException {
+  private Map<Integer, Integer> insertStep(HttpServletRequest request, QuestionForm form,
+      WdkModelBean wdkModel, UserBean user, StrategyBean strategy, StepBean step, String customName)
+      throws WdkUserException, WdkModelException {
     logger.debug("Inserting step...");
 
     // current step has to exist for insert
     if (step == null)
-      throw new WdkUserException("Required param " + PARAM_STEP
-          + " is missing.");
+      throw new WdkUserException("Required param " + PARAM_STEP + " is missing.");
 
     // the question name has to exist
     String questionName = request.getParameter(PARAM_QUESTION);
     if (questionName == null || questionName.length() == 0)
-      throw new WdkUserException("Required param " + PARAM_QUESTION
-          + " is missing.");
+      throw new WdkUserException("Required param " + PARAM_QUESTION + " is missing.");
 
     QuestionBean question = wdkModel.getQuestion(questionName);
-    Map<String, String> params = ProcessQuestionAction.prepareParams(user,
-        request, form);
+    Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, form);
 
     // get the weight, or use the current step's.
     Integer weight = getWeight(request);
     if (weight == null)
       weight = Utilities.DEFAULT_WEIGHT;
 
-    StepBean newStep = user.createStep(question, params, null, false, true,
-        weight);
+    StepBean newStep = user.createStep(question, params, null, false, true, weight);
     if (customName != null) {
       newStep.setCustomName(customName);
       newStep.update(false);
@@ -260,25 +228,20 @@ public class ProcessStepAction extends Action {
       String filterName = step.getFilterName();
       weight = step.getAssignedWeight();
 
-      StepBean newParent = user.createStep(question, params, filterName, false,
-          true, weight);
+      StepBean newParent = user.createStep(question, params, filterName, false, true, weight);
 
       // then replace the current step with the newParent
-      return strategy.editOrInsertStep(step.getStepId(), newParent);
-    } else {
+      return strategy.insertStepBefore(newParent, step.getStepId());
+    }
+    else { // insert on any other steps
       // the new step is to replace the previous step of the current one
-
-      // need to recover the link to the original current step
-      previousStep.setNextStep(step);
-
-      return strategy.editOrInsertStep(previousStep.getStepId(), newStep);
+      return strategy.insertStepBefore(newStep, step.getStepId());
     }
   }
 
-  private Map<Integer, Integer> addStep(HttpServletRequest request,
-      QuestionForm form, WdkModelBean wdkModel, UserBean user,
-      StrategyBean strategy, String customName) throws WdkUserException,
-      NumberFormatException, WdkModelException, SQLException {
+  private Map<Integer, Integer> addStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
+      UserBean user, StrategyBean strategy, String customName) throws WdkUserException,
+      NumberFormatException, WdkModelException {
     logger.debug("Adding step...");
 
     // get root step
@@ -287,37 +250,24 @@ public class ProcessStepAction extends Action {
     // the question name has to exist
     String questionName = request.getParameter(PARAM_QUESTION);
     if (questionName == null || questionName.length() == 0)
-      throw new WdkUserException("Required param " + PARAM_QUESTION
-          + " is missing.");
+      throw new WdkUserException("Required param " + PARAM_QUESTION + " is missing.");
 
     QuestionBean question = wdkModel.getQuestion(questionName);
-    Map<String, String> params = ProcessQuestionAction.prepareParams(user,
-        request, form);
+    Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, form);
 
     // get the weight, or use the current step's.
     Integer weight = getWeight(request);
     if (weight == null)
       weight = Utilities.DEFAULT_WEIGHT;
 
-    StepBean newStep = user.createStep(question, params, null, false, true,
-        weight);
+    StepBean newStep = user.createStep(question, params, null, false, true, weight);
     if (customName != null) {
       newStep.setCustomName(customName);
       newStep.update(false);
     }
 
     logger.debug("root step: " + rootStep);
-    if (rootStep.getStepId() != strategy.getLatestStepId()) {
-      // add on a branch, it is equivalent to a insert
-      newStep.setIsCollapsible(true);
-      newStep.setCollapsedName(rootStep.getCollapsedName());
-
-      // the new Step is to replace the current branch root
-      return strategy.editOrInsertStep(rootStep.getStepId(), newStep);
-    } else {
-      // add on top level, append the step to the end of the strategy.
-      return strategy.addStep(rootStep.getStepId(), newStep);
-    }
+    return strategy.insertStepAfter(newStep, rootStep.getStepId());
   }
 
   private Integer getWeight(HttpServletRequest request) throws WdkUserException {
@@ -327,8 +277,8 @@ public class ProcessStepAction extends Action {
     Integer weight = null;
     if (hasWeight) {
       if (!strWeight.matches("[\\-\\+]?\\d+"))
-        throw new WdkUserException("Invalid weight value: '" + strWeight
-            + "'. Only integer numbers are allowed.");
+        throw new WdkUserException("Invalid weight value: '" + strWeight +
+            "'. Only integer numbers are allowed.");
       if (strWeight.length() > 9)
         throw new WdkUserException("Weight number is too big: " + strWeight);
       weight = Integer.parseInt(strWeight);

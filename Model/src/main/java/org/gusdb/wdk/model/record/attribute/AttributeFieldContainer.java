@@ -18,4 +18,6 @@ import org.gusdb.wdk.model.record.TableField;
 public interface AttributeFieldContainer {
 
   public Map<String, AttributeField> getAttributeFieldMap();
+  public AttributeField[] getAttributeFields();
+
 }

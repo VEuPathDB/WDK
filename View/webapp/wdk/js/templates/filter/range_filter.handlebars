@@ -23,8 +23,9 @@
   </div>
 
   <div>
-  Select {{field.display}} between
-    <input name="min" type="text" size="6" placeholder="{{min}}" autocomplete="off" /> and
+    Between
+    <input name="min" type="text" size="6" placeholder="{{min}}" autocomplete="off" />
+    and
     <input name="max" type="text" size="6" placeholder="{{max}}" autocomplete="off" />
     <span class="selection-total"></span>
   </div>
@@ -32,7 +33,7 @@
   <div>
     <div class="chart"></div>
     <div class="chart-title x-axis">{{field.display}} ({{field.units}})</div>
-    <div class="chart-title y-axis">Frequency</div>
+    <div class="chart-title y-axis">{{options.title}}</div>
   </div>
 </div>
 

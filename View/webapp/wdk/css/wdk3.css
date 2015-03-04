@@ -1,0 +1,150 @@
+/* apply a natural box layout model to all elements, but allowing components to change */
+/* See http://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
+@import 'fixed-data-table.css';
+html {
+  box-sizing: border-box;
+}
+/* Unfortunately, this does not play well with legacy WDK CSS
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+*/
+
+/*
+body {
+  font-family: sans-serif;
+  font-size: 14px;
+}
+*/
+
+main {
+  position: relative;
+  min-height: 200px;
+}
+h1 {
+  text-align: left;
+}
+h3 {
+  margin: 22px 0 8px 0;
+}
+h4 {
+  margin: 10px 0 8px 0;
+}
+
+.wdkAnswerLoading {
+  position: absolute;
+  left: 50%;
+}
+
+.wdk-Loading {
+  position: absolute;
+  top: 2em;
+  left: 50%;
+}
+
+.wdk-Answer-filter {
+  float: right;
+  margin-right: 1.5em;
+}
+.wdk-Answer-filterButton {
+  border: none;
+  background: transparent;
+  color: #5F0F47;
+  vertical-align: middle;
+  padding: 6px;
+}
+
+.wdk-RecordTable-Wrapper {
+  position: relative;
+  overflow-x: auto;
+  padding: 0 5px 5px 0;
+}
+
+.wdk-RecordTable {
+  border-collapse: collapse;
+}
+
+.wdk-RecordTable td, .wdk-RecordTable th {
+  padding: .5em;
+  min-width: 100px;
+}
+.wdk-RecordTable td {
+  border: 1px dotted #cccccc;
+}
+
+.wdk-RecordTable td {
+
+}
+
+.wdk-RecordTable-headerWrapper {
+  position: relative;
+}
+
+.wdk-RecordTable th {
+  border: 1px solid #cccccc;
+  font-weight: bold;
+  background-color: #f3f3f3;
+  white-space: nowrap;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wdk-RecordTable th .ui-icon {
+  display: inline-block;
+}
+
+.wdk-RecordTable-attributeValue {
+  line-height: 1.6;
+}
+
+.wdk-RecordTable-headerWrapper .ui-icon-close {
+  visibility: hidden;
+  cursor: pointer;
+  float: right;
+}
+
+.wdk-RecordTable-headerWrapper:hover .ui-icon-close {
+  visibility: visible;
+}
+
+.wdk-RecordTable-headerWrapper .ui-icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: .5em;
+}
+
+.wdk-RecordTable-AttributeSelectorWrapper {
+  float: right;
+}
+
+.wdk-RecordTable-AttributeSelector {
+  list-style: none;
+}
+
+.wdk-RecordTable-AttributeSelectorButtonWrapper {
+  text-align: center;
+  padding: 4px;
+}
+
+.wdk-RecordList {
+  position: relative;
+  overflow: auto;
+  background: #eaeaea;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.wdk-RecordList-Record {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+  background: white;
+  margin: 2em 1em;
+  padding: .5em;
+  word-wrap: break-word;
+}
+
+.wdk-Record {
+  padding: 0 1em;
+}
+
+.wdk-Record h4 {
+  text-decoration: underline;
+}

@@ -118,19 +118,19 @@ wdk.namespace('wdk.models.filter', function(ns) {
   }
 
   // Sort tree such that terminal nodes are before non-terminal nodes
-  function sortTree(tree) {
-    return _(tree)
-      .map(function(node) {
-        if (node.children) {
-          node.children = sortTree(node.children);
-        }
-        return node;
-      })
-      .sortBy(function(node) {
-        return Boolean(node.children);
-      })
-      .value();
-  }
+  // function sortTree(tree) {
+  //   return _(tree)
+  //     .map(function(node) {
+  //       if (node.children) {
+  //         node.children = sortTree(node.children);
+  //       }
+  //       return node;
+  //     })
+  //     .sortBy(function(node) {
+  //       return Boolean(node.children);
+  //     })
+  //     .value();
+  // }
 
 
   //
@@ -155,13 +155,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
     // static properties
 
-    // Use String as constructor so that the following is true:
-    //
-    //     'Uknown' !== Field.UNKNOWN_VALUE
-    //
-    // This will make it possible to differentiate between this
-    // and a valid value of 'Unknown'.
-    UNKNOWN_VALUE: new String('Unknown') // jshint ignore:line
+    UNKNOWN_VALUE: 'Unknown'
 
   });
 
@@ -193,8 +187,8 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
       // Create tree, then prune it so it's easier to read
       var makeTree = options.trimMetadataTerms
-        ? _.compose(sortTree, removeParentsWithSingleChild, removeSingleTopNode, constructTree)
-        : _.compose(sortTree, constructTree);
+        ? _.compose(/* sortTree, */ removeParentsWithSingleChild, removeSingleTopNode, constructTree)
+        : _.compose(/* sortTree, */ constructTree);
 
       // get all ontology terms starting from `filterable` fields
       // and traversing upwards by the `parent` attribute

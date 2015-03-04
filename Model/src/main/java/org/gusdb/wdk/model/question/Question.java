@@ -151,6 +151,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * revise build flag on what build this question is revised.
    */
   private String reviseBuild;
+  
+  
+  private List<QuestionSuggestion> _suggestions = new ArrayList<>();
 
   // /////////////////////////////////////////////////////////////////////
   // setters called at initialization
@@ -233,6 +236,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       return false; // current release is not set
     else
       return (currentBuild.equals(reviseBuild));
+  }
+  
+  public void addSuggestion(QuestionSuggestion suggestion) {
+    this._suggestions.add(suggestion);
   }
 
   @Override
@@ -505,7 +512,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   }
 
   /**
-   * if true, when the result has only one record, we will skip the strategy
+   * if true, when the result has only one record, we will skip the results
    * page and redirect user to the record page.
    * 
    * @return the noSummaryOnSingleRecord
@@ -567,6 +574,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   @Override
   public Map<String, AttributeField> getAttributeFieldMap() {
     return getAttributeFieldMap(FieldScope.ALL);
+  }
+
+  @Override
+  public AttributeField[] getAttributeFields() {
+    AttributeField[] array = {};
+    return getAttributeFieldMap(FieldScope.ALL).values().toArray(array);
   }
 
   public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
@@ -896,6 +909,15 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
     }
     stepAnalysisList = null;
+    
+    // excluding suggestions
+    for (QuestionSuggestion suggestion : _suggestions) {
+      if (suggestion.include(projectId)) {
+        suggestion.excludeResources(projectId);
+        this.newBuild = suggestion.getNewBuild();
+        this.reviseBuild = suggestion.getReviseBuild();
+      }
+    }
   }
 
   /**

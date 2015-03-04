@@ -15,6 +15,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.events.Event;
+import org.gusdb.fgputil.events.EventListener;
+import org.gusdb.fgputil.events.Events;
+import org.gusdb.wdk.events.StepCopiedEvent;
+import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -45,7 +50,7 @@ import org.gusdb.wdk.model.user.analysis.FutureCleaner.RunningAnalysis;
  *   - valid step + analysis name + version + props + params = def to execution
  *   - cache of execDef -> status/results
  */
-public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
+public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListener {
 
   private static Logger LOG = Logger.getLogger(StepAnalysisFactoryImpl.class);
 
@@ -80,6 +85,49 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
         new StepAnalysisInMemoryDataStore(wdkModel));
     _fileStore = new StepAnalysisFileStore(Paths.get(_execConfig.getFileStoreDirectory()));
     startThreadPool();
+    Events.subscribe(this, StepRevisedEvent.class, StepCopiedEvent.class);
+  }
+
+  /**
+   * Performs actions based on passed events.
+   */
+  @Override
+  public void eventTriggered(Event event) throws Exception {
+    if (event instanceof StepRevisedEvent) {
+      invalidateResults(((StepRevisedEvent)event).getRevisedStep());
+    }
+    else if (event instanceof StepCopiedEvent) {
+      StepCopiedEvent copyEvent = (StepCopiedEvent)event;
+      copyAnalysisInstances(copyEvent.getFromStep(), copyEvent.getToStep());
+    }
+  }
+
+  private void invalidateResults(Step step) throws WdkModelException, WdkUserException {
+    LOG.info("Request made to reassess analyses of step " + step.getStepId());
+    Map<Integer, StepAnalysisContext> contexts = _dataStore.getAnalysesByStepId(step.getStepId(), _fileStore);
+    for (StepAnalysisContext context : contexts.values()) {
+      LOG.info("Reassessing step analysis with ID " + context.getAnalysisId());
+      LOG.trace("TRACE: " + context.getInstanceJson());
+
+      // non-new steps that have been revised have invalid results until run again
+      if (!(context.getState().equals(StepAnalysisState.NO_RESULTS) ||
+            context.getState().equals(StepAnalysisState.INVALID_RESULTS))) {
+        context.setState(StepAnalysisState.INVALID_RESULTS);
+        _dataStore.setState(context.getAnalysisId(), StepAnalysisState.INVALID_RESULTS);
+      }
+
+      // check revised step for validity and update if newly invalid
+      try {
+        checkStepForValidity(context);
+        context.setIsValidStep(true);
+      }
+      catch (IllegalAnswerValueException e) {
+        // if answer value of toStep is not valid for the given analysis, mark as
+        // such and save; user will not be shown form and will be unable to run analysis
+        context.setIsValidStep(false, e.getMessage());
+        _dataStore.setInvalidStepReason(context.getAnalysisId(), context.getInvalidStepReason());
+      }
+    }
   }
 
   @Override
@@ -157,8 +205,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory {
     return copy;
   }
 
-  @Override
-  public void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException, WdkUserException {
+  private void copyAnalysisInstances(Step fromStep, Step toStep) throws WdkModelException, WdkUserException {
     LOG.info("Request made to copy analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
     Map<Integer, StepAnalysisContext> fromContexts = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
     for (StepAnalysisContext fromContext : fromContexts.values()) {

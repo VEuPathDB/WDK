@@ -1,0 +1,58 @@
+import Immutable from 'immutable';
+import createStore from '../utils/createStore';
+import * as ActionType from '../ActionType';
+
+
+export default createStore ({
+
+  state: Immutable.fromJS({
+    recordClasses: [],
+    isLoading: false,
+    error: null
+  }),
+
+  dispatchHandler(action, emitChange) {
+    switch(action.type) {
+
+      case ActionType.RECORD_CLASS_LOADING:
+        this.handleLoading(action, emitChange);
+        break;
+
+      case ActionType.RECORD_CLASS_LOAD_SUCCESS:
+        this.handleLoadSuccess(action, emitChange);
+        break;
+
+      case ActionType.RECORD_CLASS_LOAD_ERROR:
+        this.handleLoadError(action, emitChange);
+        break;
+
+    }
+  },
+
+  handleLoading(action, emitChange) {
+    this.state = this.state.merge({
+      isLoading: true,
+      error: null
+    });
+    emitChange();
+  },
+
+  handleLoadSuccess(action, emitChange) {
+    const { recordClass } = action;
+    const recordClasses = this.state.get('recordClasses');
+    this.state = this.state.set('recordClasses', recordClasses.push(recordClass));
+    emitChange();
+  },
+
+  handleLoadError(action, emitChange) {
+    this.state = this.state.merge({
+      isLoading: false,
+      error: action.error
+    });
+    emitChange();
+  },
+
+  getState() {
+    return this.state.toJS();
+  }
+});

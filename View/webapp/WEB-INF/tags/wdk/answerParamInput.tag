@@ -23,6 +23,8 @@ Otherwise a standard select menu is used.
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="opt" value="0"/>
 
+<div class="param answerParam" name="${pNam}">
+
 <c:choose>
   <c:when test="${qp.isReadonly}">
     <c:set var="dependentValue" value="${params[pNam]}" />
@@ -42,3 +44,5 @@ Otherwise a standard select menu is used.
     </html:select>
   </c:otherwise>
 </c:choose>
+
+</div>

@@ -87,6 +87,7 @@ public abstract class StepAnalysisDataStore {
   public abstract void renameAnalysis(int analysisId, String displayName) throws WdkModelException;
   public abstract void setState(int analysisId, StepAnalysisState state) throws WdkModelException;
   public abstract void setHasParams(int analysisId, boolean hasParams) throws WdkModelException;
+  public abstract void setInvalidStepReason(int analysisId, String invalidStepReason) throws WdkModelException;
   public abstract void updateContext(int analysisId, String contextHash, String serializedContext) throws WdkModelException;
   protected abstract List<Integer> getAnalysisIdsByHash(String contextHash) throws WdkModelException;
   protected abstract List<Integer> getAnalysisIdsByStepId(int stepId) throws WdkModelException;
