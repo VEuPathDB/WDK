@@ -237,10 +237,17 @@
     <optional>
       <attribute name="default" />
     </optional>
+    <optional>
+      <attribute name="sanityDefault" />
+    </optional>
   </define>
 
   <define name="ParamBaseTags">
     <choice>
+      <element name="visibleHelp">
+        <ref name="IncludeExclude" />
+        <text />
+      </element>
       <element name="help">
         <ref name="IncludeExclude" />
         <text />
@@ -642,21 +649,28 @@
     </optional>
     <zeroOrMore>
       <element name="testParamValues">
-        <optional>
-          <attribute name="minRows" />
-        </optional>
-        <zeroOrMore>
-          <element name="paramValue">
-            <attribute name="name" />
-            <text />
-          </element>
-        </zeroOrMore>
-        <ref name="IncludeExclude" />
+        <ref name="testParamValuesRef" />
       </element>
     </zeroOrMore>
     <zeroOrMore>
       <ref name="paramRef" />
     </zeroOrMore>
+  </define>
+
+  <define name="testParamValuesRef">
+    <optional>
+      <attribute name="minRows" />
+    </optional>
+    <zeroOrMore>
+      <element name="paramValue">
+        <attribute name="name" />
+        <choice>
+          <ref name="SelectModeContents" />
+          <text />
+        </choice>
+      </element>
+    </zeroOrMore>
+    <ref name="IncludeExclude" />
   </define>
 
   <define name="paramRef">
@@ -732,6 +746,12 @@
           <text />
         </element>
       </zeroOrMore>
+      <zeroOrMore>
+        <element name="visibleHelp">
+          <ref name="IncludeExclude" />
+          <text />
+        </element>
+      </zeroOrMore>
     </element>
   </define>
 
@@ -761,16 +781,7 @@
       <ref name="IncludeExclude" />
       <zeroOrMore>
         <element name="defaultTestParamValues">
-          <optional>
-            <attribute name="minRows" />
-          </optional>
-          <oneOrMore>
-            <element name="paramValue">
-              <attribute name="name" />
-              <text />
-            </element>
-          </oneOrMore>
-          <ref name="IncludeExclude" />
+          <ref name="testParamValuesRef" />
         </element>
       </zeroOrMore>
       <zeroOrMore>
@@ -844,7 +855,12 @@
           <data type="boolean" />
         </attribute>
       </optional>
-      <oneOrMore>
+      <optional>
+        <attribute name="useDBLink">
+          <data type="boolean" />
+        </attribute>
+      </optional>
+     <oneOrMore>
         <choice>
           <ref name="sqlColumns" />
 
@@ -958,16 +974,7 @@
           </element>
 
           <element name="testParamValues">
-            <optional>
-              <attribute name="minRows" />
-            </optional>
-            <oneOrMore>
-              <element name="paramValue">
-                <attribute name="name" />
-                <text />
-              </element>
-            </oneOrMore>
-            <ref name="IncludeExclude" />
+            <ref name="testParamValuesRef" />
           </element>
 
           <element name="reporter">
@@ -1161,6 +1168,16 @@
                 <ref name="textAttribute" />
               </choice>
             </zeroOrMore>
+          </element>
+          
+          <element name="suggestion">
+            <ref name="IncludeExclude" />
+            <optional>
+               <attribute name="newBuild" />
+            </optional>
+            <optional>                  
+               <attribute name="reviseBuild" />
+            </optional>
           </element>
 
           <ref name="paramRef" />

@@ -297,7 +297,7 @@ img[data-assets-src][src] {
 }
 .wdk-feature-tooltip .dismiss-wrapper label {
   font-size: 75%;
-  margin-left: .5em;
+  margin-right: .5em;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -482,7 +482,7 @@ ul.menubar {
 */
 /* temporary search page, look like old one */
 .content-pane.collapsible{
-	background:#DEDEDE;
+	background:#EFEFEF;  /* #DEDEDE; */
 }
 
 /* kanged from Amazon */
@@ -549,6 +549,7 @@ ul.menubar {
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 .param-group {
   min-height: 0px; /* IE7 fix */
+  margin: 4px;
 }
 
 .param-group.empty {
@@ -597,10 +598,20 @@ ul.menubar {
   display: none;
 }
 
+div.param-group div#grp-descr{
+  margin:0 0 1em 5px;
+}
+
 .param-item {
   clear: both;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-top: 0;  /* 5px; */
+  padding-bottom: 1em; /* 5px; */
+}
+
+.param-item p {
+  margin-left:5px;
+  margin-bottom:5px;
+  font-style:italic
 }
 
 .param-item > label {

@@ -92,7 +92,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         leftSql = rightSql;
         rightSql = tempSql;
       }
-      sql = GetOtherOperationSql(leftSql, rightSql, operator);
+      sql = getOtherOperationSql(leftSql, rightSql, operator);
     }
     logger.debug("boolean sql:\n" + sql);
     return sql;
@@ -183,7 +183,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     return sql.toString();
   }
 
-  private String GetOtherOperationSql(String leftSql, String rightSql,
+  private String getOtherOperationSql(String leftSql, String rightSql,
       String operator) {
     RecordClass rc = booleanQuery.getRecordClass();
     String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();

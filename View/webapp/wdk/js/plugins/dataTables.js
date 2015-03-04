@@ -25,7 +25,7 @@ wdk.util.namespace("window.wdk.plugin", function(ns, $) {
           dataTableOpts = {
             columns: null,
             scrollX: "100%",
-            SScrollY: "600px",
+            scrollY: "600px",
             scrollCollapse: true,
             paging: false,
             jQueryUI: true,

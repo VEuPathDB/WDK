@@ -361,18 +361,18 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
   }
 
   function setDraggable(e, handle) {
-    var rlimit,
-        tlimit,
-        blimit;
-    rlimit = $("div#contentwrapper").width() - e.width() - 18;
-    if (rlimit < 0) rlimit = 525;
-    blimit = $("body").height();
-    tlimit = $("div#contentwrapper").offset().top;
+    // var rlimit,
+    //     tlimit,
+    //     blimit;
+    // rlimit = $("div#contentwrapper").width() - e.width() - 18;
+    // if (rlimit < 0) rlimit = 525;
+    // blimit = $("body").height();
+    // tlimit = $("div#contentwrapper").offset().top;
     $(e).draggable({
-      handle: handle,
       // containment: [0, tlimit, rlimit, blimit]
-      containment: "document",
-      scroll: false
+      // containment: "document",
+      // scroll: false,
+      handle: handle
     });
   }
 

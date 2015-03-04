@@ -9,7 +9,13 @@
               description="Parameter group"
               type="java.util.Map"
 %>
+<%@ attribute name="groupDescription"
+              required="false"
+              description="Group description"
+              type="java.lang.String"
+%>
 
+<div id="grp-descr">${groupDescription}</div>
 
 <!-- get params from group -->
 
@@ -38,7 +44,12 @@
       </c:when>
       <c:otherwise> <%-- visible param --%>
           <%-- an individual param (can not use fullName, w/ '.', for mapped props) --%>
+
           <div class="param-item">
+          <c:if test="${not empty qP.visibleHelp}">
+            <p>${qP.visibleHelp}</p>
+          </c:if>
+
             <label>
               <span style="font-weight:bold">${qP.prompt}</span>
               <imp:image class="help-link" style="cursor:pointer" title="${fn:escapeXml(qP.help)}" src="wdk/images/question.png" />
@@ -55,35 +66,35 @@
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'AnswerParam'}">
-                      <div class="param-control">
+                      <div class="param-control" id="${qP.name}aaa">
                           <imp:answerParamInput qp="${qP}" />
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'DatasetParam'}">
-                      <div class="param-control">
+                      <div class="param-control" id="${qP.name}aaa">
                           <imp:datasetParamInput qp="${qP}" />
                       </div>
                   </c:when>
                   <c:when test="${paramType eq 'StringParam'}">
-                      <div class="param-control">
+                      <div class="param-control" id="${qP.name}aaa">
                           <imp:stringParamInput qp="${qP}" />
                       </div>
                   </c:when>
                   <c:otherwise>
                       <c:choose>
                           <c:when test="${isReadonly}">
-                              <div class="param-control">
+                              <div class="param-control" id="${qP.name}aaa">
                                   <bean:write name="qForm" property="value(${pNam})"/>
                                   <html:hidden property="value(${pNam})"/>
                               </div>
                           </c:when>
                           <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.StringParamBean' and qP.multiLine}">
-                              <div class="param-control">
+                              <div class="param-control" id="${qP.name}aaa">
                                   <html:textarea styleId="${pNam}" property="value(${pNam})" rows="4" cols="50"/>
                               </div>
                           </c:when>
                           <c:otherwise>
-                              <div class="param-control">
+                              <div class="param-control" id="${qP.name}aaa">
                                 <div class="ui-state-error ui-corner-all">
                                   Unknown param type
                                 </div>

@@ -582,7 +582,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "class='analyze_step_link' href='#'>Analyze</a>&nbsp;|&nbsp;";
 
       var disab = "";
-      var oM = "Show Nested Strategy";
+      var oM = "Open Nested Strategy";
       var moExp = sub_expand_popup;
       var moEdit = sub_edit_popup;
 
@@ -706,12 +706,16 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     $(detail_div).html(inner);
 
     if (!jsonStep.isValid) {
-      $(".crumb_menu a:not(.edit_step_link,.delete_step_link,.close_link)",
-          detail_div).removeAttr('onclick').addClass('disabled');
+      $(detail_div).find('.crumb_menu a')
+        .not('.edit_step_link')
+        .not('.delete_step_link')
+        .not('.close_link')
+        .not('.expand_step_link')
+        .addClass('disabled');
     }
     if (jsonStep.invalidQuestion == 'true') {
-      $(".crumb_menu a.edit_step_link",
-          detail_div).removeAttr('onclick').addClass('disabled');
+      $(detail_div).find('.crumb_menu a.edit_step_link')
+        .addClass('disabled');
     }
 
     $("table", detail_div).replaceWith(params_table);
@@ -797,9 +801,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
   function getParamDisplay(param) {
     if (param.className === 'org.gusdb.wdk.model.jspwrap.FilterParamBean') {
-      var rawFilters = JSON.parse(param.display);
-      var filters = new wdk.models.filter.Filters(rawFilters);
-      return filters.invoke('description').join(', <br>');
+      var filters = JSON.parse(param.display);
+      return _.pluck(filters, 'display').join(', <br>');
     }
 
     return param.display;
@@ -836,7 +839,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var json = strat.JSON;
     var id = strat.backId;
     var name = json.name;
-    var append = json.saved ? "" : append = "<span class='append'>*</span>";
+    var append = json.saved ? "" : append = "<span title='Indicates this strategy is work in progress, it is not a snapshot; you may continue changing steps in it (aka unsaved)' class='append'>*</span>";
     var exportURL = wdk.exportBaseURL() + json.importId;
     var share = "";
 

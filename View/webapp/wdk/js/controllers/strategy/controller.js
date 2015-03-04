@@ -25,6 +25,16 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   ns.stateString = '';
   ns.sidIndex = 0;
 
+  // Current strategy and step objects
+  var uiState = {
+    strategy: null,
+    step: null
+  };
+
+  function setUIState(newState) {
+    _.extend(uiState, newState);
+  }
+
   function init(element, attrs) {
     // Selects the last step of the first strategy
     wdk.step.init();
@@ -106,7 +116,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       });
 
     // update state when analysis status changes
-    wdk.on('analysis:statuschange', fetchStrategies);
+    wdk.on('analysis:statuschange', _.partial(fetchStrategies, mergeStrategies));
 
     // Add delegate submit handler here for question form
     // The callback is called when the event bubbles up to the body
@@ -213,20 +223,20 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
     // it doesn't make sense for this to be in util
     wdk.util.showLoading();
-    fetchStrategies();
+    fetchStrategies(updateStrategies);
   }
 
   /**
    * Fetch state info from server
    */
-  function fetchStrategies() {
+  function fetchStrategies(cb) {
     $.ajax({
       url: "showStrategy.do",
       type: "POST",
       dataType: "json",
       data:"state=" + ns.stateString,
       success: function(data) {
-        updateStrategies(data);
+        cb(data);
       }
     });
   }
@@ -243,14 +253,13 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    *   Otherwise they will be reloaded.
    * @returns {jQuery.Deffered} Promise
    */
-  function updateStrategies(data, ignoreFilters) {
+  function updateStrategies(data, ignoreFilters, skipRedraw) {
     var deferred = $.Deferred();
-    var skipDisplay = true;
 
     ns.state = data.state;
     ns.stateString = JSON.stringify(ns.state);
     // if a strategy is removed, update display
-    skipDisplay = !removeClosedStrategies();
+    removeClosedStrategies();
     for (var newOrdering in ns.state) {
       if (newOrdering == "count") {
         // it appears the span was removed, so this code does nothing.
@@ -263,18 +272,38 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
             // If the checksums are not the same, reload the model.
             // This assumes the strategy object in the response (`data`)
             // matches the current strategy in the global state object.
-            skipDisplay = false;
+            loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
           }
         } else {
-          skipDisplay = false;
+          loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
         }
-        loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering, skipDisplay);
       }
     }
-    if (!skipDisplay || ns.state.length === 0) {
+    if (!skipRedraw) {
       showStrategies(data.currentView, ignoreFilters, data.state.length, deferred);
     }
     return deferred.promise();
+  }
+
+  // Use this to sync server objects with client objects without redrawing
+  function mergeStrategies(data) {
+    ns.state = data.state;
+    ns.stateString = JSON.stringify(ns.state);
+
+    for (var newOrdering in ns.state) {
+      if (newOrdering != "length" && newOrdering != "count") {
+        var strategyId = ns.state[newOrdering].id;
+        if (wdk.strategy.model.isLoaded(strategyId)) {
+          if (wdk.strategy.model.getStrategyFromBackId(ns.state[newOrdering].id).checksum ==
+              ns.state[newOrdering].checksum) {
+            // If the checksums are not the same, reload the model.
+            // This assumes the strategy object in the response (`data`)
+            // matches the current strategy in the global state object.
+            mergeModel(data.strategies[ns.state[newOrdering].checksum]);
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -364,8 +393,13 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       }
     }
     var s2 = document.createElement('div');
+
+    // remove existing crumb_details from workspace
+    $('.crumb_details').remove();
+
     for (var t=1; t<=sC; t++) {
-      $(s2).prepend(ns.strats[t].DIV);
+      var strategyDiv = wdk.strategy.view.displayModel(ns.strats[t]);
+      $(s2).prepend(strategyDiv);
       displayOpenSubStrategies(ns.strats[t], s2);
     }
     $("#strategy_messages").hide();
@@ -443,13 +477,14 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
     for (j=1; j<=sCount; j++) {
       subs = wdk.strategy.model.getStrategy(strategy.subStratOrder[j]);
+      var subStrategyDiv = wdk.strategy.view.displayModel(subs);
       subs.color = parseInt(strategy.getStep(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]).backId.split("_")[1],false).frontId, 10) % colors.length;
-      $(subs.DIV).addClass("sub_diagram").css({
+      $(subStrategyDiv).addClass("sub_diagram").css({
         "margin-left": (subs.depth(null) * indent) + "px",
         "border-color": colors[subs.color].top+" "+colors[subs.color].right+" "+colors[subs.color].bottom+" "+colors[subs.color].left
       });
       $("div#diagram_" + strategy.frontId + " div#step_" + strategy.getStep(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]).backId.split("_")[1],false).frontId + "_sub", div).css({"border-color":colors[subs.color].step});
-      $("div#diagram_" + strategy.frontId, div).after(subs.DIV);
+      $("div#diagram_" + strategy.frontId, div).after(subStrategyDiv);
       if (wdk.strategy.model.getSubStrategies(strategy.subStratOrder[j]).length > 0) {
         displayOpenSubStrategies(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]),div);
       }
@@ -512,8 +547,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    * @param {Number} ord The order in which to display the strategy.
    * @param {Boolean} skipDisplay Only update the model.
    */
-  function loadModel(json, ord, skipDisplay) {
-    wdk.history.update_hist(!skipDisplay); //set update flag for history if anything was opened/changed.
+  function loadModel(json, ord) {
+    wdk.history.update_hist(true); //set update flag for history if anything was opened/changed.
     var strategy = json;
     var strat = null;
     if (!wdk.strategy.model.isLoaded(strategy.id)) {
@@ -545,9 +580,35 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     strat.dataType = strategy.steps[strategy.steps.length].dataType;
     strat.displayType = strategy.steps[strategy.steps.length].displayType; //corresponds with record displayName in model e.g. Metabolic Pathway (singular always)
     strat.nonTransformLength = strategy.steps.nonTransformLength;
-    if (!skipDisplay) {
-      strat.DIV = wdk.strategy.view.displayModel(strat);
+    // strat.DIV = wdk.strategy.view.displayModel(strat);
+    return strat.frontId;
+  }
+
+  // Use with caution
+  function mergeModel(strategy) {
+    var strat = wdk.strategy.model.getStrategyFromBackId(strategy.id);
+    strat.JSON = strategy;
+    strat.isSaved = strategy.saved;
+    strat.isPublic = strategy.isPublic;
+    strat.isValid = strategy.isValid;
+    strat.name = strategy.name;
+    strat.description = strategy.description;
+    strat.importId = strategy.importId;
+    strat.dataType = strategy.steps[strategy.steps.length].dataType;
+    strat.displayType = strategy.steps[strategy.steps.length].displayType; //corresponds with record displayName in model e.g. Metabolic Pathway (singular always)
+    strat.nonTransformLength = strategy.steps.nonTransformLength;
+
+    for (var i in strategy.steps) {
+      if (i != 'length' && i != 'nonTransformLength') {
+        var oldStep = strat.getStep(i, true);
+        var newStep = strategy.steps[i];
+        oldStep.booleanHasCompleteAnalyses = Boolean(newStep.hasCompleteAnalyses);
+        if (oldStep.step) {
+          oldStep.hasCompleteAnalyses = Boolean(newStep.step.hasCompleteAnalyses);
+        }
+      }
     }
+
     return strat.frontId;
   }
 
@@ -658,6 +719,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
             } else if ($selectedStep.attr("id") !== oldSelectedStepId) {
               $selectedStep.trigger("stepselect", [step, isBoolean]);
             }
+
+            setUIState({
+              strategy: strategy,
+              step: step
+            });
         }
 
         wdk.util.removeLoading(f_strategyId);
@@ -1021,13 +1087,14 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
   function ChangeFilter(strategyId, stepId, url, filter) {
     var filterElt = filter;
-    var b_strategyId = strategyId;
-    var strategy = wdk.strategy.model.getStrategyFromBackId(b_strategyId); 
-    var step = wdk.strategy.model.getStepFromBackId(b_strategyId, stepId);
+    var strategy = uiState.strategy;
+    var step = uiState.step;
+
     var f_strategyId = strategy.frontId;
-    if (strategy.subStratOf !== null) {
-      ns.strats.splice(wdk.strategy.model.findStrategy(f_strategyId));
-    }
+    // This is a no-op. Not sure what the intention is. - dmf
+    // if (strategy.subStratOf !== null) {
+    //   ns.strats.splice(wdk.strategy.model.findStrategy(f_strategyId));
+    // }
     var cs = strategy.checksum;
     if (strategy.subStratOf !== null) {
       cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
@@ -1110,6 +1177,13 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var ret = isBoolean
       ? step.booleanHasCompleteAnalyses
       : step.hasCompleteAnalyses || step.booleanHasCompleteAnalyses;
+
+    if (strategy.subStratOf !== null) {
+      var parentStratPieces = strategy.backId.split('_');
+      var parentStrategy = wdk.strategy.model.getStrategyFromBackId(parentStratPieces[0]);
+      var parentStep = wdk.strategy.model.getStepFromBackId(parentStratPieces[0], parentStratPieces[1]);
+      ret = ret || hasDownstreamCompleteAnalyses(parentStep, parentStrategy, false);
+    }
 
     return ret || _(strategy.Steps.slice(strategy.Steps.indexOf(step) + 1))
       .some(function(downstreamStep) {

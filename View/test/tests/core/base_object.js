@@ -1,33 +1,36 @@
-describe('wdk.core.base_object', function() {
-  var BaseObject = wdk.core.BaseObject;
+import assert from 'assert';
+import 'wdk/core/base_class';
 
-  describe('BaseObject', function() {
+describe('wdk.core.base_class', function() {
+  var BaseClass = wdk.core.BaseClass;
+
+  describe('BaseClass', function() {
 
     describe('extend', function() {
       it('should preserve inheritance', function() {
 
-        var Foo = BaseObject.extend();
+        var Foo = BaseClass.extend();
         var Bar = Foo.extend();
 
         var foo = Foo.create();
         var bar = Bar.create();
 
-        expect(foo instanceof Foo).to.equal(true);
-        expect(bar instanceof Bar).to.equal(true);
-        expect(bar instanceof Foo).to.equal(true);
+        assert(foo instanceof Foo);
+        assert(bar instanceof Bar);
+        assert(bar instanceof Foo);
 
       });
 
       it('should allow a single prototype object to be specified', function() {
-        var A = BaseObject.extend({
+        var A = BaseClass.extend({
           say: function() { return 'first arg' }
         });
         var a = A.create();
-        expect(a.say()).to.equal('first arg');
+        assert(a.say() === 'first arg');
       });
 
       it('should allow a variable number of prototype objects to be specified', function() {
-        var A = BaseObject.extend({
+        var A = BaseClass.extend({
           say: function() { return 'first arg' }
         }, {
           tell: function() { return 'second arg' }
@@ -35,15 +38,15 @@ describe('wdk.core.base_object', function() {
 
         var a = A.create();
 
-        expect(a.say()).to.equal('first arg');
-        expect(a.tell()).to.equal('second arg');
+        assert(a.say() === 'first arg');
+        assert(a.tell() === 'second arg');
       });
 
     });
 
     describe('create', function() {
       it('should call a user-defined constructor', function() {
-        var A = BaseObject.extend({
+        var A = BaseClass.extend({
           constructor: function(name) {
             this.name = name;
           }
@@ -51,11 +54,11 @@ describe('wdk.core.base_object', function() {
 
         var a = A.create('Dave');
 
-        expect(a.name).to.equal('Dave');
+        assert(a.name === 'Dave');
       });
 
       it('should apply late mixins', function() {
-        var A = BaseObject.extend();
+        var A = BaseClass.extend();
         var Mixin = {
           say: function() {
             return 'I am from a mixin';
@@ -65,22 +68,22 @@ describe('wdk.core.base_object', function() {
           mixins: [Mixin]
         });
 
-        var B = BaseObject.extend({
+        var B = BaseClass.extend({
           constructor: function() {
             this.constructor.applyMixin.call(this, Mixin)
           }
         });
         var b = B.create();
 
-        expect(a.say()).to.equal('I am from a mixin');
-        expect(b.say()).to.equal('I am from a mixin');
+        assert(a.say() === 'I am from a mixin');
+        assert(b.say() === 'I am from a mixin');
       });
     });
 
     describe('reopenClass', function() {
       var A, B;
       beforeEach(function() {
-        A = BaseObject.extend();
+        A = BaseClass.extend();
         B = A.extend();
 
         A.reopenClass({
@@ -91,11 +94,11 @@ describe('wdk.core.base_object', function() {
       });
 
       it('should allow static properties to be added', function() {
-        expect(A.say()).to.equal('I am A');
+        assert(A.say() === 'I am A');
       });
 
       it('should not pollute the prototype chain', function() {
-        expect(typeof B.say).to.equal('undefined');
+        assert(typeof B.say === 'undefined');
       });
 
     });

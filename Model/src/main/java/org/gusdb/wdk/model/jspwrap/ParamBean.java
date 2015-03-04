@@ -54,6 +54,10 @@ public abstract class ParamBean<T extends Param> {
     return param.getHelp();
   }
 
+	public String getVisibleHelp() {
+    return param.getVisibleHelp();
+  }
+
   public String getDefault() throws WdkModelException {
     return param.getDefault();
   }
@@ -104,8 +108,8 @@ public abstract class ParamBean<T extends Param> {
    * @throws WdkModelException
    *           if unable to set stable value
    */
-  public void setStableValue(String stabletValue) throws WdkModelException {
-    this.stableValue = stabletValue;
+  public void setStableValue(String stableValue) throws WdkModelException {
+    this.stableValue = stableValue;
   }
 
   public String getStableValue() {

@@ -48,10 +48,13 @@ Otherwise a standard select menu is used.
 <div class="param filter-param ${dependentClass}"
     dependson="${dependedParam}"
     name="${pNam}"
+    data-is-allow-empty="${qp.isAllowEmpty}"
     data-title="${qp.prompt}"
     data-type="filter-param"
     data-default-columns="${qp.defaultColumns}"
     data-trim-metadata-terms="${qp.trimMetadataTerms}"
+    data-min-selected-count="${qp.minSelectedCount}"
+    data-max-selected-count="${qp.maxSelectedCount}"
     data-data-id="filter-param-${qP.name}">
   <html:hidden property="value(${pNam})" />
   <%--
@@ -59,7 +62,9 @@ Otherwise a standard select menu is used.
     ${qP.jsonValues}
   </script>
   --%>
-  <div class="loading">Loading...</div>
+  <div class="loading">
+    <imp:image src="wdk/images/wizard-busy.gif"/>
+  </div>
 </div>
 
 <%-- display invalid terms, if any. --%>

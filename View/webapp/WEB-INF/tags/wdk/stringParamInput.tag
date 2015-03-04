@@ -17,6 +17,15 @@ Provides form input element for a given StringParam.
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="length" value="${qP.length}"/>
 
+<div class="param stringParam" name="${pNam}">
+<%--
+  <c:if test="${not empty qP.visibleHelp}">
+    <p style="margin-top:3px">${qP.visibleHelp}</p>
+  </c:if>
+--%>
+
+<script type="x-wdk/validation"><![CDATA[ ${qP.regex} ]]></script>
+
 <c:choose>
   <c:when test="${qP.isVisible == false}">
     <html:hidden property="value(${pNam})"/>
@@ -31,3 +40,6 @@ Provides form input element for a given StringParam.
     <html:text styleId="${pNam}" property="value(${pNam})" size="35" />
   </c:otherwise>
 </c:choose>
+
+</div>
+

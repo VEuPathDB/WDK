@@ -209,8 +209,8 @@ wdk.namespace('wdk.views.filter', function(ns) {
       if (previousPoint !== item.dataIndex) {
         qtipApi.cache.point = item.dataIndex;
         qtipApi.set('content.text',
-          this.model.get('display') + ' = ' + item.datapoint[0].toFixed(2) +
-          '<br/>' + 'Frequency = ' + item.datapoint[1]);
+          this.model.get('display') + ': ' + item.datapoint[0] +
+          '<br/># ' + this.options.title + ': ' + item.datapoint[1]);
         qtipApi.elements.tooltip.stop(1, 1);
         qtipApi.show(item);
       }

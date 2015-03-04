@@ -2,18 +2,22 @@
   "name": "wdk",
   "version": "0.1.0",
   "devDependencies": {
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-copy": "~0.4.1",
-    "grunt-contrib-uglify": "~0.2.7",
-    "grunt-cli": "~0.1.11",
-    "grunt": "~0.4.1",
-    "grunt-contrib-clean": "~0.5.0",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-handlebars": "~0.6.1",
-    "grunt-contrib-cssmin": "~0.9.0"
+    "babel": "4.3.0",
+    "babel-core": "4.3.0",
+    "babel-loader": "4.0.0",
+    "clean-css": "3.0.1",
+    "webpack": "1.4.14"
   },
   "scripts": {
-    "dist": "./node_modules/.bin/grunt --no-color dist"
+    "dist": "make -j2"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "fixed-data-table": "0.1.1",
+    "flux": "2.0.1",
+    "immutable": "3.6.2",
+    "lodash": "3.3.0",
+    "react": "0.12.2",
+    "react-router": "0.12.2"
+  }
 }

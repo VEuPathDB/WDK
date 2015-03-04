@@ -1,13 +1,11 @@
 package org.gusdb.wdk.model.config;
 
-
 /**
- * An object representaion of the {@code model-config.xml} file. It holds all
- * the configuration information for the WDK system.
+ * An object representaion of the {@code model-config.xml} file. It holds all the configuration information
+ * for the WDK system.
  * 
  * @author Jerric
- * @modified Jan 6, 2006 - Jerric add a property for the name of query history
- *           table
+ * @modified Jan 6, 2006 - Jerric add a property for the name of query history table
  */
 public class ModelConfig {
 
@@ -61,8 +59,7 @@ public class ModelConfig {
   private QueryMonitor queryMonitor = new QueryMonitor();
 
   /**
-   * The projectId is not part of the config file content, it is input by the
-   * user
+   * The projectId is not part of the config file content, it is input by the user
    */
   private String projectId;
   private String gusHome;
@@ -93,8 +90,15 @@ public class ModelConfig {
   private int blockedThreshold = 20;
 
   /**
-   * If it returns true, a monitoring thread will be turned on when webapp is
-   * initialized.
+   * enable or disable global caching. default enabled, and then each individual sqlQuery can control their
+   * own cache behavior. if global caching is disabled, then caching on sqlQuery will always be disabled,
+   * regardless of the individual setting on the query. Please note that this flag has no effect on
+   * processQueries, which is always cached.
+   */
+  private boolean caching = true;
+
+  /**
+   * If it returns true, a monitoring thread will be turned on when webapp is initialized.
    * 
    * @return
    */
@@ -107,8 +111,7 @@ public class ModelConfig {
   }
 
   /**
-   * An report will be fired when the number of blocked threads reaches the
-   * threshold.
+   * An report will be fired when the number of blocked threads reaches the threshold.
    * 
    * @return
    */
@@ -241,7 +244,7 @@ public class ModelConfig {
   public void setWebAppUrl(String webAppUrl) {
     this.webAppUrl = webAppUrl;
   }
-  
+
   /**
    * @return the userDB
    */
@@ -363,4 +366,21 @@ public class ModelConfig {
   public void setQueryMonitor(QueryMonitor queryMonitor) {
     this.queryMonitor = queryMonitor;
   }
+
+  /**
+   * enable or disable global caching. default enabled, and then each individual sqlQuery can control their
+   * own cache behavior. if global caching is disabled, then caching on sqlQuery will always be disabled,
+   * regardless of the individual setting on the query. Please note that this flag has no effect on
+   * processQueries, which is always cached.
+   * 
+   * @return whether global caching is turned on or not.
+   */
+  public boolean isCaching() {
+    return caching;
+  }
+
+  public void setCaching(boolean caching) {
+    this.caching = caching;
+  }
+
 }

@@ -1,5 +1,7 @@
 package org.gusdb.wdk.jmx.mbeans;
 
+import org.gusdb.wdk.jmx.BeanBase;
+
 /**
  * Miscellaneous version and related values from the model.
  * The values are obtained from the instantiated WdkModel
@@ -14,42 +16,42 @@ public class Meta extends BeanBase implements MetaMBean   {
 
   @Override
   public String getModelVersion() {
-    return wdkModel.getVersion();
+    return getWdkModel().getVersion();
   }
 
   @Override
   public String getDisplayName() {
-    return wdkModel.getDisplayName();
+    return getWdkModel().getDisplayName();
   }
 
   @Override
   public String getIntroduction() {
-    return wdkModel.getIntroduction();
+    return getWdkModel().getIntroduction();
   }
 
   @Override
   public String getProjectId() {
-      return wdkModel.getProjectId();
+      return getWdkModel().getProjectId();
   }
 
   @Override
   public String getName() {
-      return wdkModel.getProjectId();
+      return getWdkModel().getProjectId();
   }
 
   @Override
   public String getReleaseDate() {
-      return wdkModel.getReleaseDate();
+      return getWdkModel().getReleaseDate();
   }
 
   @Override
   public String getBuildNumber() {
-      return wdkModel.getBuildNumber();
+      return getWdkModel().getBuildNumber();
   }
 
   @Override
   public String getGusHome() {
-      return wdkModel.getGusHome();
+      return getWdkModel().getGusHome();
   }
 
 }
