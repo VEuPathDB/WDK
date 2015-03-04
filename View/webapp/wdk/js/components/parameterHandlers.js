@@ -1,5 +1,8 @@
+/* global _ */
 wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   "use strict";
+
+  var XHR_DATA_KEY = 'dependent-xhr';
 
   var displayTermMap;
   var termDisplayMap;
@@ -678,25 +681,29 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
         '&name=' + paramName + '&dependedValue=' + JSON.stringify(dependedValues);
 
+    // Abort in-flight xhr to prevent race condition.
+    var previousXhr = dependentParam.data(XHR_DATA_KEY);
+    if (previousXhr) previousXhr.abort();
+
+    // Store xhr object in element dataset.
+    var xhr;
+
     if (dependentParam.is('[data-type="type-ahead"]')) {
       sendReqUrl = sendReqUrl + '&json=true';
       // dependentParam.find('.loading').show();
 
-      return $.getJSON(sendReqUrl)
-        .then(function(data) {
-          // createAutoComplete(data, paramName);
-          createFilteredSelect(data, paramName, dependentParam, keepPreviousValue);
-        })
-        .done(function() {
-          element.find(".param[name='" + paramName + "']").attr("ready", "");
-          dependentParam
-            .attr('ready', '')
-            .find('input')
-              .removeAttr('disabled')
-              .end()
-            .find('.loading')
-              .hide();
-        });
+      xhr = $.getJSON(sendReqUrl, function(data) {
+        // createAutoComplete(data, paramName);
+        createFilteredSelect(data, paramName, dependentParam, keepPreviousValue);
+        element.find(".param[name='" + paramName + "']").attr("ready", "");
+        dependentParam
+          .attr('ready', '')
+          .find('input')
+            .removeAttr('disabled')
+            .end()
+          .find('.loading')
+            .hide();
+      });
 
     } else if (dependentParam.is('[data-type="filter-param"]')) {
 
@@ -706,16 +713,15 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         .find('.loading').show();
 
       sendReqUrl = sendReqUrl + '&json=true';
-      return $.getJSON(sendReqUrl)
-        .then(createFilterParam.bind(null, dependentParam, questionName, dependedValues))
-        .done(function() {
-          dependentParam
-            .find('input').removeAttr('disabled').end()
-            .find('.loading').hide();
-          element.find(".param[name='" + paramName + "']").attr("ready", "");
-        });
+      xhr = $.getJSON(sendReqUrl, function(data) {
+        createFilterParam(dependentParam, questionName, dependedValues, data);
+        dependentParam
+          .find('input').removeAttr('disabled').end()
+          .find('.loading').hide();
+        element.find(".param[name='" + paramName + "']").attr("ready", "");
+      });
     } else {
-      return $.ajax({
+      xhr = $.ajax({
         url: sendReqUrl,
         type: "POST",
         data: {},
@@ -733,12 +739,27 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
           element.find(".param[name='" + paramName + "']").attr("ready", "");
           dependentParam.change();
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-          alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
         }
       });
     }
+
+    // store xhr object
+    dependentParam.data(XHR_DATA_KEY, xhr);
+
+    // handle failure, unless aborted
+    xhr.fail(function (jqXHR, textStatus, errorThrown) {
+      if (textStatus != 'abort') {
+        alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
+      }
+    });
+
+    // remove xhr object when it's complete, or if it failed (including abort)
+    xhr.always(function() {
+      dependentParam.data(XHR_DATA_KEY, undefined);
+    });
+
+    // return a Promise
+    return xhr.promise();
   }
 
   //==============================================================================
