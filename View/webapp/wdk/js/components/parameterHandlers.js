@@ -18,12 +18,33 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
+  //
+  // Find all depended parameters and register a change handler for each to
+  // update any parameters that depend upon its value.
+  //
+  //==============================================================================
   function initDependentParamHandlers(element) {
     // jshint loopfunc:true
 
-    // map of depended param => dependent params
-    var dependentParams = Object.create(null);
+    // Map depended param names to dependent params names:
+    //
+    //     { string : Array<string> }
+    //
+    var dependentParamsMap = Object.create(null);
 
+    // Map dependend param names to value:
+    //
+    //     { string: string }
+    //
+    var dependedValuesMap = Object.create(null);
+
+    // Populate dependentParamsMap map by iterating over each dependent param, and
+    // for each dependent param, find all params it depends on.
+    //
+    // Foreach dependentParam P:
+    //   Foreach param D depending on P:
+    //     Append P to Map[D]
+    //
     element.find('div.dependentParam').each(function(index, node) {
       var $dependentParam = $(node);
       var name = $dependentParam.attr('name');
@@ -35,35 +56,40 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var dependedNames = $dependentParam.attr('dependson').split(",");
       for (var i=0; i < dependedNames.length; i++) {
         var dependedName = dependedNames[i];
-        var dependentList = dependentParams[dependedName] ? dependentParams[dependedName] : [];
+        var dependentList = dependentParamsMap[dependedName] ? dependentParamsMap[dependedName] : [];
         dependentList.push(name);
-        dependentParams[dependedName] = dependentList;
+        dependentParamsMap[dependedName] = dependentList;
       }
 
       $dependentParam.find('input, select').prop('disabled',false);
     });
 
-    // register change event to dependedParam only once
-    for (var dependedName in dependentParams) {
+    // Register change and keyup event handlers to dependent parameter.
+    Object.keys(dependentParamsMap).map(function(dependedName) {
       var dependedParam = $("div.param[name='" + dependedName + "']");
-      dependedParam.change(function(e) {
-        e.stopPropagation();
-        onDependedParamChange(dependedParam, element, dependentParams);
-      });
 
-      // also register keyup event for text input
-      dependedParam.keyup(_.debounce(function(e) {
+      var handleChange = function handleChange(e) {
+        var newValue = e.target.value;
+        var oldValue = dependedValuesMap[dependedName];
         e.stopPropagation();
-        onDependedParamChange(dependedParam, element, dependentParams);        
-      }, 1000));
+
+        if (newValue != oldValue && oldValue != null) {
+          onDependedParamChange(dependedParam, element, dependentParamsMap);
+        }
+
+        dependedValuesMap[dependedName] = newValue;
+      };
+
+      dependedParam.change(handleChange);
+      dependedParam.keyup(_.debounce(handleChange, 1000));
 
       if (dependedParam.is('[data-type="type-ahead"]').length > 0) {
         dependedParam.change();
       }
-    }
+    });
   }
 
-  function onDependedParamChange(dependedParam, dependentElement, dependentParams) {
+  function onDependedParamChange(dependedParam, dependentElement, dependentParamsMap) {
         var dependedName = dependedParam.attr("name");
         var $form = dependedParam.closest("form");
         var $submitButton = $form.find('input[type=submit]');
@@ -72,7 +98,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
         // map list of names to elements
         // then reduce to a list of $.ajax deferred objects
-        var dependentDeferreds = dependentParams[dependedName]
+        var dependentDeferreds = dependentParamsMap[dependedName]
           .map(function(dependentName) {
 
             // return dependentParam reference
