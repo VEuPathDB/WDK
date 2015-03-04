@@ -17,10 +17,7 @@ var App = React.createClass({
 
   render() {
     return (
-      <div>
-        <h1>WDK 3.0</h1>
-        <RouteHandler {...this.props}/>
-      </div>
+      <RouteHandler {...this.props}/>
     );
   }
 
