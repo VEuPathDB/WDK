@@ -1,7 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -148,8 +147,7 @@ public class ProcessBooleanAction extends Action {
   }
 
   private void reviseBoolean(HttpServletRequest request, UserBean user, StrategyBean strategy,
-      String operator, StepBean step) throws NumberFormatException, WdkUserException, WdkModelException,
-      SQLException {
+      String operator, StepBean step) throws NumberFormatException, WdkUserException, WdkModelException {
     logger.debug("Revising boolean...");
 
     // current step has to exist for revise
@@ -165,8 +163,7 @@ public class ProcessBooleanAction extends Action {
   }
 
   private Map<Integer, Integer> insertBoolean(HttpServletRequest request, UserBean user,
-      StrategyBean strategy, String operator, StepBean step) throws WdkUserException, WdkModelException,
-      SQLException {
+      StrategyBean strategy, String operator, StepBean step) throws WdkUserException, WdkModelException {
     logger.debug("Inserting boolean...");
 
     // current step has to exist for insert
@@ -199,7 +196,7 @@ public class ProcessBooleanAction extends Action {
   }
 
   private Map<Integer, Integer> addBoolean(HttpServletRequest request, UserBean user, StrategyBean strategy,
-      String operator) throws WdkUserException, NumberFormatException, WdkModelException, SQLException {
+      String operator) throws WdkUserException, NumberFormatException, WdkModelException {
     logger.debug("Adding boolean...");
 
     // get root step

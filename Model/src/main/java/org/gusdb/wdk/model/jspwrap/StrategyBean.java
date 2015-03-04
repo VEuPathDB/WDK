@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -135,7 +134,7 @@ public class StrategyBean {
     return getAllSteps().length;
   }
 
-  public void update(boolean overwrite) throws WdkUserException, WdkModelException, SQLException {
+  public void update(boolean overwrite) throws WdkUserException, WdkModelException {
     strategy.update(overwrite);
   }
 
