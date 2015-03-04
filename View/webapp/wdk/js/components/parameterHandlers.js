@@ -1,6 +1,5 @@
 /* global _ */
 wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
-  "use strict";
 
   var XHR_DATA_KEY = 'dependent-xhr';
 
@@ -71,12 +70,15 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     Object.keys(dependentParamsMap).map(function(dependedName) {
       var dependedParam = $("div.param[name='" + dependedName + "']");
 
+      // set previous value
+      dependedValuesMap[dependedName] = dependedParam.find('input, select').val();
+
       var handleChange = function handleChange(e) {
         var newValue = e.target.value;
         var oldValue = dependedValuesMap[dependedName];
         e.stopPropagation();
 
-        if (newValue != oldValue && oldValue != null) {
+        if (newValue != oldValue) {
           onDependedParamChange(dependedParam, element, dependentParamsMap);
         }
 
@@ -85,10 +87,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       dependedParam.change(handleChange);
       dependedParam.keyup(_.debounce(handleChange, 1000));
-
-      if (dependedParam.is('[data-type="type-ahead"]').length > 0) {
-        dependedParam.change();
-      }
     });
   }
 
