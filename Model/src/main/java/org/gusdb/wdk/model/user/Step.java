@@ -520,16 +520,17 @@ public class Step {
 
   /**
    * Checks validity of this step and all the child steps it depends on and returns result. Value is memoized
-   * for efficiency. This call checks against any preset valid value, and checks that param names are correct,
-   * but does not check param values due to execution cost. Param values must be checked elsewhere; if they
-   * are found invalid, invalidateStep() should be called, which updates the DB.
+   * for efficiency. This call checks against any preset valid field value (set from the DB or during a previous
+   * call to isValid()), and checks that param names are correct, but does not check param values due to
+   * execution cost. Param values must be checked elsewhere; if they are found invalid, invalidateStep()
+   * should be called, which updates the DB.
    * 
    * @return true if this step is valid (to the best of our knowledge), else false
    */
   public boolean isValid() throws WdkModelException {
     if (!valid || validityChecked) {
-      // check 1: nothing but revise can turn step from invalid -> valid
-      // check 2: if value is memorized, do not check steps and params again
+      // check 1: return; later, revise can turn step from invalid -> valid
+      // check 2: if value is memoized, do not check steps and params again
       return valid;
     }
 
