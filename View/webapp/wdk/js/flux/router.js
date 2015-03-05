@@ -13,7 +13,7 @@ var { Route, DefaultRoute, NotFoundRoute } = Router;
  *
  * @param {string} baseUrl The baseUrl used to match paths below
  */
-export function getRoutes(baseUrl) {
+export function getRoutes(baseUrl = '/') {
   return (
     <Route name="app" path={baseUrl} handler={App}>
       <Route name="answer" path="answer/:questionName" handler={AnswerPage}/>,
