@@ -920,12 +920,12 @@ public class Step {
 
       Step childStep = getChildStep();
       if (childStep != null) {
-        jsStep.put("child", childStep.getJSONContent(strategyId));
+        jsStep.put("child", childStep.getJSONContent(strategyId, forChecksum));
       }
 
       Step prevStep = getPreviousStep();
       if (prevStep != null) {
-        jsStep.put("previous", prevStep.getJSONContent(strategyId));
+        jsStep.put("previous", prevStep.getJSONContent(strategyId, forChecksum));
       }
 
       if (!forChecksum) {
