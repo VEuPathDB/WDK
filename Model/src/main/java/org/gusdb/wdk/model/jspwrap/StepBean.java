@@ -527,4 +527,8 @@ public class StepBean {
     step.saveParamFilters();
   }
 
+  public void setAssignedWeight(int assignedWeight) {
+    step.setAssignedWeight(assignedWeight);
+  }
+
 }
