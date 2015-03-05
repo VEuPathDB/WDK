@@ -1,10 +1,11 @@
 package org.gusdb.wdk.model.fix;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.StepFactory;
@@ -24,29 +25,21 @@ import org.gusdb.wdk.model.user.Strategy;
  */
 public class RunPublicStrats extends BaseCLI {
 
-  private static final String ARG_EUPATH_USER = "onlyEuPathUser";
-
   private static final Logger LOG = Logger.getLogger(RunPublicStrats.class);
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
     RunPublicStrats runPublic = new RunPublicStrats(cmdName);
     try {
       runPublic.invoke(args);
     }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      throw ex;
+    catch (Exception e) {
+      LOG.error("Error while running " + cmdName, e);
     }
     finally {
       LOG.info("Public Strategies done.");
-      System.exit(0);
     }
   }
-
-  private WdkModel wdkModel;
-
-  // private String userSchema;
 
   public RunPublicStrats(String command) {
     super((command != null) ? command : "wdkRunPublicStrats",
@@ -57,67 +50,66 @@ public class RunPublicStrats extends BaseCLI {
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "a ProjectId, which should match the directory name "
         + "under $GUS_HOME, where model-config.xml is stored.");
-
-    addSingleValueOption(ARG_EUPATH_USER, true, null,
-        "if 'yes', will only run the EuPathDB user Public Strategies ");
   }
 
   @Override
-  protected void execute() throws Exception {
+  protected void execute() throws WdkModelException {
     LOG.info("****Public Strategies run:  IN EXECUTE******");
-    String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+    String gusHome = GusHome.getGusHome();
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-    String onlyEuPath = (String) getOptionValue(ARG_EUPATH_USER);
 
-    wdkModel = WdkModel.construct(projectId, gusHome);
-    LOG.debug("\n\n\n**********  MODEL CONSTRUCTED : using " + gusHome + "**********");
-    LOG.info("\n**********  MODEL CONSTRUCTED : " + projectId + "**********");
-    if (onlyEuPath.equals("yes"))
-      LOG.info("\n\n**********  MODEL CONSTRUCTED : running only EuPathDB user Public Strategies*********");
-    else
+    WdkModel wdkModel = null;
+    try {
+      wdkModel = WdkModel.construct(projectId, gusHome);
+      LOG.debug("\n\n\n**********  MODEL CONSTRUCTED : using " + gusHome + "**********");
+      LOG.info("\n**********  MODEL CONSTRUCTED : " + projectId + "**********");
       LOG.info("\n**********  MODEL CONSTRUCTED : running ALL Public Strategies**********");
 
-    publicStrats(onlyEuPath);
-
+      List<Strategy> erroredStratIds = publicStrats(wdkModel);
+      if (!erroredStratIds.isEmpty()) {
+        LOG.warn("At least one public strategy is invalid.  See below for list");
+        for (Strategy st : erroredStratIds) {
+          LOG.info("{ strategyId: " + st.getStrategyId() + ", strategyName: " + st.getName() + ", owner: " + st.getUser().getEmail());
+        }
+      }
+    }
+    finally {
+      if (wdkModel != null) wdkModel.releaseResources();
+    }
   }
 
-  private void publicStrats(String onlyEuPath) throws WdkModelException {
+  private static List<Strategy> publicStrats(WdkModel wdkModel) throws WdkModelException {
 
     StepFactory factory = wdkModel.getStepFactory();
     List<Strategy> publicStrategies = factory.loadPublicStrategies();
-    Strategy st = null;
-    int result, stratCount = 0;
+    int stratCount = 0;
+    List<Strategy> erroredPublicStrats = new ArrayList<>();
     int allStratSize = publicStrategies.size();
     LOG.info("\n\n\n********** WE HAVE " + allStratSize + " public strategies total *********");
 
-    try {
-      for (int i = 0; i < allStratSize; i++) {
-        st = publicStrategies.get(i);
-        if (onlyEuPath.equals("yes")) {
-          if (st.getUser().getUserId() == 1926010) {
-            LOG.info("\n\n\n********** Found a EuPathDB Public Strat: " + st.getStrategyId() + "**********");
-            // TEST STRAT
-            result = st.getLatestStep().getResultSize();
-            stratCount++;
-          }
-        }
-        else {
-          LOG.info("\n\n\n********** Found a Public Strat: " + st.getStrategyId() + " of user: " +
-              st.getUser().getEmail() + "  *********");
+    for (int i = 0; i < allStratSize; i++) {
+      Strategy st = publicStrategies.get(i);
 
-          // TEST STRAT
-          result = st.getLatestStep().getResultSize();
-          stratCount++;
-        }
+      LOG.info("\n\n\n********** Found a Public Strat: " + st.getStrategyId() + " of user: " +
+          st.getUser().getEmail() + "  *********");
+
+      try {
+        // TEST STRAT
+        stratCount++;
+        // to get the proper number of bad strats, we must get the answer value;
+        //   this takes longer, but the alternative (getResultSize) masks bad
+        //   strategies because it can't tell whether the exception is due to a
+        //   bad strat or due to something else
+        st.getLatestStep().getAnswerValue(true);
       }
-      LOG.info("\n\n\n********** TESTED " + stratCount + " public strategies  *********");
-      return;
+      catch (Exception ex) {
+        // check if strategy is already invalid, ignore if user NOT eupathdb
+        LOG.error("Adding strategy " + st.getName() + " to list of errored strats.", ex);
+        erroredPublicStrats.add(st);
+      }
     }
-    catch (WdkModelException ex) {
-      // check if strategy is already invalid, ignore if user NOT eupathdb
-      throw ex;
-    }
-
+    LOG.info("\n\n********** TESTED " + stratCount + " public strategies  *********\n");
+    LOG.info("\n\n****** FOUND " + erroredPublicStrats.size() + " errored public strategies  *****\n");
+    return erroredPublicStrats;
   }
-
 }
