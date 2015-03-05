@@ -1,34 +1,23 @@
 package org.gusdb.wdk.model.fix;
 
 import java.util.List;
-import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.wdk.model.Utilities;
-
-/*
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import javax.sql.DataSource;
-import org.gusdb.fgputil.db.DBStateException;
-import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.db.platform.DBPlatform;
-*/
-import org.apache.log4j.Logger;
-
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 
-
 /**
  * 1. load a model
  * 2. get a list of public strategies (only care for EuPathDB user for now)
- *    StepFactory.loadPublicStrategies() will load all the public strategies (and their users)
+ *    StepFactory.loadPublicStrategies() will load all the public strategies
+ *    (and their users)
  * 3. run each strategy, and get the resultSize from the last step
- *    strategy.getLatestStep().getResultSize();
- *    (catch any exceptions on that, and log it, and move to the next one)
+ *    strategy.getLatestStep().getResultSize(); (catch any
+ *    exceptions on that, and log it, and move to the next one)
  * 
  * @author Cris
  *
@@ -56,7 +45,8 @@ public class RunPublicStrats extends BaseCLI {
   }
 
   private WdkModel wdkModel;
-  //private String userSchema;
+
+  // private String userSchema;
 
   public RunPublicStrats(String command) {
     super((command != null) ? command : "wdkRunPublicStrats",
@@ -68,7 +58,8 @@ public class RunPublicStrats extends BaseCLI {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "a ProjectId, which should match the directory name "
         + "under $GUS_HOME, where model-config.xml is stored.");
 
-    addSingleValueOption(ARG_EUPATH_USER, true, null, "if 'yes', will only run the EuPathDB user Public Strategies ");
+    addSingleValueOption(ARG_EUPATH_USER, true, null,
+        "if 'yes', will only run the EuPathDB user Public Strategies ");
   }
 
   @Override
@@ -78,56 +69,55 @@ public class RunPublicStrats extends BaseCLI {
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
     String onlyEuPath = (String) getOptionValue(ARG_EUPATH_USER);
 
-		wdkModel = WdkModel.construct(projectId, gusHome);
-		LOG.debug("\n\n\n**********  MODEL CONSTRUCTED : using " + gusHome + "**********");
-		LOG.info("\n**********  MODEL CONSTRUCTED : " + projectId + "**********");
-		if ( onlyEuPath.equals("yes") ) 		LOG.info("\n\n**********  MODEL CONSTRUCTED : running only EuPathDB user Public Strategies*********");
-		else 	LOG.info("\n**********  MODEL CONSTRUCTED : running ALL Public Strategies**********");
+    wdkModel = WdkModel.construct(projectId, gusHome);
+    LOG.debug("\n\n\n**********  MODEL CONSTRUCTED : using " + gusHome + "**********");
+    LOG.info("\n**********  MODEL CONSTRUCTED : " + projectId + "**********");
+    if (onlyEuPath.equals("yes"))
+      LOG.info("\n\n**********  MODEL CONSTRUCTED : running only EuPathDB user Public Strategies*********");
+    else
+      LOG.info("\n**********  MODEL CONSTRUCTED : running ALL Public Strategies**********");
 
-		publicStrats(onlyEuPath);
+    publicStrats(onlyEuPath);
 
-	}
+  }
 
-	private void publicStrats(String onlyEuPath) throws WdkModelException {
+  private void publicStrats(String onlyEuPath) throws WdkModelException {
 
-		StepFactory factory = wdkModel.getStepFactory();
-		List<Strategy> publicStrategies = factory.loadPublicStrategies();
-		Strategy st = null;
-		int result,stratCount = 0;
-		int allStratSize = publicStrategies.size();
-		LOG.info("\n\n\n********** WE HAVE " + allStratSize + " public strategies total *********");
+    StepFactory factory = wdkModel.getStepFactory();
+    List<Strategy> publicStrategies = factory.loadPublicStrategies();
+    Strategy st = null;
+    int result, stratCount = 0;
+    int allStratSize = publicStrategies.size();
+    LOG.info("\n\n\n********** WE HAVE " + allStratSize + " public strategies total *********");
 
-		try {
-			for (int i = 0; i < allStratSize; i++) {
-				st =  publicStrategies.get(i);
-				if ( onlyEuPath.equals("yes") ) {
-						 if ( st.getUser().getUserId() == 1926010 ) {
-							 LOG.info("\n\n\n********** Found a EuPathDB Public Strat: " + st.getStrategyId() 
-												 + "**********");
-							 // TEST STRAT
-							 result = 	st.getLatestStep().getResultSize();
-							 stratCount++;
-						 }
-					}
-				else {
-					LOG.info("\n\n\n********** Found a Public Strat: " + st.getStrategyId() 
-												 + " of user: " + st.getUser().getEmail()+ "  *********");
+    try {
+      for (int i = 0; i < allStratSize; i++) {
+        st = publicStrategies.get(i);
+        if (onlyEuPath.equals("yes")) {
+          if (st.getUser().getUserId() == 1926010) {
+            LOG.info("\n\n\n********** Found a EuPathDB Public Strat: " + st.getStrategyId() + "**********");
+            // TEST STRAT
+            result = st.getLatestStep().getResultSize();
+            stratCount++;
+          }
+        }
+        else {
+          LOG.info("\n\n\n********** Found a Public Strat: " + st.getStrategyId() + " of user: " +
+              st.getUser().getEmail() + "  *********");
 
-					// TEST STRAT
-					result = st.getLatestStep().getResultSize();
-					stratCount++;
-				}
-			}
-			LOG.info("\n\n\n********** TESTED " + stratCount + " public strategies  *********");
-			return;
-		}
+          // TEST STRAT
+          result = st.getLatestStep().getResultSize();
+          stratCount++;
+        }
+      }
+      LOG.info("\n\n\n********** TESTED " + stratCount + " public strategies  *********");
+      return;
+    }
     catch (WdkModelException ex) {
-			//check if strategy is already invalid, ignore if user NOT eupathdb
+      // check if strategy is already invalid, ignore if user NOT eupathdb
       throw ex;
     }
-		
-	}
+
+  }
 
 }
-
-
