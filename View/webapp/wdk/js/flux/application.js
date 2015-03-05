@@ -1,10 +1,10 @@
 import noop from 'lodash/utility/noop';
 import React from 'react';
 import Router from 'react-router';
-import { routes } from './router';
+import { getRoutes } from './router';
 import createObjectCache from './utils/createObjectCache';
 
-const createRouterCallback = function createRouterCallback(rootElement, context) {
+var createRouterCallback = function createRouterCallback(rootElement, context) {
   return function runRoute(Handler, state) {
     React.withContext(context, function render() {
       React.render( <Handler {...state} />, rootElement);
@@ -12,15 +12,16 @@ const createRouterCallback = function createRouterCallback(rootElement, context)
   };
 };
 
-const runApplication = ({
+var runApplication = function runApplication({
+  baseUrl,
   dispatcher,
   serviceAPI,
   stores,
   actionCreators,
   rootElement,
-  location,
+  routerLocation,
   recordComponentResolver = noop
-}) => {
+}) {
 
   if (dispatcher == null) {
     throw Error('A dispatcher was not defined');
@@ -29,8 +30,9 @@ const runApplication = ({
     throw Error('A serviceAPI was not defined');
   }
 
-  const storeCache = createObjectCache(stores, dispatcher);
-  const actionCreatorsCache = createObjectCache(actionCreators, dispatcher, serviceAPI);
+  var routes = getRoutes(baseUrl);
+  var storeCache = createObjectCache(stores, dispatcher);
+  var actionCreatorsCache = createObjectCache(actionCreators, dispatcher, serviceAPI);
 
   // This is used below in `React.withContext`. Properties of this object will
   // be available in React components that declare them using the
@@ -52,7 +54,7 @@ const runApplication = ({
   //     // ...
   //
   // See `./mixins/createStoreMixin` for an example of its usage.
-  const reactContext = {
+  var reactContext = {
     getStore(name) {
       return storeCache.get(name);
     },
@@ -64,8 +66,8 @@ const runApplication = ({
     }
   };
 
-  const routerCallback = createRouterCallback(rootElement, reactContext);
-  Router.run(routes, location, routerCallback);
+  var routerCallback = createRouterCallback(rootElement, reactContext);
+  Router.run(routes, routerLocation, routerCallback);
 };
 
 export { runApplication };
