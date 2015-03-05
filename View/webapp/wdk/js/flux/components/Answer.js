@@ -109,7 +109,7 @@ const Answer = React.createClass({
               ref="filterInput"
               style={{ padding: '.5em', width: '25em'}}
               defaultValue={filterTerm}
-              placeholder={`Filter ${recordClass.displayName}`}
+              placeholder={`Filter ${recordClass.displayName} records`}
             />
             <button className="wdk-Answer-filterButton">
               <i className="fa fa-search fa-lg"/>
