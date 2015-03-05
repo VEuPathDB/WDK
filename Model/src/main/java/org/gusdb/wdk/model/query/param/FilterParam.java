@@ -39,9 +39,9 @@ import org.json.JSONObject;
  *         metadata and terms for the param itself, but the stable value of a flatVocabParam is just a string
  *         representation of comma separated list of terms.
  * 
- *         raw value: a JSON string of both term list and metadata list.
+ *         raw value: a JSON string of both term list, ignore list and metadata list.
  * 
- *         stable value: same as raw value, a JSON string of both term list and metadata list.
+ *         stable value: same as raw value, a JSON string of both term list, ignore list and metadata list.
  * 
  *         signature: a checksum of the JSON string, but values are sorted
  * 
