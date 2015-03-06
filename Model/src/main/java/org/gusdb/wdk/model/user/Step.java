@@ -24,6 +24,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -907,6 +908,7 @@ public class Step {
   public JSONObject getJSONContent(int strategyId, boolean forChecksum) throws WdkModelException {
 
     JSONObject jsStep = new JSONObject();
+    JSONArray jsParams = new JSONArray();
 
     try {
       jsStep.put("id", this.stepId);
@@ -917,6 +919,15 @@ public class Step {
       jsStep.put("collapsed", this.isCollapsible());
       jsStep.put("collapsedName", this.getCollapsedName());
       jsStep.put("deleted", deleted);
+      
+      for (String paramName: paramValues.keySet()) {
+    	JSONObject param = new JSONObject();
+    	param.put("name", paramName);
+    	param.put("value", paramValues.get(paramName));
+    	jsParams.put(param);
+      }
+      
+      jsStep.put("params", jsParams);
 
       Step childStep = getChildStep();
       if (childStep != null) {
@@ -928,9 +939,8 @@ public class Step {
         jsStep.put("previous", prevStep.getJSONContent(strategyId, forChecksum));
       }
 
-      if (!forChecksum) {
-        jsStep.put("size", this.estimateSize);
-      }
+      jsStep.put("size", this.estimateSize);
+        
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + this.stepId;
         Integer order = getUser().getStrategyOrder(subStratId);
