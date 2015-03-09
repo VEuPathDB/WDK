@@ -16,6 +16,11 @@ module.exports = {
   devtool: node_env === 'production' ? 'source-map' : 'inline-source-map',
   plugins: node_env !== 'production' ? null : [
     new webpack.optimize.UglifyJsPlugin(),
-    new webpack.optimize.OccurenceOrderPlugin(true)
+    new webpack.optimize.OccurenceOrderPlugin(true),
+    new webpack.DefinePlugin({
+      "process.env": {
+        NODE_ENV: JSON.stringify("production")
+      }
+    })
   ]
 };
