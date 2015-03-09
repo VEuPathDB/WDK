@@ -1,14 +1,31 @@
 /* global Spinner */
 import React from 'react';
 
+/**
+ * See http://fgnass.github.io/spin.js/
+ */
 var Loading = React.createClass({
 
+  PropTypes: {
+    className: React.PropTypes.string,
+    radius: React.PropTypes.number
+  },
+
+  getDefaultProps() {
+    return {
+      className: '',
+      radius: 8
+    };
+  },
+
   componentDidMount() {
+    var { radius } = this.props;
+
     var opts = {
-      lines: 17, // The number of lines to draw
-      length: 0, // The length of each line
-      width: 3, // The line thickness
-      radius: 8, // The radius of the inner circle
+      lines: 11, // The number of lines to draw
+      length: 3, // The length of each line
+      width: 2, // The line thickness
+      radius: radius, // The radius of the inner circle
       corners: 1, // Corner roundness (0..1)
       rotate: 0, // The rotation offset
       direction: 1, // 1: clockwise, -1: counterclockwise
@@ -23,12 +40,13 @@ var Loading = React.createClass({
       left: '50%' // Left position relative to parent
     };
 
-    this.spinner = new Spinner(opts).spin(this.getDOMNode());
+    new Spinner(opts).spin(this.getDOMNode());
   },
 
   render() {
+    var { className } = this.props;
     return (
-      <div className="wdk-Loading"/>
+      <div className={`wdk-loading ${className}`}/>
     );
   }
 });

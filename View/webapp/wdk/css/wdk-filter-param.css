@@ -432,6 +432,11 @@
 .filter-results.field-list h4 {
   margin-left: 0;
 }
+.wdk-AttributeFilter-Loading {
+  top: 118px;
+  position: absolute;
+  left: 46px;
+}
 /*
 .filter-param .dataTables_wrapper {
   overflow-x: auto;

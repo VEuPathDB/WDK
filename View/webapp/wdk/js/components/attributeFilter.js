@@ -1,5 +1,6 @@
 /* global _ */
 import React from 'react';
+import Loading from '../flux/components/Loading';
 
 wdk.namespace('wdk.components.attributeFilter', function(ns) {
   'use strict';
@@ -274,7 +275,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     render: function() {
-      var { data, filteredData, fields, filters, selectedField, distributionMap } = this.state;
+      var { data, filteredData, fields, filters, selectedField, distributionMap, isLoading } = this.state;
       var displayName = this.props.displayName;
       var selectedFilter = _.find(filters, filter => {
         return filter.field.term === _.result(selectedField, 'term');
@@ -284,6 +285,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
       return (
         <div>
+          {isLoading ? <Loading className="wdk-AttributeFilter-Loading" radius={4}/> : null}
           <FilterList
             onFilterSelect={actions.selectField}
             onFilterRemove={actions.removeFilter}
