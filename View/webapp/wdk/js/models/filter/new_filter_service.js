@@ -1,4 +1,4 @@
-/* global RSVP */
+/* global _, Backbone, RSVP */
 
 // TODO How does this class relate to Flux?
 //
@@ -79,6 +79,9 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
     constructor: function(attrs, options) {
 
+      // loading status for async operations
+      this.isLoading = false;
+
       // metadata properties
       this.fields = attrs.fields || [];
 
@@ -119,14 +122,18 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     getState: function() {
-      return _.pick(this, 'fields', 'filters', 'data', 'filteredData', 'columns', 'ignored', 'selectedField', 'distributionMap');
+      return _.pick(this, 'isLoading', 'fields', 'filters', 'data', 'filteredData', 'columns', 'ignored', 'selectedField', 'distributionMap');
     },
 
     setSelectedField: function(field) {
+      this.isLoading = true;
+      this.emitChange();
+
       this.getFieldDistribution(field)
         .then(function(distribution) {
           this.distributionMap[field.term] = distribution;
           this.selectedField = field;
+          this.isLoading = false;
           this.emitChange();
         }.bind(this));
     },
@@ -185,6 +192,9 @@ wdk.namespace('wdk.models.filter', function(ns) {
     // Filter is optional. If supplied, calculate it's selection.
     // If @selectedField is undefined, skip updating @distributionMap.
     updateFilters: function(filter) {
+      this.isLoading = true;
+      this.emitChange();
+
       var promises = {
         filteredData: this.getFilteredData(this.filters),
         distribution: this.selectedField &&
@@ -200,21 +210,27 @@ wdk.namespace('wdk.models.filter', function(ns) {
           filter.selection = results.filterSelection;
         }
         this.filteredData = results.filteredData;
+        this.isLoading = false;
         this.emitChange();
       }.bind(this));
     },
 
     updateColumns: function(field, doAdd) {
+      this.isLoading = true;
+      this.emitChange();
+
       if (doAdd) {
         this.getFieldMetadata(field)
           .then(function(/* metadata */) {
             // field.metadata = metadata; // do we need this?
             this.columns = this.columns.concat(field);
+            this.isLoading = false;
             this.emitChange();
           }.bind(this));
       }
       else {
         this.columns = _.without(this.columns, field);
+        this.isLoading = false;
         this.emitChange();
       }
     },
