@@ -650,6 +650,7 @@ public class AnswerValue {
       }
     }
     catch (SQLException e) {
+      logger.error("Error executing attribute query using SQL \"" + sql + "\"", e);
       throw new WdkModelException(e);
     }
     finally {
