@@ -267,9 +267,10 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     $param.data('filterParam', filterParam);
 
     filterParam.on('change:value', function(filterParam, value) {
+      var ignored = value.data.filter(datum => datum.isIgnored);
       input.val(JSON.stringify({
         values: _.pluck(value.filteredData, 'term'),
-        ignored: value.ignored,
+        ignored: _.pluck(ignored, 'term'),
         filters: _.map(value.filters, _.partialRight(_.omit, 'selection'))
       }));
     });
