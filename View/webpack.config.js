@@ -1,5 +1,5 @@
 var webpack = require('webpack');
-var node_env = process.env.NODE_ENV || 'development';
+var node_env = process.env.NODE_ENV || 'production';
 
 module.exports = {
   bail: true,
@@ -13,7 +13,7 @@ module.exports = {
     ]
   },
   debug: node_env !== 'production',
-  devtool: node_env === 'production' ? 'source-map' : 'inline-source-map',
+  devtool: 'source-map',
   plugins: node_env !== 'production' ? null : [
     new webpack.optimize.UglifyJsPlugin(),
     new webpack.optimize.OccurenceOrderPlugin(true),
