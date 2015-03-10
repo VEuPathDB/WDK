@@ -1,6 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.io.PrintWriter;
 import java.net.URLEncoder;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +15,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerFilterInstanceBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.json.JSONObject;
 
 /**
  * This action should be used to handle only the following situation:
@@ -57,7 +55,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
        if (filter == null) throw new WdkUserException("The filter is invalid: " + filterName);
       }
       step.setFilterName(filterName);
-      step.update(true);
+      step.saveParamFilters();
 
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
       StringBuffer url = new StringBuffer(showStrategy.getPath());
