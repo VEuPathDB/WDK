@@ -64,7 +64,7 @@
       <c:when test="${current}"><div class="current"></c:when>
       <c:otherwise><div></c:otherwise>
     </c:choose>
-        <c:url var="linkUrl" value="/processFilter.do?strategy=${strategyId}&revise=${stepId}&filter=${instance.name}" />
+        <c:url var="linkUrl" value="/processFilter.do?strategy=${strategyId}&step=${stepId}&filter=${instance.name}" />
         <c:url var="countUrl" value="/showResultSize.do?step=${stepId}&answer=${answerValue.checksum}&filter=${instance.name}" />
         <a id="link-${instance.name}" data-filter="${instance.name}" class="link-url" href="javascript:void(0)" 
            countref="${countUrl}" strId="${strategyId}" stpId="${stepId}" linkUrl="${linkUrl}">
