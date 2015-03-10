@@ -203,7 +203,7 @@ public class StepFactory {
 
     // contains wildcard for project; does not contain ordering
     countValidPublicStratsSql = new StringBuilder("select count(1) from ( ").append(unsortedPublicStratsSql).append(
-        isRootStepValidCondition).append(" )").toString();
+        isRootStepValidCondition).append(" ) cps ").toString();
 
     // contains wildcards for is_public (boolean) and strat ID (int)
     updatePublicStratStatusSql = new StringBuilder().append("UPDATE ").append(userSchema).append(
