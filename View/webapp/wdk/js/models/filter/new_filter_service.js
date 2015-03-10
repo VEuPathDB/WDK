@@ -60,20 +60,16 @@ wdk.namespace('wdk.models.filter', function(ns) {
         this.removeFilter(filter);
       },
 
-      addColumn: function(field) {
-        this.updateColumns(field, true);
+      addIgnored: function(datum) {
+        this.addIgnored(datum);
       },
 
-      removeColumn: function(field) {
-        this.updatecolumns(field, false);
+      removeIgnored: function(datum) {
+        this.removeIgnored(datum);
       },
 
-      addIgnored: function(dataId) {
-        console.log(dataId);
-      },
-
-      removeIgnored: function(dataId) {
-        console.log(dataId);
+      updateColumns: function(fields) {
+        this.updateColumns(fields);
       }
     },
 
@@ -215,24 +211,32 @@ wdk.namespace('wdk.models.filter', function(ns) {
       }.bind(this));
     },
 
-    updateColumns: function(field, doAdd) {
+    updateColumns: function(fields) {
       this.isLoading = true;
       this.emitChange();
 
-      if (doAdd) {
-        this.getFieldMetadata(field)
-          .then(function(/* metadata */) {
-            // field.metadata = metadata; // do we need this?
-            this.columns = this.columns.concat(field);
-            this.isLoading = false;
-            this.emitChange();
-          }.bind(this));
-      }
-      else {
-        this.columns = _.without(this.columns, field);
-        this.isLoading = false;
-        this.emitChange();
-      }
+      Promise.all(fields.map(field => this.getFieldMetadata(field)))
+        .then(() => {
+          this.columns = fields;
+          this.isLoading = false;
+          this.emitChange();
+        });
+    },
+
+    addIgnored: function(datum) {
+      // this.ignored = _.uniq(this.ignored.concat(datum.term));
+      datum.isIgnored = true;
+      cloneDatum(this.data, datum);
+      cloneDatum(this.filteredData, datum);
+      this.emitChange();
+    },
+
+    removeIgnored: function(datum) {
+      // this.ignored = this.ignored.filter(t => t != datum.term);
+      datum.isIgnored = false;
+      cloneDatum(this.data, datum);
+      cloneDatum(this.filteredData, datum);
+      this.emitChange();
     },
 
 
@@ -265,3 +269,12 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
   });
 });
+
+function cloneDatum(data, datum) {
+  for (var index = 0; index < data.length; index++) {
+    if (data[index] == datum) {
+      data[index] = _.cloneDeep(datum);
+      break;
+    }
+  }
+}
