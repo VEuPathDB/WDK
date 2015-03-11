@@ -11,8 +11,10 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.events.StepCopiedEvent;
+import org.gusdb.wdk.events.StepsModifiedEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -465,13 +467,23 @@ public class Step {
     this.booleanExpression = booleanExpression;
   }
 
+  // saves attributes of the step that do NOT impact results or parent steps
   public void update(boolean updateTime) throws WdkModelException {
     stepFactory.updateStep(getUser(), this, updateTime);
   }
 
+  // saves param values AND filter values (AND step name and maybe other things)
   public void saveParamFilters() throws WdkModelException {
+
     stepFactory.saveStepParamFilters(this);
     stepFactory.resetStepCounts(this);
+
+    // get list of steps dependent on this one; all their results are now invalid
+    List<Integer> stepIds = stepFactory.getStepAndParents(getStepId());
+    // invalidate step analysis tabs for this step and wait for completion
+    Events.triggerAndWait(new StepsModifiedEvent(stepIds),
+        new WdkModelException("Unable to invalidate step IDs: " +
+            FormatUtil.arrayToString(stepIds.toArray())));
   }
 
   public String getDescription() {
