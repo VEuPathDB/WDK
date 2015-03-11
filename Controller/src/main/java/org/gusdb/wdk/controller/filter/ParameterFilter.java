@@ -45,7 +45,8 @@ public final class ParameterFilter implements Filter {
 
     @Override
     public Enumeration<String> getParameterNames() {
-      List<String> requestParameterNames = Collections.list(super.getParameterNames());
+      @SuppressWarnings("unchecked")
+      List<String> requestParameterNames = Collections.list((Enumeration<String>)super.getParameterNames());
       List<String> finalParameterNames = new ArrayList<>();
 
       for (String parameterName : requestParameterNames) {
