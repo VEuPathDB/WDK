@@ -28,6 +28,8 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.platform.Oracle;
 import org.gusdb.fgputil.db.platform.PostgreSQL;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.MDCUtil;
@@ -1762,5 +1764,18 @@ public class StepFactory {
       throw new WdkModelException("Unsupported platform type: " + platform.getClass().getName());
     }
     return sql;
+  }
+
+  public List<Integer> getStepAndParents(final int stepId) throws WdkModelException {
+    final List<Integer> ids = new ArrayList<>();
+    new SQLRunner(userDb.getDataSource(), selectStepAndParents(stepId))
+        .executeQuery(new ResultSetHandler() {
+          @Override public void handleResult(ResultSet rs) throws SQLException {
+            while (rs.next()) {
+              ids.add(rs.getInt(1));
+            }
+          }
+        });
+    return ids;
   }
 }
