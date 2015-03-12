@@ -223,7 +223,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     renderPk: function(cellData) {
       var handleIgnored = event => {
-        this.props.onIgnored(cellData, !event.target.isChecked);
+        this.props.onIgnored(cellData, !event.target.checked);
       };
       return (
         <label>

@@ -93,9 +93,6 @@ wdk.namespace('wdk.models.filter', function(ns) {
       // visible columns in results
       this.columns = attrs.columns || [];
 
-      // ignored data
-      this.ignored = attrs.ignored || [];
-
       // selected field
       this.selectedField =  null;
 
@@ -104,6 +101,13 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
       // listen to actions
       this.listenTo(options.intents, this.actionListeners);
+
+      // set isIgnored flag
+      if (attrs.ignored && attrs.ignored.length) {
+        this.data.forEach(function(datum) {
+          datum.isIgnored = attrs.ignored.indexOf(datum.term) > -1;
+        });
+      }
 
       // apply filters
       this.getFilteredData(this.filters)
@@ -118,7 +122,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     getState: function() {
-      return _.pick(this, 'isLoading', 'fields', 'filters', 'data', 'filteredData', 'columns', 'ignored', 'selectedField', 'distributionMap');
+      return _.pick(this, 'isLoading', 'fields', 'filters', 'data', 'filteredData', 'columns', 'selectedField', 'distributionMap');
     },
 
     setSelectedField: function(field) {
@@ -224,19 +228,34 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     addIgnored: function(datum) {
-      // this.ignored = _.uniq(this.ignored.concat(datum.term));
       datum.isIgnored = true;
-      cloneDatum(this.data, datum);
-      cloneDatum(this.filteredData, datum);
+      this._cloneDatum(datum);
       this.emitChange();
     },
 
     removeIgnored: function(datum) {
-      // this.ignored = this.ignored.filter(t => t != datum.term);
       datum.isIgnored = false;
-      cloneDatum(this.data, datum);
-      cloneDatum(this.filteredData, datum);
+      this._cloneDatum(datum);
       this.emitChange();
+    },
+
+    _cloneDatum: function(datum) {
+      var { data, filteredData } = this;
+      var clone = _.cloneDeep(datum);
+
+      for (var index = 0; index < data.length; index++) {
+        if (data[index] == datum) {
+          data[index] = clone
+          break;
+        }
+      }
+
+      for (var index = 0; index < filteredData.length; index++) {
+        if (filteredData[index] == datum) {
+          filteredData[index] = clone
+          break;
+        }
+      }
     },
 
 
@@ -269,12 +288,3 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
   });
 });
-
-function cloneDatum(data, datum) {
-  for (var index = 0; index < data.length; index++) {
-    if (data[index] == datum) {
-      data[index] = _.cloneDeep(datum);
-      break;
-    }
-  }
-}
