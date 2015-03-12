@@ -63,7 +63,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
       ActionForward forward = new ActionForward(url.toString());
       forward.setRedirect(true);
-      System.out.println("Leaving ProcessStepAction...");
+      System.out.println("Leaving ProcessFilterAction...");
       return forward;
     }
     catch (Exception ex) {
