@@ -209,7 +209,10 @@ public class Step {
   }
 
   public int getResultSize() throws WdkModelException {
-    if (!isValid()) {
+    // Only recompute the answer value size if the step hasn't been validated
+    // yet, or if the estimateSize is unknown, indicating the underlying query
+    // has not yet been run.
+    if (!isValid() || estimateSize == StepFactory.UNKNOWN_SIZE) {
       try {
         estimateSize = getAnswerValue().getResultSize();
       }
@@ -938,7 +941,6 @@ public class Step {
     	param.put("value", paramValues.get(paramName));
     	jsParams.put(param);
       }
-      
       jsStep.put("params", jsParams);
 
       Step childStep = getChildStep();
@@ -951,7 +953,9 @@ public class Step {
         jsStep.put("previous", prevStep.getJSONContent(strategyId, forChecksum));
       }
 
-      jsStep.put("size", this.estimateSize);
+      if (!forChecksum) {
+        jsStep.put("size", this.estimateSize);
+      }
         
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + this.stepId;

@@ -229,12 +229,17 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   /**
    * Fetch state info from server
    */
-  function fetchStrategies(cb) {
+  function fetchStrategies(cb, options = {}) {
+    var data = {
+      state: ns.stateString,
+      updateResults: Boolean(options.updateResults)
+    };
+
     $.ajax({
       url: "showStrategy.do",
       type: "POST",
       dataType: "json",
-      data:"state=" + ns.stateString,
+      data: data,
       success: function(data) {
         cb(data);
       }
@@ -251,38 +256,72 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    * @param {Object} data Object retreived from server with state information
    * @param {Boolean} ignoreFilters If `true` filters will not be reloaded.
    *   Otherwise they will be reloaded.
-   * @returns {jQuery.Deffered} Promise
    */
-  function updateStrategies(data, ignoreFilters, skipRedraw) {
-    var deferred = $.Deferred();
+  function updateStrategies(data, ignoreFilters = false, count = 1) {
+    // Should we update the strategy panel?
+    var showStrats = true;
+
+    // Increment count if we refetch strategies with updated results
+    var nextUpdateStrategies = _.partialRight(updateStrategies, ignoreFilters,
+                                              count + 1);
+
+    // Fetch strategies with updated results. Used if root step results == -1
+    var updateResults = _.partial(fetchStrategies, nextUpdateStrategies, {
+      updateResults: true
+    });
 
     ns.state = data.state;
     ns.stateString = JSON.stringify(ns.state);
+
+    // If root step size is -1, fetch strategies with updated results and skip
+    // updating the strategy panel.
+    for (var checksum in data.strategies) {
+      if (checksum == 'length') continue;
+      var strategy = data.strategies[checksum];
+      if (strategy.steps[strategy.steps.length].results == -1) {
+        showStrats = false;
+        setTimeout(updateResults, 250 * count);
+        break;
+      }
+    }
+
     // if a strategy is removed, update display
     removeClosedStrategies();
     for (var newOrdering in ns.state) {
+
       if (newOrdering == "count") {
         // it appears the span was removed, so this code does nothing.
         $("#mysearch span").text('My Strategies ('+ns.state[newOrdering]+')');
-      } else if (newOrdering != "length") {
-        var strategyId = ns.state[newOrdering].id;
-        if (wdk.strategy.model.isLoaded(strategyId)) {
-          if (wdk.strategy.model.getStrategyFromBackId(ns.state[newOrdering].id).checksum !=
-              ns.state[newOrdering].checksum) {
-            // If the checksums are not the same, reload the model.
-            // This assumes the strategy object in the response (`data`)
-            // matches the current strategy in the global state object.
-            loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
-          }
-        } else {
-          loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
-        }
+      }
+
+      else if (newOrdering != "length") {
+        // Always reload the strategy objects.
+        loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+        // var strategyId = ns.state[newOrdering].id;
+        // if (wdk.strategy.model.isLoaded(strategyId)) {
+        //   var loadedStrategy = wdk.strategy.model.getStrategyFromBackId(strategyId);
+        //   var newStrategy = data.strategies[ns.state[newOrdering].checksum];
+        //   var loadedRootStep = loadedStrategy.JSON.steps[loadedStrategy.JSON.steps.length];
+        //   var newRootStep = newStrategy.steps[newStrategy.steps.length];
+
+        //   if (loadedStrategy.checksum != ns.state[newOrdering].checksum ||
+        //       loadedRootStep.results != newRootStep.results) {
+        //     // If the checksums are not the same, reload the model.
+        //     // This assumes the strategy object in the response (`data`)
+        //     // matches the current strategy in the global state object.
+        //     loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+        //   }
+        // }
+
+        // else {
+        //   loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+        // }
       }
     }
-    if (!skipRedraw) {
-      showStrategies(data.currentView, ignoreFilters, data.state.length, deferred);
+
+    if (showStrats) {
+      showStrategies(data.currentView, ignoreFilters, data.state.length);
     }
-    return deferred.promise();
   }
 
   // Use this to sync server objects with client objects without redrawing
