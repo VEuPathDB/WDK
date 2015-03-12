@@ -12,7 +12,7 @@ import './components';
 import './views';
 import './controllers';
 
-import wdkFlux from './flux/main';
+// import wdkFlux from './flux/main';
 
 var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver; // jshint ignore:line
 
@@ -47,15 +47,15 @@ var app = wdk.application = wdk.app = wdk.core.Application.create({
      * the pushState API). A HeadlessLocation instance will maintain this stack
      * internally and keep the URL bar clean.
      */
-    jQuery('[data-route]').each((index, el) => {
-      var route = el.getAttribute('data-route');
-      wdkFlux.createApplication({
-        location: 'none',
-        defaultRoute: route,
-        serviceUrl: wdk.webappUrl('/service'),
-        rootElement: el
-      });
-    });
+    // jQuery('[data-route]').each((index, el) => {
+    //   var route = el.getAttribute('data-route');
+    //   wdkFlux.createApplication({
+    //     location: 'none',
+    //     defaultRoute: route,
+    //     serviceUrl: wdk.webappUrl('/service'),
+    //     rootElement: el
+    //   });
+    // });
 
     wdk.cookieTest();
     wdk.setUpDialogs();
