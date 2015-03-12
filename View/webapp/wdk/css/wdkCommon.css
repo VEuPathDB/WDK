@@ -606,6 +606,7 @@ div.param-group div#grp-descr{
   clear: both;
   padding-top: 0;  /* 5px; */
   padding-bottom: 1em; /* 5px; */
+  position: relative;
 }
 
 .param-item p {
