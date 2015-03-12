@@ -753,7 +753,7 @@ public class StepFactory {
     String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_CUSTOM_NAME + " = ?, " +
         COLUMN_LAST_RUN_TIME + " = ?, " + COLUMN_IS_DELETED + " = ?, " + COLUMN_IS_COLLAPSIBLE + " = ?, " +
         COLUMN_COLLAPSED_NAME + " = ?, " + COLUMN_ESTIMATE_SIZE + " = ?, " + COLUMN_IS_VALID + " = ?, " +
-        COLUMN_ANSWER_FILTER + " = ?, " + COLUMN_ASSIGNED_WEIGHT + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
+        COLUMN_ASSIGNED_WEIGHT + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
     try {
       long start = System.currentTimeMillis();
       psStep = SqlUtils.getPreparedStatement(dataSource, sql);
@@ -764,9 +764,8 @@ public class StepFactory {
       psStep.setString(5, step.getCollapsedName());
       psStep.setInt(6, estimateSize);
       psStep.setBoolean(7, step.isValid());
-      psStep.setString(8, step.getFilterName());
-      psStep.setInt(9, step.getAssignedWeight());
-      psStep.setInt(10, step.getStepId());
+      psStep.setInt(8, step.getAssignedWeight());
+      psStep.setInt(9, step.getStepId());
       int result = psStep.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-update-step", start);
       if (result == 0)
