@@ -107,9 +107,20 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
     }
   }
 */
+  /**
+   * If result size is 1, return singular name, otherwise plural.
+   *
+   * Examples:
+   *     -1 => Loading Genes
+   *     0  => 0 Genes
+   *     1  => 1 Gene
+   *     10 => 10 Genes
+   */
   function getDisplayType(myStep) {
- 		return ( (myStep.results > 1) ? myStep.shortDisplayTypePlural : myStep.shortDisplayType );
-	}
+    return myStep.results == 1
+      ? myStep.shortDisplayType
+      : myStep.shortDisplayTypePlural;
+  }
 
   function initShowHide(details) {
     $(".param-group[type='ShowHide']",details).each(function() {

@@ -228,6 +228,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
           st.nextStepType = (nstp.istransform) ? "transform" : "boolean";
         }
         st.booleanHasCompleteAnalyses = Boolean(steps[i].hasCompleteAnalyses);
+        st.isLoading = steps[steps.length].results == -1;
         arr.push(st);
       }
     }

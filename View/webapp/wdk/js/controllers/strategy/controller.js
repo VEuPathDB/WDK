@@ -258,9 +258,6 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    *   Otherwise they will be reloaded.
    */
   function updateStrategies(data, ignoreFilters = false, count = 1) {
-    // Should we update the strategy panel?
-    var showStrats = true;
-
     // Increment count if we refetch strategies with updated results
     var nextUpdateStrategies = _.partialRight(updateStrategies, ignoreFilters,
                                               count + 1);
@@ -279,7 +276,6 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       if (checksum == 'length') continue;
       var strategy = data.strategies[checksum];
       if (strategy.steps[strategy.steps.length].results == -1) {
-        showStrats = false;
         setTimeout(updateResults, 250 * count);
         break;
       }
@@ -319,9 +315,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       }
     }
 
-    if (showStrats) {
-      showStrategies(data.currentView, ignoreFilters, data.state.length);
-    }
+    showStrategies(data.currentView, ignoreFilters, data.state.length);
   }
 
   // Use this to sync server objects with client objects without redrawing
@@ -471,7 +465,12 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       var initStp = initStr.getStep(view.step, false);
       if (initStr === false || initStp === null) {
         newResults(-1);
-      } else {
+      }
+      else if (initStp.isLoading) {
+        newResults(-1);
+        wdk.util.showLoading(initStr.frontId);
+      }
+      else {
         var isVenn = (initStp.back_boolean_Id == view.step);
         var pagerOffset = view.pagerOffset;
         if (view.action !== undefined && view.action.match("^basket")) {

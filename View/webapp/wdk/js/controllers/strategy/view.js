@@ -231,6 +231,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var filterImg = "";
     var bool_link = "";
     var details_link = "wdk.step.showDetails(this)";
+    var results = modelstep.isLoading ? "Loading" : jsonStep.results;
 
     if (modelstep.isSpan) {
       details_link = "void(0)";
@@ -247,7 +248,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "style='height:10px;position:relative;top:0px'/></span>";
     }
 
-    var displayType = (jsonStep.results > 1) ? jsonStep.shortDisplayTypePlural : jsonStep.shortDisplayType;
+    var displayType = wdk.util.getDisplayType(jsonStep);
     
     var boolinner = ""+
         "<div id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonStep.operation + "' class='divlink results_link step-elem' "+
@@ -259,7 +260,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "     >" + getEditImage('boolean')+"</a><br/>"+
         "  <div class='crumb_details'></div>" +
         "  <h6 class='resultCount'>" +
-        "    <span class='operation'>" + jsonStep.results + "&nbsp;" + displayType + "</span>" +
+        "    <span class='operation'>" + results + "&nbsp;" + displayType + "</span>" +
         "  </h6>" +
            filterImg +
         "</div>";
@@ -283,6 +284,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     //Create the operand Step Box
     var childStp = jsonStep.step;  
+    var childResults = modelstep.isLoading ? "Loading" : childStp.results;
     var uname = "";
     var fullName = "";
 
@@ -314,7 +316,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 	//"        <div style='position:absolute;top:-6px;right:-8px;width:19px;height:19px;'></div>"+
       "        <div class='crumb_details'></div>"+
       "      </h4>"+
-      "      <h6 class='resultCount'>" + childStp.results + "&nbsp;" + wdk.util.getDisplayType(childStp) + "</h6>"+
+      "      <h6 class='resultCount'>" + childResults + "&nbsp;" + wdk.util.getDisplayType(childStp) + "</h6>"+
       childfilterImg +
       "    </div>"+
       "<img class='arrow down' src='" + wdk.assetsUrl('wdk/images/arrow_chain_down2.png') + "' alt='equals'>";
@@ -397,6 +399,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   function singleStep(modelstep, prevjsonstep, jsonStep, sid) {
     var uname = "";
     var fullName = "";
+    var results = modelstep.isLoading ? "Loading" : jsonStep.results;
 
     if (jsonStep.name == jsonStep.customName) {
       uname = jsonStep.shortName;
@@ -426,7 +429,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
       "        <div class='crumb_details'></div>"+
       "      </h4>"+
-      "      <h6 class='resultCount'>" + jsonStep.results + "&nbsp;" + wdk.util.getDisplayType(jsonStep) + "</h6>"+
+      "      <h6 class='resultCount'>" + results + "&nbsp;" + wdk.util.getDisplayType(jsonStep) + "</h6>"+
       filterImg +
       "    </div>";
 
