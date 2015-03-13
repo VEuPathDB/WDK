@@ -644,9 +644,10 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     for (i=0; i < dependedNames.length; i++) {
       dependedName = dependedNames[i];
       var dependedParam = element.find([
-        "input[name='value(" + dependedName + ")']",         // any single input
-        "input[name='array(" + dependedName + ")']",         // any array input
-        "select[name='array(" + dependedName + ")']"         // select
+        "[name$='(" + dependedName + ")']:text",    // text input
+        "[name$='(" + dependedName + ")']textarea", // textrea
+        "[name$='(" + dependedName + ")']:checked", // radio or checkbox
+        "[name$='(" + dependedName + ")']select"    // select
       ].join(','));
 
       // get the selected values from depended param
