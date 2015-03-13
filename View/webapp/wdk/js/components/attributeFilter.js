@@ -257,7 +257,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     render: function() {
-      var { fields, selectedFields, metadata, filteredData, displayName, tabWidth } = this.props;
+      var { fields, selectedFields, metadata, filteredData, displayName, tabWidth, totalSize } = this.props;
       var { dialogIsOpen, pendingSelectedFields } = this.state;
 
       if (!tabWidth) return null;
@@ -266,7 +266,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
         <div className="wdk-AttributeFilter-FilteredData">
 
           <div className="ui-helper-clearfix" style={{padding: 10}}>
-            <div style={{float: 'left'}}>Showing {filteredData.length} {displayName}</div>
+            <div style={{float: 'left'}}>Showing {filteredData.length} of {totalSize} {displayName}</div>
             <div style={{float: 'right'}}>
               <button onClick={this.openDialog}>Add Columns</button>
             </div>
@@ -481,14 +481,14 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             <button onClick={this.handleExpandClick}
               style={{
                 display: !this.state.collapsed ? 'none' : 'block'
-              }} >Select {displayName}</button>
+              }} >Filter {displayName}</button>
 
             {/* Tabs */}
 
             <div className="filter-param-tabs" style={{ display: this.state.collapsed ? 'none' : 'block' }}>
               <ul>
-                <li><a href="#filters">Select {displayName}</a></li>
-                <li><a href="#data">View selection ({filteredNotIgnored.length})</a></li>
+                <li><a href="#filters">Filter {displayName}</a></li>
+                <li><a href="#data">View filtered {displayName} ({filteredData.length})</a></li>
               </ul>
 
               {/* Main selection UI */}
@@ -521,6 +521,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                   sortTerm={sortTerm}
                   sortDirection={sortDirection}
                   filteredData={sortedFilteredData}
+                  totalSize={data.length}
                   selectedFields={columns}
                   fields={fields}
                   ignored={ignored}
