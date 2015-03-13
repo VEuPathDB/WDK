@@ -443,6 +443,9 @@
 .wdk-AttributeFilter-FilteredData {
   padding: 5px;
 }
+.wdk-AttributeFilter-ItemIgnored {
+  color: #9f9f9f;
+}
 /*
 .filter-param .dataTables_wrapper {
   overflow-x: auto;

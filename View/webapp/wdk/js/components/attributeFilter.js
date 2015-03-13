@@ -3,12 +3,13 @@ import React from 'react';
 import FixedDataTable from 'fixed-data-table';
 import Loading from '../flux/components/Loading';
 import Dialog from '../flux/components/Dialog';
+import Table from '../flux/components/Table';
 
 wdk.namespace('wdk.components.attributeFilter', function(ns) {
   'use strict';
 
   var { PropTypes } = React;
-  var { Table, Column } = FixedDataTable;
+  var { Column } = FixedDataTable;
   var { Fields } = wdk.models.filter;
 
 
@@ -158,7 +159,10 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       metadata: PropTypes.object,
       displayName: PropTypes.string,
       onFieldsChange: PropTypes.func,
-      onIgnored: PropTypes.func
+      onIgnored: PropTypes.func,
+      onSort: PropTypes.func,
+      sortTerm: PropTypes.string,
+      sortDirection: PropTypes.string
     },
 
     getInitialState: function() {
@@ -207,6 +211,15 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       });
     },
 
+    handleSort: function(term) {
+      this.props.onSort(term);
+    },
+
+    handleHideColumn: function(term) {
+      var nextFields = this.props.selectedFields.filter(field => field.term != term)
+      this.props.onFieldsChange(nextFields);
+    },
+
     isIgnored: function(field) {
       return this.props.ignored.indexOf(field.term) > -1;
     },
@@ -214,6 +227,12 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     getRow: function(index) {
       return this.props.filteredData[index];
       // return _.cloneDeep(this.props.filteredData[index]);
+    },
+
+    getRowClassName: function(index) {
+      return this.props.filteredData[index].isIgnored
+        ? 'wdk-AttributeFilter-ItemIgnored'
+        : 'wdk-AttributeFilter-Item';
     },
 
     getCellData: function(cellDataKey, rowData) {
@@ -295,7 +314,12 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             rowsCount={filteredData.length}
             rowHeight={25}
             rowGetter={this.getRow}
+            rowClassNameGetter={this.getRowClassName}
             headerHeight={30}
+            onSort={this.handleSort}
+            onHideColumn={this.handleHideColumn}
+            sortDataKey={this.props.sortTerm}
+            sortDirection={this.props.sortDirection}
           >
           <Column
             label="Name"
@@ -304,14 +328,16 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             width={200}
             cellDataGetter={this.getCellData}
             cellRenderer={this.renderPk}
+            isRemovable={false}
           />
           {selectedFields.map(field => {
             return (
               <Column
                 label={field.display}
                 dataKey={field.term}
-                width={130}
+                width={200}
                 cellDataGetter={this.getCellData}
+                isRemovable={true}
               />
             );
           })}
@@ -338,7 +364,10 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     getInitialState: function() {
-      return this.props.store.getState();
+      return Object.assign({
+        sortTerm: '__primary_key__',
+        sortDirection: 'ASC',
+      }, this.props.store.getState());
     },
 
     componentDidMount: function() {
@@ -389,6 +418,18 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       else this.props.actions.removeIgnored(datum);
     },
 
+    handleSort: function(fieldTerm) {
+      var { sortTerm, sortDirection } = this.state;
+
+      var direction = fieldTerm == sortTerm && sortDirection == 'ASC'
+        ? 'DESC' : 'ASC';
+
+      this.setState({
+        sortTerm: fieldTerm,
+        sortDirection: direction
+      });
+    },
+
     render: function() {
       var {
         data,
@@ -400,7 +441,9 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
         selectedField,
         distributionMap,
         isLoading,
-        tabWidth
+        tabWidth,
+        sortTerm,
+        sortDirection
       } = this.state;
 
       var displayName = this.props.displayName;
@@ -409,8 +452,16 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       });
 
       var actions = this.props.actions;
+      var metadata = this.props.store.metadata;
 
       var filteredNotIgnored = filteredData.filter(datum => !datum.isIgnored);
+
+      var sortedFilteredData = _.sortBy(filteredData, function(datum) {
+        var term = datum.term;
+        return sortTerm == '__primary_key__' ? term : metadata[sortTerm][term];
+      });
+
+      if (sortDirection == 'DESC') sortedFilteredData.reverse();
 
       return (
         <div>
@@ -465,12 +516,15 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                   tabWidth={tabWidth}
                   displayName={displayName}
                   onFieldsChange={this.handleFieldsChange}
-                  filteredData={filteredData}
+                  onIgnored={this.handleIgnored}
+                  onSort={this.handleSort}
+                  sortTerm={sortTerm}
+                  sortDirection={sortDirection}
+                  filteredData={sortedFilteredData}
                   selectedFields={columns}
                   fields={fields}
                   ignored={ignored}
-                  onIgnored={this.handleIgnored}
-                  metadata={this.props.store.metadata}/>
+                  metadata={metadata}/>
               </div>
             </div>
           </div>
