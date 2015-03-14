@@ -950,7 +950,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     }, 200),
 
     render: function() {
-      var { field, distribution } = this.props;
+      var { field, distribution, filter } = this.props;
       var dist = _.filter(distribution, item => _.isNumber(item.value));
       var size = _.reduce(dist, (acc, item) => acc + item.count, 0);
       var sum = _.reduce(dist, (acc, item) => acc + (item.value * item.count), 0);
@@ -958,10 +958,10 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       var distMin = _.min(values);
       var distMax = _.max(values);
       var distAvg = (sum / size).toFixed(2);
-      var { min, max } = this.props.filter ? this.props.filter.values : {};
-      var selectionTotal = this.props.filter
-        ? " (" + this.props.filter.selection.length + " selected) "
-        : '';
+      var { min, max } = filter ? filter.values : {};
+      var selectionTotal = filter && filter.selection
+        ? " (" + filter.selection.length + " selected) "
+        : null;
 
       return (
         <div className="range-filter">
