@@ -1,3 +1,4 @@
+import partial from 'lodash/function/partial';
 import noop from 'lodash/utility/noop';
 import FixedDataTable from 'fixed-data-table';
 import React from 'react/addons';
@@ -36,16 +37,13 @@ const WdkTable = React.createClass({
 
     onSort: React.PropTypes.func,
 
-    onHideColumn: React.PropTypes.func,
-
-    isRemovable: React.PropTypes.bool
+    onHideColumn: React.PropTypes.func
   },
 
   getDefaultProps() {
     return {
       onSort: noop,
-      onHideColumn: noop,
-      isRemovable: true
+      onHideColumn: noop
     };
   },
 
@@ -95,9 +93,8 @@ const WdkTable = React.createClass({
     const { dataKey, headerRenderer } = columnComponent.props;
     const sortClass = this.props.sortDataKey == columnComponent.props.dataKey
       ? SORT_CLASS_MAP[this.props.sortDirection] : '';
-
-    const sort = _.partial(this.handleSort, dataKey);
-    const hide = _.partial(this.handleHideColumn, dataKey);
+    const sort = partial(this.handleSort, dataKey);
+    const hide = partial(this.handleHideColumn, dataKey);
 
     return (
       <div onClick={sort} className="wdk-RecordTable-headerWrapper">
@@ -113,15 +110,16 @@ const WdkTable = React.createClass({
   },
 
   render() {
-    const tableProps = Object.assign({
+    const defaultTableProps = {
       isColumnResizing: isColumnResizing,
       onColumnResizeEndCallback: this.handleColumnResize
-    }, this.props);
+    };
+    const tableProps = Object.assign({}, defaultTableProps, this.props);
 
     return (
       <Table {...tableProps}>
         {React.Children.map(this.props.children, child => {
-          const headerRenderer = _.partial(this.renderHeader, child);
+          const headerRenderer = partial(this.renderHeader, child);
           const isResizable = child.props.isResizable != null
             ? child.props.isResizable : true;
 
