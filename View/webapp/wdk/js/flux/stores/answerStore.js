@@ -82,13 +82,13 @@ var parseSearchTerms = function parseSearchTerms(terms) {
 // There is much room for performance tuning here.
 var isTermInRecord = curry(function isTermInRecord(term, record) {
   var attributeValues = record
-    .get('attributes')
+    .get('attributes').toList()
     .map(function(attribute) {
       return attribute.get('value');
     });
 
   var tableValues = record
-    .get('tables')
+    .get('tables').toList()
     .flatMap(function(table) {
       return table
         .get('rows')
@@ -115,7 +115,6 @@ export default createStore({
   state: Immutable.fromJS({
     isLoading: false,
     error: null,
-    answer: { records: null },
     filterTerm: '',
     filteredRecords: [],
     answers: {},
@@ -219,6 +218,12 @@ export default createStore({
 
   handleAnswerLoadSuccess(action, emitChange) {
     /* Answer resource */
+    // answer = {
+    //   meta,
+    //   records: [{
+    //     id, attributes, tables
+    //   }]
+    // }
     var answer = action.answer;
 
     /*
@@ -249,6 +254,28 @@ export default createStore({
     answer.meta.attributes = answer.meta.attributes
       .filter(attr => attr.name != 'wdk_weight');
 
+    // For each record, attributes should be a map indexed by attribute name
+    var records$ = Immutable.List().withMutations(list => {
+      answer.records.forEach(record => {
+
+        var id = record.id;
+
+        var attributes = Immutable.Map().withMutations(map => {
+          record.attributes.forEach(attribute => {
+            map.set(attribute.name, Immutable.fromJS(attribute));
+          });
+        });
+
+        var tables = Immutable.Map().withMutations(map => {
+          record.tables.forEach(table => {
+            map.set(table.name, Immutable.fromJS(table));
+          });
+        });
+
+        list.push(Immutable.Map({ id, attributes, tables }));
+      });
+    });
+
     /*
      * This will update the keys 'isLoading', 'answer', 'displayInfo',
      * and 'questionDefinition' in `state`. `displayInfo` and
@@ -257,9 +284,9 @@ export default createStore({
     this.state = this.state.merge({
       isLoading: false,
       answers: {
-        [questionName]: answer
+        [questionName]: { records: records$, meta: answer.meta }
       },
-      filteredRecords: answer.records
+      filteredRecords: records$
     }, requestData);
 
     emitChange();
@@ -313,10 +340,10 @@ export default createStore({
      * Create new Immutable list of attribtues. We have to use fromJS so
      * that we create Immutable data structures for nested attribute keys.
      */
-    var newList = Immutable.fromJS(action.attributes);
+    // var newList = Immutable.fromJS(action.attributes);
 
     /* set state.displayInfo.attributes to the new list */
-    this.state = this.state.setIn(['displayInfo', 'visibleAttributes'], newList);
+    this.state = this.state.setIn(['displayInfo', 'visibleAttributes'], action.attributes);
 
     emitChange();
   },
@@ -344,7 +371,7 @@ export default createStore({
      * explore returning `state` as-is. This will require updating any modules
      * that work with the store (AnswerPage, etc).
      */
-    return this.state.toJS();
+    return this.state;
   }
 
 });

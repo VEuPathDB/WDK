@@ -101,23 +101,23 @@ const AnswerPage = React.createClass({
   getStateFromStores(stores) {
     const { questionName } = this.props.params;
 
-    const {
-      answers,
-      isLoading,
-      error,
-      displayInfo,
-      questionDefinition,
-      filterTerm,
-      filteredRecords
-    } = stores.answerStore.getState();
-    const answer = answers[questionName];
+    const answerStoreState = stores.answerStore.getState();
+    const answer = answerStoreState.getIn(['answers', questionName]);
+    const isLoading = answerStoreState.get('isLoading');
+    const error = answerStoreState.get('error');
+    const displayInfo = answerStoreState.get('displayInfo');
+    const questionDefinition = answerStoreState.get('questionDefinition');
+    const filterTerm = answerStoreState.get('filterTerm');
+    const filteredRecords = answerStoreState.get('filteredRecords');
 
-    const { questions } = stores.questionStore.getState();
-    const question = _.find(questions, { name: questionName });
+    const questionStoreState = stores.questionStore.getState();
+    const question = questionStoreState.get('questions')
+      .find(question => question.get('name') === questionName);
 
-    const { recordClasses } = stores.recordClassStore.getState();
+    const recordClassStoreState = stores.recordClassStore.getState();
     const recordClass = question
-      ? _.find(recordClasses, { fullName: question.class })
+      ? recordClassStoreState.get('recordClasses')
+        .find(recordClass => recordClass.get('fullName') === question.get('class'))
       : null;
 
     return {
@@ -187,7 +187,7 @@ const AnswerPage = React.createClass({
       const displayInfo = {
         pagination,
         sorting,
-        visibleAttributes: this.state.displayInfo.visibleAttributes
+        visibleAttributes: this.state.displayInfo.get('visibleAttributes')
       };
 
       // TODO Add params to loadAnswer call
@@ -265,7 +265,7 @@ const AnswerPage = React.createClass({
       // Update the query object with the new values.
       // See https://lodash.com/docs#assign
       const query = Object.assign({}, this.props.query, {
-        sortBy: attribute.name,
+        sortBy: attribute.get('name'),
         sortDir: direction
       });
 
@@ -332,12 +332,12 @@ const AnswerPage = React.createClass({
 
     // FIXME This will be removed when the record service is serving up records
     onRecordClick(record) {
-      const { id } = record;
       const path = 'answer';
+      const records = this.state.answer.get('records');
 
       // update query with format and position
       const query = Object.assign({}, this.props.query, {
-        expandedRecord: _.findIndex(this.state.answer.records, { id })
+        expandedRecord: records.findIndex(r => r === record)
       });
 
       // Method provided by Router.Navigation mixin
@@ -430,13 +430,13 @@ const AnswerPage = React.createClass({
 
     // FIXME This will be removed when the record service is serving up records
     if (answer && expandedRecord != null) {
-      const RecordComponent = this.context.getRecordComponent(answer.meta.class, Record)
+      const RecordComponent = this.context.getRecordComponent(answer.getIn(['meta', 'class']), Record)
         || Record;
 
       components.push(
         <RecordComponent
-          record={answer.records[expandedRecord]}
-          attributes={answer.meta.attributes}
+          record={answer.get('records').get(expandedRecord)}
+          attributes={answer.getIn(['meta', 'attributes'])}
         />
       );
     }
@@ -444,7 +444,7 @@ const AnswerPage = React.createClass({
     else if (answer && question && recordClass) {
       components.push(
         <div>
-          <h1>{question.displayName}</h1>
+          <h1>{question.get('displayName')}</h1>
           <Answer
             format={format}
             position={position}
