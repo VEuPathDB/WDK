@@ -86,7 +86,7 @@ public class ProcessStepAction extends Action {
         rootMap = insertStep(request, questionForm, wdkModel, user, strategy, step, customName);
       }
       else { // add a boolean step
-        rootMap = addStep(request, questionForm, wdkModel, user, strategy, customName);
+        rootMap = addStep(request, questionForm, wdkModel, user, strategy, step, customName);
       }
 
       // the strategy id might change due to editting on saved strategies.
@@ -240,12 +240,13 @@ public class ProcessStepAction extends Action {
   }
 
   private Map<Integer, Integer> addStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
-      UserBean user, StrategyBean strategy, String customName) throws WdkUserException,
+      UserBean user, StrategyBean strategy, StepBean step, String customName) throws WdkUserException,
       NumberFormatException, WdkModelException {
     logger.debug("Adding step...");
 
     // get root step
-    StepBean rootStep = getRootStep(request, user, strategy);
+    if (step == null)
+    step = getRootStep(request, user, strategy);
 
     // the question name has to exist
     String questionName = request.getParameter(PARAM_QUESTION);
@@ -266,8 +267,8 @@ public class ProcessStepAction extends Action {
       newStep.update(false);
     }
 
-    logger.debug("root step: " + rootStep);
-    return strategy.insertStepAfter(newStep, rootStep.getStepId());
+    logger.debug("Insert Afte step: " + step);
+    return strategy.insertStepAfter(newStep, step.getStepId());
   }
 
   private Integer getWeight(HttpServletRequest request) throws WdkUserException {
