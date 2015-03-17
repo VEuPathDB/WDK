@@ -43,7 +43,7 @@ public class RunPublicStrats extends BaseCLI {
 
   public RunPublicStrats(String command) {
     super((command != null) ? command : "wdkRunPublicStrats",
-        "This command runs public strategies (default is only for the EuPathDB user).");
+        "This command runs public strategies, will log at end a list of invalid ones.");
   }
 
   @Override
