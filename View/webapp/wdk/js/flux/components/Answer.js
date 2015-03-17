@@ -27,27 +27,24 @@ const Answer = React.createClass({
   // obviated when we better incorporate JSON-schema and validate in the
   // ServiceAPI calls.
   propTypes: {
-    questionName: PropTypes.string.isRequired,
-    error: PropTypes.string,
-    isLoading: PropTypes.bool,
     answer: PropTypes.shape({
       meta: PropTypes.object,
       records: PropTypes.array
-    }),
+    }).isRequired,
     displayInfo: PropTypes.shape({
       pagination: PropTypes.object,
       attributes: PropTypes.array,
       tables: PropTypes.array,
       sorting: PropTypes.array
-    }),
+    }).isRequired,
     answerEvents: PropTypes.shape({
       onSort: PropTypes.func,
       onMoveColumn: PropTypes.func,
       onChangeColumns: PropTypes.func,
       onNewPage: PropTypes.func,
       onAttributeClick: PropTypes.func
-    }),
-    format: PropTypes.string,
+    }).isRequired,
+    format: PropTypes.string.isRequired,
     position: PropTypes.number
   },
 
@@ -94,11 +91,13 @@ const Answer = React.createClass({
       filterTerm,
       filteredRecords
     } = this.props;
-    const { meta } = answer;
-    const { pagination } = displayInfo;
-    const firstRec = pagination.offset + 1;
-    const lastRec = Math.min(pagination.offset + pagination.numRecords,
-                             meta.count, filteredRecords.length);
+
+    const displayName = recordClass.get('displayName');
+    const meta = answer.get('meta');
+    const pagination = displayInfo.get('pagination');
+    const firstRec = pagination.get('offset') + 1;
+    const lastRec = Math.min(pagination.get('offset') + pagination.get('numRecords'),
+                             meta.get('count'), filteredRecords.size);
     const Records = format === 'list' ? RecordList : RecordTable;
 
     return (
@@ -109,7 +108,7 @@ const Answer = React.createClass({
               ref="filterInput"
               style={{ padding: '.5em', width: '25em'}}
               defaultValue={filterTerm}
-              placeholder={`Filter ${recordClass.displayName} records`}
+              placeholder={`Filter ${displayName} records`}
             />
             <button className="wdk-Answer-filterButton">
               <i className="fa fa-search fa-lg"/>
@@ -117,7 +116,7 @@ const Answer = React.createClass({
           </form>
         </div>
         <p>
-          Showing {firstRec} - {lastRec} of {meta.count} {recordClass.displayName} records
+          Showing {firstRec} - {lastRec} of {meta.get('count')} {displayName} records
         </p>
         <Records
           ref="records"

@@ -38,9 +38,7 @@ export default createStore ({
   },
 
   handleLoadSuccess(action, emitChange) {
-    const { recordClass } = action;
-    const recordClasses = this.state.get('recordClasses');
-    this.state = this.state.set('recordClasses', recordClasses.push(recordClass));
+    this.state = this.state.mergeIn(['recordClasses'], [action.recordClass]);
     emitChange();
   },
 
@@ -53,6 +51,6 @@ export default createStore ({
   },
 
   getState() {
-    return this.state.toJS();
+    return this.state;
   }
 });
