@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
 import FixedDataTable from 'fixed-data-table';
+import Table from './Table';
 import Dialog from './Dialog';
 import {
   formatAttributeName,
@@ -26,7 +27,7 @@ import {
  */
 
 const $ = window.jQuery;
-const { Table, Column } = FixedDataTable;
+const { Column } = FixedDataTable;
 const { PropTypes } = React;
 
 // Constants
@@ -40,18 +41,6 @@ const SORT_CLASS_MAP = {
 // Bookkeeping for `Table`
 let isColumnResizing = false;
 
-
-/**
- * Return the attributes for the row at index `rowIndex`
- *
- * @param {number} rowIndex
- */
-const getRow = function(rowIndex) {
-  const rowData = this.props.records[rowIndex].attributes;
-  return _.indexBy(rowData, 'name');
-};
-const rowNumberRenderer = (_, __, ___, rowIndex) => rowIndex + 1;
-const getRowNumberColumnWidth = length => String(length).length * 16;
 
 /**
  * Function that doesn't do anything. This is the default for many
@@ -168,15 +157,14 @@ const RecordTable = React.createClass({
     }, this._getInitialAttributeSelectorState());
   },
 
+  getRow(rowIndex) {
+    return this.props.records[rowIndex].attributes;
+  },
+
   componentWillReceiveProps(nextProps) {
-    this.getRow = _.memoize(_.bind(getRow, this));
     this.setState({
       pendingVisibleAttributes: nextProps.displayInfo.visibleAttributes
     });
-  },
-
-  componentWillMount() {
-    this.getRow = _.memoize(_.bind(getRow, this));
   },
 
   componentDidMount() {
@@ -218,11 +206,13 @@ const RecordTable = React.createClass({
     }
   },
 
-  handleSort(attribute) {
+  handleSort(name) {
+    const attributes = this.props.meta.attributes;
     const sortSpec = this.props.displayInfo.sorting[0];
+    const attribute = _.find(attributes, { name });
     // Determine the sort direction. If the attribute is the same, then
     // we will reverse the direction... otherwise, we will default to `ASC`.
-    const direction = sortSpec.attributeName === attribute.name
+    const direction = sortSpec.attributeName === name
       ? sortSpec.direction === 'ASC' ? 'DESC' : 'ASC'
       : 'ASC';
     this.props.onSort(attribute, direction);
@@ -233,10 +223,9 @@ const RecordTable = React.createClass({
     this.props.onChangeColumns(attributes);
   },
 
-  handleHideColumn(attribute, e) {
-    e.stopPropagation(); // prevent click event from bubbling to sort handler
+  handleHideColumn(name) {
     const attributes = this.props.displayInfo.visibleAttributes;
-    this.props.onChangeColumns(attributes.filter(attr => attr !== attribute));
+    this.props.onChangeColumns(attributes.filter(attr => attr.name !== name));
   },
 
   handleNewPage() {
@@ -322,24 +311,7 @@ const RecordTable = React.createClass({
    * @param {any} attribute Value of `label` prop of `Column`.
    */
   renderHeader(attribute) {
-    const { sorting } = this.props.displayInfo;
-    // const sortSpec = _.find(sorting, { attributeName: attribute.name });
-    const sortSpec = sorting[0];
-    const sortClass = sortSpec.attributeName === attribute.name
-      ? SORT_CLASS_MAP[sortSpec.direction] : '';
-
-    const sort = _.partial(this.handleSort, attribute);
-    const hide = _.partial(this.handleHideColumn, attribute);
-
-    return (
-      <div onClick={sort} className="wdk-RecordTable-headerWrapper">
-        <span>{formatAttributeName(attribute.displayName)}</span>
-        <span className={sortClass}/>
-        <span className="ui-icon ui-icon-close"
-          title="Hide column"
-          onClick={hide}/>
-      </div>
-    );
+    return formatAttributeName(attribute.displayName);
   },
 
   _getInitialAttributeSelectorState() {
@@ -352,8 +324,9 @@ const RecordTable = React.createClass({
   // TODO Find a better way to specify row height
   render() {
     // creates variables: meta, records, and visibleAttributes
-    const { meta, records, displayInfo: {  visibleAttributes } } = this.props;
+    const { meta, records, displayInfo: {  visibleAttributes, sorting } } = this.props;
     const { pendingVisibleAttributes } = this.state;
+    const sortSpec = sorting[0];
 
     return (
       <div>
@@ -383,13 +356,11 @@ const RecordTable = React.createClass({
           rowsCount={records.length}
           rowHeight={28}
           rowGetter={this.getRow}
-          scrollTop={0}
-          scrollLeft={0}
-          overflowX="auto"
-          overfloxY="auto"
           headerHeight={40}
-          isColumnResizing={isColumnResizing}
-          onColumnResizeEndCallback={this.handleColumnResize}
+          sortDataKey={sortSpec.attributeName}
+          sortDirection={sortSpec.direction}
+          onSort={this.handleSort}
+          onHideColumn={this.handleHideColumn}
         >
 
           {visibleAttributes.map(attribute => {
@@ -409,6 +380,8 @@ const RecordTable = React.createClass({
                 width={width}
                 flexGrow={flexGrow}
                 isResizable={true}
+                isSortable={true}
+                isRemovable={!isPk}
                 cellClassName={cellClassNames}
               />
             );
