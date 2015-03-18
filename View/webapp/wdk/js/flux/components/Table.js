@@ -12,14 +12,11 @@ import React from 'react/addons';
  */
 
 const { Table } = FixedDataTable;
+
 const SORT_CLASS_MAP = {
-  ASC:  'ui-icon ui-icon-triangle-1-n',
-  DESC: 'ui-icon ui-icon-triangle-1-s'
+  ASC:  'fa fa-lg fa-sort-alpha-asc',
+  DESC: 'fa fa-lg fa-sort-alpha-desc'
 };
-// const SORT_CLASS_MAP = {
-//   ASC:  'fa fa-lg fa-sort-alpha-asc',
-//   DESC: 'fa fa-lg fa-sort-alpha-desc'
-// };
 
 // Bookkeeping for `Table` prop `isColumnResizing`.
 let isColumnResizing = false;
@@ -95,9 +92,12 @@ const WdkTable = React.createClass({
       ? SORT_CLASS_MAP[this.props.sortDirection] : '';
     const sort = partial(this.handleSort, dataKey);
     const hide = partial(this.handleHideColumn, dataKey);
+    const title = columnComponent.props.isSortable
+      ? 'Click to sort table by this column.'
+      : null;
 
     return (
-      <div onClick={sort} className="wdk-RecordTable-headerWrapper">
+      <div title={title} onClick={sort} className="wdk-RecordTable-headerWrapper">
         <span>{headerRenderer ? headerRenderer(...rest) : rest[0]}</span>
         <span className={sortClass}/>
         {columnComponent.props.isRemovable ? (

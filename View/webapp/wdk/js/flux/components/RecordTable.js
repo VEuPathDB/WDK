@@ -314,7 +314,11 @@ const RecordTable = React.createClass({
    * @param {any} attribute Value of `label` prop of `Column`.
    */
   renderHeader(attribute) {
-    return formatAttributeName(attribute.get('displayName'));
+    return (
+      <span title={attribute.get('help')}>
+        {formatAttributeName(attribute.get('displayName'))}
+      </span>
+    );
   },
 
   _getInitialAttributeSelectorState() {
@@ -385,8 +389,8 @@ const RecordTable = React.createClass({
                 cellDataGetter={this.getCellData}
                 width={width}
                 isResizable={true}
-                isSortable={true}
-                isRemovable={!isPk}
+                isSortable={attribute.get('isSortable')}
+                isRemovable={attribute.get('isRemovable')}
                 cellClassName={cellClassNames}
               />
             );

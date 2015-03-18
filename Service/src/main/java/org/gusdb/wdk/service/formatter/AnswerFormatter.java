@@ -83,6 +83,11 @@ public class AnswerFormatter {
       JSONObject attribJson = new JSONObject();
       attribJson.put("name", attrib.getName());
       attribJson.put("displayName", attrib.getDisplayName());
+      attribJson.put("help", attrib.getHelp());
+      attribJson.put("align", attrib.getAlign());
+      attribJson.put("isSortable", attrib.isSortable());
+      attribJson.put("isRemovable", attrib.isRemovable());
+      attribJson.put("type", attrib.getType());
       attributes.put(attribJson);
     }
     meta.put("attributes", attributes);
