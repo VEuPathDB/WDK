@@ -246,9 +246,9 @@ export default createStore({
      * localStorage is one possble solution.
      */
     if (!requestData.displayInfo.visibleAttributes || previousQuestionName !== questionName) {
-      requestData.displayInfo.visibleAttributes = answer.meta.attributes.filter(
-        attr => answer.meta.summaryAttributes.indexOf(attr.name) > -1
-      );
+      requestData.displayInfo.visibleAttributes = answer.meta.summaryAttributes.map(attrName => {
+        return answer.meta.attributes.find(attr => attr.name === attrName);
+      });
     }
 
     answer.meta.attributes = answer.meta.attributes
