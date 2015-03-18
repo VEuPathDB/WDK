@@ -38,6 +38,7 @@ export const QUESTION_LIST_LOAD_ERROR = 'questionListLoadError';
 export const QUESTION_LOAD_SUCCESS = 'questionLoadSuccess';
 
 export const RECORD_CLASS_LOADING = 'recordClassLoading';
+export const RECORD_CLASSES_LOAD_SUCCESS = 'recordClassesLoadSuccess';
 export const RECORD_CLASS_LOAD_SUCCESS = 'recordClassLoadSuccess';
 export const RECORD_CLASS_LOAD_ERROR = 'recordClassLoadError';
 

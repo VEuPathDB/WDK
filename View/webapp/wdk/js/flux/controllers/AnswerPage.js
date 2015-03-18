@@ -103,6 +103,13 @@ const AnswerPage = React.createClass({
 
     const answerStoreState = stores.answerStore.getState();
     const answer = answerStoreState.getIn(['answers', questionName]);
+
+    const questionStoreState = stores.questionStore.getState();
+    const questions = questionStoreState.get('questions');
+
+    const recordClassStoreState = stores.recordClassStore.getState();
+    const recordClasses = recordClassStoreState.get('recordClasses');
+
     const isLoading = answerStoreState.get('isLoading');
     const error = answerStoreState.get('error');
     const displayInfo = answerStoreState.get('displayInfo');
@@ -110,14 +117,9 @@ const AnswerPage = React.createClass({
     const filterTerm = answerStoreState.get('filterTerm');
     const filteredRecords = answerStoreState.get('filteredRecords');
 
-    const questionStoreState = stores.questionStore.getState();
-    const questions = questionStoreState.get('questions');
     const question = questions.find(q => q.get('name') === questionName);
-
-    const recordClassStoreState = stores.recordClassStore.getState();
     const recordClass = question
-      ? recordClassStoreState.get('recordClasses')
-        .find(r => r.get('fullName') === question.get('class'))
+      ? recordClasses.find(r => r.get('fullName') === question.get('class'))
       : null;
 
     return {
@@ -125,6 +127,7 @@ const AnswerPage = React.createClass({
       question,
       questions,
       recordClass,
+      recordClasses,
       isLoading,
       error,
       displayInfo,
@@ -384,6 +387,7 @@ const AnswerPage = React.createClass({
       question,
       questions,
       recordClass,
+      recordClasses,
       displayInfo,
       filterTerm,
       filteredRecords
@@ -439,6 +443,7 @@ const AnswerPage = React.createClass({
         <RecordComponent
           record={answer.get('records').get(expandedRecord)}
           questions={questions}
+          recordClasses={recordClasses}
           attributes={answer.getIn(['meta', 'attributes'])}
         />
       );
