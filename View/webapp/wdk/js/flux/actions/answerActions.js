@@ -266,7 +266,8 @@ export default createActionCreators({
   },
 
   changeAttributes(attributes) {
-    console.assert(Array.isArray(attributes), `attributes ${attributes} should be an array.`);
+    // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
+    console.assert(attributes[Symbol.iterator], `attributes ${attributes} should be iterable.`);
 
     var action = new AnswerChangeAttributesAction({
       attributes: attributes
