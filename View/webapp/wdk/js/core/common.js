@@ -632,7 +632,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   function load($el) {
     $el = $el || $(document);
 
-    console.log('load', $el);
+    // console.log('load', $el);
 
     resolveAssetsUrls($el);
     wdk.components.wdkAjax.init($el);
