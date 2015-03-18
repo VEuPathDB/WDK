@@ -78,6 +78,7 @@ const AttributeSelectorItem = React.createClass({
           name="pendingAttribute"
           value={name}
           onChange={this.props.onChange}
+          disabled={!attribute.get('isRemovable')}
           checked={this.props.isChecked}/>
         <label htmlFor={'column-select-' + name}> {formatAttributeName(displayName)} </label>
       </li>
@@ -337,9 +338,9 @@ const RecordTable = React.createClass({
     const sortSpec = displayInfo.getIn(['sorting', 0]);
 
     return (
-      <div>
+      <div className="wdk-RecordTable">
 
-        <p>
+        <p className="wdk-RecordTable-AttributeSelectorOpenButton">
           <button onClick={this.handleOpenAttributeSelectorClick}>Add Columns</button>
         </p>
 

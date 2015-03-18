@@ -104,7 +104,6 @@ const Answer = React.createClass({
     return (
       <div className="wdk-Answer">
         <div className="wdk-Answer-filter">
-          <i className="fa fa-search fa-lg wdk-Answer-filterIcon"/>
           <input
             ref="filterInput"
             className="wdk-Answer-filterInput"
@@ -112,8 +111,9 @@ const Answer = React.createClass({
             placeholder={`Filter ${displayName} records`}
             onKeyUp={throttle(this.handleFilter, 150, { leading: false })}
           />
+          <i className="fa fa-search fa-lg wdk-Answer-filterIcon"/>
         </div>
-        <p>
+        <p className="wdk-Answer-count">
           Showing {firstRec} - {lastRec} of {meta.get('count')} {displayName} records
         </p>
         <Records
