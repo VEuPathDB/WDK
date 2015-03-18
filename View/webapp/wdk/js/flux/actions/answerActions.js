@@ -7,7 +7,7 @@ import {
   ANSWER_MOVE_COLUMN,
   ANSWER_CHANGE_ATTRIBUTES,
   ANSWER_FILTER,
-  QUESTION_LOAD_SUCCESS,
+  QUESTION_LIST_LOAD_SUCCESS,
   RECORD_CLASS_LOAD_SUCCESS
 } from '../ActionType';
 
@@ -73,9 +73,9 @@ var AnswerFilterAction = new Record({
   terms: ''
 });
 
-var QuestionLoadSuccessAction = new Record({
-  type: QUESTION_LOAD_SUCCESS,
-  question: null
+var QuestionsLoadSuccessAction = new Record({
+  type: QUESTION_LIST_LOAD_SUCCESS,
+  questions: null
 });
 
 var RecordClassLoadSuccessAction = new Record({
@@ -189,7 +189,7 @@ export default createActionCreators({
     // First, create a Promise for the question resource (the ajax request will
     // be made as soon as possible (which will more-or-less be when the current
     // method's execution is complete).
-    var questionPromise = this.serviceAPI.getResource('/question/' + questionName);
+    var questionPromise = this.serviceAPI.getResource('/question?expandQuestions=true');
 
     // Then, create a Promise for the answer resource.
     var answerPromise = this.serviceAPI.postResource('/answer', requestData);
@@ -214,21 +214,22 @@ export default createActionCreators({
     //   Thus, `combinedPromise` is a Promise which is fulfilled with the
     //   question resource, the recordClass resource, and the answer resource as
     //   an array.
-    var combinedPromise = questionPromise.then(question => {
+    var combinedPromise = questionPromise.then(questions => {
+      var question = questions.find(question => question.name === questionName);
       var recordClassPromise = this.serviceAPI.getResource('/record/' + question.class);
 
       // Note that `question` is not a Promise, but is the value with which
       // `questionPromise` was fulfilled. This value will simply be passed to
       // any fulfilled handlers (see this in action below).
-      return Promise.all([question, recordClassPromise, answerPromise]);
+      return Promise.all([questions, recordClassPromise, answerPromise]);
     });
 
     // Finally, we register a callback for when the combinedPromise is
     // fulfilled. We are simply dispatching actions based on the values.
     combinedPromise.then(responses => {
-      var [ question, recordClass, answer ] = responses;
+      var [ questions, recordClass, answer ] = responses;
 
-      var questionAction = new QuestionLoadSuccessAction({ question });
+      var questionAction = new QuestionsLoadSuccessAction({ questions });
       dispatch(questionAction);
 
       var recordClassAction = new RecordClassLoadSuccessAction({ recordClass });

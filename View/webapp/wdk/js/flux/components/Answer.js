@@ -8,6 +8,7 @@
  */
 
 import find from 'lodash/collection/find';
+import throttle from 'lodash/function/throttle';
 import React from 'react';
 import RecordTable from './RecordTable';
 import RecordList from './RecordList';
@@ -63,9 +64,9 @@ const Answer = React.createClass({
     $(window).off('resize', this._updateHeight);
   },
 
-  handleFilter(e) {
-    e.preventDefault();
-    var value = this.refs.filterInput.getDOMNode().value;
+  handleFilter() {
+    //e.preventDefault();
+    const value = this.refs.filterInput.getDOMNode().value;
     this.props.answerEvents.onFilter(value);
   },
 
@@ -103,17 +104,14 @@ const Answer = React.createClass({
     return (
       <div className="wdk-Answer">
         <div className="wdk-Answer-filter">
-          <form onSubmit={this.handleFilter}>
-            <input
-              ref="filterInput"
-              style={{ padding: '.5em', width: '25em'}}
-              defaultValue={filterTerm}
-              placeholder={`Filter ${displayName} records`}
-            />
-            <button className="wdk-Answer-filterButton">
-              <i className="fa fa-search fa-lg"/>
-            </button>
-          </form>
+          <i className="fa fa-search fa-lg wdk-Answer-filterIcon"/>
+          <input
+            ref="filterInput"
+            className="wdk-Answer-filterInput"
+            defaultValue={filterTerm}
+            placeholder={`Filter ${displayName} records`}
+            onKeyUp={throttle(this.handleFilter, 150, { leading: false })}
+          />
         </div>
         <p>
           Showing {firstRec} - {lastRec} of {meta.get('count')} {displayName} records
