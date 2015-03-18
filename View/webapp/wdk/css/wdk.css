@@ -7,10 +7,10 @@
 
 @import 'wdk.libs.css';
 @import 'wdkCommon.css';
+@import 'wdk3.css';
 @import 'wdk-ajax.css';
 @import 'wdk-filter-param.css';
 @import 'dyk.css';
 @import 'Strategy.css';
 @import 'flexigrid.css';
 @import 'wdkFilter.css';
-@import 'wdk3.css';
