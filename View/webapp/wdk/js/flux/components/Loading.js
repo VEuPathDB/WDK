@@ -46,7 +46,7 @@ var Loading = React.createClass({
   render() {
     var { className } = this.props;
     return (
-      <div className={`wdk-loading ${className}`}/>
+      <div className={`wdk-Loading ${className}`}/>
     );
   }
 });
