@@ -111,18 +111,19 @@ const AnswerPage = React.createClass({
     const filteredRecords = answerStoreState.get('filteredRecords');
 
     const questionStoreState = stores.questionStore.getState();
-    const question = questionStoreState.get('questions')
-      .find(question => question.get('name') === questionName);
+    const questions = questionStoreState.get('questions');
+    const question = questions.find(q => q.get('name') === questionName);
 
     const recordClassStoreState = stores.recordClassStore.getState();
     const recordClass = question
       ? recordClassStoreState.get('recordClasses')
-        .find(recordClass => recordClass.get('fullName') === question.get('class'))
+        .find(r => r.get('fullName') === question.get('class'))
       : null;
 
     return {
       answer,
       question,
+      questions,
       recordClass,
       isLoading,
       error,
@@ -381,6 +382,7 @@ const AnswerPage = React.createClass({
       error,
       answer,
       question,
+      questions,
       recordClass,
       displayInfo,
       filterTerm,
@@ -436,6 +438,7 @@ const AnswerPage = React.createClass({
       components.push(
         <RecordComponent
           record={answer.get('records').get(expandedRecord)}
+          questions={questions}
           attributes={answer.getIn(['meta', 'attributes'])}
         />
       );
