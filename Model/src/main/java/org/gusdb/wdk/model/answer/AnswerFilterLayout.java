@@ -188,8 +188,8 @@ public class AnswerFilterLayout extends WdkModelBase {
 			String family;
 			String[] phylumGenusSpecies;
 			String phylum;
-			String[] kingdomPhylumGenusSpecies;
-			String kingdom;
+			//String[] kingdomPhylumGenusSpecies;
+			//String kingdom;
 
       if (instanceMap.containsKey(ref))
         throw new WdkModelException("More than one instance [" + ref
