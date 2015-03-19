@@ -292,7 +292,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
             // event listeners. So, we cache it, set it to null, and
             // add it as a data property of the element. Then, in
             // validateOperation(), we call the code... *shudder*
-            var $form = $("#query_form").find("#form_question");
+            var $form = $("#query_form").find("form[name=questionForm]");
             $form.data("inline-submit", $form.get(0).onsubmit);
             $form.get(0).onsubmit = null;
           }
