@@ -125,7 +125,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     // We do this so custom Site submit handlers can cancel a form
     // submission just by calling event.preventDefault(), or
     // event.stopPropagation().
-    $(document.body).on('submit', 'form#form_question', wdk.addStepPopup.validateOperations);
+    $(document.body).on('submit', 'form[name=questionForm]', wdk.addStepPopup.validateOperations);
   }
 
   /**
