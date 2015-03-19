@@ -56,23 +56,6 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
     }
   }
 
-  // parses the inputs of the question form to be sent via ajax call
-  /** @deprecated */
-  function parseInputs() {
-    // has to use find in two steps, IE7 cannot find the form using 
-    // $("#query_form form#form_question")
-    var quesForm = $("#query_form").find("form#form_question");
-          
-    // if the questionForm is popupped by other ways, get it from the opened popup under body.
-    if (quesForm.length === 0) {
-      quesForm = $("body").children("div.crumb_details").find("form#form_question");
-    }
-
-    // Jerric - use ajax to serialize the form data
-    var d = quesForm.serialize();
-    return d;
-  }
-
   function checkEnter(ele,evt) {
     var charCode = (evt.which) ? evt.which : evt.keyCode;
     if(charCode == 13) $(ele).blur();
@@ -292,7 +275,6 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
   ns.getDisplayType = getDisplayType;
   ns.initShowHide = initShowHide;
   ns.parseUrlUtil = parseUrlUtil;
-  ns.parseInputs = parseInputs;
   ns.removeLoading = removeLoading;
   ns.setDraggable = setDraggable;
   ns.setFrontAction = setFrontAction;

@@ -813,68 +813,6 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
   }
 
-  // will be replaced by wizard
-  // function AddStepToStrategy(url, proto) {
-  //   var strategy = wdk.strategy.model.getStrategyFromBackId(proto);
-  //   var f_strategyId = strategy.frontId;
-  //   var cs = strategy.checksum;
-  //   if (strategy.subStratOf !== null) {
-  //     cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
-  //   }
-  //   url = url + "&strategy_checksum="+cs;
-  //   var d = wdk.util.parseInputs();
-  //   $.ajax({
-  //     url: url,
-  //     type: "POST",
-  //     dataType: "json",
-  //     data: d + "&state=" + ns.stateString,
-  //     beforeSend: function(){
-  //       wdk.util.showLoading(f_strategyId);
-  //     },
-  //     success: function(data) {
-  //       if (wdk.strategy.error.ErrorHandler("AddStep", data, strategy, $("div#query_form"))) {
-  //         if ($("div#query_form").css("display") == "none") {
-  //           $("div#query_form").remove();
-  //         }
-  //         updateStrategies(data);
-  //       } else {
-  //         wdk.util.removeLoading(f_strategyId);
-  //       }
-  //     }
-  //   });
-  //   wdk.step.isInsert = "";
-  //   wdk.addStepPopup.closeAll(true);
-  // }
-
-  // function EditStep(url, proto){
-  //   var ss = wdk.strategy.model.getStrategyFromBackId(proto);
-  //   var d = wdk.util.parseInputs();
-  //   var cs = ss.checksum;
-  //   if (ss.subStratOf !== null) {
-  //     cs = wdk.strategy.model.getStrategy(ss.subStratOf).checksum;
-  //   }
-  //   url = url+"&strategy_checksum="+cs;
-  //   $.ajax({
-  //     url: url,
-  //     type: "POST",
-  //     dataType:"json",
-  //     data: d + "&state=" + ns.stateString,
-  //     beforeSend: function(){
-  //       wdk.addStepPopup.closeAll(true);
-  //       wdk.util.showLoading(ss.frontId);
-  //     },
-  //     success: function(data) {
-  //       if (wdk.strategy.error.ErrorHandler("EditStep", data, ss, $("div#query_form"))) {
-  //         $("div#query_form").remove();
-  //         wdk.step.hideDetails();
-  //         updateStrategies(data);
-  //       } else {
-  //         wdk.util.removeLoading(ss.frontId);
-  //       }
-  //     }
-  //   });
-  // }
-
   function DeleteStep(f_strategyId,f_stepId) {
     var strategy = wdk.strategy.model.getStrategy(f_strategyId);
     var step = strategy.getStep(f_stepId, true);
