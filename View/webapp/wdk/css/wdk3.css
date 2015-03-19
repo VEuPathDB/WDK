@@ -21,13 +21,13 @@ main {
   position: relative;
   min-height: 200px;
 }
-h1 {
+main h1 {
   text-align: left;
 }
-h3 {
+main h3 {
   margin: 22px 0 8px 0;
 }
-h4 {
+main h4 {
   margin: 10px 0 8px 0;
 }
 
