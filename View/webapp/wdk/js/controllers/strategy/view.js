@@ -535,8 +535,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     if (jsonStep.isboolean && !jsonStep.isCollapsed) {
       var url = "wizard.do?action=revise&step=" + modelstep.back_boolean_Id + "&";
-      var oform = "<form id='form_question' class='clear' " +
-          "enctype='multipart/form-data' name='questionForm'>";
+      var oform = "<form class='clear' enctype='multipart/form-data' name='questionForm'>";
       var cform = "</form>";
       var stage_input = "<input type='hidden' id='stage' value='process_boolean'/>";
       params_table = "<div class='filter operators'>" +
