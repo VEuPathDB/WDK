@@ -190,15 +190,28 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private String name;
   private String fullName;
-
+  
   /**
-   * TODO - the displayName, shortDisplayName, and type are redundant, need to consolidate them into one
-   * field.
+   * An option that provides SQL to post-process an Answer result, providing a custom result size count. 
+   * If present, induces construction of a non-default result size plugin that uses this sql
    */
+  private ResultSizeQueryReference resultSizeQueryRef = null;
+
+  private ResultSize resultSizePlugin = new DefaultResultSizePlugin();
+  /**
+   * the native versions are the real name of the record class.  the non-native are potentially different,
+   * for display purposes.  This can happen if a ResultSizeQueryReference is supplied, that provides non-native
+   * result counts and display names
+   */
+  private String nativeDisplayName;
+  private String nativeDisplayNamePlural;
+  private String nativeShortDisplayName;
+  private String nativeShortDisplayNamePlural;
   private String displayName;
   private String displayNamePlural;
   private String shortDisplayName;
   private String shortDisplayNamePlural;
+
 
   private String attributeOrdering;
 
@@ -291,8 +304,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return (displayName == null) ? getName() : displayName;
   }
 
+  public String getNativeDisplayName() {
+	    return (nativeDisplayName == null) ? getName() : nativeDisplayName;
+	  }
+
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+    this.nativeDisplayName = displayName;
   }
 
   public String getDisplayNamePlural() {
@@ -302,8 +320,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return getPlural(getDisplayName());
   }
 
+  public String getNativeDisplayNamePlural() {
+	    if (nativeDisplayNamePlural != null)
+	      return nativeDisplayNamePlural;
+
+	    return getPlural(getDisplayName());
+	  }
+
   public void setDisplayNamePlural(String displayNamePlural) {
     this.displayNamePlural = displayNamePlural;
+    this.nativeDisplayNamePlural = displayNamePlural;
   }
 
   public String getShortDisplayNamePlural() {
@@ -313,8 +339,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return getPlural(getShortDisplayName());
   }
 
+  public String getNativeShortDisplayNamePlural() {
+	    if (nativeShortDisplayNamePlural != null)
+	      return nativeShortDisplayNamePlural;
+
+	    return getPlural(getNativeShortDisplayName());
+	  }
+
   public void setShortDisplayNamePlural(String shortDisplayNamePlural) {
     this.shortDisplayNamePlural = shortDisplayNamePlural;
+    this.nativeShortDisplayNamePlural = shortDisplayNamePlural;
   }
 
   private String getPlural(String name) {
@@ -413,6 +447,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   public void setAttributeCategoryTree(AttributeCategoryTree tree) {
     attributeCategoryTree = tree;
+  }
+  
+  public void setResultSizeQueryReference(ResultSizeQueryReference ref) {
+	  resultSizeQueryRef = ref;
   }
 
   // ////////////////////////////////////////////////////////////
@@ -516,6 +554,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) {
     return attributeCategoryTree.getTrimmedCopy(scope);
   }
+  
+  public ResultSizeQueryReference getResultSizeQueryReference() {
+	  return resultSizeQueryRef;	
+  }
 
   @Override
   public String toString() {
@@ -615,6 +657,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       field.resolveReferences(model);
     }
 
+    if (resultSizeQueryRef != null) {
+    	resultSizeQueryRef.resolveReferences(model);
+    	displayName = resultSizeQueryRef.getRecordDisplayName();
+    	shortDisplayName = resultSizeQueryRef.getRecordShortDisplayName();
+    	displayNamePlural = resultSizeQueryRef.getRecordDisplayNamePlural();
+    	shortDisplayNamePlural = resultSizeQueryRef.getRecordShortDisplayNamePlural();
+        Query query = (Query) wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
+    	resultSizePlugin = new SqlQueryResultSizePlugin(query);
+    }
+    
     // resolve the alias query
     resolveAliasQuery(model);
 
@@ -1427,6 +1479,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public String getShortDisplayName() {
     return (shortDisplayName != null) ? shortDisplayName : getDisplayName();
   }
+
+  public String getNativeShortDisplayName() {
+	    return (nativeShortDisplayName != null) ? nativeShortDisplayName : getNativeDisplayName();
+	  }
 
   /**
    * @param shortDisplayName
