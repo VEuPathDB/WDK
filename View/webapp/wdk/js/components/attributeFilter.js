@@ -367,7 +367,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       return Object.assign({
         sortTerm: '__primary_key__',
         sortDirection: 'ASC',
-        collapsed: true,
+        collapsed: false,
       }, this.props.store.getState());
     },
 
@@ -476,21 +476,26 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             selectedField={selectedField}/>
 
           <div className="filter-view">
-            <div className="collapse-wrapper" style={{ display: this.state.collapsed ? 'none' : 'block' }}>
-              <a href="#" onClick={this.handleCollapseClick}>Collapse</a>
-            </div>
             <button onClick={this.handleExpandClick}
               style={{
                 display: !this.state.collapsed ? 'none' : 'block'
-              }} >Filter {displayName}</button>
+              }} >Select {displayName}</button>
 
             {/* Tabs */}
 
             <div className="filter-param-tabs" style={{ display: this.state.collapsed ? 'none' : 'block' }}>
-              <ul>
-                <li><a href="#filters">Filter {displayName}</a></li>
-                <li><a href="#data">View filtered {displayName} ({filteredData.length})</a></li>
+              <ul className="wdk-AttributeFilter-TabNav">
+                <li><a href="#filters">Select {displayName}</a></li>
+                <li><a href="#data">View selected {displayName} ({filteredData.length})</a></li>
+                <li>
+                  <span
+                    className="wdk-AttributeFilter-Collapse link"
+                    title="Hide selection tool"
+                    onClick={this.handleCollapseClick}
+                  >Collapse</span>
+                </li>
               </ul>
+
 
               {/* Main selection UI */}
               <div id="filters">
