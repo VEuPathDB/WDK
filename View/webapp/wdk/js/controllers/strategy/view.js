@@ -802,12 +802,25 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   }
 
   function getParamDisplay(param) {
+    var display;
+
     if (param.className === 'org.gusdb.wdk.model.jspwrap.FilterParamBean') {
       var filters = JSON.parse(param.display);
-      return _.pluck(filters, 'display').join(', <br>');
+      if (!Array.isArray(filters)) {
+        console.error("Expected param.display to be a JSON array. Instead got ", param.display);
+        display = param.display;
+      }
+      else {
+        display = filters.length
+          ? _.pluck(filters, 'display').join(', <br>')
+          : 'All ' + param.prompt;
+      }
+    }
+    else {
+      display = param.display;
     }
 
-    return param.display;
+    return display;
   }
 
   // HANDLE THE DISPLAY OF THE STRATEGY RECORD TYPE DIV
