@@ -435,6 +435,17 @@
 .filter-results.field-list h4 {
   margin-left: 0;
 }
+.wdk-AttributeFilter-Collapse {
+  padding-left: 1em;
+  cursor: pointer;
+}
+/*
+.wdk-AttributeFilter-TabNav {
+  display: inline-block;
+  position: relative;
+  top: 2px;
+}
+*/
 .wdk-AttributeFilter-Loading {
   position: absolute;
   top: 65px;
