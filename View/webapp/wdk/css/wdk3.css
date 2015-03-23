@@ -111,6 +111,9 @@ main h4 {
 }
 .wdk-RecordTable-attributeValue {
   line-height: 1.6;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .wdk-RecordTable-headerWrapper .ui-icon-close {
