@@ -38,6 +38,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.ResultSize;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
@@ -288,7 +289,11 @@ public class AnswerValue {
     }
     return resultSize;
   }
-
+  
+  public Integer getDisplayResultSize() throws WdkModelException, WdkUserException {
+	  ResultSize plugin = question.getRecordClass().getResultSizePlugin();
+	  return plugin.getResultSize(this);
+  }
   public Map<String, Integer> getResultSizesByProject() throws WdkModelException, WdkUserException {
     if (resultSizesByProject == null) {
       resultSizesByProject = new LinkedHashMap<String, Integer>();

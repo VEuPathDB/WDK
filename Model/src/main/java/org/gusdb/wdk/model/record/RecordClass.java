@@ -366,6 +366,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     return name + "s";
   }
+  
+  public ResultSize getResultSizePlugin() {
+	  return resultSizePlugin;
+  }
 
   /**
    * @param attList
