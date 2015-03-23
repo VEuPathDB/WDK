@@ -268,13 +268,17 @@ const RecordTable = React.createClass({
   togglePendingAttribute() {
     const form = this.refs.attributeSelector.getDOMNode();
     const attributes = this.props.meta.get('attributes');
+    const visibleAttributes = this.props.displayInfo.get('visibleAttributes');
 
-    const pendingAttrs = [].slice.call(form.pendingAttribute)
+    const checkedAttrs = [].slice.call(form.pendingAttribute)
       .filter(a => a.checked)
-      .map(a => a.value);
+      .map(a => attributes.find(attr => attr.get('name') === a.value));
 
-    const pendingVisibleAttributes = attributes
-      .filter(attr => pendingAttrs.indexOf(attr.get('name')) > -1);
+    // Remove visible atributes that are not checked.
+    // Then, concat checked attributes that are not currently visible.
+    const pendingVisibleAttributes = visibleAttributes
+      .filter(attr => checkedAttrs.find(p => p.get('name') === attr.get('name')))
+      .concat(checkedAttrs.filter(attr => !visibleAttributes.find(a => a.get('name') === attr.get('name'))));
 
     this.setState({ pendingVisibleAttributes });
   },
