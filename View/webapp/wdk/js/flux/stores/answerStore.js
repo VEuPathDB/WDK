@@ -104,6 +104,24 @@ var isTermInRecord = curry(function isTermInRecord(term, record) {
   return clob.toLowerCase().indexOf(term.toLowerCase()) !== -1;
 });
 
+var state = Immutable.fromJS({
+  isLoading: false,
+  error: null,
+  filterTerm: '',
+  filteredRecords: [],
+  answers: {},
+  displayInfo: {
+    sorting: null,
+    pagination: null,
+    attributes: null,
+    tables: null
+  },
+  questionDefinition: {
+    questionName: null,
+    params: null,
+    filters: null
+  }
+});
 
 export default createStore({
 
@@ -112,27 +130,10 @@ export default createStore({
    * fullest extent. This is sort of a trial run. So far, the interface is very
    * intuitive. -dmf
    */
-  state: Immutable.fromJS({
-    isLoading: false,
-    error: null,
-    filterTerm: '',
-    filteredRecords: [],
-    answers: {},
-    displayInfo: {
-      sorting: null,
-      pagination: null,
-      attributes: null,
-      tables: null
-    },
-    questionDefinition: {
-      questionName: null,
-      params: null,
-      filters: null
-    }
-  }),
+  state: state,
 
   /** Used to roll back on loading errors */
-  previousState: null,
+  previousState: state,
 
   /**
    * Handle dispatched actions. Hopefully most of this is self explanatory.
