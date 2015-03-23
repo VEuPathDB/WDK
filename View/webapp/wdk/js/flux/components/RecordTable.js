@@ -284,13 +284,17 @@ const RecordTable = React.createClass({
    *
    * @param {any} attribute Value returned by `getRow`.
    */
-  renderCell(attribute, attributeName, attributes, index) {
+  renderCell(attribute, attributeName, attributes, index, columnData, width) {
+    // const width = this.state.columnWidths[attributeName] - 10;
     if (attribute.get('name') === PRIMARY_KEY_NAME) {
       const href = '#' + attribute.get('value');
       const record = this.props.records.get(index);
       const handlePrimaryKeyClick = _.partial(this.handlePrimaryKeyClick, record);
       return (
-        <div className="wdk-RecordTable-attributeValue">
+        <div
+          style={{ width: width - 10 }}
+          className="wdk-RecordTable-attributeValue"
+        >
           <a
             href={href}
             onClick={handlePrimaryKeyClick}
@@ -302,6 +306,7 @@ const RecordTable = React.createClass({
     else {
       return (
         <div
+          style={{ width: width - 10 }}
           className="wdk-RecordTable-attributeValue"
           dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute) }}
         />
@@ -365,7 +370,7 @@ const RecordTable = React.createClass({
           rowsCount={records.size}
           rowHeight={28}
           rowGetter={this.getRow}
-          headerHeight={40}
+          headerHeight={35}
           sortDataKey={sortSpec.get('attributeName')}
           sortDirection={sortSpec.get('direction')}
           onSort={this.handleSort}
