@@ -1,7 +1,8 @@
 import Immutable from 'immutable';
 import createActionCreators from '../utils/createActionCreators';
 import {
-  ANSWER_LOADING,
+  APP_LOADING,
+  APP_ERROR,
   ANSWER_LOAD_SUCCESS,
   ANSWER_LOAD_ERROR,
   ANSWER_MOVE_COLUMN,
@@ -27,7 +28,7 @@ import {
  * object. A key difference is that properties cannot be set directly. E.g.,
  *
  *     var action = LoadingAnswerAction({ answer: responseData });
- *     action.type === ANSWER_LOADING; // returns true
+ *     action.type === APP_LOADING; // returns true
  *     action.type = 'some evil string'; // throws Error
  *
  *
@@ -39,9 +40,9 @@ import {
 // thought as it might be in opposition to some underlying Flux ideology.
 var Record = Immutable.Record;
 
-var AnswerLoadingAction = Record({
-  type: ANSWER_LOADING,
-  requestData: {}
+var LoadingAction = Record({
+  type: APP_LOADING,
+  isLoading: false
 });
 
 var AnswerLoadSuccessAction = Record({
@@ -50,10 +51,10 @@ var AnswerLoadSuccessAction = Record({
   answer: {}
 });
 
-var AnswerLoadErrorAction = Record({
-  type: ANSWER_LOAD_ERROR,
+var ErrorAction = Record({
+  type: APP_ERROR,
   requestData: {},
-  error: {}
+  error: null
 });
 
 var AnswerMoveColumnAction = Record({
@@ -104,9 +105,9 @@ export default createActionCreators({
    *
    * Actions dispatched:
    *
-   *   - AnswerLoadingAction
+   *   - LoadingAction
    *   - AnswerLoadSuccessAction
-   *   - AnswerLoadErrorAction
+   *   - ErrorAction
    *
    *
    * Usage:
@@ -172,7 +173,7 @@ export default createActionCreators({
     var requestData = { questionDefinition, displayInfo };
 
     // Dispatch loading action.
-    var action = AnswerLoadingAction({ requestData: requestData });
+    var action = LoadingAction({ isLoading: true });
     dispatch(action);
 
     // The next section of code deals with composing Promises. Simply put, a
@@ -239,11 +240,13 @@ export default createActionCreators({
         answer: answer
       });
       dispatch(answerAction);
+
+      var doneLoadingAction = LoadingAction({ isLoading: false });
+      dispatch(doneLoadingAction);
     }, error => {
-      var action = AnswerLoadErrorAction({
-        requestData: requestData,
-        error: error
-      });
+      var doneLoadingAction = LoadingAction({ isLoading: false });
+      var action = ErrorAction({ error: error });
+      dispatch(doneLoadingAction);
       dispatch(action);
     })
     // Catch errors caused by Store callbacks.
