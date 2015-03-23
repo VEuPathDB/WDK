@@ -367,6 +367,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       return Object.assign({
         sortTerm: '__primary_key__',
         sortDirection: 'ASC',
+        collapsed: true,
       }, this.props.store.getState());
     },
 
