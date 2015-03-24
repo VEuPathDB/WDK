@@ -7,7 +7,6 @@
  * AnswerPage, but will also be used for Step results.
  */
 
-import find from 'lodash/collection/find';
 import throttle from 'lodash/function/throttle';
 import React from 'react';
 import RecordTable from './RecordTable';
