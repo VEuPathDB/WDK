@@ -296,7 +296,7 @@ const RecordTable = React.createClass({
       const handlePrimaryKeyClick = _.partial(this.handlePrimaryKeyClick, record);
       return (
         <div
-          style={{ width: width - 10 }}
+          style={{ width: width - 12 }}
           className="wdk-RecordTable-attributeValue"
         >
           <a
@@ -310,7 +310,7 @@ const RecordTable = React.createClass({
     else {
       return (
         <div
-          style={{ width: width - 10 }}
+          style={{ width: width - 12 }}
           className="wdk-RecordTable-attributeValue"
           dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute) }}
         />
