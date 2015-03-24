@@ -20,10 +20,10 @@
 wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   "use strict";
 
+  var sidIndex = 0;
   ns.state = null;
   ns.strats = {};
   ns.stateString = '';
-  ns.sidIndex = 0;
 
   // Current strategy and step objects
   var uiState = {
@@ -292,7 +292,10 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
       else if (newOrdering != "length") {
         // Always reload the strategy objects.
-        loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+        var strategy = data.strategies[ns.state[newOrdering].checksum];
+        if (strategy) {
+          loadModel(strategy, newOrdering);
+        }
         // var strategyId = ns.state[newOrdering].id;
         // if (wdk.strategy.model.isLoaded(strategyId)) {
         //   var loadedStrategy = wdk.strategy.model.getStrategyFromBackId(strategyId);
@@ -590,8 +593,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var strategy = json;
     var strat = null;
     if (!wdk.strategy.model.isLoaded(strategy.id)) {
-      strat = new wdk.strategy.model.Strategy(ns.sidIndex, strategy.id, true);
-      ns.sidIndex++;
+      strat = new wdk.strategy.model.Strategy(sidIndex, strategy.id, true);
+      sidIndex++;
     } else {
       strat = wdk.strategy.model.getStrategyFromBackId(strategy.id);
       strat.subStratOrder = {};
