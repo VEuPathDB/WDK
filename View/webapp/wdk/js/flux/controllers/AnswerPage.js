@@ -8,6 +8,7 @@ import Loading from '../components/Loading';
 import createStoreMixin from '../mixins/createStoreMixin';
 import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
+
 // AnswerPage is a React component which acts as a Controller-View, as well as
 // a Route Handler.
 //
@@ -360,6 +361,19 @@ const AnswerPage = React.createClass({
 
       // Method provided by Router.Navigation mixin
       this.transitionTo(path, params, query);
+    },
+
+    recordHrefGetter(record) {
+      const path = 'answer';
+      const records = this.state.answer.get('records');
+
+      // update query with format and position
+      const query = Object.assign({}, this.props.query, {
+        expandedRecord: records.findIndex(r => r === record)
+      });
+
+      // Method provided by Router.Navigation mixin
+      return this.makeHref(path, this.props.params, query);
     },
 
     onFilter(terms) {
