@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
+import Router from 'react-router';
 import FixedDataTable from 'fixed-data-table';
 import Table from './Table';
 import Dialog from './Dialog';
@@ -29,6 +30,7 @@ import {
 const $ = window.jQuery;
 const { Column } = FixedDataTable;
 const { PropTypes } = React;
+const { Link } = Router;
 
 // Constants
 const PRIMARY_KEY_NAME = 'primary_key';
@@ -291,17 +293,17 @@ const RecordTable = React.createClass({
   renderCell(attribute, attributeName, attributes, index, columnData, width) {
     // const width = this.state.columnWidths[attributeName] - 10;
     if (attribute.get('name') === PRIMARY_KEY_NAME) {
-      const href = '#' + attribute.get('value');
       const record = this.props.records.get(index);
-      const handlePrimaryKeyClick = _.partial(this.handlePrimaryKeyClick, record);
+      // const href = '#' + attribute.get('value');
+      // const handlePrimaryKeyClick = _.partial(this.handlePrimaryKeyClick, record);
+      const href = this.props.recordHrefGetter(record);
       return (
         <div
           style={{ width: width - 12 }}
           className="wdk-RecordTable-attributeValue"
         >
-          <a
-            href={href}
-            onClick={handlePrimaryKeyClick}
+          <Link
+            to={href}
             dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute) }}
           />
         </div>
