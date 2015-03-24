@@ -1,10 +1,10 @@
 import React from 'react';
 import Router from 'react-router';
-import App from './controllers/App';
-import IndexPage from './controllers/IndexPage';
-import NotFoundPage from './controllers/NotFoundPage';
-import AnswerPage from './controllers/AnswerPage';
-import QuestionListPage from './controllers/QuestionListPage';
+import App from './components/App';
+import Index from './components/Index';
+import NotFound from './components/NotFound';
+import Answer from './components/Answer';
+import QuestionList from './components/QuestionList';
 
 var { Route, DefaultRoute, NotFoundRoute } = Router;
 
@@ -16,10 +16,10 @@ var { Route, DefaultRoute, NotFoundRoute } = Router;
 export function getRoutes(baseUrl = '/') {
   return (
     <Route name="app" path={baseUrl} handler={App}>
-      <Route name="answer" path="answer/:questionName" handler={AnswerPage}/>,
-      <Route name="question-list" handler={QuestionListPage}/>,
-      <DefaultRoute handler={IndexPage}/>,
-      <NotFoundRoute handler={NotFoundPage}/>,
+      <Route name="answer" path="answer/:questionName" handler={Answer}/>,
+      <Route name="question-list" handler={QuestionList}/>,
+      <DefaultRoute handler={Index}/>,
+      <NotFoundRoute handler={NotFound}/>,
     </Route>
   );
 }

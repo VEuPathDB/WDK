@@ -21,7 +21,7 @@ var { Link } = Router;
  * and https://github.com/rackt/react-router/blob/master/docs/api/misc/Location.md
  * for more details.
  */
-var IndexPage = React.createClass({
+var Index = React.createClass({
 
   render() {
     return (
@@ -38,4 +38,4 @@ var IndexPage = React.createClass({
 
 });
 
-export default IndexPage;
+export default Index;
