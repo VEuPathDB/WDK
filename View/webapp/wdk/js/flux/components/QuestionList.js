@@ -7,7 +7,7 @@ var { Link } = Router;
 var storeMixin = createStoreMixin('questionStore');
 var actionsMixin = createActionCreatorsMixin('questionActions');
 
-var QuestionListPage = React.createClass({
+var QuestionList = React.createClass({
 
   mixins: [ storeMixin, actionsMixin ],
 
@@ -44,4 +44,4 @@ var QuestionListPage = React.createClass({
 
 });
 
-export default QuestionListPage;
+export default QuestionList;
