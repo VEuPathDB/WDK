@@ -1073,23 +1073,24 @@ public class AnswerValue {
       catch (SQLException e) {
         throw new WdkModelException(e);
       }
-      ResultList resultList = new SqlResultList(resultSet);
-      RecordClass recordClass = question.getRecordClass();
-      PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
-      while (resultList.next()) {
-        // get primary key. the primary key is supposed to be translated to
-        // the current ones from the id query, and no more translation
-        // needed.
-        //
-        // If this assumption is false, then we need to join the alias query
-        // into the paged id query as well.
-        Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-        for (String column : pkField.getColumnRefs()) {
-          Object value = resultList.get(column);
-          pkValues.put(column, value);
+      try (ResultList resultList = new SqlResultList(resultSet)) {
+        RecordClass recordClass = question.getRecordClass();
+        PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
+        while (resultList.next()) {
+          // get primary key. the primary key is supposed to be translated to
+          // the current ones from the id query, and no more translation
+          // needed.
+          //
+          // If this assumption is false, then we need to join the alias query
+          // into the paged id query as well.
+          Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+          for (String column : pkField.getColumnRefs()) {
+            Object value = resultList.get(column);
+            pkValues.put(column, value);
+          }
+          RecordInstance record = new RecordInstance(this, pkValues);
+          pageRecordInstances.put(record.getPrimaryKey(), record);
         }
-        RecordInstance record = new RecordInstance(this, pkValues);
-        pageRecordInstances.put(record.getPrimaryKey(), record);
       }
 
       // check if the number of records is expected
