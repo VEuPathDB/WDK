@@ -1,3 +1,4 @@
+import partialRight from 'lodash/function/partialRight';
 import React from 'react';
 import { Link } from 'react-router';
 import { Column } from 'fixed-data-table';
@@ -136,6 +137,10 @@ const RecordTable = React.createClass({
     onRecordClick: PropTypes.func.isRequired
   },
 
+  contextTypes: {
+    getCellRenderer: PropTypes.func.isRequired
+  },
+
   getDefaultProps() {
     return {
       onSort: noop,
@@ -151,7 +156,7 @@ const RecordTable = React.createClass({
   getInitialState() {
     return Object.assign({
       columnWidths: this.props.meta.get('attributes').reduce((widths, attr) => {
-        const name = attr.get('name')
+        const name = attr.get('name');
         widths[name] = name === PRIMARY_KEY_NAME ? 400 : 200;
         return widths;
       }, {})
@@ -345,6 +350,8 @@ const RecordTable = React.createClass({
     const visibleAttributes = displayInfo.get('visibleAttributes');
     const sortSpec = displayInfo.getIn(['sorting', 0]);
 
+    const cellRenderer = this.context.getCellRenderer(meta.get('class'), this.renderCell) || this.renderCell;
+
     return (
       <div className="wdk-RecordTable">
 
@@ -381,7 +388,7 @@ const RecordTable = React.createClass({
         >
 
           {visibleAttributes.map(attribute => {
-            const name = attribute.get('name')
+            const name = attribute.get('name');
             const isPk = name === PRIMARY_KEY_NAME;
             const cellClassNames = name + ' ' + attribute.get('className') +
               ' ' + CELL_CLASS_NAME;
@@ -394,7 +401,7 @@ const RecordTable = React.createClass({
                 label={attribute}
                 dataKey={name}
                 headerRenderer={this.renderHeader}
-                cellRenderer={this.renderCell}
+                cellRenderer={partialRight(cellRenderer, this.renderCell)}
                 cellDataGetter={this.getCellData}
                 width={width}
                 isResizable={true}
