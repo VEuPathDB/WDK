@@ -20,7 +20,7 @@ import { Link } from 'react-router';
  * and https://github.com/rackt/react-router/blob/master/docs/api/misc/Location.md
  * for more details.
  */
-var Index = React.createClass({
+var IndexController = React.createClass({
 
   render() {
     return (
@@ -37,4 +37,4 @@ var Index = React.createClass({
 
 });
 
-export default Index;
+export default IndexController;
