@@ -4,8 +4,8 @@ Provides form input element for a given StringParam.
 --%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
-<%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
+<%@ taglib prefix="bean" uri="http://struts.apache.org/tags-bean" %>
+<%@ taglib prefix="html" uri="http://struts.apache.org/tags-html" %>
 
 <%@ attribute name="qp"
               type="org.gusdb.wdk.model.jspwrap.StringParamBean"
@@ -18,6 +18,13 @@ Provides form input element for a given StringParam.
 <c:set var="length" value="${qP.length}"/>
 
 <div class="param stringParam" name="${pNam}">
+<%--
+  <c:if test="${not empty qP.visibleHelp}">
+    <p style="margin-top:3px">${qP.visibleHelp}</p>
+  </c:if>
+--%>
+
+<script type="x-wdk/validation"><![CDATA[ ${qP.regex} ]]></script>
 
 <c:choose>
   <c:when test="${qP.isVisible == false}">

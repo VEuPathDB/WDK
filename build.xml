@@ -223,7 +223,7 @@
           executable="npm"
           failonerror="true"
           failifexecutionfails="true">
-      <arg line="rebuild"/>
+      <arg line="install"/>
     </exec>
 
     <echo message="Running npm run dist"/>
@@ -238,14 +238,7 @@
     <copy todir="${webappTargetDir}">
       <fileset dir="${projectsDir}/WDK/View/dist"/>
     </copy>
-    <!--
-    <ant target="webinstall-javascript">
-      <property name="srcDir" value="${webappTargetDir}/wdk/js/src"/>
-      <property name="initialFiles" value="util/namespace.js"/>
-      <property name="destDir" value="${webappTargetDir}/wdk/js"/>
-      <property name="destFilename" value="wdk.js"/>
-    </ant>
-    -->
+
   </target>  
 
   <target name="WebsitePlusGusHome" depends="WDK-Installation,

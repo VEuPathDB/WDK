@@ -231,6 +231,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var filterImg = "";
     var bool_link = "";
     var details_link = "wdk.step.showDetails(this)";
+    var results = modelstep.isLoading ? "Loading" : jsonStep.results;
 
     if (modelstep.isSpan) {
       details_link = "void(0)";
@@ -247,7 +248,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "style='height:10px;position:relative;top:0px'/></span>";
     }
 
-    var displayType = (jsonStep.results > 1) ? jsonStep.shortDisplayTypePlural : jsonStep.shortDisplayType;
+    var displayType = wdk.util.getDisplayType(jsonStep);
     
     var boolinner = ""+
         "<div id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonStep.operation + "' class='divlink results_link step-elem' "+
@@ -259,7 +260,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "     >" + getEditImage('boolean')+"</a><br/>"+
         "  <div class='crumb_details'></div>" +
         "  <h6 class='resultCount'>" +
-        "    <span class='operation'>" + jsonStep.results + "&nbsp;" + displayType + "</span>" +
+        "    <span class='operation'>" + results + "&nbsp;" + displayType + "</span>" +
         "  </h6>" +
            filterImg +
         "</div>";
@@ -283,6 +284,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     //Create the operand Step Box
     var childStp = jsonStep.step;  
+    var childResults = modelstep.isLoading ? "Loading" : childStp.results;
     var uname = "";
     var fullName = "";
 
@@ -314,7 +316,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 	//"        <div style='position:absolute;top:-6px;right:-8px;width:19px;height:19px;'></div>"+
       "        <div class='crumb_details'></div>"+
       "      </h4>"+
-      "      <h6 class='resultCount'>" + childStp.results + "&nbsp;" + wdk.util.getDisplayType(childStp) + "</h6>"+
+      "      <h6 class='resultCount'>" + childResults + "&nbsp;" + wdk.util.getDisplayType(childStp) + "</h6>"+
       childfilterImg +
       "    </div>"+
       "<img class='arrow down' src='" + wdk.assetsUrl('wdk/images/arrow_chain_down2.png') + "' alt='equals'>";
@@ -397,6 +399,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   function singleStep(modelstep, prevjsonstep, jsonStep, sid) {
     var uname = "";
     var fullName = "";
+    var results = modelstep.isLoading ? "Loading" : jsonStep.results;
 
     if (jsonStep.name == jsonStep.customName) {
       uname = jsonStep.shortName;
@@ -426,7 +429,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
       "        <div class='crumb_details'></div>"+
       "      </h4>"+
-      "      <h6 class='resultCount'>" + jsonStep.results + "&nbsp;" + wdk.util.getDisplayType(jsonStep) + "</h6>"+
+      "      <h6 class='resultCount'>" + results + "&nbsp;" + wdk.util.getDisplayType(jsonStep) + "</h6>"+
       filterImg +
       "    </div>";
 
@@ -532,8 +535,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     if (jsonStep.isboolean && !jsonStep.isCollapsed) {
       var url = "wizard.do?action=revise&step=" + modelstep.back_boolean_Id + "&";
-      var oform = "<form id='form_question' class='clear' " +
-          "enctype='multipart/form-data' name='questionForm'>";
+      var oform = "<form class='clear' enctype='multipart/form-data' name='questionForm'>";
       var cform = "</form>";
       var stage_input = "<input type='hidden' id='stage' value='process_boolean'/>";
       params_table = "<div class='filter operators'>" +
@@ -800,12 +802,25 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   }
 
   function getParamDisplay(param) {
+    var display;
+
     if (param.className === 'org.gusdb.wdk.model.jspwrap.FilterParamBean') {
       var filters = JSON.parse(param.display);
-      return _.pluck(filters, 'display').join(', <br>');
+      if (!Array.isArray(filters)) {
+        console.error("Expected param.display to be a JSON array. Instead got ", param.display);
+        display = param.display;
+      }
+      else {
+        display = filters.length
+          ? _.pluck(filters, 'display').join(', <br>')
+          : 'All ' + param.prompt;
+      }
+    }
+    else {
+      display = param.display;
     }
 
-    return param.display;
+    return display;
   }
 
   // HANDLE THE DISPLAY OF THE STRATEGY RECORD TYPE DIV
@@ -839,7 +854,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var json = strat.JSON;
     var id = strat.backId;
     var name = json.name;
-    var append = json.saved ? "" : append = "<span class='append'>*</span>";
+    var append = json.saved ? "" : append = "<span title='Indicates this strategy is work in progress, it is not a snapshot; you may continue changing steps in it (aka unsaved)' class='append'>*</span>";
     var exportURL = wdk.exportBaseURL() + json.importId;
     var share = "";
 

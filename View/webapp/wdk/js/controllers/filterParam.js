@@ -84,12 +84,16 @@ wdk.namespace('wdk.controllers', function(ns) {
           this.trigger('removeColumn', column);
         },
 
-        addIgnored: function(dataId) {
-          this.trigger('addIgnored', dataId);
+        addIgnored: function(datum) {
+          this.trigger('addIgnored', datum);
         },
 
-        removeIgnored: function(dataId) {
-          this.trigger('removeIgnored', dataId);
+        removeIgnored: function(datum) {
+          this.trigger('removeIgnored', datum);
+        },
+
+        updateColumns: function(fields) {
+          this.trigger('updateColumns', fields);
         }
 
       }, Backbone.Events);
@@ -108,6 +112,7 @@ wdk.namespace('wdk.controllers', function(ns) {
       var filterService = LazyFilterService.create({
         filters: options.filters,
         fields: options.fields,
+        ignored: options.ignored,
         data: options.data,
         columns: options.defaultColumns,
         name: options.name,

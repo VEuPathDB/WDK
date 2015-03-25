@@ -15,11 +15,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
+import org.gusdb.wdk.events.StepsModifiedEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -85,7 +87,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         new StepAnalysisInMemoryDataStore(wdkModel));
     _fileStore = new StepAnalysisFileStore(Paths.get(_execConfig.getFileStoreDirectory()));
     startThreadPool();
-    Events.subscribe(this, StepRevisedEvent.class, StepCopiedEvent.class);
+    Events.subscribe(this, StepsModifiedEvent.class, StepRevisedEvent.class, StepCopiedEvent.class);
   }
 
   /**
@@ -94,7 +96,15 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   @Override
   public void eventTriggered(Event event) throws Exception {
     if (event instanceof StepRevisedEvent) {
-      invalidateResults(((StepRevisedEvent)event).getRevisedStep());
+      invalidateResults(((StepRevisedEvent)event).getRevisedStep().getStepId());
+    }
+    else if (event instanceof StepsModifiedEvent) {
+      List<Integer> stepIds = ((StepsModifiedEvent)event).getStepIds();
+      LOG.debug("StepsModifiedEvent with " + stepIds.size() + " steps: " +
+          FormatUtil.arrayToString(stepIds.toArray()));
+      for (int stepId : stepIds) {
+        invalidateResults(stepId);
+      }
     }
     else if (event instanceof StepCopiedEvent) {
       StepCopiedEvent copyEvent = (StepCopiedEvent)event;
@@ -102,9 +112,9 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     }
   }
 
-  private void invalidateResults(Step step) throws WdkModelException, WdkUserException {
-    LOG.info("Request made to reassess analyses of step " + step.getStepId());
-    Map<Integer, StepAnalysisContext> contexts = _dataStore.getAnalysesByStepId(step.getStepId(), _fileStore);
+  private void invalidateResults(int stepId) throws WdkModelException, WdkUserException {
+    LOG.debug("Request made to reassess analyses of step " + stepId);
+    Map<Integer, StepAnalysisContext> contexts = _dataStore.getAnalysesByStepId(stepId, _fileStore);
     for (StepAnalysisContext context : contexts.values()) {
       LOG.info("Reassessing step analysis with ID " + context.getAnalysisId());
       LOG.trace("TRACE: " + context.getInstanceJson());

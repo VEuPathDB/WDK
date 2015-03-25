@@ -1,17 +1,26 @@
 package org.gusdb.wdk.service.service;
 
+import java.util.Collections;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Variant;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.util.WdkResultFactory;
+import org.gusdb.wdk.service.factory.WdkAnswerFactory;
 
 public abstract class WdkService {
+
+  // TODO: for now return generic "bad request" response; in the
+  //       future we should create a list of Variants to return to user
+  protected static final Response BAD_REQUEST_RESPONSE = 
+      Response.notAcceptable(Collections.<Variant>emptyList()).build();
 
   @Context
   private HttpServletRequest _request;
@@ -20,7 +29,7 @@ public abstract class WdkService {
   private UriInfo _uriInfo;
 
   private WdkModelBean _wdkModelBean;
-  private WdkResultFactory _resultFactory;
+  private WdkAnswerFactory _resultFactory;
 
   protected WdkModelBean getWdkModelBean() {
     return _wdkModelBean;
@@ -46,9 +55,9 @@ public abstract class WdkService {
     return getCurrentUserBean().getUser();
   }
 
-  protected WdkResultFactory getResultFactory() {
+  protected WdkAnswerFactory getResultFactory() {
     if (_resultFactory == null) {
-      _resultFactory = new WdkResultFactory(getCurrentUserBean());
+      _resultFactory = new WdkAnswerFactory(getCurrentUserBean());
     }
     return _resultFactory;
   }
@@ -58,4 +67,26 @@ public abstract class WdkService {
     _wdkModelBean = ((WdkModelBean)context.getAttribute("wdkModel"));
   }
 
+  /**
+   * Returns an unboxed version of the passed value or the default
+   * boolean flag value (false) if the passed value is null.
+   * 
+   * @param boolValue flag value passed to service
+   * @return unboxed value or false if null
+   */
+  protected boolean getFlag(Boolean boolValue) {
+    return (boolValue == null ? false : boolValue);
+  }
+
+  /**
+   * Returns an unboxed version of the passed value or the default
+   * boolean flag value if the passed value is null.
+   * 
+   * @param boolValue flag value passed to service
+   * @param defaultValue default value if boolValue is null
+   * @return unboxed value or defaultValue if null
+   */
+  protected boolean getFlag(Boolean boolValue, boolean defaultValue) {
+    return (boolValue == null ? defaultValue : boolValue);
+  }
 }

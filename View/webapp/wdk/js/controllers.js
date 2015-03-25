@@ -1,7 +1,7 @@
+import './controllers/strategy/controller';
+import './controllers/strategy/error';
 import './controllers/strategy/model';
 import './controllers/strategy/view';
-import './controllers/strategy/error';
-import './controllers/strategy/controller';
 import './controllers/addStepPopup';
 import './controllers/api';
 import './controllers/basket';

@@ -27,7 +27,7 @@ public abstract class AbstractDbMbeanFactory implements NamedMBeanFactory {
     // will query DatabaseInstance to get a list of active connection pools
     Map<String, Object> namedMbeans = new HashMap<>();
     for (Entry<String, DatabaseInstance> dbEntry : DatabaseInstance.getAllInstances().entrySet()) {
-      String finalName = parameterizedMbeanName.replaceAll(DB_NAME_MACRO, dbEntry.getKey());
+      String finalName = parameterizedMbeanName.replace(DB_NAME_MACRO, dbEntry.getKey());
       Object beanObject = getMbeanObject(dbEntry.getValue());
       namedMbeans.put(finalName, beanObject);
       if (firstInstanceOnly) {
@@ -36,5 +36,4 @@ public abstract class AbstractDbMbeanFactory implements NamedMBeanFactory {
     }
     return namedMbeans;
   }
-
 }

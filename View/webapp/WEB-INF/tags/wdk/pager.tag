@@ -1,6 +1,6 @@
 <%@ taglib uri="http://jsptags.com/tags/navigation/pager" prefix="pg" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
+<%@ taglib prefix="html" uri="http://struts.apache.org/tags-html" %>
 
 <%@ attribute name="pager_id"
               required="true"

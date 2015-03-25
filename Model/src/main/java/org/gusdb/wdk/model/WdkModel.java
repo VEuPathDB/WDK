@@ -174,9 +174,14 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   private ThreadMonitor _myThreadMonitor;
 
-  public WdkModel() throws WdkModelException {
+  public WdkModel() {
     // add default sets
-    addFilterSet(FilterSet.getWdkFilterSet());
+    try {
+      addFilterSet(FilterSet.getWdkFilterSet());
+    }
+    catch (WdkModelException ex) {
+      throw new WdkRuntimeException(ex);
+    }
   }
 
   @Override

@@ -43,7 +43,7 @@ public class ToggleFilterAction extends Action {
     UserBean user = ActionUtility.getUser(servlet, request);
     StepBean step = user.getStep(Integer.valueOf(stepId));
     step.getFilterOptions().getFilterOption(filterName).setDisabled(disabled);
-    step.saveParams();
+    step.saveParamFilters();
     
     ActionForward showApplication = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
 

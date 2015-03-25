@@ -482,7 +482,7 @@ ul.menubar {
 */
 /* temporary search page, look like old one */
 .content-pane.collapsible{
-	background:#DEDEDE;
+	background:#EFEFEF;  /* #DEDEDE; */
 }
 
 /* kanged from Amazon */
@@ -598,10 +598,21 @@ ul.menubar {
   display: none;
 }
 
+div.param-group div#grp-descr{
+  margin:0 0 1em 5px;
+}
+
 .param-item {
   clear: both;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-top: 0;  /* 5px; */
+  padding-bottom: 1em; /* 5px; */
+  position: relative;
+}
+
+.param-item p {
+  margin-left:5px;
+  margin-bottom:5px;
+  font-style:italic
 }
 
 .param-item > label {
@@ -856,7 +867,7 @@ a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =RESULTS PAGE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#form_question .filter-button { 
+form[name=questionForm] .filter-button { 
 	text-align: center; 
 	padding-top: 1em;
 }

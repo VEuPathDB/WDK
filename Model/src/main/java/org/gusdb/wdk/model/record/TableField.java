@@ -60,6 +60,7 @@ public class TableField extends Field implements AttributeFieldContainer {
     return queryTwoPartName;
   }
 
+  @Override
   public AttributeField[] getAttributeFields() {
     return getAttributeFields(FieldScope.ALL);
   }

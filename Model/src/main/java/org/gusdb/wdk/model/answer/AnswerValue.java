@@ -101,6 +101,15 @@ import org.json.JSONObject;
  * </p>
  * 
  * <p>
+ * During a standard load of an AnswerValue, we do the following:
+ * 1. Apply filter to the IDs in the cache (FilterInstance takes SQL for IDs, wraps to filter, and returns)
+ * 2. Apply sorting (AnswerValue takes SQL from filter, join with appropriate attribute queries, wrap to sort, and returns)
+ * 3. Apply paging (add rownum, etc. to SQL)
+ * Then run SQL!!  Creates template RecordInstances (non populated with attributes)
+ * 4. Apply SQL from step 3, join with attribute queries to build results to return to user
+ * Attribute fetch is lazy-loaded, but cache all attributes from attribute query (could be big e.g. BFMV), even if don't need all of them
+ * 
+ * <p>
  * Created: Fri June 4 13:01:30 2004 EDT
  * </p>
  * 
@@ -111,6 +120,13 @@ import org.json.JSONObject;
  */
 public class AnswerValue {
 
+  /**
+   * Computes application of various filters to the same answer value in parallel to get result sizes
+   * 
+   * May eventually be deprecated if we do away with the filter grid (the only place we really load filtered result sizes)
+   * 
+   * @author jerric
+   */
   private static class FilterSizeTask implements Runnable {
 
     private final AnswerValue answer;
@@ -659,6 +675,7 @@ public class AnswerValue {
       }
     }
     catch (SQLException e) {
+      logger.error("Error executing attribute query using SQL \"" + sql + "\"", e);
       throw new WdkModelException(e);
     }
     finally {

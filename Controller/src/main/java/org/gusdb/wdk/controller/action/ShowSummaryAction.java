@@ -173,7 +173,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 // only runs the step and return the step info in json, does not
                 // create a strategy or add to existing strategy
                 JSONObject jsStep = ShowStrategyAction.outputStep(wdkModel, wdkUser,
-                        step, 0, false);
+                        step, 0, false, false);
 
                 response.setContentType("text/json");
                 PrintWriter writer = response.getWriter();

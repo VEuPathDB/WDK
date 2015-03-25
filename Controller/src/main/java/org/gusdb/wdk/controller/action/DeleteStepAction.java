@@ -14,6 +14,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -41,7 +42,6 @@ public class DeleteStepAction extends ProcessFilterAction {
 
             // Make sure a strategy is specified
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String strBranchId = null;
 
             if (strStratId == null || strStratId.length() == 0) {
                 throw new WdkModelException(
@@ -62,7 +62,6 @@ public class DeleteStepAction extends ProcessFilterAction {
 
             String strategyKey = strStratId;
             if (strStratId.indexOf("_") > 0) {
-                strBranchId = strStratId.split("_")[1];
                 strStratId = strStratId.split("_")[0];
             }
 
@@ -85,15 +84,8 @@ public class DeleteStepAction extends ProcessFilterAction {
                     wdkUser.getViewPagerOffset());
             }
 
-            Map<Integer, Integer> stepIdsMap = strategy.deleteStep(
-                    Integer.valueOf(deleteStep), (strBranchId != null));
-            // If a branch was specified, look up the new branch id in the
-            // stepIdsMap
-            if (strBranchId != null) {
-                if (stepIdsMap.containsKey(Integer.valueOf(strBranchId))) strBranchId = stepIdsMap.get(
-                        Integer.valueOf(strBranchId)).toString();
-                else strBranchId = null;
-            }
+            StepBean step = strategy.getStepById(Integer.valueOf(deleteStep));
+            Map<Integer, Integer> stepIdsMap = strategy.deleteStep(step);
 
             // If strategy was marked for deletion as a result of deleting
             // the step, forward to DeleteStrategy
