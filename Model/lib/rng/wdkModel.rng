@@ -1702,10 +1702,7 @@
   <define name="stepAnalysisProperties">
     <zeroOrMore>
       <choice>
-        <element name="property">
-          <attribute name="name" />
-          <attribute name="value" />
-        </element>
+        <ref name="property" />
       </choice>
     </zeroOrMore>
   </define>
