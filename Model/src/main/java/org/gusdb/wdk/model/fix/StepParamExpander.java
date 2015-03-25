@@ -102,16 +102,17 @@ public class StepParamExpander extends BaseCLI {
         if (!clob.startsWith("{"))
           continue;
 
-        Map<String, String> values = parseClob(wdkModel, questionName, clob);
+        Map<String, Set<String>> values = parseClob(wdkModel, questionName, clob);
 
         // insert the values
         for (String paramName : values.keySet()) {
-          String paramValue = values.get(paramName);
-
-          psInsert.setInt(1, stepId);
-          psInsert.setString(2, paramName);
-          psInsert.setString(3, paramValue);
-          psInsert.addBatch();
+          Set<String> paramValues = values.get(paramName);
+          for (String paramValue : paramValues) {
+            psInsert.setInt(1, stepId);
+            psInsert.setString(2, paramName);
+            psInsert.setString(3, paramValue);
+            psInsert.addBatch();
+          }
         }
         psInsert.executeBatch();
         connection.commit();
@@ -160,9 +161,9 @@ public class StepParamExpander extends BaseCLI {
     return connection.prepareStatement(sql.toString());
   }
 
-  private Map<String, String> parseClob(WdkModel wdkModel, String questionName, String clob)
+  private Map<String, Set<String>> parseClob(WdkModel wdkModel, String questionName, String clob)
       throws WdkModelException, JSONException {
-    Map<String, String> newValues = new LinkedHashMap<>();
+    Map<String, Set<String>> newValues = new LinkedHashMap<>();
     if (clob != null && clob.length() > 0) {
       Map<String, String> values = StepFactory.parseParamContent(new JSONObject(clob));
       for (String paramName : values.keySet()) {
@@ -183,14 +184,9 @@ public class StepParamExpander extends BaseCLI {
         for (String term : terms) {
           if (term.length() > 4000)
             term = term.substring(0, 4000);
-          if (used.contains(term)) {
-            continue;
-          }
-          else {
-            newValues.put(paramName.trim(), term.trim());
-            used.add(term);
-          }
+          used.add(term);
         }
+        newValues.put(paramName.trim(), used);
       }
     }
     return newValues;

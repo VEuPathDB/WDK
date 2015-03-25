@@ -8,13 +8,12 @@
   "nonbsp": true,
   "undef": true,
   "unused": true,
-  "strict": true,
-  "eqnull": false,
+  "eqnull": true,
   "laxbreak": true,
   "browser": true,
   "node": true,
+  "esnext": true,
   "devel": true,
-  "jquery": true,
   "maxerr": 150,
   "globals": {
     "wdk": true

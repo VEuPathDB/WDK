@@ -1,41 +1,25 @@
 import React from 'react';
 import Router from 'react-router';
-import IndexPage from './pages/IndexPage';
-import NotFoundPage from './pages/NotFoundPage';
-import AnswerPage from './pages/AnswerPage';
+import App from './controllers/App';
+import IndexPage from './controllers/IndexPage';
+import NotFoundPage from './controllers/NotFoundPage';
+import AnswerPage from './controllers/AnswerPage';
+import QuestionListPage from './controllers/QuestionListPage';
 
-var { Route, RouteHandler, DefaultRoute, NotFoundRoute } = Router;
-
-/**
- * Example of a "wholistic" routes definition. App defines the basic page
- * layout.
- *
- * var routes = (
- *   <Route name="app" path="/" handler={App}>
- *     <Route name="answer" path="answer/:questionName" handler={AnswerPage}/>
- *     <Route name="user" handler={User}/>
- *     <Route name="project" handler={Project}/>
- *     <DefaultRoute handler={IndexPage}/>
- *     <NotFoundRoute handler={NotFoundPage}/>
- *   </Route>
- * );
- */
+var { Route, DefaultRoute, NotFoundRoute } = Router;
 
 /**
- * This is a transitional routes definition. Notice that there is not top-level
- * route, and that this is an array.
+ * Get routes based on `baseUrl`.
  *
- * Example usage:
- *
- *     Router.run(routes, '/project', function(Handler) {
- *       React.render(<Handler/>, document.getElementById("app"));
- *     });
- *
+ * @param {string} baseUrl The baseUrl used to match paths below
  */
-export var routes = [
-  <Route name="answer" path="answer/:questionName" handler={AnswerPage}/>,
-  <DefaultRoute handler={IndexPage}/>,
-  <NotFoundRoute handler={NotFoundPage}/>,
-];
-
-export default Router.create({ routes });
+export function getRoutes(baseUrl = '/') {
+  return (
+    <Route name="app" path={baseUrl} handler={App}>
+      <Route name="answer" path="answer/:questionName" handler={AnswerPage}/>,
+      <Route name="question-list" handler={QuestionListPage}/>,
+      <DefaultRoute handler={IndexPage}/>,
+      <NotFoundRoute handler={NotFoundPage}/>,
+    </Route>
+  );
+}

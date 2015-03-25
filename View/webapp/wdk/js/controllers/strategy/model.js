@@ -199,10 +199,18 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
             st.operation = "SPAN";
           }
           if (steps[i].step.isCollapsed && steps[i].step.strategy.order > 0) {
-            this.subStratOrder[steps[i].step.strategy.order] = wdk.strategy.controller.sidIndex;
             subId = wdk.strategy.controller.loadModel(steps[i].step.strategy, ord + "." + ssind);
             ssind++;
-            //this.subStratOrder[steps[i].step.strategy.order] = subId;
+
+            // We were using the global `wdk.strategy.controller.sidIndex` here.
+            // `wdk.strategy.controller.loadModel` returns the constructed
+            // Strategy's `frontId`, which is derived from `sidIndex` at the
+            // time of construction (here, it is assigned to `subId`). By using
+            // `subId`, we protect ourselves from `sidIndex` being mutated since
+            // the construction of the Strategy. Also, `subStratOrder` is a map
+            // of orderNumber => frontId, thus using `subId` is definitely
+            // safer.
+            this.subStratOrder[steps[i].step.strategy.order] = subId;
             st.child_Strat_Id = subId;
           }
           st.hasCompleteAnalyses = Boolean(steps[i].step.hasCompleteAnalyses);
@@ -228,6 +236,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
           st.nextStepType = (nstp.istransform) ? "transform" : "boolean";
         }
         st.booleanHasCompleteAnalyses = Boolean(steps[i].hasCompleteAnalyses);
+        st.isLoading = steps[steps.length].results == -1;
         arr.push(st);
       }
     }

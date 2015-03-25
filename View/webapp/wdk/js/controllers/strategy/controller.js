@@ -20,10 +20,10 @@
 wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   "use strict";
 
+  var sidIndex = 0;
   ns.state = null;
   ns.strats = {};
   ns.stateString = '';
-  ns.sidIndex = 0;
 
   // Current strategy and step objects
   var uiState = {
@@ -125,7 +125,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     // We do this so custom Site submit handlers can cancel a form
     // submission just by calling event.preventDefault(), or
     // event.stopPropagation().
-    $(document.body).on('submit', 'form#form_question', wdk.addStepPopup.validateOperations);
+    $(document.body).on('submit', 'form[name=questionForm]', wdk.addStepPopup.validateOperations);
   }
 
   /**
@@ -229,12 +229,17 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   /**
    * Fetch state info from server
    */
-  function fetchStrategies(cb) {
+  function fetchStrategies(cb, options = {}) {
+    var data = {
+      state: ns.stateString,
+      updateResults: Boolean(options.updateResults)
+    };
+
     $.ajax({
       url: "showStrategy.do",
       type: "POST",
       dataType: "json",
-      data:"state=" + ns.stateString,
+      data: data,
       success: function(data) {
         cb(data);
       }
@@ -251,38 +256,69 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    * @param {Object} data Object retreived from server with state information
    * @param {Boolean} ignoreFilters If `true` filters will not be reloaded.
    *   Otherwise they will be reloaded.
-   * @returns {jQuery.Deffered} Promise
    */
-  function updateStrategies(data, ignoreFilters, skipRedraw) {
-    var deferred = $.Deferred();
+  function updateStrategies(data, ignoreFilters = false, count = 1) {
+    // Increment count if we refetch strategies with updated results
+    var nextUpdateStrategies = _.partialRight(updateStrategies, ignoreFilters,
+                                              count + 1);
+
+    // Fetch strategies with updated results. Used if root step results == -1
+    var updateResults = _.partial(fetchStrategies, nextUpdateStrategies, {
+      updateResults: true
+    });
 
     ns.state = data.state;
     ns.stateString = JSON.stringify(ns.state);
+
+    // If root step size is -1, fetch strategies with updated results and skip
+    // updating the strategy panel.
+    for (var checksum in data.strategies) {
+      if (checksum == 'length') continue;
+      var strategy = data.strategies[checksum];
+      if (strategy.steps[strategy.steps.length].results == -1) {
+        setTimeout(updateResults, 250 * count);
+        break;
+      }
+    }
+
     // if a strategy is removed, update display
     removeClosedStrategies();
     for (var newOrdering in ns.state) {
+
       if (newOrdering == "count") {
         // it appears the span was removed, so this code does nothing.
         $("#mysearch span").text('My Strategies ('+ns.state[newOrdering]+')');
-      } else if (newOrdering != "length") {
-        var strategyId = ns.state[newOrdering].id;
-        if (wdk.strategy.model.isLoaded(strategyId)) {
-          if (wdk.strategy.model.getStrategyFromBackId(ns.state[newOrdering].id).checksum !=
-              ns.state[newOrdering].checksum) {
-            // If the checksums are not the same, reload the model.
-            // This assumes the strategy object in the response (`data`)
-            // matches the current strategy in the global state object.
-            loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
-          }
-        } else {
-          loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+      }
+
+      else if (newOrdering != "length") {
+        // Always reload the strategy objects.
+        var strategy = data.strategies[ns.state[newOrdering].checksum];
+        if (strategy) {
+          loadModel(strategy, newOrdering);
         }
+        // var strategyId = ns.state[newOrdering].id;
+        // if (wdk.strategy.model.isLoaded(strategyId)) {
+        //   var loadedStrategy = wdk.strategy.model.getStrategyFromBackId(strategyId);
+        //   var newStrategy = data.strategies[ns.state[newOrdering].checksum];
+        //   var loadedRootStep = loadedStrategy.JSON.steps[loadedStrategy.JSON.steps.length];
+        //   var newRootStep = newStrategy.steps[newStrategy.steps.length];
+
+        //   if (loadedStrategy.checksum != ns.state[newOrdering].checksum ||
+        //       loadedRootStep.results != newRootStep.results) {
+        //     // If the checksums are not the same, reload the model.
+        //     // This assumes the strategy object in the response (`data`)
+        //     // matches the current strategy in the global state object.
+        //     loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+        //   }
+        // }
+
+        // else {
+        //   loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+        // }
       }
     }
-    if (!skipRedraw) {
-      showStrategies(data.currentView, ignoreFilters, data.state.length, deferred);
-    }
-    return deferred.promise();
+
+    showStrategies(data.currentView, ignoreFilters, data.state.length);
   }
 
   // Use this to sync server objects with client objects without redrawing
@@ -432,7 +468,12 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       var initStp = initStr.getStep(view.step, false);
       if (initStr === false || initStp === null) {
         newResults(-1);
-      } else {
+      }
+      else if (initStp.isLoading) {
+        newResults(-1);
+        wdk.util.showLoading(initStr.frontId);
+      }
+      else {
         var isVenn = (initStp.back_boolean_Id == view.step);
         var pagerOffset = view.pagerOffset;
         if (view.action !== undefined && view.action.match("^basket")) {
@@ -552,8 +593,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var strategy = json;
     var strat = null;
     if (!wdk.strategy.model.isLoaded(strategy.id)) {
-      strat = new wdk.strategy.model.Strategy(ns.sidIndex, strategy.id, true);
-      ns.sidIndex++;
+      strat = new wdk.strategy.model.Strategy(sidIndex, strategy.id, true);
+      sidIndex++;
     } else {
       strat = wdk.strategy.model.getStrategyFromBackId(strategy.id);
       strat.subStratOrder = {};
@@ -774,68 +815,6 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       }
     });
   }
-
-  // will be replaced by wizard
-  // function AddStepToStrategy(url, proto) {
-  //   var strategy = wdk.strategy.model.getStrategyFromBackId(proto);
-  //   var f_strategyId = strategy.frontId;
-  //   var cs = strategy.checksum;
-  //   if (strategy.subStratOf !== null) {
-  //     cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
-  //   }
-  //   url = url + "&strategy_checksum="+cs;
-  //   var d = wdk.util.parseInputs();
-  //   $.ajax({
-  //     url: url,
-  //     type: "POST",
-  //     dataType: "json",
-  //     data: d + "&state=" + ns.stateString,
-  //     beforeSend: function(){
-  //       wdk.util.showLoading(f_strategyId);
-  //     },
-  //     success: function(data) {
-  //       if (wdk.strategy.error.ErrorHandler("AddStep", data, strategy, $("div#query_form"))) {
-  //         if ($("div#query_form").css("display") == "none") {
-  //           $("div#query_form").remove();
-  //         }
-  //         updateStrategies(data);
-  //       } else {
-  //         wdk.util.removeLoading(f_strategyId);
-  //       }
-  //     }
-  //   });
-  //   wdk.step.isInsert = "";
-  //   wdk.addStepPopup.closeAll(true);
-  // }
-
-  // function EditStep(url, proto){
-  //   var ss = wdk.strategy.model.getStrategyFromBackId(proto);
-  //   var d = wdk.util.parseInputs();
-  //   var cs = ss.checksum;
-  //   if (ss.subStratOf !== null) {
-  //     cs = wdk.strategy.model.getStrategy(ss.subStratOf).checksum;
-  //   }
-  //   url = url+"&strategy_checksum="+cs;
-  //   $.ajax({
-  //     url: url,
-  //     type: "POST",
-  //     dataType:"json",
-  //     data: d + "&state=" + ns.stateString,
-  //     beforeSend: function(){
-  //       wdk.addStepPopup.closeAll(true);
-  //       wdk.util.showLoading(ss.frontId);
-  //     },
-  //     success: function(data) {
-  //       if (wdk.strategy.error.ErrorHandler("EditStep", data, ss, $("div#query_form"))) {
-  //         $("div#query_form").remove();
-  //         wdk.step.hideDetails();
-  //         updateStrategies(data);
-  //       } else {
-  //         wdk.util.removeLoading(ss.frontId);
-  //       }
-  //     }
-  //   });
-  // }
 
   function DeleteStep(f_strategyId,f_stepId) {
     var strategy = wdk.strategy.model.getStrategy(f_strategyId);

@@ -110,18 +110,29 @@ public class EnumParamHandler extends AbstractParamHandler {
    * the signature is a checksum of sorted stable value.
    * 
    * @throws WdkModelException
+   * @throws WdkUserException 
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
   public String toSignature(User user, String stableValue, Map<String, String> contextValues)
-      throws WdkModelException {
-    // make sure to get a sorted stable value;
-    String[] rawValue = toRawValue(user, stableValue, contextValues);
-    Arrays.sort(rawValue);
-    stableValue = toStableValue(user, rawValue, contextValues);
-    return Utilities.encrypt(stableValue);
+      throws WdkModelException, WdkUserException {
+    AbstractEnumParam enumParam = (AbstractEnumParam) param;
+    EnumParamCache cache = enumParam.getValueCache(user, contextValues);
+
+    String[] terms = enumParam.convertToTerms(stableValue);
+    Set<String> internals = new LinkedHashSet<>();
+    for (String term : terms) {
+      if (!cache.containsTerm(term))
+        throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
+
+      String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
+      internals.add(internal);
+    }
+    String[] array = internals.toArray(new String[0]);
+    Arrays.sort(array);
+    return Utilities.encrypt(Arrays.toString(array));
   }
 
   /**

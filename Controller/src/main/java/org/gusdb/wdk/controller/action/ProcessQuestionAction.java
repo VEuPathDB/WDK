@@ -88,8 +88,12 @@ public class ProcessQuestionAction extends Action {
       // the question is already validated in the question form, don't need to do it again.
       String filterName = request.getParameter(CConstants.WDK_FILTER_KEY);
       StepBean step = wdkUser.createStep(wdkQuestion, params, filterName, false, false, weight);
-			step.setCustomName(customName);
-			step.update(false);
+      if (step.getException() != null) {
+        // exception occurred loading initial results for this step
+        throw step.getException();
+      }
+      step.setCustomName(customName);
+      step.update(false);
 
       logger.debug("Test run search [" + qFullName + "] and get # of results: " + step.getResultSize());
 
@@ -109,8 +113,7 @@ public class ProcessQuestionAction extends Action {
       return forward;
     }
     catch (Exception ex) {
-      logger.error(ex, ex);
-      ex.printStackTrace();
+      logger.error("Error while processing question", ex);
 
       ActionMessages messages = new ActionErrors();
       ActionMessage message = new ActionMessage("mapped.properties", (qFullName == null ||
@@ -118,6 +121,7 @@ public class ProcessQuestionAction extends Action {
       messages.add(ActionErrors.GLOBAL_MESSAGE, message);
       saveErrors(request, messages);
       ActionForward forward = mapping.getInputForward();
+      logger.error("ProcessQuestionAction error forward = " + forward.getPath());
       return forward;
     }
   }

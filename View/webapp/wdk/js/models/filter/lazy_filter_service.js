@@ -46,7 +46,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.questionName = attrs.questionName;
       this.dependedValue = attrs.dependedValue;
       this.metadata = {};
-      this.metadataXhrQueue = {};
+      this.metadataXhrQueue = new Map();
       this.listenTo(options.intents, this.xhrActions);
       FilterService.prototype.constructor.apply(this, arguments);
     },
@@ -64,7 +64,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
     cancelXhr: function(field) {
       if (field) {
-        return _.result(this.metadataXhrQueue[field.term], 'abort');
+        return _.result(this.metadataXhrQueue.get(field.term), 'abort');
       }
     },
 
@@ -129,8 +129,10 @@ wdk.namespace('wdk.models.filter', function(ns) {
           property: term
         };
 
-        // this.showSpinner();
-        (this.metadataXhrQueue[term] = $.getJSON(metadataUrl, metadataUrlParams))
+        var xhr = $.getJSON(metadataUrl, metadataUrlParams);
+        this.metadataXhrQueue.set(term, xhr);
+
+        xhr
           .then(function(metadata) {
             metadata = _.indexBy(metadata, 'sample');
             // cache metadata and transform to a dict
@@ -151,11 +153,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
             }
           })
           .always(function() {
-            delete this.metadataXhrQueue[term];
-            if (_.size(this.metadataXhrQueue) === 0) {
-              // this.hideSpinner();
-              console.log('hide');
-            }
+            this.metadataXhrQueue.delete(term);
           }.bind(this));
       }.bind(this));
     },

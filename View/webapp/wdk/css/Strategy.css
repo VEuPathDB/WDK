@@ -516,6 +516,10 @@ div.transform a.crumb_name img{
   z-index: 1;
 }
 
+span.append {
+  font-size: 20px;
+}
+
 /*
 .diagram .strategy-name.wdk-editable {
 padding-bottom: 5px;
@@ -912,7 +916,7 @@ div.bottom-close{
   margin: auto;
 }
 
-.crumb_details #form_question {
+.crumb_details form[name=questionForm] {
   border: 1px solid black;
   background-color: white;
   margin: 0 5px;

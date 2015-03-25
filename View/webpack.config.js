@@ -1,27 +1,26 @@
 var webpack = require('webpack');
-var node_env = process.env.NODE_ENV || 'development';
+var node_env = process.env.NODE_ENV || 'production';
 
 module.exports = {
-  cache: true,
-  context: __dirname + '/webapp/wdk/js',
-  entry: './app.js',
-  output: {
-    filename: 'dist/wdk/js/wdk.js'
-  },
+  bail: true,
   resolve: {
     // adding .jsx; the rest are defaults (this overwrites, so we're including them)
     extensions: ["", ".webpack.js", ".web.js", ".js", ".jsx"]
   },
   module: {
     loaders: [
-      { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: 'traceur?runtime' },
-      { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: 'jsx-loader' },
+      { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: 'babel-loader' },
     ]
   },
   debug: node_env !== 'production',
-  devtool: node_env === 'production' ? 'source-map' : 'inline-source-map',
+  devtool: 'source-map',
   plugins: node_env !== 'production' ? null : [
     new webpack.optimize.UglifyJsPlugin(),
-    new webpack.optimize.OccurenceOrderPlugin(true)
+    new webpack.optimize.OccurenceOrderPlugin(true),
+    new webpack.DefinePlugin({
+      "process.env": {
+        NODE_ENV: JSON.stringify("production")
+      }
+    })
   ]
 };

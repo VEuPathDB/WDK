@@ -1,8 +1,8 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
+<%@ taglib prefix="bean" uri="http://struts.apache.org/tags-bean" %>
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
-<%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
+<%@ taglib prefix="html" uri="http://struts.apache.org/tags-html" %>
 
 <c:set var="model" value="${applicationScope.wdkModel}" />
 <c:set var="siteName" value="${model.name}" />
@@ -30,6 +30,7 @@
 <c:set var="allowSpan" value="${stepRcName eq 'GeneRecordClasses.GeneRecordClass' 
                                 || stepRcName eq 'OrfRecordClasses.OrfRecordClass'
                                 || stepRcName eq 'DynSpanRecordClasses.DynSpanRecordClass'
+                                || stepRcName eq 'SnpChipRecordClasses.SnpChipRecordClass'
                                 || stepRcName eq 'SnpRecordClasses.SnpRecordClass'}" />
 
 <c:set var="partialUrl" value="wizard.do?strategy=${strategyId}&step=${step.stepId}&action=${action}" />
@@ -108,6 +109,7 @@
                                       || ((rcName eq 'GeneRecordClasses.GeneRecordClass' 
                                            || rcName eq 'OrfRecordClasses.OrfRecordClass' 
                                            || rcName eq 'DynSpanRecordClasses.DynSpanRecordClass' 
+                                           || rcName eq 'SnpChipRecordClasses.SnpChipRecordClass'
                                            || rcName eq 'SnpRecordClasses.SnpRecordClass')
                                           && allowSpan
                                          )
@@ -236,7 +238,8 @@ ${rcDisplay} basket
                                   &&
                                   (rcs.value.name eq 'GeneRecordClasses.GeneRecordClass' 
                                    || rcs.value.name eq 'OrfRecordClasses.OrfRecordClass'
-				   || rcs.value.name eq 'DynSpanRecordClasses.DynSpanRecordClass'
+				                           || rcs.value.name eq 'DynSpanRecordClasses.DynSpanRecordClass'
+                                   || rcs.value.name eq 'SnpChipRecordClasses.SnpChipRecordClass'
                                    || rcs.value.name eq 'SnpRecordClasses.SnpRecordClass')
                                  )}">
                     <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_${classId}',3)">${rcs.value.displayName}</li>

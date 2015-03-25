@@ -50,7 +50,7 @@ public class ApplyFilterAction extends Action {
       LOG.debug("Got filter: " + filter.getKey() + ", options=" + options);
 
       step.addFilterOption(filter.getKey(), options);
-      step.saveParams();
+      step.saveParamFilters();
 
       ActionForward showApplication = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
 
@@ -74,9 +74,9 @@ public class ApplyFilterAction extends Action {
 
   private JSONObject prepareOptions(HttpServletRequest request) {
     JSONObject jsOptions = new JSONObject();
-    Enumeration<String> names = request.getParameterNames();
+    Enumeration<?> names = request.getParameterNames();
     while (names.hasMoreElements()) {
-      String name = names.nextElement();
+      String name = (String)names.nextElement();
       if (name.equals(PARAM_FILTER) || name.equals(PARAM_STEP))
         continue;
       String[] values = request.getParameterValues(name);

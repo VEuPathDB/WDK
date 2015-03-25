@@ -42,7 +42,7 @@ public class RemoveFilterAction extends Action {
     AnswerValueBean answer = step.getAnswerValue();
     Filter filter = answer.getQuestion().getFilter(filterName);
     step.removeFilterOption(filter.getKey());
-    step.saveParams();
+    step.saveParamFilters();
     
     ActionForward showApplication = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
 

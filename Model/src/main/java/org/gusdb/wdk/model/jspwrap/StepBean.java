@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -125,7 +126,7 @@ public class StepBean {
         return step.getOperation();
     }
 
-    public boolean getIsFirstStep() {
+    public boolean getIsFirstStep() throws WdkModelException {
         return step.isFirstStep();
     }
     public AnswerValueBean getAnswerValue() throws WdkModelException, WdkUserException {
@@ -257,11 +258,11 @@ public class StepBean {
         return new StepBean(user, step.getStep(index));
     }
 
-    public StepBean[] getAllSteps() throws WdkModelException {
-        Step[] steps = step.getAllSteps();
-        StepBean[] beans = new StepBean[steps.length];
-        for (int i = 0; i < steps.length; ++i) {
-            beans[i] = new StepBean(user, steps[i]);
+    public StepBean[] getMainBranch() throws WdkModelException {
+        List<Step> steps = step.getMainBranch();
+        StepBean[] beans = new StepBean[steps.size()];
+        for (int i = 0; i < steps.size(); ++i) {
+            beans[i] = new StepBean(user, steps.get(i));
         }
         return beans;
     }
@@ -456,18 +457,18 @@ public class StepBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Step#getChildStepParam()
+     * @see org.gusdb.wdk.model.user.Step#getChildStepParamName()
      */
     public String getChildStepParam() throws WdkModelException {
-        return step.getChildStepParam();
+        return step.getChildStepParamName();
     }
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Step#getPreviousStepParam()
+     * @see org.gusdb.wdk.model.user.Step#getPreviousStepParamName()
      */
     public String getPreviousStepParam() throws WdkModelException {
-        return step.getPreviousStepParam();
+        return step.getPreviousStepParamName();
     }
 
     /**
@@ -508,6 +509,30 @@ public class StepBean {
 	  return step.getHasCompleteAnalyses();
 	}
 
+  public void setQuestionName(String questionName) {
+    step.setQuestionName(questionName);
+  }
+
+  public void setParamValues(Map<String, String> paramValues) {
+    step.setParamValues(paramValues);
+  }
+
+  public void setParamValue(String paramName, String paramValue) {
+    step.setParamValue(paramName, paramValue);
+  }
+
+  public void setFilterName(String filterName) {
+    step.setFilterName(filterName);
+  }
+
+  public void saveParamFilters() throws WdkModelException {
+    step.saveParamFilters();
+  }
+
+  public void setAssignedWeight(int assignedWeight) {
+    step.setAssignedWeight(assignedWeight);
+  }
+
   public FilterOptionList getFilterOptions() throws WdkModelException {
     return step.getFilterOptions();
   }
@@ -520,7 +545,4 @@ public class StepBean {
     step.removeFilterOption(filterName);
   }
 
-  public void saveParams() throws WdkModelException {
-    step.saveParams();
-  }
 }

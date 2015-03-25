@@ -517,7 +517,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   }
 
   /**
-   * if true, when the result has only one record, we will skip the strategy
+   * if true, when the result has only one record, we will skip the results
    * page and redirect user to the record page.
    * 
    * @return the noSummaryOnSingleRecord
@@ -579,6 +579,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   @Override
   public Map<String, AttributeField> getAttributeFieldMap() {
     return getAttributeFieldMap(FieldScope.ALL);
+  }
+
+  @Override
+  public AttributeField[] getAttributeFields() {
+    AttributeField[] array = {};
+    return getAttributeFieldMap(FieldScope.ALL).values().toArray(array);
   }
 
   public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {

@@ -2,25 +2,22 @@
   "name": "wdk",
   "version": "0.1.0",
   "devDependencies": {
-    "clean-css": "^3.0.1",
-    "jsx-loader": "^0.12.2",
-    "traceur-loader": "^0.6.3",
-    "webpack": "^1.4.14"
+    "babel": "4.6.6",
+    "babel-core": "4.6.6",
+    "babel-loader": "4.0.0",
+    "clean-css": "3.1.4",
+    "webpack": "1.7.2"
   },
   "scripts": {
-    "build-js": "./scripts/concatLibs ./dist/wdk/js/wdk.libs.js && webpack",
-    "build-css": "./scripts/buildCss",
-    "clean": "rm -rf ./dist",
-    "dist": "npm run build-js && npm run build-css",
-    "test": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack -d --config webpack-test.config.js",
-    "test-server": "./scripts/concatLibs ./test/dist/wdk.libs.js && webpack-dev-server -d --config webpack-test.config.js"
+    "dist": "make -j2"
   },
   "private": true,
   "dependencies": {
-    "flux": "^2.0.1",
-    "immutable": "^3.4.1",
-    "lodash": "^2.4.1",
-    "react": "^0.12.2",
-    "react-router": "^0.11.6"
+    "fixed-data-table": "0.1.1",
+    "flux": "2.0.1",
+    "immutable": "3.6.2",
+    "lodash": "3.3.1",
+    "react": "0.12.2",
+    "react-router": "0.12.4"
   }
 }

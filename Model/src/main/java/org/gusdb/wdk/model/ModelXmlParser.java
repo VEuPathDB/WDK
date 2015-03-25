@@ -762,7 +762,6 @@ public class ModelXmlParser extends XmlParser {
   private void configureParamContent(Digester digester, String paramPath, Class<?> suggestionClass) {
     configureNode(digester, paramPath + "/suggest", suggestionClass, "addSuggest");
     configureNode(digester, paramPath + "/noTranslation", ParamConfiguration.class, "addNoTranslation");
-
     configureNode(digester, paramPath + "/handler", ParamHandlerReference.class, "addHandler");
     configureNode(digester, paramPath + "/handler/property", WdkModelText.class, "addProperty");
     digester.addCallMethod(paramPath + "/handler/property", "setText", 0);
@@ -919,6 +918,9 @@ public class ModelXmlParser extends XmlParser {
   private void configureCommonNodes(Digester digester) {
     configureNode(digester, "*/help", WdkModelText.class, "addHelp");
     digester.addCallMethod("*/help", "setText", 0);
+
+		configureNode(digester, "*/visibleHelp", WdkModelText.class, "addVisibleHelp");
+    digester.addCallMethod("*/visibleHelp", "setText", 0);
 
     configureNode(digester, "*/value", WdkModelText.class, "addValue");
     digester.addCallMethod("*/value", "setText", 0);
