@@ -1287,7 +1287,7 @@ public class Step {
   }
 
   public void setFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
-    this.filterOptions = (jsOptions == null) ? null : new FilterOptionList(childStep, jsOptions);
+    this.filterOptions = (jsOptions == null) ? null : new FilterOptionList(this, jsOptions);
   }
 
   public String getType() throws WdkModelException {
