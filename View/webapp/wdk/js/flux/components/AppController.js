@@ -16,7 +16,7 @@ import createStoreMixin from '../mixins/createStoreMixin';
 
 var storeMixin = createStoreMixin('appStore');
 
-var App = React.createClass({
+var AppController = React.createClass({
 
   mixins: [ storeMixin ],
 
@@ -47,4 +47,4 @@ var App = React.createClass({
 
 });
 
-export default App;
+export default AppController;

@@ -4,11 +4,11 @@ import {
   DefaultRoute,
   NotFoundRoute
 } from 'react-router';
-import App from './components/App';
-import Index from './components/Index';
-import NotFound from './components/NotFound';
-import Answer from './components/Answer';
-import QuestionList from './components/QuestionList';
+import AppController from './components/AppController';
+import IndexController from './components/IndexController';
+import NotFoundController from './components/NotFoundController';
+import AnswerController from './components/AnswerController';
+import QuestionListController from './components/QuestionListController';
 
 /**
  * Get routes based on `baseUrl`.
@@ -17,11 +17,11 @@ import QuestionList from './components/QuestionList';
  */
 export function getRoutes(baseUrl = '/') {
   return (
-    <Route name="app" path={baseUrl} handler={App}>
-      <Route name="answer" path="answer/:questionName" handler={Answer}/>,
-      <Route name="question-list" handler={QuestionList}/>,
-      <DefaultRoute handler={Index}/>,
-      <NotFoundRoute handler={NotFound}/>,
+    <Route name="app" path={baseUrl} handler={AppController}>
+      <Route name="answer" path="answer/:questionName" handler={AnswerController}/>,
+      <Route name="question-list" handler={QuestionListController}/>,
+      <DefaultRoute handler={IndexController}/>,
+      <NotFoundRoute handler={NotFoundController}/>,
     </Route>
   );
 }

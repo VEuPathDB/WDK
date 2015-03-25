@@ -6,7 +6,7 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 var storeMixin = createStoreMixin('questionStore');
 var actionsMixin = createActionCreatorsMixin('questionActions');
 
-var QuestionList = React.createClass({
+var QuestionListController = React.createClass({
 
   mixins: [ storeMixin, actionsMixin ],
 
@@ -43,4 +43,4 @@ var QuestionList = React.createClass({
 
 });
 
-export default QuestionList;
+export default QuestionListController;

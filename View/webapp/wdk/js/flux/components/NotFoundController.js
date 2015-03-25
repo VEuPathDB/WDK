@@ -3,7 +3,7 @@
  */
 import React from 'react';
 
-var NotFound = React.createClass({
+var NotFoundController = React.createClass({
 
   render() {
     return (
@@ -16,4 +16,4 @@ var NotFound = React.createClass({
 
 });
 
-export default NotFound;
+export default NotFoundController;
