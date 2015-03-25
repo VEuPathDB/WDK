@@ -39,6 +39,9 @@ public class Step {
 
   public static final int RESET_SIZE_FLAG = -1;
   
+  private static final String KEY_PARAMS = "params";
+  private static final String KEY_FILTERS = "filters";
+
   private static final Logger logger = Logger.getLogger(Step.class);
 
   // injected during Step object creation
@@ -67,9 +70,9 @@ public class Step {
   private String questionName;
 
   // Steps within the "main branch" strategy flow
-  //  Next Step must be combined step (e.g. transform or boolean/span-logic (two-answer function))
+  // Next Step must be combined step (e.g. transform or boolean/span-logic (two-answer function))
   private Step nextStep = null;
-  //  Previous step could be first step (=leaf), or combined step
+  // Previous step could be first step (=leaf), or combined step
   private Step previousStep = null;
 
   // Parent step must be a boolean
@@ -78,7 +81,7 @@ public class Step {
   private Step childStep = null;
 
   // Probably should be marked deprecated
-  //  Jerric says can be retrieved from param values
+  // Jerric says can be retrieved from param values
   private String booleanExpression;
 
   // in DB, set during maintenance (true or null = valid, false = invalid)
@@ -87,35 +90,33 @@ public class Step {
   private boolean validityChecked = false;
 
   /**
-   * First set when step was created and answer generated, size stored in DB.
-   * So can use this to show step size without pulling records from cache.
-   * Size == -1 means must rerun step (and recache results), get size and store in step table.
-   * Can be out of date for releases since we don't rerun strategies on release.
-   * Should be reset on step table every time we rerun step.
-   * EstimateSize is set to -1 when step is revised (in place)- also all steps affected by
-   *   this step are also changed to -1 so the values are set when those steps are rerun
-   * (i.e. value of -1 means step is "dirty" (modified but not run))
+   * First set when step was created and answer generated, size stored in DB. So can use this to show step
+   * size without pulling records from cache. Size == -1 means must rerun step (and recache results), get size
+   * and store in step table. Can be out of date for releases since we don't rerun strategies on release.
+   * Should be reset on step table every time we rerun step. EstimateSize is set to -1 when step is revised
+   * (in place)- also all steps affected by this step are also changed to -1 so the values are set when those
+   * steps are rerun (i.e. value of -1 means step is "dirty" (modified but not run))
    */
   private int estimateSize = 0;
 
   // name of (non-parameterized) filter instance applied to this step (if any), DB value of null = no filter
-  //   if any filters exist on a recordclass, model must have a "default" filter; usually this is
-  //   a filter that simply returns all the results.  The default filter is automatically applied to a step.
-  //   This affects the UI- if no filter OR the default filter is applied, the filter icon does not appear
+  // if any filters exist on a recordclass, model must have a "default" filter; usually this is
+  // a filter that simply returns all the results. The default filter is automatically applied to a step.
+  // This affects the UI- if no filter OR the default filter is applied, the filter icon does not appear
   private String filterName;
 
   // AnswerValue for this step (see AnswerValue)
   private AnswerValue answerValue;
 
   // Map of param name (without set name) to stable value (always a string), which are:
-  //   StringParam: unquoted raw value
-  //   TimestampParam: millisecs since 1970 (or whatever)
-  //   DatasetParam: Dataset ID (PK int column in Datasets table in apicomm)
-  //   AbstractEnumParam: unsorted string representation of term list (comma-delimited)
-  //     EnumParam: (inherited)
-  //     FlatVocabParam: (inherited)
-  //       FilterParam: JSON string representing all filters applied (see FilterParam)
-  //   AnswerParam: Step ID
+  // StringParam: unquoted raw value
+  // TimestampParam: millisecs since 1970 (or whatever)
+  // DatasetParam: Dataset ID (PK int column in Datasets table in apicomm)
+  // AbstractEnumParam: unsorted string representation of term list (comma-delimited)
+  // EnumParam: (inherited)
+  // FlatVocabParam: (inherited)
+  // FilterParam: JSON string representing all filters applied (see FilterParam)
+  // AnswerParam: Step ID
   private Map<String, String> paramValues = new LinkedHashMap<String, String>();
   private FilterOptionList filterOptions;
 
@@ -127,13 +128,12 @@ public class Step {
   private int previousStepId;
   private int childStepId;
 
-  // This value may or may not be used by the UI, but it is not changed.  isRevisable always returns true
+  // This value may or may not be used by the UI, but it is not changed. isRevisable always returns true
   private boolean revisable = true;
 
   // Set if exception occurs during step loading (but we don't want to bubble the exception up)
   // This allows the UI to show a "broken" step but not hose the whole strategy
   private Exception exception;
-  
 
   /**
    * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
@@ -146,7 +146,7 @@ public class Step {
    * @param stepId
    *          id of the step
    */
-  Step(StepFactory stepFactory, int userId, int stepId) {
+  public Step(StepFactory stepFactory, int userId, int stepId) {
     this.stepFactory = stepFactory;
     this.user = null;
     this.userId = userId;
@@ -216,9 +216,10 @@ public class Step {
     if (!isValid() || estimateSize == StepFactory.UNKNOWN_SIZE) {
       try {
         CountPlugin countPlugin = getRecordClass().getCountPlugin();
-        if (countPlugin == null) {  // no count plugin needed
+        if (countPlugin == null) { // no count plugin needed
           estimateSize = getAnswerValue().getResultSize();
-        } else {    // will use count plugin the get counts
+        }
+        else { // will use count plugin the get counts
           estimateSize = countPlugin.count(this);
         }
       }
@@ -404,11 +405,11 @@ public class Step {
 
   /**
    * @return Size estimate of this step's result
-   * @throws WdkUserException 
-   * @throws WdkModelException 
+   * @throws WdkUserException
+   * @throws WdkModelException
    */
   public int getEstimateSize() throws WdkModelException {
-    if (estimateSize == RESET_SIZE_FLAG) {   
+    if (estimateSize == RESET_SIZE_FLAG) {
       // The flag indicates if the size has been reset, and need to be calculated again.
       try {
         estimateSize = getAnswerValue().getResultSize();
@@ -501,9 +502,8 @@ public class Step {
     // get list of steps dependent on this one; all their results are now invalid
     List<Integer> stepIds = stepFactory.getStepAndParents(getStepId());
     // invalidate step analysis tabs for this step and wait for completion
-    Events.triggerAndWait(new StepsModifiedEvent(stepIds),
-        new WdkModelException("Unable to invalidate step IDs: " +
-            FormatUtil.arrayToString(stepIds.toArray())));
+    Events.triggerAndWait(new StepsModifiedEvent(stepIds), new WdkModelException(
+        "Unable to invalidate step IDs: " + FormatUtil.arrayToString(stepIds.toArray())));
   }
 
   public String getDescription() {
@@ -553,9 +553,9 @@ public class Step {
 
   /**
    * Checks validity of this step and all the child steps it depends on and returns result. Value is memoized
-   * for efficiency. This call checks against any preset valid field value (set from the DB or during a previous
-   * call to isValid()), and checks that param names are correct, but does not check param values due to
-   * execution cost. Param values must be checked elsewhere; if they are found invalid, invalidateStep()
+   * for efficiency. This call checks against any preset valid field value (set from the DB or during a
+   * previous call to isValid()), and checks that param names are correct, but does not check param values due
+   * to execution cost. Param values must be checked elsewhere; if they are found invalid, invalidateStep()
    * should be called, which updates the DB.
    * 
    * @return true if this step is valid (to the best of our knowledge), else false
@@ -773,7 +773,7 @@ public class Step {
   public Map<String, String> getParamValues() {
     return new LinkedHashMap<String, String>(paramValues);
   }
-  
+
   /**
    * @param paramErrors
    *          the paramErrors to set
@@ -783,24 +783,24 @@ public class Step {
       paramValues = new LinkedHashMap<>();
     this.paramValues = new LinkedHashMap<String, String>(paramValues);
   }
-  
+
   public FilterOptionList getFilterOptions() throws WdkModelException {
     if (filterOptions == null) {
       filterOptions = new FilterOptionList(this);
     }
     return filterOptions;
   }
-  
+
   public void setFilterOptions(FilterOptionList filterOptions) {
     this.filterOptions = filterOptions;
     if (answerValue != null)
       answerValue.setFilterOptions(filterOptions);
   }
-  
+
   public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
     getFilterOptions().addFilterOption(filterName, filterValue);
   }
-  
+
   public void removeFilterOption(String filterName) throws WdkModelException {
     getFilterOptions().removeFilterOption(filterName);
   }
@@ -965,7 +965,6 @@ public class Step {
   public JSONObject getJSONContent(int strategyId, boolean forChecksum) throws WdkModelException {
 
     JSONObject jsStep = new JSONObject();
-    JSONArray jsParams = new JSONArray();
 
     try {
       jsStep.put("id", this.stepId);
@@ -976,14 +975,8 @@ public class Step {
       jsStep.put("collapsed", this.isCollapsible());
       jsStep.put("collapsedName", this.getCollapsedName());
       jsStep.put("deleted", deleted);
-      
-      for (String paramName: paramValues.keySet()) {
-    	JSONObject param = new JSONObject();
-    	param.put("name", paramName);
-    	param.put("value", paramValues.get(paramName));
-    	jsParams.put(param);
-      }
-      jsStep.put("params", jsParams);
+      jsStep.put(KEY_PARAMS, getParamsJSON());
+      jsStep.put(KEY_FILTERS, getFilterOptionsJSON());
 
       Step childStep = getChildStep();
       if (childStep != null) {
@@ -998,7 +991,7 @@ public class Step {
       if (!forChecksum) {
         jsStep.put("size", this.estimateSize);
       }
-        
+
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + this.stepId;
         Integer order = getUser().getStrategyOrder(subStratId);
@@ -1147,9 +1140,10 @@ public class Step {
   public boolean isRevisable() {
     return revisable;
   }
-  
+
   /**
-   * Get the answerParam that take the previousStep as input, which is the first answerParam in the param list.
+   * Get the answerParam that take the previousStep as input, which is the first answerParam in the param
+   * list.
    * 
    * @return an AnswerParam
    * @throws WdkModelException
@@ -1158,7 +1152,7 @@ public class Step {
     Param[] params = getQuestion().getParams();
     for (Param param : params) {
       if (param instanceof AnswerParam) {
-        return(AnswerParam)param;
+        return (AnswerParam) param;
       }
     }
     return null;
@@ -1175,7 +1169,7 @@ public class Step {
     AnswerParam param = getPreviousStepParam();
     return (param == null) ? null : param.getName();
   }
-  
+
   public AnswerParam getChildStepParam() throws WdkModelException {
     Param[] params = getQuestion().getParams();
     int index = 0;
@@ -1183,7 +1177,7 @@ public class Step {
       if (param instanceof AnswerParam) {
         index++;
         if (index == 2)
-          return (AnswerParam)param;
+          return (AnswerParam) param;
       }
     }
     return null;
@@ -1241,27 +1235,38 @@ public class Step {
     return stepFactory.getWdkModel().getStepAnalysisFactory().hasCompleteAnalyses(this);
   }
 
-  public JSONObject getParamsJSON() {
+  public JSONObject getParamFilterJSON() {
     JSONObject jsContent = new JSONObject();
+    jsContent.put(KEY_PARAMS, getParamsJSON());
+    jsContent.put(KEY_FILTERS, getFilterOptionsJSON());
+    return jsContent;
+  }
 
+  public void setParamFilterJSON(JSONObject jsContent) throws WdkModelException {
+    if (jsContent != null) {
+      setParamsJSON(jsContent.has(KEY_PARAMS) ? jsContent.getJSONObject(KEY_PARAMS) : jsContent);
+      setFilterOptionsJSON(jsContent.has(KEY_FILTERS) ? jsContent.getJSONArray(KEY_FILTERS) : null);
+    }
+    else {
+      setParamsJSON(null);
+      setFilterOptionsJSON(null);
+    }
+  }
+
+  public JSONObject getParamsJSON() {
     // convert params
     JSONObject jsParams = new JSONObject();
     for (String paramName : paramValues.keySet()) {
       jsParams.put(paramName, paramValues.get(paramName));
     }
-    jsContent.put("params", jsParams);
-
-    // convert filters -- TODO
-    jsContent.put("filters", new JSONObject());
-    return jsContent;
+    return jsParams;
   }
 
-  public void setParamsJSON(JSONObject jsContent) throws WdkModelException {
+  public void setParamsJSON(JSONObject jsParams) throws WdkModelException {
     paramValues = new LinkedHashMap<String, String>();
-    if (jsContent != null) {
+    if (jsParams != null) {
       try {
         // read params;
-        JSONObject jsParams = jsContent.has("params") ? jsContent.getJSONObject("params") : jsContent;
         String[] paramNames = JSONObject.getNames(jsParams);
         if (paramNames != null) {
           for (String paramName : paramNames) {
@@ -1275,13 +1280,20 @@ public class Step {
         throw new WdkModelException(ex);
       }
     }
-
   }
-  
+
+  public JSONArray getFilterOptionsJSON() {
+    return (filterOptions == null) ? null : filterOptions.getJSON();
+  }
+
+  public void setFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
+    this.filterOptions = (jsOptions == null) ? null : new FilterOptionList(childStep, jsOptions);
+  }
+
   public String getType() throws WdkModelException {
     return getRecordClass().getFullName();
   }
-  
+
   /**
    * Check id the given step can be assigned as the previous step of the current one. If it's not allowed, a
    * WdkUserException will be thrown out
