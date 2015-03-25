@@ -35,7 +35,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.xml.NamedValue;
 import org.gusdb.wdk.model.UIConfig.ExtraLogoutCookies;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
@@ -949,7 +948,6 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod(nodeLocation + "/shortDescription", "setText", 0);
     configureNode(digester, nodeLocation + "/description", WdkModelText.class, "setDescription");
     digester.addCallMethod(nodeLocation + "/description", "setText", 0);
-    configureNode(digester, nodeLocation + "/property", NamedValue.class, "addProperty");
   }
 
   private void configureFilterSet(Digester digester) {

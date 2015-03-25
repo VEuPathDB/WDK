@@ -45,6 +45,17 @@ public class WdkModelText extends WdkModelBase {
     this.text = text;
   }
 
+  /**
+   * A temporary fix on model parsing. It sets the value into text, and should be deprecated/removed after 
+   * the model is unified to use setText() only.
+   *
+   * @param value
+   *
+   */ 
+  public void setValue(String value) {
+    this.text = value;
+  }
+
   /*
    * (non-Javadoc)
    * 
