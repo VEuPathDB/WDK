@@ -1,6 +1,6 @@
 import partial from 'lodash/function/partial';
 import noop from 'lodash/utility/noop';
-import FixedDataTable from 'fixed-data-table';
+import { Table } from 'fixed-data-table';
 import React from 'react/addons';
 
 /**
@@ -10,8 +10,6 @@ import React from 'react/addons';
  *     - add / remove columns
  *
  */
-
-const { Table } = FixedDataTable;
 
 const SORT_CLASS_MAP = {
   ASC:  'fa fa-lg fa-sort-alpha-asc',
