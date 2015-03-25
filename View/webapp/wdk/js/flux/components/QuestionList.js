@@ -1,9 +1,8 @@
 import React from 'react';
-import Router from 'react-router';
+import { Link } from 'react-router';
 import createStoreMixin from '../mixins/createStoreMixin';
 import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
-var { Link } = Router;
 var storeMixin = createStoreMixin('questionStore');
 var actionsMixin = createActionCreatorsMixin('questionActions');
 

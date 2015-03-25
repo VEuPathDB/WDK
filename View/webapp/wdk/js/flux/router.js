@@ -1,12 +1,14 @@
 import React from 'react';
-import Router from 'react-router';
+import {
+  Route,
+  DefaultRoute,
+  NotFoundRoute
+} from 'react-router';
 import App from './components/App';
 import Index from './components/Index';
 import NotFound from './components/NotFound';
 import Answer from './components/Answer';
 import QuestionList from './components/QuestionList';
-
-var { Route, DefaultRoute, NotFoundRoute } = Router;
 
 /**
  * Get routes based on `baseUrl`.

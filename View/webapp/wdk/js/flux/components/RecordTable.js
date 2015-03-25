@@ -1,6 +1,6 @@
 import React from 'react';
-import Router from 'react-router';
-import FixedDataTable from 'fixed-data-table';
+import { Link } from 'react-router';
+import { Column } from 'fixed-data-table';
 import Table from './Table';
 import Dialog from './Dialog';
 import {
@@ -27,9 +27,7 @@ import {
  */
 
 const $ = window.jQuery;
-const { Column } = FixedDataTable;
 const { PropTypes } = React;
-const { Link } = Router;
 
 // Constants
 const PRIMARY_KEY_NAME = 'primary_key';
