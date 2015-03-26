@@ -85,20 +85,20 @@ const WdkTable = React.createClass({
   },
 
   renderHeader(columnComponent, ...rest) {
-    const { dataKey, headerRenderer } = columnComponent.props;
+    const { dataKey, headerRenderer, isRemovable, isSortable } = columnComponent.props;
+    const className = 'wdk-RecordTable-headerWrapper' +
+      (isSortable ? ' wdk-RecordTable-headerWrapper_sortable' : '');
     const sortClass = this.props.sortDataKey == columnComponent.props.dataKey
-      ? SORT_CLASS_MAP[this.props.sortDirection] : '';
-    const sort = partial(this.handleSort, dataKey);
+      ? SORT_CLASS_MAP[this.props.sortDirection] : SORT_CLASS_MAP['ASC'] + ' wdk-RecordTable-unsorted';
+    const sort = isSortable ? partial(this.handleSort, dataKey) : noop;
     const hide = partial(this.handleHideColumn, dataKey);
-    const title = columnComponent.props.isSortable
-      ? 'Click to sort table by this column.'
-      : null;
+    const title = isSortable ? 'Click to sort table by this column.' : '';
 
     return (
-      <div title={title} onClick={sort} className="wdk-RecordTable-headerWrapper">
+      <div title={title} onClick={sort} className={className}>
         <span>{headerRenderer ? headerRenderer(...rest) : rest[0]}</span>
-        <span className={sortClass}/>
-        {columnComponent.props.isRemovable ? (
+        {isSortable ? <span className={sortClass}/> : null}
+        {isRemovable ? (
           <span className="ui-icon ui-icon-close"
             title="Hide column"
             onClick={hide}/>

@@ -90,6 +90,9 @@ main h4 {
 .wdk-RecordTable-headerWrapper {
   position: relative;
 }
+.wdk-RecordTable-headerWrapper_sortable {
+  cursor: pointer;
+}
 
 .wdk-RecordTable th {
   border: 1px solid #cccccc;
@@ -117,14 +120,16 @@ main h4 {
 }
 
 .wdk-RecordTable-headerWrapper .ui-icon-close {
-  visibility: hidden;
+  /*visibility: hidden;*/
   cursor: pointer;
   float: right;
 }
 
+/*
 .wdk-RecordTable-headerWrapper:hover .ui-icon-close {
   visibility: visible;
 }
+*/
 
 .wdk-RecordTable-headerWrapper .ui-icon {
   display: inline-block;
@@ -134,6 +139,11 @@ main h4 {
 
 .wdk-RecordTable-headerWrapper .fa {
   margin-left: .5em;
+}
+
+.wdk-RecordTable-unsorted {
+  color: rgb(170, 170, 170);
+  color: rgba(0, 0, 0, 0.26);
 }
 
 .wdk-RecordTable-AttributeSelectorWrapper {
