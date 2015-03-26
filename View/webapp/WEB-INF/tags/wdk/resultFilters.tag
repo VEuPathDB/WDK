@@ -8,9 +8,10 @@
               description="The current step"
 %>
 
+<c:set var="filters" value="${step.question.filters}" />
 <c:set var="filterOptions" value="${step.filterOptions.filterOptions}" />
 
-<c:if test="${fn:length(filterOptions) gt 0}">
+<c:if test="${fn:length(filters) gt 0}">
 
 <div class="wdk-filters" data-step="${step.stepId}">
 
