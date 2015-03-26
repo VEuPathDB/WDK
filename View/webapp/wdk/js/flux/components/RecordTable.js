@@ -305,6 +305,7 @@ const RecordTable = React.createClass({
           className="wdk-RecordTable-attributeValue"
         >
           <Link
+            className="wdk-RecordTable-recordLink"
             to={href}
             dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute) }}
           />
