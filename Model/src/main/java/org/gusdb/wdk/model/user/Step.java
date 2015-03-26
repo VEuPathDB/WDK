@@ -1245,7 +1245,11 @@ public class Step {
   public void setParamFilterJSON(JSONObject jsContent) throws WdkModelException {
     if (jsContent != null) {
       setParamsJSON(jsContent.has(KEY_PARAMS) ? jsContent.getJSONObject(KEY_PARAMS) : jsContent);
-      setFilterOptionsJSON(jsContent.has(KEY_FILTERS) ? jsContent.getJSONArray(KEY_FILTERS) : null);
+      JSONArray jsFilters = null;
+      try {
+        if (jsContent.has(KEY_FILTERS)) jsFilters = jsContent.getJSONArray(KEY_FILTERS);
+      } catch(JSONException ex) { }
+      setFilterOptionsJSON(jsFilters);
     }
     else {
       setParamsJSON(null);

@@ -8,11 +8,14 @@
               description="The current step"
 %>
 
+<c:set var="filterOptions" value="${step.filterOptions.filterOptions}" />
+
+<c:if test="${fn:length(filterOptions) gt 0}">
 
 <div class="wdk-filters" data-step="${step.stepId}">
 
   <div class="current-filters">
-    <c:forEach items="${step.filterOptions.filterOptions}" var="entity">
+    <c:forEach items="${filterOptions}" var="entity">
       <c:set var="option" value="${entity.value}" />
       <c:set var="filter" value="${option.filter}" />
       <div class="option ${option.disabled ? 'disabled' : ''}" 
@@ -64,4 +67,7 @@
 
   </div>
 </div>
+
+</c:if>
+
 
