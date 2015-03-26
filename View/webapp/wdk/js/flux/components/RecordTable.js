@@ -157,7 +157,10 @@ const RecordTable = React.createClass({
     return Object.assign({
       columnWidths: this.props.meta.get('attributes').reduce((widths, attr) => {
         const name = attr.get('name');
-        widths[name] = name === PRIMARY_KEY_NAME ? 400 : 200;
+        const displayName = attr.get('displayName');
+        // 8px per char, plus 12px for sort icon
+        const width = Math.max(displayName.length * 8 + 12, 200);
+        widths[name] = name === PRIMARY_KEY_NAME ? 400 : width;
         return widths;
       }, {})
     }, this._getInitialAttributeSelectorState());
