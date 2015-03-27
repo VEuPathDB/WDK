@@ -159,7 +159,7 @@ const RecordTable = React.createClass({
         const name = attr.get('name');
         const displayName = attr.get('displayName');
         // 8px per char, plus 12px for sort icon
-        const width = Math.max(displayName.length * 8 + 12, 200);
+        const width = Math.max(displayName.length * 8.5 + 12, 200);
         widths[name] = name === PRIMARY_KEY_NAME ? 400 : width;
         return widths;
       }, {})
