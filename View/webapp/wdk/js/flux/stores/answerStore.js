@@ -130,9 +130,6 @@ export default createStore({
    */
   state: state,
 
-  /** Used to roll back on loading errors */
-  previousState: state,
-
   /**
    * Handle dispatched actions. Hopefully most of this is self explanatory.
    *
@@ -180,7 +177,7 @@ export default createStore({
      */
     var requestData = action.requestData;
     var questionName = requestData.questionDefinition.questionName;
-    var previousQuestionName = this.previousState.getIn([
+    var previousQuestionName = this.state.getIn([
       'questionDefinition',
       'questionName'
     ]);
