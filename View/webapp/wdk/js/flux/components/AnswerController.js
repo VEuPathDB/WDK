@@ -154,7 +154,7 @@ const AnswerController = React.createClass({
     if (!query.numrecs || !query.offset) {
       // Replace the current undefined URL query params with default values
       Object.assign(query, {
-        numrecs: query.numrecs || 500,
+        numrecs: query.numrecs || 1000,
         offset: query.offset || 0
       });
 
