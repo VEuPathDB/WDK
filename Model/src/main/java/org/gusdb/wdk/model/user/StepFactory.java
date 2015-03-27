@@ -258,7 +258,7 @@ public class StepFactory {
         estimateSize = answerValue.getFilterSize(filterName);
       }
       else
-        estimateSize = answerValue.getResultSize();
+        estimateSize = answerValue.getDisplayResultSize();
     }
     catch (Exception ex) {
       estimateSize = 0;

@@ -290,7 +290,8 @@ public class AnswerValue {
     return resultSize;
   }
   
-  public Integer getDisplayResultSize() throws WdkModelException, WdkUserException {
+  
+  public int getDisplayResultSize() throws WdkModelException, WdkUserException {
 	  ResultSize plugin = question.getRecordClass().getResultSizePlugin();
 	  return plugin.getResultSize(this);
   }

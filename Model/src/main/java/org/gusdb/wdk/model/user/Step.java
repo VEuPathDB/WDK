@@ -214,7 +214,7 @@ public class Step {
     // has not yet been run.
     if (!isValid() || estimateSize == StepFactory.UNKNOWN_SIZE) {
       try {
-        estimateSize = getAnswerValue().getResultSize();
+        estimateSize = getAnswerValue().getDisplayResultSize();
       }
       catch (Exception ex) {
         logger.error("Exception when estimating result size.", ex);
@@ -1015,7 +1015,7 @@ public class Step {
         throw new WdkModelException(ex);
       }
       try {
-        this.estimateSize = answerValue.getResultSize();
+        this.estimateSize = answerValue.getDisplayResultSize();
       }
       catch (WdkModelException | WdkUserException ex) {
         // if validate is false, the error will be ignored to allow the process to continue.

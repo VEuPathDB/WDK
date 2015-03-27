@@ -192,12 +192,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String fullName;
   
   /**
-   * An option that provides SQL to post-process an Answer result, providing a custom result size count. 
-   * If present, induces construction of a non-default result size plugin that uses this sql
+   * An reference to a java plugin  
    */
-  private ResultSizeQueryReference resultSizeQueryRef = null;
+  private ResultPropertiesPluginRef resultPropertiesPluginRef = null;
 
-  private ResultSize resultSizePlugin = new DefaultResultSizePlugin();
+  /**
+   * A pluggable way to compute the result size.  For example, count the number of genes in a list of transcripts.
+   * The default is overridden with a plugin supplied in the XML model, if provided.
+   */
+  private ResultProperties resultPropertiesPlugin = null;
+  
   /**
    * the native versions are the real name of the record class.  the non-native are potentially different,
    * for display purposes.  This can happen if a ResultSizeQueryReference is supplied, that provides non-native
@@ -212,7 +216,19 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String shortDisplayName;
   private String shortDisplayNamePlural;
 
+  /**
+   * An option that provides SQL to post-process an Answer result, providing a custom result size count. 
+   * If present, induces construction of a non-default result size plugin that uses this sql
+   */
+  private ResultSizeQueryReference resultSizeQueryRef = null;
 
+  /**
+   * A pluggable way to compute the result size.  For example, count the number of genes in a list of transcripts.
+   * The default is overridden with a plugin supplied in the XML model, if provided.
+   */
+  private ResultSize resultSizePlugin = new DefaultResultSizePlugin();
+
+  
   private String attributeOrdering;
 
   private List<NestedRecord> nestedRecordQuestionRefList = new ArrayList<NestedRecord>();
@@ -371,6 +387,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 	  return resultSizePlugin;
   }
 
+  public ResultProperties getResultPropertiesPlugin() {
+	  return resultPropertiesPlugin;
+  }
+  
   /**
    * @param attList
    *          comma separated list of attributes in a summary containing this recordClass.
@@ -453,8 +473,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     attributeCategoryTree = tree;
   }
   
-  public void setResultSizeQueryReference(ResultSizeQueryReference ref) {
+  public void setResultSizeQueryRef(ResultSizeQueryReference ref) {
 	  resultSizeQueryRef = ref;
+  }
+  
+  public void setResultPropertiesPluginRef(ResultPropertiesPluginRef ref) {
+	  resultPropertiesPluginRef = ref;
   }
 
   // ////////////////////////////////////////////////////////////
@@ -559,8 +583,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return attributeCategoryTree.getTrimmedCopy(scope);
   }
   
-  public ResultSizeQueryReference getResultSizeQueryReference() {
+  public ResultSizeQueryReference getResultSizeQueryRef() {
 	  return resultSizeQueryRef;	
+  }
+  
+  public ResultPropertiesPluginRef getResultPropertiesPluginRef() {
+	  return resultPropertiesPluginRef;
   }
 
   @Override
@@ -669,6 +697,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     	shortDisplayNamePlural = resultSizeQueryRef.getRecordShortDisplayNamePlural();
         Query query = (Query) wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
     	resultSizePlugin = new SqlQueryResultSizePlugin(query);
+    }
+    
+    if (resultPropertiesPluginRef != null) {
+    	resultPropertiesPlugin = resultPropertiesPluginRef.getImplementationInstance();
     }
     
     // resolve the alias query
