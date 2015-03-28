@@ -1,9 +1,11 @@
 package org.gusdb.wdk.jmx;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * An implementation of the ServletContextListener interface that receives 
@@ -26,7 +28,19 @@ public final class JmxInitListener implements ServletContextListener {
 
   @Override
   public void contextInitialized(ServletContextEvent sce) {
-    ContextThreadLocal.set(sce.getServletContext());
+    ServletContext context = sce.getServletContext();
+
+    // Check whether model is initialized; if not, then initialization probably
+    //   failed, so warn in logs and skip JMX initialization.  If this is caused
+    //   by a race condition between the two listeners, will need to address in
+    //   a different way.
+    WdkModelBean model = (WdkModelBean)context.getAttribute(BeanBase.WDK_MODEL_KEY);
+    if (model == null) {
+      LOG.warn("Missing model in ServletContext.  Skipping MBean registration.");
+      return;
+    }
+
+    ContextThreadLocal.set(context);
     try {
       _registration = new MBeanRegistration();
       _registration.init();
@@ -41,7 +55,9 @@ public final class JmxInitListener implements ServletContextListener {
 
   @Override
   public void contextDestroyed(ServletContextEvent sce) {
-    _registration.destroy();
+    if (_registration != null) {
+      _registration.destroy();
+    }
   }
 
 }
