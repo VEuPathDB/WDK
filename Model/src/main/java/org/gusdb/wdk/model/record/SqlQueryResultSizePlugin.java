@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.record;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -15,8 +14,8 @@ import org.gusdb.wdk.model.query.param.Param;
 
 public class SqlQueryResultSizePlugin implements ResultSize {
 	
-	private static String WDK_ID_SQL_PARAM = "WDK_ID_SQL";
-	private static String COUNT_COLUMN = "count";
+	private final static String WDK_ID_SQL_PARAM = "WDK_ID_SQL";
+	private final static String COUNT_COLUMN = "count";
 	
 	Query query;
 
