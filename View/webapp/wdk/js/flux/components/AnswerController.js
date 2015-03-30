@@ -4,6 +4,7 @@ import React from 'react';
 import Router from 'react-router';
 import Loading from './Loading';
 import Answer from './Answer';
+import Doc from './Doc';
 import Record from './Record';
 import createStoreMixin from '../mixins/createStoreMixin';
 import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
@@ -433,29 +434,34 @@ const AnswerController = React.createClass({
     if (answer && expandedRecord != null) {
       const RecordComponent = this.context.getRecordComponent(answer.getIn(['meta', 'class']), Record)
         || Record;
+      const record = answer.get('records').get(expandedRecord);
 
       return (
-        <RecordComponent
-          record={answer.get('records').get(expandedRecord)}
-          questions={questions}
-          recordClasses={recordClasses}
-          attributes={answer.getIn(['meta', 'attributes'])}
-        />
+        <Doc title={`${recordClass.get('displayName')}: ${record.get('id')}`}>
+          <RecordComponent
+            record={record}
+            questions={questions}
+            recordClasses={recordClasses}
+            attributes={answer.getIn(['meta', 'attributes'])}
+          />
+        </Doc>
       );
     }
 
     else if (answer && question && recordClass) {
       return (
-        <Answer
-          answer={answer}
-          question={question}
-          recordClass={recordClass}
-          displayInfo={displayInfo}
-          filterTerm={filterTerm}
-          filteredRecords={filteredRecords}
-          format={format}
-          answerEvents={answerEvents}
-        />
+        <Doc title={`${question.get('displayName')}`}>
+          <Answer
+            answer={answer}
+            question={question}
+            recordClass={recordClass}
+            displayInfo={displayInfo}
+            filterTerm={filterTerm}
+            filteredRecords={filteredRecords}
+            format={format}
+            answerEvents={answerEvents}
+          />
+        </Doc>
       );
     }
 
