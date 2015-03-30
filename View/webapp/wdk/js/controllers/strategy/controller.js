@@ -746,25 +746,23 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           // in this case, select events
           // defer this so the DOM has time to finish initializing
           //
-          // FIXME Figure out how we can avoid deferring the event trigger.
-          // The reason we defer is so that wdk.load() can initialize
-          // any parts of the DOM necessary. In this case, it is calling
-          // the editable() plugin for the strategy name. Custom elements
-          // might help here, but we can't use them with IE8.
-            var $selectedStrategy = $("#Strategies .diagram").has(".selected");
-            var $selectedStep = $("#Strategies .diagram").find(".selected");
+          // Call wdk.load() to avoid a race condition causing some jQuery
+          // plugins to not get initialized until after we expect.
+          wdk.load();
+          var $selectedStrategy = $("#Strategies .diagram").has(".selected");
+          var $selectedStep = $("#Strategies .diagram").find(".selected");
 
-            if ($selectedStrategy.attr("id") !== oldSelectedStrategyId) {
-              $selectedStrategy.trigger("strategyselect", [strategy]);
-              $selectedStep.trigger("stepselect", [step, isBoolean]);
-            } else if ($selectedStep.attr("id") !== oldSelectedStepId) {
-              $selectedStep.trigger("stepselect", [step, isBoolean]);
-            }
+          if ($selectedStrategy.attr("id") !== oldSelectedStrategyId) {
+            $selectedStrategy.trigger("strategyselect", [strategy]);
+            $selectedStep.trigger("stepselect", [step, isBoolean]);
+          } else if ($selectedStep.attr("id") !== oldSelectedStepId) {
+            $selectedStep.trigger("stepselect", [step, isBoolean]);
+          }
 
-            setUIState({
-              strategy: strategy,
-              step: step
-            });
+          setUIState({
+            strategy: strategy,
+            step: step
+          });
         }
 
         wdk.util.removeLoading(f_strategyId);
