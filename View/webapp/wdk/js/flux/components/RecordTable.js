@@ -115,6 +115,7 @@ const AttributeSelector = React.createClass({
   _renderItem(attribute) {
     return (
       <AttributeSelectorItem
+        key={attribute.get('name')}
         isChecked={this.props.selectedAttributes.contains(attribute)}
         attribute={attribute}
         onChange={this.props.onChange}
@@ -401,9 +402,10 @@ const RecordTable = React.createClass({
 
             return (
               <Column
+                key={name}
+                dataKey={name}
                 fixed={isPk}
                 label={attribute}
-                dataKey={name}
                 headerRenderer={this.renderHeader}
                 cellRenderer={partialRight(cellRenderer, this.renderCell)}
                 cellDataGetter={this.getCellData}
