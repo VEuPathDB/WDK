@@ -225,7 +225,7 @@ public class BooleanQuery extends SqlQuery {
         assignedWeight, context);
   }
 
-  private String constructSql() {
+  public String constructSql() {
     StringBuffer sql = new StringBuffer();
     constructOperandSql(sql, leftOperand.getName());
     sql.append(" $$").append(operator.getName()).append("$$ ");
