@@ -66,7 +66,7 @@ var parseSearchTerms = function parseSearchTerms(terms) {
     // remove wrapping quotes from phrases
     return term.replace(/(^")|("$)/g, '');
   });
-}
+};
 
 
 // Search record for a term.
@@ -105,8 +105,6 @@ var isTermInRecord = curry(function isTermInRecord(term, record) {
 });
 
 var state = Immutable.fromJS({
-  isLoading: false,
-  error: null,
   filterTerm: '',
   filteredRecords: [],
   answers: {},
@@ -132,9 +130,6 @@ export default createStore({
    */
   state: state,
 
-  /** Used to roll back on loading errors */
-  previousState: state,
-
   /**
    * Handle dispatched actions. Hopefully most of this is self explanatory.
    *
@@ -147,16 +142,8 @@ export default createStore({
   dispatchHandler(action, emitChange) {
     switch(action.type) {
 
-      case ActionType.ANSWER_LOADING:
-        this.handleAnswerLoading(action, emitChange);
-        break;
-
       case ActionType.ANSWER_LOAD_SUCCESS:
         this.handleAnswerLoadSuccess(action, emitChange);
-        break;
-
-      case ActionType.ANSWER_LOAD_ERROR:
-        this.handleAnswerLoadError(action, emitChange);
         break;
 
       case ActionType.ANSWER_MOVE_COLUMN:
@@ -171,50 +158,6 @@ export default createStore({
         this.handleAnswerFilter(action, emitChange);
         break;
     }
-  },
-
-  handleAnswerLoading(action, emitChange) {
-    var questionName = action.requestData.questionDefinition.questionName;
-
-    /*
-     * If the loading answer is for a different question, we want to remove
-     * the current question. We will save it in case we have an error so that
-     * we can roll back the state of the store.
-     *
-     * `state.getIn(...)` is another way to write
-     * `state.get('questionDefinition').get('questionName')`, but without
-     * creating intermediate copies.
-     */
-    if(this.state.getIn(['questionDefinition', 'questionName']) !== questionName) {
-      /*
-       * Cache previous state. It will be used to replace the state
-       * if we handle ANSWER_LOAD_ERROR.
-       */
-      this.previousState = this.state;
-
-      /*
-       * Clear the current state. This helps keep the UI more consistent
-       * by not showing unrelated results when loading.
-       */
-      this.state = this.state.merge({
-        answer: {},
-        questionDefinition: {},
-        displayInfo: {}
-      });
-    }
-
-    /*
-     * Finally, set isLoading to true and error to null.
-     */
-    this.state = this.state.merge({
-      isLoading: true,
-      error: null
-    });
-
-    /*
-     * This will cause subscribed functions to be called.
-     */
-    emitChange();
   },
 
   handleAnswerLoadSuccess(action, emitChange) {
@@ -234,7 +177,7 @@ export default createStore({
      */
     var requestData = action.requestData;
     var questionName = requestData.questionDefinition.questionName;
-    var previousQuestionName = this.previousState.getIn([
+    var previousQuestionName = this.state.getIn([
       'questionDefinition',
       'questionName'
     ]);
@@ -289,15 +232,6 @@ export default createStore({
       },
       filteredRecords: records$
     }, requestData);
-
-    emitChange();
-  },
-
-  handleAnswerLoadError(action, emitChange) {
-    /* rollback to the previous state, and add the error message */
-    this.state = this.previousState.merge({
-      error: action.error
-    });
 
     emitChange();
   },

@@ -1,9 +1,8 @@
 import React from 'react';
-import Router from 'react-router';
+import { Link } from 'react-router';
 
 // Link is a component used to create links to other routes.
 // See https://github.com/rackt/react-router/blob/master/docs/api/components/Link.md
-var { Link } = Router;
 
 /**
  * This component is rendered by the DefaultRoute in ../routes.js.
@@ -21,7 +20,7 @@ var { Link } = Router;
  * and https://github.com/rackt/react-router/blob/master/docs/api/misc/Location.md
  * for more details.
  */
-var IndexPage = React.createClass({
+var IndexController = React.createClass({
 
   render() {
     return (
@@ -38,4 +37,4 @@ var IndexPage = React.createClass({
 
 });
 
-export default IndexPage;
+export default IndexController;

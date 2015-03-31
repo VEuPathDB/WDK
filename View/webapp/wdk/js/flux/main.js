@@ -38,6 +38,7 @@ var createApplication = function createApplication(config) {
     serviceUrl,
     rootElement,
     recordComponentResolver,
+    cellRendererResolver,
     location
   } = config;
 
@@ -59,7 +60,7 @@ var createApplication = function createApplication(config) {
     routerLocation = new HeadlessLocation(config.defaultRoute || '/');
   }
   else if (baseUrl) {
-    routerLocation = Router.HistoryLocation
+    routerLocation = Router.HistoryLocation;
   }
   else {
     routerLocation = Router.HashLocation;
@@ -73,7 +74,8 @@ var createApplication = function createApplication(config) {
     serviceAPI,
     stores,
     actionCreators,
-    recordComponentResolver
+    recordComponentResolver,
+    cellRendererResolver
   });
 };
 

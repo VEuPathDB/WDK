@@ -329,6 +329,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             cellDataGetter={this.getCellData}
             cellRenderer={this.renderPk}
             isRemovable={false}
+            isSortable={true}
           />
           {selectedFields.map(field => {
             return (
@@ -338,6 +339,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                 width={200}
                 cellDataGetter={this.getCellData}
                 isRemovable={true}
+                isSortable={true}
               />
             );
           })}

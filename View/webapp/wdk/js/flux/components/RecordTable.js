@@ -1,7 +1,7 @@
-import _ from 'lodash';
+import partialRight from 'lodash/function/partialRight';
 import React from 'react';
-import Router from 'react-router';
-import FixedDataTable from 'fixed-data-table';
+import { Link } from 'react-router';
+import { Column } from 'fixed-data-table';
 import Table from './Table';
 import Dialog from './Dialog';
 import {
@@ -28,9 +28,7 @@ import {
  */
 
 const $ = window.jQuery;
-const { Column } = FixedDataTable;
 const { PropTypes } = React;
-const { Link } = Router;
 
 // Constants
 const PRIMARY_KEY_NAME = 'primary_key';
@@ -117,6 +115,7 @@ const AttributeSelector = React.createClass({
   _renderItem(attribute) {
     return (
       <AttributeSelectorItem
+        key={attribute.get('name')}
         isChecked={this.props.selectedAttributes.contains(attribute)}
         attribute={attribute}
         onChange={this.props.onChange}
@@ -139,6 +138,10 @@ const RecordTable = React.createClass({
     onRecordClick: PropTypes.func.isRequired
   },
 
+  contextTypes: {
+    getCellRenderer: PropTypes.func.isRequired
+  },
+
   getDefaultProps() {
     return {
       onSort: noop,
@@ -154,8 +157,11 @@ const RecordTable = React.createClass({
   getInitialState() {
     return Object.assign({
       columnWidths: this.props.meta.get('attributes').reduce((widths, attr) => {
-        const name = attr.get('name')
-        widths[name] = name === PRIMARY_KEY_NAME ? 400 : 200;
+        const name = attr.get('name');
+        const displayName = attr.get('displayName');
+        // 8px per char, plus 12px for sort icon
+        const width = Math.max(displayName.length * 8.5 + 12, 200);
+        widths[name] = name === PRIMARY_KEY_NAME ? 400 : width;
         return widths;
       }, {})
     }, this._getInitialAttributeSelectorState());
@@ -303,6 +309,7 @@ const RecordTable = React.createClass({
           className="wdk-RecordTable-attributeValue"
         >
           <Link
+            className="wdk-RecordTable-recordLink"
             to={href}
             dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute) }}
           />
@@ -348,6 +355,8 @@ const RecordTable = React.createClass({
     const visibleAttributes = displayInfo.get('visibleAttributes');
     const sortSpec = displayInfo.getIn(['sorting', 0]);
 
+    const cellRenderer = this.context.getCellRenderer(meta.get('class'), this.renderCell) || this.renderCell;
+
     return (
       <div className="wdk-RecordTable">
 
@@ -384,7 +393,7 @@ const RecordTable = React.createClass({
         >
 
           {visibleAttributes.map(attribute => {
-            const name = attribute.get('name')
+            const name = attribute.get('name');
             const isPk = name === PRIMARY_KEY_NAME;
             const cellClassNames = name + ' ' + attribute.get('className') +
               ' ' + CELL_CLASS_NAME;
@@ -393,11 +402,12 @@ const RecordTable = React.createClass({
 
             return (
               <Column
+                key={name}
+                dataKey={name}
                 fixed={isPk}
                 label={attribute}
-                dataKey={name}
                 headerRenderer={this.renderHeader}
-                cellRenderer={this.renderCell}
+                cellRenderer={partialRight(cellRenderer, this.renderCell)}
                 cellDataGetter={this.getCellData}
                 width={width}
                 isResizable={true}
