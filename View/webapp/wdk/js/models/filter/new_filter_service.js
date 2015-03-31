@@ -75,6 +75,21 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
     constructor: function(attrs, options) {
 
+      // Partition options.filters into two arrays:
+      //   * valid
+      //   * invalid
+      var filterPartitions = _.reduce(attrs.filters, function(partitions, filter) {
+        if (_.any(attrs.fields, function(field) {
+          return filter.field.term === field.term;
+        })) {
+          partitions.valid.push(filter);
+        }
+        else {
+          partitions.invalid.push(filter);
+        }
+        return partitions;
+      }, { valid: [], invalid: [] });
+
       // loading status for async operations
       this.isLoading = false;
 
@@ -82,7 +97,10 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.fields = attrs.fields || [];
 
       // list of filters
-      this.filters = attrs.filters || [];
+      this.filters = filterPartitions.valid.filters || [];
+
+      // list of invalid filters
+      this.invalidFilters = filterPartitions.invalid;
 
       // unfiltered data, used for local filtering
       this.data = attrs.data || [];
@@ -122,7 +140,16 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     getState: function() {
-      return _.pick(this, 'isLoading', 'fields', 'filters', 'data', 'filteredData', 'columns', 'selectedField', 'distributionMap');
+      return _.pick(this,
+                    'isLoading',
+                    'fields',
+                    'filters',
+                    'invalidFilters',
+                    'data',
+                    'filteredData',
+                    'columns',
+                    'selectedField',
+                    'distributionMap');
     },
 
     setSelectedField: function(field) {
