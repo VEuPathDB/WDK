@@ -470,7 +470,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         newResults(-1);
       }
       else if (initStp.isLoading) {
-        newResults(-1);
+        // newResults(-1);
         wdk.util.showLoading(initStr.frontId);
       }
       else {
