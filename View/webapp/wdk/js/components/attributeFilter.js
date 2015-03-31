@@ -441,6 +441,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
         columns,
         ignored,
         filters,
+        invalidFilters,
         selectedField,
         distributionMap,
         isLoading,
@@ -476,6 +477,8 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             filteredDataCount={filteredNotIgnored.length}
             dataCount={data.length}
             selectedField={selectedField}/>
+
+          <InvalidFilterList filters={invalidFilters}/>
 
           <div className="filter-view">
             <button onClick={this.handleExpandClick}
@@ -539,6 +542,29 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
           </div>
         </div>
       );
+    }
+  });
+
+  var InvalidFilterList = React.createClass({
+    render: function() {
+      var { filters } = this.props;
+
+      if (filters) {
+        return (
+          <div className="invalid-values">
+            <p>Some of the options you previously selected are no longer available:</p>
+            <ul>
+              {_.map(filters, function(filter) {
+                return (
+                  <li className="invalid">{filter.display}</li>
+                );
+              }, this)}
+            </ul>
+          </div>
+        );
+      }
+
+      return null;
     }
   });
 
