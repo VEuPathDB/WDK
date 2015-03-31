@@ -97,7 +97,7 @@ public class BooleanQuery extends SqlQuery {
 
     prepareColumns(recordClass);
 
-    this.setSql(constructSql());
+    this.setSql("don't care");  // the boolean query instance will not use sql set at the query level
   }
 
   private BooleanQuery(BooleanQuery query) {
@@ -223,26 +223,6 @@ public class BooleanQuery extends SqlQuery {
       throws WdkModelException, WdkUserException {
     return new BooleanQueryInstance(user, this, values, validate,
         assignedWeight, context);
-  }
-
-  public String constructSql() {
-    StringBuffer sql = new StringBuffer();
-    constructOperandSql(sql, leftOperand.getName());
-    sql.append(" $$").append(operator.getName()).append("$$ ");
-    constructOperandSql(sql, leftOperand.getName());
-    return sql.toString();
-  }
-
-  private void constructOperandSql(StringBuffer sql, String operand) {
-    sql.append("SELECT ");
-    boolean first = true;
-    for (String column : columnMap.keySet()) {
-      if (first) first = false;
-      else sql.append(", ");
-      sql.append(column);
-    }
-    sql.append(" FROM $$").append(operand).append("$$");
-    sql.append(" WHERE $$").append(operand).append(".condition$$");
   }
 
   /*
