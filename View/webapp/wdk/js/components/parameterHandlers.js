@@ -644,6 +644,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     for (i=0; i < dependedNames.length; i++) {
       dependedName = dependedNames[i];
       var dependedParam = element.find([
+        "[name$='(" + dependedName + ")']:hidden",  // hidden input
         "[name$='(" + dependedName + ")']:text",    // text input
         "[name$='(" + dependedName + ")']textarea", // textrea
         "[name$='(" + dependedName + ")']:checked", // radio or checkbox
