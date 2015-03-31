@@ -111,6 +111,7 @@ main h4 {
   position: absolute;
   right: 2em;
   top: 3em;
+  font-size:1.2em; 
 }
 .wdk-RecordTable-attributeValue {
   line-height: 1.6;
