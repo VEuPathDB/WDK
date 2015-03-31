@@ -100,22 +100,23 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
   private String constructOperandSql(String subSql, boolean booleanFlag)
       throws WdkModelException, WdkUserException {
-    RecordClass recordClass = booleanQuery.getRecordClass();
+
     // apply the filter query if needed
-    AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();
+/* optimistically assume we can lose this relic functionality
+	  AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();
     if (booleanFlag && filter != null) {
       // here the assigned weight comes from the boolean query itself,
       // since the filter is the boolean extension filter.
       subSql = filter.applyFilter(user, subSql, assignedWeight);
     }
-
+*/
     // limit the column output
     StringBuffer sql = new StringBuffer();
 
     // fix the returned columns to be the pk columns, plus weight column
     sql.append("SELECT " + Utilities.COLUMN_WEIGHT);
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = getPkColumns();
+
     for (String column : pkColumns) {
       sql.append(", " + column);
     }
@@ -134,8 +135,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     StringBuffer sql = new StringBuffer();
     sql.append("SELECT ");
 
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = getPkColumns();
+
     for (String column : pkColumns) {
       sql.append(column + ", ");
     }
@@ -161,8 +162,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     StringBuffer sql = new StringBuffer();
     sql.append("SELECT ");
 
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = getPkColumns();
+
     for (String column : pkColumns) {
       sql.append(column + ", ");
     }
@@ -185,8 +186,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
   private String getOtherOperationSql(String leftSql, String rightSql,
       String operator) {
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+
+    String[] pkColumns = getPkColumns();
 
     // first do boolean operation on primary keys only
     StringBuffer leftPiece = new StringBuffer();
@@ -212,5 +213,14 @@ public class BooleanQueryInstance extends SqlQueryInstance {
       sql.append("o." + pkColumns[i] + " = b." + pkColumns[i]);
     }
     return sql.toString();
+  }
+  
+  /**
+   * get the columns to do the boolean operation on
+   * @return
+   */
+  protected String[] getPkColumns() {
+	    RecordClass rc = booleanQuery.getRecordClass();
+	    return rc.getPrimaryKeyAttributeField().getColumnRefs();
   }
 }
