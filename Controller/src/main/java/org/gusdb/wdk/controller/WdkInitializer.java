@@ -36,7 +36,7 @@ public class WdkInitializer {
 
   public static void terminateWdk(ServletContext servletContext) {
     try {
-      WdkModelBean wdkModel = (WdkModelBean)servletContext.getAttribute(CConstants.WDK_MODEL_KEY);
+      WdkModelBean wdkModel = getWdkModel(servletContext);
       if (wdkModel != null) {
         // insulate in case model never properly loaded
         logger.info("Releasing resources for WDK Model.");
@@ -68,5 +68,9 @@ public class WdkInitializer {
     servletContext.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY, alwaysGoToSummary);
     servletContext.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
     servletContext.setAttribute(CConstants.GUS_HOME_KEY, gusHome);
+  }
+
+  public static WdkModelBean getWdkModel(ServletContext servletContext) {
+    return (WdkModelBean)servletContext.getAttribute(CConstants.WDK_MODEL_KEY);
   }
 }

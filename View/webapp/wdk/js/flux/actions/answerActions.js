@@ -1,4 +1,4 @@
-import Immutable from 'immutable';
+import { Record } from 'immutable';
 import createActionCreators from '../utils/createActionCreators';
 import {
   APP_LOADING,
@@ -38,7 +38,6 @@ import {
 // XXX Would it make sense to use Records for ActionTypes? This would have the
 // nice effect of enforcing a data type for an action payload. It bears more
 // thought as it might be in opposition to some underlying Flux ideology.
-var Record = Immutable.Record;
 
 var LoadingAction = Record({
   type: APP_LOADING,

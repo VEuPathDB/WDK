@@ -393,6 +393,7 @@ public class Strategy {
           // check if the step can take the previous step
           step.checkPreviousAllowed(previousStep);
           step.setPreviousStep(previousStep);
+          step.saveParamFilters();
         }
       }
       else { // no next step exists, the current step must be a root of main/nested strategy.
@@ -408,6 +409,7 @@ public class Strategy {
             // check if parent can take previous step as child
             parentStep.checkChildAllowed(previousStep);
             parentStep.setChildStep(previousStep);
+            parentStep.saveParamFilters();
             break;
           }
           else { // no previousStep
@@ -421,17 +423,16 @@ public class Strategy {
       }
     }
 
-    if (step != null) { // the current step is the one being updated
-      step.saveParamFilters();
-    }
-    else if (previousStep != null) { // current step is null, then previous step should become new root.
-      rootMap.put(getLatestStepId(), previousStep.getStepId());
-      setLatestStep(previousStep);
-      update(true);
-    }
-    else { // no more steps left in the strategy, delete the strategy itself.
-      stepFactory.deleteStrategy(strategyId);
-      rootMap.clear();
+    if (step == null) {
+      if (previousStep != null) { // current step is null, then previous step should become new root.
+        rootMap.put(getLatestStepId(), previousStep.getStepId());
+        setLatestStep(previousStep);
+        update(true);
+      }
+      else if (step == null) { // no more steps left in the strategy, delete the strategy itself.
+        stepFactory.deleteStrategy(strategyId);
+        rootMap.clear();
+      }
     }
 
     // after strategy is deleted (if needed), will now delete steps

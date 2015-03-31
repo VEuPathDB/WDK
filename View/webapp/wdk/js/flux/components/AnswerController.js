@@ -2,14 +2,15 @@
 import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';
-import Answer from '../components/Answer';
-import Record from '../components/Record';
-import Loading from '../components/Loading';
+import Loading from './Loading';
+import Answer from './Answer';
+import Doc from './Doc';
+import Record from './Record';
 import createStoreMixin from '../mixins/createStoreMixin';
 import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
 
-// AnswerPage is a React component which acts as a Controller-View, as well as
+// Answer is a React component which acts as a Controller-View, as well as
 // a Route Handler.
 //
 // A Controller-View is a Flux concept in which a component can register a
@@ -50,15 +51,19 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 // See https://github.com/rackt/react-router/blob/master/docs/api/run.md#callbackhandler-state
 //
 //
-// The primary responsibility of the AnswerPage is to call an ActionCreator to
-// load the Answer resource from the REST service, and to update the page when
-// the state of the AnswerStore has changed. The AnswerPage will determine what
-// Answer to load based on the URL parameters.
+// The primary responsibility of the Answer component is to call an
+// ActionCreator to load the Answer resource from the REST service, and to
+// update the page when the state of the AnswerStore has changed. The Answer
+// component will determine what Answer to load based on the URL parameters.
 
 // Define the React Component class.
 // See http://facebook.github.io/react/docs/top-level-api.html#react.createclass
-const AnswerPage = React.createClass({
+const AnswerController = React.createClass({
 
+  // This utilizes an undocumented feature of React. This can be thought of as a
+  // declaration of named properties to inject into this component. In this
+  // case, `getRecordComponent` is a function which will resolve a concrete
+  // React Component class for a given record class.
   contextTypes: {
     getRecordComponent: React.PropTypes.func.isRequired
   },
@@ -111,8 +116,6 @@ const AnswerPage = React.createClass({
     const recordClassStoreState = stores.recordClassStore.getState();
     const recordClasses = recordClassStoreState.get('recordClasses');
 
-    const isLoading = answerStoreState.get('isLoading');
-    const error = answerStoreState.get('error');
     const displayInfo = answerStoreState.get('displayInfo');
     const questionDefinition = answerStoreState.get('questionDefinition');
     const filterTerm = answerStoreState.get('filterTerm');
@@ -129,8 +132,6 @@ const AnswerPage = React.createClass({
       questions,
       recordClass,
       recordClasses,
-      isLoading,
-      error,
       displayInfo,
       questionDefinition,
       filterTerm,
@@ -154,7 +155,7 @@ const AnswerPage = React.createClass({
     if (!query.numrecs || !query.offset) {
       // Replace the current undefined URL query params with default values
       Object.assign(query, {
-        numrecs: query.numrecs || 500,
+        numrecs: query.numrecs || 1000,
         offset: query.offset || 0
       });
 
@@ -211,12 +212,10 @@ const AnswerPage = React.createClass({
     }
   },
 
-
   // When the component first mounts, fetch the answer.
   componentDidMount() {
     this.fetchAnswer(this.props);
   },
-
 
   // This is called anytime the component gets new props, just before they are
   // actually passed to the component instance. In our case, this is when any
@@ -247,6 +246,7 @@ const AnswerPage = React.createClass({
     else if (query.filterTerm != nextQuery.filterTerm) {
       this.answerActions.filterAnswer(nextParams.questionName, nextQuery.filterTerm);
     }
+
   },
 
 
@@ -387,16 +387,11 @@ const AnswerPage = React.createClass({
   // `props` or `state` changes. This latter will happen when any stores are
   // changed.
   //
-  // This render method is fairly simple. It will create several local
-  // references to properties of `this.state`. It will then create an H2
-  // element with the question name in it, and then it will render the Answer
-  // component as a child, passing the local variables as props.
+  // TODO - Explain what's happening here in more detail.
   render() {
 
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
     const {
-      isLoading,
-      error,
       answer,
       question,
       questions,
@@ -434,64 +429,49 @@ const AnswerPage = React.createClass({
     // and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator
     //
     // to understand the embedded XML, see: https://facebook.github.io/react/docs/jsx-in-depth.html
-    const components = [];
-
-    if (isLoading) components.push(
-      <Loading/>
-    );
-
-    if (error) components.push(
-      <div>
-        <h3>An Unexpected Error Occurred</h3>
-        <div className="wdkAnswerError">{error}</div>
-      </div>
-    );
-
 
     // FIXME This will be removed when the record service is serving up records
     if (answer && expandedRecord != null) {
       const RecordComponent = this.context.getRecordComponent(answer.getIn(['meta', 'class']), Record)
         || Record;
+      const record = answer.get('records').get(expandedRecord);
 
-      components.push(
-        <RecordComponent
-          record={answer.get('records').get(expandedRecord)}
-          questions={questions}
-          recordClasses={recordClasses}
-          attributes={answer.getIn(['meta', 'attributes'])}
-        />
+      return (
+        <Doc title={`${recordClass.get('displayName')}: ${record.get('id')}`}>
+          <RecordComponent
+            record={record}
+            questions={questions}
+            recordClasses={recordClasses}
+            attributes={answer.getIn(['meta', 'attributes'])}
+          />
+        </Doc>
       );
     }
 
     else if (answer && question && recordClass) {
-      components.push(
-        <div>
-          <h1>{question.get('displayName')}</h1>
+      return (
+        <Doc title={`${question.get('displayName')}`}>
           <Answer
-            format={format}
-            position={position}
-            recordClass={recordClass}
             answer={answer}
-            answerEvents={answerEvents}
+            question={question}
+            recordClass={recordClass}
             displayInfo={displayInfo}
             filterTerm={filterTerm}
             filteredRecords={filteredRecords}
+            format={format}
+            answerEvents={answerEvents}
           />
-        </div>
+        </Doc>
       );
     }
 
-    return (
-      <div>
-        {components}
-      </div>
-    );
+    return <Loading/>;
   }
 
 });
 
 // Export the React Component class we just created.
-export default AnswerPage;
+export default AnswerController;
 
 
 /**

@@ -4,7 +4,7 @@
  * This controller is matched and rendered for __any__ route.
  */
 import React from 'react';
-import Router from 'react-router';
+import { RouteHandler } from 'react-router';
 import Loading from '../components/Loading';
 import createStoreMixin from '../mixins/createStoreMixin';
 
@@ -13,11 +13,10 @@ import createStoreMixin from '../mixins/createStoreMixin';
  * matching child routes. For example, when the answer route is matched,
  * AnswerPage will be rendered as a child of RouteHandler.
  */
-var { RouteHandler } = Router;
 
 var storeMixin = createStoreMixin('appStore');
 
-var App = React.createClass({
+var AppController = React.createClass({
 
   mixins: [ storeMixin ],
 
@@ -48,4 +47,4 @@ var App = React.createClass({
 
 });
 
-export default App;
+export default AppController;
