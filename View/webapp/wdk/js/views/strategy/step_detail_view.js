@@ -17,6 +17,10 @@ wdk.namespace('wdk.views.strategy', function(ns) {
   };
 
   ns.StepDetailView = Backbone.View.extend({
+
+    // Namespace events with `.step`. This makes it possible to disable all
+    // such events, e.g. `$(document).off('.step')`.
+    // See http://api.jquery.com/off/.
     events: {
       'click.step .view_step_link'          : 'showResults',
       'click.step .rename_step_link'        : 'rename',
