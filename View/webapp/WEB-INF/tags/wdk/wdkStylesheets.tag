@@ -9,6 +9,7 @@
               description="Page calling this tag. The list of WDK recognized refer values are: home, question, summary, record"/>
   <jsp:directive.attribute name="debug" required="false" description="Use unminified files"/>
 
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"/>
   <c:choose>
     <c:when test="${debug eq true}">
       <imp:stylesheet rel="stylesheet" type="text/css" href="wdk/css/wdk.libs.css"/>

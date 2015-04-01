@@ -27,7 +27,7 @@ public class RecordService extends WdkService {
     return Response.ok(
         RecordFormatter.getRecordClassesJson(getWdkModel().getAllRecordClassSets(),
             getFlag(expandRecordClasses), getFlag(expandAttributes),
-            getFlag(expandTables), getFlag(expandTableAttributes))
+            getFlag(expandTables), getFlag(expandTableAttributes)).toString()
     ).build();
   }
 

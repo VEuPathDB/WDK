@@ -167,7 +167,7 @@ public class SharedStepsResolver extends BaseCLI {
     ResultSet resultSet = null;
     PreparedStatement psUpdate = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sqlSelect, "wdk-get-duplicate-root-steps", 5000);
+      resultSet = SqlUtils.executeQuery(dataSource, sqlSelect, "wdk-get-duplicate-child-steps", 5000);
       psUpdate = SqlUtils.getPreparedStatement(dataSource, sqlUpdate);
       int previousStep = 0, count = 0;
       while (resultSet.next()) {
@@ -244,7 +244,7 @@ public class SharedStepsResolver extends BaseCLI {
     finally {
       SqlUtils.closeResultSetAndStatement(resultSet);
       SqlUtils.closeStatement(psUpdate);
-      SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
+      //SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
     }
   }
 

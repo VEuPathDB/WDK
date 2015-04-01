@@ -11,6 +11,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.xml.TransformException;
+import org.gusdb.fgputil.xml.XmlTransformer;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -233,8 +235,7 @@ public class XmlQuestion extends WdkModelBase {
 
                 outXmlStream = new ByteArrayOutputStream();
 
-                XmlConverter.convert(inXmlStream, inXslStream, outXmlStream,
-                        name);
+                XmlTransformer.convert(inXmlStream, inXslStream, outXmlStream, name);
 
                 byte[] buffer = outXmlStream.toByteArray();
 
@@ -247,9 +248,7 @@ public class XmlQuestion extends WdkModelBase {
             } else { // no, just parse the xml directly
                 answer = loader.parseDataFile(xmlDataURL);
             }
-        } catch (MalformedURLException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
+        } catch (IOException | TransformException ex) {
             throw new WdkModelException(ex);
         } finally {
             try {

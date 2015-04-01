@@ -189,12 +189,6 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     }
   }
 
-  // returns whether or not user is logged in
-  function isUserLoggedIn() {
-    //return ($('#loginStatus').attr('loggedIn') == "true");
-    return !wdkConfig.wdkUser.IsGuest;
-  }
-
   /**
    * Returns the complete path to the webapp dir
    * and appends the given url
@@ -638,7 +632,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   function load($el) {
     $el = $el || $(document);
 
-    console.log('load', $el);
+    // console.log('load', $el);
 
     resolveAssetsUrls($el);
     wdk.components.wdkAjax.init($el);
@@ -674,7 +668,6 @@ wdk.util.namespace("window.wdk", function(ns, $) {
     chooseAll: chooseAll,
     webappUrl: webappUrl,
     assetsUrl: assetsUrl,
-    isUserLoggedIn: isUserLoggedIn,
     checkFields: checkFields,
     uncheckFields: uncheckFields,
     setUpNavDropDowns: setUpNavDropDowns

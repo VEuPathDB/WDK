@@ -13,6 +13,34 @@
   <packaging>jar</packaging>
 
   <dependencies>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>jstl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.web</groupId>
+      <artifactId>jstl-impl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.struts</groupId>
+      <artifactId>struts-taglib</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>taglibs</groupId>
+      <artifactId>standard</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>taglibs</groupId>
+      <artifactId>random</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>jsptags</groupId>
+      <artifactId>pager-taglib</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>wraptag</groupId>
+      <artifactId>wraptag</artifactId>
+    </dependency>
   </dependencies>
 
 </project>

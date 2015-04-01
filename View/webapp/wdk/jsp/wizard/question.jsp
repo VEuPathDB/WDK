@@ -1,6 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
-<%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
+<%@ taglib prefix="html" uri="http://struts.apache.org/tags-html" %>
+<%@ taglib prefix="bean" uri="http://struts.apache.org/tags-bean" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
@@ -60,7 +60,7 @@
 
 
 
-<html:form styleId="form_question" styleClass="is-${action}" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="wdk.addStepPopup.callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+<html:form styleClass="is-${action}" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="wdk.addStepPopup.callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 
 <html:hidden property="stage" styleId="stage" value="${nextStage}" />
 

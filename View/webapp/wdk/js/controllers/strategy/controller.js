@@ -20,10 +20,10 @@
 wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   "use strict";
 
+  var sidIndex = 0;
   ns.state = null;
   ns.strats = {};
   ns.stateString = '';
-  ns.sidIndex = 0;
 
   // Current strategy and step objects
   var uiState = {
@@ -125,7 +125,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     // We do this so custom Site submit handlers can cancel a form
     // submission just by calling event.preventDefault(), or
     // event.stopPropagation().
-    $(document.body).on('submit', 'form#form_question', wdk.addStepPopup.validateOperations);
+    $(document.body).on('submit', '#query_form form[name=questionForm]', wdk.addStepPopup.validateOperations);
   }
 
   /**
@@ -229,12 +229,17 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   /**
    * Fetch state info from server
    */
-  function fetchStrategies(cb) {
+  function fetchStrategies(cb, options = {}) {
+    var data = {
+      state: ns.stateString,
+      updateResults: Boolean(options.updateResults)
+    };
+
     $.ajax({
       url: "showStrategy.do",
       type: "POST",
       dataType: "json",
-      data:"state=" + ns.stateString,
+      data: data,
       success: function(data) {
         cb(data);
       }
@@ -251,38 +256,69 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
    * @param {Object} data Object retreived from server with state information
    * @param {Boolean} ignoreFilters If `true` filters will not be reloaded.
    *   Otherwise they will be reloaded.
-   * @returns {jQuery.Deffered} Promise
    */
-  function updateStrategies(data, ignoreFilters, skipRedraw) {
-    var deferred = $.Deferred();
+  function updateStrategies(data, ignoreFilters = false, count = 1) {
+    // Increment count if we refetch strategies with updated results
+    var nextUpdateStrategies = _.partialRight(updateStrategies, ignoreFilters,
+                                              count + 1);
+
+    // Fetch strategies with updated results. Used if root step results == -1
+    var updateResults = _.partial(fetchStrategies, nextUpdateStrategies, {
+      updateResults: true
+    });
 
     ns.state = data.state;
     ns.stateString = JSON.stringify(ns.state);
+
+    // If root step size is -1, fetch strategies with updated results and skip
+    // updating the strategy panel.
+    for (var checksum in data.strategies) {
+      if (checksum == 'length') continue;
+      var strategy = data.strategies[checksum];
+      if (strategy.steps[strategy.steps.length].results == -1) {
+        setTimeout(updateResults, 250 * count);
+        break;
+      }
+    }
+
     // if a strategy is removed, update display
     removeClosedStrategies();
     for (var newOrdering in ns.state) {
+
       if (newOrdering == "count") {
         // it appears the span was removed, so this code does nothing.
         $("#mysearch span").text('My Strategies ('+ns.state[newOrdering]+')');
-      } else if (newOrdering != "length") {
-        var strategyId = ns.state[newOrdering].id;
-        if (wdk.strategy.model.isLoaded(strategyId)) {
-          if (wdk.strategy.model.getStrategyFromBackId(ns.state[newOrdering].id).checksum !=
-              ns.state[newOrdering].checksum) {
-            // If the checksums are not the same, reload the model.
-            // This assumes the strategy object in the response (`data`)
-            // matches the current strategy in the global state object.
-            loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
-          }
-        } else {
-          loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+      }
+
+      else if (newOrdering != "length") {
+        // Always reload the strategy objects.
+        var strategy = data.strategies[ns.state[newOrdering].checksum];
+        if (strategy) {
+          loadModel(strategy, newOrdering);
         }
+        // var strategyId = ns.state[newOrdering].id;
+        // if (wdk.strategy.model.isLoaded(strategyId)) {
+        //   var loadedStrategy = wdk.strategy.model.getStrategyFromBackId(strategyId);
+        //   var newStrategy = data.strategies[ns.state[newOrdering].checksum];
+        //   var loadedRootStep = loadedStrategy.JSON.steps[loadedStrategy.JSON.steps.length];
+        //   var newRootStep = newStrategy.steps[newStrategy.steps.length];
+
+        //   if (loadedStrategy.checksum != ns.state[newOrdering].checksum ||
+        //       loadedRootStep.results != newRootStep.results) {
+        //     // If the checksums are not the same, reload the model.
+        //     // This assumes the strategy object in the response (`data`)
+        //     // matches the current strategy in the global state object.
+        //     loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+        //   }
+        // }
+
+        // else {
+        //   loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
+        // }
       }
     }
-    if (!skipRedraw) {
-      showStrategies(data.currentView, ignoreFilters, data.state.length, deferred);
-    }
-    return deferred.promise();
+
+    showStrategies(data.currentView, ignoreFilters, data.state.length);
   }
 
   // Use this to sync server objects with client objects without redrawing
@@ -425,14 +461,19 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       if (view.action == "share" || view.action == "save") {
         var x = $("a#" + view.action + "_" + view.actionStrat);
         x.click();
-      }      
+      }
     }
     if (view.strategy !== undefined || view.step !== undefined) {
       var initStr = wdk.strategy.model.getStrategyFromBackId(view.strategy);
       var initStp = initStr.getStep(view.step, false);
       if (initStr === false || initStp === null) {
         newResults(-1);
-      } else {
+      }
+      else if (initStp.isLoading) {
+        // newResults(-1);
+        wdk.util.showLoading(initStr.frontId);
+      }
+      else {
         var isVenn = (initStp.back_boolean_Id == view.step);
         var pagerOffset = view.pagerOffset;
         if (view.action !== undefined && view.action.match("^basket")) {
@@ -469,14 +510,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       {step:"#00A0A0", top:"#00A0A0", right:"#00A0A0", bottom:"#00A0A0", left:"#00A0A0"},
       {step:"#0000A0", top:"#0000A0", right:"#0000A0", bottom:"#0000A0", left:"#0000A0"}
     ];
-    var sCount = 0;
-    var subs;
-    var j;
-    for (j in strategy.subStratOrder) {
-      sCount++;
-    }
-    for (j=1; j<=sCount; j++) {
-      subs = wdk.strategy.model.getStrategy(strategy.subStratOrder[j]);
+    Object.keys(strategy.subStratOrder).sort().forEach(function(j) {
+      var subs = wdk.strategy.model.getStrategy(strategy.subStratOrder[j]);
       var subStrategyDiv = wdk.strategy.view.displayModel(subs);
       subs.color = parseInt(strategy.getStep(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]).backId.split("_")[1],false).frontId, 10) % colors.length;
       $(subStrategyDiv).addClass("sub_diagram").css({
@@ -488,7 +523,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       if (wdk.strategy.model.getSubStrategies(strategy.subStratOrder[j]).length > 0) {
         displayOpenSubStrategies(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]),div);
       }
-    }
+    });
   }
 
   function showInstructions() {
@@ -521,11 +556,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   The following two functions don't appear to be used, but keeping around in case we need it. dmf
 
   function getInstructionsHtml() {
-    var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='" + wdk.assetsUrl('wdk/images/lookUp2.png') + "' width='45px'/>"; 
+    var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='" + wdk.assetsUrl('wdk/images/lookUp2.png') + "' width='45px'/>";
     if ($("#tab_strategy_new").length > 0) {
       arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='" + wdk.assetsUrl('wdk/images/lookUp.png') + "' width='45px'/>" + arrow_image;
     }
-    
+
     arrow_image += getInstructionsText();
     return arrow_image;
   }
@@ -552,12 +587,12 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var strategy = json;
     var strat = null;
     if (!wdk.strategy.model.isLoaded(strategy.id)) {
-      strat = new wdk.strategy.model.Strategy(ns.sidIndex, strategy.id, true);
-      ns.sidIndex++;
+      strat = new wdk.strategy.model.Strategy(sidIndex, strategy.id, true);
+      sidIndex++;
     } else {
       strat = wdk.strategy.model.getStrategyFromBackId(strategy.id);
       strat.subStratOrder = {};
-    }    
+    }
     if (strategy.importId !== "") {
       strat.isDisplay = true;
       strat.checksum = ns.state[ord].checksum;
@@ -651,7 +686,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
     if (!pagerOffset) {
       data.noskip = 1;
-    } else { 
+    } else {
       data.pager = { offset: pagerOffset };
     }
 
@@ -692,7 +727,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           wdk.resultsPage.resultsToGrid(data, ignoreFilters, $("#strategy_results .Workspace"));
           // update results pane title
           wdk.resultsPage.updateResultLabels($("#strategy_results .Workspace"), strategy, step);
-          
+
           // remember user's action, if user is not logged in,
           // and tries to save, this place holds the previous
           // action the user was doing.
@@ -705,25 +740,23 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           // in this case, select events
           // defer this so the DOM has time to finish initializing
           //
-          // FIXME Figure out how we can avoid deferring the event trigger.
-          // The reason we defer is so that wdk.load() can initialize
-          // any parts of the DOM necessary. In this case, it is calling
-          // the editable() plugin for the strategy name. Custom elements
-          // might help here, but we can't use them with IE8.
-            var $selectedStrategy = $("#Strategies .diagram").has(".selected");
-            var $selectedStep = $("#Strategies .diagram").find(".selected");
+          // Call wdk.load() to avoid a race condition causing some jQuery
+          // plugins to not get initialized until after we expect.
+          wdk.load();
+          var $selectedStrategy = $("#Strategies .diagram").has(".selected");
+          var $selectedStep = $("#Strategies .diagram").find(".selected");
 
-            if ($selectedStrategy.attr("id") !== oldSelectedStrategyId) {
-              $selectedStrategy.trigger("strategyselect", [strategy]);
-              $selectedStep.trigger("stepselect", [step, isBoolean]);
-            } else if ($selectedStep.attr("id") !== oldSelectedStepId) {
-              $selectedStep.trigger("stepselect", [step, isBoolean]);
-            }
+          if ($selectedStrategy.attr("id") !== oldSelectedStrategyId) {
+            $selectedStrategy.trigger("strategyselect", [strategy]);
+            $selectedStep.trigger("stepselect", [step, isBoolean]);
+          } else if ($selectedStep.attr("id") !== oldSelectedStepId) {
+            $selectedStep.trigger("stepselect", [step, isBoolean]);
+          }
 
-            setUIState({
-              strategy: strategy,
-              step: step
-            });
+          setUIState({
+            strategy: strategy,
+            step: step
+          });
         }
 
         wdk.util.removeLoading(f_strategyId);
@@ -775,68 +808,6 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
   }
 
-  // will be replaced by wizard
-  // function AddStepToStrategy(url, proto) {
-  //   var strategy = wdk.strategy.model.getStrategyFromBackId(proto);
-  //   var f_strategyId = strategy.frontId;
-  //   var cs = strategy.checksum;
-  //   if (strategy.subStratOf !== null) {
-  //     cs = wdk.strategy.model.getStrategy(strategy.subStratOf).checksum;
-  //   }
-  //   url = url + "&strategy_checksum="+cs;
-  //   var d = wdk.util.parseInputs();
-  //   $.ajax({
-  //     url: url,
-  //     type: "POST",
-  //     dataType: "json",
-  //     data: d + "&state=" + ns.stateString,
-  //     beforeSend: function(){
-  //       wdk.util.showLoading(f_strategyId);
-  //     },
-  //     success: function(data) {
-  //       if (wdk.strategy.error.ErrorHandler("AddStep", data, strategy, $("div#query_form"))) {
-  //         if ($("div#query_form").css("display") == "none") {
-  //           $("div#query_form").remove();
-  //         }
-  //         updateStrategies(data);
-  //       } else {
-  //         wdk.util.removeLoading(f_strategyId);
-  //       }
-  //     }
-  //   });
-  //   wdk.step.isInsert = "";
-  //   wdk.addStepPopup.closeAll(true);
-  // }
-
-  // function EditStep(url, proto){
-  //   var ss = wdk.strategy.model.getStrategyFromBackId(proto);
-  //   var d = wdk.util.parseInputs();
-  //   var cs = ss.checksum;
-  //   if (ss.subStratOf !== null) {
-  //     cs = wdk.strategy.model.getStrategy(ss.subStratOf).checksum;
-  //   }
-  //   url = url+"&strategy_checksum="+cs;
-  //   $.ajax({
-  //     url: url,
-  //     type: "POST",
-  //     dataType:"json",
-  //     data: d + "&state=" + ns.stateString,
-  //     beforeSend: function(){
-  //       wdk.addStepPopup.closeAll(true);
-  //       wdk.util.showLoading(ss.frontId);
-  //     },
-  //     success: function(data) {
-  //       if (wdk.strategy.error.ErrorHandler("EditStep", data, ss, $("div#query_form"))) {
-  //         $("div#query_form").remove();
-  //         wdk.step.hideDetails();
-  //         updateStrategies(data);
-  //       } else {
-  //         wdk.util.removeLoading(ss.frontId);
-  //       }
-  //     }
-  //   });
-  // }
-
   function DeleteStep(f_strategyId,f_stepId) {
     var strategy = wdk.strategy.model.getStrategy(f_strategyId);
     var step = strategy.getStep(f_stepId, true);
@@ -854,7 +825,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       url = "deleteStep.do?strategy=" + strategy.backId + "&step=" +
           step.back_boolean_Id + "&strategy_checksum=" + cs;
     }
-      
+
     $.ajax({
       url: url,
       type: "post",
@@ -868,7 +839,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           updateStrategies(data);
         } else {
           wdk.util.removeLoading(strategy.frontId);
-        }  
+        }
       }
     });
   }
@@ -884,7 +855,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         step.back_step_Id + "&collapsedName=" + collapsedName +
         "&strategy_checksum=" + cs;
     if (uncollapse) url += "&uncollapse=true";
-    
+
     $.ajax({
       url: url,
       type: "post",
@@ -1024,9 +995,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     if (result === false) return;
     var url = "copyStrategy.do?strategy=" + stratId + "&strategy_checksum=" +
         ss.checksum;
-    $.ajax({  
+    $.ajax({
       url: url,
-      dataType: "json", 
+      dataType: "json",
       data: "state=" + ns.stateString,
       beforeSend: function() {
         if (!fromHist) {
@@ -1128,10 +1099,10 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     if (showAnalysisWarning) {
       $('<div style="font-size: 120%;">' +
           '<h3 style="margin:0;padding:0">Warning</h3>' +
-          '<p><img width="20" alt="filtering icon" src="' + 
-         wdk.assetsUrl('wdk/images/filter-short.png') + '"/>' + 
-        ' Clicking this will change the gene ' + 
-        ' results that were used to generate your analyses.' + 
+          '<p><img width="20" alt="filtering icon" src="' +
+         wdk.assetsUrl('wdk/images/filter-short.png') + '"/>' +
+        ' Clicking this will change the gene ' +
+        ' results that were used to generate your analyses.' +
          ' Analysis results for this and subsequent strategy steps will be lost.' +
           '&nbsp;  <a style="font-size:80%" href="' + wdk.webappUrl('/analysisTools.jsp') + '" target="_blank">(Learn more...)</a></p>' +
         '</div>')

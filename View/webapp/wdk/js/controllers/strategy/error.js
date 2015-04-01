@@ -11,27 +11,31 @@ wdk.util.namespace("window.wdk.strategy.error", function (ns, $) {
   function ErrorHandler(evt, data, strategy, qform, name, fromHist) {
     var type = null;
 
-    if ($("form#form_question table.parameter-errors").length > 0) {
-      $("form#form_question table.parameter-errors").remove();
-    }
+    $("#query_form form[name=questionForm] .paramter-errors").remove();
 
     if (evt == "Results") {
       if (data.substring(0,1) != "{") return true;
 
-      data = eval("(" + data + ")");
+      // Presumabley, we only get here if data is out-of-sync
+      data = JSON.parse(data);
 
-      for (var v in data.state) {
-        if (data.state[v].id == strategy.backId) {
+      // Find the index of the strategy in `data.state` whose step results we are trying to view
+      for (var index in data.state) {
+        // If this is never true, then `index` will be the last strategy in `data.state`
+        if (data.state[index].id == strategy.backId) {
           break;
         }
       }
 
-      wdk.strategy.controller.loadModel(data.strategies[data.state[v].checksum], v);
-      var x = {
-        strategy: undefined,
-        step: undefined
-      };
-      wdk.strategy.controller.showStrategies(x, false, 0);
+      // Update client state with server state
+      wdk.strategy.controller.state = data.state;
+
+      // Reload the strategy model of the step we are trying to view
+      wdk.strategy.controller.loadModel(data.strategies[data.state[index].checksum], index);
+
+      // Finally, render the strategy panel again
+      wdk.strategy.controller.showStrategies(data.currentView, false, 0);
+
       return;
     }
 

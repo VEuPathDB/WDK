@@ -1,13 +1,12 @@
 import React from 'react';
-import Router from 'react-router';
+import { Link } from 'react-router';
 import createStoreMixin from '../mixins/createStoreMixin';
 import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
-var { Link } = Router;
 var storeMixin = createStoreMixin('questionStore');
 var actionsMixin = createActionCreatorsMixin('questionActions');
 
-var QuestionListPage = React.createClass({
+var QuestionListController = React.createClass({
 
   mixins: [ storeMixin, actionsMixin ],
 
@@ -44,4 +43,4 @@ var QuestionListPage = React.createClass({
 
 });
 
-export default QuestionListPage;
+export default QuestionListController;

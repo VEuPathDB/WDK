@@ -27,5 +27,5 @@ export const formatAttributeValue = attribute => {
   //     `Unkonwn type "${attribute.type}" for attribute ${attribute.name}`
   //   );
   // }
-  return attribute.value;
+  return attribute.get('value');
 }
