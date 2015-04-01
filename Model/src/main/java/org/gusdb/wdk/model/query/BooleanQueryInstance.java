@@ -7,9 +7,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 
@@ -52,12 +50,6 @@ public class BooleanQueryInstance extends SqlQueryInstance {
   @Override
   public String getUncachedSql() throws WdkModelException, WdkUserException {
 
-    // needs to apply the view to each operand before boolean
-    // get the use_boolean filter param
-    boolean booleanFlag = isUseBooleanFilter();
-
-    logger.info("Boolean expansion flag: " + booleanFlag);
-
     Map<String, String> InternalValues = getParamInternalValues();
 
     // parse operator
@@ -69,12 +61,12 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     // construct the filter query for the first child
     AnswerParam leftParam = booleanQuery.getLeftOperandParam();
     String leftSubSql = InternalValues.get(leftParam.getName());
-    String leftSql = constructOperandSql(leftSubSql, booleanFlag);
+    String leftSql = constructOperandSql(leftSubSql);
     leftSql = preProcessOperandSql(leftSql, "Left");
 
     AnswerParam rightParam = booleanQuery.getRightOperandParam();
     String rightSubSql = InternalValues.get(rightParam.getName());
-    String rightSql = constructOperandSql(rightSubSql, booleanFlag);
+    String rightSql = constructOperandSql(rightSubSql);
     rightSql = preProcessOperandSql(rightSql, "Right");
     
     String sql;
@@ -100,18 +92,9 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     return sql;
   }
 
-  private String constructOperandSql(String subSql, boolean booleanFlag)
+  private String constructOperandSql(String subSql)
       throws WdkModelException, WdkUserException {
 
-    // apply the filter query if needed
-/* optimistically assume we can lose this relic functionality
-	  AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();
-    if (booleanFlag && filter != null) {
-      // here the assigned weight comes from the boolean query itself,
-      // since the filter is the boolean extension filter.
-      subSql = filter.applyFilter(user, subSql, assignedWeight);
-    }
-*/
     // limit the column output
     StringBuffer sql = new StringBuffer();
 
@@ -124,12 +107,6 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     }
     sql.append(" FROM (").append(subSql).append(") f");
     return sql.toString();
-  }
-
-  public boolean isUseBooleanFilter() {
-    StringParam useBooleanFilter = booleanQuery.getUseBooleanFilter();
-    String strBooleanFlag = stableValues.get(useBooleanFilter.getName());
-    return Boolean.parseBoolean(strBooleanFlag);
   }
 
   private String getUnionSql(String leftSql, String rightSql, String operator) {
