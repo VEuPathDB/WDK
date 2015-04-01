@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.WdkModel;
 
 /**
  * Starting from build-23, we no longer back up user data, and will just delete guest data for each release.
- * 
+ * Starting build 24 we add deletion of deleted strategies/steps and deletion of steps not connected to a strategy
  * @author Jerric
  *
  */
@@ -48,7 +48,7 @@ public class GuestRemover extends BaseCLI {
   }
 
   public static int deleteByBatch(DataSource dataSource, String table, String condition) throws SQLException {
-    LOG.info("Deleting from " + table + "...");
+    LOG.info("\n\nDeleting from table: " + table + " with condition: " + condition);
     PreparedStatement psDelete = null;
     try {
       String sql = "DELETE FROM " + table + " WHERE " + condition + " AND rownum <= " + PAGE_SIZE;
@@ -147,16 +147,16 @@ public class GuestRemover extends BaseCLI {
         userSchema + "datasets WHERE " + userClause + ")");
     deleteByBatch(dataSource, userSchema + "datasets", userClause);
     deleteByBatch(dataSource, userSchema + "preferences", userClause);
-    deleteByBatch(dataSource, userSchema + "user_baskets", userClause);
+    deleteByBatch(dataSource, userSchema + "user_baskets", userClause); // we dont know why we get some
     deleteByBatch(dataSource, userSchema + "favorites", userClause);
     deleteByBatch(dataSource, userSchema + "strategies", userClause);
     deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 ");
     deleteByBatch(dataSource, userSchema + "step_analysis", " step_id IN (SELECT step_id FROM " + userSchema +
         "steps WHERE " + userClause + ")");
     deleteByBatch(dataSource, userSchema + "steps", userClause +
-        " AND step_id NOT IN (SELECT root_step_id FROM " + userSchema + "strategies)");
-    deleteByBatch(dataSource, userSchema + "user_roles", userClause);
+									" AND step_id NOT IN (SELECT root_step_id FROM " + userSchema + "strategies)");// we need this so teh script does not break on broken strategies
 
+    deleteByBatch(dataSource, userSchema + "user_roles", userClause);
     deleteByBatch(dataSource, userSchema + "users", userClause + " AND user_id NOT IN (SELECT user_id FROM " +
         userSchema + "steps)");
     // jan 12 2015: the second condition makes the delete very slow (40sec for 10000 rows)
@@ -167,7 +167,6 @@ public class GuestRemover extends BaseCLI {
     // also delete guest data from GBrowse
     removeGBrowseGuests(dataSource);
 
-    removeDeletedStrategies(dataSource, userSchema);
     // need to delete analysis and step repeatedly, since every deletion will open up more to be deleted.
     boolean remain = true;
     while (remain) {
@@ -185,7 +184,7 @@ public class GuestRemover extends BaseCLI {
   }
 
   private void removeGBrowseGuests(DataSource dataSource) throws SQLException {
-    LOG.info("Deleting from gbrowseusers.sessions...");
+    LOG.info("\n\nDeleting from gbrowseusers.sessions...");
     PreparedStatement psDelete = null;
     try {
       psDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE FROM gbrowseusers.sessions WHERE id IN ("
@@ -207,13 +206,8 @@ public class GuestRemover extends BaseCLI {
     }
   }
 
-  private int removeDeletedStrategies(DataSource dataSource, String userSchema) throws SQLException {
-    int sum = GuestRemover.deleteByBatch(dataSource, userSchema + "strategies", "is_deleted = 1");
-    LOG.debug(sum + " deleted strategies removed.");
-    return sum;
-  }
-
   private int removeUnusedStepAnalysis(DataSource dataSource, String userSchema) throws SQLException {
+		LOG.info("\n\nRemoving unused step_analysis...");
     int count = 1, sum = 0;
     String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
     while (count != 0) {
@@ -229,6 +223,7 @@ public class GuestRemover extends BaseCLI {
   }
 
   private int removeUnusedSteps(DataSource dataSource, String userSchema) throws SQLException {
+		LOG.info("\n\nRemoving unused steps...");
     int count = 1, sum = 0;
     String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
     while (count != 0) {
