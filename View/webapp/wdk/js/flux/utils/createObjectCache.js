@@ -19,15 +19,16 @@
  * @param {...any} deps dependecies to inject into factories
  */
 export default function createObjectCache(factories, ...deps) {
-  // Create an object without a prototype to prevent false positives (e.g.,
-  // `toString`). See http://www.2ality.com/2013/10/dict-pattern.html
-  var cache = Object.create(null);
+  var cache = new Map();
 
   return {
     get(token) {
-      return (token in cache)
-        ? cache[token]
-        : cache[token] = factories[token](...deps);
+      if (!cache.has(token)) {
+        var factory = factories[token];
+        var instance = factory(...deps);
+        cache.set(token, instance);
+      }
+      return cache.get(token);
     }
   };
 }

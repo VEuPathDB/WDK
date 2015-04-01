@@ -1,10 +1,15 @@
 /* global _ */
 import React from 'react';
+import FixedDataTable from 'fixed-data-table';
+import Loading from '../flux/components/Loading';
+import Dialog from '../flux/components/Dialog';
+import Table from '../flux/components/Table';
 
 wdk.namespace('wdk.components.attributeFilter', function(ns) {
   'use strict';
 
   var { PropTypes } = React;
+  var { Column } = FixedDataTable;
   var { Fields } = wdk.models.filter;
 
 
@@ -146,76 +151,199 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
   var FilteredData = React.createClass({
 
     propTypes: {
+      tabWidth: PropTypes.number,
       filteredData: PropTypes.array,
       fields: PropTypes.array,
+      selectedFields: PropTypes.array,
+      ignored: PropTypes.array,
       metadata: PropTypes.object,
-      displayName: PropTypes.string
+      displayName: PropTypes.string,
+      onFieldsChange: PropTypes.func,
+      onIgnored: PropTypes.func,
+      onSort: PropTypes.func,
+      sortTerm: PropTypes.string,
+      sortDirection: PropTypes.string
     },
 
     getInitialState: function() {
       return {
-        page: 1,
-        pageSize: 20
+        dialogIsOpen: false,
+        pendingSelectedFields: this.props.selectedFields
       };
     },
 
-    componentDidMount: function() {
-      this.$buttons = $(this.refs.buttons.getDOMNode());
-      this.$buttons.buttonset();
-    },
-
-    componentDidUpdate: function() {
-      this.$buttons.buttonset('refresh');
-    },
-
-    changePage: function(e) {
-      e.preventDefault();
+    componentWillReceiveProps: function(nextProps) {
       this.setState({
-        page: Number(e.currentTarget.value)
+        pendingSelectedFields: nextProps.selectedFields
       });
     },
 
+    openDialog: function(event) {
+      event.preventDefault();
+      this.setState({
+        dialogIsOpen: true
+      });
+    },
+
+    handleDialogClose: function() {
+      this.setState({
+        dialogIsOpen: false,
+        pendingSelectedFields: this.props.selectedFields
+      });
+    },
+
+    handleFieldSelect: function() {
+      var form = this.refs.fieldSelector.getDOMNode();
+      var fields = this.props.fields;
+      var pendingSelectedFields = [].slice.call(form.field)
+        .filter(field => field.checked)
+        .map(field => fields.filter(f => f.term == field.value)[0]);
+      this.setState({
+        pendingSelectedFields: pendingSelectedFields
+      });
+    },
+
+    handleFieldSubmit: function(event) {
+      event.preventDefault();
+      this.props.onFieldsChange(this.state.pendingSelectedFields);
+      this.setState({
+        dialogIsOpen: false
+      });
+    },
+
+    handleSort: function(term) {
+      this.props.onSort(term);
+    },
+
+    handleHideColumn: function(term) {
+      var nextFields = this.props.selectedFields.filter(field => field.term != term)
+      this.props.onFieldsChange(nextFields);
+    },
+
+    isIgnored: function(field) {
+      return this.props.ignored.indexOf(field.term) > -1;
+    },
+
+    getRow: function(index) {
+      return this.props.filteredData[index];
+      // return _.cloneDeep(this.props.filteredData[index]);
+    },
+
+    getRowClassName: function(index) {
+      return this.props.filteredData[index].isIgnored
+        ? 'wdk-AttributeFilter-ItemIgnored'
+        : 'wdk-AttributeFilter-Item';
+    },
+
+    getCellData: function(cellDataKey, rowData) {
+      return cellDataKey == '__primary_key__' ? rowData :
+        this.props.metadata[cellDataKey][rowData.term].join(', ');
+    },
+
+    renderPk: function(cellData) {
+      var handleIgnored = event => {
+        this.props.onIgnored(cellData, !event.target.checked);
+      };
+      return (
+        <label>
+          <input
+            type="checkbox"
+            checked={!cellData.isIgnored}
+            onChange={handleIgnored}
+          />
+          {' ' + cellData.display + ' '}
+        </label>
+      );
+    },
+
     render: function() {
-      var { fields, metadata, filteredData, displayName } = this.props;
-      var { page, pageSize } = this.state;
-      var numPages = Math.ceil(filteredData.length / pageSize);
-      var first = (page - 1) * pageSize;
-      var last = Math.min((page) * pageSize, filteredData.length);
+      var { fields, selectedFields, metadata, filteredData, displayName, tabWidth, totalSize } = this.props;
+      var { dialogIsOpen, pendingSelectedFields } = this.state;
+
+      if (!tabWidth) return null;
 
       return (
-        <div className="results">
-          <button data-action="showColumns">Update Columns</button>
-          <div>Showing {first + 1}-{last} of {filteredData.length} {displayName}</div>
-          <div ref="buttons">
-            <button disabled={page === 1} value={1} onClick={this.changePage}>First</button>
-            <button disabled={page === 1} value={page-1} onClick={this.changePage}>Prev</button>
-            <button disabled={page === numPages} value={page+1} onClick={this.changePage}>Next</button>
-            <button disabled={page === numPages} value={numPages} onClick={this.changePage}>Last</button>
+        <div className="wdk-AttributeFilter-FilteredData">
+
+          <div className="ui-helper-clearfix" style={{padding: 10}}>
+            <div style={{float: 'left'}}>Showing {filteredData.length} of {totalSize} {displayName}</div>
+            <div style={{float: 'right'}}>
+              <button onClick={this.openDialog}>Add Columns</button>
+            </div>
           </div>
-          <div>Page: <select value={page} onChange={this.changePage}>
-                       {_.range(1, numPages + 1).map(p => <option value={p}>{p}</option>)}
-                     </select>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                {_.map(fields, field => <th key={field.term}>{field.display}</th> )}
-              </tr>
-            </thead>
-            <tbody>
-              {_.map(filteredData.slice(first, last), item => {
-                return (
-                  <tr key={item.term}>
-                    <td>{item.display}</td>
-                    {_.map(fields, field => {
-                      return (<td key={field.term + '-' + item.term}>{metadata[field.term][item.term]}</td>);
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+
+          <Dialog
+            modal={true}
+            open={dialogIsOpen}
+            onClose={this.handleDialogClose}
+            title="Select Columns"
+          >
+            <div>
+              <form ref="fieldSelector" onSubmit={this.handleFieldSubmit}>
+                <div style={{textAlign: 'center', padding: 10}}>
+                  <button>Update Columns</button>
+                </div>
+                <ul style={{listStyle: 'none'}}>
+                  {fields.map(field => {
+                    return (
+                      <li>
+                        <label>
+                          <input
+                            type="checkbox"
+                            name="field"
+                            checked={pendingSelectedFields.indexOf(field) > -1}
+                            value={field.term}
+                            onChange={this.handleFieldSelect}
+                          />
+                          {' ' + field.display + ' '}
+                        </label>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div style={{textAlign: 'center', padding: 10}}>
+                  <button>Update Columns</button>
+                </div>
+              </form>
+            </div>
+          </Dialog>
+
+          <Table
+            width={tabWidth - 10}
+            maxHeight={500}
+            rowsCount={filteredData.length}
+            rowHeight={25}
+            rowGetter={this.getRow}
+            rowClassNameGetter={this.getRowClassName}
+            headerHeight={30}
+            onSort={this.handleSort}
+            onHideColumn={this.handleHideColumn}
+            sortDataKey={this.props.sortTerm}
+            sortDirection={this.props.sortDirection}
+          >
+          <Column
+            label="Name"
+            dataKey="__primary_key__"
+            fixed={true}
+            width={200}
+            cellDataGetter={this.getCellData}
+            cellRenderer={this.renderPk}
+            isRemovable={false}
+            isSortable={true}
+          />
+          {selectedFields.map(field => {
+            return (
+              <Column
+                label={field.display}
+                dataKey={field.term}
+                width={200}
+                cellDataGetter={this.getCellData}
+                isRemovable={true}
+                isSortable={true}
+              />
+            );
+          })}
+          </Table>
         </div>
       );
     }
@@ -238,15 +366,26 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     getInitialState: function() {
-      return this.props.store.getState();
+      return Object.assign({
+        sortTerm: '__primary_key__',
+        sortDirection: 'ASC',
+        collapsed: false,
+      }, this.props.store.getState());
     },
 
     componentDidMount: function() {
+      var $node = $(this.getDOMNode());
       this.props.store.on('change', function() {
         var newState = this.props.store.getState();
         this.setState(newState);
       }, this);
-      $(this.getDOMNode()).find('.filter-param-tabs').tabs();
+      $node.find('.filter-param-tabs').tabs({
+        activate: function(event, ui) {
+          this.setState({
+            tabWidth: ui.newPanel.width()
+          });
+        }.bind(this)
+      });
     },
 
     handleSelectFieldClick: function(field, event) {
@@ -273,29 +412,75 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       });
     },
 
+    handleFieldsChange: function(fields) {
+      this.props.actions.updateColumns(fields);
+    },
+
+    handleIgnored: function(datum, ignored) {
+      if (ignored) this.props.actions.addIgnored(datum);
+      else this.props.actions.removeIgnored(datum);
+    },
+
+    handleSort: function(fieldTerm) {
+      var { sortTerm, sortDirection } = this.state;
+
+      var direction = fieldTerm == sortTerm && sortDirection == 'ASC'
+        ? 'DESC' : 'ASC';
+
+      this.setState({
+        sortTerm: fieldTerm,
+        sortDirection: direction
+      });
+    },
+
     render: function() {
-      var { data, filteredData, fields, filters, selectedField, distributionMap } = this.state;
+      var {
+        data,
+        filteredData,
+        fields,
+        columns,
+        ignored,
+        filters,
+        invalidFilters,
+        selectedField,
+        distributionMap,
+        isLoading,
+        tabWidth,
+        sortTerm,
+        sortDirection
+      } = this.state;
+
       var displayName = this.props.displayName;
       var selectedFilter = _.find(filters, filter => {
         return filter.field.term === _.result(selectedField, 'term');
       });
 
       var actions = this.props.actions;
+      var metadata = this.props.store.metadata;
+
+      var filteredNotIgnored = filteredData.filter(datum => !datum.isIgnored);
+
+      var sortedFilteredData = _.sortBy(filteredData, function(datum) {
+        var term = datum.term;
+        return sortTerm == '__primary_key__' ? term : metadata[sortTerm][term];
+      });
+
+      if (sortDirection == 'DESC') sortedFilteredData.reverse();
 
       return (
         <div>
+          {isLoading ? <Loading className="wdk-AttributeFilter-Loading" radius={4}/> : null}
           <FilterList
             onFilterSelect={actions.selectField}
             onFilterRemove={actions.removeFilter}
             filters={filters}
-            filteredDataCount={filteredData.length}
+            filteredDataCount={filteredNotIgnored.length}
             dataCount={data.length}
             selectedField={selectedField}/>
 
+          <InvalidFilterList filters={invalidFilters}/>
+
           <div className="filter-view">
-            <div className="collapse-wrapper" style={{ display: this.state.collapsed ? 'none' : 'block' }}>
-              <a href="#" onClick={this.handleCollapseClick}>Collapse</a>
-            </div>
             <button onClick={this.handleExpandClick}
               style={{
                 display: !this.state.collapsed ? 'none' : 'block'
@@ -304,10 +489,18 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             {/* Tabs */}
 
             <div className="filter-param-tabs" style={{ display: this.state.collapsed ? 'none' : 'block' }}>
-              <ul>
+              <ul className="wdk-AttributeFilter-TabNav">
                 <li><a href="#filters">Select {displayName}</a></li>
-                <li><a href="#data">View selection ({filteredData.length})</a></li>
+                <li><a href="#data">View selected {displayName} ({filteredData.length})</a></li>
+                <li>
+                  <span
+                    className="wdk-AttributeFilter-Collapse link"
+                    title="Hide selection tool"
+                    onClick={this.handleCollapseClick}
+                  >Collapse</span>
+                </li>
               </ul>
+
 
               {/* Main selection UI */}
               <div id="filters">
@@ -331,13 +524,43 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
               <div id="data">
                 <FilteredData
+                  tabWidth={tabWidth}
                   displayName={displayName}
-                  filteredData={filteredData}
-                  fields={_.filter(fields, field => _.has(this.props.store.metadata, field.term))}
-                  metadata={this.props.store.metadata}/>
+                  onFieldsChange={this.handleFieldsChange}
+                  onIgnored={this.handleIgnored}
+                  onSort={this.handleSort}
+                  sortTerm={sortTerm}
+                  sortDirection={sortDirection}
+                  filteredData={sortedFilteredData}
+                  totalSize={data.length}
+                  selectedFields={columns}
+                  fields={fields}
+                  ignored={ignored}
+                  metadata={metadata}/>
               </div>
             </div>
           </div>
+        </div>
+      );
+    }
+  });
+
+  var InvalidFilterList = React.createClass({
+    render: function() {
+      var { filters } = this.props;
+
+      if (_.isEmpty(filters)) return null;
+
+      return (
+        <div className="invalid-values">
+          <p>Some of the options you previously selected are no longer available:</p>
+          <ul>
+            {_.map(filters, function(filter) {
+              return (
+                <li className="invalid">{filter.display}</li>
+              );
+            }, this)}
+          </ul>
         </div>
       );
     }
@@ -759,7 +982,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     }, 200),
 
     render: function() {
-      var { field, distribution } = this.props;
+      var { field, distribution, filter } = this.props;
       var dist = _.filter(distribution, item => _.isNumber(item.value));
       var size = _.reduce(dist, (acc, item) => acc + item.count, 0);
       var sum = _.reduce(dist, (acc, item) => acc + (item.value * item.count), 0);
@@ -767,10 +990,10 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       var distMin = _.min(values);
       var distMax = _.max(values);
       var distAvg = (sum / size).toFixed(2);
-      var { min, max } = this.props.filter ? this.props.filter.values : {};
-      var selectionTotal = this.props.filter
-        ? " (" + this.props.filter.selection.length + " selected) "
-        : '';
+      var { min, max } = filter ? filter.values : {};
+      var selectionTotal = filter && filter.selection
+        ? " (" + filter.selection.length + " selected) "
+        : null;
 
       return (
         <div className="range-filter">

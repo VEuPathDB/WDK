@@ -1,40 +1,27 @@
 import React from 'react';
-import Router from 'react-router';
-import App from './controllers/App';
-import IndexPage from './controllers/IndexPage';
-import NotFoundPage from './controllers/NotFoundPage';
-import AnswerPage from './controllers/AnswerPage';
-import QuestionListPage from './controllers/QuestionListPage';
-
-var { Route, DefaultRoute, NotFoundRoute } = Router;
-
-// export default Router.create({ routes });
-
-/**
- * This is a transitional routes definition. Notice that there is not top-level
- * route, and that this is an array.
- *
- * Example usage:
- *
- *     Router.run(routes, '/project', function(Handler) {
- *       React.render(<Handler/>, document.getElementById("app"));
- *     });
- *
- */
-export var routes = [
-  <Route name="answer" path="answer/:questionName" handler={AnswerPage}/>,
-  <Route name="question-list" handler={QuestionListPage}/>,
-  <DefaultRoute handler={IndexPage}/>,
-  <NotFoundRoute handler={NotFoundPage}/>,
-];
-
+import {
+  Route,
+  DefaultRoute,
+  NotFoundRoute
+} from 'react-router';
+import AppController from './components/AppController';
+import IndexController from './components/IndexController';
+import NotFoundController from './components/NotFoundController';
+import AnswerController from './components/AnswerController';
+import QuestionListController from './components/QuestionListController';
 
 /**
- * Example of a "wholistic" routes definition. App defines the basic page
- * layout.
+ * Get routes based on `baseUrl`.
+ *
+ * @param {string} baseUrl The baseUrl used to match paths below
  */
-export var appRoutes = (
-  <Route name="app" path="/" handler={App}>
-    {routes}
-  </Route>
-);
+export function getRoutes(baseUrl = '/') {
+  return (
+    <Route name="app" path={baseUrl} handler={AppController}>
+      <Route name="answer" path="answer/:questionName" handler={AnswerController}/>,
+      <Route name="question-list" handler={QuestionListController}/>,
+      <DefaultRoute handler={IndexController}/>,
+      <NotFoundRoute handler={NotFoundController}/>,
+    </Route>
+  );
+}

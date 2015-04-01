@@ -11,8 +11,10 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.events.StepCopiedEvent;
+import org.gusdb.wdk.events.StepsModifiedEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -24,6 +26,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -206,7 +209,10 @@ public class Step {
   }
 
   public int getResultSize() throws WdkModelException {
-    if (!isValid()) {
+    // Only recompute the answer value size if the step hasn't been validated
+    // yet, or if the estimateSize is unknown, indicating the underlying query
+    // has not yet been run.
+    if (!isValid() || estimateSize == StepFactory.UNKNOWN_SIZE) {
       try {
         estimateSize = getAnswerValue().getResultSize();
       }
@@ -464,13 +470,23 @@ public class Step {
     this.booleanExpression = booleanExpression;
   }
 
+  // saves attributes of the step that do NOT impact results or parent steps
   public void update(boolean updateTime) throws WdkModelException {
     stepFactory.updateStep(getUser(), this, updateTime);
   }
 
+  // saves param values AND filter values (AND step name and maybe other things)
   public void saveParamFilters() throws WdkModelException {
+
     stepFactory.saveStepParamFilters(this);
     stepFactory.resetStepCounts(this);
+
+    // get list of steps dependent on this one; all their results are now invalid
+    List<Integer> stepIds = stepFactory.getStepAndParents(getStepId());
+    // invalidate step analysis tabs for this step and wait for completion
+    Events.triggerAndWait(new StepsModifiedEvent(stepIds),
+        new WdkModelException("Unable to invalidate step IDs: " +
+            FormatUtil.arrayToString(stepIds.toArray())));
   }
 
   public String getDescription() {
@@ -520,16 +536,17 @@ public class Step {
 
   /**
    * Checks validity of this step and all the child steps it depends on and returns result. Value is memoized
-   * for efficiency. This call checks against any preset valid value, and checks that param names are correct,
-   * but does not check param values due to execution cost. Param values must be checked elsewhere; if they
-   * are found invalid, invalidateStep() should be called, which updates the DB.
+   * for efficiency. This call checks against any preset valid field value (set from the DB or during a previous
+   * call to isValid()), and checks that param names are correct, but does not check param values due to
+   * execution cost. Param values must be checked elsewhere; if they are found invalid, invalidateStep()
+   * should be called, which updates the DB.
    * 
    * @return true if this step is valid (to the best of our knowledge), else false
    */
   public boolean isValid() throws WdkModelException {
     if (!valid || validityChecked) {
-      // check 1: nothing but revise can turn step from invalid -> valid
-      // check 2: if value is memorized, do not check steps and params again
+      // check 1: return; later, revise can turn step from invalid -> valid
+      // check 2: if value is memoized, do not check steps and params again
       return valid;
     }
 
@@ -906,6 +923,7 @@ public class Step {
   public JSONObject getJSONContent(int strategyId, boolean forChecksum) throws WdkModelException {
 
     JSONObject jsStep = new JSONObject();
+    JSONArray jsParams = new JSONArray();
 
     try {
       jsStep.put("id", this.stepId);
@@ -916,20 +934,29 @@ public class Step {
       jsStep.put("collapsed", this.isCollapsible());
       jsStep.put("collapsedName", this.getCollapsedName());
       jsStep.put("deleted", deleted);
+      
+      for (String paramName: paramValues.keySet()) {
+    	JSONObject param = new JSONObject();
+    	param.put("name", paramName);
+    	param.put("value", paramValues.get(paramName));
+    	jsParams.put(param);
+      }
+      jsStep.put("params", jsParams);
 
       Step childStep = getChildStep();
       if (childStep != null) {
-        jsStep.put("child", childStep.getJSONContent(strategyId));
+        jsStep.put("child", childStep.getJSONContent(strategyId, forChecksum));
       }
 
       Step prevStep = getPreviousStep();
       if (prevStep != null) {
-        jsStep.put("previous", prevStep.getJSONContent(strategyId));
+        jsStep.put("previous", prevStep.getJSONContent(strategyId, forChecksum));
       }
 
       if (!forChecksum) {
         jsStep.put("size", this.estimateSize);
       }
+        
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + this.stepId;
         Integer order = getUser().getStrategyOrder(subStratId);

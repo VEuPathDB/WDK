@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.user;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -49,6 +50,7 @@ class ActiveStrategyFactory {
         for (ActiveStrategy strategy : root.children.values()) {
             ids[i++] = strategy.strategyId;
         }
+        logger.debug("====== ids =====" + Arrays.toString(ids));
         return ids;
     }
 
@@ -193,6 +195,7 @@ class ActiveStrategyFactory {
             ActiveStrategy newChild = new ActiveStrategy(newKey);
             newChild.parent = newStrategy;
             replaceStrategy(strategy, oldChild, newChild, stepMap);
+            newStrategy.children.remove(oldKey);
             newStrategy.children.put(newKey, newChild);
         }
         // may also need to update the view

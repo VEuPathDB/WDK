@@ -28,6 +28,8 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.platform.Oracle;
 import org.gusdb.fgputil.db.platform.PostgreSQL;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.MDCUtil;
@@ -146,7 +148,7 @@ public class StepFactory {
     this.wdkModel = wdkModel;
     initialize();
   }
-  
+
   protected void initialize() {
     userDb = wdkModel.getUserDb();
     dataSource = userDb.getDataSource();
@@ -791,7 +793,7 @@ public class StepFactory {
     PreparedStatement psStep = null;
     String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_QUESTION_NAME + " = ?, " +
         COLUMN_ANSWER_FILTER + " = ?, " + COLUMN_LEFT_CHILD_ID + " = ?, " + COLUMN_RIGHT_CHILD_ID + " = ?, " +
-        COLUMN_DISPLAY_PARAMS + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
+        COLUMN_ASSIGNED_WEIGHT + " = ?, " + COLUMN_DISPLAY_PARAMS + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
 
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
     JSONObject jsContent = getParamContent(step.getParamValues());
@@ -810,8 +812,9 @@ public class StepFactory {
         psStep.setInt(4, childId);
       else
         psStep.setObject(4, null);
-      platform.setClobData(psStep, 5, jsContent.toString(), false);
-      psStep.setInt(6, step.getStepId());
+      psStep.setInt(5, step.getAssignedWeight());
+      platform.setClobData(psStep, 6, jsContent.toString(), false);
+      psStep.setInt(7, step.getStepId());
       int result = psStep.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-save-step-params", start);
       if (result == 0)
@@ -1190,8 +1193,8 @@ public class StepFactory {
   }
 
   // This function only updates the strategies table
-  void updateStrategy(User user, Strategy strategy, boolean overwrite) throws 
-      WdkModelException, WdkUserException {
+  void updateStrategy(User user, Strategy strategy, boolean overwrite) throws WdkModelException,
+      WdkUserException {
     logger.debug("Updating strategy internal#=" + strategy.getStrategyId() + ", overwrite=" + overwrite);
 
     // update strategy name, saved, step_id
@@ -1205,9 +1208,9 @@ public class StepFactory {
       if (overwrite) {
         String sql = "SELECT " + COLUMN_STRATEGY_ID + ", " + COLUMN_SIGNATURE + " FROM " + userSchema +
             TABLE_STRATEGY + " WHERE " + userIdColumn + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND " +
-            COLUMN_NAME + " = ? AND " + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? "; 
+            COLUMN_NAME + " = ? AND " + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? ";
         // AND " + COLUMN_DISPLAY_ID + " <> ?";
-        
+
         // If we're overwriting, need to look up saved strategy id by
         // name (only if the saved strategy is not the one we're
         // updating, i.e. the saved strategy id != this strategy id)
@@ -1760,5 +1763,18 @@ public class StepFactory {
       throw new WdkModelException("Unsupported platform type: " + platform.getClass().getName());
     }
     return sql;
+  }
+
+  public List<Integer> getStepAndParents(final int stepId) throws WdkModelException {
+    final List<Integer> ids = new ArrayList<>();
+    new SQLRunner(userDb.getDataSource(), selectStepAndParents(stepId))
+        .executeQuery(new ResultSetHandler() {
+          @Override public void handleResult(ResultSet rs) throws SQLException {
+            while (rs.next()) {
+              ids.add(rs.getInt(1));
+            }
+          }
+        });
+    return ids;
   }
 }

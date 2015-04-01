@@ -22,6 +22,10 @@ export default createStore ({
         this.handleLoadSuccess(action, emitChange);
         break;
 
+      case ActionType.RECORD_CLASSES_LOAD_SUCCESS:
+        this.handleListLoadSuccess(action, emitChange);
+        break;
+
       case ActionType.RECORD_CLASS_LOAD_ERROR:
         this.handleLoadError(action, emitChange);
         break;
@@ -38,9 +42,14 @@ export default createStore ({
   },
 
   handleLoadSuccess(action, emitChange) {
-    const { recordClass } = action;
-    const recordClasses = this.state.get('recordClasses');
-    this.state = this.state.set('recordClasses', recordClasses.push(recordClass));
+    this.state = this.state.mergeIn(['recordClasses'], [action.recordClass]);
+    emitChange();
+  },
+
+  handleListLoadSuccess(action, emitChange) {
+    this.state = this.state.merge({
+      recordClasses: action.recordClasses
+    });
     emitChange();
   },
 
@@ -53,6 +62,6 @@ export default createStore ({
   },
 
   getState() {
-    return this.state.toJS();
+    return this.state;
   }
 });

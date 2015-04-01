@@ -3,6 +3,10 @@
   margin-bottom: 1em;
   text-transform: capitalize;
 }
+.filter-param p {
+  font-style: initial;
+  margin: 4px;
+}
 .filter-param .muted {
   color: #9f9f9f;
 }
@@ -431,6 +435,28 @@
 }
 .filter-results.field-list h4 {
   margin-left: 0;
+}
+.wdk-AttributeFilter-Collapse {
+  padding-left: 1em;
+  cursor: pointer;
+}
+/*
+.wdk-AttributeFilter-TabNav {
+  display: inline-block;
+  position: relative;
+  top: 2px;
+}
+*/
+.wdk-AttributeFilter-Loading {
+  position: absolute;
+  top: 65px;
+  left: 30px;
+}
+.wdk-AttributeFilter-FilteredData {
+  padding: 5px;
+}
+.wdk-AttributeFilter-ItemIgnored {
+  color: #9f9f9f;
 }
 /*
 .filter-param .dataTables_wrapper {

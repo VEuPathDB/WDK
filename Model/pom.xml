@@ -17,16 +17,17 @@
     <dependency>
       <groupId>org.gusdb</groupId>
       <artifactId>wsf-client</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>javax.servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
       
     <dependency>
       <groupId>org.gusdb</groupId>
       <artifactId>fgputil-util</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>xalan</groupId>
-      <artifactId>serializer</artifactId>
     </dependency>
 
     <dependency>
@@ -43,7 +44,7 @@
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
     </dependency>
-<!--
+
     <dependency>
       <groupId>com.thaiopensource</groupId>
       <artifactId>jing</artifactId>
@@ -60,16 +61,6 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-dbcp</groupId>
-      <artifactId>commons-dbcp</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>net.sf.saxon</groupId>
-      <artifactId>saxon-dom</artifactId>
-    </dependency>
--->
-    <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
       <scope>provided</scope>
@@ -79,27 +70,13 @@
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
     </dependency>
-      
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-    </dependency>
-<!--
-    <dependency>
-      <groupId>org.hsqldb</groupId>
-      <artifactId>hsqldb</artifactId>
+      <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.mybatis</groupId>
-      <artifactId>mybatis</artifactId>
-    </dependency>
--->
   </dependencies>
 
-  <!-- Final name should not matter except to eclipse
-  <build>
-    <finalName>WdkModel</finalName>
-  </build>
-  -->
 </project>

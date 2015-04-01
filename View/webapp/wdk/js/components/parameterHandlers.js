@@ -1,5 +1,7 @@
+/* global _ */
 wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
-  "use strict";
+
+  var XHR_DATA_KEY = 'dependent-xhr';
 
   var displayTermMap;
   var termDisplayMap;
@@ -18,12 +20,33 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
+  //
+  // Find all depended parameters and register a change handler for each to
+  // update any parameters that depend upon its value.
+  //
+  //==============================================================================
   function initDependentParamHandlers(element) {
     // jshint loopfunc:true
 
-    // map of depended param => dependent params
-    var dependentParams = Object.create(null);
+    // Map depended param names to dependent params names:
+    //
+    //     { string : Array<string> }
+    //
+    var dependentParamsMap = Object.create(null);
 
+    // Map dependend param names to value:
+    //
+    //     { string: string }
+    //
+    var dependedValuesMap = Object.create(null);
+
+    // Populate dependentParamsMap map by iterating over each dependent param, and
+    // for each dependent param, find all params it depends on.
+    //
+    // Foreach dependentParam P:
+    //   Foreach param D depending on P:
+    //     Append P to Map[D]
+    //
     element.find('div.dependentParam').each(function(index, node) {
       var $dependentParam = $(node);
       var name = $dependentParam.attr('name');
@@ -35,35 +58,39 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var dependedNames = $dependentParam.attr('dependson').split(",");
       for (var i=0; i < dependedNames.length; i++) {
         var dependedName = dependedNames[i];
-        var dependentList = dependentParams[dependedName] ? dependentParams[dependedName] : [];
+        var dependentList = dependentParamsMap[dependedName] ? dependentParamsMap[dependedName] : [];
         dependentList.push(name);
-        dependentParams[dependedName] = dependentList;
+        dependentParamsMap[dependedName] = dependentList;
       }
 
       $dependentParam.find('input, select').prop('disabled',false);
     });
 
-    // register change event to dependedParam only once
-    for (var dependedName in dependentParams) {
+    // Register change and keyup event handlers to dependent parameter.
+    Object.keys(dependentParamsMap).map(function(dependedName) {
       var dependedParam = $("div.param[name='" + dependedName + "']");
-      dependedParam.change(function(e) {
-        e.stopPropagation();
-        onDependedParamChange(dependedParam, element, dependentParams);
-      });
 
-      // also register keyup event for text input
-      dependedParam.keyup(_.debounce(function(e) {
-        e.stopPropagation();
-        onDependedParamChange(dependedParam, element, dependentParams);        
-      }, 1000));
+      // set previous value
+      dependedValuesMap[dependedName] = dependedParam.find('input, select').val();
 
-      if (dependedParam.is('[data-type="type-ahead"]').length > 0) {
-        dependedParam.change();
-      }
-    }
+      var handleChange = function handleChange(e) {
+        var newValue = e.target.value;
+        var oldValue = dependedValuesMap[dependedName];
+        e.stopPropagation();
+
+        if (newValue != oldValue) {
+          onDependedParamChange(dependedParam, element, dependentParamsMap);
+        }
+
+        dependedValuesMap[dependedName] = newValue;
+      };
+
+      dependedParam.change(handleChange);
+      dependedParam.keyup(_.debounce(handleChange, 1000));
+    });
   }
 
-  function onDependedParamChange(dependedParam, dependentElement, dependentParams) {
+  function onDependedParamChange(dependedParam, dependentElement, dependentParamsMap) {
         var dependedName = dependedParam.attr("name");
         var $form = dependedParam.closest("form");
         var $submitButton = $form.find('input[type=submit]');
@@ -72,7 +99,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
         // map list of names to elements
         // then reduce to a list of $.ajax deferred objects
-        var dependentDeferreds = dependentParams[dependedName]
+        var dependentDeferreds = dependentParamsMap[dependedName]
           .map(function(dependentName) {
 
             // return dependentParam reference
@@ -240,9 +267,10 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     $param.data('filterParam', filterParam);
 
     filterParam.on('change:value', function(filterParam, value) {
+      var ignored = value.data.filter(datum => datum.isIgnored);
       input.val(JSON.stringify({
         values: _.pluck(value.filteredData, 'term'),
-        ignored: value.ignored,
+        ignored: _.pluck(ignored, 'term'),
         filters: _.map(value.filters, _.partialRight(_.omit, 'selection'))
       }));
     });
@@ -616,9 +644,11 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     for (i=0; i < dependedNames.length; i++) {
       dependedName = dependedNames[i];
       var dependedParam = element.find([
-        "#" + dependedName + "aaa input[name='value(" + dependedName + ")']",         // any single input
-        "#" + dependedName + "aaa input[name='array(" + dependedName + ")']",         // any array input
-        "#" + dependedName + "aaa select[name='array(" + dependedName + ")']"         // select
+        "[name$='(" + dependedName + ")']:hidden",  // hidden input
+        "[name$='(" + dependedName + ")']:text",    // text input
+        "[name$='(" + dependedName + ")']textarea", // textrea
+        "[name$='(" + dependedName + ")']:checked", // radio or checkbox
+        "[name$='(" + dependedName + ")']select"    // select
       ].join(','));
 
       // get the selected values from depended param
@@ -652,25 +682,29 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
         '&name=' + paramName + '&dependedValue=' + JSON.stringify(dependedValues);
 
+    // Abort in-flight xhr to prevent race condition.
+    var previousXhr = dependentParam.data(XHR_DATA_KEY);
+    if (previousXhr) previousXhr.abort();
+
+    // Store xhr object in element dataset.
+    var xhr;
+
     if (dependentParam.is('[data-type="type-ahead"]')) {
       sendReqUrl = sendReqUrl + '&json=true';
       // dependentParam.find('.loading').show();
 
-      return $.getJSON(sendReqUrl)
-        .then(function(data) {
-          // createAutoComplete(data, paramName);
-          createFilteredSelect(data, paramName, dependentParam, keepPreviousValue);
-        })
-        .done(function() {
-          element.find(".param[name='" + paramName + "']").attr("ready", "");
-          dependentParam
-            .attr('ready', '')
-            .find('input')
-              .removeAttr('disabled')
-              .end()
-            .find('.loading')
-              .hide();
-        });
+      xhr = $.getJSON(sendReqUrl, function(data) {
+        // createAutoComplete(data, paramName);
+        createFilteredSelect(data, paramName, dependentParam, keepPreviousValue);
+        element.find(".param[name='" + paramName + "']").attr("ready", "");
+        dependentParam
+          .attr('ready', '')
+          .find('input')
+            .removeAttr('disabled')
+            .end()
+          .find('.loading')
+            .hide();
+      });
 
     } else if (dependentParam.is('[data-type="filter-param"]')) {
 
@@ -680,16 +714,15 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         .find('.loading').show();
 
       sendReqUrl = sendReqUrl + '&json=true';
-      return $.getJSON(sendReqUrl)
-        .then(createFilterParam.bind(null, dependentParam, questionName, dependedValues))
-        .done(function() {
-          dependentParam
-            .find('input').removeAttr('disabled').end()
-            .find('.loading').hide();
-          element.find(".param[name='" + paramName + "']").attr("ready", "");
-        });
+      xhr = $.getJSON(sendReqUrl, function(data) {
+        createFilterParam(dependentParam, questionName, dependedValues, data);
+        dependentParam
+          .find('input').removeAttr('disabled').end()
+          .find('.loading').hide();
+        element.find(".param[name='" + paramName + "']").attr("ready", "");
+      });
     } else {
-      return $.ajax({
+      xhr = $.ajax({
         url: sendReqUrl,
         type: "POST",
         data: {},
@@ -707,12 +740,27 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
           element.find(".param[name='" + paramName + "']").attr("ready", "");
           dependentParam.change();
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-          alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
         }
       });
     }
+
+    // store xhr object
+    dependentParam.data(XHR_DATA_KEY, xhr);
+
+    // handle failure, unless aborted
+    xhr.fail(function (jqXHR, textStatus, errorThrown) {
+      if (textStatus != 'abort') {
+        alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
+      }
+    });
+
+    // remove xhr object when it's complete, or if it failed (including abort)
+    xhr.always(function() {
+      dependentParam.data(XHR_DATA_KEY, undefined);
+    });
+
+    // return a Promise
+    return xhr.promise();
   }
 
   //==============================================================================

@@ -32,8 +32,15 @@ import { runApplication } from './application';
  *        default record component. This is useful for wrapping or for using
  *        the default without modifications.
  */
-const createApplication = function createApplication(config) {
-  const { serviceUrl, rootElement } = config;
+var createApplication = function createApplication(config) {
+  var {
+    baseUrl,
+    serviceUrl,
+    rootElement,
+    recordComponentResolver,
+    cellRendererResolver,
+    location
+  } = config;
 
   if (typeof serviceUrl !== 'string') {
     throw new Error(`Application serviceUrl ${serviceUrl} must be a string.`);
@@ -43,21 +50,32 @@ const createApplication = function createApplication(config) {
     throw new Error(`Application rootElement ${rootElement} must be a DOM element.`);
   }
 
-  const location = config.location === 'none'
-    ? new HeadlessLocation(config.defaultRoute || '/')
-    : Router.HashLocation;
+  var dispatcher = new Flux.Dispatcher();
+  var serviceAPI = createServiceAPI(serviceUrl);
 
-  const dispatcher = new Flux.Dispatcher();
-  const serviceAPI = createServiceAPI(serviceUrl);
+  // Determine Router Location implementation based on config options.
+  var routerLocation;
+
+  if (location == 'none') {
+    routerLocation = new HeadlessLocation(config.defaultRoute || '/');
+  }
+  else if (baseUrl) {
+    routerLocation = Router.HistoryLocation;
+  }
+  else {
+    routerLocation = Router.HashLocation;
+  }
 
   runApplication({
+    baseUrl,
     rootElement,
-    location,
+    routerLocation,
     dispatcher,
     serviceAPI,
     stores,
     actionCreators,
-    recordComponentResolver: config.recordComponentResolver
+    recordComponentResolver,
+    cellRendererResolver
   });
 };
 
