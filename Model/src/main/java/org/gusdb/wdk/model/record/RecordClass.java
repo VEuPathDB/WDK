@@ -24,6 +24,7 @@ import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.ReporterRef;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wdk.model.query.Query;
@@ -228,6 +229,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   private ResultSize resultSizePlugin = new DefaultResultSizePlugin();
 
+  private String customBooleanQueryClassName = null;
+  
+  private BooleanQuery booleanQuery;
   
   private String attributeOrdering;
 
@@ -391,6 +395,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 	  return resultPropertiesPlugin;
   }
   
+  public String getCustomBooleanQueryClassName() {
+	  return customBooleanQueryClassName;
+  }
+  
   /**
    * @param attList
    *          comma separated list of attributes in a summary containing this recordClass.
@@ -479,6 +487,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   
   public void setResultPropertiesPluginRef(ResultPropertiesPluginRef ref) {
 	  resultPropertiesPluginRef = ref;
+  }
+  
+  public void setCustomBooleanQueryClassName(String className) {
+	  this.customBooleanQueryClassName = className;
   }
 
   // ////////////////////////////////////////////////////////////
@@ -589,6 +601,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   
   public ResultPropertiesPluginRef getResultPropertiesPluginRef() {
 	  return resultPropertiesPluginRef;
+  }
+  
+  public BooleanQuery getBooleanQuery() {
+	  return booleanQuery;
   }
 
   @Override
@@ -703,6 +719,23 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     	resultPropertiesPlugin = resultPropertiesPluginRef.getImplementationInstance();
     }
     
+    if (customBooleanQueryClassName != null) {
+		String errmsg = "Can't create java class for customBooleanQueryClassName from class name '" + customBooleanQueryClassName + "'";
+		try {
+			Class<? extends BooleanQuery> classs = Class.forName(
+					customBooleanQueryClassName).asSubclass(BooleanQuery.class);
+			booleanQuery = classs.newInstance();
+			booleanQuery.setRecordClass(this);
+		} catch (ClassNotFoundException ex) {
+			throw new WdkModelException(errmsg, ex);
+		} catch (InstantiationException ex) {
+			throw new WdkModelException(errmsg, ex);
+		} catch (IllegalAccessException ex) {
+			throw new WdkModelException(errmsg, ex);
+		}   	
+    } else booleanQuery = new BooleanQuery(this);
+
+	
     // resolve the alias query
     resolveAliasQuery(model);
 
