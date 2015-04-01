@@ -157,7 +157,9 @@ CREATE TABLE wdkuser.steps
   migration_id NUMBER(12),
   CONSTRAINT "steps_pk" PRIMARY KEY (step_id),
   CONSTRAINT "steps_fk01" FOREIGN KEY (user_id)
-      REFERENCES wdkuser.users (user_id)
+      REFERENCES wdkuser.users (user_id),
+  CONSTRAINT "steps_ux01" UNIQUE (left_child_id),
+  CONSTRAINT "steps_ux02" UNIQUE (right_child_id)
 );
 
 CREATE INDEX wdkuser.steps_idx01 ON wdkuser.steps (left_child_id, right_child_id, user_id);
@@ -166,6 +168,7 @@ CREATE INDEX wdkuser.steps_idx03 ON wdkuser.steps (is_deleted, user_id, project_
 CREATE INDEX wdkuser.steps_idx04 ON wdkuser.steps (is_valid, project_id, user_id);
 CREATE INDEX wdkuser.steps_idx05 ON wdkuser.steps (last_run_time, user_id, project_id);
 CREATE INDEX wdkuser.steps_idx06 ON wdkuser.steps (strategy_id, user_id, project_id);
+CREATE INDEX wdkuser.steps_idx07 ON wdkuser.steps (user_id, step_id);
 
 
 CREATE TABLE wdkuser.strategies
@@ -191,7 +194,8 @@ CREATE TABLE wdkuser.strategies
      CONSTRAINT "strategies_fk01" FOREIGN KEY (root_step_id)
          REFERENCES wdkuser.steps (step_id),
      CONSTRAINT "strategies_fk02" FOREIGN KEY (user_id)
-         REFERENCES wdkuser.users (user_id)
+         REFERENCES wdkuser.users (user_id),
+     CONSTRAINT "strategies_ux01" UNIQUE (root_step_id)
 );
 
 CREATE INDEX wdkuser.strategies_idx01 ON wdkuser.strategies (signature, project_id);
