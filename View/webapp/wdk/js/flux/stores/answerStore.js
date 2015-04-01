@@ -293,7 +293,7 @@ export default createStore({
         return records.filter(isTermInRecord(term));
       }, records);
 
-      state.set('filterTerms', terms);
+      state.set('filterTerm', terms);
       state.set('filteredRecords', filteredRecords);
     });
     emitChange();
