@@ -549,22 +549,20 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     render: function() {
       var { filters } = this.props;
 
-      if (filters) {
-        return (
-          <div className="invalid-values">
-            <p>Some of the options you previously selected are no longer available:</p>
-            <ul>
-              {_.map(filters, function(filter) {
-                return (
-                  <li className="invalid">{filter.display}</li>
-                );
-              }, this)}
-            </ul>
-          </div>
-        );
-      }
+      if (_.isEmpty(filters)) return null;
 
-      return null;
+      return (
+        <div className="invalid-values">
+          <p>Some of the options you previously selected are no longer available:</p>
+          <ul>
+            {_.map(filters, function(filter) {
+              return (
+                <li className="invalid">{filter.display}</li>
+              );
+            }, this)}
+          </ul>
+        </div>
+      );
     }
   });
 
