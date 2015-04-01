@@ -70,11 +70,13 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     AnswerParam leftParam = booleanQuery.getLeftOperandParam();
     String leftSubSql = InternalValues.get(leftParam.getName());
     String leftSql = constructOperandSql(leftSubSql, booleanFlag);
+    leftSql = preProcessOperandSql(leftSql, "Left");
 
     AnswerParam rightParam = booleanQuery.getRightOperandParam();
     String rightSubSql = InternalValues.get(rightParam.getName());
     String rightSql = constructOperandSql(rightSubSql, booleanFlag);
-
+    rightSql = preProcessOperandSql(rightSql, "Right");
+    
     String sql;
     if (op == BooleanOperator.UNION) {
       sql = getUnionSql(leftSql, rightSql, operator);
@@ -217,10 +219,20 @@ public class BooleanQueryInstance extends SqlQueryInstance {
   
   /**
    * get the columns to do the boolean operation on
+   * subclasses can override to provide custom pk columns
    * @return
    */
   protected String[] getPkColumns() {
-	    RecordClass rc = booleanQuery.getRecordClass();
-	    return rc.getPrimaryKeyAttributeField().getColumnRefs();
+	  RecordClass rc = booleanQuery.getRecordClass();
+	  return rc.getPrimaryKeyAttributeField().getColumnRefs();
+  }
+  
+  /**
+   * subclasses can override to provide custom preprocessing
+   * @param operandSql
+   * @return
+   */
+  protected String preProcessOperandSql(String operandSql, String leftOrRight) {
+	  return operandSql;
   }
 }
