@@ -3,7 +3,7 @@
 wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
   "use strict";
 
-  var global_isAdd; 
+  var global_isAdd;
   var buttonText = null;
 
   ns.current_Front_Strategy_Id = null;
@@ -21,7 +21,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     } else {
       wdk.dyk.initDYK(false);
     }
-    
+
     $("#strategy_tabs li").each(function() {
       if ($("a", this).length > 0) {
         var hidePanel = $("a", this).attr("id").substring(4);
@@ -99,7 +99,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     if (currentStepId === '') {
       currentStepId = stp.back_step_Id;
     }
-    
+
     var url = "wizard.do?strategy="+currStrat.backId + "&step=" + currentStepId;
 
     if (stage !== '') {
@@ -178,7 +178,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     // wdk.parameterHandlers.mapTypeAheads();
 
     if (stratFrontId === undefined) {
-      stratFrontId = ns.current_Front_Strategy_Id; 
+      stratFrontId = ns.current_Front_Strategy_Id;
     }
 
     var strategy = wdk.strategy.model.getStrategy(stratFrontId);
@@ -208,7 +208,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
             if (data.indexOf("{") === 0) {
               data = JSON.parse(data);
-              // before close, check if json is success or error, if error, display 
+              // before close, check if json is success or error, if error, display
               // it in the current qf_content
               if (wdk.strategy.error.ErrorHandler("Wizard", data, strategy,
                   $("#errors"))) {
@@ -233,50 +233,76 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
         break;
 
       case "next":
+        $("#query_form").block({
+          message: "Loading...",
+          overlayCSS: {
+            marginTop: "25px"
+          }
+        });
+
         params = params + "&strategy="+strategy.backId;
-        $.ajax({
-          url: urlBase,
-          type: "POST",
-          dataType: "html",
-          data: params,
 
-          beforeSend: function() {
-            $("#query_form").block({
-              message: "Loading...",
-              overlayCSS: {
-                marginTop: "25px"
-              }
-            });
-          },
+        var nextPromise = new Promise(function(resolve, reject) {
+          $.ajax({
+            url: urlBase,
+            type: "POST",
+            dataType: "html",
+            data: params,
+            success: function(data) {
+              resolve(data);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+              reject(errorThrown);
+            }
+          });
+        });
 
-          success: function(data) {
+        nextPromise.then(function(data) {
             wdk.step.hideDetails();
             $("#query_form").unblock();
 
             if (data.indexOf("{") === 0) {
               wdk.strategy.controller.updateStrategies(data);
-            } else {
-              if ($("#qf_content").length === 0) {
-                $.ajax({
-                  async: false,
-                  url:"wdk/jsp/wizard/context.jsp",
-                  type:"get",
-
-                  success: function(data) {
-                    $("body").append(data);
-                    setDraggable($("#query_form"), ".dragHandle");
-                  }
-                });
-              } else {
-                $("#qf_content").children().wrapAll('<div class="stage" />');
-                $("#qf_content > .stage").appendTo("#stage-stack");
-              }
-              setPopupContent(data);
-
-              if (ele) {
-                showNewSection(ele,id,sec);
-              }
+              return null;
             }
+
+            else {
+              var promise = new Promise(function(resolve, reject) {
+                if ($("#qf_content").length === 0) {
+                  $.ajax({
+                    url:"wdk/jsp/wizard/context.jsp",
+                    type:"get",
+
+                    success: function(innerData) {
+                      $("body").append(innerData);
+                      setDraggable($("#query_form"), ".dragHandle");
+                      resolve(null);
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                      reject(errorThrown);
+                    }
+                  });
+                }
+
+                else {
+                  $("#qf_content").children().wrapAll('<div class="stage" />');
+                  $("#qf_content > .stage").appendTo("#stage-stack");
+                  resolve(null);
+                }
+              });
+
+              promise.then(function() {
+                setPopupContent(data);
+
+                if (ele) {
+                  showNewSection(ele,id,sec);
+                }
+              });
+
+              return promise;
+            }
+          })
+          .then(function() {
 
             $("#query_form").css({
               zIndex: 100,
@@ -295,8 +321,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
             var $form = $("#query_form").find("form[name=questionForm]");
             $form.data("inline-submit", $form.get(0).onsubmit);
             $form.get(0).onsubmit = null;
-          }
-        });
+          });
         break;
 
       default:
@@ -441,7 +466,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     e.preventDefault();
     if (bools.length) {
       var boolChecked = bools.toArray().reduce(function(memo, input) {
-        return memo || input.checked; 
+        return memo || input.checked;
       }, false);
       if (!boolChecked) {
         if ($this.find(".wdk-error").length === 0) {
