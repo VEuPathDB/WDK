@@ -989,32 +989,34 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   }
 
   function copyStrategy(stratId, fromHist) {
-    var ss = wdk.strategy.model.getStrategyOBJ(stratId);
-    var result = confirm("Do you want to make a copy of strategy '" +
-        ss.name + "'?");
-    if (result === false) return;
-    var url = "copyStrategy.do?strategy=" + stratId + "&strategy_checksum=" +
-        ss.checksum;
-    $.ajax({
-      url: url,
-      dataType: "json",
-      data: "state=" + ns.stateString,
-      beforeSend: function() {
-        if (!fromHist) {
-          wdk.util.showLoading(ss.frontId);
-        }
-      },
-      success: function(data) {
-        if (wdk.strategy.error.ErrorHandler("Copystrategy", data, ss, null)) {
-          updateStrategies(data);
-          if (fromHist) {
-            wdk.history.update_hist(true);
-            wdk.history.updateHistory();
+    wdk.strategy.model.getStrategyOBJ(stratId)
+      .then(function(ss) {
+        var result = confirm("Do you want to make a copy of strategy '" +
+            ss.name + "'?");
+        if (result === false) return;
+        var url = "copyStrategy.do?strategy=" + stratId + "&strategy_checksum=" +
+            ss.checksum;
+        $.ajax({
+          url: url,
+          dataType: "json",
+          data: "state=" + ns.stateString,
+          beforeSend: function() {
+            if (!fromHist) {
+              wdk.util.showLoading(ss.frontId);
+            }
+          },
+          success: function(data) {
+            if (wdk.strategy.error.ErrorHandler("Copystrategy", data, ss, null)) {
+              updateStrategies(data);
+              if (fromHist) {
+                wdk.history.update_hist(true);
+                wdk.history.updateHistory();
+              }
+              wdk.util.removeLoading(ss.frontId);
+            }
           }
-          wdk.util.removeLoading(ss.frontId);
-        }
-      }
-    });
+        });
+      });
   }
 
   function saveOrRenameStrategy(strategy, checkName, save, fromHist, form) {

@@ -46,7 +46,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
                 "bJQueryUI": true,
                 "bScrollCollapse": true,
                 "aoColumns": [ { "bSortable": false },
-                               null, 
+                               null,
                                { "bSortable": false },
                                { "bSortable": false },
                                { "sSortDataType": "dom-checkbox" },
@@ -125,7 +125,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
       }
     });
   }
-    
+
   function downloadStep(stepId) {
     var url = "downloadStep.do?step_id=" + stepId;
     window.location = url;
@@ -133,7 +133,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
 
   function handleBulkStrategies(type, stratToDelete) {
     //this function is called from two different locations in the page:
-    //  - the button, expecting at least one selected strategy, or 
+    //  - the button, expecting at least one selected strategy, or
     //  - from the dropdown menu, specific to each strategy. (was calling deleteStrategy() in controller-JSON.js)
     // In the latter case, there is no need to select; the click tells us which strat is to be deleted (stratToDelete, std)
 
@@ -301,7 +301,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     } else {
       dialog_container.find(".public_input input").attr('disabled','disabled');
     }
-    
+
     if (save) {
       dialog_container.find(".save_as_msg").show();
     } else {
@@ -327,7 +327,6 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     $(form).data("strategy", strat);
 
     $(form).submit(function(event) {
-      var strategy;
       event.preventDefault();
 
       if (this.description.value.length > 4000) {
@@ -346,19 +345,21 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
       row.data("description", this.description.value);
       row.data("isPublic", ($(this.is_public).prop('checked') ? true : false));
 
-      strategy = $.extend(wdk.strategy.model.getStrategyOBJ(strat.backId), strat);
-
-      wdk.strategy.controller.saveOrRenameStrategy(strategy, true, save,
-          fromHist, form).success(function() {
-        dialog_container.dialog('close');
-      }).complete(function() {
-        dialog_container.unblock();
-      });
+      wdk.strategy.model.getStrategyOBJ(strat.backId)
+        .then(function(strategy) {
+          var nextStrategy = $.extend({}, strategy, strat);
+          wdk.strategy.controller.saveOrRenameStrategy(nextStrategy, true, save,
+              fromHist, form).success(function() {
+            dialog_container.dialog('close');
+          }).complete(function() {
+            dialog_container.unblock();
+          });
+        });
     });
 
     dialog_container.dialog('open');
   }
-  
+
   ns.update_hist = function(bool) {
     if (typeof bool !== "undefined") {
       update_hist = Boolean(bool);
