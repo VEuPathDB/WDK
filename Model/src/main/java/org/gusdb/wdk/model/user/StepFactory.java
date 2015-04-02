@@ -43,6 +43,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
+import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -94,6 +95,9 @@ public class StepFactory {
   static final int COLUMN_NAME_LIMIT = 200;
 
   public static final int UNKNOWN_SIZE = -1;
+
+  public static final String KEY_PARAMS = "params";
+  public static final String KEY_FILTERS = "filters";
 
   private static final Logger logger = Logger.getLogger(StepFactory.class);
 
@@ -232,7 +236,7 @@ public class StepFactory {
   // parse boolexp to pass left_child_id, right_child_id to loadAnswer
   Step createStep(User user, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
-      int assignedWeight) throws WdkModelException, WdkUserException {
+      int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
 
     // get summary list and sorting list
     String questionName = question.getFullName();
@@ -297,10 +301,25 @@ public class StepFactory {
     catch (SQLException e) {
       throw new WdkModelException(e);
     }
+    
+    // create the Step
+    Step step = new Step(this, user, stepId);
+    step.setQuestionName(questionName);
+    step.setCreatedTime(createTime);
+    step.setLastRunTime(lastRunTime);
+    step.setDeleted(deleted);
+    step.setParamValues(dependentValues);
+    step.setFilterOptions(filterOptions);
+    step.setAnswerValue(answerValue);
+    step.setEstimateSize(estimateSize);
+    step.setAssignedWeight(assignedWeight);
+    step.setException(exception);
+    step.setProjectId(wdkModel.getProjectId());
+    step.setProjectVersion(wdkModel.getVersion());
 
     PreparedStatement psInsertStep = null;
     try {
-      JSONObject jsContent = getParamContent(dependentValues);
+      JSONObject jsParamFilters = step.getParamFilterJSON();
 
       psInsertStep = SqlUtils.getPreparedStatement(dataSource, sqlInsertStep.toString());
       psInsertStep.setInt(1, stepId);
@@ -314,7 +333,7 @@ public class StepFactory {
       psInsertStep.setString(9, wdkModel.getProjectId());
       psInsertStep.setString(10, wdkModel.getVersion());
       psInsertStep.setString(11, questionName);
-      userDb.getPlatform().setClobData(psInsertStep, 12, jsContent.toString(), false);
+      userDb.getPlatform().setClobData(psInsertStep, 12, jsParamFilters.toString(), false);
       psInsertStep.executeUpdate();
     }
     catch (SQLException | JSONException ex) {
@@ -323,19 +342,6 @@ public class StepFactory {
     finally {
       SqlUtils.closeStatement(psInsertStep);
     }
-    // create the Step
-    Step step = new Step(this, user, stepId);
-    step.setQuestionName(questionName);
-    step.setCreatedTime(createTime);
-    step.setLastRunTime(lastRunTime);
-    step.setDeleted(deleted);
-    step.setParamValues(dependentValues);
-    step.setAnswerValue(answerValue);
-    step.setEstimateSize(estimateSize);
-    step.setAssignedWeight(assignedWeight);
-    step.setException(exception);
-    step.setProjectId(wdkModel.getProjectId());
-    step.setProjectVersion(wdkModel.getVersion());
 
     // update step dependencies
     updateStepTree(user, step);
@@ -640,13 +646,11 @@ public class StepFactory {
       step.setChildStepId(rightStepId);
     }
 
-    Map<String, String> params = null;
-    String dependentParamContent = userDb.getPlatform().getClobData(rsStep, COLUMN_DISPLAY_PARAMS);
-    if (dependentParamContent != null && dependentParamContent.length() > 0) {
-      JSONObject jsContent = new JSONObject(dependentParamContent);
-      params = parseParamContent(jsContent);
+    String paramFilters = userDb.getPlatform().getClobData(rsStep, COLUMN_DISPLAY_PARAMS);
+    if (paramFilters != null && paramFilters.length() > 0) {
+      // parse the param & filter values
+      step.setParamFilterJSON(new JSONObject(paramFilters));
     }
-    step.setParamValues(params);
 
     logger.debug("loaded step #" + stepId);
     return step;
@@ -793,10 +797,11 @@ public class StepFactory {
     PreparedStatement psStep = null;
     String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_QUESTION_NAME + " = ?, " +
         COLUMN_ANSWER_FILTER + " = ?, " + COLUMN_LEFT_CHILD_ID + " = ?, " + COLUMN_RIGHT_CHILD_ID + " = ?, " +
-        COLUMN_ASSIGNED_WEIGHT + " = ?, " + COLUMN_DISPLAY_PARAMS + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
+        COLUMN_ASSIGNED_WEIGHT + " = ?, " + COLUMN_DISPLAY_PARAMS + " = ?, " + COLUMN_IS_VALID + " = 1 " + 
+        "    WHERE " + COLUMN_STEP_ID + " = ?";
 
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
-    JSONObject jsContent = getParamContent(step.getParamValues());
+    JSONObject jsContent = step.getParamFilterJSON();
     int leftId = step.getPreviousStepId();
     int childId = step.getChildStepId();
     try {
@@ -1095,7 +1100,7 @@ public class StepFactory {
     Step newStep;
     try {
       newStep = newUser.createStep(question, paramValues, filter, startIndex, endIndex, deleted, false,
-          assignedWeight);
+          assignedWeight, oldStep.getFilterOptions());
     }
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);
@@ -1408,43 +1413,6 @@ public class StepFactory {
     finally {
       SqlUtils.closeResultSetAndStatement(rsStrategy);
     }
-  }
-
-  public static JSONObject getParamContent(Map<String, String> params) throws JSONException {
-    JSONObject jsContent = new JSONObject();
-
-    // convert params
-    JSONObject jsParams = new JSONObject();
-    for (String paramName : params.keySet()) {
-      jsParams.put(paramName, params.get(paramName));
-    }
-    jsContent.put("params", jsParams);
-
-    // convert filters -- TODO
-    jsContent.put("filters", new JSONObject());
-    return jsContent;
-  }
-
-  public static Map<String, String> parseParamContent(JSONObject jsContent) throws WdkModelException {
-    Map<String, String> params = new LinkedHashMap<String, String>();
-    if (jsContent != null) {
-      try {
-        // read params;
-        JSONObject jsParams = jsContent.has("params") ? jsContent.getJSONObject("params") : jsContent;
-        String[] paramNames = JSONObject.getNames(jsParams);
-        if (paramNames != null) {
-          for (String paramName : paramNames) {
-            String paramValue = jsParams.getString(paramName);
-            logger.trace("param '" + paramName + "' = '" + paramValue + "'");
-            params.put(paramName, paramValue);
-          }
-        }
-      }
-      catch (JSONException ex) {
-        throw new WdkModelException(ex);
-      }
-    }
-    return params;
   }
 
   NameCheckInfo checkNameExists(Strategy strategy, String name, boolean saved) throws WdkModelException {

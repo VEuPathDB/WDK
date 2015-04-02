@@ -16,7 +16,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
 /**
@@ -286,7 +286,9 @@ public class SharedStepsResolver extends BaseCLI {
 
   private String updateContent(String content, Map<Integer, Integer> ids) throws WdkModelException {
     JSONObject jsContent = new JSONObject(content);
-    Map<String, String> params = StepFactory.parseParamContent(jsContent);
+    Step step = new Step(null, 0, 0);
+    step.setParamFilterJSON(jsContent);
+    Map<String, String> params = step.getParamValues();
 
     // update param values
     String[] paramNames = params.keySet().toArray(new String[0]);
@@ -298,13 +300,8 @@ public class SharedStepsResolver extends BaseCLI {
           params.put(paramName, Integer.toString(ids.get(oldId)));
       }
     }
-    // update JSON
-    JSONObject jsParams = new JSONObject();
-    for (String paramName : params.keySet()) {
-      jsParams.put(paramName, params.get(paramName));
-    }
-    jsContent.put("params", jsParams);
-
+    step.setParamValues(params);
+    jsContent = step.getParamFilterJSON();
     return jsContent.toString();
   }
 }

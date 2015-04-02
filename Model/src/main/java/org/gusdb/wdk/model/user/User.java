@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
+import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanExpression;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -459,7 +460,7 @@ public class User /* implements Serializable */{
 
     try {
       return createStep(question, paramValues, filter, startIndex, endIndex,
-          deleted, true, assignedWeight);
+          deleted, true, assignedWeight, answerValue.getFilterOptions());
     }
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);
@@ -472,7 +473,7 @@ public class User /* implements Serializable */{
     AnswerFilterInstance filter = null;
     RecordClass recordClass = question.getRecordClass();
     if (filterName != null) {
-      filter = recordClass.getFilter(filterName);
+      filter = recordClass.getFilterInstance(filterName);
     } else filter = recordClass.getDefaultFilter();
     return createStep(question, paramValues, filter, deleted, validate,
         assignedWeight);
@@ -483,15 +484,15 @@ public class User /* implements Serializable */{
       int assignedWeight) throws WdkModelException, WdkUserException {
     int endIndex = getItemsPerPage();
     return createStep(question, paramValues, filter, 1, endIndex, deleted,
-        validate, assignedWeight);
+        validate, assignedWeight, null);
   }
 
   public Step createStep(Question question,
       Map<String, String> paramValues, AnswerFilterInstance filter,
       int pageStart, int pageEnd, boolean deleted, boolean validate,
-      int assignedWeight) throws WdkModelException, WdkUserException {
+      int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
     Step step = stepFactory.createStep(this, question, paramValues, filter,
-        pageStart, pageEnd, deleted, validate, assignedWeight);
+        pageStart, pageEnd, deleted, validate, assignedWeight, filterOptions);
     return step;
   }
 
@@ -1240,7 +1241,7 @@ public class User /* implements Serializable */{
     AnswerFilterInstance filter = null;
     RecordClass recordClass = question.getRecordClass();
     if (filterName != null) {
-      filter = question.getRecordClass().getFilter(filterName);
+      filter = question.getRecordClass().getFilterInstance(filterName);
     } else filter = recordClass.getDefaultFilter();
     return createBooleanStep(leftStep, rightStep, operator, useBooleanFilter,
         filter);
