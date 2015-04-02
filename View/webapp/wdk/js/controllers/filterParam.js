@@ -27,7 +27,7 @@ wdk.namespace('wdk.controllers', function(ns) {
   //   - title: String name used in UI. Defaults to "Items".
   //   - trimMetadataTerms: Boolean, when true remove parents w/ one child
   //   - defaultColumns: Array of field names to show in results view
-  // 
+  //
   ns.FilterParam = wdk.views.core.View.extend({
 
     className: 'filter-param',
@@ -103,10 +103,9 @@ wdk.namespace('wdk.controllers', function(ns) {
       // Set default values
       // ---------------------------
 
-      var leaves = _.find(options.fields, {'leaf': 'true'});
-      // var defaultSelection = leaves.length === 1
-      //   ? leaves[0]
-      //   : filterFields[0];
+      var selectedField = options.filters.length
+        ? options.filters[0].field
+        : _.find(options.fields, { leaf: 'true' });
 
 
       var filterService = LazyFilterService.create({
@@ -118,7 +117,7 @@ wdk.namespace('wdk.controllers', function(ns) {
         name: options.name,
         questionName: options.questionName,
         dependedValue: options.dependedValue,
-        selectedField: leaves[0]
+        selectedField: selectedField
       }, {
         intents: actions
       });
