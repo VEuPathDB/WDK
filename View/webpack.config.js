@@ -18,7 +18,7 @@ module.exports = {
   debug: node_env !== 'production',
   devtool: 'source-map',
   plugins: node_env !== 'production' ? null : [
-    new webpack.optimize.UglifyJsPlugin(),
+    new webpack.optimize.UglifyJsPlugin({ mangle: false }),
     new webpack.optimize.OccurenceOrderPlugin(true),
     new webpack.DefinePlugin({
       "process.env": {

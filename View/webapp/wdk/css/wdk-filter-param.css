@@ -4,7 +4,8 @@
   text-transform: capitalize;
 }
 .filter-param p {
-  font-style: default;
+  font-style: initial;
+  margin: 4px;
 }
 .filter-param .muted {
   color: #9f9f9f;
