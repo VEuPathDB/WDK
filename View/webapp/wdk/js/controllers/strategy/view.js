@@ -18,7 +18,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   //CONSTANTS
   var booleanClasses = "box row2 arrowgrey operation ";
   var firstClasses = "box row2 arrowgrey simple";
-  var transformClasses = "row2 transform"; 
+  var transformClasses = "row2 transform";
   var operandClasses = "box row1 arrowgrey simple";
 
   //Tooltips for step boxes
@@ -55,8 +55,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
   //Substrategies
   var sub_edit_expand_openned = "Revise the nested strategy in the open " +
-      "panel below";  
-  var sub_rename_popup = "Rename this nested strategy";             
+      "panel below";
+  var sub_rename_popup = "Rename this nested strategy";
   var sub_view_popup = "View the results of this nested strategy in the " +
       "Results area below";
   var sub_analyze_popup = "Analyze the results of this nested strategy in " +
@@ -118,7 +118,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         var lsn = strat.getStep(strat.Steps.length,true).back_boolean_Id;
 
         if (lsn == "" || lsn == null) {
-          lsn = strat.getStep(strat.Steps.length, true).back_step_Id;  
+          lsn = strat.getStep(strat.Steps.length, true).back_step_Id;
         }
         var dType = strat.dataType;
         $(button)
@@ -143,17 +143,19 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           .appendTo(div_strat)
           .addClass("diagram-wrapper");
 
-        if (has_invalid) {
-          $(div_strat).append(createInvalidText());
-        }
-
-        has_invalid = false;
-
         var strategyView = new StrategyView({
           el: div_strat,
           model: strat,
           controller: controller
         });
+
+        if (has_invalid) {
+          getInvalidText().then(function(html) {
+            $(div_strat).prepend(html);
+          });
+        }
+
+        has_invalid = false;
 
         return div_strat;
       }
@@ -249,7 +251,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     }
 
     var displayType = wdk.util.getDisplayType(jsonStep);
-    
+
     var boolinner = ""+
         "<div id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonStep.operation + "' class='divlink results_link step-elem' "+
         "     title=\""+stepBoxTooltip(jsonStep.filterName)+"\" href='javascript:void(0)' style='cursor:pointer'> " +
@@ -264,7 +266,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "  </h6>" +
            filterImg +
         "</div>";
-    
+
     if (!modelstep.isLast) {
       if (modelstep.nextStepType == "transform") {
         boolinner = boolinner + "<div class='arrow right size3'></div>";
@@ -283,7 +285,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     $(stepNumber).addClass('stepNumber').text("Step " + modelstep.frontId);
 
     //Create the operand Step Box
-    var childStp = jsonStep.step;  
+    var childStp = jsonStep.step;
     var childResults = modelstep.isLoading ? "Loading" : childStp.results;
     var uname = "";
     var fullName = "";
@@ -294,7 +296,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     } else {
       uname = (childStp.customName.length > 15) ?
           childStp.customName.substring(0,12) + "..." :
-          childStp.customName; 
+          childStp.customName;
       fullName = childStp.customName;
     }
 
@@ -332,7 +334,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
             "_sub div.crumb_menu a.edit_step_link").click();
       });
     }
-    
+
     var childDiv = document.createElement('div');
 
     if (child_invalid != null) {
@@ -343,14 +345,14 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         .addClass(operandClasses).append(childinner);
     $(".crumb_details", childDiv)
         .replaceWith(createDetails(modelstep, prevjsonstep, childStp, sid));
-    
+
     // Create the background div for a collapsed step if step is expanded
     var bkgdDiv = null;
 
     if (childStp.isCollapsed) {
       var ss_name = childStp.strategy.name.length > 15 ?
           childStp.strategy.name.substring(0,12) + "..." :
-          childStp.strategy.name; 
+          childStp.strategy.name;
       $(".crumb_name span#name", childDiv).text(ss_name);
       $("span#fullStepName", childDiv).text(childStp.strategy.name);
       bkgdDiv = document.createElement("div");
@@ -387,7 +389,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       "onmouseout=\"jQuery(this).css('background-color','white')\" " +
       "><span style='"+spanStyle+"'>Edit</span></div>";
     */
-    
+
     /* Old style with Edit icon being swapped images (left in for easy revert) */
     //var style = (type == 'boolean') ? "display:none;position:relative;top:3px" : "display:none";
     //return "<img class='edit-step' style='width:24px;"+style+"' src='wdk/images/edit-step-word-large.png' "+
@@ -405,7 +407,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       uname = jsonStep.shortName;
       fullName = jsonStep.name;
     } else {
-      uname = (jsonStep.customName.length > 15)?jsonStep.customName.substring(0,12) + "...":jsonStep.customName; 
+      uname = (jsonStep.customName.length > 15)?jsonStep.customName.substring(0,12) + "...":jsonStep.customName;
       fullName = jsonStep.customName;
     }
 
@@ -478,7 +480,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     stepbox.setAttribute('class', 'stepBox');
     stepbox.appendChild(singleDiv);
     stepbox.appendChild(stepNumber);
-    return stepbox;  
+    return stepbox;
   }
 
   //HANDLE THE CREATION OF THE STEP DETAILS BOX
@@ -529,7 +531,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         modelstep.back_boolean_Id.length != 0) {
       parentid = modelstep.back_boolean_Id;
     }
-    
+
     var params = jsonStep.params;
     var params_table = "";
 
@@ -600,14 +602,14 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       if (!jsonStep.isUncollapsible) {
         collapseDisabled = "disabled";
       }
-      
+
       var edit_step = "<a title='" + moEdit + "' class='expand_step_link " +
           disab + "' href='#'>Revise</a>&nbsp;|&nbsp;";
-      
+
       var collapse_step = "<a title='" + sub_collapse_popup +
           "' class='collapse_step_link " + collapseDisabled +
           "' href='#'>Unnest Strategy</a>&nbsp;|&nbsp;";
-      
+
       var expand_step = "<a title='" + moExp + "' class='expand_step_link " +
           disab + "' href='#'>" + oM + "</a>&nbsp;|&nbsp;";
 
@@ -654,17 +656,17 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
             "' class='expand_step_link' href='#' " +
             ">Make Nested Strategy</a>&nbsp;|&nbsp;";
       }
-      
+
       collapse_step = "";
     }
     var insertRecName = (prevjsonstep == null) ? jsonStep.dataType :
-        prevjsonstep.dataType;      
+        prevjsonstep.dataType;
     var insert_step = "<a title='" + insert_popup +
         "' class='insert_step_link' id='" + sid + "|" + parentid +
         "' href='#'>Insert Step Before</a>&nbsp;|&nbsp;";
     var customMenu = "";
 
-    // this code (function in wdkCustomization/js/customStrategy.js)  adds the ortholog link 
+    // this code (function in wdkCustomization/js/customStrategy.js)  adds the ortholog link
     try {
       if (typeof customCreateDetails === "function") {
         customMenu = customCreateDetails(jsonStep, modelstep, strat);
@@ -694,7 +696,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "' class='close_link' href='#' " +
         "'><img src=\"" + wdk.assetsUrl('wdk/images/close.gif') + "\" /></a>";
 
-    var inner = ""+  
+    var inner = ""+
         "    <div class='crumb_menu'>" + close_button + rename_step +
         view_step + analyze_step + edit_step + expand_step + collapse_step + insert_step +
         customMenu + delete_step + "    </div>"+ name +
@@ -702,7 +704,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "    <p><b>Results:&nbsp;</b>" + jsonStep.results + "&nbsp;" +
         wdk.util.getDisplayType(jsonStep);
         // + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
-         
+
     inner += "<hr class='clear' />" + createWeightSection(jsonStep,modelstep,sid);
 
     $(detail_div).html(inner);
@@ -721,7 +723,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     }
 
     $("table", detail_div).replaceWith(params_table);
-    return detail_div;       
+    return detail_div;
   }
 
   function createWeightSection(jsonStep,modelstep,sid) {
@@ -730,7 +732,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         modelstep.isSpan) {
       return "";
     }
-    
+
     var set_weight = "<div name='All_weighting' class='param-group' " +
         "type='ShowHide'><div class='group-title'> "+
         "<img style='position:relative;top:5px;'  class='group-handle' " +
@@ -755,7 +757,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "your IDs are not in our database and will not return results.<br> " +
         "Until we have a mechanism for informing you which IDs are missing, " +
         "please review your results carefully.";
-      
+
     if (isSpan) {
       // TODO:  if span logic moves into WDK, the code
       // for the span logic details box should move here.
@@ -889,8 +891,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     //     " style='width:500px'>" +
     //     "<div class='dragHandle'>" +
     //     "<div class='modal_name'>"+
-    //     "<span class='h3left'>" + sTitle + "</span>" + 
-    //     "</div>"+ 
+    //     "<span class='h3left'>" + sTitle + "</span>" +
+    //     "</div>"+
     //     "<a class='close_window' href='javascript:wdk.addStepPopup.closeModal()'>"+
     //     "<img alt='Close' src='" + wdk.assetsUrl('wdk/images/close.gif') + "' />" +
     //     "</a>"+
@@ -932,7 +934,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "' onclick=\"wdk.publicStrats.togglePublicFromLink(this, '" + id +
         "')\"><b style='font-size:120%'>" + publicizeLinkText + "</b></a>";
     */
-    
+
     var div_sn = document.createElement("div");
     var div_sm = document.createElement("div");
     var div_sm_html = '';
@@ -966,7 +968,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
       $(div_sm).html(div_sm_html);
     }//else{
-      //$(div_sn).html("<span style='font-size:14px;font-weight:bold' title='Name of this substrategy. To rename, click on the corresponding step name in the parent strategy'>" + name + "</span>" + "<span id='strategy_id_span' style='display: none;'>" + id + "</span>"); 
+      //$(div_sn).html("<span style='font-size:14px;font-weight:bold' title='Name of this substrategy. To rename, click on the corresponding step name in the parent strategy'>" + name + "</span>" + "<span id='strategy_id_span' style='display: none;'>" + id + "</span>");
     //}
     $(div_sm).css({'z-index' : 90}); // DO NOT DELETE, needed for IE7
     return [div_sn, div_sm];
@@ -1024,19 +1026,26 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     return inval;
   }
 
-  function createInvalidText() {
-    var t = document.createElement('div');
-    $(t).attr("id","invalid-step-text").attr('class','simple');
-    $.ajax({
-      url:"wdk/jsp/invalidText.jsp",
-      dataType: "html",
-      type:"get",
-      async:false,
-      success:function(data){
-        $(t).html(data); 
-      }
+  function getInvalidText() {
+    // memoize
+    if (getInvalidText.__value__) {
+      return Promise.resolve(getInvalidText.__value__);
+    }
+
+    return new Promise(function(resolve, reject) {
+      $.ajax({
+        url:"wdk/jsp/invalidText.jsp",
+        dataType: "html",
+        type:"get",
+        success:function(data) {
+          getInvalidText.__value__ = '<div id="invalid-step-text" class="simple">' + data + '</div>';
+          resolve(getInvalidText.__value__);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          reject(errorThrown);
+        }
+      });
     });
-    return t;
   }
 
   function closeInvalidText(ele) {
