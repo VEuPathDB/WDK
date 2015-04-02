@@ -1,20 +1,20 @@
 wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
   "use strict";
-  
+
   var publicStratDescriptionWarning = "Before making your strategy public, you " +
       "must add a description so others know how it can be used.";
-  
+
   function showPublicStrats() {
     $("body").block();
     $.ajax({
       url: "showPublicStrats.do",
       dataType: "html",
       success: function(data) {
-        
+
         // put retrieved html in the correct div and configure data table
         $("#public_strat").html(data);
         configurePublicStratTable();
-        
+
         // update the number of public strategies
         $("#strategy_tabs li a#tab_public_strat font.subscriptCount")
             .html("(" + $("#public_strat span#publicStrategyCount").html() + ")");
@@ -30,7 +30,7 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
       }
     });
   }
-  
+
   function configurePublicStratTable() {
     var drawFromSecondarySort = false;
     // these are the initial sort params (though always put project examples at top)
@@ -76,20 +76,22 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
     $('#public_strat table.datatables').parent().parent().parent().find('.dataTables_filter')
        .css("display","inline-block").css("margin","0").css("padding","5px 0 0 0");
   }
-  
+
   /* FIXME: First attempt at adding 'make public' link on right side of strategy display;
    *        Not called and does not work!  See also view.js, search 'publicizeStrat'
   function togglePublicFromLink(atag, stratId) {
-    var stratObj = wdk.strategy.model.getStrategyOBJ(stratId);
-    var isPublic = stratObj.isPublic;
-    //var description = atag.parents('.strategy-data').data('description');
-    //wdk.history.showUpdateDialog(this, false, true, true);
-    wdk.history.showUpdateDialog(atag, false, false, !isPublic);
-    //this, false, true, true
-    //showUpdateDialog(, save, fromHist, strat.isPublic);
+    wdk.strategy.model.getStrategyOBJ(stratId)
+      .then(function(stratObj) {
+        var isPublic = stratObj.isPublic;
+        //var description = atag.parents('.strategy-data').data('description');
+        //wdk.history.showUpdateDialog(this, false, true, true);
+        wdk.history.showUpdateDialog(atag, false, false, !isPublic);
+        //this, false, true, true
+        //showUpdateDialog(, save, fromHist, strat.isPublic);
+      });
   }
   */
-  
+
   function togglePublic(checkbox, stratId) {
     var isPublic = $(checkbox).prop('checked');
     var description = $(checkbox).parent().parent().find('.strategy_description div').html();
@@ -122,37 +124,37 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
       }
     });
   }
-  
+
   function goToPublicStrats() {
     // first set cookie to show public strats tab
     wdk.stratTabCookie.setCurrentTabCookie('application', 'public_strat');
     // then move location to strategies workspace
     window.location = "showApplication.do";
   }
-  
+
   function toggleSampleOnly(checkbox, authorFilterValue) {
     var authorColumnNumber = 4;
     // if box is checked then filter on this project's configured author; else clear filter
     var filterVal = ($(checkbox).prop('checked') ? authorFilterValue : '');
     getDataTable().fnFilter(filterVal,authorColumnNumber,false,true);
   }
-  
+
   function toggleSampleToTop(checkbox) {
     if ($(checkbox).prop('checked')) {
       sortSampleToTop();
     }
   }
-  
+
   function sortSampleToTop(secondarySort) {
     var newSortArray = (typeof secondarySort === 'undefined' ?
             [[0, 'desc']] : [[0, 'desc'], secondarySort]);
     getDataTable().fnSort(newSortArray);
   }
-  
+
   function getDataTable() {
     return $("#public_strat table.datatables").dataTable();
   }
-  
+
   // make the following methods "public" (i.e. available in the namespace)
   ns.showPublicStrats = showPublicStrats;
   ns.configurePublicStratTable = configurePublicStratTable;
@@ -163,5 +165,5 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
   ns.toggleSampleOnly = toggleSampleOnly;
   ns.toggleSampleToTop = toggleSampleToTop;
   ns.sortSampleToTop = sortSampleToTop;
-  
+
 });
