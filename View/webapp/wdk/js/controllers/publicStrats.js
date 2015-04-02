@@ -101,7 +101,7 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
       return;
     }
     $(checkbox).parent().find('img').css('display','inline-block');
-    jQuery.ajax({
+    $.ajax({
       type : "POST",
       url : "processPublicStratStatus.do",
       data : { "stratId" : stratId, "isPublic" : isPublic },
