@@ -125,7 +125,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     // We do this so custom Site submit handlers can cancel a form
     // submission just by calling event.preventDefault(), or
     // event.stopPropagation().
-    $(document.body).on('submit', 'form[name=questionForm]', wdk.addStepPopup.validateOperations);
+    $(document.body).on('submit', '#query_form form[name=questionForm]', wdk.addStepPopup.validateOperations);
   }
 
   /**
@@ -461,7 +461,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       if (view.action == "share" || view.action == "save") {
         var x = $("a#" + view.action + "_" + view.actionStrat);
         x.click();
-      }      
+      }
     }
     if (view.strategy !== undefined || view.step !== undefined) {
       var initStr = wdk.strategy.model.getStrategyFromBackId(view.strategy);
@@ -470,7 +470,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         newResults(-1);
       }
       else if (initStp.isLoading) {
-        newResults(-1);
+        // newResults(-1);
         wdk.util.showLoading(initStr.frontId);
       }
       else {
@@ -510,14 +510,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       {step:"#00A0A0", top:"#00A0A0", right:"#00A0A0", bottom:"#00A0A0", left:"#00A0A0"},
       {step:"#0000A0", top:"#0000A0", right:"#0000A0", bottom:"#0000A0", left:"#0000A0"}
     ];
-    var sCount = 0;
-    var subs;
-    var j;
-    for (j in strategy.subStratOrder) {
-      sCount++;
-    }
-    for (j=1; j<=sCount; j++) {
-      subs = wdk.strategy.model.getStrategy(strategy.subStratOrder[j]);
+    Object.keys(strategy.subStratOrder).sort().forEach(function(j) {
+      var subs = wdk.strategy.model.getStrategy(strategy.subStratOrder[j]);
       var subStrategyDiv = wdk.strategy.view.displayModel(subs);
       subs.color = parseInt(strategy.getStep(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]).backId.split("_")[1],false).frontId, 10) % colors.length;
       $(subStrategyDiv).addClass("sub_diagram").css({
@@ -529,7 +523,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       if (wdk.strategy.model.getSubStrategies(strategy.subStratOrder[j]).length > 0) {
         displayOpenSubStrategies(wdk.strategy.model.getStrategy(strategy.subStratOrder[j]),div);
       }
-    }
+    });
   }
 
   function showInstructions() {
@@ -562,11 +556,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   The following two functions don't appear to be used, but keeping around in case we need it. dmf
 
   function getInstructionsHtml() {
-    var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='" + wdk.assetsUrl('wdk/images/lookUp2.png') + "' width='45px'/>"; 
+    var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='" + wdk.assetsUrl('wdk/images/lookUp2.png') + "' width='45px'/>";
     if ($("#tab_strategy_new").length > 0) {
       arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='" + wdk.assetsUrl('wdk/images/lookUp.png') + "' width='45px'/>" + arrow_image;
     }
-    
+
     arrow_image += getInstructionsText();
     return arrow_image;
   }
@@ -598,7 +592,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     } else {
       strat = wdk.strategy.model.getStrategyFromBackId(strategy.id);
       strat.subStratOrder = {};
-    }    
+    }
     if (strategy.importId !== "") {
       strat.isDisplay = true;
       strat.checksum = ns.state[ord].checksum;
@@ -692,7 +686,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
     if (!pagerOffset) {
       data.noskip = 1;
-    } else { 
+    } else {
       data.pager = { offset: pagerOffset };
     }
 
@@ -733,7 +727,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           wdk.resultsPage.resultsToGrid(data, ignoreFilters, $("#strategy_results .Workspace"));
           // update results pane title
           wdk.resultsPage.updateResultLabels($("#strategy_results .Workspace"), strategy, step);
-          
+
           // remember user's action, if user is not logged in,
           // and tries to save, this place holds the previous
           // action the user was doing.
@@ -831,7 +825,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       url = "deleteStep.do?strategy=" + strategy.backId + "&step=" +
           step.back_boolean_Id + "&strategy_checksum=" + cs;
     }
-      
+
     $.ajax({
       url: url,
       type: "post",
@@ -845,7 +839,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           updateStrategies(data);
         } else {
           wdk.util.removeLoading(strategy.frontId);
-        }  
+        }
       }
     });
   }
@@ -861,7 +855,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         step.back_step_Id + "&collapsedName=" + collapsedName +
         "&strategy_checksum=" + cs;
     if (uncollapse) url += "&uncollapse=true";
-    
+
     $.ajax({
       url: url,
       type: "post",
@@ -1001,9 +995,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     if (result === false) return;
     var url = "copyStrategy.do?strategy=" + stratId + "&strategy_checksum=" +
         ss.checksum;
-    $.ajax({  
+    $.ajax({
       url: url,
-      dataType: "json", 
+      dataType: "json",
       data: "state=" + ns.stateString,
       beforeSend: function() {
         if (!fromHist) {
@@ -1105,10 +1099,10 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     if (showAnalysisWarning) {
       $('<div style="font-size: 120%;">' +
           '<h3 style="margin:0;padding:0">Warning</h3>' +
-          '<p><img width="20" alt="filtering icon" src="' + 
-         wdk.assetsUrl('wdk/images/filter-short.png') + '"/>' + 
-        ' Clicking this will change the gene ' + 
-        ' results that were used to generate your analyses.' + 
+          '<p><img width="20" alt="filtering icon" src="' +
+         wdk.assetsUrl('wdk/images/filter-short.png') + '"/>' +
+        ' Clicking this will change the gene ' +
+        ' results that were used to generate your analyses.' +
          ' Analysis results for this and subsequent strategy steps will be lost.' +
           '&nbsp;  <a style="font-size:80%" href="' + wdk.webappUrl('/analysisTools.jsp') + '" target="_blank">(Learn more...)</a></p>' +
         '</div>')

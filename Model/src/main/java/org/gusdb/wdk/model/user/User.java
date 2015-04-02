@@ -1299,7 +1299,7 @@ public class User /* implements Serializable */{
 
   public int getStrategyOrder(String strategyKey) {
     int order = activeStrategyFactory.getOrder(strategyKey);
-    System.out.println("strat " + strategyKey + " order: " + order);
+    logger.debug("strat " + strategyKey + " order: " + order);
     return order;
   }
 
