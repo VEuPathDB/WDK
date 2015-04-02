@@ -867,7 +867,7 @@ a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =RESULTS PAGE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#form_question .filter-button { 
+form[name=questionForm] .filter-button { 
 	text-align: center; 
 	padding-top: 1em;
 }

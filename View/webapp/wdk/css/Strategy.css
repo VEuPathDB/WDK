@@ -916,7 +916,7 @@ div.bottom-close{
   margin: auto;
 }
 
-.crumb_details #form_question {
+.crumb_details form[name=questionForm] {
   border: 1px solid black;
   background-color: white;
   margin: 0 5px;

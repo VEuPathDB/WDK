@@ -20,7 +20,8 @@ var runApplication = function runApplication({
   actionCreators,
   rootElement,
   routerLocation,
-  recordComponentResolver = noop
+  recordComponentResolver = noop,
+  cellRendererResolver = noop
 }) {
 
   if (dispatcher == null) {
@@ -63,6 +64,9 @@ var runApplication = function runApplication({
     },
     getRecordComponent(recordClass, defaultComponent) {
       return recordComponentResolver(recordClass, defaultComponent);
+    },
+    getCellRenderer(recordClass, defaultRenderer) {
+      return cellRendererResolver(recordClass, defaultRenderer);
     }
   };
 

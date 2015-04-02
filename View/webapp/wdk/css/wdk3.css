@@ -21,13 +21,13 @@ main {
   position: relative;
   min-height: 200px;
 }
-h1 {
+main h1 {
   text-align: left;
 }
-h3 {
+main h3 {
   margin: 22px 0 8px 0;
 }
-h4 {
+main h4 {
   margin: 10px 0 8px 0;
 }
 
@@ -43,8 +43,16 @@ h4 {
 }
 
 .wdk-Answer-filter {
-  float: right;
-  margin-right: 1.5em;
+  display: inline-block;
+}
+.wdk-Answer-filterIcon {
+  color: gray;
+  position: relative;
+  left: -20.5em;
+}
+.wdk-Answer-filterInput {
+  padding: .5em .5em .5em 2em;
+  width: 25em;
 }
 .wdk-Answer-filterButton {
   border: none;
@@ -52,6 +60,9 @@ h4 {
   color: #5F0F47;
   vertical-align: middle;
   padding: 6px;
+}
+.wdk-Answer-count {
+  display: inline-block;
 }
 
 .wdk-RecordTable-Wrapper {
@@ -61,7 +72,7 @@ h4 {
 }
 
 .wdk-RecordTable {
-  border-collapse: collapse;
+  margin-top: 1em;
 }
 
 .wdk-RecordTable td, .wdk-RecordTable th {
@@ -79,6 +90,9 @@ h4 {
 .wdk-RecordTable-headerWrapper {
   position: relative;
 }
+.wdk-RecordTable-headerWrapper_sortable {
+  cursor: pointer;
+}
 
 .wdk-RecordTable th {
   border: 1px solid #cccccc;
@@ -93,24 +107,44 @@ h4 {
   display: inline-block;
 }
 
+.wdk-RecordTable-AttributeSelectorOpenButton {
+  position: absolute;
+  right: 2em;
+  top: 3em;
+  font-size:1.2em; 
+}
 .wdk-RecordTable-attributeValue {
   line-height: 1.6;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .wdk-RecordTable-headerWrapper .ui-icon-close {
-  visibility: hidden;
+  /*visibility: hidden;*/
   cursor: pointer;
   float: right;
 }
 
+/*
 .wdk-RecordTable-headerWrapper:hover .ui-icon-close {
   visibility: visible;
 }
+*/
 
 .wdk-RecordTable-headerWrapper .ui-icon {
   display: inline-block;
   vertical-align: middle;
   margin-right: .5em;
+}
+
+.wdk-RecordTable-headerWrapper .fa {
+  margin-left: .5em;
+}
+
+.wdk-RecordTable-unsorted {
+  color: rgb(170, 170, 170);
+  color: rgba(0, 0, 0, 0.26);
 }
 
 .wdk-RecordTable-AttributeSelectorWrapper {

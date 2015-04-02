@@ -7,7 +7,8 @@ my $GUS_HOME = $ENV{GUS_HOME};
 my $CLASSPATH = &FgpUtil::Util::CommandHelper::getJavaClasspath($GUS_HOME);
 my $sysProps = &FgpUtil::Util::CommandHelper::getSystemProps($GUS_HOME, 'wdkRunPublicStrats');
 my $args = &FgpUtil::Util::CommandHelper::getJavaArgs(@ARGV);
+my $envJvmOpts = $ENV{GUSJVMOPTS};
 
-my $cmd = "java $sysProps -classpath $CLASSPATH org.gusdb.wdk.model.fix.RunPublicStrats $args";
+my $cmd = "java $sysProps $envJvmOpts -classpath $CLASSPATH org.gusdb.wdk.model.fix.RunPublicStrats $args";
 
 system($cmd);

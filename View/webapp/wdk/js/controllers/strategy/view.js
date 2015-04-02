@@ -535,8 +535,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     if (jsonStep.isboolean && !jsonStep.isCollapsed) {
       var url = "wizard.do?action=revise&step=" + modelstep.back_boolean_Id + "&";
-      var oform = "<form id='form_question' class='clear' " +
-          "enctype='multipart/form-data' name='questionForm'>";
+      var oform = "<form class='clear' enctype='multipart/form-data' name='questionForm'>";
       var cform = "</form>";
       var stage_input = "<input type='hidden' id='stage' value='process_boolean'/>";
       params_table = "<div class='filter operators'>" +
@@ -803,12 +802,25 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   }
 
   function getParamDisplay(param) {
+    var display;
+
     if (param.className === 'org.gusdb.wdk.model.jspwrap.FilterParamBean') {
       var filters = JSON.parse(param.display);
-      return _.pluck(filters, 'display').join(', <br>');
+      if (!Array.isArray(filters)) {
+        console.error("Expected param.display to be a JSON array. Instead got ", param.display);
+        display = param.display;
+      }
+      else {
+        display = filters.length
+          ? _.pluck(filters, 'display').join(', <br>')
+          : 'All ' + param.prompt;
+      }
+    }
+    else {
+      display = param.display;
     }
 
-    return param.display;
+    return display;
   }
 
   // HANDLE THE DISPLAY OF THE STRATEGY RECORD TYPE DIV

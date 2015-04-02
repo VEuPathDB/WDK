@@ -316,10 +316,6 @@ public class StepBean {
         return step.isCombined();
     }
 
-    public boolean isUseBooleanFilter() throws WdkModelException {
-        return step.isUseBooleanFilter();
-    }
-
     public boolean isFiltered() {
         return step.isFiltered();
     }

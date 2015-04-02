@@ -1281,8 +1281,6 @@ public class User /* implements Serializable */{
 
     String operatorString = operator.getBaseOperator();
     params.put(booleanQuery.getOperatorParam().getName(), operatorString);
-    params.put(booleanQuery.getUseBooleanFilter().getName(),
-        Boolean.toString(useBooleanFilter));
 
     Step booleanStep;
     try {
@@ -1298,7 +1296,7 @@ public class User /* implements Serializable */{
 
   public int getStrategyOrder(String strategyKey) {
     int order = activeStrategyFactory.getOrder(strategyKey);
-    System.out.println("strat " + strategyKey + " order: " + order);
+    logger.debug("strat " + strategyKey + " order: " + order);
     return order;
   }
 

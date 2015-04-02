@@ -217,8 +217,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("type", MESSAGE_TYPE_OUT_OF_SYNC_ERROR);
 
         // get a list of strategy checksums
-        outputCommon(user, jsMessage);
         outputStrategies(model, user, jsMessage, strategies, false);
+        outputCommon(user, jsMessage);
 
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
@@ -240,8 +240,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("isPublicDup", isDupPublic);
 
         // get a list of strategy checksums
-        outputCommon(user, jsMessage);
         outputStrategies(model, user, jsMessage, strategies, false);
+        outputCommon(user, jsMessage);
 
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
@@ -260,8 +260,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
 
         // get a list of strategy checksums
-        outputCommon(user, jsMessage);
         outputStrategies(model, user, jsMessage, displayStrategies, updateResults);
+        outputCommon(user, jsMessage);
 
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());

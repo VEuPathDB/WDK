@@ -1,6 +1,6 @@
 import partial from 'lodash/function/partial';
 import noop from 'lodash/utility/noop';
-import FixedDataTable from 'fixed-data-table';
+import { Table } from 'fixed-data-table';
 import React from 'react/addons';
 
 /**
@@ -11,15 +11,10 @@ import React from 'react/addons';
  *
  */
 
-const { Table } = FixedDataTable;
 const SORT_CLASS_MAP = {
-  ASC:  'ui-icon ui-icon-triangle-1-n',
-  DESC: 'ui-icon ui-icon-triangle-1-s'
+  ASC:  'fa fa-lg fa-sort-alpha-asc',
+  DESC: 'fa fa-lg fa-sort-alpha-desc'
 };
-// const SORT_CLASS_MAP = {
-//   ASC:  'fa fa-lg fa-sort-alpha-asc',
-//   DESC: 'fa fa-lg fa-sort-alpha-desc'
-// };
 
 // Bookkeeping for `Table` prop `isColumnResizing`.
 let isColumnResizing = false;
@@ -90,17 +85,20 @@ const WdkTable = React.createClass({
   },
 
   renderHeader(columnComponent, ...rest) {
-    const { dataKey, headerRenderer } = columnComponent.props;
+    const { dataKey, headerRenderer, isRemovable, isSortable } = columnComponent.props;
+    const className = 'wdk-RecordTable-headerWrapper' +
+      (isSortable ? ' wdk-RecordTable-headerWrapper_sortable' : '');
     const sortClass = this.props.sortDataKey == columnComponent.props.dataKey
-      ? SORT_CLASS_MAP[this.props.sortDirection] : '';
-    const sort = partial(this.handleSort, dataKey);
+      ? SORT_CLASS_MAP[this.props.sortDirection] : SORT_CLASS_MAP['ASC'] + ' wdk-RecordTable-unsorted';
+    const sort = isSortable ? partial(this.handleSort, dataKey) : noop;
     const hide = partial(this.handleHideColumn, dataKey);
+    const title = isSortable ? 'Click to sort table by this column.' : '';
 
     return (
-      <div onClick={sort} className="wdk-RecordTable-headerWrapper">
+      <div title={title} onClick={sort} className={className}>
         <span>{headerRenderer ? headerRenderer(...rest) : rest[0]}</span>
-        <span className={sortClass}/>
-        {columnComponent.props.isRemovable ? (
+        {isSortable ? <span className={sortClass}/> : null}
+        {isRemovable ? (
           <span className="ui-icon ui-icon-close"
             title="Hide column"
             onClick={hide}/>

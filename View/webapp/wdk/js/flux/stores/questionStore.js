@@ -15,8 +15,7 @@ export default createStore ({
     switch(action.type) {
 
       case ActionType.QUESTION_LOAD_SUCCESS:
-        var questions = this.state.get('questions');
-        this.state = this.state.set('questions',  questions.push(action.question));
+        this.state = this.state.mergeIn(['questions'], [action.question]);
         emitChange();
         break;
 
@@ -48,6 +47,6 @@ export default createStore ({
   },
 
   getState() {
-    return this.state.toJS();
+    return this.state;
   }
 });

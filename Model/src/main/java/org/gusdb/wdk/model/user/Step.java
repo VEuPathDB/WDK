@@ -1029,15 +1029,6 @@ public class Step {
     return answerValue;
   }
 
-  public boolean isUseBooleanFilter() throws WdkModelException {
-    if (!isBoolean())
-      return false;
-    BooleanQuery query = (BooleanQuery) getQuestion().getQuery();
-    String paramName = query.getUseBooleanFilter().getName();
-    String strBooleanFlag = paramValues.get(paramName);
-    return Boolean.parseBoolean(strBooleanFlag);
-  }
-
   public void setAnswerValue(AnswerValue answerValue) {
     this.answerValue = answerValue;
   }

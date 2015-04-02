@@ -329,6 +329,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             cellDataGetter={this.getCellData}
             cellRenderer={this.renderPk}
             isRemovable={false}
+            isSortable={true}
           />
           {selectedFields.map(field => {
             return (
@@ -338,6 +339,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                 width={200}
                 cellDataGetter={this.getCellData}
                 isRemovable={true}
+                isSortable={true}
               />
             );
           })}
@@ -367,6 +369,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       return Object.assign({
         sortTerm: '__primary_key__',
         sortDirection: 'ASC',
+        collapsed: false,
       }, this.props.store.getState());
     },
 
@@ -438,6 +441,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
         columns,
         ignored,
         filters,
+        invalidFilters,
         selectedField,
         distributionMap,
         isLoading,
@@ -474,22 +478,29 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             dataCount={data.length}
             selectedField={selectedField}/>
 
+          <InvalidFilterList filters={invalidFilters}/>
+
           <div className="filter-view">
-            <div className="collapse-wrapper" style={{ display: this.state.collapsed ? 'none' : 'block' }}>
-              <a href="#" onClick={this.handleCollapseClick}>Collapse</a>
-            </div>
             <button onClick={this.handleExpandClick}
               style={{
                 display: !this.state.collapsed ? 'none' : 'block'
-              }} >Filter {displayName}</button>
+              }} >Select {displayName}</button>
 
             {/* Tabs */}
 
             <div className="filter-param-tabs" style={{ display: this.state.collapsed ? 'none' : 'block' }}>
-              <ul>
-                <li><a href="#filters">Filter {displayName}</a></li>
-                <li><a href="#data">View filtered {displayName} ({filteredData.length})</a></li>
+              <ul className="wdk-AttributeFilter-TabNav">
+                <li><a href="#filters">Select {displayName}</a></li>
+                <li><a href="#data">View selected {displayName} ({filteredData.length})</a></li>
+                <li>
+                  <span
+                    className="wdk-AttributeFilter-Collapse link"
+                    title="Hide selection tool"
+                    onClick={this.handleCollapseClick}
+                  >Collapse</span>
+                </li>
               </ul>
+
 
               {/* Main selection UI */}
               <div id="filters">
@@ -529,6 +540,27 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
               </div>
             </div>
           </div>
+        </div>
+      );
+    }
+  });
+
+  var InvalidFilterList = React.createClass({
+    render: function() {
+      var { filters } = this.props;
+
+      if (_.isEmpty(filters)) return null;
+
+      return (
+        <div className="invalid-values">
+          <p>Some of the options you previously selected are no longer available:</p>
+          <ul>
+            {_.map(filters, function(filter) {
+              return (
+                <li className="invalid">{filter.display}</li>
+              );
+            }, this)}
+          </ul>
         </div>
       );
     }

@@ -11,9 +11,7 @@ wdk.util.namespace("window.wdk.strategy.error", function (ns, $) {
   function ErrorHandler(evt, data, strategy, qform, name, fromHist) {
     var type = null;
 
-    if ($("form#form_question table.parameter-errors").length > 0) {
-      $("form#form_question table.parameter-errors").remove();
-    }
+    $("#query_form form[name=questionForm] .paramter-errors").remove();
 
     if (evt == "Results") {
       if (data.substring(0,1) != "{") return true;
