@@ -112,6 +112,7 @@ public class SharedStepsResolver extends BaseCLI {
 
   private void mapSharedRootSteps(WdkModel wdkModel, DataSource dataSource, String userSchema)
       throws WdkModelException {
+		LOG.debug("\n\nDealing with shared root steps");
     String strategyTable = userSchema + "strategies";
     String sqlSelect = "SELECT strategy_id, root_step_id FROM " + strategyTable +
         "  WHERE root_step_id IN (SELECT root_step_id FROM " + strategyTable +
@@ -154,6 +155,7 @@ public class SharedStepsResolver extends BaseCLI {
 
   private void mapSharedChildSteps(WdkModel wdkModel, DataSource dataSource, String userSchema, boolean left)
       throws WdkModelException {
+		LOG.debug("\n\nDealing with shared child steps, left child??? " + left);
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
     String column = left ? "left_child_id" : "right_child_id";
     String stepTable = userSchema + "steps";
@@ -244,7 +246,7 @@ public class SharedStepsResolver extends BaseCLI {
     finally {
       SqlUtils.closeResultSetAndStatement(resultSet);
       SqlUtils.closeStatement(psUpdate);
-      //SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
+      SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
     }
   }
 
