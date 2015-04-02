@@ -1281,8 +1281,6 @@ public class User /* implements Serializable */{
 
     String operatorString = operator.getBaseOperator();
     params.put(booleanQuery.getOperatorParam().getName(), operatorString);
-    params.put(booleanQuery.getUseBooleanFilter().getName(),
-        Boolean.toString(useBooleanFilter));
 
     Step booleanStep;
     try {

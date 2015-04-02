@@ -7,9 +7,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 
@@ -52,12 +50,6 @@ public class BooleanQueryInstance extends SqlQueryInstance {
   @Override
   public String getUncachedSql() throws WdkModelException, WdkUserException {
 
-    // needs to apply the view to each operand before boolean
-    // get the use_boolean filter param
-    boolean booleanFlag = isUseBooleanFilter();
-
-    logger.info("Boolean expansion flag: " + booleanFlag);
-
     Map<String, String> InternalValues = getParamInternalValues();
 
     // parse operator
@@ -69,12 +61,14 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     // construct the filter query for the first child
     AnswerParam leftParam = booleanQuery.getLeftOperandParam();
     String leftSubSql = InternalValues.get(leftParam.getName());
-    String leftSql = constructOperandSql(leftSubSql, booleanFlag);
+    String leftSql = constructOperandSql(leftSubSql);
+    leftSql = preProcessOperandSql(leftSql, "Left");
 
     AnswerParam rightParam = booleanQuery.getRightOperandParam();
     String rightSubSql = InternalValues.get(rightParam.getName());
-    String rightSql = constructOperandSql(rightSubSql, booleanFlag);
-
+    String rightSql = constructOperandSql(rightSubSql);
+    rightSql = preProcessOperandSql(rightSql, "Right");
+    
     String sql;
     if (op == BooleanOperator.UNION) {
       sql = getUnionSql(leftSql, rightSql, operator);
@@ -98,24 +92,16 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     return sql;
   }
 
-  private String constructOperandSql(String subSql, boolean booleanFlag)
+  private String constructOperandSql(String subSql)
       throws WdkModelException, WdkUserException {
-    RecordClass recordClass = booleanQuery.getRecordClass();
-    // apply the filter query if needed
-    AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();
-    if (booleanFlag && filter != null) {
-      // here the assigned weight comes from the boolean query itself,
-      // since the filter is the boolean extension filter.
-      subSql = filter.applyFilter(user, subSql, assignedWeight);
-    }
 
     // limit the column output
     StringBuffer sql = new StringBuffer();
 
     // fix the returned columns to be the pk columns, plus weight column
     sql.append("SELECT " + Utilities.COLUMN_WEIGHT);
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = getPkColumns();
+
     for (String column : pkColumns) {
       sql.append(", " + column);
     }
@@ -123,19 +109,13 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     return sql.toString();
   }
 
-  public boolean isUseBooleanFilter() {
-    StringParam useBooleanFilter = booleanQuery.getUseBooleanFilter();
-    String strBooleanFlag = stableValues.get(useBooleanFilter.getName());
-    return Boolean.parseBoolean(strBooleanFlag);
-  }
-
   private String getUnionSql(String leftSql, String rightSql, String operator) {
     // just sum the weight from original sql
     StringBuffer sql = new StringBuffer();
     sql.append("SELECT ");
 
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = getPkColumns();
+
     for (String column : pkColumns) {
       sql.append(column + ", ");
     }
@@ -161,8 +141,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     StringBuffer sql = new StringBuffer();
     sql.append("SELECT ");
 
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+    String[] pkColumns = getPkColumns();
+
     for (String column : pkColumns) {
       sql.append(column + ", ");
     }
@@ -185,8 +165,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
   private String getOtherOperationSql(String leftSql, String rightSql,
       String operator) {
-    RecordClass rc = booleanQuery.getRecordClass();
-    String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+
+    String[] pkColumns = getPkColumns();
 
     // first do boolean operation on primary keys only
     StringBuffer leftPiece = new StringBuffer();
@@ -212,5 +192,24 @@ public class BooleanQueryInstance extends SqlQueryInstance {
       sql.append("o." + pkColumns[i] + " = b." + pkColumns[i]);
     }
     return sql.toString();
+  }
+  
+  /**
+   * get the columns to do the boolean operation on
+   * subclasses can override to provide custom pk columns
+   * @return
+   */
+  protected String[] getPkColumns() {
+	  RecordClass rc = booleanQuery.getRecordClass();
+	  return rc.getPrimaryKeyAttributeField().getColumnRefs();
+  }
+  
+  /**
+   * subclasses can override to provide custom preprocessing
+   * @param operandSql
+   * @return
+   */
+  protected String preProcessOperandSql(String operandSql, String leftOrRight) {
+	  return operandSql;
   }
 }

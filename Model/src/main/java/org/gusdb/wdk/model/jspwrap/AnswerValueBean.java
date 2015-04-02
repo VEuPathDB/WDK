@@ -179,7 +179,11 @@ public class AnswerValueBean {
         return answerValue.getResultSize();
     }
 
-    public Map<String, Integer> getResultSizesByProject()
+    public int getDisplayResultSize() throws WdkModelException, WdkUserException {
+        return answerValue.getDisplayResultSize();
+    }
+
+   public Map<String, Integer> getResultSizesByProject()
             throws WdkModelException, WdkUserException {
         return answerValue.getResultSizesByProject();
     }
