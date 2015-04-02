@@ -66,7 +66,7 @@ public class WdkAnswerRequest {
     Map<String, Object> inputValueMap = getContextValues(jsonArray);
     List<FilterValue> filterValues = new ArrayList<>();
     for (String filterName : inputValueMap.keySet()) {
-      AnswerFilterInstance filter = question.getRecordClass().getFilter(filterName);
+      AnswerFilterInstance filter = question.getRecordClass().getFilterInstance(filterName);
       if (filter == null) {
         throw new WdkUserException("Filter name " + filterName +
             " does not exist for record class " + question.getRecordClass().getFullName());

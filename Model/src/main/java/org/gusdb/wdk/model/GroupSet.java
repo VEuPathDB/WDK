@@ -15,7 +15,7 @@ import java.util.Map;
  * @created: Mar 1, 2007
  * @updated: Mar 1, 2007
  */
-public class GroupSet extends WdkModelBase implements ModelSetI {
+public class GroupSet extends WdkModelBase implements ModelSetI<Group> {
 
   private String name;
   private List<Group> groupList = new ArrayList<Group>();
@@ -53,7 +53,7 @@ public class GroupSet extends WdkModelBase implements ModelSetI {
    * @see org.gusdb.wdk.model.ModelSetI#getElement(java.lang.String)
    */
   @Override
-  public Object getElement(String elementName) {
+  public Group getElement(String elementName) {
     return groupMap.get(elementName);
   }
 

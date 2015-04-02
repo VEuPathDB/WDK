@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
+import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
@@ -245,7 +246,7 @@ public class QuestionBean {
     AnswerFilterInstance filter = null;
     if (filterName != null) {
       RecordClass recordClass = question.getRecordClass();
-      filter = recordClass.getFilter(filterName);
+      filter = recordClass.getFilterInstance(filterName);
     }
     AnswerValue answerValue = question.makeAnswerValue(user.getUser(),
         paramValues, pageStart, pageEnd, sortingMap, filter, validate,
@@ -450,4 +451,14 @@ public class QuestionBean {
     question.getQuery().fillContextParamValues(user.getUser(),
         contextParamValues);
   }
+
+  public Map<String, Filter> getFilters() {
+    return question.getFilters();
+  }
+
+  public Filter getFilter(String filterName) throws WdkModelException {
+    return question.getFilter(filterName);
+  }
+  
+  
 }

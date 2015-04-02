@@ -24,7 +24,7 @@ import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FilterParamHandler;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -165,7 +165,10 @@ public class StepParamExpander extends BaseCLI {
       throws WdkModelException, JSONException {
     Map<String, Set<String>> newValues = new LinkedHashMap<>();
     if (clob != null && clob.length() > 0) {
-      Map<String, String> values = StepFactory.parseParamContent(new JSONObject(clob));
+      // create a temp step to process the json and extract param values.
+      Step step = new Step(null, 0, 0);
+      step.setParamFilterJSON(new JSONObject(clob));
+      Map<String, String> values = step.getParamValues();
       for (String paramName : values.keySet()) {
         String value = values.get(paramName);
         String[] terms;

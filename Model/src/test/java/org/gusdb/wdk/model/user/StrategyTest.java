@@ -134,7 +134,7 @@ public class StrategyTest {
   public void testChangeBooleanStepFilter() throws Exception {
     Step step1 = UnitTestHelper.createNormalStep(user);
     RecordClass recordClass = step1.getQuestion().getRecordClass();
-    AnswerFilterInstance[] filters = recordClass.getFilters();
+    AnswerFilterInstance[] filters = recordClass.getFilterInstances();
     if (filters.length == 0)
       return; // no filter exists skip the test
 
@@ -161,7 +161,7 @@ public class StrategyTest {
     Step oldStep = UnitTestHelper.createNormalStep(user);
 
     RecordClass recordClass = oldStep.getQuestion().getRecordClass();
-    AnswerFilterInstance[] filters = recordClass.getFilters();
+    AnswerFilterInstance[] filters = recordClass.getFilterInstances();
     if (filters.length == 0)
       return; // no filter exists skip the test
 
@@ -187,7 +187,7 @@ public class StrategyTest {
 
     Step step2 = UnitTestHelper.createNormalStep(user);
     RecordClass recordClass = step2.getQuestion().getRecordClass();
-    AnswerFilterInstance[] filters = recordClass.getFilters();
+    AnswerFilterInstance[] filters = recordClass.getFilterInstances();
     if (filters.length == 0)
       return; // no filter exists skip the test
 
@@ -218,7 +218,7 @@ public class StrategyTest {
     Step step2 = UnitTestHelper.createNormalStep(user);
     RecordClass recordClass = step2.getQuestion().getRecordClass();
     AnswerFilterInstance booleanFilter = recordClass.getDefaultFilter();
-    AnswerFilterInstance[] filters = recordClass.getFilters();
+    AnswerFilterInstance[] filters = recordClass.getFilterInstances();
     if (filters.length == 0)
       return; // no filter exists skip the test
 
@@ -304,7 +304,7 @@ public class StrategyTest {
     Step step2 = UnitTestHelper.createNormalStep(user);
     RecordClass recordClass = step2.getQuestion().getRecordClass();
     AnswerFilterInstance booleanFilter = recordClass.getDefaultFilter();
-    AnswerFilterInstance[] filters = recordClass.getFilters();
+    AnswerFilterInstance[] filters = recordClass.getFilterInstances();
     if (filters.length == 0)
       return; // no filter exists skip the test
 
@@ -343,7 +343,7 @@ public class StrategyTest {
     Step step2 = UnitTestHelper.createNormalStep(user);
     RecordClass recordClass = step2.getQuestion().getRecordClass();
     AnswerFilterInstance booleanFilter = recordClass.getDefaultFilter();
-    AnswerFilterInstance[] filters = recordClass.getFilters();
+    AnswerFilterInstance[] filters = recordClass.getFilterInstances();
     if (filters.length == 0)
       return; // no filter exists skip the test
 

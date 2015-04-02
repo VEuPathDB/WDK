@@ -16,7 +16,7 @@ import org.gusdb.wdk.model.WdkModelException;
  * @author jerric
  *
  */
-public class ParamSet extends WdkModelBase implements ModelSetI {
+public class ParamSet extends WdkModelBase implements ModelSetI<Param> {
 
     private List<Param> paramList = new ArrayList<Param>();
     private Map<String, Param> paramMap = new LinkedHashMap<String, Param>();
@@ -43,7 +43,7 @@ public class ParamSet extends WdkModelBase implements ModelSetI {
     }
 
     @Override
-    public Object getElement(String name) {
+    public Param getElement(String name) {
         return paramMap.get(name);
     }
 

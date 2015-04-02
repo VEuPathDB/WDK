@@ -18,7 +18,7 @@ import org.gusdb.wdk.model.WdkModelText;
  * @author Jerric
  * @created Oct 14, 2005
  */
-public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
+public class XmlQuestionSet extends WdkModelBase implements ModelSetI<XmlQuestion> {
 
     private String name;
     private String displayName;
@@ -115,7 +115,7 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
      * @see org.gusdb.wdk.model.ModelSetI#getElement(java.lang.String)
      */
     @Override
-    public Object getElement(String elementName) {
+    public XmlQuestion getElement(String elementName) {
         return questions.get(elementName);
     }
 

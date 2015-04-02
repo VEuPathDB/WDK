@@ -101,7 +101,7 @@ public class SummaryTester {
       AnswerFilterInstance filter = null;
       if (cmdLine.hasOption(ARG_FILTER)) {
         String filterName = cmdLine.getOptionValue(ARG_FILTER);
-        filter = question.getRecordClass().getFilter(filterName);
+        filter = question.getRecordClass().getFilterInstance(filterName);
         if (filter == null)
           throw new WdkUserException("Given filter name doesn't exist: "
               + filterName);
