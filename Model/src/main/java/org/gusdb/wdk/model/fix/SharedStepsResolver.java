@@ -154,7 +154,7 @@ public class SharedStepsResolver extends BaseCLI {
   }
 
   private void mapSharedChildSteps(WdkModel wdkModel, DataSource dataSource, String userSchema, boolean left)
-      throws WdkModelException {
+		throws WdkModelException {
 		LOG.debug("\n\nDealing with shared child steps, left child??? " + left);
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
     String column = left ? "left_child_id" : "right_child_id";
@@ -203,7 +203,6 @@ public class SharedStepsResolver extends BaseCLI {
     finally {
       SqlUtils.closeResultSetAndStatement(resultSet);
       SqlUtils.closeStatement(psUpdate);
-      SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
     }
   }
 
@@ -247,7 +246,7 @@ public class SharedStepsResolver extends BaseCLI {
     finally {
       SqlUtils.closeResultSetAndStatement(resultSet);
       SqlUtils.closeStatement(psUpdate);
-      //SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
+      SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
     }
   }
 
