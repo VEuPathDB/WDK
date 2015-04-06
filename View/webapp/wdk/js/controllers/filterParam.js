@@ -103,9 +103,10 @@ wdk.namespace('wdk.controllers', function(ns) {
       // Set default values
       // ---------------------------
 
-      var selectedField = options.filters.length
+      var selectedField = options.filter && options.filters.length
         ? options.filters[0].field
-        : _.find(options.fields, { leaf: 'true' });
+        : null;
+        // : _.find(options.fields, { leaf: 'true' });
 
 
       var filterService = LazyFilterService.create({

@@ -125,8 +125,9 @@ wdk.namespace('wdk.models.filter', function(ns) {
       }
 
       // selected field
-      this.selectedField = attrs.selectedField;
-      this.setSelectedField(attrs.selectedField);
+      if (attrs.selectedField) {
+        this.setSelectedField(attrs.selectedField);
+      }
 
       // apply filters
       this.getFilteredData(this.filters)
