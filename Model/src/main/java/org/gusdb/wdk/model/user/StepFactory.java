@@ -344,7 +344,8 @@ public class StepFactory {
     }
 
     // update step dependencies
-    updateStepTree(user, step);
+    if (step.isCombined())
+      updateStepTree(user, step);
 
     return step;
   }
@@ -673,11 +674,13 @@ public class StepFactory {
       String leftKey = displayParams.get(leftParam.getName());
       String leftStepKey = leftKey.substring(leftKey.indexOf(":") + 1);
       leftStepId = Integer.parseInt(leftStepKey);
+      dropDependency(leftStepId, COLUMN_LEFT_CHILD_ID);
 
       AnswerParam rightParam = booleanQuery.getRightOperandParam();
       String rightKey = displayParams.get(rightParam.getName());
       String rightStepKey = rightKey.substring(rightKey.indexOf(":") + 1);
       rightStepId = Integer.parseInt(rightStepKey);
+      dropDependency(rightStepId, COLUMN_RIGHT_CHILD_ID);
 
       StringParam operatorParam = booleanQuery.getOperatorParam();
       String operator = displayParams.get(operatorParam.getName());
@@ -733,6 +736,19 @@ public class StepFactory {
     }
     finally {
       SqlUtils.closeStatement(psUpdateStepTree);
+    }
+  }
+  
+  private int dropDependency(int stepId, String column) throws WdkModelException {
+    String sql = "UPDATE " + userSchema + "steps SET " + column +" = null WHERE " + column + " = " + stepId;
+    try {
+      int count = SqlUtils.executeUpdate(dataSource, sql, "wdk-steps-drop-dependecy");
+      if (count != 0)
+        logger.debug(count + " dependencies on step " + stepId + " is removed.");
+      return count;
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
     }
   }
 
