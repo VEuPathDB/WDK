@@ -793,7 +793,7 @@ public class StepFactory {
     PreparedStatement psStep = null;
     String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_QUESTION_NAME + " = ?, " +
         COLUMN_ANSWER_FILTER + " = ?, " + COLUMN_LEFT_CHILD_ID + " = ?, " + COLUMN_RIGHT_CHILD_ID + " = ?, " +
-        COLUMN_ASSIGNED_WEIGHT + " = ?, " + COLUMN_DISPLAY_PARAMS + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
+        COLUMN_ASSIGNED_WEIGHT + " = ?, " + COLUMN_DISPLAY_PARAMS + " = ?, is_valid = 1 WHERE " + COLUMN_STEP_ID + " = ?";
 
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
     JSONObject jsContent = getParamContent(step.getParamValues());
@@ -1694,7 +1694,7 @@ public class StepFactory {
   int resetStepCounts(Step fromStep) throws WdkModelException {
     String selectSql = selectStepAndParents(fromStep.getStepId());
     String sql = "UPDATE " + userSchema + "steps SET estimate_size = " + UNKNOWN_SIZE +
-        "  WHERE step_id IN (" + selectSql + ")";
+        ", is_valid = 1 WHERE step_id IN (" + selectSql + ")";
     try {
       return SqlUtils.executeUpdate(userDb.getDataSource(), sql, "wdk-step-reset-count-recursive");
     }
