@@ -1662,7 +1662,7 @@ public class StepFactory {
   int resetStepCounts(Step fromStep) throws WdkModelException {
     String selectSql = selectStepAndParents(fromStep.getStepId());
     String sql = "UPDATE " + userSchema + "steps SET estimate_size = " + UNKNOWN_SIZE +
-        "  WHERE step_id IN (" + selectSql + ")";
+        ", is_valid = 1 WHERE step_id IN (" + selectSql + ")";
     try {
       return SqlUtils.executeUpdate(userDb.getDataSource(), sql, "wdk-step-reset-count-recursive");
     }
