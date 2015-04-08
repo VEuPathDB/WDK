@@ -664,7 +664,7 @@ public class StepFactory {
     Query query = question.getQuery();
     int leftStepId = 0;
     int rightStepId = 0;
-    String customName;
+    String customName = step.getBaseCustomName();
     if (query.isBoolean()) {
       // boolean result, set the left and right step ids accordingly, and
       // set the constructed boolean expression to custom name.
@@ -684,8 +684,6 @@ public class StepFactory {
 
       StringParam operatorParam = booleanQuery.getOperatorParam();
       String operator = displayParams.get(operatorParam.getName());
-
-      customName = leftStepId + " " + operator + " " + rightKey;
     }
     else if (query.isCombined()) {
       // transform result, set the first two params
@@ -702,10 +700,7 @@ public class StepFactory {
           }
         }
       }
-      customName = step.getBaseCustomName();
     }
-    else
-      customName = step.getBaseCustomName();
 
     step.setAndVerifyPreviousStepId(leftStepId);
     step.setAndVerifyChildStepId(rightStepId);
