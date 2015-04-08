@@ -343,6 +343,9 @@ public class StepFactory {
       SqlUtils.closeStatement(psInsertStep);
     }
 
+    // update step dependencies
+    updateStepTree(user, step);
+
     return step;
   }
 
@@ -653,6 +656,86 @@ public class StepFactory {
     return step;
   }
 
+  private void updateStepTree(User user, Step step) throws WdkModelException {
+    Question question = step.getQuestion();
+    Map<String, String> displayParams = step.getParamValues();
+
+    Query query = question.getQuery();
+    int leftStepId = 0;
+    int rightStepId = 0;
+    String customName;
+    if (query.isBoolean()) {
+      // boolean result, set the left and right step ids accordingly, and
+      // set the constructed boolean expression to custom name.
+      BooleanQuery booleanQuery = (BooleanQuery) query;
+
+      AnswerParam leftParam = booleanQuery.getLeftOperandParam();
+      String leftKey = displayParams.get(leftParam.getName());
+      String leftStepKey = leftKey.substring(leftKey.indexOf(":") + 1);
+      leftStepId = Integer.parseInt(leftStepKey);
+
+      AnswerParam rightParam = booleanQuery.getRightOperandParam();
+      String rightKey = displayParams.get(rightParam.getName());
+      String rightStepKey = rightKey.substring(rightKey.indexOf(":") + 1);
+      rightStepId = Integer.parseInt(rightStepKey);
+
+      StringParam operatorParam = booleanQuery.getOperatorParam();
+      String operator = displayParams.get(operatorParam.getName());
+
+      customName = leftStepId + " " + operator + " " + rightKey;
+    }
+    else if (query.isCombined()) {
+      // transform result, set the first two params
+      for (Param param : question.getParams()) {
+        if (param instanceof AnswerParam) {
+          AnswerParam answerParam = (AnswerParam) param;
+          String stepId = displayParams.get(answerParam.getName());
+          // put the first child into left, the second into right
+          if (leftStepId == 0)
+            leftStepId = Integer.valueOf(stepId);
+          else {
+            rightStepId = Integer.valueOf(stepId);
+            break;
+          }
+        }
+      }
+      customName = step.getBaseCustomName();
+    }
+    else
+      customName = step.getBaseCustomName();
+
+    step.setAndVerifyPreviousStepId(leftStepId);
+    step.setAndVerifyChildStepId(rightStepId);
+
+    // construct the update sql
+    StringBuffer sql = new StringBuffer("UPDATE ");
+    sql.append(userSchema).append(TABLE_STEP).append(" SET ");
+    sql.append(COLUMN_CUSTOM_NAME).append(" = ? ");
+    if (query.isCombined()) {
+      sql.append(", " + COLUMN_LEFT_CHILD_ID + " = " + leftStepId);
+      if (rightStepId != 0) {
+        sql.append(", " + COLUMN_RIGHT_CHILD_ID + " = " + rightStepId);
+      }
+    }
+    sql.append(" WHERE " + COLUMN_STEP_ID + " = " + step.getStepId());
+
+    step.setCustomName(customName);
+    PreparedStatement psUpdateStepTree = null;
+    try {
+      long start = System.currentTimeMillis();
+      psUpdateStepTree = SqlUtils.getPreparedStatement(dataSource, sql.toString());
+      psUpdateStepTree.setString(1, customName);
+      psUpdateStepTree.executeUpdate();
+      QueryLogger.logEndStatementExecution(sql.toString(), "wdk-step-factory-update-step-tree", start);
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Could not update step tree.", e);
+    }
+    finally {
+      SqlUtils.closeStatement(psUpdateStepTree);
+    }
+  }
+
   /**
    * This method updates the custom name, the time stamp of last running, isDeleted, isCollapsible, and
    * collapsed name
@@ -696,6 +779,10 @@ public class StepFactory {
       // update the last run stamp
       step.setLastRunTime(lastRunTime);
       step.setEstimateSize(estimateSize);
+
+      // update dependencies
+      if (step.isCombined())
+        updateStepTree(user, step);
     }
     catch (SQLException e) {
       throw new WdkModelException("Could not update step.", e);
