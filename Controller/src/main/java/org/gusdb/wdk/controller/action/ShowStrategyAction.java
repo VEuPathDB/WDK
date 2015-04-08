@@ -75,12 +75,15 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
             Map<Integer, StrategyBean> displayStrategies;
             if (currentStrategy != null) {
+                logger.info("OPEN single strategy...");
                 // this case is directly from showSummaryAction, where one step
                 // is invalid
                 displayStrategies = new LinkedHashMap<Integer, StrategyBean>();
+                // reload the current strategy to make sure all the data is up to date.
                 displayStrategies.put(currentStrategy.getStrategyId(),
-                        currentStrategy);
+                        wdkUser.getStrategy(currentStrategy.getStrategyId()));
             } else if (open) {
+                logger.info("OPEN all strategies...");
                 // open all the requested strategies
                 for (String strategyKey : stratKeys) {
                     wdkUser.addActiveStrategy(strategyKey);
@@ -101,6 +104,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     }
                 }
             } else {
+                logger.info("GET all strategies...");
                 // return the details of all the requested strategies; skip the
                 // state validation
                 displayStrategies = new LinkedHashMap<Integer, StrategyBean>();
@@ -260,7 +264,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
 
         // get a list of strategy checksums
+        logger.trace("TEST - " + user.getActiveStrategies()[0].getLatestStep().getCustomName());
         outputStrategies(model, user, jsMessage, displayStrategies, updateResults);
+        logger.trace("TEST - " + user.getActiveStrategies()[0].getLatestStep().getCustomName());
         outputCommon(user, jsMessage);
 
         PrintWriter writer = response.getWriter();
@@ -283,15 +289,15 @@ public class ShowStrategyAction extends ShowQuestionAction {
    
         for (int order = 0; order < openedStrategies.length; order++) {
             StrategyBean strat = openedStrategies[order];
-
-            logger.debug("#" + strat.getStrategyId() + " - " + strat.getChecksum());
+            String checksum = strat.getChecksum();
+            logger.debug("#" + strat.getStrategyId() + " - " + checksum);
 
             int stratId = strat.getStrategyId();
             JSONObject jsStrategy = new JSONObject();
             jsStrategy.put("id", stratId);
-            jsStrategy.put("checksum", strat.getChecksum());
+            jsStrategy.put("checksum", checksum);
             // System.out.println("ID: " + stratId);
-            // System.out.println("Checksum: " + strat.getChecksum());
+            // System.out.println("Checksum: " + checksum);
             jsState.put(Integer.toString(order + 1), jsStrategy);
         }
         jsState.put("length", openedStrategies.length);
@@ -328,13 +334,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
         logger.debug("PRINTING DETAIL for " + strategies.size() + " strategies");
 
         for (StrategyBean strategy : strategies.values()) {
-
-            logger.debug("#" + strategy.getStrategyId() + " - " + strategy.getChecksum());
+            String checksum = strategy.getChecksum();
+            logger.debug("#" + strategy.getStrategyId() + " - " + checksum);
 
             JSONObject jsStrategy = outputStrategy(model, user, strategy, updateResults);
             System.out.println("ID: " + strategy.getStrategyId());
-            System.out.println("Checksum: " + strategy.getChecksum());
-            jsStrategies.put(strategy.getChecksum(), jsStrategy);
+            System.out.println("Checksum: " + checksum);
+            jsStrategies.put(checksum, jsStrategy);
         }
         jsStrategies.put("length", strategies.size());
         jsMessage.put("strategies", jsStrategies);
