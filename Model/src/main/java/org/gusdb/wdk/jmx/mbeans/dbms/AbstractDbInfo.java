@@ -171,6 +171,19 @@ public abstract class AbstractDbInfo implements DbInfo {
     updateDblinkListWithValidity(dblinkList);
   }
 
+  /**
+    * Run a test query for each link in the given ArrayList of dblinks and
+    * add an 'isValid' column with one of the follow values:
+    * 
+    * 0 if the link is valid. More precisely, the query
+    * 'select 1 from dual@<link>' returns a row.
+    *
+    * 1 if the link is invalid. More precisely, if the link test throws an SqlException, as
+    * is typical for bad username/password or when the host name could not be resolved.
+    *
+    * -1 if the link could not be tested. More precisely, throws a SQLSyntaxErrorException
+    * as can happen for "ORA-02020: too many database links in use".
+    */
   public void updateDblinkListWithValidity(ArrayList<Map<String, String>> dblinkList) {
 
     for (Map<String,String> map : dblinkList) {
@@ -188,8 +201,21 @@ public abstract class AbstractDbInfo implements DbInfo {
         while (rs.next()) {
           map.put(columnName, "1" );
         }
+
+        /** Call commit() to avoid "ORA-02020: too many database links in use" when 
+          * the number of configured links exceeds the database's 'open_links'
+          * parameter value. I do not understand why this alone is sufficient
+          * and why I do not have to followup with 'alter session close database link ...'
+          * as I would in an interactive session.
+        **/
+        ps.getConnection().commit();
+      }
+      catch (java.sql.SQLSyntaxErrorException sqee) {
+        logger.error(sqee);
+        map.put(columnName, "-1" );
       }
       catch (SQLException sqle) {
+        logger.error(sqle);
         map.put(columnName, "0" );
       }
       catch (Exception e) {
