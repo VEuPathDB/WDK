@@ -287,6 +287,11 @@
         <data type="boolean" />
       </attribute>
       <optional>
+	<attribute name="isSql">
+	  <data type="boolean" />
+	</attribute>
+      </optional>
+      <optional>
         <attribute name="length">
           <data type="positiveInteger" />
         </attribute>
@@ -947,6 +952,27 @@
       </optional>
       <optional>
         <attribute name="summaryAttributesList" />
+      </optional>
+      <optional>
+        <element name="resultSizeQueryRef">
+          <attribute name="recordDisplayName" />
+          <attribute name="ref" />
+	  <optional>
+	    <attribute name="recordDisplayNamePlural" />
+	  </optional>
+	  <optional>
+	    <attribute name="recordShortDisplayName" />
+	  </optional>
+	  <optional>
+	    <attribute name="recordShortDisplayNamePlural" />
+	  </optional>
+        </element>
+      </optional>
+      <optional>
+        <element name="resultPropertiesPluginRef">
+ 	    <attribute name="implementation" />
+	    <attribute name="propertyNameList" />        
+        </element>
       </optional>
       <optional>
         <element name="attributeCategories">
