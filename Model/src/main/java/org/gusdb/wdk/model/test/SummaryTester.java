@@ -138,6 +138,7 @@ public class SummaryTester {
 
         // print the size of the answer
         System.out.println("Total # of records: " + answerValue.getResultSize());
+        System.out.println("Display Size: " + answerValue.getDisplayResultSize());
         System.out.println("Answer Checksum: " + answerValue.getChecksum());
 
         AnswerValueBean answerValueBean = new AnswerValueBean(answerValue);
