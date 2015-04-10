@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.record;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.math.BigDecimal;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -30,7 +31,7 @@ public class SqlQueryResultSizePlugin implements ResultSize {
 		QueryInstance<?> queryInstance = getQueryInstance(answerValue);
 		ResultList results = queryInstance.getResults();
 		results.next();
-		Integer count = (Integer)results.get(COUNT_COLUMN);
+		Integer count = ((BigDecimal)results.get(COUNT_COLUMN)).intValue();
 		RecordClass recordClass = answerValue.getQuestion().getRecordClass();
 		if (results.next()) throw new WdkModelException("Record class '"  + recordClass.getName() + "' has an SqlResultSizePlugin whose SQL returns more than one row.");
 		return count;
