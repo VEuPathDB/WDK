@@ -22,20 +22,24 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
 	private final static String PROPERTY_COLUMN = "property";
 	
 	Query query;
+	String propertyName;
 
-	public SqlQueryResultSizePlugin(Query query) {
+	public SqlQueryResultPropertyPlugin(Query query, String propertyName) throws WdkModelException{
 		this.query = query;
+		this.propertyName = propertyName;
+		validateQuery(query);
 	}
 	
 	@Override
-	public Integer getPropertyValue(AnswerValue answerValue)
+	public Integer getPropertyValue(AnswerValue answerValue, String propertyName)
 			throws WdkModelException, WdkUserException {
 
+		RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+		if (propertyName.equals(this.propertyName)) throw new WdkModelException("Accessing result property plugin for record class '"  + recordClass.getName() + "' with illegal property name '" + propertyName + "'.  The allowed property name is '" + this.propertyName + "'");
 		QueryInstance<?> queryInstance = getQueryInstance(answerValue);
 		ResultList results = queryInstance.getResults();
 		results.next();
 		Integer count = ((BigDecimal)results.get(PROPERTY_COLUMN)).intValue();
-		RecordClass recordClass = answerValue.getQuestion().getRecordClass();
 		if (results.next()) throw new WdkModelException("Record class '"  + recordClass.getName() + "' has an SqlResultPropertyPlugin whose SQL returns more than one row.");
 		return count;
 	}
@@ -54,7 +58,7 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
 	      return queryInstance;
 	  }
 	
-	void validateQuery(Query query) throws WdkModelException {
+	private void validateQuery(Query query) throws WdkModelException {
 
 		// must have only one parameter, and return only one column, the result size
 		Param[] params = query.getParams();

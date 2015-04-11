@@ -191,18 +191,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private String name;
   private String fullName;
-  
-  /**
-   * An reference to a java plugin  
-   */
-  private ResultPropertiesPluginRef resultPropertiesPluginRef = null;
 
-  /**
-   * A pluggable way to compute the result size.  For example, count the number of genes in a list of transcripts.
-   * The default is overridden with a plugin supplied in the XML model, if provided.
-   */
-  private ResultProperties resultPropertiesPlugin = null;
-  
+
   /**
    * the native versions are the real name of the record class.  the non-native are potentially different,
    * for display purposes.  This can happen if a ResultSizeQueryReference is supplied, that provides non-native
@@ -224,10 +214,20 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private ResultSizeQueryReference resultSizeQueryRef = null;
 
   /**
+   * An option that provides SQL to post-process an Answer result, providing a custom property value. 
+   */
+  private ResultPropertyQueryReference resultPropertyQueryRef = null;
+
+  /**
    * A pluggable way to compute the result size.  For example, count the number of genes in a list of transcripts.
    * The default is overridden with a plugin supplied in the XML model, if provided.
    */
   private ResultSize resultSizePlugin = new DefaultResultSizePlugin();
+  
+  /**
+   * A pluggable way to compute a result property.  For example, count the number of genes in a list of transcripts that are missing transcripts.
+   */
+  private ResultProperty resultPropertyPlugin = null;
 
   private String customBooleanQueryClassName = null;
   
@@ -391,8 +391,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 	  return resultSizePlugin;
   }
 
-  public ResultProperties getResultPropertiesPlugin() {
-	  return resultPropertiesPlugin;
+  public ResultProperty getResultPropertyPlugin() {
+	  return resultPropertyPlugin;
   }
   
   public String getCustomBooleanQueryClassName() {
@@ -485,8 +485,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 	  resultSizeQueryRef = ref;
   }
   
-  public void setResultPropertiesPluginRef(ResultPropertiesPluginRef ref) {
-	  resultPropertiesPluginRef = ref;
+  public void setResultPropertyQueryRef(ResultPropertyQueryReference ref) {
+	  resultPropertyQueryRef = ref;
   }
   
   public void setCustomBooleanQueryClassName(String className) {
@@ -599,8 +599,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 	  return resultSizeQueryRef;	
   }
   
-  public ResultPropertiesPluginRef getResultPropertiesPluginRef() {
-	  return resultPropertiesPluginRef;
+  public ResultPropertyQueryReference getResultPropertyQueryRef() {
+	  return resultPropertyQueryRef;	
   }
   
   public BooleanQuery getBooleanQuery() {
@@ -715,8 +715,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     	resultSizePlugin = new SqlQueryResultSizePlugin(query);
     }
     
-    if (resultPropertiesPluginRef != null) {
-    	resultPropertiesPlugin = resultPropertiesPluginRef.getImplementationInstance();
+    if (resultPropertyQueryRef != null) {
+    	resultPropertyQueryRef.resolveReferences(model);
+        Query query = (Query) wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
+    	resultPropertyPlugin = new SqlQueryResultPropertyPlugin(query, resultPropertyQueryRef.getPropertyName());
     }
     
     if (customBooleanQueryClassName != null) {

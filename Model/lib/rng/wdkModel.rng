@@ -969,9 +969,9 @@
         </element>
       </optional>
       <optional>
-        <element name="resultPropertiesPluginRef">
- 	    <attribute name="implementation" />
-	    <attribute name="propertyNameList" />        
+        <element name="resultPropertyQueryRef">
+ 	    <attribute name="ref" />
+	    <attribute name="propertyName" />        
         </element>
       </optional>
       <optional>

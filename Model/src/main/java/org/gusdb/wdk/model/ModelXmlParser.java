@@ -88,7 +88,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.record.ResultSizeQueryReference;
-import org.gusdb.wdk.model.record.ResultPropertiesPluginRef;
+import org.gusdb.wdk.model.record.ResultPropertyQueryReference;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
@@ -622,8 +622,8 @@ public class ModelXmlParser extends XmlParser {
         ResultSizeQueryReference.class, "setResultSizeQueryRef");
 
     // result properties plugin ref
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/resultPropertiesPluginRef",
-        ResultPropertiesPluginRef.class, "setResultPropertiesPluginRef");
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/resultPropertyQueryRef",
+        ResultPropertyQueryReference.class, "setResultPropertyQueryRef");
 
    // nested record and record list
     configureNode(digester, "wdkModel/recordClassSet/recordClass/nestedRecord", NestedRecord.class,
