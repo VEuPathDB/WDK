@@ -52,8 +52,8 @@ public class ResultSizeQueryReference extends Reference {
   }		
  
   public String getRecordDisplayName() { return recordDisplayName; }
-  public String getRecordDisplayNamePlural() { return recordDisplayNamePlural; }
-  public String getRecordShortDisplayName() { return recordShortDisplayName; }
-  public String getRecordShortDisplayNamePlural() { return recordShortDisplayNamePlural; }
+  public String getRecordDisplayNamePlural() { return recordDisplayNamePlural == null? recordDisplayName + "s" : recordDisplayNamePlural; }
+  public String getRecordShortDisplayName() { return recordShortDisplayName == null? recordDisplayName : recordShortDisplayName; }
+  public String getRecordShortDisplayNamePlural() { return recordShortDisplayNamePlural == null? getRecordShortDisplayName() + "s" : recordShortDisplayNamePlural; }
 
 }
