@@ -34,6 +34,7 @@ import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.record.ResultProperties;
 import org.json.JSONException;
 
 public class SummaryTester {
@@ -138,6 +139,11 @@ public class SummaryTester {
 
         // print the size of the answer
         System.out.println("Total # of records: " + answerValue.getResultSize());
+        System.out.println("Display Size: " + answerValue.getDisplayResultSize());
+	ResultProperties rp = answerValue.getQuestion().getRecordClass().getResultPropertiesPlugin();
+	Map<String, String> m = rp.getPropertyValues(answerValue);
+	
+        System.out.println("has missing transcripts: " + m.get("genesMissingTranscriptsCount"));
         System.out.println("Display Size: " + answerValue.getDisplayResultSize());
         System.out.println("Answer Checksum: " + answerValue.getChecksum());
 

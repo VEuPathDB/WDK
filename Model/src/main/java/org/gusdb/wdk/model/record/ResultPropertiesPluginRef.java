@@ -17,11 +17,12 @@ public class ResultPropertiesPluginRef {
 	
 	public String getImplementation() {return javaClassName;}
 	
-	public void addPropertyName(String propName) {
-		propertyNames.add(propName);
+	public void setPropertyNameList(String propNames) {
+		String[] names = propNames.split(",\\s*");
+		for (String name : names) { propertyNames.add(name); }
 	}
 
-	public List<String> getPropertyNames() {
+	public List<String> getPropertyNameList() {
 		return Collections.unmodifiableList(propertyNames);
 	}
 	
