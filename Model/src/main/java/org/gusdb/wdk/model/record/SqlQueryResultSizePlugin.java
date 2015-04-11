@@ -20,8 +20,9 @@ public class SqlQueryResultSizePlugin implements ResultSize {
 	
 	Query query;
 
-	public SqlQueryResultSizePlugin(Query query) {
+	public SqlQueryResultSizePlugin(Query query)  throws WdkModelException {
 		this.query = query;
+		validateQuery(query);
 	}
 	
 	@Override
@@ -51,7 +52,7 @@ public class SqlQueryResultSizePlugin implements ResultSize {
 	      return queryInstance;
 	  }
 	
-	void validateQuery(Query query) throws WdkModelException {
+	private void validateQuery(Query query) throws WdkModelException {
 
 		// must have only one parameter, and return only one column, the result size
 		Param[] params = query.getParams();
