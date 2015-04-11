@@ -19,7 +19,7 @@ import org.gusdb.wdk.model.query.param.Param;
 public class SqlQueryResultPropertyPlugin implements ResultProperty {
 	
 	private final static String WDK_ID_SQL_PARAM = "WDK_ID_SQL";
-	private final static String PROPERTY_COLUMN = "property";
+	private final static String PROPERTY_COLUMN = "propertyValue";
 	
 	Query query;
 	String propertyName;
@@ -35,7 +35,7 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
 			throws WdkModelException, WdkUserException {
 
 		RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-		if (propertyName.equals(this.propertyName)) throw new WdkModelException("Accessing result property plugin for record class '"  + recordClass.getName() + "' with illegal property name '" + propertyName + "'.  The allowed property name is '" + this.propertyName + "'");
+		if (!propertyName.equals(this.propertyName)) throw new WdkModelException("Accessing result property plugin for record class '"  + recordClass.getName() + "' with illegal property name '" + propertyName + "'.  The allowed property name is '" + this.propertyName + "'");
 		QueryInstance<?> queryInstance = getQueryInstance(answerValue);
 		ResultList results = queryInstance.getResults();
 		results.next();

@@ -717,7 +717,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     
     if (resultPropertyQueryRef != null) {
     	resultPropertyQueryRef.resolveReferences(model);
-        Query query = (Query) wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
+        Query query = (Query) wdkModel.resolveReference(resultPropertyQueryRef.getTwoPartName());
     	resultPropertyPlugin = new SqlQueryResultPropertyPlugin(query, resultPropertyQueryRef.getPropertyName());
     }
     
