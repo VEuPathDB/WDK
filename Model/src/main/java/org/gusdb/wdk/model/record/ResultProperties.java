@@ -13,6 +13,7 @@ public interface ResultProperties {
 	
 	/**
 	 * validate that the property names declared in the XML model are those that are expected.
+	 * called by the record class when the implemenation is instantiated
 	 * @param propNames
 	 */
 	void validatePropertyNames(List<String> propNames) throws WdkModelException;
