@@ -734,6 +734,12 @@ public class StepFactory {
     }
   }
   
+  int dropDependency(int stepId) throws WdkModelException {
+    int count = dropDependency(stepId, COLUMN_LEFT_CHILD_ID);
+    count += dropDependency(stepId, COLUMN_RIGHT_CHILD_ID);
+    return count;
+  }
+  
   private int dropDependency(int stepId, String column) throws WdkModelException {
     String sql = "UPDATE " + userSchema + "steps SET " + column +" = null WHERE " + column + " = " + stepId;
     try {
