@@ -368,6 +368,8 @@ public class Strategy {
     if (childStep != null)
       deletes.addAll(childStep.getNestedBranch());
     deletes.add(step); // delete the current step
+    stepFactory.dropDependency(step.getStepId());
+    
 
     // keep a reference to previous step, in case we need to delete multiple steps. this previousStep will be
     // used to connect to the remaining steps.
@@ -383,11 +385,9 @@ public class Strategy {
             // a two-input combined step, since there is no previousStep, the child of it will become new
             // previousStep, and this combined step will be deleted
             previousStep = step.getChildStep();
-            deletes.add(step);
-          }
-          else { // a transform step, and since there is no previousStep, it will also be deleted
-            deletes.add(step);
-          }
+          } // otherwise, a transform step, and since there is no previousStep, it will also be deleted
+          deletes.add(step);
+          stepFactory.dropDependency(step.getStepId());
         }
         else { // otherwise, previous step exists, no more deletion needed. will exit loop.
           // check if the step can take the previous step
@@ -417,7 +417,8 @@ public class Strategy {
             // now the previousStep will become the previous one from the parent.
             previousStep = parentStep.getPreviousStep();
             deletes.add(parentStep);
-          }
+            stepFactory.dropDependency(parentStep.getStepId());
+         }
         } // otherwise, we are deleting the last step in main branch, will handle it outside of the loop
         step = parentStep;
       }
@@ -442,54 +443,8 @@ public class Strategy {
     }
 
     return rootMap;
-
-    // // are we deleting the first step?
-    // if (step.isFirstStep()) {
-    // if (step.getNextStep() != null) {
-    // // if there are at least two steps, we need to turn the child
-    // // step of step 2 into a first step (no operation)
-    // while (step.getNextStep() != null && step.getNextStep().isTransform()) {
-    // step = step.getNextStep();
-    // }
-    // if (step.getNextStep() == null) {// found the last step in a strategy, or a nested strategy
-    // if (!isBranch) {
-    // logger.debug("Step is only non-transform step in main strategy...");
-    // this.setDeleted(true);
-    // }
-    // else {
-    // logger.debug("Step is only non-transform step in branch...");
-    // step = step.getParentStep();
-    // targetStepId = step.getStepId();
-    // step = step.getPreviousStep();
-    // }
-    //
-    // }
-    // else {
-    // logger.debug("Moving to second step to replace first step...");
-    // targetStepId = step.getNextStep().getStepId();
-    // step = step.getNextStep().getChildStep();
-    // }
-    // }
-    // else if (isBranch) {
-    // logger.debug("Step is only step in a branch...");
-    // step = step.getParentStep();
-    // targetStepId = step.getStepId();
-    // step = step.getPreviousStep();
-    // }
-    // else {
-    // logger.debug("Deleting the single step in the strategy will cause the strategy to be deleted");
-    // stepFactory.deleteStrategy(strategyId);
-    // }
-    // }
-    // else {
-    // logger.debug("Moving to previous step to replace non-first step...");
-    // step = step.getPreviousStep();
-    // }
-    //
-    // logger.debug("Updating step tree to delete target step...");
-    // return updateStepTree(targetStepId, step);
   }
-
+  
   // public Map<Integer, Integer> moveStep(int moveFromId, int moveToId, String branch)
   // throws WdkModelException, WdkUserException, SQLException {
   // Step targetStep;
