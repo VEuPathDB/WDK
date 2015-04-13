@@ -2,6 +2,7 @@ import throttle from 'lodash/function/throttle';
 import React from 'react';
 import RecordTable from './RecordTable';
 import RecordList from './RecordList';
+import Tooltip from './Tooltip';
 
 // Assign global jQuery to local variable
 const $ = window.jQuery;
@@ -69,19 +70,38 @@ const Answer = React.createClass({
                              meta.get('count'), filteredRecords.size);
     const Records = format === 'list' ? RecordList : RecordTable;
 
+    const tooltipContent = (
+      <div>
+        <p>
+          Enter words or phrases that you wish to query. Words should be
+          separated by spaces, and phrases should be enclosed in parentheses.
+        </p>
+        <p>
+          {displayName} records displayed will contain these words or phrases
+          in any field. All words and phrases are partially matched.
+        </p>
+        <p>
+          For example, the word <i>typical</i> will match both the
+          word <i><u>typical</u>ly</i> and the word <i>a<u>typical</u></i>.
+        </p>
+      </div>
+    );
+
     return (
       <div>
         <h1>{question.get('displayName')}</h1>
           <div className="wdk-Answer">
             <div className="wdk-Answer-filter">
-              <input
-                ref="filterInput"
-                className="wdk-Answer-filterInput"
-                defaultValue={filterTerm}
-                placeholder={`Filter ${displayName} records`}
-                onKeyUp={throttle(this.handleFilter, 150, { leading: false })}
-              />
-              <i className="fa fa-search fa-lg wdk-Answer-filterIcon"/>
+              <Tooltip content={tooltipContent}>
+                <input
+                  ref="filterInput"
+                  className="wdk-Answer-filterInput"
+                  defaultValue={filterTerm}
+                  placeholder={`Filter ${displayName} records`}
+                  onKeyUp={throttle(this.handleFilter, 150, { leading: false })}
+                />
+                <i className="fa fa-search fa-lg wdk-Answer-filterIcon"/>
+              </Tooltip>
             </div>
             <p className="wdk-Answer-count">
               Showing {firstRec} - {lastRec} of {meta.get('count')} {displayName} records
