@@ -368,8 +368,6 @@ public class Strategy {
     if (childStep != null)
       deletes.addAll(childStep.getNestedBranch());
     deletes.add(step); // delete the current step
-    stepFactory.dropDependency(step.getStepId());
-    
 
     // keep a reference to previous step, in case we need to delete multiple steps. this previousStep will be
     // used to connect to the remaining steps.
@@ -387,10 +385,10 @@ public class Strategy {
             previousStep = step.getChildStep();
           } // otherwise, a transform step, and since there is no previousStep, it will also be deleted
           deletes.add(step);
-          stepFactory.dropDependency(step.getStepId());
         }
         else { // otherwise, previous step exists, no more deletion needed. will exit loop.
           // check if the step can take the previous step
+          stepFactory.dropDependency(previousStep.getStepId(), StepFactory.COLUMN_LEFT_CHILD_ID);
           step.checkPreviousAllowed(previousStep);
           step.setPreviousStep(previousStep);
           step.saveParamFilters();
@@ -407,6 +405,7 @@ public class Strategy {
             rootMap.put(step.getStepId(), previousStep.getStepId());
 
             // check if parent can take previous step as child
+            stepFactory.dropDependency(previousStep.getStepId(), StepFactory.COLUMN_RIGHT_CHILD_ID);
             parentStep.checkChildAllowed(previousStep);
             parentStep.setChildStep(previousStep);
             parentStep.saveParamFilters();
@@ -417,7 +416,6 @@ public class Strategy {
             // now the previousStep will become the previous one from the parent.
             previousStep = parentStep.getPreviousStep();
             deletes.add(parentStep);
-            stepFactory.dropDependency(parentStep.getStepId());
          }
         } // otherwise, we are deleting the last step in main branch, will handle it outside of the loop
         step = parentStep;
