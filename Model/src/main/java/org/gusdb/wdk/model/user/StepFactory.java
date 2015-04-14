@@ -62,8 +62,8 @@ public class StepFactory {
   private static final String TABLE_STRATEGY = "strategies";
 
   private static final String COLUMN_STEP_ID = "step_id";
-  private static final String COLUMN_LEFT_CHILD_ID = "left_child_id";
-  private static final String COLUMN_RIGHT_CHILD_ID = "right_child_id";
+  static final String COLUMN_LEFT_CHILD_ID = "left_child_id";
+  static final String COLUMN_RIGHT_CHILD_ID = "right_child_id";
   private static final String COLUMN_CREATE_TIME = "create_time";
   private static final String COLUMN_LAST_RUN_TIME = "last_run_time";
   private static final String COLUMN_ESTIMATE_SIZE = "estimate_size";
@@ -670,13 +670,11 @@ public class StepFactory {
       String leftKey = displayParams.get(leftParam.getName());
       String leftStepKey = leftKey.substring(leftKey.indexOf(":") + 1);
       leftStepId = Integer.parseInt(leftStepKey);
-      dropDependency(leftStepId, COLUMN_LEFT_CHILD_ID);
 
       AnswerParam rightParam = booleanQuery.getRightOperandParam();
       String rightKey = displayParams.get(rightParam.getName());
       String rightStepKey = rightKey.substring(rightKey.indexOf(":") + 1);
       rightStepId = Integer.parseInt(rightStepKey);
-      dropDependency(rightStepId, COLUMN_RIGHT_CHILD_ID);
 
       StringParam operatorParam = booleanQuery.getOperatorParam();
       String operator = displayParams.get(operatorParam.getName());
@@ -696,6 +694,11 @@ public class StepFactory {
           }
         }
       }
+    }
+
+    dropDependency(leftStepId, COLUMN_LEFT_CHILD_ID);
+    if (rightStepId != 0) {
+      dropDependency(rightStepId, COLUMN_RIGHT_CHILD_ID);
     }
 
     step.setAndVerifyPreviousStepId(leftStepId);
@@ -730,7 +733,7 @@ public class StepFactory {
     }
   }
   
-  private int dropDependency(int stepId, String column) throws WdkModelException {
+  int dropDependency(int stepId, String column) throws WdkModelException {
     String sql = "UPDATE " + userSchema + "steps SET " + column +" = null WHERE " + column + " = " + stepId;
     try {
       int count = SqlUtils.executeUpdate(dataSource, sql, "wdk-steps-drop-dependecy");

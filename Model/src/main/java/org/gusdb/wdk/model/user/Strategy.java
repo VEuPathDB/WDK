@@ -391,6 +391,7 @@ public class Strategy {
         }
         else { // otherwise, previous step exists, no more deletion needed. will exit loop.
           // check if the step can take the previous step
+          stepFactory.dropDependency(previousStep.getStepId(), StepFactory.COLUMN_LEFT_CHILD_ID);
           step.checkPreviousAllowed(previousStep);
           step.setPreviousStep(previousStep);
           step.saveParamFilters();
@@ -407,6 +408,7 @@ public class Strategy {
             rootMap.put(step.getStepId(), previousStep.getStepId());
 
             // check if parent can take previous step as child
+            stepFactory.dropDependency(previousStep.getStepId(), StepFactory.COLUMN_RIGHT_CHILD_ID);
             parentStep.checkChildAllowed(previousStep);
             parentStep.setChildStep(previousStep);
             parentStep.saveParamFilters();
