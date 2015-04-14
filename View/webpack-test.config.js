@@ -13,7 +13,7 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: '6to5-loader' }
+      { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: 'babel-loader' }
     ]
   },
   devtool: 'inline-source-map'
