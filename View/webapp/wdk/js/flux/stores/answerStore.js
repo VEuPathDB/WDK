@@ -1,8 +1,19 @@
 // TODO Break this into two stores: Answers and UI
-import curry from 'lodash/function/curry';
-import Immutable from 'immutable';
+import {
+  assign,
+  curry,
+  flattenDeep,
+  indexBy,
+  property,
+  values
+} from 'lodash';
 import createStore from '../utils/createStore';
-import * as ActionType from '../ActionType';
+import {
+  ANSWER_LOAD_SUCCESS,
+  ANSWER_MOVE_COLUMN,
+  ANSWER_CHANGE_ATTRIBUTES,
+  ANSWER_FILTER
+} from '../ActionType';
 
 /**
  * This module is exporting a store class (not an instance).
@@ -40,22 +51,6 @@ import * as ActionType from '../ActionType';
  * This store retains the UI state for the AnswerPage, including the current
  * Answer resource being displayed.. UI state includes things like loading
  * state, error state, table sorting options, etc.
- *
- * This store is maintaining its internal state using an immutable data
- * structure (with the aid of the library Immutable.js
- * http://facebook.github.io/immutable-js/). The state will be initialized
- * with default values. It's type is Immutable.Map. See
- * http://facebook.github.io/immutable-js/docs/#/Map for method details. We
- * will mainly be using merge(), which accepts plain JavaScript objects, in
- * addition to any Immutable iterable data type. In our case, we will be
- * merging plain JavaScript objects. This operation will copy the keys of the
- * object to same-named keys of the Map. Any nested objects or arrays will be
- * recursively converteed to a Map or List, resp.
- *
- * Currently, getState() will return a plain-old JavaScript object using
- * the toJS() method provided by Immutate.js. This does a deep traversal
- * of state and converts all iterables to the JS alternative (e.g.,
- * Map -> Object, List -> Array, etc).
  */
 
 
@@ -81,54 +76,40 @@ var parseSearchTerms = function parseSearchTerms(terms) {
 //
 // There is much room for performance tuning here.
 var isTermInRecord = curry(function isTermInRecord(term, record) {
-  var attributeValues = record
-    .get('attributes').toList()
-    .map(function(attribute) {
-      return attribute.get('value');
-    });
+  var attributeValues = values(record.attributes).map(property('value'));
 
-  var tableValues = record
-    .get('tables').toList()
-    .flatMap(function(table) {
-      return table
-        .get('rows')
-        .flatMap(function(row) {
-          return row.map(function(attribute) {
-            return attribute.get('value');
-          });
-        });
-    });
+  var tableValues = flattenDeep(values(record.tables)
+    .map(function(table) {
+      return table.rows.map(function(row) {
+        return row.map(property('value'))
+      });
+    }));
 
   var clob = attributeValues.concat(tableValues).join('\0');
 
   return clob.toLowerCase().indexOf(term.toLowerCase()) !== -1;
 });
 
-var state = Immutable.fromJS({
-  filterTerm: '',
-  filteredRecords: [],
-  answers: {},
-  displayInfo: {
-    sorting: null,
-    pagination: null,
-    attributes: null,
-    tables: null
-  },
-  questionDefinition: {
-    questionName: null,
-    params: null,
-    filters: null
-  }
-});
-
 export default createStore({
 
-  /**
-   * The state of the store. We're using Immutable.js here, but not to its
-   * fullest extent. This is sort of a trial run. So far, the interface is very
-   * intuitive. -dmf
-   */
-  state: state,
+  init() {
+    this.state = {
+      filterTerm: '',
+      filteredRecords: null,
+      answers: {},
+      displayInfo: {
+        sorting: null,
+        pagination: null,
+        attributes: null,
+        tables: null
+      },
+      questionDefinition: {
+        questionName: null,
+        params: null,
+        filters: null
+      }
+    };
+  },
 
   /**
    * Handle dispatched actions. Hopefully most of this is self explanatory.
@@ -142,19 +123,19 @@ export default createStore({
   dispatchHandler(action, emitChange) {
     switch(action.type) {
 
-      case ActionType.ANSWER_LOAD_SUCCESS:
+      case ANSWER_LOAD_SUCCESS:
         this.handleAnswerLoadSuccess(action, emitChange);
         break;
 
-      case ActionType.ANSWER_MOVE_COLUMN:
+      case ANSWER_MOVE_COLUMN:
         this.handleAnswerMoveColumn(action, emitChange);
         break;
 
-      case ActionType.ANSWER_CHANGE_ATTRIBUTES:
+      case ANSWER_CHANGE_ATTRIBUTES:
         this.handleAnswerChangeAttributes(action, emitChange);
         break;
 
-      case ActionType.ANSWER_FILTER:
+      case ANSWER_FILTER:
         this.handleAnswerFilter(action, emitChange);
         break;
     }
@@ -164,9 +145,7 @@ export default createStore({
     /* Answer resource */
     // answer = {
     //   meta,
-    //   records: [{
-    //     id, attributes, tables
-    //   }]
+    //   records: [{ id, attributes, tables }]
     // }
     var answer = action.answer;
 
@@ -177,10 +156,7 @@ export default createStore({
      */
     var requestData = action.requestData;
     var questionName = requestData.questionDefinition.questionName;
-    var previousQuestionName = this.state.getIn([
-      'questionDefinition',
-      'questionName'
-    ]);
+    var previousQuestionName = this.state.questionDefinition.questionName;
 
     /*
      * If state.displayInfo.attributes isn't defined we want to use the
@@ -198,40 +174,23 @@ export default createStore({
     answer.meta.attributes = answer.meta.attributes
       .filter(attr => attr.name != 'wdk_weight');
 
-    // For each record, attributes should be a map indexed by attribute name
-    var records$ = Immutable.List().withMutations(list => {
-      answer.records.forEach(record => {
-
-        var id = record.id;
-
-        var attributes = Immutable.Map().withMutations(map => {
-          record.attributes.forEach(attribute => {
-            map.set(attribute.name, Immutable.fromJS(attribute));
-          });
-        });
-
-        var tables = Immutable.Map().withMutations(map => {
-          record.tables.forEach(table => {
-            map.set(table.name, Immutable.fromJS(table));
-          });
-        });
-
-        list.push(Immutable.Map({ id, attributes, tables }));
-      });
+    // For each record, attributes should be an object-map indexed by attribute name
+    answer.records.forEach(function(record) {
+      record.attributes = indexBy(record.attributes, 'name');
+      record.tables = indexBy(record.tables, 'name');
     });
 
     /*
-     * This will update the keys 'isLoading', 'answer', 'displayInfo',
-     * and 'questionDefinition' in `state`. `displayInfo` and
-     * `questionDefinition` are defined on `requestData`.
+     * This will update the keys `filteredRecords`, `displayInfo`, and
+     * `questionDefinition` in `this.state`.
      */
-    this.state = this.state.merge({
-      isLoading: false,
-      answers: {
-        [questionName]: { records: records$, meta: answer.meta }
-      },
-      filteredRecords: records$
-    }, requestData);
+    assign(this.state, {
+      filteredRecords: answer.records,
+      displayInfo: requestData.displayInfo,
+      questionDefinition: requestData.questionDefinition
+    });
+
+    this.state.answers[questionName] = answer;
 
     emitChange();
   },
@@ -244,11 +203,8 @@ export default createStore({
     /* The new position for the attribute */
     var newPosition = action.newPosition;
 
-    /* used with setIn http://facebook.github.io/immutable-js/docs/#/Map/setIn */
-    var keyPath = [ 'displayInfo', 'visibleAttributes' ];
-
     /* list of attributes we will be altering */
-    var attributes = this.state.getIn(keyPath);
+    var attributes = this.state.displayInfo.visibleAttributes;
 
     /* The current position of the attribute being moved */
     var currentPosition = attributes.findIndex(function(attribute) {
@@ -256,56 +212,40 @@ export default createStore({
     });
 
     /* The attribute being moved */
-    var attribute = attributes.get(currentPosition);
+    var attribute = attributes[currentPosition];
 
-    /* Make a temporary copy of attributes with the one being moved removed */
-    var newAttributes = attributes.delete(currentPosition);
-
-    /* Splice the attribute being moved into the new position */
-    newAttributes = newAttributes.splice(newPosition, 0, attribute);
-
-    /* Set the attributes to the new list */
-    this.state = this.state.setIn(keyPath, newAttributes);
+    attributes
+      // remove attribute from array
+      .splice(currentPosition, 1)
+      // then, insert into new position
+      .splice(newPosition, 0, attribute);
 
     emitChange();
   },
 
   handleAnswerChangeAttributes(action, emitChange) {
-    /*
-     * Create new Immutable list of attribtues. We have to use fromJS so
-     * that we create Immutable data structures for nested attribute keys.
-     */
-    // var newList = Immutable.fromJS(action.attributes);
-
-    /* set state.displayInfo.attributes to the new list */
-    this.state = this.state.setIn(['displayInfo', 'visibleAttributes'], action.attributes);
-
+    this.state.displayInfo.visibleAttributes = action.attributes;
     emitChange();
   },
 
   handleAnswerFilter(action, emitChange) {
-    this.state = this.state.withMutations(function(state) {
-      var terms = action.terms;
-      var questionName = action.questionName;
-      var parsedTerms = parseSearchTerms(terms);
-      var records = state.getIn(['answers', questionName, 'records']);
-      var filteredRecords = parsedTerms.reduce(function(records, term) {
-        return records.filter(isTermInRecord(term));
-      }, records);
+    var terms = action.terms;
+    var questionName = action.questionName;
+    var parsedTerms = parseSearchTerms(terms);
+    var records = this.state.answers[questionName].records;
+    var filteredRecords = parsedTerms.reduce(function(records, term) {
+      return records.filter(isTermInRecord(term));
+    }, records);
 
-      state.set('filterTerm', terms);
-      state.set('filteredRecords', filteredRecords);
+    assign(this.state, {
+      filterTerm: terms,
+      filteredRecords: filteredRecords
     });
+
     emitChange();
   },
 
   getState() {
-
-    /*
-     * Convert `state` to a plain JavaScript object. At some point, we should
-     * explore returning `state` as-is. This will require updating any modules
-     * that work with the store (AnswerPage, etc).
-     */
     return this.state;
   }
 

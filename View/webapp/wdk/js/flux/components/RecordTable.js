@@ -39,25 +39,8 @@ const CELL_CLASS_NAME = 'wdk-RecordTable-cell';
  * optional handlers. We can do an equality check as a form of feature
  * detection. E.g., if onSort === noop, then we won't enable sorting.
  */
-const noop = () => {};
+function noop() {}
 
-const not = func => (...args) => !func(...args);
-
-/**
- * Higher-order function that returns a predicate to test the value of an
- * iterable item whose key is `key` against the value `val`.
- *
- * Example
- *
- *     const iterable = new Map({ name: 'Dave' });
- *     const nameIsDave = where('name', 'Dave');
- *     nameIsDave(iterable); //=> true
- *
- * @param {string} key Where to find the property
- * @param {any} val The test value
- * @return boolean
- */
-const where = (key, val) => iter => iter.get(key) === val;
 
 const AttributeSelectorItem = React.createClass({
 
@@ -69,8 +52,8 @@ const AttributeSelectorItem = React.createClass({
 
   render() {
     const { attribute } = this.props;
-    const name = attribute.get('name');
-    const displayName = attribute.get('displayName');
+    const name = attribute.name;
+    const displayName = attribute.displayName;
     return (
       <li key={name}>
         <input type="checkbox"
@@ -78,7 +61,7 @@ const AttributeSelectorItem = React.createClass({
           name="pendingAttribute"
           value={name}
           onChange={this.props.onChange}
-          disabled={!attribute.get('isRemovable')}
+          disabled={!attribute.isRemovable}
           checked={this.props.isChecked}/>
         <label htmlFor={'column-select-' + name}> {formatAttributeName(displayName)} </label>
       </li>
@@ -103,7 +86,7 @@ const AttributeSelector = React.createClass({
           <button>Update Columns</button>
         </div>
         <ul className="wdk-RecordTable-AttributeSelector">
-          {this.props.attributes.map(this._renderItem).toArray()}
+          {this.props.attributes.map(this._renderItem)}
         </ul>
         <div className="wdk-RecordTable-AttributeSelectorButtonWrapper">
           <button>Update Columns</button>
@@ -115,8 +98,8 @@ const AttributeSelector = React.createClass({
   _renderItem(attribute) {
     return (
       <AttributeSelectorItem
-        key={attribute.get('name')}
-        isChecked={this.props.selectedAttributes.contains(attribute)}
+        key={attribute.name}
+        isChecked={this.props.selectedAttributes.indexOf(attribute) > -1}
         attribute={attribute}
         onChange={this.props.onChange}
       />
@@ -156,9 +139,9 @@ const RecordTable = React.createClass({
    */
   getInitialState() {
     return Object.assign({
-      columnWidths: this.props.meta.get('attributes').reduce((widths, attr) => {
-        const name = attr.get('name');
-        const displayName = attr.get('displayName');
+      columnWidths: this.props.meta.attributes.reduce((widths, attr) => {
+        const name = attr.name;
+        const displayName = attr.displayName;
         // 8px per char, plus 12px for sort icon
         const width = Math.max(displayName.length * 8.5 + 12, 200);
         widths[name] = name === PRIMARY_KEY_NAME ? 400 : width;
@@ -168,16 +151,16 @@ const RecordTable = React.createClass({
   },
 
   getRow(rowIndex) {
-    return this.props.records.getIn([rowIndex, 'attributes']);
+    return this.props.records[rowIndex].attributes;
   },
 
   getCellData(name, attributes) {
-    return attributes.get(name);
+    return attributes[name];
   },
 
   componentWillReceiveProps(nextProps) {
     this.setState({
-      pendingVisibleAttributes: nextProps.displayInfo.get('visibleAttributes')
+      pendingVisibleAttributes: nextProps.displayInfo.visibleAttributes
     });
   },
 
@@ -221,13 +204,13 @@ const RecordTable = React.createClass({
   },
 
   handleSort(name) {
-    const attributes = this.props.meta.get('attributes');
-    const sortSpec = this.props.displayInfo.getIn(['sorting', 0]);
-    const attribute = attributes.find(where('name', name));
+    const attributes = this.props.meta.attributes;
+    const sortSpec = this.props.displayInfo.sorting[0];
+    const attribute = attributes.find(attr => attr.name == name);
     // Determine the sort direction. If the attribute is the same, then
     // we will reverse the direction... otherwise, we will default to `ASC`.
-    const direction = sortSpec.get('attributeName') === name
-      ? sortSpec.get('direction') === 'ASC' ? 'DESC' : 'ASC'
+    const direction = sortSpec.attributeName === name
+      ? sortSpec.direction === 'ASC' ? 'DESC' : 'ASC'
       : 'ASC';
     this.props.onSort(attribute, direction);
   },
@@ -238,8 +221,8 @@ const RecordTable = React.createClass({
   },
 
   handleHideColumn(name) {
-    const attributes = this.props.displayInfo.get('visibleAttributes')
-      .filter(not(where('name', name)));
+    const attributes = this.props.displayInfo.visibleAttributes
+      .filter(attr => attr.name != name);
     this.props.onChangeColumns(attributes);
   },
 
@@ -275,18 +258,18 @@ const RecordTable = React.createClass({
    */
   togglePendingAttribute() {
     const form = this.refs.attributeSelector.getDOMNode();
-    const attributes = this.props.meta.get('attributes');
-    const visibleAttributes = this.props.displayInfo.get('visibleAttributes');
+    const attributes = this.props.meta.attributes;
+    const visibleAttributes = this.props.displayInfo.visibleAttributes;
 
     const checkedAttrs = [].slice.call(form.pendingAttribute)
       .filter(a => a.checked)
-      .map(a => attributes.find(attr => attr.get('name') === a.value));
+      .map(a => attributes.find(attr => attr.name === a.value));
 
     // Remove visible atributes that are not checked.
     // Then, concat checked attributes that are not currently visible.
     const pendingVisibleAttributes = visibleAttributes
-      .filter(attr => checkedAttrs.find(p => p.get('name') === attr.get('name')))
-      .concat(checkedAttrs.filter(attr => !visibleAttributes.find(a => a.get('name') === attr.get('name'))));
+      .filter(attr => checkedAttrs.find(p => p.name === attr.name))
+      .concat(checkedAttrs.filter(attr => !visibleAttributes.find(a => a.name === attr.name)));
 
     this.setState({ pendingVisibleAttributes });
   },
@@ -297,11 +280,10 @@ const RecordTable = React.createClass({
    * @param {any} attribute Value returned by `getRow`.
    */
   renderCell(attribute, attributeName, attributes, index, columnData, width) {
-    // const width = this.state.columnWidths[attributeName] - 10;
-    if (attribute.get('name') === PRIMARY_KEY_NAME) {
-      const record = this.props.records.get(index);
-      // const href = '#' + attribute.get('value');
-      // const handlePrimaryKeyClick = _.partial(this.handlePrimaryKeyClick, record);
+    const value = attribute.value;
+    const type = columnData.attributeDefinition.type;
+    if (attribute.name === PRIMARY_KEY_NAME) {
+      const record = this.props.records[index];
       const href = this.props.recordHrefGetter(record);
       return (
         <div
@@ -311,7 +293,7 @@ const RecordTable = React.createClass({
           <Link
             className="wdk-RecordTable-recordLink"
             to={href}
-            dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute) }}
+            dangerouslySetInnerHTML={{__html: formatAttributeValue(value, type) }}
           />
         </div>
       );
@@ -321,7 +303,7 @@ const RecordTable = React.createClass({
         <div
           style={{ width: width - 12 }}
           className="wdk-RecordTable-attributeValue"
-          dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute) }}
+          dangerouslySetInnerHTML={{__html: formatAttributeValue(value, type) }}
         />
       );
     }
@@ -334,15 +316,15 @@ const RecordTable = React.createClass({
    */
   renderHeader(attribute) {
     return (
-      <span title={attribute.get('help')}>
-        {formatAttributeName(attribute.get('displayName'))}
+      <span title={attribute.help || ''}>
+        {formatAttributeName(attribute.displayName)}
       </span>
     );
   },
 
   _getInitialAttributeSelectorState() {
     return {
-      pendingVisibleAttributes: this.props.displayInfo.get('visibleAttributes'),
+      pendingVisibleAttributes: this.props.displayInfo.visibleAttributes,
       attributeSelectorOpen: false
     };
   },
@@ -352,10 +334,10 @@ const RecordTable = React.createClass({
     // creates variables: meta, records, and visibleAttributes
     const { pendingVisibleAttributes } = this.state;
     const { meta, records, displayInfo } = this.props;
-    const visibleAttributes = displayInfo.get('visibleAttributes');
-    const sortSpec = displayInfo.getIn(['sorting', 0]);
+    const visibleAttributes = displayInfo.visibleAttributes;
+    const sortSpec = displayInfo.sorting[0];
 
-    const cellRenderer = this.context.getCellRenderer(meta.get('class'), this.renderCell) || this.renderCell;
+    const cellRenderer = this.context.getCellRenderer(meta.class, this.renderCell) || this.renderCell;
 
     return (
       <div className="wdk-RecordTable">
@@ -371,7 +353,7 @@ const RecordTable = React.createClass({
             title="Select Columns">
             <AttributeSelector
               ref="attributeSelector"
-              attributes={meta.get('attributes')}
+              attributes={meta.attributes}
               selectedAttributes={pendingVisibleAttributes}
               onSubmit={this.handleAttributeSelectorSubmit}
               onChange={this.togglePendingAttribute}
@@ -382,22 +364,25 @@ const RecordTable = React.createClass({
           ref="table"
           width={window.innerWidth - 45}
           maxHeight={this.props.height - 32}
-          rowsCount={records.size}
+          rowsCount={records.length}
           rowHeight={28}
           rowGetter={this.getRow}
           headerHeight={35}
-          sortDataKey={sortSpec.get('attributeName')}
-          sortDirection={sortSpec.get('direction')}
+          sortDataKey={sortSpec.attributeName}
+          sortDirection={sortSpec.direction}
           onSort={this.handleSort}
           onHideColumn={this.handleHideColumn}
         >
 
           {visibleAttributes.map(attribute => {
-            const name = attribute.get('name');
+            const name = attribute.name;
             const isPk = name === PRIMARY_KEY_NAME;
-            const cellClassNames = name + ' ' + attribute.get('className') +
+            const cellClassNames = name + ' ' + attribute.className +
               ' ' + CELL_CLASS_NAME;
             const width = this.state.columnWidths[name];
+            const columnData = {
+              attributeDefinition: attribute
+            };
             // const flexGrow = isPk ? 2 : 1;
 
             return (
@@ -409,14 +394,15 @@ const RecordTable = React.createClass({
                 headerRenderer={this.renderHeader}
                 cellRenderer={partialRight(cellRenderer, this.renderCell)}
                 cellDataGetter={this.getCellData}
+                columnData={columnData}
                 width={width}
                 isResizable={true}
-                isSortable={attribute.get('isSortable')}
-                isRemovable={attribute.get('isRemovable')}
+                isSortable={attribute.isSortable}
+                isRemovable={attribute.isRemovable}
                 cellClassName={cellClassNames}
               />
             );
-          }).toArray()}
+          })}
         </Table>
 
       </div>

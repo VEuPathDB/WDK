@@ -1,45 +1,43 @@
-import Immutable from 'immutable';
 import createStore from '../utils/createStore';
-import * as ActionType from '../ActionType';
+import {
+  QUESTION_LOAD_SUCCESS,
+  QUESTION_LIST_LOADING,
+  QUESTION_LIST_LOAD_SUCCESS,
+  QUESTION_LIST_LOAD_ERROR
+} from '../ActionType';
 
 
 export default createStore ({
 
-  state: Immutable.fromJS({
-    questions: [],
-    isLoading: false,
-    error: null
-  }),
+  init() {
+    this.state = {
+      questions: []
+    };
+  },
 
   dispatchHandler(action, emitChange) {
     switch(action.type) {
 
-      case ActionType.QUESTION_LOAD_SUCCESS:
-        this.state = this.state.mergeIn(['questions'], [action.question]);
+      case QUESTION_LOAD_SUCCESS:
+        this.state.questions.push(action.question);
         emitChange();
         break;
 
-      case ActionType.QUESTION_LIST_LOADING:
-        this.state = this.state.merge({
-          isLoading: true,
-          error: null
-        });
+      case QUESTION_LIST_LOADING:
+        this.state.isLoading = true;
+        this.state.error = null;
         emitChange();
         break;
 
-      case ActionType.QUESTION_LIST_LOAD_SUCCESS:
-        this.state = this.state.merge({
-          isLoading: false,
-          questions: action.questions
-        });
+      case QUESTION_LIST_LOAD_SUCCESS:
+        this.state.isLoading = false;
+        this.state.questions = action.questions;
         emitChange();
         break;
 
-      case ActionType.QUESTION_LIST_LOAD_ERROR:
-        this.state = this.state.merge({
-          isLoading: false,
-          error: action.error
-        });
+      case QUESTION_LIST_LOAD_ERROR:
+        this.state.isLoading = false;
+        this.state.error = action.error;
         emitChange();
         break;
 
