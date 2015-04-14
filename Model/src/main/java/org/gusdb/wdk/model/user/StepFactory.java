@@ -673,13 +673,11 @@ public class StepFactory {
       String leftKey = displayParams.get(leftParam.getName());
       String leftStepKey = leftKey.substring(leftKey.indexOf(":") + 1);
       leftStepId = Integer.parseInt(leftStepKey);
-      dropDependency(leftStepId, COLUMN_LEFT_CHILD_ID);
 
       AnswerParam rightParam = booleanQuery.getRightOperandParam();
       String rightKey = displayParams.get(rightParam.getName());
       String rightStepKey = rightKey.substring(rightKey.indexOf(":") + 1);
       rightStepId = Integer.parseInt(rightStepKey);
-      dropDependency(rightStepId, COLUMN_RIGHT_CHILD_ID);
     }
     else if (query.isCombined()) {
       // transform result, set the first two params
@@ -697,6 +695,12 @@ public class StepFactory {
         }
       }
     }
+
+    dropDependency(leftStepId, COLUMN_LEFT_CHILD_ID);
+    if (rightStepId != 0) {
+      dropDependency(rightStepId, COLUMN_RIGHT_CHILD_ID);
+    }
+
 
     step.setAndVerifyPreviousStepId(leftStepId);
     step.setAndVerifyChildStepId(rightStepId);
