@@ -108,22 +108,21 @@ const AnswerController = React.createClass({
     const { questionName } = this.props.params;
 
     const answerStoreState = stores.answerStore.getState();
-    const answer = answerStoreState.getIn(['answers', questionName]);
+    const answer = answerStoreState.answers[questionName];
 
     const questionStoreState = stores.questionStore.getState();
-    const questions = questionStoreState.get('questions');
+    const questions = questionStoreState.questions;
 
     const recordClassStoreState = stores.recordClassStore.getState();
-    const recordClasses = recordClassStoreState.get('recordClasses');
+    const recordClasses = recordClassStoreState.recordClasses;
 
-    const displayInfo = answerStoreState.get('displayInfo');
-    const questionDefinition = answerStoreState.get('questionDefinition');
-    const filterTerm = answerStoreState.get('filterTerm');
-    const filteredRecords = answerStoreState.get('filteredRecords');
+    const displayInfo = answerStoreState.displayInfo;
+    const filterTerm = answerStoreState.filterTerm;
+    const filteredRecords = answerStoreState.filteredRecords;
 
-    const question = questions.find(q => q.get('name') === questionName);
+    const question = questions.find(q => q.name === questionName);
     const recordClass = question
-      ? recordClasses.find(r => r.get('fullName') === question.get('class'))
+      ? recordClasses.find(r => r.fullName === question.class)
       : null;
 
     return {
@@ -133,7 +132,6 @@ const AnswerController = React.createClass({
       recordClass,
       recordClasses,
       displayInfo,
-      questionDefinition,
       filterTerm,
       filteredRecords
     };
@@ -193,7 +191,7 @@ const AnswerController = React.createClass({
       const displayInfo = {
         pagination,
         sorting,
-        visibleAttributes: this.state.displayInfo.get('visibleAttributes')
+        visibleAttributes: this.state.displayInfo.visibleAttributes
       };
 
       // TODO Add params to loadAnswer call
@@ -270,7 +268,7 @@ const AnswerController = React.createClass({
       // Update the query object with the new values.
       // See https://lodash.com/docs#assign
       const query = Object.assign({}, this.props.query, {
-        sortBy: attribute.get('name'),
+        sortBy: attribute.name,
         sortDir: direction
       });
 
@@ -338,7 +336,7 @@ const AnswerController = React.createClass({
     // FIXME This will be removed when the record service is serving up records
     onRecordClick(record) {
       const path = 'answer';
-      const records = this.state.answer.get('records');
+      const records = this.state.answer.records;
 
       // update query with format and position
       const query = Object.assign({}, this.props.query, {
@@ -365,11 +363,11 @@ const AnswerController = React.createClass({
 
     recordHrefGetter(record) {
       const path = 'answer';
-      const records = this.state.answer.get('records');
+      const records = this.state.answer.records;
 
       // update query with format and position
       const query = Object.assign({}, this.props.query, {
-        expandedRecord: records.findIndex(r => r === record)
+        expandedRecord: records.indexOf(record)
       });
 
       // Method provided by Router.Navigation mixin
@@ -432,17 +430,18 @@ const AnswerController = React.createClass({
 
     // FIXME This will be removed when the record service is serving up records
     if (answer && expandedRecord != null) {
-      const RecordComponent = this.context.getRecordComponent(answer.getIn(['meta', 'class']), Record)
+      const RecordComponent = this.context.getRecordComponent(answer.meta.class, Record)
         || Record;
-      const record = answer.get('records').get(expandedRecord);
+      const record = answer.records[expandedRecord];
 
       return (
-        <Doc title={`${recordClass.get('displayName')}: ${record.get('id')}`}>
+        <Doc title={`${recordClass.displayName}: ${record.id}`}>
           <RecordComponent
             record={record}
             questions={questions}
+            recordClass={recordClass}
             recordClasses={recordClasses}
-            attributes={answer.getIn(['meta', 'attributes'])}
+            attributes={answer.meta.attributes}
           />
         </Doc>
       );
@@ -450,7 +449,7 @@ const AnswerController = React.createClass({
 
     else if (answer && question && recordClass) {
       return (
-        <Doc title={`${question.get('displayName')}`}>
+        <Doc title={`${question.displayName}`}>
           <Answer
             answer={answer}
             question={question}
