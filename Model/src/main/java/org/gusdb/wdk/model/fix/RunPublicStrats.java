@@ -104,7 +104,7 @@ public class RunPublicStrats extends BaseCLI {
       }
       catch (Exception ex) {
         // check if strategy is already invalid, ignore if user NOT eupathdb
-        LOG.error("Adding strategy " + st.getName() + " to list of errored strats.", ex);
+        LOG.error("Adding strategy " + st.getName() + " -belonging to user " + st.getUser().getEmail() + " created on " + getCreatedTime() + " and modified last on " + getLastModifiedTime() + "..... to list of errored strats.", ex);
         erroredPublicStrats.add(st);
       }
     }
