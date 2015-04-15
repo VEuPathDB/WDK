@@ -241,7 +241,7 @@ public class StepValidator extends BaseCLI {
       // add a hint to use filter in CONNECT BY, which improves from 1368
       // seconds to 251 seconds.
       sql = "UPDATE " + steps + " SET is_valid = 0 "
-          + "WHERE is_valid != 0                   "
+          + "WHERE (is_valid is NULL OR is_valid = 1)                  "
           + "  AND step_id IN (SELECT DISTINCT step_id FROM " + tempTable
           + "                  START WITH is_valid = 0 "
           + "                  CONNECT BY prior user_id = user_id "
