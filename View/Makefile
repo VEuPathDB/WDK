@@ -18,7 +18,6 @@ libs_sources := webapp/wdk/lib/rsvp.min.js \
                 webapp/wdk/lib/jquery.cookie.js \
                 webapp/wdk/lib/jquery.blockUI.js \
                 webapp/wdk/lib/jquery.qtip.min.js \
-                webapp/wdk/lib/handlebars.runtime.min-v1.3.0.js \
                 webapp/wdk/lib/flexigrid.js \
                 webapp/wdk/lib/select2.min.js \
                 webapp/wdk/lib/jquery.flot.min.js \
@@ -45,7 +44,7 @@ $(wdk_bundle): $(wdk_sources)
 	webpack $< $@
 
 $(wdk3_bundle): $(wdk3_sources)
-	webpack $< $@ --output-library wdk --output-library-target umd
+	webpack $< $@ --output-library Wdk --output-library-target umd
 
 
 # =============================================================================

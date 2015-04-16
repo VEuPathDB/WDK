@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.WdkModel;
 
 /**
  * Starting from build-23, we no longer back up user data, and will just delete guest data for each release.
- * 
+ * Starting build 24 we add deletion of deleted strategies/steps and deletion of steps not connected to a strategy
  * @author Jerric
  *
  */
@@ -25,7 +25,8 @@ public class GuestRemover extends BaseCLI {
 
   private static final String GUEST_TABLE = "wdk_guests";
 
-	// 1000 makes the process too slow; 10000 is good but it is considered “long transaction” which will affect the replication.
+  // 1000 makes the process too slow; 10000 is good but it is considered “long transaction” which will affect
+  // the replication.
   private static final int PAGE_SIZE = 9000;
 
   private static final Logger LOG = Logger.getLogger(GuestRemover.class);
@@ -43,6 +44,30 @@ public class GuestRemover extends BaseCLI {
     finally {
       LOG.info("WDK User Remover done.");
       System.exit(0);
+    }
+  }
+
+  public static int deleteByBatch(DataSource dataSource, String table, String condition) throws SQLException {
+    LOG.info("\n\nDeleting from table: " + table + " with condition: " + condition);
+    PreparedStatement psDelete = null;
+    try {
+      String sql = "DELETE FROM " + table + " WHERE " + condition + " AND rownum <= " + PAGE_SIZE;
+      psDelete = SqlUtils.getPreparedStatement(dataSource, sql);
+
+      int sum = 0;
+      while (true) {
+        // executeUpdate includes the commit
+        int count = psDelete.executeUpdate();
+        if (count == 0)
+          break;
+        sum += count;
+        LOG.debug(sum + " rows deleted so far.");
+      }
+      LOG.debug("***** totally deleted " + sum + " rows. *****");
+      return sum;
+    }
+    finally {
+      SqlUtils.closeStatement(psDelete);
     }
   }
 
@@ -107,7 +132,8 @@ public class GuestRemover extends BaseCLI {
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + GUEST_TABLE + " AS SELECT user_id FROM " +
         userSchema + "users " + " WHERE is_guest = 1 AND register_time < to_date('" + cutoffDate +
         "', 'yyyy/mm/dd')", "backup-create-guest-table");
-		SqlUtils.executeUpdate(dataSource,"CREATE UNIQUE INDEX " + GUEST_TABLE + "_ix01 ON " + GUEST_TABLE + " (user_id)", "create-guest-index");
+    SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX " + GUEST_TABLE + "_ix01 ON " + GUEST_TABLE +
+        " (user_id)", "create-guest-index");
 
     return "SELECT user_id FROM " + GUEST_TABLE;
   }
@@ -117,30 +143,48 @@ public class GuestRemover extends BaseCLI {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     String userClause = "user_id IN (" + guestSql + ")";
 
-		deleteByBatch(dataSource, "dataset_values", " dataset_id IN (SELECT dataset_id FROM " + userSchema +
-        "datasets WHERE " + userClause + ")");
-    deleteByBatch(dataSource, "datasets", userClause);
-    deleteByBatch(dataSource, "preferences", userClause);
-    deleteByBatch(dataSource, "user_baskets", userClause);
-    deleteByBatch(dataSource, "favorites", userClause);
-    deleteByBatch(dataSource, "strategies", userClause);
-    deleteByBatch(dataSource, "step_analysis", " step_id IN (SELECT step_id FROM " + userSchema + "steps WHERE " +
-        userClause + ")");
-    deleteByBatch(dataSource, "steps", userClause + " AND step_id NOT IN (SELECT root_step_id FROM " +
-        userSchema + "strategies)");
-    deleteByBatch(dataSource, "user_roles", userClause);
+    deleteByBatch(dataSource, userSchema + "dataset_values", " dataset_id IN (SELECT dataset_id FROM " +
+        userSchema + "datasets WHERE " + userClause + ")");
+    deleteByBatch(dataSource, userSchema + "datasets", userClause);
+    deleteByBatch(dataSource, userSchema + "preferences", userClause);
+    deleteByBatch(dataSource, userSchema + "user_baskets", userClause); // we dont know why we get some
+    deleteByBatch(dataSource, userSchema + "favorites", userClause);
+    deleteByBatch(dataSource, userSchema + "strategies", userClause);
+    deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 ");
+    deleteByBatch(dataSource, userSchema + "step_analysis", " step_id IN (SELECT step_id FROM " + userSchema +
+        "steps WHERE " + userClause + ")");
+    deleteByBatch(dataSource, userSchema + "steps", userClause +
+									" AND step_id NOT IN (SELECT root_step_id FROM " + userSchema + "strategies)");// we need this so teh script does not break on broken strategies
 
-    //deleteByBatch(dataSource, "users", userClause + " AND user_id NOT IN (SELECT user_id FROM " + userSchema +  "steps)");
-		// jan 12 2015: the second condition makes the delete very slow (40sec for 10000 rows) 
-		// and it should not be needed since steps from users in GUEST_TABLE should have been already removed from the steps table 
-		deleteByBatch(dataSource, "users", userClause);
+    deleteByBatch(dataSource, userSchema + "user_roles", userClause);
+    deleteByBatch(dataSource, userSchema + "users", userClause + " AND user_id NOT IN (SELECT user_id FROM " +
+        userSchema + "steps)");
+    // jan 12 2015: the second condition makes the delete very slow (40sec for 10000 rows)
+    // and it should not be needed since steps from users in GUEST_TABLE should have been already removed from
+    // the steps table
+    // deleteByBatch(dataSource, userSchema + "users", userClause);
 
     // also delete guest data from GBrowse
     removeGBrowseGuests(dataSource);
+
+    // need to delete analysis and step repeatedly, since every deletion will open up more to be deleted.
+    boolean remain = true;
+    while (remain) {
+      int sum = removeUnusedStepAnalysis(dataSource, userSchema);
+      try {
+        sum = removeUnusedSteps(dataSource, userSchema);
+        remain = (sum != 0);
+      }
+      catch (SQLException ex) {
+        LOG.warn(ex.getMessage());
+        remain = true;
+      }
+    }
+
   }
 
   private void removeGBrowseGuests(DataSource dataSource) throws SQLException {
-    LOG.info("Deleting from gbrowseusers.sessions...");
+    LOG.info("\n\nDeleting from gbrowseusers.sessions...");
     PreparedStatement psDelete = null;
     try {
       psDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE FROM gbrowseusers.sessions WHERE id IN ("
@@ -162,26 +206,36 @@ public class GuestRemover extends BaseCLI {
     }
   }
 
-  private void deleteByBatch(DataSource dataSource, String table, String condition) throws SQLException {
-    LOG.info("Deleting from " + table + "...");
-    PreparedStatement psDelete = null;
-    try {
-      psDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE FROM " + userSchema + table + " WHERE (" +
-				 condition + ") AND rownum <= " + PAGE_SIZE);
-
-      int sum = 0;
-      while (true) {
-				//executeUpdate includes the commit
-        int count = psDelete.executeUpdate();
-				LOG.info("****deleted " + count + " rows\n");
-        if (count == 0)
-          break;
-        sum += count;
-        LOG.debug(sum + " rows deleted so far.");
-      }
+  private int removeUnusedStepAnalysis(DataSource dataSource, String userSchema) throws SQLException {
+		LOG.info("\n\nRemoving unused step_analysis...");
+    int count = 1, sum = 0;
+    String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
+    while (count != 0) {
+      count = GuestRemover.deleteByBatch(dataSource, userSchema + "step_analysis", "step_id IN (" +
+          "  SELECT step_id              FROM           " + stepTable +
+          "  MINUS SELECT root_step_id   FROM           " + strategyTable +
+          "  MINUS SELECT left_child_id  FROM           " + stepTable +
+          "  MINUS SELECT right_child_id FROM           " + stepTable + ")");
+      sum += count;
     }
-    finally {
-      SqlUtils.closeStatement(psDelete);
-    }
+    LOG.debug(sum + " unused step_analysis deleted");
+    return sum;
   }
+
+  private int removeUnusedSteps(DataSource dataSource, String userSchema) throws SQLException {
+		LOG.info("\n\nRemoving unused steps...");
+    int count = 1, sum = 0;
+    String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
+    while (count != 0) {
+      count = GuestRemover.deleteByBatch(dataSource, stepTable, "step_id IN (" +
+          "  SELECT step_id              FROM           " + stepTable +
+          "  MINUS SELECT root_step_id   FROM           " + strategyTable +
+          "  MINUS SELECT left_child_id  FROM           " + stepTable +
+          "  MINUS SELECT right_child_id FROM           " + stepTable + ")");
+      sum += count;
+    }
+    LOG.debug(sum + " unused steps deleted");
+    return sum;
+  }
+
 }

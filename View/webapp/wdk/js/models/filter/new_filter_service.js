@@ -1,4 +1,4 @@
-/* global RSVP */
+/* global _, Backbone, RSVP */
 
 // TODO How does this class relate to Flux?
 //
@@ -60,30 +60,47 @@ wdk.namespace('wdk.models.filter', function(ns) {
         this.removeFilter(filter);
       },
 
-      addColumn: function(field) {
-        this.updateColumns(field, true);
+      addIgnored: function(datum) {
+        this.addIgnored(datum);
       },
 
-      removeColumn: function(field) {
-        this.updatecolumns(field, false);
+      removeIgnored: function(datum) {
+        this.removeIgnored(datum);
       },
 
-      addIgnored: function(dataId) {
-        console.log(dataId);
-      },
-
-      removeIgnored: function(dataId) {
-        console.log(dataId);
+      updateColumns: function(fields) {
+        this.updateColumns(fields);
       }
     },
 
     constructor: function(attrs, options) {
 
+      // Partition options.filters into two arrays:
+      //   * valid
+      //   * invalid
+      var filterPartitions = _.reduce(attrs.filters, function(partitions, filter) {
+        if (_.any(attrs.fields, function(field) {
+          return filter.field.term === field.term;
+        })) {
+          partitions.valid.push(filter);
+        }
+        else {
+          partitions.invalid.push(filter);
+        }
+        return partitions;
+      }, { valid: [], invalid: [] });
+
+      // loading status for async operations
+      this.isLoading = false;
+
       // metadata properties
       this.fields = attrs.fields || [];
 
       // list of filters
-      this.filters = attrs.filters || [];
+      this.filters = filterPartitions.valid || [];
+
+      // list of invalid filters
+      this.invalidFilters = filterPartitions.invalid;
 
       // unfiltered data, used for local filtering
       this.data = attrs.data || [];
@@ -94,17 +111,23 @@ wdk.namespace('wdk.models.filter', function(ns) {
       // visible columns in results
       this.columns = attrs.columns || [];
 
-      // ignored data
-      this.ignored = attrs.ignored || [];
-
-      // selected field
-      this.selectedField =  null;
-
       // field distributions keyed by field term
       this.distributionMap = {};
 
       // listen to actions
       this.listenTo(options.intents, this.actionListeners);
+
+      // set isIgnored flag
+      if (attrs.ignored && attrs.ignored.length) {
+        this.data.forEach(function(datum) {
+          datum.isIgnored = attrs.ignored.indexOf(datum.term) > -1;
+        });
+      }
+
+      // selected field
+      if (attrs.selectedField) {
+        this.setSelectedField(attrs.selectedField);
+      }
 
       // apply filters
       this.getFilteredData(this.filters)
@@ -119,14 +142,27 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     getState: function() {
-      return _.pick(this, 'fields', 'filters', 'data', 'filteredData', 'columns', 'ignored', 'selectedField', 'distributionMap');
+      return _.pick(this,
+                    'isLoading',
+                    'fields',
+                    'filters',
+                    'invalidFilters',
+                    'data',
+                    'filteredData',
+                    'columns',
+                    'selectedField',
+                    'distributionMap');
     },
 
     setSelectedField: function(field) {
+      this.isLoading = true;
+      this.emitChange();
+
       this.getFieldDistribution(field)
         .then(function(distribution) {
           this.distributionMap[field.term] = distribution;
           this.selectedField = field;
+          this.isLoading = false;
           this.emitChange();
         }.bind(this));
     },
@@ -185,6 +221,9 @@ wdk.namespace('wdk.models.filter', function(ns) {
     // Filter is optional. If supplied, calculate it's selection.
     // If @selectedField is undefined, skip updating @distributionMap.
     updateFilters: function(filter) {
+      this.isLoading = true;
+      this.emitChange();
+
       var promises = {
         filteredData: this.getFilteredData(this.filters),
         distribution: this.selectedField &&
@@ -200,22 +239,51 @@ wdk.namespace('wdk.models.filter', function(ns) {
           filter.selection = results.filterSelection;
         }
         this.filteredData = results.filteredData;
+        this.isLoading = false;
         this.emitChange();
       }.bind(this));
     },
 
-    updateColumns: function(field, doAdd) {
-      if (doAdd) {
-        this.getFieldMetadata(field)
-          .then(function(/* metadata */) {
-            // field.metadata = metadata; // do we need this?
-            this.columns = this.columns.concat(field);
-            this.emitChange();
-          }.bind(this));
+    updateColumns: function(fields) {
+      this.isLoading = true;
+      this.emitChange();
+
+      Promise.all(fields.map(field => this.getFieldMetadata(field)))
+        .then(() => {
+          this.columns = fields;
+          this.isLoading = false;
+          this.emitChange();
+        });
+    },
+
+    addIgnored: function(datum) {
+      datum.isIgnored = true;
+      this._cloneDatum(datum);
+      this.emitChange();
+    },
+
+    removeIgnored: function(datum) {
+      datum.isIgnored = false;
+      this._cloneDatum(datum);
+      this.emitChange();
+    },
+
+    _cloneDatum: function(datum) {
+      var { data, filteredData } = this;
+      var clone = _.cloneDeep(datum);
+
+      for (var index = 0; index < data.length; index++) {
+        if (data[index] == datum) {
+          data[index] = clone
+          break;
+        }
       }
-      else {
-        this.columns = _.without(this.columns, field);
-        this.emitChange();
+
+      for (var index = 0; index < filteredData.length; index++) {
+        if (filteredData[index] == datum) {
+          filteredData[index] = clone
+          break;
+        }
       }
     },
 

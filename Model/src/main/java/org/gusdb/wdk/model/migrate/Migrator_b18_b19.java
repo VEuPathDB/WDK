@@ -14,7 +14,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.Step;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -68,9 +68,12 @@ public class Migrator_b18_b19 implements Migrator {
 
         // update params
         String paramContent = platform.getClobData(rsSteps, "display_params");
-        Map<String, String> params = StepFactory.parseParamContent(new JSONObject(paramContent));
+        Step step = new Step(null, 0, 0);
+        step.setParamFilterJSON(new JSONObject(paramContent));
+        Map<String, String> params = step.getParamValues();
         updateParams(stepId, params, leftChildId, rightChildId);
-        paramContent = StepFactory.getParamContent(params).toString();
+        step.setParamValues(params);
+        paramContent = step.getParamFilterJSON().toString();
 
         // save changes
         platform.setClobData(psUpdate, 1, paramContent, false);

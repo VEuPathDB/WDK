@@ -7,19 +7,18 @@
 
 // Include the babel polyfill. This adds global objects expected in parts of our
 // code base, such as Promise, and the runtime needed for generators.
-import 'babel/polyfill';
+// import 'babel/polyfill';
+// import 'babel/browser'; // remove this before going to prod
 
-import _ from 'lodash';
-import Flux from 'flux';
 import React from 'react';
+import Flux from 'flux';
 import Router from 'react-router';
 
-import createServiceAPI from './utils/createServiceAPI';
-import createObjectCache from './utils/createObjectCache';
+import ServiceAPI from './utils/ServiceAPI';
 import HeadlessLocation from './utils/HeadlessLocation';
 import stores from './stores';
 import actionCreators from './actions';
-import { routes } from './router';
+import { runApplication } from './application';
 
 /**
  * Starts a WDK application instance based on the provided configuration.
@@ -27,9 +26,21 @@ import { routes } from './router';
  * @param {object} config Application configuration
  * @param {string} config.serviceUrl Base URL for the RESTful WDK Service
  * @param {element} config.rootElement Root element to render application
+ * @param {function} config.recordComponentResolver Function used to resolve
+ *        a record component based on the record class name. The function
+ *        will be called with the record class name and a reference to the
+ *        default record component. This is useful for wrapping or for using
+ *        the default without modifications.
  */
-const createApplication = function createApplication(config) {
-  const { serviceUrl, rootElement } = config;
+var createApplication = function createApplication(config) {
+  var {
+    baseUrl,
+    serviceUrl,
+    rootElement,
+    recordComponentResolver,
+    cellRendererResolver,
+    location
+  } = config;
 
   if (typeof serviceUrl !== 'string') {
     throw new Error(`Application serviceUrl ${serviceUrl} must be a string.`);
@@ -39,49 +50,33 @@ const createApplication = function createApplication(config) {
     throw new Error(`Application rootElement ${rootElement} must be a DOM element.`);
   }
 
-  const location = config.location === 'none'
-    ? new HeadlessLocation(config.defaultRoute || '/')
-    : Router.HashLocation;
-  const dispatcher = new Flux.Dispatcher();
-  const serviceAPI = createServiceAPI(serviceUrl);
-  const storeCache = createObjectCache(stores, dispatcher);
-  const actionCreatorsCache = createObjectCache(actionCreators, dispatcher, serviceAPI);
+  var dispatcher = new Flux.Dispatcher();
+  var serviceAPI = ServiceAPI(serviceUrl);
 
-  // This is used below in `React.withContext`. Properties of this object will
-  // be available in React components that declare them using the
-  // `contextTypes` property. React will read this propery on each component
-  // and expose the defined context properties (via `this.context`).
-  //
-  // EXAMPLE
-  //
-  //     // ...
-  //
-  //     contextTypes: {
-  //       getStore: React.PropTypes.func.isRequired
-  //     },
-  //
-  //     getStore: function(storeName) {
-  //         return this.context.getStore(storeName);
-  //     }
-  //
-  //     // ...
-  //
-  // See `./mixins/createStoreMixin` for an example of its usage.
-  const reactContext = {
-    getStore(name) {
-      return storeCache.get(name);
-    },
-    getActions(name) {
-      return actionCreatorsCache.get(name);
-    }
-  };
+  // Determine Router Location implementation based on config options.
+  var routerLocation;
 
-  const router = Router.run(routes, location, function runRoute(Handler){
-    React.withContext(reactContext, function() {
-      React.render( <Handler/>, rootElement);
-    });
+  if (location == 'none') {
+    routerLocation = new HeadlessLocation(config.defaultRoute || '/');
+  }
+  else if (baseUrl) {
+    routerLocation = Router.HistoryLocation;
+  }
+  else {
+    routerLocation = Router.HashLocation;
+  }
+
+  runApplication({
+    baseUrl,
+    rootElement,
+    routerLocation,
+    dispatcher,
+    serviceAPI,
+    stores,
+    actionCreators,
+    recordComponentResolver,
+    cellRendererResolver
   });
-}
+};
 
-// expose libraries, e.g. wdk._ or wdk.React
-export default { createApplication, routes, _, React, Router };
+export default { createApplication, React };

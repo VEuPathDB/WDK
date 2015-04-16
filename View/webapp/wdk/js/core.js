@@ -1,4 +1,3 @@
-import './core/console';
 import './core/namespace';
 import './core/fn';
 import './core/c_properties';

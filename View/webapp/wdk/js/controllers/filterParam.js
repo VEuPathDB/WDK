@@ -27,7 +27,7 @@ wdk.namespace('wdk.controllers', function(ns) {
   //   - title: String name used in UI. Defaults to "Items".
   //   - trimMetadataTerms: Boolean, when true remove parents w/ one child
   //   - defaultColumns: Array of field names to show in results view
-  // 
+  //
   ns.FilterParam = wdk.views.core.View.extend({
 
     className: 'filter-param',
@@ -84,12 +84,16 @@ wdk.namespace('wdk.controllers', function(ns) {
           this.trigger('removeColumn', column);
         },
 
-        addIgnored: function(dataId) {
-          this.trigger('addIgnored', dataId);
+        addIgnored: function(datum) {
+          this.trigger('addIgnored', datum);
         },
 
-        removeIgnored: function(dataId) {
-          this.trigger('removeIgnored', dataId);
+        removeIgnored: function(datum) {
+          this.trigger('removeIgnored', datum);
+        },
+
+        updateColumns: function(fields) {
+          this.trigger('updateColumns', fields);
         }
 
       }, Backbone.Events);
@@ -99,21 +103,22 @@ wdk.namespace('wdk.controllers', function(ns) {
       // Set default values
       // ---------------------------
 
-      var leaves = _.find(options.fields, {'leaf': 'true'});
-      // var defaultSelection = leaves.length === 1
-      //   ? leaves[0]
-      //   : filterFields[0];
+      var selectedField = options.filter && options.filters.length
+        ? options.filters[0].field
+        : null;
+        // : _.find(options.fields, { leaf: 'true' });
 
 
       var filterService = LazyFilterService.create({
         filters: options.filters,
         fields: options.fields,
+        ignored: options.ignored,
         data: options.data,
         columns: options.defaultColumns,
         name: options.name,
         questionName: options.questionName,
         dependedValue: options.dependedValue,
-        selectedField: leaves[0]
+        selectedField: selectedField
       }, {
         intents: actions
       });

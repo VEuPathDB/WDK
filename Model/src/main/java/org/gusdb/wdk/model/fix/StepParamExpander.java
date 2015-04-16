@@ -24,7 +24,7 @@ import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.FilterParamHandler;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -102,16 +102,17 @@ public class StepParamExpander extends BaseCLI {
         if (!clob.startsWith("{"))
           continue;
 
-        Map<String, String> values = parseClob(wdkModel, questionName, clob);
+        Map<String, Set<String>> values = parseClob(wdkModel, questionName, clob);
 
         // insert the values
         for (String paramName : values.keySet()) {
-          String paramValue = values.get(paramName);
-
-          psInsert.setInt(1, stepId);
-          psInsert.setString(2, paramName);
-          psInsert.setString(3, paramValue);
-          psInsert.addBatch();
+          Set<String> paramValues = values.get(paramName);
+          for (String paramValue : paramValues) {
+            psInsert.setInt(1, stepId);
+            psInsert.setString(2, paramName);
+            psInsert.setString(3, paramValue);
+            psInsert.addBatch();
+          }
         }
         psInsert.executeBatch();
         connection.commit();
@@ -160,11 +161,14 @@ public class StepParamExpander extends BaseCLI {
     return connection.prepareStatement(sql.toString());
   }
 
-  private Map<String, String> parseClob(WdkModel wdkModel, String questionName, String clob)
+  private Map<String, Set<String>> parseClob(WdkModel wdkModel, String questionName, String clob)
       throws WdkModelException, JSONException {
-    Map<String, String> newValues = new LinkedHashMap<>();
+    Map<String, Set<String>> newValues = new LinkedHashMap<>();
     if (clob != null && clob.length() > 0) {
-      Map<String, String> values = StepFactory.parseParamContent(new JSONObject(clob));
+      // create a temp step to process the json and extract param values.
+      Step step = new Step(null, 0, 0);
+      step.setParamFilterJSON(new JSONObject(clob));
+      Map<String, String> values = step.getParamValues();
       for (String paramName : values.keySet()) {
         String value = values.get(paramName);
         String[] terms;
@@ -183,14 +187,9 @@ public class StepParamExpander extends BaseCLI {
         for (String term : terms) {
           if (term.length() > 4000)
             term = term.substring(0, 4000);
-          if (used.contains(term)) {
-            continue;
-          }
-          else {
-            newValues.put(paramName.trim(), term.trim());
-            used.add(term);
-          }
+          used.add(term);
         }
+        newValues.put(paramName.trim(), used);
       }
     }
     return newValues;

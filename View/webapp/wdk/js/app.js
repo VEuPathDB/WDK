@@ -12,7 +12,7 @@ import './components';
 import './views';
 import './controllers';
 
-import wdkFlux from './flux/main';
+// import wdkFlux from './flux/main';
 
 var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver; // jshint ignore:line
 
@@ -47,15 +47,15 @@ var app = wdk.application = wdk.app = wdk.core.Application.create({
      * the pushState API). A HeadlessLocation instance will maintain this stack
      * internally and keep the URL bar clean.
      */
-    jQuery('[data-route]').each((index, el) => {
-      var route = el.getAttribute('data-route');
-      wdkFlux.createApplication({
-        location: 'none',
-        defaultRoute: route,
-        serviceUrl: wdk.webappUrl('/service'),
-        rootElement: el
-      });
-    });
+    // jQuery('[data-route]').each((index, el) => {
+    //   var route = el.getAttribute('data-route');
+    //   wdkFlux.createApplication({
+    //     location: 'none',
+    //     defaultRoute: route,
+    //     serviceUrl: wdk.webappUrl('/service'),
+    //     rootElement: el
+    //   });
+    // });
 
     wdk.cookieTest();
     wdk.setUpDialogs();
@@ -91,6 +91,9 @@ jQuery(window).on('resize', _.throttle(function() {
   jQuery(jQuery.fn.dataTable.tables(true)).DataTable().columns.adjust();
 }, 100));
 
+// Break bfcache. The handler doesn't have to do anything for the desired
+// effect. See redmine #18839.
+jQuery(window).on('unload', function() { });
 
 // Helper functions
 // ----------------
@@ -129,7 +132,7 @@ var throttledRafLoad = _.throttle(rafLoad, 100);
 // get unique set of targets with addedNodes
 function loadUniqueMutationTargets(mutations) {
   var targets = _.uniq(mutations.reduce(function(acc, mutation) {
-    return mutation.addedNodes.length > 0
+    return mutation.addedNodes.length > 0 && !mutation.target.getAttribute('data-reactid')
       ? acc.concat([ mutation.target ])
       : acc;
   }, []));

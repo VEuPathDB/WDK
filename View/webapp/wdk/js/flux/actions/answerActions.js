@@ -1,13 +1,15 @@
-import Immutable from 'immutable';
+import { Record } from 'immutable';
 import createActionCreators from '../utils/createActionCreators';
 import {
-  ANSWER_LOADING,
+  APP_LOADING,
+  APP_ERROR,
   ANSWER_LOAD_SUCCESS,
   ANSWER_LOAD_ERROR,
   ANSWER_MOVE_COLUMN,
   ANSWER_CHANGE_ATTRIBUTES,
-  QUESTION_LOAD_SUCCESS,
-  RECORD_CLASS_LOAD_SUCCESS
+  ANSWER_FILTER,
+  QUESTION_LIST_LOAD_SUCCESS,
+  RECORD_CLASSES_LOAD_SUCCESS
 } from '../ActionType';
 
 
@@ -25,8 +27,8 @@ import {
  * In practice, a Record instance can be used just like a plain JavaScript
  * object. A key difference is that properties cannot be set directly. E.g.,
  *
- *     var action = new LoadingAnswerAction({ answer: responseData });
- *     action.type === ANSWER_LOADING; // returns true
+ *     var action = LoadingAnswerAction({ answer: responseData });
+ *     action.type === APP_LOADING; // returns true
  *     action.type = 'some evil string'; // throws Error
  *
  *
@@ -36,44 +38,49 @@ import {
 // XXX Would it make sense to use Records for ActionTypes? This would have the
 // nice effect of enforcing a data type for an action payload. It bears more
 // thought as it might be in opposition to some underlying Flux ideology.
-var Record = Immutable.Record;
 
-var AnswerLoadingAction = new Record({
-  type: ANSWER_LOADING,
-  requestData: {}
+var LoadingAction = Record({
+  type: APP_LOADING,
+  isLoading: false
 });
 
-var AnswerLoadSuccessAction = new Record({
+var AnswerLoadSuccessAction = Record({
   type: ANSWER_LOAD_SUCCESS,
   requestData: {},
   answer: {}
 });
 
-var AnswerLoadErrorAction = new Record({
-  type: ANSWER_LOAD_ERROR,
+var ErrorAction = Record({
+  type: APP_ERROR,
   requestData: {},
-  error: {}
+  error: null
 });
 
-var AnswerMoveColumnAction = new Record({
+var AnswerMoveColumnAction = Record({
   type: ANSWER_MOVE_COLUMN,
   columnName: '',
   newPosition: -1
 });
 
-var AnswerChangeAttributesAction = new Record({
+var AnswerChangeAttributesAction = Record({
   type: ANSWER_CHANGE_ATTRIBUTES,
   attributes: []
 });
 
-var QuestionLoadSuccessAction = new Record({
-  type: QUESTION_LOAD_SUCCESS,
-  question: null
+var AnswerFilterAction = Record({
+  type: ANSWER_FILTER,
+  questionName: null,
+  terms: ''
 });
 
-var RecordClassLoadSuccessAction = new Record({
-  type: RECORD_CLASS_LOAD_SUCCESS,
-  recordClass: null
+var QuestionsLoadSuccessAction = Record({
+  type: QUESTION_LIST_LOAD_SUCCESS,
+  questions: null
+});
+
+var RecordClassesLoadSuccessAction = Record({
+  type: RECORD_CLASSES_LOAD_SUCCESS,
+  recordClasses: null
 });
 
 
@@ -97,9 +104,9 @@ export default createActionCreators({
    *
    * Actions dispatched:
    *
-   *   - AnswerLoadingAction
+   *   - LoadingAction
    *   - AnswerLoadSuccessAction
-   *   - AnswerLoadErrorAction
+   *   - ErrorAction
    *
    *
    * Usage:
@@ -165,7 +172,7 @@ export default createActionCreators({
     var requestData = { questionDefinition, displayInfo };
 
     // Dispatch loading action.
-    var action = new AnswerLoadingAction({ requestData: requestData });
+    var action = LoadingAction({ isLoading: true });
     dispatch(action);
 
     // The next section of code deals with composing Promises. Simply put, a
@@ -182,7 +189,10 @@ export default createActionCreators({
     // First, create a Promise for the question resource (the ajax request will
     // be made as soon as possible (which will more-or-less be when the current
     // method's execution is complete).
-    var questionPromise = this.serviceAPI.getResource('/question/' + questionName);
+    var questionPromise = this.serviceAPI.getResource('/question?expandQuestions=true');
+
+    // Then, create a Promise for the recordClass
+    var recordClassPromise = this.serviceAPI.getResource('/record?expandRecordClasses=true');
 
     // Then, create a Promise for the answer resource.
     var answerPromise = this.serviceAPI.postResource('/answer', requestData);
@@ -207,36 +217,35 @@ export default createActionCreators({
     //   Thus, `combinedPromise` is a Promise which is fulfilled with the
     //   question resource, the recordClass resource, and the answer resource as
     //   an array.
-    var combinedPromise = questionPromise.then(question => {
-      var recordClassPromise = this.serviceAPI.getResource('/record/' + question.class);
-
-      // Note that `question` is not a Promise, but is the value with which
-      // `questionPromise` was fulfilled. This value will simply be passed to
-      // any fulfilled handlers (see this in action below).
-      return Promise.all([question, recordClassPromise, answerPromise]);
-    });
+    var combinedPromise = Promise.all([
+      questionPromise,
+      recordClassPromise,
+      answerPromise
+    ]);
 
     // Finally, we register a callback for when the combinedPromise is
     // fulfilled. We are simply dispatching actions based on the values.
     combinedPromise.then(responses => {
-      var [ question, recordClass, answer ] = responses;
+      var [ questions, recordClasses, answer ] = responses;
 
-      var questionAction = new QuestionLoadSuccessAction({ question });
+      var questionAction = QuestionsLoadSuccessAction({ questions });
       dispatch(questionAction);
 
-      var recordClassAction = new RecordClassLoadSuccessAction({ recordClass });
+      var recordClassAction = RecordClassesLoadSuccessAction({ recordClasses });
       dispatch(recordClassAction);
 
-      var answerAction = new AnswerLoadSuccessAction({
+      var answerAction = AnswerLoadSuccessAction({
         requestData: requestData,
         answer: answer
       });
       dispatch(answerAction);
+
+      var doneLoadingAction = LoadingAction({ isLoading: false });
+      dispatch(doneLoadingAction);
     }, error => {
-      var action = new AnswerLoadErrorAction({
-        requestData: requestData,
-        error: error
-      });
+      var doneLoadingAction = LoadingAction({ isLoading: false });
+      var action = ErrorAction({ error: error });
+      dispatch(doneLoadingAction);
       dispatch(action);
     })
     // Catch errors caused by Store callbacks.
@@ -249,7 +258,7 @@ export default createActionCreators({
     console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
     console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
 
-    var action = new AnswerMoveColumnAction({
+    var action = AnswerMoveColumnAction({
       columnName: columnName,
       newPosition: newPosition
     });
@@ -258,12 +267,21 @@ export default createActionCreators({
   },
 
   changeAttributes(attributes) {
-    console.assert(Array.isArray(attributes), `attributes ${attributes} should be an array.`);
+    // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
+    console.assert(attributes[Symbol.iterator], `attributes ${attributes} should be iterable.`);
 
-    var action = new AnswerChangeAttributesAction({
+    var action = AnswerChangeAttributesAction({
       attributes: attributes
     });
 
+    this.dispatch(action);
+  },
+
+  filterAnswer(questionName, terms) {
+    var action = AnswerFilterAction({
+      questionName: questionName,
+      terms: terms
+    });
     this.dispatch(action);
   }
 

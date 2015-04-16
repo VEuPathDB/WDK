@@ -18,7 +18,6 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
       findStrategy,
       findStep,
       isLoaded,
-      getStrategyJSON,
       getStrategyOBJ;
 
 
@@ -199,10 +198,18 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
             st.operation = "SPAN";
           }
           if (steps[i].step.isCollapsed && steps[i].step.strategy.order > 0) {
-            this.subStratOrder[steps[i].step.strategy.order] = wdk.strategy.controller.sidIndex;
             subId = wdk.strategy.controller.loadModel(steps[i].step.strategy, ord + "." + ssind);
             ssind++;
-            //this.subStratOrder[steps[i].step.strategy.order] = subId;
+
+            // We were using the global `wdk.strategy.controller.sidIndex` here.
+            // `wdk.strategy.controller.loadModel` returns the constructed
+            // Strategy's `frontId`, which is derived from `sidIndex` at the
+            // time of construction (here, it is assigned to `subId`). By using
+            // `subId`, we protect ourselves from `sidIndex` being mutated since
+            // the construction of the Strategy. Also, `subStratOrder` is a map
+            // of orderNumber => frontId, thus using `subId` is definitely
+            // safer.
+            this.subStratOrder[steps[i].step.strategy.order] = subId;
             st.child_Strat_Id = subId;
           }
           st.hasCompleteAnalyses = Boolean(steps[i].step.hasCompleteAnalyses);
@@ -228,6 +235,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
           st.nextStepType = (nstp.istransform) ? "transform" : "boolean";
         }
         st.booleanHasCompleteAnalyses = Boolean(steps[i].hasCompleteAnalyses);
+        st.isLoading = steps[steps.length].results == -1;
         arr.push(st);
       }
     }
@@ -293,7 +301,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
   /****************************************************
   Utility Functions
   *****************************************************/
-    
+
   getStep = function (strat,id) {
     var i,
         j;
@@ -309,7 +317,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
     }
     return false;
   };
-    
+
   getStrategy = function (id) {
     var i;
 
@@ -389,41 +397,42 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
       if (wdk.strategy.controller.strats[i].backId == id) {
         return true;
       }
-    } 
+    }
     return false;
   };
 
-  getStrategyJSON = function (backId){
-    var strategyJSON = null;
-    $.ajax({
-      async: false,
-      url:"showStrategy.do?strategy=" + backId + "&open=false",
-      type: "POST",
-      dataType: "json",
-      data:"pstate=" + wdk.strategy.controller.stateString,
-      success: function(data){
-        for(var s in data.strategies){
-          if(s != "length") {
-            data.strategies[s].checksum = s;
-            strategyJSON = data.strategies[s];
-          }
-        }
-      }
-    });
-    return strategyJSON;
-  };
-
+  // Returns a Promise resolved with the Strategy object associated with backId
   getStrategyOBJ = function (backId){
-    if (getStrategyFromBackId(backId) !== false) {
-      return getStrategyFromBackId(backId);
-    } else {
-      var json = getStrategyJSON(backId);
-      var s = new Strategy(wdk.strategy.controller.strats.length, json.id, false);
-      s.checksum = json.checksum;
-      s.JSON = json;
-      s.name = json.name;
-      s.description = json.description;
-      return s;
+    var strategy = getStrategyFromBackId(backId);
+    if (strategy !== false) {
+      return Promise.resolve(strategy);
+    }
+    else {
+      return new Promise(function(resolve, reject) {
+        $.ajax({
+          url:"showStrategy.do?strategy=" + backId + "&open=false",
+          type: "POST",
+          dataType: "json",
+          data:"pstate=" + wdk.strategy.controller.stateString,
+          success: function(data){
+            for(var checksum in data.strategies){
+              if(checksum != "length") {
+                data.strategies[checksum].checksum = checksum;
+                var strategyJSON = data.strategies[checksum];
+                strategy = new Strategy(wdk.strategy.controller.strats.length, strategyJSON.id, false);
+                strategy.checksum = strategyJSON.checksum;
+                strategy.JSON = strategyJSON;
+                strategy.name = strategyJSON.name;
+                strategy.description = strategyJSON.description;
+                resolve(strategy);
+              }
+            }
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            reject(errorThrown);
+          }
+        });
+      });
     }
   };
 
@@ -437,7 +446,6 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
   ns.getStrategyFromBackId = getStrategyFromBackId;
   ns.findStrategy = findStrategy;
   ns.isLoaded = isLoaded;
-  ns.getStrategyJSON = getStrategyJSON;
   ns.getStrategyOBJ = getStrategyOBJ;
 
 });
