@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import warnInvariant from './utils/warnInvariant';
 
 /**
  * Base class for a Flux Store.
@@ -53,6 +54,11 @@ export default class Store {
     this._methods = new Map();
     this._emitter = new EventEmitter();
     this.init();
+    warnInvariant(
+      this.state !== undefined,
+      'state was not defined during init(). Check the definition of %s.',
+      this.constructor.name
+    );
     this.dispatchToken = dispatcher.register(this._dispatchHandler.bind(this));
   }
 
@@ -181,8 +187,11 @@ export default class Store {
   // template method hooks
 
   init() {
-    const className = this.constructor.name;
-    console.warn('Store did not implement an #init() method. Check the definition of', className);
+    warnInvariant(
+      false,
+      'Store did not implement an init() method. Check the definition of %s.',
+      this.constructor.name
+    );
   }
 
 }
