@@ -2,12 +2,11 @@
 import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';
+import combineStores from '../utils/combineStores';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
 import Record from './Record';
-import createStoreMixin from '../mixins/createStoreMixin';
-import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
 
 // Answer is a React component which acts as a Controller-View, as well as
@@ -60,12 +59,17 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 // See http://facebook.github.io/react/docs/top-level-api.html#react.createclass
 const AnswerController = React.createClass({
 
-  // This utilizes an undocumented feature of React. This can be thought of as a
-  // declaration of named properties to inject into this component. In this
-  // case, `getRecordComponent` is a function which will resolve a concrete
-  // React Component class for a given record class.
-  contextTypes: {
-    getRecordComponent: React.PropTypes.func.isRequired
+  // `propTypes` is a place to declare properties this component expects. The
+  // mapping is property name => type. You can additionally declare a property
+  // as "required". When the props passed to a component violate this
+  // declaration, a warning is logged to the console, but React will render
+  // anyway.
+  //
+  // NB, these warnings don't appear in non-development builds.
+  propTypes: {
+
+    // The application context used to look up services.
+    application: React.PropTypes.object.isRequired
   },
 
   // mixins are used to share behaviors between otherwise unrelated components.
@@ -79,16 +83,6 @@ const AnswerController = React.createClass({
   // See http://facebook.github.io/react/docs/component-specs.html#mixins
   mixins: [
 
-    // Registers a callback with the `answerStore`, `questionStore`, and
-    // `recordClassStore`. The callback will use `getStateFromStores` (defined
-    //  below) in the callback. This mixin will also use `getStateFromStores` in
-    // `getInitialState`.
-    createStoreMixin('answerStore', 'questionStore', 'recordClassStore'),
-
-    // Adds a property to this component with the same name as the action
-    // creators. In this case, `this.answerActions`.
-    createActionCreatorsMixin('answerActions'),
-
     // Adds methods to handle navigating to other routes. We use
     // `replaceWith()` in this component.
     // See https://github.com/rackt/react-router/blob/master/docs/api/mixins/Navigation.md
@@ -96,45 +90,46 @@ const AnswerController = React.createClass({
   ],
 
 
-  // This is used by the `createStoreMixin` mixin as the return value for
-  // `getInitialState` and as the value passed to `setState` when the store's
-  // state changes.
-  // See http://facebook.github.io/react/docs/component-specs.html#getinitialstate
-  // and http://facebook.github.io/react/docs/component-api.html#setstate
-  //
-  // XXX: An alternative is to define a callback function for each store. This
-  // would require a change to `createStoreMixin`.
-  getStateFromStores(stores) {
+  // Create subscriptions to stores.
+  subscribeToStores() {
     const { questionName } = this.props.params;
+    const { getStore } = this.props.application;
 
-    const answerStoreState = stores.answerStore.getState();
-    const answer = answerStoreState.answers[questionName];
+    const answerStore = getStore('answerStore');
+    const questionStore = getStore('questionStore');
+    const recordClassStore = getStore('recordClassStore');
 
-    const questionStoreState = stores.questionStore.getState();
-    const questions = questionStoreState.questions;
+    this.subscription = combineStores(
+      answerStore,
+      questionStore,
+      recordClassStore,
+      (aState, qState, rState) => {
+        const answer = aState.answers[questionName];
+        const { displayInfo } = aState;
+        const { filterTerm } = aState;
+        const { filteredRecords } = aState;
+        const { questions } = qState;
+        const question = questions.find(q => q.name === questionName);
+        const { recordClasses } = rState;
+        const recordClass = recordClasses.find(r => r.fullName == question.class);
 
-    const recordClassStoreState = stores.recordClassStore.getState();
-    const recordClasses = recordClassStoreState.recordClasses;
+        this.setState({
+          answer,
+          displayInfo,
+          filterTerm,
+          filteredRecords,
+          question,
+          questions,
+          recordClass,
+          recordClasses
+        });
+      }
+    );
+  },
 
-    const displayInfo = answerStoreState.displayInfo;
-    const filterTerm = answerStoreState.filterTerm;
-    const filteredRecords = answerStoreState.filteredRecords;
 
-    const question = questions.find(q => q.name === questionName);
-    const recordClass = question
-      ? recordClasses.find(r => r.fullName === question.class)
-      : null;
-
-    return {
-      answer,
-      question,
-      questions,
-      recordClass,
-      recordClasses,
-      displayInfo,
-      filterTerm,
-      filteredRecords
-    };
+  disposeSubscriptions() {
+    this.subscription.dispose();
   },
 
 
@@ -145,7 +140,7 @@ const AnswerController = React.createClass({
   // objects.
   fetchAnswer(props) {
 
-    // These methods are provided by the `Router.State` mixin
+    // props.params and props.query are passed to this component by the Router.
     const path = 'answer';
     const params = props.params;
     const query = props.query;
@@ -179,7 +174,7 @@ const AnswerController = React.createClass({
             attributeName: query.sortBy,
             direction: query.sortDir
           }]
-        : this.state.displayInfo.sorting;
+        : this.state && this.state.displayInfo.sorting;
 
       // Combine `pagination` and `sorting` into a single object:
       //
@@ -191,7 +186,7 @@ const AnswerController = React.createClass({
       const displayInfo = {
         pagination,
         sorting,
-        visibleAttributes: this.state.displayInfo.visibleAttributes
+        visibleAttributes: this.state && this.state.displayInfo.visibleAttributes
       };
 
       // TODO Add params to loadAnswer call
@@ -206,13 +201,19 @@ const AnswerController = React.createClass({
       };
 
       // Call the AnswerCreator to fetch the Answer resource
-      this.answerActions.loadAnswer(params.questionName, opts);
+      this.props.application.getActions('answerActions')
+      .loadAnswer(params.questionName, opts);
     }
   },
 
   // When the component first mounts, fetch the answer.
   componentDidMount() {
     this.fetchAnswer(this.props);
+    this.subscribeToStores();
+  },
+
+  componentWillUnmount() {
+    this.disposeSubscriptions();
   },
 
   // This is called anytime the component gets new props, just before they are
@@ -242,7 +243,8 @@ const AnswerController = React.createClass({
 
     // filter answer if the filter terms have changed
     else if (query.filterTerm != nextQuery.filterTerm) {
-      this.answerActions.filterAnswer(nextParams.questionName, nextQuery.filterTerm);
+      this.props.application.getActions('answerActions')
+      .filterAnswer(nextParams.questionName, nextQuery.filterTerm);
     }
 
   },
@@ -303,7 +305,8 @@ const AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onMoveColumn(columnName, newPosition) {
-      this.answerActions.moveColumn(columnName, newPosition);
+      this.props.application.getActions('answerActions')
+      .moveColumn(columnName, newPosition);
     },
 
     // Call the `changeAttributes` action creator. This will cause the state of
@@ -311,7 +314,8 @@ const AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onChangeColumns(attributes) {
-      this.answerActions.changeAttributes(attributes);
+      this.props.application.getActions('answerActions')
+      .changeAttributes(attributes);
     },
 
     // This is a stub... yet to be completed
@@ -320,7 +324,6 @@ const AnswerController = React.createClass({
     },
 
     xonRecordClick(record) {
-      // Methods provided by Router.State mixin
       const path = 'answer';
       const params = this.props.params;
       const query = this.props.query;
@@ -348,7 +351,6 @@ const AnswerController = React.createClass({
     },
 
     onToggleFormat() {
-      // Methods provided by Router.State mixin
       const path = 'answer';
       const params = this.props.params;
       const query = this.props.query;
@@ -388,6 +390,8 @@ const AnswerController = React.createClass({
   // TODO - Explain what's happening here in more detail.
   render() {
 
+    if (this.state == null) return null;
+
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
     const {
       answer,
@@ -399,6 +403,8 @@ const AnswerController = React.createClass({
       filterTerm,
       filteredRecords
     } = this.state;
+
+    const { getCellRenderer, getRecordComponent } = this.props.application;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
@@ -430,7 +436,7 @@ const AnswerController = React.createClass({
 
     // FIXME This will be removed when the record service is serving up records
     if (answer && expandedRecord != null) {
-      const RecordComponent = this.context.getRecordComponent(answer.meta.class, Record)
+      const RecordComponent = getRecordComponent(answer.meta.class, Record)
         || Record;
       const record = answer.records[expandedRecord];
 
@@ -459,6 +465,7 @@ const AnswerController = React.createClass({
             filteredRecords={filteredRecords}
             format={format}
             answerEvents={answerEvents}
+            getCellRenderer={getCellRenderer}
           />
         </Doc>
       );

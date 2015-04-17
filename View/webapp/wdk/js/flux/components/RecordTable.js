@@ -118,10 +118,7 @@ const RecordTable = React.createClass({
     onMoveColumn: PropTypes.func,
     onChangeColumns: PropTypes.func,
     onNewPage: PropTypes.func,
-    onRecordClick: PropTypes.func.isRequired
-  },
-
-  contextTypes: {
+    onRecordClick: PropTypes.func.isRequired,
     getCellRenderer: PropTypes.func.isRequired
   },
 
@@ -337,7 +334,7 @@ const RecordTable = React.createClass({
     const visibleAttributes = displayInfo.visibleAttributes;
     const sortSpec = displayInfo.sorting[0];
 
-    const cellRenderer = this.context.getCellRenderer(meta.class, this.renderCell) || this.renderCell;
+    const cellRenderer = this.props.getCellRenderer(meta.class, this.renderCell) || this.renderCell;
 
     return (
       <div className="wdk-RecordTable">

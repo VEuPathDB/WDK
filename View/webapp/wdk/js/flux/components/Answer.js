@@ -112,6 +112,7 @@ const Answer = React.createClass({
               records={filteredRecords}
               displayInfo={displayInfo}
               {...answerEvents}
+              getCellRenderer={this.props.getCellRenderer}
             />
           </div>
       </div>
