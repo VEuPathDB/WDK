@@ -7,7 +7,7 @@ import {
   property,
   values
 } from 'lodash';
-import createStore from '../utils/createStore';
+import Store from '../Store';
 import {
   ANSWER_LOAD_SUCCESS,
   ANSWER_MOVE_COLUMN,
@@ -90,7 +90,8 @@ var isTermInRecord = curry(function isTermInRecord(term, record) {
   return clob.toLowerCase().indexOf(term.toLowerCase()) !== -1;
 });
 
-export default createStore({
+
+export default class AnswerStore extends Store {
 
   init() {
     this.state = {
@@ -109,39 +110,14 @@ export default createStore({
         filters: null
       }
     };
-  },
 
-  /**
-   * Handle dispatched actions. Hopefully most of this is self explanatory.
-   *
-   * `action` is the action that is being dispatched. It is a plain JavaScript
-   * object.
-   *
-   * `emitChange` is a function that, when called, will call any registered
-   * callback functions via the `subscribe` method.
-   */
-  dispatchHandler(action, emitChange) {
-    switch(action.type) {
+    this.handleAction(ANSWER_LOAD_SUCCESS, this.handleAnswerLoadSuccess);
+    this.handleAction(ANSWER_MOVE_COLUMN, this.handleAnswerMoveColumn);
+    this.handleAction(ANSWER_CHANGE_ATTRIBUTES, this.handleAnswerChangeAttributes);
+    this.handleAction(ANSWER_FILTER, this.handleAnswerFilter);
+  }
 
-      case ANSWER_LOAD_SUCCESS:
-        this.handleAnswerLoadSuccess(action, emitChange);
-        break;
-
-      case ANSWER_MOVE_COLUMN:
-        this.handleAnswerMoveColumn(action, emitChange);
-        break;
-
-      case ANSWER_CHANGE_ATTRIBUTES:
-        this.handleAnswerChangeAttributes(action, emitChange);
-        break;
-
-      case ANSWER_FILTER:
-        this.handleAnswerFilter(action, emitChange);
-        break;
-    }
-  },
-
-  handleAnswerLoadSuccess(action, emitChange) {
+  handleAnswerLoadSuccess(action) {
     /* Answer resource */
     // answer = {
     //   meta,
@@ -191,11 +167,9 @@ export default createStore({
     });
 
     this.state.answers[questionName] = answer;
+  }
 
-    emitChange();
-  },
-
-  handleAnswerMoveColumn(action, emitChange) {
+  handleAnswerMoveColumn(action) {
     /* The name of the attribute being moved. */
     /* FIXME Should be attributeName */
     var columnName = action.columnName;
@@ -219,16 +193,13 @@ export default createStore({
       .splice(currentPosition, 1)
       // then, insert into new position
       .splice(newPosition, 0, attribute);
+  }
 
-    emitChange();
-  },
-
-  handleAnswerChangeAttributes(action, emitChange) {
+  handleAnswerChangeAttributes(action) {
     this.state.displayInfo.visibleAttributes = action.attributes;
-    emitChange();
-  },
+  }
 
-  handleAnswerFilter(action, emitChange) {
+  handleAnswerFilter(action) {
     var terms = action.terms;
     var questionName = action.questionName;
     var parsedTerms = parseSearchTerms(terms);
@@ -241,12 +212,6 @@ export default createStore({
       filterTerm: terms,
       filteredRecords: filteredRecords
     });
-
-    emitChange();
-  },
-
-  getState() {
-    return this.state;
   }
 
-});
+}

@@ -6,9 +6,7 @@ import createObjectCache from './utils/createObjectCache';
 
 var createRouterCallback = function createRouterCallback(rootElement, context) {
   return function runRoute(Handler, state) {
-    React.withContext(context, function render() {
-      React.render( <Handler {...state} />, rootElement);
-    });
+    React.render( <Handler {...state} application={context} />, rootElement);
   };
 };
 
@@ -35,29 +33,13 @@ var runApplication = function runApplication({
   var storeCache = createObjectCache(stores, dispatcher);
   var actionCreatorsCache = createObjectCache(actionCreators, dispatcher, serviceAPI);
 
-  // This is used below in `React.withContext`. Properties of this object will
-  // be available in React components that declare them using the
-  // `contextTypes` property. React will read this propery on each component
-  // and expose the defined context properties (via `this.context`).
+  // This object is passed to the top level React component, and any other
+  // Route handlers. This is effectively a lookup service.
   //
-  // EXAMPLE
-  //
-  //     // ...
-  //
-  //     contextTypes: {
-  //       getStore: React.PropTypes.func.isRequired
-  //     },
-  //
-  //     getStore: function(storeName) {
-  //         return this.context.getStore(storeName);
-  //     }
-  //
-  //     // ...
-  //
-  // See `./mixins/createStoreMixin` for an example of its usage.
-  var reactContext = {
+  // TODO Warn or throw when a requested object is not found.
+  var applicationContext = {
     getStore(name) {
-      return storeCache.get(name);
+      return storeCache.get(name).asObservable();
     },
     getActions(name) {
       return actionCreatorsCache.get(name);
@@ -70,7 +52,7 @@ var runApplication = function runApplication({
     }
   };
 
-  var routerCallback = createRouterCallback(rootElement, reactContext);
+  var routerCallback = createRouterCallback(rootElement, applicationContext);
   Router.run(routes, routerLocation, routerCallback);
 };
 

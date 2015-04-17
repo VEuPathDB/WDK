@@ -6,7 +6,6 @@
 import React from 'react';
 import { RouteHandler } from 'react-router';
 import Loading from '../components/Loading';
-import createStoreMixin from '../mixins/createStoreMixin';
 
 /*
  * RouterHandler is a special React component that the router uses to inject
@@ -14,17 +13,26 @@ import createStoreMixin from '../mixins/createStoreMixin';
  * AnswerPage will be rendered as a child of RouteHandler.
  */
 
-var storeMixin = createStoreMixin('appStore');
-
 var AppController = React.createClass({
 
-  mixins: [ storeMixin ],
+  propTypes: {
+    application: React.PropTypes.object.isRequired
+  },
 
-  getStateFromStores(stores) {
-    return stores.appStore.getState();
+  componentDidMount() {
+    var store = this.props.application.getStore('appStore');
+    this.storeSubscription = store.subscribe(state => {
+      this.setState(state);
+    });
+  },
+
+  componentWillUnmount() {
+    this.storeSubscription.dispose();
   },
 
   render() {
+    if (!this.state) return null;
+
     var { isLoading, errors } = this.state;
 
     if (errors.length > 0) {
