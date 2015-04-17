@@ -2,21 +2,21 @@
   "name": "wdk",
   "version": "0.1.0",
   "devDependencies": {
-    "babel": "4.6.6",
-    "babel-core": "4.6.6",
-    "babel-loader": "4.0.0",
-    "clean-css": "3.1.4",
-    "webpack": "1.7.2"
+    "babel": "5.1.10",
+    "babel-core": "5.1.10",
+    "babel-loader": "5.0.0",
+    "clean-css": "3.1.9",
+    "webpack": "1.8.5"
   },
   "scripts": {
     "dist": "make -j2"
   },
   "private": true,
   "dependencies": {
-    "fixed-data-table": "0.1.1",
+    "fixed-data-table": "0.1.2",
     "flux": "2.0.1",
     "immutable": "3.6.2",
-    "lodash": "3.3.1",
+    "lodash": "3.7.0",
     "react": "0.12.2",
     "react-router": "0.12.4"
   }
