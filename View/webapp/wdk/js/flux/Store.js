@@ -77,13 +77,13 @@ export default class Store {
 
     if (method.waitFor) {
       const tokens = method.waitFor.map(storeClass => {
-        const store = this._application.get(storeClass)
+        const store = this._application.get(storeClass);
         if (store === undefined) {
           throw Error('Could not find Store', storeClass);
         }
         return store.dispatchToken;
       });
-      this._dispatcher.waitFor(...storeClasses);
+      this._dispatcher.waitFor(...tokens);
     }
 
     method.call(this, action);
