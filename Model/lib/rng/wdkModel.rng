@@ -937,6 +937,9 @@
         <attribute name="shortDisplayNamePlural" />
       </optional>
       <optional>
+        <attribute name="customBooleanQueryClassName" />
+      </optional>
+      <optional>
         <attribute name="doNotTest">
           <data type="boolean" />
         </attribute>
