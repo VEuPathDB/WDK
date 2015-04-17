@@ -178,6 +178,22 @@ export default class Store {
    *
    *     }
    *
+   *
+   *     // Future version with register decorator
+   *     class MyStore extends Store {
+   *
+   *       init() {
+   *         this.state = {};
+   *       }
+   *
+   *       @Store.handleAction(SOME_ACTION);
+   *       @Store.waitFor(OtherStore);
+   *       update(action, otherStore) {
+   *         ...
+   *       }
+   *
+   *     }
+   *
    */
   static waitFor(method, ...Stores) {
     method.waitFor = Stores;
