@@ -879,6 +879,7 @@ public class StepFactory {
       sql.append(byLastViewedCondition);
     sql.append(modTimeSortSql);
 
+		//logger.debug("\n\nREADY TO LOAD STRATEGIES" + sql.toString() + "\n\n");
     List<Strategy> strategies;
     ResultSet resultSet = null;
     try {
@@ -1028,10 +1029,10 @@ public class StepFactory {
         Question question = wdkModel.getQuestion(questionName);
         strategy.setRecordClass(question.getRecordClass());
       }
-      catch (WdkModelException ex) { // the question doesn't exist
-        // skip such strategies for now
+      catch (WdkModelException ex) { // the question doesn't exist; this is a root step and so we cannot get the strategy recordclass;
+        // skip such strategies for now, since we dont have an "unknown" type tab in All Tab in front end
         continue;
-        // strategy.setValid(false);
+        //strategy.setValid(false);
       }
 
       String signature = strategy.getSignature();
