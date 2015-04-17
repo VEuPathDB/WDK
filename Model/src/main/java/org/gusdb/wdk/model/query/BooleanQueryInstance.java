@@ -59,16 +59,9 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     operator = op.getOperator(platform);
 
     // construct the filter query for the first child
-    AnswerParam leftParam = booleanQuery.getLeftOperandParam();
-    String leftSubSql = InternalValues.get(leftParam.getName());
-    String leftSql = constructOperandSql(leftSubSql);
-    leftSql = preProcessOperandSql(leftSql, "Left");
-
-    AnswerParam rightParam = booleanQuery.getRightOperandParam();
-    String rightSubSql = InternalValues.get(rightParam.getName());
-    String rightSql = constructOperandSql(rightSubSql);
-    rightSql = preProcessOperandSql(rightSql, "Right");
-    
+    String leftSql = getLeftSql();
+    String rightSql = getRightSql();
+   
     String sql;
     if (op == BooleanOperator.UNION) {
       sql = getUnionSql(leftSql, rightSql, operator);
@@ -91,6 +84,18 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     logger.debug("boolean sql:\n" + sql);
     return sql;
   }
+
+    protected String getLeftSql() {
+	AnswerParam leftParam = booleanQuery.getLeftOperandParam();
+	String leftSubSql = InternalValues.get(leftParam.getName());
+	return constructOperandSql(leftSubSql);
+    }
+
+    protected String getRightSql() {
+	AnswerParam rightParam = booleanQuery.getRightOperandParam();
+	String rightSubSql = InternalValues.get(rightParam.getName());
+	return constructOperandSql(rightSubSql);
+    }
 
   private String constructOperandSql(String subSql)
       throws WdkModelException, WdkUserException {
@@ -204,12 +209,4 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 	  return rc.getPrimaryKeyAttributeField().getColumnRefs();
   }
   
-  /**
-   * subclasses can override to provide custom preprocessing
-   * @param operandSql
-   * @return
-   */
-  protected String preProcessOperandSql(String operandSql, String leftOrRight) {
-	  return operandSql;
-  }
 }
