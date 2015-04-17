@@ -4,47 +4,55 @@ import Store from 'wdk/flux/Store';
 
 describe('Store', function() {
 
-  it('should create an object', function() {
-    var dispatcher = new Dispatcher();
-    var store = new Store(dispatcher);
-    assert(store !== undefined);
-    dispatcher.unregister(store.dispatchToken);
-  });
+  describe('#constructor()', function() {
 
-  it('should call derived class\'s init method', function() {
+    it('should create an object', function() {
+      var dispatcher = new Dispatcher();
+      var store = new Store(dispatcher);
+      assert(store !== undefined);
+      dispatcher.unregister(store.dispatchToken);
+    });
 
-    class DerivedStore extends Store {
-      init() {
-        called = true;
-      }
-    }
+    it('should call derived class\'s init method', function() {
 
-    var called = false;
-    var dispatcher = new Dispatcher();
-    var store = new DerivedStore(dispatcher);
-    assert(called);
-    dispatcher.unregister(store.dispatchToken);
-  });
-
-  it('should register callbacks with dispatcher via `handleAction`', function(done) {
-
-    class DerivedStore extends Store {
-      init() {
-        this.handleAction('test', this.callDone);
+      class DerivedStore extends Store {
+        init() {
+          called = true;
+        }
       }
 
-      callDone() {
-        done();
-      }
-    }
+      var called = false;
+      var dispatcher = new Dispatcher();
+      var store = new DerivedStore(dispatcher);
+      assert(called);
+      dispatcher.unregister(store.dispatchToken);
+    });
 
-    var dispatcher = new Dispatcher();
-    var store = new DerivedStore(dispatcher);
-    dispatcher.dispatch({ type: 'test' });
-    dispatcher.unregister(store.dispatchToken);
   });
 
-  describe('asObservable', function() {
+  describe('#handleAction()', function() {
+
+    it('should register callbacks with dispatcher via `handleAction`', function(done) {
+
+      class DerivedStore extends Store {
+        init() {
+          this.handleAction('test', this.callDone);
+        }
+
+        callDone() {
+          done();
+        }
+      }
+
+      var dispatcher = new Dispatcher();
+      var store = new DerivedStore(dispatcher);
+      dispatcher.dispatch({ type: 'test' });
+      dispatcher.unregister(store.dispatchToken);
+    });
+
+  });
+
+  describe('#asObservable()', function() {
     class DerivedStore extends Store {
 
       init() {
@@ -120,6 +128,10 @@ describe('Store', function() {
       });
       assert.deepEqual(values, [ 0 ]);
     })
+  });
+
+  describe('.waitFor()', function() {
+    it('should wait for other stores');
   });
 
 });
