@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import warnInvariant from './utils/warnInvariant';
+import warning from 'react/lib/warning';
 
 /**
  * Base class for a Flux Store.
@@ -54,9 +54,9 @@ export default class Store {
     this._methods = new Map();
     this._emitter = new EventEmitter();
     this.init();
-    warnInvariant(
+    warning(
       this.state !== undefined,
-      'state was not defined during init(). Check the definition of %s.',
+      '`state` is not defined. Check the init method of %s.',
       this.constructor.name
     );
     this.dispatchToken = dispatcher.register(this._dispatchHandler.bind(this));
@@ -187,9 +187,9 @@ export default class Store {
   // template method hooks
 
   init() {
-    warnInvariant(
+    warning(
       false,
-      'Store did not implement an init() method. Check the definition of %s.',
+      'Store did not implement an init method. Check the definition of `%s`.',
       this.constructor.name
     );
   }
