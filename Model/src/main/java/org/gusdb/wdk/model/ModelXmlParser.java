@@ -35,7 +35,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.xml.NamedValue;
 import org.gusdb.wdk.model.UIConfig.ExtraLogoutCookies;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
@@ -43,12 +42,15 @@ import org.gusdb.wdk.model.answer.AnswerFilter;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterInstanceReference;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
-import org.gusdb.wdk.model.answer.ReporterProperty;
 import org.gusdb.wdk.model.answer.ReporterRef;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
+import org.gusdb.wdk.model.filter.ColumnFilterDefinition;
+import org.gusdb.wdk.model.filter.FilterReference;
+import org.gusdb.wdk.model.filter.StepFilterDefinition;
+import org.gusdb.wdk.model.filter.FilterSet;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
@@ -82,6 +84,8 @@ import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.QuestionSuggestion;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
+import org.gusdb.wdk.model.record.BooleanReference;
+import org.gusdb.wdk.model.record.CountReference;
 import org.gusdb.wdk.model.record.NestedRecord;
 import org.gusdb.wdk.model.record.NestedRecordList;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -501,6 +505,9 @@ public class ModelXmlParser extends XmlParser {
 
     configureStepAnalysis(digester);
 
+    // configureF all sub nodes of filters
+    configureFilterSet(digester);
+
     return digester;
   }
 
@@ -532,6 +539,11 @@ public class ModelXmlParser extends XmlParser {
 
     // configure property macros
     configureNode(digester, "wdkModel/declaredMacro", MacroDeclaration.class, "addMacroDeclaration");
+
+    // configure general properties
+    configureNode(digester, "*/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod("*/property", "setText", 0);
+
   }
 
   private void configureRecordClassSet(Digester digester) {
@@ -560,7 +572,7 @@ public class ModelXmlParser extends XmlParser {
     // reporter
     configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter", ReporterRef.class,
         "addReporterRef");
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter/property", ReporterProperty.class,
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter/property", WdkModelText.class,
         "addProperty");
     digester.addCallMethod("wdkModel/recordClassSet/recordClass/reporter/property", "setValue", 0);
 
@@ -637,7 +649,17 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/recordClassSet/recordClass/recordView/description", WdkModelText.class,
         "addDescription");
     digester.addCallMethod("wdkModel/recordClassSet/recordClass/recordView/description", "setText", 0);
-  }
+
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/filterRef", FilterReference.class,
+        "addFilterReference");
+    
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/count", CountReference.class,
+        "setCountReference");
+    
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/boolean", BooleanReference.class,
+        "setBooleanReference");
+
+}
 
   private void configureQuerySet(Digester digester) {
     // QuerySet
@@ -861,6 +883,7 @@ public class ModelXmlParser extends XmlParser {
     configureAttributePlugins(digester, "primaryKeyAttribute");
 
     configureNode(digester, "*/columnAttribute", ColumnAttributeField.class, "addAttributeField");
+    configureNode(digester, "*/columnAttribute/filterRef", FilterReference.class, "addFilterReference");
     configureAttributePlugins(digester, "columnAttribute");
 
     // link attribute
@@ -925,7 +948,26 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod(nodeLocation + "/shortDescription", "setText", 0);
     configureNode(digester, nodeLocation + "/description", WdkModelText.class, "setDescription");
     digester.addCallMethod(nodeLocation + "/description", "setText", 0);
-    configureNode(digester, nodeLocation + "/property", NamedValue.class, "addProperty");
+  }
+
+  private void configureFilterSet(Digester digester) {
+    // load filter set
+    configureNode(digester, "wdkModel/filterSet", FilterSet.class, "addFilterSet");
+
+    // load filter
+    configureNode(digester, "wdkModel/filterSet/stepFilter", StepFilterDefinition.class, "addStepFilter");
+    configureNode(digester, "wdkModel/filterSet/stepFilter/display", WdkModelText.class, "addDisplay");
+    digester.addCallMethod("wdkModel/filterSet/stepFilter/display", "setText", 0);
+    configureNode(digester, "wdkModel/filterSet/stepFilter/description", WdkModelText.class, "addDescription");
+    digester.addCallMethod("wdkModel/filterSet/stepFilter/description", "setText", 0);
+
+    // load column filter
+    configureNode(digester, "wdkModel/filterSet/columnFilter", ColumnFilterDefinition.class, "addColumnFilter");
+    configureNode(digester, "wdkModel/filterSet/columnFilter/display", WdkModelText.class, "addDisplay");
+    digester.addCallMethod("wdkModel/filterSet/columnFilter/display", "setText", 0);
+    configureNode(digester, "wdkModel/filterSet/columnFilter/description", WdkModelText.class,
+        "addDescription");
+    digester.addCallMethod("wdkModel/filterSet/columnFilter/description", "setText", 0);
   }
 
   public static void main(String[] args) {

@@ -26,7 +26,7 @@ import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
  * @author jerric
  * 
  */
-public class QuerySet extends WdkModelBase implements ModelSetI, OptionallyTestable {
+public class QuerySet extends WdkModelBase implements ModelSetI<Query>, OptionallyTestable {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(QuerySet.class);
@@ -96,7 +96,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI, OptionallyTesta
   }
 
   @Override
-  public Object getElement(String name) {
+  public Query getElement(String name) {
     return queries.get(name);
   }
 

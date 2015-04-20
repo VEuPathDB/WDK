@@ -1,28 +1,10 @@
 import _ from 'lodash';
 import React from 'react';
 import {
-  formatAttributeName
+  formatAttributeName,
+  formatAttributeValue
 } from '../utils/stringUtils';
 
-/**
- * Record detail component
- */
-
-const hasValue = _.property('value');
-const notPk = attr => attr.name != 'primary_key';
-
-/**
- * Creates a predicate function based on predicate functions `funcs`.
- *
- * `value` to each fn and
- */
-const passesAll = (...funcs) => {
-  return value => {
-    return funcs.reduce(function(pass, func) {
-      return pass && func(value);
-    }, true);
-  };
-}
 
 const Record = React.createClass({
   propTypes: {
@@ -30,31 +12,46 @@ const Record = React.createClass({
   },
 
   render() {
-    const { record, attributes } = this.props;
-    const recordAttributes = _.indexBy(record.attributes, 'name');
+    const { record, recordClass } = this.props;
+    const recordAttributes = record.attributes;
+    const recordTables = record.tables;
+
+    const attributes = recordClass.attributes.map(attribute => {
+      return {
+        meta: attribute,
+        model: recordAttributes[attribute.name]
+      };
+    });
+
+    // const tables = this.props.tables.map(table => {
+    //   return {
+    //     meta: table,
+    //     model: recordTables[table.name]
+    //   };
+    // });
+
     return (
       <div className="wdk-Record">
         <h1 dangerouslySetInnerHTML={{__html: record.id}}/>
         <div className="wdk-Record-attributes">
           {attributes
-            .map(attr => recordAttributes[attr.name])
-            .filter(passesAll(notPk, hasValue))
+            .filter(attr => attr.meta.name !== 'primary_key')
             .map(this._renderAttribute)}
         </div>
         <div className="wdk-Record-tables">
-          {record.tables.map(this._renderTable)}
+          {_.map(recordTables, this._renderTable)}
         </div>
       </div>
     );
   },
 
   _renderAttribute(attribute) {
-    const { name, value } = attribute;
-    if (typeof value === 'undefined') return null;
+    const { meta, model } = attribute;
+    if (model.value == null) return null;
     return (
       <div className="wdk-Record-attribute">
-        <h4>{formatAttributeName(name)}</h4>
-        <div dangerouslySetInnerHTML={{__html: value}}/>
+        <h4>{formatAttributeName(meta.name)}</h4>
+        <div dangerouslySetInnerHTML={{__html: formatAttributeValue(model.value, meta.type)}}/>
       </div>
     );
   },
@@ -77,7 +74,7 @@ const Record = React.createClass({
   _renderTableRow(attributes) {
     return (
       <li>
-        {attributes.filter(hasValue).map(this._renderTableRowAttribute)}
+        {attributes.filter(_.property('value')).map(this._renderTableRowAttribute)}
       </li>
     );
   },

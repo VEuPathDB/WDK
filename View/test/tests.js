@@ -1,3 +1,4 @@
+import 'babel/polyfill';
 import 'wdk/core/namespace';
 
 import './tests/core/c_properties';
@@ -13,8 +14,12 @@ import './tests/views/template_view';
 
 import './tests/addStepPopup';
 
-import './tests/actions/AnswerActions';
+// import './tests/createObjectCache';
+// import './tests/ObservableProxy';
+import './tests/Store';
 
-import './tests/stores/Store';
-
-import './tests/components/Answer';
+// import './tests/actions/AnswerActions';
+// 
+// import './tests/stores/Store';
+// 
+// import './tests/components/Answer';

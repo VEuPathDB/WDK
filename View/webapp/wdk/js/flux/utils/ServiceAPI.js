@@ -4,7 +4,7 @@ var $ = window.jQuery;
  * Methods to interface with the WDK REST API.
  */
 
-export default function createServiceAPI(serviceUrl) {
+export default function ServiceAPI(serviceUrl) {
 
   if (typeof serviceUrl !== 'string') {
     throw new TypeError(`serviceUrl ${serviceUrl} must be a string.`);

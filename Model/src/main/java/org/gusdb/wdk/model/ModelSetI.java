@@ -15,11 +15,11 @@ import org.json.JSONException;
  * @author jerric
  *
  */
-public interface ModelSetI {
+public interface ModelSetI<T extends WdkModelBase> {
 
     String getName();
 
-    Object getElement(String elementName);
+    T getElement(String elementName);
 
     void setResources(WdkModel model) throws WdkModelException;
 
