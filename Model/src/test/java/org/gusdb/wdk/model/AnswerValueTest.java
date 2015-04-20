@@ -126,7 +126,7 @@ public class AnswerValueTest {
         int size = answerValue.getResultSize();
 
         AnswerFilterInstance[] filters = answerValue.getQuestion()
-                .getRecordClass().getFilters();
+                .getRecordClass().getFilterInstances();
         for (AnswerFilterInstance filter : filters) {
             int filterSize = answerValue.getFilterSize(filter.getName());
             if (filter.equals(currentFilter)) {

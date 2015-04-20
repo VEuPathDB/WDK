@@ -383,14 +383,12 @@ public class Strategy {
             // a two-input combined step, since there is no previousStep, the child of it will become new
             // previousStep, and this combined step will be deleted
             previousStep = step.getChildStep();
-            deletes.add(step);
-          }
-          else { // a transform step, and since there is no previousStep, it will also be deleted
-            deletes.add(step);
-          }
+          } // otherwise, a transform step, and since there is no previousStep, it will also be deleted
+          deletes.add(step);
         }
         else { // otherwise, previous step exists, no more deletion needed. will exit loop.
           // check if the step can take the previous step
+          stepFactory.dropDependency(previousStep.getStepId(), StepFactory.COLUMN_LEFT_CHILD_ID);
           step.checkPreviousAllowed(previousStep);
           step.setPreviousStep(previousStep);
           step.saveParamFilters();
@@ -407,6 +405,7 @@ public class Strategy {
             rootMap.put(step.getStepId(), previousStep.getStepId());
 
             // check if parent can take previous step as child
+            stepFactory.dropDependency(previousStep.getStepId(), StepFactory.COLUMN_RIGHT_CHILD_ID);
             parentStep.checkChildAllowed(previousStep);
             parentStep.setChildStep(previousStep);
             parentStep.saveParamFilters();
@@ -417,7 +416,7 @@ public class Strategy {
             // now the previousStep will become the previous one from the parent.
             previousStep = parentStep.getPreviousStep();
             deletes.add(parentStep);
-          }
+         }
         } // otherwise, we are deleting the last step in main branch, will handle it outside of the loop
         step = parentStep;
       }
@@ -442,54 +441,8 @@ public class Strategy {
     }
 
     return rootMap;
-
-    // // are we deleting the first step?
-    // if (step.isFirstStep()) {
-    // if (step.getNextStep() != null) {
-    // // if there are at least two steps, we need to turn the child
-    // // step of step 2 into a first step (no operation)
-    // while (step.getNextStep() != null && step.getNextStep().isTransform()) {
-    // step = step.getNextStep();
-    // }
-    // if (step.getNextStep() == null) {// found the last step in a strategy, or a nested strategy
-    // if (!isBranch) {
-    // logger.debug("Step is only non-transform step in main strategy...");
-    // this.setDeleted(true);
-    // }
-    // else {
-    // logger.debug("Step is only non-transform step in branch...");
-    // step = step.getParentStep();
-    // targetStepId = step.getStepId();
-    // step = step.getPreviousStep();
-    // }
-    //
-    // }
-    // else {
-    // logger.debug("Moving to second step to replace first step...");
-    // targetStepId = step.getNextStep().getStepId();
-    // step = step.getNextStep().getChildStep();
-    // }
-    // }
-    // else if (isBranch) {
-    // logger.debug("Step is only step in a branch...");
-    // step = step.getParentStep();
-    // targetStepId = step.getStepId();
-    // step = step.getPreviousStep();
-    // }
-    // else {
-    // logger.debug("Deleting the single step in the strategy will cause the strategy to be deleted");
-    // stepFactory.deleteStrategy(strategyId);
-    // }
-    // }
-    // else {
-    // logger.debug("Moving to previous step to replace non-first step...");
-    // step = step.getPreviousStep();
-    // }
-    //
-    // logger.debug("Updating step tree to delete target step...");
-    // return updateStepTree(targetStepId, step);
   }
-
+  
   // public Map<Integer, Integer> moveStep(int moveFromId, int moveToId, String branch)
   // throws WdkModelException, WdkUserException, SQLException {
   // Step targetStep;
@@ -658,7 +611,9 @@ public class Strategy {
   public String getChecksum() throws WdkModelException {
     JSONObject jsStrategy = getJSONContent(true);
 
-    return Utilities.encrypt(jsStrategy.toString());
+    String checksum = Utilities.encrypt(jsStrategy.toString());
+    LOG.debug("Strategy #" + strategyId + ", checksum=" + checksum + ", json:\n" + jsStrategy);
+    return checksum;
   }
 
   public JSONObject getJSONContent() throws WdkModelException {
@@ -777,7 +732,7 @@ public class Strategy {
     this.description = description;
   }
 
-  public int getEstimateSize() {
+  public int getEstimateSize() throws WdkModelException {
     if (latestStep != null)
       estimateSize = latestStep.getEstimateSize();
     return estimateSize;

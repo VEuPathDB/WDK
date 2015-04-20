@@ -1,5 +1,43 @@
 /* WDK filter related styles */
 
+/* ==============================================
+ *
+ * This section is for the new filters.
+ *
+ * ============================================== */
+
+.wdk-filters { margin:2px; }
+.wdk-filters .filter-list { width:200px; background:#EEEEEE; }
+.wdk-filters .filter-list .filter { border:0px; cursor:pointer; }
+.wdk-filters .filter-list .filter.highlight { background:yellow; }
+.wdk-filters .filter-list .filter .description { display:none; }
+.wdk-filters .filter-detail { border-left:3px solid gray; }
+.wdk-filters .filter-detail .description { background:#FEFEFE; padding:10px; }
+.wdk-filters .filter-detail .filter-controls { text-align:center; padding:10px; background:#FEFEFE; }
+
+.wdk-filters .filter .description { display:none; }
+.wdk-filters .option { 
+    display:inline-block; border:1px solid #999999; background:#EEEEEE; padding:5px; margin:2px; border-radius:3px; cursor:pointer;
+}
+.wdk-filters .option .remove { display:inline-block; } 
+.wdk-filters .filter-summary { max-height:500px;}
+
+
+
+/* ========================== styles for list column filter ============================ */
+.wdk-filters .list-filter td { padding:1px 3px; }
+.wdk-filters .list-filter .count-bar { height:10px; background:#CC3333; }
+.wdk-filters .list-filter .count { text-align:right; font-weight:normal; }
+
+
+/* ==============================================
+ *
+ * The section below is the style of older filters, and it maybe deprecated in the future.
+ *
+ * ============================================== */
+
+
+
 .filter-layout .layout-info > .handle {
     cursor: pointer;
     position:relative;

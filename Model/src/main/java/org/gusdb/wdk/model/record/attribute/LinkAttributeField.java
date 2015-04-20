@@ -29,6 +29,8 @@ import org.gusdb.wdk.model.record.RecordClass;
  */
 public class LinkAttributeField extends AttributeField {
 
+  private static final String DEFAULT_TYPE = "link";
+  
   private List<WdkModelText> urls;
   private String url;
 
@@ -42,6 +44,10 @@ public class LinkAttributeField extends AttributeField {
     urls = new ArrayList<WdkModelText>();
     // by default, don't show linked attributes in the download
     this.inReportMaker = false;
+    
+    if (this.type == null) {
+      this.type = DEFAULT_TYPE;
+    }
   }
 
   public void setNewWindow(boolean newWindow) {
@@ -71,7 +77,7 @@ public class LinkAttributeField extends AttributeField {
   public String getDisplayText() {
     return displayText;
   }
-
+  
   /**
    * @param displayText
    *          the displayText to set

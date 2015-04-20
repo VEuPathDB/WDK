@@ -14,7 +14,7 @@ import React from 'react';
 import Flux from 'flux';
 import Router from 'react-router';
 
-import createServiceAPI from './utils/createServiceAPI';
+import ServiceAPI from './utils/ServiceAPI';
 import HeadlessLocation from './utils/HeadlessLocation';
 import stores from './stores';
 import actionCreators from './actions';
@@ -51,7 +51,7 @@ var createApplication = function createApplication(config) {
   }
 
   var dispatcher = new Flux.Dispatcher();
-  var serviceAPI = createServiceAPI(serviceUrl);
+  var serviceAPI = ServiceAPI(serviceUrl);
 
   // Determine Router Location implementation based on config options.
   var routerLocation;

@@ -50,6 +50,14 @@
                      answerValue="${wdkAnswer}" />
 </c:if>
 
+<br />
+<!-- ================ New filter architecture ================= -->
+
+
+<c:if test="${strategy != null}">
+  <imp:resultFilters step="${step}" />
+</c:if> 
+
 <!--<div><a href="javascript:wdk.stepAnalysis.showAllAnalyses()">Magic Button</a></div>-->
 
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->

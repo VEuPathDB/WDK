@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
+import org.gusdb.wdk.model.record.attribute.LinkAttributeValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -107,7 +108,7 @@ public class AnswerFormatter {
     for (Entry<String,AttributeValue> attrib : record.getAttributeValueMap().entrySet()) {
       JSONObject attribJson = new JSONObject();
       attribJson.put("name", attrib.getKey());
-      attribJson.put("value", attrib.getValue().getValue());
+      attribJson.put("value", getAttributeJsonValue(attrib.getValue()));
       attributes.put(attribJson);
     }
     json.put("attributes", attributes);
@@ -122,7 +123,7 @@ public class AnswerFormatter {
           if (!entry.getValue().getAttributeField().isInternal()) {
             JSONObject tableAttrJSON = new JSONObject();
              tableAttrJSON.put("name", entry.getKey());
-             tableAttrJSON.put("value", entry.getValue().getValue());
+             tableAttrJSON.put("value", getAttributeJsonValue(entry.getValue()));
              tableAttrsJSON.put(tableAttrJSON);
           }
         }
@@ -135,6 +136,20 @@ public class AnswerFormatter {
     }
     json.put("tables", tables);
     return json;
+  }
+  
+  private static Object getAttributeJsonValue(AttributeValue attr) throws
+    WdkModelException, WdkUserException {
+    if (attr instanceof LinkAttributeValue) {
+      LinkAttributeValue linkAttr = (LinkAttributeValue) attr;
+      JSONObject value = new JSONObject();
+      value.put("url",  linkAttr.getUrl());
+      value.put("displayText", linkAttr.getDisplayText());
+      return value;
+    }
+    else {
+      return attr.getValue();
+    }
   }
 
 }

@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.analysis.StepAnalysisXml;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
+import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wdk.model.query.Query;
@@ -152,8 +153,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    */
   private String reviseBuild;
   
+  private final Map<String, Filter> filters = new LinkedHashMap<>();
+  
   
   private List<QuestionSuggestion> _suggestions = new ArrayList<>();
+
 
   // /////////////////////////////////////////////////////////////////////
   // setters called at initialization
@@ -193,11 +197,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     this.shortDisplayName = question.shortDisplayName;
     this.customJavascriptFile = question.customJavascriptFile;
 
-    this.paramRefs = new ArrayList<ParamReference>(question.paramRefs);
+    this.paramRefs = new ArrayList<>(question.paramRefs);
 
     if (sqlMacroList != null)
-      this.sqlMacroList = new ArrayList<WdkModelText>(question.sqlMacroList);
-    this.sqlMacroMap = new LinkedHashMap<String, String>(question.sqlMacroMap);
+      this.sqlMacroList = new ArrayList<>(question.sqlMacroList);
+    this.sqlMacroMap = new LinkedHashMap<>(question.sqlMacroMap);
+    this.filters.putAll(new LinkedHashMap<>(question.filters));
   }
 
   public String getNewBuild() {
@@ -1115,5 +1120,20 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     // print query
     query.printDependency(writer, indent);
     writer.print(indent + "</question>");
+  }
+  
+  public void addFilter(Filter filter) {
+    filters.put(filter.getKey(), filter);
+  }
+  
+  public Map<String, Filter> getFilters() {
+    Map<String, Filter> map = new LinkedHashMap<>(recordClass.getFilters());
+    map.putAll(this.filters);
+    return map;
+  }
+  
+  public Filter getFilter(String filterName) throws WdkModelException {
+    Filter filter = filters.get(filterName);
+    return (filter != null) ? filter : recordClass.getFilter(filterName); 
   }
 }

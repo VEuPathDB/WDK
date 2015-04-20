@@ -4,14 +4,6 @@ import Router from 'react-router';
 import { getRoutes } from './router';
 import createObjectCache from './utils/createObjectCache';
 
-var createRouterCallback = function createRouterCallback(rootElement, context) {
-  return function runRoute(Handler, state) {
-    React.withContext(context, function render() {
-      React.render( <Handler {...state} />, rootElement);
-    });
-  };
-};
-
 var runApplication = function runApplication({
   baseUrl,
   dispatcher,
@@ -34,30 +26,29 @@ var runApplication = function runApplication({
   var routes = getRoutes(baseUrl);
   var storeCache = createObjectCache(stores, dispatcher);
   var actionCreatorsCache = createObjectCache(actionCreators, dispatcher, serviceAPI);
+  var router = Router.create({
+    routes: routes,
+    location: routerLocation
+  });
+  var applicationContext = createApplicationContext(
+    storeCache,
+    actionCreatorsCache,
+    recordComponentResolver,
+    cellRendererResolver,
+    router
+  );
+  var routerCallback = createRouterCallback(rootElement, applicationContext);
+  router.run(routerCallback);
+};
 
-  // This is used below in `React.withContext`. Properties of this object will
-  // be available in React components that declare them using the
-  // `contextTypes` property. React will read this propery on each component
-  // and expose the defined context properties (via `this.context`).
+  // This object is passed to the top level React component, and any other
+  // Route handlers. This is effectively a lookup service.
   //
-  // EXAMPLE
-  //
-  //     // ...
-  //
-  //     contextTypes: {
-  //       getStore: React.PropTypes.func.isRequired
-  //     },
-  //
-  //     getStore: function(storeName) {
-  //         return this.context.getStore(storeName);
-  //     }
-  //
-  //     // ...
-  //
-  // See `./mixins/createStoreMixin` for an example of its usage.
-  var reactContext = {
+  // TODO Warn or throw when a requested object is not found.
+function createApplicationContext(storeCache, actionCreatorsCache, recordComponentResolver, cellRendererResolver, router) {
+  return {
     getStore(name) {
-      return storeCache.get(name);
+      return storeCache.get(name).asObservable();
     },
     getActions(name) {
       return actionCreatorsCache.get(name);
@@ -67,11 +58,17 @@ var runApplication = function runApplication({
     },
     getCellRenderer(recordClass, defaultRenderer) {
       return cellRendererResolver(recordClass, defaultRenderer);
+    },
+    getRouter() {
+      return router;
     }
   };
+}
 
-  var routerCallback = createRouterCallback(rootElement, reactContext);
-  Router.run(routes, routerLocation, routerCallback);
-};
+function createRouterCallback(rootElement, context) {
+  return function runRoute(Handler, state) {
+    React.render( <Handler {...state} application={context} />, rootElement);
+  };
+}
 
 export { runApplication };

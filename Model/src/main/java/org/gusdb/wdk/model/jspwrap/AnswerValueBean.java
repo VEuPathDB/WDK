@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -209,7 +210,12 @@ public class AnswerValueBean {
      * @throws WdkUserException 
      */
     public Iterator<RecordBean> getRecords() throws WdkModelException, WdkUserException {
+      try {
     	return new RecordBeanList(answerValue.getRecordInstances());
+      } catch (WdkModelException | WdkUserException ex) {
+        logger.error(ex.getMessage(), ex);
+        throw ex;
+      }
     }
 
     public void setDownloadConfigMap(Map<?, ?> downloadConfigMap) {
@@ -400,7 +406,7 @@ public class AnswerValueBean {
     }
 
     public void setFilter(String filterName) {
-        answerValue.setFilter(filterName);
+        answerValue.setFilterInstance(filterName);
     }
 
     public int getFilterSize(String filterName)
@@ -482,4 +488,12 @@ public class AnswerValueBean {
     public boolean getUseCheckboxTree() {
     	return true;
     }
+
+    public FilterSummary getFilterSummary(String filterName) throws WdkModelException, WdkUserException {
+      return answerValue.getFilterSummary(filterName);
+    }
+    
+    public String getIdSql() throws WdkModelException, WdkUserException {
+      return answerValue.getIdSql();
+    }    
 }

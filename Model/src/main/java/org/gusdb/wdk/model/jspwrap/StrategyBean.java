@@ -186,6 +186,14 @@ public class StrategyBean {
   public String getSignature() {
     return strategy.getSignature();
   }
+    /**
+     * @return
+     * @throws WdkModelException 
+     * @see org.gusdb.wdk.model.user.Strategy#getEstimateSize()
+     */
+    public int getEstimateSize() throws WdkModelException {
+        return strategy.getEstimateSize();
+    }
 
   private String formatDate(Date date) {
     if (date == null)
@@ -200,14 +208,6 @@ public class StrategyBean {
    */
   public boolean isValid() throws WdkModelException {
     return strategy.isValid();
-  }
-
-  /**
-   * @return
-   * @see org.gusdb.wdk.model.user.Strategy#getEstimateSize()
-   */
-  public int getEstimateSize() {
-    return strategy.getEstimateSize();
   }
 
   public RecordClassBean getRecordClass() throws WdkModelException {

@@ -1,36 +1,25 @@
-import createStore from '../utils/createStore';
+import Store from '../Store';
 import { APP_LOADING, APP_ERROR } from '../ActionType';
 
-export default createStore({
+export default class AppStore extends Store {
 
-  state: {
-    isLoading: 0,
-    errors: []
-  },
-
-  dispatchHandler(action, emitChange) {
-    switch(action.type) {
-      case APP_LOADING:
-        if (action.isLoading) this.state.isLoading++;
-        else this.state.isLoading--;
-        emitChange();
-        break;
-
-      case APP_ERROR:
-        this.state.errors.unshift(action.error);
-        emitChange();
-
-        // remove error after 1 second
-        // setTimeout(() => {
-        //   this.state.errors.pop();
-        //   emitChange();
-        // }, 1000);
-        break;
-    }
-  },
-
-  getState() {
-    return this.state;
+  init() {
+    this.state = {
+      isLoading: 0,
+      errors: []
+    };
+    this.handleAction(APP_LOADING, this.setLoading);
+    this.handleAction(APP_ERROR, this.setError);
   }
 
-});
+  setLoading(action) {
+    if (action.isLoading) this.state.isLoading++;
+    else this.state.isLoading--;
+  }
+
+  setError(action) {
+    this.state.errors.unshift(action.error);
+  }
+
+
+}

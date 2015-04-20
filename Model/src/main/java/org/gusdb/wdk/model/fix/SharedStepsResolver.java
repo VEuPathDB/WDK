@@ -16,7 +16,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
 /**
@@ -112,6 +112,7 @@ public class SharedStepsResolver extends BaseCLI {
 
   private void mapSharedRootSteps(WdkModel wdkModel, DataSource dataSource, String userSchema)
       throws WdkModelException {
+		LOG.debug("\n\nDealing with shared root steps");
     String strategyTable = userSchema + "strategies";
     String sqlSelect = "SELECT strategy_id, root_step_id FROM " + strategyTable +
         "  WHERE root_step_id IN (SELECT root_step_id FROM " + strategyTable +
@@ -153,7 +154,8 @@ public class SharedStepsResolver extends BaseCLI {
   }
 
   private void mapSharedChildSteps(WdkModel wdkModel, DataSource dataSource, String userSchema, boolean left)
-      throws WdkModelException {
+		throws WdkModelException {
+		LOG.debug("\n\nDealing with shared child steps, left child??? " + left);
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
     String column = left ? "left_child_id" : "right_child_id";
     String stepTable = userSchema + "steps";
@@ -244,7 +246,7 @@ public class SharedStepsResolver extends BaseCLI {
     finally {
       SqlUtils.closeResultSetAndStatement(resultSet);
       SqlUtils.closeStatement(psUpdate);
-      //SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
+      SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
     }
   }
 
@@ -286,7 +288,9 @@ public class SharedStepsResolver extends BaseCLI {
 
   private String updateContent(String content, Map<Integer, Integer> ids) throws WdkModelException {
     JSONObject jsContent = new JSONObject(content);
-    Map<String, String> params = StepFactory.parseParamContent(jsContent);
+    Step step = new Step(null, 0, 0);
+    step.setParamFilterJSON(jsContent);
+    Map<String, String> params = step.getParamValues();
 
     // update param values
     String[] paramNames = params.keySet().toArray(new String[0]);
@@ -298,13 +302,8 @@ public class SharedStepsResolver extends BaseCLI {
           params.put(paramName, Integer.toString(ids.get(oldId)));
       }
     }
-    // update JSON
-    JSONObject jsParams = new JSONObject();
-    for (String paramName : params.keySet()) {
-      jsParams.put(paramName, params.get(paramName));
-    }
-    jsContent.put("params", jsParams);
-
+    step.setParamValues(params);
+    jsContent = step.getParamFilterJSON();
     return jsContent.toString();
   }
 }
