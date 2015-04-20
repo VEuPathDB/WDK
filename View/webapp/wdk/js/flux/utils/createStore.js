@@ -58,6 +58,10 @@ export default function createStore(spec) {
     var specCopy = Object.create(spec);
     var emitter = new EventEmitter();
 
+    if (specCopy.init && typeof specCopy.init === 'function') {
+      specCopy.init();
+    }
+
     var emitChange = function emitChange() {
       emitter.emit('change', specCopy.getState());
     };

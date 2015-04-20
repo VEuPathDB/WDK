@@ -18,7 +18,7 @@ public class AnswerStreamer {
     return new StreamingOutput() {
       @Override
       public void write(OutputStream stream) throws IOException, WebApplicationException {
-        stream.write(result.getBytes());
+        stream.write(result.getBytes("UTF-8"));
       }
     };
   }

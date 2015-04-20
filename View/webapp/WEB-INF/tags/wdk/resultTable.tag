@@ -16,11 +16,9 @@
   <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
   <c:set var="recHasBasket" value="${wdkAnswer.question.recordClass.useBasket}" />
   <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
-<!--
   <c:catch var="answerValueRecords_exception">
     <c:set var="answerRecords" value="${wdkAnswer.records}" />
   </c:catch>
--->
   <c:set var="wdkView" value="${requestScope.wdkView}" />
 
   <c:set var="displayName" value="${step.recordClass.displayName}"/>

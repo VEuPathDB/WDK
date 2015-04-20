@@ -25,7 +25,7 @@ export default function createObjectCache(factories, ...deps) {
     get(token) {
       if (!cache.has(token)) {
         var factory = factories[token];
-        var instance = factory(...deps);
+        var instance = new factory(...deps);
         cache.set(token, instance);
       }
       return cache.get(token);
