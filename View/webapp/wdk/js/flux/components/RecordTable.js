@@ -279,6 +279,9 @@ const RecordTable = React.createClass({
   renderCell(attribute, attributeName, attributes, index, columnData, width) {
     const value = attribute.value;
     const type = columnData.attributeDefinition.type;
+
+    if (value == null) return '';
+
     if (attribute.name === PRIMARY_KEY_NAME) {
       const record = this.props.records[index];
       const href = this.props.recordHrefGetter(record);
@@ -311,7 +314,8 @@ const RecordTable = React.createClass({
    *
    * @param {any} attribute Value of `label` prop of `Column`.
    */
-  renderHeader(attribute) {
+  renderHeader(label, dataKey, columnData) {
+    const attribute = columnData.attributeDefinition;
     return (
       <span title={attribute.help || ''}>
         {formatAttributeName(attribute.displayName)}
@@ -387,7 +391,6 @@ const RecordTable = React.createClass({
                 key={name}
                 dataKey={name}
                 fixed={isPk}
-                label={attribute}
                 headerRenderer={this.renderHeader}
                 cellRenderer={partialRight(cellRenderer, this.renderCell)}
                 cellDataGetter={this.getCellData}

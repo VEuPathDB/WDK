@@ -72,23 +72,49 @@ const AnswerController = React.createClass({
     application: React.PropTypes.object.isRequired
   },
 
-  // mixins are used to share behaviors between otherwise unrelated components.
-  // A mixin is simply an object with properties that are added (copied) to the
-  // object literal we are currently defining (and passing to
-  // React.createClass). The concept is not unique to React.
-  //
-  // React will use each object in the provided array to attach additional
-  // behavior to instances of the component class.
-  //
-  // See http://facebook.github.io/react/docs/component-specs.html#mixins
-  mixins: [
+  // When the component first mounts, fetch the answer.
+  componentWillMount() {
+    this.router = this.props.application.getRouter();
+    this.fetchAnswer(this.props);
+    this.subscribeToStores();
+  },
 
-    // Adds methods to handle navigating to other routes. We use
-    // `replaceWith()` in this component.
-    // See https://github.com/rackt/react-router/blob/master/docs/api/mixins/Navigation.md
-    Router.Navigation
-  ],
+  // This is called anytime the component gets new props, just before they are
+  // actually passed to the component instance. In our case, this is when any
+  // part of the URL changes. We will first check if a new answer resource needs
+  // to be fetched. If not, then we will check if the filter needs to be updated.
+  componentWillReceiveProps(nextProps) {
+    // current query and params
+    const { query, params } = this.props;
 
+    // incoming query and params
+    const { query: nextQuery, params: nextParams } = nextProps;
+
+    // query keys to compare to determine if we need to fetch a new answer
+    const queryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
+
+    // _.pick will create an object with keys from queryKeys, and values from
+    // the source object (query and nextQuery).
+    const answerQuery = _.pick(query, queryKeys);
+    const nextAnswerQuery = _.pick(nextQuery, queryKeys);
+
+    // fetch answer if the query has changed, or if the question name has changed
+    if (!_.isEqual(answerQuery, nextAnswerQuery) || params.questionName != nextParams.questionName) {
+      this.fetchAnswer(nextProps);
+    }
+
+    // filter answer if the filter terms have changed
+    else if (query.filterTerm != nextQuery.filterTerm) {
+      this.props.application.getActions('answerActions')
+      .filterAnswer(nextParams.questionName, nextQuery.filterTerm);
+    }
+
+  },
+
+
+  componentWillUnmount() {
+    this.disposeSubscriptions();
+  },
 
   // Create subscriptions to stores.
   subscribeToStores() {
@@ -157,7 +183,7 @@ const AnswerController = React.createClass({
       // call will cause the Route Handler for 'answer' (this component) to be
       // rendered again. Since `query.numrecs` and `query.offset` are now set,
       // the else block below will get executed again.
-      this.replaceWith(path, params, query);
+      this.router.replaceWith(path, params, query);
 
     } else {
 
@@ -206,49 +232,6 @@ const AnswerController = React.createClass({
     }
   },
 
-  // When the component first mounts, fetch the answer.
-  componentDidMount() {
-    this.fetchAnswer(this.props);
-    this.subscribeToStores();
-  },
-
-  componentWillUnmount() {
-    this.disposeSubscriptions();
-  },
-
-  // This is called anytime the component gets new props, just before they are
-  // actually passed to the component instance. In our case, this is when any
-  // part of the URL changes. We will first check if a new answer resource needs
-  // to be fetched. If not, then we will check if the filter needs to be updated.
-  componentWillReceiveProps(nextProps) {
-
-    // current query and params
-    const { query, params } = this.props;
-
-    // incoming query and params
-    const { query: nextQuery, params: nextParams } = nextProps;
-
-    // query keys to compare to determine if we need to fetch a new answer
-    const queryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
-
-    // _.pick will create an object with keys from queryKeys, and values from
-    // the source object (query and nextQuery).
-    const answerQuery = _.pick(query, queryKeys);
-    const nextAnswerQuery = _.pick(nextQuery, queryKeys);
-
-    // fetch answer if the query has changed, or if the question name has changed
-    if (!_.isEqual(answerQuery, nextAnswerQuery) || params.questionName != nextParams.questionName) {
-      this.fetchAnswer(nextProps);
-    }
-
-    // filter answer if the filter terms have changed
-    else if (query.filterTerm != nextQuery.filterTerm) {
-      this.props.application.getActions('answerActions')
-      .filterAnswer(nextParams.questionName, nextQuery.filterTerm);
-    }
-
-  },
-
 
   // This is a collection of event handlers that will be passed to the Answer
   // component (which will, in turn, pass these to the RecordTable component.
@@ -279,7 +262,7 @@ const AnswerController = React.createClass({
       // this `this.componentWillReceiveProps` to be called, which will cause
       // this component to call `this.fetchAnswer()` with the sorting
       // configuration.
-      this.replaceWith('answer', this.props.params, query);
+      this.router.replaceWith('answer', this.props.params, query);
 
       // This is an alternative way, which is to call loadAnswer.
       // The appeal of the above is that if the user clicks the browser refresh
@@ -373,7 +356,7 @@ const AnswerController = React.createClass({
       });
 
       // Method provided by Router.Navigation mixin
-      return this.makeHref(path, this.props.params, query);
+      return this.router.makeHref(path, this.props.params, query);
     },
 
     onFilter(terms) {
