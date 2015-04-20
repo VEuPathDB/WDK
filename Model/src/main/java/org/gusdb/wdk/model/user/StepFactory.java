@@ -333,7 +333,7 @@ public class StepFactory {
       psInsertStep.setString(9, wdkModel.getProjectId());
       psInsertStep.setString(10, wdkModel.getVersion());
       psInsertStep.setString(11, questionName);
-      psInsertStep.setInt(12, strategyId);
+      psInsertStep.setObject(12, strategyId);
       userDb.getPlatform().setClobData(psInsertStep, 13, jsParamFilters.toString(), false);
       psInsertStep.executeUpdate();
     }
@@ -1411,7 +1411,7 @@ public class StepFactory {
       logger.debug("new strategy created, id=" + strategyId);
 
       // check if we need to update the strategy id on the step;
-      if (root.getStrategyId() != strategyId)
+      if (root.getStrategyId() == null || root.getStrategyId() != strategyId)
         updateStrategyId(strategyId, root);
     }
     catch (SQLException ex) {
