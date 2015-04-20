@@ -47,7 +47,7 @@ const Record = React.createClass({
 
   _renderAttribute(attribute) {
     const { meta, model } = attribute;
-    if (typeof model.value === 'undefined') return null;
+    if (model.value == null) return null;
     return (
       <div className="wdk-Record-attribute">
         <h4>{formatAttributeName(meta.name)}</h4>

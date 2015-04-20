@@ -4,7 +4,10 @@ const Tooltip = React.createClass({
 
   propTypes: {
     // string or ReactElement
-    content: PropTypes.string
+    content: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.element
+    ])
   },
 
   componentDidMount() {

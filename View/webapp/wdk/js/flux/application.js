@@ -4,12 +4,6 @@ import Router from 'react-router';
 import { getRoutes } from './router';
 import createObjectCache from './utils/createObjectCache';
 
-var createRouterCallback = function createRouterCallback(rootElement, context) {
-  return function runRoute(Handler, state) {
-    React.render( <Handler {...state} application={context} />, rootElement);
-  };
-};
-
 var runApplication = function runApplication({
   baseUrl,
   dispatcher,
@@ -32,12 +26,27 @@ var runApplication = function runApplication({
   var routes = getRoutes(baseUrl);
   var storeCache = createObjectCache(stores, dispatcher);
   var actionCreatorsCache = createObjectCache(actionCreators, dispatcher, serviceAPI);
+  var router = Router.create({
+    routes: routes,
+    location: routerLocation
+  });
+  var applicationContext = createApplicationContext(
+    storeCache,
+    actionCreatorsCache,
+    recordComponentResolver,
+    cellRendererResolver,
+    router
+  );
+  var routerCallback = createRouterCallback(rootElement, applicationContext);
+  router.run(routerCallback);
+};
 
   // This object is passed to the top level React component, and any other
   // Route handlers. This is effectively a lookup service.
   //
   // TODO Warn or throw when a requested object is not found.
-  var applicationContext = {
+function createApplicationContext(storeCache, actionCreatorsCache, recordComponentResolver, cellRendererResolver, router) {
+  return {
     getStore(name) {
       return storeCache.get(name).asObservable();
     },
@@ -49,11 +58,17 @@ var runApplication = function runApplication({
     },
     getCellRenderer(recordClass, defaultRenderer) {
       return cellRendererResolver(recordClass, defaultRenderer);
+    },
+    getRouter() {
+      return router;
     }
   };
+}
 
-  var routerCallback = createRouterCallback(rootElement, applicationContext);
-  Router.run(routes, routerLocation, routerCallback);
-};
+function createRouterCallback(rootElement, context) {
+  return function runRoute(Handler, state) {
+    React.render( <Handler {...state} application={context} />, rootElement);
+  };
+}
 
 export { runApplication };
