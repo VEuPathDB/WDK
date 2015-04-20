@@ -183,13 +183,16 @@ public class ProcessBooleanAction extends Action {
     StepBean newStep = user.getStep(Integer.valueOf(strImport));
     if (step.isCombined()) { // there are steps before the given Step, the new step will be combined into
       // a boolean (as the child), then the boolean will be inserted before the given step.
-      StepBean booleanStep = user.createBooleanStep(step.getPreviousStep(), newStep, operator, false, null);
-      logger.debug("new boolean: #" + booleanStep.getStepId() + " (" + booleanStep.getPreviousStep().getStepId() + ", " + booleanStep.getChildStep().getStepId() + ")");
+      StepBean booleanStep = user.createBooleanStep(strategy.getStrategyId(), step.getPreviousStep(),
+          newStep, operator, false, null);
+      logger.debug("new boolean: #" + booleanStep.getStepId() + " (" +
+          booleanStep.getPreviousStep().getStepId() + ", " + booleanStep.getChildStep().getStepId() + ")");
       rootMap = strategy.insertStepBefore(booleanStep, step.getStepId());
     }
     else { // the step is the first step, will make the step as child, the new step as previous, then the
       // boolean will be inserted after the given step
-      StepBean booleanStep = user.createBooleanStep(newStep, step, operator, false, null);
+      StepBean booleanStep = user.createBooleanStep(strategy.getStrategyId(), newStep, step, operator, false,
+          null);
       rootMap = strategy.insertStepBefore(booleanStep, step.getStepId());
     }
     return rootMap;
@@ -215,7 +218,8 @@ public class ProcessBooleanAction extends Action {
     StepBean childStep = user.getStep(Integer.valueOf(strImport));
 
     // use the default flags
-    StepBean newStep = user.createBooleanStep(previousStep, childStep, operator, false, null);
+    StepBean newStep = user.createBooleanStep(strategy.getStrategyId(), previousStep, childStep, operator,
+        false, null);
     return strategy.insertStepAfter(newStep, rootStep.getStepId());
   }
 }

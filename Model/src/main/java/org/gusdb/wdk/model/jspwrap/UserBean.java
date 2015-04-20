@@ -631,10 +631,10 @@ public class UserBean /* implements Serializable */{
    * @see
    * org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
    */
-  public StepBean createStep(QuestionBean question, Map<String, String> params,
+  public StepBean createStep(Integer strategyId, QuestionBean question, Map<String, String> params,
       String filterName, boolean deleted, boolean validate, int assignedWeight)
       throws WdkModelException, WdkUserException {
-    Step step = user.createStep(question.question, params, filterName, deleted,
+    Step step = user.createStep(strategyId, question.question, params, filterName, deleted,
         validate, assignedWeight);
     return new StepBean(this, step);
   }
@@ -765,21 +765,6 @@ public class UserBean /* implements Serializable */{
    */
   public int getStrategyCount() throws WdkModelException {
     return user.getStrategyCount();
-  }
-
-  public void validateExpression(String expression) throws WdkModelException {
-    user.validateExpression(expression);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.user.User#combineHistory(java.lang.String)
-   */
-  public StepBean combineStep(String expression, boolean useBooleanFilter)
-      throws WdkModelException, WdkUserException {
-    return new StepBean(this, user.combineStep(expression, useBooleanFilter,
-        false));
   }
 
   /*
@@ -1043,10 +1028,10 @@ public class UserBean /* implements Serializable */{
    *      org.gusdb.wdk.model.user.Step, org.gusdb.wdk.model.BooleanOperator,
    *      boolean, org.gusdb.wdk.model.AnswerFilterInstance)
    */
-  public StepBean createBooleanStep(StepBean previousStep, StepBean childStep,
+  public StepBean createBooleanStep(int strategyId, StepBean previousStep, StepBean childStep,
       String operator, boolean useBooleanFilter, String filterName)
       throws WdkModelException {
-    Step step = user.createBooleanStep(previousStep.step, childStep.step,
+    Step step = user.createBooleanStep(strategyId, previousStep.step, childStep.step,
         operator, useBooleanFilter, filterName);
     return new StepBean(this, step);
   }
@@ -1325,4 +1310,10 @@ public class UserBean /* implements Serializable */{
   public void setSortingAttributes(String questionName, String sortColumns) {
     user.setSortingAttributes(questionName, sortColumns);
   }
+
+  public int getNewStrategyId() throws WdkModelException {
+    return user.getNewStrategyId();
+  }
+  
+  
 }

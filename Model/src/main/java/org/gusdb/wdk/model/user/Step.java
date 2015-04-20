@@ -135,6 +135,8 @@ public class Step {
   // This allows the UI to show a "broken" step but not hose the whole strategy
   private Exception exception;
 
+  private Integer strategyId;
+  
   /**
    * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
    * for the passed ID if one is required for processing after construction.
@@ -845,7 +847,7 @@ public class Step {
     try {
       int startIndex = getAnswerValue().getStartIndex();
       int endIndex = getAnswerValue().getEndIndex();
-      Step step = getUser().createStep(question, params, filter, startIndex, endIndex, deleted, false,
+      Step step = getUser().createStep(strategyId, question, params, filter, startIndex, endIndex, deleted, false,
           assignedWeight, getFilterOptions());
       step.collapsedName = collapsedName;
       step.customName = customName;
@@ -869,13 +871,13 @@ public class Step {
    * @throws NoSuchAlgorithmException
    * 
    */
-  public Step deepClone() throws WdkModelException {
+  public Step deepClone(Integer strategyId) throws WdkModelException {
     Step step;
     AnswerValue answerValue;
     try {
       answerValue = getAnswerValue();
       if (!isCombined()) {
-        step = getUser().createStep(answerValue, deleted, assignedWeight);
+        step = getUser().createStep(strategyId, answerValue, deleted, assignedWeight);
       }
       else {
         Question question = getQuestion();
@@ -886,7 +888,7 @@ public class Step {
           String paramValue = this.paramValues.get(paramName);
           if (param instanceof AnswerParam) {
             Step child = getUser().getStep(Integer.parseInt(paramValue));
-            child = child.deepClone();
+            child = child.deepClone(strategyId);
             paramValue = Integer.toString(child.getStepId());
           }
           paramValues.put(paramName, paramValue);
@@ -894,7 +896,7 @@ public class Step {
         AnswerFilterInstance filter = getFilter();
         int pageStart = answerValue.getStartIndex();
         int pageEnd = answerValue.getEndIndex();
-        step = getUser().createStep(question, paramValues, filter, pageStart, pageEnd, deleted, false,
+        step = getUser().createStep(strategyId, question, paramValues, filter, pageStart, pageEnd, deleted, false,
             assignedWeight, getFilterOptions());
       }
     }
@@ -1338,5 +1340,13 @@ public class Step {
     if (!param.allowRecordClass(type))
       throw new WdkUserException("The new step#" + childStep.getStepId() + " of type " + type +
           " is not compatible with the parent step#" + getStepId());
+  }
+
+  public Integer getStrategyId() {
+    return strategyId;
+  }
+
+  public void setStrategyId(Integer strategyId) {
+    this.strategyId = strategyId;
   }
 }
