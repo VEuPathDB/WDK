@@ -72,6 +72,19 @@ public class ShowSummaryAction extends ShowQuestionAction {
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
+            // load existing strategy, if needed.
+            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String strategyKey = strStratId;
+            Integer strategyId = null;
+            if (strStratId != null && strStratId.length() != 0) {
+                if (strStratId.indexOf("_") > 0) {
+                    // strBranchId = strStratId.split("_")[1];
+                    strStratId = strStratId.split("_")[0];
+                }
+                strategyId = Integer.valueOf(strStratId);
+                strategy = wdkUser.getStrategy(strategyId);
+            }
+
             // TRICKY: this is for action forward from
             // ProcessQuestionSetsFlatAction
             // need to double check this, it clean up the input....
@@ -79,7 +92,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             // String strBranchId = null;
 
-            StepBean step = getStep(request, wdkUser, form);
+            StepBean step = getStep(request, wdkUser, strategyId, form);
             request.setAttribute(CConstants.WDK_STEP_KEY, step);
             logger.debug("step created");
 
@@ -125,17 +138,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     path += "&" + pkColumn + "=" + value;
                 }
                 return new ActionForward(path, true);
-            }
-
-            // load existing strategy, if needed.
-            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String strategyKey = strStratId;
-            if (strStratId != null && strStratId.length() != 0) {
-                if (strStratId.indexOf("_") > 0) {
-                    // strBranchId = strStratId.split("_")[1];
-                    strStratId = strStratId.split("_")[0];
-                }
-                strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
             }
 
             logger.debug("preparing forward");
@@ -239,7 +241,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
     }
 
-    private StepBean getStep(HttpServletRequest request, UserBean wdkUser,
+    private StepBean getStep(HttpServletRequest request, UserBean wdkUser, Integer strategyId,
             ActionForm form) throws WdkModelException, WdkUserException {
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         QuestionForm qForm = (QuestionForm) form;
@@ -287,7 +289,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             // make the answer
             String filterName = request.getParameter(CConstants.WDK_FILTER_KEY);
-            step = summaryPaging(request, wdkQuestion, params, filterName,
+            step = summaryPaging(request, strategyId, wdkQuestion, params, filterName,
                     hidden, weight);
         } else {
             logger.debug("load existing step");
@@ -351,11 +353,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
         Map<String, String> paramValues = step.getParams();
         String filterName = step.getFilterName();
         int assignedWeight = step.getAssignedWeight();
-        return summaryPaging(request, question, paramValues, filterName, false,
+        return summaryPaging(request, step.getStrategyId(), question, paramValues, filterName, false,
                 assignedWeight);
     }
 
-    public static StepBean summaryPaging(HttpServletRequest request,
+    public static StepBean summaryPaging(HttpServletRequest request, int strategyId,
             QuestionBean question, Map<String, String> params,
             String filterName, boolean deleted, int assignedWeight)
             throws WdkModelException, WdkUserException {
@@ -369,7 +371,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         logger.info("Make answer with start=" + start + ", end=" + end);
 
-        StepBean step = wdkUser.createStep(question, params, filterName,
+        StepBean step = wdkUser.createStep(strategyId, question, params, filterName,
                 deleted, true, assignedWeight);
         String customName = request.getParameter(PARAM_CUSTOM_NAME);
         if (customName != null && customName.trim().length() > 0) {

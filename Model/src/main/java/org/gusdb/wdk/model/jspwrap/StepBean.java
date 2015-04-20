@@ -338,8 +338,8 @@ public class StepBean {
      * @return
      * @see org.gusdb.wdk.model.user.Step#deepClone()
      */
-    public StepBean deepClone() throws WdkModelException {
-        return new StepBean(user, step.deepClone());
+    public StepBean deepClone(Integer strategyId) throws WdkModelException {
+        return new StepBean(user, step.deepClone(strategyId));
     }
 
     public QuestionBean getQuestion() throws WdkModelException {
@@ -543,6 +543,10 @@ public class StepBean {
 
   public void removeFilterOption(String filterName) throws WdkModelException {
     step.removeFilterOption(filterName);
+  }
+
+  public Integer getStrategyId() {
+    return step.getStrategyId();
   }
 
 }

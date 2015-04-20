@@ -25,7 +25,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  * form bean for holding the boolean expression string fro queryStep.jsp page
  */
 
-public class FilterForm extends BooleanExpressionForm {
+public class FilterForm extends QuestionForm {
 
   /**
      * 

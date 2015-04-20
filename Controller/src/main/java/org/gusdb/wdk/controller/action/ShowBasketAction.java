@@ -23,66 +23,62 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.BasketFactory;
 
 /**
- * This action is called by the UI in order to "close" a strategy. It removes
- * the specified strategy id from the strategy id list stored in the session.
+ * This action is called by the UI in order to "close" a strategy. It removes the specified strategy id from
+ * the strategy id list stored in the session.
  */
 
 public class ShowBasketAction extends Action {
 
-    private static final String PARAM_RECORD_CLASS = "recordClass";
-    private static final String MAPKEY_SHOW_BASKET = "showBasket";
-    private static final String BASKET_MENUBAR_PAGE = "basketMenu.jsp";
+  private static final String PARAM_RECORD_CLASS = "recordClass";
+  private static final String MAPKEY_SHOW_BASKET = "showBasket";
+  private static final String BASKET_MENUBAR_PAGE = "basketMenu.jsp";
 
-    private static Logger logger = Logger.getLogger(ShowBasketAction.class);
+  private static Logger logger = Logger.getLogger(ShowBasketAction.class);
 
-    @Override
-    public ActionForward execute(ActionMapping mapping, ActionForm form,
-            HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
-        logger.debug("Entering ShowBasketAction...");
+  @Override
+  public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+      HttpServletResponse response) throws Exception {
+    logger.debug("Entering ShowBasketAction...");
 
-        UserBean user = ActionUtility.getUser(servlet, request);
-        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-        try {
-            String rcName = request.getParameter(PARAM_RECORD_CLASS);
-            String path;
+    UserBean user = ActionUtility.getUser(servlet, request);
+    WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+    try {
+      String rcName = request.getParameter(PARAM_RECORD_CLASS);
+      String path;
 
-            if (rcName != null && rcName.trim().length() > 0) {
-                // A RecordClass was specified, so load that basket to be
-                // displayed as a result page
-                RecordClassBean recordClass = wdkModel.findRecordClass(rcName);
-                QuestionBean question = recordClass.getRealtimeBasketQuestion();
-                Map<String, String> params = new LinkedHashMap<String, String>();
-                params.put(BasketFactory.PARAM_USER_SIGNATURE,
-                        user.getSignature());
+      if (rcName != null && rcName.trim().length() > 0) {
+        // A RecordClass was specified, so load that basket to be
+        // displayed as a result page
+        RecordClassBean recordClass = wdkModel.findRecordClass(rcName);
+        QuestionBean question = recordClass.getRealtimeBasketQuestion();
+        Map<String, String> params = new LinkedHashMap<String, String>();
+        params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
 
-                StepBean step = user.createStep(question, params, null, true,
-                        false, Utilities.DEFAULT_WEIGHT);
+        StepBean step = user.createStep(null, question, params, null, true, false, Utilities.DEFAULT_WEIGHT);
 
-                ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
-                path = forward.getPath() + "?"
-                        + CConstants.WDK_RESULT_SET_ONLY_KEY + "=true&"
-                        + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
-            } else {
-                // No RecordClass was specified, load the basket count only for
-                // all records
-                Map<RecordClassBean, Integer> baskets = user.getBasketCounts();
+        ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
+        path = forward.getPath() + "?" + CConstants.WDK_RESULT_SET_ONLY_KEY + "=true&" +
+            CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
+      }
+      else {
+        // No RecordClass was specified, load the basket count only for
+        // all records
+        Map<RecordClassBean, Integer> baskets = user.getBasketCounts();
 
-                path = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator
-                        + CConstants.WDK_PAGES_DIR + File.separator
-                        + BASKET_MENUBAR_PAGE;
+        path = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator + CConstants.WDK_PAGES_DIR + File.separator +
+            BASKET_MENUBAR_PAGE;
 
-                request.setAttribute("baskets", baskets);
-            }
-            return new ActionForward(path, false);
-        }
-        catch (Exception ex) {
-            logger.error(ex);
-            ex.printStackTrace();
-            throw ex;
-        }
-        finally {
-            logger.debug("Leaving ShowBasketAction...");
-        }
+        request.setAttribute("baskets", baskets);
+      }
+      return new ActionForward(path, false);
     }
+    catch (Exception ex) {
+      logger.error(ex);
+      ex.printStackTrace();
+      throw ex;
+    }
+    finally {
+      logger.debug("Leaving ShowBasketAction...");
+    }
+  }
 }

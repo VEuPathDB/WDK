@@ -247,7 +247,7 @@ public class StepValidator extends BaseCLI {
           + "                  CONNECT BY prior user_id = user_id "
           + "                    AND (   prior step_id = right_child_id "
           + "                         OR prior step_id = left_child_id) "
-          + "                 )";
+          + "                        )";
 
       // <ADD-AG 042911>
       logger.info("\n\nWARNING: this final SQL might take 3 hours when using"
