@@ -24,6 +24,12 @@ import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.ReporterRef;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.filter.ColumnFilter;
+import org.gusdb.wdk.model.filter.Filter;
+import org.gusdb.wdk.model.filter.FilterDefinition;
+import org.gusdb.wdk.model.filter.FilterReference;
+import org.gusdb.wdk.model.filter.StepFilter;
+import org.gusdb.wdk.model.filter.StepFilterDefinition;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
@@ -44,6 +50,7 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.BasketFactory;
+import org.gusdb.wdk.model.user.CountPlugin;
 import org.gusdb.wdk.model.user.FavoriteReference;
 import org.gusdb.wdk.model.user.User;
 
@@ -65,8 +72,8 @@ import org.gusdb.wdk.model.user.User;
  * </p>
  * 
  * <p>
- * A record can have multiple attributes, but for each attribute, it can have only one value; the tables
- * can have multiple attributes, and each attribute might have zero or more values. Please refer to the
+ * A record can have multiple attributes, but for each attribute, it can have only one value; the tables can
+ * have multiple attributes, and each attribute might have zero or more values. Please refer to the
  * AttributeQueryReference and TableQueryReference for details about defining the attribute and table queries.
  * </p>
  * 
@@ -306,7 +313,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private List<StepAnalysisXml> stepAnalysisList = new ArrayList<>();
   private Map<String, StepAnalysis> stepAnalysisMap = new LinkedHashMap<>();
+
+  private List<FilterReference> _filterReferences = new ArrayList<>();
+  private Map<String, StepFilter> _stepFilters = new LinkedHashMap<>();
   
+  private CountReference _countReference;
+  private CountPlugin _countPlugin;
+  
+  private BooleanReference _booleanReference;
+  private BooleanQuery _booleanQuery;
+
   // ////////////////////////////////////////////////////////////////////
   // Called at model creation time
   // ////////////////////////////////////////////////////////////////////
@@ -798,10 +814,22 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (RecordView recordView : recordViewMap.values()) {
       recordView.resolveReferences(model);
     }
-    
+
     // resolve step analysis refs
     for (StepAnalysis stepAnalysisRef : stepAnalysisMap.values()) {
-      ((StepAnalysisXml)stepAnalysisRef).resolveReferences(model);
+      ((StepAnalysisXml) stepAnalysisRef).resolveReferences(model);
+    }
+    
+    // resolve count plugin
+    if (_countReference != null) {
+      _countReference.resolveReferences(model);
+      _countPlugin = _countReference.getPlugin();
+    }
+    
+    // resolve custom boolean
+    if (_booleanReference != null) {
+      _booleanReference.resolveReferences(model);
+      _booleanQuery = _booleanReference.getQuery();
     }
 
     resolved = true;
@@ -960,6 +988,25 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (AnswerFilterLayout layout : filterLayoutMap.values()) {
       layout.resolveReferences(wdkModel);
     }
+
+    // resolve step filter references
+    for (FilterReference reference : _filterReferences) {
+      String name = reference.getName();
+      FilterDefinition definition = (FilterDefinition) wdkModel.resolveReference(name);
+      if (definition instanceof StepFilterDefinition) {
+        StepFilter filter = ((StepFilterDefinition) definition).getStepFilter();
+        if (_stepFilters.containsKey(filter.getKey()))
+          throw new WdkModelException("Same filter \"" + name + "\" is referenced in attribute " + getName() +
+              " of recordClass " + getFullName() + " twice.");
+        _stepFilters.put(filter.getKey(), filter);
+      }
+      else {
+        throw new WdkModelException("The filter \"" + name + "\" is not a stepFilter on attribute " +
+            getName() + " of recordClass " + getFullName());
+      }
+    }
+    _filterReferences.clear();
+
   }
 
   /**
@@ -1288,7 +1335,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       }
     }
     summaryViewList = null;
-    
+
     // add WDK supported views to all record classes, first
     for (SummaryView view : SummaryView.createSupportedSummaryViews(this)) {
       view.excludeResources(projectId);
@@ -1306,14 +1353,14 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         analysis.excludeResources(projectId);
         String name = analysis.getName();
         if (stepAnalysisMap.containsKey(name)) {
-          throw new WdkModelException("The step analysis '" + name
-              + "' is duplicated in question " + getFullName());
+          throw new WdkModelException("The step analysis '" + name + "' is duplicated in question " +
+              getFullName());
         }
         stepAnalysisMap.put(name, analysis);
       }
     }
     stepAnalysisList = null;
-    
+
     // exclude the summary views
     Map<String, RecordView> recordViews = new LinkedHashMap<String, RecordView>();
     for (RecordView view : recordViewList) {
@@ -1339,6 +1386,17 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (RecordView view : recordViews.values()) {
       recordViewMap.put(view.getName(), view);
     }
+
+    // exclude filter references
+    List<FilterReference> references = new ArrayList<>();
+    for (FilterReference reference : _filterReferences) {
+      if (reference.include(projectId)) {
+        reference.excludeResources(projectId);
+        references.add(reference);
+      }
+    }
+    _filterReferences.clear();
+    _filterReferences.addAll(references);
   }
 
   public void addFilter(AnswerFilter filter) {
@@ -1353,13 +1411,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return new LinkedHashMap<String, AnswerFilterInstance>(filterMap);
   }
 
-  public AnswerFilterInstance[] getFilters() {
+  public AnswerFilterInstance[] getFilterInstances() {
     AnswerFilterInstance[] instances = new AnswerFilterInstance[filterMap.size()];
     filterMap.values().toArray(instances);
     return instances;
   }
 
-  public AnswerFilterInstance getFilter(String filterName) {
+  public AnswerFilterInstance getFilterInstance(String filterName) {
     if (filterName == null)
       return null;
     AnswerFilterInstance instance = filterMap.get(filterName);
@@ -1599,9 +1657,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public StepAnalysis getStepAnalysis(String name) throws WdkUserException {
     if (stepAnalysisMap.containsKey(name)) {
       return stepAnalysisMap.get(name);
-    } else {
-      throw new WdkUserException("Unknown step analysis for record class " + "["
-          + getFullName() + "]: " + name);
+    }
+    else {
+      throw new WdkUserException("Unknown step analysis for record class " + "[" + getFullName() + "]: " +
+          name);
     }
   }
 
@@ -1645,7 +1704,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       recordViewList.add(view);
   }
 
-  public boolean hasMultipleRecords(User user, Map<String, Object> pkValues) throws WdkModelException, WdkUserException {
+  public boolean hasMultipleRecords(User user, Map<String, Object> pkValues) throws WdkModelException,
+      WdkUserException {
     List<Map<String, Object>> records = lookupPrimaryKeys(user, pkValues);
     return records.size() > 1;
   }
@@ -1744,5 +1804,78 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     writer.println(indent + "</recordClass>");
+  }
+
+  public void addFilterReference(FilterReference reference) {
+    _filterReferences.add(reference);
+  }
+
+  public void addStepFilter(StepFilter filter) {
+    _stepFilters.put(filter.getKey(), filter);
+  }
+
+  public Filter getFilter(String key) throws WdkModelException {
+    Filter filter = getStepFilter(key);
+    if (filter == null)
+      filter = getColumnFilter(key);
+    if (filter == null)
+      throw new WdkModelException("Requested Step Filter doesn't exist: " + fullName);
+    return filter;
+  }
+
+  public StepFilter getStepFilter(String key) throws WdkModelException {
+    return _stepFilters.get(key);
+  }
+
+  public ColumnFilter getColumnFilter(String key) {
+    for (AttributeField attribute : getAttributeFields()) {
+      if (attribute instanceof ColumnAttributeField) {
+        ColumnAttributeField columnAttribute = (ColumnAttributeField) attribute;
+        for (ColumnFilter filter : columnAttribute.getColumnFilters()) {
+          if (filter.getKey().equals(key))
+            return filter;
+        }
+      }
+    }
+    return null;
+  }
+
+  public Map<String, StepFilter> getStepFilters() {
+    return new LinkedHashMap<>(_stepFilters);
+  }
+
+  public Map<String, Filter> getFilters() {
+    // get all step filters
+    Map<String, Filter> filters = new LinkedHashMap<>();
+    for (StepFilter filter : _stepFilters.values()) {
+      filters.put(filter.getKey(), filter);
+    }
+
+    // get all column filters
+    for (AttributeField attribute : getAttributeFields()) {
+      if (attribute instanceof ColumnAttributeField) {
+        ColumnAttributeField columnAttribute = (ColumnAttributeField) attribute;
+        for (ColumnFilter filter : columnAttribute.getColumnFilters()) {
+          filters.put(filter.getKey(), filter);
+        }
+      }
+    }
+    return filters;
+  }
+
+  public CountPlugin getCountPlugin() {
+    return _countPlugin;
+  }
+
+  public void setCountReference(CountReference countReference) {
+    _countReference = countReference;
+  }
+
+  public BooleanQuery getBooleanQuery() {
+    return _booleanQuery;
+  }
+
+  public void setBooleanReference(BooleanReference booleanReference) {
+    _booleanReference = booleanReference;
   }
 }

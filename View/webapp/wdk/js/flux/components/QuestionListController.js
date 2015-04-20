@@ -1,24 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router';
-import createStoreMixin from '../mixins/createStoreMixin';
-import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
-
-var storeMixin = createStoreMixin('questionStore');
-var actionsMixin = createActionCreatorsMixin('questionActions');
 
 var QuestionListController = React.createClass({
 
-  mixins: [ storeMixin, actionsMixin ],
-
-  getStateFromStores(stores) {
-    return stores.questionStore.getState();
+  propTypes: {
+    application: React.PropTypes.object.isRequired
   },
 
   componentDidMount() {
-    this.questionActions.loadQuestions();
+    var store = this.props.application.getStore('questionStore');
+    var actions = this.props.application.getActions('questionActions');
+    this.storeSubscription = store.subscribe(state => {
+      this.setState(state);
+    });
+    actions.loadQuestions();
+  },
+
+  componentWillUnmount() {
+    this.storeSubscription.dispose();
   },
 
   render() {
+    if (!this.state) return null;
     var { questions, error } = this.state;
 
     if (error) {

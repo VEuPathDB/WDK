@@ -111,10 +111,11 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   public Map<String, String> getProperties() {
     return _properties;
   }
-  public void addProperty(NamedValue property) {
-    if (property.getName().isEmpty())
+  public void addProperty(WdkModelText property) {
+    String name = property.getName();
+    if (name == null || name.isEmpty())
       throw new IllegalArgumentException("Property must have a name.");
-    _properties.put(property.getName(), property.getValue());
+    _properties.put(name, property.getText());
   }
   
   @Override

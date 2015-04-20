@@ -5,6 +5,7 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -21,6 +22,8 @@ public class AnswerParamHandler extends AbstractParamHandler {
   public static final String PARAM_INPUT_STEP = "inputStep";
   public static final String PARAM_INPUT_STRATEGY = "strategy";
   
+  private static final Logger LOG = Logger.getLogger(AnswerParamHandler.class);
+
   public AnswerParamHandler(){}
   
   public AnswerParamHandler(AnswerParamHandler handler, Param param) {
@@ -95,7 +98,9 @@ public class AnswerParamHandler extends AbstractParamHandler {
     int stepId = Integer.valueOf(stableValue);
     Step step = user.getStep(stepId);
     AnswerValue answerValue = step.getAnswerValue(false);
-    return answerValue.getChecksum();
+    String checksum= answerValue.getChecksum();
+    LOG.debug("Signature for step#" + stepId + ": " + checksum);
+    return checksum;
   }
 
   /**

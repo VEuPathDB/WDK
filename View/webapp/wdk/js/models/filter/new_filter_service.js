@@ -97,7 +97,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.fields = attrs.fields || [];
 
       // list of filters
-      this.filters = filterPartitions.valid.filters || [];
+      this.filters = filterPartitions.valid || [];
 
       // list of invalid filters
       this.invalidFilters = filterPartitions.invalid;
@@ -111,9 +111,6 @@ wdk.namespace('wdk.models.filter', function(ns) {
       // visible columns in results
       this.columns = attrs.columns || [];
 
-      // selected field
-      this.selectedField =  null;
-
       // field distributions keyed by field term
       this.distributionMap = {};
 
@@ -125,6 +122,11 @@ wdk.namespace('wdk.models.filter', function(ns) {
         this.data.forEach(function(datum) {
           datum.isIgnored = attrs.ignored.indexOf(datum.term) > -1;
         });
+      }
+
+      // selected field
+      if (attrs.selectedField) {
+        this.setSelectedField(attrs.selectedField);
       }
 
       // apply filters

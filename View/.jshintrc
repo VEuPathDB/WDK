@@ -2,7 +2,6 @@
   "freeze": true,
   "indent": 2,
   "latedef": "nofunc",
-  "newcap": true,
   "noarg": true,
   "noempty": true,
   "nonbsp": true,

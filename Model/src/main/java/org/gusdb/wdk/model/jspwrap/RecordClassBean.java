@@ -137,7 +137,7 @@ public class RecordClassBean {
      * @see org.gusdb.wdk.model.RecordClass#getFilters()
      */
     public AnswerFilterInstanceBean[] getFilters() {
-        AnswerFilterInstance[] instances = recordClass.getFilters();
+        AnswerFilterInstance[] instances = recordClass.getFilterInstances();
         AnswerFilterInstanceBean[] beans = new AnswerFilterInstanceBean[instances.length];
         for (int i = 0; i < instances.length; i++) {
             beans[i] = new AnswerFilterInstanceBean(instances[i]);
@@ -146,7 +146,7 @@ public class RecordClassBean {
     }
 
     public AnswerFilterInstanceBean getFilter(String filterName) {
-        AnswerFilterInstance instance = recordClass.getFilter(filterName);
+        AnswerFilterInstance instance = recordClass.getFilterInstance(filterName);
         return new AnswerFilterInstanceBean(instance);
     }
 

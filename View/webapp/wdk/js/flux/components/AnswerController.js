@@ -2,12 +2,11 @@
 import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';
+import combineStores from '../utils/combineStores';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
 import Record from './Record';
-import createStoreMixin from '../mixins/createStoreMixin';
-import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 
 
 // Answer is a React component which acts as a Controller-View, as well as
@@ -60,161 +59,24 @@ import createActionCreatorsMixin from '../mixins/createActionCreatorsMixin';
 // See http://facebook.github.io/react/docs/top-level-api.html#react.createclass
 const AnswerController = React.createClass({
 
-  // This utilizes an undocumented feature of React. This can be thought of as a
-  // declaration of named properties to inject into this component. In this
-  // case, `getRecordComponent` is a function which will resolve a concrete
-  // React Component class for a given record class.
-  contextTypes: {
-    getRecordComponent: React.PropTypes.func.isRequired
-  },
-
-  // mixins are used to share behaviors between otherwise unrelated components.
-  // A mixin is simply an object with properties that are added (copied) to the
-  // object literal we are currently defining (and passing to
-  // React.createClass). The concept is not unique to React.
+  // `propTypes` is a place to declare properties this component expects. The
+  // mapping is property name => type. You can additionally declare a property
+  // as "required". When the props passed to a component violate this
+  // declaration, a warning is logged to the console, but React will render
+  // anyway.
   //
-  // React will use each object in the provided array to attach additional
-  // behavior to instances of the component class.
-  //
-  // See http://facebook.github.io/react/docs/component-specs.html#mixins
-  mixins: [
+  // NB, these warnings don't appear in non-development builds.
+  propTypes: {
 
-    // Registers a callback with the `answerStore`, `questionStore`, and
-    // `recordClassStore`. The callback will use `getStateFromStores` (defined
-    //  below) in the callback. This mixin will also use `getStateFromStores` in
-    // `getInitialState`.
-    createStoreMixin('answerStore', 'questionStore', 'recordClassStore'),
-
-    // Adds a property to this component with the same name as the action
-    // creators. In this case, `this.answerActions`.
-    createActionCreatorsMixin('answerActions'),
-
-    // Adds methods to handle navigating to other routes. We use
-    // `replaceWith()` in this component.
-    // See https://github.com/rackt/react-router/blob/master/docs/api/mixins/Navigation.md
-    Router.Navigation
-  ],
-
-
-  // This is used by the `createStoreMixin` mixin as the return value for
-  // `getInitialState` and as the value passed to `setState` when the store's
-  // state changes.
-  // See http://facebook.github.io/react/docs/component-specs.html#getinitialstate
-  // and http://facebook.github.io/react/docs/component-api.html#setstate
-  //
-  // XXX: An alternative is to define a callback function for each store. This
-  // would require a change to `createStoreMixin`.
-  getStateFromStores(stores) {
-    const { questionName } = this.props.params;
-
-    const answerStoreState = stores.answerStore.getState();
-    const answer = answerStoreState.getIn(['answers', questionName]);
-
-    const questionStoreState = stores.questionStore.getState();
-    const questions = questionStoreState.get('questions');
-
-    const recordClassStoreState = stores.recordClassStore.getState();
-    const recordClasses = recordClassStoreState.get('recordClasses');
-
-    const displayInfo = answerStoreState.get('displayInfo');
-    const questionDefinition = answerStoreState.get('questionDefinition');
-    const filterTerm = answerStoreState.get('filterTerm');
-    const filteredRecords = answerStoreState.get('filteredRecords');
-
-    const question = questions.find(q => q.get('name') === questionName);
-    const recordClass = question
-      ? recordClasses.find(r => r.get('fullName') === question.get('class'))
-      : null;
-
-    return {
-      answer,
-      question,
-      questions,
-      recordClass,
-      recordClasses,
-      displayInfo,
-      questionDefinition,
-      filterTerm,
-      filteredRecords
-    };
-  },
-
-
-  // `fetchAnswer` will call the `loadAnswer` action creator. If either
-  // `query.numrecs` or `query.offset` is not set, we will replace the current
-  // URL by setting the query params to some default values. Otherwise, we will
-  // call the `loadAnswer` action creator based on the `params` and `query`
-  // objects.
-  fetchAnswer(props) {
-
-    // These methods are provided by the `Router.State` mixin
-    const path = 'answer';
-    const params = props.params;
-    const query = props.query;
-
-    if (!query.numrecs || !query.offset) {
-      // Replace the current undefined URL query params with default values
-      Object.assign(query, {
-        numrecs: query.numrecs || 1000,
-        offset: query.offset || 0
-      });
-
-      // This method is provided by the `Router.Navigation` mixin. It replaces
-      // the current URL, without adding an entry to the browser history. This
-      // call will cause the Route Handler for 'answer' (this component) to be
-      // rendered again. Since `query.numrecs` and `query.offset` are now set,
-      // the else block below will get executed again.
-      this.replaceWith(path, params, query);
-
-    } else {
-
-      // Get pagination info from `query`
-      const pagination = {
-        numRecords: Number(query.numrecs),
-        offset: Number(query.offset)
-      };
-
-      // Get sorting info from `query`
-      // FIXME make this one query param: sorting={attributeName}__{direction}
-      const sorting = query.sortBy && query.sortDir
-        ? [{
-            attributeName: query.sortBy,
-            direction: query.sortDir
-          }]
-        : this.state.displayInfo.sorting;
-
-      // Combine `pagination` and `sorting` into a single object:
-      //
-      //     const displayInfo = {
-      //       pagination: pagination,
-      //       sorting: sorting
-      //     };
-      //
-      const displayInfo = {
-        pagination,
-        sorting,
-        visibleAttributes: this.state.displayInfo.get('visibleAttributes')
-      };
-
-      // TODO Add params to loadAnswer call
-      const answerParams = wrap(query.param).map(p => {
-        const parts = p.split('__');
-        return { name: parts[0], value: parts[1] };
-      });
-
-      const opts = {
-        displayInfo,
-        params: answerParams
-      };
-
-      // Call the AnswerCreator to fetch the Answer resource
-      this.answerActions.loadAnswer(params.questionName, opts);
-    }
+    // The application context used to look up services.
+    application: React.PropTypes.object.isRequired
   },
 
   // When the component first mounts, fetch the answer.
-  componentDidMount() {
+  componentWillMount() {
+    this.router = this.props.application.getRouter();
     this.fetchAnswer(this.props);
+    this.subscribeToStores();
   },
 
   // This is called anytime the component gets new props, just before they are
@@ -222,7 +84,6 @@ const AnswerController = React.createClass({
   // part of the URL changes. We will first check if a new answer resource needs
   // to be fetched. If not, then we will check if the filter needs to be updated.
   componentWillReceiveProps(nextProps) {
-
     // current query and params
     const { query, params } = this.props;
 
@@ -244,9 +105,131 @@ const AnswerController = React.createClass({
 
     // filter answer if the filter terms have changed
     else if (query.filterTerm != nextQuery.filterTerm) {
-      this.answerActions.filterAnswer(nextParams.questionName, nextQuery.filterTerm);
+      this.props.application.getActions('answerActions')
+      .filterAnswer(nextParams.questionName, nextQuery.filterTerm);
     }
 
+  },
+
+
+  componentWillUnmount() {
+    this.disposeSubscriptions();
+  },
+
+  // Create subscriptions to stores.
+  subscribeToStores() {
+    const { questionName } = this.props.params;
+    const { getStore } = this.props.application;
+
+    const answerStore = getStore('answerStore');
+    const questionStore = getStore('questionStore');
+    const recordClassStore = getStore('recordClassStore');
+
+    this.subscription = combineStores(
+      answerStore,
+      questionStore,
+      recordClassStore,
+      (aState, qState, rState) => {
+        const answer = aState.answers[questionName];
+        const { displayInfo } = aState;
+        const { filterTerm } = aState;
+        const { filteredRecords } = aState;
+        const { questions } = qState;
+        const question = questions.find(q => q.name === questionName);
+        const { recordClasses } = rState;
+        const recordClass = recordClasses.find(r => r.fullName == question.class);
+
+        this.setState({
+          answer,
+          displayInfo,
+          filterTerm,
+          filteredRecords,
+          question,
+          questions,
+          recordClass,
+          recordClasses
+        });
+      }
+    );
+  },
+
+
+  disposeSubscriptions() {
+    this.subscription.dispose();
+  },
+
+
+  // `fetchAnswer` will call the `loadAnswer` action creator. If either
+  // `query.numrecs` or `query.offset` is not set, we will replace the current
+  // URL by setting the query params to some default values. Otherwise, we will
+  // call the `loadAnswer` action creator based on the `params` and `query`
+  // objects.
+  fetchAnswer(props) {
+
+    // props.params and props.query are passed to this component by the Router.
+    const path = 'answer';
+    const params = props.params;
+    const query = props.query;
+
+    if (!query.numrecs || !query.offset) {
+      // Replace the current undefined URL query params with default values
+      Object.assign(query, {
+        numrecs: query.numrecs || 1000,
+        offset: query.offset || 0
+      });
+
+      // This method is provided by the `Router.Navigation` mixin. It replaces
+      // the current URL, without adding an entry to the browser history. This
+      // call will cause the Route Handler for 'answer' (this component) to be
+      // rendered again. Since `query.numrecs` and `query.offset` are now set,
+      // the else block below will get executed again.
+      this.router.replaceWith(path, params, query);
+
+    } else {
+
+      // Get pagination info from `query`
+      const pagination = {
+        numRecords: Number(query.numrecs),
+        offset: Number(query.offset)
+      };
+
+      // Get sorting info from `query`
+      // FIXME make this one query param: sorting={attributeName}__{direction}
+      const sorting = query.sortBy && query.sortDir
+        ? [{
+            attributeName: query.sortBy,
+            direction: query.sortDir
+          }]
+        : this.state && this.state.displayInfo.sorting;
+
+      // Combine `pagination` and `sorting` into a single object:
+      //
+      //     const displayInfo = {
+      //       pagination: pagination,
+      //       sorting: sorting
+      //     };
+      //
+      const displayInfo = {
+        pagination,
+        sorting,
+        visibleAttributes: this.state && this.state.displayInfo.visibleAttributes
+      };
+
+      // TODO Add params to loadAnswer call
+      const answerParams = wrap(query.param).map(p => {
+        const parts = p.split('__');
+        return { name: parts[0], value: parts[1] };
+      });
+
+      const opts = {
+        displayInfo,
+        params: answerParams
+      };
+
+      // Call the AnswerCreator to fetch the Answer resource
+      this.props.application.getActions('answerActions')
+      .loadAnswer(params.questionName, opts);
+    }
   },
 
 
@@ -270,7 +253,7 @@ const AnswerController = React.createClass({
       // Update the query object with the new values.
       // See https://lodash.com/docs#assign
       const query = Object.assign({}, this.props.query, {
-        sortBy: attribute.get('name'),
+        sortBy: attribute.name,
         sortDir: direction
       });
 
@@ -279,7 +262,7 @@ const AnswerController = React.createClass({
       // this `this.componentWillReceiveProps` to be called, which will cause
       // this component to call `this.fetchAnswer()` with the sorting
       // configuration.
-      this.replaceWith('answer', this.props.params, query);
+      this.router.replaceWith('answer', this.props.params, query);
 
       // This is an alternative way, which is to call loadAnswer.
       // The appeal of the above is that if the user clicks the browser refresh
@@ -305,7 +288,8 @@ const AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onMoveColumn(columnName, newPosition) {
-      this.answerActions.moveColumn(columnName, newPosition);
+      this.props.application.getActions('answerActions')
+      .moveColumn(columnName, newPosition);
     },
 
     // Call the `changeAttributes` action creator. This will cause the state of
@@ -313,7 +297,8 @@ const AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onChangeColumns(attributes) {
-      this.answerActions.changeAttributes(attributes);
+      this.props.application.getActions('answerActions')
+      .changeAttributes(attributes);
     },
 
     // This is a stub... yet to be completed
@@ -322,7 +307,6 @@ const AnswerController = React.createClass({
     },
 
     xonRecordClick(record) {
-      // Methods provided by Router.State mixin
       const path = 'answer';
       const params = this.props.params;
       const query = this.props.query;
@@ -338,7 +322,7 @@ const AnswerController = React.createClass({
     // FIXME This will be removed when the record service is serving up records
     onRecordClick(record) {
       const path = 'answer';
-      const records = this.state.answer.get('records');
+      const records = this.state.answer.records;
 
       // update query with format and position
       const query = Object.assign({}, this.props.query, {
@@ -350,7 +334,6 @@ const AnswerController = React.createClass({
     },
 
     onToggleFormat() {
-      // Methods provided by Router.State mixin
       const path = 'answer';
       const params = this.props.params;
       const query = this.props.query;
@@ -365,15 +348,15 @@ const AnswerController = React.createClass({
 
     recordHrefGetter(record) {
       const path = 'answer';
-      const records = this.state.answer.get('records');
+      const records = this.state.answer.records;
 
       // update query with format and position
       const query = Object.assign({}, this.props.query, {
-        expandedRecord: records.findIndex(r => r === record)
+        expandedRecord: records.indexOf(record)
       });
 
       // Method provided by Router.Navigation mixin
-      return this.makeHref(path, this.props.params, query);
+      return this.router.makeHref(path, this.props.params, query);
     },
 
     onFilter(terms) {
@@ -390,6 +373,8 @@ const AnswerController = React.createClass({
   // TODO - Explain what's happening here in more detail.
   render() {
 
+    if (this.state == null) return null;
+
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
     const {
       answer,
@@ -401,6 +386,8 @@ const AnswerController = React.createClass({
       filterTerm,
       filteredRecords
     } = this.state;
+
+    const { getCellRenderer, getRecordComponent } = this.props.application;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
@@ -432,17 +419,18 @@ const AnswerController = React.createClass({
 
     // FIXME This will be removed when the record service is serving up records
     if (answer && expandedRecord != null) {
-      const RecordComponent = this.context.getRecordComponent(answer.getIn(['meta', 'class']), Record)
+      const RecordComponent = getRecordComponent(answer.meta.class, Record)
         || Record;
-      const record = answer.get('records').get(expandedRecord);
+      const record = answer.records[expandedRecord];
 
       return (
-        <Doc title={`${recordClass.get('displayName')}: ${record.get('id')}`}>
+        <Doc title={`${recordClass.displayName}: ${record.id}`}>
           <RecordComponent
             record={record}
             questions={questions}
+            recordClass={recordClass}
             recordClasses={recordClasses}
-            attributes={answer.getIn(['meta', 'attributes'])}
+            attributes={answer.meta.attributes}
           />
         </Doc>
       );
@@ -450,7 +438,7 @@ const AnswerController = React.createClass({
 
     else if (answer && question && recordClass) {
       return (
-        <Doc title={`${question.get('displayName')}`}>
+        <Doc title={`${question.displayName}`}>
           <Answer
             answer={answer}
             question={question}
@@ -460,6 +448,7 @@ const AnswerController = React.createClass({
             filteredRecords={filteredRecords}
             format={format}
             answerEvents={answerEvents}
+            getCellRenderer={getCellRenderer}
           />
         </Doc>
       );
