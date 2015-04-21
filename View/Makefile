@@ -8,7 +8,7 @@ css_bundle    := dist/wdk/css/wdk.min.css
 test_bundle   := test/dist/tests.js
 
 wdk_sources  := webapp/wdk/js/app.js $(shell find webapp/wdk/js -name '*.js')
-wdk3_sources := webapp/wdk/js/flux/main.js $(shell find webapp/wdk/js/flux -name '*.js')
+wdk3_sources := webapp/wdk/js/flux/index.js $(shell find webapp/wdk/js/flux -name '*.js')
 libs_sources := webapp/wdk/lib/rsvp.min.js \
                 webapp/wdk/lib/jquery.js \
                 webapp/wdk/lib/jquery-migrate-1.2.1.min.js \
