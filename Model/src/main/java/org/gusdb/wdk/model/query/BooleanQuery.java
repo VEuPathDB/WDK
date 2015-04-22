@@ -105,7 +105,7 @@ public class BooleanQuery extends SqlQuery {
     this.setSql("don't care");  // the boolean query instance will not use sql set at the query level
   }
 
-  private BooleanQuery(BooleanQuery query) {
+  protected BooleanQuery(BooleanQuery query) {
     super(query);
 
     this.recordClass = query.recordClass;
