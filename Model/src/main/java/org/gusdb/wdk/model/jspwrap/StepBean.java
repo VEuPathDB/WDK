@@ -118,7 +118,7 @@ public class StepBean {
         return step.getDisplayName();
     }
 
-    public int getResultSize() throws WdkModelException {
+    public int getResultSize() throws WdkModelException, WdkUserException {
         return step.getResultSize();
     }
 
