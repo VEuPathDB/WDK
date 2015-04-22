@@ -1,5 +1,8 @@
 import Store from '../Store';
-import { APP_LOADING, APP_ERROR } from '../ActionType';
+import {
+  AppLoading,
+  AppError
+} from '../ActionType';
 
 export default class AppStore extends Store {
 
@@ -8,8 +11,8 @@ export default class AppStore extends Store {
       isLoading: 0,
       errors: []
     };
-    this.handleAction(APP_LOADING, this.setLoading);
-    this.handleAction(APP_ERROR, this.setError);
+    this.handleAction(AppLoading, this.setLoading);
+    this.handleAction(AppError, this.setError);
   }
 
   setLoading(action) {
@@ -20,6 +23,5 @@ export default class AppStore extends Store {
   setError(action) {
     this.state.errors.unshift(action.error);
   }
-
 
 }

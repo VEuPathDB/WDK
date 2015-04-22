@@ -9,10 +9,10 @@ import {
 } from 'lodash';
 import Store from '../Store';
 import {
-  ANSWER_LOAD_SUCCESS,
-  ANSWER_MOVE_COLUMN,
-  ANSWER_CHANGE_ATTRIBUTES,
-  ANSWER_FILTER
+  AnswerAdded,
+  AnswerMoveColumn,
+  AnswerChangeAttributes,
+  AnswerFilter
 } from '../ActionType';
 
 /**
@@ -111,26 +111,28 @@ export default class AnswerStore extends Store {
       }
     };
 
-    this.handleAction(ANSWER_LOAD_SUCCESS, this.handleAnswerLoadSuccess);
-    this.handleAction(ANSWER_MOVE_COLUMN, this.handleAnswerMoveColumn);
-    this.handleAction(ANSWER_CHANGE_ATTRIBUTES, this.handleAnswerChangeAttributes);
-    this.handleAction(ANSWER_FILTER, this.handleAnswerFilter);
+    this.handleAction(AnswerAdded, this.handleAnswerLoadSuccess);
+    this.handleAction(AnswerMoveColumn, this.handleAnswerMoveColumn);
+    this.handleAction(AnswerChangeAttributes, this.handleAnswerChangeAttributes);
+    this.handleAction(AnswerFilter, this.handleAnswerFilter);
   }
 
-  handleAnswerLoadSuccess(action) {
-    /* Answer resource */
-    // answer = {
-    //   meta,
-    //   records: [{ id, attributes, tables }]
-    // }
-    var answer = action.answer;
-
-    /*
-     * requestData is an object with the keys `displayInfo` and
-     * `questionDefinition`. We will be merging these keys into `state`
-     * below.
-     */
-    var requestData = action.requestData;
+  /**
+   * answer = {
+   *   meta,
+   *   records: [{ id, attributes, tables }]
+   * }
+   *
+   * requestData = {
+   *   displayInfo,
+   *   questionDefinition
+   * }
+   *
+   * requestData is an object with the keys `displayInfo` and
+   * `questionDefinition`. We will be merging these keys into `state`
+   * below.
+   */
+  handleAnswerLoadSuccess({ answer, requestData }) {
     var questionName = requestData.questionDefinition.questionName;
     var previousQuestionName = this.state.questionDefinition.questionName;
 

@@ -72,7 +72,7 @@ export default class Store {
    *      decide of listeners should be notified.
    */
   _dispatchHandler(action) {
-    const method = this._methods.get(action.type);
+    const method = this._methods.get(action.getType());
     if (method === undefined) return;
 
     if (method.waitFor) {
