@@ -75,8 +75,44 @@
         <c:url var="commandUrl" value="/processSummaryView.do?step=${step.stepId}&view=${wdkView.name}&pager.offset=${offset}" />
         <table  width="100%">
           <tr class="subheaderrow">
+
             <th style="text-align: left;white-space:nowrap;"> 
               <imp:pager wdkAnswer="${wdkAnswer}" pager_id="top"/> 
+            </th>
+
+            <th>
+
+              <span style="padding-right: 2em">
+                ${wdkAnswer.resultSize}
+                ${wdkAnswer.resultSize eq 1 ? steo.recordClass.displayName : step.recordClass.displayNamePlural}
+              </span>
+
+              <c:if test="${wdkAnswer.resultSize > 0}">
+                <c:choose>
+                  <c:when test="${wdkUser.guest}">
+                    <c:set var="basketClick" value="wdk.user.login();" />
+                  </c:when>
+                  <c:otherwise>
+                    <c:set var="basketClick" value="wdk.basket.updateBasket(this, '${step.stepId}', '0', '0', '${recordName}');" /> <!-- fourth param is unused (basket.js) -->
+                  </c:otherwise>
+                </c:choose>
+
+                <a style="padding-left: 1em;" href="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}">
+                  <b>Download</b>
+                </a>
+
+                <c:if test="${recHasBasket}">
+                  <a style="padding-left: 1em;" id="basketStep" href="javascript:void(0)" onClick="${basketClick}">
+                    <b>Add to Basket</b>
+                  </a>
+                </c:if>
+
+                <c:if test="${!empty sessionScope.GALAXY_URL}">
+                  <a href="downloadStep.do?step_id=${step.stepId}&wdkReportFormat=tabular">
+                    <b class="galaxy">SEND TO GALAXY</b>
+                  </a>
+                </c:if>
+              </c:if>
             </th>
             <th style="text-align: right;white-space:nowrap;">
               <imp:addAttributes wdkAnswer="${wdkAnswer}" commandUrl="${commandUrl}"/>

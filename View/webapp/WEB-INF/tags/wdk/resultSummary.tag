@@ -25,45 +25,17 @@
 <c:set var="recordName" value="${wdkStep.recordClass.displayNamePlural}"/>
 
 <!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
-<table id = "title-links" width="100%"><tr>
+<div id="title-links" class="h3left">
+  <span id="text_step_count">${wdkAnswer.resultSize}</span>
+  <span id="text_data_type">${recordName}</span>
 
-
-<td class="h3left" style="vertical-align:middle;padding-bottom:3px;">
-  <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${recordName}</span>
   <c:if test="${strategy != null}">
-    &nbsp;from Step <span id="text_step_number">${strategy.length}</span> <br/>Strategy:	
-			<span 
-          class="wdk-editable strategy-name" 
-          data-id="${strategy.strategyId}"
-          data-save="wdk.strategy.controller.updateStrategyName" 
-          id="text_strategy_number" 
-          title="Click to edit">
-				${strategy.name}</span>
+    from Step <span id="text_step_number">${strategy.length}</span> <br/>Strategy:
+    <span
+      class="wdk-editable strategy-name"
+      data-id="${strategy.strategyId}"
+      data-save="wdk.strategy.controller.updateStrategyName"
+      id="text_strategy_number"
+      title="Click to edit">${strategy.name}</span>
   </c:if>
-</td>
-
-<td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
-  <c:if test="${wdkAnswer.resultSize > 0}">
-    <div style="float:right">
-      <c:set var="r_count"><span class="record-count"> ${wdkAnswer.resultSize}</span> ${recordName}</c:set>
-     <c:if test="${strategy != null}">
-      <c:choose>
-        <c:when test="${wdkUser.guest}">
-          <c:set var="basketClick" value="wdk.user.login();" />
-        </c:when>
-        <c:otherwise>
-          <c:set var="basketClick" value="wdk.basket.updateBasket(this, '${step.stepId}', '0', '0', '${recordName}');" /> <!-- fourth param is unused (basket.js) -->
-        </c:otherwise>
-      </c:choose>
-      <c:if test="${recHasBasket}"><a id="basketStep" style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add ${r_count} to Basket</b></a>&nbsp;|&nbsp;</c:if>
-     </c:if>
-      <a style="font-size:120%" href="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}"><b>Download ${r_count}</b></a>
-   
-    <c:if test="${!empty sessionScope.GALAXY_URL}">
-      &nbsp;|&nbsp;<a href="downloadStep.do?step_id=${step.stepId}&wdkReportFormat=tabular"><b class="galaxy">SEND TO GALAXY</b></a>
-    </c:if>
-    </div>
-  </c:if>
-</td>
-</tr></table>
-
+</div>
