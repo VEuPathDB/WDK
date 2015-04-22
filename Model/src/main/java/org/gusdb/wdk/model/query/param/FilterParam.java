@@ -514,7 +514,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  public void setContextQuestion(Question question) {
+  public void setContextQuestion(Question question)  throws WdkModelException {
     super.setContextQuestion(question);
     // also set context query to the metadata & spec queries
     if (metadataQuery != null)
