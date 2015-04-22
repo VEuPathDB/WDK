@@ -442,7 +442,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return this.query;
   }
 
-  public void setQuery(Query q) {
+    /**
+     * Instead of calling this, call setQueryRef() and resolveReferences()
+     */
+    @Deprecated
+    public void setQuery(Query q) throws WdkModelException {
     this.query = q;
     this.idQueryRef = q.getFullName();
     query.setContextQuestion(this);
@@ -494,6 +498,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   public boolean isDynamic() {
     return dynamicAttributeSet != null;
   }
+
+    public DynamicAttributeSet getDynamicAttributeSet() {
+	return dynamicAttributeSet;
+    }
 
   /**
    * A indicator to the controller whether this question should make answers
