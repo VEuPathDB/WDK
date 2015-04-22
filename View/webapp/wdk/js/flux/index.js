@@ -13,6 +13,7 @@
 import React from 'react';
 import Flux from 'flux';
 import Router from 'react-router';
+import _ from 'lodash';
 
 import ServiceAPI from './utils/ServiceAPI';
 import HeadlessLocation from './utils/HeadlessLocation';
@@ -79,4 +80,4 @@ var createApplication = function createApplication(config) {
   });
 };
 
-export default { createApplication, React };
+export default { createApplication, React, Flux, Router, _ };
