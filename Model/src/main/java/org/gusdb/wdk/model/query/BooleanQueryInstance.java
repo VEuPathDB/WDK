@@ -50,15 +50,14 @@ public class BooleanQueryInstance extends SqlQueryInstance {
   @Override
   public String getUncachedSql() throws WdkModelException, WdkUserException {
 
-    Map<String, String> InternalValues = getParamInternalValues();
+    Map<String, String> internalValues = getParamInternalValues();
 
     // parse operator
-    String operator = InternalValues.get(booleanQuery.getOperatorParam().getName());
+    String operator = internalValues.get(booleanQuery.getOperatorParam().getName());
     BooleanOperator op = BooleanOperator.parse(operator);
     DBPlatform platform = wdkModel.getAppDb().getPlatform();
     operator = op.getOperator(platform);
 
-    // construct the filter query for the first child
     String leftSql = getLeftSql();
     String rightSql = getRightSql();
    
@@ -84,18 +83,6 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     logger.debug("boolean sql:\n" + sql);
     return sql;
   }
-
-    protected String getLeftSql() {
-	AnswerParam leftParam = booleanQuery.getLeftOperandParam();
-	String leftSubSql = InternalValues.get(leftParam.getName());
-	return constructOperandSql(leftSubSql);
-    }
-
-    protected String getRightSql() {
-	AnswerParam rightParam = booleanQuery.getRightOperandParam();
-	String rightSubSql = InternalValues.get(rightParam.getName());
-	return constructOperandSql(rightSubSql);
-    }
 
   private String constructOperandSql(String subSql)
       throws WdkModelException, WdkUserException {
@@ -209,4 +196,17 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 	  return rc.getPrimaryKeyAttributeField().getColumnRefs();
   }
   
+    protected String getLeftSql ()  throws WdkModelException, WdkUserException {
+	Map<String, String> internalValues = getParamInternalValues();
+        AnswerParam leftParam = booleanQuery.getLeftOperandParam();
+	String leftSubSql = internalValues.get(leftParam.getName());
+	return constructOperandSql(leftSubSql);
+    }
+
+    protected String getRightSql ()  throws WdkModelException, WdkUserException {
+	Map<String, String> internalValues = getParamInternalValues();
+	AnswerParam rightParam = booleanQuery.getRightOperandParam();
+	String rightSubSql = internalValues.get(rightParam.getName());
+	return constructOperandSql(rightSubSql);
+    }
 }
