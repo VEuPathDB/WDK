@@ -1131,21 +1131,6 @@
             <attribute name="name" />
           </element>
           
-          <!-- custom count plugin/query definition -->
-          <element name="count">
-            <ref name="IncludeExclude" />
-            <choice>
-              <attribute name="plugin" />
-              <attribute name="query" />
-            </choice>
-          </element>
-          
-          <!-- custom boolean query definition -->
-          <element name="boolean">
-          	<ref name="IncludeExclude" />
-          	<attribute name="query" />
-          </element>
-          
         </choice>
       </zeroOrMore>
     </element>
