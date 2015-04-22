@@ -34,7 +34,7 @@
  * See http://facebook.github.io/immutable-js/docs/#/Record.
  */
 
-import Action from './utils/action';
+import Action from './utils/Action';
 
 export const AppLoading = Action({
   isLoading: false
