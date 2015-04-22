@@ -139,6 +139,10 @@ public class User /* implements Serializable */{
     return _userId;
   }
 
+  public void setUserId(int userId) {
+    this._userId = userId;
+  }
+
   /**
    * @return Returns the signature.
    * @throws WdkModelException 
