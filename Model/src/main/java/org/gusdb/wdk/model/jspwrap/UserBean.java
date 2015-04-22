@@ -63,7 +63,7 @@ public class UserBean /* implements Serializable */{
    * 
    * @see org.gusdb.wdk.model.user.User#getUserId()
    */
-  public int getUserId() {
+  public int getUserId() throws WdkModelException {
     return user.getUserId();
   }
 
@@ -126,7 +126,7 @@ public class UserBean /* implements Serializable */{
    * 
    * @see org.gusdb.wdk.model.user.User#getEmail()
    */
-  public String getEmail() {
+  public String getEmail() throws WdkModelException {
     return user.getEmail();
   }
 
@@ -355,7 +355,7 @@ public class UserBean /* implements Serializable */{
    * 
    * @see org.gusdb.wdk.model.user.User#getSignature()
    */
-  public String getSignature() {
+  public String getSignature() throws WdkModelException {
     return user.getSignature();
   }
 
@@ -1058,7 +1058,7 @@ public class UserBean /* implements Serializable */{
     return user.getViewPagerOffset();
   }
 
-  public StrategyBean[] getActiveStrategies() throws WdkUserException {
+  public StrategyBean[] getActiveStrategies() throws WdkUserException, WdkModelException {
     List<StrategyBean> strategies = new ArrayList<StrategyBean>();
     for (Strategy strategy : user.getActiveStrategies()) {
       strategies.add(new StrategyBean(this, strategy));
@@ -1125,7 +1125,7 @@ public class UserBean /* implements Serializable */{
     factory.removeFromBasket(user, step.step);
   }
 
-  public void clearBasket(RecordClassBean recordClass) throws SQLException {
+  public void clearBasket(RecordClassBean recordClass) throws SQLException, WdkModelException {
     BasketFactory factory = user.getWdkModel().getBasketFactory();
     factory.clearBasket(user, recordClass.recordClass);
   }

@@ -130,7 +130,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     private static Map<Integer, StrategyBean> getModifiedStrategies(
-            UserBean user, String state) throws JSONException, WdkUserException {
+            UserBean user, String state) throws JSONException, WdkUserException, WdkModelException {
         logger.debug("previous state: '" + state + "'");
 
         if (state == null || state.length() == 0) state = null;

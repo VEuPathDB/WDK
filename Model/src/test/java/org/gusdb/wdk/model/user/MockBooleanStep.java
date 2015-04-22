@@ -13,7 +13,7 @@ public class MockBooleanStep extends MockStep {
   private final AnswerParam childParam;
 
   public MockBooleanStep(StepFactory stepFactory, User user, Collection<String> previousTypes,
-      Collection<String> childTypes, String outType) {
+      Collection<String> childTypes, String outType) throws WdkModelException {
     super(stepFactory, user, outType);
     previousParam = new MockAnswerParam(previousTypes);
     childParam = new MockAnswerParam(childTypes);

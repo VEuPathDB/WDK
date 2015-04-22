@@ -166,10 +166,11 @@ public class Step {
    *          owner of this step
    * @param stepId
    *          id of the step
+   * @throws WdkModelException 
    * @throws NullPointerException
    *           if user is null
    */
-  public Step(StepFactory stepFactory, User user, int stepId) {
+  public Step(StepFactory stepFactory, User user, int stepId) throws WdkModelException {
     this.stepFactory = stepFactory;
     this.user = user;
     this.userId = user.getUserId();
