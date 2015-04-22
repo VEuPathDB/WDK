@@ -50,7 +50,6 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.BasketFactory;
-import org.gusdb.wdk.model.user.CountPlugin;
 import org.gusdb.wdk.model.user.FavoriteReference;
 import org.gusdb.wdk.model.user.User;
 
@@ -317,12 +316,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private List<FilterReference> _filterReferences = new ArrayList<>();
   private Map<String, StepFilter> _stepFilters = new LinkedHashMap<>();
   
-  private CountReference _countReference;
-  private CountPlugin _countPlugin;
-  
-  private BooleanReference _booleanReference;
-  private BooleanQuery _booleanQuery;
-
   // ////////////////////////////////////////////////////////////////////
   // Called at model creation time
   // ////////////////////////////////////////////////////////////////////
@@ -818,18 +811,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     // resolve step analysis refs
     for (StepAnalysis stepAnalysisRef : stepAnalysisMap.values()) {
       ((StepAnalysisXml) stepAnalysisRef).resolveReferences(model);
-    }
-    
-    // resolve count plugin
-    if (_countReference != null) {
-      _countReference.resolveReferences(model);
-      _countPlugin = _countReference.getPlugin();
-    }
-    
-    // resolve custom boolean
-    if (_booleanReference != null) {
-      _booleanReference.resolveReferences(model);
-      _booleanQuery = _booleanReference.getQuery();
     }
 
     resolved = true;
@@ -1863,19 +1844,4 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return filters;
   }
 
-  public CountPlugin getCountPlugin() {
-    return _countPlugin;
-  }
-
-  public void setCountReference(CountReference countReference) {
-    _countReference = countReference;
-  }
-
-  public BooleanQuery getBooleanQuery() {
-    return _booleanQuery;
-  }
-
-  public void setBooleanReference(BooleanReference booleanReference) {
-    _booleanReference = booleanReference;
-  }
 }
