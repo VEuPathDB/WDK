@@ -10,6 +10,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.User;
@@ -47,7 +48,7 @@ public abstract class WdkService {
     return ((UserBean)_request.getSession().getAttribute("wdkUser"));
   }
   
-  protected int getCurrentUserId() {
+  protected int getCurrentUserId() throws WdkModelException {
     return getCurrentUserBean().getUserId();
   }
 
