@@ -272,11 +272,13 @@ public class UserFactory {
    * @throws WdkModelException
    */
   User saveTemporaryUser(User user) throws WdkModelException {
-    
+    // logger.error("TRACE", new Exception());
+ 
     PreparedStatement psUser = null;
     try {
       // get a new user id
       int userId = userDb.getPlatform().getNextId(dataSource, userSchema, "users");
+      user.setUserId(userId);
       user.setEmail(user.getEmailPrefix() + userId);
       user.setSignature(encrypt(userId + "_" + user.getEmail()));
       
