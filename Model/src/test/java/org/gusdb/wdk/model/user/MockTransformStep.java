@@ -11,7 +11,7 @@ public class MockTransformStep extends MockStep {
 
   private final AnswerParam previousParam;
 
-  public MockTransformStep(StepFactory stepFactory, User user, Collection<String> inTypes, String outType) {
+  public MockTransformStep(StepFactory stepFactory, User user, Collection<String> inTypes, String outType) throws WdkModelException {
     super(stepFactory, user, outType);
     previousParam = new MockAnswerParam(inTypes);
   }

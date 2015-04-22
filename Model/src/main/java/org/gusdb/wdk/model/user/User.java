@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -57,10 +58,11 @@ public class User /* implements Serializable */{
   private UserFactory userFactory;
   private StepFactory stepFactory;
   private DatasetFactory datasetFactory;
-  private int userId;
+  private int _userId = 0;
   private String signature;
 
   // basic user information
+  private String emailPrefix;
   private String email;
   private String lastName;
   private String firstName;
@@ -96,7 +98,7 @@ public class User /* implements Serializable */{
   private Integer frontStep = null;
 
   User(WdkModel model, int userId, String email, String signature) {
-    this.userId = userId;
+    this._userId = userId;
     this.email = email;
     this.signature = signature;
 
@@ -128,28 +130,47 @@ public class User /* implements Serializable */{
   }
 
   /**
+   * user the userId field as a flag for lazy creation of guest user
    * @return Returns the userId.
+   * @throws WdkModelException 
    */
-  public int getUserId() {
-    return userId;
+  public synchronized int getUserId() throws WdkModelException {
+    if (_userId == 0) userFactory.saveTemporaryUser(this);
+    return _userId;
   }
 
   /**
    * @return Returns the signature.
+   * @throws WdkModelException 
    */
-  public String getSignature() {
+  public synchronized String getSignature() throws WdkModelException {
+    if (signature == null)userFactory.saveTemporaryUser(this);
     return signature;
+  }
+  
+  public void setSignature(String signature) {
+    this.signature = signature;
   }
 
   /**
    * @return Returns the email.
+   * @throws WdkModelException 
    */
-  public String getEmail() {
+  public synchronized String getEmail() throws WdkModelException {
+    if (email == null) userFactory.saveTemporaryUser(this);
     return email;
   }
 
   public void setEmail(String email) {
     this.email = email;
+  }
+  
+  public String getEmailPrefix() {
+    return emailPrefix;
+  }
+
+  public void setEmailPrefix(String emailPrefix) {
+    this.emailPrefix = emailPrefix;
   }
 
   /**
@@ -538,7 +559,7 @@ public class User /* implements Serializable */{
    */
   public void mergeUser(User user) throws WdkModelException, WdkUserException {
     // TEST
-    logger.debug("Merging user #" + user.getUserId() + " into user #" + userId + "...");
+    logger.debug("Merging user #" + user.getUserId() + " into user #" + getUserId() + "...");
 
     // first of all we import all the strategies
     Set<Integer> importedSteps = new LinkedHashSet<Integer>();
@@ -1018,7 +1039,7 @@ public class User /* implements Serializable */{
     // the key is a combination of user id and current time
     Date now = new Date();
 
-    String key = Long.toString(now.getTime()) + "->" + Integer.toString(userId);
+    String key = Long.toString(now.getTime()) + "->" + Integer.toString(getUserId());
     key = UserFactory.encrypt(key);
     // save the remote key
     String saveKey = Long.toString(now.getTime()) + "<-" + key;
@@ -1078,7 +1099,7 @@ public class User /* implements Serializable */{
     return newStrategy;
   }
 
-  public Strategy[] getActiveStrategies() throws WdkUserException {
+  public Strategy[] getActiveStrategies() throws WdkUserException, WdkModelException {
     int[] ids = activeStrategyFactory.getRootStrategies();
     List<Strategy> strategies = new ArrayList<Strategy>();
     for (int id : ids) {
@@ -1090,7 +1111,7 @@ public class User /* implements Serializable */{
         // something wrong with loading a strat, probably the strategy
         // doesn't exist anymore
         logger.warn("something wrong with loading a strat, probably " +
-            "the strategy doesn't exist anymore. Please " + "investigate:\nUser #" + userId +
+            "the strategy doesn't exist anymore. Please " + "investigate:\nUser #" + getUserId() +
             ", strategy display Id: " + id + "\nException: ", ex);
       }
     }
@@ -1155,8 +1176,13 @@ public class User /* implements Serializable */{
   public boolean equals(Object obj) {
     if (obj instanceof User) {
       User user = (User) obj;
-      if (user.userId != userId)
-        return false;
+      try {
+        if (user.getUserId() != getUserId())
+          return false;
+      }
+      catch (WdkModelException ex) {
+        new WdkRuntimeException(ex);
+      }
       if (!email.equals(user.email))
         return false;
       if (!signature.equals(user.signature))
@@ -1175,7 +1201,12 @@ public class User /* implements Serializable */{
    */
   @Override
   public int hashCode() {
-    return userId;
+    try {
+      return getUserId();
+    }
+    catch (WdkModelException ex) {
+      throw new WdkRuntimeException(ex);
+    }
   }
 
   public Step createBooleanStep(int strategyId, Step leftStep, Step rightStep, String booleanOperator,
@@ -1202,12 +1233,12 @@ public class User /* implements Serializable */{
   public Step createBooleanStep(int strategyId, Step leftStep, Step rightStep, BooleanOperator operator,
       boolean useBooleanFilter, AnswerFilterInstance filter) throws WdkModelException {
     // make sure the left & right step belongs to the user
-    if (leftStep.getUser().getUserId() != userId)
+    if (leftStep.getUser().getUserId() != getUserId())
       throw new WdkModelException("The Left Step [" + leftStep.getStepId() +
-          "] doesn't belong to the user #" + userId);
-    if (rightStep.getUser().getUserId() != userId)
+          "] doesn't belong to the user #" + getUserId());
+    if (rightStep.getUser().getUserId() != getUserId())
       throw new WdkModelException("The Right Step [" + rightStep.getStepId() +
-          "] doesn't belong to the user #" + userId);
+          "] doesn't belong to the user #" + getUserId());
 
     // verify the record type of the operands
     RecordClass leftRecordClass = leftStep.getQuestion().getRecordClass();
@@ -1416,6 +1447,12 @@ public class User /* implements Serializable */{
 
   @Override
   public String toString() {
-    return "User #" + userId + " - " + email;
+    try {
+      return "User #" + getUserId() + " - " + email;
+    }
+    catch (WdkModelException ex) {
+      // TODO Auto-generated catch block
+      throw new WdkRuntimeException(ex);
+    }
   }
 }
