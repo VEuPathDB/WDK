@@ -1,51 +1,73 @@
 /**
- * Constants used as action types.
+ * Actions used in Flux architecture.
  *
- * The naming convention is to use ALL_CAPS as the identifier, and camelCase as
- * the value. E.g. export const APP_LOADING = 'appLoading'.
+ * An Action is an object encoding some change that the application should
+ * respond to. Currently, the application Dispatcher provides a method to
+ * dispatch an action. When this method is called, the Dispatcher will invoke
+ * all registered callback functions with the action.
  *
- * Reusing an identifier is a syntax error. However, reusing a value is not but
- * should be avoided.
+ * Each Action below is a factory that accepts an object, returning an instance
+ * of an Immutable.js Record. The objects being passed to Action below are
+ * template objects. The values of the properties are treated as defaults. When
+ * the created factory is then called with an object, only the properties
+ * defined in the template object will be assigned to the object returned by the
+ * factory.
  *
  *
- * These can be imported into other modules in one of two ways:
+ * Example:
  *
- *     import { ANSWER_LOADING } from './ActionType';
- *     // do something with ANSWER_LOADING
+ *    // Create a new Action factory
+ *    const MyAction = Action({
+ *      a: undefined
+ *    });
  *
- * or
+ *    // Create a new action using the factory we just created
+ *    const myAction = MyAction({
+ *      a: 1,
+ *      b: 2
+ *    });
  *
- *     import * as ActionType from './ActionType';
- *     // do something with ActionType.ANSWER_LOADING;
+ *    // Read values from myAction
+ *    myAction.a //=> 1
+ *    myAction.b //=> undefined
  *
- * @module ActionType
+ * See http://facebook.github.io/immutable-js/docs/#/Record.
  */
 
-export const APP_LOADING = 'appLoading';
-export const APP_ERROR = 'appError';
+import Action from './utils/action';
 
-export const ANSWER_LOADING = 'answerLoading';
-export const ANSWER_LOAD_SUCCESS = 'answerLoadSuccess';
-export const ANSWER_LOAD_ERROR = 'answerLoadError';
-export const ANSWER_MOVE_COLUMN = 'answerMoveColumn';
-export const ANSWER_CHANGE_ATTRIBUTES = 'answerChangeAttributes';
-export const ANSWER_FILTER = 'answerFilter';
+export const AppLoading = Action({
+  isLoading: false
+});
 
-export const QUESTION_LIST_LOADING = 'questionListLoading';
-export const QUESTION_LIST_LOAD_SUCCESS = 'questionListLoadSuccess';
-export const QUESTION_LIST_LOAD_ERROR = 'questionListLoadError';
+export const AppError = Action({
+  requestData: {},
+  error: null
+});
 
-export const QUESTION_LOAD_SUCCESS = 'questionLoadSuccess';
+export const AnswerAdded = Action({
+  requestData: {},
+  answer: {}
+});
 
-export const RECORD_CLASS_LOADING = 'recordClassLoading';
-export const RECORD_CLASSES_LOAD_SUCCESS = 'recordClassesLoadSuccess';
-export const RECORD_CLASS_LOAD_SUCCESS = 'recordClassLoadSuccess';
-export const RECORD_CLASS_LOAD_ERROR = 'recordClassLoadError';
+export const AnswerMoveColumn = Action({
+  columnName: '',
+  newPosition: -1
+});
 
-export const PROJECT_LOADING = 'projectLoading';
-export const PROJECT_LOAD_SUCCESS = 'projectLoadSuccess';
-export const PROJECT_LOAD_ERROR = 'projectLoadError';
+export const AnswerChangeAttributes = Action({
+  attributes: []
+});
 
-export const USER_LOADING = 'userLoading';
-export const USER_LOAD_SUCCESS = 'userLoadSuccess';
-export const USER_LOAD_ERROR = 'userLoadError';
+export const AnswerFilter = Action({
+  questionName: null,
+  terms: ''
+});
+
+export const QuestionsAdded = Action({
+  questions: null
+});
+
+export const RecordClassesAdded = Action({
+  recordClasses: null
+});

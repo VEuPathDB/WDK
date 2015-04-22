@@ -1,15 +1,14 @@
 import { Record } from 'immutable';
 import createActionCreators from '../utils/createActionCreators';
 import {
-  APP_LOADING,
-  APP_ERROR,
-  ANSWER_LOAD_SUCCESS,
-  ANSWER_LOAD_ERROR,
-  ANSWER_MOVE_COLUMN,
-  ANSWER_CHANGE_ATTRIBUTES,
-  ANSWER_FILTER,
-  QUESTION_LIST_LOAD_SUCCESS,
-  RECORD_CLASSES_LOAD_SUCCESS
+  AppLoading,
+  AppError,
+  AnswerAdded,
+  AnswerMoveColumn,
+  AnswerChangeAttributes,
+  AnswerFilter,
+  QuestionsAdded,
+  RecordClassesAdded
 } from '../ActionType';
 
 
@@ -38,50 +37,6 @@ import {
 // XXX Would it make sense to use Records for ActionTypes? This would have the
 // nice effect of enforcing a data type for an action payload. It bears more
 // thought as it might be in opposition to some underlying Flux ideology.
-
-var LoadingAction = Record({
-  type: APP_LOADING,
-  isLoading: false
-});
-
-var AnswerLoadSuccessAction = Record({
-  type: ANSWER_LOAD_SUCCESS,
-  requestData: {},
-  answer: {}
-});
-
-var ErrorAction = Record({
-  type: APP_ERROR,
-  requestData: {},
-  error: null
-});
-
-var AnswerMoveColumnAction = Record({
-  type: ANSWER_MOVE_COLUMN,
-  columnName: '',
-  newPosition: -1
-});
-
-var AnswerChangeAttributesAction = Record({
-  type: ANSWER_CHANGE_ATTRIBUTES,
-  attributes: []
-});
-
-var AnswerFilterAction = Record({
-  type: ANSWER_FILTER,
-  questionName: null,
-  terms: ''
-});
-
-var QuestionsLoadSuccessAction = Record({
-  type: QUESTION_LIST_LOAD_SUCCESS,
-  questions: null
-});
-
-var RecordClassesLoadSuccessAction = Record({
-  type: RECORD_CLASSES_LOAD_SUCCESS,
-  recordClasses: null
-});
 
 
 /**
@@ -172,7 +127,7 @@ export default createActionCreators({
     var requestData = { questionDefinition, displayInfo };
 
     // Dispatch loading action.
-    var action = LoadingAction({ isLoading: true });
+    var action = AppLoading({ isLoading: true });
     dispatch(action);
 
     // The next section of code deals with composing Promises. Simply put, a
@@ -228,23 +183,23 @@ export default createActionCreators({
     combinedPromise.then(responses => {
       var [ questions, recordClasses, answer ] = responses;
 
-      var questionAction = QuestionsLoadSuccessAction({ questions });
+      var questionAction = QuestionsAdded({ questions });
       dispatch(questionAction);
 
-      var recordClassAction = RecordClassesLoadSuccessAction({ recordClasses });
+      var recordClassAction = RecordClassesAdded({ recordClasses });
       dispatch(recordClassAction);
 
-      var answerAction = AnswerLoadSuccessAction({
+      var answerAction = AnswerAdded({
         requestData: requestData,
         answer: answer
       });
       dispatch(answerAction);
 
-      var doneLoadingAction = LoadingAction({ isLoading: false });
+      var doneLoadingAction = AppLoading({ isLoading: false });
       dispatch(doneLoadingAction);
     }, error => {
-      var doneLoadingAction = LoadingAction({ isLoading: false });
-      var action = ErrorAction({ error: error });
+      var doneLoadingAction = AppLoading({ isLoading: false });
+      var action = AppError({ error: error });
       dispatch(doneLoadingAction);
       dispatch(action);
     })
@@ -258,7 +213,7 @@ export default createActionCreators({
     console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
     console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
 
-    var action = AnswerMoveColumnAction({
+    var action = AnswerMoveColumn({
       columnName: columnName,
       newPosition: newPosition
     });
@@ -270,7 +225,7 @@ export default createActionCreators({
     // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
     console.assert(attributes[Symbol.iterator], `attributes ${attributes} should be iterable.`);
 
-    var action = AnswerChangeAttributesAction({
+    var action = AnswerChangeAttributes({
       attributes: attributes
     });
 
@@ -278,7 +233,7 @@ export default createActionCreators({
   },
 
   filterAnswer(questionName, terms) {
-    var action = AnswerFilterAction({
+    var action = AnswerFilter({
       questionName: questionName,
       terms: terms
     });
