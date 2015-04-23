@@ -111,10 +111,10 @@ export default class AnswerStore extends Store {
       }
     };
 
-    this.handleAction(AnswerAdded, this.handleAnswerLoadSuccess);
-    this.handleAction(AnswerMoveColumn, this.handleAnswerMoveColumn);
-    this.handleAction(AnswerChangeAttributes, this.handleAnswerChangeAttributes);
-    this.handleAction(AnswerFilter, this.handleAnswerFilter);
+    this.handleAction(AnswerAdded, this.addAnswer);
+    this.handleAction(AnswerMoveColumn, this.moveTableColumn);
+    this.handleAction(AnswerChangeAttributes, this.updateVisibleAttributes);
+    this.handleAction(AnswerFilter, this.filterAnswer);
   }
 
   /**
@@ -132,7 +132,7 @@ export default class AnswerStore extends Store {
    * `questionDefinition`. We will be merging these keys into `state`
    * below.
    */
-  handleAnswerLoadSuccess({ answer, requestData }) {
+  addAnswer({ answer, requestData }) {
     var questionName = requestData.questionDefinition.questionName;
     var previousQuestionName = this.state.questionDefinition.questionName;
 
@@ -171,14 +171,13 @@ export default class AnswerStore extends Store {
     this.state.answers[questionName] = answer;
   }
 
-  handleAnswerMoveColumn(action) {
-    /* The name of the attribute being moved. */
-    /* FIXME Should be attributeName */
-    var columnName = action.columnName;
-
-    /* The new position for the attribute */
-    var newPosition = action.newPosition;
-
+  /**
+   * Update the position of an attribute in the answer table.
+   *
+   * @param {string} columnName The name of the atribute being moved.
+   * @param {number} newPosition The 0-based index to move the attribute to.
+   */
+  moveTableColumn({ columnName, newPosition }) {
     /* list of attributes we will be altering */
     var attributes = this.state.displayInfo.visibleAttributes;
 
@@ -197,13 +196,18 @@ export default class AnswerStore extends Store {
       .splice(newPosition, 0, attribute);
   }
 
-  handleAnswerChangeAttributes(action) {
-    this.state.displayInfo.visibleAttributes = action.attributes;
+  updateVisibleAttributes({ attributes }) {
+    this.state.displayInfo.visibleAttributes = attributes;
   }
 
-  handleAnswerFilter(action) {
-    var terms = action.terms;
-    var questionName = action.questionName;
+  /**
+   * Filter the results of an answer. The filtered results are stored in a
+   * separate property.
+   *
+   * @param {string} terms The search phrase.
+   * @param {string} questionName The questionName of the answer to filter.
+   */
+  filterAnswer({ terms, questionName }) {
     var parsedTerms = parseSearchTerms(terms);
     var records = this.state.answers[questionName].records;
     var filteredRecords = parsedTerms.reduce(function(records, term) {
