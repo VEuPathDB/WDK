@@ -50,7 +50,6 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.BasketFactory;
-import org.gusdb.wdk.model.user.CountPlugin;
 import org.gusdb.wdk.model.user.FavoriteReference;
 import org.gusdb.wdk.model.user.User;
 
@@ -199,15 +198,47 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String name;
   private String fullName;
 
+
   /**
-   * TODO - the displayName, shortDisplayName, and type are redundant, need to consolidate them into one
-   * field.
+   * the native versions are the real name of the record class.  the non-native are potentially different,
+   * for display purposes.  This can happen if a ResultSizeQueryReference is supplied, that provides non-native
+   * result counts and display names
    */
+  private String nativeDisplayName;
+  private String nativeDisplayNamePlural;
+  private String nativeShortDisplayName;
+  private String nativeShortDisplayNamePlural;
   private String displayName;
   private String displayNamePlural;
   private String shortDisplayName;
   private String shortDisplayNamePlural;
 
+  /**
+   * An option that provides SQL to post-process an Answer result, providing a custom result size count. 
+   * If present, induces construction of a non-default result size plugin that uses this sql
+   */
+  private ResultSizeQueryReference resultSizeQueryRef = null;
+
+  /**
+   * An option that provides SQL to post-process an Answer result, providing a custom property value. 
+   */
+  private ResultPropertyQueryReference resultPropertyQueryRef = null;
+
+  /**
+   * A pluggable way to compute the result size.  For example, count the number of genes in a list of transcripts.
+   * The default is overridden with a plugin supplied in the XML model, if provided.
+   */
+  private ResultSize resultSizePlugin = new DefaultResultSizePlugin();
+  
+  /**
+   * A pluggable way to compute a result property.  For example, count the number of genes in a list of transcripts that are missing transcripts.
+   */
+  private ResultProperty resultPropertyPlugin = null;
+
+  private String customBooleanQueryClassName = null;
+  
+  private BooleanQuery booleanQuery;
+  
   private String attributeOrdering;
 
   private List<NestedRecord> nestedRecordQuestionRefList = new ArrayList<NestedRecord>();
@@ -285,12 +316,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private List<FilterReference> _filterReferences = new ArrayList<>();
   private Map<String, StepFilter> _stepFilters = new LinkedHashMap<>();
   
-  private CountReference _countReference;
-  private CountPlugin _countPlugin;
-  
-  private BooleanReference _booleanReference;
-  private BooleanQuery _booleanQuery;
-
   // ////////////////////////////////////////////////////////////////////
   // Called at model creation time
   // ////////////////////////////////////////////////////////////////////
@@ -308,8 +333,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return (displayName == null) ? getName() : displayName;
   }
 
+  public String getNativeDisplayName() {
+	    return (nativeDisplayName == null) ? getName() : nativeDisplayName;
+	  }
+
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+    this.nativeDisplayName = displayName;
   }
 
   public String getDisplayNamePlural() {
@@ -319,8 +349,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return getPlural(getDisplayName());
   }
 
+  public String getNativeDisplayNamePlural() {
+	    if (nativeDisplayNamePlural != null)
+	      return nativeDisplayNamePlural;
+
+	    return getPlural(getDisplayName());
+	  }
+
   public void setDisplayNamePlural(String displayNamePlural) {
     this.displayNamePlural = displayNamePlural;
+    this.nativeDisplayNamePlural = displayNamePlural;
   }
 
   public String getShortDisplayNamePlural() {
@@ -330,8 +368,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return getPlural(getShortDisplayName());
   }
 
+  public String getNativeShortDisplayNamePlural() {
+	    if (nativeShortDisplayNamePlural != null)
+	      return nativeShortDisplayNamePlural;
+
+	    return getPlural(getNativeShortDisplayName());
+	  }
+
   public void setShortDisplayNamePlural(String shortDisplayNamePlural) {
     this.shortDisplayNamePlural = shortDisplayNamePlural;
+    this.nativeShortDisplayNamePlural = shortDisplayNamePlural;
   }
 
   private String getPlural(String name) {
@@ -349,7 +395,19 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     return name + "s";
   }
+  
+  public ResultSize getResultSizePlugin() {
+	  return resultSizePlugin;
+  }
 
+  public ResultProperty getResultPropertyPlugin() {
+	  return resultPropertyPlugin;
+  }
+  
+  public String getCustomBooleanQueryClassName() {
+	  return customBooleanQueryClassName;
+  }
+  
   /**
    * @param attList
    *          comma separated list of attributes in a summary containing this recordClass.
@@ -430,6 +488,18 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   public void setAttributeCategoryTree(AttributeCategoryTree tree) {
     attributeCategoryTree = tree;
+  }
+  
+  public void setResultSizeQueryRef(ResultSizeQueryReference ref) {
+	  resultSizeQueryRef = ref;
+  }
+  
+  public void setResultPropertyQueryRef(ResultPropertyQueryReference ref) {
+	  resultPropertyQueryRef = ref;
+  }
+  
+  public void setCustomBooleanQueryClassName(String className) {
+	  this.customBooleanQueryClassName = className;
   }
 
   // ////////////////////////////////////////////////////////////
@@ -533,6 +603,18 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) {
     return attributeCategoryTree.getTrimmedCopy(scope);
   }
+  
+  public ResultSizeQueryReference getResultSizeQueryRef() {
+	  return resultSizeQueryRef;	
+  }
+  
+  public ResultPropertyQueryReference getResultPropertyQueryRef() {
+	  return resultPropertyQueryRef;	
+  }
+  
+  public BooleanQuery getBooleanQuery() {
+	  return booleanQuery;
+  }
 
   @Override
   public String toString() {
@@ -632,6 +714,39 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       field.resolveReferences(model);
     }
 
+    if (resultSizeQueryRef != null) {
+    	resultSizeQueryRef.resolveReferences(model);
+    	displayName = resultSizeQueryRef.getRecordDisplayName();
+    	shortDisplayName = resultSizeQueryRef.getRecordShortDisplayName();
+    	displayNamePlural = resultSizeQueryRef.getRecordDisplayNamePlural();
+    	shortDisplayNamePlural = resultSizeQueryRef.getRecordShortDisplayNamePlural();
+        Query query = (Query) wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
+    	resultSizePlugin = new SqlQueryResultSizePlugin(query);
+    }
+    
+    if (resultPropertyQueryRef != null) {
+    	resultPropertyQueryRef.resolveReferences(model);
+        Query query = (Query) wdkModel.resolveReference(resultPropertyQueryRef.getTwoPartName());
+    	resultPropertyPlugin = new SqlQueryResultPropertyPlugin(query, resultPropertyQueryRef.getPropertyName());
+    }
+    
+    if (customBooleanQueryClassName != null) {
+		String errmsg = "Can't create java class for customBooleanQueryClassName from class name '" + customBooleanQueryClassName + "'";
+		try {
+			Class<? extends BooleanQuery> classs = Class.forName(
+					customBooleanQueryClassName).asSubclass(BooleanQuery.class);
+			booleanQuery = classs.newInstance();
+			booleanQuery.setRecordClass(this);
+		} catch (ClassNotFoundException ex) {
+			throw new WdkModelException(errmsg, ex);
+		} catch (InstantiationException ex) {
+			throw new WdkModelException(errmsg, ex);
+		} catch (IllegalAccessException ex) {
+			throw new WdkModelException(errmsg, ex);
+		}   	
+    } else booleanQuery = new BooleanQuery(this);
+
+	
     // resolve the alias query
     resolveAliasQuery(model);
 
@@ -696,18 +811,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     // resolve step analysis refs
     for (StepAnalysis stepAnalysisRef : stepAnalysisMap.values()) {
       ((StepAnalysisXml) stepAnalysisRef).resolveReferences(model);
-    }
-    
-    // resolve count plugin
-    if (_countReference != null) {
-      _countReference.resolveReferences(model);
-      _countPlugin = _countReference.getPlugin();
-    }
-    
-    // resolve custom boolean
-    if (_booleanReference != null) {
-      _booleanReference.resolveReferences(model);
-      _booleanQuery = _booleanReference.getQuery();
     }
 
     resolved = true;
@@ -1487,6 +1590,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return (shortDisplayName != null) ? shortDisplayName : getDisplayName();
   }
 
+  public String getNativeShortDisplayName() {
+	    return (nativeShortDisplayName != null) ? nativeShortDisplayName : getNativeDisplayName();
+	  }
+
   /**
    * @param shortDisplayName
    *          the shortDisplayName to set
@@ -1737,19 +1844,4 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return filters;
   }
 
-  public CountPlugin getCountPlugin() {
-    return _countPlugin;
-  }
-
-  public void setCountReference(CountReference countReference) {
-    _countReference = countReference;
-  }
-
-  public BooleanQuery getBooleanQuery() {
-    return _booleanQuery;
-  }
-
-  public void setBooleanReference(BooleanReference booleanReference) {
-    _booleanReference = booleanReference;
-  }
 }

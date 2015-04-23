@@ -454,7 +454,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       booleanQuery = (BooleanQuery) internalQuerySet.getQuery(queryName);
     }
     else {
-      booleanQuery = new BooleanQuery(recordClass);
+      booleanQuery = recordClass.getBooleanQuery();
 
       // make sure we create index on primary keys
       booleanQuery.setIndexColumns(recordClass.getIndexColumns());

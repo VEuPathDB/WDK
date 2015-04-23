@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Collections;
 
 import javax.sql.DataSource;
 
@@ -60,6 +61,7 @@ public abstract class QueryInstance<T extends Query> {
   protected int assignedWeight;
 
   protected Map<String, String> context;
+  private Map<String, String> paramInternalValues = null;
 
   protected QueryInstance(User user, T query, Map<String, String> stableValues, boolean validate,
       int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
@@ -306,31 +308,34 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   protected Map<String, String> getParamInternalValues() throws WdkModelException, WdkUserException {
-    // the empty & default values are filled
-    Map<String, String> stableValues = fillEmptyValues(this.stableValues);
-    Map<String, String> internalValues = new LinkedHashMap<String, String>();
-    Map<String, Param> params = query.getParamMap();
-    for (String paramName : params.keySet()) {
-      Param param = params.get(paramName);
-      String internalValue, stableValue = stableValues.get(paramName);
 
-      // TODO: refactor so this fork isn't necessary
-      if (param instanceof AbstractEnumParam && ((AbstractEnumParam) param).isDependentParam()) {
-        AbstractEnumParam aeParam = (AbstractEnumParam) param;
-        Map<String, String> dependedParamValues = new LinkedHashMap<>();
-        for (Param dependedParam : aeParam.getDependedParams()) {
-          String value = stableValues.get(dependedParam.getName());
-          dependedParamValues.put(dependedParam.getName(), value);
-        }
-        internalValue = aeParam.getInternalValue(user, stableValue, dependedParamValues);
-      }
-      else {
-        internalValue = param.getInternalValue(user, stableValue, stableValues);
-      }
+      if (paramInternalValues == null ) {
+	  // the empty & default values are filled
+	  Map<String, String> stableValues = fillEmptyValues(this.stableValues);
+	  paramInternalValues = new LinkedHashMap<String, String>();
+	  Map<String, Param> params = query.getParamMap();
+	  for (String paramName : params.keySet()) {
+	      Param param = params.get(paramName);
+	      String internalValue, stableValue = stableValues.get(paramName);
 
-      internalValues.put(paramName, internalValue);
-    }
-    return internalValues;
+	      // TODO: refactor so this fork isn't necessary
+	      if (param instanceof AbstractEnumParam && ((AbstractEnumParam) param).isDependentParam()) {
+		  AbstractEnumParam aeParam = (AbstractEnumParam) param;
+		  Map<String, String> dependedParamValues = new LinkedHashMap<>();
+		  for (Param dependedParam : aeParam.getDependedParams()) {
+		      String value = stableValues.get(dependedParam.getName());
+		      dependedParamValues.put(dependedParam.getName(), value);
+		  }
+		  internalValue = aeParam.getInternalValue(user, stableValue, dependedParamValues);
+	      }
+	      else {
+		  internalValue = param.getInternalValue(user, stableValue, stableValues);
+	      }
+
+	      paramInternalValues.put(paramName, internalValue);
+	  }
+      }
+      return Collections.unmodifiableMap(paramInternalValues);
   }
 
   public int getAssignedWeight() {

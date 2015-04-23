@@ -76,11 +76,14 @@ public class StringParamHandler extends AbstractParamHandler {
       return stableValue;
 
     StringParam stringParam = (StringParam) param;
+
     if (stringParam.isNumber()) {
       stableValue = stableValue.replaceAll(",", "");
       return stableValue;
     }
-    else {
+    else if (stringParam.getIsSql()) {
+	return stableValue;
+    } else {
       stableValue = stableValue.replaceAll("'", "''");
       return "'" + stableValue + "'";
     }

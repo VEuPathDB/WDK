@@ -515,7 +515,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * 
    * @param question
    */
-  public void setContextQuestion(Question question) {
+  public void setContextQuestion(Question question) throws WdkModelException {
     this.contextQuestion = question;
   }
 

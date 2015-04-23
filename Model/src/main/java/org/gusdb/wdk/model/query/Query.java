@@ -216,7 +216,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return contextQuestion;
   }
 
-  public void setContextQuestion(Question contextQuestion) {
+  public void setContextQuestion(Question contextQuestion) throws WdkModelException {
     this.contextQuestion = contextQuestion;
     for (Param param : paramMap.values()) {
       param.setContextQuestion(contextQuestion);

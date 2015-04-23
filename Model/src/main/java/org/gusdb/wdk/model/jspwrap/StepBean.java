@@ -118,7 +118,7 @@ public class StepBean {
         return step.getDisplayName();
     }
 
-    public int getResultSize() throws WdkModelException {
+    public int getResultSize() throws WdkModelException, WdkUserException {
         return step.getResultSize();
     }
 
@@ -316,10 +316,6 @@ public class StepBean {
      */
     public boolean isCombined() {
         return step.isCombined();
-    }
-
-    public boolean isUseBooleanFilter() throws WdkModelException {
-        return step.isUseBooleanFilter();
     }
 
     public boolean isFiltered() {

@@ -209,34 +209,14 @@ public class Step {
     }
   }
 
-  public int getResultSize() throws WdkModelException {
-    // Only recompute the answer value size if the step hasn't been validated
-    // yet, or if the estimateSize is unknown, indicating the underlying query
-    // has not yet been run.
-    if (!isValid() || estimateSize == StepFactory.UNKNOWN_SIZE) {
-      try {
-        CountPlugin countPlugin = getRecordClass().getCountPlugin();
-        if (countPlugin == null) { // no count plugin needed
-          estimateSize = getAnswerValue().getResultSize();
-        }
-        else { // will use count plugin the get counts
-          estimateSize = countPlugin.count(this);
-        }
-      }
-      catch (Exception ex) {
-        logger.error("Exception when estimating result size.", ex);
-        // FIXME (Redmine #16030): not sure if this exception means step is
-        // invalid or not. It could mean param values are invalid and step
-        // should be made invalid, but it could also mean DB is down or other
-        // issues. Thus, we cannot set valid to false at all here (locally or
-        // in DB), because it might impact parent steps whose valid values
-        // depend on this one's. To fix, we need to differentiate the
-        // exceptions thrown by AnswerValue by the errors that mean Step is
-        // invalid vs. those that don't.
-      }
+    /** 
+     * Get the real result size from the answerValue.  AnswerValue is
+     * responsible for caching, if any
+     */
+    public int getResultSize() throws WdkModelException, WdkUserException {
+	estimateSize = getAnswerValue().getDisplayResultSize();
+	return estimateSize;
     }
-    return estimateSize;
-  }
 
   // Needs to be updated for transforms
   public String getOperation() throws WdkModelException, WdkUserException {
@@ -412,10 +392,18 @@ public class Step {
     if (estimateSize == RESET_SIZE_FLAG) {
       // The flag indicates if the size has been reset, and need to be calculated again.
       try {
-        estimateSize = getAnswerValue().getResultSize();
+	estimateSize = getResultSize();
       }
-      catch (WdkUserException ex) {
-        throw new WdkModelException(ex);
+      catch (Exception ex) {
+        logger.error("Exception when estimating result size.", ex);
+        // FIXME (Redmine #16030): not sure if this exception means step is
+        // invalid or not. It could mean param values are invalid and step
+        // should be made invalid, but it could also mean DB is down or other
+        // issues. Thus, we cannot set valid to false at all here (locally or
+        // in DB), because it might impact parent steps whose valid values
+        // depend on this one's. To fix, we need to differentiate the
+        // exceptions thrown by AnswerValue by the errors that mean Step is
+        // invalid vs. those that don't.
       }
     }
     return estimateSize;
@@ -1051,7 +1039,7 @@ public class Step {
         throw new WdkModelException(ex);
       }
       try {
-        this.estimateSize = answerValue.getResultSize();
+        this.estimateSize = answerValue.getDisplayResultSize();
       }
       catch (WdkModelException | WdkUserException ex) {
         // if validate is false, the error will be ignored to allow the process to continue.
@@ -1063,15 +1051,6 @@ public class Step {
       update(false);
     }
     return answerValue;
-  }
-
-  public boolean isUseBooleanFilter() throws WdkModelException {
-    if (!isBoolean())
-      return false;
-    BooleanQuery query = (BooleanQuery) getQuestion().getQuery();
-    String paramName = query.getUseBooleanFilter().getName();
-    String strBooleanFlag = paramValues.get(paramName);
-    return Boolean.parseBoolean(strBooleanFlag);
   }
 
   public void setAnswerValue(AnswerValue answerValue) {

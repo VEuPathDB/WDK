@@ -401,6 +401,7 @@ public class CacheFactory {
       logger.debug("Get QueryInfo: " + queryInfo);
     }
     catch (SQLException e) {
+      logger.debug("Bad sql: " + sql);
       throw new WdkModelException("Unable to check query info.", e);
     }
     finally {
