@@ -316,7 +316,7 @@ const AnswerController = React.createClass({
       query.position = _.indexOf(this.state.answer.records, record);
 
       // Method provided by Router.Navigation mixin
-      this.transitionTo(path, params, query);
+      this.router.transitionTo(path, params, query);
     },
 
     // FIXME This will be removed when the record service is serving up records
@@ -330,7 +330,7 @@ const AnswerController = React.createClass({
       });
 
       // Method provided by Router.Navigation mixin
-      this.transitionTo(path, this.props.params, query);
+      this.router.transitionTo(path, this.props.params, query);
     },
 
     onToggleFormat() {
@@ -343,7 +343,7 @@ const AnswerController = React.createClass({
         ? 'list' : 'table';
 
       // Method provided by Router.Navigation mixin
-      this.transitionTo(path, params, query);
+      this.router.transitionTo(path, params, query);
     },
 
     recordHrefGetter(record) {
@@ -361,7 +361,7 @@ const AnswerController = React.createClass({
 
     onFilter(terms) {
       const query = Object.assign({}, this.props.query, { filterTerm: terms });
-      this.transitionTo('answer', this.props.params, query);
+      this.router.transitionTo('answer', this.props.params, query);
     }
 
   },
