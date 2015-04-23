@@ -52,7 +52,6 @@ public class BooleanQuery extends SqlQuery {
   public static final String QUERY_NAME_PREFIX = "bq_";
   public static final String LEFT_OPERAND_PARAM_PREFIX = "bq_left_op_";
   public static final String RIGHT_OPERAND_PARAM_PREFIX = "bq_right_op_";
-  public static final String USE_BOOLEAN_FILTER_PARAM = "use_boolean_filter";
 
   public static final String OPERATOR_PARAM = "bq_operator";
 
@@ -64,10 +63,20 @@ public class BooleanQuery extends SqlQuery {
   private AnswerParam leftOperand;
   private AnswerParam rightOperand;
   private StringParam operator;
-  private StringParam useBooleanFilter;
   private RecordClass recordClass;
 
   public BooleanQuery(RecordClass recordClass) throws WdkModelException {
+	  setRecordClass(recordClass);
+  }
+  
+ /**
+  * Need a no-arg constructor for easy construction using newInstance()
+  * @throws WdkModelException
+  */
+  public BooleanQuery() throws WdkModelException {
+  }
+  
+  public void setRecordClass(RecordClass recordClass) throws WdkModelException {
     this.recordClass = recordClass;
     this.wdkModel = recordClass.getWdkModel();
     String rcName = recordClass.getFullName().replace('.', '_');
@@ -84,30 +93,25 @@ public class BooleanQuery extends SqlQuery {
     // create the stringParam for the others
     operator = prepareStringParam(internalParamSet, OPERATOR_PARAM);
     operator.setPrompt("Operator");
-    useBooleanFilter = prepareStringParam(internalParamSet,
-        USE_BOOLEAN_FILTER_PARAM);
-    useBooleanFilter.setPrompt("Use Expand Filter");
 
     // create the query
-    this.setName(BooleanQuery.getQueryName(recordClass));
+    this.setName(getQueryName(recordClass));
     this.addParam(leftOperand);
     this.addParam(rightOperand);
     this.addParam(operator);
-    this.addParam(useBooleanFilter);
 
     prepareColumns(recordClass);
 
-    this.setSql(constructSql());
+    this.setSql("don't care");  // the boolean query instance will not use sql set at the query level
   }
 
-  private BooleanQuery(BooleanQuery query) {
+  protected BooleanQuery(BooleanQuery query) {
     super(query);
 
     this.recordClass = query.recordClass;
     this.leftOperand = (AnswerParam) paramMap.get(query.leftOperand.getName());
     this.operator = (StringParam) paramMap.get(query.operator.getName());
     this.rightOperand = (AnswerParam) paramMap.get(query.rightOperand.getName());
-    this.useBooleanFilter = (StringParam) paramMap.get(query.useBooleanFilter.getName());
   }
 
   /**
@@ -136,13 +140,6 @@ public class BooleanQuery extends SqlQuery {
    */
   public StringParam getOperatorParam() {
     return operator;
-  }
-
-  /**
-   * @return the useBooleanFilter
-   */
-  public StringParam getUseBooleanFilter() {
-    return useBooleanFilter;
   }
 
   private AnswerParam prepareOperand(ParamSet paramSet,
@@ -179,7 +176,7 @@ public class BooleanQuery extends SqlQuery {
     return param;
   }
 
-  private void prepareColumns(RecordClass recordClass) {
+  protected void prepareColumns(RecordClass recordClass) {
     PrimaryKeyAttributeField primaryKey = recordClass.getPrimaryKeyAttributeField();
 
     for (String columnName : primaryKey.getColumnRefs()) {
@@ -223,26 +220,6 @@ public class BooleanQuery extends SqlQuery {
       throws WdkModelException, WdkUserException {
     return new BooleanQueryInstance(user, this, values, validate,
         assignedWeight, context);
-  }
-
-  private String constructSql() {
-    StringBuffer sql = new StringBuffer();
-    constructOperandSql(sql, leftOperand.getName());
-    sql.append(" $$").append(operator.getName()).append("$$ ");
-    constructOperandSql(sql, leftOperand.getName());
-    return sql.toString();
-  }
-
-  private void constructOperandSql(StringBuffer sql, String operand) {
-    sql.append("SELECT ");
-    boolean first = true;
-    for (String column : columnMap.keySet()) {
-      if (first) first = false;
-      else sql.append(", ");
-      sql.append(column);
-    }
-    sql.append(" FROM $$").append(operand).append("$$");
-    sql.append(" WHERE $$").append(operand).append(".condition$$");
   }
 
   /*

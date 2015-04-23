@@ -96,10 +96,9 @@ public class ProcessBooleanAction extends Action {
       return null;
     }
     catch (Exception ex) {
-      logger.error(ex);
-      ex.printStackTrace();
+      logger.error(ex.getMessage(), ex);
       ShowStrategyAction.outputErrorJSON(user, response, ex);
-      return null;
+      throw ex;
     }
   }
 

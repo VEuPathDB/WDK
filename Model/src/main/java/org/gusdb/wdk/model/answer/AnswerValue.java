@@ -41,6 +41,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.ResultSize;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
@@ -299,7 +300,12 @@ public class AnswerValue {
     logger.debug("getting result size: cache=" + resultSize + ", isCached=" + idsQueryInstance.isCached());
     return resultSize;
   }
-
+  
+  
+  public int getDisplayResultSize() throws WdkModelException, WdkUserException {
+	  ResultSize plugin = question.getRecordClass().getResultSizePlugin();
+	  return plugin.getResultSize(this);
+  }
   public Map<String, Integer> getResultSizesByProject() throws WdkModelException, WdkUserException {
     if (resultSizesByProject == null) {
       resultSizesByProject = new LinkedHashMap<String, Integer>();
@@ -1410,14 +1416,6 @@ public class AnswerValue {
       SqlUtils.closeResultSetAndStatement(resultSet);
     }
     return pkValues;
-  }
-
-  public boolean isUseBooleanFilter() {
-    if (idsQueryInstance instanceof BooleanQueryInstance) {
-      return ((BooleanQueryInstance) idsQueryInstance).isUseBooleanFilter();
-    }
-    else
-      return false;
   }
 
   public void setPageIndex(int startIndex, int endIndex) {

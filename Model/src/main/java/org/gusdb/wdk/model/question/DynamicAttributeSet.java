@@ -42,7 +42,11 @@ public class DynamicAttributeSet extends WdkModelBase {
   public DynamicAttributeSet() {}
 
   public void addAttributeField(AttributeField attributeField) {
-    attributeFieldList.add(attributeField);
+	// from XML parse, before excludeResources
+	  if (attributeFieldList != null) attributeFieldList.add(attributeField);  
+	  
+	  // to support adding after excludeResources
+	  else attributeFieldMap.put(attributeField.getName(), attributeField);
   }
 
   @Override

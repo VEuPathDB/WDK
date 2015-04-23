@@ -289,6 +289,11 @@
         <data type="boolean" />
       </attribute>
       <optional>
+	<attribute name="isSql">
+	  <data type="boolean" />
+	</attribute>
+      </optional>
+      <optional>
         <attribute name="length">
           <data type="positiveInteger" />
         </attribute>
@@ -934,6 +939,9 @@
         <attribute name="shortDisplayNamePlural" />
       </optional>
       <optional>
+        <attribute name="customBooleanQueryClassName" />
+      </optional>
+      <optional>
         <attribute name="doNotTest">
           <data type="boolean" />
         </attribute>
@@ -949,6 +957,27 @@
       </optional>
       <optional>
         <attribute name="summaryAttributesList" />
+      </optional>
+      <optional>
+        <element name="resultSizeQueryRef">
+          <attribute name="recordDisplayName" />
+          <attribute name="ref" />
+	  <optional>
+	    <attribute name="recordDisplayNamePlural" />
+	  </optional>
+	  <optional>
+	    <attribute name="recordShortDisplayName" />
+	  </optional>
+	  <optional>
+	    <attribute name="recordShortDisplayNamePlural" />
+	  </optional>
+        </element>
+      </optional>
+      <optional>
+        <element name="resultPropertyQueryRef">
+ 	    <attribute name="ref" />
+	    <attribute name="propertyName" />        
+        </element>
       </optional>
       <optional>
         <element name="attributeCategories">
@@ -1100,21 +1129,6 @@
           <element name="filterRef">
             <ref name="IncludeExclude" />
             <attribute name="name" />
-          </element>
-          
-          <!-- custom count plugin/query definition -->
-          <element name="count">
-            <ref name="IncludeExclude" />
-            <choice>
-              <attribute name="plugin" />
-              <attribute name="query" />
-            </choice>
-          </element>
-          
-          <!-- custom boolean query definition -->
-          <element name="boolean">
-          	<ref name="IncludeExclude" />
-          	<attribute name="query" />
           </element>
           
         </choice>
