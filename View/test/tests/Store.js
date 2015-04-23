@@ -1,8 +1,13 @@
 import assert from 'assert';
 import Dispatcher from 'wdk/flux/Dispatcher';
 import Store from 'wdk/flux/Store';
+import Action from 'wdk/flux/utils/Action';
 
 describe('Store', function() {
+
+  var TestAction = Action({
+    value: undefined
+  });
 
   describe('#constructor()', function() {
 
@@ -36,7 +41,7 @@ describe('Store', function() {
 
       class DerivedStore extends Store {
         init() {
-          this.handleAction('test', this.callDone);
+          this.handleAction(TestAction, this.callDone);
         }
 
         callDone() {
@@ -46,7 +51,7 @@ describe('Store', function() {
 
       var dispatcher = new Dispatcher();
       var store = new DerivedStore(dispatcher);
-      dispatcher.dispatch({ type: 'test' });
+      dispatcher.dispatch(TestAction());
       dispatcher.unregister(store.dispatchToken);
     });
 
@@ -59,7 +64,7 @@ describe('Store', function() {
         this.state = {
           value: 0
         };
-        this.handleAction('test', this.updateState);
+        this.handleAction(TestAction, this.updateState);
       }
 
       updateState(action) {
@@ -92,26 +97,22 @@ describe('Store', function() {
       var subscription = observable.subscribe(function(state) {
         values.push(state.value);
       });
-      dispatcher.dispatch({
-        type: 'test',
+      var IgnoreAction = Action({ value: undefined });
+      dispatcher.dispatch(TestAction({
         value: 1
-      });
-      dispatcher.dispatch({
-        type: 'test',
+      }));
+      dispatcher.dispatch(TestAction({
         value: 2
-      });
-      dispatcher.dispatch({
-        type: 'test',
+      }));
+      dispatcher.dispatch(TestAction({
         value: 3
-      });
-      dispatcher.dispatch({
-        type: 'test',
+      }));
+      dispatcher.dispatch(TestAction({
         value: 4
-      });
-      dispatcher.dispatch({
-        type: 'ignore',
+      }));
+      dispatcher.dispatch(IgnoreAction({
         value: 3
-      });
+      }));
       assert.deepEqual(values, [ 0, 1, 2, 3, 4 ]);
       subscription.dispose();
     });
@@ -122,10 +123,9 @@ describe('Store', function() {
       observable.subscribe(function(state) {
         values.push(state.value);
       }).dispose();
-      dispatcher.dispatch({
-        type: 'test',
+      dispatcher.dispatch(TestAction({
         value: 1
-      });
+      }));
       assert.deepEqual(values, [ 0 ]);
     })
   });
