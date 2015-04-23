@@ -59,7 +59,7 @@ export default class Store {
       '`state` is not defined. Check the init method of %s.',
       this.constructor.name
     );
-    this.dispatchToken = dispatcher.register(this._dispatchHandler.bind(this));
+    this.dispatchToken = dispatcher.register(this.dispatchHandler.bind(this));
   }
 
   /**
@@ -71,7 +71,7 @@ export default class Store {
    * TODO If class declares it's state as immutable, do an equality check to
    *      decide of listeners should be notified.
    */
-  _dispatchHandler(action) {
+  dispatchHandler(action) {
     const method = this._methods.get(action.getType());
     if (method === undefined) return;
 
