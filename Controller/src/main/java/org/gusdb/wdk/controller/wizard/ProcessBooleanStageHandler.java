@@ -58,7 +58,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
       // a question name specified, either create a step from it, or revise a current step
       String action = request.getParameter(ProcessBooleanAction.PARAM_ACTION);
       if (action.equals(WizardForm.ACTION_REVISE)) {
-        childStep = updateStepWithQuestion(servlet, request, wizardForm, questionName, user, wdkModel);
+        childStep = updateStepWithQuestion(servlet, request, wizardForm, strategy, questionName, user, wdkModel);
       }
       else {
         childStep = createStepFromQuestion(servlet, request, wizardForm, strategy, questionName, user, wdkModel);
@@ -87,7 +87,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
   }
 
   private StepBean updateStepWithQuestion(ActionServlet servlet, HttpServletRequest request,
-      WizardForm wizardForm, String questionName, UserBean user, WdkModelBean wdkModel)
+      WizardForm wizardForm, StrategyBean strategy, String questionName, UserBean user, WdkModelBean wdkModel)
       throws WdkUserException, WdkModelException {
     logger.debug("updating step with question: " + questionName);
 
@@ -117,6 +117,10 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
     StepBean booleanStep = user.getStep(Integer.valueOf(strStepId));
     StepBean childStep = booleanStep.getChildStep();
+
+    // before changing step, need to check if strategy is saved, if yes, make a copy.
+      if (strategy.getIsSaved())
+        strategy.update(false);
 
     // revise on the child step
     childStep.setQuestionName(questionName);

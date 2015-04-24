@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 public class RemoveFilterAction extends Action {
@@ -41,6 +42,18 @@ public class RemoveFilterAction extends Action {
     StepBean step = user.getStep(Integer.valueOf(stepId));
     AnswerValueBean answer = step.getAnswerValue();
     Filter filter = answer.getQuestion().getFilter(filterName);
+    
+
+    // before changing step, need to check if strategy is saved, if yes, make a copy.
+    String strStrategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+    if (strStrategyId != null && !strStrategyId.isEmpty()) {
+      int strategyId = Integer.valueOf(strStrategyId.split("_", 2)[0]);
+      StrategyBean strategy = user.getStrategy(strategyId);
+      if (strategy.getIsSaved())
+        strategy.update(false);
+    }
+
+    
     step.removeFilterOption(filter.getKey());
     step.saveParamFilters();
     

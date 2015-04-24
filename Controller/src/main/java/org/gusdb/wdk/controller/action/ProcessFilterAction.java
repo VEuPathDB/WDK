@@ -14,6 +14,7 @@ import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerFilterInstanceBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -43,17 +44,27 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     String filterName = request.getParameter(PARAM_FILTER);
     if (strStepId == null) throw new WdkUserException("Required step param is missing.");
 
-    UserBean wdkUser = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(servlet, request);
     String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
     try {
       int stepId = Integer.valueOf(strStepId);
-      StepBean step = wdkUser.getStep(stepId);
+      StepBean step = user.getStep(stepId);
       
       if (filterName != null) {
         AnswerFilterInstanceBean filter = step.getRecordClass().getFilter(filterName);
        if (filter == null) throw new WdkUserException("The filter is invalid: " + filterName);
       }
+
+      // before changing step, need to check if strategy is saved, if yes, make a copy.
+      String strStrategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+      if (strStrategyId != null && !strStrategyId.isEmpty()) {
+        int strategyId = Integer.valueOf(strStrategyId.split("_", 2)[0]);
+        StrategyBean strategy = user.getStrategy(strategyId);
+        if (strategy.getIsSaved())
+          strategy.update(false);
+      }
+
       step.setFilterName(filterName);
       step.saveParamFilters();
 
@@ -68,7 +79,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     }
     catch (Exception ex) {
       logger.error("Error while processing filter.", ex);
-      ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
+      ShowStrategyAction.outputErrorJSON(user, response, ex);
     }
     return null;
   }

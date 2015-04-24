@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -49,6 +50,15 @@ public class ApplyFilterAction extends Action {
 
       LOG.debug("Got filter: " + filter.getKey() + ", options=" + options);
 
+      // before changing step, need to check if strategy is saved, if yes, make a copy.
+      String strStrategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+      if (strStrategyId != null && !strStrategyId.isEmpty()) {
+        int strategyId = Integer.valueOf(strStrategyId.split("_", 2)[0]);
+        StrategyBean strategy = user.getStrategy(strategyId);
+        if (strategy.getIsSaved())
+          strategy.update(false);
+      }
+      
       step.addFilterOption(filter.getKey(), options);
       step.saveParamFilters();
 
