@@ -212,6 +212,10 @@ public class Strategy {
     stepFactory.verifySameOwnerAndProject(this, targetStep);
 
     Map<Integer, Integer> rootMap = new HashMap<>();
+    
+    // if the strategy is saved, need to make a unsaved copy first
+    if (getIsSaved()) 
+      update(false);
 
     // make sure the previousStep of the target is now the previousStep of newStep
     if (targetStep.isFirstStep()) { // inserting before first step will cause the first step being replaced by
@@ -287,6 +291,10 @@ public class Strategy {
     if (previousStep == null || previousStep.getStepId() != targetId)
       throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " after step #" + targetId +
           " since it will corrupt the structure of the strategy #" + strategyId);
+    
+    // if the strategy is saved, need to make a unsaved copy first
+    if (getIsSaved()) 
+      update(false);
 
     Step targetStep = getStepById(targetId);
 
@@ -363,6 +371,10 @@ public class Strategy {
     List<Step> deletes = new ArrayList<>();
     Map<Integer, Integer> rootMap = new HashMap<>();
 
+    // if the strategy is saved, need to make a unsaved copy first
+    if (getIsSaved()) 
+      update(false);
+
     // if a step has child, delete all the steps on that branch.
     Step childStep = step.getChildStep();
     if (childStep != null)
@@ -426,7 +438,7 @@ public class Strategy {
       if (previousStep != null) { // current step is null, then previous step should become new root.
         rootMap.put(getLatestStepId(), previousStep.getStepId());
         setLatestStep(previousStep);
-        update(true);
+        update(false);
       }
       else if (step == null) { // no more steps left in the strategy, delete the strategy itself.
         stepFactory.deleteStrategy(strategyId);
