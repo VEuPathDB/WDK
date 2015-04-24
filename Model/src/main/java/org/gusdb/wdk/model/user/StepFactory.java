@@ -1033,8 +1033,9 @@ public class StepFactory {
         Question question = wdkModel.getQuestion(questionName);
         strategy.setRecordClass(question.getRecordClass());
       }
-      catch (WdkModelException ex) { // the question doesn't exist; this is a root step and so we cannot get the strategy recordclass;
-         // skip such strategies for now, since we dont have an "unknown" type tab in All Tab in front end
+      catch (WdkModelException ex) { // the question doesn't exist; this is a root step and so we cannot get
+                                     // the strategy recordclass;
+        // skip such strategies for now, since we dont have an "unknown" type tab in All Tab in front end
         continue;
         // strategy.setValid(false);
       }
@@ -1278,15 +1279,12 @@ public class StepFactory {
         String name = getNextName(user, strategy.getName(), false);
         int newStrategyId = getNewStrategyId();
         Step newRootStep = strategy.getLatestStep().deepClone(newStrategyId);
-        Strategy newStrat = createStrategy(user, newRootStep, name, strategy.getName(), false,
-            strategy.getDescription(), false, false);
-        strategy.setName(newStrat.getName());
-        strategy.setSavedName(newStrat.getSavedName());
-        strategy.setStrategyId(newStrat.getStrategyId());
-        strategy.setSignature(newStrat.getSignature());
+        // instead of getting an unsaved copy, we create a saved copy, then change the current one to be
+        // unsaved, and modify it directly.
+        createStrategy(user, newRootStep, name, strategy.getName(), true, strategy.getDescription(), false,
+            strategy.getIsPublic());
         strategy.setIsSaved(false);
         strategy.setIsPublic(false);
-        strategy.setLatestStep(newRootStep);
       }
 
       Date modifiedTime = new Date();

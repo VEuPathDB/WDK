@@ -167,6 +167,10 @@ public class ProcessStepAction extends Action {
     if (step == null)
       throw new WdkUserException("Required param " + PARAM_STEP + " is missing.");
 
+    // before changing step, need to check if strategy is saved, if yes, make a copy.
+      if (strategy.getIsSaved())
+        strategy.update(false);
+
     // check if the question name exists
     String questionName = request.getParameter(PARAM_QUESTION);
     String filterName = request.getParameter(PARAM_FILTER);

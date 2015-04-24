@@ -156,6 +156,10 @@ public class ProcessBooleanAction extends Action {
     if (operator == null)
       throw new WdkUserException("Required param " + PARAM_BOOLEAN_OPERATOR + " is missing.");
 
+    // before changing step, need to check if strategy is saved, if yes, make a copy.
+      if (strategy.getIsSaved())
+        strategy.update(false);
+
     step.setParamValue(BooleanQuery.OPERATOR_PARAM, operator);
     step.saveParamFilters();
 

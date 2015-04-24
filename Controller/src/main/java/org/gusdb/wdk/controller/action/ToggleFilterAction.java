@@ -12,6 +12,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 public class ToggleFilterAction extends Action {
@@ -42,6 +43,17 @@ public class ToggleFilterAction extends Action {
     
     UserBean user = ActionUtility.getUser(servlet, request);
     StepBean step = user.getStep(Integer.valueOf(stepId));
+
+
+    // before changing step, need to check if strategy is saved, if yes, make a copy.
+    String strStrategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+    if (strStrategyId != null && !strStrategyId.isEmpty()) {
+      int strategyId = Integer.valueOf(strStrategyId.split("_", 2)[0]);
+      StrategyBean strategy = user.getStrategy(strategyId);
+      if (strategy.getIsSaved())
+        strategy.update(false);
+    }
+
     step.getFilterOptions().getFilterOption(filterName).setDisabled(disabled);
     step.saveParamFilters();
     
