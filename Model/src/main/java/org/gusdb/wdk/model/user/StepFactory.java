@@ -1276,7 +1276,9 @@ public class StepFactory {
         // it. We need to get an unsaved copy to modify. Generate unsaved name.
         // Note all new unsaved strats are private; they do not inherit public.
         String name = getNextName(user, strategy.getName(), false);
-        Strategy newStrat = createStrategy(user, strategy.getLatestStep(), name, strategy.getName(), false,
+        int newStrategyId = getNewStrategyId();
+        Step newRootStep = strategy.getLatestStep().deepClone(newStrategyId);
+        Strategy newStrat = createStrategy(user, newRootStep, name, strategy.getName(), false,
             strategy.getDescription(), false, false);
         strategy.setName(newStrat.getName());
         strategy.setSavedName(newStrat.getSavedName());
@@ -1284,6 +1286,7 @@ public class StepFactory {
         strategy.setSignature(newStrat.getSignature());
         strategy.setIsSaved(false);
         strategy.setIsPublic(false);
+        strategy.setLatestStep(newRootStep);
       }
 
       Date modifiedTime = new Date();
