@@ -16,16 +16,20 @@
   <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
   <c:set var="recHasBasket" value="${wdkAnswer.question.recordClass.useBasket}" />
   <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
+
+  <%-- catch raised exception so we can show the user a nice message --%>
   <c:catch var="answerValueRecords_exception">
+    <%-- FIXME This should probably be logged to wdk logger --%>
     <c:set var="answerRecords" value="${wdkAnswer.records}" />
   </c:catch>
+
   <c:set var="wdkView" value="${requestScope.wdkView}" />
-
   <c:set var="displayName" value="${step.recordClass.displayName}"/>
-
   <c:set var="isBasket" value="${fn:contains(step.questionName, 'ByRealtimeBasket')}"/>
 
   <c:choose>
+
+    <%-- Handle exception raised when accessing answerValue, when we're viewing a basket --%>
     <c:when test='${answerValueRecords_exception ne null and isBasket}'>
       <div class="ui-widget">
         <div class="ui-state-error ui-corner-all" style="padding:8px;">
@@ -36,6 +40,8 @@
         </div>
       </div>
     </c:when>
+
+    <%-- Handle exception raised when accessing answerValue, when we're viewing a step result --%>
     <c:when test='${answerValueRecords_exception ne null}'>
       <div class="ui-widget">
         <div class="ui-state-error ui-corner-all" style="padding:8px;">
@@ -46,9 +52,11 @@
         </div>
       </div>
     </c:when>
+
     <c:when test='${wdkAnswer.resultSize == 0}'>
       No results are retrieved
     </c:when>
+
     <c:otherwise>
 
       <%-- pager --%>
@@ -82,9 +90,16 @@
 
             <th>
 
+              <c:if test="${wdkAnswer.question.recordClass.hasResultSizeQuery}">
+                <span style="padding-right: 2em">
+                  ${wdkAnswer.displayResultSize}
+                  ${wdkAnswer.displayResultSize eq 1 ? step.recordClass.displayName : step.recordClass.displayNamePlural}
+                </span>
+              </c:if>
+
               <span style="padding-right: 2em">
                 ${wdkAnswer.resultSize}
-                ${wdkAnswer.resultSize eq 1 ? steo.recordClass.displayName : step.recordClass.displayNamePlural}
+                ${wdkAnswer.resultSize eq 1 ? wdkAnswer.question.recordClass.nativeDisplayName : wdkAnswer.question.recordClass.nativeDisplayNamePlural}
               </span>
 
               <c:if test="${wdkAnswer.resultSize > 0}">
