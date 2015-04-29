@@ -1,4 +1,3 @@
-import { Record } from 'immutable';
 import createActionCreators from '../utils/createActionCreators';
 import {
   AppLoading,

@@ -31,8 +31,10 @@ import { Record } from 'immutable';
 
 export default function Action(...args) {
   const Action = Record(...args);
-  Action.prototype.getType = function getType() {
-    return Action;
-  };
+  Object.defineProperty(Action.prototype, 'type', {
+    get() {
+      return Action;
+    }
+  });
   return Action
 }

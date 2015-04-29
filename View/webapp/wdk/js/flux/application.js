@@ -1,13 +1,15 @@
-import Flux from 'flux';
-import noop from 'lodash/utility/noop';
+import mapColl from 'lodash/collection/map';
 import React from 'react';
 import Router from 'react-router';
 import actionCreators from './actions';
-import stores from './stores';
+import Dispatcher from './Dispatcher';
+import Stores from './stores';
 import Routes from './routes';
 import HeadlessLocation from './utils/HeadlessLocation';
 import ServiceAPI from './utils/ServiceAPI';
 import createObjectCache from './utils/createObjectCache';
+
+function noop() {}
 
 function createApplication(config) {
   var {
@@ -27,7 +29,7 @@ function createApplication(config) {
     throw new Error(`Application rootElement ${rootElement} must be a DOM element.`);
   }
 
-  var dispatcher = new Flux.Dispatcher();
+  var dispatcher = Dispatcher.createDispatcher();
   var serviceAPI = ServiceAPI(serviceUrl);
 
   // Determine Router Location implementation based on config options.
@@ -49,7 +51,7 @@ function createApplication(config) {
     routerLocation,
     dispatcher,
     serviceAPI,
-    stores,
+    Stores,
     actionCreators,
     recordComponentResolver,
     cellRendererResolver
@@ -61,7 +63,7 @@ function runApplication(opts = {}) {
     baseUrl,
     dispatcher,
     serviceAPI,
-    stores,
+    Stores,
     actionCreators,
     rootElement,
     routerLocation,
@@ -77,14 +79,14 @@ function runApplication(opts = {}) {
   }
 
   var routes = Routes.getRoutes(baseUrl);
-  var storeCache = createObjectCache(stores, dispatcher);
+  var storesMap = createStoresMap(Stores, dispatcher);
   var actionCreatorsCache = createObjectCache(actionCreators, dispatcher, serviceAPI);
   var router = Router.create({
     routes: routes,
     location: routerLocation
   });
   var applicationContext = createApplicationContext(
-    storeCache,
+    storesMap,
     actionCreatorsCache,
     recordComponentResolver,
     cellRendererResolver,
@@ -99,10 +101,10 @@ function runApplication(opts = {}) {
 // Route handlers. This is effectively a lookup service.
 //
 // TODO Warn or throw when a requested object is not found.
-function createApplicationContext(storeCache, actionCreatorsCache, recordComponentResolver, cellRendererResolver, router) {
+function createApplicationContext(storesMap, actionCreatorsCache, recordComponentResolver, cellRendererResolver, router) {
   return {
     getStore(name) {
-      return storeCache.get(name).asObservable();
+      return storesMap.get(name);
     },
     getActions(name) {
       return actionCreatorsCache.get(name);
@@ -117,6 +119,17 @@ function createApplicationContext(storeCache, actionCreatorsCache, recordCompone
       return router;
     }
   };
+}
+
+// XXX Use Factory/Class as key?
+function createStoresMap(Factories, dispatcher) {
+  var storesMap = new Map();
+  mapColl(Factories, function(Factory, storeName) {
+    var store = Factory();
+    store.register(dispatcher);
+    storesMap.set(storeName, store);
+  });
+  return storesMap;
 }
 
 function createRouterCallback(rootElement, context) {

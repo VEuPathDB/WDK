@@ -1,235 +1,182 @@
-import EventEmitter from 'events';
-import warning from 'react/lib/warning';
+import invariant from 'react/lib/invariant';
+
 
 /**
- * Base class for a Flux Store.
+ * Creates a new Store object.
  *
- * This base class handles creating the callback used with the Dispatcher.
- * Derived classes can register callbacks for specific actions within the
- * #init() method hook (see example below).
+ * This constructor allows us to define a Store as a reduce function, taking
+ * the action being dispatched as input.
  *
- * The point of this class is to encapsulate the internals of the application
- * from derived classes so that we can more seamlessly transition to reactive
- * components, if we decide to.
+ * The benefit of this approach is that the Store definition doesn't have to
+ * worry about maintaing any internal state -- state is tracked by this
+ * constructor.
  *
- * Currently, all aspects of the original Flux architecture are supported,
- * including handling store dependencies via `waitFor`. The main difference
- * is that derived classes do not need to worry about `emitChange` since this
- * class handles that. Furthermore, this class provides a method to create an
- * obervable proxy (#asObservable()) that aproximated Rx.Observable semantics.
+ * This also further enforces the idea that all application change should
+ * happen through actions. By constraining the definition of a store to a
+ * reduce function, there is no opportunity to trigger updates otherwise.
+ * This is mostly due to the fact that we don't expose the dispatcher via the
+ * constructor.
  *
  *
- * __EXAMPLE__
+ * Both arguments are optional. If less then two arguments are provided, the
+ * following rules are applied:
  *
- * A derived class that updates it's state when an action with type
- * SOME_ACTION_TYPE is dispatched. Note the lack of the cumbersome switch
- * statement, and the lack of explicit call to emitChange.
+ *   - If it is a function, it will be treated as `update` and `value` will
+ *     be `undefined`.
  *
- *     class MyStore extends Store {
- *       init() {
- *         this.state = { value: 0 };
- *         this.handleAction(SOME_ACTION_TYPE, this.updateValue);
- *       }
+ *   - Otherwise, it will be treated as `value` and `update` will be a noop
+ *     function.
  *
- *       updateValue(action) {
- *         this.state.value = action.value;
- *       }
- *     }
+ * It follows that if no arguments are provided, `value` will be `undefined`
+ * and `update` will be `noop`.
+ *
+ *
+ * Examples:
+ *
+ * A store whose value increments by the amount defined in the action:
+ *
+ *    var countStore = createStore({
+ *      initialize(handlers) {
+ *        handlers.set(IncrementCount, this.increment);
+ *        return 1;
+ *      },
+ *
+ *      increment(count, action) {
+ *        return count + action.incrementBy;
+ *      }
+ *    });
+ *
+ *    var countStore = createStore(1, function(value, action) {
+ *      switch (action.type) {
+ *        case IncrementBy:
+ *          value += action.incrementBy;
+ *          break;
+ *      }
+ *      return value;
+ *    });
+ *
+ *
+ * A store that includes a list of Todo items:
+ *
+ *    var todoStore = createStore({ todos: [] }, function(state, action) {
+ *      if (action.type === TodoAdded) {
+ *        state.todos.push(action.todo);
+ *      }
+ *      return state;
+ *    });
+ *
+ *
+ * A store that depends on another store:
+ *
+ *    var todoListStore = createStore({ lists: [] }, function(state, action, waitFor) {
+ *      if (action.type === TodoSelected) {
+ *        waitFor([ todoStore.dispatchToken ]);
+ *        var list = action.todo.list;
+ *        if (state.lists.indexOf(list) === -1) {
+ *          state.lists.push(list);
+ *        }
+ *      }
+ *      return state;
+ *    });
+ *
+ * @param {any} [value] Initial value of store.
+ * @param {function} [update] A reduce function to apply to store. If not
+ *   provided, this will default to a noop function. If the provided function
+ *   returns undefined, it will be treated as a noop. If you find yourself in
+ *   need of representing an empty value, use null instead.
  */
-export default class Store {
+function createStore(value, update) {
+  invariant(
+    arguments.length !== 0,
+    'An initial value or an update function must be provided to `createStore`'
+  );
 
-  /**
-   * Basic internal housekeeping and initialization of properties.
-   *
-   * Call derived class's #init() (defaults to noop... should log warning?)
-   * and register a callback function with dispatcher.
-   *
-   * @param {Dispatcher} dispatcher Application dispatcher.
-   * @param {Application} application Application context.
-   * @constructor
-   */
-  constructor(dispatcher, application) {
-    this._dispatcher = dispatcher;
-    this._application = application;
-    this._methods = new Map();
-    this._emitter = new EventEmitter();
-    this.init();
-    warning(
-      this.state !== undefined,
-      '`state` is not defined. Check the init method of %s.',
-      this.constructor.name
-    );
-    this.dispatchToken = dispatcher.register(this.dispatchHandler.bind(this));
-  }
-
-  /**
-   * Callback used with dispatcher. This method will lookup any methods
-   * registered with #handleAction. If one is found, it will be called with the
-   * action that was dispatched. It will then notify any listeners with the new
-   * state.
-   *
-   * TODO If class declares it's state as immutable, do an equality check to
-   *      decide of listeners should be notified.
-   */
-  dispatchHandler(action) {
-    const method = this._methods.get(action.getType());
-    if (method === undefined) return;
-
-    if (method.waitFor) {
-      const tokens = method.waitFor.map(storeClass => {
-        const store = this._application.get(storeClass);
-        if (store === undefined) {
-          throw Error('Could not find Store', storeClass);
-        }
-        return store.dispatchToken;
-      });
-      this._dispatcher.waitFor(...tokens);
+  if (arguments.length < 2) {
+    if (typeof value === 'function') {
+      update = value;
+      value = undefined;
     }
-
-    method.call(this, action);
-    this._emitter.emit('change', this.state);
+    else {
+      update = noop;
+    }
   }
 
-  /**
-   * Register a callback method to be called when an action whose type is
-   * `actionType` is dispatched. This method should be called by derived
-   * classes within the #init() method hook.
-   *
-   * @param {string} actionType The type of action.
-   * @param {method} method The callback method that will be called in the
-   *     context of the constructed object.
-   */
-  handleAction(actionType, method) {
-    this._methods.set(actionType, method);
-  }
+  let dispatchToken;
+  const observable = createObservable(value);
 
+  return {
+    register(dispatcher, context = {}) {
+      invariant(
+        dispatchToken === undefined,
+        'A store can only be registered to one dispatcher.'
+      );
 
-  /**
-   * Create an observable interface to be used by Components. This prevents
-   * access to methods that may mutate state, such as those called by the
-   * dispatch handler.
-   *
-   * This loosely follows the Rx.Observable API. An eventual goal may be to
-   * create stores as Rx.Observables.
-   * See https://github.com/Reactive-Extensions/RxJS/blob/master/doc/api/core/operators/asobservable.md
-   * and https://github.com/Reactive-Extensions/RxJS/blob/master/doc/api/core/operators/subscribe.md
-   *
-   *
-   * Example usage:
-   *
-   *     var store = new Store();
-   *     var observableStore = store.asObservable();
-   *     var subscription = observableStore.subscribe(function(state) {
-   *       component.setState(state);
-   *     });
-   *
-   *     ... some time later ...
-   *
-   *     subscription.dispose();
-   *
-   * Since we call `callback` immediately within subscribe, we don't need to
-   * add a getter to access the current state of the store.
-   *
-   * `subscribe` returns a disposable object (see below).
-   */
-  asObservable() {
-    return createObservable(this);
-  }
+      const waitFor = dispatcher.waitFor.bind(dispatcher);
+      dispatchToken = dispatcher.register(function dispatcherCallback(action) {
+        let value = observable.getValue();
+        value = update(value, action, waitFor);
+        if (value !== undefined) {
+          observable.onNext(value);
+        }
+      });
+    },
 
+    unregister(dispatcher) {
+      if (dispatchToken !== undefined) {
+        dispatcher.unregister(dispatchToken);
+        dispatchToken = undefined;
+      }
+    },
 
-  /**
-   * Helper decorator for callback methods passed to #handleAction().
-   * When found, the dispatch handler will pass listed stores as addition
-   * parameters to the method.
-   *
-   * TODO Implement passing stores in dispatcher. This requires the application
-   * container to be implemented properly.
-   *
-   * TODO Enable decorators. For now, this must be used manually.
-   *
-   * Example usage where we want to wait for OtherStore to handle SOME_ACTION:
-   *
-   *     // without decorators
-   *     class MyStore extends Store {
-   *
-   *       init() {
-   *         this.state = {};
-   *         this.handleAction(SOME_ACTION, Store.waitFor(this.update, OtherStore));
-   *       }
-   *
-   *       update(action, otherStore) {
-   *         ...
-   *       }
-   *
-   *     }
-   *
-   *     // with decorators
-   *     class MyStore extends Store {
-   *
-   *       init() {
-   *         this.state = {};
-   *         this.handleAction(SOME_ACTION, this.udpate);
-   *       }
-   *
-   *       @Store.waitFor(OtherStore);
-   *       udpate(action, otherStore) {
-   *         ...
-   *       }
-   *
-   *     }
-   *
-   *
-   *     // Future version with register decorator
-   *     class MyStore extends Store {
-   *
-   *       init() {
-   *         this.state = {};
-   *       }
-   *
-   *       @Store.handleAction(SOME_ACTION);
-   *       @Store.waitFor(OtherStore);
-   *       update(action, otherStore) {
-   *         ...
-   *       }
-   *
-   *     }
-   *
-   */
-  static waitFor(method, ...Stores) {
-    method.waitFor = Stores;
-    return method;
-  }
+    subscribe(onNext) {
+      return observable.subscribe(onNext);
+    },
 
-  // template method hooks
+    get dispatchToken() {
+      return dispatchToken;
+    },
 
-  init() {
-    warning(
-      false,
-      'Store did not implement an init method. Check the definition of `%s`.',
-      this.constructor.name
-    );
-  }
-
+    get value() {
+      return observable.getValue();
+    }
+  };
 }
 
+function createObservable(initialValue) {
+  let value = initialValue;
+  const callbacks = [];
 
-// Creates an observable proxy object to the store.
-function createObservable(store) {
   return {
     subscribe(callback) {
-      store._emitter.on('change', callback);
-      callback(store.state);
-      return createDisposable(store, callback);
+      if (value !== undefined) {
+        callback(value);
+      }
+      callbacks.push(callback);
+      return createDisposable(callback, callbacks);
+    },
+
+    onNext(newValue) {
+      value = newValue;
+      callbacks.forEach(callback => callback(value));
+    },
+
+    getValue() {
+      return value;
     }
   };
 }
 
-// This will provide a method to remove a callback function
-// from a store. This is loosely based on Rx.Observables.
-function createDisposable(store, callback) {
+function createDisposable(callback, callbacks) {
   return {
     dispose() {
-      store._emitter.removeListener('change', callback);
+      const index = callbacks.indexOf(callback);
+      callbacks.splice(index, 1);
     }
   };
 }
+
+function noop() {}
+
+export default {
+  createStore
+};
