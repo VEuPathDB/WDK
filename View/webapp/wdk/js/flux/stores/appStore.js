@@ -4,24 +4,28 @@ import {
   AppError
 } from '../ActionType';
 
-export default class AppStore extends Store {
+export default function createAppStore() {
+  var initialState = {
+    isLoading: 0,
+    errors: []
+  };
+  return Store.createStore(initialState, update);
+}
 
-  init() {
-    this.state = {
-      isLoading: 0,
-      errors: []
-    };
-    this.handleAction(AppLoading, this.setLoading);
-    this.handleAction(AppError, this.setError);
+function update(state, action) {
+  switch(action.type) {
+    case AppLoading: return setLoading(state, action);
+    case AppError: return setError(state, action);
   }
+}
 
-  setLoading(action) {
-    if (action.isLoading) this.state.isLoading++;
-    else this.state.isLoading--;
-  }
+function setLoading(state, action) {
+  if (action.isLoading) state.isLoading++;
+  else state.isLoading--;
+  return state;
+}
 
-  setError(action) {
-    this.state.errors.unshift(action.error);
-  }
-
+function setError(state, action) {
+  state.errors.unshift(action.error);
+  return state;
 }

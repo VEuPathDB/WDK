@@ -4,18 +4,11 @@ import {
 } from '../ActionType';
 
 
-export default class RecordClassStore extends Store {
-
-  init() {
-    this.state = {
-      recordClasses: []
-    };
-    this.handleAction(RecordClassesAdded, this.setRecordClasses);
-  }
-
-
-  setRecordClasses({ recordClasses }) {
-    this.state.recordClasses = recordClasses;
-  }
-
+export default function createRecordClassStore() {
+  return Store.createStore(function(state = {}, action) {
+    if (action.type === RecordClassesAdded) {
+      state.recordClasses = action.recordClasses;
+      return state;
+    }
+  });
 }

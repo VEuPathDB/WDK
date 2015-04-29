@@ -90,134 +90,137 @@ var isTermInRecord = curry(function isTermInRecord(term, record) {
   return clob.toLowerCase().indexOf(term.toLowerCase()) !== -1;
 });
 
-
-export default class AnswerStore extends Store {
-
-  init() {
-    this.state = {
-      filterTerm: '',
-      filteredRecords: null,
-      answers: {},
-      displayInfo: {
-        sorting: null,
-        pagination: null,
-        attributes: null,
-        tables: null
-      },
-      questionDefinition: {
-        questionName: null,
-        params: null,
-        filters: null
-      }
-    };
-
-    this.handleAction(AnswerAdded, this.addAnswer);
-    this.handleAction(AnswerMoveColumn, this.moveTableColumn);
-    this.handleAction(AnswerChangeAttributes, this.updateVisibleAttributes);
-    this.handleAction(AnswerFilter, this.filterAnswer);
-  }
-
-  /**
-   * answer = {
-   *   meta,
-   *   records: [{ id, attributes, tables }]
-   * }
-   *
-   * requestData = {
-   *   displayInfo,
-   *   questionDefinition
-   * }
-   *
-   * requestData is an object with the keys `displayInfo` and
-   * `questionDefinition`. We will be merging these keys into `state`
-   * below.
-   */
-  addAnswer({ answer, requestData }) {
-    var questionName = requestData.questionDefinition.questionName;
-    var previousQuestionName = this.state.questionDefinition.questionName;
-
-    /*
-     * If state.displayInfo.attributes isn't defined we want to use the
-     * defaults. For now, we will just show whatever is in
-     * answer.meta.attributes by default. This is probably wrong.
-     * We probably also want to persist the user's choice somehow. Using
-     * localStorage is one possble solution.
-     */
-    if (!requestData.displayInfo.visibleAttributes || previousQuestionName !== questionName) {
-      requestData.displayInfo.visibleAttributes = answer.meta.summaryAttributes.map(attrName => {
-        return answer.meta.attributes.find(attr => attr.name === attrName);
-      });
+export default function createAnswerStore() {
+  var initialState = {
+    filterTerm: '',
+    filteredRecords: null,
+    answers: {},
+    displayInfo: {
+      sorting: null,
+      pagination: null,
+      attributes: null,
+      tables: null
+    },
+    questionDefinition: {
+      questionName: null,
+      params: null,
+      filters: null
     }
+  };
+  return Store.createStore(initialState, function update(state, action) {
+    switch(action.type) {
+      case AnswerAdded: return addAnswer(state, action);
+      case AnswerMoveColumn: return moveTableColumn(state, action);
+      case AnswerChangeAttributes: return updateVisibleAttributes(state, action);
+      case AnswerFilter: return filterAnswer(state, action);
+    }
+  });
+}
 
-    answer.meta.attributes = answer.meta.attributes
-      .filter(attr => attr.name != 'wdk_weight');
 
-    // For each record, attributes should be an object-map indexed by attribute name
-    answer.records.forEach(function(record) {
-      record.attributes = indexBy(record.attributes, 'name');
-      record.tables = indexBy(record.tables, 'name');
-    });
+/**
+ * answer = {
+ *   meta,
+ *   records: [{ id, attributes, tables }]
+ * }
+ *
+ * requestData = {
+ *   displayInfo,
+ *   questionDefinition
+ * }
+ *
+ * requestData is an object with the keys `displayInfo` and
+ * `questionDefinition`. We will be merging these keys into `state`
+ * below.
+ */
+function addAnswer(state, { answer, requestData }) {
+  var questionName = requestData.questionDefinition.questionName;
+  var previousQuestionName = state.questionDefinition.questionName;
 
-    /*
-     * This will update the keys `filteredRecords`, `displayInfo`, and
-     * `questionDefinition` in `this.state`.
-     */
-    assign(this.state, {
-      filteredRecords: answer.records,
-      displayInfo: requestData.displayInfo,
-      questionDefinition: requestData.questionDefinition
-    });
-
-    this.state.answers[questionName] = answer;
-  }
-
-  /**
-   * Update the position of an attribute in the answer table.
-   *
-   * @param {string} columnName The name of the atribute being moved.
-   * @param {number} newPosition The 0-based index to move the attribute to.
+  /*
+   * If state.displayInfo.attributes isn't defined we want to use the
+   * defaults. For now, we will just show whatever is in
+   * answer.meta.attributes by default. This is probably wrong.
+   * We probably also want to persist the user's choice somehow. Using
+   * localStorage is one possble solution.
    */
-  moveTableColumn({ columnName, newPosition }) {
-    /* list of attributes we will be altering */
-    var attributes = this.state.displayInfo.visibleAttributes;
-
-    /* The current position of the attribute being moved */
-    var currentPosition = attributes.findIndex(function(attribute) {
-      return attribute.get('name') === columnName;
+  if (!requestData.displayInfo.visibleAttributes || previousQuestionName !== questionName) {
+    requestData.displayInfo.visibleAttributes = answer.meta.summaryAttributes.map(attrName => {
+      return answer.meta.attributes.find(attr => attr.name === attrName);
     });
-
-    /* The attribute being moved */
-    var attribute = attributes[currentPosition];
-
-    attributes
-      // remove attribute from array
-      .splice(currentPosition, 1)
-      // then, insert into new position
-      .splice(newPosition, 0, attribute);
   }
 
-  updateVisibleAttributes({ attributes }) {
-    this.state.displayInfo.visibleAttributes = attributes;
-  }
+  answer.meta.attributes = answer.meta.attributes
+    .filter(attr => attr.name != 'wdk_weight');
 
-  /**
-   * Filter the results of an answer. The filtered results are stored in a
-   * separate property.
-   *
-   * @param {string} terms The search phrase.
-   * @param {string} questionName The questionName of the answer to filter.
+  // For each record, attributes should be an object-map indexed by attribute name
+  answer.records.forEach(function(record) {
+    record.attributes = indexBy(record.attributes, 'name');
+    record.tables = indexBy(record.tables, 'name');
+  });
+
+  /*
+   * This will update the keys `filteredRecords`, `displayInfo`, and
+   * `questionDefinition` in `state`.
    */
-  filterAnswer({ terms, questionName }) {
-    var parsedTerms = parseSearchTerms(terms);
-    var records = this.state.answers[questionName].records;
-    var filteredRecords = parsedTerms.reduce(function(records, term) {
-      return records.filter(isTermInRecord(term));
-    }, records);
+  assign(state, {
+    filteredRecords: answer.records,
+    displayInfo: requestData.displayInfo,
+    questionDefinition: requestData.questionDefinition
+  });
 
-    assign(this.state, {
-      filterTerm: terms,
-      filteredRecords: filteredRecords
-    });
-  }
+  state.answers[questionName] = answer;
+  return state;
+}
 
+/**
+ * Update the position of an attribute in the answer table.
+ *
+ * @param {string} columnName The name of the atribute being moved.
+ * @param {number} newPosition The 0-based index to move the attribute to.
+ */
+function moveTableColumn(state, { columnName, newPosition }) {
+  /* list of attributes we will be altering */
+  var attributes = state.displayInfo.visibleAttributes;
+
+  /* The current position of the attribute being moved */
+  var currentPosition = attributes.findIndex(function(attribute) {
+    return attribute.get('name') === columnName;
+  });
+
+  /* The attribute being moved */
+  var attribute = attributes[currentPosition];
+
+  attributes
+    // remove attribute from array
+    .splice(currentPosition, 1)
+    // then, insert into new position
+    .splice(newPosition, 0, attribute);
+
+  return state;
+}
+
+function updateVisibleAttributes(state, { attributes }) {
+  state.displayInfo.visibleAttributes = attributes;
+  return state;
+}
+
+/**
+ * Filter the results of an answer. The filtered results are stored in a
+ * separate property.
+ *
+ * @param {string} terms The search phrase.
+ * @param {string} questionName The questionName of the answer to filter.
+ */
+function filterAnswer(state, { terms, questionName }) {
+  var parsedTerms = parseSearchTerms(terms);
+  var records = state.answers[questionName].records;
+  var filteredRecords = parsedTerms.reduce(function(records, term) {
+    return records.filter(isTermInRecord(term));
+  }, records);
+
+  return assign(state, {
+    filterTerm: terms,
+    filteredRecords: filteredRecords
+  });
 }
