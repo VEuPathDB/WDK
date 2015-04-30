@@ -1800,7 +1800,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     if (filter == null)
       filter = getColumnFilter(key);
     if (filter == null)
-      throw new WdkModelException("Requested Step Filter doesn't exist: " + fullName);
+      throw new WdkModelException("Requested Filter, with key '" + key + "' doesn't exist in record: " + fullName);
     return filter;
   }
 
