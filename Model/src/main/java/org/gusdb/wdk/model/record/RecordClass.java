@@ -334,8 +334,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public String getNativeDisplayName() {
-	    return (nativeDisplayName == null) ? getName() : nativeDisplayName;
-	  }
+    return (nativeDisplayName == null) ? getName() : nativeDisplayName;
+  }
 
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
@@ -353,7 +353,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 	    if (nativeDisplayNamePlural != null)
 	      return nativeDisplayNamePlural;
 
-	    return getPlural(getDisplayName());
+	    return getPlural(getNativeDisplayName());
 	  }
 
   public void setDisplayNamePlural(String displayNamePlural) {
