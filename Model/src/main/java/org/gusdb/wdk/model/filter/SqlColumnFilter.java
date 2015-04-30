@@ -13,12 +13,15 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.json.JSONObject;
+import org.apache.log4j.Logger;
 
 public abstract class SqlColumnFilter extends ColumnFilter {
 
 	protected static final String COLUMN_PROPERTY = "property";
 	protected static final String COLUMN_COUNT = "count";
 	
+    private static final Logger LOG = Logger.getLogger(SqlColumnFilter.class);
+
 	public SqlColumnFilter(String name, ColumnAttributeField attribute) {
 		super(name, attribute);
 	}
@@ -84,8 +87,10 @@ public abstract class SqlColumnFilter extends ColumnFilter {
 			throws WdkModelException, WdkUserException {
 		
 		String attributeSql = getAttributeSql(answer, idSql);
+		String columnName = attribute.getName();
 
-		StringBuilder sql = new StringBuilder("SELECT idq.* ");
+
+		StringBuilder sql = new StringBuilder("SELECT idq.*, aq. " + columnName);
 
 		// need to join with idsql here to get extra (dynamic) columns from idq
 		String[] pkColumns = answer.getQuestion().getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
