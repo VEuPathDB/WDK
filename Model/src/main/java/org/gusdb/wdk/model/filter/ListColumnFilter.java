@@ -15,7 +15,6 @@ public class ListColumnFilter extends SqlColumnFilter {
 
   public static final int MAX_DISPLAY_LENGTH = 30;
 
-  private static final String COLUMN_COUNT = "counts";
   private static final String KEY_VALUES = "values";
 
   public static ColumnFilterDefinition getDefinition() {
@@ -49,7 +48,7 @@ public class ListColumnFilter extends SqlColumnFilter {
       WdkUserException {
     String columnName = attribute.getName();
 
-    StringBuilder sql = new StringBuilder("select * from (" + inputSql + ") where " + columnName + "in (");
+    StringBuilder sql = new StringBuilder("select * from (" + inputSql + ") where " + columnName + " in (");
 
     // put the filter values as join conditions
     List<String> values = getValues(jsValue);
