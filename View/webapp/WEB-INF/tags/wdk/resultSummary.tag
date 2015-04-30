@@ -26,7 +26,7 @@
 
 <!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
 <div id="title-links" class="h3left">
-  <span id="text_step_count">${wdkAnswer.resultSize}</span>
+  <span id="text_step_count">${wdkAnswer.displayResultSize}</span>
   <span id="text_data_type">${recordName}</span>
 
   <c:if test="${strategy != null}">
