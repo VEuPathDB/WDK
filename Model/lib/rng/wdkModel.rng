@@ -1557,8 +1557,10 @@
       <attribute name="name" />
       <ref name="IncludeExclude" />
       <zeroOrMore>
-        <ref name="stepFilter" />
-        <ref name="columnFilter" />
+	<choice>
+	  <ref name="stepFilter" />
+	  <ref name="columnFilter" />
+	</choice>
       </zeroOrMore>
     </element>
   </define>
