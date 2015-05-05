@@ -204,6 +204,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * field.
    */
   private String displayName;
+  private String description;
   private String displayNamePlural;
   private String shortDisplayName;
   private String shortDisplayNamePlural;
@@ -308,8 +309,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return (displayName == null) ? getName() : displayName;
   }
 
+  public String getDescription() {
+    return (description == null) ? "nothing" : description;
+  }
+
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 
   public String getDisplayNamePlural() {
