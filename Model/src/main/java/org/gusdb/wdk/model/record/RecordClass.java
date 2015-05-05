@@ -310,7 +310,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public String getDescription() {
-    return (description == null) ? "nothing" : description;
+    return (description == null) ? "" : description;
   }
 
   public void setDisplayName(String displayName) {
