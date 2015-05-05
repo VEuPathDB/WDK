@@ -933,6 +933,9 @@
       <optional>
         <attribute name="shortDisplayNamePlural" />
       </optional>
+       <optional>
+        <attribute name="description" />
+      </optional>
       <optional>
         <attribute name="doNotTest">
           <data type="boolean" />
