@@ -63,6 +63,7 @@ const Answer = React.createClass({
     } = this.props;
 
     const displayName = recordClass.displayName;
+    const description = recordClass.description;
     const meta = answer.meta;
     const pagination = displayInfo.pagination;
     const firstRec = pagination.offset + 1;
@@ -89,6 +90,7 @@ const Answer = React.createClass({
     return (
       <div>
         <h1>{question.displayName}</h1>
+          <div>{description}</div>
           <div className="wdk-Answer">
             <div className="wdk-Answer-filter">
               <Tooltip content={tooltipContent}>
