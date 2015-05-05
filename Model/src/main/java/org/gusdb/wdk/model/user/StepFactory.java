@@ -244,6 +244,7 @@ public class StepFactory {
     // create answer
     AnswerValue answerValue = question.makeAnswerValue(user, dependentValues, pageStart, pageEnd,
         sortingAttributes, filter, validate, assignedWeight);
+    answerValue.setFilterOptions(filterOptions);
 
     logger.debug("id query name  :" + answerValue.getIdsQueryInstance().getQuery().getFullName());
     logger.debug("answer checksum:" + answerValue.getChecksum());
@@ -256,11 +257,6 @@ public class StepFactory {
     int estimateSize;
     Exception exception = null;
     try {
-      if (filter != null) {
-        filterName = filter.getName();
-        estimateSize = answerValue.getFilterSize(filterName);
-      }
-      else
         estimateSize = answerValue.getDisplayResultSize();
     }
     catch (Exception ex) {
