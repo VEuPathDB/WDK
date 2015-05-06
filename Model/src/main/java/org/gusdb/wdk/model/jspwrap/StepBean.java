@@ -533,7 +533,7 @@ public class StepBean {
     step.setAssignedWeight(assignedWeight);
   }
 
-  public FilterOptionList getFilterOptions() throws WdkModelException {
+  public FilterOptionList getFilterOptions() {
     return step.getFilterOptions();
   }
 
@@ -541,7 +541,7 @@ public class StepBean {
     step.addFilterOption(filterName, filterValue);
   }
 
-  public void removeFilterOption(String filterName) throws WdkModelException {
+  public void removeFilterOption(String filterName) {
     step.removeFilterOption(filterName);
   }
 

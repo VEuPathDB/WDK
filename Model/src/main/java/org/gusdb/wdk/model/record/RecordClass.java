@@ -1706,7 +1706,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return filter;
   }
 
-  public StepFilter getStepFilter(String key) throws WdkModelException {
+  public StepFilter getStepFilter(String key) {
     return _stepFilters.get(key);
   }
 
