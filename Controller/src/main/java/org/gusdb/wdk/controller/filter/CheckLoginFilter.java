@@ -19,7 +19,6 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.LoginCookieFactory.LoginCookieParts;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;

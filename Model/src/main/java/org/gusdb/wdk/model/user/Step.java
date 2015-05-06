@@ -787,7 +787,7 @@ public class Step {
     this.paramValues = new LinkedHashMap<String, String>(paramValues);
   }
 
-  public FilterOptionList getFilterOptions() throws WdkModelException {
+  public FilterOptionList getFilterOptions() {
     if (filterOptions == null) {
       filterOptions = new FilterOptionList(this);
     }
@@ -804,7 +804,7 @@ public class Step {
     getFilterOptions().addFilterOption(filterName, filterValue);
   }
 
-  public void removeFilterOption(String filterName) throws WdkModelException {
+  public void removeFilterOption(String filterName) {
     getFilterOptions().removeFilterOption(filterName);
   }
 
