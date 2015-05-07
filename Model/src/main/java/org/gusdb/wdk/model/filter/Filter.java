@@ -24,9 +24,20 @@ public interface Filter {
   
   void setView(String view);
   
+  void setDefaultValue(JSONObject defaultValue);
+  
+  JSONObject getDefaultValue();
+  
   String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException;
 
   FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException, WdkUserException;
   
   String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException, WdkUserException;
+  
+  /**
+   * return true if supplied value equals default value.  return false if no default value.
+   * @param value
+   * @return
+   */
+  boolean defaultValueEquals(JSONObject value) throws WdkModelException;
 }

@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -100,5 +101,18 @@ public class ListColumnFilter extends SqlColumnFilter {
       }
     }
     return values;
+  }
+  
+  @Override
+  public void setDefaultValue(JSONObject defaultValue) {
+	  throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
+  }
+  
+  @Override
+  /**
+   * Not fully implemented yet.
+   */
+  public boolean defaultValueEquals(JSONObject value)  throws WdkModelException {
+	  return false;
   }
 }

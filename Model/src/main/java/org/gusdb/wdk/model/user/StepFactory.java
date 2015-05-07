@@ -43,6 +43,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
+import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
@@ -305,6 +306,7 @@ public class StepFactory {
     step.setDeleted(deleted);
     step.setParamValues(dependentValues);
     step.setFilterOptions(filterOptions);
+    addDefaultFiltersToStep(step);
     step.setAnswerValue(answerValue);
     step.setEstimateSize(estimateSize);
     step.setAssignedWeight(assignedWeight);
@@ -1751,5 +1753,13 @@ public class StepFactory {
           }
         });
     return ids;
+  }
+  
+  private void addDefaultFiltersToStep(Step step) throws WdkModelException {
+	for (Filter filter : step.getQuestion().getFilters().values()) {
+		if (filter.getDefaultValue() != null) {
+			step.addFilterOption(filter.getKey(), filter.getDefaultValue());
+		}
+	}
   }
 }
