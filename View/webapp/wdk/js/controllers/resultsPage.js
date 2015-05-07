@@ -184,6 +184,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
           }
           resultsToGrid(data, ignoreFilters, currentDiv, resultOnly);
           updateResultLabels(currentDiv, strat, step);
+          $(currentDiv).trigger('wdk-results-loaded');
         }
         if(strat) wdk.util.removeLoading(strat.frontId);
       },
