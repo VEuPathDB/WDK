@@ -390,11 +390,10 @@ public class UserBean /* implements Serializable */{
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.user.User#changePassword(java.lang.String,
-   * java.lang.String, java.lang.String)
+   * @see org.gusdb.wdk.model.user.User#changePassword(java.lang.String, java.lang.String, java.lang.String)
    */
-  public void changePassword(String oldPassword, String newPassword,
-      String confirmPassword) throws WdkUserException {
+  public void changePassword(String oldPassword, String newPassword, String confirmPassword)
+      throws WdkUserException {
     user.changePassword(oldPassword, newPassword, confirmPassword);
   }
 
@@ -628,14 +627,13 @@ public class UserBean /* implements Serializable */{
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
+   * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
    */
   public StepBean createStep(Integer strategyId, QuestionBean question, Map<String, String> params,
-      String filterName, boolean deleted, boolean validate, int assignedWeight)
-      throws WdkModelException, WdkUserException {
-    Step step = user.createStep(strategyId, question.question, params, filterName, deleted,
-        validate, assignedWeight);
+      String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException,
+      WdkUserException {
+    Step step = user.createStep(strategyId, question.question, params, filterName, deleted, validate,
+        assignedWeight);
     return new StepBean(this, step);
   }
 
@@ -684,8 +682,7 @@ public class UserBean /* implements Serializable */{
     user.deleteInvalidStrategies();
   }
 
-  public Map<String, List<StepBean>> getStepsByCategory()
-      throws WdkModelException {
+  public Map<String, List<StepBean>> getStepsByCategory() throws WdkModelException {
     Map<String, List<Step>> steps = user.getStepsByCategory();
     Map<String, List<StepBean>> category = new LinkedHashMap<String, List<StepBean>>();
     for (String type : steps.keySet()) {
@@ -713,24 +710,22 @@ public class UserBean /* implements Serializable */{
     return beans;
   }
 
-  public StrategyBean getStrategy(int displayId) throws WdkUserException,
-      WdkModelException {
+  public StrategyBean getStrategy(int displayId) throws WdkUserException, WdkModelException {
     return new StrategyBean(this, user.getStrategy(displayId));
   }
 
-  public Map<String, List<StrategyBean>> getStrategiesByCategory()
-      throws Exception {
+  public Map<String, List<StrategyBean>> getStrategiesByCategory() throws Exception {
     try {
       Map<String, List<Strategy>> strategies = user.getStrategiesByCategory();
       return convertMap(strategies);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       throw ex;
     }
   }
 
-  private Map<String, List<StrategyBean>> convertMap(
-      Map<String, List<Strategy>> strategies) {
+  private Map<String, List<StrategyBean>> convertMap(Map<String, List<Strategy>> strategies) {
     Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
     for (String type : strategies.keySet()) {
       List<Strategy> list = strategies.get(type);
@@ -798,11 +793,10 @@ public class UserBean /* implements Serializable */{
    * @param questionFullName
    * @param attrName
    * @param ascending
-   * @see org.gusdb.wdk.model.user.User#addSortingAttribute(java.lang.String,
-   *      java.lang.String, boolean)
+   * @see org.gusdb.wdk.model.user.User#addSortingAttribute(java.lang.String, java.lang.String, boolean)
    */
-  public String addSortingAttribute(String questionFullName, String attrName,
-      boolean ascending) throws WdkModelException {
+  public String addSortingAttribute(String questionFullName, String attrName, boolean ascending)
+      throws WdkModelException {
     return user.addSortingAttribute(questionFullName, attrName, ascending);
   }
 
@@ -811,8 +805,7 @@ public class UserBean /* implements Serializable */{
    * @return
    * @see org.gusdb.wdk.model.user.User#getSortingAttributes(java.lang.String)
    */
-  public Map<String, Boolean> getSortingAttributes(String questionFullName)
-      throws WdkModelException {
+  public Map<String, Boolean> getSortingAttributes(String questionFullName) throws WdkModelException {
     return user.getSortingAttributes(questionFullName);
   }
 
@@ -821,8 +814,7 @@ public class UserBean /* implements Serializable */{
    * @return
    * @see org.gusdb.wdk.model.user.User#getSummaryAttributes(java.lang.String)
    */
-  public String[] getSummaryAttributes(String questionFullName)
-      throws WdkModelException {
+  public String[] getSummaryAttributes(String questionFullName) throws WdkModelException {
     return user.getSummaryAttributes(questionFullName);
   }
 
@@ -860,8 +852,8 @@ public class UserBean /* implements Serializable */{
     return this.user.toString();
   }
 
-  public void addActiveStrategy(String strategyKey)
-      throws NumberFormatException, WdkUserException, WdkModelException {
+  public void addActiveStrategy(String strategyKey) throws NumberFormatException, WdkUserException,
+      WdkModelException {
     user.addActiveStrategy(strategyKey);
   }
 
@@ -869,9 +861,8 @@ public class UserBean /* implements Serializable */{
     user.removeActiveStrategy(strategyId);
   }
 
-  public void replaceActiveStrategy(int oldStrategyId, int newStrategyId,
-      Map<Integer, Integer> stepIdsMap) throws WdkUserException,
-      WdkModelException {
+  public void replaceActiveStrategy(int oldStrategyId, int newStrategyId, Map<Integer, Integer> stepIdsMap)
+      throws WdkUserException, WdkModelException {
     user.replaceActiveStrategy(oldStrategyId, newStrategyId, stepIdsMap);
   }
 
@@ -895,26 +886,24 @@ public class UserBean /* implements Serializable */{
    * @return
    * @see org.gusdb.wdk.model.user.User#importStrategyByAnswer(java.lang.String)
    */
-  public StrategyBean importStrategy(String strategyKey)
-      throws WdkModelException, WdkUserException {
+  public StrategyBean importStrategy(String strategyKey) throws WdkModelException, WdkUserException {
     Strategy strategy = user.importStrategy(strategyKey);
     return new StrategyBean(this, strategy);
   }
 
-    public NameCheckInfo checkNameExists(StrategyBean strategy, String name,
-            boolean saved) throws WdkModelException {
-        return user.checkNameExists(strategy.strategy, name, saved);
-    }
+  public NameCheckInfo checkNameExists(StrategyBean strategy, String name, boolean saved)
+      throws WdkModelException {
+    return user.checkNameExists(strategy.strategy, name, saved);
+  }
 
   /**
    * @param answer
    * @param saved
    * @return
-   * @see org.gusdb.wdk.model.user.User#createStrategy(org.gusdb.wdk.model.user.Step,
-   *      boolean)
+   * @see org.gusdb.wdk.model.user.User#createStrategy(org.gusdb.wdk.model.user.Step, boolean)
    */
-  public StrategyBean createStrategy(StepBean step, boolean saved,
-      boolean hidden) throws WdkUserException, WdkModelException {
+  public StrategyBean createStrategy(StepBean step, boolean saved, boolean hidden) throws WdkUserException,
+      WdkModelException {
     return new StrategyBean(this, user.createStrategy(step.step, saved, hidden));
   }
 
@@ -922,34 +911,29 @@ public class UserBean /* implements Serializable */{
    * @param questionFullName
    * @param summaryNames
    * @return
-   * @see org.gusdb.wdk.model.user.User#setSummaryAttribute(java.lang.String,
-   *      java.lang.String[])
+   * @see org.gusdb.wdk.model.user.User#setSummaryAttribute(java.lang.String, java.lang.String[])
    */
-  public String setSummaryAttributes(String questionFullName,
-      String[] summaryNames) throws WdkModelException {
+  public String setSummaryAttributes(String questionFullName, String[] summaryNames) throws WdkModelException {
     return user.setSummaryAttributes(questionFullName, summaryNames);
   }
 
-  public Map<String, List<StrategyBean>> getSavedStrategiesByCategory()
-      throws WdkModelException {
+  public Map<String, List<StrategyBean>> getSavedStrategiesByCategory() throws WdkModelException {
     Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
     return convertMap(strategies);
   }
 
-  public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory()
-      throws WdkModelException {
+  public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory() throws WdkModelException {
     Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
     return convertMap(strategies);
   }
 
-  public Map<String, List<StrategyBean>> getRecentStrategiesByCategory()
-      throws WdkModelException {
+  public Map<String, List<StrategyBean>> getRecentStrategiesByCategory() throws WdkModelException {
     Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
     return convertMap(strategies);
   }
 
-  public Map<String, List<StrategyBean>> getActiveStrategiesByCategory()
-      throws WdkModelException, WdkUserException {
+  public Map<String, List<StrategyBean>> getActiveStrategiesByCategory() throws WdkModelException,
+      WdkUserException {
     Map<String, List<Strategy>> strategies = user.getActiveStrategiesByCategory();
     return convertMap(strategies);
   }
@@ -971,7 +955,8 @@ public class UserBean /* implements Serializable */{
       RecordClass recordClass = wdkModel.getRecordClass(rcName);
       String category = recordClass.getDisplayName();
       List<StrategyBean> strategies = activeStrats.get(rcName);
-      if (strategies.size() == 0) continue;
+      if (strategies.size() == 0)
+        continue;
 
       Map<String, List<StrategyBean>> activities = new LinkedHashMap<String, List<StrategyBean>>();
       activities.put("Opened", strategies);
@@ -982,7 +967,8 @@ public class UserBean /* implements Serializable */{
       RecordClass recordClass = wdkModel.getRecordClass(rcName);
       String category = recordClass.getDisplayName();
       List<StrategyBean> strategies = savedStrats.get(rcName);
-      if (strategies.size() == 0) continue;
+      if (strategies.size() == 0)
+        continue;
 
       Map<String, List<StrategyBean>> activities = categories.get(category);
       if (activities == null) {
@@ -996,7 +982,8 @@ public class UserBean /* implements Serializable */{
       RecordClass recordClass = wdkModel.getRecordClass(rcName);
       String category = recordClass.getDisplayName();
       List<StrategyBean> strategies = recentStrats.get(rcName);
-      if (strategies.size() == 0) continue;
+      if (strategies.size() == 0)
+        continue;
 
       Map<String, List<StrategyBean>> activities = categories.get(category);
       if (activities == null) {
@@ -1025,20 +1012,18 @@ public class UserBean /* implements Serializable */{
    * @param filter
    * @return
    * @see org.gusdb.wdk.model.user.User#createBooleanStep(org.gusdb.wdk.model.user.Step,
-   *      org.gusdb.wdk.model.user.Step, org.gusdb.wdk.model.BooleanOperator,
-   *      boolean, org.gusdb.wdk.model.AnswerFilterInstance)
+   *      org.gusdb.wdk.model.user.Step, org.gusdb.wdk.model.BooleanOperator, boolean,
+   *      org.gusdb.wdk.model.AnswerFilterInstance)
    */
   public StepBean createBooleanStep(int strategyId, StepBean previousStep, StepBean childStep,
-      String operator, boolean useBooleanFilter, String filterName)
-      throws WdkModelException {
-    Step step = user.createBooleanStep(strategyId, previousStep.step, childStep.step,
-        operator, useBooleanFilter, filterName);
+      String operator, boolean useBooleanFilter, String filterName) throws WdkModelException {
+    Step step = user.createBooleanStep(strategyId, previousStep.step, childStep.step, operator,
+        useBooleanFilter, filterName);
     return new StepBean(this, step);
   }
 
   public void setViewResults(String strategyKey, int stepId, int viewPagerOffset) {
-    logger.debug("setting view steps: " + strategyKey + ", " + stepId + ", "
-        + viewPagerOffset);
+    logger.debug("setting view steps: " + strategyKey + ", " + stepId + ", " + viewPagerOffset);
     user.setViewResults(strategyKey, stepId, viewPagerOffset);
   }
 
@@ -1093,18 +1078,17 @@ public class UserBean /* implements Serializable */{
     return new StepBean(this, user.getStep(stepId));
   }
 
-  public StrategyBean copyStrategy(StrategyBean strategy)
+  public StrategyBean copyStrategy(StrategyBean strategy, Map<Integer, Integer> stepIdMap)
       throws WdkUserException, WdkModelException {
-    return new StrategyBean(this, user.copyStrategy(strategy.strategy));
+    return new StrategyBean(this, user.copyStrategy(strategy.strategy, stepIdMap));
   }
 
-  public StrategyBean copyStrategy(StrategyBean strategy, int stepId)
+  public StrategyBean copyStrategy(StrategyBean strategy, Map<Integer, Integer> stepIdMap, String name)
       throws WdkModelException, WdkUserException {
-    return new StrategyBean(this, user.copyStrategy(strategy.strategy, stepId));
+    return new StrategyBean(this, user.copyStrategy(strategy.strategy, stepIdMap, name));
   }
 
-  public void addToBasket(RecordClassBean recordClass, List<String[]> ids) throws WdkModelException
-       {
+  public void addToBasket(RecordClassBean recordClass, List<String[]> ids) throws WdkModelException {
     BasketFactory factory = user.getWdkModel().getBasketFactory();
     factory.addToBasket(user, recordClass.recordClass, ids);
   }
@@ -1114,8 +1098,7 @@ public class UserBean /* implements Serializable */{
     factory.addToBasket(user, step.step);
   }
 
-  public void removeFromBasket(RecordClassBean recordClass, List<String[]> ids) throws WdkModelException
-       {
+  public void removeFromBasket(RecordClassBean recordClass, List<String[]> ids) throws WdkModelException {
     BasketFactory factory = user.getWdkModel().getBasketFactory();
     factory.removeFromBasket(user, recordClass.recordClass, ids);
   }
@@ -1135,8 +1118,7 @@ public class UserBean /* implements Serializable */{
     return basketFactory.getBasketContent(user, recordClass.recordClass);
   }
 
-  public Map<RecordClassBean, Integer> getBasketCounts()
-      throws WdkModelException {
+  public Map<RecordClassBean, Integer> getBasketCounts() throws WdkModelException {
     Map<RecordClass, Integer> counts = user.getBasketCounts();
     Map<RecordClassBean, Integer> beans = new LinkedHashMap<RecordClassBean, Integer>();
     for (RecordClass recordClass : counts.keySet()) {
@@ -1159,12 +1141,11 @@ public class UserBean /* implements Serializable */{
   /**
    * @param recordClass
    * @param pkValues
-   * @throws WdkUserException 
-   * @see org.gusdb.wdk.model.user.User#addToFavorite(org.gusdb.wdk.model.RecordClass,
-   *      java.util.List)
+   * @throws WdkUserException
+   * @see org.gusdb.wdk.model.user.User#addToFavorite(org.gusdb.wdk.model.RecordClass, java.util.List)
    */
-  public void addToFavorite(RecordClassBean recordClass,
-      List<Map<String, Object>> pkValues) throws WdkModelException, WdkUserException {
+  public void addToFavorite(RecordClassBean recordClass, List<Map<String, Object>> pkValues)
+      throws WdkModelException, WdkUserException {
     user.addToFavorite(recordClass.recordClass, pkValues);
   }
 
@@ -1187,8 +1168,7 @@ public class UserBean /* implements Serializable */{
    * @return
    * @see org.gusdb.wdk.model.user.User#getFavorites()
    */
-  public Map<RecordClassBean, List<FavoriteBean>> getFavorites()
-      throws WdkModelException {
+  public Map<RecordClassBean, List<FavoriteBean>> getFavorites() throws WdkModelException {
     Map<RecordClass, List<Favorite>> favorites = user.getFavorites();
     Map<RecordClassBean, List<FavoriteBean>> beans = new LinkedHashMap<RecordClassBean, List<FavoriteBean>>();
     for (RecordClass recordClass : favorites.keySet()) {
@@ -1206,11 +1186,10 @@ public class UserBean /* implements Serializable */{
   /**
    * @param recordClass
    * @param pkValues
-   * @see org.gusdb.wdk.model.user.User#removeFromFavorite(org.gusdb.wdk.model.RecordClass,
-   *      java.util.List)
+   * @see org.gusdb.wdk.model.user.User#removeFromFavorite(org.gusdb.wdk.model.RecordClass, java.util.List)
    */
-  public void removeFromFavorite(RecordClassBean recordClass,
-      List<Map<String, Object>> pkValues) throws WdkModelException {
+  public void removeFromFavorite(RecordClassBean recordClass, List<Map<String, Object>> pkValues)
+      throws WdkModelException {
     user.removeFromFavorite(recordClass.recordClass, pkValues);
   }
 
@@ -1218,11 +1197,10 @@ public class UserBean /* implements Serializable */{
    * @param recordClass
    * @param pkValues
    * @param group
-   * @see org.gusdb.wdk.model.user.User#setFavoriteGroups(org.gusdb.wdk.model.RecordClass,
-   *      java.util.List, java.lang.String)
+   * @see org.gusdb.wdk.model.user.User#setFavoriteGroups(org.gusdb.wdk.model.RecordClass, java.util.List,
+   *      java.lang.String)
    */
-  public void setFavoriteGroups(RecordClassBean recordClass,
-      List<Map<String, Object>> pkValues, String group)
+  public void setFavoriteGroups(RecordClassBean recordClass, List<Map<String, Object>> pkValues, String group)
       throws WdkModelException {
     user.setFavoriteGroups(recordClass.recordClass, pkValues, group);
   }
@@ -1231,11 +1209,11 @@ public class UserBean /* implements Serializable */{
    * @param recordClass
    * @param pkValues
    * @param note
-   * @see org.gusdb.wdk.model.user.User#setFavoriteNotes(org.gusdb.wdk.model.RecordClass,
-   *      java.util.List, java.lang.String)
+   * @see org.gusdb.wdk.model.user.User#setFavoriteNotes(org.gusdb.wdk.model.RecordClass, java.util.List,
+   *      java.lang.String)
    */
-  public void setFavoriteNotes(RecordClassBean recordClass,
-      List<Map<String, Object>> pkValues, String note) throws WdkModelException {
+  public void setFavoriteNotes(RecordClassBean recordClass, List<Map<String, Object>> pkValues, String note)
+      throws WdkModelException {
     user.setFavoriteNotes(recordClass.recordClass, pkValues, note);
   }
 
@@ -1252,8 +1230,7 @@ public class UserBean /* implements Serializable */{
    * @param recordClass
    * @return
    */
-  public int getBasketCount(List<String[]> records, RecordClassBean recordClass)
-      throws WdkModelException {
+  public int getBasketCount(List<String[]> records, RecordClassBean recordClass) throws WdkModelException {
     return user.getBasketCounts(records, recordClass.recordClass);
   }
 
@@ -1262,8 +1239,8 @@ public class UserBean /* implements Serializable */{
    * @param recordClass
    * @return
    */
-  public int getFavoriteCount(List<Map<String, Object>> records,
-      RecordClassBean recordClass) throws WdkModelException {
+  public int getFavoriteCount(List<Map<String, Object>> records, RecordClassBean recordClass)
+      throws WdkModelException {
     return user.getFavoriteCount(records, recordClass.recordClass);
   }
 
@@ -1276,14 +1253,14 @@ public class UserBean /* implements Serializable */{
   public SummaryView getCurrentSummaryView() throws Exception {
     try {
       return user.getCurrentSummaryView(currentQuestion);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       throw ex;
     }
   }
 
-  public void setCurrentSummaryView(QuestionBean question,
-      SummaryView summaryView) throws WdkModelException {
+  public void setCurrentSummaryView(QuestionBean question, SummaryView summaryView) throws WdkModelException {
     user.setCurrentSummaryView(question.question, summaryView);
   }
 
@@ -1296,14 +1273,15 @@ public class UserBean /* implements Serializable */{
   public RecordView getCurrentRecordView() throws Exception {
     try {
       return user.getCurrentRecordView(currentRecordClass);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       throw ex;
     }
   }
 
-  public void setCurrentRecordView(RecordClassBean recordClass,
-      RecordView recordView) throws WdkModelException {
+  public void setCurrentRecordView(RecordClassBean recordClass, RecordView recordView)
+      throws WdkModelException {
     user.setCurrentRecordView(recordClass.recordClass, recordView);
   }
 
@@ -1314,6 +1292,5 @@ public class UserBean /* implements Serializable */{
   public int getNewStrategyId() throws WdkModelException {
     return user.getNewStrategyId();
   }
-  
-  
+
 }

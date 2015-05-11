@@ -778,8 +778,8 @@ public class Step {
   }
 
   /**
-   * @param paramErrors
-   *          the paramErrors to set
+   * @param paramValues
+   *          the paramValues to set
    */
   public void setParamValues(Map<String, String> paramValues) {
     if (paramValues == null)
@@ -872,7 +872,7 @@ public class Step {
    * @throws NoSuchAlgorithmException
    * 
    */
-  public Step deepClone(Integer strategyId) throws WdkModelException {
+  public Step deepClone(Integer strategyId, Map<Integer, Integer> stepIdMap) throws WdkModelException {
     Step step;
     AnswerValue answerValue;
     try {
@@ -889,7 +889,7 @@ public class Step {
           String paramValue = this.paramValues.get(paramName);
           if (param instanceof AnswerParam) {
             Step child = getUser().getStep(Integer.parseInt(paramValue));
-            child = child.deepClone(strategyId);
+            child = child.deepClone(strategyId, stepIdMap);
             paramValue = Integer.toString(child.getStepId());
           }
           paramValues.put(paramName, paramValue);
@@ -905,6 +905,8 @@ public class Step {
       throw new WdkModelException(ex);
     }
 
+    stepIdMap.put(getStepId(), step.getStepId());
+    
     step.collapsedName = collapsedName;
     step.customName = customName;
     step.collapsible = collapsible;
@@ -1269,7 +1271,7 @@ public class Step {
     return jsParams;
   }
 
-  public void setParamsJSON(JSONObject jsParams) throws WdkModelException {
+  void setParamsJSON(JSONObject jsParams) throws WdkModelException {
     paramValues = new LinkedHashMap<String, String>();
     if (jsParams != null) {
       try {
