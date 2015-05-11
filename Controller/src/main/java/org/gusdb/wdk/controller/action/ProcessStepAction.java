@@ -56,15 +56,42 @@ public class ProcessStepAction extends Action {
 
     String state = request.getParameter(CConstants.WDK_STATE_KEY);
     try {
+      // get current strategy
+      String strategyKey = request.getParameter(PARAM_STRATEGY);
+      if (strategyKey == null || strategyKey.length() == 0)
+        throw new WdkUserException("No strategy was specified for " + "processing!");
 
-      StrategyBean strategy = getStrategy(request, user);
-      int oldStrategyId = strategy.getStrategyId();
+      // did we get strategyId_stepId?
+      int pos = strategyKey.indexOf("_");
+      int branchId = 0;
+      if (pos >= 0) {
+        branchId = Integer.valueOf(strategyKey.substring(pos + 1));
+        strategyKey = strategyKey.substring(0, pos);
+      }
+      int oldStrategyId = Integer.valueOf(strategyKey);
 
-      // get current step
-      StepBean step = null;
+      // get strategy, and verify the checksum
+      StrategyBean strategy = user.getStrategy(oldStrategyId);
+      String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+      if (checksum != null && !strategy.getChecksum().equals(checksum))
+        throw new WdkOutOfSyncException("strategy checksum: " + strategy.getChecksum() +
+            ", but the input checksum: " + checksum);
+
+      int stepId = 0;
       String strStepId = request.getParameter(PARAM_STEP);
       if (strStepId != null && strStepId.length() > 0)
-        step = strategy.getStepById(Integer.valueOf(strStepId));
+        stepId = Integer.valueOf(strStepId);
+
+      // cannot change step in saved strategy, will need to make a clone first
+      if (strategy.getIsSaved()) {
+        Map<Integer, Integer> stepIdMap = new HashMap<>();
+        strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
+        // map the old step id to the new one
+        stepId = stepIdMap.get(stepId);
+      }
+
+      // get current step
+      StepBean step = (stepId == 0) ? null : strategy.getStepById(stepId);
 
       // load custom name
       String customName = request.getParameter(PARAM_CUSTOM_NAME);
@@ -86,7 +113,7 @@ public class ProcessStepAction extends Action {
         rootMap = insertStep(request, questionForm, wdkModel, user, strategy, step, customName);
       }
       else { // add a boolean step
-        rootMap = addStep(request, questionForm, wdkModel, user, strategy, step, customName);
+        rootMap = addStep(request, questionForm, wdkModel, user, strategy, step, customName, branchId);
       }
 
       // the strategy id might change due to editting on saved strategies.
@@ -116,48 +143,6 @@ public class ProcessStepAction extends Action {
     }
   }
 
-  private StrategyBean getStrategy(HttpServletRequest request, UserBean user) throws WdkModelException,
-      WdkUserException {
-
-    // get current strategy
-    String strategyKey = request.getParameter(PARAM_STRATEGY);
-    if (strategyKey == null || strategyKey.length() == 0)
-      throw new WdkUserException("No strategy was specified for " + "processing!");
-
-    // did we get strategyId_stepId?
-    int pos = strategyKey.indexOf("_");
-    String strStratId = (pos > 0) ? strategyKey.substring(0, pos) : strategyKey;
-
-    // get strategy, and verify the checksum
-    StrategyBean strategy = user.getStrategy(Integer.parseInt(strStratId));
-    String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
-    if (checksum != null && !strategy.getChecksum().equals(checksum))
-      throw new WdkOutOfSyncException("strategy checksum: " + strategy.getChecksum() +
-          ", but the input checksum: " + checksum);
-
-    return strategy;
-  }
-
-  private StepBean getRootStep(HttpServletRequest request, UserBean user, StrategyBean strategy)
-      throws WdkUserException, WdkModelException {
-    String strategyKey = request.getParameter(PARAM_STRATEGY);
-    if (strategyKey == null || strategyKey.length() == 0)
-      throw new WdkUserException("No strategy was specified for " + "processing!");
-    int pos = strategyKey.indexOf("_");
-
-    // load branch root, if exists
-    StepBean rootStep;
-    if (pos > 0) {
-      int branchRootId = Integer.valueOf(strategyKey.substring(pos + 1));
-      rootStep = strategy.getStepById(branchRootId);
-    }
-    else {
-      rootStep = strategy.getLatestStep();
-    }
-
-    return rootStep;
-  }
-
   private void reviseStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
       UserBean user, StrategyBean strategy, StepBean step, String customName) throws NumberFormatException,
       WdkUserException, WdkModelException {
@@ -168,8 +153,8 @@ public class ProcessStepAction extends Action {
       throw new WdkUserException("Required param " + PARAM_STEP + " is missing.");
 
     // before changing step, need to check if strategy is saved, if yes, make a copy.
-      if (strategy.getIsSaved())
-        strategy.update(false);
+    if (strategy.getIsSaved())
+      strategy.update(false);
 
     // check if the question name exists
     String questionName = request.getParameter(PARAM_QUESTION);
@@ -245,13 +230,13 @@ public class ProcessStepAction extends Action {
   }
 
   private Map<Integer, Integer> addStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
-      UserBean user, StrategyBean strategy, StepBean step, String customName) throws WdkUserException,
-      NumberFormatException, WdkModelException {
+      UserBean user, StrategyBean strategy, StepBean step, String customName, int branchId)
+      throws WdkUserException, NumberFormatException, WdkModelException {
     logger.debug("Adding step...");
 
     // get root step
     if (step == null)
-      step = getRootStep(request, user, strategy);
+      step = (branchId == 0) ? strategy.getLatestStep() : strategy.getStepById(branchId);
 
     // the question name has to exist
     String questionName = request.getParameter(PARAM_QUESTION);

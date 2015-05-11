@@ -131,11 +131,13 @@ public class User /* implements Serializable */{
 
   /**
    * user the userId field as a flag for lazy creation of guest user
+   * 
    * @return Returns the userId.
-   * @throws WdkModelException 
+   * @throws WdkModelException
    */
   public synchronized int getUserId() throws WdkModelException {
-    if (_userId == 0) userFactory.saveTemporaryUser(this);
+    if (_userId == 0)
+      userFactory.saveTemporaryUser(this);
     return _userId;
   }
 
@@ -145,30 +147,32 @@ public class User /* implements Serializable */{
 
   /**
    * @return Returns the signature.
-   * @throws WdkModelException 
+   * @throws WdkModelException
    */
   public synchronized String getSignature() throws WdkModelException {
-    if (signature == null)userFactory.saveTemporaryUser(this);
+    if (signature == null)
+      userFactory.saveTemporaryUser(this);
     return signature;
   }
-  
+
   public void setSignature(String signature) {
     this.signature = signature;
   }
 
   /**
    * @return Returns the email.
-   * @throws WdkModelException 
+   * @throws WdkModelException
    */
   public synchronized String getEmail() throws WdkModelException {
-    if (email == null) userFactory.saveTemporaryUser(this);
+    if (email == null)
+      userFactory.saveTemporaryUser(this);
     return email;
   }
 
   public void setEmail(String email) {
     this.email = email;
   }
-  
+
   public String getEmailPrefix() {
     return emailPrefix;
   }
@@ -548,7 +552,7 @@ public class User /* implements Serializable */{
     }
     return strategy;
   }
-  
+
   public int getNewStrategyId() throws WdkModelException {
     return stepFactory.getNewStrategyId();
   }
@@ -1292,13 +1296,15 @@ public class User /* implements Serializable */{
     return activeStrategyFactory.getRootStrategies();
   }
 
-  public Strategy copyStrategy(Strategy strategy) throws WdkModelException, WdkUserException {
-    Strategy copy = stepFactory.copyStrategy(strategy);
+  public Strategy copyStrategy(Strategy strategy, Map<Integer, Integer> stepIdMap) throws WdkModelException,
+      WdkUserException {
+    Strategy copy = stepFactory.copyStrategy(strategy, stepIdMap);
     return copy;
   }
 
-  public Strategy copyStrategy(Strategy strategy, int stepId) throws WdkModelException, WdkUserException {
-    Strategy copy = stepFactory.copyStrategy(strategy, stepId);
+  public Strategy copyStrategy(Strategy strategy, Map<Integer, Integer> stepIdMap, String name)
+      throws WdkModelException, WdkUserException {
+    Strategy copy = stepFactory.copyStrategy(strategy, stepIdMap, name);
     return copy;
   }
 

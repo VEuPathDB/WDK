@@ -450,8 +450,7 @@ public class StepFactory {
 
   public void deleteStrategy(int strategyId) throws WdkModelException {
     PreparedStatement psStrategy = null;
-    String sql = "UPDATE " + userSchema + TABLE_STRATEGY + " SET " + COLUMN_IS_DELETED + " = ? WHERE " +
-        COLUMN_STRATEGY_ID + " = ?";
+    String sql = "DELETE FROM " + userSchema + TABLE_STRATEGY + " WHERE " + COLUMN_STRATEGY_ID + " = ?";
     try {
       // remove history
       /*
@@ -464,8 +463,7 @@ public class StepFactory {
        */
       long start = System.currentTimeMillis();
       psStrategy = SqlUtils.getPreparedStatement(dataSource, sql);
-      psStrategy.setBoolean(1, true);
-      psStrategy.setInt(2, strategyId);
+      psStrategy.setInt(1, strategyId);
       int result = psStrategy.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-delete-strategy", start);
       if (result == 0)
@@ -1227,6 +1225,11 @@ public class StepFactory {
       WdkUserException {
     logger.debug("Updating strategy internal#=" + strategy.getStrategyId() + ", overwrite=" + overwrite);
 
+    // cannot update a saved strategy if overwrite flag is false
+    if (!overwrite && strategy.getIsSaved())
+      throw new WdkUserException("Cannot update a saved strategy. Please create a copy and update it, "
+          + "or set overwrite flag to true.");
+
     // update strategy name, saved, step_id
     PreparedStatement psStrategy = null;
     ResultSet rsStrategy = null;
@@ -1271,20 +1274,6 @@ public class StepFactory {
           if (strategy.getStrategyId() != idToDelete)
             user.deleteStrategy(idToDelete);
         }
-      }
-      else if (strategy.getIsSaved()) {
-        // If we're not overwriting a saved strategy, then we're modifying
-        // it. We need to get an unsaved copy to modify. Generate unsaved name.
-        // Note all new unsaved strats are private; they do not inherit public.
-        String name = getNextName(user, strategy.getName(), false);
-        int newStrategyId = getNewStrategyId();
-        Step newRootStep = strategy.getLatestStep().deepClone(newStrategyId);
-        // instead of getting an unsaved copy, we create a saved copy, then change the current one to be
-        // unsaved, and modify it directly.
-        createStrategy(user, newRootStep, name, strategy.getName(), true, strategy.getDescription(), false,
-            strategy.getIsPublic());
-        strategy.setIsSaved(false);
-        strategy.setIsPublic(false);
       }
 
       Date modifiedTime = new Date();
@@ -1500,44 +1489,44 @@ public class StepFactory {
   }
 
   /**
-   * Copy is different from import strategy in that the copy will replicate every setting of the strategy, and
-   * the new name is different with a " copy" suffix.
+   * Make a copy of the strategy, and if the original strategy's name is not ended with ", Copy of", then that
+   * suffix will be appended to it. The copy will be unsaved.
+   * 
+   * The steps of the strategy will be cloned, and an id map will be filled during the cloning.
    * 
    * @param strategy
+   * @param stepIdMap
+   *          the mapping from ids of old steps to those of newly cloned ones will be put into this provided
+   *          map.
    * @return
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  Strategy copyStrategy(Strategy strategy) throws WdkModelException, WdkUserException {
-    Step root = strategy.getLatestStep();
-    return copyStrategy(strategy, root, strategy.getName());
+  Strategy copyStrategy(Strategy strategy, Map<Integer, Integer> stepIdMap) throws WdkModelException,
+      WdkUserException {
+    String name = strategy.getName();
+    if (!name.toLowerCase().endsWith(", copy of"))
+      name += ", Copy of";
+    return copyStrategy(strategy, stepIdMap, name);
   }
 
   /**
-   * copy a branch of strategy from the given step to the beginning of the strategy, can make an unsaved
-   * strategy from it.
+   * Make a copy of a strategy with a new name. The copy will be unsaved.
    * 
    * @param strategy
-   * @param stepId
+   * @param name
+   * @param stepIdMap
    * @return
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  Strategy copyStrategy(Strategy strategy, int stepId) throws WdkModelException, WdkUserException {
-    Step oldStep = strategy.getStepById(stepId);
-    return copyStrategy(strategy, oldStep, oldStep.getCustomName());
-
-  }
-
-  private Strategy copyStrategy(Strategy strategy, Step oldTopStep, String oldStrategyName)
+  Strategy copyStrategy(Strategy strategy, Map<Integer, Integer> stepIdMap, String name)
       throws WdkModelException, WdkUserException {
     User user = strategy.getUser();
     int strategyId = getNewStrategyId();
-    Step newTopStep = oldTopStep.deepClone(strategyId);
-    String newName = oldStrategyName +
-        (!oldStrategyName.toLowerCase().endsWith(", copy of") ? ", Copy of" : "");
-    newName = getNextName(user, newName, false);
-    return createStrategy(user, strategyId, newTopStep, newName, null, false, null, false, false);
+    Step newRootStep = strategy.getLatestStep().deepClone(strategyId, stepIdMap);
+    name = getNextName(user, name, false);
+    return createStrategy(user, strategyId, newRootStep, name, null, false, null, false, false);
   }
 
   private String getNextName(User user, String oldName, boolean saved) throws WdkModelException {
