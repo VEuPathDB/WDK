@@ -28,6 +28,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
   public static final String PARAM_QUESTION = "questionFullName";
   public static final String PARAM_CUSTOM_NAME = "customName";
   public static final String PARAM_STRATEGY = "strategy";
+  public static final String PARAM_STEP = "step";
   public static final String PARAM_IMPORT_STRATEGY = "importStrategy";
 
   public static final String ATTR_IMPORT_STEP = ProcessBooleanAction.PARAM_IMPORT_STEP;
@@ -42,14 +43,24 @@ public class ProcessBooleanStageHandler implements StageHandler {
     UserBean user = ActionUtility.getUser(servlet, request);
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
 
-    StepBean childStep = null;
-    
     String strStratId = request.getParameter(PARAM_STRATEGY);
-    StrategyBean strategy = null;
-    if (strStratId != null && strStratId.length() > 0) {
-      int strategyId = Integer.valueOf(strStratId.split("_", 2)[0]);
-      strategy = user.getStrategy(strategyId);
+    if (strStratId == null || strStratId.isEmpty())
+      throw new WdkUserException("Required " + PARAM_STRATEGY + " param is missing.");
+
+    int strategyId = Integer.valueOf(strStratId.split("_", 2)[0]);
+    StrategyBean strategy = user.getStrategy(strategyId);
+
+    String strStepId = request.getParameter(PARAM_STEP);
+    int stepId = (strStepId == null || strStepId.isEmpty()) ? 0 : Integer.valueOf(strStepId);
+
+    if (strategy.getIsSaved()) {
+      Map<Integer, Integer> stepIdMap = new HashMap<>();
+      strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
+      if (stepId == 0)
+        stepId = stepIdMap.get(stepId);
     }
+
+    StepBean childStep = null;
 
     // unify between question and strategy
     String questionName = request.getParameter(PARAM_QUESTION);
@@ -58,10 +69,12 @@ public class ProcessBooleanStageHandler implements StageHandler {
       // a question name specified, either create a step from it, or revise a current step
       String action = request.getParameter(ProcessBooleanAction.PARAM_ACTION);
       if (action.equals(WizardForm.ACTION_REVISE)) {
-        childStep = updateStepWithQuestion(servlet, request, wizardForm, strategy, questionName, user, wdkModel);
+        childStep = updateStepWithQuestion(servlet, request, wizardForm, strategy, questionName, user,
+            wdkModel, stepId);
       }
       else {
-        childStep = createStepFromQuestion(servlet, request, wizardForm, strategy, questionName, user, wdkModel);
+        childStep = createStepFromQuestion(servlet, request, wizardForm, strategy, questionName, user,
+            wdkModel);
       }
     }
     else if (importStrategyId != null && importStrategyId.length() > 0) {
@@ -87,8 +100,8 @@ public class ProcessBooleanStageHandler implements StageHandler {
   }
 
   private StepBean updateStepWithQuestion(ActionServlet servlet, HttpServletRequest request,
-      WizardForm wizardForm, StrategyBean strategy, String questionName, UserBean user, WdkModelBean wdkModel)
-      throws WdkUserException, WdkModelException {
+      WizardForm wizardForm, StrategyBean strategy, String questionName, UserBean user,
+      WdkModelBean wdkModel, int stepId) throws WdkUserException, WdkModelException {
     logger.debug("updating step with question: " + questionName);
 
     // get the assigned weight
@@ -111,16 +124,15 @@ public class ProcessBooleanStageHandler implements StageHandler {
     Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, questionForm);
 
     // get the boolean/span step, then get child from the boolean
-    String strStepId = request.getParameter(ProcessBooleanAction.PARAM_STEP);
-    if (strStepId == null || strStepId.length() == 0)
+    if (stepId == 0)
       throw new WdkUserException("The required param \"" + ProcessBooleanAction.PARAM_STEP + "\" is missing.");
 
-    StepBean booleanStep = user.getStep(Integer.valueOf(strStepId));
+    StepBean booleanStep = strategy.getStepById(stepId);
     StepBean childStep = booleanStep.getChildStep();
 
     // before changing step, need to check if strategy is saved, if yes, make a copy.
-      if (strategy.getIsSaved())
-        strategy.update(false);
+    if (strategy.getIsSaved())
+      strategy.update(false);
 
     // revise on the child step
     childStep.setQuestionName(questionName);
@@ -159,12 +171,12 @@ public class ProcessBooleanStageHandler implements StageHandler {
     return user.createStep(strategy.getStrategyId(), question, params, null, false, true, weight);
   }
 
-  private StepBean createStepFromStrategy(UserBean user, StrategyBean newStrategy, int importStrategyId) throws WdkModelException,
-      WdkUserException {
+  private StepBean createStepFromStrategy(UserBean user, StrategyBean newStrategy, int importStrategyId)
+      throws WdkModelException, WdkUserException {
     logger.debug("creating step from strategy: " + importStrategyId);
     StrategyBean importStrategy = user.getStrategy(importStrategyId);
     StepBean step = importStrategy.getLatestStep();
-    StepBean childStep = step.deepClone(newStrategy.getStrategyId());
+    StepBean childStep = step.deepClone(newStrategy.getStrategyId(), new HashMap<Integer, Integer>());
     childStep.setIsCollapsible(true);
     childStep.setCollapsedName("Copy of " + importStrategy.getName());
     childStep.update(false);
