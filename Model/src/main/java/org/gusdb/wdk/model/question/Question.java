@@ -1144,4 +1144,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     Filter filter = filters.get(filterName);
     return (filter != null) ? filter : recordClass.getFilter(filterName); 
   }
+
+    /**
+     * Used when these values are patched in to this Question after the XML parsing and resolution phase is over.
+     */
+    public void setDefaultSummaryAttributeNames(String[] names) {
+	defaultSummaryAttributeNames = names;
+    }
 }
