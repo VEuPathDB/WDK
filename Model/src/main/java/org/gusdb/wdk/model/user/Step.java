@@ -901,7 +901,7 @@ public class Step {
     return step;
   }
 
-  public boolean isFiltered() {
+  public boolean isFiltered() throws WdkModelException {
     // first check if new filter has been applied
     if (filterOptions != null && filterOptions.isFiltered())
       return true;
