@@ -63,4 +63,8 @@ public class FilterOption {
     jsFilterOption.put(KEY_DISABLED, _disabled);
     return jsFilterOption;
   }
+
+    public boolean isSetToDefaultValue() throws WdkModelException {
+	return getFilter().defaultValueEquals(getValue());
+    }
 }
