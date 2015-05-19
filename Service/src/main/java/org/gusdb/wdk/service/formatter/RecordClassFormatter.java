@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class RecordFormatter {
+public class RecordClassFormatter {
 
   public static JSONArray getRecordClassesJson(RecordClassSet[] recordClassSets,
       boolean expandRecordClasses, boolean expandAttributes,
