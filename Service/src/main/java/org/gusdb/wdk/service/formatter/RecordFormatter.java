@@ -1,9 +1,8 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -60,7 +59,7 @@ JSON output format:
 }
 */
 public class RecordFormatter {
-  public static JSONObject formatAnswer(RecordInstance recordInstance, Set<String> attributeNames, Set<String> tableNames) throws WdkModelException {
+  public static JSONObject formatRecord(RecordInstance recordInstance, List<String> attributeNames, List<String> tableNames) throws WdkModelException {
     try {
       JSONObject parent = new JSONObject();
       parent.put("meta", getMetaData(recordInstance, attributeNames, tableNames));
@@ -73,7 +72,7 @@ public class RecordFormatter {
     }
   }
 
-  public static JSONObject getMetaData(RecordInstance recordInstance, Set<String> attributeNames, Set<String> tableNames) {
+  public static JSONObject getMetaData(RecordInstance recordInstance, List<String> attributeNames, List<String> tableNames) {
     JSONObject meta = new JSONObject();
     RecordClass recordClass = recordInstance.getRecordClass();
     meta.put("class", recordClass.getFullName());
