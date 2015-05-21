@@ -73,8 +73,7 @@ public class RecordFormatter {
     }
   }
 
-  public static JSONObject getMetaData(RecordInstance recordInstance, Set<String> attributeNames, Set<String> tableNames)
-      throws WdkModelException, WdkUserException {
+  public static JSONObject getMetaData(RecordInstance recordInstance, Set<String> attributeNames, Set<String> tableNames) {
     JSONObject meta = new JSONObject();
     RecordClass recordClass = recordInstance.getRecordClass();
     meta.put("class", recordClass.getFullName());
