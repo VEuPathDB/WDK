@@ -1,16 +1,10 @@
 package org.gusdb.wdk.service.formatter;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.record.RecordInstance;
-import org.gusdb.wdk.model.record.TableValue;
-import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.record.attribute.LinkAttributeValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
