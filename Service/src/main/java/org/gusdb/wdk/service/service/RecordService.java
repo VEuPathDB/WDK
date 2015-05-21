@@ -12,7 +12,7 @@ import javax.ws.rs.core.Response.Status;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
-import org.gusdb.wdk.service.formatter.RecordFormatter;
+import org.gusdb.wdk.service.formatter.RecordClassFormatter;
 
 @Path("/record")
 public class RecordService extends WdkService {
@@ -25,7 +25,7 @@ public class RecordService extends WdkService {
       @QueryParam("expandTables") Boolean expandTables,
       @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
     return Response.ok(
-        RecordFormatter.getRecordClassesJson(getWdkModel().getAllRecordClassSets(),
+        RecordClassFormatter.getRecordClassesJson(getWdkModel().getAllRecordClassSets(),
             getFlag(expandRecordClasses), getFlag(expandAttributes),
             getFlag(expandTables), getFlag(expandTableAttributes)).toString()
     ).build();
@@ -42,7 +42,7 @@ public class RecordService extends WdkService {
     try {
       RecordClass rc = getWdkModel().getRecordClass(recordClassName);
       return Response.ok(
-          RecordFormatter.getRecordClassJson(rc, getFlag(expandAttributes),
+          RecordClassFormatter.getRecordClassJson(rc, getFlag(expandAttributes),
               getFlag(expandTables), getFlag(expandTableAttributes)).toString()
       ).build();
     }
@@ -60,7 +60,7 @@ public class RecordService extends WdkService {
     try {
       RecordClass rc = getWdkModel().getRecordClass(recordClassName);
       return Response.ok(
-          RecordFormatter.getAttributesJson(rc, getFlag(expandAttributes)).toString()
+          RecordClassFormatter.getAttributesJson(rc, getFlag(expandAttributes)).toString()
       ).build();
     }
     catch (WdkModelException e) {
@@ -78,7 +78,7 @@ public class RecordService extends WdkService {
     try {
       RecordClass rc = getWdkModel().getRecordClass(recordClassName);
       return Response.ok(
-          RecordFormatter.getTablesJson(rc, getFlag(expandTables),
+          RecordClassFormatter.getTablesJson(rc, getFlag(expandTables),
               getFlag(expandTableAttributes)).toString()
       ).build();
     }
@@ -117,8 +117,8 @@ public class RecordService extends WdkService {
       if (table == null) throw new WdkModelException ("Table '" + tableName +
           "' not found for RecordClass '" + recordClassName + "'");
       return Response.ok((attributesOnly ?
-          RecordFormatter.getAttributesJson(table, expandAttributes) :
-          RecordFormatter.getTableJson(table, expandAttributes)
+          RecordClassFormatter.getAttributesJson(table, expandAttributes) :
+          RecordClassFormatter.getTableJson(table, expandAttributes)
       ).toString()).build();
     }
     catch (WdkModelException e) {
