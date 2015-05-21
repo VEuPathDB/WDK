@@ -100,6 +100,7 @@ public class StrategyFixer extends BaseCLI {
           " WHERE step_id = ?");
 
       // update the strategy id for root steps;
+      LOG.info("updating root steps...");
       rsRoots = SqlUtils.executeQuery(dataSource, "SELECT sr.strategy_id, sr.root_step_id         " +
           " FROM " + schema + "strategies sr, " + schema + "users u, " + schema + "steps st" +
           " WHERE sr.user_id = u.user_id AND sr.root_step_id = st.step_id " +
@@ -110,11 +111,14 @@ public class StrategyFixer extends BaseCLI {
         psUpdate.setInt(2, rsRoots.getInt("root_step_id"));
         psUpdate.addBatch();
         count++;
-        if (count % BATCH_SIZE == 0)
+        if (count % BATCH_SIZE == 0) {
           psUpdate.executeBatch();
+          LOG.info(count + " steps updated.");
+        }
       }
 
       // recursively update all the depended steps
+      LOG.info("recursively updating children steps...");
       String sql = "SELECT s.step_id, p.strategy_id FROM " + schema + "steps s, " + schema + "steps p " +
           " WHERE s.strategy_id IS NULL and p.strategy_id IS NOT NULL ";
       psChildren = SqlUtils.getPreparedStatement(dataSource, sql + " AND s.step_id = p.left_child_id " +
