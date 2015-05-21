@@ -69,7 +69,7 @@ public class AnswerService extends WdkService {
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.info("Passed request body deemed unacceptable", e);
-      return BAD_REQUEST_RESPONSE;
+      return getBadRequestResponse(e.getMessage());
     }
   }
 }
