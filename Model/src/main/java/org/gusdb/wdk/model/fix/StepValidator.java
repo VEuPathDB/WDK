@@ -26,11 +26,12 @@ import org.gusdb.wdk.model.config.ModelConfigUserDB;
  * 
  *         this script needs to be run after the model expender & step expender.
  * 
- *         just accept one model. the model is only used to provide the access
- *         to user db, the result of this program will affect all projects in
- *         that user db.
+ *         just accept one model. the model is only used to provide the access to user db, the result of this
+ *         program will affect all projects in that user db.
  */
 public class StepValidator extends BaseCLI {
+
+  private static final int BATCH_SIZE = 1000;
 
   private static final Logger logger = Logger.getLogger(StepValidator.class);
 
@@ -39,18 +40,19 @@ public class StepValidator extends BaseCLI {
     StepValidator validator = new StepValidator(cmdName);
     try {
       validator.invoke(args);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       throw ex;
-    } finally {
+    }
+    finally {
       logger.info("step validator done.");
       System.exit(0);
     }
   }
 
   public StepValidator(String command) {
-    super((command != null) ? command : "wdkValidateStep",
-        "store model information into database");
+    super((command != null) ? command : "wdkValidateStep", "store model information into database");
   }
 
   /*
@@ -85,7 +87,8 @@ public class StepValidator extends BaseCLI {
     // parse project ids and add single quotes.
     StringBuilder buffer = new StringBuilder();
     for (String projectId : projectIds) {
-      if (buffer.length() > 0) buffer.append(",");
+      if (buffer.length() > 0)
+        buffer.append(",");
       buffer.append("'").append(projectId).append("'");
     }
     projects = "(" + buffer.toString() + ")";
@@ -101,8 +104,7 @@ public class StepValidator extends BaseCLI {
     flagDependentSteps(wdkModel, projects);
   }
 
-  private void resetFlags(WdkModel wdkModel, String projects)
-      throws SQLException {
+  private void resetFlags(WdkModel wdkModel, String projects) throws SQLException {
     logger.debug("resetting is_valid flags...");
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
     String userSchema = userDB.getUserSchema();
@@ -110,13 +112,11 @@ public class StepValidator extends BaseCLI {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
     // <ADD-AG 042911>
-    resetByBatch(wdkModel, dataSource, "UPDATE " + userSchema + "steps "
-        + " SET is_valid = NULL WHERE project_id IN " + projects,
-        "wdk-reset-step-flag");
+    resetByBatch(wdkModel, dataSource, "UPDATE " + userSchema + "steps " +
+        " SET is_valid = NULL WHERE project_id IN " + projects, "wdk-reset-step-flag");
   }
 
-  private void detectQuestions(WdkModel wdkModel, String projects)
-      throws SQLException {
+  private void detectQuestions(WdkModel wdkModel, String projects) throws SQLException {
     logger.debug("detecting invalid questions...");
 
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -124,26 +124,20 @@ public class StepValidator extends BaseCLI {
     DataSource source = wdkModel.getUserDb().getDataSource();
 
     // <ADD-AG 042911> ----------------------------------------------------
-    String sql = "UPDATE " + steps + " SET is_valid = 0 "
-        + "WHERE step_id IN (SELECT DISTINCT s.step_id      "
-        + "                  FROM " + steps + " s, "
-        + "                       (  SELECT project_id, question_name "
-        + "                          FROM " + steps
-        + "                        MINUS "
-        + "                          SELECT project_id, question_name "
-        + "                          FROM wdk_questions"
-        + "                       ) d "
-        + "                  WHERE s.project_id = d.project_id"
-        + "                    AND s.question_name = d.question_name"
-        + "                    AND s.project_id IN " + projects
-        + "                    AND s.is_valid IS NULL)";
+    String sql = "UPDATE " + steps + " SET is_valid = 0 " +
+        "WHERE step_id IN (SELECT DISTINCT s.step_id      " + "                  FROM " + steps + " s, " +
+        "                       (  SELECT project_id, question_name " + "                          FROM " +
+        steps + "                        MINUS " +
+        "                          SELECT project_id, question_name " +
+        "                          FROM wdk_questions" + "                       ) d " +
+        "                  WHERE s.project_id = d.project_id" +
+        "                    AND s.question_name = d.question_name" +
+        "                    AND s.project_id IN " + projects + "                    AND s.is_valid IS NULL)";
 
-    executeByBatch(wdkModel, source, sql, "STEPS:wdk-invalidate-question",
-        null, null);
+    executeByBatch(wdkModel, source, sql, "STEPS:wdk-invalidate-question", null, null);
   }
 
-  private void detectParams(WdkModel wdkModel, String projects)
-      throws SQLException {
+  private void detectParams(WdkModel wdkModel, String projects) throws SQLException {
     logger.debug("detecting invalid params...");
 
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -151,31 +145,22 @@ public class StepValidator extends BaseCLI {
     DataSource source = wdkModel.getUserDb().getDataSource();
 
     // <ADD-AG 042911> ----------------------------------------------------
-    String sql = "UPDATE " + steps + " SET is_valid = 0 WHERE step_id IN "
-        + "  (SELECT DISTINCT s.step_id                    "
-        + "   FROM step_params sp, " + steps + " s, "
-        + "        (  SELECT s.project_id, s.question_name, sp.param_name "
-        + "           FROM step_params sp, " + steps + " s "
-        + "           WHERE sp.step_id = s.step_id "
-        + "             AND s.is_valid IS NULL "
-        + "         MINUS                  "
-        + "           SELECT q.project_id, q.question_name, p.param_name "
-        + "           FROM wdk_questions q, wdk_params p"
-        + "           WHERE q.question_id = p.question_id    "
-        + "         ) d       "
-        + "   WHERE s.project_id = d.project_id        "
-        + "     AND s.question_name = d.question_name "
-        + "     AND s.project_id IN " + projects
-        + "     AND s.step_id = sp.step_id "
-        + "     AND sp.param_name = d.param_name "
-        + "     AND s.is_valid IS NULL)";
+    String sql = "UPDATE " + steps + " SET is_valid = 0 WHERE step_id IN " +
+        "  (SELECT DISTINCT s.step_id                    " + "   FROM step_params sp, " + steps + " s, " +
+        "        (  SELECT s.project_id, s.question_name, sp.param_name " +
+        "           FROM step_params sp, " + steps + " s " + "           WHERE sp.step_id = s.step_id " +
+        "             AND s.is_valid IS NULL " + "         MINUS                  " +
+        "           SELECT q.project_id, q.question_name, p.param_name " +
+        "           FROM wdk_questions q, wdk_params p" +
+        "           WHERE q.question_id = p.question_id    " + "         ) d       " +
+        "   WHERE s.project_id = d.project_id        " + "     AND s.question_name = d.question_name " +
+        "     AND s.project_id IN " + projects + "     AND s.step_id = sp.step_id " +
+        "     AND sp.param_name = d.param_name " + "     AND s.is_valid IS NULL)";
 
-    executeByBatch(wdkModel, source, sql, "STEPS:wdk-invalidate-param", null,
-        null);
+    executeByBatch(wdkModel, source, sql, "STEPS:wdk-invalidate-param", null, null);
   }
 
-  private void detectEnumParams(WdkModel wdkModel, String projects)
-      throws SQLException {
+  private void detectEnumParams(WdkModel wdkModel, String projects) throws SQLException {
     logger.debug("detecting invalid enum params...");
 
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -183,45 +168,33 @@ public class StepValidator extends BaseCLI {
     DataSource source = wdkModel.getUserDb().getDataSource();
 
     // <ADD-AG 042911> ----------------------------------------------------
-    String sql = "UPDATE " + steps + " SET is_valid = 0 WHERE step_id IN "
-        + "  (SELECT DISTINCT s.step_id                    "
-        + "   FROM step_params sp, " + steps + " s, "
-        + "        (  SELECT s.project_id, s.question_name, sp.param_name, "
-        + "                  sp.param_value "
-        + "           FROM step_params sp, " + steps + " s, wdk_questions q, "
-        + "                wdk_params p "
-        + "           WHERE sp.step_id = s.step_id "
-        + "             AND s.is_valid IS NULL "
-        + "             AND s.project_id = q.project_id "
-        + "             AND s.question_name = q.question_name "
-        + "             AND q.question_id = p.question_id "
-        + "             AND sp.param_name = p.param_name "
-        + "             AND p.param_type IN ('EnumParam', 'FlatVocabParam')"
-        + "         MINUS "
-        + "           SELECT q.project_id, q.question_name, "
-        + "                  p.param_name, ep.param_value "
-        + "           FROM wdk_questions q, wdk_params p, wdk_enum_params ep "
-        + "           WHERE q.question_id = p.question_id "
-        + "             AND p.param_id = ep.param_id        "
-        + "        ) d               "
-        + "   WHERE s.project_id = d.project_id "
-        + "     AND s.question_name = d.question_name "
-        + "     AND s.project_id IN " + projects
-        + "     AND s.step_id = sp.step_id "
-        + "     AND sp.param_name = d.param_name "
-        + "     AND sp.param_value = d.param_value "
-        + "     AND s.is_valid IS NULL)";
+    String sql = "UPDATE " + steps + " SET is_valid = 0 WHERE step_id IN " +
+        "  (SELECT DISTINCT s.step_id                    " + "   FROM step_params sp, " + steps + " s, " +
+        "        (  SELECT s.project_id, s.question_name, sp.param_name, " +
+        "                  sp.param_value " + "           FROM step_params sp, " + steps +
+        " s, wdk_questions q, " + "                wdk_params p " +
+        "           WHERE sp.step_id = s.step_id " + "             AND s.is_valid IS NULL " +
+        "             AND s.project_id = q.project_id " +
+        "             AND s.question_name = q.question_name " +
+        "             AND q.question_id = p.question_id " + "             AND sp.param_name = p.param_name " +
+        "             AND p.param_type IN ('EnumParam', 'FlatVocabParam')" + "         MINUS " +
+        "           SELECT q.project_id, q.question_name, " +
+        "                  p.param_name, ep.param_value " +
+        "           FROM wdk_questions q, wdk_params p, wdk_enum_params ep " +
+        "           WHERE q.question_id = p.question_id " +
+        "             AND p.param_id = ep.param_id        " + "        ) d               " +
+        "   WHERE s.project_id = d.project_id " + "     AND s.question_name = d.question_name " +
+        "     AND s.project_id IN " + projects + "     AND s.step_id = sp.step_id " +
+        "     AND sp.param_name = d.param_name " + "     AND sp.param_value = d.param_value " +
+        "     AND s.is_valid IS NULL)";
 
-    executeByBatch(wdkModel, source, sql, "STEPS:wdk-invalidate-enum-param",
-        null, null);
+    executeByBatch(wdkModel, source, sql, "STEPS:wdk-invalidate-enum-param", null, null);
   }
 
-  private void flagDependentSteps(WdkModel wdkModel, String projects)
-      throws SQLException {
+  private void flagDependentSteps(WdkModel wdkModel, String projects) throws SQLException {
     logger.debug("Flagging invalid dependent steps. These are any steps other "
         + "than leave steps: boolean, transforms,... Here the root of the "
-        + "strategy will get marked, which will translate into an invalid "
-        + "icon by the strategy.");
+        + "strategy will get marked, which will translate into an invalid " + "icon by the strategy.");
 
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
     String steps = userDB.getUserSchema() + "steps";
@@ -230,33 +203,30 @@ public class StepValidator extends BaseCLI {
     String tempTable = "wdk_part_steps";
 
     try {
-      String sql = "CREATE TABLE " + tempTable + " AS "
-          + "(SELECT step_id, user_id, left_child_id, right_child_id, is_valid"
-          + " FROM                       " + steps
-          + " WHERE project_id IN     " + projects
-          + "   AND user_id IN  (SELECT DISTINCT user_id FROM " + steps
-          + "                    WHERE is_valid = 0) )";
+      String sql = "CREATE TABLE " + tempTable + " AS " +
+          "(SELECT step_id, user_id, left_child_id, right_child_id, is_valid" +
+          " FROM                       " + steps + " WHERE project_id IN     " + projects +
+          "   AND user_id IN  (SELECT DISTINCT user_id FROM " + steps +
+          "                    WHERE is_valid = 0) )";
       SqlUtils.executeUpdate(source, sql, "wdk-invalidate-create-part-steps");
 
       // add a hint to use filter in CONNECT BY, which improves from 1368
       // seconds to 251 seconds.
-      sql = "UPDATE " + steps + " SET is_valid = 0 "
-          + "WHERE is_valid != 0                   "
-          + "  AND step_id IN (SELECT DISTINCT step_id FROM " + tempTable
-          + "                  START WITH is_valid = 0 "
-          + "                  CONNECT BY prior user_id = user_id "
-          + "                    AND (   prior step_id = right_child_id "
-          + "                         OR prior step_id = left_child_id) "
-          + "                        )";
+      sql = "UPDATE " + steps + " SET is_valid = 0 " + "WHERE is_valid != 0                   " +
+          "  AND step_id IN (SELECT DISTINCT step_id FROM " + tempTable +
+          "                  START WITH is_valid = 0 " +
+          "                  CONNECT BY prior user_id = user_id " +
+          "                    AND (   prior step_id = right_child_id " +
+          "                         OR prior step_id = left_child_id) " + "                        )";
 
       // <ADD-AG 042911>
       logger.info("\n\nWARNING: this final SQL might take 3 hours when using"
           + " all projects; please let it run, killing the job would"
           + " break replication.\n...................................\n");
-      executeByBatch(wdkModel, source, sql, "STEP:wdk-invalidate-parent-step",
-          null, null);
+      executeByBatch(wdkModel, source, sql, "STEP:wdk-invalidate-parent-step", null, null);
 
-    } finally {
+    }
+    finally {
       String sql = "DROP TABLE " + tempTable + " PURGE";
       SqlUtils.executeUpdate(source, sql, "wdk-invalidate-drop-part-steps");
     }
@@ -271,12 +241,10 @@ public class StepValidator extends BaseCLI {
     sql.append("(SELECT step_id FROM " + userSchema + "steps)");
 
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    SqlUtils.executeUpdate(dataSource, sql.toString(),
-        "wdk-delete-invalid-step-params");
+    SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-delete-invalid-step-params");
   }
 
-  private void dropDanglingSteps(WdkModel wdkModel, String projects)
-      throws SQLException, IOException {
+  private void dropDanglingSteps(WdkModel wdkModel, String projects) throws SQLException, IOException {
     logger.info("drop dangling steps table and related resources...");
 
     String stepTable = "wdk_dangle_steps";
@@ -296,12 +264,12 @@ public class StepValidator extends BaseCLI {
       platform.dropTable(ds, null, strategyTable, true);
 
     String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-    if (schema.length() > 0 && !schema.endsWith(".")) schema += ".";
+    if (schema.length() > 0 && !schema.endsWith("."))
+      schema += ".";
 
     selectDanglingSteps(wdkModel, schema, stepTable, projects);
     selectParentSteps(wdkModel, schema, stepTable, parentTable);
-    selectDanglingStrategies(wdkModel, schema, strategyTable, parentTable,
-        projects);
+    selectDanglingStrategies(wdkModel, schema, strategyTable, parentTable, projects);
     // save the dangling strategies into a file
     reportDanglingStrategies(wdkModel, strategyTable);
     deleteDanglingStrategies(wdkModel, schema, strategyTable);
@@ -319,8 +287,8 @@ public class StepValidator extends BaseCLI {
     // + parentTable + " PURGE", "wdk_drop_parent_steps");
   }
 
-  private void selectDanglingSteps(WdkModel wdkModel, String schema,
-      String danglingTable, String projects) throws SQLException {
+  private void selectDanglingSteps(WdkModel wdkModel, String schema, String danglingTable, String projects)
+      throws SQLException {
     logger.debug("looking for dangling steps...");
 
     String stepTable = schema + "steps";
@@ -349,12 +317,11 @@ public class StepValidator extends BaseCLI {
     sql.append("   AND s.project_id IN " + projects + ")");
 
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    SqlUtils.executeUpdate(dataSource, sql.toString(),
-        "wdk-create-dangling-step");
+    SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-create-dangling-step");
   }
 
-  private void selectParentSteps(WdkModel wdkModel, String schema,
-      String danglingTable, String parentTable) throws SQLException {
+  private void selectParentSteps(WdkModel wdkModel, String schema, String danglingTable, String parentTable)
+      throws SQLException {
     logger.debug("looking for parents of dangling steps...");
 
     String stepTable = schema + "steps";
@@ -374,9 +341,8 @@ public class StepValidator extends BaseCLI {
     SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-create-parent-step");
   }
 
-  private void selectDanglingStrategies(WdkModel wdkModel, String schema,
-      String strategyTable, String parentTable, String projects)
-      throws SQLException {
+  private void selectDanglingStrategies(WdkModel wdkModel, String schema, String strategyTable,
+      String parentTable, String projects) throws SQLException {
     logger.debug("Selecting dangling strategies...");
 
     String stratTable = schema + "strategies";
@@ -399,16 +365,15 @@ public class StepValidator extends BaseCLI {
     sql.append("  )"); // <MOD-AG 050511>
 
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    SqlUtils.executeUpdate(dataSource, sql.toString(),
-        "wdk-create-dangling-strategies");
+    SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-create-dangling-strategies");
   }
 
-  private void reportDanglingStrategies(WdkModel wdkModel, String strategyTable)
-      throws SQLException, IOException {
+  private void reportDanglingStrategies(WdkModel wdkModel, String strategyTable) throws SQLException,
+      IOException {
     // determine the file name
     Calendar now = Calendar.getInstance();
-    String name = "dangling-strategies_" + now.get(Calendar.YEAR) + "-"
-        + now.get(Calendar.MONTH) + "-" + now.get(Calendar.DAY_OF_MONTH);
+    String name = "dangling-strategies_" + now.get(Calendar.YEAR) + "-" + now.get(Calendar.MONTH) + "-" +
+        now.get(Calendar.DAY_OF_MONTH);
     File file = new File(name + ".log");
     int count = 0;
     while (file.exists()) {
@@ -419,16 +384,13 @@ public class StepValidator extends BaseCLI {
     writer.println("user_id\temail\tstrategy_id\tproject\tis_saved\tcreate_time\tlast_modified\troot_step\tname");
 
     String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-    String sql = "SELECT u.email, s.* FROM " + schema + "strategies s, "
-        + schema + "users u, " + strategyTable + " d "
-        + " WHERE d.strategy_id = s.strategy_id "
-        + "   AND s.user_id = u.user_id "
-        + " ORDER BY s.user_id ASC, s.strategy_id ASC";
+    String sql = "SELECT u.email, s.* FROM " + schema + "strategies s, " + schema + "users u, " +
+        strategyTable + " d " + " WHERE d.strategy_id = s.strategy_id " + "   AND s.user_id = u.user_id " +
+        " ORDER BY s.user_id ASC, s.strategy_id ASC";
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql,
-          "wdk-get-dangling-strats", 100);
+      resultSet = SqlUtils.executeQuery(dataSource, sql, "wdk-get-dangling-strats", 100);
       while (resultSet.next()) {
         writer.print(resultSet.getInt("user_id") + "\t");
         writer.print(resultSet.getString("email") + "\t");
@@ -441,17 +403,17 @@ public class StepValidator extends BaseCLI {
         writer.println(resultSet.getString("name"));
       }
 
-    } finally {
+    }
+    finally {
       SqlUtils.closeResultSetAndStatement(resultSet);
       writer.flush();
       writer.close();
-      System.out.println("Dangling strategies are saved at: "
-          + file.getAbsolutePath());
+      System.out.println("Dangling strategies are saved at: " + file.getAbsolutePath());
     }
   }
 
-  private void deleteDanglingStrategies(WdkModel wdkModel, String schema,
-      String strategyTable) throws SQLException {
+  private void deleteDanglingStrategies(WdkModel wdkModel, String schema, String strategyTable)
+      throws SQLException {
     logger.debug("Deleting dangling strategies...");
 
     String stratTable = schema + "strategies";
@@ -463,12 +425,11 @@ public class StepValidator extends BaseCLI {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
     // <ADD-AG 050511>
-    executeByBatch(wdkModel, dataSource, sql.toString(),
-        "STRATEGIES:wdk-delete-dangling-strategy", null, null);
+    executeByBatch(wdkModel, dataSource, sql.toString(), "STRATEGIES:wdk-delete-dangling-strategy", null,
+        null);
   }
 
-  private void deleteDanglingSteps(WdkModel wdkModel, String schema,
-      String parentTable) throws SQLException {
+  private void deleteDanglingSteps(WdkModel wdkModel, String schema, String parentTable) throws SQLException {
     logger.debug("Deleting dangling steps...");
 
     String stepTable = schema + "steps";
@@ -478,9 +439,8 @@ public class StepValidator extends BaseCLI {
 
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
-    executeByBatch(wdkModel, dataSource, sql.toString(),
-        "STEPS:wdk-delete-dangling-step", null, null); // <ADD-AG
-                                                       // 050511>
+    executeByBatch(wdkModel, dataSource, sql.toString(), "STEPS:wdk-delete-dangling-step", null, null); // <ADD-AG
+                                                                                                        // 050511>
 
     // SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
     // "wdk-delete-dangling-step");
@@ -489,14 +449,14 @@ public class StepValidator extends BaseCLI {
   // <ADD-AG 042911>
   // -----------------------------------------------------------
 
-  private void executeByBatch(WdkModel wdkModel, DataSource dataSource,
-      String sql, String name, String dmlSql, String selectSql)
-      throws SQLException {
+  public static void executeByBatch(WdkModel wdkModel, DataSource dataSource, String sql, String name,
+      String dmlSql, String selectSql) throws SQLException {
 
     if ((dmlSql == null) || (selectSql == null)) {
       dmlSql = sql.substring(0, sql.indexOf("IN ", 0)) + " = ?";
       selectSql = sql.substring(sql.indexOf("IN ", 0) + 3).trim();
-      if (selectSql.startsWith("(")) selectSql = selectSql.substring(1);
+      if (selectSql.startsWith("("))
+        selectSql = selectSql.substring(1);
       if (selectSql.endsWith(")"))
         selectSql = selectSql.substring(0, selectSql.length() - 1);
 
@@ -509,8 +469,7 @@ public class StepValidator extends BaseCLI {
     ResultSet resultSet = null;
 
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, selectSql, "wdk-backup-"
-          + name);
+      resultSet = SqlUtils.executeQuery(dataSource, selectSql, "wdk-backup-" + name);
 
       connection = dataSource.getConnection();
       psInsert = connection.prepareStatement(dmlSql);
@@ -524,15 +483,18 @@ public class StepValidator extends BaseCLI {
         psInsert.addBatch();
 
         count++;
-        if (count % 1000 == 0) {
+        if (count % BATCH_SIZE == 0) {
           psInsert.executeBatch();
           logger.info("Rows processed for " + name + " = " + count + ".");
         }
       }
 
-      psInsert.executeBatch();
-      logger.info("Total rows processed for " + name + " = " + count + ".");
-    } finally {
+      if (count % BATCH_SIZE != 0) {
+        psInsert.executeBatch();
+        logger.info("Total rows processed for " + name + " = " + count + ".");
+      }
+    }
+    finally {
       SqlUtils.closeResultSetAndStatement(resultSet);
       SqlUtils.closeStatement(psInsert);
     }
@@ -540,8 +502,8 @@ public class StepValidator extends BaseCLI {
 
   // ---------------------------------------------------------------------------
 
-  private void resetByBatch(WdkModel wdkModel, DataSource dataSource,
-      String sql, String name) throws SQLException {
+  private void resetByBatch(WdkModel wdkModel, DataSource dataSource, String sql, String name)
+      throws SQLException {
 
     sql = sql + " AND is_valid is not NULL and rownum < 1000";
 
