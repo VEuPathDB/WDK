@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -26,6 +27,8 @@ import org.json.JSONObject;
 
 @Path("/record")
 public class RecordService extends WdkService {
+
+  private static final Logger LOG = Logger.getLogger(RecordService.class);
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -133,8 +136,8 @@ public class RecordService extends WdkService {
       return Response.ok(RecordStreamer.getRecordAsStream(recordInstance, request.getAttributeNames(), request.getTableNames())).build();
     }
     catch (JSONException | RequestMisformatException e) {
-      //LOG.info("Passed request body deemed unacceptable", e);
-      return BAD_REQUEST_RESPONSE;
+      LOG.warn("Passed request body deemed unacceptable", e);
+      return getBadRequestResponse(e.getMessage());
     }
   }
   
