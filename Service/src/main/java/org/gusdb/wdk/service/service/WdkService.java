@@ -18,7 +18,7 @@ import org.gusdb.wdk.service.factory.WdkAnswerFactory;
 public abstract class WdkService {
 
   protected static final Response getBadRequestBodyResponse(String message) {
-    String responseMsg = "Improperly formatted or incomplete request body" + message + FormatUtil.NL;
+    String responseMsg = "Improperly formatted or incomplete request body: " + message + FormatUtil.NL;
     return Response.status(Status.BAD_REQUEST).entity(responseMsg).build();
   }
 
