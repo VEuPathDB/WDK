@@ -142,6 +142,13 @@ public class BooleanQuery extends SqlQuery {
     return operator;
   }
 
+  /**
+   * @return the useBooleanFilter
+   */
+  public StringParam getUseBooleanFilter() {
+    return useBooleanFilter;
+  }
+
   private AnswerParam prepareOperand(ParamSet paramSet,
       RecordClass recordClass, String paramName) throws WdkModelException {
     AnswerParam operand;
