@@ -7,6 +7,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -16,8 +17,9 @@ import org.gusdb.wdk.service.factory.WdkAnswerFactory;
 
 public abstract class WdkService {
 
-  protected static final Response getBadRequestResponse(String message) {
-    return Response.status(Status.BAD_REQUEST).entity(message).build();
+  protected static final Response getBadRequestBodyResponse(String message) {
+    String responseMsg = "Improperly formatted or incomplete request body" + message + FormatUtil.NL;
+    return Response.status(Status.BAD_REQUEST).entity(responseMsg).build();
   }
 
   @Context

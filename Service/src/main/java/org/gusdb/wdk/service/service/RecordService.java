@@ -137,7 +137,7 @@ public class RecordService extends WdkService {
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.warn("Passed request body deemed unacceptable", e);
-      return getBadRequestResponse(e.getMessage());
+      return getBadRequestBodyResponse(e.getMessage());
     }
   }
   
