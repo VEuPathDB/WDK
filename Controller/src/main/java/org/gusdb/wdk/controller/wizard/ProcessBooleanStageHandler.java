@@ -27,6 +27,8 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
   public static final String PARAM_QUESTION = "questionFullName";
   public static final String PARAM_CUSTOM_NAME = "customName";
+  public static final String PARAM_STRATEGY = "strategy";
+  public static final String PARAM_STEP = "step";
   public static final String PARAM_IMPORT_STRATEGY = "importStrategy";
 
   public static final String ATTR_IMPORT_STEP = ProcessBooleanAction.PARAM_IMPORT_STEP;
@@ -41,26 +43,44 @@ public class ProcessBooleanStageHandler implements StageHandler {
     UserBean user = ActionUtility.getUser(servlet, request);
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
 
+    String strStratId = request.getParameter(PARAM_STRATEGY);
+    if (strStratId == null || strStratId.isEmpty())
+      throw new WdkUserException("Required " + PARAM_STRATEGY + " param is missing.");
+
+    int strategyId = Integer.valueOf(strStratId.split("_", 2)[0]);
+    StrategyBean strategy = user.getStrategy(strategyId);
+
+    String strStepId = request.getParameter(PARAM_STEP);
+    int stepId = (strStepId == null || strStepId.isEmpty()) ? 0 : Integer.valueOf(strStepId);
+
+    if (strategy.getIsSaved()) {
+      Map<Integer, Integer> stepIdMap = new HashMap<>();
+      strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
+      if (stepId == 0)
+        stepId = stepIdMap.get(stepId);
+    }
+
     StepBean childStep = null;
 
     // unify between question and strategy
     String questionName = request.getParameter(PARAM_QUESTION);
-    String strStrategyId = request.getParameter(PARAM_IMPORT_STRATEGY);
+    String importStrategyId = request.getParameter(PARAM_IMPORT_STRATEGY);
     if (questionName != null && questionName.length() > 0) {
       // a question name specified, either create a step from it, or revise a current step
       String action = request.getParameter(ProcessBooleanAction.PARAM_ACTION);
       if (action.equals(WizardForm.ACTION_REVISE)) {
-        childStep = updateStepWithQuestion(servlet, request, wizardForm, questionName, user, wdkModel);
+        childStep = updateStepWithQuestion(servlet, request, wizardForm, strategy, questionName, user,
+            wdkModel, stepId);
       }
       else {
-        childStep = createStepFromQuestion(servlet, request, wizardForm, questionName, user, wdkModel);
+        childStep = createStepFromQuestion(servlet, request, wizardForm, strategy, questionName, user,
+            wdkModel);
       }
     }
-    else if (strStrategyId != null && strStrategyId.length() > 0) {
+    else if (importStrategyId != null && importStrategyId.length() > 0) {
       // a step specified, it must come from an insert strategy. make a
       // copy of it, and mark it as collapsable.
-      int strategyId = Integer.valueOf(strStrategyId);
-      childStep = createStepFromStrategy(user, strategyId);
+      childStep = createStepFromStrategy(user, strategy, Integer.valueOf(importStrategyId));
     }
 
     String customName = request.getParameter(PARAM_CUSTOM_NAME);
@@ -80,8 +100,8 @@ public class ProcessBooleanStageHandler implements StageHandler {
   }
 
   private StepBean updateStepWithQuestion(ActionServlet servlet, HttpServletRequest request,
-      WizardForm wizardForm, String questionName, UserBean user, WdkModelBean wdkModel)
-      throws WdkUserException, WdkModelException {
+      WizardForm wizardForm, StrategyBean strategy, String questionName, UserBean user,
+      WdkModelBean wdkModel, int stepId) throws WdkUserException, WdkModelException {
     logger.debug("updating step with question: " + questionName);
 
     // get the assigned weight
@@ -104,12 +124,15 @@ public class ProcessBooleanStageHandler implements StageHandler {
     Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, questionForm);
 
     // get the boolean/span step, then get child from the boolean
-    String strStepId = request.getParameter(ProcessBooleanAction.PARAM_STEP);
-    if (strStepId == null || strStepId.length() == 0)
+    if (stepId == 0)
       throw new WdkUserException("The required param \"" + ProcessBooleanAction.PARAM_STEP + "\" is missing.");
 
-    StepBean booleanStep = user.getStep(Integer.valueOf(strStepId));
+    StepBean booleanStep = strategy.getStepById(stepId);
     StepBean childStep = booleanStep.getChildStep();
+
+    // before changing step, need to check if strategy is saved, if yes, make a copy.
+    if (strategy.getIsSaved())
+      strategy.update(false);
 
     // revise on the child step
     childStep.setQuestionName(questionName);
@@ -120,7 +143,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
   }
 
   private StepBean createStepFromQuestion(ActionServlet servlet, HttpServletRequest request,
-      WizardForm wizardForm, String questionName, UserBean user, WdkModelBean wdkModel)
+      WizardForm wizardForm, StrategyBean strategy, String questionName, UserBean user, WdkModelBean wdkModel)
       throws WdkUserException, WdkModelException {
     logger.debug("creating step from question: " + questionName);
 
@@ -145,17 +168,17 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
     // create child step
     QuestionBean question = wdkModel.getQuestion(questionName);
-    return user.createStep(question, params, null, false, true, weight);
+    return user.createStep(strategy.getStrategyId(), question, params, null, false, true, weight);
   }
 
-  private StepBean createStepFromStrategy(UserBean user, int strategyId) throws WdkModelException,
-      WdkUserException {
-    logger.debug("creating step from strategy: " + strategyId);
-    StrategyBean strategy = user.getStrategy(strategyId);
-    StepBean step = strategy.getLatestStep();
-    StepBean childStep = step.deepClone();
+  private StepBean createStepFromStrategy(UserBean user, StrategyBean newStrategy, int importStrategyId)
+      throws WdkModelException, WdkUserException {
+    logger.debug("creating step from strategy: " + importStrategyId);
+    StrategyBean importStrategy = user.getStrategy(importStrategyId);
+    StepBean step = importStrategy.getLatestStep();
+    StepBean childStep = step.deepClone(newStrategy.getStrategyId(), new HashMap<Integer, Integer>());
     childStep.setIsCollapsible(true);
-    childStep.setCollapsedName("Copy of " + strategy.getName());
+    childStep.setCollapsedName("Copy of " + importStrategy.getName());
     childStep.update(false);
     return childStep;
   }

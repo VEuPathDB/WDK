@@ -130,7 +130,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     private static Map<Integer, StrategyBean> getModifiedStrategies(
-            UserBean user, String state) throws JSONException, WdkUserException {
+            UserBean user, String state) throws JSONException, WdkUserException, WdkModelException {
         logger.debug("previous state: '" + state + "'");
 
         if (state == null || state.length() == 0) state = null;
@@ -264,9 +264,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
 
         // get a list of strategy checksums
-        logger.trace("TEST - " + user.getActiveStrategies()[0].getLatestStep().getCustomName());
         outputStrategies(model, user, jsMessage, displayStrategies, updateResults);
-        logger.trace("TEST - " + user.getActiveStrategies()[0].getLatestStep().getCustomName());
         outputCommon(user, jsMessage);
 
         PrintWriter writer = response.getWriter();

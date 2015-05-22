@@ -25,7 +25,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  * form bean for holding the boolean expression string fro queryStep.jsp page
  */
 
-public class FilterForm extends BooleanExpressionForm {
+public class FilterForm extends QuestionForm {
 
   /**
      * 
@@ -42,6 +42,7 @@ public class FilterForm extends BooleanExpressionForm {
   private boolean validating = true;
   private boolean paramsFilled = false;
 
+  @Override
   public void reset() {
     resetMappedProps();
   }
@@ -162,10 +163,12 @@ public class FilterForm extends BooleanExpressionForm {
     }
   }
 
+  @Override
   public void setQuestion(QuestionBean s) {
     question = s;
   }
 
+  @Override
   public QuestionBean getQuestion() throws WdkModelException {
     if (question == null) {
       if (qFullName == null) return null;
@@ -184,22 +187,27 @@ public class FilterForm extends BooleanExpressionForm {
     return question;
   }
 
+  @Override
   public void setNonValidating() {
     validating = false;
   }
 
+  @Override
   public void setParamsFilled(boolean paramsFilled) {
     this.paramsFilled = paramsFilled;
   }
 
+  @Override
   public boolean getParamsFilled() {
     return paramsFilled;
   }
 
+  @Override
   public void setQuestionFullName(String qFN) {
     this.qFullName = qFN;
   }
 
+  @Override
   public String getQuestionFullName() {
     return this.qFullName;
   }

@@ -275,7 +275,7 @@ public class DatasetFactory {
     return dataset;
   }
 
-  private Dataset getDataset(User user, Connection connection, String checksum) throws SQLException {
+  private Dataset getDataset(User user, Connection connection, String checksum) throws WdkModelException  {
     StringBuilder sqlBuffer = new StringBuilder("SELECT d.* FROM ");
     sqlBuffer.append(schema + TABLE_DATASETS + " d ");
     sqlBuffer.append(" WHERE d." + COLUMN_CONTENT_CHECKSUM + " = ? ");
@@ -296,16 +296,23 @@ public class DatasetFactory {
 
       return dataset;
     }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
     finally {
+      try {
       if (resultSet != null)
         resultSet.close();
       if (statement != null)
         statement.close();
+      } catch(SQLException ex) {
+        throw new WdkModelException(ex);
+      }
     }
   }
 
   private int insertDataset(User user, Connection connection, int datasetId, String name, String content,
-      String checksum, int size, Date createdDate, String parserName, String uploadFile) throws SQLException {
+      String checksum, int size, Date createdDate, String parserName, String uploadFile) throws WdkModelException {
     StringBuilder sqlBuffer = new StringBuilder("INSERT INTO ");
     sqlBuffer.append(schema + TABLE_DATASETS + " (");
     sqlBuffer.append(COLUMN_DATASET_ID + ", " + COLUMN_NAME + ", " + COLUMN_USER_ID + ", " +
@@ -330,9 +337,17 @@ public class DatasetFactory {
 
       return datasetId;
     }
+    catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
     finally {
       if (psInsert != null)
-        psInsert.close();
+        try {
+          psInsert.close();
+        }
+        catch (SQLException ex) {
+          throw new WdkModelException(ex);
+        }
     }
   }
 

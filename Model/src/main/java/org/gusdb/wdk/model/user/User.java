@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -22,7 +23,6 @@ import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.filter.FilterOptionList;
-import org.gusdb.wdk.model.query.BooleanExpression;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.question.Question;
@@ -41,7 +41,7 @@ public class User /* implements Serializable */{
 
   public final static String PREF_ITEMS_PER_PAGE = "preference_global_items_per_page";
   public final static String PREF_REMOTE_KEY = "preference_remote_key";
-  
+
   private final static int PREF_VALUE_LENGTH = 4000;
 
   public final static String SORTING_ATTRIBUTES_SUFFIX = "_sort";
@@ -58,10 +58,11 @@ public class User /* implements Serializable */{
   private UserFactory userFactory;
   private StepFactory stepFactory;
   private DatasetFactory datasetFactory;
-  private int userId;
+  private int _userId = 0;
   private String signature;
 
   // basic user information
+  private String emailPrefix;
   private String email;
   private String lastName;
   private String firstName;
@@ -81,8 +82,8 @@ public class User /* implements Serializable */{
   private boolean guest = true;
 
   /**
-   * the preferences for the user: <prefName, prefValue>. It only contains the
-   * preferences for the current project
+   * the preferences for the user: <prefName, prefValue>. It only contains the preferences for the current
+   * project
    */
   private Map<String, String> globalPreferences;
   private Map<String, String> projectPreferences;
@@ -97,7 +98,7 @@ public class User /* implements Serializable */{
   private Integer frontStep = null;
 
   User(WdkModel model, int userId, String email, String signature) {
-    this.userId = userId;
+    this._userId = userId;
     this.email = email;
     this.signature = signature;
 
@@ -129,28 +130,55 @@ public class User /* implements Serializable */{
   }
 
   /**
+   * user the userId field as a flag for lazy creation of guest user
+   * 
    * @return Returns the userId.
+   * @throws WdkModelException
    */
-  public int getUserId() {
-    return userId;
+  public synchronized int getUserId() throws WdkModelException {
+    if (_userId == 0)
+      userFactory.saveTemporaryUser(this);
+    return _userId;
+  }
+
+  public void setUserId(int userId) {
+    this._userId = userId;
   }
 
   /**
    * @return Returns the signature.
+   * @throws WdkModelException
    */
-  public String getSignature() {
+  public synchronized String getSignature() throws WdkModelException {
+    if (signature == null)
+      userFactory.saveTemporaryUser(this);
     return signature;
+  }
+
+  public void setSignature(String signature) {
+    this.signature = signature;
   }
 
   /**
    * @return Returns the email.
+   * @throws WdkModelException
    */
-  public String getEmail() {
+  public synchronized String getEmail() throws WdkModelException {
+    if (email == null)
+      userFactory.saveTemporaryUser(this);
     return email;
   }
 
   public void setEmail(String email) {
     this.email = email;
+  }
+
+  public String getEmailPrefix() {
+    return emailPrefix;
+  }
+
+  public void setEmailPrefix(String emailPrefix) {
+    this.emailPrefix = emailPrefix;
   }
 
   /**
@@ -262,15 +290,13 @@ public class User /* implements Serializable */{
    * @return User's full name (first middle last)
    */
   public String getDisplayName() {
-    return (formatNamePart(getFirstName()) +
-            formatNamePart(getMiddleName()) +
-            formatNamePart(getLastName())).trim();
+    return (formatNamePart(getFirstName()) + formatNamePart(getMiddleName()) + formatNamePart(getLastName())).trim();
   }
-  
+
   private String formatNamePart(String namePart) {
     return (namePart == null || namePart.isEmpty() ? "" : " " + namePart.trim());
   }
-  
+
   /**
    * @return Returns the organization.
    */
@@ -450,7 +476,7 @@ public class User /* implements Serializable */{
    * @throws WdkUserException
    * @throws NoSuchAlgorithmException
    */
-  Step createStep(AnswerValue answerValue, boolean deleted, int assignedWeight)
+  Step createStep(Integer strategyId, AnswerValue answerValue, boolean deleted, int assignedWeight)
       throws WdkModelException {
     Question question = answerValue.getQuestion();
     Map<String, String> paramValues = answerValue.getIdsQueryInstance().getParamStableValues();
@@ -459,65 +485,63 @@ public class User /* implements Serializable */{
     int endIndex = answerValue.getEndIndex();
 
     try {
-      return createStep(question, paramValues, filter, startIndex, endIndex,
-          deleted, true, assignedWeight, answerValue.getFilterOptions());
+      return createStep(strategyId, question, paramValues, filter, startIndex, endIndex, deleted, true,
+          assignedWeight, answerValue.getFilterOptions());
     }
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);
     }
   }
 
-  public Step createStep(Question question, Map<String, String> paramValues,
-      String filterName, boolean deleted, boolean validate, int assignedWeight)
-      throws WdkModelException, WdkUserException {
+  public Step createStep(Integer strategyId, Question question, Map<String, String> paramValues,
+      String filterName, boolean deleted, boolean validate, int assignedWeight) throws WdkModelException,
+      WdkUserException {
     AnswerFilterInstance filter = null;
     RecordClass recordClass = question.getRecordClass();
     if (filterName != null) {
       filter = recordClass.getFilterInstance(filterName);
-    } else filter = recordClass.getDefaultFilter();
-    return createStep(question, paramValues, filter, deleted, validate,
-        assignedWeight);
+    }
+    else
+      filter = recordClass.getDefaultFilter();
+    return createStep(strategyId, question, paramValues, filter, deleted, validate, assignedWeight);
   }
 
-  public Step createStep(Question question, Map<String, String> paramValues,
-      AnswerFilterInstance filter, boolean deleted, boolean validate,
-      int assignedWeight) throws WdkModelException, WdkUserException {
+  public Step createStep(Integer strategyId, Question question, Map<String, String> paramValues,
+      AnswerFilterInstance filter, boolean deleted, boolean validate, int assignedWeight)
+      throws WdkModelException, WdkUserException {
     int endIndex = getItemsPerPage();
-    return createStep(question, paramValues, filter, 1, endIndex, deleted,
-        validate, assignedWeight, null);
+    return createStep(strategyId, question, paramValues, filter, 1, endIndex, deleted, validate,
+        assignedWeight, null);
   }
 
-  public Step createStep(Question question,
-      Map<String, String> paramValues, AnswerFilterInstance filter,
-      int pageStart, int pageEnd, boolean deleted, boolean validate,
+  public Step createStep(Integer strategyId, Question question, Map<String, String> paramValues,
+      AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
       int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
-    Step step = stepFactory.createStep(this, question, paramValues, filter,
-        pageStart, pageEnd, deleted, validate, assignedWeight, filterOptions);
+    Step step = stepFactory.createStep(this, strategyId, question, paramValues, filter, pageStart, pageEnd,
+        deleted, validate, assignedWeight, filterOptions);
     return step;
   }
 
-  public Strategy createStrategy(Step step, boolean saved)
-      throws WdkModelException, WdkUserException {
+  public Strategy createStrategy(Step step, boolean saved) throws WdkModelException, WdkUserException {
     return createStrategy(step, null, null, saved, null, false, false);
   }
 
-  public Strategy createStrategy(Step step, boolean saved, boolean hidden)
-      throws WdkModelException, WdkUserException {
+  public Strategy createStrategy(Step step, boolean saved, boolean hidden) throws WdkModelException,
+      WdkUserException {
     return createStrategy(step, null, null, saved, null, hidden, false);
   }
 
   // Transitional method...how to handle savedName properly?
   // Probably by expecting it if a name is given?
-  public Strategy createStrategy(Step step, String name, boolean saved)
-      throws WdkModelException, WdkUserException {
+  public Strategy createStrategy(Step step, String name, boolean saved) throws WdkModelException,
+      WdkUserException {
     return createStrategy(step, name, null, saved, null, false, false);
   }
 
-  public Strategy createStrategy(Step step, String name,
-      String savedName, boolean saved, String description, boolean hidden, boolean isPublic)
-      throws WdkModelException, WdkUserException {
-    Strategy strategy = stepFactory.createStrategy(this, step, name, savedName,
-        saved, description, hidden, isPublic);
+  public Strategy createStrategy(Step step, String name, String savedName, boolean saved, String description,
+      boolean hidden, boolean isPublic) throws WdkModelException, WdkUserException {
+    Strategy strategy = stepFactory.createStrategy(this, step, name, savedName, saved, description, hidden,
+        isPublic);
 
     // set the view to this one
     String strategyKey = Integer.toString(strategy.getStrategyId());
@@ -529,10 +553,13 @@ public class User /* implements Serializable */{
     return strategy;
   }
 
+  public int getNewStrategyId() throws WdkModelException {
+    return stepFactory.getNewStrategyId();
+  }
+
   /**
-   * this method is only called by UserFactory during the login process, it
-   * merges the existing history of the current guest user into the logged-in
-   * user.
+   * this method is only called by UserFactory during the login process, it merges the existing history of the
+   * current guest user into the logged-in user.
    * 
    * @param user
    * @throws WdkModelException
@@ -540,8 +567,7 @@ public class User /* implements Serializable */{
    */
   public void mergeUser(User user) throws WdkModelException, WdkUserException {
     // TEST
-    logger.debug("Merging user #" + user.getUserId() + " into user #" + userId
-        + "...");
+    logger.debug("Merging user #" + user.getUserId() + " into user #" + getUserId() + "...");
 
     // first of all we import all the strategies
     Set<Integer> importedSteps = new LinkedHashSet<Integer>();
@@ -566,17 +592,9 @@ public class User /* implements Serializable */{
       activeStrategyFactory.openActiveStrategy(Integer.toString(newStrategyId));
     }
 
-    // then import the steps that do not belong to any strategies; that is,
-    // only the root steps who are not imported yet.
-    for (Step step : user.getSteps()) {
-      if (stepFactory.isStepDepended(step.getStepId())) continue;
-      if (importedSteps.contains(step.getStepId())) continue;
-
-      stepFactory.importStep(this, step, stepsMap);
-    }
+    // no need to import steps that don't belong to any strategies, since they won't be referenced in any way.
 
     // if a front action is specified, copy it over and update ids
-
     if (user.getFrontAction() != null) {
       setFrontAction(user.getFrontAction());
       if (strategiesMap.containsKey(user.getFrontStrategy())) {
@@ -599,8 +617,7 @@ public class User /* implements Serializable */{
   public Map<Integer, Strategy> getStrategiesMap() throws WdkModelException {
     logger.debug("loading strategies...");
     Map<Integer, Strategy> invalidStrategies = new LinkedHashMap<Integer, Strategy>();
-    Map<Integer, Strategy> strategies = stepFactory.loadStrategies(this,
-        invalidStrategies);
+    Map<Integer, Strategy> strategies = stepFactory.loadStrategies(this, invalidStrategies);
 
     return strategies;
   }
@@ -610,13 +627,15 @@ public class User /* implements Serializable */{
     Map<String, List<Step>> category = new LinkedHashMap<String, List<Step>>();
     for (Step step : steps.values()) {
       // not include the histories marked as 'deleted'
-      if (step.isDeleted()) continue;
+      if (step.isDeleted())
+        continue;
 
       String type = step.getRecordClass().getFullName();
       List<Step> list;
       if (category.containsKey(type)) {
         list = category.get(type);
-      } else {
+      }
+      else {
         list = new ArrayList<Step>();
         category.put(type, list);
       }
@@ -633,7 +652,8 @@ public class User /* implements Serializable */{
       Strategy[] array = new Strategy[strategies.size()];
       strategies.values().toArray(array);
       return array;
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       System.out.println(ex);
       throw ex;
     }
@@ -646,14 +666,12 @@ public class User /* implements Serializable */{
     return array;
   }
 
-  public Map<String, List<Strategy>> getStrategiesByCategory()
-      throws WdkModelException {
+  public Map<String, List<Strategy>> getStrategiesByCategory() throws WdkModelException {
     Map<Integer, Strategy> strategies = getStrategiesMap();
     return formatStrategiesByRecordClass(strategies.values());
   }
 
-  public Map<String, List<Strategy>> getUnsavedStrategiesByCategory()
-      throws WdkModelException {
+  public Map<String, List<Strategy>> getUnsavedStrategiesByCategory() throws WdkModelException {
     List<Strategy> strategies = stepFactory.loadStrategies(this, false, false);
     return formatStrategiesByRecordClass(strategies);
   }
@@ -666,20 +684,18 @@ public class User /* implements Serializable */{
    * @throws JSONException
    * @throws SQLException
    */
-  public Map<String, List<Strategy>> getSavedStrategiesByCategory()
-      throws WdkModelException {
+  public Map<String, List<Strategy>> getSavedStrategiesByCategory() throws WdkModelException {
     List<Strategy> strategies = stepFactory.loadStrategies(this, true, false);
     return formatStrategiesByRecordClass(strategies);
   }
 
-  public Map<String, List<Strategy>> getRecentStrategiesByCategory()
-      throws WdkModelException {
+  public Map<String, List<Strategy>> getRecentStrategiesByCategory() throws WdkModelException {
     List<Strategy> strategies = stepFactory.loadStrategies(this, false, true);
     return formatStrategiesByRecordClass(strategies);
   }
 
-  public Map<String, List<Strategy>> getActiveStrategiesByCategory()
-      throws WdkModelException, WdkUserException {
+  public Map<String, List<Strategy>> getActiveStrategiesByCategory() throws WdkModelException,
+      WdkUserException {
     Strategy[] strategies = getActiveStrategies();
     List<Strategy> list = new ArrayList<Strategy>();
     for (Strategy strategy : strategies)
@@ -687,8 +703,8 @@ public class User /* implements Serializable */{
     return formatStrategiesByRecordClass(list);
   }
 
-  private Map<String, List<Strategy>> formatStrategiesByRecordClass(
-      Collection<Strategy> strategies) throws WdkModelException {
+  private Map<String, List<Strategy>> formatStrategiesByRecordClass(Collection<Strategy> strategies)
+      throws WdkModelException {
     Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
     for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
       for (RecordClass recordClass : rcSet.getRecordClasses()) {
@@ -701,7 +717,8 @@ public class User /* implements Serializable */{
       List<Strategy> list;
       if (category.containsKey(rcName)) {
         list = category.get(rcName);
-      } else {
+      }
+      else {
         list = new ArrayList<Strategy>();
         category.put(rcName, list);
       }
@@ -744,8 +761,7 @@ public class User /* implements Serializable */{
     return array;
   }
 
-  public Map<Integer, Strategy> getStrategiesMap(String rcName)
-      throws WdkModelException {
+  public Map<Integer, Strategy> getStrategiesMap(String rcName) throws WdkModelException {
     Map<Integer, Strategy> strategies = getStrategiesMap();
     Map<Integer, Strategy> selected = new LinkedHashMap<Integer, Strategy>();
     for (int strategyId : strategies.keySet()) {
@@ -767,13 +783,12 @@ public class User /* implements Serializable */{
     return stepFactory.loadStep(this, stepID);
   }
 
-  public Strategy getStrategy(int userStrategyId) throws WdkModelException,
-      WdkUserException {
+  public Strategy getStrategy(int userStrategyId) throws WdkModelException, WdkUserException {
     return getStrategy(userStrategyId, true);
   }
 
-  public Strategy getStrategy(int userStrategyId, boolean allowDeleted)
-      throws WdkModelException, WdkUserException {
+  public Strategy getStrategy(int userStrategyId, boolean allowDeleted) throws WdkModelException,
+      WdkUserException {
     return stepFactory.loadStrategy(this, userStrategyId, allowDeleted);
   }
 
@@ -800,7 +815,8 @@ public class User /* implements Serializable */{
   public void deleteStrategy(int strategyId) throws WdkModelException {
     String strategyKey = Integer.toString(strategyId);
     int order = activeStrategyFactory.getOrder(strategyKey);
-    if (order > 0) activeStrategyFactory.closeActiveStrategy(strategyKey);
+    if (order > 0)
+      activeStrategyFactory.closeActiveStrategy(strategyKey);
     stepFactory.deleteStrategy(strategyId);
   }
 
@@ -823,7 +839,8 @@ public class User /* implements Serializable */{
   }
 
   public void setProjectPreference(String prefName, String prefValue) {
-    if (prefValue == null) prefValue = prefName;
+    if (prefValue == null)
+      prefValue = prefName;
     projectPreferences.put(prefName, prefValue);
   }
 
@@ -840,7 +857,8 @@ public class User /* implements Serializable */{
   }
 
   public void setGlobalPreference(String prefName, String prefValue) {
-    if (prefValue == null) prefValue = prefName;
+    if (prefValue == null)
+      prefValue = prefName;
     globalPreferences.put(prefName, prefValue);
   }
 
@@ -867,8 +885,8 @@ public class User /* implements Serializable */{
     projectPreferences.putAll(preferences.get(1));
   }
 
-  public void changePassword(String oldPassword, String newPassword,
-      String confirmPassword) throws WdkUserException {
+  public void changePassword(String oldPassword, String newPassword, String confirmPassword)
+      throws WdkUserException {
     userFactory.changePassword(email, oldPassword, newPassword, confirmPassword);
   }
 
@@ -876,14 +894,12 @@ public class User /* implements Serializable */{
     return datasetFactory;
   }
 
-
   public Dataset getDataset(int datasetId) throws WdkModelException {
     return datasetFactory.getDataset(this, datasetId);
   }
 
   /**
-   * set this method synchronized to make sure the preferences are not updated
-   * at the same time.
+   * set this method synchronized to make sure the preferences are not updated at the same time.
    * 
    * @throws WdkModelException
    */
@@ -898,48 +914,12 @@ public class User /* implements Serializable */{
   }
 
   public void setItemsPerPage(int itemsPerPage) throws WdkModelException {
-    if (itemsPerPage <= 0) itemsPerPage = 20;
-    else if (itemsPerPage > 1000) itemsPerPage = 1000;
-    setGlobalPreference(User.PREF_ITEMS_PER_PAGE,
-        Integer.toString(itemsPerPage));
+    if (itemsPerPage <= 0)
+      itemsPerPage = 20;
+    else if (itemsPerPage > 1000)
+      itemsPerPage = 1000;
+    setGlobalPreference(User.PREF_ITEMS_PER_PAGE, Integer.toString(itemsPerPage));
     save();
-  }
-
-  public Step combineStep(String expression) throws WdkModelException, WdkUserException {
-    return combineStep(expression, false, false);
-  }
-
-  public Step combineStep(String expression, boolean useBooleanFilter,
-      boolean deleted) throws WdkModelException, WdkUserException {
-    logger.debug("Boolean expression: " + expression);
-    BooleanExpression exp = new BooleanExpression(this);
-    Step step = exp.parseExpression(expression, useBooleanFilter);
-    step.setBooleanExpression(expression);
-    AnswerValue answerValue = step.getAnswerValue();
-
-    logger.debug("Boolean answer size: " + answerValue.getResultSize());
-
-    // save summary list, if no summary list exists
-    String summaryKey = answerValue.getQuestion().getFullName()
-        + SUMMARY_ATTRIBUTES_SUFFIX;
-    if (!projectPreferences.containsKey(summaryKey)) {
-      Map<String, AttributeField> summary = answerValue.getSummaryAttributeFieldMap();
-      StringBuffer sb = new StringBuffer();
-      for (String attrName : summary.keySet()) {
-        if (sb.length() != 0) sb.append(",");
-        sb.append(attrName);
-      }
-      projectPreferences.put(summaryKey, sb.toString());
-      save();
-    }
-
-    return step;
-  }
-
-  public void validateExpression(String expression) throws WdkModelException {
-    // construct BooleanQuestionNode
-    BooleanExpression be = new BooleanExpression(this);
-    be.parseExpression(expression, false);
   }
 
   public Map<String, Boolean> getSortingAttributes(String questionFullName) throws WdkModelException {
@@ -997,7 +977,7 @@ public class User /* implements Serializable */{
     projectPreferences.put(sortKey, sortValue);
     return sortValue;
   }
-  
+
   public void setSortingAttributes(String questionName, String sortings) {
     String sortKey = questionName + SORTING_ATTRIBUTES_SUFFIX;
     projectPreferences.put(sortKey, sortings);
@@ -1033,21 +1013,23 @@ public class User /* implements Serializable */{
     logger.debug("reset used weight to false");
   }
 
-  public String setSummaryAttributes(String questionFullName,
-      String[] summaryNames) throws WdkModelException {
+  public String setSummaryAttributes(String questionFullName, String[] summaryNames) throws WdkModelException {
     // make sure all the attribute names exist
     Question question = (Question) wdkModel.resolveReference(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
-    
+
     StringBuilder summary = new StringBuilder();
     for (String attrName : summaryNames) {
       // ignore invalid attribute names
-      if (!attributes.keySet().contains(attrName))continue;
-      
+      if (!attributes.keySet().contains(attrName))
+        continue;
+
       // exit if we have too many attributes
-      if (summary.length() + attrName.length() + 1 >= PREF_VALUE_LENGTH) break;
-      
-      if (summary.length() > 0) summary.append(",");
+      if (summary.length() + attrName.length() + 1 >= PREF_VALUE_LENGTH)
+        break;
+
+      if (summary.length() > 0)
+        summary.append(",");
       summary.append(attrName);
     }
 
@@ -1065,7 +1047,7 @@ public class User /* implements Serializable */{
     // the key is a combination of user id and current time
     Date now = new Date();
 
-    String key = Long.toString(now.getTime()) + "->" + Integer.toString(userId);
+    String key = Long.toString(now.getTime()) + "->" + Integer.toString(getUserId());
     key = UserFactory.encrypt(key);
     // save the remote key
     String saveKey = Long.toString(now.getTime()) + "<-" + key;
@@ -1079,37 +1061,33 @@ public class User /* implements Serializable */{
     // get save key and creating time
     String saveKey = globalPreferences.get(PREF_REMOTE_KEY);
     if (saveKey == null)
-      throw new WdkUserException(
-          "Remote login failed. The remote key doesn't exist.");
+      throw new WdkUserException("Remote login failed. The remote key doesn't exist.");
     String[] parts = saveKey.split("<-");
     if (parts.length != 2)
-      throw new WdkUserException(
-          "Remote login failed. The remote key is invalid.");
+      throw new WdkUserException("Remote login failed. The remote key is invalid.");
     long createTime = Long.parseLong(parts[0]);
     String createKey = parts[1].trim();
 
     // verify remote key
     if (!createKey.equals(remoteKey))
-      throw new WdkUserException(
-          "Remote login failed. The remote key doesn't match.");
+      throw new WdkUserException("Remote login failed. The remote key doesn't match.");
 
     // check if the remote key is expired. There is an mandatory 10 minutes
     // expiration time for the remote key
     long now = (new Date()).getTime();
     if (Math.abs(now - createTime) >= (10 * 60 * 1000))
-      throw new WdkUserException(
-          "Remote login failed. The remote key is expired.");
+      throw new WdkUserException("Remote login failed. The remote key is expired.");
   }
 
-  public Strategy importStrategy(String strategyKey) throws WdkModelException,
-      WdkUserException {
+  public Strategy importStrategy(String strategyKey) throws WdkModelException, WdkUserException {
     Strategy oldStrategy;
     String[] parts = strategyKey.split(":");
     if (parts.length == 1) {
       // new strategy export url
       String strategySignature = parts[0];
       oldStrategy = stepFactory.loadStrategy(strategySignature);
-    } else {
+    }
+    else {
       String userSignature = parts[0];
       int displayId = Integer.parseInt(parts[1]);
       User user = userFactory.getUser(userSignature);
@@ -1118,32 +1096,31 @@ public class User /* implements Serializable */{
     return importStrategy(oldStrategy, null);
   }
 
-  public Strategy importStrategy(Strategy oldStrategy,
-      Map<Integer, Integer> stepIdsMap) throws WdkModelException,
-      WdkUserException {
-    Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy,
-        stepIdsMap);
+  public Strategy importStrategy(Strategy oldStrategy, Map<Integer, Integer> stepIdsMap)
+      throws WdkModelException, WdkUserException {
+    Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy, stepIdsMap);
     // highlight the imported strategy
     int rootStepId = newStrategy.getLatestStepId();
     String strategyKey = Integer.toString(newStrategy.getStrategyId());
-    if (newStrategy.isValid()) setViewResults(strategyKey, rootStepId, 0);
+    if (newStrategy.isValid())
+      setViewResults(strategyKey, rootStepId, 0);
     return newStrategy;
   }
 
-  public Strategy[] getActiveStrategies() throws WdkUserException {
+  public Strategy[] getActiveStrategies() throws WdkUserException, WdkModelException {
     int[] ids = activeStrategyFactory.getRootStrategies();
     List<Strategy> strategies = new ArrayList<Strategy>();
     for (int id : ids) {
       try {
         Strategy strategy = getStrategy(id);
         strategies.add(strategy);
-      } catch (WdkModelException ex) {
+      }
+      catch (WdkModelException ex) {
         // something wrong with loading a strat, probably the strategy
         // doesn't exist anymore
-        logger.warn("something wrong with loading a strat, probably "
-            + "the strategy doesn't exist anymore. Please "
-            + "investigate:\nUser #" + userId + ", strategy display Id: " + id
-            + "\nException: ", ex);
+        logger.warn("something wrong with loading a strat, probably " +
+            "the strategy doesn't exist anymore. Please " + "investigate:\nUser #" + getUserId() +
+            ", strategy display Id: " + id + "\nException: ", ex);
       }
     }
     Strategy[] array = new Strategy[strategies.size()];
@@ -1151,11 +1128,11 @@ public class User /* implements Serializable */{
     return array;
   }
 
-  public void addActiveStrategy(String strategyKey) throws WdkModelException,
-      WdkUserException {
+  public void addActiveStrategy(String strategyKey) throws WdkModelException, WdkUserException {
     activeStrategyFactory.openActiveStrategy(strategyKey);
     int pos = strategyKey.indexOf('_');
-    if (pos >= 0) strategyKey = strategyKey.substring(0, pos);
+    if (pos >= 0)
+      strategyKey = strategyKey.substring(0, pos);
     int strategyId = Integer.parseInt(strategyKey);
     stepFactory.updateStrategyViewTime(strategyId);
   }
@@ -1164,11 +1141,9 @@ public class User /* implements Serializable */{
     activeStrategyFactory.closeActiveStrategy(strategyKey);
   }
 
-  public void replaceActiveStrategy(int oldStrategyId, int newStrategyId,
-      Map<Integer, Integer> stepIdsMap) throws WdkModelException,
-      WdkUserException {
-    activeStrategyFactory.replaceStrategy(this, oldStrategyId, newStrategyId,
-        stepIdsMap);
+  public void replaceActiveStrategy(int oldStrategyId, int newStrategyId, Map<Integer, Integer> stepIdsMap)
+      throws WdkModelException, WdkUserException {
+    activeStrategyFactory.replaceStrategy(this, oldStrategyId, newStrategyId, stepIdsMap);
   }
 
   public void setViewResults(String strategyKey, int stepId, int pagerOffset) {
@@ -1209,12 +1184,22 @@ public class User /* implements Serializable */{
   public boolean equals(Object obj) {
     if (obj instanceof User) {
       User user = (User) obj;
-      if (user.userId != userId) return false;
-      if (!email.equals(user.email)) return false;
-      if (!signature.equals(user.signature)) return false;
+      try {
+        if (user.getUserId() != getUserId())
+          return false;
+      }
+      catch (WdkModelException ex) {
+        new WdkRuntimeException(ex);
+      }
+      if (!email.equals(user.email))
+        return false;
+      if (!signature.equals(user.signature))
+        return false;
 
       return true;
-    } else return false;
+    }
+    else
+      return false;
   }
 
   /*
@@ -1224,17 +1209,22 @@ public class User /* implements Serializable */{
    */
   @Override
   public int hashCode() {
-    return userId;
+    try {
+      return getUserId();
+    }
+    catch (WdkModelException ex) {
+      throw new WdkRuntimeException(ex);
+    }
   }
 
-  public Step createBooleanStep(Step leftStep, Step rightStep,
-      String booleanOperator, boolean useBooleanFilter, String filterName)
-      throws WdkModelException {
+  public Step createBooleanStep(int strategyId, Step leftStep, Step rightStep, String booleanOperator,
+      boolean useBooleanFilter, String filterName) throws WdkModelException {
     BooleanOperator operator = BooleanOperator.parse(booleanOperator);
     Question question = null;
     try {
       question = leftStep.getQuestion();
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       // in case the left step has an invalid question, try the right
       question = rightStep.getQuestion();
     }
@@ -1242,30 +1232,30 @@ public class User /* implements Serializable */{
     RecordClass recordClass = question.getRecordClass();
     if (filterName != null) {
       filter = question.getRecordClass().getFilterInstance(filterName);
-    } else filter = recordClass.getDefaultFilter();
-    return createBooleanStep(leftStep, rightStep, operator, useBooleanFilter,
-        filter);
+    }
+    else
+      filter = recordClass.getDefaultFilter();
+    return createBooleanStep(strategyId, leftStep, rightStep, operator, useBooleanFilter, filter);
   }
 
-  public Step createBooleanStep(Step leftStep, Step rightStep,
-      BooleanOperator operator, boolean useBooleanFilter,
-      AnswerFilterInstance filter) throws WdkModelException {
+  public Step createBooleanStep(int strategyId, Step leftStep, Step rightStep, BooleanOperator operator,
+      boolean useBooleanFilter, AnswerFilterInstance filter) throws WdkModelException {
     // make sure the left & right step belongs to the user
-    if (leftStep.getUser().getUserId() != userId)
-      throw new WdkModelException("The Left Step [" + leftStep.getStepId()
-          + "] doesn't belong to the user #" + userId);
-    if (rightStep.getUser().getUserId() != userId)
-      throw new WdkModelException("The Right Step [" + rightStep.getStepId()
-          + "] doesn't belong to the user #" + userId);
+    if (leftStep.getUser().getUserId() != getUserId())
+      throw new WdkModelException("The Left Step [" + leftStep.getStepId() +
+          "] doesn't belong to the user #" + getUserId());
+    if (rightStep.getUser().getUserId() != getUserId())
+      throw new WdkModelException("The Right Step [" + rightStep.getStepId() +
+          "] doesn't belong to the user #" + getUserId());
 
     // verify the record type of the operands
     RecordClass leftRecordClass = leftStep.getQuestion().getRecordClass();
     RecordClass rightRecordClass = rightStep.getQuestion().getRecordClass();
     if (!leftRecordClass.getFullName().equals(rightRecordClass.getFullName()))
-      throw new WdkModelException("Boolean operation cannot be applied "
-          + "to results of different record types. Left operand is "
-          + "of type " + leftRecordClass.getFullName() + ", but the"
-          + " right operand is of type " + rightRecordClass.getFullName());
+      throw new WdkModelException("Boolean operation cannot be applied " +
+          "to results of different record types. Left operand is " + "of type " +
+          leftRecordClass.getFullName() + ", but the" + " right operand is of type " +
+          rightRecordClass.getFullName());
 
     Question question = wdkModel.getBooleanQuestion(leftRecordClass);
     BooleanQuery booleanQuery = (BooleanQuery) question.getQuery();
@@ -1282,10 +1272,11 @@ public class User /* implements Serializable */{
 
     String operatorString = operator.getBaseOperator();
     params.put(booleanQuery.getOperatorParam().getName(), operatorString);
+    params.put(booleanQuery.getUseBooleanFilter().getName(), Boolean.toString(useBooleanFilter));
 
     Step booleanStep;
     try {
-      booleanStep = createStep(question, params, filter, false, false, 0);
+      booleanStep = createStep(strategyId, question, params, filter, false, false, 0);
     }
     catch (WdkUserException ex) {
       throw new WdkModelException(ex);
@@ -1305,20 +1296,20 @@ public class User /* implements Serializable */{
     return activeStrategyFactory.getRootStrategies();
   }
 
-  public Strategy copyStrategy(Strategy strategy) throws WdkModelException,
+  public Strategy copyStrategy(Strategy strategy, Map<Integer, Integer> stepIdMap) throws WdkModelException,
       WdkUserException {
-    Strategy copy = stepFactory.copyStrategy(strategy);
+    Strategy copy = stepFactory.copyStrategy(strategy, stepIdMap);
     return copy;
   }
 
-  public Strategy copyStrategy(Strategy strategy, int stepId)
+  public Strategy copyStrategy(Strategy strategy, Map<Integer, Integer> stepIdMap, String name)
       throws WdkModelException, WdkUserException {
-    Strategy copy = stepFactory.copyStrategy(strategy, stepId);
+    Strategy copy = stepFactory.copyStrategy(strategy, stepIdMap, name);
     return copy;
   }
 
-  public void addToFavorite(RecordClass recordClass,
-      List<Map<String, Object>> pkValues) throws WdkModelException, WdkUserException {
+  public void addToFavorite(RecordClass recordClass, List<Map<String, Object>> pkValues)
+      throws WdkModelException, WdkUserException {
     FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
     favoriteFactory.addToFavorite(this, recordClass, pkValues);
   }
@@ -1331,31 +1322,28 @@ public class User /* implements Serializable */{
     return wdkModel.getFavoriteFactory().getFavoriteCounts(this);
   }
 
-  public Map<RecordClass, List<Favorite>> getFavorites()
-      throws WdkModelException {
+  public Map<RecordClass, List<Favorite>> getFavorites() throws WdkModelException {
     return wdkModel.getFavoriteFactory().getFavorites(this);
   }
 
-  public void removeFromFavorite(RecordClass recordClass,
-      List<Map<String, Object>> pkValues) throws WdkModelException {
+  public void removeFromFavorite(RecordClass recordClass, List<Map<String, Object>> pkValues)
+      throws WdkModelException {
     FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
     favoriteFactory.removeFromFavorite(this, recordClass, pkValues);
   }
 
-  public boolean isInFavorite(RecordClass recordClass,
-      Map<String, Object> pkValue) throws WdkModelException {
+  public boolean isInFavorite(RecordClass recordClass, Map<String, Object> pkValue) throws WdkModelException {
     FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
     return favoriteFactory.isInFavorite(this, recordClass, pkValue);
   }
 
-  public void setFavoriteNotes(RecordClass recordClass,
-      List<Map<String, Object>> pkValues, String note) throws WdkModelException {
+  public void setFavoriteNotes(RecordClass recordClass, List<Map<String, Object>> pkValues, String note)
+      throws WdkModelException {
     FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
     favoriteFactory.setNotes(this, recordClass, pkValues, note);
   }
 
-  public void setFavoriteGroups(RecordClass recordClass,
-      List<Map<String, Object>> pkValues, String group)
+  public void setFavoriteGroups(RecordClass recordClass, List<Map<String, Object>> pkValues, String group)
       throws WdkModelException {
     FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
     favoriteFactory.setGroups(this, recordClass, pkValues, group);
@@ -1371,10 +1359,8 @@ public class User /* implements Serializable */{
     return basketFactory.getBasketCounts(this);
   }
 
-  public int getBasketCounts(List<String[]> records, RecordClass recordClass)
-      throws WdkModelException {
-    int count = wdkModel.getBasketFactory().getBasketCounts(this, records,
-        recordClass);
+  public int getBasketCounts(List<String[]> records, RecordClass recordClass) throws WdkModelException {
+    int count = wdkModel.getBasketFactory().getBasketCounts(this, records, recordClass);
     if (logger.isDebugEnabled()) {
       logger.debug("How many of " + convert(records) + " in basket? " + count);
     }
@@ -1394,8 +1380,8 @@ public class User /* implements Serializable */{
     return sb.toString();
   }
 
-  public int getFavoriteCount(List<Map<String, Object>> records,
-      RecordClass recordClass) throws WdkModelException {
+  public int getFavoriteCount(List<Map<String, Object>> records, RecordClass recordClass)
+      throws WdkModelException {
     FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
     int count = 0;
     for (Map<String, Object> item : records) {
@@ -1419,50 +1405,50 @@ public class User /* implements Serializable */{
     return sb.toString();
   }
 
-  public SummaryView getCurrentSummaryView(Question question)
-      throws WdkUserException {
+  public SummaryView getCurrentSummaryView(Question question) throws WdkUserException {
     String key = SUMMARY_VIEW_PREFIX + question.getFullName();
     String viewName = projectPreferences.get(key);
     SummaryView view;
     if (viewName == null) { // no summary view set, use the default one
       view = question.getDefaultSummaryView();
-    } else {
+    }
+    else {
       view = question.getSummaryView(viewName);
     }
     return view;
   }
 
-  public void setCurrentSummaryView(Question question, SummaryView summaryView)
-      throws WdkModelException {
+  public void setCurrentSummaryView(Question question, SummaryView summaryView) throws WdkModelException {
     String key = SUMMARY_VIEW_PREFIX + question.getFullName();
     if (summaryView == null) { // remove the current summary view
       projectPreferences.remove(key);
-    } else { // store the current summary view
+    }
+    else { // store the current summary view
       String viewName = summaryView.getName();
       projectPreferences.put(key, viewName);
     }
     save();
   }
 
-  public RecordView getCurrentRecordView(RecordClass recordClass)
-      throws WdkUserException {
+  public RecordView getCurrentRecordView(RecordClass recordClass) throws WdkUserException {
     String key = RECORD_VIEW_PREFIX + recordClass.getFullName();
     String viewName = projectPreferences.get(key);
     RecordView view;
     if (viewName == null) { // no record view set, use the default one
       view = recordClass.getDefaultRecordView();
-    } else {
+    }
+    else {
       view = recordClass.getRecordView(viewName);
     }
     return view;
   }
 
-  public void setCurrentRecordView(RecordClass recordClass,
-      RecordView recordView) throws WdkModelException {
+  public void setCurrentRecordView(RecordClass recordClass, RecordView recordView) throws WdkModelException {
     String key = RECORD_VIEW_PREFIX + recordClass.getFullName();
     if (recordView == null) { // remove the current record view
       projectPreferences.remove(key);
-    } else { // store the current record view
+    }
+    else { // store the current record view
       String viewName = recordView.getName();
       projectPreferences.put(key, viewName);
     }
@@ -1471,6 +1457,12 @@ public class User /* implements Serializable */{
 
   @Override
   public String toString() {
-    return "User #" + userId + " - " + email;
+    try {
+      return "User #" + getUserId() + " - " + email;
+    }
+    catch (WdkModelException ex) {
+      // TODO Auto-generated catch block
+      throw new WdkRuntimeException(ex);
+    }
   }
 }
