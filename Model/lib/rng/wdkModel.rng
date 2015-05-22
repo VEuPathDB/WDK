@@ -938,6 +938,9 @@
       <optional>
         <attribute name="shortDisplayNamePlural" />
       </optional>
+       <optional>
+        <attribute name="description" />
+      </optional>
       <optional>
         <attribute name="customBooleanQueryClassName" />
       </optional>

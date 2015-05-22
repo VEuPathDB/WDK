@@ -1,6 +1,8 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -14,6 +16,7 @@ import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerFilterInstanceBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -43,17 +46,32 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     String filterName = request.getParameter(PARAM_FILTER);
     if (strStepId == null) throw new WdkUserException("Required step param is missing.");
 
-    UserBean wdkUser = ActionUtility.getUser(servlet, request);
+    UserBean user = ActionUtility.getUser(servlet, request);
     String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
     try {
       int stepId = Integer.valueOf(strStepId);
-      StepBean step = wdkUser.getStep(stepId);
+
+      // before changing step, need to check if strategy is saved, if yes, make a copy.
+      StepBean step;
+      String strStrategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+      if (strStrategyId != null && !strStrategyId.isEmpty()) {
+        int strategyId = Integer.valueOf(strStrategyId.split("_", 2)[0]);
+        StrategyBean strategy = user.getStrategy(strategyId);
+        if (strategy.getIsSaved()){
+          Map<Integer, Integer> stepIdMap = new HashMap<>();
+          strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
+          // map the old step id to the new one
+          stepId = stepIdMap.get(stepId);
+        }
+        step = strategy.getStepById(stepId);
+      } else step = user.getStep(stepId);
       
       if (filterName != null) {
         AnswerFilterInstanceBean filter = step.getRecordClass().getFilter(filterName);
        if (filter == null) throw new WdkUserException("The filter is invalid: " + filterName);
       }
+
       step.setFilterName(filterName);
       step.saveParamFilters();
 
@@ -68,7 +86,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     }
     catch (Exception ex) {
       logger.error("Error while processing filter.", ex);
-      ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
+      ShowStrategyAction.outputErrorJSON(user, response, ex);
     }
     return null;
   }

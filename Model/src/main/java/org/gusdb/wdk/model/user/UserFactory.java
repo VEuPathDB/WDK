@@ -232,26 +232,58 @@ public class UserFactory {
       SqlUtils.closeStatement(psUser);
     }
   }
-
+  
+  /**
+   * create a lazy-creation system user that will only be created when needed.
+   * @return
+   * @throws WdkModelException
+   */
   public User createSystemUser() throws WdkModelException {
-    return createGuestUser(SYSTEM_USER_PREFIX);
+    return createTemporaryUser(SYSTEM_USER_PREFIX);
   }
 
+  /**
+   * create a lazy-creation guest that will only be created when needed.
+   * @return
+   * @throws WdkModelException
+   */
   public User createGuestUser() throws WdkModelException {
-    return createGuestUser(GUEST_USER_PREFIX);
+    return createTemporaryUser(GUEST_USER_PREFIX);
+  }
+  
+  /**
+   * create a lazy-creation temporary user that will only be created when needed.
+   * @param guestEmailPrefix
+   * @return
+   */
+  User createTemporaryUser(String guestEmailPrefix) {
+    User guest = new User(wdkModel, 0, guestEmailPrefix, null);
+    guest.setGuest(true);
+    guest.setFirstName("WDK Guest");
+    guest.setEmailPrefix(guestEmailPrefix);
+    return guest;
   }
 
-  public User createGuestUser(String guestEmailPrefix) throws WdkModelException {
-    
+  /**
+   * Save the temporary user into database, and initialize its fields.
+   * 
+   * @param user
+   * @return
+   * @throws WdkModelException
+   */
+  User saveTemporaryUser(User user) throws WdkModelException {
+    // logger.error("TRACE", new Exception());
+ 
     PreparedStatement psUser = null;
     try {
       // get a new user id
       int userId = userDb.getPlatform().getNextId(dataSource, userSchema, "users");
-      String email = guestEmailPrefix + userId;
+      user.setUserId(userId);
+      user.setEmail(user.getEmailPrefix() + userId);
+      user.setSignature(encrypt(userId + "_" + user.getEmail()));
+      
       Date registerTime = new Date();
       Date lastActiveTime = new Date();
-      String signature = encrypt(userId + "_" + email);
-      String firstName = "Guest #" + userId;
       String sql = "INSERT INTO " + userSchema
           + "users (user_id, email, passwd, is_guest, "
           + "register_time, last_active, first_name, signature) "
@@ -259,24 +291,21 @@ public class UserFactory {
       long start = System.currentTimeMillis();
       psUser = SqlUtils.getPreparedStatement(dataSource, sql);
       psUser.setInt(1, userId);
-      psUser.setString(2, email);
+      psUser.setString(2, user.getEmail());
       psUser.setBoolean(3, true);
       psUser.setTimestamp(4, new Timestamp(registerTime.getTime()));
       psUser.setTimestamp(5, new Timestamp(lastActiveTime.getTime()));
-      psUser.setString(6, firstName);
-      psUser.setString(7, signature);
+      psUser.setString(6, user.getFirstName());
+      psUser.setString(7, user.getSignature());
       psUser.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-user-create-guest", start);
 
-      User user = new User(wdkModel, userId, email, signature);
-      user.setFirstName(firstName);
       user.addUserRole(defaultRole);
-      user.setGuest(true);
 
       // save user's roles
       saveUserRoles(user);
 
-      logger.info("Guest user " + email + " created.");
+      logger.info("Guest user " + user.getEmail() + " created.");
 
       return user;
     } catch (SQLException e) {
@@ -579,7 +608,7 @@ public class UserFactory {
     }
   }
 
-  private Set<String> getUserRoles(User user) throws WdkUserException {
+  private Set<String> getUserRoles(User user) throws WdkUserException, WdkModelException {
     Set<String> roles = new LinkedHashSet<String>();
     ResultSet rsRole = null;
     String sql = "SELECT user_role from " + userSchema + "user_roles "
@@ -602,7 +631,7 @@ public class UserFactory {
     return roles;
   }
 
-  private void saveUserRoles(User user) throws WdkUserException {
+  private void saveUserRoles(User user) throws WdkUserException, WdkModelException {
     // get a list of original roles, and find the roles to be deleted and
     // added
     Set<String> oldRoles = getUserRoles(user);
@@ -723,8 +752,9 @@ public class UserFactory {
    * update the time stamp of the activity
    * 
    * @param user
+   * @throws WdkModelException 
    */
-  private void updateUser(User user) throws WdkUserException {
+  private void updateUser(User user) throws WdkUserException, WdkModelException {
     PreparedStatement psUser = null;
     String sql = "UPDATE " + userSchema
         + "users SET last_active = ? WHERE user_id = ?";
@@ -741,7 +771,7 @@ public class UserFactory {
         throw new WdkUserException("User " + user.getEmail()
             + " cannot be found.");
     } catch (SQLException ex) {
-      throw new WdkUserException(ex);
+      throw new WdkModelException(ex);
     } finally {
       SqlUtils.closeStatement(psUser);
     }

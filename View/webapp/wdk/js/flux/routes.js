@@ -1,9 +1,9 @@
-import React from 'react';
 import {
   Route,
   DefaultRoute,
   NotFoundRoute
 } from 'react-router';
+import React from 'react';
 import AppController from './components/AppController';
 import IndexController from './components/IndexController';
 import NotFoundController from './components/NotFoundController';
@@ -15,7 +15,7 @@ import QuestionListController from './components/QuestionListController';
  *
  * @param {string} baseUrl The baseUrl used to match paths below
  */
-export function getRoutes(baseUrl = '/') {
+function getRoutes(baseUrl = '/') {
   return (
     <Route name="app" path={baseUrl} handler={AppController}>
       <Route name="answer" path="answer/:questionName" handler={AnswerController}/>,
@@ -25,3 +25,7 @@ export function getRoutes(baseUrl = '/') {
     </Route>
   );
 }
+
+export default {
+  getRoutes
+};

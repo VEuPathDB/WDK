@@ -3,9 +3,7 @@
  */
 package org.gusdb.wdk.model.user;
 
-import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanOperator;
@@ -18,26 +16,18 @@ import org.junit.Test;
  */
 public class StepTest {
 
-    public static void compareStep(Step expectedStep, Step actualStep)
-            throws WdkModelException, WdkUserException {
-        Assert.assertEquals("step id", expectedStep.getStepId(),
-                actualStep.getStepId());
-        Assert.assertEquals("valid", expectedStep.isValid(),
-                actualStep.isValid());
-        Assert.assertEquals("custom name", expectedStep.getCustomName(),
-                actualStep.getCustomName());
-        Assert.assertEquals("answer checksum",
-                expectedStep.getAnswerValue().getChecksum(),
-                actualStep.getAnswerValue().getChecksum());
-    }
+  public static void compareStep(Step expectedStep, Step actualStep) throws WdkModelException,
+      WdkUserException {
+    Assert.assertEquals("step id", expectedStep.getStepId(), actualStep.getStepId());
+    Assert.assertEquals("valid", expectedStep.isValid(), actualStep.isValid());
+    Assert.assertEquals("custom name", expectedStep.getCustomName(), actualStep.getCustomName());
+    Assert.assertEquals("answer checksum", expectedStep.getAnswerValue().getChecksum(),
+        actualStep.getAnswerValue().getChecksum());
+  }
 
-  private WdkModel wdkModel;
-    private DatabaseInstance appDb;
   private User user;
 
   public StepTest() throws Exception {
-    wdkModel = UnitTestHelper.getModel();
-        appDb = wdkModel.getAppDb();
     this.user = UnitTestHelper.getRegisteredUser();
   }
 
@@ -53,8 +43,7 @@ public class StepTest {
     Assert.assertFalse("Step shouldn't be deleted", step.isDeleted());
     Assert.assertFalse("This is not combined", step.isCombined());
     Assert.assertFalse("This is not transform", step.isTransform());
-    Assert.assertTrue("get result size",
-        step.getAnswerValue().getResultSize() > 0);
+    Assert.assertTrue("get result size", step.getAnswerValue().getResultSize() > 0);
   }
 
   @Test
@@ -62,54 +51,16 @@ public class StepTest {
     Step leftOperand = UnitTestHelper.createNormalStep(user);
     Step rightOperand = UnitTestHelper.createNormalStep(user);
 
-    int leftId = leftOperand.getStepId();
-    int rightId = rightOperand.getStepId();
     int leftSize = leftOperand.getResultSize();
     int rightSize = rightOperand.getResultSize();
-        String operator = BooleanOperator.UNION.getOperator(appDb.getPlatform());
 
-    String expression = leftId + " " + operator + " " + rightId;
-
-    Step step = user.combineStep(expression);
+    Step step = user.createBooleanStep(leftOperand.getStrategyId(), leftOperand, rightOperand,
+        BooleanOperator.UNION, false, null);
     int size = step.getResultSize();
     Assert.assertTrue("result is boolean", step.isCombined());
     Assert.assertTrue("total size no smaller than left", size >= leftSize);
     Assert.assertTrue("total size no smaller than right", size >= rightSize);
-    Assert.assertTrue("total size no bigger than combined", size <= leftSize
-        + rightSize);
-  }
-
-  @Test
-  public void testCreateComplexBooleanStep() throws Exception {
-    Step operand1 = UnitTestHelper.createNormalStep(user);
-    Step operand2 = UnitTestHelper.createNormalStep(user);
-    Step operand3 = UnitTestHelper.createNormalStep(user);
-
-    int id1 = operand1.getStepId();
-    int id2 = operand2.getStepId();
-    int id3 = operand3.getStepId();
-    int size1 = operand1.getResultSize();
-    int size2 = operand2.getResultSize();
-    int size3 = operand3.getResultSize();
-        String operator = " " + BooleanOperator.INTERSECT.getOperator(appDb.getPlatform())
-        + " ";
-
-    String expression = id1 + operator + "(" + id2 + operator + id3 + ")";
-
-    // get a combo result
-    Step result1 = user.combineStep(expression);
-    int resultSize1 = result1.getResultSize();
-
-    Assert.assertTrue("No bigger than first operand", resultSize1 <= size1);
-    Assert.assertTrue("No bigger than second operand", resultSize1 <= size2);
-    Assert.assertTrue("No bigger than third operand", resultSize1 <= size3);
-
-    // compose the result step by step
-    Step result2 = user.combineStep(id2 + operator + id3);
-    Step result3 = user.combineStep(id1 + operator + result2.getStepId());
-
-    // the result of result1 and result3 should be identical
-    Assert.assertEquals("Size equal", resultSize1, result3.getResultSize());
+    Assert.assertTrue("total size no bigger than combined", size <= leftSize + rightSize);
   }
 
   @Test
@@ -166,7 +117,8 @@ public class StepTest {
     try {
       user.getStep(step.getStepId());
       Assert.assertTrue("step is not deleted", false);
-    } catch (WdkModelException ex) {
+    }
+    catch (WdkModelException ex) {
       // do nothing, expected
     }
   }

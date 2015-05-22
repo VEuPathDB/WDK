@@ -209,6 +209,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String nativeShortDisplayName;
   private String nativeShortDisplayNamePlural;
   private String displayName;
+  private String description;
   private String displayNamePlural;
   private String shortDisplayName;
   private String shortDisplayNamePlural;
@@ -337,9 +338,17 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 	    return (nativeDisplayName == null) ? getName() : nativeDisplayName;
 	  }
 
+  public String getDescription() {
+    return (description == null) ? "" : description;
+  }
+
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
     this.nativeDisplayName = displayName;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 
   public String getDisplayNamePlural() {
@@ -1804,7 +1813,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return filter;
   }
 
-  public StepFilter getStepFilter(String key) throws WdkModelException {
+  public StepFilter getStepFilter(String key) {
     return _stepFilters.get(key);
   }
 
