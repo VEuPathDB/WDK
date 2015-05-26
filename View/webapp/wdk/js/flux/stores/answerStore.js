@@ -220,6 +220,9 @@ export default createStore({
       });
     });
 
+    var terms = requestData.displayInfo.filterTerm || this.state.get('filterTerm');
+    var filteredRecords$ = terms ? filterRecords(records$, terms) : records$;
+
     /*
      * This will update the keys 'isLoading', 'answer', 'displayInfo',
      * and 'questionDefinition' in `state`. `displayInfo` and
@@ -227,10 +230,11 @@ export default createStore({
      */
     this.state = this.state.merge({
       isLoading: false,
+      filterTerm: terms,
       answers: {
         [questionName]: { records: records$, meta: answer.meta }
       },
-      filteredRecords: records$
+      filteredRecords: filteredRecords$
     }, requestData);
 
     emitChange();
@@ -287,11 +291,8 @@ export default createStore({
     this.state = this.state.withMutations(function(state) {
       var terms = action.terms;
       var questionName = action.questionName;
-      var parsedTerms = parseSearchTerms(terms);
       var records = state.getIn(['answers', questionName, 'records']);
-      var filteredRecords = parsedTerms.reduce(function(records, term) {
-        return records.filter(isTermInRecord(term));
-      }, records);
+      var filteredRecords = filterRecords(records, terms);
 
       state.set('filterTerm', terms);
       state.set('filteredRecords', filteredRecords);
@@ -310,3 +311,10 @@ export default createStore({
   }
 
 });
+
+function filterRecords(records, terms) {
+  var parsedTerms = parseSearchTerms(terms);
+  return parsedTerms.reduce(function(records, term) {
+    return records.filter(isTermInRecord(term));
+  }, records);
+}

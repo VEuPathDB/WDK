@@ -193,7 +193,8 @@ const AnswerController = React.createClass({
       const displayInfo = {
         pagination,
         sorting,
-        visibleAttributes: this.state.displayInfo.get('visibleAttributes')
+        visibleAttributes: this.state.displayInfo.get('visibleAttributes'),
+        filterTerm: query.filterTerm
       };
 
       // TODO Add params to loadAnswer call
