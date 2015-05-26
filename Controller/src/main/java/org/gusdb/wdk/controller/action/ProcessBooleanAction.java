@@ -52,14 +52,43 @@ public class ProcessBooleanAction extends Action {
       if (operator != null && operator.length() == 0)
         operator = null;
 
-      StrategyBean strategy = getStrategy(request, user);
-      int oldStrategyId = strategy.getStrategyId();
+      // get current strategy
+      String strategyKey = request.getParameter(PARAM_STRATEGY);
+      if (strategyKey == null || strategyKey.length() == 0)
+        throw new WdkUserException("No strategy was specified for " + "processing!");
+
+      // did we get strategyId_stepId?
+      int pos = strategyKey.indexOf("_");
+      int branchId = 0;
+      if (pos > 0) {
+        branchId = Integer.valueOf(strategyKey.substring(pos + 1));
+        strategyKey = strategyKey.substring(0, pos);
+      }
+      int oldStrategyId = Integer.valueOf(strategyKey); 
+
+      // get strategy, and verify the checksum
+      StrategyBean strategy = user.getStrategy(oldStrategyId);
+      String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+      if (checksum != null && !strategy.getChecksum().equals(checksum))
+        throw new WdkOutOfSyncException("strategy checksum: " + strategy.getChecksum() +
+            ", but the input checksum: " + checksum);
+
+      String strStepId = request.getParameter(PARAM_STEP);
+      if (strStepId == null || strStepId.isEmpty())
+        throw new WdkUserException("The required param '" + PARAM_STEP + "' is missing.");
+      int stepId = Integer.valueOf(strStepId);
+      
+      // cannot change step on saved strategy, will need to make a clone first
+      if (strategy.getIsSaved()) {
+        Map<Integer, Integer> stepIdMap = new HashMap<>();
+        strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
+        // map the old step id to the new one
+        stepId = stepIdMap.get(stepId);
+        if (branchId != 0) branchId = stepIdMap.get(branchId);
+      }
 
       // get current step
-      StepBean step = null;
-      String strStepId = request.getParameter(PARAM_STEP);
-      if (strStepId != null && strStepId.length() > 0)
-        step = strategy.getStepById(Integer.valueOf(strStepId));
+      StepBean step = strategy.getStepById(stepId);
 
       Map<Integer, Integer> rootMap;
       String action = request.getParameter(PARAM_ACTION);
@@ -72,7 +101,7 @@ public class ProcessBooleanAction extends Action {
         rootMap = insertBoolean(request, user, strategy, operator, step);
       }
       else { // add a boolean step
-        rootMap = addBoolean(request, user, strategy, operator);
+        rootMap = addBoolean(request, user, strategy, operator, branchId);
       }
 
       // the strategy id might change due to editting on saved strategies.
@@ -100,49 +129,6 @@ public class ProcessBooleanAction extends Action {
       ShowStrategyAction.outputErrorJSON(user, response, ex);
       throw ex;
     }
-  }
-
-  private StrategyBean getStrategy(HttpServletRequest request, UserBean user) throws WdkModelException,
-      WdkUserException {
-    // get current strategy
-    String strategyKey = request.getParameter(PARAM_STRATEGY);
-    if (strategyKey == null || strategyKey.length() == 0)
-      throw new WdkUserException("No strategy was specified for " + "processing!");
-
-    // did we get strategyId_stepId?
-    int pos = strategyKey.indexOf("_");
-    String strStratId = (pos > 0) ? strategyKey.substring(0, pos) : strategyKey;
-
-    // get strategy, and verify the checksum
-    StrategyBean strategy = user.getStrategy(Integer.parseInt(strStratId));
-    String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
-    if (checksum != null && !strategy.getChecksum().equals(checksum))
-      throw new WdkOutOfSyncException("strategy checksum: " + strategy.getChecksum() +
-          ", but the input checksum: " + checksum);
-
-    return strategy;
-  }
-
-  private StepBean getRootStep(HttpServletRequest request, StrategyBean strategy) throws WdkUserException,
-      WdkModelException {
-    // get current strategy
-    String strategyKey = request.getParameter(PARAM_STRATEGY);
-    if (strategyKey == null || strategyKey.length() == 0)
-      throw new WdkUserException("No strategy was specified for " + "processing!");
-
-    // did we get strategyId_stepId?
-    int pos = strategyKey.indexOf("_");
-    // load branch root, if exists
-
-    StepBean rootStep;
-    if (pos > 0) {
-      int branchRootId = Integer.valueOf(strategyKey.substring(pos + 1));
-      rootStep = strategy.getStepById(branchRootId);
-    }
-    else {
-      rootStep = strategy.getLatestStep();
-    }
-    return rootStep;
   }
 
   private void reviseBoolean(HttpServletRequest request, UserBean user, StrategyBean strategy,
@@ -182,24 +168,27 @@ public class ProcessBooleanAction extends Action {
     StepBean newStep = user.getStep(Integer.valueOf(strImport));
     if (step.isCombined()) { // there are steps before the given Step, the new step will be combined into
       // a boolean (as the child), then the boolean will be inserted before the given step.
-      StepBean booleanStep = user.createBooleanStep(step.getPreviousStep(), newStep, operator, false, null);
-      logger.debug("new boolean: #" + booleanStep.getStepId() + " (" + booleanStep.getPreviousStep().getStepId() + ", " + booleanStep.getChildStep().getStepId() + ")");
+      StepBean booleanStep = user.createBooleanStep(strategy.getStrategyId(), step.getPreviousStep(),
+          newStep, operator, false, null);
+      logger.debug("new boolean: #" + booleanStep.getStepId() + " (" +
+          booleanStep.getPreviousStep().getStepId() + ", " + booleanStep.getChildStep().getStepId() + ")");
       rootMap = strategy.insertStepBefore(booleanStep, step.getStepId());
     }
     else { // the step is the first step, will make the step as child, the new step as previous, then the
       // boolean will be inserted after the given step
-      StepBean booleanStep = user.createBooleanStep(newStep, step, operator, false, null);
+      StepBean booleanStep = user.createBooleanStep(strategy.getStrategyId(), newStep, step, operator, false,
+          null);
       rootMap = strategy.insertStepBefore(booleanStep, step.getStepId());
     }
     return rootMap;
   }
 
   private Map<Integer, Integer> addBoolean(HttpServletRequest request, UserBean user, StrategyBean strategy,
-      String operator) throws WdkUserException, NumberFormatException, WdkModelException {
+      String operator, int branchId) throws WdkUserException, NumberFormatException, WdkModelException {
     logger.debug("Adding boolean...");
 
     // get root step
-    StepBean rootStep = getRootStep(request, strategy);
+    StepBean rootStep = (branchId == 0) ? strategy.getLatestStep() : strategy.getStepById(branchId);
 
     // the importStep has to exist for insert
     String strImport = request.getParameter(PARAM_IMPORT_STEP);
@@ -214,7 +203,8 @@ public class ProcessBooleanAction extends Action {
     StepBean childStep = user.getStep(Integer.valueOf(strImport));
 
     // use the default flags
-    StepBean newStep = user.createBooleanStep(previousStep, childStep, operator, false, null);
+    StepBean newStep = user.createBooleanStep(strategy.getStrategyId(), previousStep, childStep, operator,
+        false, null);
     return strategy.insertStepAfter(newStep, rootStep.getStepId());
   }
 }

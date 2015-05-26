@@ -1,20 +1,14 @@
 import Store from '../Store';
 import {
-  QUESTION_LIST_LOAD_SUCCESS
+  QuestionsAdded
 } from '../ActionType';
 
 
-export default class QuestionStore extends Store {
-
-  init() {
-    this.state = {
-      questions: []
-    };
-    this.handleAction(QUESTION_LIST_LOAD_SUCCESS, this.setQuestions);
-  }
-
-  setQuestions({ questions }) {
-    this.state.questions = questions;
-  }
-
+export default function createQuestionStore() {
+  return Store.createStore(function(state = {}, action) {
+    if (action.type === QuestionsAdded) {
+      state.questions = action.questions;
+      return state;
+    }
+  });
 }

@@ -4,7 +4,7 @@ import org.gusdb.wdk.model.WdkModelException;
 
 public class MockSingleStep extends MockStep {
 
-  public MockSingleStep(StepFactory stepFactory, User user, String type) {
+  public MockSingleStep(StepFactory stepFactory, User user, String type) throws WdkModelException {
     super(stepFactory, user, type);
   }
 

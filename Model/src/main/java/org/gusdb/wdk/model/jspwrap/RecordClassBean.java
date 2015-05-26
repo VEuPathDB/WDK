@@ -191,7 +191,13 @@ public class RecordClassBean {
         return recordClass.getShortDisplayName();
     }
     
-    
+      /**
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#getDescription()
+     */
+    public String getDescription() {
+        return recordClass.getDescription();
+    }
     
 
     public String getDisplayNamePlural() {

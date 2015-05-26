@@ -334,8 +334,8 @@ public class StepBean {
      * @return
      * @see org.gusdb.wdk.model.user.Step#deepClone()
      */
-    public StepBean deepClone() throws WdkModelException {
-        return new StepBean(user, step.deepClone());
+    public StepBean deepClone(Integer strategyId, Map<Integer, Integer> stepIdMap) throws WdkModelException {
+        return new StepBean(user, step.deepClone(strategyId, stepIdMap));
     }
 
     public QuestionBean getQuestion() throws WdkModelException {
@@ -529,7 +529,7 @@ public class StepBean {
     step.setAssignedWeight(assignedWeight);
   }
 
-  public FilterOptionList getFilterOptions() throws WdkModelException {
+  public FilterOptionList getFilterOptions() {
     return step.getFilterOptions();
   }
 
@@ -537,8 +537,12 @@ public class StepBean {
     step.addFilterOption(filterName, filterValue);
   }
 
-  public void removeFilterOption(String filterName) throws WdkModelException {
+  public void removeFilterOption(String filterName) {
     step.removeFilterOption(filterName);
+  }
+
+  public Integer getStrategyId() {
+    return step.getStrategyId();
   }
 
 }

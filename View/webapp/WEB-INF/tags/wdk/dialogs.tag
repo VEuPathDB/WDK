@@ -23,6 +23,14 @@
   </div>
 
 
+  <c:set var="fixBasketTitle">
+    <imp:verbiage key="dialog.fix-basket.title"/>
+  </c:set>
+  <div style="display:none;" id="wdk-dialog-fix-basket" class="ui-dialog-fixed-width" title="${fixBasketTitle}">
+    <imp:verbiage key="dialog.fix-basket.content"/>
+  </div>
+
+
   <div style="display:none;" id="wdk-dialog-strat-desc">
     <div class="description"><jsp:text/></div>
     <div class="edit"><a href="#">Edit</a></div>

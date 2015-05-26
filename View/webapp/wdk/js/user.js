@@ -18,7 +18,7 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
   ns.name = function() { return wdkConfig.wdkUser.name; };
   ns.country = function() { return wdkConfig.wdkUser.country; };
   ns.email = function() { return wdkConfig.wdkUser.email; };
-  ns.isGuest = function() { return wdkConfig.wdkUser.isGuest; };
+  ns.isGuest = function() { return wdkConfig.guestUser; };
   ns.isUserLoggedIn = function() { return !ns.isGuest(); };
 
   // var to hold reference to login dialog
