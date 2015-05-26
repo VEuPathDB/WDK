@@ -4,6 +4,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,65 +26,57 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  */
 public class CopyStrategyAction extends Action {
 
-    private static Logger logger = Logger.getLogger(CopyStrategyAction.class);
+  private static Logger logger = Logger.getLogger(CopyStrategyAction.class);
 
-    @Override
-    public ActionForward execute(ActionMapping mapping, ActionForm form,
-            HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
-        logger.debug("Entering Copy Strategy...");
+  @Override
+  public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+      HttpServletResponse response) throws Exception {
+    logger.debug("Entering Copy Strategy...");
 
-        UserBean wdkUser = ActionUtility.getUser(servlet, request);
-	WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-        try {
-            String state = request.getParameter(CConstants.WDK_STATE_KEY);
+    UserBean wdkUser = ActionUtility.getUser(servlet, request);
+    WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+    try {
+      String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
-            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
+      String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 
-            // TEST
-            if (strStratId == null || strStratId.length() == 0) {
-                throw new Exception("No Strategy was given for saving");
-            }
+      if (strStratId == null || strStratId.length() == 0) {
+        throw new Exception("No Strategy was given for saving");
+      }
 
-            int stratId = Integer.parseInt(strStratId);
-            StrategyBean strategy = wdkUser.getStrategy(stratId);
+      int stratId = Integer.parseInt(strStratId);
+      StrategyBean strategy = wdkUser.getStrategy(stratId);
 
-            // verify the checksum
-            String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
-            if (checksum != null && !strategy.getChecksum().equals(checksum)) {
-                ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, state);
-                return null;
-            }
-            boolean opened = (wdkUser.getStrategyOrder(strStratId) > 0);
+      // verify the checksum
+      String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+      if (checksum != null && !strategy.getChecksum().equals(checksum)) {
+        ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, state);
+        return null;
+      }
+      boolean opened = (wdkUser.getStrategyOrder(strStratId) > 0);
 
-            StrategyBean copy;
-            if (strStepId == null || strStepId.length() == 0) {
-                copy = wdkUser.copyStrategy(strategy);
-            } else {
-                int stepId = Integer.parseInt(strStepId);
-                copy = wdkUser.copyStrategy(strategy, stepId);
-            }
+      StrategyBean copy = wdkUser.copyStrategy(strategy, new HashMap<Integer, Integer>());
 
-            // forward to strategyPage.jsp
-            ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-            StringBuffer url = new StringBuffer(showStrategy.getPath());
-            url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+      // forward to strategyPage.jsp
+      ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+      StringBuffer url = new StringBuffer(showStrategy.getPath());
+      url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
 
-            url.append("&").append(CConstants.WDK_STRATEGY_ID_KEY);
-            url.append("=").append(copy.getStrategyId());
+      url.append("&").append(CConstants.WDK_STRATEGY_ID_KEY);
+      url.append("=").append(copy.getStrategyId());
 
-            if (!opened)
-                url.append("&").append(CConstants.WDK_OPEN_KEY).append("=false");
+      if (!opened)
+        url.append("&").append(CConstants.WDK_OPEN_KEY).append("=false");
 
-            ActionForward forward = new ActionForward(url.toString());
-            return forward;
-        } catch (Exception ex) {
-            logger.error(ex);
-            ex.printStackTrace();
-            ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
-            return null;
-        }
+      ActionForward forward = new ActionForward(url.toString());
+      return forward;
     }
+    catch (Exception ex) {
+      logger.error(ex);
+      ex.printStackTrace();
+      ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
+      return null;
+    }
+  }
 
 }

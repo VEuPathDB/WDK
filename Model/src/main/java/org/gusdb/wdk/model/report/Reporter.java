@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
@@ -71,7 +72,12 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
             // disable sorting if the total size is bigger than threshold
             if (_resultSize > SORTING_THRESHOLD)
+              try {
                 answerValue.setSortingMap(new LinkedHashMap<String, Boolean>());
+              }
+              catch (WdkModelException ex) {
+                throw new WdkRuntimeException(ex);
+              }
 
             // update the current index
             _startIndex = pageEndIndex + 1;

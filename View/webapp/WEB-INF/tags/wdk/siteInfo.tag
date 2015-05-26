@@ -31,15 +31,17 @@
     assetsUrl: '${applicationScope.assetsUrl ne null ? applicationScope.assetsUrl : pageContext.request.contextPath}',
     webappUrl: '${fn:replace(pageContext.request.contextPath, "'", "\\'")}',
     guestUser: ${isGuest},
-    exportBaseUrl: '${fn:replace(exportBaseUrl, "'", "\\'")}',
-    wdkUser: {
+    exportBaseUrl: '${fn:replace(exportBaseUrl, "'", "\\'")}'
+  };
+  <c:if test="${!isGuest}">
+    wdkConfig.wdkUser = {
       id: '${fn:replace(wdkUser.userId, "'", "\\'")}',
       name: '${fn:replace(wdkUser.firstName, "'", "\\'")} ${fn:replace(wdkUser.lastName, "'", "\\'")}',
       country: '${fn:replace(wdkUser.country, "'", "\\'")}',
       email: '${fn:replace(wdkUser.email, "'", "\\'")}',
       isGuest: ${isGuest}
-    }
-  };
+    };
+  </c:if>
 </script>
 
 <%--

@@ -41,7 +41,7 @@ public class MergeUserTest {
     User guest = UnitTestHelper.getGuest();
     Step step1 = UnitTestHelper.createNormalStep(guest);
     Step step2 = UnitTestHelper.createNormalStep(guest);
-    guest.createBooleanStep(step1, step2, "OR", false, null);
+    guest.createBooleanStep(step1.getStrategyId(), step1, step2, "OR", false, null);
 
     User registeredUser = UnitTestHelper.getRegisteredUser();
     int count = guest.getStepCount() + registeredUser.getStepCount();
@@ -88,11 +88,11 @@ public class MergeUserTest {
     Strategy strategy = guest.createStrategy(step1, false);
 
     Step step2 = UnitTestHelper.createNormalStep(guest);
-    Step boolean2 = guest.createBooleanStep(step1, step2, "OR", false, null);
+    Step boolean2 = guest.createBooleanStep(step1.getStrategyId(), step1, step2, "OR", false, null);
     strategy.insertStepAfter(boolean2, step1.getStepId());
 
     Step step3 = UnitTestHelper.createNormalStep(guest);
-    Step boolean3 = guest.createBooleanStep(boolean2, step3, "OR", false, null);
+    Step boolean3 = guest.createBooleanStep(boolean2.getStrategyId(), boolean2, step3, "OR", false, null);
     strategy.insertStepAfter(boolean3, boolean2.getStepId());
     strategy.update(true);
 

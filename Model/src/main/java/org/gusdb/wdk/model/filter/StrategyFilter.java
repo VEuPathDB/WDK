@@ -31,6 +31,7 @@ public class StrategyFilter extends StepFilter {
     super(FILTER_NAME);
   }
 
+  @Override
   public void setDisplay(String display) {
     super.setDisplay(display);
   }

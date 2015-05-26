@@ -243,7 +243,7 @@ public class BasketFactory {
   }
 
   public void clearBasket(User user, RecordClass recordClass)
-      throws SQLException {
+      throws SQLException, WdkModelException {
     int userId = user.getUserId();
     String projectId = wdkModel.getProjectId();
     String rcName = recordClass.getFullName();

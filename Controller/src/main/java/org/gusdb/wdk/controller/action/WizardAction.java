@@ -88,7 +88,7 @@ public class WizardAction extends Action {
 
                 // add the input strategy & step key into the attribute
                 request.setAttribute("strategy", wizardForm.getStrategy());
-                request.setAttribute("step", wizardForm.getStrategy());
+                request.setAttribute("step", wizardForm.getStep());
 
                 // put values into attibute
                 for (String key : attributes.keySet()) {

@@ -1,6 +1,8 @@
 package org.gusdb.wdk.controller.action;
 
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,6 +19,7 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -36,19 +39,37 @@ public class ApplyFilterAction extends Action {
       String filterName = request.getParameter(PARAM_FILTER);
       if (filterName == null)
         throw new WdkUserException("Required filter parameter is missing.");
-      String stepId = request.getParameter(PARAM_STEP);
-      if (stepId == null)
+      String strStepId = request.getParameter(PARAM_STEP);
+      if (strStepId == null)
         throw new WdkUserException("Required step parameter is missing.");
-      JSONObject options = prepareOptions(request);
+      int stepId = Integer.valueOf(strStepId);
 
       UserBean user = ActionUtility.getUser(servlet, request);
-      StepBean step = user.getStep(Integer.valueOf(stepId));
+ 
+
+      // before changing step, need to check if strategy is saved, if yes, make a copy.
+      String strStrategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+      if (strStrategyId != null && !strStrategyId.isEmpty()) {
+        int strategyId = Integer.valueOf(strStrategyId.split("_", 2)[0]);
+        StrategyBean strategy = user.getStrategy(strategyId);
+        if (strategy.getIsSaved()) {
+          // cannot modify saved strategy directly, will need to create a copy, and change the steps of the
+          // copy instead.
+          Map<Integer, Integer> stepIdMap = new HashMap<>();
+          strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
+          // map the old step id to the new one.
+          stepId = stepIdMap.get(stepId);
+        }
+      }
+      
+      StepBean step = user.getStep(stepId);
+      JSONObject options = prepareOptions(request);
       AnswerValueBean answer = step.getAnswerValue();
       QuestionBean question = answer.getQuestion();
       Filter filter = question.getFilter(filterName);
-
+      
       LOG.debug("Got filter: " + filter.getKey() + ", options=" + options);
-
+      
       step.addFilterOption(filter.getKey(), options);
       step.saveParamFilters();
 

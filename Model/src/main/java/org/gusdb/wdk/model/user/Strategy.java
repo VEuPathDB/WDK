@@ -183,7 +183,7 @@ public class Strategy {
    * @param overwrite
    *          if true, it will overwrite the strategy even if it's already saved; if false, we will create a
    *          new unsaved copy if the strategy is already saved.
-   *          
+   * 
    * @throws WdkModelException
    * @throws WdkUserException
    */
@@ -201,7 +201,8 @@ public class Strategy {
    * Insert a new step before the target. The new step will become the previous step of the target, and the
    * old previousStep of the target should become the previousStep of the new step.
    * 
-   * @param newStep the newStep
+   * @param newStep
+   *          the newStep
    * @param targetId
    * @throws WdkModelException
    * @throws WdkUserException
@@ -212,6 +213,10 @@ public class Strategy {
     stepFactory.verifySameOwnerAndProject(this, targetStep);
 
     Map<Integer, Integer> rootMap = new HashMap<>();
+
+    // if the strategy is saved, need to make a unsaved copy first
+    if (getIsSaved())
+      update(false);
 
     // make sure the previousStep of the target is now the previousStep of newStep
     if (targetStep.isFirstStep()) { // inserting before first step will cause the first step being replaced by
@@ -234,7 +239,7 @@ public class Strategy {
           // copy information from target step
           newStep.setCollapsible(targetStep.isCollapsible());
           newStep.setCollapsedName(targetStep.getCollapsedName());
-          newStep.update(false);    // don't need to update LastRunTime
+          newStep.update(false); // don't need to update LastRunTime
           targetStep.setCollapsible(false);
           targetStep.update(false);
 
@@ -246,7 +251,7 @@ public class Strategy {
         }
         else { // target is at the end of the strategy, set newStep as the end of the strategy
           setLatestStep(newStep);
-          update(false);    // don't overwrite a saved strategy.
+          update(false); // don't overwrite a saved strategy.
           rootMap.put(targetId, newStep.getStepId());
         }
       }
@@ -287,6 +292,10 @@ public class Strategy {
     if (previousStep == null || previousStep.getStepId() != targetId)
       throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " after step #" + targetId +
           " since it will corrupt the structure of the strategy #" + strategyId);
+
+    // if the strategy is saved, need to make a unsaved copy first
+    if (getIsSaved())
+      update(false);
 
     Step targetStep = getStepById(targetId);
 
@@ -363,6 +372,10 @@ public class Strategy {
     List<Step> deletes = new ArrayList<>();
     Map<Integer, Integer> rootMap = new HashMap<>();
 
+    // if the strategy is saved, need to make a unsaved copy first
+    if (getIsSaved())
+      update(false);
+
     // if a step has child, delete all the steps on that branch.
     Step childStep = step.getChildStep();
     if (childStep != null)
@@ -416,7 +429,7 @@ public class Strategy {
             // now the previousStep will become the previous one from the parent.
             previousStep = parentStep.getPreviousStep();
             deletes.add(parentStep);
-         }
+          }
         } // otherwise, we are deleting the last step in main branch, will handle it outside of the loop
         step = parentStep;
       }
@@ -426,7 +439,7 @@ public class Strategy {
       if (previousStep != null) { // current step is null, then previous step should become new root.
         rootMap.put(getLatestStepId(), previousStep.getStepId());
         setLatestStep(previousStep);
-        update(true);
+        update(false);
       }
       else if (step == null) { // no more steps left in the strategy, delete the strategy itself.
         stepFactory.deleteStrategy(strategyId);
@@ -442,7 +455,7 @@ public class Strategy {
 
     return rootMap;
   }
-  
+
   // public Map<Integer, Integer> moveStep(int moveFromId, int moveToId, String branch)
   // throws WdkModelException, WdkUserException, SQLException {
   // Step targetStep;
