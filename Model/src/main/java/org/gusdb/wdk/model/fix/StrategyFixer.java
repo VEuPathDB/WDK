@@ -161,6 +161,7 @@ public class StrategyFixer extends BaseCLI {
    * @throws WdkModelException
    */
   @Deprecated
+  @SuppressWarnings("unused")
   private void generateSignatures(WdkModel wdkModel) throws SQLException, WdkModelException {
     String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
 
