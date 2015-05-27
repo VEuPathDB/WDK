@@ -1,4 +1,3 @@
-import createActionCreators from '../utils/createActionCreators';
 import {
   AppLoading,
   AppError,
@@ -51,192 +50,195 @@ import {
  * dispatched, the handling of the Action will be synchronous.
  */
 
-export default createActionCreators({
+function createActions({ dispatcher, service }) {
 
-  /**
-   * Retrieve's an Answer resource and dispatches an action with the resource.
-   *
-   * Actions dispatched:
-   *
-   *   - LoadingAction
-   *   - AnswerLoadSuccessAction
-   *   - ErrorAction
-   *
-   *
-   * Usage:
-   *
-   *    loadAnswer('GeneRecords.GenesByTaxon', { params: { ... }, filters: { ... }, displayInfo: { ... } });
-   *
-   *
-   * Request data format, POSTed to service:
-   *
-   *     {
-   *       "questionDefinition": {
-   *         "questionName": String,
-   *         "params": [ {
-   *           "name": String, “value”: Any
-   *         } ],
-   *         "filters": [ {
-   *           “name": String, value: Any
-   *         } ]
-   *       },
-   *       displayInfo: {
-   *         pagination: { offset: Number, numRecords: Number },
-   *         attributes: [ attributeName: String ],
-   *         sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
-   *       }
-   *     }
-   *
-   * @param {string} questionName Fully qualified WDK Question name.
-   * @param {object} opts Addition data to include in request.
-   * Options properties of `opts`:
-   *   - params: Object of key-value pairs for Question params.
-   *   - filters: Object of key-value pairs for Question filters.
-   *   - displayInfo: Object with display details (see Request data format below).
-   */
-  // We will make requests for the following resources:
-  // - question
-  // - answer
-  // - recordClass
-  //
-  // Once all are loaded, we will dispatch the load action
-  loadAnswer(questionName, opts = {}) {
-    var dispatch = this.dispatch;
-    var { params = [], filters = [], displayInfo } = opts;
-
-    // default values for pagination and sorting
-    var defaultPagination= { offset: 0, numRecords: 100 };
-    var defaultSorting= [{ attributeName: 'primary_key', direction: 'ASC' }];
-
-    // Set defaults if not defined in `opts`
-    displayInfo.pagination = displayInfo.pagination || defaultPagination;
-    displayInfo.sorting = displayInfo.sorting || defaultSorting;
-
-    // FIXME Set attributes to whatever we're soring on. This is required by
-    // the service, but it doesn't appear to have any effect at this time. I
-    // think what we want is for the service to use default attributes defined
-    // in the model XML. We also need a way to ask for all attributes (and
-    // tables). An alternative is to get the list of available attributes from a
-    // preferences service.
-    displayInfo.attributes = displayInfo.sorting.map(s => s.attributeName);
-    displayInfo.tables = [];
-
-    // Build XHR request data for '/answer'
-    var questionDefinition = { questionName, params, filters };
-    var requestData = { questionDefinition, displayInfo };
-
-    // Dispatch loading action.
-    var action = AppLoading({ isLoading: true });
-    dispatch(action);
-
-    // The next section of code deals with composing Promises. Simply put, a
-    // Promise is a container for an asynchronous operation, such as an Ajax
-    // request. Promises can be combined in various ways to allow what would
-    // otherwise require complex bookkeeping to be expressed in a more
-    // declarative way.
+  return {
+    /**
+     * Retrieve's an Answer resource and dispatches an action with the resource.
+     *
+     * Actions dispatched:
+     *
+     *   - LoadingAction
+     *   - AnswerLoadSuccessAction
+     *   - ErrorAction
+     *
+     *
+     * Usage:
+     *
+     *    loadAnswer('GeneRecords.GenesByTaxon', { params: { ... }, filters: { ... }, displayInfo: { ... } });
+     *
+     *
+     * Request data format, POSTed to service:
+     *
+     *     {
+     *       "questionDefinition": {
+     *         "questionName": String,
+     *         "params": [ {
+     *           "name": String, “value”: Any
+     *         } ],
+     *         "filters": [ {
+     *           “name": String, value: Any
+     *         } ]
+     *       },
+     *       displayInfo: {
+     *         pagination: { offset: Number, numRecords: Number },
+     *         attributes: [ attributeName: String ],
+     *         sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
+     *       }
+     *     }
+     *
+     * @param {string} questionName Fully qualified WDK Question name.
+     * @param {object} opts Addition data to include in request.
+     * Options properties of `opts`:
+     *   - params: Object of key-value pairs for Question params.
+     *   - filters: Object of key-value pairs for Question filters.
+     *   - displayInfo: Object with display details (see Request data format below).
+     */
+    // We will make requests for the following resources:
+    // - question
+    // - answer
+    // - recordClass
     //
-    // Ultimately, the code below will be making a request for the question and
-    // answer resource in parallel. When the question request is complete, we
-    // will then make the request for the recordClass resource. Once these
-    // three requests are complete, we will dispatch three related actions.
+    // Once all are loaded, we will dispatch the load action
+    loadAnswer(questionName, opts = {}) {
+      var { params = [], filters = [], displayInfo } = opts;
 
-    // First, create a Promise for the question resource (the ajax request will
-    // be made as soon as possible (which will more-or-less be when the current
-    // method's execution is complete).
-    var questionPromise = this.serviceAPI.getResource('/question?expandQuestions=true');
+      // default values for pagination and sorting
+      var defaultPagination= { offset: 0, numRecords: 100 };
+      var defaultSorting= [{ attributeName: 'primary_key', direction: 'ASC' }];
 
-    // Then, create a Promise for the recordClass
-    var recordClassPromise = this.serviceAPI.getResource('/record?expandRecordClasses=true');
+      // Set defaults if not defined in `opts`
+      displayInfo.pagination = displayInfo.pagination || defaultPagination;
+      displayInfo.sorting = displayInfo.sorting || defaultSorting;
 
-    // Then, create a Promise for the answer resource.
-    var answerPromise = this.serviceAPI.postResource('/answer', requestData);
+      // FIXME Set attributes to whatever we're soring on. This is required by
+      // the service, but it doesn't appear to have any effect at this time. I
+      // think what we want is for the service to use default attributes defined
+      // in the model XML. We also need a way to ask for all attributes (and
+      // tables). An alternative is to get the list of available attributes from a
+      // preferences service.
+      displayInfo.attributes = displayInfo.sorting.map(s => s.attributeName);
+      displayInfo.tables = [];
 
-    // This is the "tricky" part. This code block says, "When the question
-    // Promise is fulfilled, create a Promise for the record resource.
-    // Then, using `Promise.all`, create yet another Promise that is fulfilled
-    // when all three Promises are fulfilled." It takes advantage of two
-    // important properties of Promises:
-    //
-    //   1. `Promise.prototype.then` itself returns a Promise. The value that
-    //      Promise is fulfilled with is determined by the return value. If the
-    //      value is another Promise, it will fulfill with what ever value that
-    //      Promise fulfills with; otherwise it will fulfill with the
-    //      non-Promise value.
-    //
-    //   2. `Promise.all` accepts an array of Promises or values, and returns a
-    //      Promise that is fulfilled with the an array whose elements are the
-    //      values that each Promise in the array is fulfilled with, or the
-    //      non-Promise element of the array.
-    //
-    //   Thus, `combinedPromise` is a Promise which is fulfilled with the
-    //   question resource, the recordClass resource, and the answer resource as
-    //   an array.
-    var combinedPromise = Promise.all([
-      questionPromise,
-      recordClassPromise,
-      answerPromise
-    ]);
+      // Build XHR request data for '/answer'
+      var questionDefinition = { questionName, params, filters };
+      var requestData = { questionDefinition, displayInfo };
 
-    // Finally, we register a callback for when the combinedPromise is
-    // fulfilled. We are simply dispatching actions based on the values.
-    combinedPromise.then(responses => {
-      var [ questions, recordClasses, answer ] = responses;
+      // Dispatch loading action.
+      var action = AppLoading({ isLoading: true });
+      dispatcher.dispatch(action);
 
-      var questionAction = QuestionsAdded({ questions });
-      dispatch(questionAction);
+      // The next section of code deals with composing Promises. Simply put, a
+      // Promise is a container for an asynchronous operation, such as an Ajax
+      // request. Promises can be combined in various ways to allow what would
+      // otherwise require complex bookkeeping to be expressed in a more
+      // declarative way.
+      //
+      // Ultimately, the code below will be making a request for the question and
+      // answer resource in parallel. When the question request is complete, we
+      // will then make the request for the recordClass resource. Once these
+      // three requests are complete, we will dispatch three related actions.
 
-      var recordClassAction = RecordClassesAdded({ recordClasses });
-      dispatch(recordClassAction);
+      // First, create a Promise for the question resource (the ajax request will
+      // be made as soon as possible (which will more-or-less be when the current
+      // method's execution is complete).
+      var questionPromise = service.getResource('/question?expandQuestions=true');
 
-      var answerAction = AnswerAdded({
-        requestData: requestData,
-        answer: answer
+      // Then, create a Promise for the recordClass
+      var recordClassPromise = service.getResource('/record?expandRecordClasses=true');
+
+      // Then, create a Promise for the answer resource.
+      var answerPromise = service.postResource('/answer', requestData);
+
+      // This is the "tricky" part. This code block says, "When the question
+      // Promise is fulfilled, create a Promise for the record resource.
+      // Then, using `Promise.all`, create yet another Promise that is fulfilled
+      // when all three Promises are fulfilled." It takes advantage of two
+      // important properties of Promises:
+      //
+      //   1. `Promise.prototype.then` itself returns a Promise. The value that
+      //      Promise is fulfilled with is determined by the return value. If the
+      //      value is another Promise, it will fulfill with what ever value that
+      //      Promise fulfills with; otherwise it will fulfill with the
+      //      non-Promise value.
+      //
+      //   2. `Promise.all` accepts an array of Promises or values, and returns a
+      //      Promise that is fulfilled with the an array whose elements are the
+      //      values that each Promise in the array is fulfilled with, or the
+      //      non-Promise element of the array.
+      //
+      //   Thus, `combinedPromise` is a Promise which is fulfilled with the
+      //   question resource, the recordClass resource, and the answer resource as
+      //   an array.
+      var combinedPromise = Promise.all([
+        questionPromise,
+        recordClassPromise,
+        answerPromise
+      ]);
+
+      // Finally, we register a callback for when the combinedPromise is
+      // fulfilled. We are simply dispatching actions based on the values.
+      combinedPromise.then(responses => {
+        var [ questions, recordClasses, answer ] = responses;
+
+        var questionAction = QuestionsAdded({ questions });
+        dispatcher.dispatch(questionAction);
+
+        var recordClassAction = RecordClassesAdded({ recordClasses });
+        dispatcher.dispatch(recordClassAction);
+
+        var answerAction = AnswerAdded({
+          requestData: requestData,
+          answer: answer
+        });
+        dispatcher.dispatch(answerAction);
+
+        var doneLoadingAction = AppLoading({ isLoading: false });
+        dispatcher.dispatch(doneLoadingAction);
+      }, error => {
+        var doneLoadingAction = AppLoading({ isLoading: false });
+        var action = AppError({ error: error });
+        dispatcher.dispatch(doneLoadingAction);
+        dispatcher.dispatch(action);
+      })
+      // Catch errors caused by Store callbacks.
+      // This is a last-ditch effort to alert developers that there was an error
+      // with how a Store handled the action.
+      .catch(err => console.assert(false, err));
+    },
+
+    moveColumn(columnName, newPosition) {
+      console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
+      console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
+
+      var action = AnswerMoveColumn({
+        columnName: columnName,
+        newPosition: newPosition
       });
-      dispatch(answerAction);
 
-      var doneLoadingAction = AppLoading({ isLoading: false });
-      dispatch(doneLoadingAction);
-    }, error => {
-      var doneLoadingAction = AppLoading({ isLoading: false });
-      var action = AppError({ error: error });
-      dispatch(doneLoadingAction);
-      dispatch(action);
-    })
-    // Catch errors caused by Store callbacks.
-    // This is a last-ditch effort to alert developers that there was an error
-    // with how a Store handled the action.
-    .catch(err => console.assert(false, err));
-  },
+      dispatcher.dispatch(action);
+    },
 
-  moveColumn(columnName, newPosition) {
-    console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
-    console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
+    changeAttributes(attributes) {
+      // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
+      console.assert(attributes[Symbol.iterator], `attributes ${attributes} should be iterable.`);
 
-    var action = AnswerMoveColumn({
-      columnName: columnName,
-      newPosition: newPosition
-    });
+      var action = AnswerChangeAttributes({
+        attributes: attributes
+      });
 
-    this.dispatch(action);
-  },
+      dispatcher.dispatch(action);
+    },
 
-  changeAttributes(attributes) {
-    // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
-    console.assert(attributes[Symbol.iterator], `attributes ${attributes} should be iterable.`);
+    filterAnswer(questionName, terms) {
+      var action = AnswerFilter({
+        questionName: questionName,
+        terms: terms
+      });
+      dispatcher.dispatch(action);
+    }
 
-    var action = AnswerChangeAttributes({
-      attributes: attributes
-    });
+  };
+}
 
-    this.dispatch(action);
-  },
-
-  filterAnswer(questionName, terms) {
-    var action = AnswerFilter({
-      questionName: questionName,
-      terms: terms
-    });
-    this.dispatch(action);
-  }
-
-});
+export default { createActions };

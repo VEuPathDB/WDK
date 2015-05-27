@@ -1,25 +1,23 @@
-import createActionCreators from '../utils/createActionCreators';
 import {
   AppLoading,
   AppError,
   QuestionsAdded
 } from '../ActionType';
 
-export default createActionCreators({
+function createActions({ dispatcher, service }) {
+  return {
+    loadQuestions() {
+      dispatcher.dispatch(AppLoading({ isLoading: true }));
+      serviceAPI.getResource('/question?expandQuestions=true')
+        .then(questions => {
+          dispatcher.dispatch(QuestionsAdded({ questions }));
+          dispatcher.dispatch(AppLoading({ isLoading: false }));
+        }, error => {
+          dispatcher.dispatch(AppError({ error }));
+        })
+        .catch(err => console.assert(false, err));
+    }
+  };
+}
 
-  loadQuestions() {
-    var { dispatch, serviceAPI } = this;
-
-    dispatch(AppLoading({ isLoading: true }));
-
-    serviceAPI.getResource('/question?expandQuestions=true')
-      .then(questions => {
-        dispatch(QuestionsAdded({ questions }));
-        dispatch(AppLoading({ isLoading: false }));
-      }, error => {
-        dispatch(AppError({ error }));
-      })
-      .catch(err => console.assert(false, err));
-  }
-
-});
+export default { createActions };

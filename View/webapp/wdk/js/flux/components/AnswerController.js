@@ -3,6 +3,10 @@ import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';
 import combineStores from '../utils/combineStores';
+import AnswerStore from '../stores/answerStore';
+import QuestionStore from '../stores/questionStore';
+import RecordClassStore from '../stores/recordClassStore';
+import AnswerActions from '../actions/answerActions';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
@@ -74,7 +78,7 @@ const AnswerController = React.createClass({
 
   // When the component first mounts, fetch the answer.
   componentWillMount() {
-    this.router = this.props.application.getRouter();
+    this.router = this.props.application.router;
     this.fetchAnswer(this.props);
     this.subscribeToStores();
   },
@@ -105,7 +109,7 @@ const AnswerController = React.createClass({
 
     // filter answer if the filter terms have changed
     else if (query.filterTerm != nextQuery.filterTerm) {
-      this.props.application.getActions('answerActions')
+      this.props.application.getActions(AnswerActions)
       .filterAnswer(nextParams.questionName, nextQuery.filterTerm);
     }
 
@@ -119,11 +123,11 @@ const AnswerController = React.createClass({
   // Create subscriptions to stores.
   subscribeToStores() {
     const { questionName } = this.props.params;
-    const { getStore } = this.props.application;
+    const { application } = this.props;
 
-    const answerStore = getStore('answerStore');
-    const questionStore = getStore('questionStore');
-    const recordClassStore = getStore('recordClassStore');
+    const answerStore = application.getStore(AnswerStore);
+    const questionStore = application.getStore(QuestionStore);
+    const recordClassStore = application.getStore(RecordClassStore);
 
     this.subscription = combineStores(
       answerStore,
@@ -227,7 +231,7 @@ const AnswerController = React.createClass({
       };
 
       // Call the AnswerCreator to fetch the Answer resource
-      this.props.application.getActions('answerActions')
+      this.props.application.getActions(AnswerActions)
       .loadAnswer(params.questionName, opts);
     }
   },
@@ -288,7 +292,7 @@ const AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onMoveColumn(columnName, newPosition) {
-      this.props.application.getActions('answerActions')
+      this.props.application.getActions(AnswerActions)
       .moveColumn(columnName, newPosition);
     },
 
@@ -297,7 +301,7 @@ const AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onChangeColumns(attributes) {
-      this.props.application.getActions('answerActions')
+      this.props.application.getActions(AnswerActions)
       .changeAttributes(attributes);
     },
 
