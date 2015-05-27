@@ -1,15 +1,15 @@
-import Store from '../Store';
+import Store from '../core/store';
 import {
   AppLoading,
   AppError
 } from '../ActionType';
 
-export default function createAppStore() {
-  var initialState = {
+function createStore({ dispatcher }) {
+  var state = {
     isLoading: 0,
     errors: []
   };
-  return Store.createStore(initialState, update);
+  return new Store(dispatcher, state, update);
 }
 
 function update(state, action) {
@@ -29,3 +29,7 @@ function setError(state, action) {
   state.errors.unshift(action.error);
   return state;
 }
+
+export default {
+  createStore
+};

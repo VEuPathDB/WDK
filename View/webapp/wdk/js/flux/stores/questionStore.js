@@ -1,14 +1,19 @@
-import Store from '../Store';
+import Store from '../core/store';
 import {
   QuestionsAdded
 } from '../ActionType';
 
-
-export default function createQuestionStore() {
-  return Store.createStore(function(state = {}, action) {
-    if (action.type === QuestionsAdded) {
-      state.questions = action.questions;
-      return state;
-    }
-  });
+function createStore({ dispatcher }) {
+  return new Store(dispatcher, undefined, update);
 }
+
+function update(state = {}, action) {
+  if (action.type === QuestionsAdded) {
+    state.questions = action.questions;
+    return state;
+  }
+}
+
+export default {
+  createStore
+};

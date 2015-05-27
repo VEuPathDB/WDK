@@ -6,6 +6,7 @@
 import React from 'react';
 import { RouteHandler } from 'react-router';
 import Loading from '../components/Loading';
+import AppStore from '../stores/appStore';
 
 /*
  * RouterHandler is a special React component that the router uses to inject
@@ -20,7 +21,7 @@ var AppController = React.createClass({
   },
 
   componentDidMount() {
-    var store = this.props.application.getStore('appStore');
+    var store = this.props.application.getStore(AppStore);
     this.storeSubscription = store.subscribe(state => {
       this.setState(state);
     });
