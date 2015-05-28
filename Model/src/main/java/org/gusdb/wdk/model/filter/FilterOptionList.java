@@ -27,8 +27,11 @@ public class FilterOptionList {
     }
   }
 
-  public boolean isFiltered() {
-    return (_options.size() > 0);
+  public boolean isFiltered() throws WdkModelException {
+    for (FilterOption option : _options.values()) {
+	if (!option.isDisabled() && !option.isSetToDefaultValue()) return true;
+    }
+    return false;
   }
 
   public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {

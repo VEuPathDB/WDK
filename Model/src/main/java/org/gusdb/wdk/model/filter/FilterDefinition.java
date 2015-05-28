@@ -23,7 +23,7 @@ public abstract class FilterDefinition extends WdkModelBase {
   }
 
   public void setName(String name) {
-    this._name = name;
+     this._name = name;
   }
 
   public String getDisplay() {
@@ -62,8 +62,8 @@ public abstract class FilterDefinition extends WdkModelBase {
     return _implementation;
   }
 
-  protected void setImplementation(String implementation) {
-    this._implementation = implementation;
+  public void setImplementation(String implementation) {
+      this._implementation = implementation;
   }
 
   @Override

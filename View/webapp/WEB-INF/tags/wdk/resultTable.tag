@@ -16,16 +16,20 @@
   <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
   <c:set var="recHasBasket" value="${wdkAnswer.question.recordClass.useBasket}" />
   <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
+
+  <%-- catch raised exception so we can show the user a nice message --%>
   <c:catch var="answerValueRecords_exception">
+    <%-- FIXME This should probably be logged to wdk logger --%>
     <c:set var="answerRecords" value="${wdkAnswer.records}" />
   </c:catch>
+
   <c:set var="wdkView" value="${requestScope.wdkView}" />
-
   <c:set var="displayName" value="${step.recordClass.displayName}"/>
-
   <c:set var="isBasket" value="${fn:contains(step.questionName, 'ByRealtimeBasket')}"/>
 
   <c:choose>
+
+    <%-- Handle exception raised when accessing answerValue, when we're viewing a basket --%>
     <c:when test='${answerValueRecords_exception ne null and isBasket}'>
       <div class="ui-widget">
         <div class="ui-state-error ui-corner-all" style="padding:8px;">
@@ -36,6 +40,8 @@
         </div>
       </div>
     </c:when>
+
+    <%-- Handle exception raised when accessing answerValue, when we're viewing a step result --%>
     <c:when test='${answerValueRecords_exception ne null}'>
       <div class="ui-widget">
         <div class="ui-state-error ui-corner-all" style="padding:8px;">
@@ -46,9 +52,11 @@
         </div>
       </div>
     </c:when>
+
     <c:when test='${wdkAnswer.resultSize == 0}'>
       No results are retrieved
     </c:when>
+
     <c:otherwise>
 
       <%-- pager --%>
@@ -76,18 +84,35 @@
         <table  width="100%">
           <tr class="subheaderrow">
 
-            <th style="text-align: left;white-space:nowrap;"> 
+            <th style="text-align: left; white-space: nowrap; width: 33%;"> 
               <imp:pager wdkAnswer="${wdkAnswer}" pager_id="top"/> 
             </th>
 
-            <th>
+            <th style="text-align: center; white-space: nowrap; width: 34px;">
+
+              <c:if test="${wdkAnswer.question.recordClass.hasResultSizeQuery}">
+                <span style="padding-right: 2em">
+                  ${wdkAnswer.displayResultSize}
+                  ${wdkAnswer.displayResultSize eq 1 ? step.recordClass.displayName : step.recordClass.displayNamePlural}
+                </span>
+              </c:if>
 
               <span style="padding-right: 2em">
                 ${wdkAnswer.resultSize}
-                ${wdkAnswer.resultSize eq 1 ? steo.recordClass.displayName : step.recordClass.displayNamePlural}
+                ${wdkAnswer.resultSize eq 1 ? wdkAnswer.question.recordClass.nativeDisplayName : wdkAnswer.question.recordClass.nativeDisplayNamePlural}
               </span>
 
+            </th>
+            <th style="text-align: right; white-space: nowrap; width: 33px;">
               <c:if test="${wdkAnswer.resultSize > 0}">
+
+                <%-- Galaxy URL --%>
+                <c:if test="${!empty sessionScope.GALAXY_URL}">
+                  <a href="downloadStep.do?step_id=${step.stepId}&wdkReportFormat=tabular">
+                    <b class="galaxy">SEND TO GALAXY</b>
+                  </a>
+                </c:if>
+
                 <c:choose>
                   <c:when test="${wdkUser.guest}">
                     <c:set var="basketClick" value="wdk.user.login();" />
@@ -97,24 +122,16 @@
                   </c:otherwise>
                 </c:choose>
 
-                <a style="padding-left: 1em;" href="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}">
+                <a style="padding-right: 1em;" href="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}">
                   <b>Download</b>
                 </a>
 
                 <c:if test="${recHasBasket}">
-                  <a style="padding-left: 1em;" id="basketStep" href="javascript:void(0)" onClick="${basketClick}">
+                  <a style="padding-right: 1em;" id="basketStep" href="javascript:void(0)" onClick="${basketClick}">
                     <b>Add to Basket</b>
                   </a>
                 </c:if>
-
-                <c:if test="${!empty sessionScope.GALAXY_URL}">
-                  <a href="downloadStep.do?step_id=${step.stepId}&wdkReportFormat=tabular">
-                    <b class="galaxy">SEND TO GALAXY</b>
-                  </a>
-                </c:if>
               </c:if>
-            </th>
-            <th style="text-align: right;white-space:nowrap;">
               <imp:addAttributes wdkAnswer="${wdkAnswer}" commandUrl="${commandUrl}"/>
             </th>
           </tr>
