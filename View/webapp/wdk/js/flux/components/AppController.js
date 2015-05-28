@@ -20,6 +20,15 @@ var AppController = React.createClass({
     application: React.PropTypes.object.isRequired
   },
 
+  childContextTypes: {
+    application: React.PropTypes.object.isRequired
+  },
+
+  getChildContext() {
+    const { application } = this.props
+    return { application };
+  },
+
   componentDidMount() {
     var store = this.props.application.getStore(AppStore);
     this.storeSubscription = store.subscribe(state => {
@@ -48,7 +57,7 @@ var AppController = React.createClass({
       return (
         <div>
           { isLoading !== 0 ? <Loading/> : null }
-          <RouteHandler {...this.props}/>
+          <RouteHandler/>
         </div>
       );
     }
