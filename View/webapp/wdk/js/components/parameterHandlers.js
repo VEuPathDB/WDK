@@ -86,7 +86,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       };
 
       dependedParam.change(handleChange);
-      dependedParam.keyup(_.debounce(handleChange, 1000));
+      dependedParam.keyup(_.debounce(handleChange, 2000));
     });
   }
 
