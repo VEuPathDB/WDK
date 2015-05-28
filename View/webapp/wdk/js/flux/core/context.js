@@ -71,9 +71,7 @@ function createContext(config = {}) {
 
 function makeRouterCallback(context, rootElement) {
   return function routerCallback(Handler, state) {
-    React.withContext(context, function() {
-      React.render(<Handler application={context} {...state}/>, rootElement);
-    });
+    React.render(<Handler application={context}/>, rootElement);
   };
 }
 

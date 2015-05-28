@@ -8,7 +8,7 @@ function createActions({ dispatcher, service }) {
   return {
     loadQuestions() {
       dispatcher.dispatch(AppLoading({ isLoading: true }));
-      serviceAPI.getResource('/question?expandQuestions=true')
+      service.getResource('/question?expandQuestions=true')
         .then(questions => {
           dispatcher.dispatch(QuestionsAdded({ questions }));
           dispatcher.dispatch(AppLoading({ isLoading: false }));

@@ -63,22 +63,18 @@ import Record from './Record';
 // See http://facebook.github.io/react/docs/top-level-api.html#react.createclass
 const AnswerController = React.createClass({
 
-  // `propTypes` is a place to declare properties this component expects. The
-  // mapping is property name => type. You can additionally declare a property
-  // as "required". When the props passed to a component violate this
-  // declaration, a warning is logged to the console, but React will render
-  // anyway.
-  //
-  // NB, these warnings don't appear in non-development builds.
-  propTypes: {
 
+  // Declare context properties used by this component. The context object is
+  // defined in AppController (the application root component). React uses
+  // `contextTypes` to determine which properties to add to `this.context`.
+  contextTypes: {
     // The application context used to look up services.
     application: React.PropTypes.object.isRequired
   },
 
   // When the component first mounts, fetch the answer.
   componentWillMount() {
-    this.router = this.props.application.router;
+    this.router = this.context.application.router;
     this.fetchAnswer(this.props);
     this.subscribeToStores();
   },
@@ -109,7 +105,7 @@ const AnswerController = React.createClass({
 
     // filter answer if the filter terms have changed
     else if (query.filterTerm != nextQuery.filterTerm) {
-      this.props.application.getActions(AnswerActions)
+      this.context.application.getActions(AnswerActions)
       .filterAnswer(nextParams.questionName, nextQuery.filterTerm);
     }
 
@@ -123,7 +119,7 @@ const AnswerController = React.createClass({
   // Create subscriptions to stores.
   subscribeToStores() {
     const { questionName } = this.props.params;
-    const { application } = this.props;
+    const { application } = this.context;
 
     const answerStore = application.getStore(AnswerStore);
     const questionStore = application.getStore(QuestionStore);
@@ -231,7 +227,7 @@ const AnswerController = React.createClass({
       };
 
       // Call the AnswerCreator to fetch the Answer resource
-      this.props.application.getActions(AnswerActions)
+      this.context.application.getActions(AnswerActions)
       .loadAnswer(params.questionName, opts);
     }
   },
@@ -292,7 +288,7 @@ const AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onMoveColumn(columnName, newPosition) {
-      this.props.application.getActions(AnswerActions)
+      this.context.application.getActions(AnswerActions)
       .moveColumn(columnName, newPosition);
     },
 
@@ -301,7 +297,7 @@ const AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onChangeColumns(attributes) {
-      this.props.application.getActions(AnswerActions)
+      this.context.application.getActions(AnswerActions)
       .changeAttributes(attributes);
     },
 
@@ -391,7 +387,7 @@ const AnswerController = React.createClass({
       filteredRecords
     } = this.state;
 
-    const { getCellRenderer, getRecordComponent } = this.props.application;
+    const { getCellRenderer, getRecordComponent } = this.context.application;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
