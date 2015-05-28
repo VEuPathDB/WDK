@@ -318,7 +318,7 @@ public class StepBean {
         return step.isCombined();
     }
 
-    public boolean isFiltered() {
+    public boolean isFiltered() throws WdkModelException {
         return step.isFiltered();
     }
 

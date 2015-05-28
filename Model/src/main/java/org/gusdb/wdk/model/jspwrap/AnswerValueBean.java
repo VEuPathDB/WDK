@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -19,6 +20,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.ResultPropertyQueryReference;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.Reporter;
@@ -75,6 +77,7 @@ public class AnswerValueBean {
     private static Logger logger = Logger.getLogger(AnswerValueBean.class);
 
     private AnswerValue answerValue;
+    private HashMap<String, Integer> resultProperties;
     Map<?, ?> downloadConfigMap = null;
 
     String customName = null;
@@ -500,4 +503,23 @@ public class AnswerValueBean {
     public String getIdSql() throws WdkModelException, WdkUserException {
       return answerValue.getIdSql();
     }    
+
+    public HashMap<String, Integer> getResultProperties() throws WdkModelException, WdkUserException {
+      // defer creation of map until properties are requested
+      if (resultProperties == null) {
+        resultProperties = new HashMap<String, Integer>();
+        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        ResultPropertyQueryReference ref = recordClass.getResultPropertyQueryRef();
+
+        if (ref != null) {
+          String name = ref.getPropertyName();
+          Integer value = recordClass.getResultPropertyPlugin()
+            .getPropertyValue(answerValue, name);
+          resultProperties.put(name, value);
+          logger.debug("Getting result property " + name + ": " + value);
+        }
+      }
+
+      return resultProperties;
+    }
 }

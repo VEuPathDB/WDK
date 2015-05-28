@@ -204,6 +204,14 @@ public class RecordClassBean {
       return recordClass.getDisplayNamePlural();
     }
 
+    public String getNativeDisplayName() {
+      return recordClass.getNativeDisplayName();
+    }
+
+    public String getNativeDisplayNamePlural() {
+      return recordClass.getNativeDisplayNamePlural();
+    }
+
     public String getShortDisplayNamePlural() {
       return recordClass.getShortDisplayNamePlural();
     }
@@ -236,4 +244,8 @@ public class RecordClassBean {
         AnswerFilterInstance filter = recordClass.getDefaultFilter();
         return (filter == null) ? null : new AnswerFilterInstanceBean(filter);
     }    
+
+    public boolean getHasResultSizeQuery() {
+      return recordClass.getResultSizeQueryRef() != null;
+    }
 }

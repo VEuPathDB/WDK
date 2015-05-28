@@ -335,8 +335,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public String getNativeDisplayName() {
-	    return (nativeDisplayName == null) ? getName() : nativeDisplayName;
-	  }
+    return (nativeDisplayName == null) ? getName() : nativeDisplayName;
+  }
 
   public String getDescription() {
     return (description == null) ? "" : description;
@@ -362,7 +362,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 	    if (nativeDisplayNamePlural != null)
 	      return nativeDisplayNamePlural;
 
-	    return getPlural(getDisplayName());
+	    return getPlural(getNativeDisplayName());
 	  }
 
   public void setDisplayNamePlural(String displayNamePlural) {
@@ -1809,7 +1809,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     if (filter == null)
       filter = getColumnFilter(key);
     if (filter == null)
-      throw new WdkModelException("Requested Step Filter doesn't exist: " + fullName);
+      throw new WdkModelException("Requested Filter, with key '" + key + "' doesn't exist in record: " + fullName);
     return filter;
   }
 

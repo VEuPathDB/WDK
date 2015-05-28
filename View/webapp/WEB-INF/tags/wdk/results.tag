@@ -54,9 +54,11 @@
 <!-- ================ New filter architecture ================= -->
 
 
+<!-- FIXME Uncomment sometime
 <c:if test="${strategy != null}">
   <imp:resultFilters step="${step}" />
 </c:if> 
+-->
 
 <!--<div><a href="javascript:wdk.stepAnalysis.showAllAnalyses()">Magic Button</a></div>-->
 

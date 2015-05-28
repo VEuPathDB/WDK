@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.filter;
 
+import org.json.JSONObject;
+
 
 public abstract class AbstractFilter implements Filter {
 
@@ -7,6 +9,7 @@ public abstract class AbstractFilter implements Filter {
   private String _display;
   private String _description;
   private String _view;
+  protected JSONObject _defaultValue;
   
   public AbstractFilter(String key) {
     this._key = key;
@@ -46,4 +49,9 @@ public abstract class AbstractFilter implements Filter {
   public void setView(String view) {
     this._view = view;
   }
+  
+  @Override public JSONObject getDefaultValue() {
+	  return _defaultValue;
+  }
+  
 }

@@ -43,6 +43,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
+import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
@@ -244,6 +245,7 @@ public class StepFactory {
     // create answer
     AnswerValue answerValue = question.makeAnswerValue(user, dependentValues, pageStart, pageEnd,
         sortingAttributes, filter, validate, assignedWeight);
+    answerValue.setFilterOptions(filterOptions);
 
     logger.debug("id query name  :" + answerValue.getIdsQueryInstance().getQuery().getFullName());
     logger.debug("answer checksum:" + answerValue.getChecksum());
@@ -256,11 +258,6 @@ public class StepFactory {
     int estimateSize;
     Exception exception = null;
     try {
-      if (filter != null) {
-        filterName = filter.getName();
-        estimateSize = answerValue.getFilterSize(filterName);
-      }
-      else
         estimateSize = answerValue.getDisplayResultSize();
     }
     catch (Exception ex) {
@@ -310,6 +307,7 @@ public class StepFactory {
     step.setDeleted(deleted);
     step.setParamValues(dependentValues);
     step.setFilterOptions(filterOptions);
+    addDefaultFiltersToStep(step);
     step.setAnswerValue(answerValue);
     step.setEstimateSize(estimateSize);
     step.setAssignedWeight(assignedWeight);
@@ -1782,5 +1780,13 @@ public class StepFactory {
       }
     });
     return ids;
+  }
+  
+  private void addDefaultFiltersToStep(Step step) throws WdkModelException {
+	for (Filter filter : step.getQuestion().getFilters().values()) {
+		if (filter.getDefaultValue() != null) {
+			step.addFilterOption(filter.getKey(), filter.getDefaultValue());
+		}
+	}
   }
 }
