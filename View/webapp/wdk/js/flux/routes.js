@@ -11,13 +11,13 @@ import AnswerController from './components/AnswerController';
 import QuestionListController from './components/QuestionListController';
 
 /**
- * Get routes based on `baseUrl`.
+ * Get routes based on `rootUrl`.
  *
- * @param {string} baseUrl The baseUrl used to match paths below
+ * @param {string} rootUrl The rootUrl used to match paths below
  */
-function getRoutes(baseUrl = '/') {
+function getRoutes(rootUrl = '/') {
   return (
-    <Route name="app" path={baseUrl} handler={AppController}>
+    <Route name="app" path={rootUrl} handler={AppController}>
       <Route name="answer" path="answer/:questionName" handler={AnswerController}/>,
       <Route name="question-list" handler={QuestionListController}/>,
       <DefaultRoute handler={IndexController}/>,
