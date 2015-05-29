@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.AuthenticationService;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.LoginCookieFactory;
+import org.gusdb.wdk.controller.OAuthClient;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Count;
@@ -45,7 +46,7 @@ public class ProcessLoginAction extends WdkAction {
   
   @Override
   protected boolean shouldValidateParams() {
-    return true;
+    return false;
   }
 
   @Override
@@ -110,55 +111,88 @@ public class ProcessLoginAction extends WdkAction {
       return new ActionResult().setViewName(SUCCESS);
     }
     else {
-      // get user's input
-      String openid = params.getValue(CConstants.WDK_OPENID_KEY);
-      String email = params.getValue(CConstants.WDK_EMAIL_KEY);
-      String password = params.getValue(CConstants.WDK_PASSWORD_KEY);
-      boolean remember = params.getSingleCheckboxValue(REMEMBER_PARAM_KEY);
-      
-      // authenticate
-      try {
-        // user must enter something for either openid or email/password
-        //checkExistenceOfParams(params);
-          
-        if (openid != null && openid.length() > 0) {
-          // first make sure we have a user with this OpenID
-          openid = AuthenticationService.normalizeOpenId(openid);
-          UserBean potentialUser = factory.getUserByOpenId(openid);
-          if (potentialUser == null) {
-            throw new WdkUserException("The OpenID you specified does not correspond to a registered user.");
-          }
-          
-          // try to authenticate with OpenID
-          try {
-            AuthenticationService auth = new AuthenticationService();
-            LOG.info("Setting referrer on OpenID login to : " + getRequestData().getReferrer());
-            auth.setReferringUrl(getOriginalReferrer(params, getRequestData()));
-            auth.setRememberUser(params.getSingleCheckboxValue("remember"));
-            String redirectUrl = auth.authRequest(openid, getWebAppRoot());
-            // same AuthenticationService MUST be used for stage 2, store on session for later retrieval
-            setSessionAttribute(CConstants.WDK_OPENID_AUTH_SERVICE_KEY, auth);
-            return new ActionResult().setRedirect(true).setViewPath(redirectUrl);
-          }
-          catch (Exception e) {
-            throw new WdkUserException("Your OpenID could not be authenticated.  Please try again.", e);
-          }
+      //return oldHandleLogin(params, guest, factory);
+      return handleLogin(params, guest, factory);
+    }
+  }
+
+  private ActionResult handleLogin(ParamGroup params, UserBean guest, UserFactoryBean factory) {
+
+    // params used to fetch token and validate user
+    String redirectUrl = params.getValue("redirectUrl");
+    String authCode = params.getValue("code");
+
+    try {
+      OAuthClient client = new OAuthClient();
+      int userId = client.getUserIdFromAuthCode(authCode, getRequestData().getFullRequestUrl());
+
+      UserBean user = factory.login(guest, userId);
+      if (user == null) throw new WdkModelException("Unable to find user with ID " +
+          userId + ", returned by OAuth service for authCode " + authCode);
+
+      int wdkCookieMaxAge = addLoginCookie(user, true, getWdkModel(), this);
+      setCurrentUser(user);
+      setSessionAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
+      // go back to user's original page after successful login
+      return getSuccessfulLoginResult(redirectUrl, wdkCookieMaxAge);
+    }
+    catch (Exception e) {
+      LOG.error("Could not log user in with authCode " + authCode, e);
+      return getFailedLoginResult(e);
+    }
+  }
+
+  @Deprecated
+  @SuppressWarnings("unused")
+  private ActionResult oldHandleLogin(ParamGroup params, UserBean guest, UserFactoryBean factory) {
+    // get user's input
+    String openid = params.getValue(CConstants.WDK_OPENID_KEY);
+    String email = params.getValue(CConstants.WDK_EMAIL_KEY);
+    String password = params.getValue(CConstants.WDK_PASSWORD_KEY);
+    boolean remember = params.getSingleCheckboxValue(REMEMBER_PARAM_KEY);
+    
+    // authenticate
+    try {
+      // user must enter something for either openid or email/password
+      //checkExistenceOfParams(params);
+        
+      if (openid != null && openid.length() > 0) {
+        // first make sure we have a user with this OpenID
+        openid = AuthenticationService.normalizeOpenId(openid);
+        UserBean potentialUser = factory.getUserByOpenId(openid);
+        if (potentialUser == null) {
+          throw new WdkUserException("The OpenID you specified does not correspond to a registered user.");
         }
-        else {
-          UserBean user = factory.login(guest, email, password);
-          int wdkCookieMaxAge = addLoginCookie(user, remember, getWdkModel(), this);
-          setCurrentUser(user);
-          setSessionAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
-          // go back to user's original page after successful login
-          String redirectPage = getOriginalReferrer(params, getRequestData());
-          return getSuccessfulLoginResult(redirectPage, wdkCookieMaxAge);
+        
+        // try to authenticate with OpenID
+        try {
+          AuthenticationService auth = new AuthenticationService();
+          LOG.info("Setting referrer on OpenID login to : " + getRequestData().getReferrer());
+          auth.setReferringUrl(getOriginalReferrer(params, getRequestData()));
+          auth.setRememberUser(params.getSingleCheckboxValue("remember"));
+          String redirectUrl = auth.authRequest(openid, getWebAppRoot());
+          // same AuthenticationService MUST be used for stage 2, store on session for later retrieval
+          setSessionAttribute(CConstants.WDK_OPENID_AUTH_SERVICE_KEY, auth);
+          return new ActionResult().setRedirect(true).setViewPath(redirectUrl);
+        }
+        catch (Exception e) {
+          throw new WdkUserException("Your OpenID could not be authenticated.  Please try again.", e);
         }
       }
-      catch (Exception ex) {
-        LOG.info("Could not authenticate user's identity.  Exception thrown: ", ex);
-        // user authentication failed, set the error message and the referring page
-        return getFailedLoginResult(ex);
+      else {
+        UserBean user = factory.login(guest, email, password);
+        int wdkCookieMaxAge = addLoginCookie(user, remember, getWdkModel(), this);
+        setCurrentUser(user);
+        setSessionAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
+        // go back to user's original page after successful login
+        String redirectPage = getOriginalReferrer(params, getRequestData());
+        return getSuccessfulLoginResult(redirectPage, wdkCookieMaxAge);
       }
+    }
+    catch (Exception ex) {
+      LOG.info("Could not authenticate user's identity.  Exception thrown: ", ex);
+      // user authentication failed, set the error message and the referring page
+      return getFailedLoginResult(ex);
     }
   }
 

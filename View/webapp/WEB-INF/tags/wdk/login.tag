@@ -24,7 +24,7 @@
       </li>
     </c:when>
     <c:otherwise>
-      <li><a href="javascript:void(0)" class="open-dialog-login-form">Login</a></li>
+      <li><a href="javascript:void(0)" onclick="wdk.user.login()">Login</a></li>
       <li><a href="${pageContext.request.contextPath}/showRegister.do">Register</a></li>
     </c:otherwise>
   </c:choose>
