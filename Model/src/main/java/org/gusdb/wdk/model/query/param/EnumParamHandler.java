@@ -119,18 +119,24 @@ public class EnumParamHandler extends AbstractParamHandler {
   public String toSignature(User user, String stableValue, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
     AbstractEnumParam enumParam = (AbstractEnumParam) param;
-    EnumParamCache cache = enumParam.getValueCache(user, contextValues);
+    // EnumParamCache cache = enumParam.getValueCache(user, contextValues);
 
     String[] terms = enumParam.convertToTerms(stableValue);
-    Set<String> internals = new LinkedHashSet<>();
-    for (String term : terms) {
-      if (!cache.containsTerm(term))
-        throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
+    // jerric - we should use terms to generate signature, not internal value. I don't remember
+    // when and why we switched to internal values. I will revert it back to term.
+    // Furthermore, I will skip validating the terms here, otherwise, it breaks the deep clone
+    // of the steps, which prevents us from revising saved invalid strategies.
+ 
+//    Set<String> internals = new LinkedHashSet<>();
+//    for (String term : terms) {
+//      if (!cache.containsTerm(term))
+//        throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
 
-      String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
-      internals.add(internal);
-    }
-    String[] array = internals.toArray(new String[0]);
+//     String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
+//      internals.add(internal);
+//    }
+//    String[] array = internals.toArray(new String[0]);
+    String[] array = terms;
     Arrays.sort(array);
     return Utilities.encrypt(Arrays.toString(array));
   }

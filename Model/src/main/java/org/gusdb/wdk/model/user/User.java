@@ -485,7 +485,7 @@ public class User /* implements Serializable */{
     int endIndex = answerValue.getEndIndex();
 
     try {
-      return createStep(strategyId, question, paramValues, filter, startIndex, endIndex, deleted, true,
+      return createStep(strategyId, question, paramValues, filter, startIndex, endIndex, deleted, false,
           assignedWeight, answerValue.getFilterOptions());
     }
     catch (WdkUserException ex) {
@@ -509,9 +509,17 @@ public class User /* implements Serializable */{
   public Step createStep(Integer strategyId, Question question, Map<String, String> paramValues,
       AnswerFilterInstance filter, boolean deleted, boolean validate, int assignedWeight)
       throws WdkModelException, WdkUserException {
+    return createStep(strategyId, question, paramValues, filter, deleted, validate,
+        assignedWeight, null);
+  }
+
+  public Step createStep(Integer strategyId, Question question, Map<String, String> paramValues,
+      AnswerFilterInstance filter, boolean deleted, boolean validate, int assignedWeight,
+      FilterOptionList filterOptions)
+      throws WdkModelException, WdkUserException {
     int endIndex = getItemsPerPage();
     return createStep(strategyId, question, paramValues, filter, 1, endIndex, deleted, validate,
-        assignedWeight, null);
+        assignedWeight, filterOptions);
   }
 
   public Step createStep(Integer strategyId, Question question, Map<String, String> paramValues,

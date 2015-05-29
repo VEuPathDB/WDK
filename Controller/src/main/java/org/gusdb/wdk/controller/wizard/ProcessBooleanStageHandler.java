@@ -53,10 +53,11 @@ public class ProcessBooleanStageHandler implements StageHandler {
     String strStepId = request.getParameter(PARAM_STEP);
     int stepId = (strStepId == null || strStepId.isEmpty()) ? 0 : Integer.valueOf(strStepId);
 
+    logger.debug("Strategy: id=" + strategy.getStrategyId() + ", saved=" + strategy.getIsSaved());
     if (strategy.getIsSaved()) {
       Map<Integer, Integer> stepIdMap = new HashMap<>();
       strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
-      if (stepId == 0)
+      if (stepId != 0)
         stepId = stepIdMap.get(stepId);
     }
 
