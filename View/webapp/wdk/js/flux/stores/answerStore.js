@@ -7,7 +7,7 @@ import {
   property,
   values
 } from 'lodash';
-import Store from '../Store';
+import Store from '../core/store';
 import {
   AnswerAdded,
   AnswerMoveColumn,
@@ -90,8 +90,8 @@ var isTermInRecord = curry(function isTermInRecord(term, record) {
   return clob.toLowerCase().indexOf(term.toLowerCase()) !== -1;
 });
 
-export default function createAnswerStore() {
-  var initialState = {
+function createStore({ dispatcher }) {
+  var value = {
     filterTerm: '',
     filteredRecords: null,
     answers: {},
@@ -107,14 +107,16 @@ export default function createAnswerStore() {
       filters: null
     }
   };
-  return Store.createStore(initialState, function update(state, action) {
-    switch(action.type) {
-      case AnswerAdded: return addAnswer(state, action);
-      case AnswerMoveColumn: return moveTableColumn(state, action);
-      case AnswerChangeAttributes: return updateVisibleAttributes(state, action);
-      case AnswerFilter: return filterAnswer(state, action);
-    }
-  });
+  return new Store(dispatcher, value, update);
+}
+
+function update(state, action) {
+  switch(action.type) {
+    case AnswerAdded: return addAnswer(state, action);
+    case AnswerMoveColumn: return moveTableColumn(state, action);
+    case AnswerChangeAttributes: return updateVisibleAttributes(state, action);
+    case AnswerFilter: return filterAnswer(state, action);
+  }
 }
 
 
@@ -224,3 +226,7 @@ function filterAnswer(state, { terms, questionName }) {
     filteredRecords: filteredRecords
   });
 }
+
+export default {
+  createStore
+};

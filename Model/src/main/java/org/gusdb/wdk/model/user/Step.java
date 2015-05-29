@@ -408,17 +408,19 @@ public class Step {
 
   /**
    * @return Size estimate of this step's result
-   * @throws WdkUserException
-   * @throws WdkModelException
    */
-  public int getEstimateSize() throws WdkModelException {
+  public int getEstimateSize() {
     if (estimateSize == RESET_SIZE_FLAG) {
       // The flag indicates if the size has been reset, and need to be calculated again.
       try {
         estimateSize = getAnswerValue().getResultSize();
       }
-      catch (WdkUserException ex) {
-        throw new WdkModelException(ex);
+      catch (Exception ex) {
+        // do not throw error in this method, just return 0, to avoid infinite
+        // loop from frontend. (otherwise frontend will keep trying showStrategy.do when
+        // it sees a -1;
+        logger.error("Error occurred, use the old estimate size", ex);
+        return 0;
       }
     }
     return estimateSize;
@@ -876,8 +878,8 @@ public class Step {
     Step step;
     AnswerValue answerValue;
     try {
-      answerValue = getAnswerValue();
       if (!isCombined()) {
+        answerValue = getAnswerValue(false);
         step = getUser().createStep(strategyId, answerValue, deleted, assignedWeight);
       }
       else {
@@ -895,9 +897,7 @@ public class Step {
           paramValues.put(paramName, paramValue);
         }
         AnswerFilterInstance filter = getFilter();
-        int pageStart = answerValue.getStartIndex();
-        int pageEnd = answerValue.getEndIndex();
-        step = getUser().createStep(strategyId, question, paramValues, filter, pageStart, pageEnd, deleted, false,
+        step = getUser().createStep(strategyId, question, paramValues, filter, deleted, false,
             assignedWeight, getFilterOptions());
       }
     }
@@ -1047,14 +1047,14 @@ public class Step {
       User user = getUser();
       Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
       int endIndex = user.getItemsPerPage();
-      try {
+      // try {
         answerValue = question.makeAnswerValue(user, paramValues, 1, endIndex, sortingMap, getFilter(),
             validate, assignedWeight);
         answerValue.setFilterOptions(getFilterOptions());
-      }
-      catch (WdkUserException ex) {
-        throw new WdkModelException(ex);
-      }
+      // }
+      // catch (WdkUserException ex) {
+      //  throw new WdkModelException(ex);
+      // }
       try {
         this.estimateSize = answerValue.getResultSize();
       }
