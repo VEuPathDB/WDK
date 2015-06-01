@@ -40,6 +40,8 @@ public class ProcessBooleanStageHandler implements StageHandler {
       HttpServletResponse response, WizardForm wizardForm) throws Exception {
     logger.debug("Entering BooleanStageHandler...");
 
+    Map<String, Object> attributes = new HashMap<String, Object>();
+
     UserBean user = ActionUtility.getUser(servlet, request);
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
 
@@ -66,9 +68,15 @@ public class ProcessBooleanStageHandler implements StageHandler {
       if (branchId != null)
         strategyKey += "_" + stepIdMap.get(branchId);
       wizardForm.setStrategy(strategyKey);
+      attributes.put(PARAM_STRATEGY, strategyKey);
 
-      if (stepId != 0)
+      // also replace the saved strategy with the new unsaved copy in the view
+      user.replaceActiveStrategy(strategyId, strategy.getStrategyId(), stepIdMap);
+
+      if (stepId != 0) {
         stepId = stepIdMap.get(stepId);
+        attributes.put(PARAM_STEP, Integer.toString(stepId));
+      }
     }
 
     StepBean childStep = null;
@@ -100,7 +108,6 @@ public class ProcessBooleanStageHandler implements StageHandler {
       childStep.update(false);
     }
 
-    Map<String, Object> attributes = new HashMap<String, Object>();
     // the childStep might not be created, in which case user just revises
     // the boolean operator.
     logger.debug("child step: " + childStep);
@@ -150,6 +157,9 @@ public class ProcessBooleanStageHandler implements StageHandler {
     childStep.setParamValues(params);
     childStep.setAssignedWeight(weight);
     childStep.saveParamFilters();
+
+    logger.info("step#" + childStep.getStepId() + " - " + params);
+
     return childStep;
   }
 
