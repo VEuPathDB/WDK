@@ -17,7 +17,7 @@ public class WizardForm extends MapActionForm {
      */
     private static final long serialVersionUID = 3608316943911485689L;
 
-    private String strategy;
+    private String strategyKey;
     private int step;
     private String stage;
     private String action;
@@ -26,21 +26,21 @@ public class WizardForm extends MapActionForm {
      * @return the strategy
      */
     public String getStrategy() {
-        return strategy;
+        return strategyKey;
     }
 
     public int getStrategyId() {
-        int pos = strategy.indexOf("_");
-        String strId = (pos < 0) ? strategy : strategy.substring(0, pos);
+        int pos = strategyKey.indexOf("_");
+        String strId = (pos < 0) ? strategyKey : strategyKey.substring(0, pos);
         return Integer.valueOf(strId);
     }
 
     /**
-     * @param strategy
+     * @param strategyKey
      *            the strategy to set
      */
-    public void setStrategy(String strategy) {
-        this.strategy = strategy;
+    public void setStrategy(String strategyKey) {
+        this.strategyKey = strategyKey;
     }
 
     /**
@@ -95,7 +95,7 @@ public class WizardForm extends MapActionForm {
         if (errors == null) errors = new ActionErrors();
 
         // validate strategy id
-        if (strategy == null || strategy.length() == 0) {
+        if (strategyKey == null || strategyKey.length() == 0) {
             ActionMessage message = new ActionMessage("mapped.properties",
                     "required strategy param is not assigned. Please assign "
                             + "it with strategy key.");

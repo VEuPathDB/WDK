@@ -47,7 +47,9 @@ public class ProcessBooleanStageHandler implements StageHandler {
     if (strStratId == null || strStratId.isEmpty())
       throw new WdkUserException("Required " + PARAM_STRATEGY + " param is missing.");
 
-    int strategyId = Integer.valueOf(strStratId.split("_", 2)[0]);
+    String[] pieces = strStratId.split("_", 2);
+    int strategyId = Integer.valueOf(pieces[0]);
+    Integer branchId = (pieces.length == 1) ? null : Integer.valueOf(pieces[1]);
     StrategyBean strategy = user.getStrategy(strategyId);
 
     String strStepId = request.getParameter(PARAM_STEP);
@@ -57,6 +59,14 @@ public class ProcessBooleanStageHandler implements StageHandler {
     if (strategy.getIsSaved()) {
       Map<Integer, Integer> stepIdMap = new HashMap<>();
       strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
+
+      // make sure to also change the strategy key in the wizard form, so the new unsaved strategy can be
+      // carried over the next stages.
+      String strategyKey = Integer.toString(strategy.getStrategyId());
+      if (branchId != null)
+        strategyKey += "_" + stepIdMap.get(branchId);
+      wizardForm.setStrategy(strategyKey);
+
       if (stepId != 0)
         stepId = stepIdMap.get(stepId);
     }
