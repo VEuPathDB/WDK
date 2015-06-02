@@ -45,7 +45,7 @@ JSON output format:
     } ]
   },
   record:  {
-    id: String,
+    id: Any,
     attributes: [
      { name: String, value: Any }
     ],
@@ -111,7 +111,7 @@ public class RecordFormatter {
   public static JSONObject getRecordJson(RecordInstance record)
       throws WdkModelException, WdkUserException {
     JSONObject json = new JSONObject();
-    json.put("id", record.getPrimaryKey().getValue());
+    json.put("id", record.getPrimaryKey().getValues());
     JSONArray attributes = new JSONArray();
     for (Entry<String,AttributeValue> attrib : record.getAttributeValueMap().entrySet()) {
       JSONObject attribJson = new JSONObject();
