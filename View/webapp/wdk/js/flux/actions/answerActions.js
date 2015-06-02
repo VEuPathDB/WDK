@@ -5,8 +5,7 @@ import {
   AnswerMoveColumn,
   AnswerChangeAttributes,
   AnswerFilter,
-  QuestionsAdded,
-  RecordClassesAdded
+  AnswerLoading
 } from '../ActionType';
 
 
@@ -124,87 +123,27 @@ function createActions({ dispatcher, service }) {
       var questionDefinition = { questionName, params, filters };
       var requestData = { questionDefinition, displayInfo };
 
-      // Dispatch loading action.
-      var action = AppLoading({ isLoading: true });
-      dispatcher.dispatch(action);
-
-      // The next section of code deals with composing Promises. Simply put, a
-      // Promise is a container for an asynchronous operation, such as an Ajax
-      // request. Promises can be combined in various ways to allow what would
-      // otherwise require complex bookkeeping to be expressed in a more
-      // declarative way.
-      //
-      // Ultimately, the code below will be making a request for the question and
-      // answer resource in parallel. When the question request is complete, we
-      // will then make the request for the recordClass resource. Once these
-      // three requests are complete, we will dispatch three related actions.
-
-      // First, create a Promise for the question resource (the ajax request will
-      // be made as soon as possible (which will more-or-less be when the current
-      // method's execution is complete).
-      var questionPromise = service.getResource('/question?expandQuestions=true');
-
-      // Then, create a Promise for the recordClass
-      var recordClassPromise = service.getResource('/record?expandRecordClasses=true');
+      // Dispatch AnswerLoading action
+      dispatcher.dispatch(AnswerLoading({ isLoading: true }));
 
       // Then, create a Promise for the answer resource.
-      var answerPromise = service.postResource('/answer', requestData);
-
-      // This is the "tricky" part. This code block says, "When the question
-      // Promise is fulfilled, create a Promise for the record resource.
-      // Then, using `Promise.all`, create yet another Promise that is fulfilled
-      // when all three Promises are fulfilled." It takes advantage of two
-      // important properties of Promises:
-      //
-      //   1. `Promise.prototype.then` itself returns a Promise. The value that
-      //      Promise is fulfilled with is determined by the return value. If the
-      //      value is another Promise, it will fulfill with what ever value that
-      //      Promise fulfills with; otherwise it will fulfill with the
-      //      non-Promise value.
-      //
-      //   2. `Promise.all` accepts an array of Promises or values, and returns a
-      //      Promise that is fulfilled with the an array whose elements are the
-      //      values that each Promise in the array is fulfilled with, or the
-      //      non-Promise element of the array.
-      //
-      //   Thus, `combinedPromise` is a Promise which is fulfilled with the
-      //   question resource, the recordClass resource, and the answer resource as
-      //   an array.
-      var combinedPromise = Promise.all([
-        questionPromise,
-        recordClassPromise,
-        answerPromise
-      ]);
-
-      // Finally, we register a callback for when the combinedPromise is
-      // fulfilled. We are simply dispatching actions based on the values.
-      combinedPromise.then(responses => {
-        var [ questions, recordClasses, answer ] = responses;
-
-        var questionAction = QuestionsAdded({ questions });
-        dispatcher.dispatch(questionAction);
-
-        var recordClassAction = RecordClassesAdded({ recordClasses });
-        dispatcher.dispatch(recordClassAction);
-
-        var answerAction = AnswerAdded({
-          requestData: requestData,
-          answer: answer
-        });
-        dispatcher.dispatch(answerAction);
-
-        var doneLoadingAction = AppLoading({ isLoading: false });
-        dispatcher.dispatch(doneLoadingAction);
-      }, error => {
-        var doneLoadingAction = AppLoading({ isLoading: false });
-        var action = AppError({ error: error });
-        dispatcher.dispatch(doneLoadingAction);
-        dispatcher.dispatch(action);
-      })
-      // Catch errors caused by Store callbacks.
-      // This is a last-ditch effort to alert developers that there was an error
-      // with how a Store handled the action.
-      .catch(err => console.assert(false, err));
+      service.postResource('/answer', requestData)
+        .then(answer => {
+          var answerAction = AnswerAdded({
+            requestData: requestData,
+            answer: answer
+          });
+          dispatcher.dispatch(answerAction);
+          dispatcher.dispatch(AnswerLoading({ isLoading: false }));
+        }, error => {
+          var action = AppError({ error: error });
+          dispatcher.dispatch(action);
+          dispatcher.dispatch(AnswerLoading({ isLoading: false }));
+        })
+        // Catch errors caused by Store callbacks.
+        // This is a last-ditch effort to alert developers that there was an error
+        // with how a Store handled the action.
+        .catch(err => console.assert(false, err));
     },
 
     moveColumn(columnName, newPosition) {
