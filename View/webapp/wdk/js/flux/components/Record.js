@@ -12,14 +12,14 @@ const Record = React.createClass({
   },
 
   render() {
-    const { record, recordClass } = this.props;
+    const { record, meta } = this.props;
     const recordAttributes = record.attributes;
     const recordTables = record.tables;
 
-    const attributes = recordClass.attributes.map(attribute => {
+    const attributes = meta.attributes.map(attribute => {
       return {
         meta: attribute,
-        model: recordAttributes[attribute.name]
+        model: recordAttributes.find(attr => attr.name == attribute.name)
       };
     });
 
@@ -30,9 +30,10 @@ const Record = React.createClass({
     //   };
     // });
 
+    const displayName = record.attributes.find(a => a.name === 'primary_key');
     return (
       <div className="wdk-Record">
-        <h1 dangerouslySetInnerHTML={{__html: record.id}}/>
+        <h1 dangerouslySetInnerHTML={{__html: displayName.value}}/>
         <div className="wdk-Record-attributes">
           {attributes
             .filter(attr => attr.meta.name !== 'primary_key')

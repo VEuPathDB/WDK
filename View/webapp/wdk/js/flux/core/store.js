@@ -125,6 +125,5 @@ function notify(callback) {
 }
 
 function dispose(callback) {
-  const index = this._callbacks.findIndex(callback);
-  this._callbacks.splice(index, 1);
+  this._callbacks = this._callbacks.filter(c => c !== callback);
 };
