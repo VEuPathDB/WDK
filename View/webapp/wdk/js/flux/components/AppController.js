@@ -29,6 +29,12 @@ let AppController = React.createClass({
     return { application };
   },
 
+  getInitialState() {
+    return {
+      errors: []
+    };
+  },
+
   componentWillMount() {
     let { application } = this.props;
     let store = application.getStore(AppStore);
@@ -44,8 +50,6 @@ let AppController = React.createClass({
   },
 
   render() {
-    if (!this.state) return null;
-
     let { errors } = this.state;
 
     if (errors.length > 0) {

@@ -75,8 +75,8 @@ let AnswerController = React.createClass({
   // When the component first mounts, fetch the answer.
   componentWillMount() {
     this.router = this.context.application.router;
-    this.fetchAnswer(this.props);
     this.subscribeToStores();
+    this.fetchAnswer(this.props);
   },
 
   // This is called anytime the component gets new props, just before they are
@@ -185,7 +185,12 @@ let AnswerController = React.createClass({
       // call will cause the Route Handler for 'answer' (this component) to be
       // rendered again. Since `query.numrecs` and `query.offset` are now set,
       // the else block below will get executed again.
-      this.router.replaceWith(path, params, query);
+      //
+      // It seems that calling this before the component is mounted leads to
+      // errors, so we will defer doing so.
+      setTimeout(() => {
+        this.router.replaceWith(path, params, query);
+      }, 0);
 
     } else {
 
