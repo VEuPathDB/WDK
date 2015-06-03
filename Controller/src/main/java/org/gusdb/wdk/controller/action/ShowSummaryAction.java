@@ -161,10 +161,13 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     // reload the strategy to get the changes
                     strategy = wdkUser.getStrategy(strategy.getStrategyId());
                     String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+                    String stratChecksum = strategy.getChecksum();
+                    int stratChecksumLen = stratChecksum.length();
+                    int checksumLen = checksum.length();
                     if (!strategy.getChecksum().equals(checksum)) {
-                        logger.info("strategy checksum: "
-                                + strategy.getChecksum()
-                                + ", but the input checksum: " + checksum);
+                        logger.info("strategy checksum: '"
+                                + stratChecksum + "' (" + stratChecksumLen  
+                                + "), but the input checksum is: '" + checksum + "' (" + checksumLen + ")");
                         ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser,
                                 response, state);
                         return null;
