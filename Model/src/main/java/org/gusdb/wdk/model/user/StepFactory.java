@@ -809,7 +809,7 @@ public class StepFactory {
     PreparedStatement psStep = null;
     String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_QUESTION_NAME + " = ?, " +
         COLUMN_ANSWER_FILTER + " = ?, " + COLUMN_LEFT_CHILD_ID + " = ?, " + COLUMN_RIGHT_CHILD_ID + " = ?, " +
-        COLUMN_ASSIGNED_WEIGHT + " = ?, " + COLUMN_DISPLAY_PARAMS + " = ?, " + COLUMN_IS_VALID + " = 1 " +
+        COLUMN_ASSIGNED_WEIGHT + " = ?, " + COLUMN_DISPLAY_PARAMS + " = ?, " + COLUMN_IS_VALID + " = ? " +
         "    WHERE " + COLUMN_STEP_ID + " = ?";
 
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
@@ -831,7 +831,8 @@ public class StepFactory {
         psStep.setObject(4, null);
       psStep.setInt(5, step.getAssignedWeight());
       platform.setClobData(psStep, 6, jsContent.toString(), false);
-      psStep.setInt(7, step.getStepId());
+      psStep.setBoolean(7, true);
+      psStep.setInt(8, step.getStepId());
       int result = psStep.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-save-step-params", start);
       if (result == 0)
@@ -1333,6 +1334,7 @@ public class StepFactory {
   Strategy createStrategy(User user, int strategyId, Step root, String name, String savedName, boolean saved,
       String description, boolean hidden, boolean isPublic) throws WdkModelException, WdkUserException {
     logger.debug("creating strategy, saved=" + saved);
+
     int userId = user.getUserId();
 
     String userIdColumn = Utilities.COLUMN_USER_ID;
@@ -1698,9 +1700,10 @@ public class StepFactory {
    * @throws WdkModelException
    */
   int resetStepCounts(Step fromStep) throws WdkModelException {
+    DBPlatform platform = userDb.getPlatform();
     String selectSql = selectStepAndParents(fromStep.getStepId());
     String sql = "UPDATE " + userSchema + "steps SET estimate_size = " + UNKNOWN_SIZE +
-        ", is_valid = 1 WHERE step_id IN (" + selectSql + ")";
+        ", is_valid = " + platform.convertBoolean(true) + " WHERE step_id IN (" + selectSql + ")";
     try {
       return SqlUtils.executeUpdate(userDb.getDataSource(), sql, "wdk-step-reset-count-recursive");
     }

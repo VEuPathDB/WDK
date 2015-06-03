@@ -1307,12 +1307,14 @@ public class User /* implements Serializable */{
   public Strategy copyStrategy(Strategy strategy, Map<Integer, Integer> stepIdMap) throws WdkModelException,
       WdkUserException {
     Strategy copy = stepFactory.copyStrategy(strategy, stepIdMap);
+    logger.info("Copy Strategy #" + strategy.getStrategyId() + " -> " + copy.getStrategyId());
     return copy;
   }
 
   public Strategy copyStrategy(Strategy strategy, Map<Integer, Integer> stepIdMap, String name)
       throws WdkModelException, WdkUserException {
     Strategy copy = stepFactory.copyStrategy(strategy, stepIdMap, name);
+    logger.info("Copy Strategy #" + strategy.getStrategyId() + " -> " + copy.getStrategyId());
     return copy;
   }
 

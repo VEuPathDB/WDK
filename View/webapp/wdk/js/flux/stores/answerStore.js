@@ -12,7 +12,8 @@ import {
   AnswerAdded,
   AnswerMoveColumn,
   AnswerChangeAttributes,
-  AnswerFilter
+  AnswerFilter,
+  AnswerLoading
 } from '../ActionType';
 
 /**
@@ -92,6 +93,7 @@ var isTermInRecord = curry(function isTermInRecord(term, record) {
 
 function createStore({ dispatcher }) {
   var value = {
+    isLoading: false,
     filterTerm: '',
     filteredRecords: null,
     answers: {},
@@ -116,6 +118,7 @@ function update(state, action) {
     case AnswerMoveColumn: return moveTableColumn(state, action);
     case AnswerChangeAttributes: return updateVisibleAttributes(state, action);
     case AnswerFilter: return filterAnswer(state, action);
+    case AnswerLoading: return answerLoading(state, action);
   }
 }
 
@@ -225,6 +228,11 @@ function filterAnswer(state, { terms, questionName }) {
     filterTerm: terms,
     filteredRecords: filteredRecords
   });
+}
+
+function answerLoading(state, action) {
+  state.isLoading = action.isLoading;
+  return state;
 }
 
 export default {

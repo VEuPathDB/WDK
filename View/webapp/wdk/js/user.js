@@ -99,7 +99,21 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
 
   ns.logout = function() {
     if (confirm("Do you want to log out as " + ns.name() + "?")) {
-      $("#user-control form[name=logoutForm]").submit();
+      var oauthServerBase = 'https://integrate.eupathdb.org/oauth';
+      jQuery.ajax({
+        url: oauthServerBase + "/logout",
+        data: { redirect_uri: window.location.href },
+        success: function() { alert("successfully logged out of oauth server"); },
+        error: function (jqXHR, textStatus, errorThrown) {
+          alert("failed oauth logout" + "Error: " + textStatus + ", " + errorThrown);
+          console.log("Error: " + textStatus + ", " + errorThrown);
+        },
+        complete: function () {
+          // logout of this component site regardless
+          alert("logging out of wdk");
+          jQuery("#user-control form[name=logoutForm]").submit();
+        }
+      });
     }
   };
 
