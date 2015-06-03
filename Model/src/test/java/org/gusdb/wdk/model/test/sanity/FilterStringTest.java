@@ -26,7 +26,7 @@ public class FilterStringTest {
       .toMap();
   
   @Test
-  public void filterStringTest() throws Exception {
+  public void filterStringTest() {
     for (Entry<String, Integer[]> testCase : CASES.entrySet()) {
       List<Integer> inputList = Arrays.asList(testCase.getValue());
       assertEquals(testCase.getKey(), TestFilter.getFilterString(inputList));

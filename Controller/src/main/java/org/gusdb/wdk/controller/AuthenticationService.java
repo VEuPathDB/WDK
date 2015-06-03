@@ -48,7 +48,6 @@ public class AuthenticationService {
             // HttpClientFactory.setProxyProperties(proxyProps);
 
             // perform discovery on the user-supplied identifier
-            @SuppressWarnings("unchecked")
             List<DiscoveryInformation> discoveries = _manager.discover(userSuppliedString);
 
             // attempt to associate with the OpenID provider
