@@ -661,7 +661,7 @@ public class Strategy {
     JSONObject jsStrategy = getJSONContent(true);
 
     String checksum = Utilities.encrypt(jsStrategy.toString());
-    LOG.debug("Strategy #" + strategyId + ", checksum=" + checksum + ", json:\n" + jsStrategy);
+    LOG.info("Strategy #" + strategyId + ", checksum=" + checksum + ", json:\n" + jsStrategy);
     return checksum;
   }
 
