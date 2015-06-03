@@ -660,7 +660,9 @@ public class Strategy {
   public String getChecksum() throws WdkModelException {
     JSONObject jsStrategy = getJSONContent(true);
 
-    return Utilities.encrypt(jsStrategy.toString());
+    String checksum = Utilities.encrypt(jsStrategy.toString());
+    LOG.debug("Strategy #" + strategyId + ", checksum=" + checksum + ", json:\n" + jsStrategy);
+    return checksum;
   }
 
   public JSONObject getJSONContent() throws WdkModelException {
