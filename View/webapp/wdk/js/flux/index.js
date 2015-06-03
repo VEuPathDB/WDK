@@ -15,8 +15,11 @@ import AnswerStore from './stores/answerStore';
 import AppStore from './stores/appStore';
 import QuestionStore from './stores/questionStore';
 import RecordClassStore from './stores/recordClassStore';
+import RecordStore from './stores/recordStore';
 import AnswerActions from './actions/answerActions';
 import QuestionActions from './actions/questionActions';
+import RecordActions from './actions/recordActions';
+import CommonActions from './actions/commonActions';
 
 // expose libraries to global object, but only if they aren't already defined
 if (window._ == null) window._ = _;
@@ -56,12 +59,15 @@ const Wdk = {
     AnswerStore,
     AppStore,
     QuestionStore,
-    RecordClassStore
+    RecordClassStore,
+    RecordStore
   },
 
   actions: {
     AnswerActions,
-    QuestionActions
+    QuestionActions,
+    RecordActions,
+    CommonActions
   }
 
 };

@@ -45,6 +45,10 @@ export const AppError = Action({
   error: null
 });
 
+export const AnswerLoading = Action({
+  isLoading: true
+});
+
 export const AnswerAdded = Action({
   requestData: {},
   answer: {}
@@ -70,4 +74,9 @@ export const QuestionsAdded = Action({
 
 export const RecordClassesAdded = Action({
   recordClasses: null
+});
+
+export let RecordDetailsReceived = Action({
+  meta: undefined,
+  record: undefined
 });
