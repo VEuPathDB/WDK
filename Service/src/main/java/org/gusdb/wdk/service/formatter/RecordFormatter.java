@@ -46,16 +46,9 @@ JSON output format:
   },
   record:  {
     id: Any,
-    attributes: [
-     { name: String, value: Any }
-    ],
-    tables: [
-      { 
-        name: String,
-        value: [ { name: String, value: Any } ]
-      }
-    ]
-  } 
+    attributes: { [name: String]: [value: Any] },
+    tables: { [name: String]: [ { [name: String]: [value: Any] } ] }
+  }
 }
 */
 public class RecordFormatter {
@@ -112,35 +105,26 @@ public class RecordFormatter {
       throws WdkModelException, WdkUserException {
     JSONObject json = new JSONObject();
     json.put("id", record.getPrimaryKey().getValues());
-    JSONArray attributes = new JSONArray();
+    JSONObject attributes = new JSONObject();
     for (Entry<String,AttributeValue> attrib : record.getAttributeValueMap().entrySet()) {
-      JSONObject attribJson = new JSONObject();
-      attribJson.put("name", attrib.getKey());
-      attribJson.put("value", getAttributeJsonValue(attrib.getValue()));
-      attributes.put(attribJson);
+      attributes.put(attrib.getKey(), getAttributeJsonValue(attrib.getValue()));
     }
     json.put("attributes", attributes);
 
     // FIXME: This can probably be cleaned up / refactored
-    JSONArray tables = new JSONArray();
+    JSONObject tables = new JSONObject();
     for (Entry<String, TableValue> table : record.getTables().entrySet()) {
       JSONArray tableRowsJSON = new JSONArray();
       for(Map<String, AttributeValue> row : table.getValue()) {
-        JSONArray tableAttrsJSON = new JSONArray();
+        JSONObject tableAttrsJSON = new JSONObject();
         for (Entry<String, AttributeValue> entry : row.entrySet()) {
           if (!entry.getValue().getAttributeField().isInternal()) {
-            JSONObject tableAttrJSON = new JSONObject();
-             tableAttrJSON.put("name", entry.getKey());
-             tableAttrJSON.put("value", getAttributeJsonValue(entry.getValue()));
-             tableAttrsJSON.put(tableAttrJSON);
+             tableAttrsJSON.put(entry.getKey(), getAttributeJsonValue(entry.getValue()));
           }
         }
         tableRowsJSON.put(tableAttrsJSON);
       }
-      JSONObject tableJson = new JSONObject();
-      tableJson.put("name", table.getKey());
-      tableJson.put("rows", tableRowsJSON);
-      tables.put(tableJson);
+      tables.put(table.getKey(), tableRowsJSON);
     }
     json.put("tables", tables);
     return json;
