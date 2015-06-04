@@ -94,7 +94,7 @@ public class RecordFormatter {
       tableJson.put("help", table.getHelp());
       tableJson.put("description", table.getDescription());
       tableJson.put("type", table.getType());
-      attributes.put(tableJson);
+      tables.put(tableJson);
     }
     meta.put("tables", tables);
    
