@@ -28,7 +28,9 @@ function addRecordDetails(state, action) {
 }
 
 function makeKey(recordClass, id) {
-  return recordClass + '@' + JSON.stringify(id);
+  // order keys
+  let idStr = Object.keys(id).sort().map(name => `name=${id[name]}`).join('&');
+  return recordClass + '?' + idStr;
 }
 
 export default { createStore, makeKey };
