@@ -18,8 +18,6 @@ function update(state, action) {
 
 function addRecordDetails(state, action) {
   let { meta, record } = action;
-  record.attributes = indexBy(record.attributes, 'name');
-  record.tables = indexBy(record.tables, 'name');
   let key = makeKey(meta.class, record.id);
   // merge `meta` and `record` with state.records[key]
   let recordData = state.records[key] || { meta: {}, record: {} };

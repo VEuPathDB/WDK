@@ -226,9 +226,6 @@ let RecordTable = React.createClass({
     this.props.onChangeColumns(attributes);
   },
 
-  handleNewPage() {
-  },
-
   handleOpenAttributeSelectorClick() {
     this.setState({
       attributeSelectorOpen: !this.state.attributeSelectorOpen
@@ -279,13 +276,12 @@ let RecordTable = React.createClass({
    *
    * @param {any} attribute Value returned by `getRow`.
    */
-  renderCell(attribute, attributeName, attributes, index, columnData, width) {
-    let value = attribute.value;
+  renderCell(attributeValue, attributeName, attributes, index, columnData, width) {
+    if (attributeValue == null) return '';
+
     let type = columnData.attributeDefinition.type;
 
-    if (value == null) return '';
-
-    if (attribute.name === PRIMARY_KEY_NAME) {
+    if (attributeName === PRIMARY_KEY_NAME) {
       let record = this.props.records[index];
       let href = this.props.recordHrefGetter(record);
       return (
@@ -296,7 +292,7 @@ let RecordTable = React.createClass({
           <Link
             className="wdk-RecordTable-recordLink"
             to={href}
-            dangerouslySetInnerHTML={{__html: formatAttributeValue(value, type) }}
+            dangerouslySetInnerHTML={{__html: formatAttributeValue(attributeValue, type) }}
           />
         </div>
       );
@@ -306,7 +302,7 @@ let RecordTable = React.createClass({
         <div
           style={{ width: width - 12 }}
           className="wdk-RecordTable-attributeValue"
-          dangerouslySetInnerHTML={{__html: formatAttributeValue(value, type) }}
+          dangerouslySetInnerHTML={{__html: formatAttributeValue(attributeValue, type) }}
         />
       );
     }
