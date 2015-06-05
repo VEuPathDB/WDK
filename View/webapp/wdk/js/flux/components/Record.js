@@ -6,64 +6,63 @@ import {
 } from '../utils/stringUtils';
 
 
-const Record = React.createClass({
+let Record = React.createClass({
   propTypes: {
     record: React.PropTypes.object.isRequired
   },
 
   render() {
-    const { record, recordClass } = this.props;
-    const recordAttributes = record.attributes;
-    const recordTables = record.tables;
-
-    const attributes = recordClass.attributes.map(attribute => {
+    let { meta, record } = this.props;
+    let { attributes: recordAttributes, tables: recordTables } = record;
+    let attributes = meta.attributes.map(attribute => {
       return {
         meta: attribute,
-        model: recordAttributes[attribute.name]
+        value: recordAttributes[attribute.name]
       };
     });
 
-    // const tables = this.props.tables.map(table => {
-    //   return {
-    //     meta: table,
-    //     model: recordTables[table.name]
-    //   };
-    // });
+    let tables = meta.tables.map(table => {
+      return {
+        meta: table,
+        values: recordTables[table.name]
+      };
+    });
 
+    let displayName = recordAttributes.primary_key;
     return (
       <div className="wdk-Record">
-        <h1 dangerouslySetInnerHTML={{__html: record.id}}/>
+        <h1 dangerouslySetInnerHTML={{__html: displayName}}/>
         <div className="wdk-Record-attributes">
           {attributes
             .filter(attr => attr.meta.name !== 'primary_key')
             .map(this._renderAttribute)}
         </div>
         <div className="wdk-Record-tables">
-          {_.map(recordTables, this._renderTable)}
+          {_.map(tables, this._renderTable)}
         </div>
       </div>
     );
   },
 
   _renderAttribute(attribute) {
-    const { meta, model } = attribute;
-    if (model.value == null) return null;
+    let { meta, value } = attribute;
+    if (value == null) return null;
     return (
       <div className="wdk-Record-attribute">
         <h4>{formatAttributeName(meta.name)}</h4>
-        <div dangerouslySetInnerHTML={{__html: formatAttributeValue(model.value, meta.type)}}/>
+        <div dangerouslySetInnerHTML={{__html: formatAttributeValue(value, meta.type)}}/>
       </div>
     );
   },
 
   _renderTable(table) {
-    const { name, rows } = table;
-    if (rows.length) {
+    let { meta, values } = table;
+    if (values.length) {
       return (
         <div>
-          <h4>{formatAttributeName(name)}</h4>
+          <h4>{formatAttributeName(meta.name)}</h4>
           <ul>
-            {rows.map(this._renderTableRow)}
+            {values.map(this._renderTableRow)}
           </ul>
         </div>
       );
@@ -74,14 +73,14 @@ const Record = React.createClass({
   _renderTableRow(attributes) {
     return (
       <li>
-        {attributes.filter(_.property('value')).map(this._renderTableRowAttribute)}
+        {_.pairs(attributes).filter(([name, value]) => value != null).map(this._renderTableRowAttribute)}
       </li>
     );
   },
 
-  _renderTableRowAttribute(attribute) {
+  _renderTableRowAttribute([ name, value ]) {
     return (
-      <p>{formatAttributeName(attribute.name)}: {attribute.value}</p>
+      <p>{formatAttributeName(name)}: {value}</p>
     );
   }
 });

@@ -29,7 +29,9 @@ const Doc = React.createClass({
     document.title = title;
   },
   render() {
-    return this.props.children;
+    return (
+      <div>{this.props.children}</div>
+    );
   }
 });
 

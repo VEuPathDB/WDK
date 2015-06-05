@@ -27,15 +27,22 @@ wdk.util.namespace("window.wdk.strategy.error", function (ns, $) {
         }
       }
 
-      // Update client state with server state
-      wdk.strategy.controller.state = data.state;
-
       // Reload the strategy model of the step we are trying to view
       wdk.strategy.controller.loadModel(data.strategies[data.state[index].checksum], index);
 
-      // Finally, render the strategy panel again
-      wdk.strategy.controller.showStrategies(data.currentView, false, 0);
+      // clear out current view
+      var currentView = {
+        strategy: undefined,
+        step: undefined
+      };
 
+      // Finally, render the strategy panel again
+      wdk.strategy.controller.showStrategies(currentView, false, 0);
+
+      alert('The results could not be loaded. Please reload the page. ' +
+            'If the problem persists, you can report the error using ' +
+            'the Contact Us page (you can find the link at the top right ' +
+            'of the page).');
       return;
     }
 

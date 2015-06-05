@@ -21,20 +21,20 @@ import org.json.JSONObject;
 
 public class RecordRequest {
   
- //private static final Logger LOG = Logger.getLogger(WdkAnswerRequest.class);
+    //private static final Logger LOG = Logger.getLogger(WdkAnswerRequest.class);
   
   
  /**
    * * Input Format:
    * 
    * {
-   * “recordInstanceSpecification”: {
+   * "recordInstanceSpecification": {
    *  "primaryKey": [ 
-   *     {"name": String, "value": String}
+   *     {"name": String, "value": String},
    *     {"name": String, "value": String}
    *   ]
    *  },
-   *  "tables": [ String, String ]
+   *  "tables": [ String, String ],
    *  "attributes": [ String, String ]
    * }
    * 
@@ -46,11 +46,12 @@ public class RecordRequest {
   public static RecordRequest createFromJson(User user, JSONObject json, String recordClassName, WdkModelBean model) throws RequestMisformatException {
     try {
       model.validateRecordClassName(recordClassName);
+      //      LOG.info(json.toString(3));
       RecordClass recordClass = model.getModel().getRecordClass(recordClassName);
       RecordRequest request = new RecordRequest(recordClass);
       request.setAttributeNames(parseAttributeNames(json.getJSONArray("attributes"), recordClass));
       request.setTableNames(parseTableNames(json.getJSONArray("tables"), recordClass));
-      request.setPrimaryKey(parsePrimaryKey(json.getJSONObject("primaryKey"), recordClass));
+      request.setPrimaryKey(parsePrimaryKey(json.getJSONArray("primaryKey"), recordClass));
       return request;
     }
     catch (JSONException | WdkUserException e) {
@@ -61,17 +62,20 @@ public class RecordRequest {
     }
   }
   
-  private static Map<String, Object> parsePrimaryKey(JSONObject primaryKeyJson,
+  private static Map<String, Object> parsePrimaryKey(JSONArray primaryKeyJson,
       RecordClass recordClass) throws WdkUserException {
 
     PrimaryKeyAttributeField pkAttrField = recordClass.getPrimaryKeyAttributeField();
 
     Map<String,Object> pkMap = new HashMap<String,Object>();
-    for (Object key : primaryKeyJson.keySet()) {
-      String keyName = (String)key;
+    for (int i = 0; i < primaryKeyJson.length(); i++) {
+      JSONObject keyPartJson = primaryKeyJson.getJSONObject(i);
+      String keyName = keyPartJson.getString("name");
+      String keyValue = keyPartJson.getString("value");
+      if (keyName == null) throw new WdkUserException("Primary key part has null name");
+      if (keyValue == null) throw new WdkUserException("Primary key name '" + keyName + "' has null value");
       if (!pkAttrField.hasColumn(keyName)) throw new WdkUserException("Primary key name '" + keyName + "' is not in record class '" + recordClass.getFullName() + "'.");
-      if (primaryKeyJson.getString(keyName) == null) throw new WdkUserException("Primary key name '" + keyName + "' has null value");
-      pkMap.put(keyName, primaryKeyJson.getString(keyName));
+      pkMap.put(keyName, keyValue);
     }
    
     return pkMap;

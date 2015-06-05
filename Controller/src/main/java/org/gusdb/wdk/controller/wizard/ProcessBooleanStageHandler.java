@@ -40,6 +40,8 @@ public class ProcessBooleanStageHandler implements StageHandler {
       HttpServletResponse response, WizardForm wizardForm) throws Exception {
     logger.debug("Entering BooleanStageHandler...");
 
+    Map<String, Object> attributes = new HashMap<String, Object>();
+
     UserBean user = ActionUtility.getUser(servlet, request);
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
 
@@ -47,17 +49,34 @@ public class ProcessBooleanStageHandler implements StageHandler {
     if (strStratId == null || strStratId.isEmpty())
       throw new WdkUserException("Required " + PARAM_STRATEGY + " param is missing.");
 
-    int strategyId = Integer.valueOf(strStratId.split("_", 2)[0]);
+    String[] pieces = strStratId.split("_", 2);
+    int strategyId = Integer.valueOf(pieces[0]);
+    Integer branchId = (pieces.length == 1) ? null : Integer.valueOf(pieces[1]);
     StrategyBean strategy = user.getStrategy(strategyId);
 
     String strStepId = request.getParameter(PARAM_STEP);
     int stepId = (strStepId == null || strStepId.isEmpty()) ? 0 : Integer.valueOf(strStepId);
 
+    logger.debug("Strategy: id=" + strategy.getStrategyId() + ", saved=" + strategy.getIsSaved());
     if (strategy.getIsSaved()) {
       Map<Integer, Integer> stepIdMap = new HashMap<>();
       strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
-      if (stepId == 0)
+
+      // make sure to also change the strategy key in the wizard form, so the new unsaved strategy can be
+      // carried over the next stages.
+      String strategyKey = Integer.toString(strategy.getStrategyId());
+      if (branchId != null)
+        strategyKey += "_" + stepIdMap.get(branchId);
+      wizardForm.setStrategy(strategyKey);
+      attributes.put(PARAM_STRATEGY, strategyKey);
+
+      // also replace the saved strategy with the new unsaved copy in the view
+      user.replaceActiveStrategy(strategyId, strategy.getStrategyId(), stepIdMap);
+
+      if (stepId != 0) {
         stepId = stepIdMap.get(stepId);
+        attributes.put(PARAM_STEP, Integer.toString(stepId));
+      }
     }
 
     StepBean childStep = null;
@@ -89,7 +108,6 @@ public class ProcessBooleanStageHandler implements StageHandler {
       childStep.update(false);
     }
 
-    Map<String, Object> attributes = new HashMap<String, Object>();
     // the childStep might not be created, in which case user just revises
     // the boolean operator.
     logger.debug("child step: " + childStep);
@@ -139,6 +157,9 @@ public class ProcessBooleanStageHandler implements StageHandler {
     childStep.setParamValues(params);
     childStep.setAssignedWeight(weight);
     childStep.saveParamFilters();
+
+    logger.info("step#" + childStep.getStepId() + " - " + params);
+
     return childStep;
   }
 

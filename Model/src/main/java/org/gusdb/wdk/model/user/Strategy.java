@@ -176,7 +176,10 @@ public class Strategy {
   }
 
   public Step getStepById(int id) throws WdkModelException {
-    return getLatestStep().getStepByDisplayId(id);
+    Step step = getLatestStep().getStepByDisplayId(id);
+    if (step == null)
+      throw new WdkModelException("Strategy #" + strategyId + " doesn't have step #" + id);
+    return step;
   }
 
   /**

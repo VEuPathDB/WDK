@@ -27,12 +27,12 @@ import {
  *   - onNewPage(offset: number, numRecords: number)
  */
 
-const $ = window.jQuery;
-const { PropTypes } = React;
+let $ = window.jQuery;
+let { PropTypes } = React;
 
 // Constants
-const PRIMARY_KEY_NAME = 'primary_key';
-const CELL_CLASS_NAME = 'wdk-RecordTable-cell';
+let PRIMARY_KEY_NAME = 'primary_key';
+let CELL_CLASS_NAME = 'wdk-RecordTable-cell';
 
 /**
  * Function that doesn't do anything. This is the default for many
@@ -42,7 +42,7 @@ const CELL_CLASS_NAME = 'wdk-RecordTable-cell';
 function noop() {}
 
 
-const AttributeSelectorItem = React.createClass({
+let AttributeSelectorItem = React.createClass({
 
   propTypes: {
     attribute: PropTypes.object.isRequired,
@@ -51,9 +51,9 @@ const AttributeSelectorItem = React.createClass({
   },
 
   render() {
-    const { attribute } = this.props;
-    const name = attribute.name;
-    const displayName = attribute.displayName;
+    let { attribute } = this.props;
+    let name = attribute.name;
+    let displayName = attribute.displayName;
     return (
       <li key={name}>
         <input type="checkbox"
@@ -70,7 +70,7 @@ const AttributeSelectorItem = React.createClass({
 
 });
 
-const AttributeSelector = React.createClass({
+let AttributeSelector = React.createClass({
 
   propTypes: {
     attributes: PropTypes.array.isRequired,
@@ -96,10 +96,11 @@ const AttributeSelector = React.createClass({
   },
 
   _renderItem(attribute) {
+    let isAttribute = attr => attr.name === attribute.name;
     return (
       <AttributeSelectorItem
         key={attribute.name}
-        isChecked={this.props.selectedAttributes.indexOf(attribute) > -1}
+        isChecked={this.props.selectedAttributes.some(isAttribute)}
         attribute={attribute}
         onChange={this.props.onChange}
       />
@@ -108,17 +109,18 @@ const AttributeSelector = React.createClass({
 
 });
 
-const RecordTable = React.createClass({
+let RecordTable = React.createClass({
 
   propTypes: {
     meta: PropTypes.object.isRequired,
     displayInfo: PropTypes.object.isRequired,
     records: PropTypes.array.isRequired,
+    recordHrefGetter: PropTypes.func.isRequired,
     onSort: PropTypes.func,
     onMoveColumn: PropTypes.func,
     onChangeColumns: PropTypes.func,
     onNewPage: PropTypes.func,
-    onRecordClick: PropTypes.func.isRequired,
+    onRecordClick: PropTypes.func,
     getCellRenderer: PropTypes.func.isRequired
   },
 
@@ -127,7 +129,8 @@ const RecordTable = React.createClass({
       onSort: noop,
       onMoveColumn: noop,
       onChangeColumns: noop,
-      onNewPage: noop
+      onNewPage: noop,
+      onRecordClick: noop
     };
   },
 
@@ -137,10 +140,10 @@ const RecordTable = React.createClass({
   getInitialState() {
     return Object.assign({
       columnWidths: this.props.meta.attributes.reduce((widths, attr) => {
-        const name = attr.name;
-        const displayName = attr.displayName;
+        let name = attr.name;
+        let displayName = attr.displayName;
         // 8px per char, plus 12px for sort icon
-        const width = Math.max(displayName.length * 8.5 + 12, 200);
+        let width = Math.max(displayName.length * 8.5 + 12, 200);
         widths[name] = name === PRIMARY_KEY_NAME ? 400 : width;
         return widths;
       }, {})
@@ -163,8 +166,8 @@ const RecordTable = React.createClass({
 
   componentDidMount() {
     // FIXME More research!
-    // const { onMoveColumn } = this.props;
-    const onMoveColumn = noop;
+    // let { onMoveColumn } = this.props;
+    let onMoveColumn = noop;
 
     if (onMoveColumn !== noop) {
       // Only set up column reordering if a callback is provided.
@@ -181,17 +184,17 @@ const RecordTable = React.createClass({
       //
       // A future iteration may be to use HTML5's draggable, thus removing the
       // jQueryUI dependency.
-      // const $headerRow = $(this.refs.headerRow.getDOMNode());
-      const $headerRow = $(this.getDOMNode()).find('.fixedDataTableCellGroup_cellGroup');
+      // let $headerRow = $(this.refs.headerRow.getDOMNode());
+      let $headerRow = $(this.getDOMNode()).find('.fixedDataTableCellGroup_cellGroup');
       $headerRow.sortable({
         items: '> .public_fixedDataTableCell_main',
         helper: 'clone',
         opacity: 0.7,
         placeholder: 'ui-state-highlight',
         stop(e, ui) {
-          const { item } = ui;
-          const columnName = item.data('column');
-          const newPosition = item.index();
+          let { item } = ui;
+          let columnName = item.data('column');
+          let newPosition = item.index();
           // We want to let React update the position, so we'll cancel.
           $headerRow.sortable('cancel');
           onMoveColumn(columnName, newPosition);
@@ -201,12 +204,12 @@ const RecordTable = React.createClass({
   },
 
   handleSort(name) {
-    const attributes = this.props.meta.attributes;
-    const sortSpec = this.props.displayInfo.sorting[0];
-    const attribute = attributes.find(attr => attr.name == name);
+    let attributes = this.props.meta.attributes;
+    let sortSpec = this.props.displayInfo.sorting[0];
+    let attribute = attributes.find(attr => attr.name == name);
     // Determine the sort direction. If the attribute is the same, then
     // we will reverse the direction... otherwise, we will default to `ASC`.
-    const direction = sortSpec.attributeName === name
+    let direction = sortSpec.attributeName === name
       ? sortSpec.direction === 'ASC' ? 'DESC' : 'ASC'
       : 'ASC';
     this.props.onSort(attribute, direction);
@@ -218,12 +221,9 @@ const RecordTable = React.createClass({
   },
 
   handleHideColumn(name) {
-    const attributes = this.props.displayInfo.visibleAttributes
+    let attributes = this.props.displayInfo.visibleAttributes
       .filter(attr => attr.name != name);
     this.props.onChangeColumns(attributes);
-  },
-
-  handleNewPage() {
   },
 
   handleOpenAttributeSelectorClick() {
@@ -254,17 +254,17 @@ const RecordTable = React.createClass({
    * Filter unchecked checkboxes and map to attributes
    */
   togglePendingAttribute() {
-    const form = this.refs.attributeSelector.getDOMNode();
-    const attributes = this.props.meta.attributes;
-    const visibleAttributes = this.props.displayInfo.visibleAttributes;
+    let form = this.refs.attributeSelector.getDOMNode();
+    let attributes = this.props.meta.attributes;
+    let visibleAttributes = this.props.displayInfo.visibleAttributes;
 
-    const checkedAttrs = [].slice.call(form.pendingAttribute)
+    let checkedAttrs = [].slice.call(form.pendingAttribute)
       .filter(a => a.checked)
       .map(a => attributes.find(attr => attr.name === a.value));
 
     // Remove visible atributes that are not checked.
     // Then, concat checked attributes that are not currently visible.
-    const pendingVisibleAttributes = visibleAttributes
+    let pendingVisibleAttributes = visibleAttributes
       .filter(attr => checkedAttrs.find(p => p.name === attr.name))
       .concat(checkedAttrs.filter(attr => !visibleAttributes.find(a => a.name === attr.name)));
 
@@ -276,15 +276,14 @@ const RecordTable = React.createClass({
    *
    * @param {any} attribute Value returned by `getRow`.
    */
-  renderCell(attribute, attributeName, attributes, index, columnData, width) {
-    const value = attribute.value;
-    const type = columnData.attributeDefinition.type;
+  renderCell(attributeValue, attributeName, attributes, index, columnData, width) {
+    if (attributeValue == null) return '';
 
-    if (value == null) return '';
+    let type = columnData.attributeDefinition.type;
 
-    if (attribute.name === PRIMARY_KEY_NAME) {
-      const record = this.props.records[index];
-      const href = this.props.recordHrefGetter(record);
+    if (attributeName === PRIMARY_KEY_NAME) {
+      let record = this.props.records[index];
+      let href = this.props.recordHrefGetter(record);
       return (
         <div
           style={{ width: width - 12 }}
@@ -293,7 +292,7 @@ const RecordTable = React.createClass({
           <Link
             className="wdk-RecordTable-recordLink"
             to={href}
-            dangerouslySetInnerHTML={{__html: formatAttributeValue(value, type) }}
+            dangerouslySetInnerHTML={{__html: formatAttributeValue(attributeValue, type) }}
           />
         </div>
       );
@@ -303,7 +302,7 @@ const RecordTable = React.createClass({
         <div
           style={{ width: width - 12 }}
           className="wdk-RecordTable-attributeValue"
-          dangerouslySetInnerHTML={{__html: formatAttributeValue(value, type) }}
+          dangerouslySetInnerHTML={{__html: formatAttributeValue(attributeValue, type) }}
         />
       );
     }
@@ -315,7 +314,7 @@ const RecordTable = React.createClass({
    * @param {any} attribute Value of `label` prop of `Column`.
    */
   renderHeader(label, dataKey, columnData) {
-    const attribute = columnData.attributeDefinition;
+    let attribute = columnData.attributeDefinition;
     return (
       <span title={attribute.help || ''}>
         {formatAttributeName(attribute.displayName)}
@@ -333,12 +332,12 @@ const RecordTable = React.createClass({
   // TODO Find a better way to specify row height
   render() {
     // creates variables: meta, records, and visibleAttributes
-    const { pendingVisibleAttributes } = this.state;
-    const { meta, records, displayInfo } = this.props;
-    const visibleAttributes = displayInfo.visibleAttributes;
-    const sortSpec = displayInfo.sorting[0];
+    let { pendingVisibleAttributes } = this.state;
+    let { meta, records, displayInfo } = this.props;
+    let visibleAttributes = displayInfo.visibleAttributes;
+    let sortSpec = displayInfo.sorting[0];
 
-    const cellRenderer = this.props.getCellRenderer(meta.class, this.renderCell) || this.renderCell;
+    let cellRenderer = this.props.getCellRenderer(meta.class, this.renderCell) || this.renderCell;
 
     return (
       <div className="wdk-RecordTable">
@@ -376,15 +375,15 @@ const RecordTable = React.createClass({
         >
 
           {visibleAttributes.map(attribute => {
-            const name = attribute.name;
-            const isPk = name === PRIMARY_KEY_NAME;
-            const cellClassNames = name + ' ' + attribute.className +
+            let name = attribute.name;
+            let isPk = name === PRIMARY_KEY_NAME;
+            let cellClassNames = name + ' ' + attribute.className +
               ' ' + CELL_CLASS_NAME;
-            const width = this.state.columnWidths[name];
-            const columnData = {
+            let width = this.state.columnWidths[name];
+            let columnData = {
               attributeDefinition: attribute
             };
-            // const flexGrow = isPk ? 2 : 1;
+            // let flexGrow = isPk ? 2 : 1;
 
             return (
               <Column
