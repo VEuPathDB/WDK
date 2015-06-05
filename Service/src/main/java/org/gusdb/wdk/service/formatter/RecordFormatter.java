@@ -56,7 +56,7 @@ public class RecordFormatter {
     try {
       JSONObject parent = new JSONObject();
       parent.put("meta", getMetaData(recordInstance, attributeNames, tableNames));
-      parent.put("record", getRecordJson(recordInstance));
+      parent.put("record", getRecordJson(recordInstance, attributeNames, tableNames));
       return parent;
     }
     catch (WdkUserException e) {
@@ -103,10 +103,16 @@ public class RecordFormatter {
 
   public static JSONObject getRecordJson(RecordInstance record)
       throws WdkModelException, WdkUserException {
+      return getRecordJson(record, null, null);
+  }
+
+  public static JSONObject getRecordJson(RecordInstance record, List<String> attributeNames, List<String> tableNames)
+      throws WdkModelException, WdkUserException {
     JSONObject json = new JSONObject();
     json.put("id", record.getPrimaryKey().getValues());
     JSONObject attributes = new JSONObject();
     for (Entry<String,AttributeValue> attrib : record.getAttributeValueMap().entrySet()) {
+      if (attributeNames != null && !attributeNames.contains(attrib.getKey())) continue;
       attributes.put(attrib.getKey(), getAttributeJsonValue(attrib.getValue()));
     }
     json.put("attributes", attributes);
@@ -115,6 +121,9 @@ public class RecordFormatter {
     JSONObject tables = new JSONObject();
     for (Entry<String, TableValue> table : record.getTables().entrySet()) {
       JSONArray tableRowsJSON = new JSONArray();
+
+      if (tableNames != null && !tableNames.contains(table.getKey())) continue;
+
       for(Map<String, AttributeValue> row : table.getValue()) {
         JSONObject tableAttrsJSON = new JSONObject();
         for (Entry<String, AttributeValue> entry : row.entrySet()) {
