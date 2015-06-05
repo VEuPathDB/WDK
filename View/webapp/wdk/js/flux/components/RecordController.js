@@ -75,12 +75,15 @@ let RecoredController = React.createClass({
   fetchRecordDetails(attributes, tables) {
     let { application } = this.context;
     let { params, query } = this.props;
-    let recordActions = application.getActions(RecordActions);
+    let primaryKey = Object.keys(query).map(function(name) {
+      return { name, value: query[name] };
+    });
     let recordSpec = {
-      primaryKey: query,
+      primaryKey,
       attributes,
       tables
     };
+    let recordActions = application.getActions(RecordActions);
     recordActions.fetchRecordDetails(params.class, recordSpec);
   },
 
