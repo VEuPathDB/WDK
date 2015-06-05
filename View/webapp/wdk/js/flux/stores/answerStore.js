@@ -7,12 +7,13 @@ import {
   property,
   values
 } from 'lodash';
-import Store from '../Store';
+import Store from '../core/store';
 import {
   AnswerAdded,
   AnswerMoveColumn,
   AnswerChangeAttributes,
-  AnswerFilter
+  AnswerFilter,
+  AnswerLoading
 } from '../ActionType';
 
 /**
@@ -27,7 +28,7 @@ import {
  *     ...
  *
  *     componentDidMount() {
- *       var customStore = this.props.lookup(CustomStore);
+ *       let customStore = this.props.lookup(CustomStore);
  *       // do stuff with customStore...
  *     }
  *
@@ -55,8 +56,8 @@ import {
 
 
 // Split terms on whitespace, unless wrapped in quotes
-var parseSearchTerms = function parseSearchTerms(terms) {
-  var match = terms.match(/\w+|"[\w\s]*"/g) || [];
+let parseSearchTerms = function parseSearchTerms(terms) {
+  let match = terms.match(/\w+|"[\w\s]*"/g) || [];
   return match.map(function(term) {
     // remove wrapping quotes from phrases
     return term.replace(/(^")|("$)/g, '');
@@ -75,23 +76,22 @@ var parseSearchTerms = function parseSearchTerms(terms) {
 //   - return (index !== -1).
 //
 // There is much room for performance tuning here.
-var isTermInRecord = curry(function isTermInRecord(term, record) {
-  var attributeValues = values(record.attributes).map(property('value'));
+let isTermInRecord = curry(function isTermInRecord(term, record) {
+  let attributeValues = values(record.attributes);
 
-  var tableValues = flattenDeep(values(record.tables)
+  let tableValues = flattenDeep(values(record.tables)
     .map(function(table) {
-      return table.rows.map(function(row) {
-        return row.map(property('value'))
-      });
+      return table.map(values);
     }));
 
-  var clob = attributeValues.concat(tableValues).join('\0');
+  let clob = attributeValues.concat(tableValues).join('\0');
 
   return clob.toLowerCase().indexOf(term.toLowerCase()) !== -1;
 });
 
-export default function createAnswerStore() {
-  var initialState = {
+function createStore({ dispatcher }) {
+  let value = {
+    isLoading: false,
     filterTerm: '',
     filteredRecords: null,
     answers: {},
@@ -107,14 +107,17 @@ export default function createAnswerStore() {
       filters: null
     }
   };
-  return Store.createStore(initialState, function update(state, action) {
-    switch(action.type) {
-      case AnswerAdded: return addAnswer(state, action);
-      case AnswerMoveColumn: return moveTableColumn(state, action);
-      case AnswerChangeAttributes: return updateVisibleAttributes(state, action);
-      case AnswerFilter: return filterAnswer(state, action);
-    }
-  });
+  return new Store(dispatcher, value, update);
+}
+
+function update(state, action) {
+  switch(action.type) {
+    case AnswerAdded: return addAnswer(state, action);
+    case AnswerMoveColumn: return moveTableColumn(state, action);
+    case AnswerChangeAttributes: return updateVisibleAttributes(state, action);
+    case AnswerFilter: return filterAnswer(state, action);
+    case AnswerLoading: return answerLoading(state, action);
+  }
 }
 
 
@@ -134,8 +137,8 @@ export default function createAnswerStore() {
  * below.
  */
 function addAnswer(state, { answer, requestData }) {
-  var questionName = requestData.questionDefinition.questionName;
-  var previousQuestionName = state.questionDefinition.questionName;
+  let questionName = requestData.questionDefinition.questionName;
+  let previousQuestionName = state.questionDefinition.questionName;
 
   /*
    * If state.displayInfo.attributes isn't defined we want to use the
@@ -152,12 +155,6 @@ function addAnswer(state, { answer, requestData }) {
 
   answer.meta.attributes = answer.meta.attributes
     .filter(attr => attr.name != 'wdk_weight');
-
-  // For each record, attributes should be an object-map indexed by attribute name
-  answer.records.forEach(function(record) {
-    record.attributes = indexBy(record.attributes, 'name');
-    record.tables = indexBy(record.tables, 'name');
-  });
 
   /*
    * This will update the keys `filteredRecords`, `displayInfo`, and
@@ -181,15 +178,15 @@ function addAnswer(state, { answer, requestData }) {
  */
 function moveTableColumn(state, { columnName, newPosition }) {
   /* list of attributes we will be altering */
-  var attributes = state.displayInfo.visibleAttributes;
+  let attributes = state.displayInfo.visibleAttributes;
 
   /* The current position of the attribute being moved */
-  var currentPosition = attributes.findIndex(function(attribute) {
+  let currentPosition = attributes.findIndex(function(attribute) {
     return attribute.get('name') === columnName;
   });
 
   /* The attribute being moved */
-  var attribute = attributes[currentPosition];
+  let attribute = attributes[currentPosition];
 
   attributes
     // remove attribute from array
@@ -213,9 +210,9 @@ function updateVisibleAttributes(state, { attributes }) {
  * @param {string} questionName The questionName of the answer to filter.
  */
 function filterAnswer(state, { terms, questionName }) {
-  var parsedTerms = parseSearchTerms(terms);
-  var records = state.answers[questionName].records;
-  var filteredRecords = parsedTerms.reduce(function(records, term) {
+  let parsedTerms = parseSearchTerms(terms);
+  let records = state.answers[questionName].records;
+  let filteredRecords = parsedTerms.reduce(function(records, term) {
     return records.filter(isTermInRecord(term));
   }, records);
 
@@ -224,3 +221,12 @@ function filterAnswer(state, { terms, questionName }) {
     filteredRecords: filteredRecords
   });
 }
+
+function answerLoading(state, action) {
+  state.isLoading = action.isLoading;
+  return state;
+}
+
+export default {
+  createStore
+};

@@ -1,15 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router';
+import QuestionStore from '../stores/questionStore';
+import QuestionActions from '../actions/questionActions';
 
 var QuestionListController = React.createClass({
 
-  propTypes: {
+  contextTypes: {
     application: React.PropTypes.object.isRequired
   },
 
   componentDidMount() {
-    var store = this.props.application.getStore('questionStore');
-    var actions = this.props.application.getActions('questionActions');
+    var store = this.context.application.getStore(QuestionStore);
+    var actions = this.context.application.getActions(QuestionActions);
     this.storeSubscription = store.subscribe(state => {
       this.setState(state);
     });

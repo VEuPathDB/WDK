@@ -142,7 +142,7 @@ public class StrategyFixer extends BaseCLI {
 
       if (count % BATCH_SIZE != 0)
         psUpdate.executeBatch();
-      LOG.info("Total" + count + " steps updated.");
+      LOG.info("Total " + count + " steps updated.");
     }
     finally {
       SqlUtils.closeResultSetAndStatement(rsChildren);
@@ -161,6 +161,7 @@ public class StrategyFixer extends BaseCLI {
    * @throws WdkModelException
    */
   @Deprecated
+  @SuppressWarnings("unused")
   private void generateSignatures(WdkModel wdkModel) throws SQLException, WdkModelException {
     String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
 

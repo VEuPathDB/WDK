@@ -3,6 +3,10 @@ import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';
 import combineStores from '../utils/combineStores';
+import AnswerStore from '../stores/answerStore';
+import QuestionStore from '../stores/questionStore';
+import RecordClassStore from '../stores/recordClassStore';
+import AnswerActions from '../actions/answerActions';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
@@ -57,26 +61,22 @@ import Record from './Record';
 
 // Define the React Component class.
 // See http://facebook.github.io/react/docs/top-level-api.html#react.createclass
-const AnswerController = React.createClass({
+let AnswerController = React.createClass({
 
-  // `propTypes` is a place to declare properties this component expects. The
-  // mapping is property name => type. You can additionally declare a property
-  // as "required". When the props passed to a component violate this
-  // declaration, a warning is logged to the console, but React will render
-  // anyway.
-  //
-  // NB, these warnings don't appear in non-development builds.
-  propTypes: {
 
+  // Declare context properties used by this component. The context object is
+  // defined in AppController (the application root component). React uses
+  // `contextTypes` to determine which properties to add to `this.context`.
+  contextTypes: {
     // The application context used to look up services.
     application: React.PropTypes.object.isRequired
   },
 
   // When the component first mounts, fetch the answer.
   componentWillMount() {
-    this.router = this.props.application.getRouter();
-    this.fetchAnswer(this.props);
+    this.router = this.context.application.router;
     this.subscribeToStores();
+    this.fetchAnswer(this.props);
   },
 
   // This is called anytime the component gets new props, just before they are
@@ -85,18 +85,18 @@ const AnswerController = React.createClass({
   // to be fetched. If not, then we will check if the filter needs to be updated.
   componentWillReceiveProps(nextProps) {
     // current query and params
-    const { query, params } = this.props;
+    let { query, params } = this.props;
 
     // incoming query and params
-    const { query: nextQuery, params: nextParams } = nextProps;
+    let { query: nextQuery, params: nextParams } = nextProps;
 
     // query keys to compare to determine if we need to fetch a new answer
-    const queryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
+    let queryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
 
     // _.pick will create an object with keys from queryKeys, and values from
     // the source object (query and nextQuery).
-    const answerQuery = _.pick(query, queryKeys);
-    const nextAnswerQuery = _.pick(nextQuery, queryKeys);
+    let answerQuery = _.pick(query, queryKeys);
+    let nextAnswerQuery = _.pick(nextQuery, queryKeys);
 
     // fetch answer if the query has changed, or if the question name has changed
     if (!_.isEqual(answerQuery, nextAnswerQuery) || params.questionName != nextParams.questionName) {
@@ -105,7 +105,7 @@ const AnswerController = React.createClass({
 
     // filter answer if the filter terms have changed
     else if (query.filterTerm != nextQuery.filterTerm) {
-      this.props.application.getActions('answerActions')
+      this.context.application.getActions(AnswerActions)
       .filterAnswer(nextParams.questionName, nextQuery.filterTerm);
     }
 
@@ -118,28 +118,30 @@ const AnswerController = React.createClass({
 
   // Create subscriptions to stores.
   subscribeToStores() {
-    const { questionName } = this.props.params;
-    const { getStore } = this.props.application;
+    let { questionName } = this.props.params;
+    let { application } = this.context;
 
-    const answerStore = getStore('answerStore');
-    const questionStore = getStore('questionStore');
-    const recordClassStore = getStore('recordClassStore');
+    let answerStore = application.getStore(AnswerStore);
+    let questionStore = application.getStore(QuestionStore);
+    let recordClassStore = application.getStore(RecordClassStore);
 
     this.subscription = combineStores(
       answerStore,
       questionStore,
       recordClassStore,
       (aState, qState, rState) => {
-        const answer = aState.answers[questionName];
-        const { displayInfo } = aState;
-        const { filterTerm } = aState;
-        const { filteredRecords } = aState;
-        const { questions } = qState;
-        const question = questions.find(q => q.name === questionName);
-        const { recordClasses } = rState;
-        const recordClass = recordClasses.find(r => r.fullName == question.class);
+        let answer = aState.answers[questionName];
+        let { isLoading } = aState;
+        let { displayInfo } = aState;
+        let { filterTerm } = aState;
+        let { filteredRecords } = aState;
+        let { questions } = qState;
+        let question = questions.find(q => q.name === questionName);
+        let { recordClasses } = rState;
+        let recordClass = recordClasses.find(r => r.fullName == question.class);
 
         this.setState({
+          isLoading,
           answer,
           displayInfo,
           filterTerm,
@@ -167,9 +169,9 @@ const AnswerController = React.createClass({
   fetchAnswer(props) {
 
     // props.params and props.query are passed to this component by the Router.
-    const path = 'answer';
-    const params = props.params;
-    const query = props.query;
+    let path = 'answer';
+    let params = props.params;
+    let query = props.query;
 
     if (!query.numrecs || !query.offset) {
       // Replace the current undefined URL query params with default values
@@ -183,19 +185,24 @@ const AnswerController = React.createClass({
       // call will cause the Route Handler for 'answer' (this component) to be
       // rendered again. Since `query.numrecs` and `query.offset` are now set,
       // the else block below will get executed again.
-      this.router.replaceWith(path, params, query);
+      //
+      // It seems that calling this before the component is mounted leads to
+      // errors, so we will defer doing so.
+      setTimeout(() => {
+        this.router.replaceWith(path, params, query);
+      }, 0);
 
     } else {
 
       // Get pagination info from `query`
-      const pagination = {
+      let pagination = {
         numRecords: Number(query.numrecs),
         offset: Number(query.offset)
       };
 
       // Get sorting info from `query`
       // FIXME make this one query param: sorting={attributeName}__{direction}
-      const sorting = query.sortBy && query.sortDir
+      let sorting = query.sortBy && query.sortDir
         ? [{
             attributeName: query.sortBy,
             direction: query.sortDir
@@ -204,30 +211,30 @@ const AnswerController = React.createClass({
 
       // Combine `pagination` and `sorting` into a single object:
       //
-      //     const displayInfo = {
+      //     let displayInfo = {
       //       pagination: pagination,
       //       sorting: sorting
       //     };
       //
-      const displayInfo = {
+      let displayInfo = {
         pagination,
         sorting,
         visibleAttributes: this.state && this.state.displayInfo.visibleAttributes
       };
 
       // TODO Add params to loadAnswer call
-      const answerParams = wrap(query.param).map(p => {
-        const parts = p.split('__');
+      let answerParams = wrap(query.param).map(p => {
+        let parts = p.split('__');
         return { name: parts[0], value: parts[1] };
       });
 
-      const opts = {
+      let opts = {
         displayInfo,
         params: answerParams
       };
 
       // Call the AnswerCreator to fetch the Answer resource
-      this.props.application.getActions('answerActions')
+      this.context.application.getActions(AnswerActions)
       .loadAnswer(params.questionName, opts);
     }
   },
@@ -252,7 +259,7 @@ const AnswerController = React.createClass({
 
       // Update the query object with the new values.
       // See https://lodash.com/docs#assign
-      const query = Object.assign({}, this.props.query, {
+      let query = Object.assign({}, this.props.query, {
         sortBy: attribute.name,
         sortDir: direction
       });
@@ -270,7 +277,7 @@ const AnswerController = React.createClass({
       // saving the display info to localStorage and reloading it when the page
       // is reloaded.
       //
-      // const opts = {
+      // let opts = {
       //   displayInfo: {
       //     sorting: [ { columnName: attribute.name, direction } ],
       //     attributes,
@@ -288,7 +295,7 @@ const AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onMoveColumn(columnName, newPosition) {
-      this.props.application.getActions('answerActions')
+      this.context.application.getActions(AnswerActions)
       .moveColumn(columnName, newPosition);
     },
 
@@ -297,7 +304,7 @@ const AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onChangeColumns(attributes) {
-      this.props.application.getActions('answerActions')
+      this.context.application.getActions(AnswerActions)
       .changeAttributes(attributes);
     },
 
@@ -306,37 +313,10 @@ const AnswerController = React.createClass({
       console.log(offset, numRecords);
     },
 
-    xonRecordClick(record) {
-      const path = 'answer';
-      const params = this.props.params;
-      const query = this.props.query;
-
-      // update query with format and position
-      query.format = 'list';
-      query.position = _.indexOf(this.state.answer.records, record);
-
-      // Method provided by Router.Navigation mixin
-      this.router.transitionTo(path, params, query);
-    },
-
-    // FIXME This will be removed when the record service is serving up records
-    onRecordClick(record) {
-      const path = 'answer';
-      const records = this.state.answer.records;
-
-      // update query with format and position
-      const query = Object.assign({}, this.props.query, {
-        expandedRecord: records.findIndex(r => r === record)
-      });
-
-      // Method provided by Router.Navigation mixin
-      this.router.transitionTo(path, this.props.params, query);
-    },
-
     onToggleFormat() {
-      const path = 'answer';
-      const params = this.props.params;
-      const query = this.props.query;
+      let path = 'answer';
+      let params = this.props.params;
+      let query = this.props.query;
 
       // update query with format and position
       query.format = !query.format || query.format === 'table'
@@ -347,20 +327,16 @@ const AnswerController = React.createClass({
     },
 
     recordHrefGetter(record) {
-      const path = 'answer';
-      const records = this.state.answer.records;
-
-      // update query with format and position
-      const query = Object.assign({}, this.props.query, {
-        expandedRecord: records.indexOf(record)
-      });
+      let path = 'record';
+      let params = { class: this.state.answer.meta.class }
+      let query = record.id;
 
       // Method provided by Router.Navigation mixin
-      return this.router.makeHref(path, this.props.params, query);
+      return this.router.makeHref(path, params, query);
     },
 
     onFilter(terms) {
-      const query = Object.assign({}, this.props.query, { filterTerm: terms });
+      let query = Object.assign({}, this.props.query, { filterTerm: terms });
       this.router.transitionTo('answer', this.props.params, query);
     }
 
@@ -373,10 +349,18 @@ const AnswerController = React.createClass({
   // TODO - Explain what's happening here in more detail.
   render() {
 
+    // If state is null, we can assume the stores have no been populated yet.
+    // We can remove this logic by moving the store subscription to a generic
+    // parent component. Doing so will allow the state of the stores to be
+    // passed as props to this component. This null check would happen in the
+    // parent component simplifying the logic in this component.
+    //
+    // We return null here to indicate to React that there is nothing to render.
     if (this.state == null) return null;
 
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
-    const {
+    let {
+      isLoading,
       answer,
       question,
       questions,
@@ -387,12 +371,12 @@ const AnswerController = React.createClass({
       filteredRecords
     } = this.state;
 
-    const { getCellRenderer, getRecordComponent } = this.props.application;
+    let { getCellRenderer, getRecordComponent } = this.context.application;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
     // this component.
-    const answerEvents = Object.keys(this.answerEvents)
+    let answerEvents = Object.keys(this.answerEvents)
       .reduce((events, key) => {
         events[key] = this.answerEvents[key].bind(this);
         return events;
@@ -400,13 +384,13 @@ const AnswerController = React.createClass({
 
     // Valid formats are 'table' and 'list'
     // TODO validation
-    const format = this.props.query.format || 'table';
+    let format = this.props.query.format || 'table';
 
-    const expandedRecord = this.props.query.expandedRecord;
+    let expandedRecord = this.props.query.expandedRecord;
 
     // List position of "selected" record (this is used to keep the same
     // record at the top when transitioning between formats.
-    const position = Number(this.props.query.position) || 0;
+    let position = Number(this.props.query.position) || 0;
 
     // `{...this.state}` is JSX short-hand syntax to pass each key-value pair of
     // this.state as a property to the component. It intentionally resembles
@@ -416,29 +400,10 @@ const AnswerController = React.createClass({
     // and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator
     //
     // to understand the embedded XML, see: https://facebook.github.io/react/docs/jsx-in-depth.html
-
-    // FIXME This will be removed when the record service is serving up records
-    if (answer && expandedRecord != null) {
-      const RecordComponent = getRecordComponent(answer.meta.class, Record)
-        || Record;
-      const record = answer.records[expandedRecord];
-
-      return (
-        <Doc title={`${recordClass.displayName}: ${record.id}`}>
-          <RecordComponent
-            record={record}
-            questions={questions}
-            recordClass={recordClass}
-            recordClasses={recordClasses}
-            attributes={answer.meta.attributes}
-          />
-        </Doc>
-      );
-    }
-
-    else if (answer && question && recordClass) {
+    if (answer && question && recordClass) {
       return (
         <Doc title={`${question.displayName}`}>
+          {isLoading ? <Loading/> : null}
           <Answer
             answer={answer}
             question={question}

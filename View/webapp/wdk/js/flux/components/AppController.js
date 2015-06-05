@@ -5,7 +5,8 @@
  */
 import React from 'react';
 import { RouteHandler } from 'react-router';
-import Loading from '../components/Loading';
+import AppStore from '../stores/appStore';
+import CommonActions from '../actions/commonActions';
 
 /*
  * RouterHandler is a special React component that the router uses to inject
@@ -13,14 +14,32 @@ import Loading from '../components/Loading';
  * AnswerPage will be rendered as a child of RouteHandler.
  */
 
-var AppController = React.createClass({
+let AppController = React.createClass({
 
   propTypes: {
     application: React.PropTypes.object.isRequired
   },
 
-  componentDidMount() {
-    var store = this.props.application.getStore('appStore');
+  childContextTypes: {
+    application: React.PropTypes.object.isRequired
+  },
+
+  getChildContext() {
+    let { application } = this.props
+    return { application };
+  },
+
+  getInitialState() {
+    return {
+      errors: []
+    };
+  },
+
+  componentWillMount() {
+    let { application } = this.props;
+    let store = application.getStore(AppStore);
+    let commonActions = application.getActions(CommonActions);
+    commonActions.fetchCommonData();
     this.storeSubscription = store.subscribe(state => {
       this.setState(state);
     });
@@ -31,9 +50,7 @@ var AppController = React.createClass({
   },
 
   render() {
-    if (!this.state) return null;
-
-    var { isLoading, errors } = this.state;
+    let { errors } = this.state;
 
     if (errors.length > 0) {
       return (
@@ -45,10 +62,7 @@ var AppController = React.createClass({
     }
     else {
       return (
-        <div>
-          { isLoading !== 0 ? <Loading/> : null }
-          <RouteHandler {...this.props}/>
-        </div>
+        <RouteHandler/>
       );
     }
   }
