@@ -77,13 +77,11 @@ let parseSearchTerms = function parseSearchTerms(terms) {
 //
 // There is much room for performance tuning here.
 let isTermInRecord = curry(function isTermInRecord(term, record) {
-  let attributeValues = values(record.attributes).map(property('value'));
+  let attributeValues = values(record.attributes);
 
   let tableValues = flattenDeep(values(record.tables)
     .map(function(table) {
-      return table.rows.map(function(row) {
-        return row.map(property('value'))
-      });
+      return table.map(values);
     }));
 
   let clob = attributeValues.concat(tableValues).join('\0');
