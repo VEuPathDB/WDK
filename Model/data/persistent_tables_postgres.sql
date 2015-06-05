@@ -1,3 +1,10 @@
+-- =========================================================================
+-- persistent_tables_postgres.sql
+--
+-- create user tables in postgres instance
+--
+-- NOTE: table definitions must be kept in sync with user_dblink_postgres.sql (in this same directory)
+-- =========================================================================
 
 --DROP SEQUENCE IF EXISTS wdkuser.categories_pkseq;
 --DROP SEQUENCE IF EXISTS wdkuser.datasets_pkseq;
