@@ -49,7 +49,7 @@ public class AnswerService extends WdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response buildResult(String body) throws WdkModelException {
     try {
-      LOG.info("POST submission to /answer with body:\n" + body);
+	// LOG.info("POST submission to /answer with body:\n" + body);
       JSONObject json = new JSONObject(body);
 
       // expect two parts to this request
