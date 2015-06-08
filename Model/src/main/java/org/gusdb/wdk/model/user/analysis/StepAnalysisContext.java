@@ -161,7 +161,6 @@ public class StepAnalysisContext {
       JSONObject formObj = json.getJSONObject(JsonKey.formParams.name());
       LOG.debug("Retrieved the following params JSON from the DB: " + formObj);
       
-      @SuppressWarnings("unchecked")
       Iterator<String> iter2 = formObj.keys();
       while (iter2.hasNext()) {
         String key = iter2.next();

@@ -748,7 +748,7 @@ public class Strategy {
     this.description = description;
   }
 
-  public int getEstimateSize() throws WdkModelException {
+  public int getEstimateSize() {
     if (latestStep != null)
       estimateSize = latestStep.getEstimateSize();
     return estimateSize;
