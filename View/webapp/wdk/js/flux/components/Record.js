@@ -1,4 +1,6 @@
-import _ from 'lodash';
+import map from 'lodash/collection/map';
+import union from 'lodash/array/union';
+import pairs from 'lodash/object/pairs';
 import React from 'react';
 import {
   formatAttributeName,
@@ -32,13 +34,15 @@ let Record = React.createClass({
     return (
       <div className="wdk-Record">
         <h1 dangerouslySetInnerHTML={{__html: displayName}}/>
-        <div className="wdk-Record-attributes">
-          {attributes
-            .filter(attr => attr.meta.name !== 'primary_key')
-            .map(this._renderAttribute)}
-        </div>
+        <table className="wdk-Record-attributes">
+          <tbody>
+            {attributes
+              .filter(attr => attr.meta.name !== 'primary_key')
+              .map(this._renderAttribute)}
+          </tbody>
+        </table>
         <div className="wdk-Record-tables">
-          {_.map(tables, this._renderTable)}
+          {map(tables, this._renderTable)}
         </div>
       </div>
     );
@@ -48,39 +52,39 @@ let Record = React.createClass({
     let { meta, value } = attribute;
     if (value == null) return null;
     return (
-      <div className="wdk-Record-attribute">
-        <h4>{formatAttributeName(meta.name)}</h4>
-        <div dangerouslySetInnerHTML={{__html: formatAttributeValue(value, meta.type)}}/>
-      </div>
+      <tr className="wdk-Record-attribute">
+        <th>{formatAttributeName(meta.name)}</th>
+        <td dangerouslySetInnerHTML={{__html: formatAttributeValue(value, meta.type)}}/>
+      </tr>
     );
   },
 
   _renderTable(table) {
     let { meta, values } = table;
     if (values.length) {
+      let headings = union(...values.map(Object.keys));
       return (
         <div>
           <h4>{formatAttributeName(meta.name)}</h4>
-          <ul>
-            {values.map(this._renderTableRow)}
-          </ul>
+          <table>
+            <thead>
+              {headings.map(heading => <th>{heading}</th>)}
+            </thead>
+            <tbody>
+              {values.map(value => this._renderTableRow(value, headings))}
+            </tbody>
+          </table>
         </div>
       );
     }
     return null;
   },
 
-  _renderTableRow(attributes) {
+  _renderTableRow(attributes, headings) {
     return (
-      <li>
-        {_.pairs(attributes).filter(([name, value]) => value != null).map(this._renderTableRowAttribute)}
-      </li>
-    );
-  },
-
-  _renderTableRowAttribute([ name, value ]) {
-    return (
-      <p>{formatAttributeName(name)}: {value}</p>
+      <tr>
+        {headings.map(heading => <td dangerouslySetInnerHTML={{__html: attributes[heading]}}/>)}
+      </tr>
     );
   }
 });
