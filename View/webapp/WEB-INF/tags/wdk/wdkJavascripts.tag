@@ -25,7 +25,8 @@
     <c:when test="${debug eq true}">
       <!-- load files in individual script tags -->
       <imp:script charset="utf8" src="wdk/js/wdk.libs.js"/>
-      <imp:script charset="utf8" src="wdk/js/wdk.js"/>
+      <imp:script charset="utf8" src="wdk/js/wdk.common.js"/>
+      <imp:script charset="utf8" src="wdk/js/wdk.app.js"/>
     </c:when>
     <c:otherwise>
       <!-- WDK libraries and source files -->

@@ -1,7 +1,16 @@
 var webpack = require('webpack');
 var node_env = process.env.NODE_ENV || 'production';
 
-module.exports = {
+var config = {
+  entry: {
+    'app': './webapp/wdk/js/app',
+    'flux': './webapp/wdk/js/flux'
+  },
+  output: {
+    filename: './dist/wdk/js/wdk.[name].js',
+    library: [ 'Wdk', '[name]' ],
+    libraryTarget: 'umd'
+  },
   bail: true,
   resolve: {
     // adding .jsx; the rest are defaults (this overwrites, so we're including them)
@@ -27,3 +36,9 @@ module.exports = {
     })
   ]
 };
+
+if (config.plugins == null) config.plugins = [];
+
+config.plugins.push( new webpack.optimize.CommonsChunkPlugin('./dist/wdk/js/wdk.common.js') );
+
+module.exports = config;
