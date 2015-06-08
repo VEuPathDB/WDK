@@ -1,14 +1,14 @@
 PATH         := node_modules/.bin:$(PATH)
 SHELL        := /bin/bash
 
-wdk_bundle    := dist/wdk/js/wdk.js
-wdk3_bundle   := dist/wdk/js/wdk-3.0.js
+# The recipe for this target creates three files, wdk.common.js, wdk.app.js, and wdk.flux.js.
+# wdk.common.js contains common code between wdk.app.js and wdk.flux.js.
+wdk_bundle    := dist/wdk/js/wdk.common.js
 libs_bundle   := dist/wdk/js/wdk.libs.js
 css_bundle    := dist/wdk/css/wdk.min.css
 test_bundle   := test/dist/tests.js
 
-wdk_sources  := webapp/wdk/js/app.js $(shell find webapp/wdk/js -name '*.js')
-wdk3_sources := webapp/wdk/js/flux/index.js $(shell find webapp/wdk/js/flux -name '*.js')
+wdk_sources  := $(shell find webapp/wdk/js -name '*.js') webpack.config.js
 libs_sources := webapp/wdk/lib/rsvp.min.js \
                 webapp/wdk/lib/jquery.js \
                 webapp/wdk/lib/jquery-migrate-1.2.1.min.js \
@@ -41,11 +41,7 @@ all: $(wdk_bundle) $(wdk3_bundle) $(libs_bundle) $(css_bundle)
 # =============================================================================
 
 $(wdk_bundle): $(wdk_sources)
-	webpack $< $@
-
-$(wdk3_bundle): $(wdk3_sources)
-	webpack $< $@ --output-library Wdk --output-library-target umd
-
+	webpack
 
 # =============================================================================
 # Concatenate libs into a single file, separated by newline
