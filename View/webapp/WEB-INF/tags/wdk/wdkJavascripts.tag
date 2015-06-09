@@ -21,19 +21,8 @@
   <![CDATA[ <![endif]--> ]]>
   <!-- endload polyfills -->
 
-  <c:choose>
-    <c:when test="${debug eq true}">
-      <!-- load files in individual script tags -->
-      <imp:script charset="utf8" src="wdk/js/wdk.libs.js"/>
-      <imp:script charset="utf8" src="wdk/js/wdk.common.js"/>
-      <imp:script charset="utf8" src="wdk/js/wdk.app.js"/>
-    </c:when>
-    <c:otherwise>
-      <!-- WDK libraries and source files -->
-      <!-- see WDK/View/assets/wdkFiles.js for details about these files -->
-      <imp:script charset="utf8" src="wdk/js/wdk.libs.js"/>
-      <imp:script charset="utf8" src="wdk/js/wdk.js"/>
-    </c:otherwise>
-  </c:choose>
+  <imp:script charset="utf8" src="wdk/js/wdk.libs.js"/>
+  <imp:script charset="utf8" src="wdk/js/wdk.common.js"/>
+  <imp:script charset="utf8" src="wdk/js/wdk.app.js"/>
 
 </jsp:root>
