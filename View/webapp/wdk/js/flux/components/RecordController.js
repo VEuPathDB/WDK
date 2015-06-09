@@ -16,7 +16,6 @@ let RecoredController = React.createClass({
   },
 
   componentWillMount() {
-    fetchRecordDetails(this.props, this.context);
     this.subscribeToStores();
   },
 
@@ -29,7 +28,8 @@ let RecoredController = React.createClass({
     let { query, params } = this.props;
     let { query: nextQuery, params: nextParams } = nextProps;
     if (params.class !== nextParams.class || !isEqual(query, nextQuery)) {
-      fetchRecordDetails(nextProps, this.context);
+      this.disposeSubscriptions();
+      this.subscribeToStores();
     }
   },
 
@@ -38,6 +38,7 @@ let RecoredController = React.createClass({
     let recordStore = application.getStore(RecordStore);
     let questionStore = application.getStore(QuestionStore);
     let recordClassStore = application.getStore(RecordClassStore);
+    let hasFullRecord = false;
 
     this.storeSubscription = combineStores(
       recordStore,
@@ -47,20 +48,43 @@ let RecoredController = React.createClass({
         let { params, query } = this.props;
         let key = RecordStore.makeKey(params.class, query);
         let recordData = recordState.records[key];
+        let { questions } = questionState;
+        let { recordClasses } = recordClassState;
+
         if (recordData != null) {
           let { meta, record } = recordData;
-          let { questions } = questionState;
-          let { recordClasses } = recordClassState;
           this.setState({ meta, record, questions, recordClasses });
+        }
+
+        // get full record
+        if (!hasFullRecord) {
+          let recordClass = recordClasses.find(rc => rc.fullName == params.class);
+          let attributes = recordClass.attributes.map(a => a.name);
+          let tables = recordClass.tables.map(t => t.name);
+          this.fetchRecordDetails(attributes, tables);
+          hasFullRecord = true;
         }
       }
     );
-    this.storeSubscription = recordStore.subscribe(state => {
-    });
   },
 
   disposeSubscriptions() {
     this.storeSubscription.dispose();
+  },
+
+  fetchRecordDetails(attributes, tables) {
+    let { application } = this.context;
+    let { params, query } = this.props;
+    let primaryKey = Object.keys(query).map(function(name) {
+      return { name, value: query[name] };
+    });
+    let recordSpec = {
+      primaryKey,
+      attributes,
+      tables
+    };
+    let recordActions = application.getActions(RecordActions);
+    recordActions.fetchRecordDetails(params.class, recordSpec);
   },
 
   render() {
@@ -68,27 +92,16 @@ let RecoredController = React.createClass({
 
     let { meta, record, recordClasses, questions } = this.state;
     let RecordComponent = this.context.application.getRecordComponent(meta.class, Record) || Record;
+    let recordClass = recordClasses.find(recordClass => recordClass.fullName == meta.class);
 
     return (
-      <Doc title={`${meta.class.displayName}: ${record.id}`}>
+      <Doc title={`${recordClass.displayName}: ${record.attributes.primary_key}`}>
         <RecordComponent meta={meta} record={record} recordClasses={recordClasses} questions={questions}/>
       </Doc>
     );
   }
 
 });
-
-function fetchRecordDetails(props, context) {
-  let { application } = context;
-  let { params, query } = props;
-  let recordActions = application.getActions(RecordActions);
-  let recordSpec = {
-    primaryKey: query,
-    attributes: [ 'primary_key' ],
-    tables: []
-  };
-  recordActions.fetchRecordDetails(params.class, recordSpec);
-}
 
 function makeRecordSpecFromProps(props) {
   let { query, params } = props;

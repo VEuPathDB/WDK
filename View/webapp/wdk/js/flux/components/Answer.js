@@ -74,7 +74,7 @@ const Answer = React.createClass({
       <div>
         <p>
           Enter words or phrases that you wish to query. Words should be
-          separated by spaces, and phrases should be enclosed in parentheses.
+          separated by spaces, and phrases should be enclosed in double-quotes (").
         </p>
         <p>
           {displayName} records displayed will contain these words or phrases
@@ -98,7 +98,7 @@ const Answer = React.createClass({
                   ref="filterInput"
                   className="wdk-Answer-filterInput"
                   defaultValue={filterTerm}
-                  placeholder={`Filter ${displayName} records`}
+                  placeholder={`Search ${displayName} records`}
                   onKeyUp={throttle(this.handleFilter, 150, { leading: false })}
                 />
                 <i className="fa fa-search fa-lg wdk-Answer-filterIcon"/>
