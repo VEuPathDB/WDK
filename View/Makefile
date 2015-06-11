@@ -9,11 +9,8 @@ css_bundle    := dist/wdk/css/wdk.min.css
 test_bundle   := test/dist/tests.js
 
 wdk_sources  := $(shell find webapp/wdk/js -name '*.js') webpack.config.js
-libs_sources := webapp/wdk/lib/rsvp.min.js \
-                webapp/wdk/lib/jquery.js \
+libs_sources := webapp/wdk/lib/jquery.js \
                 webapp/wdk/lib/jquery-migrate-1.2.1.min.js \
-                webapp/wdk/lib/lodash.compat.min.js \
-                webapp/wdk/lib/backbone-min.js \
                 webapp/wdk/lib/jquery-ui.js \
                 webapp/wdk/lib/jquery.cookie.js \
                 webapp/wdk/lib/jquery.blockUI.js \

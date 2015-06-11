@@ -1,4 +1,4 @@
-/* global _, Backbone, RSVP */
+/* global _, Backbone */
 
 // TODO How does this class relate to Flux?
 //
@@ -224,21 +224,20 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.isLoading = true;
       this.emitChange();
 
-      var promises = {
-        filteredData: this.getFilteredData(this.filters),
-        distribution: this.selectedField &&
-          this.getFieldDistribution(this.selectedField),
-        filterSelection: filter && this.getFilteredData([filter])
-      };
+      var promises = [
+        this.getFilteredData(this.filters),
+        this.selectedField && this.getFieldDistribution(this.selectedField),
+        filter && this.getFilteredData([filter])
+      ];
 
-      RSVP.hash(promises).then(function(results) {
-        if (results.distribution) {
-          this.distributionMap[this.selectedField.term] = results.distribution;
+      Promise.all(promises).then(function([ filteredData, distribution, filterSelection ]) {
+        if (distribution) {
+          this.distributionMap[this.selectedField.term] = distribution;
         }
         if (filter) {
-          filter.selection = results.filterSelection;
+          filter.selection = filterSelection;
         }
-        this.filteredData = results.filteredData;
+        this.filteredData = filteredData;
         this.isLoading = false;
         this.emitChange();
       }.bind(this));
