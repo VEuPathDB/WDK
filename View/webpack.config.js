@@ -21,9 +21,16 @@ module.exports = {
   },
   bail: true,
   resolve: {
+    alias: {
+      // alias underscore to lodash, mainly for backbone
+      underscore: 'lodash'
+    },
     // adding .jsx; the rest are defaults (this overwrites, so we're including them)
     extensions: ["", ".webpack.js", ".web.js", ".js", ".jsx"]
   },
+  externals: [
+    { jquery: 'jQuery' }
+  ],
   module: {
     loaders: [
       { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: 'babel-loader' },
@@ -43,5 +50,6 @@ module.exports = {
             NODE_ENV: JSON.stringify("production")
           }
         }),
+        // Webpack will fail unless we tell it to ignore the import statement.
         commonsPlugin ]
 };
