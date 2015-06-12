@@ -142,8 +142,10 @@ let AnswerFilter = React.createClass({
           placeholder={`Search ${displayNamePlural}`}
           onChange={this.handleFilter}
         />
-        <i className="fa fa-caret-down wdk-Answer-filterSelectFieldsIcon"
-          onClick={this.toggleFilterFieldSelector}/>
+        <Tooltip content="Show search fields">
+          <i className="fa fa-caret-down wdk-Answer-filterSelectFieldsIcon"
+            onClick={this.toggleFilterFieldSelector}/>
+        </Tooltip>
         <Tooltip content={tooltipContent}>
           <i className="fa fa-question-circle fa-lg wdk-Answer-filterInfoIcon"/>
         </Tooltip>
