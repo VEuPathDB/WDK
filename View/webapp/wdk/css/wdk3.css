@@ -70,7 +70,7 @@ main h4 {
 }
 .wdk-Answer-filterFieldSelector {
   position: absolute;
-  z-index: 1000;
+  z-index: 2;
   background: white;
   width: 30em;
   padding: 0.6em;
@@ -79,9 +79,12 @@ main h4 {
 }
 .wdk-Answer-filterFieldSelectorCloseIcon {
   cursor: pointer;
+  padding: .7em;
 }
 .wdk-Answer-filterFieldSelectorCloseIconWrapper {
-  text-align: right;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 .wdk-Answer-filterInfoIcon {
   color: blue;
