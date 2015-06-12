@@ -54,13 +54,16 @@ main h4 {
 }
 .wdk-Answer-filterInput {
   padding: .5em;
-  width: 35em;
+  width: 30em;
+  margin-right: 1em;
 }
 .wdk-Answer-filterSelectFieldsIcon {
   color: gray;
-  position: relative;
-  left: -1.5em;
+  position: absolute;
+  right: 1.7em;
   cursor: pointer;
+  padding: .7em 1em;
+  border: 2px solid transparent;
 }
 .wdk-Answer-filterSelectFieldsIcon:hover {
   color: black;
@@ -69,7 +72,7 @@ main h4 {
   position: absolute;
   z-index: 1000;
   background: white;
-  width: 35em;
+  width: 30em;
   padding: 0.6em;
   border: 1px solid #C3C3C3;
   box-shadow: 0px 1px 4px #c3c3c3;
