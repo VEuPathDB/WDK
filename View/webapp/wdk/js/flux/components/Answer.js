@@ -93,11 +93,11 @@ let AnswerFilter = React.createClass({
             onClick={this.toggleFilterFieldSelector}/>
         </div>
 
-        <div>
+        <p>
           <a href="#" onClick={this.selectAll}>select all</a>
           {' | '}
           <a href="#" onClick={this.clearAll}>clear all</a>
-        </div>
+        </p>
 
         {attributes.map(attr => {
           let isChecked = filterAttributes.includes(attr.name);
