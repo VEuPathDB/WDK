@@ -1,19 +1,20 @@
 // TODO Break this into two stores: Answers and UI
-import {
-  assign,
-  curry,
-  flattenDeep,
-  indexBy,
-  property,
-  values
-} from 'lodash';
+import assign from 'lodash/object/assign';
+import curry from 'lodash/function/curry';
+import flattenDeep from 'lodash/array/flattenDeep';
+import union from 'lodash/array/union';
+import intersection from 'lodash/array/intersection';
+import indexBy from 'lodash/collection/indexBy';
+import property from 'lodash/utility/property';
+import values from 'lodash/object/values';
+import pick from 'lodash/object/pick';
 import Store from '../core/store';
 import {
   AnswerAdded,
   AnswerMoveColumn,
   AnswerChangeAttributes,
-  AnswerFilter,
-  AnswerLoading
+  AnswerLoading,
+  AnswerUpdateFilter
 } from '../ActionType';
 
 /**
@@ -76,23 +77,34 @@ let parseSearchTerms = function parseSearchTerms(terms) {
 //   - return (index !== -1).
 //
 // There is much room for performance tuning here.
-let isTermInRecord = curry(function isTermInRecord(term, record) {
-  let attributeValues = values(record.attributes);
+let isTermInRecord = curry(function isTermInRecord(term, filterAttributes, filterTables, record) {
+  let attributes, tables;
 
-  let tableValues = flattenDeep(values(record.tables)
+  if (filterAttributes.length == 0 && filterTables.length == 0) {
+    attributes = record.attributes;
+    tables = record.tables;
+  }
+  else {
+    attributes = pick(record.attributes,  filterAttributes);
+    tables = pick(record.tables, filterTables);
+  }
+
+  let attributeValues = values(attributes);
+  let tableValues = flattenDeep(values(tables)
     .map(function(table) {
       return table.map(values);
     }));
 
   let clob = attributeValues.concat(tableValues).join('\0');
-
-  return clob.toLowerCase().indexOf(term.toLowerCase()) !== -1;
+  return clob.toLowerCase().includes(term.toLowerCase());
 });
 
 function createStore({ dispatcher }) {
   let value = {
     isLoading: false,
     filterTerm: '',
+    filterAttributes: null,
+    filterTables: null,
     filteredRecords: null,
     answers: {},
     displayInfo: {
@@ -115,8 +127,8 @@ function update(state, action) {
     case AnswerAdded: return addAnswer(state, action);
     case AnswerMoveColumn: return moveTableColumn(state, action);
     case AnswerChangeAttributes: return updateVisibleAttributes(state, action);
-    case AnswerFilter: return filterAnswer(state, action);
     case AnswerLoading: return answerLoading(state, action);
+    case AnswerUpdateFilter: return updateFilter(state, action);
   }
 }
 
@@ -167,6 +179,10 @@ function addAnswer(state, { answer, requestData }) {
   });
 
   state.answers[questionName] = answer;
+
+  if (state.filterTerm) {
+    return filterAnswer(state, { questionName })
+  }
   return state;
 }
 
@@ -202,6 +218,15 @@ function updateVisibleAttributes(state, { attributes }) {
   return state;
 }
 
+function updateFilter(state, action) {
+  state = assign(state, {
+    filterTerm: action.terms,
+    filterAttributes: action.attributes || [],
+    filterTables: action.tables || []
+  });
+  return filterAnswer(state, action);
+}
+
 /**
  * Filter the results of an answer. The filtered results are stored in a
  * separate property.
@@ -209,17 +234,22 @@ function updateVisibleAttributes(state, { attributes }) {
  * @param {string} terms The search phrase.
  * @param {string} questionName The questionName of the answer to filter.
  */
-function filterAnswer(state, { terms, questionName }) {
-  let parsedTerms = parseSearchTerms(terms);
-  let records = state.answers[questionName].records;
-  let filteredRecords = parsedTerms.reduce(function(records, term) {
-    return records.filter(isTermInRecord(term));
-  }, records);
+function filterAnswer(state, action) {
+  let { questionName } = action;
+  let answer = state.answers[questionName];
+  if (answer == null) return;
 
-  return assign(state, {
-    filterTerm: terms,
-    filteredRecords: filteredRecords
-  });
+  let { filterTerm, filterAttributes, filterTables } = state;
+  if (filterTerm == null) {
+    return assign(state, {
+      filteredRecords: answer.records
+    });
+  }
+  let parsedTerms = parseSearchTerms(filterTerm);
+  let filteredRecords = parsedTerms.reduce(function(records, term) {
+    return records.filter(isTermInRecord(term, filterAttributes, filterTables));
+  }, answer.records);
+  return assign(state, { filteredRecords });
 }
 
 function answerLoading(state, action) {

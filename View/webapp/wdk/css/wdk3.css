@@ -43,7 +43,9 @@ main h4 {
 }
 
 .wdk-Answer-filter {
+  position: relative;
   display: inline-block;
+  margin-right: 1em;
 }
 .wdk-Answer-filterIcon {
   color: gray;
@@ -51,8 +53,35 @@ main h4 {
   left: -20.5em;
 }
 .wdk-Answer-filterInput {
-  padding: .5em .5em .5em 2em;
-  width: 25em;
+  padding: .5em;
+  width: 35em;
+}
+.wdk-Answer-filterSelectFieldsIcon {
+  color: gray;
+  position: relative;
+  left: -1.5em;
+  cursor: pointer;
+}
+.wdk-Answer-filterSelectFieldsIcon:hover {
+  color: black;
+}
+.wdk-Answer-filterFieldSelector {
+  position: absolute;
+  z-index: 1000;
+  background: white;
+  width: 35em;
+  padding: 0.6em;
+  border: 1px solid #C3C3C3;
+  box-shadow: 0px 1px 4px #c3c3c3;
+}
+.wdk-Answer-filterFieldSelectorCloseIcon {
+  cursor: pointer;
+}
+.wdk-Answer-filterFieldSelectorCloseIconWrapper {
+  text-align: right;
+}
+.wdk-Answer-filterInfoIcon {
+  color: blue;
 }
 .wdk-Answer-filterButton {
   border: none;

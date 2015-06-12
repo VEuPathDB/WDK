@@ -91,12 +91,16 @@ let AnswerController = React.createClass({
     let { query: nextQuery, params: nextParams } = nextProps;
 
     // query keys to compare to determine if we need to fetch a new answer
-    let queryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
+    let answerQueryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
+    let filterQueryKeys = [ 'filterTerm', 'filterAttributes', 'filterTables' ];
 
-    // _.pick will create an object with keys from queryKeys, and values from
+    // _.pick will create an object with keys from answerQueryKeys, and values from
     // the source object (query and nextQuery).
-    let answerQuery = _.pick(query, queryKeys);
-    let nextAnswerQuery = _.pick(nextQuery, queryKeys);
+    let answerQuery = _.pick(query, answerQueryKeys);
+    let nextAnswerQuery = _.pick(nextQuery, answerQueryKeys);
+
+    let filterQuery = _.pick(query, filterQueryKeys);
+    let nextFilterQuery = _.pick(nextQuery, filterQueryKeys);
 
     // fetch answer if the query has changed, or if the question name has changed
     if (!_.isEqual(answerQuery, nextAnswerQuery) || params.questionName != nextParams.questionName) {
@@ -104,9 +108,15 @@ let AnswerController = React.createClass({
     }
 
     // filter answer if the filter terms have changed
-    else if (query.filterTerm != nextQuery.filterTerm) {
+    else if (!_.isEqual(filterQuery, nextFilterQuery)) {
+      let filterOpts = {
+        questionName: nextParams.questionName,
+        terms: nextFilterQuery.filterTerm,
+        attributes: nextFilterQuery.filterAttributes,
+        tables: nextFilterQuery.filterTables
+      };
       this.context.application.getActions(AnswerActions)
-      .filterAnswer(nextParams.questionName, nextQuery.filterTerm);
+      .updateFilter(filterOpts);
     }
 
   },
@@ -134,6 +144,8 @@ let AnswerController = React.createClass({
         let { isLoading } = aState;
         let { displayInfo } = aState;
         let { filterTerm } = aState;
+        let { filterAttributes } = aState;
+        let { filterTables } = aState;
         let { filteredRecords } = aState;
         let { questions } = qState;
         let question = questions.find(q => q.name === questionName);
@@ -145,6 +157,8 @@ let AnswerController = React.createClass({
           answer,
           displayInfo,
           filterTerm,
+          filterAttributes,
+          filterTables,
           filteredRecords,
           question,
           questions,
@@ -234,6 +248,15 @@ let AnswerController = React.createClass({
       };
 
       // Call the AnswerCreator to fetch the Answer resource
+      let filterOpts = {
+        questionName: params.questionName,
+        terms: query.filterTerm,
+        attributes: query.filterAttributes,
+        tables: query.filterTables
+      };
+      this.context.application.getActions(AnswerActions)
+      .updateFilter(filterOpts);
+
       this.context.application.getActions(AnswerActions)
       .loadAnswer(params.questionName, opts);
     }
@@ -335,8 +358,12 @@ let AnswerController = React.createClass({
       return this.router.makeHref(path, params, query);
     },
 
-    onFilter(terms) {
-      let query = Object.assign({}, this.props.query, { filterTerm: terms });
+    onFilter(terms, attributes, tables) {
+      let query = Object.assign({}, this.props.query, {
+        filterTerm: terms,
+        filterAttributes: attributes,
+        filterTables: tables
+      });
       this.router.transitionTo('answer', this.props.params, query);
     }
 
@@ -368,6 +395,8 @@ let AnswerController = React.createClass({
       recordClasses,
       displayInfo,
       filterTerm,
+      filterAttributes,
+      filterTables,
       filteredRecords
     } = this.state;
 
@@ -401,6 +430,10 @@ let AnswerController = React.createClass({
     //
     // to understand the embedded XML, see: https://facebook.github.io/react/docs/jsx-in-depth.html
     if (answer && question && recordClass) {
+      if (_.isEmpty(filterAttributes) && _.isEmpty(filterTables)) {
+        filterAttributes = recordClass.attributes.map(a => a.name);
+        filterTables = recordClass.tables.map(t => t.name);
+      }
       return (
         <Doc title={`${question.displayName}`}>
           {isLoading ? <Loading/> : null}
@@ -411,6 +444,8 @@ let AnswerController = React.createClass({
             displayInfo={displayInfo}
             filterTerm={filterTerm}
             filteredRecords={filteredRecords}
+            filterAttributes={filterAttributes}
+            filterTables={filterTables}
             format={format}
             answerEvents={answerEvents}
             getCellRenderer={getCellRenderer}

@@ -4,7 +4,7 @@ import {
   AnswerAdded,
   AnswerMoveColumn,
   AnswerChangeAttributes,
-  AnswerFilter,
+  AnswerUpdateFilter,
   AnswerLoading
 } from '../ActionType';
 
@@ -169,13 +169,15 @@ function createActions({ dispatcher, service }) {
       dispatcher.dispatch(action);
     },
 
-    filterAnswer(questionName, terms) {
-      var action = AnswerFilter({
-        questionName: questionName,
-        terms: terms
+    updateFilter({ questionName, terms, attributes, tables }) {
+      var action = AnswerUpdateFilter({
+        questionName,
+        terms,
+        attributes,
+        tables
       });
       dispatcher.dispatch(action);
-    }
+    },
 
   };
 }
