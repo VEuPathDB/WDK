@@ -60,10 +60,11 @@ main h4 {
 .wdk-Answer-filterSelectFieldsIcon {
   color: gray;
   position: absolute;
-  right: 1.7em;
+  right: 2.2em;
   cursor: pointer;
-  padding: .7em 1em;
+  padding: .7em;
   border: 2px solid transparent;
+  background-color: transparent;
 }
 .wdk-Answer-filterSelectFieldsIcon:hover {
   color: black;
@@ -80,6 +81,8 @@ main h4 {
 .wdk-Answer-filterFieldSelectorCloseIcon {
   cursor: pointer;
   padding: .7em;
+  border: 2px solid transparent;
+  background-color: transparent;
 }
 .wdk-Answer-filterFieldSelectorCloseIconWrapper {
   position: absolute;
