@@ -3,6 +3,7 @@ import React from 'react';
 import RecordTable from './RecordTable';
 import RecordList from './RecordList';
 import Tooltip from './Tooltip';
+import TabbableContainer from './TabbableContainer';
 
 let $ = window.jQuery;
 
@@ -16,7 +17,7 @@ function renderFilterField(field, isChecked, handleChange) {
   return (
     <div key={field.name}>
       <label>
-        <input type="checkbox" value={field.name} checked={isChecked} onChange={handleChange}/>
+        <input tabIndex="0" type="checkbox" value={field.name} checked={isChecked} onChange={handleChange}/>
         {' ' + field.displayName}
       </label>
     </div>
@@ -87,16 +88,19 @@ let AnswerFilter = React.createClass({
     let { filterAttributes, filterTables } = this.state;
 
     return (
-      <div className="wdk-Answer-filterFieldSelector">
+      <TabbableContainer className="wdk-Answer-filterFieldSelector">
         <div className="wdk-Answer-filterFieldSelectorCloseIconWrapper">
-          <i className="fa fa-close wdk-Answer-filterFieldSelectorCloseIcon"
-            onClick={this.toggleFilterFieldSelector}/>
+          <button
+            className="fa fa-close wdk-Answer-filterFieldSelectorCloseIcon"
+            onClick={this.toggleFilterFieldSelector}
+            tabIndex="0"
+          />
         </div>
 
         <p>
-          <a href="#" onClick={this.selectAll}>select all</a>
+          <a tabIndex="0" href="#" onClick={this.selectAll}>select all</a>
           {' | '}
-          <a href="#" onClick={this.clearAll}>clear all</a>
+          <a tabIndex="0" href="#" onClick={this.clearAll}>clear all</a>
         </p>
 
         {attributes.map(attr => {
@@ -108,7 +112,7 @@ let AnswerFilter = React.createClass({
           let isChecked = filterTables.includes(table.name);
           return renderFilterField(table, isChecked, this.toggleTable);
         })}
-      </div>
+      </TabbableContainer>
     );
   },
 
@@ -143,7 +147,7 @@ let AnswerFilter = React.createClass({
           onChange={this.handleFilter}
         />
         <Tooltip content="Show search fields">
-          <i className="fa fa-caret-down wdk-Answer-filterSelectFieldsIcon"
+          <button className="fa fa-caret-down wdk-Answer-filterSelectFieldsIcon"
             onClick={this.toggleFilterFieldSelector}/>
         </Tooltip>
         <Tooltip content={tooltipContent}>
