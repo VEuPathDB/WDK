@@ -27,7 +27,7 @@ function isTouchDevice() {
   return 'ontouchstart' in document.documentElement // works on most browsers
       || 'ontouchstart' in document // works with chrome emulator mode
       || 'onmsgesturechange' in window; // works on ie10
-};
+}
 
 let WdkTable = React.createClass({
 
@@ -123,7 +123,7 @@ let WdkTable = React.createClass({
     let className = 'wdk-RecordTable-headerWrapper' +
       (isSortable ? ' wdk-RecordTable-headerWrapper_sortable' : '');
     let sortClass = this.props.sortDataKey == columnComponent.props.dataKey
-      ? SORT_CLASS_MAP[this.props.sortDirection] : SORT_CLASS_MAP['ASC'] + ' wdk-RecordTable-unsorted';
+      ? SORT_CLASS_MAP[this.props.sortDirection] : SORT_CLASS_MAP.ASC + ' wdk-RecordTable-unsorted';
     let sort = isSortable ? partial(this.handleSort, dataKey) : noop;
     let hide = partial(this.handleHideColumn, dataKey);
     let title = isSortable ? 'Click to sort table by this column.' : '';

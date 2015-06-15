@@ -2,10 +2,6 @@
 import assign from 'lodash/object/assign';
 import curry from 'lodash/function/curry';
 import flattenDeep from 'lodash/array/flattenDeep';
-import union from 'lodash/array/union';
-import intersection from 'lodash/array/intersection';
-import indexBy from 'lodash/collection/indexBy';
-import property from 'lodash/utility/property';
 import values from 'lodash/object/values';
 import pick from 'lodash/object/pick';
 import Store from '../core/store';
@@ -181,7 +177,7 @@ function addAnswer(state, { answer, requestData }) {
   state.answers[questionName] = answer;
 
   if (state.filterTerm) {
-    return filterAnswer(state, { questionName })
+    return filterAnswer(state, { questionName });
   }
   return state;
 }

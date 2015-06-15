@@ -1,5 +1,7 @@
 import React, { PropTypes } from 'react';
 
+let $ = window.jQuery;
+
 let Tooltip = React.createClass({
 
   propTypes: {
