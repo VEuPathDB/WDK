@@ -13,7 +13,7 @@ let TouchableArea = React.createClass({
     }
 
     this.props.scroller.doTouchStart(e.touches, e.timeStamp);
-    e.preventDefault();
+    // e.preventDefault();
   },
 
   handleTouchMove(e) {
@@ -31,6 +31,11 @@ let TouchableArea = React.createClass({
     }
 
     this.props.scroller.doTouchEnd(e.timeStamp);
+    // e.preventDefault();
+  },
+
+  handleTouchCancel(e) {
+    this.handleTouchEnd(e);
     e.preventDefault();
   },
 
@@ -40,7 +45,7 @@ let TouchableArea = React.createClass({
         onTouchStart={this.handleTouchStart}
         onTouchMove={this.handleTouchMove}
         onTouchEnd={this.handleTouchEnd}
-        onTouchCancel={this.handleTouchEnd}>
+        onTouchCancel={this.handleTouchCancel}>
         {this.props.children}
       </div>
     );
