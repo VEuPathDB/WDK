@@ -9,7 +9,8 @@ css_bundle    := dist/wdk/css/wdk.min.css
 test_bundle   := test/dist/tests.js
 
 wdk_sources  := $(shell find webapp/wdk/js -name '*.js') webpack.config.js
-libs_sources := webapp/wdk/lib/jquery.js \
+libs_sources := node_modules/babel-core/browser-polyfill.min.js \
+                webapp/wdk/lib/jquery.js \
                 webapp/wdk/lib/jquery-migrate-1.2.1.min.js \
                 webapp/wdk/lib/jquery-ui.js \
                 webapp/wdk/lib/jquery.cookie.js \
@@ -23,7 +24,9 @@ libs_sources := webapp/wdk/lib/jquery.js \
                 webapp/wdk/lib/jquery.dataTables.min.js \
                 webapp/wdk/lib/dataTables.colVis.min.js \
                 webapp/wdk/lib/jstree/jquery.jstree.js \
-                webapp/wdk/lib/spin.min.js
+                webapp/wdk/lib/spin.min.js \
+                webapp/wdk/lib/zynga-scroller/Animate.js \
+                webapp/wdk/lib/zynga-scroller/Scroller.js
 css_sources  := webapp/wdk/css/wdk.css
 test_sources := test/tests.js $(shell find test/tests -name '*.js')
 

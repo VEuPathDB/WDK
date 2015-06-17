@@ -6,17 +6,17 @@ wdk.namespace('wdk.models.filter', function(ns) {
   // Helper filtering functions
   // --------------------------
 
-  function gte(min, value) {
+  var gte = _.curry(function gte(min, value) {
     return value >= min;
-  }
+  });
 
-  function lte(max, value) {
+  var lte = _.curry(function lte(max, value) {
     return value <= max;
-  }
+  });
 
-  function within(min, max, value) {
+  var within = _.curry(function within(min, max, value) {
     return gte(min, value) && lte(max, value);
-  }
+  });
 
   var passes = _.curry(function passes(value, fn) {
     return fn(value);
@@ -214,17 +214,20 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
       if (min !== null && max !== null) {
         return function rangePredicate(datum) {
-          return within(min, max, metadata[datum.term]);
+          var values = metadata[datum.term];
+          return values.some(within(min, max));
         };
       }
       if (min !== null) {
         return function rangePredicate(datum) {
-          return gte(min, metadata[datum.term]);
+          var values = metadata[datum.term];
+          return values.some(get(min));
         };
       }
       if (max !== null) {
         return function rangePredicate(datum) {
-          return lte(max, metadata[datum.term]);
+          var values = metadata[datum.term];
+          return values.some(lte(max));
         };
       }
       throw new Error('Could not determine range predicate.');

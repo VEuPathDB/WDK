@@ -28,7 +28,7 @@ if (window.React == null) window.React = React;
 if (window.ReactRouter == null) window.ReactRouter = Router;
 
 
-const Wdk = {
+let Wdk = {
 
   /**
    * Starts a WDK application instance based on the provided configuration.
@@ -45,7 +45,7 @@ const Wdk = {
    */
   createApplication(config) {
     config.routes = Routes.getRoutes(config.rootUrl);
-    const context = Context.createContext(config);
+    let context = Context.createContext(config);
     _.each(Wdk.stores, function(Store) {
       context.addStore(Store, Store.createStore(context));
     });
