@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.formatter;
 
+import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.TableField;
@@ -38,8 +39,11 @@ public class RecordClassFormatter {
 
   public static JSONArray getAttributesJson(AttributeFieldContainer container, boolean expandAttributes) {
     JSONArray array = new JSONArray();
+    FieldScope scope = FieldScope.NON_INTERNAL;
     for (AttributeField attrib : container.getAttributeFields()) {
-      array.put(expandAttributes ? attrib.getName() : getAttributeJson(attrib));
+      if (scope.isFieldInScope(attrib)) {
+        array.put(expandAttributes ? attrib.getName() : getAttributeJson(attrib));
+      }
     }
     return array;
   }

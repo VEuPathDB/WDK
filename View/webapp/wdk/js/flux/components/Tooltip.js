@@ -1,6 +1,8 @@
 import React, { PropTypes } from 'react';
 
-const Tooltip = React.createClass({
+let $ = window.jQuery;
+
+let Tooltip = React.createClass({
 
   propTypes: {
     // string or ReactElement
@@ -24,12 +26,16 @@ const Tooltip = React.createClass({
   },
 
   _setupTooltip() {
-    const { content } = this.props;
+    let { content } = this.props;
 
     if (content == null) return;
 
+    let text = typeof content === 'string'
+      ? content
+      : React.renderToStaticMarkup(content);
+
     $(this.getDOMNode()).wdkTooltip({
-      content: { text: React.renderToStaticMarkup(content) },
+      content: { text },
       show: { delay: 1000 },
       position: { my: 'top left', at: 'bottom left' }
     });
@@ -40,11 +46,7 @@ const Tooltip = React.createClass({
   },
 
   render() {
-    return (
-      <div>
-        {this.props.children}
-      </div>
-    );
+    return React.Children.only(this.props.children);
   }
 
 });

@@ -1,7 +1,11 @@
+/* global Scroller */
 import partial from 'lodash/function/partial';
+import values from 'lodash/object/values';
+import sum from 'lodash/math/sum';
 import noop from 'lodash/utility/noop';
 import { Table } from 'fixed-data-table';
 import React from 'react/addons';
+import TouchableArea from './TouchableArea';
 
 /**
  * Wrapper of FixedDataTable.Table component which adds the ability to
@@ -11,7 +15,7 @@ import React from 'react/addons';
  *
  */
 
-const SORT_CLASS_MAP = {
+let SORT_CLASS_MAP = {
   ASC:  'fa fa-lg fa-sort-alpha-asc',
   DESC: 'fa fa-lg fa-sort-alpha-desc'
 };
@@ -19,7 +23,13 @@ const SORT_CLASS_MAP = {
 // Bookkeeping for `Table` prop `isColumnResizing`.
 let isColumnResizing = false;
 
-const WdkTable = React.createClass({
+function isTouchDevice() {
+  return 'ontouchstart' in document.documentElement // works on most browsers
+      || 'ontouchstart' in document // works with chrome emulator mode
+      || 'onmsgesturechange' in window; // works on ie10
+}
+
+let WdkTable = React.createClass({
 
   propTypes: {
 
@@ -44,8 +54,14 @@ const WdkTable = React.createClass({
 
   getInitialState() {
     return {
-      columnWidths: this._getColumnWidths(this.props)
+      columnWidths: this._getColumnWidths(this.props),
+      left: 0,
+      top: 0
     };
+  },
+
+  componentWillMount() {
+    this.scroller = new Scroller(this._handleScroll);
   },
 
   componentWillReceiveProps(nextProps) {
@@ -66,6 +82,10 @@ const WdkTable = React.createClass({
     return columnWidths;
   },
 
+  _handleScroll(left, top) {
+    this.setState({ left, top });
+  },
+
   handleColumnResize(newWidth, dataKey) {
     isColumnResizing = false;
     this.state.columnWidths[dataKey] = newWidth;
@@ -84,15 +104,29 @@ const WdkTable = React.createClass({
     this.props.onHideColumn(dataKey);
   },
 
+  handleContentHeightChange(height) {
+    console.log('-- contentHeightChange', height);
+    this.scroller.setDimensions(
+      // clientWidth, e.g., width of visible table area
+      this.props.width,
+      // clientHeight, e.g. height of visible table area
+      this.height || Math.min(this.maxHeight, height),
+      // contentWidth, e.g., computed with of content within table
+      sum(values(this.state.columnWidths)),
+      // contentHeight, e.g., computed height of content within table
+      height
+    );
+  },
+
   renderHeader(columnComponent, ...rest) {
-    const { dataKey, headerRenderer, isRemovable, isSortable } = columnComponent.props;
-    const className = 'wdk-RecordTable-headerWrapper' +
+    let { dataKey, headerRenderer, isRemovable, isSortable } = columnComponent.props;
+    let className = 'wdk-RecordTable-headerWrapper' +
       (isSortable ? ' wdk-RecordTable-headerWrapper_sortable' : '');
-    const sortClass = this.props.sortDataKey == columnComponent.props.dataKey
-      ? SORT_CLASS_MAP[this.props.sortDirection] : SORT_CLASS_MAP['ASC'] + ' wdk-RecordTable-unsorted';
-    const sort = isSortable ? partial(this.handleSort, dataKey) : noop;
-    const hide = partial(this.handleHideColumn, dataKey);
-    const title = isSortable ? 'Click to sort table by this column.' : '';
+    let sortClass = this.props.sortDataKey == columnComponent.props.dataKey
+      ? SORT_CLASS_MAP[this.props.sortDirection] : SORT_CLASS_MAP.ASC + ' wdk-RecordTable-unsorted';
+    let sort = isSortable ? partial(this.handleSort, dataKey) : noop;
+    let hide = partial(this.handleHideColumn, dataKey);
+    let title = isSortable ? 'Click to sort table by this column.' : '';
 
     return (
       <div title={title} onClick={sort} className={className}>
@@ -108,26 +142,39 @@ const WdkTable = React.createClass({
   },
 
   render() {
-    const defaultTableProps = {
+    let defaultTableProps = {
       isColumnResizing: isColumnResizing,
       onColumnResizeEndCallback: this.handleColumnResize
     };
-    const tableProps = Object.assign({}, defaultTableProps, this.props);
+
+    let tableProps = Object.assign({}, defaultTableProps, this.props);
+
+    if (isTouchDevice()) {
+      Object.assign(tableProps, {
+        scrollTop: this.state.top,
+        scrollLeft: this.state.left,
+        overflowX: 'hidden',
+        overflowY: 'hidden',
+        onContentHeightChange: this.handleContentHeightChange
+      });
+    }
 
     return (
-      <Table {...tableProps}>
-        {React.Children.map(this.props.children, child => {
-          const headerRenderer = partial(this.renderHeader, child);
-          const isResizable = child.props.isResizable != null
-            ? child.props.isResizable : true;
+      <TouchableArea scroller={this.scroller}>
+        <Table {...tableProps}>
+          {React.Children.map(this.props.children, child => {
+            let headerRenderer = partial(this.renderHeader, child);
+            let isResizable = child.props.isResizable != null
+              ? child.props.isResizable : true;
 
-          return React.addons.cloneWithProps(child, {
-            headerRenderer,
-            isResizable,
-            width: this.state.columnWidths[child.props.dataKey]
-          });
-        })}
-      </Table>
+            return React.addons.cloneWithProps(child, {
+              headerRenderer,
+              isResizable,
+              width: this.state.columnWidths[child.props.dataKey]
+            });
+          })}
+        </Table>
+      </TouchableArea>
     );
   }
 

@@ -63,9 +63,11 @@ export const AnswerChangeAttributes = Action({
   attributes: []
 });
 
-export const AnswerFilter = Action({
+export const AnswerUpdateFilter = Action({
   questionName: null,
-  terms: ''
+  terms: '',
+  attributes: null,
+  tables: null
 });
 
 export const QuestionsAdded = Action({
