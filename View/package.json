@@ -14,7 +14,7 @@
   "private": true,
   "dependencies": {
     "backbone": "^1.2.1",
-    "fixed-data-table": "0.3.0",
+    "fixed-data-table": "^0.2.0",
     "flux": "2.0.3",
     "immutable": "3.7.4",
     "lodash": "3.9.3",
