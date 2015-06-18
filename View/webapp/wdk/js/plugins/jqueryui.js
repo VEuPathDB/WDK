@@ -58,9 +58,8 @@
       return;
     }
 
-    ui.tab.find("span:last").append('<img style="margin-left:4px; ' +
-      'position: relative; top:2px;" src="' +
-      wdk.assetsUrl('wdk/images/filterLoading.gif') + '"/>');
+    var spinner = new Spinner();
+    spinner.spin(ui.panel[0]);
 
     ui.jqXHR
       .done(function() {
@@ -75,7 +74,7 @@
       })
 
       .always(function() {
-        ui.tab.find("img").remove();
+        spinner.stop();
       });
   }
 
