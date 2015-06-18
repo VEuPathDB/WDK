@@ -59,6 +59,7 @@
     }
 
     var spinner = new Spinner();
+    ui.panel.html('<p style="text-align: center; font-size: 150%;">Loading</p>');
     spinner.spin(ui.panel[0]);
 
     ui.jqXHR
@@ -68,7 +69,7 @@
 
       .fail(function(jqXHR, textStatus, errorThrown) {
         if (errorThrown != "abort") {
-          ui.panel.html('<p style="padding:1em;">Unable to load tab content: ' +
+          ui.panel.html('<p style="text-align: center; font-size: 150%;">Unable to load tab content: ' +
             '<i>' + errorThrown + '</i></p>');
         }
       })
