@@ -1,6 +1,5 @@
 /* apply a natural box layout model to all elements, but allowing components to change */
 /* See http://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
-@import 'fixed-data-table.css';
 html {
   box-sizing: border-box;
 }
