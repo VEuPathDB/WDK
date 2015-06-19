@@ -106,6 +106,7 @@ public class ProcessStepAction extends Action {
       if (action.equals(WizardForm.ACTION_REVISE)) {
         // revise the given step with the question & params information.
         reviseStep(request, questionForm, wdkModel, user, strategy, step, customName);
+        // FIXME This should hold the current step id
         rootMap = new HashMap<>();
       }
       else if (action.equals(WizardForm.ACTION_INSERT)) {
@@ -152,6 +153,7 @@ public class ProcessStepAction extends Action {
     if (step == null)
       throw new WdkUserException("Required param " + PARAM_STEP + " is missing.");
 
+    // XXX This is a no-op since we clone the strategy above in execute().
     // before changing step, need to check if strategy is saved, if yes, make a copy.
     if (strategy.getIsSaved())
       strategy.update(false);
@@ -162,6 +164,7 @@ public class ProcessStepAction extends Action {
     if (questionName != null && questionName.length() > 0) {
       // revise a step with a new question
       Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, form);
+      mapStepParams(step, params);
       step.setQuestionName(questionName);
       step.setParamValues(params);
     }
@@ -192,6 +195,7 @@ public class ProcessStepAction extends Action {
 
     QuestionBean question = wdkModel.getQuestion(questionName);
     Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, form);
+    mapStepParams(step, params);
 
     // get the weight, or use the current step's.
     Integer weight = getWeight(request);
@@ -245,6 +249,7 @@ public class ProcessStepAction extends Action {
 
     QuestionBean question = wdkModel.getQuestion(questionName);
     Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, form);
+    mapStepParams(step, params);
 
     // get the weight, or use the current step's.
     Integer weight = getWeight(request);
@@ -275,5 +280,29 @@ public class ProcessStepAction extends Action {
       weight = Integer.parseInt(strWeight);
     }
     return weight;
+  }
+
+  // Map step param ids to new step ids. This is needed in the case of operating
+  // on a saved strategy, since we make a deep clone and the params may refer
+  // to steps on the saved strategy rather than the new, unsaved strategy.
+  private void mapStepParams(StepBean step, Map<String, String> params)
+      throws WdkModelException {
+    String previousStepParamName = step.getPreviousStepParam();
+    String childStepParamName = step.getChildStepParam();
+    if (params.containsKey(previousStepParamName)) {
+      Integer newStepId = step.getPreviousStep().getStepId();
+      logger.debug("updating previous step '" + previousStepParamName
+          + "' id: " + newStepId);
+      if (newStepId != null) {
+        params.put(previousStepParamName, newStepId.toString());
+      }
+    }
+    if (params.containsKey(childStepParamName)) {
+      Integer newStepId = step.getChildStep().getStepId();
+      logger.debug("updating child step id: " + newStepId);
+      if (newStepId != null) {
+        params.put(childStepParamName, newStepId.toString());
+      }
+    }
   }
 }
