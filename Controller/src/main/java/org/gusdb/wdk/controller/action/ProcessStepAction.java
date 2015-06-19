@@ -83,8 +83,8 @@ public class ProcessStepAction extends Action {
         stepId = Integer.valueOf(strStepId);
 
       // cannot change step in saved strategy, will need to make a clone first
+      Map<Integer, Integer> stepIdMap = new HashMap<>();
       if (strategy.getIsSaved()) {
-        Map<Integer, Integer> stepIdMap = new HashMap<>();
         strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
         // map the old step id to the new one
         stepId = stepIdMap.get(stepId);
@@ -107,7 +107,7 @@ public class ProcessStepAction extends Action {
         // revise the given step with the question & params information.
         reviseStep(request, questionForm, wdkModel, user, strategy, step, customName);
         // FIXME This should hold the current step id
-        rootMap = new HashMap<>();
+        rootMap = stepIdMap;
       }
       else if (action.equals(WizardForm.ACTION_INSERT)) {
         // insert a step.
@@ -144,7 +144,7 @@ public class ProcessStepAction extends Action {
     }
   }
 
-  private void reviseStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
+  private static void reviseStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
       UserBean user, StrategyBean strategy, StepBean step, String customName) throws NumberFormatException,
       WdkUserException, WdkModelException {
     logger.debug("Revising step...");
@@ -179,7 +179,7 @@ public class ProcessStepAction extends Action {
     step.saveParamFilters();
   }
 
-  private Map<Integer, Integer> insertStep(HttpServletRequest request, QuestionForm form,
+  private static Map<Integer, Integer> insertStep(HttpServletRequest request, QuestionForm form,
       WdkModelBean wdkModel, UserBean user, StrategyBean strategy, StepBean step, String customName)
       throws WdkUserException, WdkModelException {
     logger.debug("Inserting step...");
@@ -233,7 +233,7 @@ public class ProcessStepAction extends Action {
     }
   }
 
-  private Map<Integer, Integer> addStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
+  private static Map<Integer, Integer> addStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
       UserBean user, StrategyBean strategy, StepBean step, String customName, int branchId)
       throws WdkUserException, NumberFormatException, WdkModelException {
     logger.debug("Adding step...");
@@ -266,7 +266,7 @@ public class ProcessStepAction extends Action {
     return strategy.insertStepAfter(newStep, step.getStepId());
   }
 
-  private Integer getWeight(HttpServletRequest request) throws WdkUserException {
+  private static Integer getWeight(HttpServletRequest request) throws WdkUserException {
     // get the assigned weight
     String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
     boolean hasWeight = (strWeight != null && strWeight.length() > 0);
@@ -285,7 +285,7 @@ public class ProcessStepAction extends Action {
   // Map step param ids to new step ids. This is needed in the case of operating
   // on a saved strategy, since we make a deep clone and the params may refer
   // to steps on the saved strategy rather than the new, unsaved strategy.
-  private void mapStepParams(StepBean step, Map<String, String> params)
+  private static void mapStepParams(StepBean step, Map<String, String> params)
       throws WdkModelException {
     String previousStepParamName = step.getPreviousStepParam();
     String childStepParamName = step.getChildStepParam();
