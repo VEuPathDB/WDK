@@ -17,12 +17,93 @@ function renderFilterField(field, isChecked, handleChange) {
   return (
     <div key={field.name}>
       <label>
-        <input tabIndex="0" type="checkbox" value={field.name} checked={isChecked} onChange={handleChange}/>
+        <input type="checkbox" value={field.name} checked={isChecked} onChange={handleChange}/>
         {' ' + field.displayName}
       </label>
     </div>
   );
 }
+
+let AnswerFilterSelector = React.createClass({
+
+  componentDidMount() {
+    if (this.props.open) {
+      $(document).on('click', this.handleDocumentClick);
+    }
+  },
+
+  componentWillUnmount() {
+    $(document).off('click', this.handleDocumentClick);
+  },
+
+  componentDidUpdate() {
+    $(document).off('click', this.handleDocumentClick);
+    if (this.props.open) {
+      $(document).on('click', this.handleDocumentClick);
+    }
+  },
+
+  handleKeyPress(e) {
+    if (e.key === 'Escape') {
+      this.props.onClose();
+    }
+  },
+
+  handleDocumentClick(e) {
+    // close if the click target is not contained by this node
+    let node = React.findDOMNode(this);
+    if ($(e.target).closest(node).length === 0) {
+      this.props.onClose();
+    }
+  },
+
+  render() {
+    if (!this.props.open) return null;
+
+    let {
+      recordClass,
+      filterAttributes,
+      filterTables,
+      selectAll,
+      clearAll,
+      onClose,
+      toggleAttribute,
+      toggleTable
+    } = this.props;
+
+    return (
+      <TabbableContainer
+        onKeyDown={this.handleKeyPress}
+        className="wdk-Answer-filterFieldSelector">
+
+        <p>
+          <a href="#" onClick={selectAll}>select all</a>
+          {' | '}
+          <a href="#" onClick={clearAll}>clear all</a>
+        </p>
+
+        {recordClass.attributes.map(attr => {
+          let isChecked = filterAttributes.includes(attr.name);
+          return renderFilterField(attr, isChecked, toggleAttribute);
+        })}
+
+        {recordClass.tables.map(table => {
+          let isChecked = filterTables.includes(table.name);
+          return renderFilterField(table, isChecked, toggleTable);
+        })}
+
+        <div className="wdk-Answer-filterFieldSelectorCloseIconWrapper">
+          <button
+            className="fa fa-close wdk-Answer-filterFieldSelectorCloseIcon"
+            onClick={onClose}
+          />
+        </div>
+
+      </TabbableContainer>
+    );
+  }
+
+});
 
 let AnswerFilter = React.createClass({
 
@@ -83,40 +164,8 @@ let AnswerFilter = React.createClass({
     e.preventDefault();
   },
 
-  renderFilterFieldSelector() {
-    let { attributes, tables } = this.props.recordClass;
-    let { filterAttributes, filterTables } = this.state;
-
-    return (
-      <TabbableContainer className="wdk-Answer-filterFieldSelector">
-        <div className="wdk-Answer-filterFieldSelectorCloseIconWrapper">
-          <button
-            className="fa fa-close wdk-Answer-filterFieldSelectorCloseIcon"
-            onClick={this.toggleFilterFieldSelector}
-            tabIndex="0"
-          />
-        </div>
-
-        <p>
-          <a tabIndex="0" href="#" onClick={this.selectAll}>select all</a>
-          {' | '}
-          <a tabIndex="0" href="#" onClick={this.clearAll}>clear all</a>
-        </p>
-
-        {attributes.map(attr => {
-          let isChecked = filterAttributes.includes(attr.name);
-          return renderFilterField(attr, isChecked, this.toggleAttribute);
-        })}
-
-        {tables.map(table => {
-          let isChecked = filterTables.includes(table.name);
-          return renderFilterField(table, isChecked, this.toggleTable);
-        })}
-      </TabbableContainer>
-    );
-  },
-
   render() {
+    let { filterAttributes, filterTables, showFilterFieldSelector } = this.state;
     let { recordClass, filterTerm } = this.props;
     let { displayNamePlural } = recordClass;
 
@@ -154,7 +203,17 @@ let AnswerFilter = React.createClass({
           <i className="fa fa-question-circle fa-lg wdk-Answer-filterInfoIcon"/>
         </Tooltip>
 
-        { this.state.showFilterFieldSelector ? this.renderFilterFieldSelector() : null }
+        <AnswerFilterSelector
+          recordClass={recordClass}
+          open={showFilterFieldSelector}
+          onClose={this.toggleFilterFieldSelector}
+          filterAttributes={filterAttributes}
+          filterTables={filterTables}
+          selectAll={this.selectAll}
+          clearAll={this.clearAll}
+          toggleAttribute={this.toggleAttribute}
+          toggleTable={this.toggleTable}
+        />
 
       </div>
     );
