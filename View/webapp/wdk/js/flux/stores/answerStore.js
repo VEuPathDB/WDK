@@ -194,17 +194,17 @@ function moveTableColumn(state, { columnName, newPosition }) {
 
   /* The current position of the attribute being moved */
   let currentPosition = attributes.findIndex(function(attribute) {
-    return attribute.get('name') === columnName;
+    return attribute.name === columnName;
   });
 
   /* The attribute being moved */
   let attribute = attributes[currentPosition];
 
-  attributes
-    // remove attribute from array
-    .splice(currentPosition, 1)
-    // then, insert into new position
-    .splice(newPosition, 0, attribute);
+  // remove attribute from array
+  attributes.splice(currentPosition, 1)
+
+  // then, insert into new position
+  attributes.splice(newPosition, 0, attribute);
 
   return state;
 }
