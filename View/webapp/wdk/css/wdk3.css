@@ -100,6 +100,7 @@ main h4 {
 }
 .wdk-Answer-count {
   display: inline-block;
+  margin-left: 1em;
 }
 
 .wdk-RecordTable-Wrapper {
