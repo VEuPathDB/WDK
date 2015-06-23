@@ -16,9 +16,11 @@ import AppStore from './stores/appStore';
 import QuestionStore from './stores/questionStore';
 import RecordClassStore from './stores/recordClassStore';
 import RecordStore from './stores/recordStore';
+import PreferenceStore from './stores/preferenceStore';
 import AnswerActions from './actions/answerActions';
 import QuestionActions from './actions/questionActions';
 import RecordActions from './actions/recordActions';
+import PreferenceActions from './actions/preferenceActions';
 import CommonActions from './actions/commonActions';
 
 // expose libraries to global object, but only if they aren't already defined
@@ -60,14 +62,16 @@ let Wdk = {
     AppStore,
     QuestionStore,
     RecordClassStore,
-    RecordStore
+    RecordStore,
+    PreferenceStore
   },
 
   actions: {
     AnswerActions,
     QuestionActions,
     RecordActions,
-    CommonActions
+    CommonActions,
+    PreferenceActions
   }
 
 };
