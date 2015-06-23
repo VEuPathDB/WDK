@@ -1,16 +1,16 @@
 // Import modules
 import _ from 'lodash';
 import React from 'react/addons';
-import Router from 'react-router';
 import combineStores from '../utils/combineStores';
 import AnswerStore from '../stores/answerStore';
 import QuestionStore from '../stores/questionStore';
 import RecordClassStore from '../stores/recordClassStore';
+import PreferenceStore from '../stores/preferenceStore';
 import AnswerActions from '../actions/answerActions';
+import PreferenceActions from '../actions/preferenceActions';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
-import Record from './Record';
 
 // See http://facebook.github.io/react/docs/update.html
 let update = React.addons.update;
@@ -77,6 +77,7 @@ let AnswerController = React.createClass({
   // When the component first mounts, fetch the answer.
   componentWillMount() {
     this.router = this.context.application.router;
+    this.sortingPreferenceKey = 'sorting::' + this.props.params.questionName;
     this.subscribeToStores();
     this.fetchAnswer(this.props);
   },
@@ -91,6 +92,8 @@ let AnswerController = React.createClass({
 
     // incoming query and params
     let { query: nextQuery, params: nextParams } = nextProps;
+
+    this.sortingPreferenceKey = 'sorting::' + nextParams.questionName;
 
     // query keys to compare to determine if we need to fetch a new answer
     let answerQueryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
@@ -183,9 +186,9 @@ let AnswerController = React.createClass({
   // call the `loadAnswer` action creator based on the `params` and `query`
   // objects.
   fetchAnswer(props) {
+    let preferenceStore = this.context.application.getStore(PreferenceStore);
 
     // props.params and props.query are passed to this component by the Router.
-    let path = 'answer';
     let params = props.params;
     let query = props.query;
 
@@ -195,14 +198,8 @@ let AnswerController = React.createClass({
       offset: query.offset
     };
 
-    // Get sorting info from `query`
-    // FIXME make this one query param: sorting={attributeName}__{direction}
-    let sorting = query.sortBy && query.sortDir
-      ? [{
-          attributeName: query.sortBy,
-          direction: query.sortDir
-        }]
-      : this.state && this.state.displayInfo.sorting;
+    // XXX Could come from query param: sorting={attributeName}__{direction},...
+    let sorting = preferenceStore.value.preferences[this.sortingPreferenceKey];
 
     // Combine `pagination` and `sorting` into a single object:
     //
@@ -235,6 +232,7 @@ let AnswerController = React.createClass({
       attributes: maybeSplit(query.attrs, ','),
       tables: maybeSplit(query.tables, ',')
     };
+
     this.context.application.getActions(AnswerActions)
     .updateFilter(filterOpts);
 
@@ -298,6 +296,9 @@ let AnswerController = React.createClass({
 
       this.context.application.getActions(AnswerActions)
       .loadAnswer(question.name, { displayInfo });
+
+      this.context.application.getActions(PreferenceActions)
+      .setPreference(this.sortingPreferenceKey, sorting);
     },
 
     // Call the `moveColumn` action creator. This will cause the state of
@@ -338,7 +339,7 @@ let AnswerController = React.createClass({
 
     recordHrefGetter(record) {
       let path = 'record';
-      let params = { class: this.state.answer.meta.class }
+      let params = { class: this.state.answer.meta.class };
       let query = record.id;
 
       // Method provided by Router.Navigation mixin
@@ -384,9 +385,7 @@ let AnswerController = React.createClass({
       isLoading,
       answer,
       question,
-      questions,
       recordClass,
-      recordClasses,
       displayInfo,
       filterTerm,
       filterAttributes,
@@ -394,7 +393,7 @@ let AnswerController = React.createClass({
       filteredRecords
     } = this.state;
 
-    let { getCellRenderer, getRecordComponent } = this.context.application;
+    let { getCellRenderer } = this.context.application;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
@@ -408,12 +407,6 @@ let AnswerController = React.createClass({
     // Valid formats are 'table' and 'list'
     // TODO validation
     let format = this.props.query.format || 'table';
-
-    let expandedRecord = this.props.query.expandedRecord;
-
-    // List position of "selected" record (this is used to keep the same
-    // record at the top when transitioning between formats.
-    let position = Number(this.props.query.position) || 0;
 
     // `{...this.state}` is JSX short-hand syntax to pass each key-value pair of
     // this.state as a property to the component. It intentionally resembles

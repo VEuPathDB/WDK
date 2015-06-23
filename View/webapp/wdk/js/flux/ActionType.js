@@ -83,6 +83,10 @@ export let RecordDetailsReceived = Action({
   record: undefined
 });
 
+export let LoadPreferences = Action({
+  preferences: {}
+});
+
 export let SetPreference = Action({
   key: undefined,
   value: undefined
