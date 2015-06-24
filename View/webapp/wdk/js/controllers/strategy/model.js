@@ -269,9 +269,13 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
   Strategy.prototype.hasCustomName = function() {
     if (this.JSON.steps.length === 0) return false;
 
+    var regexp = /^(\(\d+\))?$/;
     var stepName = this.JSON.steps[1].customName;
-    var regex = new RegExp("^" + stepName + "(\\(\\d+\\))?$");
-    return !regex.test(this.name);
+
+    // return false if this.name is of the format
+    // "{stepName}" or "{stepName}(#)"
+    return !(this.name.startsWith(stepName) &&
+             regexp.test(this.name.replace(stepName, '')));
   };
 
   /****************************************************
