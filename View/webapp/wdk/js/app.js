@@ -1,9 +1,7 @@
-/*global RSVP, _, jQuery */
+import $ from 'jquery';
+import _ from 'lodash';
 
-// Include the babel polyfill. This adds global objects expected in parts of our
-// code base, such as Promise, and the runtime needed for generators.
-import 'babel/polyfill';
-
+import './vendor';
 import './core';
 import './user';
 import './models';
@@ -12,51 +10,16 @@ import './components';
 import './views';
 import './controllers';
 
-// import wdkFlux from './flux/main';
-
 var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver; // jshint ignore:line
 
 // uncomment next line to enable query string flag to force loadOnInterval
 // if (/\b__interval=true\b/.test(location.search)) MutationObserver = false;
-
-// Don't allow RSVP to "swallow" errors.
-// This will cause inspectors to break
-// here, from which one can look up the
-// call chain.
-RSVP.on('error', function(err) {
-  console.assert(false, err);
-});
 
 // Start the application. The ready callback is invoked
 // once the DOM has finished rendering.
 var app = wdk.application = wdk.app = wdk.core.Application.create({
 
   ready: function wdkReady() {
-
-    /**
-     * XXX This is transitional code and will be deprecated
-     *
-     * The current use case is to move pages piecemeal into
-     * the new architecture. For instance, the Datasets page
-     * used by EuPathDB sites will point to a specific Answer
-     * page: /answer/DataQuestions.AllDatasets.
-     *
-     * We are using a custom Location object to handle route changes.
-     * Typically, the browser's history is used to maintain a stack of routes
-     * by augmenting the URL (either by changing the hash property or by using
-     * the pushState API). A HeadlessLocation instance will maintain this stack
-     * internally and keep the URL bar clean.
-     */
-    // jQuery('[data-route]').each((index, el) => {
-    //   var route = el.getAttribute('data-route');
-    //   wdkFlux.createApplication({
-    //     location: 'none',
-    //     defaultRoute: route,
-    //     serviceUrl: wdk.webappUrl('/service'),
-    //     rootElement: el
-    //   });
-    // });
-
     wdk.cookieTest();
     wdk.setUpDialogs();
     wdk.setUpPopups();
@@ -73,27 +36,25 @@ var app = wdk.application = wdk.app = wdk.core.Application.create({
 
 // Sugar to register custom question views.
 // wdk.views.core.QuestionView delegates to these views
-wdk.questionView = function registerQuestionView() {
-  var name = 'question:' + arguments[0];
-  var rest = [].slice.call(arguments, 1);
-  var args = [].concat(name, rest);
-  app.registerView.apply(app, args);
+wdk.questionView = function registerQuestionView(questionName, ...rest) {
+  var name = 'question:' + questionName;
+  app.registerView(name, ...rest);
   return wdk;
 };
 
 // Global event handlers
 // need to call draw on dataTables that are children of a tab panel
-jQuery(document).on('tabsactivate', function() {
-  jQuery(jQuery.fn.dataTable.tables(true)).DataTable().columns.adjust();
+$(document).on('tabsactivate', function() {
+  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
 });
 
-jQuery(window).on('resize', _.throttle(function() {
-  jQuery(jQuery.fn.dataTable.tables(true)).DataTable().columns.adjust();
+$(window).on('resize', _.throttle(function() {
+  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
 }, 100));
 
 // Break bfcache. The handler doesn't have to do anything for the desired
 // effect. See redmine #18839.
-jQuery(window).on('unload', function() { });
+$(window).on('unload', function() { });
 
 // Helper functions
 // ----------------
@@ -114,7 +75,7 @@ function loadOnMutation() {
 
   observer.observe(target, config);
 
-  jQuery(window).on('beforeunload', function() {
+  $(window).on('beforeunload', function() {
     observer.disconnect();
   });
 
@@ -136,5 +97,5 @@ function loadUniqueMutationTargets(mutations) {
       ? acc.concat([ mutation.target ])
       : acc;
   }, []));
-  if (targets.length > 0) rafLoad(jQuery(targets));
+  if (targets.length > 0) rafLoad($(targets));
 }

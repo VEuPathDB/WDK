@@ -117,7 +117,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
     return attributes;
   }
 
-  private StepBean updateStepWithQuestion(ActionServlet servlet, HttpServletRequest request,
+  public static StepBean updateStepWithQuestion(ActionServlet servlet, HttpServletRequest request,
       WizardForm wizardForm, StrategyBean strategy, String questionName, UserBean user,
       WdkModelBean wdkModel, int stepId) throws WdkUserException, WdkModelException {
     logger.debug("updating step with question: " + questionName);
@@ -192,7 +192,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
     return user.createStep(strategy.getStrategyId(), question, params, null, false, true, weight);
   }
 
-  private StepBean createStepFromStrategy(UserBean user, StrategyBean newStrategy, int importStrategyId)
+  public static StepBean createStepFromStrategy(UserBean user, StrategyBean newStrategy, int importStrategyId)
       throws WdkModelException, WdkUserException {
     logger.debug("creating step from strategy: " + importStrategyId);
     StrategyBean importStrategy = user.getStrategy(importStrategyId);

@@ -145,7 +145,7 @@ public class StepBean {
         step.setAnswerValue(answer.getAnswerValue());
     }
 
-    public int getEstimateSize() throws WdkModelException {
+    public int getEstimateSize() {
         return step.getEstimateSize();
     }
 

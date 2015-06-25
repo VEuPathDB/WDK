@@ -1,17 +1,19 @@
 // Import modules
 import _ from 'lodash';
-import React from 'react';
-import Router from 'react-router';
+import React from 'react/addons';
 import combineStores from '../utils/combineStores';
 import AnswerStore from '../stores/answerStore';
 import QuestionStore from '../stores/questionStore';
 import RecordClassStore from '../stores/recordClassStore';
+import PreferenceStore from '../stores/preferenceStore';
 import AnswerActions from '../actions/answerActions';
+import PreferenceActions from '../actions/preferenceActions';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
-import Record from './Record';
 
+// See http://facebook.github.io/react/docs/update.html
+let update = React.addons.update;
 
 // Answer is a React component which acts as a Controller-View, as well as
 // a Route Handler.
@@ -75,6 +77,7 @@ let AnswerController = React.createClass({
   // When the component first mounts, fetch the answer.
   componentWillMount() {
     this.router = this.context.application.router;
+    this.sortingPreferenceKey = 'sorting::' + this.props.params.questionName;
     this.subscribeToStores();
     this.fetchAnswer(this.props);
   },
@@ -90,13 +93,19 @@ let AnswerController = React.createClass({
     // incoming query and params
     let { query: nextQuery, params: nextParams } = nextProps;
 
-    // query keys to compare to determine if we need to fetch a new answer
-    let queryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
+    this.sortingPreferenceKey = 'sorting::' + nextParams.questionName;
 
-    // _.pick will create an object with keys from queryKeys, and values from
+    // query keys to compare to determine if we need to fetch a new answer
+    let answerQueryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
+    let filterQueryKeys = [ 'q', 'attrs', 'tables' ];
+
+    // _.pick will create an object with keys from answerQueryKeys, and values from
     // the source object (query and nextQuery).
-    let answerQuery = _.pick(query, queryKeys);
-    let nextAnswerQuery = _.pick(nextQuery, queryKeys);
+    let answerQuery = _.pick(query, answerQueryKeys);
+    let nextAnswerQuery = _.pick(nextQuery, answerQueryKeys);
+
+    let filterQuery = _.pick(query, filterQueryKeys);
+    let nextFilterQuery = _.pick(nextQuery, filterQueryKeys);
 
     // fetch answer if the query has changed, or if the question name has changed
     if (!_.isEqual(answerQuery, nextAnswerQuery) || params.questionName != nextParams.questionName) {
@@ -104,9 +113,15 @@ let AnswerController = React.createClass({
     }
 
     // filter answer if the filter terms have changed
-    else if (query.filterTerm != nextQuery.filterTerm) {
+    else if (!_.isEqual(filterQuery, nextFilterQuery)) {
+      let filterOpts = {
+        questionName: nextParams.questionName,
+        terms: nextFilterQuery.q,
+        attributes: maybeSplit(nextFilterQuery.attrs, ','),
+        tables: maybeSplit(nextFilterQuery.tables, ',')
+      };
       this.context.application.getActions(AnswerActions)
-      .filterAnswer(nextParams.questionName, nextQuery.filterTerm);
+      .updateFilter(filterOpts);
     }
 
   },
@@ -134,6 +149,8 @@ let AnswerController = React.createClass({
         let { isLoading } = aState;
         let { displayInfo } = aState;
         let { filterTerm } = aState;
+        let { filterAttributes } = aState;
+        let { filterTables } = aState;
         let { filteredRecords } = aState;
         let { questions } = qState;
         let question = questions.find(q => q.name === questionName);
@@ -145,6 +162,8 @@ let AnswerController = React.createClass({
           answer,
           displayInfo,
           filterTerm,
+          filterAttributes,
+          filterTables,
           filteredRecords,
           question,
           questions,
@@ -167,76 +186,58 @@ let AnswerController = React.createClass({
   // call the `loadAnswer` action creator based on the `params` and `query`
   // objects.
   fetchAnswer(props) {
+    let preferenceStore = this.context.application.getStore(PreferenceStore);
 
     // props.params and props.query are passed to this component by the Router.
-    let path = 'answer';
     let params = props.params;
     let query = props.query;
 
-    if (!query.numrecs || !query.offset) {
-      // Replace the current undefined URL query params with default values
-      Object.assign(query, {
-        numrecs: query.numrecs || 1000,
-        offset: query.offset || 0
-      });
+    // Get pagination info from `query`
+    let pagination = {
+      numRecords: query.numrecs,
+      offset: query.offset
+    };
 
-      // This method is provided by the `Router.Navigation` mixin. It replaces
-      // the current URL, without adding an entry to the browser history. This
-      // call will cause the Route Handler for 'answer' (this component) to be
-      // rendered again. Since `query.numrecs` and `query.offset` are now set,
-      // the else block below will get executed again.
-      //
-      // It seems that calling this before the component is mounted leads to
-      // errors, so we will defer doing so.
-      setTimeout(() => {
-        this.router.replaceWith(path, params, query);
-      }, 0);
+    // XXX Could come from query param: sorting={attributeName}__{direction},...
+    let sorting = preferenceStore.value.preferences[this.sortingPreferenceKey];
 
-    } else {
+    // Combine `pagination` and `sorting` into a single object:
+    //
+    //     let displayInfo = {
+    //       pagination: pagination,
+    //       sorting: sorting
+    //     };
+    //
+    let displayInfo = {
+      pagination,
+      sorting,
+      visibleAttributes: this.state && this.state.displayInfo.visibleAttributes
+    };
 
-      // Get pagination info from `query`
-      let pagination = {
-        numRecords: Number(query.numrecs),
-        offset: Number(query.offset)
-      };
+    // TODO Add params to loadAnswer call
+    let answerParams = wrap(query.param).map(p => {
+      let parts = p.split('__');
+      return { name: parts[0], value: parts[1] };
+    });
 
-      // Get sorting info from `query`
-      // FIXME make this one query param: sorting={attributeName}__{direction}
-      let sorting = query.sortBy && query.sortDir
-        ? [{
-            attributeName: query.sortBy,
-            direction: query.sortDir
-          }]
-        : this.state && this.state.displayInfo.sorting;
+    let opts = {
+      displayInfo,
+      params: answerParams
+    };
 
-      // Combine `pagination` and `sorting` into a single object:
-      //
-      //     let displayInfo = {
-      //       pagination: pagination,
-      //       sorting: sorting
-      //     };
-      //
-      let displayInfo = {
-        pagination,
-        sorting,
-        visibleAttributes: this.state && this.state.displayInfo.visibleAttributes
-      };
+    // Call the AnswerCreator to fetch the Answer resource
+    let filterOpts = {
+      questionName: params.questionName,
+      terms: query.q,
+      attributes: maybeSplit(query.attrs, ','),
+      tables: maybeSplit(query.tables, ',')
+    };
 
-      // TODO Add params to loadAnswer call
-      let answerParams = wrap(query.param).map(p => {
-        let parts = p.split('__');
-        return { name: parts[0], value: parts[1] };
-      });
+    this.context.application.getActions(AnswerActions)
+    .updateFilter(filterOpts);
 
-      let opts = {
-        displayInfo,
-        params: answerParams
-      };
-
-      // Call the AnswerCreator to fetch the Answer resource
-      this.context.application.getActions(AnswerActions)
-      .loadAnswer(params.questionName, opts);
-    }
+    this.context.application.getActions(AnswerActions)
+    .loadAnswer(params.questionName, opts);
   },
 
 
@@ -259,17 +260,17 @@ let AnswerController = React.createClass({
 
       // Update the query object with the new values.
       // See https://lodash.com/docs#assign
-      let query = Object.assign({}, this.props.query, {
-        sortBy: attribute.name,
-        sortDir: direction
-      });
+      // let query = Object.assign({}, this.props.query, {
+      //   sortBy: attribute.name,
+      //   sortDir: direction
+      // });
 
       // This method is provided by the `Router.Navigation` mixin. It will
       // update the URL, which will trigger a new Route event, which will cause
       // this `this.componentWillReceiveProps` to be called, which will cause
       // this component to call `this.fetchAnswer()` with the sorting
       // configuration.
-      this.router.replaceWith('answer', this.props.params, query);
+      // this.router.replaceWith('answer', this.props.params, query);
 
       // This is an alternative way, which is to call loadAnswer.
       // The appeal of the above is that if the user clicks the browser refresh
@@ -277,17 +278,27 @@ let AnswerController = React.createClass({
       // saving the display info to localStorage and reloading it when the page
       // is reloaded.
       //
-      // let opts = {
-      //   displayInfo: {
-      //     sorting: [ { columnName: attribute.name, direction } ],
-      //     attributes,
-      //     pagination: {
-      //       offset: 0,
-      //       numRecords: 100
-      //     }
-      //   }
-      // };
-      // AnswerActions.loadAnswer(questionName, opts);
+      let attributeName = attribute.name;
+      let { displayInfo, question } = this.state;
+      let newSort = { attributeName, direction };
+      // Create a new array by removing existing sort def for attribute
+      // and adding the new sort def to the beginning of the array, only
+      // retaining the last three defs.
+      let sorting = displayInfo.sorting.
+        filter(spec => spec.attributeName !== attributeName).
+        slice(0, 2);
+
+      sorting = [newSort].concat(sorting);
+
+      displayInfo = update(displayInfo, {
+        sorting: { $set: sorting }
+      });
+
+      this.context.application.getActions(AnswerActions)
+      .loadAnswer(question.name, { displayInfo });
+
+      this.context.application.getActions(PreferenceActions)
+      .setPreference(this.sortingPreferenceKey, sorting);
     },
 
     // Call the `moveColumn` action creator. This will cause the state of
@@ -328,15 +339,26 @@ let AnswerController = React.createClass({
 
     recordHrefGetter(record) {
       let path = 'record';
-      let params = { class: this.state.answer.meta.class }
+      let params = { class: this.state.answer.meta.class };
       let query = record.id;
 
       // Method provided by Router.Navigation mixin
       return this.router.makeHref(path, params, query);
     },
 
-    onFilter(terms) {
-      let query = Object.assign({}, this.props.query, { filterTerm: terms });
+    onFilter(terms, attributes, tables) {
+      if (!terms) {
+        terms = attributes = tables = undefined;
+      }
+
+      let query = update(this.props.query, {
+        $merge: {
+          q: terms,
+          attrs: maybeJoin(attributes, ',') || undefined,
+          tables: maybeJoin(tables, ',') || undefined
+        }
+      });
+
       this.router.transitionTo('answer', this.props.params, query);
     }
 
@@ -363,15 +385,15 @@ let AnswerController = React.createClass({
       isLoading,
       answer,
       question,
-      questions,
       recordClass,
-      recordClasses,
       displayInfo,
       filterTerm,
+      filterAttributes,
+      filterTables,
       filteredRecords
     } = this.state;
 
-    let { getCellRenderer, getRecordComponent } = this.context.application;
+    let { getCellRenderer } = this.context.application;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
@@ -386,12 +408,6 @@ let AnswerController = React.createClass({
     // TODO validation
     let format = this.props.query.format || 'table';
 
-    let expandedRecord = this.props.query.expandedRecord;
-
-    // List position of "selected" record (this is used to keep the same
-    // record at the top when transitioning between formats.
-    let position = Number(this.props.query.position) || 0;
-
     // `{...this.state}` is JSX short-hand syntax to pass each key-value pair of
     // this.state as a property to the component. It intentionally resembles
     // the JavaScript spread operator.
@@ -401,6 +417,10 @@ let AnswerController = React.createClass({
     //
     // to understand the embedded XML, see: https://facebook.github.io/react/docs/jsx-in-depth.html
     if (answer && question && recordClass) {
+      if (_.isEmpty(filterAttributes) && _.isEmpty(filterTables)) {
+        filterAttributes = recordClass.attributes.map(a => a.name);
+        filterTables = recordClass.tables.map(t => t.name);
+      }
       return (
         <Doc title={`${question.displayName}`}>
           {isLoading ? <Loading/> : null}
@@ -411,6 +431,8 @@ let AnswerController = React.createClass({
             displayInfo={displayInfo}
             filterTerm={filterTerm}
             filteredRecords={filteredRecords}
+            filterAttributes={filterAttributes}
+            filterTables={filterTables}
             format={format}
             answerEvents={answerEvents}
             getCellRenderer={getCellRenderer}
@@ -442,4 +464,12 @@ function wrap(value) {
   if (typeof value === 'undefined') return [];
   if (!Array.isArray(value)) return [ value ];
   return value;
+}
+
+function maybeJoin(arr, delimeter) {
+  if (arr !== undefined) return arr.join(delimeter);
+}
+
+function maybeSplit(str, delimeter) {
+  if (str !== undefined) return str.split(delimeter);
 }

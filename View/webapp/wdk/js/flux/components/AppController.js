@@ -7,6 +7,7 @@ import React from 'react';
 import { RouteHandler } from 'react-router';
 import AppStore from '../stores/appStore';
 import CommonActions from '../actions/commonActions';
+import PreferenceActions from '../actions/preferenceActions';
 
 /*
  * RouterHandler is a special React component that the router uses to inject
@@ -25,7 +26,7 @@ let AppController = React.createClass({
   },
 
   getChildContext() {
-    let { application } = this.props
+    let { application } = this.props;
     return { application };
   },
 
@@ -39,6 +40,8 @@ let AppController = React.createClass({
     let { application } = this.props;
     let store = application.getStore(AppStore);
     let commonActions = application.getActions(CommonActions);
+    let preferenceActions = application.getActions(PreferenceActions);
+    preferenceActions.loadPreferences();
     commonActions.fetchCommonData();
     this.storeSubscription = store.subscribe(state => {
       this.setState(state);

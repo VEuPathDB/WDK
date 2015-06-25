@@ -1,6 +1,5 @@
 /* apply a natural box layout model to all elements, but allowing components to change */
 /* See http://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
-@import 'fixed-data-table.css';
 html {
   box-sizing: border-box;
 }
@@ -43,7 +42,9 @@ main h4 {
 }
 
 .wdk-Answer-filter {
+  position: relative;
   display: inline-block;
+  margin-right: 1em;
 }
 .wdk-Answer-filterIcon {
   color: gray;
@@ -51,8 +52,44 @@ main h4 {
   left: -20.5em;
 }
 .wdk-Answer-filterInput {
-  padding: .5em .5em .5em 2em;
-  width: 25em;
+  padding: .5em;
+  width: 30em;
+  margin-right: 1em;
+}
+.wdk-Answer-filterSelectFieldsIcon {
+  color: gray;
+  position: absolute;
+  right: 2.2em;
+  cursor: pointer;
+  padding: .7em;
+  border: 2px solid transparent;
+  background-color: transparent;
+}
+.wdk-Answer-filterSelectFieldsIcon:hover {
+  color: black;
+}
+.wdk-Answer-filterFieldSelector {
+  position: absolute;
+  z-index: 2;
+  background: white;
+  width: 30em;
+  padding: 0.6em;
+  border: 1px solid #C3C3C3;
+  box-shadow: 0px 1px 4px #c3c3c3;
+}
+.wdk-Answer-filterFieldSelectorCloseIcon {
+  cursor: pointer;
+  padding: .7em;
+  border: 2px solid transparent;
+  background-color: transparent;
+}
+.wdk-Answer-filterFieldSelectorCloseIconWrapper {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+.wdk-Answer-filterInfoIcon {
+  color: blue;
 }
 .wdk-Answer-filterButton {
   border: none;
@@ -63,6 +100,7 @@ main h4 {
 }
 .wdk-Answer-count {
   display: inline-block;
+  margin-left: 1em;
 }
 
 .wdk-RecordTable-Wrapper {
