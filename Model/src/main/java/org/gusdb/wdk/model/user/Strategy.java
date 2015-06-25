@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -618,11 +617,7 @@ public class Strategy {
    * change when the strategies properties are changed.
    * 
    * @return
-   * @throws JSONException
-   * @throws NoSuchAlgorithmException
    * @throws WdkModelException
-   * @throws SQLException
-   * @throws WdkUserException
    */
   public String getChecksum() throws WdkModelException {
     JSONObject jsStrategy = getJSONContent(true);
@@ -748,7 +743,7 @@ public class Strategy {
     this.description = description;
   }
 
-  public int getEstimateSize() throws WdkModelException {
+  public int getEstimateSize() {
     if (latestStep != null)
       estimateSize = latestStep.getEstimateSize();
     return estimateSize;

@@ -1,10 +1,11 @@
+import defaults from 'lodash/object/defaults';
 import {
   AppLoading,
   AppError,
   AnswerAdded,
   AnswerMoveColumn,
   AnswerChangeAttributes,
-  AnswerFilter,
+  AnswerUpdateFilter,
   AnswerLoading
 } from '../ActionType';
 
@@ -103,11 +104,11 @@ function createActions({ dispatcher, service }) {
       var { params = [], filters = [], displayInfo } = opts;
 
       // default values for pagination and sorting
-      var defaultPagination= { offset: 0, numRecords: 100 };
+      var defaultPagination= { offset: 0, numRecords: 1000 };
       var defaultSorting= [{ attributeName: 'primary_key', direction: 'ASC' }];
 
       // Set defaults if not defined in `opts`
-      displayInfo.pagination = displayInfo.pagination || defaultPagination;
+      defaults(displayInfo.pagination, defaultPagination);
       displayInfo.sorting = displayInfo.sorting || defaultSorting;
 
       // FIXME Set attributes to whatever we're soring on. This is required by
@@ -169,13 +170,15 @@ function createActions({ dispatcher, service }) {
       dispatcher.dispatch(action);
     },
 
-    filterAnswer(questionName, terms) {
-      var action = AnswerFilter({
-        questionName: questionName,
-        terms: terms
+    updateFilter({ questionName, terms, attributes, tables }) {
+      var action = AnswerUpdateFilter({
+        questionName,
+        terms,
+        attributes,
+        tables
       });
       dispatcher.dispatch(action);
-    }
+    },
 
   };
 }

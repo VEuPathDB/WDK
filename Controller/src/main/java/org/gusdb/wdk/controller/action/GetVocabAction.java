@@ -93,7 +93,6 @@ public class GetVocabAction extends Action {
     String values = request.getParameter("dependedValue");
     if (values != null && values.length() > 0) {
       JSONObject jsValues = new JSONObject(values);
-      @SuppressWarnings("unchecked")
       Iterator<String> keys = jsValues.keys();
       while (keys.hasNext()) {
         String pName = keys.next();
