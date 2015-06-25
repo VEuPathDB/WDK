@@ -53,7 +53,7 @@ let Record = React.createClass({
     if (value == null) return null;
     return (
       <tr className="wdk-Record-attribute">
-        <th>{formatAttributeName(meta.name)}</th>
+        <td><strong>{formatAttributeName(meta.name)}</strong></td>
         <td dangerouslySetInnerHTML={{__html: formatAttributeValue(value, meta.type)}}/>
       </tr>
     );
