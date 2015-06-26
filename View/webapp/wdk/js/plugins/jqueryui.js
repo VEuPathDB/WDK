@@ -58,9 +58,9 @@
       return;
     }
 
-    ui.tab.find("span:last").append('<img style="margin-left:4px; ' +
-      'position: relative; top:2px;" src="' +
-      wdk.assetsUrl('wdk/images/filterLoading.gif') + '"/>');
+    var spinner = new Spinner();
+    ui.panel.html('<p style="text-align: center; font-size: 150%; margin-bottom: 10em;">Loading</p>');
+    spinner.spin(ui.panel[0]);
 
     ui.jqXHR
       .done(function() {
@@ -69,13 +69,13 @@
 
       .fail(function(jqXHR, textStatus, errorThrown) {
         if (errorThrown != "abort") {
-          ui.panel.html('<p style="padding:1em;">Unable to load tab content: ' +
+          ui.panel.html('<p style="text-align: center; font-size: 150%;">Unable to load tab content: ' +
             '<i>' + errorThrown + '</i></p>');
         }
       })
 
       .always(function() {
-        ui.tab.find("img").remove();
+        spinner.stop();
       });
   }
 

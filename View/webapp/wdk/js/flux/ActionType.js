@@ -82,3 +82,18 @@ export let RecordDetailsReceived = Action({
   meta: undefined,
   record: undefined
 });
+
+export let LoadPreferences = Action({
+  preferences: {}
+});
+
+export let SetPreference = Action({
+  key: undefined,
+  value: undefined
+});
+
+export let RemovePreference = Action({
+  key: undefined
+});
+
+export let RemoveAllPreferences = Action({});

@@ -34,6 +34,7 @@ module.exports = {
   module: {
     loaders: [
       { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: 'babel-loader' },
+      { test: /\.css$/, loader: "style-loader!css-loader?sourceMap" }
     ]
   },
   node: {

@@ -30,17 +30,24 @@ libs_sources := node_modules/babel-core/browser-polyfill.min.js \
 css_sources  := webapp/wdk/css/wdk.css
 test_sources := test/tests.js $(shell find test/tests -name '*.js')
 
-
 .PHONY: all clean test test-server
 
-all: $(wdk_bundle) $(wdk3_bundle) $(libs_bundle) $(css_bundle)
+bundles: $(wdk_bundle) $(libs_bundle) $(css_bundle)
 
+# =============================================================================
+# Install npm packages. This target will prevent unneeded http requests.
+# =============================================================================
+node_modules: npm-shrinkwrap.json
+	npm install
+	touch node_modules
+
+node_modules/%: node_modules;
 
 # =============================================================================
 # Webpack bundles. See webpack.config.js for details
 # =============================================================================
 
-$(wdk_bundle): $(wdk_sources)
+$(wdk_bundle): $(wdk_sources) node_modules
 	webpack
 
 # =============================================================================
@@ -49,26 +56,26 @@ $(wdk_bundle): $(wdk_sources)
 
 $(libs_bundle): $(libs_sources)
 	mkdir -p $(dir $@)
-	awk 'FNR==1{print ""}1' $^ > $@
+	awk 'FNR==1{print ""}1' $(filter-out node_modules, $^) > $@
 
 
 # =============================================================================
 # Combine CSS files and add source maps
 # =============================================================================
 
-$(css_bundle): $(css_sources)
+$(css_bundle): $(css_sources) node_modules
 	mkdir -p $(dir $@)
-	cleancss --source-map --skip-rebase -o $@ $^
+	cleancss --source-map --skip-rebase -o $@ $<
 
 
 # =============================================================================
 # Create test bundles. See webpack-test.config.js
 # =============================================================================
 
-$(test_bundle): $(test_sources) $(wdk_sources)
+$(test_bundle): $(test_sources) $(wdk_sources) node_modules
 	webpack --config webpack-test.config.js $< $@
 
-test: $(test_bundle) $(libs_bundle)
+test: $(test_bundle) $(libs_bundle) node_modules
 	cp $(libs_bundle) test/dist
 
 

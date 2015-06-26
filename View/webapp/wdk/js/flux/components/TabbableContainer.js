@@ -2,6 +2,7 @@
  * Creates a container that allows a user to cycle among all tabbable elements.
  * This is useful for components such as dialogs and dropdown menus.
  */
+import omit from 'lodash/object/omit';
 import React from 'react';
 
 let $ = window.jQuery;
@@ -9,37 +10,38 @@ let $ = window.jQuery;
 let TabbableContainer = React.createClass({
 
   componentDidMount() {
-    this.node = React.findDOMNode(this);
-    this.node.focus();
-    $(this.node).on('keydown', this.containTab);
+    let node = React.findDOMNode(this);
+    this.tabbables = $(':tabbable', node);
+    node.focus();
   },
 
-  componentWillUnmount() {
-    $(this.node).off('keydown', this.containTab);
+  handleKeyDown(e) {
+    if (typeof this.props.onKeyDown === 'function')
+      this.props.onKeyDown(e);
+
+    this.containTab(e);
   },
 
   // prevent user from tabbing out of dropdown
+  // manually tab since os x removes some controls from the tabindex by default
   containTab(e) {
-    if (e.keyCode !== $.ui.keyCode.TAB) {
-      return;
+    if (e.key !== 'Tab') return;
+    let { tabbables } = this;
+    let l = tabbables.length;
+    let index = tabbables.index(e.target);
+    let inc = e.shiftKey ? l - 1 : 1;
+    let nextIndex = (index + inc) % l;
+    let nextTarget = tabbables[nextIndex];
+    if (nextTarget == null) {
+      nextTarget = tabbables[0];
     }
-
-    var tabbables = $(':tabbable', this.node),
-      first = tabbables.filter(':first'),
-      last  = tabbables.filter(':last');
-
-    if (e.target === last[0] && !e.shiftKey) {
-      first.focus(1);
-      return false;
-    } else if (e.target === first[0] && e.shiftKey) {
-      last.focus(1);
-      return false;
-    }
+    nextTarget.focus();
+    e.preventDefault();
   },
 
   render() {
     return (
-      <div tabIndex="-1" {...this.props}>
+      <div tabIndex="-1" {...this.props} onKeyDown={this.handleKeyDown}>
         {this.props.children}
       </div>
     );

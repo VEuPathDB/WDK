@@ -7,6 +7,9 @@ import { Table } from 'fixed-data-table';
 import React from 'react/addons';
 import TouchableArea from './TouchableArea';
 
+// import css file
+import 'fixed-data-table/dist/fixed-data-table.css';
+
 /**
  * Wrapper of FixedDataTable.Table component which adds the ability to
  *
