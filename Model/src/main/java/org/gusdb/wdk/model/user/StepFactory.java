@@ -214,7 +214,7 @@ public class StepFactory {
 
     // contains wildcard for project; does not contain ordering
     countValidPublicStratsSql = new StringBuilder("select count(1) from ( ").append(unsortedPublicStratsSql).append(
-        isRootStepValidCondition).append(" )").toString();
+        isRootStepValidCondition).append(" ) cps").toString();
 
     // contains wildcards for is_public (boolean) and strat ID (int)
     updatePublicStratStatusSql = new StringBuilder().append("UPDATE ").append(userSchema).append(
@@ -807,7 +807,7 @@ public class StepFactory {
     PreparedStatement psStep = null;
     String sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_QUESTION_NAME + " = ?, " +
         COLUMN_ANSWER_FILTER + " = ?, " + COLUMN_LEFT_CHILD_ID + " = ?, " + COLUMN_RIGHT_CHILD_ID + " = ?, " +
-        COLUMN_ASSIGNED_WEIGHT + " = ?, " + COLUMN_DISPLAY_PARAMS + " = ?, is_valid = 1 WHERE " + COLUMN_STEP_ID + " = ?";
+        COLUMN_ASSIGNED_WEIGHT + " = ?, " + COLUMN_DISPLAY_PARAMS + " = ?, is_valid = ? WHERE " + COLUMN_STEP_ID + " = ?";
 
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
     JSONObject jsContent = getParamContent(step.getParamValues());
@@ -828,7 +828,8 @@ public class StepFactory {
         psStep.setObject(4, null);
       psStep.setInt(5, step.getAssignedWeight());
       platform.setClobData(psStep, 6, jsContent.toString(), false);
-      psStep.setInt(7, step.getStepId());
+      psStep.setBoolean(7, true);
+      psStep.setInt(8, step.getStepId());
       int result = psStep.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-save-step-params", start);
       if (result == 0)
@@ -1709,7 +1710,7 @@ public class StepFactory {
   int resetStepCounts(Step fromStep) throws WdkModelException {
     String selectSql = selectStepAndParents(fromStep.getStepId());
     String sql = "UPDATE " + userSchema + "steps SET estimate_size = " + UNKNOWN_SIZE +
-        ", is_valid = 1 WHERE step_id IN (" + selectSql + ")";
+        ", is_valid = " + userDb.getPlatform().convertBoolean(true) + " WHERE step_id IN (" + selectSql + ")";
     try {
       return SqlUtils.executeUpdate(userDb.getDataSource(), sql, "wdk-step-reset-count-recursive");
     }
