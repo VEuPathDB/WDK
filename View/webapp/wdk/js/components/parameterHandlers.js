@@ -261,6 +261,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     });
 
     $param.append(filterParam.el);
+    $param.trigger('filterParamDidMount', filterParam);
 
     // This is a circular reference and potential memory leak, although jQuery seems to make this safe.
     // See http://stackoverflow.com/questions/10092619/precise-explanation-of-javascript-dom-circular-reference-issue
