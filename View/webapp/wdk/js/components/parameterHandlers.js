@@ -180,7 +180,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
-  function createFilterParam($param, questionName, dependedValue, filterData) {
+  function createFilterParam($param, questionName, dependedValue, filterData, keepPreviousValue) {
     var $data = $param.data();
     var filterParam = $data.filterParam;
 
@@ -201,16 +201,18 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     defaultColumns = defaultColumns ? defaultColumns.split(/\s+/) : [];
 
     // get previous values
-    try {
-      previousValue = JSON.parse(input.val());
-      if (!( _.isArray(previousValue.filters) &&
-             _.isArray(previousValue.values)  &&
-             _.isArray(previousValue.ignored) )) {
-        previousValue = undefined;
-        throw new Error('Previous value is malformed.');
+    if (keepPreviousValue) {
+      try {
+        previousValue = JSON.parse(input.val());
+        if (!( _.isArray(previousValue.filters) &&
+               _.isArray(previousValue.values)  &&
+               _.isArray(previousValue.ignored) )) {
+          previousValue = undefined;
+          throw new Error('Previous value is malformed.');
+        }
+      } catch (e) {
+        console.warn(e);
       }
-    } catch (e) {
-      console.warn(e);
     }
 
     // parse data from <script>
@@ -716,7 +718,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       sendReqUrl = sendReqUrl + '&json=true';
       xhr = $.getJSON(sendReqUrl, function(data) {
-        createFilterParam(dependentParam, questionName, dependedValues, data);
+        createFilterParam(dependentParam, questionName, dependedValues, data, keepPreviousValue);
         dependentParam
           .find('input').removeAttr('disabled').end()
           .find('.loading').hide();
