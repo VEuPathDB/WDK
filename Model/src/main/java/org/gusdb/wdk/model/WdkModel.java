@@ -508,8 +508,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
-    appDb = new DatabaseInstance(appDbConfig, DB_INSTANCE_APP);
-    userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER);
+    appDb = new DatabaseInstance(appDbConfig, DB_INSTANCE_APP, true);
+    userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER, true);
 
     resultFactory = new ResultFactory(this);
     userFactory = new UserFactory(this);
