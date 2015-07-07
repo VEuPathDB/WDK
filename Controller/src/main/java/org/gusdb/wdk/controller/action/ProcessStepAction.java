@@ -176,12 +176,10 @@ public class ProcessStepAction extends Action {
       throw new WdkUserException("Required parameter " + PARAM_QUESTION + " or " + PARAM_FILTER +
           " is missing");
     }
-    step.saveParamFilters();
-
     // Update customName
     step.setCustomName(customName);
     step.update(false);
-
+    step.saveParamFilters();
   }
 
   private static Map<Integer, Integer> insertStep(HttpServletRequest request, QuestionForm form,
