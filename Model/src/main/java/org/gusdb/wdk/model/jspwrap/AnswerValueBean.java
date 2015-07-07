@@ -291,7 +291,6 @@ public class AnswerValueBean {
         Vector<TableFieldBean> v = new Vector<TableFieldBean>();
         while (ti.hasNext()) {
             String tableName = ti.next();
-        logger.debug("reset answer cursor");
             v.add(new TableFieldBean(treeMapTables.get(tableName)));
         }
         int size = v.size();
