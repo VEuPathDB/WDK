@@ -281,10 +281,11 @@ public class AnswerValueBean {
         return rmAttribs;
     }
 
+	  // adding "yes" will hint RecordClass to use table display names 
     public TableFieldBean[] getAllReportMakerTables() {
         RecordClass recordClass = answerValue.getQuestion().getRecordClass();
         Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.REPORT_MAKER,"yes");
-				// sorting alphabetically by internal table name (unfortunately we do not have the display name)
+				// sorting alphabetically by internal table name
 				Map<String, TableField> treeMapTables = new TreeMap<String, TableField>(tables);
         Iterator<String> ti = treeMapTables.keySet().iterator();
         Vector<TableFieldBean> v = new Vector<TableFieldBean>();
