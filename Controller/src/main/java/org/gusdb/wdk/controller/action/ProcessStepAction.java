@@ -177,6 +177,11 @@ public class ProcessStepAction extends Action {
           " is missing");
     }
     step.saveParamFilters();
+
+    // Update customName
+    step.setCustomName(customName);
+    step.update(false);
+
   }
 
   private static Map<Integer, Integer> insertStep(HttpServletRequest request, QuestionForm form,
