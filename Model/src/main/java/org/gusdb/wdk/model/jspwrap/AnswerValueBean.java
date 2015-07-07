@@ -283,7 +283,7 @@ public class AnswerValueBean {
 
     public TableFieldBean[] getAllReportMakerTables() {
         RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-        Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.REPORT_MAKER);
+        Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.REPORT_MAKER,"yes");
 				// sorting alphabetically by internal table name (unfortunately we do not have the display name)
 				Map<String, TableField> treeMapTables = new TreeMap<String, TableField>(tables);
         Iterator<String> ti = treeMapTables.keySet().iterator();
