@@ -271,8 +271,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     filterParam.on('change:value', function(filterParam, value) {
       var ignored = value.data.filter(datum => datum.isIgnored);
+      var filteredData = value.filteredData.filter(datum => !ignored.includes(datum));
       input.val(JSON.stringify({
-        values: _.pluck(value.filteredData, 'term'),
+        values: _.pluck(filteredData, 'term'),
         ignored: _.pluck(ignored, 'term'),
         filters: _.map(value.filters, _.partialRight(_.omit, 'selection'))
       }));
