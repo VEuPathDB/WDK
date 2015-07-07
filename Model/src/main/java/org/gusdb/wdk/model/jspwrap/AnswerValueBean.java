@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -283,11 +284,14 @@ public class AnswerValueBean {
     public TableFieldBean[] getAllReportMakerTables() {
         RecordClass recordClass = answerValue.getQuestion().getRecordClass();
         Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.REPORT_MAKER);
-        Iterator<String> ti = tables.keySet().iterator();
+				// sorting alphabetically by internal table name (unfortunately we do not have the display name)
+				Map<String, TableField> treeMapTables = new TreeMap<String, TableField>(tables);
+        Iterator<String> ti = treeMapTables.keySet().iterator();
         Vector<TableFieldBean> v = new Vector<TableFieldBean>();
         while (ti.hasNext()) {
             String tableName = ti.next();
-            v.add(new TableFieldBean(tables.get(tableName)));
+        logger.debug("reset answer cursor");
+            v.add(new TableFieldBean(treeMapTables.get(tableName)));
         }
         int size = v.size();
         TableFieldBean[] rmTables = new TableFieldBean[size];
