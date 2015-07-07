@@ -466,6 +466,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     return fields;
   }
+	// used by report maker, adding display names in map so later the tables show sorted by display name
+	public Map<String, TableField> getTableFieldMap(FieldScope scope, String usedbyreportmaker ) {
+    Map<String, TableField> fields = new LinkedHashMap<String, TableField>();
+    for (TableField field : tableFieldsMap.values()) {
+      if (scope.isFieldInScope(field)) {
+        fields.put(field.getDisplayName(), field);
+      }
+    }
+    return fields;
+  }
 
   public TableField[] getTableFields() {
     Map<String, TableField> tables = getTableFieldMap();
