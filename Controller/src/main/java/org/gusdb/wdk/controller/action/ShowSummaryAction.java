@@ -360,7 +360,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 assignedWeight);
     }
 
-    public static StepBean summaryPaging(HttpServletRequest request, int strategyId,
+    public static StepBean summaryPaging(HttpServletRequest request, Integer strategyId,
             QuestionBean question, Map<String, String> params,
             String filterName, boolean deleted, int assignedWeight)
             throws WdkModelException, WdkUserException {
