@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.WdkModel;
 /**
  * Starting from build-23, we no longer back up user data, and will just delete guest data for each release.
  * Starting build 24 we add deletion of deleted strategies/steps and deletion of steps not connected to a strategy
+ * Starting build 25 we move all cleaning activity to its own script CleanBrokenStratsSteps
  * @author Jerric
  *
  */
@@ -85,7 +86,7 @@ public class GuestRemover extends BaseCLI {
         + "under $GUS_HOME, where model-config.xml is stored.");
 
     addSingleValueOption(ARG_CUTOFF_DATE, true, null, "Any guest user "
-        + "created by this date will be backed up, and removed "
+        + "created BEFORE this date, and the user's data, will be removed "
         + "from the live schema defined in the model-config.xml. "
         + "The data should be in this format: yyyy/mm/dd");
   }
@@ -100,14 +101,20 @@ public class GuestRemover extends BaseCLI {
 
     wdkModel = WdkModel.construct(projectId, gusHome);
     userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-
     userSchema = DBPlatform.normalizeSchema(userSchema);
 
-    LOG.info("********** Looking up guest users... **********");
+    LOG.info("********** Looking up guest users: generate temp table wdk_guests... **********");
     String guestSql = lookupGuests(userSchema, cutoffDate);
     LOG.info("********** " + guestSql + " **********");
-    LOG.info("********** Deleting guest users... **********");
+ 
+    LOG.info("********** Deleting all data belonging to guest users in userlogins5 schema... **********");
     removeGuests(guestSql);
+
+    LOG.info("********** Deleting all data belonging to guest users in gbrowseusers schema... **********"); 
+		DataSource dataSource = wdkModel.getUserDb().getDataSource();
+		// though we cannot use the cutoff date here...
+    removeGBrowseGuests(dataSource);
+
   }
 
   /**
@@ -122,19 +129,16 @@ public class GuestRemover extends BaseCLI {
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     String defaultSchema = wdkModel.getUserDb().getDefaultSchema();
-
     if (platform.checkTableExists(dataSource, defaultSchema, GUEST_TABLE)) {
       // guest table exists, will drop it first.
       SqlUtils.executeUpdate(dataSource, "DROP TABLE " + GUEST_TABLE, "backup-drop-guest-table.");
     }
-
     // create a new guest table with the guests created before the cutoff date
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + GUEST_TABLE + " AS SELECT user_id FROM " +
         userSchema + "users " + " WHERE is_guest = 1 AND register_time < to_date('" + cutoffDate +
         "', 'yyyy/mm/dd')", "backup-create-guest-table");
     SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX " + GUEST_TABLE + "_ix01 ON " + GUEST_TABLE +
         " (user_id)", "create-guest-index");
-
     return "SELECT user_id FROM " + GUEST_TABLE;
   }
 
@@ -150,37 +154,13 @@ public class GuestRemover extends BaseCLI {
     deleteByBatch(dataSource, userSchema + "user_baskets", userClause); // we dont know why we get some
     deleteByBatch(dataSource, userSchema + "favorites", userClause);
     deleteByBatch(dataSource, userSchema + "strategies", userClause);
-    deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 ");
     deleteByBatch(dataSource, userSchema + "step_analysis", " step_id IN (SELECT step_id FROM " + userSchema +
         "steps WHERE " + userClause + ")");
-    deleteByBatch(dataSource, userSchema + "steps", userClause +
-									" AND step_id NOT IN (SELECT root_step_id FROM " + userSchema + "strategies)");// we need this so teh script does not break on broken strategies
-
+    deleteByBatch(dataSource, userSchema + "steps", userClause);
+								//	" AND step_id NOT IN (SELECT root_step_id FROM " + userSchema + "strategies)");
     deleteByBatch(dataSource, userSchema + "user_roles", userClause);
-    deleteByBatch(dataSource, userSchema + "users", userClause + " AND user_id NOT IN (SELECT user_id FROM " +
-        userSchema + "steps)");
-    // jan 12 2015: the second condition makes the delete very slow (40sec for 10000 rows)
-    // and it should not be needed since steps from users in GUEST_TABLE should have been already removed from
-    // the steps table
-    // deleteByBatch(dataSource, userSchema + "users", userClause);
-
-    // also delete guest data from GBrowse
-    removeGBrowseGuests(dataSource);
-
-    // need to delete analysis and step repeatedly, since every deletion will open up more to be deleted.
-    boolean remain = true;
-    while (remain) {
-      int sum = removeUnusedStepAnalysis(dataSource, userSchema);
-      try {
-        sum = removeUnusedSteps(dataSource, userSchema);
-        remain = (sum != 0);
-      }
-      catch (SQLException ex) {
-        LOG.warn(ex.getMessage());
-        remain = true;
-      }
-    }
-
+    deleteByBatch(dataSource, userSchema + "users", userClause);
+									// " AND user_id NOT IN (SELECT user_id FROM " + userSchema + "steps)");
   }
 
   private void removeGBrowseGuests(DataSource dataSource) throws SQLException {
@@ -206,36 +186,5 @@ public class GuestRemover extends BaseCLI {
     }
   }
 
-  private int removeUnusedStepAnalysis(DataSource dataSource, String userSchema) throws SQLException {
-		LOG.info("\n\nRemoving unused step_analysis...");
-    int count = 1, sum = 0;
-    String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
-    while (count != 0) {
-      count = GuestRemover.deleteByBatch(dataSource, userSchema + "step_analysis", "step_id IN (" +
-          "  SELECT step_id              FROM           " + stepTable +
-          "  MINUS SELECT root_step_id   FROM           " + strategyTable +
-          "  MINUS SELECT left_child_id  FROM           " + stepTable +
-          "  MINUS SELECT right_child_id FROM           " + stepTable + ")");
-      sum += count;
-    }
-    LOG.debug(sum + " unused step_analysis deleted");
-    return sum;
-  }
-
-  private int removeUnusedSteps(DataSource dataSource, String userSchema) throws SQLException {
-		LOG.info("\n\nRemoving unused steps...");
-    int count = 1, sum = 0;
-    String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
-    while (count != 0) {
-      count = GuestRemover.deleteByBatch(dataSource, stepTable, "step_id IN (" +
-          "  SELECT step_id              FROM           " + stepTable +
-          "  MINUS SELECT root_step_id   FROM           " + strategyTable +
-          "  MINUS SELECT left_child_id  FROM           " + stepTable +
-          "  MINUS SELECT right_child_id FROM           " + stepTable + ")");
-      sum += count;
-    }
-    LOG.debug(sum + " unused steps deleted");
-    return sum;
-  }
 
 }
