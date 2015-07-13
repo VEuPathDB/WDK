@@ -93,16 +93,23 @@ public class StepValidator extends BaseCLI {
     }
     projects = "(" + buffer.toString() + ")";
 
+		// we are cleaning apicomm from broken strategies in a new script wdkCleanBroken that we run before we remove guests
+		// but this takes care of broken strategies in the middle, not just the root step.
     dropDanglingSteps(wdkModel, projects);
+
+		// not sure why we need this: clean up step_params, remove steps NOT in userlogins5.steps
     deleteInvalidParams(wdkModel);
 
     resetFlags(wdkModel, projects);
     detectQuestions(wdkModel, projects);
     detectParams(wdkModel, projects);
     detectEnumParams(wdkModel, projects);
-
     flagDependentSteps(wdkModel, projects);
   }
+
+
+
+
 
   private void resetFlags(WdkModel wdkModel, String projects) throws SQLException {
     logger.debug("resetting is_valid flags...");
@@ -231,6 +238,12 @@ public class StepValidator extends BaseCLI {
       SqlUtils.executeUpdate(source, sql, "wdk-invalidate-drop-part-steps");
     }
   }
+
+
+
+
+
+
 
   private void deleteInvalidParams(WdkModel wdkModel) throws SQLException {
     logger.info("Deleting params which doesn't have a valid step...");
