@@ -11,3 +11,4 @@
 @import 'datatables.css';
 @import 'dataTables.colVis.min.css';
 @import 'jquery.qtip.min.css';
+@import '../../../node_modules/fixed-data-table/dist/fixed-data-table.css';
