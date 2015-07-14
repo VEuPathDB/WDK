@@ -5,9 +5,9 @@ use FgpUtil::Util::CommandHelper;
 
 my $GUS_HOME = $ENV{GUS_HOME};
 my $CLASSPATH = &FgpUtil::Util::CommandHelper::getJavaClasspath($GUS_HOME);
-my $sysProps = &FgpUtil::Util::CommandHelper::getSystemProps($GUS_HOME, 'wdkCleanBroken');
+my $sysProps = &FgpUtil::Util::CommandHelper::getSystemProps($GUS_HOME, 'wdkRemoveBroken');
 my $args = &FgpUtil::Util::CommandHelper::getJavaArgs(@ARGV);
 
-my $cmd = "java $sysProps -classpath $CLASSPATH org.gusdb.wdk.model.fix.CleanBrokenStratsSteps $args";
+my $cmd = "java $sysProps -classpath $CLASSPATH org.gusdb.wdk.model.fix.RemoveBrokenStratsSteps $args";
 
 system($cmd);

@@ -100,6 +100,7 @@ public class StepValidator extends BaseCLI {
 		// not sure why we need this: clean up step_params, remove steps NOT in userlogins5.steps
     deleteInvalidParams(wdkModel);
 
+		// reset is_valid flag to NULL (valid) in all non-guest steps
     resetFlags(wdkModel, projects);
     detectQuestions(wdkModel, projects);
     detectParams(wdkModel, projects);
