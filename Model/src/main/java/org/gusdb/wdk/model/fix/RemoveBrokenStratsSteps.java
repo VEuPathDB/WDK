@@ -20,19 +20,19 @@ import org.gusdb.wdk.model.WdkModel;
  * - strategies with project_id different from project_id in root_step
  * - strategies with root_step inexistent
  * - strategies with user_id inexistent
- * - strategies with a root_step that contains an invalid question _name (this could be done in validate?)
+ * - strategies with a root_step that contains an invalid question_name (this could be done in validate?)
  * - finally remove all steps that do not belong to a strategy
  * @author Jerric
  *
  */
-public class CleanBrokenStratsSteps extends BaseCLI {
+public class RemoveBrokenStratsSteps extends BaseCLI {
 
   private static final int PAGE_SIZE = 9000;
-  private static final Logger LOG = Logger.getLogger(CleanBrokenStratsSteps.class);
+  private static final Logger LOG = Logger.getLogger(RemoveBrokenStratsSteps.class);
 
   public static void main(String[] args) throws Exception {
     String cmdName = System.getProperty("cmdName");
-    CleanBrokenStratsSteps backup = new CleanBrokenStratsSteps(cmdName);
+    RemoveBrokenStratsSteps backup = new RemoveBrokenStratsSteps(cmdName);
     try {
       backup.invoke(args);
     }
@@ -41,7 +41,7 @@ public class CleanBrokenStratsSteps extends BaseCLI {
       throw ex;
     }
     finally {
-      LOG.info("WDK CleanBrokenStratsSteps done.");
+      LOG.info("WDK RemoveBrokenStratsSteps done.");
       System.exit(0);
     }
   }
@@ -50,8 +50,8 @@ public class CleanBrokenStratsSteps extends BaseCLI {
   private WdkModel wdkModel;
   private String userSchema;
 
-  public CleanBrokenStratsSteps(String command) {
-    super((command != null) ? command : "wdkCleanBroken",
+  public RemoveBrokenStratsSteps(String command) {
+    super((command != null) ? command : "wdkRemoveBroken",
         "This command cleans broken strategies and steps from the user DB");
   }
 
@@ -155,7 +155,7 @@ public class CleanBrokenStratsSteps extends BaseCLI {
     int count = 1, sum = 0;
     String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
     while (count != 0) {
-      count = CleanBrokenStratsSteps.deleteByBatch(dataSource, userSchema + "step_analysis", "step_id IN (" +
+      count = RemoveBrokenStratsSteps.deleteByBatch(dataSource, userSchema + "step_analysis", "step_id IN (" +
           "  SELECT step_id              FROM           " + stepTable +
           "  MINUS SELECT root_step_id   FROM           " + strategyTable +
           "  MINUS SELECT left_child_id  FROM           " + stepTable +
@@ -171,7 +171,7 @@ public class CleanBrokenStratsSteps extends BaseCLI {
     int count = 1, sum = 0;
     String stepTable = userSchema + "steps", strategyTable = userSchema + "strategies";
     while (count != 0) {
-      count = CleanBrokenStratsSteps.deleteByBatch(dataSource, stepTable, "step_id IN (" +
+      count = RemoveBrokenStratsSteps.deleteByBatch(dataSource, stepTable, "step_id IN (" +
           "  SELECT step_id              FROM           " + stepTable +
           "  MINUS SELECT root_step_id   FROM           " + strategyTable +
           "  MINUS SELECT left_child_id  FROM           " + stepTable +
