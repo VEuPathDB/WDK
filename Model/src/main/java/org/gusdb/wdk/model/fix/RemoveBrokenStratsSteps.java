@@ -69,20 +69,28 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
     userSchema = DBPlatform.normalizeSchema(userSchema);
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
+    DBPlatform platform = wdkModel.getUserDb().getPlatform();
+    String defaultSchema = wdkModel.getUserDb().getDefaultSchema();
+		String tempBrokenTable = " wdk_broken_strategies";
+		String tempUnknownRCTable = " wdk_strats_unknownRC";
 
-/* TO CLEAN:
- * - strategies is_deleted = 1
- * - strategies with user_id different from user_id in root_step
- * - strategies with project_id different from project_id in root_step
- * - strategies with root_step inexistent
- * - strategies with user_id inexistent
- * - strategies with a root_step that contains an invalid question _name (this could be done in validate?)
- * - finally remove all steps that do not belong to a strategy
+/* TO CLEAN/REMOVE:
+ * 1- strategies is_deleted = 1
+ * 2- broken:
+ *   - strategies with user_id different from user_id in root_step
+ *   - strategies with project_id different from project_id in root_step
+ *   - strategies with root_step inexistent
+ *   - strategies with user_id inexistent
+ * 3- strategies with a root_step that contains an invalid question _name (this could be done in validate?)
+ * 123- finally remove all steps that do not belong to a strategy
  */
+		if (platform.checkTableExists(dataSource, defaultSchema, tempBrokenTable)) {
+			SqlUtils.executeUpdate(dataSource, "DROP TABLE " + tempBrokenTable, "drop-broken-strats-table.");
+		}
+		if (platform.checkTableExists(dataSource, defaultSchema, tempUnknownRCTable)) {
+			SqlUtils.executeUpdate(dataSource, "DROP TABLE " + tempUnknownRCTable, "drop-unknownRC-strats-table.");
+		}
 
-		SqlUtils.executeUpdate(dataSource, "DROP TABLE wdk_broken_strategies", "drop-broken-strats-table.");
-		SqlUtils.executeUpdate(dataSource, "DROP TABLE wdk_strats_unknownRC", "drop-unknownRC-strats-table.");
- 
     deleteByBatch(dataSource, userSchema + "strategies", " is_deleted = 1 ");
 
 		//create a new temp table with the strategies to be deleted: wdk_broken_strategies
