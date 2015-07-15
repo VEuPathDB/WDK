@@ -29,7 +29,7 @@ import org.gusdb.wdk.model.question.QuestionSet;
  */
 public class ModelCacher extends BaseCLI {
 
-	// option to keep the apicomm local question/params cache hat is used to check for invalid steps
+	// option to keep the apicomm local question/params cache that is used to check for invalid steps
 	// (it is not the WDK cache, though it could make sense to add another flag for it)
   public static final String ARG_KEEP_CACHE = "keepCache";
 
@@ -71,13 +71,13 @@ public class ModelCacher extends BaseCLI {
         + " under $GUS_HOME, where model-config.xml is stored.");
     addNonValueOption("create", false, "create the cache tables to store "
         + "model definition. It affects all projects.");
-    addNonValueOption("drop", false, "drop the cache table for storing "
+    addNonValueOption("drop", false, "drop the local cache table for storing "
         + "model definition. It affects all projects.");
     addNonValueOption("expand", false, "load the model definition into " + "the cache tables.");
     addSingleValueOption("schema", false, null, "optional. the name of the"
         + " schema where the tables will be created/dropped/used.");
     addNonValueOption(ARG_KEEP_CACHE, false, "option. if this flag is present, the question data from"
-        + " previous run will be kept in the cache, and the question in the model will be skipped.");
+        + " previous run will be kept in the local cache tables, and the question in the model will be skipped.");
     addGroup(true, "create", "drop", "expand");
   }
 

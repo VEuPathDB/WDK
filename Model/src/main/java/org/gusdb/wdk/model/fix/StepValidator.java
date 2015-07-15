@@ -204,11 +204,17 @@ public class StepValidator extends BaseCLI {
         + "than leave steps: boolean, transforms,... Here the root of the "
         + "strategy will get marked, which will translate into an invalid " + "icon by the strategy.");
 
+		DBPlatform platform = wdkModel.getUserDb().getPlatform();
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
+    String defaultSchema = wdkModel.getUserDb().getDefaultSchema();
     String steps = userDB.getUserSchema() + "steps";
     DataSource source = wdkModel.getUserDb().getDataSource();
-
     String tempTable = "wdk_part_steps";
+		
+		if (platform.checkTableExists(source, defaultSchema, tempTable)) {
+      // temp table exists, will drop it first.
+      SqlUtils.executeUpdate(source, "DROP TABLE " + tempTable, "drop-temp-table.");
+    }
 
     try {
       String sql = "CREATE TABLE " + tempTable + " AS " +
@@ -220,7 +226,8 @@ public class StepValidator extends BaseCLI {
 
       // add a hint to use filter in CONNECT BY, which improves from 1368
       // seconds to 251 seconds.
-      sql = "UPDATE " + steps + " SET is_valid = 0 " + "WHERE is_valid != 0                   " +
+			// is_valid != 0 does not pick up the NULL values
+      sql = "UPDATE " + steps + " SET is_valid = 0 " + "WHERE (is_valid is NULL OR is_valid = 1) " +
           "  AND step_id IN (SELECT DISTINCT step_id FROM " + tempTable +
           "                  START WITH is_valid = 0 " +
           "                  CONNECT BY prior user_id = user_id " +
@@ -234,10 +241,10 @@ public class StepValidator extends BaseCLI {
       executeByBatch(wdkModel, source, sql, "STEP:wdk-invalidate-parent-step", null, null);
 
     }
-    finally {
+		 finally {
       String sql = "DROP TABLE " + tempTable + " PURGE";
-      SqlUtils.executeUpdate(source, sql, "wdk-invalidate-drop-part-steps");
-    }
+      //SqlUtils.executeUpdate(source, sql, "wdk-invalidate-drop-part-steps");
+			} 
   }
 
 
