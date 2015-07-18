@@ -71,8 +71,8 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
     String defaultSchema = wdkModel.getUserDb().getDefaultSchema();
-		String tempBrokenTable = " wdk_broken_strategies";
-		String tempUnknownRCTable = " wdk_strats_unknownRC";
+		String tempBrokenTable = "wdk_broken_strategies";
+		String tempUnknownRCTable = "wdk_strats_unknownRC";
 
 /* TO CLEAN/REMOVE:
  * 1- strategies is_deleted = 1
@@ -109,8 +109,8 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
 				userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
 						"(select question_name from wdk_questions)", "create-temp-unknownRC-strats-table");
 
-		// comment out deletion of these strategies... it depends on correct content in wdk_questions local table
-		deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
+		// comment out deletion of these strategies when needed... it depends on correct content in wdk_questions local table
+			deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
 
 
     // after strategies have been cleanedup.. delete unused steps: every deletion will open up more to be deleted.
