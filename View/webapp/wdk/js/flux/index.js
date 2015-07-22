@@ -11,17 +11,9 @@ import Immutable from 'immutable';
 import _ from 'lodash';
 import Context from './core/context';
 import Routes from './routes';
-import AnswerStore from './stores/answerStore';
-import AppStore from './stores/appStore';
-import QuestionStore from './stores/questionStore';
-import RecordClassStore from './stores/recordClassStore';
-import RecordStore from './stores/recordStore';
-import PreferenceStore from './stores/preferenceStore';
-import AnswerActions from './actions/answerActions';
-import QuestionActions from './actions/questionActions';
-import RecordActions from './actions/recordActions';
-import PreferenceActions from './actions/preferenceActions';
-import CommonActions from './actions/commonActions';
+import * as components from './components';
+import * as stores from './stores';
+import * as actions from './actions';
 
 // expose libraries to global object, but only if they aren't already defined
 if (window._ == null) window._ = _;
@@ -39,42 +31,46 @@ let Wdk = {
    * @param {string} config.endpoint Base URL for the RESTful WDK Service
    * @param {string} config.rootUrl Root element to render application
    * @param {element} config.rootElement Root element to render application
-   * @param {function} config.recordComponentResolver Function used to resolve
-   *        a record component based on the record class name. The function
-   *        will be called with the record class name and a reference to the
-   *        default record component. This is useful for wrapping or for using
-   *        the default without modifications.
    */
   createApplication(config) {
     config.routes = Routes.getRoutes(config.rootUrl);
     let context = Context.createContext(config);
-    _.each(Wdk.stores, function(Store) {
+    for (let name in stores) {
+      let Store = stores[name];
       context.addStore(Store, Store.createStore(context));
-    });
-    _.each(Wdk.actions, function(Actions) {
+    }
+    for (let name in actions) {
+      let Actions = actions[name];
       context.addActions(Actions, Actions.createActions(context));
-    });
+    }
     return context;
   },
 
-  stores: {
-    AnswerStore,
-    AppStore,
-    QuestionStore,
-    RecordClassStore,
-    RecordStore,
-    PreferenceStore
-  },
+  stores,
 
-  actions: {
-    AnswerActions,
-    QuestionActions,
-    RecordActions,
-    CommonActions,
-    PreferenceActions
-  }
+  actions,
+
+  components
 
 };
 
+
+// store scroll position, and update upon reload
+let scrollKey = 'previousScrollPosition';
+
+function storeScrollPosition() {
+  let scrollPosition = JSON.stringify([ window.scrollX, window.scrollY ]);
+  window.sessionStorage.setItem(scrollKey, scrollPosition);
+}
+
+window.addEventListener('scroll', storeScrollPosition);
+
+document.addEventListener('DOMContentLoaded', function(setScrollPosition) {
+  let scrollPosition = JSON.parse(window.sessionStorage.getItem(scrollKey));
+  if (scrollPosition != null) {
+    console.log('scrolling to', scrollPosition);
+    window.scrollTo(...scrollPosition);
+  }
+});
 
 export default Wdk;

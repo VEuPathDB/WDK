@@ -1,8 +1,8 @@
 import Store from '../core/store';
 import {
-  AppLoading,
-  AppError
-} from '../ActionType';
+  APP_LOADING,
+  APP_ERROR
+} from '../constants/actionTypes';
 
 function createStore({ dispatcher }) {
   var state = {
@@ -14,8 +14,8 @@ function createStore({ dispatcher }) {
 
 function update(state, action) {
   switch(action.type) {
-    case AppLoading: return setLoading(state, action);
-    case AppError: return setError(state, action);
+    case APP_LOADING: return setLoading(state, action);
+    case APP_ERROR: return setError(state, action);
   }
 }
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import isEqual from 'lodash/lang/isEqual';
 import RecordStore from '../stores/recordStore';
 import QuestionStore from '../stores/questionStore';
 import RecordClassStore from '../stores/recordClassStore';
@@ -8,8 +7,9 @@ import combineStores from '../utils/combineStores';
 import Doc from './Doc';
 import Loading from './Loading';
 import Record from './Record';
+import wrappable from '../utils/wrappable';
 
-let RecoredController = React.createClass({
+let RecordController = React.createClass({
 
   contextTypes: {
     application: React.PropTypes.object.isRequired
@@ -24,13 +24,8 @@ let RecoredController = React.createClass({
   },
 
   componentWillReceiveProps(nextProps) {
-    // Check if query or params are different
-    let { query, params } = this.props;
-    let { query: nextQuery, params: nextParams } = nextProps;
-    if (params.class !== nextParams.class || !isEqual(query, nextQuery)) {
-      this.disposeSubscriptions();
-      this.subscribeToStores();
-    }
+    this.disposeSubscriptions();
+    this.subscribeToStores();
   },
 
   subscribeToStores() {
@@ -48,12 +43,13 @@ let RecoredController = React.createClass({
         let { params, query } = this.props;
         let key = RecordStore.makeKey(params.class, query);
         let recordData = recordState.records[key];
+        let { hiddenCategories } = recordState;
         let { questions } = questionState;
         let { recordClasses } = recordClassState;
 
         if (recordData != null) {
           let { meta, record } = recordData;
-          this.setState({ meta, record, questions, recordClasses });
+          this.setState({ meta, record, questions, recordClasses, hiddenCategories });
         }
 
         // get full record
@@ -90,13 +86,14 @@ let RecoredController = React.createClass({
   render() {
     if (this.state == null) return <Loading/>;
 
-    let { meta, record, recordClasses, questions } = this.state;
-    let RecordComponent = this.context.application.getRecordComponent(meta.class, Record) || Record;
-    let recordClass = recordClasses.find(recordClass => recordClass.fullName == meta.class);
+    let { meta, record, recordClasses, questions, hiddenCategories } = this.state;
+    let recordActions = this.context.application.getActions(RecordActions);
+    let recordClass = recordClasses.find(rc => rc.fullName === meta.class);
+    let recordProps = { meta, record, recordClass, recordClasses, questions, recordActions, hiddenCategories };
 
     return (
-      <Doc title={`${recordClass.displayName}: ${record.attributes.primary_key}`}>
-        <RecordComponent meta={meta} record={record} recordClasses={recordClasses} questions={questions}/>
+      <Doc title={`${recordClass.displayName} ${record.attributes.primary_key.value}`}>
+        <Record {...recordProps}/>
       </Doc>
     );
   }
@@ -111,4 +108,4 @@ function makeRecordSpecFromProps(props) {
   };
 }
 
-export default RecoredController;
+export default wrappable(RecordController);

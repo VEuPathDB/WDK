@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
+import wrappable from '../utils/wrappable';
 
 // Link is a component used to create links to other routes.
 // See https://github.com/rackt/react-router/blob/master/docs/api/components/Link.md
@@ -20,7 +21,7 @@ import { Link } from 'react-router';
  * and https://github.com/rackt/react-router/blob/master/docs/api/misc/Location.md
  * for more details.
  */
-var IndexController = React.createClass({
+let IndexController = React.createClass({
 
   render() {
     return (
@@ -37,4 +38,4 @@ var IndexController = React.createClass({
 
 });
 
-export default IndexController;
+export default wrappable(IndexController);

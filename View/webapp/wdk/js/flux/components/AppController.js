@@ -8,6 +8,7 @@ import { RouteHandler } from 'react-router';
 import AppStore from '../stores/appStore';
 import CommonActions from '../actions/commonActions';
 import PreferenceActions from '../actions/preferenceActions';
+import wrappable from '../utils/wrappable';
 
 /*
  * RouterHandler is a special React component that the router uses to inject
@@ -72,4 +73,4 @@ let AppController = React.createClass({
 
 });
 
-export default AppController;
+export default wrappable(AppController);

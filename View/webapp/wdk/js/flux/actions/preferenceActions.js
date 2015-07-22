@@ -1,11 +1,9 @@
-import curry from 'lodash/function/curry';
-import mapValues from 'lodash/object/mapValues';
 import {
-  LoadPreferences,
-  SetPreference,
-  RemovePreference,
-  RemoveAllPreferences
-} from '../ActionType';
+  PREFERENCES_LOADED,
+  PREFERENCE_SET,
+  PREFERENCE_REMOVED,
+  PREFERENCE_REMOVED_ALL
+} from '../constants/actionTypes';
 
 let prefix = 'wdk_preference_';
 
@@ -28,19 +26,19 @@ function loadPreferences() {
       }
     }
   }
-  return LoadPreferences({ preferences });
+  return { type: PREFERENCES_LOADED, preferences };
 }
 
 function setPreference(key, value) {
   let storageKey = makeStorageKey(key);
   localStorage.setItem(storageKey, JSON.stringify(value));
-  return SetPreference({ key, value });
+  return { type: PREFERENCE_SET, key, value };
 }
 
 function removePreference(key) {
   let storageKey = makeStorageKey(key);
   localStorage.removeItem(storageKey);
-  return RemovePreference({ key });
+  return { type: PREFERENCE_REMOVED, key };
 }
 
 function removeAllPreferences() {
@@ -48,7 +46,7 @@ function removeAllPreferences() {
     if (key.startsWith(prefix))
       localStorage.removeItem(key);
   }
-  return RemoveAllPreferences();
+  return { type: PREFERENCE_REMOVED_ALL };
 }
 
 function makeStorageKey(key) {
@@ -59,13 +57,16 @@ function makeStorageKey(key) {
 // Eventually, action creators can be defined as a module with functions that
 // return an action to be dispatched. We will be hiding the dispatcher from all
 // domain specific code, including stores.
-let makeActionCreators = curry(function makeActionCreators(module, context) {
-  return mapValues(module, function(func) {
-    return function actionCreator(...args) {
-      context.dispatcher.dispatch(func(...args));
-    };
-  });
-});
+function makeActionCreators(module) {
+  return function createActions(context) {
+    return Object.keys(module).reduce(function(actions, acName) {
+      actions[acName] = function actionCreator(...args) {
+        context.dispatcher.dispatch(module[acName](...args));
+      };
+      return actions;
+    }, {});
+  };
+}
 
 let createActions = makeActionCreators({
   loadPreferences,

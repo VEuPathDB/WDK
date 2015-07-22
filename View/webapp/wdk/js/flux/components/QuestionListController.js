@@ -2,16 +2,17 @@ import React from 'react';
 import { Link } from 'react-router';
 import QuestionStore from '../stores/questionStore';
 import QuestionActions from '../actions/questionActions';
+import wrappable from '../utils/wrappable';
 
-var QuestionListController = React.createClass({
+let QuestionListController = React.createClass({
 
   contextTypes: {
     application: React.PropTypes.object.isRequired
   },
 
   componentDidMount() {
-    var store = this.context.application.getStore(QuestionStore);
-    var actions = this.context.application.getActions(QuestionActions);
+    let store = this.context.application.getStore(QuestionStore);
+    let actions = this.context.application.getActions(QuestionActions);
     this.storeSubscription = store.subscribe(state => {
       this.setState(state);
     });
@@ -23,8 +24,8 @@ var QuestionListController = React.createClass({
   },
 
   render() {
-    if (!this.state) return null;
-    var { questions, error } = this.state;
+    if (!this.state) { return null; }
+    let { questions, error } = this.state;
 
     if (error) {
       return (
@@ -48,4 +49,4 @@ var QuestionListController = React.createClass({
 
 });
 
-export default QuestionListController;
+export default wrappable(QuestionListController);

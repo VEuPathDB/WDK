@@ -2,8 +2,8 @@
  * Creates a container that allows a user to cycle among all tabbable elements.
  * This is useful for components such as dialogs and dropdown menus.
  */
-import omit from 'lodash/object/omit';
 import React from 'react';
+import wrappable from '../utils/wrappable';
 
 let $ = window.jQuery;
 
@@ -16,8 +16,9 @@ let TabbableContainer = React.createClass({
   },
 
   handleKeyDown(e) {
-    if (typeof this.props.onKeyDown === 'function')
+    if (typeof this.props.onKeyDown === 'function') {
       this.props.onKeyDown(e);
+    }
 
     this.containTab(e);
   },
@@ -25,7 +26,7 @@ let TabbableContainer = React.createClass({
   // prevent user from tabbing out of dropdown
   // manually tab since os x removes some controls from the tabindex by default
   containTab(e) {
-    if (e.key !== 'Tab') return;
+    if (e.key !== 'Tab') { return; }
     let { tabbables } = this;
     let l = tabbables.length;
     let index = tabbables.index(e.target);
@@ -49,4 +50,4 @@ let TabbableContainer = React.createClass({
 
 });
 
-export default TabbableContainer;
+export default wrappable(TabbableContainer);

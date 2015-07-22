@@ -1,12 +1,12 @@
-import _ from 'lodash';
 import React from 'react';
 import Record from './Record';
+import wrappable from '../utils/wrappable';
 
 /**
  * RecordList displays a list of Record components.
  */
 
-const $ = window.jQuery;
+let $ = window.jQuery;
 
 /* Helper functions */
 
@@ -30,16 +30,16 @@ function formatAttribute(attribute, value) {
  * optional handlers. We can do an equality check as a form of feature
  * detection. E.g., if onSort === noop, then we won't enable sorting.
  */
-const noop = () => {};
+let noop = () => {};
 
-const PropTypes = React.PropTypes;
+let PropTypes = React.PropTypes;
 
-const sortClassMap = {
-  ASC:  'ui-icon ui-icon-arrowthick-1-n',
+let sortClassMap = {
+  ASC: 'ui-icon ui-icon-arrowthick-1-n',
   DESC: 'ui-icon ui-icon-arrowthick-1-s'
 };
 
-const RecordList = React.createClass({
+let RecordList = React.createClass({
 
   propTypes: {
     meta: PropTypes.object.isRequired,
@@ -82,7 +82,7 @@ const RecordList = React.createClass({
   },
 
   render() {
-    const { records } = this.props;
+    let { records } = this.props;
     return (
       <div
         ref="recordList"
@@ -95,9 +95,8 @@ const RecordList = React.createClass({
   },
 
   _renderRecord(record, index) {
-    const { meta, position } = this.props;
-    const attrs = _.indexBy(record.attributes, 'name');
-    const refName = index == position ? 'target' : null;
+    let { meta, position } = this.props;
+    let refName = index === position ? 'target' : null;
 
     return (
       <div ref={refName} className="wdk-RecordList-Record" >
@@ -107,11 +106,11 @@ const RecordList = React.createClass({
   },
 
   _scrollToTarget() {
-    const recordListNode = this.refs.recordList.getDOMNode();
-    const targetNode = this.refs.target.getDOMNode();
+    let recordListNode = React.findDOMNode(this.refs.recordList);
+    let targetNode = React.findDOMNode(this.refs.target);
     recordListNode.scrollTop = targetNode.offsetTop - 30;
   }
 
 });
 
-export default RecordList;
+export default wrappable(RecordList);

@@ -1,4 +1,5 @@
 import React from 'react';
+import wrappable from '../utils/wrappable';
 
 let TouchableArea = React.createClass({
   getDefaultProps() {
@@ -52,4 +53,4 @@ let TouchableArea = React.createClass({
   }
 });
 
-export default TouchableArea;
+export default wrappable(TouchableArea);
