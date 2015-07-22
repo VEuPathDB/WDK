@@ -113,7 +113,7 @@ public class StrategyFixer extends BaseCLI {
         count++;
         if (count % BATCH_SIZE == 0) {
           psUpdate.executeBatch();
-          LOG.info(count + " steps updated.");
+          LOG.info("root steps: " + count + " steps updated.");
         }
       }
 
@@ -134,7 +134,7 @@ public class StrategyFixer extends BaseCLI {
           count++;
           if (count % BATCH_SIZE == 0) {
             psUpdate.executeBatch();
-            LOG.info(count + " steps updated.");
+            LOG.info("children steps: " + count + " steps updated.");
           }
         }
       }

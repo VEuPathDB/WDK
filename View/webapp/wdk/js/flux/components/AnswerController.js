@@ -1,5 +1,4 @@
 // Import modules
-import _ from 'lodash';
 import React from 'react/addons';
 import combineStores from '../utils/combineStores';
 import AnswerStore from '../stores/answerStore';
@@ -11,6 +10,32 @@ import PreferenceActions from '../actions/preferenceActions';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
+import wrappable from '../utils/wrappable';
+
+
+/**
+ * wrap - Wrap `value` in array.
+ *
+ * If `value` is undefined, return an empty aray.
+ * Else, if `value` is an array, return it.
+ * Otherwise, return `[value]`.
+ *
+ * @param  {any} value The value to wrap
+ * @return {array}
+ */
+function wrap(value) {
+  if (typeof value === 'undefined') return [];
+  if (!Array.isArray(value)) return [ value ];
+  return value;
+}
+
+function maybeJoin(arr, delimeter) {
+  if (arr !== undefined) return arr.join(delimeter);
+}
+
+function maybeSplit(str, delimeter) {
+  if (str !== undefined) return str.split(delimeter);
+}
 
 // See http://facebook.github.io/react/docs/update.html
 let update = React.addons.update;
@@ -93,32 +118,36 @@ let AnswerController = React.createClass({
     // incoming query and params
     let { query: nextQuery, params: nextParams } = nextProps;
 
+    // update sortingPreferenceKey value
     this.sortingPreferenceKey = 'sorting::' + nextParams.questionName;
 
     // query keys to compare to determine if we need to fetch a new answer
     let answerQueryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
     let filterQueryKeys = [ 'q', 'attrs', 'tables' ];
 
-    // _.pick will create an object with keys from answerQueryKeys, and values from
-    // the source object (query and nextQuery).
-    let answerQuery = _.pick(query, answerQueryKeys);
-    let nextAnswerQuery = _.pick(nextQuery, answerQueryKeys);
+    // determine if we need to fetch a new answer
+    let answerWillChange = answerQueryKeys.reduce(function(willChange, key) {
+      return willChange || query[key] !== nextQuery[key];
+    }, false);
 
-    let filterQuery = _.pick(query, filterQueryKeys);
-    let nextFilterQuery = _.pick(nextQuery, filterQueryKeys);
+    answerWillChange = answerWillChange || params.questionName !== nextParams.questionName;
+
+    let filterWillChange = filterQueryKeys.reduce(function(willChange, key) {
+      return willChange || query[key] !== nextQuery[key];
+    }, false);
 
     // fetch answer if the query has changed, or if the question name has changed
-    if (!_.isEqual(answerQuery, nextAnswerQuery) || params.questionName != nextParams.questionName) {
+    if (answerWillChange) {
       this.fetchAnswer(nextProps);
     }
 
     // filter answer if the filter terms have changed
-    else if (!_.isEqual(filterQuery, nextFilterQuery)) {
+    else if (filterWillChange) {
       let filterOpts = {
         questionName: nextParams.questionName,
-        terms: nextFilterQuery.q,
-        attributes: maybeSplit(nextFilterQuery.attrs, ','),
-        tables: maybeSplit(nextFilterQuery.tables, ',')
+        terms: nextQuery.q,
+        attributes: maybeSplit(nextQuery.attrs, ','),
+        tables: maybeSplit(nextQuery.tables, ',')
       };
       this.context.application.getActions(AnswerActions)
       .updateFilter(filterOpts);
@@ -149,13 +178,13 @@ let AnswerController = React.createClass({
         let { isLoading } = aState;
         let { displayInfo } = aState;
         let { filterTerm } = aState;
-        let { filterAttributes } = aState;
-        let { filterTables } = aState;
+        let { filterAttributes = [] } = aState;
+        let { filterTables = [] } = aState;
         let { filteredRecords } = aState;
         let { questions } = qState;
         let question = questions.find(q => q.name === questionName);
         let { recordClasses } = rState;
-        let recordClass = recordClasses.find(r => r.fullName == question.class);
+        let recordClass = recordClasses.find(r => r.fullName === question.class);
 
         this.setState({
           isLoading,
@@ -194,12 +223,15 @@ let AnswerController = React.createClass({
 
     // Get pagination info from `query`
     let pagination = {
-      numRecords: query.numrecs,
-      offset: query.offset
+      numRecords: query.numrecs || 1000,
+      offset: query.offset || 0
     };
 
     // XXX Could come from query param: sorting={attributeName}__{direction},...
     let sorting = preferenceStore.value.preferences[this.sortingPreferenceKey];
+    if (sorting === undefined) {
+      sorting = [{ attributeName: 'primary_key', direction: 'ASC' }];
+    }
 
     // Combine `pagination` and `sorting` into a single object:
     //
@@ -242,7 +274,7 @@ let AnswerController = React.createClass({
 
 
   // This is a collection of event handlers that will be passed to the Answer
-  // component (which will, in turn, pass these to the RecordTable component.
+  // component (which will, in turn, pass these to the AnswerTable component.
   // In our render() method, we will bind these methods to the component
   // instance so that we can use `this` as expected. Normally, React will do
   // this for us, but since we are nesting methods within a property, we have
@@ -319,11 +351,6 @@ let AnswerController = React.createClass({
       .changeAttributes(attributes);
     },
 
-    // This is a stub... yet to be completed
-    onNewPage(offset, numRecords) {
-      console.log(offset, numRecords);
-    },
-
     onToggleFormat() {
       let path = 'answer';
       let params = this.props.params;
@@ -335,15 +362,6 @@ let AnswerController = React.createClass({
 
       // Method provided by Router.Navigation mixin
       this.router.transitionTo(path, params, query);
-    },
-
-    recordHrefGetter(record) {
-      let path = 'record';
-      let params = { class: this.state.answer.meta.class };
-      let query = record.id;
-
-      // Method provided by Router.Navigation mixin
-      return this.router.makeHref(path, params, query);
     },
 
     onFilter(terms, attributes, tables) {
@@ -393,8 +411,6 @@ let AnswerController = React.createClass({
       filteredRecords
     } = this.state;
 
-    let { getCellRenderer } = this.context.application;
-
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
     // this component.
@@ -417,7 +433,7 @@ let AnswerController = React.createClass({
     //
     // to understand the embedded XML, see: https://facebook.github.io/react/docs/jsx-in-depth.html
     if (answer && question && recordClass) {
-      if (_.isEmpty(filterAttributes) && _.isEmpty(filterTables)) {
+      if (filterAttributes.length === 0 && filterTables.length === 0) {
         filterAttributes = recordClass.attributes.map(a => a.name);
         filterTables = recordClass.tables.map(t => t.name);
       }
@@ -435,7 +451,6 @@ let AnswerController = React.createClass({
             filterTables={filterTables}
             format={format}
             answerEvents={answerEvents}
-            getCellRenderer={getCellRenderer}
           />
         </Doc>
       );
@@ -447,29 +462,4 @@ let AnswerController = React.createClass({
 });
 
 // Export the React Component class we just created.
-export default AnswerController;
-
-
-/**
- * wrap - Wrap `value` in array.
- *
- * If `value` is undefined, return an empty aray.
- * Else, if `value` is an array, return it.
- * Otherwise, return `[value]`.
- *
- * @param  {any} value The value to wrap
- * @return {array}
- */
-function wrap(value) {
-  if (typeof value === 'undefined') return [];
-  if (!Array.isArray(value)) return [ value ];
-  return value;
-}
-
-function maybeJoin(arr, delimeter) {
-  if (arr !== undefined) return arr.join(delimeter);
-}
-
-function maybeSplit(str, delimeter) {
-  if (str !== undefined) return str.split(delimeter);
-}
+export default wrappable(AnswerController);

@@ -27,7 +27,7 @@ libs_sources := node_modules/babel-core/browser-polyfill.min.js \
                 webapp/wdk/lib/spin.min.js \
                 webapp/wdk/lib/zynga-scroller/Animate.js \
                 webapp/wdk/lib/zynga-scroller/Scroller.js
-css_sources  := webapp/wdk/css/wdk.css
+css_sources  := webapp/wdk/css/wdk.css $(shell find webapp/wdk/css -name '*.css')
 test_sources := test/tests.js $(shell find test/tests -name '*.js')
 
 .PHONY: all clean test test-server
@@ -83,7 +83,7 @@ test: $(test_bundle) $(libs_bundle) node_modules
 # Run test server, which recompiles the test bundle on-the-fly
 # =============================================================================
 
-test-server: $(test_sources) $(wdk_sources) $(libs_bundle)
+test-server: $(test_sources) $(test_bundle) $(wdk_sources) $(libs_bundle)
 	webpack-dev-server --config webpack-test.config.js $<
 	cp $(libs_bundle) test/dist
 

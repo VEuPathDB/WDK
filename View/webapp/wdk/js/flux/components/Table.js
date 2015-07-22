@@ -6,6 +6,7 @@ import noop from 'lodash/utility/noop';
 import { Table } from 'fixed-data-table';
 import React from 'react/addons';
 import TouchableArea from './TouchableArea';
+import wrappable from '../utils/wrappable';
 
 // import css file
 import 'fixed-data-table/dist/fixed-data-table.css';
@@ -19,7 +20,7 @@ import 'fixed-data-table/dist/fixed-data-table.css';
  */
 
 let SORT_CLASS_MAP = {
-  ASC:  'fa fa-lg fa-sort-alpha-asc',
+  ASC: 'fa fa-lg fa-sort-alpha-asc',
   DESC: 'fa fa-lg fa-sort-alpha-desc'
 };
 
@@ -123,10 +124,10 @@ let WdkTable = React.createClass({
 
   renderHeader(columnComponent, ...rest) {
     let { dataKey, headerRenderer, isRemovable, isSortable } = columnComponent.props;
-    let className = 'wdk-RecordTable-headerWrapper' +
-      (isSortable ? ' wdk-RecordTable-headerWrapper_sortable' : '');
-    let sortClass = this.props.sortDataKey == columnComponent.props.dataKey
-      ? SORT_CLASS_MAP[this.props.sortDirection] : SORT_CLASS_MAP.ASC + ' wdk-RecordTable-unsorted';
+    let className = 'wdk-AnswerTable-headerWrapper' +
+      (isSortable ? ' wdk-AnswerTable-headerWrapper_sortable' : '');
+    let sortClass = this.props.sortDataKey === columnComponent.props.dataKey
+      ? SORT_CLASS_MAP[this.props.sortDirection] : SORT_CLASS_MAP.ASC + ' wdk-AnswerTable-unsorted';
     let sort = isSortable ? partial(this.handleSort, dataKey) : noop;
     let hide = partial(this.handleHideColumn, dataKey);
     let title = isSortable ? 'Click to sort table by this column.' : '';
@@ -183,4 +184,4 @@ let WdkTable = React.createClass({
 
 });
 
-export default WdkTable;
+export default wrappable(WdkTable);

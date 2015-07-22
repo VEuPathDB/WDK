@@ -33,20 +33,25 @@ function createService(endpoint) {
   function requestResource(type, resourcePath, data) {
     if (arguments.length === 0) return requestResource;
     if (arguments.length === 1) return requestResource.bind(null, type);
-    return new Promise((resolve, reject) => {
+    let promise = new Promise(function resourcePromise(resolve, reject) {
       $.ajax({
         type,
         url: endpoint + resourcePath,
         contentType: 'application/json',
         dataType: 'json',
-        data: type === 'GET' ? data : JSON.stringify(data)
-      })
-      .then(function(data) {
-        resolve(data);
-      }, function(jqXHR, textStatus, error) {
-        reject(error);
+        data: type === 'GET' ? data : JSON.stringify(data),
+        success: function resolvePromise(data) {
+          resolve(data);
+        },
+        error: function rejectPromise(jqXHR, textStatus, error) {
+          reject(error);
+        }
       });
     });
+    promise.catch(function(error) {
+      console.error('Uncaught', error);
+    });
+    return promise;
   }
 
   return {

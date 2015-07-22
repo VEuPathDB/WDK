@@ -1,10 +1,11 @@
 /* global Spinner */
 import React from 'react';
+import wrappable from '../utils/wrappable';
 
 /**
  * See http://fgnass.github.io/spin.js/
  */
-var Loading = React.createClass({
+let Loading = React.createClass({
 
   PropTypes: {
     className: React.PropTypes.string,
@@ -19,9 +20,9 @@ var Loading = React.createClass({
   },
 
   componentDidMount() {
-    var { radius } = this.props;
+    let { radius } = this.props;
 
-    var opts = {
+    let opts = {
       lines: 11, // The number of lines to draw
       length: 3, // The length of each line
       width: 2, // The line thickness
@@ -40,15 +41,15 @@ var Loading = React.createClass({
       left: '50%' // Left position relative to parent
     };
 
-    new Spinner(opts).spin(this.getDOMNode());
+    new Spinner(opts).spin(React.findDOMNode(this));
   },
 
   render() {
-    var { className } = this.props;
+    let { className } = this.props;
     return (
       <div className={`wdk-Loading ${className}`}/>
     );
   }
 });
 
-export default Loading;
+export default wrappable(Loading);

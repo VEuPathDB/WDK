@@ -176,6 +176,9 @@ public class ProcessStepAction extends Action {
       throw new WdkUserException("Required parameter " + PARAM_QUESTION + " or " + PARAM_FILTER +
           " is missing");
     }
+    // Update customName
+    step.setCustomName(customName);
+    step.update(false);
     step.saveParamFilters();
   }
 

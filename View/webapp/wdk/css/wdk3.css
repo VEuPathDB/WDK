@@ -20,8 +20,12 @@ main {
   position: relative;
   min-height: 200px;
 }
+main * {
+  font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif;
+}
 main h1 {
   text-align: left;
+  margin: 22px 0;
 }
 main h3 {
   margin: 22px 0 8px 0;
@@ -103,36 +107,41 @@ main h4 {
   margin-left: 1em;
 }
 
-.wdk-RecordTable-Wrapper {
+.wdk-AnswerTable-Wrapper {
   position: relative;
   overflow-x: auto;
   padding: 0 5px 5px 0;
 }
 
-.wdk-RecordTable {
+.wdk-AnswerTable {
   margin-top: 1em;
 }
 
-.wdk-RecordTable td, .wdk-RecordTable th {
+.wdk-AnswerTable td, .wdk-AnswerTable th {
   padding: .5em;
   min-width: 100px;
 }
-.wdk-RecordTable td {
+.wdk-AnswerTable td {
   border: 1px dotted #cccccc;
 }
 
-.wdk-RecordTable td {
+.wdk-AnswerTable td {
 
 }
 
-.wdk-RecordTable-headerWrapper {
+.wdk-AnswerTable-header {
+  display: inline-block;
+}
+
+.wdk-AnswerTable-headerWrapper {
   position: relative;
 }
-.wdk-RecordTable-headerWrapper_sortable {
+
+.wdk-AnswerTable-headerWrapper_sortable {
   cursor: pointer;
 }
 
-.wdk-RecordTable th {
+.wdk-AnswerTable th {
   border: 1px solid #cccccc;
   font-weight: bold;
   background-color: #f3f3f3;
@@ -141,59 +150,59 @@ main h4 {
   cursor: pointer;
 }
 
-.wdk-RecordTable th .ui-icon {
+.wdk-AnswerTable th .ui-icon {
   display: inline-block;
 }
 
-.wdk-RecordTable-AttributeSelectorOpenButton {
+.wdk-AnswerTable-AttributeSelectorOpenButton {
   position: absolute;
   right: 2em;
   top: 3em;
   font-size:1.2em; 
 }
-.wdk-RecordTable-attributeValue {
+.wdk-AnswerTable-attributeValue {
   line-height: 1.6;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
-.wdk-RecordTable-headerWrapper .ui-icon-close {
+.wdk-AnswerTable-headerWrapper .ui-icon-close {
   /*visibility: hidden;*/
   cursor: pointer;
   float: right;
 }
 
 /*
-.wdk-RecordTable-headerWrapper:hover .ui-icon-close {
+.wdk-AnswerTable-headerWrapper:hover .ui-icon-close {
   visibility: visible;
 }
 */
 
-.wdk-RecordTable-headerWrapper .ui-icon {
+.wdk-AnswerTable-headerWrapper .ui-icon {
   display: inline-block;
   vertical-align: middle;
   margin-right: .5em;
 }
 
-.wdk-RecordTable-headerWrapper .fa {
+.wdk-AnswerTable-headerWrapper .fa {
   margin-left: .5em;
 }
 
-.wdk-RecordTable-unsorted {
+.wdk-AnswerTable-unsorted {
   color: rgb(170, 170, 170);
   color: rgba(0, 0, 0, 0.26);
 }
 
-.wdk-RecordTable-AttributeSelectorWrapper {
+.wdk-AnswerTable-AttributeSelectorWrapper {
   float: right;
 }
 
-.wdk-RecordTable-AttributeSelector {
+.wdk-AnswerTable-AttributeSelector {
   list-style: none;
 }
 
-.wdk-RecordTable-AttributeSelectorButtonWrapper {
+.wdk-AnswerTable-AttributeSelectorButtonWrapper {
   text-align: center;
   padding: 4px;
 }
@@ -217,6 +226,125 @@ main h4 {
   padding: 0 1em;
 }
 
-.wdk-Record h4 {
-  text-decoration: underline;
+.wdk-Record-main {
+  margin-left: 260px;
+}
+
+.wdk-Record-main td {
+  word-break: break-all;
+}
+
+.wdk-Record-main .wdk-TreeNode {
+  padding-left: 1em;
+}
+
+.wdk-Record .wdk-TreeNodeCollection {
+  padding-left: 0;
+  list-style: none;
+}
+
+.wdk-Record-sidebar {
+  width: 235px;
+  background-color: white;
+  position: absolute;
+  border: 1px solid #d8d8d8;
+  border-radius: 4px;
+}
+
+.wdk-Record-sidebar__fixed {
+  position: fixed;
+  top: 0px;
+}
+
+.wdk-RecordSidebarHeader {
+  margin: 0;
+  padding: .6em;
+  background: #f9f9f9;
+  border-radius: 4px;
+}
+
+.wdk-RecordNavigationItem {
+  position: relative;
+}
+
+.wdk-Record-sidebar > ul {
+  padding: 0;
+  margin: 0;
+}
+
+.wdk-Record-sidebar-title {
+  display: block;
+  border-top: 1px solid #c0c0c0;
+  padding: .6em;
+  /*padding-left: 2.6em;*/
+}
+
+.wdk-Record-sidebar-checkbox {
+  position: absolute;
+  top: .6em;
+  right: .6em;
+}
+
+.wdk-Record-sectionHeader {
+  /*background-color: #eeeeee;
+  padding: .3em;*/
+  margin: 8px 0;
+  position: relative;
+  border-bottom: 1px solid;
+}
+
+.wdk-Record-sectionSubHeader {
+  margin: 12px 0 8px 0;
+  position: relative;
+  border-bottom: 1px dotted;
+}
+
+.wdk-Record-sectionHeaderTopLink {
+  position: absolute;
+  right: 1em;
+  z-index: 1;
+}
+
+.wdk-Record-sectionContent {
+  margin-bottom: 22px;
+  padding: .6em 1.2em;
+  list-style: none;
+  background-color: #f9f9f9;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+}
+
+.wdk-Record-attributeContent {
+  word-break: break-all;
+  display: inline-block;
+}
+
+.wdk-RecordAttributeTable tr {
+  /*border-bottom: 1px dotted;*/
+}
+
+.wdk-RecordAttributeTable td:first-child {
+  vertical-align: top;
+  text-align: right;
+}
+
+.wdk-RecordTable {
+  border: 1px solid;
+}
+
+.wdk-RecordTableHeader {
+  background-color: #eeeeee;
+  padding: .3em;
+  margin: 12px 0 8px 0;
+  position: relative;
+}
+
+.wdk-RecordTable th {
+  border: 1px solid;
+  border-top-width: 2px;
+  border-bottom-width: 2px;
+}
+
+.wdk-RecordTable td {
+  border: 1px dotted;
 }

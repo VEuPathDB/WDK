@@ -13,8 +13,9 @@
  *
  */
 import React from 'react';
+import wrappable from '../utils/wrappable';
 
-const Doc = React.createClass({
+let Doc = React.createClass({
   propTypes: {
     title: React.PropTypes.string
   },
@@ -35,4 +36,4 @@ const Doc = React.createClass({
   }
 });
 
-export default Doc;
+export default wrappable(Doc);
