@@ -67,7 +67,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     });
 
     // Register change and keyup event handlers to dependent parameter.
-    Object.keys(dependentParamsMap).map(function(dependedName) {
+    Object.keys(dependentParamsMap).forEach(function(dependedName) {
       var dependedParam = $("div.param[name='" + dependedName + "']");
 
       // set previous value
@@ -86,7 +86,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       };
 
       dependedParam.change(handleChange);
-      dependedParam.keyup(_.debounce(handleChange, 2000));
+      // Updating 2 seconds after keyup has proven problematic, so commenting out. -dmf
+      // dependedParam.keyup(_.debounce(handleChange, 2000));
     });
   }
 
