@@ -20,5 +20,8 @@
     "react-router": "^0.13.3",
     "style-loader": "^0.12.3",
     "webpack": "^1.9.11"
+  },
+  "devDependencies": {
+    "tape": "^4.0.0"
   }
 }
