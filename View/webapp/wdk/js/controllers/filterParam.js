@@ -60,7 +60,7 @@ wdk.namespace('wdk.controllers', function(ns) {
         left: '-222px' // Left position relative to parent
       });
 
-      var actions = _.extend({
+      var actions = this.actions = _.extend({
 
         // Which field has focus
         selectField: function(field) {
@@ -109,7 +109,7 @@ wdk.namespace('wdk.controllers', function(ns) {
         // : _.find(options.fields, { leaf: 'true' });
 
 
-      var filterService = LazyFilterService.create({
+      var filterService = this.filterService = LazyFilterService.create({
         filters: options.filters,
         fields: options.fields,
         ignored: options.ignored,
@@ -128,13 +128,12 @@ wdk.namespace('wdk.controllers', function(ns) {
       }, this);
 
 
-      // Append view to DOM and trigger 'ready'
-      // --------------------------------------
+      // Render filter param
+      // -------------------------------------
 
       React.render(<AttributeFilter actions={actions} store={filterService}
         trimMetadataTerms={Boolean(options.trimMetadataTerms)}
         displayName={options.title} />, this.el);
-
 
       // this.listenTo(filterService, 'change', _.debounce(function() {
       //   var value = {

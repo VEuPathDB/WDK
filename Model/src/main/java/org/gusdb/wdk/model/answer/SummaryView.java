@@ -31,7 +31,7 @@ public class SummaryView extends WdkView {
       RecordClass recordClass) {
     List<SummaryView> views = new ArrayList<SummaryView>();
     views.add(createDefaultSummaryView(recordClass));
-    return views.toArray(new SummaryView[0]);
+    return views.toArray(new SummaryView[1]);
   }
 
   private static SummaryView createDefaultSummaryView(RecordClass recordClass) {

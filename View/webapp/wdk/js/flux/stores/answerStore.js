@@ -6,12 +6,19 @@ import values from 'lodash/object/values';
 import pick from 'lodash/object/pick';
 import Store from '../core/store';
 import {
-  AnswerAdded,
-  AnswerMoveColumn,
-  AnswerChangeAttributes,
-  AnswerLoading,
-  AnswerUpdateFilter
-} from '../ActionType';
+  ANSWER_ADDED,
+  ANSWER_MOVE_COLUMN,
+  ANSWER_CHANGE_ATTRIBUTES,
+  ANSWER_LOADING,
+  ANSWER_UPDATE_FILTER
+} from '../constants/actionTypes';
+
+
+function createAttribute(meta, value) {
+  return Object.create(meta, {
+    value: { value, enumerable: true }
+  });
+}
 
 /**
  * This module is exporting a store class (not an instance).
@@ -85,7 +92,7 @@ let isTermInRecord = curry(function isTermInRecord(term, filterAttributes, filte
     tables = pick(record.tables, filterTables);
   }
 
-  let attributeValues = values(attributes);
+  let attributeValues = Object.keys(attributes).map(name => attributes[name].value);
   let tableValues = flattenDeep(values(tables)
     .map(function(table) {
       return table.map(values);
@@ -120,11 +127,11 @@ function createStore({ dispatcher }) {
 
 function update(state, action) {
   switch(action.type) {
-    case AnswerAdded: return addAnswer(state, action);
-    case AnswerMoveColumn: return moveTableColumn(state, action);
-    case AnswerChangeAttributes: return updateVisibleAttributes(state, action);
-    case AnswerLoading: return answerLoading(state, action);
-    case AnswerUpdateFilter: return updateFilter(state, action);
+    case ANSWER_ADDED: return addAnswer(state, action);
+    case ANSWER_MOVE_COLUMN: return moveTableColumn(state, action);
+    case ANSWER_CHANGE_ATTRIBUTES: return updateVisibleAttributes(state, action);
+    case ANSWER_LOADING: return answerLoading(state, action);
+    case ANSWER_UPDATE_FILTER: return updateFilter(state, action);
   }
 }
 
@@ -163,6 +170,15 @@ function addAnswer(state, { answer, requestData }) {
 
   answer.meta.attributes = answer.meta.attributes
     .filter(attr => attr.name != 'wdk_weight');
+
+  // link record attributes to attribute meta
+  answer.records.forEach(function(record) {
+    let { attributes } = record;
+    answer.meta.attributes.forEach(function(attributeMeta) {
+      let { name } = attributeMeta;
+      attributes[name] = createAttribute(attributeMeta, attributes[name]);
+    });
+  });
 
   /*
    * This will update the keys `filteredRecords`, `displayInfo`, and

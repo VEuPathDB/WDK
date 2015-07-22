@@ -1,13 +1,11 @@
-import defaults from 'lodash/object/defaults';
 import {
-  AppLoading,
-  AppError,
-  AnswerAdded,
-  AnswerMoveColumn,
-  AnswerChangeAttributes,
-  AnswerUpdateFilter,
-  AnswerLoading
-} from '../ActionType';
+  APP_ERROR,
+  ANSWER_ADDED,
+  ANSWER_MOVE_COLUMN,
+  ANSWER_CHANGE_ATTRIBUTES,
+  ANSWER_UPDATE_FILTER,
+  ANSWER_LOADING
+} from '../constants/actionTypes';
 
 
 /**
@@ -103,14 +101,6 @@ function createActions({ dispatcher, service }) {
     loadAnswer(questionName, opts = {}) {
       var { params = [], filters = [], displayInfo } = opts;
 
-      // default values for pagination and sorting
-      var defaultPagination= { offset: 0, numRecords: 1000 };
-      var defaultSorting= [{ attributeName: 'primary_key', direction: 'ASC' }];
-
-      // Set defaults if not defined in `opts`
-      defaults(displayInfo.pagination, defaultPagination);
-      displayInfo.sorting = displayInfo.sorting || defaultSorting;
-
       // FIXME Set attributes to whatever we're soring on. This is required by
       // the service, but it doesn't appear to have any effect at this time. I
       // think what we want is for the service to use default attributes defined
@@ -125,21 +115,22 @@ function createActions({ dispatcher, service }) {
       var requestData = { questionDefinition, displayInfo };
 
       // Dispatch AnswerLoading action
-      dispatcher.dispatch(AnswerLoading({ isLoading: true }));
+      dispatcher.dispatch({ type: ANSWER_LOADING, isLoading: true });
 
       // Then, create a Promise for the answer resource.
       service.postResource('/answer', requestData)
         .then(answer => {
-          var answerAction = AnswerAdded({
+          var answerAction = {
+            type: ANSWER_ADDED,
             requestData: requestData,
             answer: answer
-          });
+          };
           dispatcher.dispatch(answerAction);
-          dispatcher.dispatch(AnswerLoading({ isLoading: false }));
+          dispatcher.dispatch({ type: ANSWER_LOADING, isLoading: false });
         }, error => {
-          var action = AppError({ error: error });
+          var action = { type: APP_ERROR, error: error };
           dispatcher.dispatch(action);
-          dispatcher.dispatch(AnswerLoading({ isLoading: false }));
+          dispatcher.dispatch({ type: ANSWER_LOADING, isLoading: false });
         })
         // Catch errors caused by Store callbacks.
         // This is a last-ditch effort to alert developers that there was an error
@@ -151,10 +142,11 @@ function createActions({ dispatcher, service }) {
       console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
       console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
 
-      var action = AnswerMoveColumn({
+      var action = {
+        type: ANSWER_MOVE_COLUMN,
         columnName: columnName,
         newPosition: newPosition
-      });
+      };
 
       dispatcher.dispatch(action);
     },
@@ -163,20 +155,22 @@ function createActions({ dispatcher, service }) {
       // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
       console.assert(attributes[Symbol.iterator], `attributes ${attributes} should be iterable.`);
 
-      var action = AnswerChangeAttributes({
+      var action = {
+        type: ANSWER_CHANGE_ATTRIBUTES,
         attributes: attributes
-      });
+      };
 
       dispatcher.dispatch(action);
     },
 
     updateFilter({ questionName, terms, attributes, tables }) {
-      var action = AnswerUpdateFilter({
+      var action = {
+        type: ANSWER_UPDATE_FILTER,
         questionName,
         terms,
         attributes,
         tables
-      });
+      };
       dispatcher.dispatch(action);
     },
 

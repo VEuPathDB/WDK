@@ -1,15 +1,20 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.List;
+
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class RecordClassFormatter {
+
+  private static FieldScope fieldScope = FieldScope.NON_INTERNAL;
 
   public static JSONArray getRecordClassesJson(RecordClassSet[] recordClassSets,
       boolean expandRecordClasses, boolean expandAttributes,
@@ -34,14 +39,14 @@ public class RecordClassFormatter {
     json.put("description", recordClass.getDescription());
     json.put("attributes", getAttributesJson(recordClass, expandAttributes));
     json.put("tables", getTablesJson(recordClass, expandTables, expandTableAttributes));
+    json.put("attributeCategories", getAttributeCategoriesJson(recordClass));
     return json;
   }
 
   public static JSONArray getAttributesJson(AttributeFieldContainer container, boolean expandAttributes) {
     JSONArray array = new JSONArray();
-    FieldScope scope = FieldScope.NON_INTERNAL;
     for (AttributeField attrib : container.getAttributeFields()) {
-      if (scope.isFieldInScope(attrib)) {
+      if (fieldScope.isFieldInScope(attrib)) {
         array.put(expandAttributes ? attrib.getName() : getAttributeJson(attrib));
       }
     }
@@ -72,10 +77,37 @@ public class RecordClassFormatter {
     JSONObject json = new JSONObject();
     json.put("name", table.getName());
     json.put("type", table.getType());
+    json.put("category", table.getAttributeCategory());
     json.put("displayName", table.getDisplayName());
     json.put("description", table.getDescription());
     json.put("help", table.getHelp());
     json.put("attributes", getAttributesJson(table, expandAttributes));
     return json;
+  }
+  
+  public static JSONArray getAttributeCategoriesJson(RecordClass recordClass) {
+    List<AttributeCategory> categories = recordClass.getAttributeCategoryTree(fieldScope).getTopLevelCategories();
+    JSONArray attributeCategoriesJson = new JSONArray();
+    for (AttributeCategory category : categories) {
+      attributeCategoriesJson.put(getAttributeCategoryJson(category));
+    }
+    return attributeCategoriesJson;
+  }
+  
+  public static JSONObject getAttributeCategoryJson(AttributeCategory category) {
+    List<AttributeCategory> subCategories = category.getSubCategories();
+    JSONObject attributeCategoryJson = new JSONObject()
+      .put("name",  category.getName())
+      .put("displayName",  category.getDisplayName());
+
+    if (subCategories.size() > 0) {
+      JSONArray subCategoriesJson = new JSONArray();
+      for (AttributeCategory subCategory : category.getSubCategories()) {
+        subCategoriesJson.put(getAttributeCategoryJson(subCategory));
+      }
+      attributeCategoryJson.put("subCategories",  subCategoriesJson);
+    }
+
+    return attributeCategoryJson;
   }
 }

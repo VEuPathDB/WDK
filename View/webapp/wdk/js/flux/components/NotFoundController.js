@@ -2,8 +2,9 @@
  * Rendered whenever a URL does not match a route
  */
 import React from 'react';
+import wrappable from '../utils/wrappable';
 
-var NotFoundController = React.createClass({
+let NotFoundController = React.createClass({
 
   render() {
     return (
@@ -16,4 +17,4 @@ var NotFoundController = React.createClass({
 
 });
 
-export default NotFoundController;
+export default wrappable(NotFoundController);

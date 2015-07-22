@@ -1,7 +1,7 @@
 import {
-  QuestionsAdded,
-  RecordClassesAdded
-} from '../ActionType';
+  QUESTIONS_ADDED,
+  RECORD_CLASSES_ADDED
+} from '../constants/actionTypes';
 
 function createActions({ dispatcher, service }) {
   return {
@@ -16,8 +16,16 @@ function createActions({ dispatcher, service }) {
 
       Promise.all([questionPromise, recordClassPromise])
         .then(function([ questions, recordClasses ]) {
-          dispatcher.dispatch(QuestionsAdded({ questions }));
-          dispatcher.dispatch(RecordClassesAdded({ recordClasses }));
+          // FIXME Remove hardcoded category 'Uncategorized'
+          // starthack
+          recordClasses.forEach(function(recordClass) {
+            recordClass.attributeCategories.push(
+              { name: undefined, displayName: 'Uncategorized' }
+            );
+          });
+          // endhack
+          dispatcher.dispatch({ type: QUESTIONS_ADDED, questions });
+          dispatcher.dispatch({ type: RECORD_CLASSES_ADDED, recordClasses });
         });
     }
   };
