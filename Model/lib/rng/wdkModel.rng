@@ -1402,6 +1402,9 @@
           <ref name="propertyList" />
         </choice>
       </zeroOrMore>
+      <optional>
+        <attribute name="attributeCategory" />
+      </optional>
     </element>
   </define>
 
