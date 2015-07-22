@@ -1,4 +1,5 @@
 import React, { PropTypes } from 'react';
+import wrappable from '../utils/wrappable';
 
 let $ = window.jQuery;
 
@@ -28,13 +29,13 @@ let Tooltip = React.createClass({
   _setupTooltip() {
     let { content } = this.props;
 
-    if (content == null) return;
+    if (content == null) { return; }
 
     let text = typeof content === 'string'
       ? content
       : React.renderToStaticMarkup(content);
 
-    $(this.getDOMNode()).wdkTooltip({
+    $(React.findDOMNode(this)).wdkTooltip({
       content: { text },
       show: { delay: 1000 },
       position: { my: 'top left', at: 'bottom left' }
@@ -42,7 +43,7 @@ let Tooltip = React.createClass({
   },
 
   _destroyTooltip() {
-    $(this.getDOMNode()).qtip('destroy');
+    $(React.findDOMNode(this)).qtip('destroy');
   },
 
   render() {
@@ -51,4 +52,4 @@ let Tooltip = React.createClass({
 
 });
 
-export default Tooltip;
+export default wrappable(Tooltip);

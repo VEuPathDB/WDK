@@ -1,11 +1,11 @@
 import React from 'react';
 import Store from '../core/store';
 import {
-  LoadPreferences,
-  SetPreference,
-  RemovePreference,
-  RemoveAllPreferences
-} from '../ActionType';
+  PREFERENCES_LOADED,
+  PREFERENCE_SET,
+  PREFERENCE_REMOVED,
+  PREFERENCE_REMOVED_ALL
+} from '../constants/actionTypes';
 
 let $update = React.addons.update;
 
@@ -16,10 +16,10 @@ function createStore({ dispatcher }) {
 
 function update(state, action) {
   switch(action.type) {
-    case LoadPreferences: return load(state, action);
-    case SetPreference: return set(state, action);
-    case RemovePreference: return remove(state, action);
-    case RemoveAllPreferences: return removeAll(state, action);
+    case PREFERENCES_LOADED: return load(state, action);
+    case PREFERENCE_SET: return set(state, action);
+    case PREFERENCE_REMOVED: return remove(state, action);
+    case PREFERENCE_REMOVED_ALL: return removeAll(state, action);
   }
 }
 

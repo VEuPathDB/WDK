@@ -1,14 +1,14 @@
 import Store from '../core/store';
 import {
-  RecordClassesAdded
-} from '../ActionType';
+  RECORD_CLASSES_ADDED
+} from '../constants/actionTypes';
 
 function createStore({ dispatcher }) {
   return new Store(dispatcher, undefined, update);
 }
 
 function update(state = {}, action) {
-  if (action.type === RecordClassesAdded) {
+  if (action.type === RECORD_CLASSES_ADDED) {
     state.recordClasses = action.recordClasses;
     return state;
   }

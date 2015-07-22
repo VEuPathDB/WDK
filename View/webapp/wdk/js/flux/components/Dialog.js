@@ -1,5 +1,7 @@
 import React from 'react';
+import wrappable from '../utils/wrappable';
 
+let $ = window.jQuery;
 /**
  * A reusable jQueryUI Dialog component (http://jqueryui.com/dialog/).
  * Adapted from http://jsbin.com/vepidi/1/edit?html,js,output
@@ -92,10 +94,12 @@ var Dialog = React.createClass({
       React.Children.only(this.props.children),
       this.node
     );
-    if (this.props.open)
-      jQuery(this.node).dialog('open');
-    else
-      jQuery(this.node).dialog('close');
+    if (this.props.open) {
+      $(this.node).dialog('open');
+    }
+    else {
+      $(this.node).dialog('close');
+    }
   },
 
   componentDidUpdate() {
@@ -115,8 +119,8 @@ var Dialog = React.createClass({
       title: this.props.title,
       autoOpen: false
     };
-    this.node = this.getDOMNode();
-    jQuery(this.node).dialog(options);
+    this.node = React.findDOMNode(this);
+    $(this.node).dialog(options);
     this.handlePropsChanged();
   },
 
@@ -125,8 +129,8 @@ var Dialog = React.createClass({
    * which will cause its componentWillUnmount hook to be called.
    */
   componentWillUnmount() {
-    jQuery(this.node).dialog('destroy');
-    React.unmountComponentAtNode(this.getDOMNode());
+    $(this.node).dialog('destroy');
+    React.unmountComponentAtNode(React.findDOMNode(this));
   },
 
   /**
@@ -140,4 +144,4 @@ var Dialog = React.createClass({
   }
 });
 
-export default Dialog;
+export default wrappable(Dialog);

@@ -1,4 +1,3 @@
-import pairs from 'lodash/object/pairs';
 import React from 'react';
 import Router from 'react-router';
 import Dispatcher from './dispatcher';
@@ -36,14 +35,6 @@ function createContext(config = {}) {
       return router;
     },
 
-    getCellRenderer(...args) {
-      return config.cellRendererResolver(...args);
-    },
-
-    getRecordComponent(...args) {
-      return config.recordComponentResolver(...args);
-    },
-
     addStore(token, store) {
       stores.set(token, store);
     },
@@ -71,7 +62,18 @@ function createContext(config = {}) {
 
 function makeRouterCallback(context, rootElement) {
   return function routerCallback(Handler, state) {
-    React.render(<Handler application={context}/>, rootElement);
+    // XXX Implement router filters?
+    if ('auth_tkt' in state.query) {
+      state.query.auth_tkt = undefined;
+      context.router.replaceWith(
+        state.pathname,
+        state.params,
+        state.query
+      );
+    }
+    else {
+      React.render(<Handler state={state} application={context}/>, rootElement);
+    }
   };
 }
 
