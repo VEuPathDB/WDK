@@ -67,7 +67,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     });
 
     // Register change and keyup event handlers to dependent parameter.
-    Object.keys(dependentParamsMap).map(function(dependedName) {
+    Object.keys(dependentParamsMap).forEach(function(dependedName) {
       var dependedParam = $("div.param[name='" + dependedName + "']");
 
       // set previous value
@@ -86,7 +86,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       };
 
       dependedParam.change(handleChange);
-      dependedParam.keyup(_.debounce(handleChange, 1000));
+      // Updating 2 seconds after keyup has proven problematic, so commenting out. -dmf
+      // dependedParam.keyup(_.debounce(handleChange, 2000));
     });
   }
 
@@ -180,7 +181,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
-  function createFilterParam($param, questionName, dependedValue, filterData) {
+  function createFilterParam($param, questionName, dependedValue, filterData, keepPreviousValue) {
     var $data = $param.data();
     var filterParam = $data.filterParam;
 
@@ -201,16 +202,18 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     defaultColumns = defaultColumns ? defaultColumns.split(/\s+/) : [];
 
     // get previous values
-    try {
-      previousValue = JSON.parse(input.val());
-      if (!( _.isArray(previousValue.filters) &&
-             _.isArray(previousValue.values)  &&
-             _.isArray(previousValue.ignored) )) {
-        previousValue = undefined;
-        throw new Error('Previous value is malformed.');
+    if (keepPreviousValue) {
+      try {
+        previousValue = JSON.parse(input.val());
+        if (!( _.isArray(previousValue.filters) &&
+               _.isArray(previousValue.values)  &&
+               _.isArray(previousValue.ignored) )) {
+          previousValue = undefined;
+          throw new Error('Previous value is malformed.');
+        }
+      } catch (e) {
+        console.warn(e);
       }
-    } catch (e) {
-      console.warn(e);
     }
 
     // parse data from <script>
@@ -261,6 +264,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     });
 
     $param.append(filterParam.el);
+    $param.trigger('filterParamDidMount', filterParam);
 
     // This is a circular reference and potential memory leak, although jQuery seems to make this safe.
     // See http://stackoverflow.com/questions/10092619/precise-explanation-of-javascript-dom-circular-reference-issue
@@ -268,8 +272,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     filterParam.on('change:value', function(filterParam, value) {
       var ignored = value.data.filter(datum => datum.isIgnored);
+      var filteredData = value.filteredData.filter(datum => !ignored.includes(datum));
       input.val(JSON.stringify({
-        values: _.pluck(value.filteredData, 'term'),
+        values: _.pluck(filteredData, 'term'),
         ignored: _.pluck(ignored, 'term'),
         filters: _.map(value.filters, _.partialRight(_.omit, 'selection'))
       }));
@@ -715,7 +720,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       sendReqUrl = sendReqUrl + '&json=true';
       xhr = $.getJSON(sendReqUrl, function(data) {
-        createFilterParam(dependentParam, questionName, dependedValues, data);
+        createFilterParam(dependentParam, questionName, dependedValues, data, keepPreviousValue);
         dependentParam
           .find('input').removeAttr('disabled').end()
           .find('.loading').hide();
