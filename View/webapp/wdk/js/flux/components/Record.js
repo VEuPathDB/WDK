@@ -1,5 +1,6 @@
 import React from 'react';
 import RecordMainSection from './RecordMainSection';
+import RecordHeading from './RecordHeading';
 import RecordNavigationSection from './RecordNavigationSection';
 import wrappable from '../utils/wrappable';
 import {
@@ -31,6 +32,7 @@ let Record = React.createClass({
   render() {
     return (
       <div className="wdk-Record">
+        <RecordHeading {...this.props}/>
         <RecordNavigationSection {...this.props} onVisibleChange={this.handleVisibleChange} />
         <RecordMainSection {...this.props} />
       </div>
