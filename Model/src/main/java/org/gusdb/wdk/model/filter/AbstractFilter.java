@@ -50,8 +50,14 @@ public abstract class AbstractFilter implements Filter {
     this._view = view;
   }
   
-  @Override public JSONObject getDefaultValue() {
+  @Override
+  public JSONObject getDefaultValue() {
 	  return _defaultValue;
+  }
+  
+  @Override
+  public void setDefaultValue(JSONObject defaultValue) {
+    _defaultValue = defaultValue;
   }
   
 }
