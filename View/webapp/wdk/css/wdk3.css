@@ -226,6 +226,16 @@ main h4 {
   padding: 0 1em;
 }
 
+.wdk-RecordHeading,
+.wdk-RecordActions,
+.wdk-RecordActionItem {
+  display: inline-block;
+}
+
+.wdk-RecordActionItem {
+  padding: 0 1em;
+}
+
 .wdk-Record-main {
   margin-left: 260px;
 }
@@ -240,6 +250,7 @@ main h4 {
 
 .wdk-Record .wdk-TreeNodeCollection {
   padding-left: 0;
+  margin: 0;
   list-style: none;
 }
 
