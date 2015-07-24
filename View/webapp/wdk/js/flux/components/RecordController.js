@@ -40,11 +40,8 @@ let RecordController = React.createClass({
       let { fetchRecordDetails } = application.getActions(RecordActions);
       let attributes = recordClass.attributes.map(a => a.name);
       let tables = recordClass.tables.map(t => t.name);
-      let primaryKey = Object.keys(query).map(function(name) {
-        return { name, value: query[name] };
-      });
       let recordSpec = {
-        primaryKey,
+        primaryKey: query,
         attributes,
         tables
       };
