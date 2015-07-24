@@ -40,7 +40,7 @@ let Sticky = React.createClass({
     };
     return (
       <div> {/* This node is used to track scroll position */}
-        <div style={style}>
+        <div {...this.props} style={style}>
           {this.props.children}
         </div>
       </div>

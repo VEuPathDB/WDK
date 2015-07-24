@@ -2,17 +2,13 @@ import React from 'react';
 import Tree from './Tree';
 import wrappable from '../utils/wrappable';
 
-function noop(){}
-
-let sidebarClass = 'wdk-Record-sidebar';
-
 let RecordNavigationSection = React.createClass({
 
   mixins: [ React.addons.PureRenderMixin ],
 
   getDefaultProps() {
     return {
-      onVisibleChange: noop
+      onVisibleChange: function noop() {}
     };
   },
 
@@ -32,7 +28,7 @@ let RecordNavigationSection = React.createClass({
   render() {
     let { recordClass, hiddenCategories } = this.props;
     return (
-      <div className={sidebarClass}>
+      <div>
         <h3 className="wdk-RecordSidebarHeader">Categories</h3>
         <Tree
           items={recordClass.attributeCategories}
