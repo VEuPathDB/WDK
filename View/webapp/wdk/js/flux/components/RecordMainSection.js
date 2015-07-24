@@ -1,5 +1,4 @@
 import React from 'react';
-import RecordMainHeading from './RecordMainHeading';
 import RecordMainCategorySection from './RecordMainCategorySection';
 import RecordTable from './RecordTable';
 import Tree from './Tree';
@@ -19,7 +18,6 @@ let RecordMainSection = React.createClass({
 
     return (
       <div className="wdk-Record-main">
-        <RecordMainHeading {...this.props}/>
         <Tree
           items={attributeCategories}
           childrenProperty="subCategories"

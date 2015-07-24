@@ -17,7 +17,7 @@ import RecordAttribute from './RecordAttribute';
 import RecordController from './RecordController';
 import RecordList from './RecordList';
 import RecordMainCategorySection from './RecordMainCategorySection';
-import RecordMainHeading from './RecordMainHeading';
+import RecordHeading from './RecordHeading';
 import RecordMainSection from './RecordMainSection';
 import RecordNavigationSection from './RecordNavigationSection';
 import RecordTable from './RecordTable';
@@ -46,7 +46,7 @@ export {
   RecordAttribute,
   RecordController,
   RecordList,
-  RecordMainHeading,
+  RecordHeading,
   RecordMainSection,
   RecordMainCategorySection,
   RecordNavigationSection,
