@@ -24,8 +24,32 @@ let RecordController = React.createClass({
   },
 
   componentWillReceiveProps(nextProps) {
+    this.setState({
+      meta: null,
+      record: null
+    });
     this.disposeSubscriptions();
     this.subscribeToStores();
+  },
+
+  componentWillUpdate(nextProps, nextState) {
+    if (nextState.record == null) {
+      let { application } = this.context;
+      let { params, query } = nextProps;
+      let { recordClass } = nextState;
+      let { fetchRecordDetails } = application.getActions(RecordActions);
+      let attributes = recordClass.attributes.map(a => a.name);
+      let tables = recordClass.tables.map(t => t.name);
+      let primaryKey = Object.keys(query).map(function(name) {
+        return { name, value: query[name] };
+      });
+      let recordSpec = {
+        primaryKey,
+        attributes,
+        tables
+      };
+      fetchRecordDetails(params.class, recordSpec);
+    }
   },
 
   subscribeToStores() {
@@ -33,33 +57,17 @@ let RecordController = React.createClass({
     let recordStore = application.getStore(RecordStore);
     let questionStore = application.getStore(QuestionStore);
     let recordClassStore = application.getStore(RecordClassStore);
-    let hasFullRecord = false;
 
     this.storeSubscription = combineStores(
       recordStore,
       questionStore,
       recordClassStore,
-      (recordState, questionState, recordClassState) => {
+      ({ records, hiddenCategories }, { questions }, { recordClasses }) => {
         let { params, query } = this.props;
         let key = RecordStore.makeKey(params.class, query);
-        let recordData = recordState.records[key];
-        let { hiddenCategories } = recordState;
-        let { questions } = questionState;
-        let { recordClasses } = recordClassState;
-
-        if (recordData != null) {
-          let { meta, record } = recordData;
-          this.setState({ meta, record, questions, recordClasses, hiddenCategories });
-        }
-
-        // get full record
-        if (!hasFullRecord) {
-          let recordClass = recordClasses.find(rc => rc.fullName == params.class);
-          let attributes = recordClass.attributes.map(a => a.name);
-          let tables = recordClass.tables.map(t => t.name);
-          this.fetchRecordDetails(attributes, tables);
-          hasFullRecord = true;
-        }
+        let { meta, record } = (records[key] || {});
+        let recordClass = recordClasses.find(rc => rc.fullName == params.class);
+        this.setState({ meta, record, questions, recordClass, recordClasses, hiddenCategories });
       }
     );
   },
@@ -68,32 +76,15 @@ let RecordController = React.createClass({
     this.storeSubscription.dispose();
   },
 
-  fetchRecordDetails(attributes, tables) {
-    let { application } = this.context;
-    let { params, query } = this.props;
-    let primaryKey = Object.keys(query).map(function(name) {
-      return { name, value: query[name] };
-    });
-    let recordSpec = {
-      primaryKey,
-      attributes,
-      tables
-    };
-    let recordActions = application.getActions(RecordActions);
-    recordActions.fetchRecordDetails(params.class, recordSpec);
-  },
-
   render() {
-    if (this.state == null) return <Loading/>;
+    if (this.state == null || this.state.record == null) return <Loading/>;
 
-    let { meta, record, recordClasses, questions, hiddenCategories } = this.state;
     let recordActions = this.context.application.getActions(RecordActions);
-    let recordClass = recordClasses.find(rc => rc.fullName === meta.class);
-    let recordProps = { meta, record, recordClass, recordClasses, questions, recordActions, hiddenCategories };
+    let { record, recordClass } = this.state;
 
     return (
-      <Doc title={`${recordClass.displayName} ${record.attributes.primary_key.value}`}>
-        <Record {...recordProps}/>
+      <Doc title={`${recordClass.displayName} ${record.displayName}`}>
+        <Record {...this.state} recordActions={recordActions}/>
       </Doc>
     );
   }
