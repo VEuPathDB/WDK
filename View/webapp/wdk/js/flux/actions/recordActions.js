@@ -15,6 +15,10 @@ function createActions({ dispatcher, service, getStore }) {
    * @param {array}  spec.tables
    */
   function fetchRecordDetails(recordClass, recordSpec) {
+    // REST service wants this as an array of objects... should we change this?
+    recordSpec.primaryKey = Object.keys(recordSpec.primaryKey).map(function(name) {
+      return { name, value: recordSpec.primaryKey[name] };
+    });
     let reqBody = { recordInstanceSpecification: recordSpec };
     service.postResource(`/record/${recordClass}/get`, reqBody).then(function(data) {
       let { record, meta } = data;
