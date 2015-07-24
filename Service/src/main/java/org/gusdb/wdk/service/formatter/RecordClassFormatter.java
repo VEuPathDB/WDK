@@ -64,11 +64,12 @@ public class RecordClassFormatter {
     return json;
   }
 
-  public static JSONArray getTablesJson(RecordClass recordClass,
-      boolean expandTables, boolean expandAttributes) {
+  public static JSONArray getTablesJson(RecordClass recordClass, boolean expandTables, boolean expandAttributes) {
     JSONArray array = new JSONArray();
     for (TableField table : recordClass.getTableFields()) {
-      array.put(expandTables ? table.getName() : getTableJson(table, expandAttributes));
+      if (fieldScope.isFieldInScope(table)) {
+        array.put(expandTables ? table.getName() : getTableJson(table, expandAttributes));
+      }
     }
     return array;
   }
