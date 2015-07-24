@@ -1,4 +1,5 @@
 import React from 'react';
+import Sticky from './Sticky';
 import RecordMainSection from './RecordMainSection';
 import RecordHeading from './RecordHeading';
 import RecordNavigationSection from './RecordNavigationSection';
@@ -33,7 +34,9 @@ let Record = React.createClass({
     return (
       <div className="wdk-Record">
         <RecordHeading {...this.props}/>
-        <RecordNavigationSection {...this.props} onVisibleChange={this.handleVisibleChange} />
+        <Sticky>
+          <RecordNavigationSection {...this.props} onVisibleChange={this.handleVisibleChange} />
+        </Sticky>
         <RecordMainSection {...this.props} />
       </div>
     );
