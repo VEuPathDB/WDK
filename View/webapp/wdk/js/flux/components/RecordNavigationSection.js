@@ -7,14 +7,16 @@ let RecordNavigationSection = React.createClass({
   propTypes: {
     categories: React.PropTypes.array,
     hiddenCategories: React.PropTypes.array,
-    onVisibleChange: React.PropTypes.func
+    onVisibleChange: React.PropTypes.func,
+    heading: React.PropTypes.string
   },
 
   mixins: [ React.addons.PureRenderMixin ],
 
   getDefaultProps() {
     return {
-      onVisibleChange: function noop() {}
+      onVisibleChange: function noop() {},
+      heading: 'Categories'
     };
   },
 
@@ -32,10 +34,10 @@ let RecordNavigationSection = React.createClass({
   },
 
   render() {
-    let { categories, hiddenCategories } = this.props;
+    let { categories, hiddenCategories, heading } = this.props;
     return (
       <div className="wdk-Record-sidebar">
-        <h3 className="wdk-RecordSidebarHeader">Categories</h3>
+        <h3 className="wdk-RecordSidebarHeader">{heading}</h3>
         <Tree
           items={categories}
           maxDepth={1}
