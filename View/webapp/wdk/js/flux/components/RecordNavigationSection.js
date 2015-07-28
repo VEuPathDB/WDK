@@ -36,8 +36,8 @@ let RecordNavigationSection = React.createClass({
   render() {
     let { categories, hiddenCategories, heading } = this.props;
     return (
-      <div className="wdk-Record-sidebar">
-        <h3 className="wdk-RecordSidebarHeader">{heading}</h3>
+      <div className="wdk-RecordNavigationSection">
+        <h3 className="wdk-RecordNavigationSectionHeader">{heading}</h3>
         <Tree
           items={categories}
           maxDepth={1}
