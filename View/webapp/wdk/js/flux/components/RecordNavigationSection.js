@@ -8,7 +8,7 @@ let RecordNavigationSection = React.createClass({
     categories: React.PropTypes.array,
     hiddenCategories: React.PropTypes.array,
     onVisibleChange: React.PropTypes.func,
-    heading: React.PropTypes.string
+    heading: React.PropTypes.node
   },
 
   mixins: [ React.addons.PureRenderMixin ],
