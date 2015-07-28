@@ -39,7 +39,7 @@ let RecordController = React.createClass({
   },
 
   componentWillReceiveProps(nextProps) {
-    fetchRecordDetails(nextProps);
+    this.fetchRecordDetails(nextProps);
   },
 
   fetchRecordDetails(props) {
