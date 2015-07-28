@@ -36,8 +36,8 @@ let Record = React.createClass({
         <RecordHeading {...this.props}/>
         <Sticky>
           <RecordNavigationSection
+            {...this.props}
             categories={this.props.recordClass.attributeCategories}
-            hiddenCategories={this.props.hiddenCategories}
             onVisibleChange={this.handleVisibleChange}
           />
         </Sticky>
