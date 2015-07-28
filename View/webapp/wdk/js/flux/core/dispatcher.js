@@ -1,3 +1,4 @@
+import React from 'react';
 import { Dispatcher } from 'flux';
 
 function createDispatcher() {
@@ -5,6 +6,7 @@ function createDispatcher() {
   if ("production" !== process.env.NODE_ENV) {
     let proto = Dispatcher.prototype;
     let dispatch = proto.dispatch;
+
 
     proto.dispatch = function debugDispatch(action) {
       if (action.type === undefined) {
@@ -16,6 +18,7 @@ function createDispatcher() {
       console.info('dispatching', action);
       dispatch.call(this, action);
     };
+
   }
 
   return new Dispatcher;

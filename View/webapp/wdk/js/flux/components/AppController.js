@@ -31,21 +31,17 @@ let AppController = React.createClass({
     return { application };
   },
 
-  getInitialState() {
-    return {
-      errors: []
-    };
-  },
-
   componentWillMount() {
     let { application } = this.props;
-    let store = application.getStore(AppStore);
     let commonActions = application.getActions(CommonActions);
     let preferenceActions = application.getActions(PreferenceActions);
+    let appStore = application.getStore(AppStore);
+
     preferenceActions.loadPreferences();
     commonActions.fetchCommonData();
-    this.storeSubscription = store.subscribe(state => {
-      this.setState(state);
+
+    this.storeSubscription = appStore.subscribe(({ errors }) => {
+      this.setState({ errors });
     });
   },
 
