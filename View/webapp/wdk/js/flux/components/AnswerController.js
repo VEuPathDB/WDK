@@ -1,15 +1,15 @@
 // Import modules
 import React from 'react/addons';
-import combineStores from '../utils/combineStores';
 import AnswerStore from '../stores/answerStore';
+import PreferenceStore from '../stores/preferenceStore';
 import QuestionStore from '../stores/questionStore';
 import RecordClassStore from '../stores/recordClassStore';
-import PreferenceStore from '../stores/preferenceStore';
 import AnswerActions from '../actions/answerActions';
 import PreferenceActions from '../actions/preferenceActions';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
+import combineStores from '../utils/combineStores';
 import wrappable from '../utils/wrappable';
 
 
@@ -182,9 +182,7 @@ let AnswerController = React.createClass({
         let { filterTables = [] } = aState;
         let { filteredRecords } = aState;
         let { questions } = qState;
-        let question = questions.find(q => q.name === questionName);
         let { recordClasses } = rState;
-        let recordClass = recordClasses.find(r => r.fullName === question.class);
 
         this.setState({
           isLoading,
@@ -194,9 +192,7 @@ let AnswerController = React.createClass({
           filterAttributes,
           filterTables,
           filteredRecords,
-          question,
           questions,
-          recordClass,
           recordClasses
         });
       }
@@ -402,14 +398,19 @@ let AnswerController = React.createClass({
     let {
       isLoading,
       answer,
-      question,
-      recordClass,
       displayInfo,
       filterTerm,
       filterAttributes,
       filterTables,
-      filteredRecords
+      filteredRecords,
+      questions,
+      recordClasses
     } = this.state;
+
+    let { params } = this.props;
+
+    let question = questions.find(q => q.name === params.questionName);
+    let recordClass = recordClasses.find(r => r.fullName === question.class);
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to

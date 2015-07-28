@@ -27,7 +27,9 @@ function addRecordDetails(state, action) {
   let { attributes } = record;
   meta.attributes.forEach(function(attributeMeta) {
     let { name } = attributeMeta;
-    attributes[name] = createAttribute(attributeMeta, attributes[name]);
+    if (name in attributes) {
+      attributes[name] = createAttribute(attributeMeta, attributes[name]);
+    }
   });
   Object.assign(recordData.meta, meta);
   Object.assign(recordData.record, record);

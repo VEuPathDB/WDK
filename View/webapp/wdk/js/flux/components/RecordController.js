@@ -1,12 +1,11 @@
 import React from 'react';
-import RecordStore from '../stores/recordStore';
-import QuestionStore from '../stores/questionStore';
 import RecordClassStore from '../stores/recordClassStore';
+import RecordStore from '../stores/recordStore';
 import RecordActions from '../actions/recordActions';
-import combineStores from '../utils/combineStores';
 import Doc from './Doc';
 import Loading from './Loading';
 import Record from './Record';
+import combineStores from '../utils/combineStores';
 import wrappable from '../utils/wrappable';
 
 let RecordController = React.createClass({
@@ -15,29 +14,50 @@ let RecordController = React.createClass({
     application: React.PropTypes.object.isRequired
   },
 
+  getInitialState() {
+    return {
+      recordClass: null
+    };
+  },
+
   componentWillMount() {
-    this.subscribeToStores();
+    let { application } = this.context;
+    let recordStore = application.getStore(RecordStore);
+
+    this.storeSubscription = recordStore.subscribe(({ records, hiddenCategories }) => {
+      let { params, query } = this.props;
+      let key = RecordStore.makeKey(params.class, query);
+      let { meta, record } = (records[key] || {});
+      this.setState({ meta, record, hiddenCategories });
+    });
+
+    this.fetchRecordDetails(this.props);
   },
 
   componentWillUnmount() {
-    this.disposeSubscriptions();
+    this.storeSubscription.dispose();
   },
 
   componentWillReceiveProps(nextProps) {
-    this.setState({
-      meta: null,
-      record: null
-    });
-    this.disposeSubscriptions();
-    this.subscribeToStores();
+    fetchRecordDetails(nextProps);
   },
 
-  componentWillUpdate(nextProps, nextState) {
-    if (nextState.record == null) {
-      let { application } = this.context;
-      let { params, query } = nextProps;
-      let { recordClass } = nextState;
-      let { fetchRecordDetails } = application.getActions(RecordActions);
+  fetchRecordDetails(props) {
+    let { application } = this.context;
+    let { params, query } = props;
+    let recordClassStore = application.getStore(RecordClassStore);
+    let { fetchRecordDetails } = application.getActions(RecordActions);
+
+    // Subscribe to recordClassStore to get attributes and tables for record's
+    // recordClass, which will be used to fetch details. Then, dispose the
+    // subscription immediately. If we were using RxJS observables, we could
+    // rewrite this using the .last() operator, without expilicity calling
+    // dispose:
+    //
+    //     recordClassStore.last().subscribe( ... );
+    //
+    let subscription = recordClassStore.subscribe(({ recordClasses }) => {
+      let recordClass = recordClasses.find(r => r.fullName === params.class);
       let attributes = recordClass.attributes.map(a => a.name);
       let tables = recordClass.tables.map(t => t.name);
       let recordSpec = {
@@ -45,32 +65,17 @@ let RecordController = React.createClass({
         attributes,
         tables
       };
-      fetchRecordDetails(params.class, recordSpec);
-    }
-  },
 
-  subscribeToStores() {
-    let { application } = this.context;
-    let recordStore = application.getStore(RecordStore);
-    let questionStore = application.getStore(QuestionStore);
-    let recordClassStore = application.getStore(RecordClassStore);
-
-    this.storeSubscription = combineStores(
-      recordStore,
-      questionStore,
-      recordClassStore,
-      ({ records, hiddenCategories }, { questions }, { recordClasses }) => {
-        let { params, query } = this.props;
-        let key = RecordStore.makeKey(params.class, query);
-        let { meta, record } = (records[key] || {});
-        let recordClass = recordClasses.find(rc => rc.fullName == params.class);
-        this.setState({ meta, record, questions, recordClass, recordClasses, hiddenCategories });
+      // update the recordClass if it changes
+      if (this.state.recordClass !== recordClass) {
+        this.setState({ recordClass });
       }
-    );
-  },
 
-  disposeSubscriptions() {
-    this.storeSubscription.dispose();
+      fetchRecordDetails(params.class, recordSpec);
+
+      subscription.dispose();
+    });
+
   },
 
   render() {
