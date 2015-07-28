@@ -36,28 +36,24 @@ let RecordController = React.createClass({
 
   componentWillUnmount() {
     this.storeSubscription.dispose();
+    this.fetchSubcription.dispose();
   },
 
   componentWillReceiveProps(nextProps) {
+    this.fetchSubcription.dispose();
     this.fetchRecordDetails(nextProps);
   },
 
   fetchRecordDetails(props) {
     let { application } = this.context;
-    let { params, query } = props;
     let recordClassStore = application.getStore(RecordClassStore);
     let { fetchRecordDetails } = application.getActions(RecordActions);
+    let { params, query } = props;
 
     // Subscribe to recordClassStore to get attributes and tables for record's
-    // recordClass, which will be used to fetch details. Then, dispose the
-    // subscription immediately. If we were using RxJS observables, we could
-    // rewrite this using the .last() operator, without expilicity calling
-    // dispose:
-    //
-    //     recordClassStore.last().subscribe( ... );
-    //
-    let subscription = recordClassStore.subscribe(({ recordClasses }) => {
-      let recordClass = recordClasses.find(r => r.fullName === params.class);
+    // recordClass, which will be used to fetch details.
+    this.fetchSubcription = recordClassStore.subscribe(value => {
+      let recordClass = value.recordClasses.find(r => r.fullName === params.class);
       let attributes = recordClass.attributes.map(a => a.name);
       let tables = recordClass.tables.map(t => t.name);
       let recordSpec = {
@@ -72,10 +68,11 @@ let RecordController = React.createClass({
       }
 
       fetchRecordDetails(params.class, recordSpec);
-
-      subscription.dispose();
     });
+  },
 
+  _callFetchRecordDetails(props, recordClasses) {
+    let { application } = this.context;
   },
 
   render() {
