@@ -258,16 +258,14 @@ main h4 {
   width: 235px;
   background-color: white;
   position: absolute;
+}
+
+.wdk-RecordNavigationSection {
   border: 1px solid #d8d8d8;
   border-radius: 4px;
 }
 
-.wdk-Record-sidebar__fixed {
-  position: fixed;
-  top: 0px;
-}
-
-.wdk-RecordSidebarHeader {
+.wdk-RecordNavigationSectionHeader {
   margin: 0;
   padding: .6em;
   background: #f9f9f9;
@@ -340,7 +338,8 @@ main h4 {
 }
 
 .wdk-RecordTable {
-  border: 1px solid;
+  border: 1px solid #d8d8d8;
+  background-color: white;
 }
 
 .wdk-RecordTableHeader {
@@ -351,11 +350,12 @@ main h4 {
 }
 
 .wdk-RecordTable th {
-  border: 1px solid;
-  border-top-width: 2px;
-  border-bottom-width: 2px;
+  background-color: #f9f9f9;
+  border: 1px solid #d8d8d8;
+  font-size: 120%;
+  padding: .6em;
 }
 
 .wdk-RecordTable td {
-  border: 1px dotted;
+  border: 1px solid #d8d8d8;
 }
