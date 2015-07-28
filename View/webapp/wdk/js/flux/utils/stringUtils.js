@@ -23,7 +23,7 @@ export function formatAttributeName(str) {
 // TODO Look up or inject custom formatters
 // FIXME Return React-renderable instead of HTML markup string.
 export function formatAttributeValue(value, type) {
-  if (typeof value === 'object' && 'url' in value) {
+  if (Object(value) === value && 'url' in value) {
     return `<a href="${value.url}">${value.displayText || value.url}</a>`;
   }
   return value;
