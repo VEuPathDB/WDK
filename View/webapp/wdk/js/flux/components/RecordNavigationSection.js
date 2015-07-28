@@ -4,11 +4,19 @@ import wrappable from '../utils/wrappable';
 
 let RecordNavigationSection = React.createClass({
 
+  propTypes: {
+    categories: React.PropTypes.array,
+    hiddenCategories: React.PropTypes.array,
+    onVisibleChange: React.PropTypes.func,
+    heading: React.PropTypes.string
+  },
+
   mixins: [ React.addons.PureRenderMixin ],
 
   getDefaultProps() {
     return {
-      onVisibleChange: function noop() {}
+      onVisibleChange: function noop() {},
+      heading: 'Categories'
     };
   },
 
@@ -26,12 +34,12 @@ let RecordNavigationSection = React.createClass({
   },
 
   render() {
-    let { recordClass, hiddenCategories } = this.props;
+    let { categories, hiddenCategories, heading } = this.props;
     return (
-      <div>
-        <h3 className="wdk-RecordSidebarHeader">Categories</h3>
+      <div className="wdk-RecordNavigationSection">
+        <h3 className="wdk-RecordNavigationSectionHeader">{heading}</h3>
         <Tree
-          items={recordClass.attributeCategories}
+          items={categories}
           maxDepth={1}
           childrenProperty="subCategories"
           getKey={item => String(item.name)}
