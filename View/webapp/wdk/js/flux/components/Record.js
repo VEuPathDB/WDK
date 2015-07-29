@@ -18,30 +18,51 @@ let Record = React.createClass({
     questions: React.PropTypes.array.isRequired,
     recordClasses: React.PropTypes.array.isRequired,
     recordActions: React.PropTypes.object.isRequired,
-    hiddenCategories: React.PropTypes.array.isRequired
+    hiddenCategories: React.PropTypes.array.isRequired,
+    collapsedCategories: React.PropTypes.array.isRequired
   },
 
   handleVisibleChange({ category, isVisible }) {
     let { recordClass } = this.props;
-    this.props.recordActions.toggleCategory({
+    this.props.recordActions.toggleCategoryVisibility({
       recordClass,
       category,
       isVisible
     });
   },
 
+  handleCollapsedChange({ category, isCollapsed }) {
+    let { recordClass } = this.props;
+    this.props.recordActions.toggleCategoryCollapsed({
+      recordClass,
+      category,
+      isCollapsed
+    });
+  },
+
   render() {
+    let { recordClass, hiddenCategories } = this.props;
+    let navCategories = recordClass.attributeCategories;
+    let mainCategories = recordClass.attributeCategories.filter(function(c) {
+      return !hiddenCategories.includes(c.name)
+    });
+
     return (
       <div className="wdk-Record">
         <RecordHeading {...this.props}/>
         <Sticky className="wdk-Record-sidebar">
           <RecordNavigationSection
             {...this.props}
-            categories={this.props.recordClass.attributeCategories}
+            categories={navCategories}
             onVisibleChange={this.handleVisibleChange}
           />
         </Sticky>
-        <RecordMainSection {...this.props} />
+        <div className="wdk-Record-main">
+          <RecordMainSection
+            {...this.props}
+            categories={mainCategories}
+          />
+        </div>
       </div>
     );
   }
