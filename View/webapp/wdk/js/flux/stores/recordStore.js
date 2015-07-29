@@ -24,18 +24,19 @@ function update(state, action) {
 function addRecordDetails(state, action) {
   let { meta, record } = action;
   let key = makeKey(meta.class, record.id);
-  // merge `meta` and `record` with state.records[key]
-  let recordData = state.records[key] || { meta: {}, record: {} };
+  let recordData = state.records[key] || { meta, record };
   // link attribute value and meta
-  let { attributes } = record;
+  let { attributes, tables } = record;
   meta.attributes.forEach(function(attributeMeta) {
     let { name } = attributeMeta;
     if (name in attributes) {
       attributes[name] = createAttribute(attributeMeta, attributes[name]);
     }
   });
+  // merge `meta` and `record` with state.records[key]
   Object.assign(recordData.meta, meta);
-  Object.assign(recordData.record, record);
+  Object.assign(recordData.record.attributes, attributes);
+  Object.assign(recordData.record.tables, tables);
   state.records[key] = recordData;
   return state;
 }
