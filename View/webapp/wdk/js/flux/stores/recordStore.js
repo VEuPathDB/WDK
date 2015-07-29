@@ -1,11 +1,12 @@
 import Store from '../core/store';
 import {
   RECORD_DETAILS_ADDED,
-  RECORD_TOGGLE_CATEGORY
+  RECORD_CATEGORY_VISIBILITY_TOGGLED,
+  RECORD_CATEGORY_COLLAPSED_TOGGLED
 } from '../constants/actionTypes';
 
 function createStore({ dispatcher }) {
-  let state = { records: {}, hiddenCategories: [] };
+  let state = { records: {}, hiddenCategories: [], collapsedCategories: [] };
   return new Store(dispatcher, state, update);
 }
 
@@ -13,8 +14,10 @@ function update(state, action) {
   switch (action.type) {
     case RECORD_DETAILS_ADDED:
       return addRecordDetails(state, action);
-    case RECORD_TOGGLE_CATEGORY:
-      return toggleCategory(state, action);
+    case RECORD_CATEGORY_VISIBILITY_TOGGLED:
+      return toggleCategoryVisibility(state, action);
+    case RECORD_CATEGORY_COLLAPSED_TOGGLED:
+      return toggleCategoryCollapsed(state, action);
   }
 }
 
@@ -38,11 +41,21 @@ function addRecordDetails(state, action) {
 }
 
 // FIXME Key by record class
-function toggleCategory(state, action) {
+function toggleCategoryVisibility(state, action) {
   let { name, isVisible } = action;
   state.hiddenCategories = isVisible === false
     ? state.hiddenCategories.concat(name)
     : state.hiddenCategories.filter(function(n) {
+      return n !== name;
+    });
+  return state;
+}
+
+function toggleCategoryCollapsed(state, action) {
+  let { name, isCollapsed } = action;
+  state.collapsedCategories = isCollapsed === true
+    ? state.collapsedCategories.concat(name)
+    : state.collapsedCategories.filter(function(n) {
       return n !== name;
     });
   return state;

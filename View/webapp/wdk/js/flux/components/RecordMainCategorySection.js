@@ -9,6 +9,7 @@ import {
 let RecordMainCategorySection = React.createClass({
 
   propTypes: {
+    isCollapsed: React.PropTypes.bool.isRequired,
     category: React.PropTypes.object.isRequired,
     depth: React.PropTypes.number,
     record: React.PropTypes.object.isRequired,
@@ -17,35 +18,46 @@ let RecordMainCategorySection = React.createClass({
 
   mixins: [ React.addons.PureRenderMixin ],
 
+  toggleCollapse() {
+    let { recordClass, category, isCollapsed } = this.props;
+    this.props.recordActions.toggleCategoryCollapsed({
+      recordClass,
+      category,
+      isCollapsed: !isCollapsed
+    });
+  },
+
   render() {
-    let { category, depth, record, recordClass } = this.props;
+    let { category, depth, record, recordClass, isCollapsed } = this.props;
     let attributeMetas = recordClass.attributes.filter(a => a.category === category.name);
     let tableMetas = recordClass.tables.filter(t => t.category === category.name);
-    let rootClass = depth === 1 ? '' : 'wdk-Record-mainCategorySection';
     let headerClass = depth === 1 ? 'wdk-Record-sectionHeader' : 'wdk-Record-sectionSubHeader';
     let Header = 'h' + Math.min(depth + 1, 6);
+
     return (
-      <div className={rootClass}>
+      <div className="wdk-Record-section">
         {depth === 1 &&
           <a href="#" className="wdk-Record-sectionHeaderTopLink">Back to top</a>
         }
-        <Header id={String(category.name)} className={headerClass}>
-          {category.displayName}
+        <Header id={String(category.name)} className={headerClass} onClick={this.toggleCollapse}>
+          <i className={'fa fa-' + (isCollapsed ? 'caret-right' : 'caret-down')}/> {category.displayName}
         </Header>
-        {attributeMetas.length > 0 &&
+        {!isCollapsed && attributeMetas.length > 0 && 
           <div className="wdk-Record-sectionContent">
             <table className="wdk-RecordAttributeTable">
               <tbody>
-                {attributeMetas.map(attributeMeta => {
+                {attributeMetas.reduce(function(rows, attributeMeta) {
                   let attribute = record.attributes[attributeMeta.name];
-                  if (attribute.value == '' || attribute.value == null) return null;
-                  return (
-                    <tr key={attribute.name}>
-                      <td><strong>{attribute.displayName}</strong></td>
-                      <td><RecordAttribute attribute={attribute} /></td>
-                    </tr>
-                  );
-                })}
+                  if (attribute.value != null) {
+                    rows.push(
+                      <tr key={attribute.name}>
+                        <td><strong>{attribute.displayName}</strong></td>
+                        <td><RecordAttribute attribute={attribute} /></td>
+                      </tr>
+                    );
+                  }
+                  return rows;
+                }, [])}
               </tbody>
             </table>
             {tableMetas.map(tableMeta => {
@@ -59,6 +71,7 @@ let RecordMainCategorySection = React.createClass({
             })}
           </div>
         }
+        {!isCollapsed && this.props.children}
       </div>
     );
   }

@@ -25,7 +25,6 @@ import TabbableContainer from './TabbableContainer';
 import Table from './Table';
 import Tooltip from './Tooltip';
 import TouchableArea from './TouchableArea';
-import Tree from './Tree';
 
 export {
   Answer,
@@ -54,6 +53,5 @@ export {
   TabbableContainer,
   Table,
   Tooltip,
-  TouchableArea,
-  Tree
+  TouchableArea
 };
