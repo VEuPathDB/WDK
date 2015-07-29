@@ -1,5 +1,5 @@
 import React from 'react';
-import Tree from './Tree';
+import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
 import wrappable from '../utils/wrappable';
 
 let RecordNavigationSection = React.createClass({
@@ -38,28 +38,10 @@ let RecordNavigationSection = React.createClass({
     return (
       <div className="wdk-RecordNavigationSection">
         <h3 className="wdk-RecordNavigationSectionHeader">{heading}</h3>
-        <Tree
-          items={categories}
-          maxDepth={1}
-          childrenProperty="subCategories"
-          getKey={item => String(item.name)}
-          renderItem={category => {
-            return (
-              <div className="wdk-RecordNavigationItem">
-                <input
-                  className="wdk-Record-sidebar-checkbox"
-                  type="checkbox"
-                  checked={!hiddenCategories.includes(category.name)}
-                  onChange={(e) => {
-                    this.handleToggle(e, category);
-                  }}
-                />
-                <a href={'#' + category.name} className="wdk-Record-sidebar-title">
-                  <strong>{category.displayName}</strong>
-                </a>
-              </div>
-            );
-          }}
+        <RecordNavigationSectionCategories
+          categories={categories}
+          hiddenCategories={hiddenCategories}
+          onVisibleChange={this.handleToggle}
         />
       </div>
     );

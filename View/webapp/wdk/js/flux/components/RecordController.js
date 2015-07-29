@@ -24,11 +24,11 @@ let RecordController = React.createClass({
     let { application } = this.context;
     let recordStore = application.getStore(RecordStore);
 
-    this.storeSubscription = recordStore.subscribe(({ records, hiddenCategories }) => {
+    this.storeSubscription = recordStore.subscribe(({ records, hiddenCategories, collapsedCategories }) => {
       let { params, query } = this.props;
       let key = RecordStore.makeKey(params.class, query);
       let { meta, record } = (records[key] || {});
-      this.setState({ meta, record, hiddenCategories });
+      this.setState({ meta, record, hiddenCategories, collapsedCategories });
     });
 
     this.fetchRecordDetails(this.props);
