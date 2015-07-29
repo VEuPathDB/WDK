@@ -244,16 +244,6 @@ main h4 {
   word-break: break-all;
 }
 
-.wdk-Record-main .wdk-TreeNode {
-  padding-left: 1em;
-}
-
-.wdk-Record .wdk-TreeNodeCollection {
-  padding-left: 0;
-  margin: 0;
-  list-style: none;
-}
-
 .wdk-Record-sidebar {
   width: 235px;
   background-color: white;
@@ -295,18 +285,24 @@ main h4 {
   right: .6em;
 }
 
+.wdk-Record-section .wdk-Record-section {
+  padding-left: 1em;
+}
+
 .wdk-Record-sectionHeader {
   /*background-color: #eeeeee;
   padding: .3em;*/
   margin: 8px 0;
   position: relative;
   border-bottom: 1px solid;
+  cursor: pointer;
 }
 
 .wdk-Record-sectionSubHeader {
   margin: 12px 0 8px 0;
   position: relative;
   border-bottom: 1px dotted;
+  cursor: pointer;
 }
 
 .wdk-Record-sectionHeaderTopLink {
