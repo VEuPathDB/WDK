@@ -36,12 +36,16 @@ let RecordMainCategorySection = React.createClass({
 
     return (
       <div className="wdk-Record-section">
-        {depth === 1 &&
-          <a href="#" className="wdk-Record-sectionHeaderTopLink">Back to top</a>
-        }
-        <Header id={String(category.name)} className={headerClass} onClick={this.toggleCollapse}>
-          <i className={'fa fa-' + (isCollapsed ? 'caret-right' : 'caret-down')}/> {category.displayName}
-        </Header>
+        {depth === 1 && <a href="#" className="wdk-Record-sectionHeaderTopLink">Back to top</a>}
+        {depth === 1 ? (
+          <Header id={String(category.name)} className={headerClass}>
+            {category.displayName}
+          </Header>
+        ) : (
+          <Header id={String(category.name)} className={headerClass} onClick={this.toggleCollapse}>
+            <i className={'fa fa-' + (isCollapsed ? 'caret-right' : 'caret-down')}/> {category.displayName}
+          </Header>
+        )}
         {!isCollapsed && attributeMetas.length > 0 && 
           <div className="wdk-Record-sectionContent">
             <table className="wdk-RecordAttributeTable">

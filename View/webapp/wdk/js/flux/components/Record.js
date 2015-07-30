@@ -44,7 +44,6 @@ let Record = React.createClass({
     let { recordClass } = this.props;
     return (
       <div className="wdk-Record">
-        <RecordHeading {...this.props}/>
         <Sticky className="wdk-Record-sidebar">
           <RecordNavigationSection
             {...this.props}
@@ -53,6 +52,7 @@ let Record = React.createClass({
           />
         </Sticky>
         <div className="wdk-Record-main">
+          <RecordHeading {...this.props}/>
           <RecordMainSection
             {...this.props}
             categories={recordClass.attributeCategories}
