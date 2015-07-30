@@ -259,7 +259,7 @@ main h4 {
 .wdk-RecordNavigationSectionHeader {
   margin: 0;
   padding: .6em;
-  background: #f9f9f9;
+  background: #f2f2f2;
   border-radius: 4px;
 }
 
@@ -347,7 +347,7 @@ main h4 {
 }
 
 .wdk-RecordTable th {
-  background-color: #f9f9f9;
+  background-color: #f2f2f2;
   border: 1px solid #d8d8d8;
   font-size: 120%;
   padding: .6em;
