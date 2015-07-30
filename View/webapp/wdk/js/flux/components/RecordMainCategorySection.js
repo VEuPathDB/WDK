@@ -64,7 +64,7 @@ let RecordMainCategorySection = React.createClass({
               let table = record.tables[tableMeta.name];
               return (
                 <div key={table.name} className="wdk-RecordTableWrapper">
-                  <h4>{tableMeta.displayName}</h4>
+                  <h3>{tableMeta.displayName}</h3>
                   <RecordTable table={table} tableMeta={tableMeta}/>
                 </div>
               );
