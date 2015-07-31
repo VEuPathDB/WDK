@@ -13,25 +13,35 @@ let RecordMainSection = React.createClass({
   },
 
   render() {
-    let { depth, record, recordClass, categories, collapsedCategories, recordActions } = this.props;
+    let {
+      depth,
+      record,
+      recordClass,
+      categories,
+      collapsedCategories,
+      hiddenCategories,
+      recordActions
+    } = this.props;
 
     if (categories == null) return null;
 
     return (
       <div>
         {categories.map(category => {
-          return (
-            <RecordMainCategorySection
-              depth={depth}
-              category={category}
-              record={record}
-              recordClass={recordClass}
-              isCollapsed={collapsedCategories.includes(category.name)}
-              recordActions={recordActions}
-            >
-              <RecordMainSection {...this.props} depth={depth + 1} categories={category.subCategories}/>
-            </RecordMainCategorySection>
-          );
+          if (!hiddenCategories.includes(category.name)) {
+            return (
+              <RecordMainCategorySection
+                depth={depth}
+                category={category}
+                record={record}
+                recordClass={recordClass}
+                isCollapsed={collapsedCategories.includes(category.name)}
+                recordActions={recordActions}
+              >
+                <RecordMainSection {...this.props} depth={depth + 1} categories={category.subCategories}/>
+              </RecordMainCategorySection>
+            );
+          }
         })}
       </div>
     );
