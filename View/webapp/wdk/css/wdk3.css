@@ -249,6 +249,7 @@ main h4 {
 .wdk-Record-sidebar {
   width: 235px;
   position: absolute;
+  margin-top: 1.5em;
 }
 
 .wdk-RecordNavigationSection {
