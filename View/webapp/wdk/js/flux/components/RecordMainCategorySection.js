@@ -29,7 +29,7 @@ let RecordMainCategorySection = React.createClass({
 
   render() {
     let { category, depth, record, recordClass, isCollapsed } = this.props;
-    let attributeMetas = recordClass.attributes.filter(a => a.category === category.name);
+    let attributes = recordClass.attributes.filter(a => a.category === category.name).map(a => record.attributes[a.name]);
     let tableMetas = recordClass.tables.filter(t => t.category === category.name);
     let headerClass = depth === 1 ? 'wdk-Record-sectionHeader' : 'wdk-Record-sectionSubHeader';
     let Header = 'h' + Math.min(depth + 1, 6);
@@ -46,24 +46,25 @@ let RecordMainCategorySection = React.createClass({
             <i className={'fa fa-' + (isCollapsed ? 'caret-right' : 'caret-down')}/> {category.displayName}
           </Header>
         )}
-        {!isCollapsed && attributeMetas.length > 0 && 
+        {!isCollapsed &&
           <div className="wdk-Record-sectionContent">
-            <table className="wdk-RecordAttributeTable">
-              <tbody>
-                {attributeMetas.reduce(function(rows, attributeMeta) {
-                  let attribute = record.attributes[attributeMeta.name];
-                  if (attribute.value != null) {
-                    rows.push(
-                      <tr key={attribute.name}>
-                        <td><strong>{attribute.displayName}</strong></td>
-                        <td><RecordAttribute attribute={attribute} /></td>
-                      </tr>
-                    );
-                  }
-                  return rows;
-                }, [])}
-              </tbody>
-            </table>
+            {attributes.length > 0 &&
+              <table className="wdk-RecordAttributeTable">
+                <tbody>
+                  {attributes.reduce(function(rows, attribute) {
+                    if (attribute.value != null) {
+                      rows.push(
+                        <tr key={attribute.name}>
+                          <td><strong>{attribute.displayName}</strong></td>
+                          <td><RecordAttribute attribute={attribute} /></td>
+                        </tr>
+                      );
+                    }
+                    return rows;
+                  }, [])}
+                </tbody>
+              </table>
+            }
             {tableMetas.map(tableMeta => {
               let table = record.tables[tableMeta.name];
               return (
