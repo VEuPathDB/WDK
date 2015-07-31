@@ -67,6 +67,7 @@ let RecordMainCategorySection = React.createClass({
             }
             {tableMetas.map(tableMeta => {
               let table = record.tables[tableMeta.name];
+              if (table.length === 0) return null;
               return (
                 <div key={table.name} className="wdk-RecordTableWrapper">
                   <h3>{tableMeta.displayName}</h3>
