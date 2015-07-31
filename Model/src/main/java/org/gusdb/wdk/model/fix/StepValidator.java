@@ -242,7 +242,7 @@ public class StepValidator extends BaseCLI {
 
     }
 		 finally {
-      String sql = "DROP TABLE " + tempTable + " PURGE";
+      //String sql = "DROP TABLE " + tempTable + " PURGE";
       //SqlUtils.executeUpdate(source, sql, "wdk-invalidate-drop-part-steps");
 			} 
   }

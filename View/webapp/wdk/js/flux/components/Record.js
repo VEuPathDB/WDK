@@ -41,26 +41,21 @@ let Record = React.createClass({
   },
 
   render() {
-    let { recordClass, hiddenCategories } = this.props;
-    let navCategories = recordClass.attributeCategories;
-    let mainCategories = recordClass.attributeCategories.filter(function(c) {
-      return !hiddenCategories.includes(c.name)
-    });
-
+    let { recordClass } = this.props;
     return (
       <div className="wdk-Record">
-        <RecordHeading {...this.props}/>
         <Sticky className="wdk-Record-sidebar">
           <RecordNavigationSection
             {...this.props}
-            categories={navCategories}
+            categories={recordClass.attributeCategories}
             onVisibleChange={this.handleVisibleChange}
           />
         </Sticky>
         <div className="wdk-Record-main">
+          <RecordHeading {...this.props}/>
           <RecordMainSection
             {...this.props}
-            categories={mainCategories}
+            categories={recordClass.attributeCategories}
           />
         </div>
       </div>

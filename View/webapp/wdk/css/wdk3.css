@@ -226,14 +226,16 @@ main h4 {
   padding: 0 1em;
 }
 
-.wdk-RecordHeading,
-.wdk-RecordActions,
+.wdk-RecordActions {
+  padding: 0;
+}
+
 .wdk-RecordActionItem {
   display: inline-block;
 }
 
 .wdk-RecordActionItem {
-  padding: 0 1em;
+  padding: 0 2em 0 0;
 }
 
 .wdk-Record-main {
@@ -246,7 +248,6 @@ main h4 {
 
 .wdk-Record-sidebar {
   width: 235px;
-  background-color: white;
   position: absolute;
 }
 
@@ -295,7 +296,6 @@ main h4 {
   margin: 8px 0;
   position: relative;
   border-bottom: 1px solid;
-  cursor: pointer;
 }
 
 .wdk-Record-sectionSubHeader {
