@@ -31,6 +31,7 @@ let RecordMainSection = React.createClass({
           if (!hiddenCategories.includes(category.name)) {
             return (
               <RecordMainCategorySection
+                key={category.name}
                 depth={depth}
                 category={category}
                 record={record}
