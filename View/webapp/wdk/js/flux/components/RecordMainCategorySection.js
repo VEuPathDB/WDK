@@ -36,7 +36,6 @@ let RecordMainCategorySection = React.createClass({
 
     return (
       <div className="wdk-Record-section">
-        {depth === 1 && <a href="#" className="wdk-Record-sectionHeaderTopLink">Back to top</a>}
         {depth === 1 ? (
           <Header id={String(category.name)} className={headerClass}>
             {category.displayName}

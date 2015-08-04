@@ -26,11 +26,8 @@ let RecordNavigationSection = React.createClass({
   handleShowNone() {
   },
 
-  handleToggle(e, category) {
-    this.props.onVisibleChange({
-      category,
-      isVisible: e.target.checked
-    });
+  handleToggle(category, isVisible) {
+    this.props.onVisibleChange({ category, isVisible });
   },
 
   render() {
