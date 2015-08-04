@@ -24,17 +24,24 @@ let RecordNavigationSectionCategories = React.createClass({
     return (
       <div>
         {categories.map(category => {
+          let isHidden = hiddenCategories.includes(category.name);
           return (
             <div key={category.name} className="wdk-RecordNavigationItem">
               <input
                 className="wdk-Record-sidebar-checkbox"
                 type="checkbox"
-                checked={!hiddenCategories.includes(category.name)}
+                checked={!isHidden}
                 onChange={(e) => {
-                  onVisibleChange(e, category);
+                  onVisibleChange(category, isHidden);
                 }}
               />
-              <a href={'#' + category.name} className="wdk-Record-sidebar-title">
+              <a
+                href={'#' + category.name}
+                className="wdk-Record-sidebar-title"
+                onClick={() => {
+                  if (isHidden) onVisibleChange(category, isHidden);
+                }}
+              >
                 <strong>{category.displayName}</strong>
               </a>
             </div>
