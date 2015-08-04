@@ -1,4 +1,5 @@
 import Store from '../core/store';
+import { makeKey } from '../utils/recordUtils';
 import {
   RECORD_DETAILS_ADDED,
   RECORD_CATEGORY_VISIBILITY_TOGGLED,
@@ -62,16 +63,10 @@ function toggleCategoryCollapsed(state, action) {
   return state;
 }
 
-function makeKey(recordClass, id) {
-  // order keys
-  let idStr = Object.keys(id).sort().map(name => `name=${id[name]}`).join('&');
-  return recordClass + '?' + idStr;
-}
-
 function createAttribute(meta, value) {
   return Object.create(meta, {
     value: { value, enumerable: true }
   });
 }
 
-export default { createStore, makeKey };
+export default { createStore };

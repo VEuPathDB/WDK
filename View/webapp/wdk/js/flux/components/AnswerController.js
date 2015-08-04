@@ -1,14 +1,9 @@
 // Import modules
 import React from 'react/addons';
-import AnswerStore from '../stores/answerStore';
-import PreferenceStore from '../stores/preferenceStore';
-import QuestionStore from '../stores/questionStore';
-import RecordClassStore from '../stores/recordClassStore';
-import AnswerActions from '../actions/answerActions';
-import PreferenceActions from '../actions/preferenceActions';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
+import ContextMixin from '../utils/contextMixin';
 import combineStores from '../utils/combineStores';
 import wrappable from '../utils/wrappable';
 
@@ -94,14 +89,10 @@ let AnswerController = React.createClass({
   // Declare context properties used by this component. The context object is
   // defined in AppController (the application root component). React uses
   // `contextTypes` to determine which properties to add to `this.context`.
-  contextTypes: {
-    // The application context used to look up services.
-    application: React.PropTypes.object.isRequired
-  },
+  mixins: [ ContextMixin ],
 
   // When the component first mounts, fetch the answer.
   componentWillMount() {
-    this.router = this.context.application.router;
     this.sortingPreferenceKey = 'sorting::' + this.props.params.questionName;
     this.subscribeToStores();
     this.fetchAnswer(this.props);
@@ -149,8 +140,7 @@ let AnswerController = React.createClass({
         attributes: maybeSplit(nextQuery.attrs, ','),
         tables: maybeSplit(nextQuery.tables, ',')
       };
-      this.context.application.getActions(AnswerActions)
-      .updateFilter(filterOpts);
+      this.context.actions.answerActions.updateFilter(filterOpts);
     }
 
   },
@@ -163,11 +153,7 @@ let AnswerController = React.createClass({
   // Create subscriptions to stores.
   subscribeToStores() {
     let { questionName } = this.props.params;
-    let { application } = this.context;
-
-    let answerStore = application.getStore(AnswerStore);
-    let questionStore = application.getStore(QuestionStore);
-    let recordClassStore = application.getStore(RecordClassStore);
+    let { answerStore, questionStore, recordClassStore } = this.context.stores;
 
     this.subscription = combineStores(
       answerStore,
@@ -211,7 +197,8 @@ let AnswerController = React.createClass({
   // call the `loadAnswer` action creator based on the `params` and `query`
   // objects.
   fetchAnswer(props) {
-    let preferenceStore = this.context.application.getStore(PreferenceStore);
+    let { preferenceStore } = this.context.stores;
+    let { answerActions } = this.context.actions;
 
     // props.params and props.query are passed to this component by the Router.
     let params = props.params;
@@ -261,11 +248,8 @@ let AnswerController = React.createClass({
       tables: maybeSplit(query.tables, ',')
     };
 
-    this.context.application.getActions(AnswerActions)
-    .updateFilter(filterOpts);
-
-    this.context.application.getActions(AnswerActions)
-    .loadAnswer(params.questionName, opts);
+    answerActions.updateFilter(filterOpts);
+    answerActions.loadAnswer(params.questionName, opts);
   },
 
 
@@ -298,7 +282,7 @@ let AnswerController = React.createClass({
       // this `this.componentWillReceiveProps` to be called, which will cause
       // this component to call `this.fetchAnswer()` with the sorting
       // configuration.
-      // this.router.replaceWith('answer', this.props.params, query);
+      // this.context.router.replaceWith('answer', this.props.params, query);
 
       // This is an alternative way, which is to call loadAnswer.
       // The appeal of the above is that if the user clicks the browser refresh
@@ -322,11 +306,9 @@ let AnswerController = React.createClass({
         sorting: { $set: sorting }
       });
 
-      this.context.application.getActions(AnswerActions)
-      .loadAnswer(question.name, { displayInfo });
+      this.context.actions.answerActions.loadAnswer(question.name, { displayInfo });
 
-      this.context.application.getActions(PreferenceActions)
-      .setPreference(this.sortingPreferenceKey, sorting);
+      this.context.actions.preferenceActions.setPreference(this.sortingPreferenceKey, sorting);
     },
 
     // Call the `moveColumn` action creator. This will cause the state of
@@ -334,8 +316,7 @@ let AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onMoveColumn(columnName, newPosition) {
-      this.context.application.getActions(AnswerActions)
-      .moveColumn(columnName, newPosition);
+      this.context.actions.answerActions.moveColumn(columnName, newPosition);
     },
 
     // Call the `changeAttributes` action creator. This will cause the state of
@@ -343,8 +324,7 @@ let AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onChangeColumns(attributes) {
-      this.context.application.getActions(AnswerActions)
-      .changeAttributes(attributes);
+      this.context.actions.answerActions.changeAttributes(attributes);
     },
 
     onToggleFormat() {
@@ -357,7 +337,7 @@ let AnswerController = React.createClass({
         ? 'list' : 'table';
 
       // Method provided by Router.Navigation mixin
-      this.router.transitionTo(path, params, query);
+      this.context.router.transitionTo(path, params, query);
     },
 
     onFilter(terms, attributes, tables) {
@@ -373,7 +353,7 @@ let AnswerController = React.createClass({
         }
       });
 
-      this.router.transitionTo('answer', this.props.params, query);
+      this.context.router.transitionTo('answer', this.props.params, query);
     }
 
   },
