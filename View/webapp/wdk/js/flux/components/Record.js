@@ -45,11 +45,14 @@ let Record = React.createClass({
     return (
       <div className="wdk-Record">
         <Sticky className="wdk-Record-sidebar">
-          <RecordNavigationSection
-            {...this.props}
-            categories={recordClass.attributeCategories}
-            onVisibleChange={this.handleVisibleChange}
-          />
+          <div>
+            <RecordNavigationSection
+              {...this.props}
+              categories={recordClass.attributeCategories}
+              onVisibleChange={this.handleVisibleChange}
+            />
+            <p style={{ padding: '0 .6em' }}><a href="#top">Back to top</a></p>
+          </div>
         </Sticky>
         <div className="wdk-Record-main">
           <RecordHeading {...this.props}/>
