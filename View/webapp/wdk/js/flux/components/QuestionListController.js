@@ -1,22 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router';
-import QuestionStore from '../stores/questionStore';
-import QuestionActions from '../actions/questionActions';
 import wrappable from '../utils/wrappable';
+import ContextMixin from '../utils/contextMixin';
 
 let QuestionListController = React.createClass({
 
-  contextTypes: {
-    application: React.PropTypes.object.isRequired
-  },
+  mixins: [ ContextMixin ],
 
   componentDidMount() {
-    let store = this.context.application.getStore(QuestionStore);
-    let actions = this.context.application.getActions(QuestionActions);
-    this.storeSubscription = store.subscribe(state => {
+    let { questionStore } = this.context.stores;
+    let { questionActions } = this.context.actions;
+    this.storeSubscription = questionStore.subscribe(state => {
       this.setState(state);
     });
-    actions.loadQuestions();
+    questionActions.loadQuestions();
   },
 
   componentWillUnmount() {

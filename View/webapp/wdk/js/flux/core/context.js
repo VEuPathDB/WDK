@@ -1,5 +1,3 @@
-import React from 'react';
-import Router from 'react-router';
 import Dispatcher from './dispatcher';
 import Service from './service';
 
@@ -9,17 +7,13 @@ function createContext(config = {}) {
     endpoint = '/service',
     rootUrl = '/',
     rootElement = document.body,
-    routes
+    router
   } = config;
 
-  const stores = new Map();
-  const actions = new Map();
+  const stores = Object.create(null);
+  const actions = Object.create(null);
   const dispatcher = Dispatcher.createDispatcher();
   const service = Service.createService(endpoint);
-  const router = Router.create({
-    routes: routes,
-    location: Router.HistoryLocation
-  });
 
   const context = {
 
@@ -35,52 +29,31 @@ function createContext(config = {}) {
       return router;
     },
 
-    addStore(token, store) {
-      stores.set(token, store);
+    get stores() {
+      return stores;
     },
 
-    getStore(token) {
-      return stores.get(token);
+    get actions() {
+      return actions;
     },
 
-    addActions(token, actionSet) {
-      actions.set(token, actionSet);
+    addStore(name, store) {
+      Object.defineProperty(stores, name, {
+        enumerable: true,
+        value: store
+      });
     },
 
-    getActions(token) {
-      return actions.get(token);
+    addActions(name, actionSet) {
+      Object.defineProperty(actions, name, {
+        enumerable: true,
+        value: actionSet
+      });
     }
 
   };
-
-  // Defer routing so that stores and actions can be added.
-  // We can probably be a little smarter about this.
-  setTimeout(makeRouterRunFn(router, rootElement, context), 0);
 
   return context;
-}
-
-function makeRouterCallback(context, rootElement) {
-  return function routerCallback(Handler, state) {
-    // XXX Implement router filters?
-    if ('auth_tkt' in state.query) {
-      state.query.auth_tkt = undefined;
-      context.router.replaceWith(
-        state.pathname,
-        state.params,
-        state.query
-      );
-    }
-    else {
-      React.render(<Handler state={state} application={context}/>, rootElement);
-    }
-  };
-}
-
-function makeRouterRunFn(router, rootElement, context) {
-  return function run() {
-    router.run(makeRouterCallback(context, rootElement));
-  };
 }
 
 export default {

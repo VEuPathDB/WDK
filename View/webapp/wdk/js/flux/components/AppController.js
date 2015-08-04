@@ -5,10 +5,10 @@
  */
 import React from 'react';
 import { RouteHandler } from 'react-router';
-import AppStore from '../stores/appStore';
-import CommonActions from '../actions/commonActions';
-import PreferenceActions from '../actions/preferenceActions';
+import ContextMixin from '../utils/contextMixin';
 import wrappable from '../utils/wrappable';
+
+let { contextTypes } = ContextMixin;
 
 /*
  * RouterHandler is a special React component that the router uses to inject
@@ -19,23 +19,19 @@ import wrappable from '../utils/wrappable';
 let AppController = React.createClass({
 
   propTypes: {
-    application: React.PropTypes.object.isRequired
+    context: React.PropTypes.shape(contextTypes).isRequired
   },
 
-  childContextTypes: {
-    application: React.PropTypes.object.isRequired
-  },
+  childContextTypes: contextTypes,
 
   getChildContext() {
-    let { application } = this.props;
-    return { application };
+    return this.props.context;
   },
 
   componentWillMount() {
-    let { application } = this.props;
-    let commonActions = application.getActions(CommonActions);
-    let preferenceActions = application.getActions(PreferenceActions);
-    let appStore = application.getStore(AppStore);
+    let { context } = this.props;
+    let { commonActions, preferenceActions } = context.actions;
+    let { appStore } = context.stores;
 
     preferenceActions.loadPreferences();
     commonActions.fetchCommonData();
