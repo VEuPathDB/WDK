@@ -291,7 +291,8 @@ let AnswerController = React.createClass({
       // is reloaded.
       //
       let attributeName = attribute.name;
-      let { displayInfo, question } = this.state;
+      let { displayInfo } = this.state;
+      let { questionName } = this.props.params;
       let newSort = { attributeName, direction };
       // Create a new array by removing existing sort def for attribute
       // and adding the new sort def to the beginning of the array, only
@@ -306,7 +307,7 @@ let AnswerController = React.createClass({
         sorting: { $set: sorting }
       });
 
-      this.context.actions.answerActions.loadAnswer(question.name, { displayInfo });
+      this.context.actions.answerActions.loadAnswer(questionName, { displayInfo });
 
       this.context.actions.preferenceActions.setPreference(this.sortingPreferenceKey, sorting);
     },
