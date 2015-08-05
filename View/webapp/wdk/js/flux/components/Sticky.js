@@ -9,8 +9,8 @@ let Sticky = React.createClass({
 
   getDefaultProps() {
     return {
-      className: '',
-      fixedClassName: 'fixed'
+      className: 'wdk-Sticky',
+      fixedClassName: 'wdk-Sticky-fixed'
     };
   },
 
