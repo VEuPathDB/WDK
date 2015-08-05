@@ -226,6 +226,16 @@ main h4 {
   padding: 0 1em;
 }
 
+/* clearfix */
+.wdk-Record:after {
+  visibility: hidden;
+  display: block;
+  font-size: 0;
+  content: " ";
+  clear: both;
+  height: 0;
+}
+
 .wdk-RecordActions {
   padding: 0;
 }
@@ -248,7 +258,7 @@ main h4 {
 
 .wdk-Record-sidebar {
   width: 235px;
-  position: absolute;
+  float: left;
   margin-top: 1.5em;
 }
 
