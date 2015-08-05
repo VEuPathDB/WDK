@@ -3,7 +3,7 @@ import React from 'react';
 let Sticky = React.createClass({
 
   getInitialState() {
-    return { isFixed: false, height: '0px' };
+    return { isFixed: false, height: 'auto' };
   },
 
   componentDidMount() {
@@ -28,7 +28,8 @@ let Sticky = React.createClass({
     }
     else if (rect.top >= 0 && this.state.isFixed === true) {
       this.setState({
-        isFixed: false
+        isFixed: false,
+        height: 'auto'
       });
     }
   },
