@@ -34,10 +34,10 @@ let Sticky = React.createClass({
 
   render() {
     let { isFixed } = this.state;
-    let style = {
+    let style = Object.assign({}, this.props.style, {
       position: isFixed ? 'fixed' : '',
       top: isFixed ? 0 : ''
-    };
+    });
     return (
       <div> {/* This node is used to track scroll position */}
         <div {...this.props} style={style}>
