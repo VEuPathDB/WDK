@@ -8,7 +8,6 @@ let Sticky = React.createClass({
 
   componentDidMount() {
     this.node = React.findDOMNode(this);
-    this.updateIsFixed();
     window.addEventListener('scroll', this.updateIsFixed);
   },
 
