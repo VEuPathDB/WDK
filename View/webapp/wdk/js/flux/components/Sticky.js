@@ -2,8 +2,20 @@ import React from 'react';
 
 let Sticky = React.createClass({
 
+  propTypes: {
+    className: React.PropTypes.string,
+    fixedClassName: React.PropTypes.string
+  },
+
+  getDefaultProps() {
+    return {
+      className: '',
+      fixedClassName: 'fixed'
+    };
+  },
+
   getInitialState() {
-    return { isFixed: false };
+    return { isFixed: false, height: 'auto' };
   },
 
   componentDidMount() {
@@ -22,25 +34,31 @@ let Sticky = React.createClass({
     let rect = this.node.getBoundingClientRect();
     if (rect.top < 0 && this.state.isFixed === false) {
       this.setState({
-        isFixed: true
+        isFixed: true,
+        height: rect.height
       });
     }
     else if (rect.top >= 0 && this.state.isFixed === true) {
       this.setState({
-        isFixed: false
+        isFixed: false,
+        height: 'auto'
       });
     }
   },
 
   render() {
-    let { isFixed } = this.state;
-    let style = {
+    let { isFixed, height } = this.state;
+    let { className, fixedClassName } = this.props;
+    let style = Object.assign({}, this.props.style, {
       position: isFixed ? 'fixed' : '',
       top: isFixed ? 0 : ''
-    };
+    });
+    if (isFixed) {
+      className = className + ' ' + fixedClassName;
+    }
     return (
-      <div> {/* This node is used to track scroll position */}
-        <div {...this.props} style={style}>
+      <div style={{ height }}> {/* This node is used to track scroll position */}
+        <div {...this.props} style={style} className={className}>
           {this.props.children}
         </div>
       </div>
