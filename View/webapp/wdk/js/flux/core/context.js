@@ -10,8 +10,8 @@ function createContext(config = {}) {
     router
   } = config;
 
-  const stores = Object.create(null);
-  const actions = Object.create(null);
+  const stores = {};
+  const actions = {};
   const dispatcher = Dispatcher.createDispatcher();
   const service = Service.createService(endpoint);
 

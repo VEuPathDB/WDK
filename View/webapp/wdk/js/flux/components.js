@@ -15,12 +15,14 @@ export { default as QuestionListController } from './components/QuestionListCont
 export { default as Record } from './components/Record';
 export { default as RecordAttribute } from './components/RecordAttribute';
 export { default as RecordController } from './components/RecordController';
+export { default as RecordHeading } from './components/RecordHeading';
 export { default as RecordList } from './components/RecordList';
 export { default as RecordMainCategorySection } from './components/RecordMainCategorySection';
 export { default as RecordHeading } from './components/RecordHeading';
 export { default as RecordMainSection } from './components/RecordMainSection';
 export { default as RecordNavigationSection } from './components/RecordNavigationSection';
 export { default as RecordTable } from './components/RecordTable';
+export { default as Sticky } from './components/Sticky';
 export { default as TabbableContainer } from './components/TabbableContainer';
 export { default as Table } from './components/Table';
 export { default as Tooltip } from './components/Tooltip';
