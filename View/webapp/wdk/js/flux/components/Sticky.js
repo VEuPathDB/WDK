@@ -3,11 +3,12 @@ import React from 'react';
 let Sticky = React.createClass({
 
   getInitialState() {
-    return { isFixed: false };
+    return { isFixed: false, height: '0px' };
   },
 
   componentDidMount() {
     this.node = React.findDOMNode(this);
+    this.updateIsFixed();
     window.addEventListener('scroll', this.updateIsFixed);
   },
 
@@ -22,7 +23,8 @@ let Sticky = React.createClass({
     let rect = this.node.getBoundingClientRect();
     if (rect.top < 0 && this.state.isFixed === false) {
       this.setState({
-        isFixed: true
+        isFixed: true,
+        height: rect.height
       });
     }
     else if (rect.top >= 0 && this.state.isFixed === true) {
@@ -33,13 +35,13 @@ let Sticky = React.createClass({
   },
 
   render() {
-    let { isFixed } = this.state;
+    let { isFixed, height } = this.state;
     let style = Object.assign({}, this.props.style, {
       position: isFixed ? 'fixed' : '',
       top: isFixed ? 0 : ''
     });
     return (
-      <div> {/* This node is used to track scroll position */}
+      <div style={{ height }}> {/* This node is used to track scroll position */}
         <div {...this.props} style={style}>
           {this.props.children}
         </div>
