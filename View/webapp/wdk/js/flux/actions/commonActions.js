@@ -20,7 +20,7 @@ function createActions({ dispatcher, service }) {
           // starthack
           recordClasses.forEach(function(recordClass) {
             recordClass.attributeCategories.push(
-              { name: 'uncategorized', displayName: 'Uncategorized' }
+              { name: undefined, displayName: 'Uncategorized' }
             );
           });
           // endhack

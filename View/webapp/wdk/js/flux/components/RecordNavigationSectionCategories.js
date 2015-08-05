@@ -26,7 +26,7 @@ let RecordNavigationSectionCategories = React.createClass({
         {categories.map(category => {
           let isHidden = hiddenCategories.includes(category.name);
           return (
-            <div key={category.name} className="wdk-RecordNavigationItem">
+            <div key={String(category.name)} className="wdk-RecordNavigationItem">
               <input
                 className="wdk-Record-sidebar-checkbox"
                 type="checkbox"
