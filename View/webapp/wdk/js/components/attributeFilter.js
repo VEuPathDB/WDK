@@ -1,9 +1,9 @@
 /* global _ */
 import React from 'react';
 import FixedDataTable from 'fixed-data-table';
-import Loading from '../flux/components/Loading';
-import Dialog from '../flux/components/Dialog';
-import Table from '../flux/components/Table';
+import Loading from '../client/components/Loading';
+import Dialog from '../client/components/Dialog';
+import Table from '../client/components/Table';
 
 wdk.namespace('wdk.components.attributeFilter', function(ns) {
   'use strict';

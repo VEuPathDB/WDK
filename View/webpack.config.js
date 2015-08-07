@@ -11,7 +11,7 @@ var commonsPlugin = new webpack.optimize.CommonsChunkPlugin({
 module.exports = {
   entry: {
     'app': './webapp/wdk/js/app',
-    'flux': './webapp/wdk/js/flux'
+    'client': './webapp/wdk/js/client'
   },
   output: {
     path: outputPath,
