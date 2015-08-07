@@ -1,8 +1,8 @@
 PATH         := node_modules/.bin:$(PATH)
 SHELL        := /bin/bash
 
-# The recipe for this target creates three files, wdk.common.js, wdk.app.js, and wdk.flux.js.
-# wdk.common.js contains common code between wdk.app.js and wdk.flux.js.
+# The recipe for this target creates three files, wdk.common.js, wdk.app.js, and wdk.client.js.
+# wdk.common.js contains common code between wdk.app.js and wdk.client.js.
 wdk_bundle    := dist/wdk/js/wdk.common.js
 libs_bundle   := dist/wdk/js/wdk.libs.js
 css_bundle    := dist/wdk/css/wdk.min.css
