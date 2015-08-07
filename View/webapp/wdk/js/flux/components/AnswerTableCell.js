@@ -41,7 +41,7 @@ let AnswerTableCell = React.createClass({
     }
     else {
       return (
-        <div
+        <span
           {...this.props}
           dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute.value, type) }}
         />
