@@ -58,20 +58,21 @@ let WdkTable = React.createClass({
 
   getInitialState() {
     return {
+      disablePointerEvents: false,
       columnWidths: this._getColumnWidths(this.props),
       left: 0,
       top: 0
     };
   },
 
-  componentWillMount() {
-    this.scroller = new Scroller(this._handleScroll);
-  },
-
   componentWillReceiveProps(nextProps) {
     this.setState({
       columnWidths: this._getColumnWidths(nextProps)
     });
+  },
+
+  componentWillMount() {
+    this.scroller = new Scroller(this._handleScroll);
   },
 
   _getColumnWidths(props) {
@@ -84,6 +85,14 @@ let WdkTable = React.createClass({
     });
 
     return columnWidths;
+  },
+
+  handleScrollStart() {
+    this.setState({ disablePointerEvents: true });
+  },
+
+  handleScrollEnd() {
+    this.setState({ disablePointerEvents: false });
   },
 
   _handleScroll(left, top) {
@@ -146,12 +155,14 @@ let WdkTable = React.createClass({
   },
 
   render() {
-    let defaultTableProps = {
+    let tableProps = Object.assign({
       isColumnResizing: isColumnResizing,
       onColumnResizeEndCallback: this.handleColumnResize
-    };
+    }, this.props);
 
-    let tableProps = Object.assign({}, defaultTableProps, this.props);
+    tableProps.style = Object.assign({}, tableProps.style, {
+      pointerEvents: this.state.disablePointerEvents ? 'none' : null
+    });
 
     if (isTouchDevice()) {
       Object.assign(tableProps, {
@@ -165,7 +176,7 @@ let WdkTable = React.createClass({
 
     return (
       <TouchableArea scroller={this.scroller}>
-        <Table {...tableProps}>
+        <Table {...tableProps} onScrollStart={this.handleScrollStart} onScrollEnd={this.handleScrollEnd}>
           {React.Children.map(this.props.children, child => {
             let headerRenderer = partial(this.renderHeader, child);
             let isResizable = child.props.isResizable != null
