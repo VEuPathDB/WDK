@@ -12,7 +12,7 @@
     "backbone": "^1.2.1",
     "clean-css": "^3.3.3",
     "css-loader": "^0.15.1",
-    "fixed-data-table": "^0.3.0",
+    "fixed-data-table": "^0.4",
     "flux": "^2.0.3",
     "immutable": "^3.7.4",
     "lodash": "^3.9.3",
