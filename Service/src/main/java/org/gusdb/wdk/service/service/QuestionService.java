@@ -38,7 +38,7 @@ public class QuestionService extends WdkService {
           getFlag(expandQuestions), getFlag(expandParams)).toString()).build();
     }
     catch (IllegalArgumentException e) {
-      return BAD_REQUEST_RESPONSE;
+      return getBadRequestBodyResponse(e.getMessage());
     }
   }
 

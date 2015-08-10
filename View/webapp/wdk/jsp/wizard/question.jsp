@@ -120,6 +120,7 @@ ${Question_Header}
                                 || rcName eq 'OrfRecordClasses.OrfRecordClass'
                                 || rcName eq 'DynSpanRecordClasses.DynSpanRecordClass'
                                 || rcName eq 'SnpRecordClasses.SnpRecordClass'
+                                || rcName eq 'SnpChipRecordClasses.SnpChipRecordClass'
                                 || rcName eq 'SageTagRecordClasses.SageTagRecordClass'}" />
 
 <div class="filter operators">

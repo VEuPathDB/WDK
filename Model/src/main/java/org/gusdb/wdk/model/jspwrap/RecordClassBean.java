@@ -10,9 +10,11 @@ import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.ReporterRef;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 
 /**
@@ -191,7 +193,13 @@ public class RecordClassBean {
         return recordClass.getShortDisplayName();
     }
     
-    
+      /**
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#getDescription()
+     */
+    public String getDescription() {
+        return recordClass.getDescription();
+    }
     
 
     public String getDisplayNamePlural() {
@@ -212,6 +220,10 @@ public class RecordClassBean {
 
     public AttributeFieldBean getFavoriteNoteField() {
         return new AttributeFieldBean(recordClass.getFavoriteNoteField());
+    }
+    
+    public AttributeCategoryTree getAttributeCategoryTree(FieldScope fieldScope) {
+      return recordClass.getAttributeCategoryTree(fieldScope);
     }
 
     /**

@@ -1,15 +1,15 @@
 package org.gusdb.wdk.service.service;
 
-import java.util.Collections;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.Variant;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.User;
@@ -17,10 +17,10 @@ import org.gusdb.wdk.service.factory.WdkAnswerFactory;
 
 public abstract class WdkService {
 
-  // TODO: for now return generic "bad request" response; in the
-  //       future we should create a list of Variants to return to user
-  protected static final Response BAD_REQUEST_RESPONSE = 
-      Response.notAcceptable(Collections.<Variant>emptyList()).build();
+  protected static final Response getBadRequestBodyResponse(String message) {
+    String responseMsg = "Improperly formatted or incomplete request body: " + message + FormatUtil.NL;
+    return Response.status(Status.BAD_REQUEST).entity(responseMsg).build();
+  }
 
   @Context
   private HttpServletRequest _request;
@@ -47,7 +47,7 @@ public abstract class WdkService {
     return ((UserBean)_request.getSession().getAttribute("wdkUser"));
   }
   
-  protected int getCurrentUserId() {
+  protected int getCurrentUserId() throws WdkModelException {
     return getCurrentUserBean().getUserId();
   }
 

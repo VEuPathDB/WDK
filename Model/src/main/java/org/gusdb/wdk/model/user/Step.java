@@ -135,6 +135,8 @@ public class Step {
   // This allows the UI to show a "broken" step but not hose the whole strategy
   private Exception exception;
 
+  private Integer strategyId;
+  
   /**
    * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
    * for the passed ID if one is required for processing after construction.
@@ -164,10 +166,11 @@ public class Step {
    *          owner of this step
    * @param stepId
    *          id of the step
+   * @throws WdkModelException 
    * @throws NullPointerException
    *           if user is null
    */
-  public Step(StepFactory stepFactory, User user, int stepId) {
+  public Step(StepFactory stepFactory, User user, int stepId) throws WdkModelException {
     this.stepFactory = stepFactory;
     this.user = user;
     this.userId = user.getUserId();
@@ -405,17 +408,19 @@ public class Step {
 
   /**
    * @return Size estimate of this step's result
-   * @throws WdkUserException
-   * @throws WdkModelException
    */
-  public int getEstimateSize() throws WdkModelException {
+  public int getEstimateSize() {
     if (estimateSize == RESET_SIZE_FLAG) {
       // The flag indicates if the size has been reset, and need to be calculated again.
       try {
         estimateSize = getAnswerValue().getResultSize();
       }
-      catch (WdkUserException ex) {
-        throw new WdkModelException(ex);
+      catch (Exception ex) {
+        // do not throw error in this method, just return 0, to avoid infinite
+        // loop from frontend. (otherwise frontend will keep trying showStrategy.do when
+        // it sees a -1;
+        logger.error("Error occurred, use the old estimate size", ex);
+        return 0;
       }
     }
     return estimateSize;
@@ -775,8 +780,8 @@ public class Step {
   }
 
   /**
-   * @param paramErrors
-   *          the paramErrors to set
+   * @param paramValues
+   *          the paramValues to set
    */
   public void setParamValues(Map<String, String> paramValues) {
     if (paramValues == null)
@@ -784,7 +789,7 @@ public class Step {
     this.paramValues = new LinkedHashMap<String, String>(paramValues);
   }
 
-  public FilterOptionList getFilterOptions() throws WdkModelException {
+  public FilterOptionList getFilterOptions() {
     if (filterOptions == null) {
       filterOptions = new FilterOptionList(this);
     }
@@ -801,7 +806,7 @@ public class Step {
     getFilterOptions().addFilterOption(filterName, filterValue);
   }
 
-  public void removeFilterOption(String filterName) throws WdkModelException {
+  public void removeFilterOption(String filterName) {
     getFilterOptions().removeFilterOption(filterName);
   }
 
@@ -845,7 +850,7 @@ public class Step {
     try {
       int startIndex = getAnswerValue().getStartIndex();
       int endIndex = getAnswerValue().getEndIndex();
-      Step step = getUser().createStep(question, params, filter, startIndex, endIndex, deleted, false,
+      Step step = getUser().createStep(strategyId, question, params, filter, startIndex, endIndex, deleted, false,
           assignedWeight, getFilterOptions());
       step.collapsedName = collapsedName;
       step.customName = customName;
@@ -869,13 +874,13 @@ public class Step {
    * @throws NoSuchAlgorithmException
    * 
    */
-  public Step deepClone() throws WdkModelException {
+  public Step deepClone(Integer strategyId, Map<Integer, Integer> stepIdMap) throws WdkModelException {
     Step step;
     AnswerValue answerValue;
     try {
-      answerValue = getAnswerValue();
       if (!isCombined()) {
-        step = getUser().createStep(answerValue, deleted, assignedWeight);
+        answerValue = getAnswerValue(false);
+        step = getUser().createStep(strategyId, answerValue, deleted, assignedWeight);
       }
       else {
         Question question = getQuestion();
@@ -886,15 +891,13 @@ public class Step {
           String paramValue = this.paramValues.get(paramName);
           if (param instanceof AnswerParam) {
             Step child = getUser().getStep(Integer.parseInt(paramValue));
-            child = child.deepClone();
+            child = child.deepClone(strategyId, stepIdMap);
             paramValue = Integer.toString(child.getStepId());
           }
           paramValues.put(paramName, paramValue);
         }
         AnswerFilterInstance filter = getFilter();
-        int pageStart = answerValue.getStartIndex();
-        int pageEnd = answerValue.getEndIndex();
-        step = getUser().createStep(question, paramValues, filter, pageStart, pageEnd, deleted, false,
+        step = getUser().createStep(strategyId, question, paramValues, filter, deleted, false,
             assignedWeight, getFilterOptions());
       }
     }
@@ -902,6 +905,8 @@ public class Step {
       throw new WdkModelException(ex);
     }
 
+    stepIdMap.put(getStepId(), step.getStepId());
+    
     step.collapsedName = collapsedName;
     step.customName = customName;
     step.collapsible = collapsible;
@@ -1042,14 +1047,14 @@ public class Step {
       User user = getUser();
       Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
       int endIndex = user.getItemsPerPage();
-      try {
+      // try {
         answerValue = question.makeAnswerValue(user, paramValues, 1, endIndex, sortingMap, getFilter(),
             validate, assignedWeight);
         answerValue.setFilterOptions(getFilterOptions());
-      }
-      catch (WdkUserException ex) {
-        throw new WdkModelException(ex);
-      }
+      // }
+      // catch (WdkUserException ex) {
+      //  throw new WdkModelException(ex);
+      // }
       try {
         this.estimateSize = answerValue.getResultSize();
       }
@@ -1266,7 +1271,7 @@ public class Step {
     return jsParams;
   }
 
-  public void setParamsJSON(JSONObject jsParams) throws WdkModelException {
+  void setParamsJSON(JSONObject jsParams) throws WdkModelException {
     paramValues = new LinkedHashMap<String, String>();
     if (jsParams != null) {
       try {
@@ -1338,5 +1343,13 @@ public class Step {
     if (!param.allowRecordClass(type))
       throw new WdkUserException("The new step#" + childStep.getStepId() + " of type " + type +
           " is not compatible with the parent step#" + getStepId());
+  }
+
+  public Integer getStrategyId() {
+    return strategyId;
+  }
+
+  public void setStrategyId(Integer strategyId) {
+    this.strategyId = strategyId;
   }
 }

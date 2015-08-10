@@ -933,6 +933,9 @@
       <optional>
         <attribute name="shortDisplayNamePlural" />
       </optional>
+       <optional>
+        <attribute name="description" />
+      </optional>
       <optional>
         <attribute name="doNotTest">
           <data type="boolean" />
@@ -1399,6 +1402,9 @@
           <ref name="propertyList" />
         </choice>
       </zeroOrMore>
+      <optional>
+        <attribute name="attributeCategory" />
+      </optional>
     </element>
   </define>
 

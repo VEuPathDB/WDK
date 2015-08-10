@@ -14,7 +14,7 @@ public abstract class MockStep extends Step {
   private final String projectId;
   private final String type;
 
-  public MockStep(StepFactory stepFactory, User user, String type) {
+  public MockStep(StepFactory stepFactory, User user, String type) throws WdkModelException {
     super(stepFactory, user, random.nextInt(Integer.MAX_VALUE) + 1);
     this.projectId = stepFactory.getWdkModel().getProjectId();
     this.type = type;

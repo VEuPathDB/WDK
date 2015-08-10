@@ -1,76 +1,161 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.record.RecordClassSet;
+import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
+import org.gusdb.wdk.model.record.attribute.AttributeValue;
+import org.gusdb.wdk.model.record.attribute.LinkAttributeValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+JSON output format:
+{
+  meta: {
+    count: Number,
+    class: String,
+    attributes: [ {
+      name: String,
+      displayName: String,
+      sortable: Boolean,
+      removable: Boolean,
+      category: String,
+      type: string (comes from “type” property of attribute tag),
+      className: String,
+      properties: Object
+    } ],
+
+    tables: [ {
+      name: String,
+      displayName: String,
+      attributes: [ {
+        name: String,
+        displayName: String,
+        help: String,
+        description: String,
+        type: String
+      } ]
+    } ]
+  },
+  record:  {
+    id: Any,
+    attributes: { [name: String]: [value: Any] },
+    tables: { [name: String]: [ { [name: String]: [value: Any] } ] }
+  }
+}
+*/
 public class RecordFormatter {
-
-  public static JSONArray getRecordClassesJson(RecordClassSet[] recordClassSets,
-      boolean expandRecordClasses, boolean expandAttributes,
-      boolean expandTables, boolean expandTableAttributes) {
-    JSONArray json = new JSONArray();
-    for (RecordClassSet rcSet : recordClassSets) {
-      for (RecordClass rc : rcSet.getRecordClasses()) {
-        json.put(expandRecordClasses ? getRecordClassJson(rc,
-            expandAttributes, expandTables, expandTableAttributes) :
-              rc.getFullName());
-      }
+  public static JSONObject formatRecord(RecordInstance recordInstance, List<String> attributeNames, List<String> tableNames) throws WdkModelException {
+    try {
+      JSONObject parent = new JSONObject();
+      parent.put("meta", getMetaData(recordInstance, attributeNames, tableNames));
+      parent.put("record", getRecordJson(recordInstance, attributeNames, tableNames));
+      return parent;
     }
-    return json;
-  }
-
-  public static JSONObject getRecordClassJson(RecordClass recordClass,
-      boolean expandAttributes, boolean expandTables, boolean expandTableAttributes) {
-    JSONObject json = new JSONObject();
-    json.put("fullName", recordClass.getFullName());
-    json.put("displayName", recordClass.getDisplayName());
-    json.put("displayNamePlural", recordClass.getDisplayNamePlural());
-    json.put("attributes", getAttributesJson(recordClass, expandAttributes));
-    json.put("tables", getTablesJson(recordClass, expandTables, expandTableAttributes));
-    return json;
-  }
-
-  public static JSONArray getAttributesJson(AttributeFieldContainer container, boolean expandAttributes) {
-    JSONArray array = new JSONArray();
-    for (AttributeField attrib : container.getAttributeFields()) {
-      array.put(expandAttributes ? attrib.getName() : getAttributeJson(attrib));
+    catch (WdkUserException e) {
+      // should already have validated any user input
+      throw new WdkModelException("Internal validation failure", e);
     }
-    return array;
   }
 
-  public static JSONObject getAttributeJson(AttributeField attrib) {
-    JSONObject json = new JSONObject();
-    json.put("name", attrib.getName());
-    json.put("type", attrib.getType());
-    json.put("category", attrib.getAttributeCategory());
-    json.put("displayName", attrib.getDisplayName());
-    json.put("help", attrib.getHelp());
-    json.put("align", attrib.getAlign());
-    return json;
-  }
-
-  public static JSONArray getTablesJson(RecordClass recordClass,
-      boolean expandTables, boolean expandAttributes) {
-    JSONArray array = new JSONArray();
+  public static JSONObject getMetaData(RecordInstance recordInstance, List<String> attributeNames, List<String> tableNames) {
+    JSONObject meta = new JSONObject();
+    RecordClass recordClass = recordInstance.getRecordClass();
+    meta.put("class", recordClass.getFullName());
+    
+    JSONArray attributes = new JSONArray();
+    for (AttributeField attrib : recordClass.getAttributeFields()) {
+      if (!attributeNames.contains(attrib.getName())) continue;
+      JSONObject attribJson = new JSONObject();
+      attribJson.put("name", attrib.getName());
+      attribJson.put("displayName", attrib.getDisplayName());
+      attribJson.put("help", attrib.getHelp());
+      attribJson.put("align", attrib.getAlign());
+      attribJson.put("isSortable", attrib.isSortable());
+      attribJson.put("isRemovable", attrib.isRemovable());
+      attribJson.put("type", attrib.getType());
+      attributes.put(attribJson);
+    }
+    meta.put("attributes", attributes);
+    
+    JSONArray tables = new JSONArray();
     for (TableField table : recordClass.getTableFields()) {
-      array.put(expandTables ? table.getName() : getTableJson(table, expandAttributes));
+      if (!tableNames.contains(table.getName())) continue;
+      JSONObject tableJson = new JSONObject();
+      tableJson.put("name", table.getName());
+      tableJson.put("displayName", table.getDisplayName());
+      tableJson.put("help", table.getHelp());
+      tableJson.put("description", table.getDescription());
+      tableJson.put("type", table.getType());
+      tables.put(tableJson);
     }
-    return array;
+    meta.put("tables", tables);
+   
+    return meta;
   }
 
-  public static JSONObject getTableJson(TableField table, boolean expandAttributes) {
+  public static JSONObject getRecordJson(RecordInstance record)
+      throws WdkModelException, WdkUserException {
+      return getRecordJson(record, null, null);
+  }
+
+  public static JSONObject getRecordJson(RecordInstance record, List<String> attributeNames, List<String> tableNames)
+      throws WdkModelException, WdkUserException {
     JSONObject json = new JSONObject();
-    json.put("name", table.getName());
-    json.put("type", table.getType());
-    json.put("displayName", table.getDisplayName());
-    json.put("description", table.getDescription());
-    json.put("help", table.getHelp());
-    json.put("attributes", getAttributesJson(table, expandAttributes));
+    json.put("id", record.getPrimaryKey().getValues());
+    json.put("displayName",  record.getPrimaryKey().getDisplay());
+    JSONObject attributes = new JSONObject();
+    for (Entry<String,AttributeValue> attrib : record.getAttributeValueMap().entrySet()) {
+      if (attributeNames != null && !attributeNames.contains(attrib.getKey())) continue;
+      attributes.put(attrib.getKey(), getAttributeJsonValue(attrib.getValue()));
+    }
+    json.put("attributes", attributes);
+
+    // FIXME: This can probably be cleaned up / refactored
+    JSONObject tables = new JSONObject();
+    for (Entry<String, TableValue> table : record.getTables().entrySet()) {
+      JSONArray tableRowsJSON = new JSONArray();
+
+      if (tableNames != null && !tableNames.contains(table.getKey())) continue;
+
+      for(Map<String, AttributeValue> row : table.getValue()) {
+        JSONObject tableAttrsJSON = new JSONObject();
+        for (Entry<String, AttributeValue> entry : row.entrySet()) {
+          if (!entry.getValue().getAttributeField().isInternal()) {
+             tableAttrsJSON.put(entry.getKey(), getAttributeJsonValue(entry.getValue()));
+          }
+        }
+        tableRowsJSON.put(tableAttrsJSON);
+      }
+      tables.put(table.getKey(), tableRowsJSON);
+    }
+    json.put("tables", tables);
     return json;
   }
+  
+  private static Object getAttributeJsonValue(AttributeValue attr) throws
+    WdkModelException, WdkUserException {
+    if (attr instanceof LinkAttributeValue) {
+      LinkAttributeValue linkAttr = (LinkAttributeValue) attr;
+      JSONObject value = new JSONObject();
+      value.put("url",  linkAttr.getUrl());
+      value.put("displayText", linkAttr.getDisplayText());
+      return value;
+    }
+    else {
+      Object value = attr.getValue();
+      if (value == null) {
+        value = JSONObject.NULL;
+      }
+      return value;
+    }
+  }
+
 }

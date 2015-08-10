@@ -204,6 +204,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * field.
    */
   private String displayName;
+  private String description;
   private String displayNamePlural;
   private String shortDisplayName;
   private String shortDisplayNamePlural;
@@ -308,8 +309,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return (displayName == null) ? getName() : displayName;
   }
 
+  public String getDescription() {
+    return (description == null) ? "" : description;
+  }
+
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 
   public String getDisplayNamePlural() {
@@ -453,6 +462,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (TableField field : tableFieldsMap.values()) {
       if (scope.isFieldInScope(field)) {
         fields.put(field.getName(), field);
+      }
+    }
+    return fields;
+  }
+	// used by report maker, adding display names in map so later the tables show sorted by display name
+	public Map<String, TableField> getTableFieldMap(FieldScope scope, String usedbyreportmaker ) {
+    Map<String, TableField> fields = new LinkedHashMap<String, TableField>();
+    for (TableField field : tableFieldsMap.values()) {
+      if (scope.isFieldInScope(field)) {
+        fields.put(field.getDisplayName(), field);
       }
     }
     return fields;
@@ -1697,7 +1716,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return filter;
   }
 
-  public StepFilter getStepFilter(String key) throws WdkModelException {
+  public StepFilter getStepFilter(String key) {
     return _stepFilters.get(key);
   }
 

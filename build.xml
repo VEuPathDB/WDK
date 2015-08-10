@@ -208,30 +208,12 @@
       <property name="component" value="View"/>
     </ant>
 
-    <!--
-    <echo message="Setting npm registry"/>
-    <exec dir="${projectsDir}/WDK/View/assets"
-          executable="npm"
-          failonerror="true"
-          failifexecutionfails="true">
-    <arg line="config set registry http://registry.npmjs.org/"/>
-    </exec>
-    -->
-
-    <echo message="Installing npm packages"/>
+    <echo message="Making JS and CSS bundles"/>
     <exec dir="${projectsDir}/WDK/View"
-          executable="npm"
+          executable="make"
           failonerror="true"
           failifexecutionfails="true">
-      <arg line="install"/>
-    </exec>
-
-    <echo message="Running npm run dist"/>
-    <exec dir="${projectsDir}/WDK/View"
-          executable="npm"
-          failonerror="true"
-          failifexecutionfails="true">
-      <arg line="run dist"/>
+      <arg line="bundles"/>
     </exec>
 
     <echo message="Copying WDK assets to webapp"/>

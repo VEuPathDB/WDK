@@ -86,8 +86,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       };
 
       dependedParam.change(handleChange);
-      // Updating 2 seconds after keyup has proven problematic, so commenting out. -dmf
-      // dependedParam.keyup(_.debounce(handleChange, 2000));
+      dependedParam.keyup(_.debounce(handleChange, 2000));
     });
   }
 
