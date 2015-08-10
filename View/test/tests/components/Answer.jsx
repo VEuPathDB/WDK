@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import React from 'react';
-import Answer from 'wdk/flux/components/Answer';
+import Answer from 'wdk/client/components/Answer';
 
 describe('Answer component', () => {
 
