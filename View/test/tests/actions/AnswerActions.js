@@ -1,5 +1,5 @@
 import assert from 'assert';
-import * as AnswerActions from 'wdk/flux/actions/AnswerActions';
+import * as AnswerActions from 'wdk/client/actions/AnswerActions';
 
 describe('AnswerActions', function() {
 

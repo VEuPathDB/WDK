@@ -165,6 +165,38 @@ let AnswerTable = React.createClass({
   },
 
   componentDidMount() {
+    this.node = React.findDOMNode(this);
+    this.$node = $(this.node);
+    this.addEventListeners();
+    this.setupMoveColumn();
+  },
+
+  componentWillUnmount() {
+    this.removeEventListeners();
+  },
+
+  addEventListeners() {
+    this.$node.on('mouseenter', '.wdk-AnswerTable-attributeValue', this.setTitle);
+    this.$node.on('mouseleave', '.wdk-AnswerTable-attributeValue', this.unsetTitle);
+  },
+
+  removeEventListeners() {
+    this.$node.off('mouseenter', '.wdk-AnswerTable-attributeValue', this.setTitle);
+    this.$node.off('mouseleave', '.wdk-AnswerTable-attributeValue', this.unsetTitle);
+  },
+
+  setTitle(e) {
+    if (e.target.offsetWidth < e.target.scrollWidth) {
+      e.target.setAttribute('title', e.target.textContent);
+    }
+  },
+
+  unsetTitle(e) {
+    e.target.removeAttribute('title');
+  },
+
+  setupMoveColumn() {
+
     // FIXME More research!
     // let { onMoveColumn } = this.props;
     let onMoveColumn = noop;
@@ -185,7 +217,7 @@ let AnswerTable = React.createClass({
       // A future iteration may be to use HTML5's draggable, thus removing the
       // jQueryUI dependency.
       // let $headerRow = $(this.refs.headerRow.getDOMNode());
-      let $headerRow = $(React.findDOMNode(this)).find('.fixedDataTableCellGroup_cellGroup');
+      let $headerRow = this.$node.find('.fixedDataTableCellGroup_cellGroup');
       $headerRow.sortable({
         items: '> .public_fixedDataTableCell_main',
         helper: 'clone',
