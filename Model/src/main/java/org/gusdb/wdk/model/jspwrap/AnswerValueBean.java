@@ -212,13 +212,14 @@ public class AnswerValueBean {
      */
     public Iterator<RecordBean> getRecords() throws WdkModelException, WdkUserException {
       try {
-    	return new RecordBeanList(answerValue.getRecordInstances());
-      } catch (WdkModelException | WdkUserException ex) {
+        return new RecordBeanList(answerValue.getRecordInstances());
+      }
+      catch (WdkModelException | WdkUserException ex) {
         logger.error(ex.getMessage(), ex);
         throw ex;
       }
     }
-
+    
     public void setDownloadConfigMap(Map<?, ?> downloadConfigMap) {
         this.downloadConfigMap = downloadConfigMap;
     }
