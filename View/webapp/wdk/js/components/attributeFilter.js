@@ -137,7 +137,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                     </div>
                     <div>
                       <div className="bar"><div className="fill filtered"></div></div>
-                      <div className="label">{this.props.displayName} remaing when <em>other</em> criteria have been applied.</div>
+                      <div className="label">{this.props.displayName} remaing when <em>other</em> criteria has been applied.</div>
                     </div>
                   </div>
                 </div>
