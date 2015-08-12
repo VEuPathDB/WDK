@@ -6,6 +6,7 @@ package org.gusdb.wdk.controller.actionutil;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
@@ -65,4 +66,9 @@ public class ActionUtility {
         return params;
     }
 
+    public static void applyModel(HttpServletRequest request, Map<String, Object> model) {
+      for (Entry<String, Object> modelValue : model.entrySet()) {
+        request.setAttribute(modelValue.getKey(), modelValue.getValue());
+      }
+    }
 }

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Group;
@@ -1125,10 +1126,21 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   public void addFilter(Filter filter) {
     filters.put(filter.getKey(), filter);
   }
-  
+
+  /**
+   * Returns a set of filters (by name) for this question.  Only non-view-only
+   * filters are included in this list.  View-only filters are only available
+   * by name.
+   * 
+   * @return map of all non-view-only filters, from filter name to filter
+   */
   public Map<String, Filter> getFilters() {
     Map<String, Filter> map = new LinkedHashMap<>(recordClass.getFilters());
-    map.putAll(this.filters);
+    for (Entry<String, Filter> filter : this.filters.entrySet()) {
+      if (!filter.getValue().getIsViewOnly()) {
+        map.put(filter.getKey(), filter.getValue());
+      }
+    }
     return map;
   }
   

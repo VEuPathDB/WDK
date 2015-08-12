@@ -40,6 +40,13 @@ public interface Filter {
   void setView(String view);
 
   /**
+   * @returns false if this filter should affect the actual result; true if it only affects the results view
+   */
+  boolean getIsViewOnly();
+
+  void setIsViewOnly(boolean isViewOnly);
+
+  /**
    * get the display value of the filter. The value will be displayed on the applied filter list.
    * 
    * @param answer
