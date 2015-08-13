@@ -32,7 +32,6 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterOption;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.filter.FilterSummary;
-import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
