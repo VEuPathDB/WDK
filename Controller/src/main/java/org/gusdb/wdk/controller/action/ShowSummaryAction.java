@@ -3,10 +3,7 @@ package org.gusdb.wdk.controller.action;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -21,6 +18,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.controller.form.QuestionForm;
+import org.gusdb.wdk.controller.summary.ResultTablePaging;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -35,8 +33,9 @@ import org.json.JSONObject;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It
- * 1) reads param values from input form bean, 2) runs the query and saves the
- * answer 3) forwards control to a jsp page that displays a summary
+ * 1) reads param values from input form bean
+ * 2) runs the query and saves the answer
+ * 3) forwards control to a jsp page that displays a summary
  */
 
 public class ShowSummaryAction extends ShowQuestionAction {
@@ -350,17 +349,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return forward;
     }
 
-    public static StepBean summaryPaging(HttpServletRequest request,
-            StepBean step) throws WdkModelException, WdkUserException {
-        QuestionBean question = step.getQuestion();
-        Map<String, String> paramValues = step.getParams();
-        String filterName = step.getFilterName();
-        int assignedWeight = step.getAssignedWeight();
-        return summaryPaging(request, step.getStrategyId(), question, paramValues, filterName, false,
-                assignedWeight);
-    }
-
-    public static StepBean summaryPaging(HttpServletRequest request, Integer strategyId,
+    private static StepBean summaryPaging(HttpServletRequest request, Integer strategyId,
             QuestionBean question, Map<String, String> params,
             String filterName, boolean deleted, int assignedWeight)
             throws WdkModelException, WdkUserException {
@@ -368,8 +357,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
-        int start = getPageStart(request);
-        int pageSize = getPageSize(request, question, wdkUser);
+        int start = ResultTablePaging.getPageStart(request.getParameterMap());
+        int pageSize = ResultTablePaging.getPageSize(request.getParameterMap(), question, wdkUser);
         int end = start + pageSize - 1;
 
         logger.info("Make answer with start=" + start + ", end=" + end);
@@ -482,37 +471,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private static void prepareAttributes(HttpServletRequest request,
             UserBean user, StepBean step) throws WdkModelException, WdkUserException {
         AnswerValueBean answerValue = step.getAnswerValue();
-        int start = getPageStart(request);
-        int pageSize = getPageSize(request, step.getQuestion(), user);
-
-        int totalSize = answerValue.getResultSize();
-
-        if (start > totalSize) {
-            int pages = totalSize / pageSize;
-            start = (pages * pageSize) + 1;
-        }
-
-        int end = start + pageSize - 1;
-
-        answerValue.setPageIndex(start, end);
-
-        List<String> editedParamNames = new ArrayList<String>();
-        for (Enumeration<?> en = request.getParameterNames(); en.hasMoreElements();) {
-            String key = (String) en.nextElement();
-            if (!key.equals(CConstants.WDK_PAGE_SIZE_KEY)
-                    && !key.equals(CConstants.WDK_ALT_PAGE_SIZE_KEY)
-                    && !"start".equals(key) && !"pager.offset".equals(key)) {
-                editedParamNames.add(key);
-            }
-        }
-
-        request.setAttribute("wdk_paging_total", new Integer(totalSize));
-        request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
-        request.setAttribute("wdk_paging_start", new Integer(start));
-        request.setAttribute("wdk_paging_end", new Integer(end));
-        request.setAttribute("wdk_paging_url", request.getRequestURI());
-        request.setAttribute("wdk_paging_params", editedParamNames);
-
+        ActionUtility.applyModel(request,
+            ResultTablePaging.processPaging(request.getParameterMap(), step.getQuestion(), user, answerValue));
         request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY,
                 answerValue.getInternalParams());
         request.setAttribute(CConstants.WDK_STEP_KEY, step);
@@ -557,7 +517,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         ServletContext application = servlet.getServletContext();
 
         @SuppressWarnings("unchecked")
-		Map<String, Integer> sizeCache = (Map<String, Integer>)application.getAttribute(KEY_SIZE_CACHE_MAP);
+        Map<String, Integer> sizeCache = (Map<String, Integer>)application.getAttribute(KEY_SIZE_CACHE_MAP);
         if (sizeCache == null) {
             sizeCache = new LinkedHashMap<String, Integer>();
             application.setAttribute(KEY_SIZE_CACHE_MAP, sizeCache);
@@ -577,39 +537,5 @@ public class ShowSummaryAction extends ShowQuestionAction {
         sizeCache.put(key, size);
 
         return size;
-    }
-
-    public static int getPageStart(HttpServletRequest request) {
-        int start = 1;
-        if (request.getParameter("pager.offset") != null) {
-            start = Integer.parseInt(request.getParameter("pager.offset"));
-            start++;
-            if (start < 1) start = 1;
-        }
-        return start;
-    }
-
-    public static int getPageSize(HttpServletRequest request,
-            QuestionBean question, UserBean user) throws WdkModelException {
-        int pageSize = user.getItemsPerPage();
-        // check if the question is supposed to make answers containing all
-        // records in one page
-        if (question.isFullAnswer()) {
-            pageSize = Utilities.MAXIMUM_RECORD_INSTANCES;
-        } else {
-            String pageSizeKey = request.getParameter(CConstants.WDK_PAGE_SIZE_KEY);
-            if (pageSizeKey != null) {
-                pageSize = Integer.parseInt(pageSizeKey);
-                user.setItemsPerPage(pageSize);
-            } else {
-                String altPageSizeKey = request.getParameter(CConstants.WDK_ALT_PAGE_SIZE_KEY);
-                if (altPageSizeKey != null)
-                    pageSize = Integer.parseInt(altPageSizeKey);
-            }
-            // set the minimal page size
-            if (pageSize < CConstants.MIN_PAGE_SIZE)
-                pageSize = CConstants.MIN_PAGE_SIZE;
-        }
-        return pageSize;
     }
 }

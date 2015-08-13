@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.filter;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -8,7 +9,7 @@ import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class FilterOptionList {
+public class FilterOptionList implements Iterable<FilterOption>{
 
   private final Map<String, FilterOption> _options = new LinkedHashMap<>();
 
@@ -34,6 +35,10 @@ public class FilterOptionList {
     return false;
   }
 
+  public int getSize() {
+    return _options.size();
+  }
+
   public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
     Filter filter = _step.getQuestion().getFilter(filterName);
     FilterOption option = new FilterOption(_step, filter, filterValue);
@@ -56,7 +61,19 @@ public class FilterOptionList {
     return jsOptions;
   }
 
+  /**
+   * Returns the filter option for the passed name, or null if no option
+   * exists for that name in this list
+   * 
+   * @param filterName filter name
+   * @return filter option for the name or null if none is found
+   */
   public FilterOption getFilterOption(String filterName) {
     return _options.get(filterName);
+  }
+
+  @Override
+  public Iterator<FilterOption> iterator() {
+    return _options.values().iterator();
   }
 }

@@ -1844,11 +1844,19 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return new LinkedHashMap<>(_stepFilters);
   }
 
+  /**
+   * Returns a set of filters (by name) for this question.  Only non-view-only
+   * filters are included in this list.  View-only filters are only available
+   * by name.
+   * 
+   * @return map of all non-view-only filters, from filter name to filter
+   */
   public Map<String, Filter> getFilters() {
     // get all step filters
     Map<String, Filter> filters = new LinkedHashMap<>();
     for (StepFilter filter : _stepFilters.values()) {
-      filters.put(filter.getKey(), filter);
+      if (!filter.getIsViewOnly())
+        filters.put(filter.getKey(), filter);
     }
 
     // get all column filters
@@ -1856,7 +1864,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       if (attribute instanceof ColumnAttributeField) {
         ColumnAttributeField columnAttribute = (ColumnAttributeField) attribute;
         for (ColumnFilter filter : columnAttribute.getColumnFilters()) {
-          filters.put(filter.getKey(), filter);
+          if (!filter.getIsViewOnly())
+            filters.put(filter.getKey(), filter);
         }
       }
     }

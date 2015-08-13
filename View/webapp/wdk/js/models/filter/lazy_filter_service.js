@@ -221,7 +221,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
       if (min !== null) {
         return function rangePredicate(datum) {
           var values = metadata[datum.term];
-          return values.some(get(min));
+          return values.some(gte(min));
         };
       }
       if (max !== null) {

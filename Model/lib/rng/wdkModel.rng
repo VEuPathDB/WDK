@@ -1563,10 +1563,10 @@
       <attribute name="name" />
       <ref name="IncludeExclude" />
       <zeroOrMore>
-	<choice>
-	  <ref name="stepFilter" />
-	  <ref name="columnFilter" />
-	</choice>
+        <choice>
+          <ref name="stepFilter" />
+          <ref name="columnFilter" />
+        </choice>
       </zeroOrMore>
     </element>
   </define>
@@ -1584,22 +1584,29 @@
   </define>
   
   <define name="filterBaseContent">
-     <ref name="IncludeExclude" />
-	 <attribute name="name" />
-	 <attribute name="view" />
-	 <attribute name="implementation" />
-     <zeroOrMore>
-        <choice>
-	      <element name="display">
-	        <ref name="IncludeExclude" />
-	        <text />
-	      </element>
-	      <element name="description">
-	        <ref name="IncludeExclude" />
-	        <text />
-	      </element>
-	    </choice>
-     </zeroOrMore>
+    <ref name="IncludeExclude" />
+    <attribute name="name" />
+    <attribute name="implementation" />
+    <optional>
+      <attribute name="view" />
+    </optional>
+    <optional>
+      <attribute name="isViewOnly">
+        <data type="boolean" />
+      </attribute>
+    </optional>
+    <zeroOrMore>
+      <choice>
+        <element name="display">
+          <ref name="IncludeExclude" />
+          <text />
+        </element>
+        <element name="description">
+          <ref name="IncludeExclude" />
+          <text />
+        </element>
+      </choice>
+    </zeroOrMore>
   </define>
 
   <define name="summaryView">

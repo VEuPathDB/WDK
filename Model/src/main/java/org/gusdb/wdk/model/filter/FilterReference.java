@@ -20,7 +20,6 @@ public class FilterReference extends WdkModelBase {
   public void setName(String name) {
     _name = name;
   }
-  
   public String getDefaultValue() {
 	  return _defaultValueString;
   }

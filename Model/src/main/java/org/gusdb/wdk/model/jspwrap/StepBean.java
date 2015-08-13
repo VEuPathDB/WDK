@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.filter.FilterOptionList;
@@ -24,6 +25,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class StepBean {
+
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger.getLogger(StepBean.class);
 
     private UserBean user;
     protected Step step;
@@ -129,12 +133,18 @@ public class StepBean {
     public boolean getIsFirstStep() throws WdkModelException {
         return step.isFirstStep();
     }
+
     public AnswerValueBean getAnswerValue() throws WdkModelException, WdkUserException {
-        return getAnswerValue(true);
+        return getAnswerValue(true, false);
     }
 
-    public AnswerValueBean getAnswerValue(boolean validate) throws WdkModelException, WdkUserException {
-        return new AnswerValueBean(step.getAnswerValue(validate));
+    public AnswerValueBean getViewAnswerValue() throws WdkModelException, WdkUserException {
+        return getAnswerValue(true, true);
+    }
+
+    public AnswerValueBean getAnswerValue(boolean validate, boolean applyViewFilters)
+            throws WdkModelException, WdkUserException {
+        return new AnswerValueBean(step.getAnswerValue(validate, applyViewFilters));
     }
 
     public int getStepId() {
