@@ -4,7 +4,6 @@ import curry from 'lodash/function/curry';
 import flattenDeep from 'lodash/array/flattenDeep';
 import values from 'lodash/object/values';
 import pick from 'lodash/object/pick';
-import Store from '../core/store';
 import {
   ANSWER_ADDED,
   ANSWER_MOVE_COLUMN,
@@ -60,13 +59,19 @@ function createAttribute(meta, value) {
 
 
 // Split terms on whitespace, unless wrapped in quotes
-let parseSearchTerms = function parseSearchTerms(terms) {
-  let match = terms.match(/\w+|"[\w\s]*"/g) || [];
+function parseSearchTerms(terms) {
+  let match = terms.match(/\w+|"[^"]*"/g) || [];
   return match.map(function(term) {
     // remove wrapping quotes from phrases
     return term.replace(/(^")|("$)/g, '');
   });
-};
+}
+
+function stripHTML(str) {
+  let span = document.createElement('span');
+  span.innerHTML = str;
+  return span.textContent;
+}
 
 
 // Search record for a term.
@@ -98,18 +103,19 @@ let isTermInRecord = curry(function isTermInRecord(term, filterAttributes, filte
       return table.map(values);
     }));
 
-  let clob = attributeValues.concat(tableValues).join('\0');
+  let clob = stripHTML(attributeValues.concat(tableValues).join('\0'));
   return clob.toLowerCase().includes(term.toLowerCase());
 });
 
-function createStore({ dispatcher }) {
-  let value = {
+function getInitialState() {
+  return {
+    meta: null,
+    records: null,
     isLoading: false,
     filterTerm: '',
     filterAttributes: null,
     filterTables: null,
     filteredRecords: null,
-    answers: {},
     displayInfo: {
       sorting: null,
       pagination: null,
@@ -122,7 +128,6 @@ function createStore({ dispatcher }) {
       filters: null
     }
   };
-  return new Store(dispatcher, value, update);
 }
 
 function update(state, action) {
@@ -132,6 +137,7 @@ function update(state, action) {
     case ANSWER_CHANGE_ATTRIBUTES: return updateVisibleAttributes(state, action);
     case ANSWER_LOADING: return answerLoading(state, action);
     case ANSWER_UPDATE_FILTER: return updateFilter(state, action);
+    default: return state;
   }
 }
 
@@ -184,13 +190,11 @@ function addAnswer(state, { answer, requestData }) {
    * This will update the keys `filteredRecords`, `displayInfo`, and
    * `questionDefinition` in `state`.
    */
-  assign(state, {
+  assign(state, answer, {
     filteredRecords: answer.records,
     displayInfo: requestData.displayInfo,
     questionDefinition: requestData.questionDefinition
   });
-
-  state.answers[questionName] = answer;
 
   if (state.filterTerm) {
     return filterAnswer(state, { questionName });
@@ -247,20 +251,19 @@ function updateFilter(state, action) {
  * @param {string} questionName The questionName of the answer to filter.
  */
 function filterAnswer(state, action) {
-  let { questionName } = action;
-  let answer = state.answers[questionName];
-  if (answer == null) return;
+  let { records } = state;
+  if (records == null) return state;
 
   let { filterTerm, filterAttributes, filterTables } = state;
   if (filterTerm == null) {
     return assign(state, {
-      filteredRecords: answer.records
+      filteredRecords: records
     });
   }
   let parsedTerms = parseSearchTerms(filterTerm);
   let filteredRecords = parsedTerms.reduce(function(records, term) {
     return records.filter(isTermInRecord(term, filterAttributes, filterTables));
-  }, answer.records);
+  }, records);
   return assign(state, { filteredRecords });
 }
 
@@ -270,5 +273,6 @@ function answerLoading(state, action) {
 }
 
 export default {
-  createStore
+  getInitialState,
+  update
 };
