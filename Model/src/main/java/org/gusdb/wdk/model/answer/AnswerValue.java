@@ -32,6 +32,7 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterOption;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.filter.FilterSummary;
+import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -312,7 +313,7 @@ public class AnswerValue {
   
   
   public int getDisplayResultSize() throws WdkModelException, WdkUserException {
-	  ResultSize plugin = question.getRecordClass().getResultSizePlugin();
+	  ResultSize plugin = _question.getRecordClass().getResultSizePlugin();
 	  return plugin.getResultSize(this);
   }
   public Map<String, Integer> getResultSizesByProject() throws WdkModelException, WdkUserException {
@@ -1438,14 +1439,6 @@ public class AnswerValue {
       SqlUtils.closeResultSetAndStatement(resultSet);
     }
     return pkValues;
-  }
-
-  public boolean isUseBooleanFilter() {
-    if (_idsQueryInstance instanceof BooleanQueryInstance) {
-      return ((BooleanQueryInstance) _idsQueryInstance).isUseBooleanFilter();
-    }
-    else
-      return false;
   }
 
   public void setPageIndex(int startIndex, int endIndex) {
