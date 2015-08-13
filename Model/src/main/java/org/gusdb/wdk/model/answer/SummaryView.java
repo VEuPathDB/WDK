@@ -1,8 +1,5 @@
 package org.gusdb.wdk.model.answer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkView;
@@ -10,63 +7,61 @@ import org.gusdb.wdk.model.record.RecordClass;
 
 public class SummaryView extends WdkView {
 
-  private static class DefaultSummaryView extends SummaryView {
+    public static SummaryView[] createSupportedSummaryViews(RecordClass recordClass)
+            throws WdkModelException {
+        SummaryView defaultSummaryView = new SummaryView(recordClass);
+        return new SummaryView[]{ defaultSummaryView };
+    }
 
-    private final RecordClass recordClass;
+    private String handlerClass;
+    private SummaryViewHandler handler;
 
-    public DefaultSummaryView(RecordClass recordClass) {
-      this.recordClass = recordClass;
-      this.setName("_default");
-      this.setJsp("/wdk/jsp/results/default.jsp");
+    // must create public no-arg constructor for Digester
+    public SummaryView() { }
+
+    /**
+     * Creates a default summary view for the passed RecordClass.  This view
+     * displays results in a WDK results table.
+     * 
+     * @param recordClass
+     * @throws WdkModelException 
+     */
+    private SummaryView(RecordClass recordClass) throws WdkModelException {
+        setName("_default");
+        // FIXME: basket shares the tab title with the results table,
+        //   so the tab should say "Genes" not "Gene results"
+        setDisplay(recordClass.getDisplayName() + " Results");
+        setJsp("/wdk/jsp/results/default.jsp");
+        // NOTE: will leave handler class null; default handler class will be used
+    }
+
+    public SummaryViewHandler getHandler() {
+        return handler;
+    }
+
+    public void setHandlerClass(String handlerClass) {
+        this.handlerClass = handlerClass;
     }
 
     @Override
-    public String getDisplay() {
-      return recordClass.getDisplayName() + " Results";
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+        super.resolveReferences(wdkModel);
+        resolveHandlerClass();
     }
-
-  }
-
-  public static SummaryView[] createSupportedSummaryViews(
-      RecordClass recordClass) {
-    List<SummaryView> views = new ArrayList<SummaryView>();
-    views.add(createDefaultSummaryView(recordClass));
-    return views.toArray(new SummaryView[1]);
-  }
-
-  private static SummaryView createDefaultSummaryView(RecordClass recordClass) {
-    SummaryView view = new DefaultSummaryView(recordClass);
-    return view;
-  }
-
-  private String handlerClass;
-  private SummaryViewHandler handler;
-
-  public SummaryViewHandler getHandler() {
-    return handler;
-  }
-
-  public void setHandlerClass(String handlerClass) {
-    this.handlerClass = handlerClass;
-  }
-
-  @Override
-  public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    super.resolveReferences(wdkModel);
-
-    if (handlerClass != null) { // resolve the handler class
-      try {
-        Class<? extends SummaryViewHandler> hClass = Class
-            .forName(handlerClass).asSubclass(SummaryViewHandler.class);
-        handler = hClass.newInstance();
-      } catch (ClassNotFoundException ex) {
-        throw new WdkModelException(ex);
-      } catch (InstantiationException ex) {
-        throw new WdkModelException(ex);
-      } catch (IllegalAccessException ex) {
-        throw new WdkModelException(ex);
-      }
+    
+    private void resolveHandlerClass() throws WdkModelException {
+        if (handlerClass != null) {  // resolve the handler class
+            try {
+                Class<? extends SummaryViewHandler> hClass = Class.forName(
+                    handlerClass).asSubclass(SummaryViewHandler.class);
+                handler = hClass.newInstance();
+            } catch (ClassNotFoundException ex) {
+                throw new WdkModelException(ex);
+            } catch (InstantiationException ex) {
+                throw new WdkModelException(ex);
+            } catch (IllegalAccessException ex) {
+                throw new WdkModelException(ex);
+            }
+        }
     }
-  }
-
 }

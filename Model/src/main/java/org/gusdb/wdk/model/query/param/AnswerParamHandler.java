@@ -97,7 +97,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
       throws WdkModelException, WdkUserException {
     int stepId = Integer.valueOf(stableValue);
     Step step = user.getStep(stepId);
-    AnswerValue answerValue = step.getAnswerValue(false);
+    AnswerValue answerValue = step.getAnswerValue(false, false);
     String checksum= answerValue.getChecksum();
     LOG.debug("Signature for step#" + stepId + ": " + checksum);
     return checksum;

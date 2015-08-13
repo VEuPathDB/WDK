@@ -103,7 +103,7 @@ public class ShowResultSizeAction extends Action {
     catch (NumberFormatException ex) {
       throw new WdkUserException("The step id is invalid: " + stepId);
     }
-    return step.getAnswerValue(false);
+    return step.getAnswerValue(false, false);
   }
 
   private String convertToJSON(Map<String, Integer> sizes) throws JSONException {

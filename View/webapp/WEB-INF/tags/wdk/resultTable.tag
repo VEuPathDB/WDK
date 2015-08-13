@@ -8,8 +8,7 @@
               required="true"
               description="Step bean we are looking at" %>
 
-
-  <c:set var="wdkAnswer" value="${step.answerValue}"/>
+  <c:set var="wdkAnswer" value="${step.viewAnswerValue}"/>
 
   <c:set var="qName" value="${wdkAnswer.question.fullName}" />
   <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
@@ -64,7 +63,7 @@
                 scope="request"
                 items="${wdk_paging_total}"
                 maxItems="${wdk_paging_total}"
-                url="${wdk_paging_url}"
+                url="${requestUri}"
                 maxPageItems="${wdk_paging_pageSize}"
                 export="offset,currentPageNumber=pageNumber">
         <c:forEach var="paramName" items="${wdk_paging_params}">

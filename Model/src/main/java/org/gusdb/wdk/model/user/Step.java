@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.filter.FilterOption;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -41,6 +42,7 @@ public class Step {
   
   private static final String KEY_PARAMS = "params";
   private static final String KEY_FILTERS = "filters";
+  private static final String KEY_VIEW_FILTERS = "viewFilters";
 
   private static final Logger logger = Logger.getLogger(Step.class);
 
@@ -99,7 +101,9 @@ public class Step {
    */
   private int estimateSize = 0;
 
-  // name of (non-parameterized) filter instance applied to this step (if any), DB value of null = no filter
+  // LEGACY!!  Any filtering code mods should be applied to the parameterized
+  //     filter framework.  TODO: remove this code and migrade the DB
+  // Name of (non-parameterized) filter instance applied to this step (if any), DB value of null = no filter
   // if any filters exist on a recordclass, model must have a "default" filter; usually this is
   // a filter that simply returns all the results. The default filter is automatically applied to a step.
   // This affects the UI- if no filter OR the default filter is applied, the filter icon does not appear
@@ -118,7 +122,12 @@ public class Step {
   // FilterParam: JSON string representing all filters applied (see FilterParam)
   // AnswerParam: Step ID
   private Map<String, String> paramValues = new LinkedHashMap<String, String>();
+
+  // filters applied to this step
   private FilterOptionList filterOptions;
+
+  // view filters applied to this step
+  private FilterOptionList viewFilterOptions;
 
   // only applied to leaf steps, user-defined
   // during booleans, weights of records are modified (per boolean-specific logic, see BooleanQuery)
@@ -177,6 +186,47 @@ public class Step {
     this.stepId = stepId;
     deleted = false;
     assignedWeight = 0;
+  }
+
+  /**
+   * Constructor that takes an existing step and makes a shallow copy of the
+   * existing private fields.
+   * 
+   * @param step Step to make a shallow copy of
+   */
+  public Step(Step step) {
+    stepFactory = step.stepFactory;
+    user = step.user;
+    userId = step.userId;
+    stepId = step.stepId;
+    createdTime = step.createdTime;
+    lastRunTime = step.lastRunTime;
+    customName = step.customName;
+    deleted = step.deleted;
+    collapsible = step.collapsible;
+    collapsedName = step.collapsedName;
+    projectId = step.projectId;
+    projectVersion = step.projectVersion;
+    questionName = step.questionName;
+    nextStep = step.nextStep;
+    previousStep = step.previousStep;
+    parentStep = step.parentStep;
+    childStep = step.childStep;
+    booleanExpression = step.booleanExpression;
+    valid = step.valid;
+    validityChecked = step.validityChecked;
+    estimateSize = step.estimateSize;
+    filterName = step.filterName;
+    answerValue = step.answerValue;
+    paramValues = step.paramValues;
+    filterOptions = step.filterOptions;
+    viewFilterOptions = step.viewFilterOptions;
+    assignedWeight = step.assignedWeight;
+    previousStepId = step.previousStepId;
+    childStepId = step.childStepId;
+    revisable = step.revisable;
+    exception = step.exception;
+    strategyId = step.strategyId;
   }
 
   public Step getPreviousStep() throws WdkModelException {
@@ -776,18 +826,43 @@ public class Step {
     return filterOptions;
   }
 
-  public void setFilterOptions(FilterOptionList filterOptions) {
+  public void setFilterOptions(FilterOptionList filterOptions) throws WdkModelException {
+    validateFilterOptions(filterOptions, false);
     this.filterOptions = filterOptions;
     if (answerValue != null)
       answerValue.setFilterOptions(filterOptions);
   }
 
+  public FilterOptionList getViewFilterOptions() {
+    if (viewFilterOptions == null) {
+      viewFilterOptions = new FilterOptionList(this);
+    }
+    return viewFilterOptions;
+  }
+
+  public void setViewFilterOptions(FilterOptionList filterOptions) throws WdkModelException {
+    validateFilterOptions(filterOptions, true);
+    this.viewFilterOptions = filterOptions;
+    if (answerValue != null)
+      answerValue.setViewFilterOptions(filterOptions);
+  }
+
   public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
     getFilterOptions().addFilterOption(filterName, filterValue);
+    validateFilterOptions(getViewFilterOptions(), false);
   }
 
   public void removeFilterOption(String filterName) {
     getFilterOptions().removeFilterOption(filterName);
+  }
+
+  public void addViewFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
+    getViewFilterOptions().addFilterOption(filterName, filterValue);
+    validateFilterOptions(getViewFilterOptions(), true);
+  }
+
+  public void removeViewFilterOption(String filterName) {
+    getViewFilterOptions().removeFilterOption(filterName);
   }
 
   public void setParamValue(String paramName, String paramValue) {
@@ -859,7 +934,7 @@ public class Step {
     AnswerValue answerValue;
     try {
       if (!isCombined()) {
-        answerValue = getAnswerValue(false);
+        answerValue = getAnswerValue(false, false);
         step = getUser().createStep(strategyId, answerValue, deleted, assignedWeight);
       }
       else {
@@ -1013,11 +1088,16 @@ public class Step {
     this.filterName = filterName;
   }
 
+  public AnswerValue getViewAnswerValue() throws WdkModelException, WdkUserException {
+    return getAnswerValue(true, true);
+  }
+  
   public AnswerValue getAnswerValue() throws WdkModelException, WdkUserException {
-    return getAnswerValue(true);
+    return getAnswerValue(true, false);
   }
 
-  public AnswerValue getAnswerValue(boolean validate) throws WdkModelException, WdkUserException {
+  public AnswerValue getAnswerValue(boolean validate, boolean applyViewFilters)
+      throws WdkModelException, WdkUserException {
     // even if a step is invalid, still allow user to create answerValue
     // if (!valid)
     // throw new WdkUserException("Step #" + internalId
@@ -1031,6 +1111,8 @@ public class Step {
         answerValue = question.makeAnswerValue(user, paramValues, 1, endIndex, sortingMap, getFilter(),
             validate, assignedWeight);
         answerValue.setFilterOptions(getFilterOptions());
+        answerValue.setViewFilterOptions(getViewFilterOptions());
+        answerValue.setApplyViewFilters(applyViewFilters);
       // }
       // catch (WdkUserException ex) {
       //  throw new WdkModelException(ex);
@@ -1215,22 +1297,63 @@ public class Step {
     JSONObject jsContent = new JSONObject();
     jsContent.put(KEY_PARAMS, getParamsJSON());
     jsContent.put(KEY_FILTERS, getFilterOptionsJSON());
+    jsContent.put(KEY_VIEW_FILTERS, getViewFilterOptionsJSON());
     return jsContent;
   }
 
   public void setParamFilterJSON(JSONObject jsContent) throws WdkModelException {
-    if (jsContent != null) {
-      setParamsJSON(jsContent.has(KEY_PARAMS) ? jsContent.getJSONObject(KEY_PARAMS) : jsContent);
-      JSONArray jsFilters = null;
-      try {
-        if (jsContent.has(KEY_FILTERS)) jsFilters = jsContent.getJSONArray(KEY_FILTERS);
-      } catch(JSONException ex) { }
-      setFilterOptionsJSON(jsFilters);
-    }
-    else {
+
+    // handle no params, no filters
+    if (jsContent == null) {
       setParamsJSON(null);
       setFilterOptionsJSON(null);
+      setViewFilterOptionsJSON(null);
+      return;
     }
+
+    logger.info("Parsing json:\n" + jsContent.toString(2));
+
+    // legacy records: if no "params" property, assume JSON represents only params
+    if (!jsContent.has(KEY_PARAMS)) {
+      setParamsJSON(jsContent);
+      setFilterOptionsJSON(null);
+      setViewFilterOptionsJSON(null);
+      return;
+    }
+
+    // assume up-to-date layout
+    try {
+      setParamsJSON(jsContent.getJSONObject(KEY_PARAMS));
+    }
+    catch (JSONException e) {
+      throw new WdkModelException("Params property value is not a JSON Object", e);
+    }
+    setFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_FILTERS));
+    setViewFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_VIEW_FILTERS));
+  }
+
+  private JSONArray getFilterArrayOrNull(JSONObject jsContent, String propKey) throws WdkModelException {
+    if (jsContent.has(propKey)) {
+      // FIXME: Some steps in the DB have a filters property with a JSON object (usually empty);
+      //    Ignore these for now to avoid errors; they will eventually be overwritten or die quietly
+      try {
+        jsContent.getJSONObject(propKey);
+        // if successful, ignore!
+        return null;
+      }
+      catch (JSONException e) {
+        // not an object; hopefully it is an array (parsed below)
+      }
+
+      // proper value is an array of filter objects
+      try {
+        return jsContent.getJSONArray(propKey);
+      }
+      catch (JSONException e) {
+        throw new WdkModelException(propKey + " property value is not a JSON Array", e);
+      }
+    }
+    return null;
   }
 
   public JSONObject getParamsJSON() {
@@ -1267,7 +1390,39 @@ public class Step {
   }
 
   public void setFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
-    this.filterOptions = (jsOptions == null) ? null : new FilterOptionList(this, jsOptions);
+    if (jsOptions == null) {
+      this.filterOptions = null;
+    }
+    else {
+      FilterOptionList newList = new FilterOptionList(this, jsOptions);
+      validateFilterOptions(newList, false);
+      this.filterOptions = newList;
+    }
+  }
+
+  public JSONArray getViewFilterOptionsJSON() {
+    return (viewFilterOptions == null) ? null : viewFilterOptions.getJSON();
+  }
+
+  public void setViewFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
+    if (jsOptions == null) {
+      this.viewFilterOptions = null;
+    }
+    else {
+      FilterOptionList newList = new FilterOptionList(this, jsOptions);
+      validateFilterOptions(newList, true);
+      this.viewFilterOptions = newList;
+    }
+  }
+
+  private void validateFilterOptions(FilterOptionList optionList, boolean desiredViewOnlyFlag) throws WdkModelException {
+    if (optionList == null) return;
+    for (FilterOption filter : optionList) {
+      if (filter.getFilter().getIsViewOnly() != desiredViewOnlyFlag) {
+        String viewOnlyString = (desiredViewOnlyFlag ? "view-only" : "regular (non-view-only)");
+        throw new WdkModelException("Cannot set Filter '" + filter.getFilter().getKey() + "' as a " + viewOnlyString + " filter.");
+      }
+    }
   }
 
   public String getType() throws WdkModelException {
