@@ -53,28 +53,9 @@ function makeStorageKey(key) {
   return prefix + key;
 }
 
-// TODO Put in utils and invert control so that the main function uses this.
-// Eventually, action creators can be defined as a module with functions that
-// return an action to be dispatched. We will be hiding the dispatcher from all
-// domain specific code, including stores.
-function makeActionCreators(module) {
-  return function createActions(context) {
-    return Object.keys(module).reduce(function(actions, acName) {
-      actions[acName] = function actionCreator(...args) {
-        context.dispatcher.dispatch(module[acName](...args));
-      };
-      return actions;
-    }, {});
-  };
-}
-
-let createActions = makeActionCreators({
+export default {
   loadPreferences,
   setPreference,
   removePreference,
   removeAllPreferences
-});
-
-export default {
-  createActions
 };

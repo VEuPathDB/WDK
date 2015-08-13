@@ -9,11 +9,11 @@ import React from 'react';
 import Router from 'react-router';
 import Immutable from 'immutable';
 import _ from 'lodash';
-import Context from './core/context';
+import Application from './core/application';
 import ContextMixin from './utils/contextMixin';
 import Routes from './routes';
 import * as components from './components';
-import * as stores from './stores';
+import * as state from './state';
 import * as actions from './actions';
 
 // expose libraries to global object, but only if they aren't already defined
@@ -24,8 +24,9 @@ if (window.ReactRouter == null) window.ReactRouter = Router;
 
 
 let Wdk = {
-  createApplication,
-  components
+  actions,
+  components,
+  createApplication
 };
 
 /**
@@ -37,41 +38,20 @@ let Wdk = {
  * @param {element} config.rootElement Root element to render application
  */
 function createApplication(config) {
+  let context = Application.create(state, config);
+
   let router = Router.create({
     routes: Routes.getRoutes(config.rootUrl),
     location: Router.HistoryLocation
   });
 
-  Object.assign(config, { router });
-
-  let context = Context.createContext(config);
-
-  for (let name in stores) {
-    let Store = stores[name];
-    context.addStore(name, Store.createStore(context));
-  }
-
-  for (let name in actions) {
-    let Actions = actions[name];
-    context.addActions(name, Actions.createActions(context));
-  }
-
   // Defer routing so that stores and actions can be added.
   // We can probably be a little smarter about this.
-  setTimeout(makeRouterRunFn(router, config.rootElement, makeContextProxy(context)), 0);
+  setTimeout(makeRouterRunFn(router, config.rootElement, context), 0);
 
   return context;
 }
 
-function makeContextProxy(context) {
-  return Object.keys(ContextMixin.contextTypes).reduce(function(proxy, key) {
-    Object.defineProperty(proxy, key, {
-      enumerable: true,
-      value: context[key]
-    });
-    return proxy;
-  }, {});
-}
 
 function makeRouterCallback(context, rootElement) {
   return function routerCallback(Handler, state) {

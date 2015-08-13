@@ -2,8 +2,9 @@ import React from 'react';
 
 export default {
   contextTypes: {
-    router: React.PropTypes.func.isRequired,
-    stores: React.PropTypes.object.isRequired,
-    actions: React.PropTypes.object.isRequired
+    dispatch: React.PropTypes.func.isRequired,
+    subscribe: React.PropTypes.func.isRequired,
+    state: React.PropTypes.object.isRequired,
+    config: React.PropTypes.object.isRequired
   }
 };

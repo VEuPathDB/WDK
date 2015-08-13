@@ -7,13 +7,10 @@ let QuestionListController = React.createClass({
 
   mixins: [ ContextMixin ],
 
-  componentDidMount() {
-    let { questionStore } = this.context.stores;
-    let { questionActions } = this.context.actions;
-    this.storeSubscription = questionStore.subscribe(state => {
-      this.setState(state);
+  componentWillMount() {
+    this.storeSubscription = this.context.subscribe(state => {
+      this.setState({ questions: state.questions });
     });
-    questionActions.loadQuestions();
   },
 
   componentWillUnmount() {
@@ -22,26 +19,20 @@ let QuestionListController = React.createClass({
 
   render() {
     if (!this.state) { return null; }
-    let { questions, error } = this.state;
+    let { questions } = this.state;
 
-    if (error) {
-      return (
-        <div>There was an error: {error}</div>
-      );
-    } else {
-      return (
-        <div>
-          <ol>
-            {questions.map(question => (
-              <li key={question.name}>
-                {question.displayName + ' - '}
-                <Link to="answer" params={{ questionName: question.name }}>answer page</Link>
-              </li>
-            ))}
-          </ol>
-        </div>
-      );
-    }
+    return (
+      <div>
+        <ol>
+          {questions.map(question => (
+            <li key={question.name}>
+              {question.displayName + ' - '}
+              <Link to="answer" params={{ questionName: question.name }}>answer page</Link>
+            </li>
+          ))}
+        </ol>
+      </div>
+    );
   }
 
 });

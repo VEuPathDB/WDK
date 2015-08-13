@@ -7,6 +7,8 @@ import React from 'react';
 import { RouteHandler } from 'react-router';
 import ContextMixin from '../utils/contextMixin';
 import wrappable from '../utils/wrappable';
+import CommonActions from '../actions/commonActions';
+import PreferenceActions from '../actions/preferenceActions';
 
 let { contextTypes } = ContextMixin;
 
@@ -28,16 +30,16 @@ let AppController = React.createClass({
     return this.props.context;
   },
 
+  mixins: [ React.addons.PureRenderMixin ],
+
   componentWillMount() {
-    let { context } = this.props;
-    let { commonActions, preferenceActions } = context.actions;
-    let { appStore } = context.stores;
+    let { dispatch, subscribe } = this.props.context;
 
-    preferenceActions.loadPreferences();
-    commonActions.fetchCommonData();
+    dispatch(PreferenceActions.loadPreferences());
+    dispatch(CommonActions.fetchCommonData());
 
-    this.storeSubscription = appStore.subscribe(({ errors }) => {
-      this.setState({ errors });
+    this.storeSubscription = subscribe(state => {
+      this.setState({ errors: state.errors });
     });
   },
 
