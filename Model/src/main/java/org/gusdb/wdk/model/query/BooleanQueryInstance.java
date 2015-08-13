@@ -84,8 +84,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     return sql;
   }
 
-  private String constructOperandSql(String subSql)
-      throws WdkModelException, WdkUserException {
+  private String constructOperandSql(String subSql) {
 
     // limit the column output
     StringBuffer sql = new StringBuffer();

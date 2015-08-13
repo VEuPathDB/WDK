@@ -514,6 +514,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * initialized, therefore, each param object will refer to one question uniquely.
    * 
    * @param question
+   * @throws WdkModelException
    */
   public void setContextQuestion(Question question) throws WdkModelException {
     this.contextQuestion = question;

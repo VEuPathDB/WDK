@@ -19,7 +19,8 @@ public abstract class SqlColumnFilter extends ColumnFilter {
 
 	protected static final String COLUMN_PROPERTY = "property";
 	protected static final String COLUMN_COUNT = "count";
-	
+
+    @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(SqlColumnFilter.class);
 
 	public SqlColumnFilter(String name, ColumnAttributeField attribute) {
