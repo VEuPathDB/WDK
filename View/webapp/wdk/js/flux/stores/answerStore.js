@@ -54,12 +54,18 @@ import {
 
 // Split terms on whitespace, unless wrapped in quotes
 let parseSearchTerms = function parseSearchTerms(terms) {
-  let match = terms.match(/\w+|"[\w\s]*"/g) || [];
+  let match = terms.match(/\w+|"[^"]*"/g) || [];
   return match.map(function(term) {
     // remove wrapping quotes from phrases
     return term.replace(/(^")|("$)/g, '');
   });
 };
+
+function stripHTML(str) {
+  let span = document.createElement('span');
+  span.innerHTML = str;
+  return span.textContent;
+}
 
 
 // Search record for a term.
@@ -91,7 +97,7 @@ let isTermInRecord = curry(function isTermInRecord(term, filterAttributes, filte
       return table.map(values);
     }));
 
-  let clob = attributeValues.concat(tableValues).join('\0');
+  let clob = stripHTML(attributeValues.concat(tableValues).join('\0'));
   return clob.toLowerCase().includes(term.toLowerCase());
 });
 
