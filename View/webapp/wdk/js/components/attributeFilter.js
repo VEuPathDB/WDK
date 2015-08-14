@@ -761,9 +761,25 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     getInitialState() {
       // Set default yAxis max based on distribution
-      var yAxisMax = Math.max(...this.props.distribution.map(d => d.count));
-      return { yAxisMax };
+      var yAxisMax = this.computeYAxisMax();
+      return { yAxisMax: yAxisMax + yAxisMax * 0.1 };
     },
+
+    computeYAxisMax() {
+      var dist = _(this.props.distribution)
+        .filter(d => _.isNumber(d.value))
+        .sortBy(d => d.count)
+        .value();
+      var max = dist[dist.length - 1]
+      var nextMax = dist[dist.length - 2];
+
+      return max.count >= nextMax.count * 2 ? nextMax.count : max.count;
+    },
+
+    // componentWillReceiveProps(nextProps) {
+    //   var yAxisMax = Math.max(...this.props.distribution.filter(d => _.isNumber(d.value).map(d => d.count));
+    //   this.setState({ yAxisMax });
+    // },
 
     componentDidMount: function() {
       $(this.getDOMNode())
@@ -1047,9 +1063,10 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
               <div>
                 <input
                   style={{width: '90%'}}
-                  type="range" min={countMin + 1} max={countMax}
+                  type="range" min={countMin + 1} max={countMax + countMax * 0.1}
                   title={this.state.yAxisMax}
                   value={this.state.yAxisMax}
+                  autoFocus={true}
                   onChange={e => this.setYAxisMax(Number(e.target.value))}/>
               </div>
             </div>
