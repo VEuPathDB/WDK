@@ -8,7 +8,7 @@ import {
 
 let $update = React.addons.update;
 
-function update(preferences = {}, action) {
+export default function preferences(preferences = {}, action) {
   switch(action.type) {
     case PREFERENCES_LOADED: return load(preferences, action);
     case PREFERENCE_SET: return set(preferences, action);
@@ -35,7 +35,3 @@ function remove(preferences, action) {
 function removeAll(preferences) {
   return $update(preferences, { $set: {} } );
 }
-
-export default {
-  update
-};

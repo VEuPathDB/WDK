@@ -5,11 +5,7 @@ import {
   RECORD_CATEGORY_COLLAPSED_TOGGLED
 } from '../constants/actionTypes';
 
-function getInitialState() {
-  return { records: {}, hiddenCategories: [], collapsedCategories: [] };
-}
-
-function update(state, action) {
+export default function record(state = getInitialState(), action) {
   switch (action.type) {
     case RECORD_DETAILS_ADDED:
       return addRecordDetails(state, action);
@@ -20,6 +16,10 @@ function update(state, action) {
     default:
       return state;
   }
+}
+
+function getInitialState() {
+  return { records: {}, hiddenCategories: [], collapsedCategories: [] };
 }
 
 function addRecordDetails(state, action) {
@@ -68,8 +68,3 @@ function createAttribute(meta, value) {
     value: { value, enumerable: true }
   });
 }
-
-export default {
-  getInitialState,
-  update
-};

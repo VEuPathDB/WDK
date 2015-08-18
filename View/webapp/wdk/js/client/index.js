@@ -7,18 +7,16 @@
 
 import React from 'react';
 import Router from 'react-router';
-import Immutable from 'immutable';
 import _ from 'lodash';
-import Application from './core/application';
-import ContextMixin from './utils/contextMixin';
+import Store from './core/store';
+import RestAPI from './services/restAPI';
 import Routes from './routes';
 import * as components from './components';
-import * as state from './state';
 import * as actions from './actions';
+import reducer from './reducer';
 
 // expose libraries to global object, but only if they aren't already defined
 if (window._ == null) window._ = _;
-if (window.Immutable == null) window.Immutable = Immutable;
 if (window.React == null) window.React = React;
 if (window.ReactRouter == null) window.ReactRouter = Router;
 
@@ -38,41 +36,69 @@ let Wdk = {
  * @param {element} config.rootElement Root element to render application
  */
 function createApplication(config) {
-  let context = Application.create(state, config);
+  let container = createContainer(config);
+  let containerFilter = createContainerFilter(container);
+  let store = Store.create(reducer, [
+    containerFilter,
+    promiseFilter,
+    logFilter
+  ]);
 
-  let router = Router.create({
-    routes: Routes.getRoutes(config.rootUrl),
-    location: Router.HistoryLocation
+  let router = Router.run(
+    Routes.getRoutes(config.rootUrl),
+    Router.HistoryLocation,
+    function (Root, state) {
+      // XXX Implement router filters?
+      if ('auth_tkt' in state.query) {
+        state.query.auth_tkt = undefined;
+        router.replaceWith(
+          state.pathname,
+          state.params,
+          state.query
+        );
+      }
+      else {
+        React.render(<Root state={state} store={store}/>, config.rootElement);
+      }
+    }
+  );
+
+  return store;
+}
+
+function createContainer(config) {
+  let restAPI = RestAPI.create(config.endpoint);
+  return Object.freeze({
+    restAPI
   });
-
-  // Defer routing so that stores and actions can be added.
-  // We can probably be a little smarter about this.
-  setTimeout(makeRouterRunFn(router, config.rootElement, context), 0);
-
-  return context;
 }
 
-
-function makeRouterCallback(context, rootElement) {
-  return function routerCallback(Handler, state) {
-    // XXX Implement router filters?
-    if ('auth_tkt' in state.query) {
-      state.query.auth_tkt = undefined;
-      context.router.replaceWith(
-        state.pathname,
-        state.params,
-        state.query
-      );
-    }
-    else {
-      React.render(<Handler state={state} context={context}/>, rootElement);
-    }
-  };
+function logFilter(store, next, action) {
+  console.group(action.type);
+  console.info('dispatching', action);
+  let result = next(action);
+  console.log('state', store.getState());
+  console.groupEnd(action.type);
+  return result;
 }
 
-function makeRouterRunFn(router, rootElement, context) {
-  return function run() {
-    router.run(makeRouterCallback(context, rootElement));
+function promiseFilter(store, next, action) {
+  return new Promise(function(resolve, reject) {
+    try {
+      resolve(next(action));
+    }
+    catch(error) {
+      reject(error);
+    }
+  });
+}
+
+function createContainerFilter(services) {
+  return function containerFilter(store, next, action) {
+    if (typeof action === 'function') {
+      return action(store.dispatch, store.state, services);
+    }
+    return next(action);
   };
 }
 

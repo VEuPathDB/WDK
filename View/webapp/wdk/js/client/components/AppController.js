@@ -21,30 +21,26 @@ let { contextTypes } = ContextMixin;
 let AppController = React.createClass({
 
   propTypes: {
-    context: React.PropTypes.shape(contextTypes).isRequired
-  },
-
-  childContextTypes: contextTypes,
-
-  getChildContext() {
-    return this.props.context;
+    store: contextTypes.store
   },
 
   mixins: [ React.addons.PureRenderMixin ],
 
   componentWillMount() {
-    let { dispatch, subscribe } = this.props.context;
+    let { store } = this.props;
 
-    dispatch(PreferenceActions.loadPreferences());
-    dispatch(CommonActions.fetchCommonData());
-
-    this.storeSubscription = subscribe(state => {
-      this.setState({ errors: state.errors });
-    });
+    store.dispatch(PreferenceActions.loadPreferences());
+    store.dispatch(CommonActions.fetchCommonData());
+    this.selectState(store.getState());
+    this.storeSubscription = store.subscribe(this.selectState);
   },
 
   componentWillUnmount() {
     this.storeSubscription.dispose();
+  },
+
+  selectState(state) {
+    this.setState({ errors: state.errors });
   },
 
   render() {
@@ -60,7 +56,7 @@ let AppController = React.createClass({
     }
     else {
       return (
-        <RouteHandler/>
+        <RouteHandler store={this.props.store}/>
       );
     }
   }
