@@ -1,4 +1,3 @@
-import RestAPI from '../utils/restAPI';
 import {
   APP_ERROR,
   ANSWER_ADDED,
@@ -98,7 +97,7 @@ export default {
   //
   // Once all are loaded, we will dispatch the load action
   loadAnswer(questionName, opts = {}) {
-    return function(dispatch, state, config) {
+    return function(dispatch, state, { restAPI }) {
       var { params = [], filters = [], displayInfo } = opts;
 
       // FIXME Set attributes to whatever we're soring on. This is required by
@@ -118,7 +117,7 @@ export default {
       dispatch({ type: ANSWER_LOADING, isLoading: true });
 
       // Then, create a Promise for the answer resource.
-      RestAPI.postResource(config.endpoint + '/answer', requestData)
+      return restAPI.postResource('/answer', requestData)
         .then(answer => {
           var answerAction = {
             type: ANSWER_ADDED,

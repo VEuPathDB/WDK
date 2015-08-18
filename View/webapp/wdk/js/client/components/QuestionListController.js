@@ -5,16 +5,18 @@ import ContextMixin from '../utils/contextMixin';
 
 let QuestionListController = React.createClass({
 
-  mixins: [ ContextMixin ],
-
   componentWillMount() {
-    this.storeSubscription = this.context.subscribe(state => {
-      this.setState({ questions: state.questions });
-    });
+    let { store } = this.props;
+    this.selectState(store.getState());
+    this.storeSubscription = store.subscribe(this.selectState);
   },
 
   componentWillUnmount() {
     this.storeSubscription.dispose();
+  },
+
+  selectState(state) {
+    this.setState({ questions: state.questions });
   },
 
   render() {

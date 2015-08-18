@@ -5,36 +5,21 @@ import Loading from './Loading';
 import Record from './Record';
 import RecordActions from '../actions/recordActions';
 import wrappable from '../utils/wrappable';
-import ContextMixin from '../utils/contextMixin';
 import { makeKey } from '../utils/recordUtils';
 
 let RecordController = React.createClass({
 
-  mixins: [ ContextMixin ],
-
   componentWillMount() {
-    let { dispatch, subscribe } = this.context;
+    let { store } = this.props;
 
     this.recordActions = mapValues(RecordActions, function(action) {
       return function dispatchWrapper(...args) {
-        return dispatch(action(...args));
+        return store.dispatch(action(...args));
       };
     });
-
-    this.storeSubscription = subscribe(state => {
-      let { params, query } = this.props;
-      let key = makeKey(params.class, query);
-      let {
-        record: { records, hiddenCategories, collapsedCategories },
-        recordClasses,
-        questions
-      } = state;
-      let { meta, record } = (records[key] || {});
-      let recordClass = recordClasses.find(r => r.fullName === params.class);
-      this.setState({ meta, record, hiddenCategories, collapsedCategories, recordClass, recordClasses, questions });
-    });
-
     this.fetchRecordDetails(this.props);
+    this.selectState(store.getState());
+    this.storeSubscription = store.subscribe(this.selectState);
   },
 
   componentWillUnmount() {
@@ -48,6 +33,19 @@ let RecordController = React.createClass({
   fetchRecordDetails(props) {
     let { params, query } = props;
     this.recordActions.fetchRecord(params.class, query);
+  },
+
+  selectState(state) {
+    let { params, query } = this.props;
+    let key = makeKey(params.class, query);
+    let {
+      record: { records, hiddenCategories, collapsedCategories },
+      recordClasses,
+      questions
+    } = state;
+    let { meta, record } = (records[key] || {});
+    let recordClass = recordClasses.find(r => r.fullName === params.class);
+    this.setState({ meta, record, hiddenCategories, collapsedCategories, recordClass, recordClasses, questions });
   },
 
   render() {

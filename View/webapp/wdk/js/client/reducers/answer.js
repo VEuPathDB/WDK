@@ -13,6 +13,40 @@ import {
 } from '../constants/actionTypes';
 
 
+export default function answer(state = getInitialState(), action) {
+  switch(action.type) {
+    case ANSWER_ADDED: return addAnswer(state, action);
+    case ANSWER_MOVE_COLUMN: return moveTableColumn(state, action);
+    case ANSWER_CHANGE_ATTRIBUTES: return updateVisibleAttributes(state, action);
+    case ANSWER_LOADING: return answerLoading(state, action);
+    case ANSWER_UPDATE_FILTER: return updateFilter(state, action);
+    default: return state;
+  }
+}
+
+function getInitialState() {
+  return {
+    meta: null,
+    records: null,
+    isLoading: false,
+    filterTerm: '',
+    filterAttributes: null,
+    filterTables: null,
+    filteredRecords: null,
+    displayInfo: {
+      sorting: null,
+      pagination: null,
+      attributes: null,
+      tables: null
+    },
+    questionDefinition: {
+      questionName: null,
+      params: null,
+      filters: null
+    }
+  };
+}
+
 function createAttribute(meta, value) {
   return Object.create(meta, {
     value: { value, enumerable: true }
@@ -107,40 +141,6 @@ let isTermInRecord = curry(function isTermInRecord(term, filterAttributes, filte
   return clob.toLowerCase().includes(term.toLowerCase());
 });
 
-function getInitialState() {
-  return {
-    meta: null,
-    records: null,
-    isLoading: false,
-    filterTerm: '',
-    filterAttributes: null,
-    filterTables: null,
-    filteredRecords: null,
-    displayInfo: {
-      sorting: null,
-      pagination: null,
-      attributes: null,
-      tables: null
-    },
-    questionDefinition: {
-      questionName: null,
-      params: null,
-      filters: null
-    }
-  };
-}
-
-function update(state, action) {
-  switch(action.type) {
-    case ANSWER_ADDED: return addAnswer(state, action);
-    case ANSWER_MOVE_COLUMN: return moveTableColumn(state, action);
-    case ANSWER_CHANGE_ATTRIBUTES: return updateVisibleAttributes(state, action);
-    case ANSWER_LOADING: return answerLoading(state, action);
-    case ANSWER_UPDATE_FILTER: return updateFilter(state, action);
-    default: return state;
-  }
-}
-
 
 /**
  * answer = {
@@ -168,11 +168,17 @@ function addAnswer(state, { answer, requestData }) {
    * We probably also want to persist the user's choice somehow. Using
    * localStorage is one possble solution.
    */
-  if (!requestData.displayInfo.visibleAttributes || previousQuestionName !== questionName) {
-    requestData.displayInfo.visibleAttributes = answer.meta.summaryAttributes.map(attrName => {
+  let visibleAttributes = state.displayInfo.visibleAttributes;
+
+  if (!visibleAttributes || previousQuestionName !== questionName) {
+    visibleAttributes = answer.meta.summaryAttributes.map(attrName => {
       return answer.meta.attributes.find(attr => attr.name === attrName);
     });
   }
+
+  let displayInfo = Object.assign({
+    visibleAttributes
+  }, requestData.displayInfo);
 
   answer.meta.attributes = answer.meta.attributes
     .filter(attr => attr.name != 'wdk_weight');
@@ -192,7 +198,7 @@ function addAnswer(state, { answer, requestData }) {
    */
   assign(state, answer, {
     filteredRecords: answer.records,
-    displayInfo: requestData.displayInfo,
+    displayInfo: displayInfo,
     questionDefinition: requestData.questionDefinition
   });
 
@@ -271,8 +277,3 @@ function answerLoading(state, action) {
   state.isLoading = action.isLoading;
   return state;
 }
-
-export default {
-  getInitialState,
-  update
-};

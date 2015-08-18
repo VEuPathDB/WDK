@@ -1,4 +1,3 @@
-import RestAPI from '../utils/restAPI';
 import {
   APP_LOADING,
   APP_ERROR,
@@ -6,9 +5,9 @@ import {
 } from '../constants/actionTypes';
 
 function loadQuestions() {
-  return function (dispatcher, state, config) {
+  return function (dispatcher, state, { restAPI }) {
     dispatch({ type: APP_LOADING, isLoading: true });
-    RestAPI.getResource(config.endpoint + '/question?expandQuestions=true')
+    return restAPI.getResource('/question?expandQuestions=true')
       .then(questions => {
         dispatch({ type: QUESTIONS_ADDED, questions });
         dispatch({ type: APP_LOADING, isLoading: false });

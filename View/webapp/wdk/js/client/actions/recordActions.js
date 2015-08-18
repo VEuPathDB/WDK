@@ -1,6 +1,5 @@
 import map from 'lodash/collection/map';
 import flattenDeep from 'lodash/array/flattenDeep';
-import RestAPI from '../utils/restAPI';
 import {
   APP_ERROR,
   RECORD_DETAILS_ADDED,
@@ -13,8 +12,8 @@ function fetchRecord(recordClassName, primaryKey) {
   primaryKey = Object.keys(primaryKey).map(function(name) {
     return { name, value: primaryKey[name] };
   });
-  return function(dispatch, state, config) {
-    RestAPI.getResource(config.endpoint + '/record/' + recordClassName)
+  return function(dispatch, state, { restAPI }) {
+    return restAPI.getResource('/record/' + recordClassName)
     .then(function(recordClass) {
       let attributes = recordClass.attributes.map(a => a.name);
       let tables = recordClass.tables.map(t => t.name);
@@ -24,7 +23,7 @@ function fetchRecord(recordClassName, primaryKey) {
         tables
       };
       let reqBody = { recordInstanceSpecification: recordSpec };
-      RestAPI.postResource(`${config.endpoint}/record/${recordClass.fullName}/get`, reqBody).then(function(data) {
+      return restAPI.postResource(`/record/${recordClass.fullName}/get`, reqBody).then(function(data) {
         let { record, meta } = data;
         dispatch({ type: RECORD_DETAILS_ADDED, meta, record });
       });
@@ -40,13 +39,13 @@ function fetchRecord(recordClassName, primaryKey) {
  * @param {array}  spec.tables
  */
 function fetchRecordDetails(recordClass, recordSpec) {
-  return function(dispatch, state, config) {
+  return function(dispatch, state, { restAPI }) {
     // REST service wants this as an array of objects... should we change this?
     recordSpec.primaryKey = Object.keys(recordSpec.primaryKey).map(function(name) {
       return { name, value: recordSpec.primaryKey[name] };
     });
     let reqBody = { recordInstanceSpecification: recordSpec };
-    RestAPI.postResource(`${config.endpoint}/record/${recordClass}/get`, reqBody).then(function(data) {
+    return restAPI.postResource(`/record/${recordClass}/get`, reqBody).then(function(data) {
       let { record, meta } = data;
       dispatch({ type: RECORD_DETAILS_ADDED, meta, record });
     }).catch(function(error) {
@@ -61,7 +60,7 @@ function fetchRecordDetails(recordClass, recordSpec) {
  * @param {string} categoryName
  */
 function fetchCategoryDetails(recordClass, primaryKey, categoryName) {
-  return function(dispatch, state, config) {
+  return function(dispatch, state, { restAPI }) {
     let category = findCategory(recordClass.attributeCategories, categoryName);
     if (category === undefined) {
       console.warn('Could not find category %s', categoryName);
@@ -85,12 +84,12 @@ function fetchCategoryDetails(recordClass, primaryKey, categoryName) {
         return t.name;
       });
 
-    let resourcePath = config.endpoint + '/record/' + recordClass.fullName + '/get';
+    let resourcePath = '/record/' + recordClass.fullName + '/get';
     let requestBody = {
       recordInstanceSpecification: { primaryKey, attributes, tables }
     };
 
-    RestAPI.postResource(resourcePath, requestBody)
+    return restAPI.postResource(resourcePath, requestBody)
       .then(function(data) {
         dispatch({
           type: RECORD_DETAILS_ADDED,

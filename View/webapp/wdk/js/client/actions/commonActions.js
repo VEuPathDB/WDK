@@ -1,4 +1,3 @@
-import RestAPI from '../utils/restAPI';
 import {
   QUESTIONS_ADDED,
   RECORD_CLASSES_ADDED
@@ -9,15 +8,15 @@ import {
  * This allows async Actions to be batch dispatched.
  */
 
-function fetchQuestions(endpoint) {
-  return RestAPI.getResource(endpoint + '/question?expandQuestions=true')
+function fetchQuestions(restAPI) {
+  return restAPI.getResource('/question?expandQuestions=true')
     .then(function(questions) {
       return { type: QUESTIONS_ADDED, questions };
     });
 }
 
-function fetchRecordClasses(endpoint) {
-  return RestAPI.getResource(endpoint + '/record?expandRecordClasses=true')
+function fetchRecordClasses(restAPI) {
+  return restAPI.getResource('/record?expandRecordClasses=true')
     .then(function(recordClasses) {
       // FIXME Remove hardcoded category 'Uncategorized'
       // starthack
@@ -32,11 +31,13 @@ function fetchRecordClasses(endpoint) {
 }
 
 function fetchCommonData() {
-  return function(dispatch, state, config) {
-    Promise.all([
-      fetchQuestions(config.endpoint),
-      fetchRecordClasses(config.endpoint)
-    ]).then(dispatch);
+  return function(dispatch, state, { restAPI }) {
+    return Promise.all([
+      fetchQuestions(restAPI),
+      fetchRecordClasses(restAPI)
+    ]).then(function(actions) {
+      return actions.map(dispatch);
+    });
   };
 }
 

@@ -2,9 +2,10 @@ import React from 'react';
 
 export default {
   contextTypes: {
-    dispatch: React.PropTypes.func.isRequired,
-    subscribe: React.PropTypes.func.isRequired,
-    state: React.PropTypes.object.isRequired,
-    config: React.PropTypes.object.isRequired
+    store: React.PropTypes.shape({
+      dispatch: React.PropTypes.func.isRequired,
+      subscribe: React.PropTypes.func.isRequired,
+      getState: React.PropTypes.func.isRequired
+    }).isRequired
   }
 };
