@@ -759,6 +759,28 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
   fieldComponents.number = React.createClass({
 
+    getInitialState() {
+      // Set default yAxis max based on distribution
+      var yAxisMax = this.computeYAxisMax();
+      return { yAxisMax: yAxisMax + yAxisMax * 0.1 };
+    },
+
+    computeYAxisMax() {
+      var dist = _(this.props.distribution)
+        .filter(d => _.isNumber(d.value))
+        .sortBy(d => d.count)
+        .value();
+      var max = dist[dist.length - 1]
+      var nextMax = dist[dist.length - 2];
+
+      return max.count >= nextMax.count * 2 ? nextMax.count : max.count;
+    },
+
+    // componentWillReceiveProps(nextProps) {
+    //   var yAxisMax = Math.max(...this.props.distribution.filter(d => _.isNumber(d.value).map(d => d.count));
+    //   this.setState({ yAxisMax });
+    // },
+
     componentDidMount: function() {
       $(this.getDOMNode())
         .on('plotselected .chart', this.handlePlotSelected)
@@ -902,9 +924,13 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
           }
         },
         xaxis: {
-          min: Math.min(min, 0),
+          min: Math.floor(min - barWidth),
           max: Math.ceil(max + barWidth),
           tickLength: 0
+        },
+        yaxis: {
+          min: 0,
+          max: this.state.yAxisMax
         },
         grid: {
           clickable: true,
@@ -981,6 +1007,14 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       this.doPlotSelection();
     }, 200),
 
+    setYAxisMax: function(yAxisMax) {
+      this.setState({ yAxisMax }, () => {
+        this.plot.getOptions().yaxes[0].max = yAxisMax;
+        this.plot.setupGrid();
+        this.plot.draw();
+      });
+    },
+
     render: function() {
       var { field, distribution, filter } = this.props;
       var dist = _.filter(distribution, item => _.isNumber(item.value));
@@ -990,6 +1024,9 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       var distMin = _.min(values);
       var distMax = _.max(values);
       var distAvg = (sum / size).toFixed(2);
+      var counts = dist.map(d => d.count);
+      var countMax = Math.max(...counts);
+      var countMin = Math.min(...counts);
       var { min, max } = filter ? filter.values : {};
       var selectionTotal = filter && filter.selection
         ? " (" + filter.selection.length + " selected) "
@@ -1018,8 +1055,21 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
           <div>
             <div className="chart"></div>
-            <div className="chart-title x-axis">{field.display} ({field.units})</div>
-            <div className="chart-title y-axis">{this.props.displayName}</div>
+            <div className="chart-title x-axis">
+              {field.display} ({field.units})
+            </div>
+            <div className="chart-title y-axis">
+              <div>{this.props.displayName}</div>
+              <div>
+                <input
+                  style={{width: '90%'}}
+                  type="range" min={countMin + 1} max={countMax + countMax * 0.1}
+                  title={this.state.yAxisMax}
+                  value={this.state.yAxisMax}
+                  autoFocus={true}
+                  onChange={e => this.setYAxisMax(Number(e.target.value))}/>
+              </div>
+            </div>
           </div>
         </div>
       );

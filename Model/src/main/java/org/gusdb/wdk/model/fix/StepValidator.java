@@ -94,22 +94,21 @@ public class StepValidator extends BaseCLI {
     projects = "(" + buffer.toString() + ")";
 
 		// we are cleaning apicomm from broken strategies in a new script wdkCleanBroken that we run before we remove guests
-		// but this takes care of broken strategies in the middle, not just the root step.
+		// but this takes care of broken strategies in the middle, not just the root step, with non existent children steps.
     dropDanglingSteps(wdkModel, projects);
 
-		// not sure why we need this: clean up step_params, remove steps NOT in userlogins5.steps
+		// clean up step_params (remove step IDs NOT in userlogins5.steps), which will be used to determine validity
     deleteInvalidParams(wdkModel);
 
 		// reset is_valid flag to NULL (valid) in all non-guest steps
     resetFlags(wdkModel, projects);
+
+		// mark step invalid
     detectQuestions(wdkModel, projects);
     detectParams(wdkModel, projects);
     detectEnumParams(wdkModel, projects);
     flagDependentSteps(wdkModel, projects);
   }
-
-
-
 
 
   private void resetFlags(WdkModel wdkModel, String projects) throws SQLException {
@@ -248,11 +247,6 @@ public class StepValidator extends BaseCLI {
   }
 
 
-
-
-
-
-
   private void deleteInvalidParams(WdkModel wdkModel) throws SQLException {
     logger.info("Deleting params which doesn't have a valid step...");
     String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
@@ -264,6 +258,7 @@ public class StepValidator extends BaseCLI {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-delete-invalid-step-params");
   }
+
 
   private void dropDanglingSteps(WdkModel wdkModel, String projects) throws SQLException, IOException {
     logger.info("drop dangling steps table and related resources...");
@@ -314,6 +309,7 @@ public class StepValidator extends BaseCLI {
 
     String stepTable = schema + "steps";
 
+    // create danglingTable = "wdk_dangle_steps";
     StringBuilder sql = new StringBuilder("CREATE TABLE ");
     sql.append(danglingTable + " AS ");
     sql.append("(SELECT s.step_id ");
@@ -347,6 +343,8 @@ public class StepValidator extends BaseCLI {
 
     String stepTable = schema + "steps";
 
+    // creates parentTable :  "wdk_parent_steps";
+		// danglingTable: "wdk_dangle_steps";
     StringBuilder sql = new StringBuilder("CREATE TABLE ");
     sql.append(parentTable + " AS ");
     sql.append("  (SELECT s.step_id, s.user_id ");
@@ -369,9 +367,11 @@ public class StepValidator extends BaseCLI {
     String stratTable = schema + "strategies";
     String stepTable = schema + "steps";
 
+    // creates "wdk_dangle_strategies";
+		// parentTable : "wdk_parent_steps";
     StringBuilder sql = new StringBuilder("CREATE TABLE " + strategyTable);
     sql.append(" AS ((SELECT sr.strategy_id  ");
-    sql.append("      FROM " + stratTable + " sr, wdk_parent_steps ps ");
+    sql.append("      FROM " + stratTable + " sr, " + parentTable + " ps ");
     sql.append("      WHERE sr.user_id = ps.user_id ");
     sql.append("        AND sr.root_step_id = ps.step_id ");
     sql.append("        AND sr.project_id IN " + projects + ") ");
@@ -462,9 +462,6 @@ public class StepValidator extends BaseCLI {
 
     executeByBatch(wdkModel, dataSource, sql.toString(), "STEPS:wdk-delete-dangling-step", null, null); // <ADD-AG
                                                                                                         // 050511>
-
-    // SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
-    // "wdk-delete-dangling-step");
   }
 
   // <ADD-AG 042911>

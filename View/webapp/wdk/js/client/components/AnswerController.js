@@ -1,9 +1,11 @@
 // Import modules
 import React from 'react/addons';
+import Router from 'react-router';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
-import ContextMixin from '../utils/contextMixin';
+import AnswerActions from '../actions/answerActions';
+import PreferenceActions from '../actions/preferenceActions';
 import combineStores from '../utils/combineStores';
 import wrappable from '../utils/wrappable';
 
@@ -89,13 +91,15 @@ let AnswerController = React.createClass({
   // Declare context properties used by this component. The context object is
   // defined in AppController (the application root component). React uses
   // `contextTypes` to determine which properties to add to `this.context`.
-  mixins: [ ContextMixin ],
+  mixins: [ Router.Navigation ],
 
   // When the component first mounts, fetch the answer.
   componentWillMount() {
+    let { store } = this.props;
     this.sortingPreferenceKey = 'sorting::' + this.props.params.questionName;
-    this.subscribeToStores();
     this.fetchAnswer(this.props);
+    this.selectState(store.getState());
+    this.storeSubscription = store.subscribe(this.selectState);
   },
 
   // This is called anytime the component gets new props, just before they are
@@ -140,54 +144,39 @@ let AnswerController = React.createClass({
         attributes: maybeSplit(nextQuery.attrs, ','),
         tables: maybeSplit(nextQuery.tables, ',')
       };
-      this.context.actions.answerActions.updateFilter(filterOpts);
+      this.props.store.dispatch(AnswerActions.updateFilter(filterOpts));
     }
 
   },
 
 
   componentWillUnmount() {
-    this.disposeSubscriptions();
+    this.storeSubscription.dispose();
   },
 
-  // Create subscriptions to stores.
-  subscribeToStores() {
-    let { questionName } = this.props.params;
-    let { answerStore, questionStore, recordClassStore } = this.context.stores;
+  selectState(state) {
+    let { answer, questions, recordClasses } = state;
+    let { meta } = answer;
+    let { records } = answer;
+    let { isLoading } = answer;
+    let { displayInfo } = answer;
+    let { filterTerm } = answer;
+    let { filterAttributes = [] } = answer;
+    let { filterTables = [] } = answer;
+    let { filteredRecords } = answer;
 
-    this.subscription = combineStores(
-      answerStore,
-      questionStore,
-      recordClassStore,
-      (aState, qState, rState) => {
-        let answer = aState.answers[questionName];
-        let { isLoading } = aState;
-        let { displayInfo } = aState;
-        let { filterTerm } = aState;
-        let { filterAttributes = [] } = aState;
-        let { filterTables = [] } = aState;
-        let { filteredRecords } = aState;
-        let { questions } = qState;
-        let { recordClasses } = rState;
-
-        this.setState({
-          isLoading,
-          answer,
-          displayInfo,
-          filterTerm,
-          filterAttributes,
-          filterTables,
-          filteredRecords,
-          questions,
-          recordClasses
-        });
-      }
-    );
-  },
-
-
-  disposeSubscriptions() {
-    this.subscription.dispose();
+    this.setState({
+      isLoading,
+      meta,
+      records,
+      displayInfo,
+      filterTerm,
+      filterAttributes,
+      filterTables,
+      filteredRecords,
+      questions,
+      recordClasses
+    });
   },
 
 
@@ -197,8 +186,8 @@ let AnswerController = React.createClass({
   // call the `loadAnswer` action creator based on the `params` and `query`
   // objects.
   fetchAnswer(props) {
-    let { preferenceStore } = this.context.stores;
-    let { answerActions } = this.context.actions;
+    let { store } = this.props;
+    let state = store.getState();
 
     // props.params and props.query are passed to this component by the Router.
     let params = props.params;
@@ -211,7 +200,7 @@ let AnswerController = React.createClass({
     };
 
     // XXX Could come from query param: sorting={attributeName}__{direction},...
-    let sorting = preferenceStore.value.preferences[this.sortingPreferenceKey];
+    let sorting = state.preferences[this.sortingPreferenceKey];
     if (sorting === undefined) {
       sorting = [{ attributeName: 'primary_key', direction: 'ASC' }];
     }
@@ -225,8 +214,7 @@ let AnswerController = React.createClass({
     //
     let displayInfo = {
       pagination,
-      sorting,
-      visibleAttributes: this.state && this.state.displayInfo.visibleAttributes
+      sorting
     };
 
     // TODO Add params to loadAnswer call
@@ -248,8 +236,8 @@ let AnswerController = React.createClass({
       tables: maybeSplit(query.tables, ',')
     };
 
-    answerActions.updateFilter(filterOpts);
-    answerActions.loadAnswer(params.questionName, opts);
+    store.dispatch(AnswerActions.updateFilter(filterOpts));
+    store.dispatch(AnswerActions.loadAnswer(params.questionName, opts));
   },
 
 
@@ -293,6 +281,7 @@ let AnswerController = React.createClass({
       let attributeName = attribute.name;
       let { displayInfo } = this.state;
       let { questionName } = this.props.params;
+      let { dispatch } = this.props.store;
       let newSort = { attributeName, direction };
       // Create a new array by removing existing sort def for attribute
       // and adding the new sort def to the beginning of the array, only
@@ -307,9 +296,9 @@ let AnswerController = React.createClass({
         sorting: { $set: sorting }
       });
 
-      this.context.actions.answerActions.loadAnswer(questionName, { displayInfo });
+      dispatch(AnswerActions.loadAnswer(questionName, { displayInfo }));
 
-      this.context.actions.preferenceActions.setPreference(this.sortingPreferenceKey, sorting);
+      dispatch(PreferenceActions.setPreference(this.sortingPreferenceKey, sorting));
     },
 
     // Call the `moveColumn` action creator. This will cause the state of
@@ -317,7 +306,7 @@ let AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onMoveColumn(columnName, newPosition) {
-      this.context.actions.answerActions.moveColumn(columnName, newPosition);
+      this.props.store.dispatch(AnswerActions.moveColumn(columnName, newPosition));
     },
 
     // Call the `changeAttributes` action creator. This will cause the state of
@@ -325,7 +314,7 @@ let AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onChangeColumns(attributes) {
-      this.context.actions.answerActions.changeAttributes(attributes);
+      this.props.store.dispatch(AnswerActions.changeAttributes(attributes));
     },
 
     onToggleFormat() {
@@ -338,7 +327,7 @@ let AnswerController = React.createClass({
         ? 'list' : 'table';
 
       // Method provided by Router.Navigation mixin
-      this.context.router.transitionTo(path, params, query);
+      this.transitionTo(path, params, query);
     },
 
     onFilter(terms, attributes, tables) {
@@ -354,7 +343,7 @@ let AnswerController = React.createClass({
         }
       });
 
-      this.context.router.transitionTo('answer', this.props.params, query);
+      this.transitionTo('answer', this.props.params, query);
     }
 
   },
@@ -378,7 +367,8 @@ let AnswerController = React.createClass({
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
     let {
       isLoading,
-      answer,
+      meta,
+      records,
       displayInfo,
       filterTerm,
       filterAttributes,
@@ -414,7 +404,7 @@ let AnswerController = React.createClass({
     // and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator
     //
     // to understand the embedded XML, see: https://facebook.github.io/react/docs/jsx-in-depth.html
-    if (answer && question && recordClass) {
+    if (records && question && recordClass) {
       if (filterAttributes.length === 0 && filterTables.length === 0) {
         filterAttributes = recordClass.attributes.map(a => a.name);
         filterTables = recordClass.tables.map(t => t.name);
@@ -423,7 +413,7 @@ let AnswerController = React.createClass({
         <Doc title={`${question.displayName}`}>
           {isLoading ? <Loading/> : null}
           <Answer
-            answer={answer}
+            answer={{ meta, records }}
             question={question}
             recordClass={recordClass}
             displayInfo={displayInfo}

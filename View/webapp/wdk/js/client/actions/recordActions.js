@@ -6,35 +6,61 @@ import {
   RECORD_CATEGORY_VISIBILITY_TOGGLED,
   RECORD_CATEGORY_COLLAPSED_TOGGLED
 } from '../constants/actionTypes';
+import CommonActions from './commonActions';
 
-function createActions({ dispatcher, service, getStore }) {
-  /**
-   * @param {string} recordClass
-   * @param {object} spec
-   * @param {object} spec.primaryKey
-   * @param {array}  spec.attributes
-   * @param {array}  spec.tables
-   */
-  function fetchRecordDetails(recordClass, recordSpec) {
+function fetchRecord(recordClassName, primaryKey) {
+  primaryKey = Object.keys(primaryKey).map(function(name) {
+    return { name, value: primaryKey[name] };
+  });
+  return function(dispatch, state, { restAPI }) {
+    return restAPI.getResource('/record/' + recordClassName)
+    .then(function(recordClass) {
+      let attributes = recordClass.attributes.map(a => a.name);
+      let tables = recordClass.tables.map(t => t.name);
+      let recordSpec = {
+        primaryKey,
+        attributes,
+        tables
+      };
+      let reqBody = { recordInstanceSpecification: recordSpec };
+      return restAPI.postResource(`/record/${recordClass.fullName}/get`, reqBody).then(function(data) {
+        let { record, meta } = data;
+        dispatch({ type: RECORD_DETAILS_ADDED, meta, record });
+      });
+    });
+  };
+}
+
+/**
+ * @param {string} recordClass
+ * @param {object} spec
+ * @param {object} spec.primaryKey
+ * @param {array}  spec.attributes
+ * @param {array}  spec.tables
+ */
+function fetchRecordDetails(recordClass, recordSpec) {
+  return function(dispatch, state, { restAPI }) {
     // REST service wants this as an array of objects... should we change this?
     recordSpec.primaryKey = Object.keys(recordSpec.primaryKey).map(function(name) {
       return { name, value: recordSpec.primaryKey[name] };
     });
     let reqBody = { recordInstanceSpecification: recordSpec };
-    service.postResource(`/record/${recordClass}/get`, reqBody).then(function(data) {
+    return restAPI.postResource(`/record/${recordClass}/get`, reqBody).then(function(data) {
       let { record, meta } = data;
-      dispatcher.dispatch({ type: RECORD_DETAILS_ADDED, meta, record });
+      dispatch({ type: RECORD_DETAILS_ADDED, meta, record });
     }).catch(function(error) {
-      dispatcher.dispatch({ type: APP_ERROR, error });
+      dispatch({ type: APP_ERROR, error });
     });
-  }
+  };
+}
 
-  /**
-   * @param {object} recordClass
-   * @param {object} primaryKey
-   * @param {string} categoryName
-   */
-  function fetchCategoryDetails(recordClass, primaryKey, categoryName) {
+/**
+ * @param {object} recordClass
+ * @param {object} primaryKey
+ * @param {string} categoryName
+ */
+function fetchCategoryDetails(recordClass, primaryKey, categoryName) {
+  return function(dispatch, state, { restAPI }) {
     let category = findCategory(recordClass.attributeCategories, categoryName);
     if (category === undefined) {
       console.warn('Could not find category %s', categoryName);
@@ -63,43 +89,36 @@ function createActions({ dispatcher, service, getStore }) {
       recordInstanceSpecification: { primaryKey, attributes, tables }
     };
 
-    service.postResource(resourcePath, requestBody)
+    return restAPI.postResource(resourcePath, requestBody)
       .then(function(data) {
-        dispatcher.dispatch({
+        dispatch({
           type: RECORD_DETAILS_ADDED,
           record: data.record,
           meta: data.meta
         });
       })
       .catch(function(error) {
-        dispatcher.dispatch({ type: APP_ERROR, error });
+        dispatch({ type: APP_ERROR, error });
       });
   }
+}
 
-  function toggleCategoryVisibility({ recordClass, category, isVisible }) {
-    dispatcher.dispatch({
-      type: RECORD_CATEGORY_VISIBILITY_TOGGLED,
-      recordClass: recordClass.fullName,
-      name: category.name,
-      isVisible
-    });
-  }
-
-  function toggleCategoryCollapsed({ recordClass, category, isCollapsed }) {
-    dispatcher.dispatch({
-      type: RECORD_CATEGORY_COLLAPSED_TOGGLED,
-      recordClass: recordClass.fullName,
-      name: category.name,
-      isCollapsed
-    });
-  }
-
+function toggleCategoryVisibility({ recordClass, category, isVisible }) {
   return {
-    fetchRecordDetails,
-    fetchCategoryDetails,
-    toggleCategoryVisibility,
-    toggleCategoryCollapsed
+    type: RECORD_CATEGORY_VISIBILITY_TOGGLED,
+    recordClass: recordClass.fullName,
+    name: category.name,
+    isVisible
   };
+}
+
+function toggleCategoryCollapsed({ recordClass, category, isCollapsed }) {
+  return {
+    type: RECORD_CATEGORY_COLLAPSED_TOGGLED,
+    recordClass: recordClass.fullName,
+    name: category.name,
+    isCollapsed
+  }
 }
 
 // Search categories for the category with name == categoryName
@@ -124,4 +143,10 @@ function findSubCategoryNames(category) {
   }));
 }
 
-export default { createActions };
+export default {
+  fetchRecord,
+  fetchRecordDetails,
+  fetchCategoryDetails,
+  toggleCategoryVisibility,
+  toggleCategoryCollapsed
+};
