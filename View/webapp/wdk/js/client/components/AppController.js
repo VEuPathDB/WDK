@@ -7,6 +7,8 @@ import React from 'react';
 import { RouteHandler } from 'react-router';
 import ContextMixin from '../utils/contextMixin';
 import wrappable from '../utils/wrappable';
+import CommonActions from '../actions/commonActions';
+import PreferenceActions from '../actions/preferenceActions';
 
 let { contextTypes } = ContextMixin;
 
@@ -19,30 +21,26 @@ let { contextTypes } = ContextMixin;
 let AppController = React.createClass({
 
   propTypes: {
-    context: React.PropTypes.shape(contextTypes).isRequired
+    store: contextTypes.store
   },
 
-  childContextTypes: contextTypes,
-
-  getChildContext() {
-    return this.props.context;
-  },
+  mixins: [ React.addons.PureRenderMixin ],
 
   componentWillMount() {
-    let { context } = this.props;
-    let { commonActions, preferenceActions } = context.actions;
-    let { appStore } = context.stores;
+    let { store } = this.props;
 
-    preferenceActions.loadPreferences();
-    commonActions.fetchCommonData();
-
-    this.storeSubscription = appStore.subscribe(({ errors }) => {
-      this.setState({ errors });
-    });
+    store.dispatch(PreferenceActions.loadPreferences());
+    store.dispatch(CommonActions.fetchCommonData());
+    this.selectState(store.getState());
+    this.storeSubscription = store.subscribe(this.selectState);
   },
 
   componentWillUnmount() {
     this.storeSubscription.dispose();
+  },
+
+  selectState(state) {
+    this.setState({ errors: state.errors });
   },
 
   render() {
@@ -58,7 +56,7 @@ let AppController = React.createClass({
     }
     else {
       return (
-        <RouteHandler/>
+        <RouteHandler store={this.props.store}/>
       );
     }
   }

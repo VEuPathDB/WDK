@@ -1,4 +1,3 @@
-import Store from '../core/store';
 import { makeKey } from '../utils/recordUtils';
 import {
   RECORD_DETAILS_ADDED,
@@ -6,12 +5,7 @@ import {
   RECORD_CATEGORY_COLLAPSED_TOGGLED
 } from '../constants/actionTypes';
 
-function createStore({ dispatcher }) {
-  let state = { records: {}, hiddenCategories: [], collapsedCategories: [] };
-  return new Store(dispatcher, state, update);
-}
-
-function update(state, action) {
+export default function record(state = getInitialState(), action) {
   switch (action.type) {
     case RECORD_DETAILS_ADDED:
       return addRecordDetails(state, action);
@@ -19,7 +13,13 @@ function update(state, action) {
       return toggleCategoryVisibility(state, action);
     case RECORD_CATEGORY_COLLAPSED_TOGGLED:
       return toggleCategoryCollapsed(state, action);
+    default:
+      return state;
   }
+}
+
+function getInitialState() {
+  return { records: {}, hiddenCategories: [], collapsedCategories: [] };
 }
 
 function addRecordDetails(state, action) {
@@ -68,5 +68,3 @@ function createAttribute(meta, value) {
     value: { value, enumerable: true }
   });
 }
-
-export default { createStore };

@@ -4,7 +4,6 @@ import curry from 'lodash/function/curry';
 import flattenDeep from 'lodash/array/flattenDeep';
 import values from 'lodash/object/values';
 import pick from 'lodash/object/pick';
-import Store from '../core/store';
 import {
   ANSWER_ADDED,
   ANSWER_MOVE_COLUMN,
@@ -13,6 +12,40 @@ import {
   ANSWER_UPDATE_FILTER
 } from '../constants/actionTypes';
 
+
+export default function answer(state = getInitialState(), action) {
+  switch(action.type) {
+    case ANSWER_ADDED: return addAnswer(state, action);
+    case ANSWER_MOVE_COLUMN: return moveTableColumn(state, action);
+    case ANSWER_CHANGE_ATTRIBUTES: return updateVisibleAttributes(state, action);
+    case ANSWER_LOADING: return answerLoading(state, action);
+    case ANSWER_UPDATE_FILTER: return updateFilter(state, action);
+    default: return state;
+  }
+}
+
+function getInitialState() {
+  return {
+    meta: null,
+    records: null,
+    isLoading: false,
+    filterTerm: '',
+    filterAttributes: null,
+    filterTables: null,
+    filteredRecords: null,
+    displayInfo: {
+      sorting: null,
+      pagination: null,
+      attributes: null,
+      tables: null
+    },
+    questionDefinition: {
+      questionName: null,
+      params: null,
+      filters: null
+    }
+  };
+}
 
 function createAttribute(meta, value) {
   return Object.create(meta, {
@@ -60,13 +93,19 @@ function createAttribute(meta, value) {
 
 
 // Split terms on whitespace, unless wrapped in quotes
-let parseSearchTerms = function parseSearchTerms(terms) {
-  let match = terms.match(/\w+|"[\w\s]*"/g) || [];
+function parseSearchTerms(terms) {
+  let match = terms.match(/\w+|"[^"]*"/g) || [];
   return match.map(function(term) {
     // remove wrapping quotes from phrases
     return term.replace(/(^")|("$)/g, '');
   });
-};
+}
+
+function stripHTML(str) {
+  let span = document.createElement('span');
+  span.innerHTML = str;
+  return span.textContent;
+}
 
 
 // Search record for a term.
@@ -98,42 +137,9 @@ let isTermInRecord = curry(function isTermInRecord(term, filterAttributes, filte
       return table.map(values);
     }));
 
-  let clob = attributeValues.concat(tableValues).join('\0');
+  let clob = stripHTML(attributeValues.concat(tableValues).join('\0'));
   return clob.toLowerCase().includes(term.toLowerCase());
 });
-
-function createStore({ dispatcher }) {
-  let value = {
-    isLoading: false,
-    filterTerm: '',
-    filterAttributes: null,
-    filterTables: null,
-    filteredRecords: null,
-    answers: {},
-    displayInfo: {
-      sorting: null,
-      pagination: null,
-      attributes: null,
-      tables: null
-    },
-    questionDefinition: {
-      questionName: null,
-      params: null,
-      filters: null
-    }
-  };
-  return new Store(dispatcher, value, update);
-}
-
-function update(state, action) {
-  switch(action.type) {
-    case ANSWER_ADDED: return addAnswer(state, action);
-    case ANSWER_MOVE_COLUMN: return moveTableColumn(state, action);
-    case ANSWER_CHANGE_ATTRIBUTES: return updateVisibleAttributes(state, action);
-    case ANSWER_LOADING: return answerLoading(state, action);
-    case ANSWER_UPDATE_FILTER: return updateFilter(state, action);
-  }
-}
 
 
 /**
@@ -162,11 +168,17 @@ function addAnswer(state, { answer, requestData }) {
    * We probably also want to persist the user's choice somehow. Using
    * localStorage is one possble solution.
    */
-  if (!requestData.displayInfo.visibleAttributes || previousQuestionName !== questionName) {
-    requestData.displayInfo.visibleAttributes = answer.meta.summaryAttributes.map(attrName => {
+  let visibleAttributes = state.displayInfo.visibleAttributes;
+
+  if (!visibleAttributes || previousQuestionName !== questionName) {
+    visibleAttributes = answer.meta.summaryAttributes.map(attrName => {
       return answer.meta.attributes.find(attr => attr.name === attrName);
     });
   }
+
+  let displayInfo = Object.assign({
+    visibleAttributes
+  }, requestData.displayInfo);
 
   answer.meta.attributes = answer.meta.attributes
     .filter(attr => attr.name != 'wdk_weight');
@@ -184,13 +196,11 @@ function addAnswer(state, { answer, requestData }) {
    * This will update the keys `filteredRecords`, `displayInfo`, and
    * `questionDefinition` in `state`.
    */
-  assign(state, {
+  assign(state, answer, {
     filteredRecords: answer.records,
-    displayInfo: requestData.displayInfo,
+    displayInfo: displayInfo,
     questionDefinition: requestData.questionDefinition
   });
-
-  state.answers[questionName] = answer;
 
   if (state.filterTerm) {
     return filterAnswer(state, { questionName });
@@ -247,20 +257,19 @@ function updateFilter(state, action) {
  * @param {string} questionName The questionName of the answer to filter.
  */
 function filterAnswer(state, action) {
-  let { questionName } = action;
-  let answer = state.answers[questionName];
-  if (answer == null) return;
+  let { records } = state;
+  if (records == null) return state;
 
   let { filterTerm, filterAttributes, filterTables } = state;
   if (filterTerm == null) {
     return assign(state, {
-      filteredRecords: answer.records
+      filteredRecords: records
     });
   }
   let parsedTerms = parseSearchTerms(filterTerm);
   let filteredRecords = parsedTerms.reduce(function(records, term) {
     return records.filter(isTermInRecord(term, filterAttributes, filterTables));
-  }, answer.records);
+  }, records);
   return assign(state, { filteredRecords });
 }
 
@@ -268,7 +277,3 @@ function answerLoading(state, action) {
   state.isLoading = action.isLoading;
   return state;
 }
-
-export default {
-  createStore
-};

@@ -94,6 +94,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
           .flatten()
           .uniq()
           .sortBy(type === 'number' ? Number : String)
+          .sortBy(value => value === 'Unknown' ? String.fromCharCode(255) : value)
           .map(function(value) {
             return {
               value: value,
