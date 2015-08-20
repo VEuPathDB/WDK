@@ -1,6 +1,6 @@
 import invariant from 'invariant';
 
-export const REST_TYPE = Symbol('REST_TYPE');
+const REST_TYPE = Symbol('REST_TYPE');
 
 /**
  * Filter to encapsulate calls to REST service. The REST spec should have the
@@ -26,9 +26,7 @@ export const REST_TYPE = Symbol('REST_TYPE');
  */
 export function createRestFilter(restAPI) {
   return function restFilter(store, next, action) {
-    if (!(REST_TYPE in action)) {
-      return next(action);
-    }
+    if (!isRestAction(action)) return next(action);
 
     let spec = action[REST_TYPE];
 
@@ -72,6 +70,11 @@ function verifySpec(spec) {
   let methods = [ 'GET', 'POST', 'PUT', 'DELETE', 'PATCH' ];
 
   invariant(
+    typeof spec !== 'undefined',
+    'spec must be defined.'
+  );
+
+  invariant(
     typeof spec.resource === 'string',
     'restAction `resource` must be a string.'
   );
@@ -103,6 +106,11 @@ function dispatchErrorWith(store, type, requestData) {
   return function dispatchError(error) {
     return store.dispatch({ type, error, requestData });
   };
+}
+
+function isRestAction(action) {
+  if (action == null) return false;
+  return Object.getOwnPropertySymbols(action).includes(REST_TYPE);
 }
 
 function getTrue() {
