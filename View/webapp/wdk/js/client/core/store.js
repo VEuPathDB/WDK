@@ -20,18 +20,18 @@ function create(reducer, filters = []) {
 
     isDispatching = true;
 
-    let nextState = reducer(state, action);
-
-    if (state !== nextState) {
-      state = nextState;
-      callbacks.forEach(function(callback) {
-        callback(state);
-      });
-    }
+    let oldState = state;
+    state = reducer(state, action);
 
     isDispatching = false;
 
-    return state;
+    return Promise.resolve(state).then(function(state) {
+      if (state !== oldState) {
+        callbacks.forEach(function(callback) {
+          callback(state);
+        });
+      }
+    });
   }
 
   // Call `callback` when the state is changed. Also calls `callback`
