@@ -1,3 +1,4 @@
+import debounce from 'lodash/function/debounce';
 import React from 'react';
 import AnswerFilterSelector from './AnswerFilterSelector';
 import Tooltip from './Tooltip';
@@ -23,6 +24,10 @@ let AnswerFilter = React.createClass({
       filterAttributes,
       filterTables
     };
+  },
+
+  componentWillMount() {
+    this.handleFilter = debounce(this.handleFilter, 100);
   },
 
   componentDidUpdate(prevProps, prevState) {
@@ -110,7 +115,7 @@ let AnswerFilter = React.createClass({
         <input
           ref="filterInput"
           className="wdk-Answer-filterInput"
-          value={filterTerm}
+          defaultValue={filterTerm}
           placeholder={`Search ${displayNamePlural}`}
           onChange={this.handleFilter}
         />
