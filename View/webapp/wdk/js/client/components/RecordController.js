@@ -3,6 +3,7 @@ import mapValues from 'lodash/object/mapValues';
 import Doc from './Doc';
 import Loading from './Loading';
 import Record from './Record';
+import CommonActions from '../actions/commonActions';
 import RecordActions from '../actions/recordActions';
 import wrappable from '../utils/wrappable';
 import { makeKey } from '../utils/recordUtils';
@@ -13,6 +14,11 @@ let RecordController = React.createClass({
     let { store } = this.props;
 
     this.recordActions = mapValues(RecordActions, function(action) {
+      return function dispatchWrapper(...args) {
+        return store.dispatch(action(...args));
+      };
+    });
+    this.commonActions = mapValues(CommonActions, function(action) {
       return function dispatchWrapper(...args) {
         return store.dispatch(action(...args));
       };
@@ -31,8 +37,24 @@ let RecordController = React.createClass({
   },
 
   fetchRecordDetails(props) {
-    let { params, query } = props;
-    this.recordActions.fetchRecord(params.class, query);
+    let { params, query, store } = props;
+    let recordClassName = params.class;
+    let primaryKey = Object.keys(query).map(function(name) {
+      return { name, value: query[name] };
+    });
+
+    Promise.all([
+      this.commonActions.fetchRecordClasses(),
+      this.commonActions.fetchQuestions()
+    ]).then(() => {
+      let recordClass = store.getState().recordClasses.find(function(recordClass) {
+        return recordClass.fullName === recordClassName;
+      });
+      let attributes = recordClass.attributes.map(a => a.name);
+      let tables = recordClass.tables.map(t => t.name);
+      let recordSpec = { primaryKey, attributes, tables };
+      this.recordActions.fetchRecordDetails(recordClassName, recordSpec);
+    });
   },
 
   selectState(state) {
@@ -43,9 +65,9 @@ let RecordController = React.createClass({
       recordClasses,
       questions
     } = state;
-    let { meta, record } = (records[key] || {});
+    let record = records[key];
     let recordClass = recordClasses.find(r => r.fullName === params.class);
-    this.setState({ meta, record, hiddenCategories, collapsedCategories, recordClass, recordClasses, questions });
+    this.setState({ record, hiddenCategories, collapsedCategories, recordClass, recordClasses, questions });
   },
 
   render() {
@@ -61,13 +83,5 @@ let RecordController = React.createClass({
   }
 
 });
-
-function makeRecordSpecFromProps(props) {
-  let { query, params } = props;
-  return {
-    class: params.class,
-    primaryKey: query
-  };
-}
 
 export default wrappable(RecordController);

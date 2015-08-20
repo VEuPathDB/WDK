@@ -8,12 +8,15 @@
 import React from 'react';
 import Router from 'react-router';
 import _ from 'lodash';
-import Store from './core/store';
-import RestAPI from './services/restAPI';
-import Routes from './routes';
+
 import * as components from './components';
 import * as actions from './actions';
+
+import Store from './core/store';
 import reducer from './reducer';
+import RestAPI from './services/restAPI';
+import Routes from './routes';
+import { createRestFilter } from './filters/restFilter';
 
 // expose libraries to global object, but only if they aren't already defined
 if (window._ == null) window._ = _;
@@ -36,11 +39,9 @@ let Wdk = {
  * @param {element} config.rootElement Root element to render application
  */
 function createApplication(config) {
-  let container = createContainer(config);
-  let containerFilter = createContainerFilter(container);
+  let restAPI = RestAPI.create(config.endpoint);
   let store = Store.create(reducer, [
-    containerFilter,
-    promiseFilter,
+    createRestFilter(restAPI),
     logFilter
   ]);
 
@@ -66,13 +67,6 @@ function createApplication(config) {
   return store;
 }
 
-function createContainer(config) {
-  let restAPI = RestAPI.create(config.endpoint);
-  return Object.freeze({
-    restAPI
-  });
-}
-
 function logFilter(store, next, action) {
   console.group(action.type);
   console.info('dispatching', action);
@@ -80,26 +74,6 @@ function logFilter(store, next, action) {
   console.log('state', store.getState());
   console.groupEnd(action.type);
   return result;
-}
-
-function promiseFilter(store, next, action) {
-  return new Promise(function(resolve, reject) {
-    try {
-      resolve(next(action));
-    }
-    catch(error) {
-      reject(error);
-    }
-  });
-}
-
-function createContainerFilter(services) {
-  return function containerFilter(store, next, action) {
-    if (typeof action === 'function') {
-      return action(store.dispatch, store.state, services);
-    }
-    return next(action);
-  };
 }
 
 export default Wdk;

@@ -1,25 +1,25 @@
+// FIXME Store records as list of IDs
 // TODO Break this into two stores: Answers and UI
 import assign from 'lodash/object/assign';
-import curry from 'lodash/function/curry';
-import flattenDeep from 'lodash/array/flattenDeep';
-import values from 'lodash/object/values';
-import pick from 'lodash/object/pick';
 import {
   ANSWER_ADDED,
-  ANSWER_MOVE_COLUMN,
   ANSWER_CHANGE_ATTRIBUTES,
   ANSWER_LOADING,
-  ANSWER_UPDATE_FILTER
+  ANSWER_MOVE_COLUMN,
+  ANSWER_UPDATE_FILTER,
+  APP_ERROR
 } from '../constants/actionTypes';
+import * as RecordUtils from '../utils/recordUtils';
 
 
 export default function answer(state = getInitialState(), action) {
   switch(action.type) {
     case ANSWER_ADDED: return addAnswer(state, action);
-    case ANSWER_MOVE_COLUMN: return moveTableColumn(state, action);
     case ANSWER_CHANGE_ATTRIBUTES: return updateVisibleAttributes(state, action);
     case ANSWER_LOADING: return answerLoading(state, action);
+    case ANSWER_MOVE_COLUMN: return moveTableColumn(state, action);
     case ANSWER_UPDATE_FILTER: return updateFilter(state, action);
+    case APP_ERROR: return answerLoading(state, action);
     default: return state;
   }
 }
@@ -28,29 +28,18 @@ function getInitialState() {
   return {
     meta: null,
     records: null,
+    unfilteredRecords: null,
     isLoading: false,
     filterTerm: '',
     filterAttributes: null,
     filterTables: null,
-    filteredRecords: null,
     displayInfo: {
       sorting: null,
       pagination: null,
       attributes: null,
       tables: null
-    },
-    questionDefinition: {
-      questionName: null,
-      params: null,
-      filters: null
     }
   };
-}
-
-function createAttribute(meta, value) {
-  return Object.create(meta, {
-    value: { value, enumerable: true }
-  });
 }
 
 /**
@@ -92,54 +81,6 @@ function createAttribute(meta, value) {
  */
 
 
-// Split terms on whitespace, unless wrapped in quotes
-function parseSearchTerms(terms) {
-  let match = terms.match(/\w+|"[^"]*"/g) || [];
-  return match.map(function(term) {
-    // remove wrapping quotes from phrases
-    return term.replace(/(^")|("$)/g, '');
-  });
-}
-
-function stripHTML(str) {
-  let span = document.createElement('span');
-  span.innerHTML = str;
-  return span.textContent;
-}
-
-
-// Search record for a term.
-//
-// The approach here is pretty basic and probably ineffecient:
-//   - Convert all attribute values to an array of values.
-//   - Convert all table values to a flat array of values.
-//   - Combine the above arrays into a single array.
-//   - Join the array with a control character.
-//   - Search the resulting string for the index of 'term'.
-//   - return (index !== -1).
-//
-// There is much room for performance tuning here.
-let isTermInRecord = curry(function isTermInRecord(term, filterAttributes, filterTables, record) {
-  let attributes, tables;
-
-  if (filterAttributes.length == 0 && filterTables.length == 0) {
-    attributes = record.attributes;
-    tables = record.tables;
-  }
-  else {
-    attributes = pick(record.attributes,  filterAttributes);
-    tables = pick(record.tables, filterTables);
-  }
-
-  let attributeValues = Object.keys(attributes).map(name => attributes[name].value);
-  let tableValues = flattenDeep(values(tables)
-    .map(function(table) {
-      return table.map(values);
-    }));
-
-  let clob = stripHTML(attributeValues.concat(tableValues).join('\0'));
-  return clob.toLowerCase().includes(term.toLowerCase());
-});
 
 
 /**
@@ -157,9 +98,9 @@ let isTermInRecord = curry(function isTermInRecord(term, filterAttributes, filte
  * `questionDefinition`. We will be merging these keys into `state`
  * below.
  */
-function addAnswer(state, { answer, requestData }) {
-  let questionName = requestData.questionDefinition.questionName;
-  let previousQuestionName = state.questionDefinition.questionName;
+function addAnswer(state, action) {
+  let answer = action.response;
+  let { displayInfo } = action.requestData;
 
   /*
    * If state.displayInfo.attributes isn't defined we want to use the
@@ -170,42 +111,28 @@ function addAnswer(state, { answer, requestData }) {
    */
   let visibleAttributes = state.displayInfo.visibleAttributes;
 
-  if (!visibleAttributes || previousQuestionName !== questionName) {
+  if (!visibleAttributes || state.meta.class !== answer.meta.class) {
     visibleAttributes = answer.meta.summaryAttributes.map(attrName => {
       return answer.meta.attributes.find(attr => attr.name === attrName);
     });
   }
 
-  let displayInfo = Object.assign({
-    visibleAttributes
-  }, requestData.displayInfo);
+  Object.assign(displayInfo, { visibleAttributes });
 
-  answer.meta.attributes = answer.meta.attributes
-    .filter(attr => attr.name != 'wdk_weight');
+  // Remove search weight since it doens't apply to non-Step answers
+  answer.meta.attributes = answer.meta.attributes.filter(attr => attr.name != 'wdk_weight');
 
-  // link record attributes to attribute meta
-  answer.records.forEach(function(record) {
-    let { attributes } = record;
-    answer.meta.attributes.forEach(function(attributeMeta) {
-      let { name } = attributeMeta;
-      attributes[name] = createAttribute(attributeMeta, attributes[name]);
-    });
-  });
 
   /*
-   * This will update the keys `filteredRecords`, `displayInfo`, and
-   * `questionDefinition` in `state`.
+   * This will update the keys `filteredRecords`, and `questionDefinition` in `state`.
    */
-  assign(state, answer, {
-    filteredRecords: answer.records,
-    displayInfo: displayInfo,
-    questionDefinition: requestData.questionDefinition
+  return assign(state, {
+    meta: answer.meta,
+    unfilteredRecords: answer.records,
+    records: RecordUtils.filterRecords(answer.records, state),
+    isLoading: false,
+    displayInfo
   });
-
-  if (state.filterTerm) {
-    return filterAnswer(state, { questionName });
-  }
-  return state;
 }
 
 /**
@@ -246,34 +173,16 @@ function updateFilter(state, action) {
     filterAttributes: action.attributes || [],
     filterTables: action.tables || []
   });
-  return filterAnswer(state, action);
-}
-
-/**
- * Filter the results of an answer. The filtered results are stored in a
- * separate property.
- *
- * @param {string} terms The search phrase.
- * @param {string} questionName The questionName of the answer to filter.
- */
-function filterAnswer(state, action) {
-  let { records } = state;
-  if (records == null) return state;
-
-  let { filterTerm, filterAttributes, filterTables } = state;
-  if (filterTerm == null) {
-    return assign(state, {
-      filteredRecords: records
-    });
-  }
-  let parsedTerms = parseSearchTerms(filterTerm);
-  let filteredRecords = parsedTerms.reduce(function(records, term) {
-    return records.filter(isTermInRecord(term, filterAttributes, filterTables));
-  }, records);
-  return assign(state, { filteredRecords });
+  return assign(state, {
+    records: RecordUtils.filterRecords(state.unfilteredRecords, state)
+  });
 }
 
 function answerLoading(state, action) {
-  state.isLoading = action.isLoading;
+  if (action.type === ANSWER_LOADING) {
+    state.isLoading = true;
+  } else if (action.type === APP_ERROR) {
+    state.isLoading = false;
+  }
   return state;
 }

@@ -1,6 +1,7 @@
 function create(reducer, filters = []) {
   let state = reducer(undefined, { type: '@@wdk/INIT' });
   let callbacks = [];
+  let isDispatching = false;
 
   return applyDispatchFilters({
     getState,
@@ -13,27 +14,24 @@ function create(reducer, filters = []) {
   }
 
   function dispatch(action) {
-    // Apply action asynchronously. Using a Promise callback will enqueue the
-    // task as a microtask. This means that it will be invoked immediately
-    // after the current execution script, but before the next event loop.
-    // The effect of this is that if an action is called within a subscribe
-    // callback, the rest of the callback will be executed before the action
-    // is dispatched. With React, this is mostly not an issue since the callback
-    // will typically simply call `component.setState`, which is generally
-    // asynchronous. However, React does not guarantee this in all scenarios,
-    // thus we could potentially operate on a stale state. Most likely, this
-    // would only become a serious issue with nested components observing the
-    // store, which would ideally be avoided.
-    return Promise.resolve().then(function() {
-      let nextState = reducer(state, action);
-      if (state !== nextState) {
-        state = nextState;
-        callbacks.forEach(function(callback) {
-          callback(state);
-        });
-      }
-      return state;
-    });
+    if (isDispatching) {
+      throw new Error('Cannot dispatch during a dispach.');
+    }
+
+    isDispatching = true;
+
+    let nextState = reducer(state, action);
+
+    if (state !== nextState) {
+      state = nextState;
+      callbacks.forEach(function(callback) {
+        callback(state);
+      });
+    }
+
+    isDispatching = false;
+
+    return state;
   }
 
   // Call `callback` when the state is changed. Also calls `callback`

@@ -12,7 +12,6 @@ import {
 let Record = React.createClass({
 
   propTypes: {
-    meta: React.PropTypes.object.isRequired,
     record: React.PropTypes.object.isRequired,
     recordClass: React.PropTypes.object.isRequired,
     questions: React.PropTypes.array.isRequired,
