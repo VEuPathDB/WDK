@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
 import wrappable from '../utils/wrappable';
-import ContextMixin from '../utils/contextMixin';
 
 let QuestionListController = React.createClass({
 
