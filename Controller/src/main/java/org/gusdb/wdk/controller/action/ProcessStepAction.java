@@ -209,9 +209,8 @@ public class ProcessStepAction extends Action {
       Map<String, ParamBean<?>> questionParamsMap = question.getParamsMap();
       // Map the first AnswerParam value in requestParams to the id of step. The
       // assumption is that the first AnswerParam is the previous step.
-      for (Map.Entry<String, String> entry : newStepParams.entrySet()) {
-        ParamBean<?> paramBean = questionParamsMap.get(entry.getKey());
-        if (paramBean instanceof AnswerParamBean) {
+      for (Map.Entry<String, ParamBean<?>> entry : questionParamsMap.entrySet()) {
+        if (entry.getValue() instanceof AnswerParamBean) {
           newStepParams.put(entry.getKey(), Integer.toString(previousStep.getStepId()));
           break;
         }
@@ -273,11 +272,10 @@ public class ProcessStepAction extends Action {
     Map<String, ParamBean<?>> questionParamsMap = question.getParamsMap();
     Map<String, String> newStepParams = ProcessQuestionAction.prepareParams(user, request, form);
 
-    // Map the first AnswerParam value in requestParams to the id of step. The
+    // Map the first AnswerParam value in newStepParams to the id of step. The
     // assumption is that the first AnswerParam is the previous step.
-    for (Map.Entry<String, String> entry : newStepParams.entrySet()) {
-      ParamBean<?> paramBean = questionParamsMap.get(entry.getValue());
-      if (paramBean instanceof AnswerParamBean) {
+    for (Map.Entry<String, ParamBean<?>> entry : questionParamsMap.entrySet()) {
+      if (entry.getValue() instanceof AnswerParamBean) {
         newStepParams.put(entry.getKey(), Integer.toString(previousStep.getStepId()));
         break;
       }
