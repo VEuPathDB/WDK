@@ -20,6 +20,8 @@ import org.gusdb.wdk.controller.form.WizardForm;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
+import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
@@ -61,6 +63,7 @@ public class ProcessStepAction extends Action {
       if (strategyKey == null || strategyKey.length() == 0)
         throw new WdkUserException("No strategy was specified for " + "processing!");
 
+      // Handle nested strategies, which have an id of the form {id}_{id}
       // did we get strategyId_stepId?
       int pos = strategyKey.indexOf("_");
       int branchId = 0;
@@ -164,7 +167,7 @@ public class ProcessStepAction extends Action {
     if (questionName != null && questionName.length() > 0) {
       // revise a step with a new question
       Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, form);
-      mapStepParams(step, params);
+      mapPreviousAndChildStepIds(step, params);
       step.setQuestionName(questionName);
       step.setParamValues(params);
     }
@@ -196,22 +199,38 @@ public class ProcessStepAction extends Action {
     if (questionName == null || questionName.length() == 0)
       throw new WdkUserException("Required param " + PARAM_QUESTION + " is missing.");
 
+    StepBean previousStep = step.getPreviousStep();
     QuestionBean question = wdkModel.getQuestion(questionName);
-    Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, form);
-    mapStepParams(step, params);
+    Map<String, String> newStepParams = ProcessQuestionAction.prepareParams(user, request, form);
+    
+    // If the step we are inserting before has a previous step, then we need to
+    // map the step id in the request to refer to this new step id.
+    if (previousStep != null) {
+      Map<String, ParamBean<?>> questionParamsMap = question.getParamsMap();
+      // Map the first AnswerParam value in requestParams to the id of step. The
+      // assumption is that the first AnswerParam is the previous step.
+      for (Map.Entry<String, String> entry : newStepParams.entrySet()) {
+        ParamBean<?> paramBean = questionParamsMap.get(entry.getKey());
+        if (paramBean instanceof AnswerParamBean) {
+          newStepParams.put(entry.getKey(), Integer.toString(previousStep.getStepId()));
+          break;
+        }
+      }
+    }
+
+
 
     // get the weight, or use the current step's.
     Integer weight = getWeight(request);
     if (weight == null)
       weight = Utilities.DEFAULT_WEIGHT;
 
-    StepBean newStep = user.createStep(strategy.getStrategyId(), question, params, null, false, true, weight);
+    StepBean newStep = user.createStep(strategy.getStrategyId(), question, newStepParams, null, false, true, weight);
     if (customName != null) {
       newStep.setCustomName(customName);
       newStep.update(false);
     }
 
-    StepBean previousStep = step.getPreviousStep();
     if (previousStep == null) {
       // insert before the first step, need to create a new step to
       // replace the current one.
@@ -224,7 +243,7 @@ public class ProcessStepAction extends Action {
       String filterName = step.getFilterName();
       weight = step.getAssignedWeight();
 
-      StepBean newParent = user.createStep(strategy.getStrategyId(), question, params, filterName, false,
+      StepBean newParent = user.createStep(strategy.getStrategyId(), question, newStepParams, filterName, false,
           true, weight);
 
       // then replace the current step with the newParent
@@ -237,13 +256,13 @@ public class ProcessStepAction extends Action {
   }
 
   private static Map<Integer, Integer> addStep(HttpServletRequest request, QuestionForm form, WdkModelBean wdkModel,
-      UserBean user, StrategyBean strategy, StepBean step, String customName, int branchId)
+      UserBean user, StrategyBean strategy, StepBean previousStep, String customName, int branchId)
       throws WdkUserException, NumberFormatException, WdkModelException {
     logger.debug("Adding step...");
 
     // get root step
-    if (step == null)
-      step = (branchId == 0) ? strategy.getLatestStep() : strategy.getStepById(branchId);
+    if (previousStep == null)
+      previousStep = (branchId == 0) ? strategy.getLatestStep() : strategy.getStepById(branchId);
 
     // the question name has to exist
     String questionName = request.getParameter(PARAM_QUESTION);
@@ -251,22 +270,32 @@ public class ProcessStepAction extends Action {
       throw new WdkUserException("Required param " + PARAM_QUESTION + " is missing.");
 
     QuestionBean question = wdkModel.getQuestion(questionName);
-    Map<String, String> params = ProcessQuestionAction.prepareParams(user, request, form);
-    mapStepParams(step, params);
+    Map<String, ParamBean<?>> questionParamsMap = question.getParamsMap();
+    Map<String, String> newStepParams = ProcessQuestionAction.prepareParams(user, request, form);
+
+    // Map the first AnswerParam value in requestParams to the id of step. The
+    // assumption is that the first AnswerParam is the previous step.
+    for (Map.Entry<String, String> entry : newStepParams.entrySet()) {
+      ParamBean<?> paramBean = questionParamsMap.get(entry.getValue());
+      if (paramBean instanceof AnswerParamBean) {
+        newStepParams.put(entry.getKey(), Integer.toString(previousStep.getStepId()));
+        break;
+      }
+    }
 
     // get the weight, or use the current step's.
     Integer weight = getWeight(request);
     if (weight == null)
       weight = Utilities.DEFAULT_WEIGHT;
 
-    StepBean newStep = user.createStep(strategy.getStrategyId(), question, params, null, false, true, weight);
+    StepBean newStep = user.createStep(strategy.getStrategyId(), question, newStepParams, null, false, true, weight);
     if (customName != null) {
       newStep.setCustomName(customName);
       newStep.update(false);
     }
 
-    logger.debug("Insert Afte step: " + step);
-    return strategy.insertStepAfter(newStep, step.getStepId());
+    logger.debug("Insert Afte step: " + previousStep);
+    return strategy.insertStepAfter(newStep, previousStep.getStepId());
   }
 
   private static Integer getWeight(HttpServletRequest request) throws WdkUserException {
@@ -285,10 +314,10 @@ public class ProcessStepAction extends Action {
     return weight;
   }
 
-  // Map step param ids to new step ids. This is needed in the case of operating
+  // Map old step ids to new step ids in the params map. This is needed in the case of operating
   // on a saved strategy, since we make a deep clone and the params may refer
   // to steps on the saved strategy rather than the new, unsaved strategy.
-  private static void mapStepParams(StepBean step, Map<String, String> params)
+  private static void mapPreviousAndChildStepIds(StepBean step, Map<String, String> params)
       throws WdkModelException {
     String previousStepParamName = step.getPreviousStepParam();
     String childStepParamName = step.getChildStepParam();
