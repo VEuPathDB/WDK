@@ -29,7 +29,7 @@ let RecordMainCategorySection = React.createClass({
 
   render() {
     let { category, depth, record, recordClass, isCollapsed } = this.props;
-    let attributes = recordClass.attributes.filter(a => a.category === category.name).map(a => record.attributes[a.name]);
+    let attributes = recordClass.attributes.filter(a => a.category === category.name);
     let tableMetas = recordClass.tables.filter(t => t.category === category.name);
     let headerClass = depth === 1 ? 'wdk-Record-sectionHeader' : 'wdk-Record-sectionSubHeader';
     let Header = 'h' + Math.min(depth + 1, 6);
@@ -51,11 +51,13 @@ let RecordMainCategorySection = React.createClass({
               <table className="wdk-RecordAttributeTable">
                 <tbody>
                   {attributes.reduce(function(rows, attribute) {
-                    if (attribute.value != null) {
+                    let { name, displayName } = attribute;
+                    let value = record.attributes[name]
+                    if (value != null) {
                       rows.push(
-                        <tr key={attribute.name}>
-                          <td><strong>{attribute.displayName}</strong></td>
-                          <td><RecordAttribute attribute={attribute} /></td>
+                        <tr key={name}>
+                          <td><strong>{displayName}</strong></td>
+                          <td><RecordAttribute value={value} /></td>
                         </tr>
                       );
                     }

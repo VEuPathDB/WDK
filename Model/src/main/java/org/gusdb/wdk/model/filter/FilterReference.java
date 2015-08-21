@@ -13,6 +13,5 @@ public class FilterReference extends WdkModelBase {
   public void setName(String name) {
     _name = name;
   }
-  
 
 }

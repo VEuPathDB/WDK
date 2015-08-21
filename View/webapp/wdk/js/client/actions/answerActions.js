@@ -1,3 +1,4 @@
+import isMatch from 'lodash/lang/isMatch';
 import {
   APP_ERROR,
   ANSWER_ADDED,
@@ -6,6 +7,7 @@ import {
   ANSWER_UPDATE_FILTER,
   ANSWER_LOADING
 } from '../constants/actionTypes';
+import { restAction } from '../filters/restFilter';
 
 
 /**
@@ -48,133 +50,109 @@ import {
  * dispatched, the handling of the Action will be synchronous.
  */
 
-function createActions({ dispatcher, service }) {
+export default {
+  /**
+   * Retrieve's an Answer resource and dispatches an action with the resource.
+   *
+   * Actions dispatched:
+   *
+   *   - LoadingAction
+   *   - AnswerLoadSuccessAction
+   *   - ErrorAction
+   *
+   *
+   * Usage:
+   *
+   *    loadAnswer('GeneRecords.GenesByTaxon', { params: { ... }, filters: { ... }, displayInfo: { ... } });
+   *
+   *
+   * Request data format, POSTed to service:
+   *
+   *     {
+   *       "questionDefinition": {
+   *         "questionName": String,
+   *         "params": [ {
+   *           "name": String, “value”: Any
+   *         } ],
+   *         "filters": [ {
+   *           “name": String, value: Any
+   *         } ]
+   *       },
+   *       displayInfo: {
+   *         pagination: { offset: Number, numRecords: Number },
+   *         attributes: [ attributeName: String ],
+   *         sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
+   *       }
+   *     }
+   *
+   * @param {string} questionName Fully qualified WDK Question name.
+   * @param {object} opts Addition data to include in request.
+   * Options properties of `opts`:
+   *   - params: Object of key-value pairs for Question params.
+   *   - filters: Object of key-value pairs for Question filters.
+   *   - displayInfo: Object with display details (see Request data format below).
+   */
+  // We will make requests for the following resources:
+  // - question
+  // - answer
+  // - recordClass
+  //
+  // Once all are loaded, we will dispatch the load action
+  loadAnswer(questionName, opts = {}) {
+    let { params = [], filters = [], displayInfo } = opts;
 
-  return {
-    /**
-     * Retrieve's an Answer resource and dispatches an action with the resource.
-     *
-     * Actions dispatched:
-     *
-     *   - LoadingAction
-     *   - AnswerLoadSuccessAction
-     *   - ErrorAction
-     *
-     *
-     * Usage:
-     *
-     *    loadAnswer('GeneRecords.GenesByTaxon', { params: { ... }, filters: { ... }, displayInfo: { ... } });
-     *
-     *
-     * Request data format, POSTed to service:
-     *
-     *     {
-     *       "questionDefinition": {
-     *         "questionName": String,
-     *         "params": [ {
-     *           "name": String, “value”: Any
-     *         } ],
-     *         "filters": [ {
-     *           “name": String, value: Any
-     *         } ]
-     *       },
-     *       displayInfo: {
-     *         pagination: { offset: Number, numRecords: Number },
-     *         attributes: [ attributeName: String ],
-     *         sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
-     *       }
-     *     }
-     *
-     * @param {string} questionName Fully qualified WDK Question name.
-     * @param {object} opts Addition data to include in request.
-     * Options properties of `opts`:
-     *   - params: Object of key-value pairs for Question params.
-     *   - filters: Object of key-value pairs for Question filters.
-     *   - displayInfo: Object with display details (see Request data format below).
-     */
-    // We will make requests for the following resources:
-    // - question
-    // - answer
-    // - recordClass
-    //
-    // Once all are loaded, we will dispatch the load action
-    loadAnswer(questionName, opts = {}) {
-      var { params = [], filters = [], displayInfo } = opts;
+    // FIXME Set attributes to whatever we're soring on. This is required by
+    // the service, but it doesn't appear to have any effect at this time. I
+    // think what we want is for the service to use default attributes defined
+    // in the model XML. We also need a way to ask for all attributes (and
+    // tables). An alternative is to get the list of available attributes from a
+    // preferences service.
+    displayInfo.attributes = displayInfo.sorting.map(s => s.attributeName);
+    displayInfo.tables = [];
 
-      // FIXME Set attributes to whatever we're soring on. This is required by
-      // the service, but it doesn't appear to have any effect at this time. I
-      // think what we want is for the service to use default attributes defined
-      // in the model XML. We also need a way to ask for all attributes (and
-      // tables). An alternative is to get the list of available attributes from a
-      // preferences service.
-      displayInfo.attributes = displayInfo.sorting.map(s => s.attributeName);
-      displayInfo.tables = [];
+    // Build XHR request data for '/answer'
+    let questionDefinition = { questionName, params, filters };
 
-      // Build XHR request data for '/answer'
-      var questionDefinition = { questionName, params, filters };
-      var requestData = { questionDefinition, displayInfo };
+    return restAction({
+      method: 'POST',
+      resource: '/answer',
+      data: { questionDefinition, displayInfo },
+      types: [ ANSWER_LOADING, APP_ERROR, ANSWER_ADDED ],
+      shouldFetch(state) {
+        return !isMatch(state.answer.displayInfo, displayInfo);
+      }
+    });
+  },
 
-      // Dispatch AnswerLoading action
-      dispatcher.dispatch({ type: ANSWER_LOADING, isLoading: true });
+  moveColumn(columnName, newPosition) {
+    console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
+    console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
 
-      // Then, create a Promise for the answer resource.
-      service.postResource('/answer', requestData)
-        .then(answer => {
-          var answerAction = {
-            type: ANSWER_ADDED,
-            requestData: requestData,
-            answer: answer
-          };
-          dispatcher.dispatch(answerAction);
-          dispatcher.dispatch({ type: ANSWER_LOADING, isLoading: false });
-        }, error => {
-          var action = { type: APP_ERROR, error: error };
-          dispatcher.dispatch(action);
-          dispatcher.dispatch({ type: ANSWER_LOADING, isLoading: false });
-        })
-        // Catch errors caused by Store callbacks.
-        // This is a last-ditch effort to alert developers that there was an error
-        // with how a Store handled the action.
-        .catch(err => console.assert(false, err));
-    },
+    return {
+      type: ANSWER_MOVE_COLUMN,
+      columnName: columnName,
+      newPosition: newPosition
+    };
+  },
 
-    moveColumn(columnName, newPosition) {
-      console.assert(typeof columnName === "string", `columnName ${columnName} should be a string.`);
-      console.assert(typeof newPosition === "number", `newPosition ${newPosition} should be a number.`);
+  changeAttributes(attributes) {
+    // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
+    console.assert(attributes[Symbol.iterator], `attributes ${attributes} should be iterable.`);
 
-      var action = {
-        type: ANSWER_MOVE_COLUMN,
-        columnName: columnName,
-        newPosition: newPosition
-      };
+    return {
+      type: ANSWER_CHANGE_ATTRIBUTES,
+      attributes: attributes
+    };
+  },
 
-      dispatcher.dispatch(action);
-    },
+  updateFilter({ questionName, terms, attributes, tables }) {
+    return {
+      type: ANSWER_UPDATE_FILTER,
+      questionName,
+      terms,
+      attributes,
+      tables
+    };
+  },
 
-    changeAttributes(attributes) {
-      // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
-      console.assert(attributes[Symbol.iterator], `attributes ${attributes} should be iterable.`);
-
-      var action = {
-        type: ANSWER_CHANGE_ATTRIBUTES,
-        attributes: attributes
-      };
-
-      dispatcher.dispatch(action);
-    },
-
-    updateFilter({ questionName, terms, attributes, tables }) {
-      var action = {
-        type: ANSWER_UPDATE_FILTER,
-        questionName,
-        terms,
-        attributes,
-        tables
-      };
-      dispatcher.dispatch(action);
-    },
-
-  };
-}
-
-export default { createActions };
+};

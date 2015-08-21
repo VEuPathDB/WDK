@@ -15,21 +15,19 @@ function getOffsetTop(node, sum = 0) {
 let Answer = React.createClass({
 
   getInitialState() {
-    return {
-      height: 0
-    };
+    return { height: 0 };
   },
 
   componentDidMount() {
-    this._updateHeight();
-    $(window).on('resize', this._updateHeight);
+    this.updateHeight();
+    $(window).on('resize', this.updateHeight);
   },
 
   componentWillUnmount() {
-    $(window).off('resize', this._updateHeight);
+    $(window).off('resize', this.updateHeight);
   },
 
-  _updateHeight() {
+  updateHeight() {
     if (this.refs.records) {
       let node = React.findDOMNode(this.refs.records);
       let nodeOffsetTop = getOffsetTop(node);
@@ -44,22 +42,21 @@ let Answer = React.createClass({
   render() {
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
     let {
-      answer,
+      meta,
+      records,
       question,
       recordClass,
       displayInfo,
-      filteredRecords,
       answerEvents,
       format
     } = this.props;
 
     let displayNamePlural = recordClass.displayNamePlural;
     let description = recordClass.description;
-    let meta = answer.meta;
     let pagination = displayInfo.pagination;
     let firstRec = pagination.offset + 1;
     let lastRec = Math.min(pagination.offset + pagination.numRecords,
-                             meta.count, filteredRecords.length);
+                             meta.count, records.length);
     let Records = format === 'list' ? RecordList : AnswerTable;
 
     return (
@@ -75,7 +72,7 @@ let Answer = React.createClass({
               ref="records"
               height={this.state.height}
               meta={meta}
-              records={filteredRecords}
+              records={records}
               displayInfo={displayInfo}
               {...answerEvents}
             />

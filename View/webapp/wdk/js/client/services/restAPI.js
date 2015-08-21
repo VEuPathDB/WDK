@@ -3,16 +3,11 @@ import invariant from 'react/lib/invariant';
 var $ = window.jQuery;
 
 /**
- * Methods to interface with the WDK REST API.
+ * Functions to interface with the WDK REST API. This module mainly
+ * encapsulates header and formatting details of requests.
  */
 
-function createService(endpoint) {
-  invariant(
-    typeof endpoint === 'string',
-    'endpoint `endpoint` must be a string',
-    endpoint
-  );
-
+function create(endpoint) {
   /**
    * Request a resource from the WDK Service.
    *
@@ -23,7 +18,7 @@ function createService(endpoint) {
    *
    * @param {string} type Can be one of 'GET', 'POST', 'PUT', 'PATCH', or
    * 'DELETE'
-   * @param {string} resourcePath The service path to a resource, e.g. '/answer'
+   * @param {string} resourcePath The service path to a resource, e.g. '/serviceEndpoint/answer'
    * @param {object} [data] Data to include in request. For GET, these will be
    * added to the URL as query params. For all others, it will be included as
    * raw JSON in the body.
@@ -61,10 +56,7 @@ function createService(endpoint) {
     putResource:      requestResource('PUT'),
     deleteResource:   requestResource('DELETE'),
     patchResource:    requestResource('PATCH')
-  }
-
+  };
 }
 
-export default {
-  createService
-};
+export default { create };

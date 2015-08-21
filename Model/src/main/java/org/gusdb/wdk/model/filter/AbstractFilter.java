@@ -7,9 +7,10 @@ public abstract class AbstractFilter implements Filter {
   private String _display;
   private String _description;
   private String _view;
+  private boolean _isViewOnly;
   
   public AbstractFilter(String key) {
-    this._key = key;
+    _key = key;
   }
 
   @Override
@@ -24,7 +25,7 @@ public abstract class AbstractFilter implements Filter {
   
   @Override  
   public void setDisplay(String display) {
-    this._display = display;
+    _display = display;
   }
 
   @Override
@@ -34,7 +35,7 @@ public abstract class AbstractFilter implements Filter {
   
   @Override  
   public void setDescription(String description) {
-    this._description = description;
+    _description = description;
   }
 
   @Override
@@ -44,6 +45,16 @@ public abstract class AbstractFilter implements Filter {
 
   @Override  
   public void setView(String view) {
-    this._view = view;
+    _view = view;
+  }
+
+  @Override
+  public boolean getIsViewOnly() {
+    return _isViewOnly;
+  }
+
+  @Override
+  public void setIsViewOnly(boolean isViewOnly) {
+    _isViewOnly = isViewOnly;
   }
 }

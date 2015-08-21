@@ -15,10 +15,12 @@
     "fixed-data-table": "^0.4",
     "flux": "^2.0.3",
     "immutable": "^3.7.4",
+    "invariant": "^2.1.0",
     "lodash": "^3.9.3",
     "react": "^0.13.3",
     "react-router": "^0.13.3",
     "style-loader": "^0.12.3",
+    "warning": "^2.0.0",
     "webpack": "^1.9.11"
   },
   "devDependencies": {

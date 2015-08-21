@@ -14,6 +14,7 @@ public abstract class FilterDefinition extends WdkModelBase {
   private String _description;
   private String _view;
   private String _implementation;
+  private boolean _isViewOnly = false;
 
   private List<WdkModelText> _displays = new ArrayList<>();
   private List<WdkModelText> _descriptions = new ArrayList<>();
@@ -62,8 +63,16 @@ public abstract class FilterDefinition extends WdkModelBase {
     return _implementation;
   }
 
-  protected void setImplementation(String implementation) {
+  public void setImplementation(String implementation) {
     this._implementation = implementation;
+  }
+
+  public boolean getIsViewOnly() {
+    return _isViewOnly;
+  }
+
+  public void setIsViewOnly(boolean isViewOnly) {
+    _isViewOnly = isViewOnly;
   }
 
   @Override
@@ -105,5 +114,6 @@ public abstract class FilterDefinition extends WdkModelBase {
     filter.setDisplay(_display);
     filter.setDescription(_description);
     filter.setView(_view);
+    filter.setIsViewOnly(_isViewOnly);
   }
 }

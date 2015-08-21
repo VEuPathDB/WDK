@@ -1,73 +1,73 @@
 import React from 'react';
+import mapValues from 'lodash/object/mapValues';
 import Doc from './Doc';
 import Loading from './Loading';
 import Record from './Record';
-import combineStores from '../utils/combineStores';
+import CommonActions from '../actions/commonActions';
+import RecordActions from '../actions/recordActions';
 import wrappable from '../utils/wrappable';
-import ContextMixin from '../utils/contextMixin';
 import { makeKey } from '../utils/recordUtils';
 
 let RecordController = React.createClass({
 
-  mixins: [ ContextMixin ],
-
-  getInitialState() {
-    return {
-      recordClass: null
-    };
-  },
-
   componentWillMount() {
-    let { recordStore, recordClassStore, questionStore } = this.context.stores;
+    let { store } = this.props;
 
-    this.storeSubscription = combineStores(
-      recordStore,
-      recordClassStore,
-      questionStore,
-      ({ records, hiddenCategories, collapsedCategories }, { recordClasses }, { questions }) => {
-      let { params, query } = this.props;
-      let key = makeKey(params.class, query);
-      let { meta, record } = (records[key] || {});
-      this.setState({ meta, record, hiddenCategories, collapsedCategories, recordClasses, questions });
+    this.recordActions = mapValues(RecordActions, function(action) {
+      return function dispatchWrapper(...args) {
+        return store.dispatch(action(...args));
+      };
     });
-
+    this.commonActions = mapValues(CommonActions, function(action) {
+      return function dispatchWrapper(...args) {
+        return store.dispatch(action(...args));
+      };
+    });
     this.fetchRecordDetails(this.props);
+    this.selectState(store.getState());
+    this.storeSubscription = store.subscribe(this.selectState);
   },
 
   componentWillUnmount() {
     this.storeSubscription.dispose();
-    this.fetchSubcription.dispose();
   },
 
   componentWillReceiveProps(nextProps) {
-    this.fetchSubcription.dispose();
     this.fetchRecordDetails(nextProps);
   },
 
   fetchRecordDetails(props) {
-    let { recordClassStore } = this.context.stores;
-    let { recordActions } = this.context.actions;
-    let { params, query } = props;
+    let { params, query, store } = props;
+    let recordClassName = params.class;
+    let primaryKey = Object.keys(query).map(function(name) {
+      return { name, value: query[name] };
+    });
 
-    // Subscribe to recordClassStore to get attributes and tables for record's
-    // recordClass, which will be used to fetch details.
-    this.fetchSubcription = recordClassStore.subscribe(value => {
-      let recordClass = value.recordClasses.find(r => r.fullName === params.class);
+    Promise.all([
+      this.commonActions.fetchRecordClasses(),
+      this.commonActions.fetchQuestions()
+    ]).then(() => {
+      let recordClass = store.getState().recordClasses.find(function(recordClass) {
+        return recordClass.fullName === recordClassName;
+      });
       let attributes = recordClass.attributes.map(a => a.name);
       let tables = recordClass.tables.map(t => t.name);
-      let recordSpec = {
-        primaryKey: query,
-        attributes,
-        tables
-      };
-
-      // update the recordClass if it changes
-      if (this.state.recordClass !== recordClass) {
-        this.setState({ recordClass });
-      }
-
-      recordActions.fetchRecordDetails(params.class, recordSpec);
+      let recordSpec = { primaryKey, attributes, tables };
+      this.recordActions.fetchRecordDetails(recordClassName, recordSpec);
     });
+  },
+
+  selectState(state) {
+    let { params, query } = this.props;
+    let key = makeKey(params.class, query);
+    let {
+      record: { records, hiddenCategories, collapsedCategories },
+      recordClasses,
+      questions
+    } = state;
+    let record = records[key];
+    let recordClass = recordClasses.find(r => r.fullName === params.class);
+    this.setState({ record, hiddenCategories, collapsedCategories, recordClass, recordClasses, questions });
   },
 
   render() {
@@ -77,19 +77,11 @@ let RecordController = React.createClass({
 
     return (
       <Doc title={`${recordClass.displayName} ${record.displayName}`}>
-        <Record {...this.state} recordActions={this.context.actions.recordActions}/>
+        <Record {...this.state} recordActions={this.recordActions}/>
       </Doc>
     );
   }
 
 });
-
-function makeRecordSpecFromProps(props) {
-  let { query, params } = props;
-  return {
-    class: params.class,
-    primaryKey: query
-  };
-}
 
 export default wrappable(RecordController);
