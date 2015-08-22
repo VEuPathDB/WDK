@@ -51,6 +51,9 @@ public class ProcessStepAction extends Action {
   public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
       HttpServletResponse response) throws Exception {
     logger.debug("Entering ProcessStepAction...");
+    
+    // FIXME This code needs to be cleaned up and refactored, along with
+    // ProcessBooleanStepAction.java.
 
     // get user & model
     UserBean user = ActionUtility.getUser(servlet, request);
@@ -122,8 +125,9 @@ public class ProcessStepAction extends Action {
         rootMap = addStep(request, questionForm, wdkModel, user, strategy, step, customName, branchId);
       }
 
-      // the strategy id might change due to editing on saved strategies.
-      // New unsaved strategy is created.
+      // Call again to set the correct step as active. This seems like a
+      // redundant call, and more than likely we can clean up a lot of the code
+      // throughout this action (and ProcessBooleanStepAction as well).
       user.replaceActiveStrategy(strategy.getStrategyId(), strategy.getStrategyId(), rootMap);
 
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
