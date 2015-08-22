@@ -91,6 +91,8 @@ public class ProcessStepAction extends Action {
         strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
         // map the old step id to the new one
         stepId = stepIdMap.get(stepId);
+        // set the new strategy as the active strategy for the view
+        user.replaceActiveStrategy(oldStrategyId, strategy.getStrategyId(), stepIdMap);
       }
 
       // get current step
@@ -120,9 +122,9 @@ public class ProcessStepAction extends Action {
         rootMap = addStep(request, questionForm, wdkModel, user, strategy, step, customName, branchId);
       }
 
-      // the strategy id might change due to editting on saved strategies.
+      // the strategy id might change due to editing on saved strategies.
       // New unsaved strategy is created.
-      user.replaceActiveStrategy(oldStrategyId, strategy.getStrategyId(), rootMap);
+      user.replaceActiveStrategy(strategy.getStrategyId(), strategy.getStrategyId(), rootMap);
 
       ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
       StringBuffer url = new StringBuffer(showStrategy.getPath());
