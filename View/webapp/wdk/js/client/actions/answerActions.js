@@ -1,3 +1,4 @@
+import isMatch from 'lodash/lang/isMatch';
 import {
   APP_ERROR,
   ANSWER_ADDED,
@@ -6,6 +7,7 @@ import {
   ANSWER_UPDATE_FILTER,
   ANSWER_LOADING
 } from '../constants/actionTypes';
+import { restAction } from '../filters/restFilter';
 
 
 /**
@@ -97,45 +99,29 @@ export default {
   //
   // Once all are loaded, we will dispatch the load action
   loadAnswer(questionName, opts = {}) {
-    return function(dispatch, state, { restAPI }) {
-      var { params = [], filters = [], displayInfo } = opts;
+    let { params = [], filters = [], displayInfo } = opts;
 
-      // FIXME Set attributes to whatever we're soring on. This is required by
-      // the service, but it doesn't appear to have any effect at this time. I
-      // think what we want is for the service to use default attributes defined
-      // in the model XML. We also need a way to ask for all attributes (and
-      // tables). An alternative is to get the list of available attributes from a
-      // preferences service.
-      displayInfo.attributes = displayInfo.sorting.map(s => s.attributeName);
-      displayInfo.tables = [];
+    // FIXME Set attributes to whatever we're soring on. This is required by
+    // the service, but it doesn't appear to have any effect at this time. I
+    // think what we want is for the service to use default attributes defined
+    // in the model XML. We also need a way to ask for all attributes (and
+    // tables). An alternative is to get the list of available attributes from a
+    // preferences service.
+    displayInfo.attributes = displayInfo.sorting.map(s => s.attributeName);
+    displayInfo.tables = [];
 
-      // Build XHR request data for '/answer'
-      var questionDefinition = { questionName, params, filters };
-      var requestData = { questionDefinition, displayInfo };
+    // Build XHR request data for '/answer'
+    let questionDefinition = { questionName, params, filters };
 
-      // Dispatch AnswerLoading action
-      dispatch({ type: ANSWER_LOADING, isLoading: true });
-
-      // Then, create a Promise for the answer resource.
-      return restAPI.postResource('/answer', requestData)
-        .then(answer => {
-          var answerAction = {
-            type: ANSWER_ADDED,
-            requestData: requestData,
-            answer: answer
-          };
-          dispatch(answerAction);
-          dispatch({ type: ANSWER_LOADING, isLoading: false });
-        }, error => {
-          var action = { type: APP_ERROR, error: error };
-          dispatch(action);
-          dispatch({ type: ANSWER_LOADING, isLoading: false });
-        })
-        // Catch errors caused by Store callbacks.
-        // This is a last-ditch effort to alert developers that there was an error
-        // with how a Store handled the action.
-        .catch(err => console.assert(false, err));
+    return restAction({
+      method: 'POST',
+      resource: '/answer',
+      data: { questionDefinition, displayInfo },
+      types: [ ANSWER_LOADING, APP_ERROR, ANSWER_ADDED ],
+      shouldFetch(state) {
+        return !isMatch(state.answer.displayInfo, displayInfo);
       }
+    });
   },
 
   moveColumn(columnName, newPosition) {

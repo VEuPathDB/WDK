@@ -12,7 +12,8 @@ let AnswerTableCell = React.createClass({
 
   propTypes: {
     // TODO Put reusable propTypes in a module
-    attribute: React.PropTypes.object,
+    value: React.PropTypes.string.isRequired,
+    descriptor: React.PropTypes.object.isRequired,
     record: React.PropTypes.object.isRequired,
     recordClass: React.PropTypes.string.isRequired,
     width: React.PropTypes.number.isRequired
@@ -21,21 +22,20 @@ let AnswerTableCell = React.createClass({
   mixins: [ Navigation ],
 
   render() {
-    if (this.props.attribute.value == null) {
+    if (this.props.value == null) {
       return null;
     }
 
-    let { attribute, record, recordClass, width } = this.props;
-    let type = attribute.type;
+    let { value, descriptor, record, recordClass, width } = this.props;
 
-    if (attribute.name === primaryKeyName) {
+    if (descriptor.name === primaryKeyName) {
       let href = this.makeHref('record', { class: recordClass }, record.id);
       return (
         <Link
           {...this.props}
           className="wdk-AnswerTable-recordLink"
           to={href}
-          dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute.value, type) }}
+          dangerouslySetInnerHTML={{__html: formatAttributeValue(value, descriptor.type) }}
         />
       );
     }
@@ -43,7 +43,7 @@ let AnswerTableCell = React.createClass({
       return (
         <span
           {...this.props}
-          dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute.value, type) }}
+          dangerouslySetInnerHTML={{__html: formatAttributeValue(value, descriptor.type) }}
         />
       );
     }

@@ -1,3 +1,4 @@
+import debounce from 'lodash/function/debounce';
 import React from 'react';
 import AnswerFilterSelector from './AnswerFilterSelector';
 import Tooltip from './Tooltip';
@@ -23,6 +24,10 @@ let AnswerFilter = React.createClass({
       filterAttributes,
       filterTables
     };
+  },
+
+  componentWillMount() {
+    this.handleFilter = debounce(this.handleFilter, 100);
   },
 
   componentDidUpdate(prevProps, prevState) {
@@ -76,7 +81,7 @@ let AnswerFilter = React.createClass({
     let { filterAttributes, filterTables, showFilterFieldSelector } = this.state;
     let { recordClass, filterTerm } = this.props;
     let { displayNamePlural } = recordClass;
-		/*
+    /*
     let tooltipContent = (
       <div>
         <p>
@@ -93,14 +98,14 @@ let AnswerFilter = React.createClass({
         </p>
       </div>
     );
-		*/
+    */
     let tooltipContent = (
       <div>
-			  <ul>
-			  <li>The data sets in your refined list will contain ALL your terms (or phrases, when using double quotes), in ANY of the selected fields.</li>
-			  <li>Click on the arrow inside the box to select/unselect fields. </li>
+        <ul>
+        <li>The data sets in your refined list will contain ALL your terms (or phrases, when using double quotes), in ANY of the selected fields.</li>
+        <li>Click on the arrow inside the box to select/unselect fields. </li>
         <li>Your terms are partially matched; 
-			      for example, the term <i>typ</i> will match <i><u>typ</u>ically</i>, <i><u>typ</u>e</i>, <i>a<u>typ</u>ical</i>.</li>
+            for example, the term <i>typ</i> will match <i><u>typ</u>ically</i>, <i><u>typ</u>e</i>, <i>a<u>typ</u>ical</i>.</li>
         </ul>
       </div>
     );
@@ -110,7 +115,7 @@ let AnswerFilter = React.createClass({
         <input
           ref="filterInput"
           className="wdk-Answer-filterInput"
-          value={filterTerm}
+          defaultValue={filterTerm}
           placeholder={`Search ${displayNamePlural}`}
           onChange={this.handleFilter}
         />

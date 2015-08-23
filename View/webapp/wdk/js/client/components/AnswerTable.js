@@ -308,11 +308,13 @@ let AnswerTable = React.createClass({
    *
    * @param {any} attribute Value returned by `getRow`.
    */
-  renderCell(attribute, attributeName, attributes, index, columnData, width) {
+  renderCell(attributeValue, attributeName, recordAttributes, index, columnData, width) {
+    let { attributeDescriptor } = columnData;
     return (
       <div className="wdk-AnswerTable-attributeValue" style={{width: width - 12 }}>
         <AnswerTableCell
-          attribute={attribute}
+          descriptor={attributeDescriptor}
+          value={attributeValue}
           record={this.props.records[index]}
           recordClass={this.props.meta.class}
           width={width}
@@ -327,11 +329,11 @@ let AnswerTable = React.createClass({
    * @param {any} attribute Value of `label` prop of `Column`.
    */
   renderHeader(label, dataKey, columnData) {
-    let attributeMeta = columnData.attributeDefinition;
+    let { attributeDescriptor } = columnData;
 
     return (
-      <div className="wdk-AnswerTable-header" title={attributeMeta.help || ''}>
-        <AnswerTableHeader attributeMeta={attributeMeta}/>
+      <div className="wdk-AnswerTable-header" title={attributeDescriptor.help || ''}>
+        <AnswerTableHeader descriptor={attributeDescriptor}/>
       </div>
     );
   },
@@ -393,7 +395,7 @@ let AnswerTable = React.createClass({
               ' ' + CELL_CLASS_NAME;
             let width = this.state.columnWidths[name];
             let columnData = {
-              attributeDefinition: attribute
+              attributeDescriptor: attribute
             };
             // let flexGrow = isPk ? 2 : 1;
 

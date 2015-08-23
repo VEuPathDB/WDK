@@ -7,15 +7,18 @@ import {
 let RecordAttribute = React.createClass({
 
   propTypes: {
-    attribute: React.PropTypes.object.isRequired
+    value: React.PropTypes.oneOfType([
+      React.PropTypes.string,
+      React.PropTypes.object
+    ]).isRequired
   },
 
   render() {
-    let { attribute } = this.props;
+    let { value } = this.props;
     return (
       <div
         className="wdk-Record-attributeContent"
-        dangerouslySetInnerHTML={{__html: formatAttributeValue(attribute.value)}}
+        dangerouslySetInnerHTML={{__html: formatAttributeValue(value)}}
       />
     );
   }
