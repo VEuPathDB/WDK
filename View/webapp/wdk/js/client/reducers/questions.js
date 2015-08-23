@@ -4,7 +4,7 @@ import {
 
 export default function questions(questions = [], action) {
   if (action.type === QUESTIONS_ADDED) {
-    questions = action.questions;
+    questions = action.response;
   }
   return questions;
 }

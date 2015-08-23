@@ -5,12 +5,9 @@
  */
 import React from 'react';
 import { RouteHandler } from 'react-router';
-import ContextMixin from '../utils/contextMixin';
 import wrappable from '../utils/wrappable';
 import CommonActions from '../actions/commonActions';
 import PreferenceActions from '../actions/preferenceActions';
-
-let { contextTypes } = ContextMixin;
 
 /*
  * RouterHandler is a special React component that the router uses to inject
@@ -20,17 +17,13 @@ let { contextTypes } = ContextMixin;
 
 let AppController = React.createClass({
 
-  propTypes: {
-    store: contextTypes.store
-  },
-
   mixins: [ React.addons.PureRenderMixin ],
 
   componentWillMount() {
     let { store } = this.props;
 
-    store.dispatch(PreferenceActions.loadPreferences());
-    store.dispatch(CommonActions.fetchCommonData());
+    // store.dispatch(PreferenceActions.loadPreferences());
+    // store.dispatch(CommonActions.fetchCommonData());
     this.selectState(store.getState());
     this.storeSubscription = store.subscribe(this.selectState);
   },

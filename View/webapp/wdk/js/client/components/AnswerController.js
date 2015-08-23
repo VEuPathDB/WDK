@@ -5,8 +5,8 @@ import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
 import AnswerActions from '../actions/answerActions';
+import CommonActions from '../actions/commonActions';
 import PreferenceActions from '../actions/preferenceActions';
-import combineStores from '../utils/combineStores';
 import wrappable from '../utils/wrappable';
 
 
@@ -96,6 +96,8 @@ let AnswerController = React.createClass({
   // When the component first mounts, fetch the answer.
   componentWillMount() {
     let { store } = this.props;
+    store.dispatch(CommonActions.fetchQuestions());
+    store.dispatch(CommonActions.fetchRecordClasses());
     this.sortingPreferenceKey = 'sorting::' + this.props.params.questionName;
     this.fetchAnswer(this.props);
     this.selectState(store.getState());
@@ -156,6 +158,7 @@ let AnswerController = React.createClass({
 
   selectState(state) {
     let { answer, questions, recordClasses } = state;
+
     let { meta } = answer;
     let { records } = answer;
     let { isLoading } = answer;
@@ -163,7 +166,6 @@ let AnswerController = React.createClass({
     let { filterTerm } = answer;
     let { filterAttributes = [] } = answer;
     let { filterTables = [] } = answer;
-    let { filteredRecords } = answer;
 
     this.setState({
       isLoading,
@@ -173,7 +175,6 @@ let AnswerController = React.createClass({
       filterTerm,
       filterAttributes,
       filterTables,
-      filteredRecords,
       questions,
       recordClasses
     });
@@ -373,7 +374,6 @@ let AnswerController = React.createClass({
       filterTerm,
       filterAttributes,
       filterTables,
-      filteredRecords,
       questions,
       recordClasses
     } = this.state;
@@ -413,12 +413,12 @@ let AnswerController = React.createClass({
         <Doc title={`${question.displayName}`}>
           {isLoading ? <Loading/> : null}
           <Answer
-            answer={{ meta, records }}
+            meta={meta}
+            records={records}
             question={question}
             recordClass={recordClass}
             displayInfo={displayInfo}
             filterTerm={filterTerm}
-            filteredRecords={filteredRecords}
             filterAttributes={filterAttributes}
             filterTables={filterTables}
             format={format}
