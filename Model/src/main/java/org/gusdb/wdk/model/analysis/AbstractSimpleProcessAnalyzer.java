@@ -15,6 +15,9 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
 
+/**
+ * Use this as a super class if your analysis runs as a stand-alone unix command.
+ */
 public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer {
   
   private static final Logger LOG = Logger.getLogger(AbstractSimpleProcessAnalyzer.class);
