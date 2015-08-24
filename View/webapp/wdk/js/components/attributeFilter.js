@@ -2,6 +2,7 @@
 import React from 'react';
 import FixedDataTable from 'fixed-data-table';
 import Loading from '../client/components/Loading';
+import Tooltip from '../client/components/Tooltip';
 import Dialog from '../client/components/Dialog';
 import Table from '../client/components/Table';
 
@@ -103,7 +104,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       displayName: PropTypes.string,
       field: PropTypes.object,
       filter: PropTypes.object,
-      distribution: PropTypes.object,
+      distribution: PropTypes.array,
       onAddFilter: PropTypes.func
     },
 
@@ -698,25 +699,48 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     render: function() {
       var dist = this.props.distribution;
       var total = _.reduce(dist, (acc, item) => acc + item.count, 0);
+      var displayName = this.props.displayName;
+      var fieldDisplay = this.props.field.display;
+      var tooltipContent =
+       `<p>This table shows the distribution of ${displayName} with
+        respect to ${fieldDisplay}.</p>
+
+        <p>The <i>Total</i> column indicates the number of
+        ${displayName} with the given ${fieldDisplay}
+        value.</p>
+
+        <p>The <i>Matching</i> column indicates the number of
+        ${displayName} that match the critera chosen for other
+        qualities and that have the given ${fieldDisplay}
+        value.</p>
+
+        <p>You may add or remove ${displayName} with specific ${fieldDisplay}
+        values from your overall selection by checking or unchecking the
+        corresponding checkboxes.</p>
+        `;
 
       return (
         <div className="membership-filter">
 
           <div className="membership-wrapper">
             <div className="membership-table-panel">
+              <div className="toggle-links">
+                <a href="#select-all" onClick={this.handleSelectAll}>select all</a>
+                {' | '}
+                <a href="#clear-all" onClick={this.handleRemoveAll}>clear all</a>
+              </div>
+              <div style={{ position: 'absolute', right: '1em' }}>
+                <Tooltip content={tooltipContent}>
+                  <i className="fa fa-question-circle fa-lg" style={{ color: 'blue' }}/>
+                </Tooltip>
+              </div>
               <table>
                 <thead>
                   <tr>
-                    <th colSpan="2">
-                      <div className="toggle-links">
-                        <a href="#select-all" onClick={this.handleSelectAll}>select all</a>
-                        {' | '}
-                        <a href="#clear-all" onClick={this.handleRemoveAll}>clear all</a>
-                      </div>
-                    </th>
-                    <th colSpan="3">
-                      <div>{this.props.displayName}</div>
-                    </th>
+                    <th colSpan="2">{this.props.field.display}</th>
+                    <th>Total {this.props.displayName}</th>
+                    <th>Matching {this.props.displayName}</th>
+                    <th>Distribution</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -732,7 +756,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                         <td><input value={item.value} type="checkbox" checked={isChecked} onChange={this.handleChange}/></td>
                         <td><span className="value">{item.value}</span></td>
                         <td><span className="frequency">{item.count}</span></td>
-                        <td><span className="percent">{percentage.toFixed(2) + '%'}</span></td>
+                        <td><span className="frequency">{item.filteredCount}</span></td>
                         <td><div className="bar">
                           <div className="fill" style={{ width: percentage + '%' }}/>
                           <div className="fill filtered" style={{ width: filteredPercentage + '%' }}/>
