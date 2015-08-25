@@ -135,24 +135,19 @@ public class StepBean {
     }
 
     public AnswerValueBean getAnswerValue() throws WdkModelException, WdkUserException {
-        return getAnswerValue(true, false);
+        return new AnswerValueBean(step.getAnswerValue());
+    }
+
+    public AnswerValueBean getAnswerValue(boolean validate) throws WdkModelException, WdkUserException {
+      return new AnswerValueBean(step.getAnswerValue(validate));
     }
 
     public AnswerValueBean getViewAnswerValue() throws WdkModelException, WdkUserException {
-        return getAnswerValue(true, true);
-    }
-
-    public AnswerValueBean getAnswerValue(boolean validate, boolean applyViewFilters)
-            throws WdkModelException, WdkUserException {
-        return new AnswerValueBean(step.getAnswerValue(validate, applyViewFilters));
+        return new AnswerValueBean(step.getViewAnswerValue());
     }
 
     public int getStepId() {
         return step.getStepId();
-    }
-
-    public void setAnswerValue(AnswerValueBean answer) {
-        step.setAnswerValue(answer.getAnswerValue());
     }
 
     public int getEstimateSize() {
@@ -553,6 +548,10 @@ public class StepBean {
 
   public Integer getStrategyId() {
     return step.getStrategyId();
+  }
+
+  public void setAnswerValuePaging(int start, int end) {
+    step.setAnswerValuePaging(start, end);
   }
 
 }

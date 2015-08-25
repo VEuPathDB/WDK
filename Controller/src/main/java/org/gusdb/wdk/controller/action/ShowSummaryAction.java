@@ -377,8 +377,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         if (start != answerValue.getStartIndex()
                 || end != answerValue.getEndIndex()) {
-            answerValue = answerValue.makeAnswerValue(start, end);
-            step.setAnswerValue(answerValue);
+            step.setAnswerValuePaging(start, end);
         }
 
         prepareAttributes(request, wdkUser, step);
