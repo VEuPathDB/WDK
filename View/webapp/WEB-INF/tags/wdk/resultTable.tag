@@ -8,7 +8,8 @@
               required="true"
               description="Step bean we are looking at" %>
 
-  <c:set var="wdkAnswer" value="${step.viewAnswerValue}"/>
+  <c:set var="wdkAnswer" value="${step.answerValue}"/>
+  <c:set var="wdkViewAnswer" value="${step.viewAnswerValue}"/>
 
   <c:set var="qName" value="${wdkAnswer.question.fullName}" />
   <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
@@ -19,7 +20,7 @@
   <%-- catch raised exception so we can show the user a nice message --%>
   <c:catch var="answerValueRecords_exception">
     <%-- FIXME This should probably be logged to wdk logger --%>
-    <c:set var="answerRecords" value="${wdkAnswer.records}" />
+    <c:set var="answerRecords" value="${wdkViewAnswer.records}" />
   </c:catch>
 
   <c:set var="wdkView" value="${requestScope.wdkView}" />
@@ -52,7 +53,7 @@
       </div>
     </c:when>
 
-    <c:when test='${wdkAnswer.resultSize == 0}'>
+    <c:when test='${wdkViewAnswer.resultSize == 0}'>
       No results are retrieved
     </c:when>
 
@@ -84,7 +85,7 @@
           <tr class="subheaderrow">
 
             <th style="text-align: left; white-space: nowrap; width: 33%;"> 
-              <imp:pager wdkAnswer="${wdkAnswer}" pager_id="top"/> 
+              <imp:pager wdkAnswer="${wdkViewAnswer}" pager_id="top"/> 
             </th>
 
             <th style="text-align: center; white-space: nowrap; width: 34px;">
@@ -103,7 +104,7 @@
 
             </th>
             <th style="text-align: right; white-space: nowrap; width: 33px;">
-              <c:if test="${wdkAnswer.resultSize > 0}">
+              <c:if test="${wdkViewAnswer.resultSize > 0}">
 
                 <%-- Galaxy URL --%>
                 <c:if test="${!empty sessionScope.GALAXY_URL}">
@@ -319,7 +320,7 @@
         <table style="width:100%">
           <tr class="subheaderrow">
             <th style="text-align:left;white-space:nowrap;"> 
-              <imp:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 
+              <imp:pager wdkAnswer="${wdkViewAnswer}" pager_id="bottom"/> 
             </th>
           </tr>
         </table>

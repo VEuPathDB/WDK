@@ -186,10 +186,6 @@ public class AnswerValue {
   private FilterOptionList _filterOptions;
   private FilterOptionList _viewFilterOptions;
 
-  // by default do not apply view filters;
-  //   we want the full result in many more cases
-  private boolean _applyViewFilters = false;
-
   private String _checksum;
 
   // ------------------------------------------------------------------
@@ -249,17 +245,11 @@ public class AnswerValue {
 
     _sortingMap = new LinkedHashMap<String, Boolean>(answerValue._sortingMap);
     _filter = answerValue._filter;
-    _applyViewFilters = answerValue._applyViewFilters;
   }
 
   // ------------------------------------------------------------------
   // Public Methods
   // ------------------------------------------------------------------
-
-  public void setApplyViewFilters(boolean applyViewFilters) {
-    _applyViewFilters = applyViewFilters;
-    reset();
-  }
 
   /**
    * provide property that user's term for question
@@ -975,13 +965,14 @@ public class AnswerValue {
       innerSql = applyFilters(innerSql, _filterOptions, excludeFilter);
 
       // apply view filters if requested
-      if (_applyViewFilters) {
+      boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
+      if (viewFiltersApplied){
         innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
       }
       
       innerSql = "(" + innerSql + ")";
 
-      logger.debug("ID SQL constructed (viewFilters = " + _applyViewFilters + "):\n" + innerSql);
+      logger.debug("ID SQL constructed (viewFilters = " + viewFiltersApplied + "):\n" + innerSql);
 
       return innerSql;
     }
@@ -1467,9 +1458,5 @@ public class AnswerValue {
     String idSql = getIdSql(filterName);
     Filter filter = _question.getFilter(filterName);
     return filter.getSummary(this, idSql);
-  }
-
-  public boolean getApplyViewFilters() {
-    return _applyViewFilters;
   }
 }

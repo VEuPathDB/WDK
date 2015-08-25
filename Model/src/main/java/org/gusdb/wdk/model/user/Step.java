@@ -109,8 +109,8 @@ public class Step {
   // This affects the UI- if no filter OR the default filter is applied, the filter icon does not appear
   private String filterName;
 
-  // AnswerValue for this step (see AnswerValue)
-  private AnswerValue answerValue;
+  // stores answer values for this step object and manages reuse of those objects
+  private AnswerValueCache answerValueCache;
 
   // Map of param name (without set name) to stable value (always a string), which are:
   // StringParam: unquoted raw value
@@ -156,12 +156,14 @@ public class Step {
    *          id of the owner of this step
    * @param stepId
    *          id of the step
+   * @throws WdkModelException 
    */
-  public Step(StepFactory stepFactory, int userId, int stepId) {
+  public Step(StepFactory stepFactory, int userId, int stepId) throws WdkModelException {
     this.stepFactory = stepFactory;
     this.user = null;
     this.userId = userId;
     this.stepId = stepId;
+    this.answerValueCache = new AnswerValueCache(this);
     deleted = false;
     assignedWeight = 0;
   }
@@ -184,6 +186,7 @@ public class Step {
     this.user = user;
     this.userId = user.getUserId();
     this.stepId = stepId;
+    this.answerValueCache = new AnswerValueCache(this);
     deleted = false;
     assignedWeight = 0;
   }
@@ -193,8 +196,9 @@ public class Step {
    * existing private fields.
    * 
    * @param step Step to make a shallow copy of
+   * @throws WdkModelException 
    */
-  public Step(Step step) {
+  public Step(Step step) throws WdkModelException {
     stepFactory = step.stepFactory;
     user = step.user;
     userId = step.userId;
@@ -217,7 +221,6 @@ public class Step {
     validityChecked = step.validityChecked;
     estimateSize = step.estimateSize;
     filterName = step.filterName;
-    answerValue = step.answerValue;
     paramValues = step.paramValues;
     filterOptions = step.filterOptions;
     viewFilterOptions = step.viewFilterOptions;
@@ -227,6 +230,10 @@ public class Step {
     revisable = step.revisable;
     exception = step.exception;
     strategyId = step.strategyId;
+
+    // answer value cache copy is NOT shallow- if caller wants a new step, they are
+    // probably going to modify it to get a different answer value
+    this.answerValueCache = new AnswerValueCache(this);
   }
 
   public Step getPreviousStep() throws WdkModelException {
@@ -826,13 +833,6 @@ public class Step {
     return filterOptions;
   }
 
-  public void setFilterOptions(FilterOptionList filterOptions) throws WdkModelException {
-    validateFilterOptions(filterOptions, false);
-    this.filterOptions = filterOptions;
-    if (answerValue != null)
-      answerValue.setFilterOptions(filterOptions);
-  }
-
   public FilterOptionList getViewFilterOptions() {
     if (viewFilterOptions == null) {
       viewFilterOptions = new FilterOptionList(this);
@@ -840,11 +840,16 @@ public class Step {
     return viewFilterOptions;
   }
 
+  public void setFilterOptions(FilterOptionList filterOptions) throws WdkModelException {
+    validateFilterOptions(filterOptions, false);
+    this.filterOptions = filterOptions;
+    answerValueCache.invalidateAll();
+  }
+
   public void setViewFilterOptions(FilterOptionList filterOptions) throws WdkModelException {
     validateFilterOptions(filterOptions, true);
     this.viewFilterOptions = filterOptions;
-    if (answerValue != null)
-      answerValue.setViewFilterOptions(filterOptions);
+    answerValueCache.invalidateViewAnswers();
   }
 
   public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
@@ -922,19 +927,14 @@ public class Step {
    * deep clone a step, the step will get a new id, and if the step contains other sub-steps, all those sub
    * steps are cloned recursively.
    * 
-   * @throws SQLException
    * @throws WdkUserException
-   * @throws JSONException
    * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * 
    */
   public Step deepClone(Integer strategyId, Map<Integer, Integer> stepIdMap) throws WdkModelException {
     Step step;
-    AnswerValue answerValue;
     try {
       if (!isCombined()) {
-        answerValue = getAnswerValue(false, false);
+        AnswerValue answerValue = answerValueCache.getAnswerValue(false);
         step = getUser().createStep(strategyId, answerValue, deleted, assignedWeight);
       }
       else {
@@ -1088,56 +1088,20 @@ public class Step {
     this.filterName = filterName;
   }
 
-  public AnswerValue getViewAnswerValue() throws WdkModelException, WdkUserException {
-    return getAnswerValue(true, true);
-  }
-  
   public AnswerValue getAnswerValue() throws WdkModelException, WdkUserException {
-    return getAnswerValue(true, false);
+    return answerValueCache.getAnswerValue(true);
   }
 
-  public AnswerValue getAnswerValue(boolean validate, boolean applyViewFilters)
-      throws WdkModelException, WdkUserException {
-    // even if a step is invalid, still allow user to create answerValue
-    // if (!valid)
-    // throw new WdkUserException("Step #" + internalId
-    // + "(i) is invalid, cannot create answerValue.");
-    if (answerValue == null) {
-      Question question = getQuestion();
-      User user = getUser();
-      Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
-      int endIndex = user.getItemsPerPage();
-      // try {
-        answerValue = question.makeAnswerValue(user, paramValues, 1, endIndex, sortingMap, getFilter(),
-            validate, assignedWeight);
-        answerValue.setFilterOptions(getFilterOptions());
-        answerValue.setViewFilterOptions(getViewFilterOptions());
-        answerValue.setApplyViewFilters(applyViewFilters);
-      // }
-      // catch (WdkUserException ex) {
-      //  throw new WdkModelException(ex);
-      // }
-      try {
-        this.estimateSize = answerValue.getDisplayResultSize();
-      }
-      catch (WdkModelException | WdkUserException ex) {
-        // if validate is false, the error will be ignored to allow the process to continue.
-        if (validate)
-          throw ex;
-        else
-          logger.warn(ex);
-      }
-      update(false);
-    }
-    return answerValue;
+  public AnswerValue getViewAnswerValue() throws WdkModelException, WdkUserException {
+    return answerValueCache.getViewAnswerValue(true);
   }
 
-  public void setAnswerValue(AnswerValue answerValue) {
-    this.answerValue = answerValue;
+  public AnswerValue getAnswerValue(boolean validate) throws WdkModelException, WdkUserException {
+    return answerValueCache.getAnswerValue(validate);
   }
 
   public void resetAnswerValue() {
-    this.answerValue = null;
+    answerValueCache.invalidateAll();
   }
 
   /**
@@ -1477,5 +1441,10 @@ public class Step {
 
   public void setStrategyId(Integer strategyId) {
     this.strategyId = strategyId;
+  }
+
+  public void setAnswerValuePaging(int start, int end) {
+    answerValueCache.setPaging(start, end);
+    
   }
 }

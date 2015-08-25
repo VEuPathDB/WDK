@@ -308,7 +308,6 @@ public class StepFactory {
     step.setParamValues(dependentValues);
     step.setFilterOptions(filterOptions);
     addDefaultFiltersToStep(step);
-    step.setAnswerValue(answerValue);
     step.setEstimateSize(estimateSize);
     step.setAssignedWeight(assignedWeight);
     step.setException(exception);
