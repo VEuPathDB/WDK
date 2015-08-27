@@ -92,14 +92,14 @@
 
               <c:if test="${wdkAnswer.question.recordClass.hasResultSizeQuery}">
                 <span style="padding-right: 2em">
+                  ${wdkAnswer.displayResultSize eq 1 ? step.recordClass.displayName : step.recordClass.displayNamePlural}:
                   ${wdkAnswer.displayResultSize}
-                  ${wdkAnswer.displayResultSize eq 1 ? step.recordClass.displayName : step.recordClass.displayNamePlural}
                 </span>
               </c:if>
 
               <span style="padding-right: 2em">
+                ${wdkAnswer.resultSize eq 1 ? wdkAnswer.question.recordClass.nativeDisplayName : wdkAnswer.question.recordClass.nativeDisplayNamePlural}:
                 ${wdkAnswer.resultSize}
-                ${wdkAnswer.resultSize eq 1 ? wdkAnswer.question.recordClass.nativeDisplayName : wdkAnswer.question.recordClass.nativeDisplayNamePlural}
               </span>
 
             </th>
