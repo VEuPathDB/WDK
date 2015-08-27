@@ -1275,7 +1275,7 @@ public class Step {
       return;
     }
 
-    logger.info("Parsing json:\n" + jsContent.toString(2));
+    logger.debug("Parsing json:\n" + jsContent.toString(2));
 
     // legacy records: if no "params" property, assume JSON represents only params
     if (!jsContent.has(KEY_PARAMS)) {
