@@ -6,6 +6,39 @@ import Tooltip from '../client/components/Tooltip';
 import Dialog from '../client/components/Dialog';
 import Table from '../client/components/Table';
 
+function noop(){}
+
+var dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
+
+/**
+ * Returns an strftime style format string.
+ */
+function getFormatFromDateString(dateString) {
+  var matches = dateString.match(dateStringRe);
+  if (matches !== null) {
+    var [ , Y, m, d ] = matches;
+    return  d !== undefined ? '%Y-%m-%d'
+          : m !== undefined ? '%Y-%m'
+          : '%Y';
+  }
+}
+
+/**
+ * Returns a formatted date.
+ *
+ * @param {string} format strftime style format string
+ * @param {Date} date
+ */
+function formatDate(format, date) {
+  if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
+  return format
+  .replace(/%Y/, date.getFullYear())
+  .replace(/%m/, date.getMonth() + 1)
+  .replace(/%d/, date.getDate());
+}
+
 wdk.namespace('wdk.components.attributeFilter', function(ns) {
   'use strict';
 
@@ -661,6 +694,383 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
   });
 
+  // Reusable histogram field component. The parent component
+  // is responsible for preparing the data.
+
+  var unwrapXaxisRange = function unwrap(flotRanges) {
+    if (flotRanges == null) {
+      return { min: null, max: null };
+    }
+
+    var { from, to } = flotRanges.xaxis;
+    var min = Number(from.toFixed(2));
+    var max = Number(to.toFixed(2));
+    return { min, max };
+  };
+
+  var distributionEntryPropType = React.PropTypes.shape({
+    value: React.PropTypes.number.isRequired,
+    count: React.PropTypes.number.isRequired,
+    filteredCount: React.PropTypes.number.isRequired
+  });
+
+  var Histogram = React.createClass({
+
+    propTypes: {
+      distribution: React.PropTypes.arrayOf(distributionEntryPropType).isRequired,
+      selectedMin: React.PropTypes.number,
+      selectedMax: React.PropTypes.number,
+      chartType: React.PropTypes.oneOf([ 'number', 'date' ]).isRequired,
+      timeformat: React.PropTypes.string.isRequired,
+      xaxisLabel: React.PropTypes.string,
+      yaxisLabel: React.PropTypes.string,
+
+      onSelected: React.PropTypes.func,
+      onSelecting: React.PropTypes.func,
+      onUnselected: React.PropTypes.func,
+    },
+
+    getDefaultProps() {
+      return {
+        xaxisLabel: 'X-Axis',
+        yaxisLabel: 'Y-Axis',
+        selectedMin: null,
+        selectedMax: null,
+        onSelected: noop,
+        onSelecting: noop,
+        onUnselected: noop
+      };
+    },
+
+    getInitialState() {
+      // Set default yAxis max based on distribution
+      var yaxisMax = this.computeYAxisMax();
+      return { yaxisMax };
+    },
+
+    computeYAxisMax() {
+      var counts = this.props.distribution.map(entry => entry.count);
+      // Reverse sort, then pull out first and second highest values
+      var [ max, nextMax ] = counts.sort((a, b) => a < b ? 1 : -1);
+      var yaxisMax = max >= nextMax * 2 ? nextMax : max;
+      return yaxisMax + yaxisMax * 0.1;
+    },
+
+    componentWillMount() {
+      this.handleResize = _.throttle(this.handleResize, 100);
+    },
+
+    componentDidMount: function() {
+      $(window).on('resize', this.handleResize);
+      $(this.getDOMNode())
+        .on('plotselected .chart', this.handlePlotSelected)
+        .on('plotselecting .chart', this.handlePlotSelecting)
+        .on('plotunselected .chart', this.handlePlotUnselected)
+        .on('plothover .chart', this.handlePlotHover);
+
+      this.createPlot();
+      this.createTooltip();
+      this.drawPlotSelection();
+    },
+
+    componentWillUnmount: function() {
+      $(window).off('resize', this.handleResize);
+    },
+
+    /**
+     * Conditionally update plot and selection based on props and state:
+     *  1. Call createPlot if distribution changed
+     */
+    componentDidUpdate: function(prevProps) {
+      if (!_.isEqual(this.props.distribution, prevProps.distribution)) {
+        this.createPlot();
+        this.drawPlotSelection();
+      }
+      if (prevProps.selectedMin !== this.props.selectedMin || prevProps.selectedMax !== this.props.selectedMax) {
+        this.drawPlotSelection();
+      }
+    },
+
+    handleResize: function() {
+      this.plot.resize();
+      this.plot.setupGrid();
+      this.plot.draw();
+      this.drawPlotSelection();
+    },
+
+    handlePlotSelected: function(event, ranges) {
+      var range = unwrapXaxisRange(ranges);
+      this.props.onSelected(range);
+    },
+
+    handlePlotSelecting: function(event, ranges) {
+      if (!ranges) return;
+      var range = unwrapXaxisRange(ranges);
+      this.props.onSelecting(range);
+    },
+
+    handlePlotUnselected: function() {
+      var range = { min: null, max: null };
+      this.props.onSelected(range);
+    },
+
+    drawPlotSelection: function() {
+      var values = this.props.distribution.map(entry => entry.value);
+      var currentSelection = unwrapXaxisRange(this.plot.getSelection());
+      var { selectedMin, selectedMax } = this.props;
+
+      // Selection already matches current state
+      if (selectedMin === currentSelection.min && selectedMax === currentSelection.max) {
+        return;
+      }
+
+      if (selectedMin === null && selectedMax === null) {
+        this.plot.clearSelection(true);
+      } else {
+        this.plot.setSelection({
+          xaxis: {
+            from: selectedMin === null ? _.min(values) : selectedMin,
+            to: selectedMax === null ? _.max(values) : selectedMax
+          }
+        }, true);
+      }
+    },
+
+    createPlot: function() {
+      var { distribution, chartType, timeformat } = this.props;
+
+      var values = distribution.map(entry => entry.value);
+      var min = _.min(values);
+      var max = _.max(values);
+
+      var barWidth = (max - min) * 0.005;
+
+      var xaxisBaseOptions = chartType === 'date'
+        ? { mode: 'time', timeformat: timeformat }
+        : {};
+
+
+      var seriesData = [{
+        data: distribution.map(entry => [ entry.value, entry.count ]),
+        color: '#AAAAAA'
+      },{
+        data: distribution.map(entry => [ entry.value, entry.filteredCount ]),
+        color: '#DA7272',
+        hoverable: false,
+        points: { show: true }
+      }];
+
+      var plotOptions = {
+        series: {
+          bars: {
+            show: true,
+            fillColor: { colors: [{ opacity: 1 }, { opacity: 1 }] },
+            barWidth: barWidth,
+            lineWidth: 0,
+            align: 'center'
+          }
+        },
+        xaxis: Object.assign({
+          min: Math.floor(min - barWidth),
+          max: Math.ceil(max + barWidth),
+          tickLength: 0
+        }, xaxisBaseOptions),
+        yaxis: {
+          min: 0,
+          max: this.state.yaxisMax
+        },
+        grid: {
+          clickable: true,
+          hoverable: true,
+          autoHighlight: false,
+          borderWidth: 0
+        },
+        selection: {
+          mode: 'x',
+          color: '#66A4E7'
+        }
+      };
+
+      if (this.plot) this.plot.destroy();
+
+      this.$chart = $(this.getDOMNode()).find('.chart');
+      this.plot = $.plot(this.$chart, seriesData, plotOptions);
+    },
+
+    createTooltip: function() {
+      this.tooltip = this.$chart
+        .wdkTooltip({
+          prerender: true,
+          content: ' ',
+          position: {
+            target: 'mouse',
+            viewport: this.$el,
+            my: 'bottom center'
+          },
+          show: false,
+          hide: {
+            event: false,
+            fixed: true
+          }
+        });
+    },
+
+    handlePlotHover: function(event, pos, item) {
+      var qtipApi = this.tooltip.qtip('api'),
+          previousPoint;
+
+      if (!item) {
+        qtipApi.cache.point = false;
+        return qtipApi.hide(item);
+      }
+
+      previousPoint = qtipApi.cache.point;
+
+      if (previousPoint !== item.dataIndex) {
+        qtipApi.cache.point = item.dataIndex;
+        var entry = this.props.distribution[item.dataIndex];
+        var formattedValue = this.props.chartType === 'date'
+          ? formatDate(this.props.timeformat, entry.value)
+          : entry.value;
+
+        // FIXME Format date
+        qtipApi.set('content.text',
+          this.props.xaxisLabel + ': ' + formattedValue +
+          '<br/>Total ' + this.props.yaxisLabel + ': ' + entry.count +
+          '<br/>Matching ' + this.props.yaxisLabel + ': ' + entry.filteredCount);
+        qtipApi.elements.tooltip.stop(1, 1);
+        qtipApi.show(item);
+      }
+    },
+
+    setYAxisMax: function(yaxisMax) {
+      this.setState({ yaxisMax }, () => {
+        this.plot.getOptions().yaxes[0].max = yaxisMax;
+        this.plot.setupGrid();
+        this.plot.draw();
+      });
+    },
+
+    render: function() {
+      var { yaxisMax } = this.state;
+      var { xaxisLabel, yaxisLabel, distribution } = this.props;
+
+      var counts = distribution.map(entry => entry.count);
+      var countsMin = Math.min(...counts);
+      var countsMax = Math.max(...counts);
+
+      return (
+        <div>
+          <div className="chart"></div>
+          <div className="chart-title x-axis">{xaxisLabel}</div>
+          <div className="chart-title y-axis">
+            <div>{yaxisLabel}</div>
+            <div>
+              <input
+                style={{width: '90%'}}
+                type="range" min={countsMin + 1} max={countsMax + countsMax * 0.1}
+                title={yaxisMax}
+                value={yaxisMax}
+                autoFocus={true}
+                onChange={e => this.setYAxisMax(Number(e.target.value))}/>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  });
+
+  var HistogramField = React.createClass({
+
+    propTypes: {
+      toFilterValue: React.PropTypes.func.isRequired,
+      toHistogramValue: React.PropTypes.func.isRequired,
+      onAddFilter: React.PropTypes.func.isRequired,
+      field: React.PropTypes.object.isRequired,
+      filter: React.PropTypes.object.isRequired,
+      overview: React.PropTypes.node.isRequired,
+      displayName: React.PropTypes.string.isRequired
+    },
+
+    componentWillMount() {
+      this.updateFilter = _.debounce(this.updateFilter, 50);
+    },
+
+    handleChange() {
+      var inputMin = this.refs.min.getDOMNode().value
+      var inputMax = this.refs.max.getDOMNode().value
+      var min = inputMin === '' ? null : this.props.toFilterValue(inputMin);
+      var max = inputMax === '' ? null : this.props.toFilterValue(inputMax);
+      this.props.onAddFilter(this.props.field, { min, max });
+    },
+
+    updateFilter(range) {
+      var min = this.props.toFilterValue(range.min);
+      var max = this.props.toFilterValue(range.max);
+      this.props.onAddFilter(this.props.field, { min, max });
+    },
+
+    render: function() {
+      var { field, filter, distribution, displayName } = this.props;
+      var values = distribution.map(entry => entry.value);
+      var distMin = this.props.toFilterValue(Math.min(...values));
+      var distMax = this.props.toFilterValue(Math.max(...values));
+
+      var { min, max } = filter ? filter.values : {};
+
+      var selectedMin = min == null ? null : this.props.toHistogramValue(min);
+      var selectedMax = max == null ? null : this.props.toHistogramValue(max);
+
+      var selectionTotal = filter && filter.selection && filter.selection.length;
+
+      var selection = selectionTotal != null
+        ? " (" + selectionTotal + " selected) "
+        : null;
+
+      return (
+        <div className="range-filter">
+
+          <div className="overview">
+            {this.props.overview}
+          </div>
+
+          <div>
+            {'Between '}
+            <input
+              ref="min"
+              type="text"
+              size="6"
+              placeholder={distMin}
+              value={min}
+              onChange={this.handleChange}
+            />
+            {' and '}
+            <input
+              ref="max"
+              type="text"
+              size="6"
+              placeholder={distMax}
+              value={max}
+              onChange={this.handleChange}
+            />
+            <span className="selection-total">{selection}</span>
+          </div>
+
+          <Histogram
+            distribution={distribution}
+            onSelected={this.updateFilter}
+            selectedMin={selectedMin}
+            selectedMax={selectedMax}
+            chartType={field.type}
+            timeformat={this.props.timeformat}
+            xaxisLabel={field.display}
+            yaxisLabel={displayName}
+          />
+        </div>
+      );
+    }
+
+  });
 
   var fieldComponents = {};
 
@@ -716,8 +1126,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
         <p>You may add or remove ${displayName} with specific ${fieldDisplay}
         values from your overall selection by checking or unchecking the
-        corresponding checkboxes.</p>
-        `;
+        corresponding checkboxes.</p>`;
 
       return (
         <div className="membership-filter">
@@ -774,328 +1183,130 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
   });
 
 
-  var unwrapXaxisRange = function unwrap(flotRanges) {
-    var { from, to } = flotRanges.xaxis;
-    var min = Number(from.toFixed(2));
-    var max = Number(to.toFixed(2));
-    return { min, max };
-  };
-
   fieldComponents.number = React.createClass({
 
-    getInitialState() {
-      // Set default yAxis max based on distribution
-      var yAxisMax = this.computeYAxisMax();
-      return { yAxisMax: yAxisMax + yAxisMax * 0.1 };
-    },
-
-    computeYAxisMax() {
-      var dist = _(this.props.distribution)
-        .filter(d => _.isNumber(d.value))
-        .sortBy(d => d.count)
-        .value();
-      var max = dist[dist.length - 1]
-      var nextMax = dist[dist.length - 2];
-
-      return max.count >= nextMax.count * 2 ? nextMax.count : max.count;
-    },
-
-    // componentWillReceiveProps(nextProps) {
-    //   var yAxisMax = Math.max(...this.props.distribution.filter(d => _.isNumber(d.value).map(d => d.count));
-    //   this.setState({ yAxisMax });
-    // },
-
-    componentDidMount: function() {
-      $(this.getDOMNode())
-        .on('plotselected .chart', this.handlePlotSelected)
-        .on('plotselecting .chart', this.handlePlotSelecting)
-        .on('plotunselected .chart', this.handlePlotUnselected)
-        .on('plothover .chart', this.handlePlotHover);
-
-      this.throttledHandleResize = _.throttle(this.handleResize, 100);
-      $(window).on('resize', this.throttledHandleResize);
-
-      this.createPlot();
-      this.createTooltip();
-      if (this.props.filter) this.doPlotSelection();
-    },
-
-    componentWillUnmount: function() {
-      $(window).off('resize', this.throttledHandleResize);
-    },
-
-    componentDidUpdate: function(prevProps) {
-      var doPlotSelection = false;
-      var prevMin = this.refs.min.getDOMNode().value;
-      var prevMax = this.refs.max.getDOMNode().value;
-      var min = null;
-      var max = null;
-
-      prevMin = prevMin === '' ? null : Number(prevMin);
-      prevMax = prevMax === '' ? null : Number(prevMax);
-
-      if (this.props.filter) {
-        min = this.props.filter.values.min;
-        max = this.props.filter.values.max;
-      }
-
-      if (!_.isEqual(prevProps.distribution, this.props.distribution)) {
-        this.createPlot();
-        doPlotSelection = true;
-      }
-
-      if (prevMin !== min && prevMax !== max) {
-        this.refs.min.getDOMNode().value = min;
-        this.refs.max.getDOMNode().value = max;
-        doPlotSelection = true;
-      }
-
-      if (doPlotSelection) {
-        this.doPlotSelection();
+    // FIXME Handle intermediate strings S where Number(S) => NaN
+    // E.g., S = '-'
+    // A potential solution is to use strings for state and to
+    // convert to Number when needed
+    parseValue(value) {
+      switch (typeof value) {
+        case 'string': return Number(value);
+        default: return value;
       }
     },
 
-    handleResize: function() {
-      this.plot.resize();
-      this.plot.setupGrid();
-      this.plot.draw();
-      this.doPlotSelection();
+    toHistogramValue(value) {
+      return Number(value);
     },
 
-    handlePlotSelected: function(event, ranges) {
-      var { min, max } = unwrapXaxisRange(ranges);
-      this._updateInputs(min, max);
-      this._updateFilter(min, max);
-      // this.setSelectionTotal(filter);
+    toFilterValue(value) {
+      return Number(value);
     },
 
-    handlePlotSelecting: function(event, ranges) {
-      if (!ranges) return;
-
-      var { min, max } = unwrapXaxisRange(ranges);
-      this._updateInputs(min, max);
-    },
-
-    handlePlotUnselected: function() {
-      this.props.onAddFilter(this.props.field, { min: null, max: null });
-    },
-
-    doPlotSelection: function() {
-      var values = _.pluck(this.props.distribution, 'value');
-      var minNodeVal = this.refs.min.getDOMNode().value;
-      var maxNodeVal = this.refs.max.getDOMNode().value;
-      var min = minNodeVal === '' ? null : minNodeVal;
-      var max = maxNodeVal === '' ? null : maxNodeVal;
-
-      if (min === null && max === null) {
-        this.plot.clearSelection(true);
-      } else {
-        this.plot.setSelection({
-          xaxis: {
-            from: min === null ? _.min(values) : min,
-            to: max === null ? _.max(values) : max
-          }
-        }, true);
-      }
-    },
-
-
-    _updateInputs: function(min, max) {
-      this.refs.min.getDOMNode().value = min;
-      this.refs.max.getDOMNode().value = max;
-    },
-
-    _updateFilter: _.debounce(function(min, max) {
-      this.props.onAddFilter(this.props.field, { min, max });
-    }, 50),
-
-    createPlot: function() {
-      var { distribution } = this.props;
-      var dist = _.filter(distribution, item => _.isNumber(item.value));
-
-      var series = _.reduce(dist, (acc, item) => {
-        if (_.isUndefined(item.count)) return acc;
-        return acc.concat([ [ Number(item.value), Number(item.count) ] ]);
-      }, []);
-
-      var fSeries = _.reduce(dist, (acc, item) => {
-        if (_.isUndefined(item.filteredCount)) return acc;
-        return acc.concat([ [ Number(item.value), Number(item.filteredCount) ] ]);
-      }, []);
-
-      var values = _.pluck(dist, 'value');
-      var min = _.min(values);
-      var max = _.max(values);
-
-      var barWidth = (max - min) * 0.005;
-
-      var seriesData = [{
-        data: series,
-        color: '#000'
-      },{
-        data: fSeries,
-        color: 'red',
-        hoverable: false
-      }];
-
-      var plotOptions = {
-        series: {
-          bars: {
-            show: true,
-            barWidth: barWidth,
-            lineWidth: 0,
-            align: 'center'
-          }
-        },
-        xaxis: {
-          min: Math.floor(min - barWidth),
-          max: Math.ceil(max + barWidth),
-          tickLength: 0
-        },
-        yaxis: {
-          min: 0,
-          max: this.state.yAxisMax
-        },
-        grid: {
-          clickable: true,
-          hoverable: true,
-          autoHighlight: false,
-          borderWidth: 0
-        },
-        selection: {
-          mode: 'x',
-          color: '#66A4E7'
-        }
-      };
-
-      if (this.plot) this.plot.destroy();
-
-      this.$chart = $(this.getDOMNode()).find('.chart');
-      this.plot = $.plot(this.$chart, seriesData, plotOptions);
-
-      // // activate Read more link if text is overflowed
-      // var p = this.$('.description p').get(0);
-      // if (p && p.scrollWidth > p.clientWidth) {
-      //   this.$('.description .read-more').addClass('visible');
-      // }
-
-      // return this;
-    },
-
-    createTooltip: function() {
-      // do we need this ref?
-      this.tooltip = this.$chart
-        .wdkTooltip({
-          prerender: true,
-          content: ' ',
-          position: {
-            target: 'mouse',
-            viewport: this.$el,
-            my: 'bottom center'
-          },
-          show: false,
-          hide: {
-            event: false,
-            fixed: true
-          }
-        });
-    },
-
-    handlePlotHover: function(event, pos, item) {
-      var qtipApi = this.tooltip.qtip('api'),
-          previousPoint;
-
-      if (!item) {
-        qtipApi.cache.point = false;
-        return qtipApi.hide(item);
-      }
-
-      previousPoint = qtipApi.cache.point;
-
-      if (previousPoint !== item.dataIndex) {
-        qtipApi.cache.point = item.dataIndex;
-        qtipApi.set('content.text',
-          this.props.field.display + ': ' + item.datapoint[0] +
-          '<br/>' + this.props.displayName + ': ' + item.datapoint[1]);
-        qtipApi.elements.tooltip.stop(1, 1);
-        qtipApi.show(item);
-      }
-    },
-
-    handleChange: _.debounce(function() {
-      var min = this.refs.min.getDOMNode().value;
-      var max = this.refs.max.getDOMNode().value;
-      min = min === '' ? null : Number(min);
-      max = max === '' ? null : Number(max);
-      this._updateFilter(min, max);
-      this.doPlotSelection();
-    }, 200),
-
-    setYAxisMax: function(yAxisMax) {
-      this.setState({ yAxisMax }, () => {
-        this.plot.getOptions().yaxes[0].max = yAxisMax;
-        this.plot.setupGrid();
-        this.plot.draw();
+    render() {
+      var [ knownDist, unknownDist ] = _.partition(this.props.distribution, function(entry) {
+        return entry.value !== 'Unknown';
       });
+
+      var size = knownDist.reduce(function(sum, entry) {
+        return entry.count + sum;
+      }, 0);
+
+      var sum = knownDist.reduce(function(sum, entry) {
+        return entry.value * entry.count + sum;
+      }, 0);
+
+      var values = knownDist.map(entry => entry.value);
+      var distMin = Math.min(...values);
+      var distMax = Math.max(...values);
+      var distAvg = (sum / size).toFixed(2);
+      var unknownCount = unknownDist.reduce((sum, entry) => sum + entry.count, 0);
+      var overview = (
+        <dl className="ui-helper-clearfix">
+          <dt>Avg</dt>
+          <dd>{distAvg}</dd>
+          <dt>Min</dt>
+          <dd>{distMin}</dd>
+          <dt>Max</dt>
+          <dd>{distMax}</dd>
+          <dt>Unknown</dt>
+          <dd>{unknownCount}</dd>
+        </dl>
+      );
+
+      return (
+        <HistogramField
+          {...this.props}
+          distribution={knownDist}
+          toFilterValue={this.toFilterValue}
+          toHistogramValue={this.toHistogramValue}
+          overview={overview}
+        />
+      );
+    }
+  });
+
+  fieldComponents.date = React.createClass({
+
+    componentWillMount() {
+      this.timeformat = getFormatFromDateString(this.props.distribution[0].value);
+    },
+
+    componentWillUpdate(nextProps) {
+      this.timeformat = getFormatFromDateString(nextProps.distribution[0].value);
+    },
+
+    toHistogramValue(value) {
+      return new Date(value).getTime();
+    },
+
+    toFilterValue(value) {
+      switch (typeof value) {
+        case 'number': return formatDate(this.timeformat, value);
+        default: return value;
+      }
     },
 
     render: function() {
-      var { field, distribution, filter } = this.props;
-      var dist = _.filter(distribution, item => _.isNumber(item.value));
-      var size = _.reduce(dist, (acc, item) => acc + item.count, 0);
-      var sum = _.reduce(dist, (acc, item) => acc + (item.value * item.count), 0);
-      var values = _.pluck(dist, 'value');
-      var distMin = _.min(values);
-      var distMax = _.max(values);
-      var distAvg = (sum / size).toFixed(2);
-      var counts = dist.map(d => d.count);
-      var countMax = Math.max(...counts);
-      var countMin = Math.min(...counts);
-      var { min, max } = filter ? filter.values : {};
-      var selectionTotal = filter && filter.selection
-        ? " (" + filter.selection.length + " selected) "
-        : null;
+      var [ knownDist, unknownDist ] = _.partition(this.props.distribution, function(entry) {
+        return entry.value !== 'Unknown';
+      });
+
+
+      var values = knownDist.map(entry => entry.value);
+      var distMin = Math.min(...values);
+      var distMax = Math.max(...values);
+
+      var dateDist = knownDist.map(function(entry) {
+        // convert value to time in ms
+        return Object.assign({}, entry, {
+          value: new Date(entry.value).getTime()
+        });
+      });
+
+      var unknownCount = unknownDist.reduce((sum, entry) => sum + entry.count, 0);
+
+      var overview = (
+        <dl className="ui-helper-clearfix">
+          <dt>Min</dt>
+          <dd>{distMin}</dd>
+          <dt>Max</dt>
+          <dd>{distMax}</dd>
+          <dt>Unknown</dt>
+          <dd>{unknownCount}</dd>
+        </dl>
+      );
 
       return (
-        <div className="range-filter">
-          <div className="overview">
-            <dl className="ui-helper-clearfix">
-              <dt>Avg</dt>
-              <dd>{distAvg}</dd>
-              <dt>Min</dt>
-              <dd>{distMin}</dd>
-              <dt>Max</dt>
-              <dd>{distMax}</dd>
-            </dl>
-          </div>
-
-          <div>
-            {'Between '}
-            <input onChange={this.handleChange} ref="min" type="text" size="6" placeholder={distMin} defaultValue={min}/>
-            {' and '}
-            <input onChange={this.handleChange} ref="max" type="text" size="6" placeholder={distMax} defaultValue={max}/>
-            <span className="selection-total">{selectionTotal}</span>
-          </div>
-
-          <div>
-            <div className="chart"></div>
-            <div className="chart-title x-axis">
-              {field.display} ({field.units})
-            </div>
-            <div className="chart-title y-axis">
-              <div>{this.props.displayName}</div>
-              <div>
-                <input
-                  style={{width: '90%'}}
-                  type="range" min={countMin + 1} max={countMax + countMax * 0.1}
-                  title={this.state.yAxisMax}
-                  value={this.state.yAxisMax}
-                  autoFocus={true}
-                  onChange={e => this.setYAxisMax(Number(e.target.value))}/>
-              </div>
-            </div>
-          </div>
-        </div>
+        <HistogramField
+          {...this.props}
+          timeformat={this.timeformat}
+          distribution={dateDist}
+          toFilterValue={this.toFilterValue}
+          toHistogramValue={this.toHistogramValue}
+          overview={overview}
+        />
       );
     }
   });
