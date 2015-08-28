@@ -9,6 +9,10 @@ css_bundle    := dist/wdk/css/wdk.min.css
 test_bundle   := test/dist/tests.js
 
 wdk_sources  := $(shell find webapp/wdk/js -name '*.js') webpack.config.js
+
+# This exists mainly for legacy support. These should eventually
+# be included via npm and webpack. This will make it possible to
+# lazy-load these libraries with not-too-much effort.
 libs_sources := node_modules/babel-core/browser-polyfill.min.js \
                 webapp/wdk/lib/jquery.js \
                 webapp/wdk/lib/jquery-migrate-1.2.1.min.js \
@@ -18,9 +22,10 @@ libs_sources := node_modules/babel-core/browser-polyfill.min.js \
                 webapp/wdk/lib/jquery.qtip.min.js \
                 webapp/wdk/lib/flexigrid.js \
                 webapp/wdk/lib/select2.min.js \
-                webapp/wdk/lib/jquery.flot.min.js \
-                webapp/wdk/lib/jquery.flot.categories.min.js \
-                webapp/wdk/lib/jquery.flot.selection.min.js \
+                webapp/wdk/lib/flot/jquery.flot.min.js \
+                webapp/wdk/lib/flot/jquery.flot.categories.min.js \
+                webapp/wdk/lib/flot/jquery.flot.selection.min.js \
+                webapp/wdk/lib/flot/jquery.flot.time.min.js \
                 webapp/wdk/lib/jquery.dataTables.min.js \
                 webapp/wdk/lib/dataTables.colVis.min.js \
                 webapp/wdk/lib/jstree/jquery.jstree.js \

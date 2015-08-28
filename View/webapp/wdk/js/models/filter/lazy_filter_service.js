@@ -3,6 +3,52 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
   var FilterService = wdk.models.filter.FilterService;
 
+  // _.flow is a higher-order function that returns a function F composed of the
+  // supplied functions. Each provided function is invoked from left to right.
+  // The left-most function is called with the argument that F is called with.
+  // The next function is called, with the argument returned by the previous
+  // function, and so on. The return value of the last function is the return
+  // value of F.
+
+  /**
+   * Used by lodash sortBy. Returns a value that sortBy will use to
+   * compare with other values in an array.
+   *
+   * FIXME Use natural sort
+   *
+   * @param {any} value
+   */
+  function valueSorter(value) {
+    return typeof value === 'number' ? Number(value)
+         : value === 'Uknown' ? String.fromCharCode(0)
+         : String(value);
+  }
+
+  var flattenMetadataValues = _.flow(
+    metadata => Object.keys(metadata).map(key => metadata[key]),
+    nestedValues => nestedValues.reduce((a, b) => a.concat(b), []),
+    values => _.sortBy(values, valueSorter)
+  );
+
+  /**
+   * Calculate the occurence of each value present in metadata.
+   *
+   * @param {object} metadata A key-value map of { sample: [ { value } ] }
+   * @returns {object} A key-value map of { value: count }
+   */
+  var countByValues = _.flow(
+    flattenMetadataValues,
+    values => values.reduce((counts, value) => {
+      counts.hasOwnProperty(value) ? counts[value]++ : counts[value] = 1;
+      return counts;
+    }, {})
+  );
+
+  var uniqMetadataValues = _.flow(
+    flattenMetadataValues,
+    values => _.uniq(values)
+  );
+
   // Helper filtering functions
   // --------------------------
 
@@ -66,7 +112,6 @@ wdk.namespace('wdk.models.filter', function(ns) {
     },
 
     getFieldDistribution: function(field) {
-      var countByValues = _.compose(_.countBy, _.flatten, _.values);
       var term = field.term;
       var type = field.type;
       var otherFilters =_.reject(this.filters, function(filter) {
@@ -78,31 +123,22 @@ wdk.namespace('wdk.models.filter', function(ns) {
       return Promise.all([
         this.getFieldMetadata(field),
         this.getFilteredData(otherFilters)
-      ]).then(function(results) {
-        var metadata = results[0];
-        var filteredData = results[1];
+      ]).then(function([ fieldMetadata, filteredData ]) {
         var filteredMetadata = filteredData
           .reduce(function(acc, fd) {
-            acc[fd.term] = metadata[fd.term];
+            acc[fd.term] = fieldMetadata[fd.term];
             return acc;
           }, {});
-        var counts = countByValues(metadata);
+        var counts = countByValues(fieldMetadata);
         var filteredCounts = countByValues(filteredMetadata);
+        return uniqMetadataValues(fieldMetadata).map(value => {
+          return {
+            value,
+            count: counts[value],
+            filteredCount: filteredCounts[value] || 0
+          };
+        });
 
-        return _.chain(metadata)
-          .values()
-          .flatten()
-          .uniq()
-          .sortBy(type === 'number' ? Number : String)
-          .sortBy(value => value === 'Unknown' ? String.fromCharCode(255) : value)
-          .map(function(value) {
-            return {
-              value: value,
-              count: Number(counts[value]),
-              filteredCount: filteredCounts[value] || 0
-            };
-          })
-          .value();
       }.bind(this));
     },
 
@@ -131,17 +167,21 @@ wdk.namespace('wdk.models.filter', function(ns) {
         this.metadataXhrQueue.set(term, xhr);
 
         xhr
-          .then(function(metadata) {
-            metadata = _.indexBy(metadata, 'sample');
-            // cache metadata and transform to a dict
-            this.metadata[term] = this.data
-              .reduce(function(acc, d) {
-                var values = _.result(metadata[d.term], 'values');
-                acc[d.term] = _.isUndefined(values)
-                  ? [ 'Unknown' ]
-                  : type == 'number' ? values.map(Number) : values;
-                return acc;
-              }, {});
+          .then(function(fieldMetadata) {
+            // Cache fieldMetadata and transform to a dict. Also parse values
+            // into primitives (String, Number, Date, etc.).
+            // Each key is the sample term, and each value is an array of values
+            // for the given term.
+            fieldMetadata = _.indexBy(fieldMetadata, 'sample');
+            this.metadata[term] = this.data.reduce(function(parsedMetadata, d) {
+              // TODO Add formatting for date type
+              var values = _.result(fieldMetadata[d.term], 'values');
+              // TODO Use a Symbol for Unknown
+              parsedMetadata[d.term] = _.isUndefined(values) ? [ 'Unknown' ]
+                                     : type === 'number' ? values.map(Number)
+                                     : values.map(String);
+              return parsedMetadata;
+            }, {});
             resolve(this.metadata[term]);
           }.bind(this))
           .fail(function(err) {
@@ -166,7 +206,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
             .map(function(filter) {
               if (filter.field.type == 'string') {
                 return this.getMemberPredicate(filter);
-              } else if (filter.field.type == 'number') {
+              } else if (filter.field.type == 'number' || filter.field.type == 'date') {
                 return this.getRangePredicate(filter);
               }
             }, this);
