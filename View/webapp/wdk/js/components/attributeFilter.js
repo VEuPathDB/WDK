@@ -721,7 +721,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       selectedMin: React.PropTypes.number,
       selectedMax: React.PropTypes.number,
       chartType: React.PropTypes.oneOf([ 'number', 'date' ]).isRequired,
-      timeformat: React.PropTypes.string.isRequired,
+      timeformat: React.PropTypes.string,
       xaxisLabel: React.PropTypes.string,
       yaxisLabel: React.PropTypes.string,
 
