@@ -179,14 +179,17 @@ wdk.namespace('wdk.models.filter', function(ns) {
       }
 
       if (field.type === 'string') {
-        this.addStringFilter(filter, values);
+        this.addIncludesFilter(filter, values);
       }
-      else if (field.type === 'number') {
-        this.addNumberFilter(filter, values);
+      else if (field.type === 'number' || field.type === 'date') {
+        this.addRangeFilter(filter, values);
+      }
+      else {
+        throw new Error('Unkown field type `' + field.type + '` on field `' + field.term + '`.');
       }
     },
 
-    addStringFilter: function(filter, values) {
+    addIncludesFilter: function(filter, values) {
       var field = filter.field;
       var allValues = _.pluck(this.distributionMap[field.term], 'value');
       if (_.difference(allValues, values).length === 0) {
@@ -202,7 +205,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.updateFilters(filter);
     },
 
-    addNumberFilter: function(filter, values) {
+    addRangeFilter: function(filter, values) {
       if (values.min === null && values.max === null) {
         this.removeFilter(filter);
         return;
