@@ -37,6 +37,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.DefaultResultSizePlugin;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -132,17 +133,21 @@ public class AnswerValue {
     private final AnswerValue _answer;
     private final ConcurrentMap<String, Integer> _sizes;
     private final String _filterName;
+    private final boolean _useDisplay;
 
-    public FilterSizeTask(AnswerValue answer, ConcurrentMap<String, Integer> sizes, String filterName) {
+    public FilterSizeTask(AnswerValue answer, ConcurrentMap<String, Integer> sizes, String filterName, boolean useDisplay) {
       _answer = answer;
       _sizes = sizes;
       _filterName = filterName;
+      _useDisplay = useDisplay;
     }
 
     @Override
     public void run() {
       try {
-        int size = _answer.getFilterSize(_filterName);
+        int size = (_useDisplay ?
+            _answer.getFilterDisplaySize(_filterName) :
+            _answer.getFilterSize(_filterName));
         _sizes.put(_filterName, size);
       }
       catch (WdkModelException | WdkUserException ex) {
@@ -285,26 +290,17 @@ public class AnswerValue {
 
   public int getResultSize() throws WdkModelException, WdkUserException {
     if (_resultSize == null || !_idsQueryInstance.isCached()) {
-      String idSql = getIdSql();
-      DataSource dataSource = _question.getWdkModel().getAppDb().getDataSource();
-      try {
-        Object count = SqlUtils.executeScalar(dataSource, "SELECT count(*) FROM (" + idSql + ")",
-            _question.getFullName() + "__count");
-        _resultSize = Integer.valueOf(count.toString());
-      }
-      catch (SQLException ex) {
-        throw new WdkModelException(ex);
-      }
+      _resultSize = new DefaultResultSizePlugin().getResultSize(this);
     }
     logger.debug("getting result size: cache=" + _resultSize + ", isCached=" + _idsQueryInstance.isCached());
     return _resultSize;
   }
-  
-  
+
   public int getDisplayResultSize() throws WdkModelException, WdkUserException {
-	  ResultSize plugin = _question.getRecordClass().getResultSizePlugin();
-	  return plugin.getResultSize(this);
+    ResultSize plugin = _question.getRecordClass().getResultSizePlugin();
+    return plugin.getResultSize(this);
   }
+
   public Map<String, Integer> getResultSizesByProject() throws WdkModelException, WdkUserException {
     if (_resultSizesByProject == null) {
       _resultSizesByProject = new LinkedHashMap<String, Integer>();
@@ -1300,7 +1296,25 @@ public class AnswerValue {
     return ids;
   }
 
+  public int getFilterDisplaySize(String filterName)
+      throws WdkModelException, WdkUserException {
+    return getFilterSize(filterName, true);
+  }
+
+  public int getFilterSize(String filterName)
+      throws WdkModelException, WdkUserException {
+    return getFilterSize(filterName, false);
+  }
+
+  public Map<String, Integer> getFilterDisplaySizes() {
+    return getFilterSizes(true);
+  }
+
   public Map<String, Integer> getFilterSizes() {
+    return getFilterSizes(false);
+  }
+
+  private Map<String, Integer> getFilterSizes(boolean useDisplay) {
     RecordClass recordClass = _question.getRecordClass();
     AnswerFilterInstance[] filters = recordClass.getFilterInstances();
     ConcurrentMap<String, Integer> sizes = new ConcurrentHashMap<>(filters.length);
@@ -1308,7 +1322,7 @@ public class AnswerValue {
     // use a thread pool to get filter sizes in parallel
     ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     for (AnswerFilterInstance filter : filters) {
-      executor.execute(new FilterSizeTask(this, sizes, filter.getName()));
+      executor.execute(new FilterSizeTask(this, sizes, filter.getName(), useDisplay));
     }
 
     // wait for executor to finish.
@@ -1325,38 +1339,31 @@ public class AnswerValue {
     return sizes;
   }
 
-  public int getFilterSize(String filterName) throws WdkModelException, WdkUserException {
+  private int getFilterSize(String filterName, boolean useDisplay)
+      throws WdkModelException, WdkUserException {
     Integer size = _resultSizesByFilter.get(filterName);
     if (size != null && _idsQueryInstance.isCached()) {
       return size;
     }
-    try {
-      RecordClass recordClass = _question.getRecordClass();
 
-      String innerSql = _idsQueryInstance.getSql();
-      int assignedWeight = _idsQueryInstance.getAssignedWeight();
+    RecordClass recordClass = _question.getRecordClass();
+    String innerSql = _idsQueryInstance.getSql();
+    int assignedWeight = _idsQueryInstance.getAssignedWeight();
 
-      // ignore invalid filters
-      AnswerFilterInstance filter = recordClass.getFilterInstance(filterName);
-      if (filter != null)
-        innerSql = filter.applyFilter(_user, innerSql, assignedWeight);
+    // ignore invalid filters
+    AnswerFilterInstance filter = recordClass.getFilterInstance(filterName);
+    if (filter != null)
+      innerSql = filter.applyFilter(_user, innerSql, assignedWeight);
 
-      StringBuffer sql = new StringBuffer("SELECT count(*) FROM ");
-      sql.append("(").append(innerSql).append(") f");
+    // if display count requested, use custom plugin; else use default
+    ResultSize countPlugin = (useDisplay ?
+        _question.getRecordClass().getResultSizePlugin() :
+        new DefaultResultSizePlugin());
 
-      WdkModel wdkModel = _question.getWdkModel();
-      DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      Object result = SqlUtils.executeScalar(dataSource, sql.toString(),
-          _idsQueryInstance.getQuery().getFullName() + "__" + filterName + "-filter-size");
-      size = Integer.parseInt(result.toString());
-
-      _resultSizesByFilter.put(filterName, size);
-
-      return size;
-    }
-    catch (SQLException e) {
-      throw new WdkModelException("Unable to get filter size for filter " + filterName, e);
-    }
+    // get size, cache, and return
+    size = countPlugin.getResultSize(this, innerSql);
+    _resultSizesByFilter.put(filterName, size);
+    return size;
   }
 
   /**

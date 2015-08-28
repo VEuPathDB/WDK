@@ -24,12 +24,18 @@ public class SqlQueryResultSizePlugin implements ResultSize {
 		this.query = query;
 		validateQuery(query);
 	}
-	
+
 	@Override
 	public Integer getResultSize(AnswerValue answerValue)
+	        throws WdkModelException, WdkUserException {
+	    return getResultSize(answerValue, answerValue.getIdSql());
+	}
+	
+	@Override
+	public Integer getResultSize(AnswerValue answerValue, String idSql)
 			throws WdkModelException, WdkUserException {
 
-		QueryInstance<?> queryInstance = getQueryInstance(answerValue);
+		QueryInstance<?> queryInstance = getQueryInstance(answerValue, idSql);
 		ResultList results = queryInstance.getResults();
 		results.next();
 		Integer count = ((BigDecimal)results.get(COUNT_COLUMN)).intValue();
@@ -38,9 +44,9 @@ public class SqlQueryResultSizePlugin implements ResultSize {
 		return count;
 	}
 	
-	private QueryInstance<?> getQueryInstance(AnswerValue answerValue) throws WdkModelException, WdkUserException {
+	private QueryInstance<?> getQueryInstance(AnswerValue answerValue, String idSql) throws WdkModelException {
 	      Map<String, String> params = new LinkedHashMap<String, String>();
-	      params.put(WDK_ID_SQL_PARAM, answerValue.getIdSql());
+	      params.put(WDK_ID_SQL_PARAM, idSql);
 	      QueryInstance<?> queryInstance;
 	      try {
 	        queryInstance = query.makeInstance(answerValue.getUser(), params, true, 0,
