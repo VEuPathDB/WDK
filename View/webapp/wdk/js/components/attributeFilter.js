@@ -1005,8 +1005,8 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     updateFilter(range) {
-      var min = this.props.toFilterValue(range.min);
-      var max = this.props.toFilterValue(range.max);
+      var min = range.min == null ? null : this.props.toFilterValue(range.min);
+      var max = range.max == null ? null : this.props.toFilterValue(range.max);
       this.props.onAddFilter(this.props.field, { min, max });
     },
 
