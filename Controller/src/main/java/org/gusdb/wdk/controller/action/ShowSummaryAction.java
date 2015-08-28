@@ -40,9 +40,6 @@ import org.json.JSONObject;
 
 public class ShowSummaryAction extends ShowQuestionAction {
 
-    private static final String KEY_SIZE_CACHE_MAP = "size_cache";
-    private static final int MAX_SIZE_CACHE_MAP = 100;
-
     private static final String PARAM_HIDDEN_STEP = "hidden";
     private static final String PARAM_CUSTOM_NAME = "customName";
 
@@ -99,6 +96,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             AnswerValueBean answerValue = step.getAnswerValue();
 
             // return only the result size, if requested
+            /* deprecated; does not appear to be used anywhere */
             if (request.getParameterMap().containsKey(
                     CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
                 String filterName = request.getParameter("filter");
@@ -507,6 +505,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
      * @return
      * @throws WdkUserException 
      */
+    @Deprecated
     private int getSize(AnswerValueBean answerValue, String filterName)
             throws WdkModelException, WdkUserException {
 
@@ -516,10 +515,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
         ServletContext application = servlet.getServletContext();
 
         @SuppressWarnings("unchecked")
-        Map<String, Integer> sizeCache = (Map<String, Integer>)application.getAttribute(KEY_SIZE_CACHE_MAP);
+        Map<String, Integer> sizeCache = (Map<String, Integer>)application
+            .getAttribute("size_cache");
         if (sizeCache == null) {
             sizeCache = new LinkedHashMap<String, Integer>();
-            application.setAttribute(KEY_SIZE_CACHE_MAP, sizeCache);
+            application.setAttribute("size_cache", sizeCache);
         }
 
         // check if the size value has been cached
@@ -529,7 +529,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         int size = (filterName == null) ? answerValue.getResultSize()
                 : answerValue.getFilterSize(filterName);
 
-        if (sizeCache.size() >= MAX_SIZE_CACHE_MAP) {
+        if (sizeCache.size() >= 100) {
             String oldKey = sizeCache.keySet().iterator().next();
             sizeCache.remove(oldKey);
         }

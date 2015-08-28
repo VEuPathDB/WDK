@@ -427,11 +427,18 @@ public class AnswerValueBean {
             throws WdkModelException, WdkUserException {
         return answerValue.getFilterSize(filterName);
     }
-    
-    
 
     public Map<String, Integer> getFilterSizes() {
       return answerValue.getFilterSizes();
+    }
+
+    public int getFilterDisplaySize(String filterName)
+            throws WdkModelException, WdkUserException {
+        return answerValue.getFilterDisplaySize(filterName);
+    }
+
+    public Map<String, Integer> getFilterDisplaySizes() {
+      return answerValue.getFilterDisplaySizes();
     }
 
     public AnswerFilterInstanceBean getFilter() {

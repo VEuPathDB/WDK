@@ -576,6 +576,11 @@ public class StepFactory {
     return steps;
   }
 
+  /**
+   * @param stepId step ID for which to retrieve step
+   * @return step by step ID
+   * @throws WdkModelException if step not found or problem occurs
+   */
   public Step getStepById(int stepId) throws WdkModelException {
     return loadStep(null, stepId);
   }
