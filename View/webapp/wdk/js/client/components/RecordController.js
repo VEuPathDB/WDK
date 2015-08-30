@@ -39,9 +39,7 @@ let RecordController = React.createClass({
   fetchRecordDetails(props) {
     let { params, query, store } = props;
     let recordClassName = params.class;
-    let primaryKey = Object.keys(query).map(function(name) {
-      return { name, value: query[name] };
-    });
+    let primaryKey = query;
 
     Promise.all([
       this.commonActions.fetchRecordClasses(),
@@ -65,9 +63,15 @@ let RecordController = React.createClass({
       recordClasses,
       questions
     } = state;
-    let record = records[key];
     let recordClass = recordClasses.find(r => r.fullName === params.class);
-    this.setState({ record, hiddenCategories, collapsedCategories, recordClass, recordClasses, questions });
+    let record = records[key];
+
+    this.setState({ hiddenCategories, collapsedCategories, recordClass, recordClasses, questions });
+
+    // only update record when it's available
+    if (record) {
+      this.setState({ record });
+    }
   },
 
   render() {
