@@ -30,11 +30,21 @@ public class FilterSizeCache {
 
   private static final Logger LOG = Logger.getLogger(FilterSizeCache.class);
 
+  // These are the items being cached in the ItemCache.  Depending on the order
+  // of calls to getFilterSize() and getFilterSizes(), the sizeMap might be
+  // fully or partially populated
   private static class FilterSizeGroup {
+
+    // set to true if the entire size map has been populated by getFilterSizes()
     boolean allFiltersLoaded = false;
+
+    // map from filter name to filter size (count of records when that filter is applied)
     Map<String, Integer> sizeMap = new HashMap<>();
   }
 
+  // Fetches size of a single filter on a single step and populates a
+  // FilterSizeGroup with the fetched value.  If value is already present for
+  // the filter name, itemNeedsUpdating() returns false and no update will occur.
   private static class SingleSizeFetcher implements ItemFetcher<Integer, FilterSizeGroup> {
 
     private final String _filterToFetch;
@@ -44,7 +54,7 @@ public class FilterSizeCache {
       _filterToFetch = filterToFetch;
       _wdkModel = wdkModel;
     }
-    
+
     @Override
     public FilterSizeGroup fetchItem(Integer id) throws UnfetchableItemException {
       FilterSizeGroup emptyGroup = new FilterSizeGroup();
@@ -80,7 +90,7 @@ public class FilterSizeCache {
     public AllSizesFetcher(WdkModel wdkModel) {
       _wdkModel = wdkModel;
     }
-    
+
     @Override
     public FilterSizeGroup fetchItem(Integer id) throws UnfetchableItemException {
       FilterSizeGroup emptyGroup = new FilterSizeGroup();
@@ -107,7 +117,6 @@ public class FilterSizeCache {
     public boolean itemNeedsUpdating(FilterSizeGroup item) {
       return !item.allFiltersLoaded;
     }
-    
   }
 
   private final ItemCache<Integer, FilterSizeGroup> _cache = new ItemCache<>();
@@ -116,6 +125,14 @@ public class FilterSizeCache {
     subscribeToEvents();
   }
 
+  // Must subscribe to step-revised events so we know when to expire counts in the cache.
+  //
+  // FIXME: currently any step revise (change that impacts the result), including the
+  // application of a legacy filter, will expire counts for that step.  But the application
+  // of a new filter does not affect the legacy filter counts.  We should add the ability
+  // to differentiate between revise events due to param or other changes (which would
+  // affect filter counts) and the application of a filter (which should not expire the
+  // filter size numbers in the cache.
   private void subscribeToEvents() {
     // when steps are revised, we must clear their filter sizes from the cache
     Events.subscribe(new EventListener(){
