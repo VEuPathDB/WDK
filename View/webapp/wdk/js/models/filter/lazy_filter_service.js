@@ -20,7 +20,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
    */
   function valueSorter(value) {
     return typeof value === 'number' ? Number(value)
-         : value === 'Uknown' ? String.fromCharCode(0)
+         : value === 'Unknown' ? String.fromCharCode(Math.pow(2, 16) - 1)
          : String(value);
   }
 
