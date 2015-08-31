@@ -871,8 +871,8 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
           }
         },
         xaxis: Object.assign({
-          min: Math.floor(min - barWidth),
-          max: Math.ceil(max + barWidth),
+          min: min - barWidth,
+          max: max + barWidth,
           tickLength: 0
         }, xaxisBaseOptions),
         yaxis: {
