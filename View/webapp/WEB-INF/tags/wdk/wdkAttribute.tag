@@ -42,20 +42,18 @@
     </c:when>
 
     <c:when test="${attributeValue.class.name eq 'org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue'}">
-      <c:set var="pkValues" value="${attributeValue.values}" />
-      <c:set var="recordLinkKeys" value="" />
-      <c:forEach items="${pkValues}" var="pkValue">
-        <c:set var="recordLinkKeys" value="${recordLinkKeys}&${pkValue.key}=${pkValue.value}" />
-      </c:forEach>
-
-      <%-- display a link to record page --%>
-      <!-- store the primary key pairs here -->
+      <!-- store the primary key pairs here - used by basket link -->
       <div class="primaryKey" fvalue="${briefValue}" style="display:none;">
-        <c:forEach items="${pkValues}" var="pkValue">
+        <c:forEach items="${attributeValue.values}" var="pkValue">
           <span key="${pkValue.key}">${pkValue.value}</span>
         </c:forEach>
       </div>
-      <a href="<c:url value='/showRecord.do?name=${recordName}${recordLinkKeys}' />">${displayValue}</a>
+
+      <!-- display a link to record page -->
+      <imp:recordLink
+        primaryKeyAttributeValue="${attributeValue}"
+        recordName="${recordName}"
+      />
     </c:when>
 
     <c:when test="${attributeValue.class.name eq 'org.gusdb.wdk.model.record.attribute.LinkAttributeValue'}">
