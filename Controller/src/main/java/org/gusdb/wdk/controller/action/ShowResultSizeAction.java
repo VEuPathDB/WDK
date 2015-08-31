@@ -1,116 +1,70 @@
 package org.gusdb.wdk.controller.action;
 
-import java.io.PrintWriter;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.cache.FilterSizeCache;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.jspwrap.StepBean;
-import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * @author xingao
- */
 public class ShowResultSizeAction extends Action {
 
-  private static final String KEY_SIZE_CACHE_MAP = "size_cache";
-  private static final int MAX_SIZE_CACHE_MAP = 500;
+  @SuppressWarnings("unused")
+  private static Logger LOG = Logger.getLogger(ShowResultSizeAction.class);
 
-  private static Logger logger = Logger.getLogger(ShowResultSizeAction.class);
+  // will use application-wide cache to manage filter result sizes
+  private static final FilterSizeCache FILTER_SIZE_CACHE = new FilterSizeCache();
 
   @Override
-  public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-      HttpServletResponse response) throws Exception {
-    logger.trace("entering showResultSize");
+  public ActionForward execute(ActionMapping mapping, ActionForm form,
+      HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-    String stepId = request.getParameter("step");
+    String stepIdStr = request.getParameter("step");
+    if (!FormatUtil.isInteger(stepIdStr)) {
+      throw new WdkUserException("Parameter 'step' must be a valid step ID");
+    }
+
+    int stepId = Integer.parseInt(stepIdStr);
     String filterName = request.getParameter("filter");
-    PrintWriter writer = response.getWriter();
 
-    Map<String, Integer> sizeCache = getSizeCache(request.getSession());
+    String result = (filterName == null ?
+        getFilterResultSizes(stepId) :
+        getSingleFilterResultSize(stepId, filterName));
 
-    if (filterName != null) { // filter name specified, return only the size of the given filter.
-      String key = stepId + ":" + filterName;
+    response.getWriter().print(result);
 
-      // check if the size value has been cached
-      int size;
-      if (sizeCache.containsKey(key)) {
-        size = sizeCache.get(key);
-      }
-      else {// size is not cached get it and cache it
-        AnswerValueBean answerValue = getAnswerValue(request, stepId);
-        size = (filterName == null) ? answerValue.getResultSize() : answerValue.getFilterSize(filterName);
-
-        // cache the size
-        synchronized (sizeCache) {
-          if (sizeCache.size() >= MAX_SIZE_CACHE_MAP) {
-            String oldKey = sizeCache.keySet().iterator().next();
-            sizeCache.remove(oldKey);
-          }
-          sizeCache.put(key, size);
-        }
-      }
-      writer.print(size);
-    }
-    else { // no filter is specified, will return all the filter sizes
-      AnswerValueBean answerValue = getAnswerValue(request, stepId);
-      Map<String, Integer> sizes;
-      synchronized (sizeCache) {
-        sizes = answerValue.getFilterSizes();
-        sizeCache.putAll(sizes);
-        while (sizeCache.size() > MAX_SIZE_CACHE_MAP) {
-          sizeCache.remove(sizeCache.keySet().iterator().next());
-        }
-      }
-      writer.print(convertToJSON(sizes));
-    }
     return null;
   }
 
-  private Map<String, Integer> getSizeCache(HttpSession session) {
-    synchronized (session) {
-      @SuppressWarnings({ "unchecked" })
-      Map<String, Integer> cache = (Map<String, Integer>) session.getAttribute(KEY_SIZE_CACHE_MAP);
-      if (cache == null) {
-        cache = new LinkedHashMap<>();
-        session.setAttribute(KEY_SIZE_CACHE_MAP, cache);
-      }
-      return cache;
-    }
+  // filter name specified, return only the size of the given filter
+  private String getSingleFilterResultSize(int stepId, String filterName)
+      throws WdkModelException, WdkUserException {
+    WdkModel wdkModel = ActionUtility.getWdkModel(getServlet()).getModel();
+    int size = FILTER_SIZE_CACHE.getFilterSize(stepId, filterName, wdkModel);
+    return String.valueOf(size);
   }
 
-  private AnswerValueBean getAnswerValue(HttpServletRequest request, String stepId) throws WdkModelException,
-      WdkUserException {
-    UserBean user = ActionUtility.getUser(servlet, request);
-    StepBean step;
-    try {
-      step = user.getStep(Integer.valueOf(stepId));
+  // no filter is specified, will return all (legacy) filter sizes for the given step
+  private String getFilterResultSizes(int stepId)
+      throws WdkModelException, WdkUserException {
+    WdkModel wdkModel = ActionUtility.getWdkModel(getServlet()).getModel();
+    Map<String, Integer> sizes = FILTER_SIZE_CACHE.getFilterSizes(stepId, wdkModel);
+    JSONObject json = new JSONObject();
+    for (Entry<String, Integer> entry : sizes.entrySet()) {
+      json.put(entry.getKey(), entry.getValue());
     }
-    catch (NumberFormatException ex) {
-      throw new WdkUserException("The step id is invalid: " + stepId);
-    }
-    return step.getAnswerValue(false, false);
-  }
-
-  private String convertToJSON(Map<String, Integer> sizes) throws JSONException {
-    JSONObject jsSizes = new JSONObject();
-    for (String filterName : sizes.keySet()) {
-      jsSizes.put(filterName, sizes.get(filterName));
-    }
-    return jsSizes.toString();
+    return json.toString();
   }
 }
