@@ -45,26 +45,27 @@ function createApplication(config) {
     logFilter
   ]);
 
-  let router = Router.run(
-    Routes.getRoutes(config.rootUrl),
-    Router.HistoryLocation,
-    function (Root, state) {
-      // XXX Implement router filters?
-      if ('auth_tkt' in state.query) {
-        state.query.auth_tkt = undefined;
-        router.replaceWith(
-          state.pathname,
-          state.params,
-          state.query
-        );
-      }
-      else {
-        React.render(<Root state={state} store={store}/>, config.rootElement);
-      }
-    }
-  );
+  let router = Router.create({
+    routes: Routes.getRoutes(config.rootUrl),
+    location: Router.HistoryLocation
+  });
 
-  return store;
+  router.run(function (Root, state) {
+    // XXX Implement router filters?
+    if ('auth_tkt' in state.query) {
+      state.query.auth_tkt = undefined;
+      router.replaceWith(
+        state.pathname,
+        state.params,
+        state.query
+      );
+    }
+    else {
+      React.render(<Root state={state} store={store}/>, config.rootElement);
+    }
+  });
+
+  return { store, router, restAPI };
 }
 
 function logFilter(store, next, action) {
