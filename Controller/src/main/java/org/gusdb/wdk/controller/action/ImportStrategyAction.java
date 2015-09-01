@@ -10,7 +10,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
-import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -31,7 +31,7 @@ public class ImportStrategyAction extends Action {
             strategyKey = request.getParameter("s"); // try a shorter version
         }
         if (strategyKey == null || strategyKey.length() == 0) {
-            throw new WdkModelException(
+            throw new WdkUserException(
                     "No strategy key was specified for importing!");
         }
 
