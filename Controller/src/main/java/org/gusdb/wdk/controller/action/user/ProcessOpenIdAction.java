@@ -48,7 +48,6 @@ public class ProcessOpenIdAction extends WdkAction {
         }
         int wdkCookieMaxAge = ProcessLoginAction.addLoginCookie(user, auth.rememberUser(), getWdkModel(), this);
         setCurrentUser(user);
-        setSessionAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
         
         // go back to user's original page after successful login
         return getSuccessfulLoginResult(auth.getReferringUrl(), wdkCookieMaxAge);

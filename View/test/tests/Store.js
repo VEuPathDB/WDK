@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { Dispatcher } from 'flux';
-import Store from 'wdk/flux/Store';
-import Action from 'wdk/flux/utils/Action';
+import Store from 'wdk/client/Store';
+import Action from 'wdk/client/utils/Action';
 
 const createStore = Store.createStore;
 const update = (function() {

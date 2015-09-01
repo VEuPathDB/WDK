@@ -211,15 +211,15 @@ public abstract class AbstractDbInfo implements DbInfo {
         ps.getConnection().commit();
       }
       catch (java.sql.SQLSyntaxErrorException sqee) {
-        logger.error(sqee);
+        logger.error("Error while trying DB link validation SQL", sqee);
         map.put(columnName, "-1" );
       }
       catch (SQLException sqle) {
-        logger.error(sqle);
+        logger.error("Error while trying DB link validation SQL", sqle);
         map.put(columnName, "0" );
       }
       catch (Exception e) {
-        logger.error(e);
+        logger.error("Error while trying DB link validation SQL", e);
       }
       finally {
         SqlUtils.closeResultSetAndStatement(rs);
