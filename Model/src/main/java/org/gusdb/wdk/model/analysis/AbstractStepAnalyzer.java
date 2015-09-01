@@ -113,6 +113,9 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
     return null;
   }
   
+    /**
+     * Return an arbitrary object that the parameter form will have access to.  This is the "model" that the form will render.  It can contain info about parameters, such as terms for vocabulary parameters.  Typically you would create an inner class in your plugin for this.
+     */
   @Override
   public Object getFormViewModel() throws WdkModelException, WdkUserException {
     return null;

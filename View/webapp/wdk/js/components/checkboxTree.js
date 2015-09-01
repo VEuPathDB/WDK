@@ -33,7 +33,7 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
     return (typeof jsArray === "object" ? jsArray :
         jQuery.parseJSON(jsArray.replace(/'/g, '"')));
   }
-  
+
   function configureCheckboxTree(treeId) {
     var checkboxTree = checkboxTreeConfig[treeId];
     if (!checkboxTree.configured) {
@@ -80,30 +80,29 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
   }
 
   function selectCurrentNodes(treeId) {
-    selectListOfNodes(treeId, checkboxTreeConfig[treeId].currentList);
+    selectListOfNodes(treeId, checkboxTreeConfig[treeId].currentList, 'current');
   }
 
   function selectDefaultNodes(treeId) {
-    selectListOfNodes(treeId, checkboxTreeConfig[treeId].defaultList);
+    selectListOfNodes(treeId, checkboxTreeConfig[treeId].defaultList, 'default');
   }
 
-  function selectListOfNodes(treeId, checkedArray) {
+  function selectListOfNodes(treeId, checkedArray, reason) {
     // jshint loopfunc:true
     var i;
+    var $tree = $('#' + treeId);
     uncheckAll(treeId);
-    // Why aren't we using valid IDs???
-    // Have to manually select nodes and compare IDs since our ID names are not jquery-selection friendly
-    // Ideally would be able to do the following for each item in the checked array:
-    //   $('.checkboxTree').jstree("check_node", '#'+checkedArray[i];);
-    for (i = 0; i < checkedArray.length; i++) {
-      $('#' + treeId + ' .jstree-leaf').each(function() {
-        if (this.id == checkedArray[i]) {
-          $('#' + treeId).jstree("check_node", $(this));
-        }
-      });
+
+    for (var id of checkedArray) {
+      // Our ID names are not jquery-selection friendly, so we have to use the following selector
+      $tree.jstree('check_node', '[id="' + id + '"]');
     }
+
     // tree may have changed so call user's onchange function
     checkboxTreeConfig[treeId].onchange();
+
+    // trigger event with mo
+    $tree.trigger('change', [ reason ]);
   }
 
   function checkAll(treeId) {

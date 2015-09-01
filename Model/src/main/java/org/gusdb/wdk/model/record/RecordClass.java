@@ -466,6 +466,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     return fields;
   }
+	// used by report maker, adding display names in map so later the tables show sorted by display name
+	public Map<String, TableField> getTableFieldMap(FieldScope scope, String usedbyreportmaker ) {
+    Map<String, TableField> fields = new LinkedHashMap<String, TableField>();
+    for (TableField field : tableFieldsMap.values()) {
+      if (scope.isFieldInScope(field)) {
+        fields.put(field.getDisplayName(), field);
+      }
+    }
+    return fields;
+  }
 
   public TableField[] getTableFields() {
     Map<String, TableField> tables = getTableFieldMap();
@@ -1727,11 +1737,19 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return new LinkedHashMap<>(_stepFilters);
   }
 
+  /**
+   * Returns a set of filters (by name) for this question.  Only non-view-only
+   * filters are included in this list.  View-only filters are only available
+   * by name.
+   * 
+   * @return map of all non-view-only filters, from filter name to filter
+   */
   public Map<String, Filter> getFilters() {
     // get all step filters
     Map<String, Filter> filters = new LinkedHashMap<>();
     for (StepFilter filter : _stepFilters.values()) {
-      filters.put(filter.getKey(), filter);
+      if (!filter.getIsViewOnly())
+        filters.put(filter.getKey(), filter);
     }
 
     // get all column filters
@@ -1739,7 +1757,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       if (attribute instanceof ColumnAttributeField) {
         ColumnAttributeField columnAttribute = (ColumnAttributeField) attribute;
         for (ColumnFilter filter : columnAttribute.getColumnFilters()) {
-          filters.put(filter.getKey(), filter);
+          if (!filter.getIsViewOnly())
+            filters.put(filter.getKey(), filter);
         }
       }
     }

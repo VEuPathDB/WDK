@@ -37,6 +37,7 @@ public class TableField extends Field implements AttributeFieldContainer {
 
   private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
   private String description;
+  private String categoryName;
 
   public Query getQuery() {
     return query;
@@ -201,4 +202,20 @@ public class TableField extends Field implements AttributeFieldContainer {
     // print table queries
     query.printDependency(writer, indent);
   }
+
+  /**
+   * @return attribute category name
+   */
+  public String getAttributeCategory() {
+    return categoryName;
+  }
+
+  /**
+   * @param categoryName
+   *          attribute category name
+   */
+  public void setAttributeCategory(String categoryName) {
+    this.categoryName = categoryName;
+  }
+
 }

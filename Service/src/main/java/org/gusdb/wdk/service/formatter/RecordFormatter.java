@@ -110,6 +110,7 @@ public class RecordFormatter {
       throws WdkModelException, WdkUserException {
     JSONObject json = new JSONObject();
     json.put("id", record.getPrimaryKey().getValues());
+    json.put("displayName",  record.getPrimaryKey().getDisplay());
     JSONObject attributes = new JSONObject();
     for (Entry<String,AttributeValue> attrib : record.getAttributeValueMap().entrySet()) {
       if (attributeNames != null && !attributeNames.contains(attrib.getKey())) continue;
@@ -149,7 +150,11 @@ public class RecordFormatter {
       return value;
     }
     else {
-      return attr.getValue();
+      Object value = attr.getValue();
+      if (value == null) {
+        value = JSONObject.NULL;
+      }
+      return value;
     }
   }
 

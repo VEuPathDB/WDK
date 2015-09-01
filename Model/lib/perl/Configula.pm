@@ -28,12 +28,19 @@ use YAML qw(LoadFile);
 our $scriptname = basename ( (caller(0))[1] );
 
 my %dblinkMap = (
+    # USE LOWERCASE KEYS!
     'apicomms'    => 'prods.login_comment',
     'apicommn'    => 'prodn.login_comment',
     'apicommdevs' => 'devs.login_comment',
     'apicommdevn' => 'devn.login_comment',
+    'amazcomms'   => 'amazS.login_comment',
+    'amazcommn'   => 'amazN.login_comment',
     'icmrcomm'    => 'icemr.login_comment',
+    'gus4commn'   => 'gus4commN.login_comment',
+    'gus4comms'   => 'gus4commS.login_comment',
     'prsmcomm'    => 'prism.login_comment',
+    'prsmcomms'   => 'prisms.login_comment',
+    'prsmcommn'   => 'prismn.login_comment',
     'rm15873'     => 'rm15873.login_comment',
     'rm9972'      => 'rm9972.login_comment',
     'userdb'      => 'vm.userdb', # standalone virtual machine

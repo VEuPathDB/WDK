@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -211,13 +212,14 @@ public class AnswerValueBean {
      */
     public Iterator<RecordBean> getRecords() throws WdkModelException, WdkUserException {
       try {
-    	return new RecordBeanList(answerValue.getRecordInstances());
-      } catch (WdkModelException | WdkUserException ex) {
+        return new RecordBeanList(answerValue.getRecordInstances());
+      }
+      catch (WdkModelException | WdkUserException ex) {
         logger.error(ex.getMessage(), ex);
         throw ex;
       }
     }
-
+    
     public void setDownloadConfigMap(Map<?, ?> downloadConfigMap) {
         this.downloadConfigMap = downloadConfigMap;
     }
@@ -280,14 +282,17 @@ public class AnswerValueBean {
         return rmAttribs;
     }
 
+	  // adding "yes" will hint RecordClass to use table display names 
     public TableFieldBean[] getAllReportMakerTables() {
         RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-        Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.REPORT_MAKER);
-        Iterator<String> ti = tables.keySet().iterator();
+        Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.REPORT_MAKER,"yes");
+				// sorting alphabetically by internal table name
+				Map<String, TableField> treeMapTables = new TreeMap<String, TableField>(tables);
+        Iterator<String> ti = treeMapTables.keySet().iterator();
         Vector<TableFieldBean> v = new Vector<TableFieldBean>();
         while (ti.hasNext()) {
             String tableName = ti.next();
-            v.add(new TableFieldBean(tables.get(tableName)));
+            v.add(new TableFieldBean(treeMapTables.get(tableName)));
         }
         int size = v.size();
         TableFieldBean[] rmTables = new TableFieldBean[size];

@@ -15,6 +15,7 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -24,6 +25,18 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  * This Action handles expanding a step in a search strategy (i.e., turning the step into a substrategy) by
  * setting the isCollapsible and collapsedName (if not set already) and returning the expanded step to
  * strategy.jsp.
+ *
+ * This action is used in 3 user scenarios:
+ * 1- open an existing nested strategy     (step has IS_COLLAPSIBLE = 1 / step.getIsCollapsible() == true)  -- class= expand_step_link => ExpandStep   (uncollapse=false) 
+ * 2- create new nested strategy           (step has IS_COLLAPSIBLE = 0 / step.getIsCollapsible() == false) -- class= expand_step_link => ExpandStep   (uncollapse=false) 
+ * 3- unnest a single step nested strategy (step has IS_COLLAPSIBLE = 1 / step.getIsCollapsible() == true)  -- class= collpase_step_link => ExpandStep (uncollapse=true)
+ *
+ * If this is a saved strategy:
+ * - case 1: no need to generate unsaved strategy, just add nested strategy in activestrategy set
+ * - in cases 2 and 3 we need to
+ *     ---  make a copy of the strategy (a new unsaved strategy)
+ *     ---  replace the strategy in the activestrategy set
+ *     ---  make the changes in this new strategy
  **/
 public class ExpandStepAction extends Action {
 
@@ -39,10 +52,10 @@ public class ExpandStepAction extends Action {
     UserBean wdkUser = ActionUtility.getUser(servlet, request);
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
     try {
-      String state = request.getParameter(CConstants.WDK_STATE_KEY);
+      String state = request.getParameter(CConstants.WDK_STATE_KEY); //state
 
-      String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-      String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
+      String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY); //strategy
+      String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY); //step
 
       if (strStratId == null || strStratId.length() == 0) {
         throw new WdkModelException("No strategy was specified for expanding a step!");
@@ -54,24 +67,16 @@ public class ExpandStepAction extends Action {
 
       if (strStratId.indexOf("_") > 0)
         strStratId = strStratId.split("_")[0];
-      int strategyId = Integer.valueOf(strStratId);
+      int oldStrategyId = Integer.valueOf(strStratId);
 
-      StrategyBean strategy = wdkUser.getStrategy(strategyId);
+      StrategyBean strategy = wdkUser.getStrategy(oldStrategyId);
       // verify the checksum
       String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
       if (checksum != null && !strategy.getChecksum().equals(checksum)) {
         ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, state);
         return null;
       }
-
-      // cannot change step on saved strategy, will need to make a clone first
-      if (strategy.getIsSaved()) {
-        Map<Integer, Integer> stepIdMap = new HashMap<>();
-        strategy = wdkUser.copyStrategy(strategy, stepIdMap, strategy.getName());
-        // map the old step id to the new one
-        stepId = stepIdMap.get(stepId);
-      }
-
+ 
       StepBean step = strategy.getStepById(stepId);
       if (step.getParentStep() == null) {
         throw new WdkModelException("Only top-row steps can be expanded!");
@@ -82,6 +87,22 @@ public class ExpandStepAction extends Action {
       if (strUncollapse != null && strUncollapse.equalsIgnoreCase("true"))
         uncollapse = true;
 
+      // cannot change step (unnest or make a new nested) on saved strategy, will need to make a clone first
+      if ( strategy.getIsSaved() && ( uncollapse == true || !step.getIsCollapsible() ) ) {
+        Map<Integer, Integer> stepIdMap = new HashMap<>();
+        strategy = wdkUser.copyStrategy(strategy, stepIdMap, strategy.getName());
+        // map the old step id to the new one
+        stepId = stepIdMap.get(stepId);
+        step = strategy.getStepById(stepId);
+        try {
+          wdkUser.replaceActiveStrategy(oldStrategyId, strategy.getStrategyId(), stepIdMap);
+        }
+        catch (WdkUserException ex) {
+          // Need to add strategy to active strategies list
+          // which will be handled by ShowStrategyAction
+        }
+      }
+
       if (uncollapse && step.isUncollapsible()) {
         // uncollapse a single-step nested strategy
         step.setCollapsedName(null);
@@ -89,7 +110,7 @@ public class ExpandStepAction extends Action {
         step.update(false);
       }
       else if (!step.getIsCollapsible()) {
-        // collapse a step into a single-step nested strategy
+        // make a new nested strategy:   collapse a step into a single-step nested strategy
         String branch = request.getParameter("collapsedName");
         if (branch == null || branch.length() == 0) {
           throw new WdkModelException("No collapsed name given for newly expanded step!");

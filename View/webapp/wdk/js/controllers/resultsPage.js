@@ -21,6 +21,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       load: function(event, ui) {
         addFeatureTooltipOnce($element);
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
+        setupAddAttributes($element);
         wdk.basket.checkPageBasket();
         wdk.util.setDraggable(ui.panel.find("div.attributesList"), ".dragHandle");
       }
@@ -96,20 +97,16 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     updateResultsPage($(table), url, false);
   }
 
-  function updateAttrs(attrSelector, commandUrl) {
-    var form = $(attrSelector).parents().parents("form");
-    var selected = $("input:checked",form);
-    var attributes = [];
+  function updateAttrs($form) {
+    var commandUrl = $form.attr('action');
+    var command = $form.find('[name=command]').val();
+    var attributes = $form.find("input:checked").toArray().map(el => el.value);
+    var url = commandUrl + "&command=" + command + "&attribute=" + attributes.join("&attribute=");
 
-    selected.each(function() {
-      attributes.push(this.value);
-    });
-    var url = commandUrl + "&command=update&attribute=" + attributes.join("&attribute=");
-    
     // close the dialog
-    form.parents(".attributesList").dialog("close");
+    $form.parents(".attributesList").dialog("close");
 
-    updateResultsPage(form, url, true);
+    updateResultsPage($form, url, true);
   }
 
   function resetAttr(url, button) {
@@ -246,6 +243,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
 
     // convert results table to drag-and-drop flex grid
     createFlexigridFromTable(currentDiv.find(" .Results_Table"));  // moved to tab load success callback
+    setupAddAttributes(currentDiv);
 
     // check the basket for the page if needed
     wdk.basket.checkPageBasket();
@@ -264,6 +262,18 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       onMoveColumn : moveAttr,
       nowrap : false,
       resizable : false
+    });
+  }
+
+  function setupAddAttributes($container) {
+    var $form = $container.find('form[name="addAttributes"]');
+    var $command = $form.find('[name=command]');
+    $form.on('submit', function(e) {
+      e.preventDefault();
+      updateAttrs($form);
+    });
+    $form.on('change', function(e, reason) {
+      $command.val(reason == 'default' ? 'reset' : 'update');
     });
   }
 
@@ -374,6 +384,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   ns.closeAdvancedPaging = closeAdvancedPaging;
   ns.configureSummaryViews = configureSummaryViews;
   ns.createFlexigridFromTable = createFlexigridFromTable;
+  ns.setupAddAttributes = setupAddAttributes;
   ns.gotoPage = gotoPage;
   ns.invokeAttributePlugin = invokeAttributePlugin;
   ns.openAdvancedPaging = openAdvancedPaging;
@@ -381,7 +392,6 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   ns.removeAttribute = removeAttribute;
   ns.resetAttr = resetAttr;
   ns.sortResult = sortResult;
-  ns.updateAttrs = updateAttrs;
   ns.updatePageCount = updatePageCount;
   ns.updateResultLabels = updateResultLabels;
   
