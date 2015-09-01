@@ -34,132 +34,120 @@ public class CheckLoginFilter implements Filter {
   public void init(FilterConfig filterConfig) throws ServletException {
     _config = filterConfig;
     _context = _config.getServletContext();
-    _context.log("Filter CheckLoginFilter initialized.");
+    LOG.debug("Filter CheckLoginFilter initialized.");
   }
 
   /**
-   * Looks at currently session and passed WDK cookie to determine whether action needs to be taken to assign
-   * logged-in or guest user to session, remove user from session, and remove or add cookies.
+   * Looks at current session and passed WDK cookie to determine whether action needs to be taken to assign
+   * logged-in or guest user to session, or remove user from session, and whether to remove or add cookies.
    * 
-   * Handles the following cases: logged user, matching wdk cookie = no action logged user, unmatching,
-   * invalid, or missing wdk cookie = send expired cookie, new guest guest user, any wdk cookie = send expired
-   * cookie, keep guest guest user, missing wdk cookie = no action no user, valid wdk cookie = log user in,
-   * send updated cookie <- THIS IS A BUG FOR GBROWSE no user, invalid wdk cookie = send expired cookie, new
-   * guest no user, missing wdk cookie = new guest
+   * See comment below for specific cases and what we do about them.
    */
   @Override
   public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
       throws IOException, ServletException {
 
+    // load model, user
+    WdkModelBean wdkModel = (WdkModelBean) _context.getAttribute(CConstants.WDK_MODEL_KEY);
+    UserFactoryBean userFactory = wdkModel.getUserFactory();
+
     HttpServletRequest request = (HttpServletRequest) servletRequest;
     HttpServletResponse response = (HttpServletResponse) servletResponse;
     HttpSession session = request.getSession();
 
-    try {
-
-      // clear any login error from previous request; if user is not trying to
-      // log in with multiple requests simultaneously, he probably doesn't
-      // care about the reason his logins are failing
-      session.setAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
-
-      // load model, user
-      WdkModelBean wdkModel = (WdkModelBean) _context.getAttribute(CConstants.WDK_MODEL_KEY);
-      UserFactoryBean userFactory = wdkModel.getUserFactory();
-      UserBean wdkUser = (UserBean) session.getAttribute(CConstants.WDK_USER_KEY);
-
-      // figure out what's going on with the cookie
-      Cookie loginCookie = LoginCookieFactory.findLoginCookie(request.getCookies());
-      boolean cookiePresent = (loginCookie != null);
-      LoginCookieParts cookieParts = null;
-      boolean cookieValid = false, cookieMatches = false;
+    synchronized(session) {
       try {
-        if (cookiePresent) {
-          LoginCookieFactory auth = new LoginCookieFactory(wdkModel.getSecretKey());
-          cookieParts = LoginCookieFactory.parseCookieValue(loginCookie.getValue());
-          cookieValid = auth.isValidCookie(cookieParts);
-          cookieMatches = (wdkUser != null && cookieParts.getUsername().equals(wdkUser.getEmail()));
-        }
-      }
-      catch (IllegalArgumentException | WdkModelException e) {
-        /* negative values already set */
-      }
+        // get the current user in session and determine type
+        UserBean wdkUser = (UserBean) session.getAttribute(CConstants.WDK_USER_KEY);
+        boolean userPresent = (wdkUser != null);
+        boolean isGuestUser = (userPresent ? wdkUser.isGuest() : false);
 
-      // handle cases
-      // find the cases where the current user is ok
-      if (wdkUser != null && (wdkUser.isGuest() || cookieMatches)) {
-        if (wdkUser.isGuest() && cookiePresent) {
-          // Weird situation: guest on back end but cookie on front end?
-          // Could be spammer; just use guest and remove cookie
-          response.addCookie(LoginCookieFactory.createLogoutCookie());
-        }
-      }
-      else { // otherwise, a user needs to be created or loaded
-        synchronized (session) {
-          // get the user and do the check again, in case a user was loaded after last check, but before we
-          // enter the synchronized block
-          wdkUser = (UserBean) session.getAttribute(CConstants.WDK_USER_KEY);
-          cookieMatches = (wdkUser != null && cookieParts.getUsername().equals(wdkUser.getEmail()));
-          if (wdkUser != null && (wdkUser.isGuest() || cookieMatches)) {
-            // do nothing,user is good, and will use this user
-          }
-          else { // will create or load a user, and store into session
-            // need to clean the cookie if something is wrong
-            if (wdkUser == null) {
-              if (!cookieValid && cookiePresent)
-                response.addCookie(LoginCookieFactory.createLogoutCookie());
-            }
-            else if ((wdkUser.isGuest() && cookiePresent) || (!wdkUser.isGuest() && !cookieMatches)) {
-              response.addCookie(LoginCookieFactory.createLogoutCookie());
-            }
-            wdkUser = (wdkUser == null && cookieValid)
-                ? userFactory.getUserByEmail(cookieParts.getUsername()) : userFactory.getGuestUser();
-            session.setAttribute(CConstants.WDK_USER_KEY, wdkUser);
+        // figure out what's going on with the cookie
+        Cookie loginCookie = LoginCookieFactory.findLoginCookie(request.getCookies());
+        boolean cookiePresent = (loginCookie != null);
+        LoginCookieParts cookieParts = null;
+        boolean cookieValid = false, cookieMatches = false;
+        try {
+          if (cookiePresent) {
+            LoginCookieFactory auth = new LoginCookieFactory(wdkModel.getSecretKey());
+            cookieParts = LoginCookieFactory.parseCookieValue(loginCookie.getValue());
+            cookieValid = auth.isValidCookie(cookieParts);
+            cookieMatches = (wdkUser != null && cookieParts.getUsername().equals(wdkUser.getEmail()));
           }
         }
-      }
+        catch (IllegalArgumentException | WdkModelException e) {
+          /* negative values already set */
+        }
 
-      //
-      // if (wdkUser == null) {
-      // if (cookieValid) {
-      // // get the user represented by the current cookie and set in session
-      // setUser(session, userFactory.getUserByEmail(cookieParts.getUsername()));
-      // }
-      // else {
-      // if (cookiePresent) {
-      // // cookie is not valid; remove it
-      // response.addCookie(LoginCookieFactory.createLogoutCookie());
-      // }
-      // // give session a new guest user
-      // setUser(session, userFactory.getGuestUser());
-      // }
-      // }
-      // else if (wdkUser.isGuest()) {
-      // if (cookiePresent) {
-      // // Weird situation: guest on back end but cookie on front end?
-      // // Could be spammer; just use guest and remove cookie
-      // response.addCookie(LoginCookieFactory.createLogoutCookie());
-      // }
-      // }
-      // else if (!cookieMatches) {
-      // // clear old cookie and log out current user; give session new guest
-      // response.addCookie(LoginCookieFactory.createLogoutCookie());
-      // setUser(session, userFactory.getGuestUser());
-      // }
-      //
-    }
-    catch (Exception ex) {
-      LOG.error("Caught exception while checking login cookie: " + ex);
-      response.addCookie(LoginCookieFactory.createLogoutCookie());
-      throw new ServletException("Unable to complete check-login process", ex);
+        /*
+         * Find out which of the following cases this is:
+         * 
+         * 1. logged user, matching wdk cookie = no action
+         * 2. logged user, unmatching, invalid, or missing wdk cookie = send expired cookie, new guest
+         * 3. guest user, any wdk cookie = send expired cookie, keep guest
+         * 4. guest user, missing wdk cookie = no action
+         * 5. no user, valid wdk cookie = log user in, but do not send updated cookie, since doing so is a bug for GBrowse
+         * 6. no user, invalid wdk cookie = send expired cookie, new guest
+         * 7. no user, missing wdk cookie = new guest
+         */
+        int thisCase =
+            (userPresent ?
+                // user is present cases
+                (isGuestUser ?
+                    // guest user cases
+                    (cookiePresent ? 3 : 4) :
+                    // logged user cases
+                    (cookieMatches ? 1 : 2)) :
+                // no user present cases
+                (cookiePresent ?
+                    // cookie but no user
+                    (cookieValid ? 5 : 6) :
+                    // no cookie, no user
+                    7));
+
+        // determine actions based on case
+        Cookie cookieToSend = null;
+        UserBean userToSet = null;
+        switch (thisCase) {
+          // note cases 1 and 4 require no action
+          case 2:
+            cookieToSend = LoginCookieFactory.createLogoutCookie();
+            userToSet = userFactory.getGuestUser();
+            break;
+          case 3:
+            cookieToSend = LoginCookieFactory.createLogoutCookie();
+            // guest user present in session is sufficient
+            break;
+          case 5:
+            // do not want to update max age on cookie since we have no way to tell GBrowse to also update
+            userToSet = userFactory.getUserByEmail(cookieParts.getUsername());
+            break;
+          case 6:
+            cookieToSend = LoginCookieFactory.createLogoutCookie();
+            userToSet = userFactory.getGuestUser();
+            break;
+          case 7:
+            // no cookie necessary
+            userToSet = userFactory.getGuestUser();
+            break;
+        }
+
+        // take action as needed
+        if (cookieToSend != null)
+          response.addCookie(cookieToSend);
+        if (userToSet != null)
+          session.setAttribute(CConstants.WDK_USER_KEY, userToSet);
+      }
+      catch (Exception ex) {
+        LOG.error("Caught exception while checking login cookie: " + ex);
+        response.addCookie(LoginCookieFactory.createLogoutCookie());
+        throw new ServletException("Unable to complete check-login process", ex);
+      }
     }
 
     // do next filter in chain
     chain.doFilter(request, response);
   }
-
-  // private void setUser(HttpSession session, UserBean user) {
-  // session.setAttribute(CConstants.WDK_USER_KEY, user);
-  // }
 
   @Override
   public void destroy() {
