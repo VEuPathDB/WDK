@@ -121,7 +121,7 @@ public class RecordService extends WdkService {
   }
   
   @POST
-  @Path("{recordClassName}/get")
+  @Path("{recordClassName}/instance")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response buildResult(@PathParam("recordClassName") String recordClassName, String body) throws WdkModelException, WdkUserException {
@@ -129,7 +129,7 @@ public class RecordService extends WdkService {
       JSONObject json = new JSONObject(body);
 
       RecordRequest request = RecordRequest.createFromJson(
-          getCurrentUser(), json.getJSONObject("recordInstanceSpecification"), recordClassName, getWdkModelBean());
+          getCurrentUser(), json, recordClassName, getWdkModelBean());
       
       RecordInstance recordInstance = getRecordInstance(getCurrentUser(), request);
 
