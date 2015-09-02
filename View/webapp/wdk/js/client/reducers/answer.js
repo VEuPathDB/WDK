@@ -1,6 +1,5 @@
 // FIXME Store records as list of IDs
 // TODO Break this into two stores: Answers and UI
-import assign from 'lodash/object/assign';
 import {
   ANSWER_ADDED,
   ANSWER_CHANGE_ATTRIBUTES,
@@ -12,7 +11,23 @@ import {
 import * as RecordUtils from '../utils/recordUtils';
 
 
-export default function answer(state = getInitialState(), action) {
+let initialState = {
+  meta: null,
+  records: null,
+  unfilteredRecords: null,
+  isLoading: false,
+  filterTerm: '',
+  filterAttributes: null,
+  filterTables: null,
+  displayInfo: {
+    sorting: null,
+    pagination: null,
+    attributes: null,
+    tables: null
+  }
+};
+
+export default function answer(state = initialState, action) {
   switch(action.type) {
     case ANSWER_ADDED: return addAnswer(state, action);
     case ANSWER_CHANGE_ATTRIBUTES: return updateVisibleAttributes(state, action);
@@ -22,24 +37,6 @@ export default function answer(state = getInitialState(), action) {
     case APP_ERROR: return answerLoading(state, action);
     default: return state;
   }
-}
-
-function getInitialState() {
-  return {
-    meta: null,
-    records: null,
-    unfilteredRecords: null,
-    isLoading: false,
-    filterTerm: '',
-    filterAttributes: null,
-    filterTables: null,
-    displayInfo: {
-      sorting: null,
-      pagination: null,
-      attributes: null,
-      tables: null
-    }
-  };
 }
 
 /**
@@ -126,7 +123,7 @@ function addAnswer(state, action) {
   /*
    * This will update the keys `filteredRecords`, and `questionDefinition` in `state`.
    */
-  return assign(state, {
+  return Object.assign({}, state, {
     meta: answer.meta,
     unfilteredRecords: answer.records,
     records: RecordUtils.filterRecords(answer.records, state),
@@ -142,8 +139,8 @@ function addAnswer(state, action) {
  * @param {number} newPosition The 0-based index to move the attribute to.
  */
 function moveTableColumn(state, { columnName, newPosition }) {
-  /* list of attributes we will be altering */
-  let attributes = state.displayInfo.visibleAttributes;
+  /* make a copy of list of attributes we will be altering */
+  let attributes = [ ...state.displayInfo.visibleAttributes ];
 
   /* The current position of the attribute being moved */
   let currentPosition = attributes.findIndex(function(attribute) {
@@ -159,30 +156,37 @@ function moveTableColumn(state, { columnName, newPosition }) {
   // then, insert into new position
   attributes.splice(newPosition, 0, attribute);
 
-  return state;
+  return updateVisibleAttributes(state, { attributes });
 }
 
 function updateVisibleAttributes(state, { attributes }) {
-  state.displayInfo.visibleAttributes = attributes;
-  return state;
+  // Create a new copy of displayInfo
+  let displayInfo = Object.assign({}, state.displayInfo, {
+    visibleAttributes: attributes
+  });
+
+  // Create a new copy of state
+  return Object.assign({}, state, {
+    displayInfo
+  });
 }
 
 function updateFilter(state, action) {
-  state = assign(state, {
+  let filterSpec = {
     filterTerm: action.terms,
     filterAttributes: action.attributes || [],
     filterTables: action.tables || []
-  });
-  return assign(state, {
-    records: RecordUtils.filterRecords(state.unfilteredRecords, state)
+  };
+  return Object.assign({}, state, filterSpec, {
+    records: RecordUtils.filterRecords(state.unfilteredRecords, filterSpec)
   });
 }
 
 function answerLoading(state, action) {
-  if (action.type === ANSWER_LOADING) {
-    state.isLoading = true;
-  } else if (action.type === APP_ERROR) {
-    state.isLoading = false;
+  if (action.type === ANSWER_LOADING && state.isLoading === false) {
+    return Object.assign({}, state, { isLoading: true });
+  } else if (action.type === APP_ERROR && state.isLoading === true) {
+    return Object.assign({}, state, { isLoading: false });
   }
   return state;
 }
