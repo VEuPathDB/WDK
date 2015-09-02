@@ -6,7 +6,13 @@ import {
   RECORD_CATEGORY_COLLAPSED_TOGGLED
 } from '../constants/actionTypes';
 
-export default function record(state = getInitialState(), action) {
+let initialState = {
+  records: {},
+  hiddenCategories: [],
+  collapsedCategories: []
+};
+
+export default function record(state = initialState, action) {
   switch (action.type) {
     case ANSWER_ADDED:
       return addAnswerRecords(state, action);
@@ -21,19 +27,20 @@ export default function record(state = getInitialState(), action) {
   }
 }
 
-function getInitialState() {
-  return { records: {}, hiddenCategories: [], collapsedCategories: [] };
-}
-
 function addAnswerRecords(state, action) {
   let { meta } = action.response;
   let recordClass = meta.class;
+  // make a copy of records
+  let records = Object.assign({}, state.records);
+
+  // add answer records to records object
   action.response.records.forEach(function(record) {
     let key = makeKey(recordClass, record.id);
-    state.records[key] = record;
-    // state.records[key] = mergeRecordWithMeta(meta, record);
+    records[key] = record;
   });
-  return state;
+
+  // return a new copy of state with new records object
+  return Object.assign({}, state, { records });
 }
 
 /**
@@ -43,50 +50,41 @@ function addAnswerRecords(state, action) {
  */
 function addRecordDetails(state, action) {
   let { meta, record } = action.response;
-  // record = mergeRecordWithMeta(meta, record);
   let key = makeKey(meta.class, record.id);
-  let stateRecord = state.records[key] || record;
+  // make a copy of the records object
+  let records = Object.assign({}, state.records);
+  // make a copy of the existing record object, or just use the new record
+  let stateRecord = records[key] === undefined ? record
+                  : Object.assign({}, records[key]);
+
+  // if we already had the record, merge the new attributes and tables
   if (stateRecord !== record) {
     Object.assign(stateRecord.attributes, record.attributes);
     Object.assign(stateRecord.tables, record.tables);
   }
-  state.records[key] = stateRecord;
-  return state;
+
+  // add the merged record to the new records object
+  records[key] = stateRecord;
+
+  // return a new state object with the new record details added
+  return Object.assign({}, state, { records });
 }
 
 // FIXME Key by record class
 function toggleCategoryVisibility(state, action) {
   let { name, isVisible } = action;
-  state.hiddenCategories = isVisible === false
-    ? state.hiddenCategories.concat(name)
-    : state.hiddenCategories.filter(function(n) {
-      return n !== name;
-    });
-  return state;
+  let hiddenCategories = isVisible === false ? state.hiddenCategories.concat(name)
+                       : state.hiddenCategories.filter(function(n) {
+                         return n !== name;
+                       });
+  return Object.assign({}, state, { hiddenCategories });
 }
 
 function toggleCategoryCollapsed(state, action) {
   let { name, isCollapsed } = action;
-  state.collapsedCategories = isCollapsed === true
-    ? state.collapsedCategories.concat(name)
-    : state.collapsedCategories.filter(function(n) {
-      return n !== name;
-    });
-  return state;
-}
-
-function mergeRecordWithMeta(meta, record) {
-  let { attributes, tables } = record;
-  meta.attributes.forEach(function(attributeMeta) {
-    let { name } = attributeMeta;
-    if (name in attributes) {
-      attributes[name] = Object.create(attributeMeta, {
-        value: {
-          value: attributes[name],
-          enumerable: true
-        }
-      });
-    }
-  });
-  return record;
+  let collapsedCategories = isCollapsed === true ? state.collapsedCategories.concat(name)
+                          : state.collapsedCategories.filter(function(n) {
+                              return n !== name;
+                            });
+  return Object.assign({}, state, { collapsedCategories });
 }

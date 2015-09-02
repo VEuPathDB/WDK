@@ -33,6 +33,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
       // create multi select control for adding columns
       checkPageBasket();
       wdk.resultsPage.createFlexigridFromTable($("#basket-menu #Results_Table"));
+      wdk.resultsPage.setupAddAttributes(currentDiv);
       try {
         customBasketPage();
       } catch(err) {
