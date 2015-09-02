@@ -2,8 +2,10 @@ package org.gusdb.wdk.service.request;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 
 //import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -51,7 +53,7 @@ public class RecordRequest {
       RecordRequest request = new RecordRequest(recordClass);
       request.setAttributeNames(parseAttributeNames(json.getJSONArray("attributes"), recordClass));
       request.setTableNames(parseTableNames(json.getJSONArray("tables"), recordClass));
-      request.setPrimaryKey(parsePrimaryKey(json.getJSONArray("primaryKey"), recordClass));
+      request.setPrimaryKey(parsePrimaryKey(json.getJSONObject("primaryKey"), recordClass));
       return request;
     }
     catch (JSONException | WdkUserException e) {
@@ -62,22 +64,21 @@ public class RecordRequest {
     }
   }
   
-  private static Map<String, Object> parsePrimaryKey(JSONArray primaryKeyJson,
+  private static Map<String, Object> parsePrimaryKey(JSONObject primaryKeyJson,
       RecordClass recordClass) throws WdkUserException {
 
     PrimaryKeyAttributeField pkAttrField = recordClass.getPrimaryKeyAttributeField();
 
     Map<String,Object> pkMap = new HashMap<String,Object>();
-    for (int i = 0; i < primaryKeyJson.length(); i++) {
-      JSONObject keyPartJson = primaryKeyJson.getJSONObject(i);
-      String keyName = keyPartJson.getString("name");
-      String keyValue = keyPartJson.getString("value");
+    for (Iterator<?> keys = primaryKeyJson.keys(); keys.hasNext();) {
+      String keyName = (String) keys.next();
+      String keyValue = primaryKeyJson.getString(keyName);
       if (keyName == null) throw new WdkUserException("Primary key part has null name");
       if (keyValue == null) throw new WdkUserException("Primary key name '" + keyName + "' has null value");
       if (!pkAttrField.hasColumn(keyName)) throw new WdkUserException("Primary key name '" + keyName + "' is not in record class '" + recordClass.getFullName() + "'.");
       pkMap.put(keyName, keyValue);
     }
-   
+
     return pkMap;
   }
 

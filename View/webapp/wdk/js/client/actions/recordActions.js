@@ -17,15 +17,12 @@ import { restAction } from '../filters/restFilter';
  * @param {array}  spec.tables
  */
 function fetchRecordDetails(recordClassName, recordSpec) {
-  recordSpec.primaryKey = Object.keys(recordSpec.primaryKey).map(function(name) {
-    return { name, value: recordSpec.primaryKey[name] };
-  });
   // TODO Only fetch what is needed. This will require being able to read the
   // application state here. Thus, we probably need to add a thunk filter.
   return restAction({
     method: 'POST',
-    resource: '/record/' + recordClassName + '/get',
-    data: { recordInstanceSpecification: recordSpec },
+    resource: '/record/' + recordClassName + '/instance',
+    data: recordSpec,
     types: [ null, null, RECORD_DETAILS_ADDED ]
   });
 }
