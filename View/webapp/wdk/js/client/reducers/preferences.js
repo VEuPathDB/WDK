@@ -1,12 +1,9 @@
-import React from 'react';
 import {
   PREFERENCES_LOADED,
   PREFERENCE_SET,
   PREFERENCE_REMOVED,
   PREFERENCE_REMOVED_ALL
 } from '../constants/actionTypes';
-
-let $update = React.addons.update;
 
 export default function preferences(preferences = {}, action) {
   switch(action.type) {
@@ -19,19 +16,25 @@ export default function preferences(preferences = {}, action) {
 }
 
 function load(preferences, action) {
-  return $update(preferences, { $set: action.preferences } );
+  return Object.assign({}, preferences, {
+    preferences: action.preferences
+  });
 }
 
 function set(preferences, action) {
   let { key, value } = action;
-  return $update(preferences, { $merge: { [key]: value } } );
+  return Object.assign({}, preferences, {
+    [key]: value
+  });
 }
 
 function remove(preferences, action) {
   let { key } = action;
-  return $update(preferences, { $merge: { [key]: undefined } } );
+  return Object.assign({}, preferences, {
+    [key]: undefined
+  });
 }
 
 function removeAll(preferences) {
-  return $update(preferences, { $set: {} } );
+  return {};
 }
