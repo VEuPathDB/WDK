@@ -2,6 +2,7 @@
 wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
   "use strict";
 
+  var escapeSelectorComponent = wdk.util.escapeSelectorComponent;
   var checkboxTreeConfig = {};
 
   function setUpCheckboxTree($elem, $attrs) {
@@ -94,8 +95,10 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
     uncheckAll(treeId);
 
     for (var id of checkedArray) {
-      // Our ID names are not jquery-selection friendly, so we have to use the following selector
-      $tree.jstree('check_node', '[id="' + id + '"]');
+      // Our ID names are not jquery-selection friendly. Our ID names are also
+      // not unique, so we need to scope our search to the tree.
+      var node = $tree.find('#' + escapeSelectorComponent(id));
+      $tree.jstree('check_node', node);
     }
 
     // tree may have changed so call user's onchange function
