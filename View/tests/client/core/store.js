@@ -40,7 +40,7 @@ test('dispatch should map state with reducer', function(t) {
   });
 });
 
-test('subscribe callback execution should complete before the next dispatch is executed', function(t) {
+test('dispatch should be synchronous', function(t) {
   t.plan(1);
 
   let store = Store.create(function(count = 0, action) {
@@ -57,7 +57,7 @@ test('subscribe callback execution should complete before the next dispatch is e
     store.dispatch('inc');
     let stateAfterDispatch = store.getState();
 
-    t.deepEqual(
+    t.notEqual(
       stateBeforeDispatch,
       stateAfterDispatch,
       "The store's state was changed before the callback completed"
@@ -162,6 +162,5 @@ test('subscribe should call callback function when state changes', function(t) {
 
   for (let i = 0; i < plan; i++) {
     store.dispatch({ type: 'test' });
-    store.dispatch({ type: 'skip' });
   }
 });
