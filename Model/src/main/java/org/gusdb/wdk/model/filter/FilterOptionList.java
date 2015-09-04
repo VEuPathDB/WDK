@@ -5,25 +5,24 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.question.Question;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class FilterOptionList implements Iterable<FilterOption>{
 
+  private final Question _question;
   private final Map<String, FilterOption> _options = new LinkedHashMap<>();
 
-  private final Step _step;
-
-  public FilterOptionList(Step step) {
-    this._step = step;
+  public FilterOptionList(Question question) {
+    _question = question;
   }
-
-  public FilterOptionList(Step step, JSONArray jsOptions) throws WdkModelException {
-    this(step);
+  
+  public FilterOptionList(Question question, JSONArray jsOptions) throws WdkModelException {
+    _question = question;
     for (int i = 0; i < jsOptions.length(); i++) {
       JSONObject jsFilterOption = jsOptions.getJSONObject(i);
-      FilterOption option = new FilterOption(step, jsFilterOption);
+      FilterOption option = new FilterOption(question, jsFilterOption);
       _options.put(option.getKey(), option);
     }
   }
@@ -39,9 +38,16 @@ public class FilterOptionList implements Iterable<FilterOption>{
     return _options.size();
   }
 
+  public void addFilterOption(FilterOption filterOption) throws WdkModelException {
+    // make sure this option is valid for this list's question
+    String filterName = filterOption.getKey();
+    _question.getFilter(filterName);
+    _options.put(filterName, filterOption);
+  }
+
   public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
-    Filter filter = _step.getQuestion().getFilter(filterName);
-    FilterOption option = new FilterOption(_step, filter, filterValue);
+    Filter filter = _question.getFilter(filterName);
+    FilterOption option = new FilterOption(_question, filter, filterValue);
     _options.put(filterName, option);
   }
 

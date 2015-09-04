@@ -2,7 +2,8 @@ package org.gusdb.wdk.model.filter;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
 
 public class FilterOption {
@@ -11,22 +12,19 @@ public class FilterOption {
   public static final String KEY_VALUE = "value";
   public static final String KEY_DISABLED = "disabled";
 
-  private final Step _step;
   private final Filter _filter;
   private final JSONObject _value;
   private boolean _disabled = false;
 
-  public FilterOption(Step step, JSONObject jsFilterOption) throws WdkModelException {
+  public FilterOption(Question question, JSONObject jsFilterOption) throws WdkModelException {
     String name = jsFilterOption.getString(KEY_NAME);
-    this._step = step;
     this._value = jsFilterOption.getJSONObject(KEY_VALUE);
-    this._filter = step.getQuestion().getFilter(name);
+    this._filter = question.getFilter(name);
     if (jsFilterOption.has(KEY_DISABLED))
       this._disabled = jsFilterOption.getBoolean(KEY_DISABLED);
   }
 
-  public FilterOption(Step step, Filter filter, JSONObject value) {
-    this._step = step;
+  public FilterOption(Question question, Filter filter, JSONObject value) {
     this._filter = filter;
     this._value = value;
     this._disabled = false;
@@ -44,8 +42,8 @@ public class FilterOption {
     return _value;
   }
 
-  public String getDisplayValue() throws WdkModelException, WdkUserException {
-    return _filter.getDisplayValue(_step.getAnswerValue(), _value);
+  public String getDisplayValue(AnswerValue answerValue) throws WdkModelException, WdkUserException {
+    return _filter.getDisplayValue(answerValue, _value);
   }
 
   public boolean isDisabled() {
