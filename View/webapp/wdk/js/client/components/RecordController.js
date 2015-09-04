@@ -45,7 +45,7 @@ let RecordController = React.createClass({
       this.commonActions.fetchRecordClasses(),
       this.commonActions.fetchQuestions()
     ]).then(() => {
-      let recordClass = store.getState().recordClasses.find(function(recordClass) {
+      let recordClass = store.getState().resources.recordClasses.find(function(recordClass) {
         return recordClass.fullName === recordClassName;
       });
       let attributes = recordClass.attributes.map(a => a.name);
@@ -58,11 +58,8 @@ let RecordController = React.createClass({
   selectState(state) {
     let { params, query } = this.props;
     let key = makeKey(params.class, query);
-    let {
-      record: { records, hiddenCategories, collapsedCategories },
-      recordClasses,
-      questions
-    } = state;
+    let { records, recordClasses, questions } = state.resources;
+    let { hiddenCategories, collapsedCategories } = state.views.record;
     let recordClass = recordClasses.find(r => r.fullName === params.class);
     let record = records[key];
 

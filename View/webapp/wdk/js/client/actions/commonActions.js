@@ -17,7 +17,7 @@ function fetchQuestions() {
     data: { expandQuestions: true },
     types: [ null, null, QUESTIONS_ADDED ],
     shouldFetch(state) {
-      return state.questions.length === 0;
+      return state.resources.questions.length === 0;
     }
   });
 }
@@ -29,7 +29,7 @@ function fetchRecordClasses() {
     data: { expandRecordClasses: true },
     types: [ null, null, RECORD_CLASSES_ADDED ],
     shouldFetch(state) {
-      return state.recordClasses.length === 0;
+      return state.resources.recordClasses.length === 0;
     }
   });
 }
