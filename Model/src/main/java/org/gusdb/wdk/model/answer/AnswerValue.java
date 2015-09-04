@@ -818,19 +818,18 @@ public class AnswerValue {
       sql.append("tq.").append(column).append(" = pidq.").append(column);
     }
 
-    // replace the id_sql macro
-    return sql.toString().replace(Utilities.MACRO_ID_SQL, idSql);
+    // replace the id_sql macro.  this sql must include filters (but not view filters)
+    return sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true));
   }
 
   public String getAttributeSql(Query attributeQuery) throws WdkModelException, WdkUserException {
     String queryName = attributeQuery.getFullName();
     Query dynaQuery = _question.getDynamicAttributeQuery();
-    String idSql = _idsQueryInstance.getSql();
     String sql;
     if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
       // the dynamic query doesn't have sql defined, the sql will be
       // constructed from the id query cache table.
-      sql = idSql;
+      sql = _idsQueryInstance.getSql();
     }
     else {
       // make an instance from the original attribute query, and attribute
@@ -840,30 +839,33 @@ public class AnswerValue {
       Map<String, String> params = new LinkedHashMap<String, String>();
       String userId = Integer.toString(_user.getUserId());
       params.put(Utilities.PARAM_USER_ID, userId);
-      QueryInstance<?> queryInstance;
+      QueryInstance<?> attributeQueryInstance;
       try {
-        queryInstance = attributeQuery.makeInstance(_user, params, true, 0,
+        attributeQueryInstance = attributeQuery.makeInstance(_user, params, true, 0,
             new LinkedHashMap<String, String>());
       }
       catch (WdkUserException ex) {
         throw new WdkModelException(ex);
       }
-      sql = queryInstance.getSql();
+      sql = attributeQueryInstance.getSql();
 
-      // replace the id_sql macro
-      sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
+      // replace the id_sql macro.  the injected sql must include filters (but not view filters)
+      sql = sql.replace(Utilities.MACRO_ID_SQL, getIdSql(null, true));
     }
     return sql;
   }
 
   public String getSortedIdSql() throws WdkModelException, WdkUserException {
-    if (_sortedIdSql != null)
+      if (_sortedIdSql == null) _sortedIdSql = getSortedIdSql(false);
       return _sortedIdSql;
+  }
+
+  public String getSortedIdSql(boolean excludeViewFilters) throws WdkModelException, WdkUserException {
 
     String[] pkColumns = _question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
 
     // get id sql
-    String idSql = getIdSql();
+    String idSql = getIdSql(null, excludeViewFilters);
 
     // get sorting attribute queries
     Map<String, String> attributeSqls = new LinkedHashMap<String, String>();
@@ -920,14 +922,17 @@ public class AnswerValue {
         sql.append(", ");
       sql.append("idq.").append(column);
     }
-    _sortedIdSql = sql.toString();
 
     logger.debug("sorted id sql constructed.");
-    return _sortedIdSql;
+    return sql.toString();
   }
 
   private String getPagedIdSql() throws WdkModelException, WdkUserException {
-    String sortedIdSql = getSortedIdSql();
+      return getPagedIdSql(false);
+  }
+
+  private String getPagedIdSql(boolean excludeViewFilters) throws WdkModelException, WdkUserException {
+    String sortedIdSql = getSortedIdSql(excludeViewFilters);
     DatabaseInstance platform = _question.getWdkModel().getAppDb();
     String sql = platform.getPlatform().getPagedSql(sortedIdSql, _startIndex, _endIndex);
 
@@ -940,10 +945,10 @@ public class AnswerValue {
   }
 
   public String getIdSql() throws WdkModelException, WdkUserException {
-    return getIdSql(null);
+      return getIdSql(null, false);
   }
 
-  private String getIdSql(String excludeFilter) throws WdkModelException, WdkUserException {
+  private String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException, WdkUserException {
     try {
       String innerSql = _idsQueryInstance.getSql();
 
@@ -962,7 +967,7 @@ public class AnswerValue {
 
       // apply view filters if requested
       boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
-      if (viewFiltersApplied){
+      if (viewFiltersApplied && !excludeViewFilters){
         innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
       }
       
@@ -1462,7 +1467,7 @@ public class AnswerValue {
   public FilterSummary getFilterSummary(String filterName) throws WdkModelException, WdkUserException {
     // need to exclude the given filter from the idSql, so that the selection of the current filter won't
     // affect the background;
-    String idSql = getIdSql(filterName);
+    String idSql = getIdSql(filterName, false);
     Filter filter = _question.getFilter(filterName);
     return filter.getSummary(this, idSql);
   }
