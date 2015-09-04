@@ -12,7 +12,7 @@ public class WdkClientApplication extends Application {
   public Set<Class<?>> getClasses() {
     return new SetBuilder<Class<?>>()
 
-    // add service classes
+    // add main client class
     .add(WdkClient.class)
 
     .toSet();
