@@ -49,7 +49,7 @@ let AppController = React.createClass({
     }
     else {
       return (
-        <RouteHandler store={this.props.store}/>
+        <RouteHandler {...this.props}/>
       );
     }
   }
