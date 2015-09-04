@@ -62,7 +62,7 @@ function createApplication(config) {
       );
     }
     else {
-      React.render(<Root state={state} store={store}/>, config.rootElement);
+      React.render(<Root {...state} store={store}/>, config.rootElement);
     }
   });
 
