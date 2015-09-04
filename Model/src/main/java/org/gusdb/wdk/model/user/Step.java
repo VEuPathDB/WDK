@@ -826,16 +826,16 @@ public class Step {
     this.paramValues = new LinkedHashMap<String, String>(paramValues);
   }
 
-  public FilterOptionList getFilterOptions() {
+  public FilterOptionList getFilterOptions() throws WdkModelException {
     if (filterOptions == null) {
-      filterOptions = new FilterOptionList(this);
+      filterOptions = new FilterOptionList(getQuestion());
     }
     return filterOptions;
   }
 
-  public FilterOptionList getViewFilterOptions() {
+  public FilterOptionList getViewFilterOptions() throws WdkModelException {
     if (viewFilterOptions == null) {
-      viewFilterOptions = new FilterOptionList(this);
+      viewFilterOptions = new FilterOptionList(getQuestion());
     }
     return viewFilterOptions;
   }
@@ -857,7 +857,7 @@ public class Step {
     validateFilterOptions(getViewFilterOptions(), false);
   }
 
-  public void removeFilterOption(String filterName) {
+  public void removeFilterOption(String filterName) throws WdkModelException {
     getFilterOptions().removeFilterOption(filterName);
   }
 
@@ -866,7 +866,7 @@ public class Step {
     validateFilterOptions(getViewFilterOptions(), true);
   }
 
-  public void removeViewFilterOption(String filterName) {
+  public void removeViewFilterOption(String filterName) throws WdkModelException {
     getViewFilterOptions().removeFilterOption(filterName);
   }
 
@@ -1358,7 +1358,7 @@ public class Step {
       this.filterOptions = null;
     }
     else {
-      FilterOptionList newList = new FilterOptionList(this, jsOptions);
+      FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
       validateFilterOptions(newList, false);
       this.filterOptions = newList;
     }
@@ -1373,7 +1373,7 @@ public class Step {
       this.viewFilterOptions = null;
     }
     else {
-      FilterOptionList newList = new FilterOptionList(this, jsOptions);
+      FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
       validateFilterOptions(newList, true);
       this.viewFilterOptions = newList;
     }

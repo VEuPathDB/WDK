@@ -17,6 +17,7 @@ import reducer from './reducer';
 import RestAPI from './services/restAPI';
 import Routes from './routes';
 import { createRestFilter } from './filters/restFilter';
+import logFilter from './filters/logFilter';
 
 // expose libraries to global object, but only if they aren't already defined
 if (window._ == null) window._ = _;
@@ -66,15 +67,6 @@ function createApplication(config) {
   });
 
   return { store, router, restAPI };
-}
-
-function logFilter(store, next, action) {
-  console.group(action.type);
-  console.info('dispatching', action);
-  let result = next(action);
-  console.log('state', store.getState());
-  console.groupEnd(action.type);
-  return result;
 }
 
 export default Wdk;
