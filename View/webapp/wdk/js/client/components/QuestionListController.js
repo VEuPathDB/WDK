@@ -15,7 +15,7 @@ let QuestionListController = React.createClass({
   },
 
   selectState(state) {
-    this.setState({ questions: state.questions });
+    this.setState({ questions: state.resources.questions });
   },
 
   render() {

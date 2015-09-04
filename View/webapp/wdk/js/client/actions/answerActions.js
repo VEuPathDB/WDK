@@ -119,7 +119,7 @@ export default {
       data: { questionDefinition, displayInfo },
       types: [ ANSWER_LOADING, APP_ERROR, ANSWER_ADDED ],
       shouldFetch(state) {
-        return !isMatch(state.answer.displayInfo, displayInfo);
+        return !isMatch(state.views.answer.displayInfo, displayInfo);
       }
     });
   },

@@ -157,7 +157,8 @@ let AnswerController = React.createClass({
   },
 
   selectState(state) {
-    let { answer, questions, recordClasses } = state;
+    let { answer } = state.views;
+    let { questions, recordClasses } = state.resources;
 
     let { meta } = answer;
     let { records } = answer;
