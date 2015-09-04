@@ -1,19 +1,19 @@
 package org.gusdb.wdk.beans;
 
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.filter.Filter;
 
 public class FilterValue {
 
-  private final AnswerFilterInstance _filter;
+  private final Filter _filter;
   private final Object _value;
 
-  public FilterValue(AnswerFilterInstance filter, Object value) {
+  public FilterValue(Filter filter, Object value) {
     _filter = filter;
     _value = value;
   }
 
-  public String getName() {
-    return _filter.getName();
+  public String getKey() {
+    return _filter.getKey();
   }
 
   public Object getValue() {
