@@ -7,8 +7,8 @@ import {
   ANSWER_MOVE_COLUMN,
   ANSWER_UPDATE_FILTER,
   APP_ERROR
-} from '../constants/actionTypes';
-import * as RecordUtils from '../utils/recordUtils';
+} from '../../constants/actionTypes';
+import * as RecordUtils from '../../utils/recordUtils';
 
 
 let initialState = {

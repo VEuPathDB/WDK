@@ -5,9 +5,14 @@ import {
   PREFERENCE_REMOVED_ALL
 } from '../constants/actionTypes';
 
+/**
+ * ActionCreators for reading and writing preferences. These are currently using
+ * localStorage. We will eventually want to read and write to the REST service.
+ */
+
 let prefix = 'wdk_preference_';
 
-function loadPreferences() {
+export function loadPreferences() {
   let preferences = {};
   for (let storageKey in localStorage) {
     if (storageKey.startsWith(prefix)) {
@@ -29,19 +34,19 @@ function loadPreferences() {
   return { type: PREFERENCES_LOADED, preferences };
 }
 
-function setPreference(key, value) {
+export function setPreference(key, value) {
   let storageKey = makeStorageKey(key);
   localStorage.setItem(storageKey, JSON.stringify(value));
   return { type: PREFERENCE_SET, key, value };
 }
 
-function removePreference(key) {
+export function removePreference(key) {
   let storageKey = makeStorageKey(key);
   localStorage.removeItem(storageKey);
   return { type: PREFERENCE_REMOVED, key };
 }
 
-function removeAllPreferences() {
+export function removeAllPreferences() {
   for (let key in localStorage) {
     if (key.startsWith(prefix))
       localStorage.removeItem(key);
@@ -52,10 +57,3 @@ function removeAllPreferences() {
 function makeStorageKey(key) {
   return prefix + key;
 }
-
-export default {
-  loadPreferences,
-  setPreference,
-  removePreference,
-  removeAllPreferences
-};

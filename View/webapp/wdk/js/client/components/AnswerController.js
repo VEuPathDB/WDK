@@ -4,9 +4,9 @@ import Router from 'react-router';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
-import AnswerActions from '../actions/answerActions';
-import CommonActions from '../actions/commonActions';
-import PreferenceActions from '../actions/preferenceActions';
+import * as AnswerActions from '../actions/answerActions';
+import * as CommonActions from '../actions/commonActions';
+import * as PreferenceActions from '../actions/preferenceActions';
 import wrappable from '../utils/wrappable';
 
 
@@ -157,7 +157,8 @@ let AnswerController = React.createClass({
   },
 
   selectState(state) {
-    let { answer, questions, recordClasses } = state;
+    let { answer } = state.views;
+    let { questions, recordClasses } = state.resources;
 
     let { meta } = answer;
     let { records } = answer;
