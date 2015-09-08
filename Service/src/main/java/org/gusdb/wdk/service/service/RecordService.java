@@ -120,6 +120,22 @@ public class RecordService extends WdkService {
     return getTableResponse(recordClassName, tableName, expandTableAttributes, true);
   }
   
+  @GET
+  @Path("{recordClassName}/answerFormat")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getAnswerFormats(
+      @PathParam("recordClassName") String recordClassName) {
+    try {
+      RecordClass rc = getWdkModel().getRecordClass(recordClassName);
+      return Response.ok(
+          RecordClassFormatter.getAnswerFormatsJson(rc).toString()
+      ).build();
+    }
+    catch (WdkModelException e) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+  }
+
   @POST
   @Path("{recordClassName}/instance")
   @Consumes(MediaType.APPLICATION_JSON)
