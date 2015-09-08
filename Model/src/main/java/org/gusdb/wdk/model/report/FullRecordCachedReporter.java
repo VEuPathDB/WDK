@@ -139,7 +139,7 @@ public class FullRecordCachedReporter extends Reporter {
      * org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
     @Override
-    protected void write(OutputStream out) throws WdkModelException,
+    public void write(OutputStream out) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         // get the columns that will be in the report

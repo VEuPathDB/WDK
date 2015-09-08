@@ -154,7 +154,7 @@ public class FullRecordReporter extends Reporter {
      * org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
     @Override
-    protected void write(OutputStream out) throws WdkModelException,
+    public void write(OutputStream out) throws WdkModelException,
             SQLException, NoSuchAlgorithmException, JSONException,
             WdkUserException {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
