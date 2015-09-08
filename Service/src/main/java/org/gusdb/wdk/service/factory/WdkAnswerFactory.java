@@ -42,9 +42,6 @@ public class WdkAnswerFactory {
           convertSorting(specifics.getSorting()), legacyFilter, true, 0);
       answer.setFilterOptions(request.getFilterValues());
       answer.setViewFilterOptions(request.getViewFilterValues());
-      // if view filters are present, then apply them; if user
-      //   doesn't want them, they will omit in request
-      answer.setApplyViewFilters(true);
       return new AnswerValueBean(answer);
     }
     catch (WdkUserException e) {
