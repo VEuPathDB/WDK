@@ -1,5 +1,8 @@
 package org.gusdb.wdk.service.service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -9,7 +12,10 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
+import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.request.WdkAnswerRequest;
 import org.gusdb.wdk.service.request.WdkAnswerRequestSpecifics;
@@ -35,8 +41,8 @@ import org.json.JSONObject;
  *     } ]
  *   },
  *   displayInfo: {
- *     reporter: String,
- *     reporterConfig: Any (sample for JSON, XML, etc. below)
+ *     format: String,   (reporter internal name. optional.  if not provided, use WDK standard JSON)
+ *     formatConfig: Any (sample for JSON, XML, etc. below)
  *   }
  * }
  * </pre>
@@ -58,7 +64,7 @@ public class AnswerService extends WdkService {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response buildResult(String body) throws WdkModelException {
+  public Response buildResult(String body) throws WdkModelException, WdkUserException {
     try {
       LOG.debug("POST submission to /answer with body:\n" + body);
       JSONObject json = new JSONObject(body);
@@ -70,20 +76,39 @@ public class AnswerService extends WdkService {
       
       // 2. Parse (optional) request specifics (columns, pagination, etc.)
       WdkAnswerRequestSpecifics requestSpecifics = null;
+      String format = null;
       if (json.has("displayInfo")) {
         // only try to parse if present; if not present then pass null to createResult
-        JSONObject specJson = json.getJSONObject("displayInfo");
+        JSONObject displayInfo = json.getJSONObject("displayInfo");
+        format = displayInfo.getString("format"); // the internal format name
+        JSONObject formatConfig = displayInfo.getJSONObject("formatConfig");
         requestSpecifics = WdkAnswerRequestSpecifics.createFromJson(
-            specJson, request.getQuestion().getRecordClass());
+            formatConfig, request.getQuestion().getRecordClass());
       }
       
       // seemed to parse ok; create answer and format
       AnswerValueBean answerValue = getResultFactory().createResult(request, requestSpecifics);
-      return Response.ok(AnswerStreamer.getAnswerAsStream(answerValue)).build();
+      if (format == null) {
+        return Response.ok(AnswerStreamer.getAnswerAsStream(answerValue)).build();       
+      } else {
+        Reporter reporter = getReporter(answerValue, format);
+        return Response.ok(AnswerStreamer.getAnswerAsStream(reporter)).build();
+      }
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.info("Passed request body deemed unacceptable", e);
       return getBadRequestBodyResponse(e.getMessage());
     }
+  }
+  
+  private Reporter getReporter(AnswerValueBean answerValue, String format) throws WdkUserException, WdkModelException {
+    RecordClassBean recordClass = answerValue.getQuestion().getRecordClass();
+    if (!recordClass.getReporterMap().keySet().contains(format)) {
+      throw new WdkUserException("Request for an invalid WDK answer format: " + format);
+    }
+    Map<String, String> config = new HashMap<String, String>();
+    Reporter reporter = answerValue.createReport(format, config);
+    reporter.configure(config);
+    return reporter;
   }
 }
