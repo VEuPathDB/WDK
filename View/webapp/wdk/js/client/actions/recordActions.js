@@ -10,13 +10,18 @@ import CommonActions from './commonActions';
 import { restAction } from '../filters/restFilter';
 
 /**
- * @param {string} recordClassName
- * @param {object} spec
- * @param {object} spec.primaryKey
- * @param {array}  spec.attributes
- * @param {array}  spec.tables
+ * Actions related to Records, including fetching from the WDK REST Service and
+ * toggling the visibility of attribute categories.
  */
-function fetchRecordDetails(recordClassName, recordSpec) {
+
+/**
+ * @param {string} recordClassName
+ * @param {Object} spec
+ * @param {Object} spec.primaryKey
+ * @param {Array<string>}  spec.attributes
+ * @param {Array<string>}  spec.tables
+ */
+export function fetchRecordDetails(recordClassName, recordSpec) {
   // TODO Only fetch what is needed. This will require being able to read the
   // application state here. Thus, we probably need to add a thunk filter.
   return restAction({
@@ -27,56 +32,7 @@ function fetchRecordDetails(recordClassName, recordSpec) {
   });
 }
 
-/**
- * @param {object} recordClass
- * @param {object} primaryKey
- * @param {string} categoryName
- */
-function fetchCategoryDetails(recordClass, primaryKey, categoryName) {
-  return function(dispatch, state, { restAPI }) {
-    let category = findCategory(recordClass.attributeCategories, categoryName);
-    if (category === undefined) {
-      console.warn('Could not find category %s', categoryName);
-      return;
-    }
-    let categoryNames = [categoryName].concat(findSubCategoryNames(category));
-
-    let attributes = recordClass.attributes
-      .filter(function(a) {
-        return categoryNames.includes(a.category);
-      })
-      .map(function(a) {
-        return a.name;
-      });
-
-    let tables = recordClass.tables
-      .filter(function(t) {
-        return categoryNames.includes(t.category);
-      })
-      .map(function(t) {
-        return t.name;
-      });
-
-    let resourcePath = '/record/' + recordClass.fullName + '/get';
-    let requestBody = {
-      recordInstanceSpecification: { primaryKey, attributes, tables }
-    };
-
-    return restAPI.postResource(resourcePath, requestBody)
-      .then(function(data) {
-        dispatch({
-          type: RECORD_DETAILS_ADDED,
-          record: data.record,
-          meta: data.meta
-        });
-      })
-      .catch(function(error) {
-        dispatch({ type: APP_ERROR, error });
-      });
-  }
-}
-
-function toggleCategoryVisibility({ recordClass, category, isVisible }) {
+export function toggleCategoryVisibility({ recordClass, category, isVisible }) {
   return {
     type: RECORD_CATEGORY_VISIBILITY_TOGGLED,
     recordClass: recordClass.fullName,
@@ -85,7 +41,7 @@ function toggleCategoryVisibility({ recordClass, category, isVisible }) {
   };
 }
 
-function toggleCategoryCollapsed({ recordClass, category, isCollapsed }) {
+export function toggleCategoryCollapsed({ recordClass, category, isCollapsed }) {
   return {
     type: RECORD_CATEGORY_COLLAPSED_TOGGLED,
     recordClass: recordClass.fullName,
@@ -93,32 +49,3 @@ function toggleCategoryCollapsed({ recordClass, category, isCollapsed }) {
     isCollapsed
   }
 }
-
-// Search categories for the category with name == categoryName
-function findCategory(categories = [], categoryName) {
-  let category;
-  for (category of categories) {
-    if (category.name === categoryName) {
-      break;
-    }
-    category = findCategory(category.subCategories, categoryName);
-    if (category) {
-      break;
-    }
-  }
-  return category;
-}
-
-// Return a flat array of category names that are children of categoryName
-function findSubCategoryNames(category) {
-  return flattenDeep(map(category.subCategories, function(subCategory) {
-    return [subCategory.name].concat(findSubCategoryNames(subCategory));
-  }));
-}
-
-export default {
-  fetchRecordDetails,
-  fetchCategoryDetails,
-  toggleCategoryVisibility,
-  toggleCategoryCollapsed
-};
