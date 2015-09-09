@@ -1,8 +1,13 @@
 package org.gusdb.wdk.model.filter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
 
@@ -62,7 +67,28 @@ public class FilterOption {
     return jsFilterOption;
   }
 
-    public boolean isSetToDefaultValue() throws WdkModelException {
-	return getFilter().defaultValueEquals(getValue());
-    }
+  public boolean isSetToDefaultValue() throws WdkModelException {
+    return getFilter().defaultValueEquals(getValue());
+  }
+
+  // FIXME: this is a total hack to support the JSP calling
+  //   getDisplayValue(AnswerValue) with an argument.  It should be removed
+  //   once we move filter displays from JSP to the new service architecture.
+  @SuppressWarnings("serial")
+  public Map<AnswerValueBean, String> getDisplayValueMap() {
+    return new HashMap<AnswerValueBean, String>() {
+      @Override
+      public String get(Object answerValue) {
+        if (answerValue instanceof AnswerValueBean) {
+          try {
+            return getDisplayValue(((AnswerValueBean)answerValue).getAnswerValue());
+          }
+          catch (WdkModelException | WdkUserException e) {
+            throw new WdkRuntimeException(e);
+          }
+        }
+        throw new IllegalArgumentException("Argument must be a AnswerValueBean.");
+      }
+    };
+  }
 }
