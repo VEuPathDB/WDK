@@ -3,16 +3,21 @@
 The WDK client employs the Flux architecture, as described at https://facebook.github.io/flux/docs/overview.html#content.
 
 
+Note: This document uses Facebook's
+[Flow type annotations](http://flowtype.org/docs/quick-reference.html) and
+[ES6 syntax](https://babeljs.io/docs/learn-es2015/). The reader is encouraged to
+familiarize themselves with these syntaxes.
+
+
 # Simple Flux Overview
 
 The Flux architecture prescribes a unidirectional data flow, as depicted in the
 following diagram:
 
-<pre>
                     Store --> View Controller --> Action --> Dispatcher
-                    ^                                                 |
+                    ^                                                 '
                     '-------------------------------------------------'
-</pre>
+
 
 The Flux architecture contains these Entities:
 
@@ -39,7 +44,35 @@ WDK's implementation differs slightly from what is described above:
   * WDK uses a single Store for the application state.
   * This single Store exposes a dispatch method that takes the place of the
     Dispatcher.
-  * The application state is treated as immutable.
+  * The application state is treated as an immutable tree.
+
+WDK also adds a Router, whose job is to render a View Controller, passing the
+View Controller information about the URL. The Router does this when the page
+is initialized, and every time the URL changes.
+
+
+In WDK, the diagram above looks more like:
+
+
+                                          Router
+                                            |
+                                            | (renders with URL info)
+                                            v
+
+
+                                      View Controller
+                                           |  ^
+                      (sends Action via    |  |   (observes via
+                       store.dispatch)     v  |    store.subscribe)
+
+
+                                          Store
+
+
+_The fact that arrows are touching some entities and not others is important.
+This indicates where the relationship between two entities is defined. For
+example, a View Controller defines both relationships with the Store._
+
 
 The motivations behind these differences are twofold:
 
@@ -53,10 +86,9 @@ The motivations behind these differences are twofold:
      Store.
   2. Combining the dispatch functionality with the Store results in a simpler
      object dependency graph.
-
-
-_It's important to note that this change does not preclude the ability to create
-multiple Stores that are managed by a single Dispatcher._
+  3. The Router allows some portion of the application state to be encoded in a
+     URL. The View Controller manages decoding the URL into Actions, which the
+     Store will commit to its state tree.
 
 
 ## Store
@@ -64,7 +96,9 @@ multiple Stores that are managed by a single Dispatcher._
 As mentioned above, the WDK Client contains a single Store. The Store is defined
 by a single reduce function of the type:
 
-    <S>(state: S, action: { type: string; ...}) => S
+    function reduce<State>(state: State, action: Action): State { ... }
+
+[Syntax explanation](http://flowtype.org/docs/functions.html#polymorphic-functions)
 
 In other words, for every Action that is dispatched, this function will return
 a new State based on the old State. The Store holds a reference to the current
@@ -131,6 +165,16 @@ is by design to
 
   1. Make it easy to associate a part of the application state with a reducer.
   2. Make it easy to rearrange the state with minimal code rewriting.
+
+
+The following examples use Flow type and ES6 syntax:
+
+  * [Object types](http://flowtype.org/docs/objects.html)
+  * [Array types](http://flowtype.org/docs/arrays.html)
+  * [Enhanced Object Literals](https://babeljs.io/docs/learn-es2015/#enhanced-object-literals)
+  * [Default + Rest + Spread](https://babeljs.io/docs/learn-es2015/#default-rest-spread)
+  * [Let + Const](https://babeljs.io/docs/learn-es2015/#let-const)
+
 
 For example, if our state has the following shape:
 
