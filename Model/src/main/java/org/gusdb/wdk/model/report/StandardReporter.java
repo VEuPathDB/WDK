@@ -29,7 +29,6 @@ public abstract class StandardReporter extends Reporter {
 
   protected StandardReporter(AnswerValue answerValue, int startIndex, int endIndex) {
     super(answerValue, startIndex, endIndex);
-    // TODO Auto-generated constructor stub
   }
 
   /*
@@ -137,8 +136,10 @@ public class Configuration {
     public static final String SELECTED_FIELDS = "selectedFields";  // tables or attributes
     public static final String SELECT_ALL_FIELDS = "all-fields";
     public static final String SELECTED_ATTRS = "o-fields";
+    public static final String SELECTED_ATTRS_JSON = "attributes";
     public static final String SELECT_ALL_ATTRS = "allAttributes";
     public static final String SELECTED_TABLES = "o-tables";
+    public static final String SELECTED_TABLES_JSON = "tables";
     public static final String SELECT_ALL_TABLES = "allTables";
     public static final String FILE_TYPE = "downloadType";
     public static final String INCLUDE_EMPTY_TABLES = "hasEmptyTable";
@@ -195,8 +196,8 @@ public class Configuration {
        
       if (config.has(SELECT_ALL_ATTRS)) {
         allAttributes = true;
-      } else if (!allFields && !config.has(SELECTED_FIELDS) && config.has(SELECTED_ATTRS)){
-        JSONArray flds = config.getJSONArray(SELECTED_ATTRS);
+      } else if (!allFields && !config.has(SELECTED_FIELDS) && config.has(SELECTED_ATTRS_JSON)){
+        JSONArray flds = config.getJSONArray(SELECTED_ATTRS_JSON);
         for (int i=0; i<flds.length(); i++) {
           String fld = flds.getString(i);
           attributes.add(fld);
@@ -205,8 +206,8 @@ public class Configuration {
 
       if (config.has(SELECT_ALL_TABLES)) {
         allTables = true;
-      } else if (!allFields && !config.has(SELECTED_FIELDS) && config.has(SELECTED_TABLES)){
-        JSONArray flds = config.getJSONArray(SELECTED_TABLES);
+      } else if (!allFields && !config.has(SELECTED_FIELDS) && config.has(SELECTED_TABLES_JSON)){
+        JSONArray flds = config.getJSONArray(SELECTED_TABLES_JSON);
         for (int i=0; i<flds.length(); i++) {
           String fld = flds.getString(i);
           tables.add(fld);
@@ -239,13 +240,17 @@ public class Configuration {
           if (fieldMap.get(fld).getClass().getName().contains("TableField")) tables.add(fld);
         }
       } else {
-        String attrFlds = config.get(SELECTED_ATTRS);
-        if (attrFlds.equals("all")) allAttributes = true;
-        else attributes = Arrays.asList(attrFlds.split(","));
+	if (config.containsKey(SELECTED_ATTRS)) {
+	  String attrFlds = config.get(SELECTED_ATTRS);
+	  if (attrFlds.equals("all")) allAttributes = true;
+	  else attributes = Arrays.asList(attrFlds.split(","));
+	}
 
-        String tableFlds = config.get(SELECTED_TABLES);
-        if (tableFlds.equals("all")) allTables = true;
-        else tables = Arrays.asList(tableFlds.split(","));        
+	if (config.containsKey(SELECTED_TABLES)) {
+          String tableFlds = config.get(SELECTED_TABLES);
+          if (tableFlds.equals("all")) allTables = true;
+          else tables = Arrays.asList(tableFlds.split(","));
+	}        
       }
         
       if (config.containsKey(FILE_TYPE)) fileType = config.get(FILE_TYPE);
