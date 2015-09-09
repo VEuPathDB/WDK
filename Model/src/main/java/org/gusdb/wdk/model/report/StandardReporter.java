@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -70,7 +71,7 @@ protected Set<Field> validateColumns() throws WdkModelException {
           columns.add(f);
       }
     }
-    else if (reporterConfig.getAttributes() != null) {
+    else  {
       for (String column : reporterConfig.getAttributes()) {
         column = column.trim();
         if (fieldMap.containsKey(column)) {
@@ -78,6 +79,7 @@ protected Set<Field> validateColumns() throws WdkModelException {
         }
       }
     }
+
     if (reporterConfig.getIsAllTables()) {
       for (String k : fieldMap.keySet()) {
         Field f = fieldMap.get(k);
@@ -85,7 +87,7 @@ protected Set<Field> validateColumns() throws WdkModelException {
           columns.add(f);
       }
     }
-    else if (reporterConfig.getTables() != null) {
+    else {
       for (String column : reporterConfig.getTables()) {
         column = column.trim();
         if (!fieldMap.containsKey(column))
@@ -112,7 +114,7 @@ protected Set<AttributeField> validateAttributeColumns() throws WdkModelExceptio
         columns.add(f);
     }
   }
-  else if (reporterConfig.getAttributes() != null) {
+  else {
     for (String column : reporterConfig.getAttributes()) {
       column = column.trim();
       if (fieldMap.containsKey(column)) {
@@ -142,20 +144,20 @@ public class Configuration {
     public static final String INCLUDE_EMPTY_TABLES = "hasEmptyTable";
     
     private boolean includeEmptyTables;
-    private List<String> fields = null;  // table and attribute field names
+    private List<String> fields = new ArrayList<String>();  // table and attribute field names
     private boolean allFields = false;
-    private List<String> attributes = null;  
+    private List<String> attributes = new ArrayList<String>();  
     private boolean allAttributes = false;
-    private List<String> tables = null;  // table and attribute field names
+    private List<String> tables = new ArrayList<String>();  // table and attribute field names
     private boolean allTables = false;
     private String fileType = "";
     
     public boolean getIncludeEmptyTables() { return includeEmptyTables; }
-    public List<String> getFields() {return Collections.unmodifiableList(fields); }
+    public List<String> getFields() {return fields == null? null : Collections.unmodifiableList(fields); }
     public boolean getIsAllFields() { return allFields || (allTables && allAttributes); }
-    public List<String> getAttributes() {return Collections.unmodifiableList(attributes); }
+    public List<String> getAttributes() {return attributes == null? null : Collections.unmodifiableList(attributes); }
     public boolean getIsAllAttributes() { return allAttributes; }
-    public List<String> getTables() {return Collections.unmodifiableList(tables); }
+    public List<String> getTables() {return tables == null? null : Collections.unmodifiableList(tables); }
     public boolean getIsAllTables() { return allTables; }
     public String getFileType() {return fileType; }
  
@@ -173,6 +175,9 @@ public class Configuration {
         String value = config.getString(INCLUDE_EMPTY_TABLES);
         includeEmptyTables = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true : false;
       } 
+
+      Map<String, Field> fieldMap = getQuestion().getFields(
+                FieldScope.REPORT_MAKER);
       
       if (config.has(SELECT_ALL_FIELDS)) {
         allFields = true;
@@ -183,8 +188,8 @@ public class Configuration {
         for (int i=0; i<flds.length(); i++) {
           String fld = flds.getString(i);
           fields.add(fld);
-          if (fld.contains("AttributeField")) attributes.add(fld);
-          if (fld.contains("TableField")) tables.add(fld);
+          if (fieldMap.get(fld).getClass().getName().contains("AttributeField")) attributes.add(fld);
+          if (fieldMap.get(fld).getClass().getName().contains("TableField")) tables.add(fld);
         }
       }
        
@@ -222,13 +227,16 @@ public class Configuration {
         includeEmptyTables = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true : false;
       } 
       
+      Map<String, Field> fieldMap = getQuestion().getFields(
+                FieldScope.REPORT_MAKER);
+
       if (config.containsKey(SELECTED_FIELDS)) {
         String flds = config.get(SELECTED_FIELDS);
         if (flds.equals("all")) allFields = true;
         else fields = Arrays.asList(flds.split(","));
         for (String fld : fields) {
-          if (fld.contains("AttributeField")) attributes.add(fld);
-          if (fld.contains("TableField")) tables.add(fld);          
+          if (fieldMap.get(fld).getClass().getName().contains("AttributeField")) attributes.add(fld);
+          if (fieldMap.get(fld).getClass().getName().contains("TableField")) tables.add(fld);
         }
       } else {
         String attrFlds = config.get(SELECTED_ATTRS);
