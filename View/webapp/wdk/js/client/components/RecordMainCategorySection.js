@@ -1,7 +1,7 @@
 import React from 'react';
 import RecordAttribute from './RecordAttribute';
 import RecordTable from './RecordTable';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 import {
   formatAttributeValue
 } from '../utils/stringUtils';

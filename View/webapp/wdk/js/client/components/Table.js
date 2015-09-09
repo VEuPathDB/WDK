@@ -6,7 +6,7 @@ import noop from 'lodash/utility/noop';
 import { Table } from 'fixed-data-table';
 import React from 'react/addons';
 import TouchableArea from './TouchableArea';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 // import css file
 import 'fixed-data-table/dist/fixed-data-table.css';
