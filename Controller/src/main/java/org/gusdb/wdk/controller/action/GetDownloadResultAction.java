@@ -36,6 +36,7 @@ public class GetDownloadResultAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+	ServletOutputStream out = null;
         try {
             // get answer
             String stepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
@@ -92,7 +93,7 @@ public class GetDownloadResultAction extends Action {
                     config);
             reporter.configure(config);
 
-            ServletOutputStream out = response.getOutputStream();
+            out = response.getOutputStream();
             response.setHeader("Pragma", "Public");
             response.setContentType(reporter.getHttpContentType());
 
@@ -121,6 +122,9 @@ public class GetDownloadResultAction extends Action {
         catch (Exception ex) {
             logger.error("downloading failed", ex);
             throw ex;
-        }
+        } finally {
+            out.flush();
+            out.close();
+	}
     }
 }
