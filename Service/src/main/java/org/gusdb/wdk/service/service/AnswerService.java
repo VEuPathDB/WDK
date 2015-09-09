@@ -1,8 +1,5 @@
 package org.gusdb.wdk.service.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -48,7 +45,7 @@ import org.json.JSONObject;
  * </pre>
  * <p>Sample input for our standard reporters:</p>
  * <pre>
- * reporterConfig: {
+ * formatConfig: {
  *   pagination: { offset: Number, numRecords: Number },
  *   attributes: [ attributeName: String ],
  *   tables: [ tableName: String ],
@@ -68,30 +65,39 @@ public class AnswerService extends WdkService {
     try {
       LOG.debug("POST submission to /answer with body:\n" + body);
       JSONObject json = new JSONObject(body);
-
+      
       // expect two parts to this request
       // 1. Parse result request (question, params, etc.)
       JSONObject questionDefJson = json.getJSONObject("questionDefinition");
       WdkAnswerRequest request = WdkAnswerRequest.createFromJson(questionDefJson, getWdkModelBean());
       
       // 2. Parse (optional) request specifics (columns, pagination, etc.)
-      WdkAnswerRequestSpecifics requestSpecifics = null;
+      JSONObject displayInfo = null;
       String format = null;
+      JSONObject formatConfig = null;
+      
       if (json.has("displayInfo")) {
         // only try to parse if present; if not present then pass null to createResult
-        JSONObject displayInfo = json.getJSONObject("displayInfo");
+        displayInfo = json.getJSONObject("displayInfo");
         format = displayInfo.getString("format"); // the internal format name
-        JSONObject formatConfig = displayInfo.getJSONObject("formatConfig");
-        requestSpecifics = WdkAnswerRequestSpecifics.createFromJson(
-            formatConfig, request.getQuestion().getRecordClass());
+        formatConfig = displayInfo.getJSONObject("formatConfig");
       }
       
-      // seemed to parse ok; create answer and format
+      // make an answer value. 
+      WdkAnswerRequestSpecifics requestSpecifics = null;
+      if (formatConfig != null) requestSpecifics = WdkAnswerRequestSpecifics.createFromJson(
+          formatConfig, request.getQuestion().getRecordClass());
       AnswerValueBean answerValue = getResultFactory().createResult(request, requestSpecifics);
+     
+      // standard answer request
       if (format == null) {
         return Response.ok(AnswerStreamer.getAnswerAsStream(answerValue)).build();       
-      } else {
-        Reporter reporter = getReporter(answerValue, format);
+      } 
+      
+      // formatted answer request (eg, for download).  This option ignores the requestSpecifics, instead building its own configuration
+      else {
+        if (formatConfig == null) throw new WdkUserException("Requested answer format '" + format + "' requires a non-null formatConfig");
+        Reporter reporter = getReporter(answerValue, format, formatConfig);
         return Response.ok(AnswerStreamer.getAnswerAsStream(reporter)).build();
       }
     }
@@ -101,14 +107,13 @@ public class AnswerService extends WdkService {
     }
   }
   
-  private Reporter getReporter(AnswerValueBean answerValue, String format) throws WdkUserException, WdkModelException {
+  private Reporter getReporter(AnswerValueBean answerValue, String format, JSONObject formatConfig) throws WdkUserException, WdkModelException {
     RecordClassBean recordClass = answerValue.getQuestion().getRecordClass();
     if (!recordClass.getReporterMap().keySet().contains(format)) {
       throw new WdkUserException("Request for an invalid WDK answer format: " + format);
     }
-    Map<String, String> config = new HashMap<String, String>();
-    Reporter reporter = answerValue.createReport(format, config);
-    reporter.configure(config);
+    
+    Reporter reporter = answerValue.createReport(format, formatConfig);
     return reporter;
   }
 }
