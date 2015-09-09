@@ -76,20 +76,22 @@ public class AnswerService extends WdkService {
       String format = null;
       JSONObject formatConfig = null;
       
+      WdkAnswerRequestSpecifics requestSpecifics = null;
+
       if (json.has("displayInfo")) {
         // only try to parse if present; if not present then pass null to createResult
         displayInfo = json.getJSONObject("displayInfo");
-        format = displayInfo.getString("format"); // the internal format name
-        formatConfig = displayInfo.getJSONObject("formatConfig");
+	if (displayInfo.has("formatConfig")) {
+	    formatConfig = displayInfo.getJSONObject("formatConfig");
+	    requestSpecifics = WdkAnswerRequestSpecifics.createFromJson(							formatConfig, request.getQuestion().getRecordClass());
+	}
+        format = displayInfo.has("format")? displayInfo.getString("format") : null; // the internal format name
       }
       
       // make an answer value. 
-      WdkAnswerRequestSpecifics requestSpecifics = null;
-      if (formatConfig != null) requestSpecifics = WdkAnswerRequestSpecifics.createFromJson(
-          formatConfig, request.getQuestion().getRecordClass());
       AnswerValueBean answerValue = getResultFactory().createResult(request, requestSpecifics);
      
-      // standard answer request
+      // if no format specified, standard answer request
       if (format == null) {
         return Response.ok(AnswerStreamer.getAnswerAsStream(answerValue)).build();       
       } 
