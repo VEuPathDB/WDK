@@ -159,7 +159,14 @@ public class Configuration {
     public boolean getIsAllTables() { return allTables; }
     public String getFileType() {return fileType; }
  
-    
+    /**
+     * as it stands now, this class does not protect against conflicting configurations.  it goes in
+     * priority order.   for example, if all fields are selected, it ignores other configurations.
+     * 
+     * eventually this will probably lose support for the SELECT_ALL_FIELDS and SELECTED_FIELDS options as they are
+     * redundant
+     * @param config
+     */
     public void configure(JSONObject config) {
     
       if (config.has(INCLUDE_EMPTY_TABLES)) {
@@ -204,6 +211,10 @@ public class Configuration {
       if (config.has(FILE_TYPE)) fileType = config.getString(FILE_TYPE);
     }
     
+    /**
+     * support for legacy Map specification.  will lose when we replace all reporter JSPs
+     * @param config
+     */
     public void configure(Map<String,String> config) {
       
       if (config.containsKey(INCLUDE_EMPTY_TABLES)) {
