@@ -123,8 +123,10 @@ public class GetDownloadResultAction extends Action {
             logger.error("downloading failed", ex);
             throw ex;
         } finally {
-            out.flush();
-            out.close();
+            if (out != null) {
+		out.flush();
+		out.close();
+	    }
 	}
     }
 }
