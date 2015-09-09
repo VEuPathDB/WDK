@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * A Reporter is used to download the content of the answerValue between the start & end indexes. It will
@@ -31,12 +32,13 @@ import org.json.JSONException;
  */
 public abstract class Reporter implements Iterable<AnswerValue> {
 
-  public static final String FIELD_FORMAT = "downloadType";
   public static final String PROPERTY_PAGE_SIZE = "page_size";
 
   private static final int SORTING_THRESHOLD = 100;
 
   private final static Logger logger = Logger.getLogger(Reporter.class);
+  
+  protected int maxPageSize = 100;
 
   protected static class PageAnswerIterator implements Iterator<AnswerValue> {
 
@@ -117,7 +119,6 @@ public abstract class Reporter implements Iterable<AnswerValue> {
       SQLException, JSONException, WdkUserException;
 
   protected Map<String, String> properties;
-  protected Map<String, String> config;
 
   protected WdkModel wdkModel;
 
@@ -125,16 +126,13 @@ public abstract class Reporter implements Iterable<AnswerValue> {
   private int startIndex;
   private int endIndex;
 
-  protected String format = "plain";
   private String description = null;
-  protected int maxPageSize = 100;
 
   protected Reporter(AnswerValue answerValue, int startIndex, int endIndex) {
     this.baseAnswer = answerValue;
     this.startIndex = startIndex;
     this.endIndex = endIndex;
     wdkModel = answerValue.getQuestion().getWdkModel();
-    config = new LinkedHashMap<String, String>();
   }
 
   /**
@@ -155,16 +153,14 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     return this.baseAnswer;
   }
 
-  public void configure(Map<String, String> newConfig) {
-    if (newConfig != null) {
-      this.config = newConfig;
+  public void configure(Map<String, String> config) {
+    
+    if (config.containsKey(PROPERTY_PAGE_SIZE)) maxPageSize = Integer.valueOf(config.get(PROPERTY_PAGE_SIZE));
+  }
 
-      if (newConfig.containsKey(FIELD_FORMAT)) {
-        format = newConfig.get(FIELD_FORMAT);
-      }
-      if (newConfig.containsKey(PROPERTY_PAGE_SIZE))
-        maxPageSize = Integer.valueOf(newConfig.get(PROPERTY_PAGE_SIZE));
-    }
+  public void configure(JSONObject config) {
+    
+    if (config.has(PROPERTY_PAGE_SIZE)) maxPageSize = config.getInt(PROPERTY_PAGE_SIZE);
   }
 
   /**

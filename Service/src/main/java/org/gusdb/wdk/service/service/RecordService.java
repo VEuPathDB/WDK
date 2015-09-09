@@ -128,7 +128,7 @@ public class RecordService extends WdkService {
     try {
       RecordClass rc = getWdkModel().getRecordClass(recordClassName);
       return Response.ok(
-          RecordClassFormatter.getAnswerFormatsJson(rc).toString()
+          RecordClassFormatter.getAnswerFormatsJson(rc.getReporterMap()).toString()
       ).build();
     }
     catch (WdkModelException e) {
