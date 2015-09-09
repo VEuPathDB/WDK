@@ -1,6 +1,6 @@
 import React from 'react';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 let RecordNavigationSection = React.createClass({
 

@@ -9,7 +9,7 @@ import {
   formatAttributeName,
   formatAttributeValue
 } from '../utils/stringUtils';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 /**
  * Generic table with UI features:

@@ -1,3 +1,9 @@
+import React from 'react';
+
+/**
+ * React Component utils
+ */
+
 /**
  * A Component decorator that wraps the Component passed to it and returns a new
  * Component with a static method `wrap`. Use this method to replace the wrapped
@@ -51,10 +57,7 @@
  *     });
  *
  */
-
-import React from 'react';
-
-export default function wrappable(Component) {
+export function wrappable(Component) {
   return class Wrapper extends React.Component {
 
     // Forward calls for displayName and propTypes to the wrapped Component.

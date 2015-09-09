@@ -1,6 +1,6 @@
 import React from 'react';
 import TabbableContainer from './TabbableContainer';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 function renderFilterField(field, isChecked, handleChange) {
   return (
