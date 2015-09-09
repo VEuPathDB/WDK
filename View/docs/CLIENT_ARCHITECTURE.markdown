@@ -5,6 +5,15 @@ The WDK client employs the Flux architecture, as described at https://facebook.g
 
 # Simple Flux Overview
 
+The Flux architecture prescribes a unidirectional data flow, as depicted in the
+following diagram:
+
+<pre>
+                    Store --> View Controller --> Action --> Dispatcher
+                    ^                                                 |
+                    '-------------------------------------------------'
+</pre>
+
 The Flux architecture contains these Entities:
 
 ## Dispatcher
@@ -14,7 +23,7 @@ Notifies Stores of Actions.
 Maintain and modify application state based on Actions.
 
 ## Actions
-Message describe a requested change to the application.
+Message that describes a requested change to the application.
 
 ## View Controllers
 Manages dispatching Actions and observing changes to Stores, and rendering Views based on these changes.
@@ -63,12 +72,61 @@ State, and it notifies observers when the State has changed due to a dispatch
 call.
 
 
+### Immutable state
+
+The state object of the Store can be thought of as an immutable tree. What this
+means is, whenever a part of the state object is change, a new object will be
+created, thus the previous state and the new state will fail simple equality
+checks. This fact makes it trivial to determine if the state has changed based
+on an action being dispatched: all one has to do is perform a simple equality
+check:
+
+    if (oldState !== newState) {
+      // state is different
+    }
+
+Furthermore, if a branch of the tree has no changes, it will retain the previous
+reference. Thus, these equality checks can be performed deep within the tree.
+
+To better visualize this, consider the following tree:
+
+                A
+               / \
+              B   C
+             / \   \
+            D   E   F
+
+and assume an action is dispatched that changes the value of E. Our new tree
+will now look like this (where lowercase indicates a new reference):
+
+                a
+               / \
+              b   C
+             / \   \
+            D   e   F
+
+`C`, `D`, and `F` will retain their references, this the following statement
+will be true (for brevity, we will assume the keys of the state object are
+all lowercase):
+
+    (oldState.b.d === newState.b.d) // => true
+
+
+What follows from these facts is that our rendering code can be dramatically
+simplified to avoid unnecessary re-renders or other expensive operations. A
+caveat to this is that we must be careful in our reducers to always return
+new objects when something changes. The justification is that both detecting
+change and communicating change are complicated tasks. The trade-off is where to
+put that complexity. By putting it in the reducers, our React Components can
+focus on handling user interactions and rendering views.
+
+
 ### State reducers
 
 The reduce function itself is composed of other reduce functions that operate on
 a subset of the application state.
 
-The orgainization of the reducers mirrors the organization of the tree. This
+The organization of the reducers mirrors the organization of the tree. This
 is by design to
 
   1. Make it easy to associate a part of the application state with a reducer.
@@ -128,7 +186,7 @@ and our top-level state reducer can delegate to these:
 Luckily, WDK provides a utility that makes defining a reducer like the one above
 cleaner and less error-prone. It takes an object whose values are reducer
 functions. It then uses the associated keys to construct an object with the same
-keys, whose values are determined by the result of the assocated reducer
+keys, whose values are determined by the result of the associated reducer
 function.
 
     let reducer = combineReducers({
@@ -199,7 +257,7 @@ has the benefit of minimizing expensive object-lookup calls, and it will result
 in fewer render() calls in React.
 
 With a little bit of wiring, we can provide a general utility that wraps a
-selector and hooks into React Component lifecycle methods to automatically call
+selector and hooks into React Component life cycle methods to automatically call
 `setState`, leveraging all of the performance benefits of immutability with
 little effort. It might look something like this:
 
