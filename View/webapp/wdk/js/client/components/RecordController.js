@@ -5,7 +5,7 @@ import Loading from './Loading';
 import Record from './Record';
 import * as CommonActions from '../actions/commonActions';
 import * as RecordActions from '../actions/recordActions';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 import { makeKey } from '../utils/recordUtils';
 
 let RecordController = React.createClass({
