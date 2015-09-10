@@ -1,4 +1,4 @@
-import combineReducers from '../../utils/combineReducers';
+import { combineReducers } from '../../utils/reducerUtils';
 import answer from './answer';
 import record from './record';
 
