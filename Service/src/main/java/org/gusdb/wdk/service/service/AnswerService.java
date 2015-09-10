@@ -6,6 +6,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -46,10 +47,11 @@ import org.json.JSONObject;
  * <p>Sample input for our standard reporters:</p>
  * <pre>
  * formatConfig: {
- *   pagination: { offset: Number, numRecords: Number },
+ *   pagination: { offset: Number, numRecords: Number },   [only used by WDK standard JSON]
  *   attributes: [ attributeName: String ],
  *   tables: [ tableName: String ],
- *   sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
+ *   sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]  [only used by WDK standard JSON]
+ *   downloadType: String    [optional. as supported by the format.  eg "excel"]
  * }
  * </pre>
  */
@@ -98,9 +100,19 @@ public class AnswerService extends WdkService {
       
       // formatted answer request (eg, for download).  This option ignores the requestSpecifics, instead building its own configuration
       else {
-        if (formatConfig == null) throw new WdkUserException("Requested answer format '" + format + "' requires a non-null formatConfig");
+        if (formatConfig == null)
+          throw new WdkUserException(
+              "Requested answer format '" + format + "' requires a non-null formatConfig");
         Reporter reporter = getReporter(answerValue, format, formatConfig);
-        return Response.ok(AnswerStreamer.getAnswerAsStream(reporter)).build();
+        ResponseBuilder builder = Response.ok(AnswerStreamer.getAnswerAsStream(reporter));
+        builder.type(reporter.getHttpContentType());
+        String fileName = reporter.getDownloadFileName();
+        if (fileName == null)
+          builder.header("Pragma", "Public");
+        else
+          builder.header("Content-disposition", "attachment; filename=" + reporter.getDownloadFileName());
+
+        return builder.build();
       }
     }
     catch (JSONException | RequestMisformatException e) {
