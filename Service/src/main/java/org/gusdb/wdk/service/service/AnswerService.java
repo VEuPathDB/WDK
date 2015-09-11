@@ -38,7 +38,7 @@ import org.json.JSONObject;
  *       “name”: String, value: Any
  *     } ]
  *   },
- *   displayInfo: {
+ *   formatting: {
  *     format: String,   (reporter internal name. optional.  if not provided, use WDK standard JSON)
  *     formatConfig: Any (sample for JSON, XML, etc. below)
  *   }
@@ -50,8 +50,9 @@ import org.json.JSONObject;
  *   pagination: { offset: Number, numRecords: Number },   [only used by WDK standard JSON]
  *   attributes: [ attributeName: String ],
  *   tables: [ tableName: String ],
- *   sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]  [only used by WDK standard JSON]
- *   downloadType: String    [optional. as supported by the format.  eg "excel"]
+ *   sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]  [so far, only used by WDK standard JSON]
+ *   attachmentType: String    [eg "excel".  optional. if not provided, return in browser (default disposition of inline), using the default content type of the reporter. if provided, disposition is attachment, of this type, and file extension reflects this type.]
+ *   includeEmptyTables: true/false
  * }
  * </pre>
  */
