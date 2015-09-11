@@ -63,7 +63,6 @@ protected Set<Field> validateColumns() throws WdkModelException {
   }
   else {
     if (reporterConfig.getIsAllAttributes()) {
-      logger.info("FIELDSLIST ALL");
       for (String k : fieldMap.keySet()) {
         Field f = fieldMap.get(k);
         if (f.getClass().getName().contains("AttributeField"))
@@ -133,16 +132,17 @@ protected Set<AttributeField> validateAttributeColumns() throws WdkModelExceptio
  */
 public class Configuration {
     // configuration props
-    public static final String SELECTED_FIELDS = "selectedFields";  // tables or attributes
     public static final String SELECT_ALL_FIELDS = "all-fields";
-    public static final String SELECTED_ATTRS = "o-fields";
-    public static final String SELECTED_ATTRS_JSON = "attributes";
     public static final String SELECT_ALL_ATTRS = "allAttributes";
-    public static final String SELECTED_TABLES = "o-tables";
-    public static final String SELECTED_TABLES_JSON = "tables";
     public static final String SELECT_ALL_TABLES = "allTables";
-    public static final String FILE_TYPE = "downloadType";
+    public static final String SELECTED_FIELDS = "selectedFields";  // tables or attributes
+    public static final String SELECTED_ATTRS = "o-fields";
+    public static final String SELECTED_TABLES = "o-tables";
     public static final String INCLUDE_EMPTY_TABLES = "hasEmptyTable";
+    public static final String SELECTED_ATTRS_JSON = "attributes";
+    public static final String SELECTED_TABLES_JSON = "tables";
+    public static final String INCLUDE_EMPTY_TABLES_JSON = "includeEmptyTables";
+    public static final String FILE_TYPE = "downloadType";
     
     private boolean includeEmptyTables;
     private List<String> fields = new ArrayList<String>();  // table and attribute field names
@@ -151,7 +151,7 @@ public class Configuration {
     private boolean allAttributes = false;
     private List<String> tables = new ArrayList<String>();  // table and attribute field names
     private boolean allTables = false;
-    private String fileType = "";
+    private String fileType = null;
     
     public boolean getIncludeEmptyTables() { return includeEmptyTables; }
     public List<String> getFields() {return fields == null? null : Collections.unmodifiableList(fields); }
@@ -172,8 +172,8 @@ public class Configuration {
      */
     public void configure(JSONObject config) {
     
-      if (config.has(INCLUDE_EMPTY_TABLES)) {
-        String value = config.getString(INCLUDE_EMPTY_TABLES);
+      if (config.has(INCLUDE_EMPTY_TABLES_JSON)) {
+        String value = config.getString(INCLUDE_EMPTY_TABLES_JSON);
         includeEmptyTables = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true : false;
       } 
 
@@ -252,7 +252,7 @@ public class Configuration {
           else tables = Arrays.asList(tableFlds.split(","));
 	}        
       }
-        
+
       if (config.containsKey(FILE_TYPE)) fileType = config.get(FILE_TYPE);
       
     }
