@@ -189,9 +189,11 @@ public class Configuration {
         JSONArray flds = config.getJSONArray(SELECTED_FIELDS);
         for (int i=0; i<flds.length(); i++) {
           String fld = flds.getString(i);
-          fields.add(fld);
-          if (fieldMap.get(fld).getClass().getName().contains("AttributeField")) attributes.add(fld);
-          if (fieldMap.get(fld).getClass().getName().contains("TableField")) tables.add(fld);
+	  if (fieldMap.containsKey(fld))  { // we might get passed category names, that are not fields.  skip these
+            fields.add(fld);
+            if (fieldMap.get(fld).getClass().getName().contains("AttributeField")) attributes.add(fld);
+            if (fieldMap.get(fld).getClass().getName().contains("TableField")) tables.add(fld);
+          }
         }
       }
        
@@ -237,8 +239,10 @@ public class Configuration {
         if (flds.equals("all")) allFields = true;
         else fields = Arrays.asList(flds.split(","));
         for (String fld : fields) {
-          if (fieldMap.get(fld).getClass().getName().contains("AttributeField")) attributes.add(fld);
-          if (fieldMap.get(fld).getClass().getName().contains("TableField")) tables.add(fld);
+ 	  if (fieldMap.containsKey(fld))  { // we might get passed category names, that are not fields.  skip these
+            if (fieldMap.get(fld).getClass().getName().contains("AttributeField")) attributes.add(fld);
+            if (fieldMap.get(fld).getClass().getName().contains("TableField")) tables.add(fld);
+          }
         }
       } else {
 	if (config.containsKey(SELECTED_ATTRS)) {
