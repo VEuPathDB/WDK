@@ -15,7 +15,7 @@
   <c:forEach var="attribute" items="${node.fields}">
     <li class="jstree-leaf" rel="file">
       <c:set var="inputProps" value=""/>
-			<c:forEach items="${attributeTreeWdkAnswer.summaryAttributes}" var="summary">
+			<c:forEach items="${attributeTreeWdkAnswer.attributes.summaryAttributes}" var="summary">
 			  <c:if test="${attribute.name eq summary.name}">
 			    <c:set var="inputProps" value="checked" />
 			    <c:if test="${attribute.removable == false}">

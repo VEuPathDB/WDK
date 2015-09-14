@@ -51,6 +51,8 @@ public class User /* implements Serializable */{
   private final static String SUMMARY_VIEW_PREFIX = "summary_view_";
   private final static String RECORD_VIEW_PREFIX = "record_view_";
 
+  public final static String DEFAULT_SUMMARY_VIEW_PREF_SUFFIX = "";
+
   public static final int SORTING_LEVEL = 3;
 
   private Logger logger = Logger.getLogger(User.class);
@@ -931,11 +933,16 @@ public class User /* implements Serializable */{
     save();
   }
 
-  public Map<String, Boolean> getSortingAttributes(String questionFullName) throws WdkModelException {
+  //***********************************************************************
+  //*** Methods to support specification and sorting of summary attributes
+  //***********************************************************************
+
+  public Map<String, Boolean> getSortingAttributes(
+      String questionFullName, String keySuffix) throws WdkModelException {
     Question question = wdkModel.getQuestion(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
-    String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
+    String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX + keySuffix;
     String sortingList = projectPreferences.get(sortKey);
 
     // user doesn't have sorting preference, return the default from question.
@@ -958,8 +965,8 @@ public class User /* implements Serializable */{
     return sortingAttributes;
   }
 
-  public String addSortingAttribute(String questionFullName, String attrName, boolean ascending)
-      throws WdkModelException {
+  public String addSortingAttribute(String questionFullName, String attrName,
+      boolean ascending, String keySuffix) throws WdkModelException {
     // make sure the attribute exists in the question
     Question question = wdkModel.getQuestion(questionFullName);
     if (!question.getAttributeFieldMap().containsKey(attrName))
@@ -969,7 +976,7 @@ public class User /* implements Serializable */{
     StringBuilder sort = new StringBuilder(attrName);
     sort.append(ascending ? " ASC" : " DESC");
 
-    Map<String, Boolean> previousMap = getSortingAttributes(questionFullName);
+    Map<String, Boolean> previousMap = getSortingAttributes(questionFullName, keySuffix);
     if (previousMap != null) {
       int count = 1;
       for (String name : previousMap.keySet()) {
@@ -981,22 +988,22 @@ public class User /* implements Serializable */{
       }
     }
 
-    String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
+    String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX + keySuffix;
     String sortValue = sort.toString();
     projectPreferences.put(sortKey, sortValue);
     return sortValue;
   }
 
-  public void setSortingAttributes(String questionName, String sortings) {
-    String sortKey = questionName + SORTING_ATTRIBUTES_SUFFIX;
+  public void setSortingAttributes(String questionName, String sortings, String keySuffix) {
+    String sortKey = questionName + SORTING_ATTRIBUTES_SUFFIX + keySuffix;
     projectPreferences.put(sortKey, sortings);
   }
 
-  public String[] getSummaryAttributes(String questionFullName) throws WdkModelException {
+  public String[] getSummaryAttributes(String questionFullName, String keySuffix) throws WdkModelException {
     Question question = wdkModel.getQuestion(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
-    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX + keySuffix;
     String summaryValue = projectPreferences.get(summaryKey);
     Set<String> summary = new LinkedHashSet<>();
     if (summaryValue != null) {
@@ -1016,13 +1023,13 @@ public class User /* implements Serializable */{
     }
   }
 
-  public void resetSummaryAttributes(String questionFullName) {
-    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+  public void resetSummaryAttributes(String questionFullName, String keySuffix) {
+    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX + keySuffix;
     projectPreferences.remove(summaryKey);
     logger.debug("reset used weight to false");
   }
 
-  public String setSummaryAttributes(String questionFullName, String[] summaryNames) throws WdkModelException {
+  public String setSummaryAttributes(String questionFullName, String[] summaryNames, String keySuffix) throws WdkModelException {
     // make sure all the attribute names exist
     Question question = (Question) wdkModel.resolveReference(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
@@ -1042,11 +1049,15 @@ public class User /* implements Serializable */{
       summary.append(attrName);
     }
 
-    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+    String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX + keySuffix;
     String summaryValue = summary.toString();
     projectPreferences.put(summaryKey, summaryValue);
     return summaryValue;
   }
+
+  //***********************************************************************
+  //*** END methods to support specification and sorting of summary attributes
+  //***********************************************************************
 
   public String createRemoteKey() throws WdkUserException, WdkModelException {
     // user can remote key only if he/she is logged in

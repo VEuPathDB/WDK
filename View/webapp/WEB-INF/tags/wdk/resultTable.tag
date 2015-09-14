@@ -132,15 +132,15 @@
                   </a>
                 </c:if>
               </c:if>
-              <imp:addAttributes wdkAnswer="${wdkAnswer}" commandUrl="${commandUrl}"/>
+              <imp:addAttributes wdkAnswer="${wdkViewAnswer}" commandUrl="${commandUrl}"/>
             </th>
           </tr>
         </table>
         <%--------- END OF PAGING TOP BAR ----------%>
 
         <%-- content of current page --%>
-        <c:set var="sortingAttrNames" value="${wdkAnswer.sortingAttributeNames}" />
-        <c:set var="sortingAttrOrders" value="${wdkAnswer.sortingAttributeOrders}" />
+        <c:set var="sortingAttrNames" value="${wdkViewAnswer.sortingAttributeNames}" />
+        <c:set var="sortingAttrOrders" value="${wdkViewAnswer.sortingAttributeOrders}" />
 
         <%--------- RESULTS  ----------%>
        <div class="result-table-data" data-commandurl="${commandUrl}"></div>
@@ -171,7 +171,7 @@
                       </th>
                     </c:if>
                     <c:set var="j" value="0"/>
-                    <c:forEach items="${wdkAnswer.summaryAttributes}" var="sumAttrib">   
+                    <c:forEach items="${wdkViewAnswer.summaryAttributes}" var="sumAttrib">   
 
 <%--------- OTHER COLUMNS  ----------%>
                     <%--------- SHOW Prim Key COLUMN (j=0) ONLY IF DISPLAYNAME is non empty (in model.xml) ----------%>
@@ -294,7 +294,7 @@
 
 <%------ FOR EACH OTHER COLUMN IN ROW --------%>
                       <c:set var="j" value="0"/>
-                      <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">    
+                      <c:forEach items="${wdkViewAnswer.summaryAttributeNames}" var="sumAttrName">    
                         <%--------- SHOW Prim Key COLUMN IF showPrimKey defined  ----------%>
                         <c:if test="${not empty showPrimKey ||  j != 0}"> 
                           <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>

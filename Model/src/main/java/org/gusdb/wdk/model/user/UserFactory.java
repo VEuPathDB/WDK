@@ -19,6 +19,8 @@ import java.util.regex.Matcher;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -458,7 +460,7 @@ public class UserFactory {
           fieldMap[i + 1] == null ? " IS NULL" : " = ?");
     }
     String sqlStr = sql.toString();
-    logger.info("Generated the following SQL: " + sqlStr);
+    logger.debug("Generated the following SQL: " + sqlStr);
     return sqlStr;
   }
 
@@ -841,9 +843,9 @@ public class UserFactory {
       if (!oldPreferences.containsKey(key))
         toInsert.put(key, newPreferences.get(key));
     }
-    logger.debug("to insert: " + toInsert);
-    logger.debug("to update: " + toUpdate);
-    logger.debug("to delete: " + toDelete);
+    logger.debug("to insert: " + FormatUtil.prettyPrint(toInsert, Style.MULTI_LINE));
+    logger.debug("to update: " + FormatUtil.prettyPrint(toUpdate, Style.MULTI_LINE));
+    logger.debug("to delete: " + FormatUtil.arrayToString(toDelete.toArray()));
 
     PreparedStatement psDelete = null, psInsert = null, psUpdate = null;
     try {

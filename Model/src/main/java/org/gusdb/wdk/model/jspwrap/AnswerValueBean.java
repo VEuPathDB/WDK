@@ -3,10 +3,8 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import java.util.HashMap;
 import java.util.TreeMap;
-
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -15,6 +13,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValueAttributes;
 import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -234,7 +233,7 @@ public class AnswerValueBean {
     }
 
     public AttributeFieldBean[] getSummaryAttributes() throws WdkModelException {
-        Map<String, AttributeField> attribs = answerValue.getSummaryAttributeFieldMap();
+        Map<String, AttributeField> attribs = answerValue.getAttributes().getSummaryAttributeFieldMap();
         AttributeFieldBean[] beans = new AttributeFieldBean[attribs.size()];
         int index = 0;
         for (AttributeField field : attribs.values()) {
@@ -401,7 +400,7 @@ public class AnswerValueBean {
     }
 
     public AttributeFieldBean[] getDisplayableAttributes() {
-        List<AttributeField> fields = answerValue.getDisplayableAttributes();
+        List<AttributeField> fields = answerValue.getAttributes().getDisplayableAttributes();
         AttributeFieldBean[] fieldBeans = new AttributeFieldBean[fields.size()];
         int index = 0;
         for (AttributeField field : fields) {
@@ -412,11 +411,11 @@ public class AnswerValueBean {
     }
 
     public TreeNode getDisplayableAttributeTree() throws WdkModelException {
-    	return answerValue.getDisplayableAttributeTree();
+    	return answerValue.getAttributes().getDisplayableAttributeTree();
     }
 
     public TreeNode getReportMakerAttributeTree() throws WdkModelException {
-    	return answerValue.getReportMakerAttributeTree();
+    	return answerValue.getAttributes().getReportMakerAttributeTree();
     }
 
     public void setFilter(String filterName) {
@@ -507,7 +506,11 @@ public class AnswerValueBean {
      * @return whether checkbox tree should be used (columns layout otherwise)
      */
     public boolean getUseCheckboxTree() {
-    	return true;
+      return true;
+    }
+
+    public AnswerValueAttributes getAttributes() {
+      return answerValue.getAttributes();
     }
 
     public FilterSummary getFilterSummary(String filterName) throws WdkModelException, WdkUserException {

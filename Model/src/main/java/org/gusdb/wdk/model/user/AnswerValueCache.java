@@ -96,7 +96,8 @@ public class AnswerValueCache {
       throws WdkModelException, WdkUserException {
     Question question = step.getQuestion();
     User user = step.getUser();
-    Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
+    Map<String, Boolean> sortingMap = user.getSortingAttributes(
+        question.getFullName(), User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
     AnswerValue answerValue = question.makeAnswerValue(user, step.getParamValues(), range[0],
         range[1], sortingMap, step.getFilter(), validate, step.getAssignedWeight());
     answerValue.setFilterOptions(step.getFilterOptions());

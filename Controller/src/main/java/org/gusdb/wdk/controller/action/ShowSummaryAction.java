@@ -29,6 +29,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
 /**
@@ -481,7 +482,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
     String sortingAttributes = request.getParameter(CConstants.WDK_SORTING_KEY);
     boolean updated = false;
     if (sortingAttributes != null) {
-      wdkUser.setSortingAttributes(questionName, sortingAttributes);
+      wdkUser.getUser().setSortingAttributes(questionName,
+          sortingAttributes, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
       updated = true;
     }
     logger.debug("sorting columns for question " + questionName + ": " + sortingAttributes);
@@ -489,7 +491,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
     // get summary key, if have
     String summaryAttributes = request.getParameter(CConstants.WDK_SUMMARY_KEY);
     if (summaryAttributes != null) {
-      wdkUser.setSummaryAttributes(questionName, summaryAttributes.split(","));
+      wdkUser.getUser().setSummaryAttributes(questionName,
+          summaryAttributes.split(","), User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
       updated = true;
     }
     logger.debug("summary columns for question " + questionName + ": " + summaryAttributes);
