@@ -4,11 +4,10 @@ import Router from 'react-router';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
-import AnswerActions from '../actions/answerActions';
-import CommonActions from '../actions/commonActions';
-import PreferenceActions from '../actions/preferenceActions';
-import wrappable from '../utils/wrappable';
-
+import * as AnswerActions from '../actions/answerActions';
+import * as CommonActions from '../actions/commonActions';
+import * as PreferenceActions from '../actions/preferenceActions';
+import { wrappable } from '../utils/componentUtils';
 
 /**
  * wrap - Wrap `value` in array.

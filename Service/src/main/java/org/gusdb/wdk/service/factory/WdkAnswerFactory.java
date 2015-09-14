@@ -8,7 +8,6 @@ import java.util.Map;
 import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -31,7 +30,6 @@ public class WdkAnswerFactory {
       return createResult(request);
     try {
       Question question = request.getQuestion();
-      AnswerFilterInstance legacyFilter = request.getLegacyFilter();
       // FIXME: looks like index starts at 1 and end index is inclusive;
       //   would much rather see 0-based start and have end index be exclusive
       //   (i.e. need to fix on AnswerValue)
@@ -39,7 +37,7 @@ public class WdkAnswerFactory {
       int endIndex = startIndex + specifics.getNumRecords() - 1;
       AnswerValue answer = question.makeAnswerValue(_user.getUser(),
           convertParams(request.getParamValues()), startIndex, endIndex,
-          convertSorting(specifics.getSorting()), legacyFilter, true, 0);
+          convertSorting(specifics.getSorting()), request.getLegacyFilter(), true, 0);
       answer.setFilterOptions(request.getFilterValues());
       answer.setViewFilterOptions(request.getViewFilterValues());
       // if view filters are present, then apply them; if user

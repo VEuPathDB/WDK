@@ -6,11 +6,10 @@ import {
 import { restAction } from '../filters/restFilter';
 
 /**
- * The following functions return a Promise which resolves with an Action.
- * This allows async Actions to be batch dispatched.
+ * ActionCreators that fetch resources from the WDK REST Service.
  */
 
-function fetchQuestions() {
+export function fetchQuestions() {
   return restAction({
     method: 'GET',
     resource: '/question',
@@ -22,7 +21,7 @@ function fetchQuestions() {
   });
 }
 
-function fetchRecordClasses() {
+export function fetchRecordClasses() {
   return restAction({
     method: 'GET',
     resource: '/record',
@@ -33,8 +32,3 @@ function fetchRecordClasses() {
     }
   });
 }
-
-export default {
-  fetchQuestions,
-  fetchRecordClasses
-};

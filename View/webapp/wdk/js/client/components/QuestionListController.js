@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 let QuestionListController = React.createClass({
 
