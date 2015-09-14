@@ -59,11 +59,12 @@ export function loadAnswer(questionName, opts = {}) {
 
   // Build XHR request data for '/answer'
   let questionDefinition = { questionName, params, filters };
+  let formatting = { formatConfig: displayInfo };
 
   return restAction({
     method: 'POST',
     resource: '/answer',
-    data: { questionDefinition, displayInfo },
+    data: { questionDefinition, formatting },
     types: [ ANSWER_LOADING, APP_ERROR, ANSWER_ADDED ],
     shouldFetch(state) {
       return !isMatch(state.views.answer.displayInfo, displayInfo);

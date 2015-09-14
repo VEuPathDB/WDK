@@ -38,7 +38,7 @@ import org.json.JSONException;
  * @author Cary P.
  * 
  */
-public class XMLReporter extends Reporter {
+public class XMLReporter extends StandardReporter {
 
   private static Logger logger = Logger.getLogger(XMLReporter.class);
 
@@ -47,14 +47,8 @@ public class XMLReporter extends Reporter {
   public static final String PROPERTY_TABLE_CACHE = "table_cache";
   public static final String PROPERTY_RECORD_ID_COLUMN = "record_id_column";
 
-  public static final String FIELD_SELECTED_COLUMNS = "o-fields";
-  public static final String TABLE_SELECTED_COLUMNS = "o-tables";
-  public static final String FIELD_HAS_EMPTY_TABLE = "hasEmptyTable";
-
   private String tableCache;
   private String recordIdColumn;
-
-  private boolean hasEmptyTable = false;
 
   private String sqlInsert;
   private String sqlQuery;
@@ -82,25 +76,7 @@ public class XMLReporter extends Reporter {
           PROPERTY_RECORD_ID_COLUMN + ", is missing");
   }
 
-  /*
-     * 
-     */
-  @Override
-  public void configure(Map<String, String> config) {
-    super.configure(config);
-
-    // get basic configurations
-    if (config.containsKey(FIELD_HAS_EMPTY_TABLE)) {
-      String value = config.get(FIELD_HAS_EMPTY_TABLE);
-      hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true : false;
-    }
-  }
-
-  @Override
-  public String getConfigInfo() {
-    return "This reporter does not have config info yet.";
-  }
-
+ 
   /*
    * (non-Javadoc)
    * 
@@ -108,10 +84,10 @@ public class XMLReporter extends Reporter {
    */
   @Override
   public String getHttpContentType() {
-    if (format.equalsIgnoreCase("text")) {
+    if (reporterConfig.getFileType().equalsIgnoreCase("text")) {
       return "text/plain";
     }
-    else if (format.equalsIgnoreCase("pdf")) {
+    else if (reporterConfig.getFileType().equalsIgnoreCase("pdf")) {
       return "application/pdf";
     }
     else { // use the default content type defined in the parent class
@@ -126,9 +102,9 @@ public class XMLReporter extends Reporter {
    */
   @Override
   public String getDownloadFileName() {
-    logger.info("Internal format: " + format);
+    logger.info("Internal format: " + reporterConfig.getFileType());
     String name = getQuestion().getName();
-    if (format.equalsIgnoreCase("text")) {
+    if (reporterConfig.getFileType().equalsIgnoreCase("text")) {
       return name + ".xml";
     }
     else { // use the default file name defined in the parent
@@ -142,7 +118,7 @@ public class XMLReporter extends Reporter {
    * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
    */
   @Override
-  protected void write(OutputStream out) throws WdkModelException, SQLException, NoSuchAlgorithmException,
+  public void write(OutputStream out) throws WdkModelException, SQLException, NoSuchAlgorithmException,
       JSONException, WdkUserException {
     PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
 
@@ -239,60 +215,6 @@ public class XMLReporter extends Reporter {
     return property.replaceAll("(<[^>]*>)|([&\"']+)", "_");
   }
 
-  private Set<Field> validateColumns() throws WdkModelException {
-    // get a map of report maker fields
-    Map<String, Field> fieldMap = getQuestion().getFields(FieldScope.REPORT_MAKER);
-
-    // the config map contains a list of column names;
-    Set<Field> columns = new LinkedHashSet<Field>();
-
-    String fieldsList = config.get(FIELD_SELECTED_COLUMNS);
-    String tablesList = config.get(TABLE_SELECTED_COLUMNS);
-    if (fieldsList == null)
-      fieldsList = "none";
-    if (tablesList == null)
-      tablesList = "none";
-    logger.info("fieldsList = " + fieldsList + "    tablesList = " + tablesList);
-    if (fieldsList.equals("all") && tablesList.equals("all")) {
-      columns.addAll(fieldMap.values());
-    }
-    else {
-      if (fieldsList.equals("all")) {
-        logger.info("FIELDSLIST ALL");
-        for (String k : fieldMap.keySet()) {
-          Field f = fieldMap.get(k);
-          if (f.getClass().getName().contains("AttributeField"))
-            columns.add(f);
-        }
-      }
-      else if (!fieldsList.equals("none")) {
-        String[] fields = fieldsList.split(",");
-        for (String column : fields) {
-          column = column.trim();
-          if (fieldMap.containsKey(column)) {
-            columns.add(fieldMap.get(column));
-          }
-        }
-      }
-      if (tablesList.equals("all")) {
-        for (String k : fieldMap.keySet()) {
-          Field f = fieldMap.get(k);
-          if (f.getClass().getName().contains("TableField"))
-            columns.add(f);
-        }
-      }
-      else if (!tablesList.equals("none")) {
-        String[] tables = tablesList.split(",");
-        for (String column : tables) {
-          column = column.trim();
-          if (!fieldMap.containsKey(column))
-            throw new WdkModelException("The column '" + column + "' cannot be included in the report");
-          columns.add(fieldMap.get(column));
-        }
-      }
-    }
-    return columns;
-  }
 
   private void formatAttributes(RecordInstance record, Set<AttributeField> attributes, PrintWriter writer)
       throws WdkModelException, WdkUserException {
@@ -367,7 +289,7 @@ public class XMLReporter extends Reporter {
       }
 
       // write to the stream
-      if (hasEmptyTable || tableSize > 0) {
+      if (reporterConfig.getIncludeEmptyTables() || tableSize > 0) {
         writer.println(content);
         writer.flush();
       }
@@ -388,4 +310,5 @@ public class XMLReporter extends Reporter {
   protected void initialize() throws WdkModelException {
     // do nothing
   }
+  
 }
