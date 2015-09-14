@@ -94,9 +94,9 @@ public class FullRecordReporter extends StandardReporter {
      */
     @Override
     public String getHttpContentType() {
-        if (reporterConfig.getFileType().equalsIgnoreCase("text")) {
+        if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
             return "text/plain";
-        } else if (reporterConfig.getFileType().equalsIgnoreCase("pdf")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
             return "application/pdf";
         } else { // use the default content type defined in the parent class
             return super.getHttpContentType();
@@ -110,11 +110,11 @@ public class FullRecordReporter extends StandardReporter {
      */
     @Override
     public String getDownloadFileName() {
-        logger.info("Internal format: " + reporterConfig.getFileType());
+        logger.info("Internal format: " + reporterConfig.getAttachmentType());
         String name = getQuestion().getName();
-        if (reporterConfig.getFileType().equalsIgnoreCase("text")) {
+        if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
             return name + "_detail.txt";
-        } else if (reporterConfig.getFileType().equalsIgnoreCase("pdf")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
             return name + "_detail.pdf";
         } else { // use the default file name defined in the parent
             return super.getDownloadFileName();
@@ -146,7 +146,7 @@ public class FullRecordReporter extends StandardReporter {
             }
         }
 
-        if (reporterConfig.getFileType().equalsIgnoreCase("pdf")) {
+        if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
             formatRecord2PDF(attributes, tables, out);
             return;
 
