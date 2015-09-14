@@ -79,11 +79,11 @@ public class TabularReporter extends StandardReporter {
      */
     @Override
     public String getHttpContentType() {
-        if (reporterConfig.getFileType().equalsIgnoreCase("text")) {
+        if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
             return "text/plain";
-        } else if (reporterConfig.getFileType().equalsIgnoreCase("excel")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("excel")) {
             return "application/vnd.ms-excel";
-        } else if (reporterConfig.getFileType().equalsIgnoreCase("pdf")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
             return "application/pdf";
         } else { // use the default content type defined in the parent class
             return super.getHttpContentType();
@@ -97,13 +97,13 @@ public class TabularReporter extends StandardReporter {
      */
     @Override
     public String getDownloadFileName() {
-        logger.info("Internal format: " + reporterConfig.getFileType());
+        logger.info("Internal format: " + reporterConfig.getAttachmentType());
         String name = getQuestion().getName();
-        if (reporterConfig.getFileType().equalsIgnoreCase("text")) {
+        if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
             return name + "_summary.txt";
-        } else if (reporterConfig.getFileType().equalsIgnoreCase("excel")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("excel")) {
             return name + "_summary.xls";
-        } else if (reporterConfig.getFileType().equalsIgnoreCase("pdf")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
             return name + "_summary.pdf";
         } else { // use the default file name defined in the parent
             return super.getDownloadFileName();
@@ -126,9 +126,9 @@ public class TabularReporter extends StandardReporter {
         Set<AttributeField> columns = validateAttributeColumns();
 
         // get the formatted result
-        if (reporterConfig.getFileType().equalsIgnoreCase("excel")) {
+        if (reporterConfig.getAttachmentType().equalsIgnoreCase("excel")) {
             format2Excel(columns, writer);
-        } else if (reporterConfig.getFileType().equalsIgnoreCase("pdf")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
             format2PDF(columns, out);
         } else {
             format2Text(columns, writer);
