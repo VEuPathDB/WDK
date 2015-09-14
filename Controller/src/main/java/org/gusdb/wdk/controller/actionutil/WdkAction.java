@@ -435,7 +435,7 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
    * @param key name of the attribute to remove
    */
   protected void unsetSessionAttribute(String key) {
-    _request.getSession().setAttribute(key, null);
+    _request.getSession().removeAttribute(key);
   }
   
   /**

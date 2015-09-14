@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +37,6 @@ public class GetDownloadResultAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-	ServletOutputStream out = null;
         try {
             // get answer
             String stepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
@@ -93,7 +93,6 @@ public class GetDownloadResultAction extends Action {
                     config);
             reporter.configure(config);
 
-            out = response.getOutputStream();
             response.setHeader("Pragma", "Public");
             response.setContentType(reporter.getHttpContentType());
 
@@ -107,26 +106,24 @@ public class GetDownloadResultAction extends Action {
             logger.info("content-type: " + reporter.getHttpContentType());
             logger.info("file-name: " + reporter.getDownloadFileName());
 
-            reporter.report(out);
-            out.flush();
-            out.close();
+            ServletOutputStream out = response.getOutputStream();
+            try {
+              reporter.report(out);
+            }
+            catch (Exception e) {
+              String logMarker = UUID.randomUUID().toString();
+              logger.error("Error downloading result (marker: " + logMarker + ").", e);
+              String message = "  An error occurred and no more content can be downloaded." +
+                  "  To report this problem, use marker '" + logMarker + "'.";
+              out.print(message);
+              
+            }
 
-            // request.setAttribute(CConstants.DOWNLOAD_RESULT_KEY, result);
-            // // System.err.println("*** GDA: forward to " +
-            // // CConstants.GET_DOWNLOAD_RESULT_MAPKEY);
-            // ActionForward forward =
-            // mapping.findForward(CConstants.GET_DOWNLOAD_RESULT_MAPKEY);
-            // return forward;
             return null;
         }
         catch (Exception ex) {
             logger.error("downloading failed", ex);
             throw ex;
-        } finally {
-            if (out != null) {
-		out.flush();
-		out.close();
-	    }
-	}
+        }
     }
 }

@@ -3,9 +3,9 @@ import mapValues from 'lodash/object/mapValues';
 import Doc from './Doc';
 import Loading from './Loading';
 import Record from './Record';
-import CommonActions from '../actions/commonActions';
-import RecordActions from '../actions/recordActions';
-import wrappable from '../utils/wrappable';
+import * as CommonActions from '../actions/commonActions';
+import * as RecordActions from '../actions/recordActions';
+import { wrappable } from '../utils/componentUtils';
 import { makeKey } from '../utils/recordUtils';
 
 let RecordController = React.createClass({

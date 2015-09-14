@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactRouter from 'react-router';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 import {
   formatAttributeValue
 } from '../utils/stringUtils';
