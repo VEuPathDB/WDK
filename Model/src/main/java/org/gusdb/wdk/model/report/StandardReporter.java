@@ -139,10 +139,11 @@ public class Configuration {
     public static final String SELECTED_ATTRS = "o-fields";
     public static final String SELECTED_TABLES = "o-tables";
     public static final String INCLUDE_EMPTY_TABLES = "hasEmptyTable";
+    public static final String ATTACHMENT_TYPE = "downloadType";
     public static final String SELECTED_ATTRS_JSON = "attributes";
     public static final String SELECTED_TABLES_JSON = "tables";
     public static final String INCLUDE_EMPTY_TABLES_JSON = "includeEmptyTables";
-    public static final String FILE_TYPE = "downloadType";
+    public static final String ATTACHMENT_TYPE_JSON = "attachmentType";
     
     private boolean includeEmptyTables;
     private List<String> fields = new ArrayList<String>();  // table and attribute field names
@@ -151,7 +152,7 @@ public class Configuration {
     private boolean allAttributes = false;
     private List<String> tables = new ArrayList<String>();  // table and attribute field names
     private boolean allTables = false;
-    private String fileType = null;
+    private String attachmentType = null;
     
     public boolean getIncludeEmptyTables() { return includeEmptyTables; }
     public List<String> getFields() {return fields == null? null : Collections.unmodifiableList(fields); }
@@ -160,7 +161,7 @@ public class Configuration {
     public boolean getIsAllAttributes() { return allAttributes; }
     public List<String> getTables() {return tables == null? null : Collections.unmodifiableList(tables); }
     public boolean getIsAllTables() { return allTables; }
-    public String getFileType() {return fileType; }
+    public String getAttachmentType() {return attachmentType; }
  
     /**
      * as it stands now, this class does not protect against conflicting configurations.  it goes in
@@ -214,7 +215,7 @@ public class Configuration {
         }
       }
 
-      if (config.has(FILE_TYPE)) fileType = config.getString(FILE_TYPE);
+      if (config.has(ATTACHMENT_TYPE_JSON)) attachmentType = config.getString(ATTACHMENT_TYPE_JSON);
     }
     
     /**
@@ -253,7 +254,7 @@ public class Configuration {
 	}        
       }
 
-      if (config.containsKey(FILE_TYPE)) fileType = config.get(FILE_TYPE);
+      if (config.containsKey(ATTACHMENT_TYPE)) attachmentType = config.get(ATTACHMENT_TYPE);
       
     }
 
