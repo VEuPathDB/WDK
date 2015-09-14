@@ -20,7 +20,6 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -38,13 +37,11 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.DefaultResultSizePlugin;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.ResultSize;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
-import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
@@ -193,6 +190,8 @@ public class AnswerValue {
 
   private String _checksum;
 
+  private AnswerValueAttributes _attributes;
+
   // ------------------------------------------------------------------
   // Constructor
   // ------------------------------------------------------------------
@@ -212,6 +211,7 @@ public class AnswerValue {
       int endIndex, Map<String, Boolean> sortingMap, AnswerFilterInstance filter) {
     _user = user;
     _question = question;
+    _attributes = new AnswerValueAttributes(_user, _question);
     _resultFactory = question.getWdkModel().getResultFactory();
     _idsQueryInstance = idsQueryInstance;
     _startIndex = startIndex;
@@ -242,6 +242,7 @@ public class AnswerValue {
     _user = answerValue._user;
     _idsQueryInstance = answerValue._idsQueryInstance;
     _question = answerValue._question;
+    _attributes = new AnswerValueAttributes(_user, _question);
     _resultFactory = answerValue._resultFactory;
     _resultSize = answerValue._resultSize;
     _resultSizesByFilter = new LinkedHashMap<String, Integer>(answerValue._resultSizesByFilter);
@@ -268,6 +269,10 @@ public class AnswerValue {
 
   public User getUser() {
     return _user;
+  }
+
+  public AnswerValueAttributes getAttributes() {
+    return _attributes;
   }
 
   /**
@@ -499,7 +504,7 @@ public class AnswerValue {
     if (_pageRecordInstances.size() == 0)
       return buf.toString();
 
-    Map<String, AttributeField> attributes = getSummaryAttributeFieldMap();
+    Map<String, AttributeField> attributes = _attributes.getSummaryAttributeFieldMap();
     for (String nextAttName : attributes.keySet()) {
       buf.append(nextAttName + "\t");
     }
@@ -860,7 +865,7 @@ public class AnswerValue {
       return _sortedIdSql;
   }
 
-  public String getSortedIdSql(boolean excludeViewFilters) throws WdkModelException, WdkUserException {
+  private String getSortedIdSql(boolean excludeViewFilters) throws WdkModelException, WdkUserException {
 
     String[] pkColumns = _question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
 
@@ -1118,7 +1123,7 @@ public class AnswerValue {
 
       if (expected != _pageRecordInstances.size()) {
         StringBuffer buffer = new StringBuffer();
-        for (String name : getSummaryAttributeFieldMap().keySet()) {
+        for (String name : _attributes.getSummaryAttributeFieldMap().keySet()) {
           if (buffer.length() > 0)
             buffer.append(", ");
           buffer.append(name);
@@ -1202,75 +1207,6 @@ public class AnswerValue {
 
     _sortedIdSql = null;
     _pageRecordInstances = null;
-  }
-
-  public List<AttributeField> getDisplayableAttributes() {
-    Map<String, AttributeField> map = getDisplayableAttributeMap();
-    return new ArrayList<AttributeField>(map.values());
-  }
-
-  /**
-   * The displayable includes all attributes that is not internal. It also contains all the summary attributes
-   * that are currently displayed.
-   * 
-   * @return
-   */
-  public Map<String, AttributeField> getDisplayableAttributeMap() {
-    Map<String, AttributeField> displayAttributes = new LinkedHashMap<String, AttributeField>();
-    Map<String, AttributeField> attributes = _question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
-    // Map<String, AttributeField> summaryAttributes =
-    // this.getSummaryAttributeFieldMap();
-    for (String attriName : attributes.keySet()) {
-      AttributeField attribute = attributes.get(attriName);
-
-      // skip the attributes that are already displayed
-      // if (summaryAttributes.containsKey(attriName)) continue;
-
-      displayAttributes.put(attriName, attribute);
-    }
-    return displayAttributes;
-  }
-
-  public TreeNode getDisplayableAttributeTree() throws WdkModelException {
-    return convertAttributeTree(_question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
-  }
-
-  public TreeNode getReportMakerAttributeTree() throws WdkModelException {
-    return convertAttributeTree(_question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
-  }
-
-  private TreeNode convertAttributeTree(AttributeCategoryTree rawAttributeTree) throws WdkModelException {
-    TreeNode root = rawAttributeTree.toTreeNode("category root", "Attribute Categories");
-    List<String> currentlySelectedFields = new ArrayList<String>();
-    for (AttributeField field : getSummaryAttributeFieldMap().values()) {
-      currentlySelectedFields.add(field.getName());
-    }
-    root.turnOnSelectedLeaves(currentlySelectedFields);
-    root.setDefaultLeaves(new ArrayList<String>(_question.getSummaryAttributeFieldMap().keySet()));
-    return root;
-  }
-
-  // private Map<String, AttributeField> summaryFieldMap;
-  // this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
-
-  public Map<String, AttributeField> getSummaryAttributeFieldMap() throws WdkModelException {
-
-    // get preferred attribs from user and initialize map
-    String[] userPrefAttributes = _user.getSummaryAttributes(_question.getFullName());
-    Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
-
-    // always put the primary key as the first attribute
-    PrimaryKeyAttributeField pkField = _question.getRecordClass().getPrimaryKeyAttributeField();
-    summaryFields.put(pkField.getName(), pkField);
-
-    // add remainder of attributes to map and return
-    Map<String, AttributeField> allFields = _question.getAttributeFieldMap();
-    for (String attributeName : userPrefAttributes) {
-      AttributeField field = allFields.get(attributeName);
-      if (field != null)
-        summaryFields.put(attributeName, field);
-    }
-    return summaryFields;
   }
 
   /**

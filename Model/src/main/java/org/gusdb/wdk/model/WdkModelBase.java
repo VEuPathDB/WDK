@@ -59,6 +59,17 @@ public abstract class WdkModelBase {
           base.propertyListMap);
   }
 
+  @Override
+  public WdkModelBase clone() {
+    try {
+      return (WdkModelBase) super.clone();
+    }
+    catch (CloneNotSupportedException e) {
+      // this should never happen since we implement Cloneable
+      throw new WdkRuntimeException(e);
+    }
+  }
+
   /**
    * @param excludeProjects
    *          the excludeProjects to set

@@ -790,43 +790,6 @@ public class UserBean /* implements Serializable */{
   }
 
   /**
-   * @param questionFullName
-   * @param attrName
-   * @param ascending
-   * @see org.gusdb.wdk.model.user.User#addSortingAttribute(java.lang.String, java.lang.String, boolean)
-   */
-  public String addSortingAttribute(String questionFullName, String attrName, boolean ascending)
-      throws WdkModelException {
-    return user.addSortingAttribute(questionFullName, attrName, ascending);
-  }
-
-  /**
-   * @param questionFullName
-   * @return
-   * @see org.gusdb.wdk.model.user.User#getSortingAttributes(java.lang.String)
-   */
-  public Map<String, Boolean> getSortingAttributes(String questionFullName) throws WdkModelException {
-    return user.getSortingAttributes(questionFullName);
-  }
-
-  /**
-   * @param questionFullName
-   * @return
-   * @see org.gusdb.wdk.model.user.User#getSummaryAttributes(java.lang.String)
-   */
-  public String[] getSummaryAttributes(String questionFullName) throws WdkModelException {
-    return user.getSummaryAttributes(questionFullName);
-  }
-
-  /**
-   * @param questionFullName
-   * @see org.gusdb.wdk.model.user.User#resetSummaryAttribute(java.lang.String)
-   */
-  public void resetSummaryAttribute(String questionFullName) {
-    user.resetSummaryAttributes(questionFullName);
-  }
-
-  /**
    * @return
    * @see org.gusdb.wdk.model.user.User#createRemoteKey()
    */
@@ -905,16 +868,6 @@ public class UserBean /* implements Serializable */{
   public StrategyBean createStrategy(StepBean step, boolean saved, boolean hidden) throws WdkUserException,
       WdkModelException {
     return new StrategyBean(this, user.createStrategy(step.step, saved, hidden));
-  }
-
-  /**
-   * @param questionFullName
-   * @param summaryNames
-   * @return
-   * @see org.gusdb.wdk.model.user.User#setSummaryAttribute(java.lang.String, java.lang.String[])
-   */
-  public String setSummaryAttributes(String questionFullName, String[] summaryNames) throws WdkModelException {
-    return user.setSummaryAttributes(questionFullName, summaryNames);
   }
 
   public Map<String, List<StrategyBean>> getSavedStrategiesByCategory() throws WdkModelException {
@@ -1283,10 +1236,6 @@ public class UserBean /* implements Serializable */{
   public void setCurrentRecordView(RecordClassBean recordClass, RecordView recordView)
       throws WdkModelException {
     user.setCurrentRecordView(recordClass.recordClass, recordView);
-  }
-
-  public void setSortingAttributes(String questionName, String sortColumns) {
-    user.setSortingAttributes(questionName, sortColumns);
   }
 
   public int getNewStrategyId() throws WdkModelException {

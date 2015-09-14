@@ -209,7 +209,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
   }
 
   protected Map<String, AttributeField> getSummaryAttributes() throws WdkModelException {
-    return baseAnswer.getSummaryAttributeFieldMap();
+    return baseAnswer.getAttributes().getSummaryAttributeFieldMap();
   }
 
   @Override

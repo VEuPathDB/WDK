@@ -40,7 +40,7 @@ import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
  * @author Jerric
  * @created Jan 19, 2006
  */
-public abstract class AttributeField extends Field {
+public abstract class AttributeField extends Field implements Cloneable {
 
   public static final Pattern MACRO_PATTERN = Pattern.compile(
       "\\$\\$([^\\$]+?)\\$\\$", Pattern.MULTILINE);
@@ -63,6 +63,11 @@ public abstract class AttributeField extends Field {
 
   private List<AttributePluginReference> pluginList = new ArrayList<AttributePluginReference>();
   private Map<String, AttributePluginReference> pluginMap;
+
+  @Override
+  public AttributeField clone() {
+    return (AttributeField) super.clone();
+  }
 
   /**
    * by default, an attribute can be removed from the result page.

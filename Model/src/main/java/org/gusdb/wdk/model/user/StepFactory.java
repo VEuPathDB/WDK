@@ -240,7 +240,8 @@ public class StepFactory {
 
     // get summary list and sorting list
     String questionName = question.getFullName();
-    Map<String, Boolean> sortingAttributes = user.getSortingAttributes(questionName);
+    Map<String, Boolean> sortingAttributes = user.getSortingAttributes(
+        questionName, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
 
     // create answer
     AnswerValue answerValue = question.makeAnswerValue(user, dependentValues, pageStart, pageEnd,
