@@ -97,7 +97,7 @@ export default function answer(state = initialState, action) {
  */
 function addAnswer(state, action) {
   let answer = action.response;
-  let { displayInfo } = action.requestData;
+  let displayInfo = action.requestData.formatting.formatConfig;
 
   /*
    * If state.displayInfo.attributes isn't defined we want to use the
