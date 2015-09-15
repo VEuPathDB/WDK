@@ -31,9 +31,6 @@ public abstract class StandardReporter extends Reporter {
     super(answerValue, startIndex, endIndex);
   }
 
-  /*
-   * 
-   */
 @Override
 public void configure(Map<String, String> config){
   super.configure(config);
