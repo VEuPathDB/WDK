@@ -540,6 +540,27 @@ public class AnswerValue {
 
   public Reporter createReport(String reporterName, Map<String, String> config, int startI, int endI)
       throws WdkModelException {
+    Reporter reporter = createReportSub(reporterName, startI, endI);
+    reporter.configure(config);
+    return reporter;
+  }
+  
+  public Reporter createReport(String reporterName, JSONObject config) throws WdkModelException,
+  WdkUserException {
+    // get the full answer
+    int endI = getResultSize();
+    return createReport(reporterName, config, 1, endI);
+  }
+
+  public Reporter createReport(String reporterName, JSONObject config, int startI, int endI)
+      throws WdkModelException {
+    Reporter reporter = createReportSub(reporterName, startI, endI);
+    reporter.configure(config);
+    return reporter;
+  }
+
+  private Reporter createReportSub(String reporterName, int startI, int endI)
+      throws WdkModelException {
     // get Reporter
     Map<String, ReporterRef> rptMap = _question.getRecordClass().getReporterMap();
     ReporterRef rptRef = rptMap.get(reporterName);
@@ -559,7 +580,6 @@ public class AnswerValue {
       Object[] params = { this, startI, endI };
       Reporter reporter = (Reporter) constructor.newInstance(params);
       reporter.setProperties(rptRef.getProperties());
-      reporter.configure(config);
       reporter.setWdkModel(rptRef.getWdkModel());
       return reporter;
     }
@@ -585,6 +605,7 @@ public class AnswerValue {
       throw new WdkModelException(ex);
     }
   }
+
 
   /**
    * Iterate through all the pages of the answer, and each page is represented by an AnswerValue object.

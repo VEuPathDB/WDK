@@ -1,7 +1,9 @@
 package org.gusdb.wdk.service.formatter;
 
 import java.util.List;
+import java.util.Map;
 
+import org.gusdb.wdk.model.answer.ReporterRef;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
@@ -111,4 +113,17 @@ public class RecordClassFormatter {
 
     return attributeCategoryJson;
   }
+  
+  public static JSONArray getAnswerFormatsJson(Map<String, ReporterRef>reporterMap) {
+    JSONArray array = new JSONArray();
+    
+    for (ReporterRef reporter : reporterMap.values()) {
+      JSONObject obj = new JSONObject();
+      obj.put(reporter.getDisplayName(), reporter.getName());
+      array.put(obj);
+    }
+    return array;
+  }
+
+  
 }
