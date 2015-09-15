@@ -1,10 +1,10 @@
 package org.gusdb.wdk.model.report;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -97,7 +97,7 @@ protected Set<Field> validateColumns() throws WdkModelException {
   return columns;
 }
 
-protected Set<AttributeField> validateAttributeColumns() throws WdkModelException {
+protected Set<AttributeField> validateAttributeColumns() {
   // get a map of report maker fields
   Map<String, AttributeField> fieldMap = getQuestion().getAttributeFieldMap();
 
