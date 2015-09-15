@@ -107,7 +107,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
   public abstract String getConfigInfo();
 
   public String getPropertyInfo() {
-    StringBuffer propInfo = new StringBuffer();
+    StringBuilder propInfo = new StringBuilder();
     for (String propName : properties.keySet()) {
       propInfo.append(propName + ": " + properties.get(propName));
       propInfo.append(System.getProperty("line.separator"));
