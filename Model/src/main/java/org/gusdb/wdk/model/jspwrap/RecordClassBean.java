@@ -226,7 +226,11 @@ public class RecordClassBean {
         return recordClass.getRecordViews();
     } 
 
-    public AttributeFieldBean getFavoriteNoteField() {
+    public Map<String, ReporterRef> getReporterMap() {
+      return recordClass.getReporterMap();
+  } 
+
+   public AttributeFieldBean getFavoriteNoteField() {
         return new AttributeFieldBean(recordClass.getFavoriteNoteField());
     }
     
