@@ -186,7 +186,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
   }
 
   public String getDownloadFileName() {
-    // by default, display the result in the browser, by seting the file
+    // by default, display the result in the browser, by setting the file
     // name as null
     return null;
   }
