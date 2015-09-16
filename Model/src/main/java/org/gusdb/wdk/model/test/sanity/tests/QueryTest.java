@@ -81,7 +81,7 @@ public class QueryTest implements ElementTest {
     result.setReturned(count + " rows returned");
     boolean countMismatch = (count < sanityMin || count > sanityMax);
     result.setShowMismatchWarning(countMismatch);
-    result.setPassed(countMismatch && isFailureOnCountMismatch());
+    result.setPassed(!(countMismatch && isFailureOnCountMismatch()));
     return result;
   }
 
