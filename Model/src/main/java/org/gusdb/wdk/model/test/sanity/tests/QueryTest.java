@@ -66,6 +66,10 @@ public class QueryTest implements ElementTest {
     return _paramValuesSet;
   }
 
+  protected boolean isFailureOnCountMismatch() {
+    return false;
+  }
+
   @Override
   public final TestResult test(Statistics stats) throws Exception {
     int sanityMin = getMinRows();
@@ -75,7 +79,9 @@ public class QueryTest implements ElementTest {
         ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
     int count = runQuery(_user, _query, _paramValuesSet, result);
     result.setReturned(count + " rows returned");
-    result.setPassed(count >= sanityMin && count <= sanityMax);
+    boolean countMismatch = (count < sanityMin || count > sanityMax);
+    result.setShowMismatchWarning(countMismatch);
+    result.setPassed(countMismatch && isFailureOnCountMismatch());
     return result;
   }
 

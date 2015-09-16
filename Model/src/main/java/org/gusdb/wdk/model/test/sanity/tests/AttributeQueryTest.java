@@ -44,6 +44,11 @@ public class AttributeQueryTest extends QueryTest {
   }
 
   @Override
+  protected boolean isFailureOnCountMismatch() {
+    return true;
+  }
+
+  @Override
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet, TestResult result) throws WdkModelException, WdkUserException, SQLException {
     int count = testAttributeQueryCount(user, query, paramValuesSet);
     result.restartTimer();

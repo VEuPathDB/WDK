@@ -65,11 +65,12 @@ public class SanityTester {
   private final List<ElementTest> _tests;
 
   public SanityTester(WdkModel wdkModel, TestFilter testFilter, boolean failuresOnly,
-      boolean indexOnly, boolean skipWebSvcQueries) throws WdkModelException {
+      boolean indexOnly, boolean skipWebSvcQueries, boolean verbose) throws WdkModelException {
     _appDb = wdkModel.getAppDb();
     _indexOnly = indexOnly;
     _failuresOnly = failuresOnly;
     _testFilter = testFilter;
+    TestResult.setVerbose(verbose);
     long testStart = System.currentTimeMillis();
     TestBuilder testBuilder = (USE_CLASSIC_TEST_SETUP ?
         new ClassicTestBuilder() : new TopDownTestBuilder());
