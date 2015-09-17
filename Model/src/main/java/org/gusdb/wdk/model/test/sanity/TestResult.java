@@ -12,7 +12,9 @@ public class TestResult {
 
   private static boolean _verbose = false;
 
-  public static void setVerbose(boolean verbose) { _verbose = verbose; }
+  public static void setVerbose(boolean verbose) {
+    _verbose = verbose;
+  }
 
   private ElementTest _test;
   private int _index = -1; // no index specified

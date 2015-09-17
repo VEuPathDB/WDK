@@ -36,11 +36,12 @@ public class SanityTesterCLI {
       boolean indexOnly = cmdLine.hasOption("indexOnly");
       boolean skipWebSvcQueries = cmdLine.hasOption("skipWebSvcQueries");
       boolean verbose = cmdLine.hasOption("verbose");
+      boolean passCountMismatches = cmdLine.hasOption("passCountMismatches");
 
       wdkModel = WdkModel.construct(modelName, GusHome.getGusHome());
 
       SanityTester sanityTester = new SanityTester(wdkModel, testFilter,
-          failuresOnly, indexOnly, skipWebSvcQueries, verbose);
+          failuresOnly, indexOnly, skipWebSvcQueries, verbose, passCountMismatches);
 
       System.out.println(new StringBuilder()
         .append(NL)
@@ -117,6 +118,12 @@ public class SanityTesterCLI {
         "Skip all questions and queries that use web service queries.");
     options.addOption(skipWebSvcQueries);
 
+    Option passCountMismatches = new Option("passCountMismatches",
+        "Treats mismatches between query result counts and expected" +
+        " counts as passed (though Attribute Query mismatched counts " +
+        "will always produce a failure).");
+    options.addOption(passCountMismatches);
+
     return options;
   }
 
@@ -149,7 +156,7 @@ public class SanityTesterCLI {
     String newline = System.getProperty("line.separator");
     String cmdlineSyntax = cmdName
         + " -model model_name"
-        + " [-t testIdList] [-failuresOnly | -indexOnly] [-verbose] [-skipWebSvcQueries]";
+        + " [-t testIdList] [-failuresOnly | -indexOnly] [-verbose] [-skipWebSvcQueries] [-passCountMismatches]";
     String header = newline
         + "Run a test on all queries and records in a wdk model." + newline
         + newline + "Options:";
