@@ -10,6 +10,12 @@ public class TestResult {
   private static final String BANNER_LINE_TOP = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
   private static final String BANNER_LINE_BOT = "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
 
+  private static boolean _verbose = false;
+
+  public static void setVerbose(boolean verbose) {
+    _verbose = verbose;
+  }
+
   private ElementTest _test;
   private int _index = -1; // no index specified
   private long _start = System.currentTimeMillis();
@@ -18,6 +24,7 @@ public class TestResult {
   private String _expected = "";
   private String _returned = "";
   private Exception _caughtException = null;
+  private boolean _showMismatchWarning = false;
 
   public TestResult(ElementTest test) {
     _test = test;
@@ -42,7 +49,11 @@ public class TestResult {
   public String getResultString() {
     StringBuilder sb = new StringBuilder();
     if (!isPassed()) sb.append(BANNER_LINE_TOP).append(NL);
-    sb.append(getShortResultString() + NL + "  [ " + _test.getCommand() + " ]" + NL);
+    sb.append(getShortResultString()).append(NL).append("  [ ")
+      .append(_test.getCommand()).append(" ]").append(NL);
+    if (_showMismatchWarning && _verbose) {
+      sb.append(getExpected()).append(", BUT ").append(getReturned()).append(NL);
+    }
     if (getCaughtException() != null) {
       sb.append(FormatUtil.getStackTrace(getCaughtException()));
     }
@@ -56,6 +67,7 @@ public class TestResult {
         getDurationSecs() + " secs" + " | " +
         getExpected() + " | " +
         getReturned() +
+        (showMismatchWarning() ? " | MISMATCH!" : "") +
         (getCaughtException() == null ? "" : " | " +
             "Threw " + getCaughtException().getClass().getSimpleName());
   }
@@ -69,11 +81,14 @@ public class TestResult {
   public void setExpected(String expected)    { _expected = expected; }
   public void setReturned(String returned)    { _returned = returned; }
   public void setCaughtException(Exception e) { _caughtException = e; }
+  public void setShowMismatchWarning(boolean showMismatchWarning)
+      { _showMismatchWarning = showMismatchWarning; }
 
   public boolean isPassed()              { return _passed; }
   public int getIndex()                  { return _index; }
   private String getExpected()           { return _expected; }
   private String getReturned()           { return _returned; }
   private Exception getCaughtException() { return _caughtException; }
+  private boolean showMismatchWarning()  { return _showMismatchWarning; }
 
 }

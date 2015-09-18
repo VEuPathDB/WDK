@@ -2,7 +2,7 @@ import debounce from 'lodash/function/debounce';
 import React from 'react';
 import AnswerFilterSelector from './AnswerFilterSelector';
 import Tooltip from './Tooltip';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 // concatenate each item in items with arr
 function addToArray(arr, item) {

@@ -9,7 +9,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,7 +16,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
@@ -33,7 +31,7 @@ import com.lowagie.text.pdf.PdfWriter;
  * @author xingao
  * 
  */
-public class TabularReporter extends Reporter {
+public class TabularReporter extends StandardReporter {
 
     private static Logger logger = Logger.getLogger(TabularReporter.class);
 
@@ -81,11 +79,11 @@ public class TabularReporter extends Reporter {
      */
     @Override
     public String getHttpContentType() {
-        if (format.equalsIgnoreCase("text")) {
+        if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
             return "text/plain";
-        } else if (format.equalsIgnoreCase("excel")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("excel")) {
             return "application/vnd.ms-excel";
-        } else if (format.equalsIgnoreCase("pdf")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
             return "application/pdf";
         } else { // use the default content type defined in the parent class
             return super.getHttpContentType();
@@ -99,13 +97,13 @@ public class TabularReporter extends Reporter {
      */
     @Override
     public String getDownloadFileName() {
-        logger.info("Internal format: " + format);
+        logger.info("Internal format: " + reporterConfig.getAttachmentType());
         String name = getQuestion().getName();
-        if (format.equalsIgnoreCase("text")) {
+        if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
             return name + "_summary.txt";
-        } else if (format.equalsIgnoreCase("excel")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("excel")) {
             return name + "_summary.xls";
-        } else if (format.equalsIgnoreCase("pdf")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
             return name + "_summary.pdf";
         } else { // use the default file name defined in the parent
             return super.getDownloadFileName();
@@ -119,46 +117,24 @@ public class TabularReporter extends Reporter {
      * org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
     @Override
-    protected void write(OutputStream out) throws WdkModelException,
+    public void write(OutputStream out) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
 
         // get the columns that will be in the report
-        Set<AttributeField> columns = validateColumns();
+        Set<AttributeField> columns = validateAttributeColumns();
 
         // get the formatted result
-        if (format.equalsIgnoreCase("excel")) {
+        if (reporterConfig.getAttachmentType().equalsIgnoreCase("excel")) {
             format2Excel(columns, writer);
-        } else if (format.equalsIgnoreCase("pdf")) {
+        } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
             format2PDF(columns, out);
         } else {
             format2Text(columns, writer);
         }
     }
 
-    private Set<AttributeField> validateColumns() throws WdkModelException {
-        // the config map contains a list of column names;
-        Map<String, AttributeField> summary = getSummaryAttributes();
-        Set<AttributeField> columns = new LinkedHashSet<AttributeField>();
-
-        String fieldsList = config.get(FIELD_SELECTED_COLUMNS);
-        logger.debug("Selected fields: " + fieldsList);
-        if (fieldsList == null) {
-            columns.addAll(summary.values());
-        } else {
-            Map<String, AttributeField> attributes = getQuestion().getAttributeFieldMap(
-                    FieldScope.REPORT_MAKER);
-            String[] fields = fieldsList.split(",");
-            for (String column : fields) {
-                column = column.trim();
-                if (attributes.containsKey(column)) {
-                	columns.add(attributes.get(column));
-                }
-            }
-        }
-        return columns;
-    }
 
     private void format2Text(Set<AttributeField> fields, PrintWriter writer)
             throws WdkModelException, WdkUserException {

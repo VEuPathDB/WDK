@@ -8,7 +8,7 @@ import java.util.List;
  * This class provides a common implementation of tree structure, and it is used
  * by the category for attributes and tree params.
  * 
- * @author jerric
+ * @author rdoherty
  * 
  */
 public class TreeNode {
@@ -226,6 +226,61 @@ public class TreeNode {
       return leafToString();
     }
     return toString("");
+  }
+
+  /**
+   * Finds first node in this tree with the passed name and returns it
+   * 
+   * @param name name of desired node
+   * @return found node or null if not found
+   */
+  public TreeNode find(String name) {
+    if (_name.equals(name)) {
+      return this;
+    }
+    for (TreeNode node : _childNodes) {
+      TreeNode found = node.find(name);
+      if (found != null) return found;
+    }
+    return null;
+  }
+
+  /**
+   * Finds first leaf node in this tree with the passed name and returns it
+   * 
+   * @param name name of desired leaf node
+   * @return found leaf node or null if not found
+   */
+  public TreeNode findLeaf(String name) {
+    if (getIsLeaf() && _name.equals(name)) {
+      return this;
+    }
+    for (TreeNode node : _childNodes) {
+      TreeNode found = node.findLeaf(name);
+      if (found != null) return found;
+    }
+    return null;
+  }
+
+  /**
+   * Removes any subtrees with the passed name.
+   * 
+   * @param name name of the subtree to be removed
+   * @return number of subtrees removed
+   */
+  public int remove(String name) {
+    int numRemoved = 0;
+    for (int i = 0; i < _childNodes.size(); i++) {
+      if (_childNodes.get(i).getName().equals(name)) {
+        _childNodes.remove(i);
+        numRemoved++;
+        i--; // reuse the current index, now pointing to the next node
+      }
+      else {
+        numRemoved += _childNodes.get(i).remove(name);
+      }
+    }
+    return numRemoved;
   }
 
   public String toString(String indentation) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 let QuestionListController = React.createClass({
 
@@ -15,7 +15,7 @@ let QuestionListController = React.createClass({
   },
 
   selectState(state) {
-    this.setState({ questions: state.questions });
+    this.setState({ questions: state.resources.questions });
   },
 
   render() {

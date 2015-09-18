@@ -12,11 +12,12 @@ import _ from 'lodash';
 import * as components from './components';
 import * as actions from './actions';
 
-import Store from './core/store';
-import reducer from './reducer';
+import Store from './lib/store';
+import { reducer } from './reducers';
 import RestAPI from './services/restAPI';
 import Routes from './routes';
 import { createRestFilter } from './filters/restFilter';
+import logFilter from './filters/logFilter';
 
 // expose libraries to global object, but only if they aren't already defined
 if (window._ == null) window._ = _;
@@ -38,15 +39,15 @@ let Wdk = {
  * @param {string} config.rootUrl Root element to render application
  * @param {element} config.rootElement Root element to render application
  */
-function createApplication(config) {
-  let restAPI = RestAPI.create(config.endpoint);
+function createApplication({ endpoint, rootElement, rootUrl }) {
+  let restAPI = RestAPI.create(endpoint);
   let store = Store.create(reducer, [
     createRestFilter(restAPI),
     logFilter
   ]);
 
   let router = Router.create({
-    routes: Routes.getRoutes(config.rootUrl),
+    routes: Routes.getRoutes(rootUrl),
     location: Router.HistoryLocation
   });
 
@@ -61,20 +62,11 @@ function createApplication(config) {
       );
     }
     else {
-      React.render(<Root state={state} store={store}/>, config.rootElement);
+      React.render(<Root {...state} store={store}/>, rootElement);
     }
   });
 
   return { store, router, restAPI };
-}
-
-function logFilter(store, next, action) {
-  console.group(action.type);
-  console.info('dispatching', action);
-  let result = next(action);
-  console.log('state', store.getState());
-  console.groupEnd(action.type);
-  return result;
 }
 
 export default Wdk;

@@ -1,6 +1,6 @@
 import {
   QUESTIONS_ADDED
-} from '../constants/actionTypes';
+} from '../../constants/actionTypes';
 
 export default function questions(questions = [], action) {
   if (action.type === QUESTIONS_ADDED) {
