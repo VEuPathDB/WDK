@@ -19,19 +19,14 @@ function create(reducer, filters = []) {
     }
 
     isDispatching = true;
-
-    let oldState = state;
     state = reducer(state, action);
-
     isDispatching = false;
 
-    return Promise.resolve(state).then(function(state) {
-      if (state !== oldState) {
-        callbacks.forEach(function(callback) {
-          callback(state);
-        });
-      }
+    callbacks.forEach(function(callback) {
+      callback(state);
     });
+
+    return action;
   }
 
   // Call `callback` when the state is changed. Also calls `callback`

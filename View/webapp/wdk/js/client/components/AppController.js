@@ -5,9 +5,9 @@
  */
 import React from 'react';
 import { RouteHandler } from 'react-router';
-import wrappable from '../utils/wrappable';
-import CommonActions from '../actions/commonActions';
-import PreferenceActions from '../actions/preferenceActions';
+import { wrappable } from '../utils/componentUtils';
+import * as CommonActions from '../actions/commonActions';
+import * as PreferenceActions from '../actions/preferenceActions';
 
 /*
  * RouterHandler is a special React component that the router uses to inject
@@ -49,7 +49,7 @@ let AppController = React.createClass({
     }
     else {
       return (
-        <RouteHandler store={this.props.store}/>
+        <RouteHandler {...this.props}/>
       );
     }
   }

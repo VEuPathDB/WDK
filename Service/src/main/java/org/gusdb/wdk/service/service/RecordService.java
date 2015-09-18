@@ -120,8 +120,24 @@ public class RecordService extends WdkService {
     return getTableResponse(recordClassName, tableName, expandTableAttributes, true);
   }
   
+  @GET
+  @Path("{recordClassName}/answerFormat")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getAnswerFormats(
+      @PathParam("recordClassName") String recordClassName) {
+    try {
+      RecordClass rc = getWdkModel().getRecordClass(recordClassName);
+      return Response.ok(
+          RecordClassFormatter.getAnswerFormatsJson(rc.getReporterMap()).toString()
+      ).build();
+    }
+    catch (WdkModelException e) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+  }
+
   @POST
-  @Path("{recordClassName}/get")
+  @Path("{recordClassName}/instance")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response buildResult(@PathParam("recordClassName") String recordClassName, String body) throws WdkModelException, WdkUserException {
@@ -129,7 +145,7 @@ public class RecordService extends WdkService {
       JSONObject json = new JSONObject(body);
 
       RecordRequest request = RecordRequest.createFromJson(
-          getCurrentUser(), json.getJSONObject("recordInstanceSpecification"), recordClassName, getWdkModelBean());
+          getCurrentUser(), json, recordClassName, getWdkModelBean());
       
       RecordInstance recordInstance = getRecordInstance(getCurrentUser(), request);
 

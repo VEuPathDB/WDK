@@ -3,7 +3,7 @@ import Sticky from './Sticky';
 import RecordMainSection from './RecordMainSection';
 import RecordHeading from './RecordHeading';
 import RecordNavigationSection from './RecordNavigationSection';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 import {
   formatAttributeValue
 } from '../utils/stringUtils';

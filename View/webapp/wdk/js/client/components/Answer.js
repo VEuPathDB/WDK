@@ -2,7 +2,7 @@ import React from 'react';
 import AnswerFilter from './AnswerFilter';
 import AnswerTable from './AnswerTable';
 import RecordList from './RecordList';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 let $ = window.jQuery;
 
