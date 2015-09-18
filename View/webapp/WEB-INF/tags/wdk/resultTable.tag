@@ -7,6 +7,14 @@
               type="org.gusdb.wdk.model.jspwrap.StepBean"
               required="true"
               description="Step bean we are looking at" %>
+<%@ attribute name="showNativeCount"
+              type="java.lang.String"
+              required="false"
+              description="if true, we show the native count" %>
+<%@ attribute name="missingNative"
+              type="java.lang.String"
+              required="false"
+              description="if true, we have missing native ids in result" %>
 
   <c:set var="wdkAnswer" value="${step.answerValue}"/>
   <c:set var="wdkViewAnswer" value="${step.viewAnswerValue}"/>
@@ -89,20 +97,28 @@
             </th>
 
             <th style="text-align: center; white-space: nowrap; width: 34px;">
-
+<c:if test="${showNativeCount eq 'true'}">
+<c:choose>
+<c:when test="${missingNative ne 'true'}">
+   <c:set var="trTitle" value="All Transcripts in the genes in your Gene Results tab, are included here." />
+</c:when>
+<c:otherwise>
+    <c:set var="trTitle" value="Not all Transcripts in the genes in your Gene Results tab, are included here; some have a divergent function or charateristic." />
+</c:otherwise>
+</c:choose>
               <c:if test="${wdkAnswer.question.recordClass.hasResultSizeQuery}">
                 <span style="padding-right: 2em">
                   ${wdkAnswer.displayResultSize eq 1 ? step.recordClass.displayName : step.recordClass.displayNamePlural}:
                   ${wdkAnswer.displayResultSize}
                 </span>
               </c:if>
-
-              <span style="padding-right: 2em">
+              <span style="padding-right: 2em" title="${trTitle}">
                 ${wdkAnswer.resultSize eq 1 ? wdkAnswer.question.recordClass.nativeDisplayName : wdkAnswer.question.recordClass.nativeDisplayNamePlural}:
                 ${wdkAnswer.resultSize}
               </span>
-
+</c:if>
             </th>
+
             <th style="text-align: right; white-space: nowrap; width: 33px;">
               <c:if test="${wdkViewAnswer.resultSize > 0}">
 
