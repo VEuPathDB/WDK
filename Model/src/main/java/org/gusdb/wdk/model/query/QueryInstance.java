@@ -260,7 +260,7 @@ public abstract class QueryInstance<T extends Query> {
       }
     }
     if (errors != null) {
-      WdkUserException ex = new WdkUserException("Some of the input parameters are invalid.", errors);
+      WdkUserException ex = new WdkUserException("Some of the input parameters are invalid or missing.", errors);
       logger.error(ex.formatErrors());
       throw ex;
     }
