@@ -1,4 +1,4 @@
-import { combineReducers } from '../../utils/reducerUtils';
+import { combineReducers } from '../../lib/utils';
 import questions from './questions';
 import recordClasses from './recordClasses';
 import records from './records';

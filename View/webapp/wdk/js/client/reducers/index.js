@@ -1,4 +1,4 @@
-import { combineReducers } from '../utils/reducerUtils';
+import { combineReducers } from '../lib/utils';
 
 import errors from './errors';
 import loading from './loading';
