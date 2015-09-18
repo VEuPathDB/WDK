@@ -183,7 +183,7 @@ For example, if our state has the following shape:
       questions: Array<Question>;
     }
 
-we can construct two reducers for each top-level property:
+we can construct two reducers, one for each top-level key (records and questions):
 
     function records(records = [], action) {
       switch (action.type) {
@@ -191,7 +191,7 @@ we can construct two reducers for each top-level property:
           return [ ...records, action.record ];
         case 'REMOVE_RECORD':
           return records.filter(function(r) {
-            return r !== record;
+            return r !== action.record;
           });
       }
     }
@@ -202,7 +202,7 @@ we can construct two reducers for each top-level property:
           return [ ...questions, action.question ];
         case 'REMOVE_QUESTIONS':
           return questions.filter(function(q) {
-            return q !== question;
+            return q !== action.question;
           });
       }
     }
@@ -234,13 +234,13 @@ keys, whose values are determined by the result of the associated reducer
 function.
 
     let reducer = combineReducers({
-      quesitons,
+      questions,
       records
     });
 
 `combineReducers` will return a function just like the one we manually defined
 above. Best of all, `combineReducers` can easily be composed to allow grouping
-reducers into a second level category:
+reducers into nested categories:
 
     // Create a reducer for view related state.
     let views = combineReducers({
