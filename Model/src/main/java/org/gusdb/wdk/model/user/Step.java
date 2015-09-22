@@ -145,7 +145,11 @@ public class Step {
   private Exception exception;
 
   private Integer strategyId;
-  
+
+    // Set this if this step should not be written to /read from db.  A hack in support of 
+    // summary views, until they are refactored using service.
+  private boolean inMemoryOnly;
+
   /**
    * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
    * for the passed ID if one is required for processing after construction.
@@ -230,6 +234,7 @@ public class Step {
     revisable = step.revisable;
     exception = step.exception;
     strategyId = step.strategyId;
+    inMemoryOnly = step.inMemoryOnly;
 
     // answer value cache copy is NOT shallow- if caller wants a new step, they are
     // probably going to modify it to get a different answer value
@@ -532,6 +537,9 @@ public class Step {
 
   // saves attributes of the step that do NOT impact results or parent steps
   public void update(boolean updateTime) throws WdkModelException {
+    // HACK: don't update if this is an in-memory only Step
+    // remove this once we refactor the world of summary views, so they don't need such Steps
+    if (inMemoryOnly) return;
     stepFactory.updateStep(getUser(), this, updateTime);
   }
 
@@ -1446,5 +1454,9 @@ public class Step {
   public void setAnswerValuePaging(int start, int end) {
     answerValueCache.setPaging(start, end);
     
+  }
+
+  public void setInMemoryOnly(boolean flag) {
+    inMemoryOnly = true;
   }
 }
