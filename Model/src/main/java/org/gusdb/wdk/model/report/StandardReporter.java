@@ -1,10 +1,10 @@
 package org.gusdb.wdk.model.report;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -121,16 +121,41 @@ public abstract class StandardReporter extends Reporter {
     return columns;
   }
 
-  /**
-   * encapsulate the configuration of a reporter, for standard reporters, that take a list of attrs and
-   * tables. unfortunately existing reporters use two different ways of configuring, either storing all fields
-   * in one list, or breaking lists into tables and attributes. this config object supports both, until we
-   * clean that up, moving all to just the latter
-   * 
-   * @author steve
-   *
-   */
-  public class Configuration {
+protected Set<AttributeField> validateAttributeColumns() {
+  // get a map of report maker fields
+  Map<String, AttributeField> fieldMap = getQuestion().getAttributeFieldMap();
+
+  // the config map contains a list of column names;
+  Set<AttributeField> columns = new LinkedHashSet<AttributeField>();
+
+  if (reporterConfig.getIsAllAttributes()) {
+    logger.info("FIELDSLIST ALL");
+    for (String k : fieldMap.keySet()) {
+      AttributeField f = fieldMap.get(k);
+      if (f.getClass().getName().contains("AttributeField"))
+        columns.add(f);
+    }
+  }
+  else {
+    for (String column : reporterConfig.getAttributes()) {
+      column = column.trim();
+      if (fieldMap.containsKey(column)) {
+        columns.add(fieldMap.get(column));
+      }
+    }
+  }
+  return columns; 
+}
+
+/**
+ * encapsulate the configuration of a reporter, for standard reporters, that take a list of attrs and tables.
+ * unfortunately existing reporters use two different ways of configuring, either storing all fields in one list, or breaking lists into tables and attributes.
+ * this config object supports both, until we clean that up, moving all to just the latter
+ * @author steve
+ *
+ */
+public class Configuration {
+
     // configuration props
     public static final String SELECT_ALL_FIELDS = "all-fields";
     public static final String SELECT_ALL_ATTRS = "allAttributes";

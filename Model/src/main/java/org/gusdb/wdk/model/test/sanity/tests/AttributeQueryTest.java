@@ -44,6 +44,11 @@ public class AttributeQueryTest extends QueryTest {
   }
 
   @Override
+  protected boolean isFailureOnCountMismatch() {
+    return true;
+  }
+
+  @Override
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet, TestResult result) throws WdkModelException, WdkUserException, SQLException {
     int count = testAttributeQueryCount(user, query, paramValuesSet);
     result.restartTimer();
@@ -83,8 +88,7 @@ public class AttributeQueryTest extends QueryTest {
     SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
         params, true, 0, new LinkedHashMap<String, String>());
 
-    String sql = "select count (*) from" +
-        "(select distinct * from (" + instance.getUncachedSql() + "))";
+    String sql = "select count (1) from (" + instance.getUncachedSql() + ")";
 
     DataSource dataSource = query.getWdkModel().getAppDb().getDataSource();
     ResultSet resultSet = null;

@@ -9,6 +9,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
+import org.gusdb.wdk.model.test.sanity.RangeCountTestUtil;
 import org.gusdb.wdk.model.test.sanity.TestResult;
 import org.gusdb.wdk.model.user.User;
 
@@ -66,7 +67,8 @@ public class QuestionTest implements ElementTest {
     }
 
     result.setReturned(resultSize + " rows returned");
-    result.setPassed(resultSize >= sanityMin && resultSize <= sanityMax);
+    RangeCountTestUtil.applyCountAssessment(resultSize, sanityMin, sanityMax,
+        false, result);
     return result;
   }
 }

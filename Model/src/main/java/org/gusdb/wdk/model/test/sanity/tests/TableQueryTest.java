@@ -42,6 +42,7 @@ public class TableQueryTest extends QueryTest {
       }
     }
     throw new WdkModelException("Table query '" + query.getFullName() +
-        "' is not associated with a RecordClass.  Cannot find PK values.");
+        "' is not referred to by any RecordClass.  This is required so the " +
+        "sanity test can discover primary key columns for the RecordClass)");
   }
 }
