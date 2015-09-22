@@ -107,7 +107,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
   public abstract String getConfigInfo();
 
   public String getPropertyInfo() {
-    StringBuffer propInfo = new StringBuffer();
+    StringBuilder propInfo = new StringBuilder();
     for (String propName : properties.keySet()) {
       propInfo.append(propName + ": " + properties.get(propName));
       propInfo.append(System.getProperty("line.separator"));
@@ -186,7 +186,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
   }
 
   public String getDownloadFileName() {
-    // by default, display the result in the browser, by seting the file
+    // by default, display the result in the browser, by setting the file
     // name as null
     return null;
   }

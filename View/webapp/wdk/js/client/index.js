@@ -12,7 +12,7 @@ import _ from 'lodash';
 import * as components from './components';
 import * as actions from './actions';
 
-import Store from './core/store';
+import Store from './lib/store';
 import { reducer } from './reducers';
 import RestAPI from './services/restAPI';
 import Routes from './routes';
