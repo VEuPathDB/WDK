@@ -25,6 +25,9 @@
   <c:set var="recHasBasket" value="${wdkAnswer.question.recordClass.useBasket}" />
   <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
 
+ <c:set var="displayNamePlural" value="${wdkAnswer.question.recordClass.displayNamePlural}" />
+ <c:set var="nativeDisplayNamePlural" value="${wdkAnswer.question.recordClass.nativeDisplayNamePlural}" />
+
   <%-- catch raised exception so we can show the user a nice message --%>
   <c:catch var="answerValueRecords_exception">
     <%-- FIXME This should probably be logged to wdk logger --%>
@@ -100,10 +103,10 @@
 <c:if test="${showNativeCount eq 'true'}">
 <c:choose>
 <c:when test="${missingNative ne 'true'}">
-   <c:set var="trTitle" value="All Transcripts in the genes in your Gene Results tab, are included here." />
+   <c:set var="trTitle" value="All ${nativeDisplayNamePlural} in the ${displayNamePlural} in your results are included here." />
 </c:when>
 <c:otherwise>
-    <c:set var="trTitle" value="Not all Transcripts in the genes in your Gene Results tab, are included here; some have a divergent function or charateristic." />
+    <c:set var="trTitle" value="Not all ${nativeDisplayNamePlural} in the ${displayNamePlural} in your results are included here; some have a divergent function or charateristic." />
 </c:otherwise>
 </c:choose>
               <c:if test="${wdkAnswer.question.recordClass.hasResultSizeQuery}">
