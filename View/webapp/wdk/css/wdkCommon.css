@@ -1162,7 +1162,7 @@ position: relative;
 z-index: 1;
 overflow: hidden;
 padding: 0;
-margin: 1em 0 -1px;
+/* margin: 1em 0 -1px; */
 }
 
 .Summary_Views .ui-tabs-panel {

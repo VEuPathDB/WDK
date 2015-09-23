@@ -50,7 +50,7 @@
                      answerValue="${wdkAnswer}" />
 </c:if>
 
-<br />
+
 <!-- ================ New filter architecture ================= -->
 
 
