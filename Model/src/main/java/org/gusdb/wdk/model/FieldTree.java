@@ -14,11 +14,10 @@ public class FieldTree {
 
   public static final IsSelectedPredicate IS_SELECTED = new IsSelectedPredicate(true);
   public static final IsSelectedPredicate IS_UNSELECTED = new IsSelectedPredicate(false);
+  public static final IsDefaultPredicate IS_DEFAULT = new IsDefaultPredicate(true);
 
   public static final SetSelectedFunction SET_SELECTED = new SetSelectedFunction(true);
   public static final SetSelectedFunction SET_UNSELECTED = new SetSelectedFunction(false);
-
-  public static final IsDefaultPredicate IS_DEFAULT = new IsDefaultPredicate(true);
   public static final SetAsDefaultFunction SET_AS_DEFAULT = new SetAsDefaultFunction(true);
 
   public static final Function<SelectableItem,String> NAME_MAPPER = new Function<SelectableItem,String>() {
@@ -105,13 +104,13 @@ public class FieldTree {
     @Override public boolean test(SelectableItem obj) { return (_searchNames.contains(obj.getName())); }
   }
 
-  public static class IsSelectedPredicate implements Predicate<SelectableItem> {
+  private static class IsSelectedPredicate implements Predicate<SelectableItem> {
     private final boolean _isSelected;
     public IsSelectedPredicate(boolean isSelected) { _isSelected = isSelected; }
     @Override public boolean test(SelectableItem obj) { return (_isSelected == obj.isSelected()); }
   }
 
-  public static class IsDefaultPredicate implements Predicate<SelectableItem> {
+  private static class IsDefaultPredicate implements Predicate<SelectableItem> {
     private final boolean _isDefault;
     public IsDefaultPredicate(boolean isDefault) { _isDefault = isDefault; }
     @Override public boolean test(SelectableItem obj) { return (_isDefault == obj.isDefault()); }
@@ -123,7 +122,7 @@ public class FieldTree {
     @Override public SelectableItem apply(SelectableItem obj) { return obj.setSelected(_isSelected); }
   }
 
-  public static class SetAsDefaultFunction implements Function<SelectableItem,SelectableItem> {
+  private static class SetAsDefaultFunction implements Function<SelectableItem,SelectableItem> {
     private final boolean _isDefault;
     public SetAsDefaultFunction(boolean isDefault) { _isDefault = isDefault; }
     @Override public SelectableItem apply(SelectableItem obj) { return obj.setSelected(_isDefault); }
