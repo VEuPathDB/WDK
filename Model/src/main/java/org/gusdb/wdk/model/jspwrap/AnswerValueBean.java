@@ -7,7 +7,7 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.TreeNode;
+import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
@@ -416,11 +416,11 @@ public class AnswerValueBean {
         return fieldBeans;
     }
 
-    public TreeNode getDisplayableAttributeTree() throws WdkModelException {
+    public FieldTree getDisplayableAttributeTree() throws WdkModelException {
     	return answerValue.getDisplayableAttributeTree();
     }
 
-    public TreeNode getReportMakerAttributeTree() throws WdkModelException {
+    public FieldTree getReportMakerAttributeTree() throws WdkModelException {
     	return answerValue.getReportMakerAttributeTree();
     }
 

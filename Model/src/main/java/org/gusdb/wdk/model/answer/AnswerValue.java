@@ -20,7 +20,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.TreeNode;
+import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -1255,23 +1255,23 @@ public class AnswerValue {
     return displayAttributes;
   }
 
-  public TreeNode getDisplayableAttributeTree() throws WdkModelException {
+  public FieldTree getDisplayableAttributeTree() throws WdkModelException {
     return convertAttributeTree(_question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
   }
 
-  public TreeNode getReportMakerAttributeTree() throws WdkModelException {
+  public FieldTree getReportMakerAttributeTree() throws WdkModelException {
     return convertAttributeTree(_question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
   }
 
-  private TreeNode convertAttributeTree(AttributeCategoryTree rawAttributeTree) throws WdkModelException {
-    TreeNode root = rawAttributeTree.toTreeNode("category root", "Attribute Categories");
+  private FieldTree convertAttributeTree(AttributeCategoryTree rawAttributeTree) throws WdkModelException {
+    FieldTree tree = rawAttributeTree.toFieldTree("category root", "Attribute Categories");
     List<String> currentlySelectedFields = new ArrayList<String>();
     for (AttributeField field : getSummaryAttributeFieldMap().values()) {
       currentlySelectedFields.add(field.getName());
     }
-    root.turnOnSelectedLeaves(currentlySelectedFields);
-    root.setDefaultLeaves(new ArrayList<String>(_question.getSummaryAttributeFieldMap().keySet()));
-    return root;
+    tree.addSelectedLeaves(currentlySelectedFields);
+    tree.addDefaultLeaves(new ArrayList<String>(_question.getSummaryAttributeFieldMap().keySet()));
+    return tree;
   }
 
   // private Map<String, AttributeField> summaryFieldMap;

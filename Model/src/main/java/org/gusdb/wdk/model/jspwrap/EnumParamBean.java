@@ -9,7 +9,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.wdk.model.TreeNode;
+import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.wdk.model.FieldTree;
+import org.gusdb.wdk.model.SelectableItem;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
@@ -245,33 +247,35 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * 
    * @return up-to-date tree of this param
    */
-  public TreeNode getParamTree() {
+  public FieldTree getParamTree() {
     EnumParamTermNode[] rootNodes = getVocabTreeRoots();
-    TreeNode root = getParamTree(getName(), rootNodes);
-    populateParamTree(root, currentValues);
+    FieldTree tree = getParamTree(getName(), rootNodes);
+    populateParamTree(tree, currentValues);
     logger.debug("param " + getName() + ", stable=" + stableValue + ", current=" + currentValues);
 
-    return root;
+    return tree;
   }
 
-  public static TreeNode getParamTree(String treeName, EnumParamTermNode[] rootNodes) {
-    TreeNode root = new TreeNode(treeName, "top");
+  public static FieldTree getParamTree(String treeName, EnumParamTermNode[] rootNodes) {
+    FieldTree tree = new FieldTree(new SelectableItem(treeName, "top"));
+    TreeNode<SelectableItem> root = tree.getRoot();
     for (EnumParamTermNode paramNode : rootNodes) {
       if (paramNode.getChildren().length == 0) {
-        root.addChildNode(new TreeNode(paramNode.getTerm(), paramNode.getDisplay(), paramNode.getDisplay()));
+        root.addChild(new SelectableItem(paramNode.getTerm(), paramNode.getDisplay(), paramNode.getDisplay()));
       }
       else {
-        root.addChildNode(paramNode.toTreeNode());
+        root.addChildNode(paramNode.toFieldTree().getRoot());
       }
     }
-    return root;
+    return tree;
   }
 
-  public static void populateParamTree(TreeNode root, String[] values) {
+  public static void populateParamTree(FieldTree tree, String[] values) {
     if (values != null && values.length > 0) {
       List<String> currentValueList = Arrays.asList(values);
-      root.turnOnSelectedLeaves(currentValueList);
-      root.setDefaultLeaves(currentValueList);
+      logger.info("Populating selected leaves: " + FormatUtil.arrayToString(values));
+      tree.setSelectedLeaves(currentValueList);
+      tree.addDefaultLeaves(currentValueList);
     }
   }
 
