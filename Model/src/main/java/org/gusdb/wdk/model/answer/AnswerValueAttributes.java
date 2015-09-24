@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.wdk.model.TreeNode;
+import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
@@ -40,7 +40,7 @@ public class AnswerValueAttributes {
   private final Question _question;
 
   // these fields may be used to override the default attributes associated with the answer value
-  private TreeNode _displayableAttributeTree;
+  private FieldTree _displayableAttributeTree;
   private Map<String, AttributeField> _summaryAttributeMap;
 
   public AnswerValueAttributes(User user, Question question) {
@@ -71,11 +71,11 @@ public class AnswerValueAttributes {
     return displayAttributes;
   }
 
-  public void overrideDisplayableAttributeTree(TreeNode attributeTree) {
+  public void overrideDisplayableAttributeTree(FieldTree attributeTree) {
     _displayableAttributeTree = attributeTree;
   }
 
-  public TreeNode getDisplayableAttributeTree() throws WdkModelException {
+  public FieldTree getDisplayableAttributeTree() throws WdkModelException {
     if (_displayableAttributeTree == null) {
       _displayableAttributeTree = convertAttributeTree(
           _question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
@@ -83,19 +83,19 @@ public class AnswerValueAttributes {
     return _displayableAttributeTree;
   }
 
-  public TreeNode getReportMakerAttributeTree() throws WdkModelException {
+  public FieldTree getReportMakerAttributeTree() throws WdkModelException {
     return convertAttributeTree(_question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
   }
 
-  private TreeNode convertAttributeTree(AttributeCategoryTree rawAttributeTree) throws WdkModelException {
-    TreeNode root = rawAttributeTree.toTreeNode("category root", "Attribute Categories");
+  private FieldTree convertAttributeTree(AttributeCategoryTree rawAttributeTree) throws WdkModelException {
+    FieldTree tree = rawAttributeTree.toFieldTree("category root", "Attribute Categories");
     List<String> currentlySelectedFields = new ArrayList<String>();
     for (AttributeField field : getSummaryAttributeFieldMap().values()) {
       currentlySelectedFields.add(field.getName());
     }
-    root.turnOnSelectedLeaves(currentlySelectedFields);
-    root.setDefaultLeaves(new ArrayList<String>(_question.getSummaryAttributeFieldMap().keySet()));
-    return root;
+    tree.setSelectedLeaves(currentlySelectedFields);
+    tree.addDefaultLeaves(new ArrayList<String>(_question.getSummaryAttributeFieldMap().keySet()));
+    return tree;
   }
 
   public void overrideSummaryAttributeFieldMap(Map<String, AttributeField> summaryAttributeMap) {
