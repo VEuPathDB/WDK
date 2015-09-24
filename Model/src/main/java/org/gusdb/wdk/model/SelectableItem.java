@@ -2,7 +2,7 @@ package org.gusdb.wdk.model;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
-import org.gusdb.fgputil.functional.TreeNode.MultiLineToString;
+import org.gusdb.fgputil.FormatUtil.MultiLineToString;
 
 public class SelectableItem implements MultiLineToString {
 
@@ -37,7 +37,7 @@ public class SelectableItem implements MultiLineToString {
     return _isSelected;
   }
 
-  public SelectableItem setIsDefault(boolean isDefault) {
+  public SelectableItem setDefault(boolean isDefault) {
     _isDefault = isDefault;
     return this;
   }
