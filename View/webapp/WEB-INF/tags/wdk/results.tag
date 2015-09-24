@@ -87,11 +87,15 @@
   <ul style="overflow:visible" currentTab="${selectedTab}">
     <c:forEach items="${views}" var="item">
       <c:set var="view" value="${item.value}" />
-      <li id="${view.name}">
-        <a href="${pageContext.request.contextPath}/showSummaryView.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}"
-           title="${view.description}"
-        >${view.display} <span> </span></a>
-      </li>
+      <c:set var="viewCountProp" value="${view.name}Count" />
+      <c:set var="viewCount" value="${step.answerValue.resultProperties[viewCountProp]}"/>
+      <c:if test="${ fn:contains(view.name, 'default') || viewCount ne 0 }"> 
+        <li id="${view.name}">
+          <a href="${pageContext.request.contextPath}/showSummaryView.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}"
+             title="${view.description}"
+          >${view.display} <span> </span></a>
+        </li>
+      </c:if>
     </c:forEach>
     <c:forEach items="${wdkStep.appliedAnalyses}" var="analysisEntry">
       <c:set var="analysisId" value="${analysisEntry.key}"/>
