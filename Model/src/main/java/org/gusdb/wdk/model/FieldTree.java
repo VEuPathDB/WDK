@@ -26,6 +26,17 @@ public class FieldTree {
   public static final Function<SelectableItem,String> QUOTED_NAME_MAPPER = new Function<SelectableItem,String>() {
     @Override public String apply(SelectableItem obj) { return "'" + obj.getName() + "'"; }};
 
+  private static final Reducer<SelectableItem,Boolean> ALL_SELECTED = new Reducer<SelectableItem,Boolean>() {
+    @Override
+    public Boolean reduce(SelectableItem obj) {
+      return obj.isSelected();
+    }
+    @Override
+    public Boolean reduce(SelectableItem obj, Boolean incomingValue) {
+      return incomingValue && obj.isSelected();
+    }
+  };
+
   private TreeNode<SelectableItem> _root;
 
   public FieldTree(SelectableItem treeField) {
@@ -85,16 +96,11 @@ public class FieldTree {
   }
 
   public boolean isAllSelected() {
-    return _root.reduce(new Reducer<SelectableItem,Boolean>() {
-      @Override
-      public Boolean reduce(SelectableItem obj) {
-        return obj.isSelected();
-      }
-      @Override
-      public Boolean reduce(SelectableItem obj, Boolean incomingValue) {
-        return incomingValue && obj.isSelected();
-      }
-    });
+    return _root.reduce(ALL_SELECTED);
+  }
+
+  public boolean isAllLeavesSelected() {
+    return _root.reduce(_root.LEAF_PREDICATE, ALL_SELECTED);
   }
 
   public static class NameMatchPredicate implements Predicate<SelectableItem> {
@@ -125,6 +131,6 @@ public class FieldTree {
   private static class SetAsDefaultFunction implements Function<SelectableItem,SelectableItem> {
     private final boolean _isDefault;
     public SetAsDefaultFunction(boolean isDefault) { _isDefault = isDefault; }
-    @Override public SelectableItem apply(SelectableItem obj) { return obj.setSelected(_isDefault); }
+    @Override public SelectableItem apply(SelectableItem obj) { return obj.setDefault(_isDefault); }
   }
 }
