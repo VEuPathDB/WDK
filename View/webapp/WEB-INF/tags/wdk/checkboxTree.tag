@@ -1,15 +1,15 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<%@ attribute name="rootNode"
+<%@ attribute name="tree"
               required="true"
-              type="org.gusdb.wdk.model.TreeNode"
+              type="org.gusdb.wdk.model.FieldTree"
               description="the root of the tree to render" %>
 
 <%@ attribute name="id"
               required="true"
               type="java.lang.String"
               description="unique name of this checkbox tree within the page" %>
-              
+
 <%@ attribute name="checkboxName"
               required="true"
               type="java.lang.String"
@@ -24,12 +24,12 @@
               required="false"
               type="java.lang.String"
               description="value for onload event to run after tree is loaded and configured" %>
-              
+
 <%@ attribute name="showSelectAll"
               required="false"
               type="java.lang.Boolean"
               description="whether or not to show a 'select all' link" %>
-              
+
 <c:if test="${empty showSelectAll}">
   <c:set var="showSelectAll" value="true"/>
 </c:if>
@@ -45,10 +45,10 @@
 
 <%-- if 'show current' link is activated, then check current nodes on init; else check default --%>
 <c:if test="${showResetCurrent}">
-  <c:set var="initiallySetList" value="${rootNode.selectedAsList}"/>
+  <c:set var="initiallySetList" value="${tree.selectedAsList}"/>
 </c:if>
 <c:if test="${not showResetCurrent}">
-  <c:set var="initiallySetList" value="${rootNode.defaultAsList}"/>
+  <c:set var="initiallySetList" value="${tree.defaultAsList}"/>
 </c:if>
 
 <%@ attribute name="buttonAlignment"
@@ -99,15 +99,15 @@
 
 <%-- Must set the following as request scope vars so included jsp has access (unset at bottom) --%>
 
-<c:set var="recurseTermNode" value="${rootNode}" scope="request"/>
+<c:set var="recurseTermNode" value="${tree.root}" scope="request"/>
 <c:set var="useHelpParam" value="${useHelp}" scope="request"/>
 <c:set var="segregateLeavesParam" value="${segregateLeaves}" scope="request"/>
 
 <!-- JSTree/Checkbox configuration -->
 <div style="display:none" data-controller="wdk.checkboxTree.setUpCheckboxTree"
     data-id="${id}" data-name="${checkboxName}" data-useicons="${useIcons}"
-    data-isallselected="${rootNode.isAllSelected}" data-leafimage="${leafImage}"
-    data-selectednodes="[${rootNode.selectedAsList}]", data-defaultnodes="[${rootNode.defaultAsList}]"
+    data-isallselected="${tree.allLeavesSelected}" data-leafimage="${leafImage}"
+    data-selectednodes="[${tree.selectedAsList}]" data-defaultnodes="[${tree.defaultAsList}]"
     data-initialnodes="[${initiallySetList}]" data-onload="${onload};"
     data-onchange="setTimeout(function() { ${onchange}; }, 0);"><jsp:text/></div>
 
