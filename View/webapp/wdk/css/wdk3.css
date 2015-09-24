@@ -1,3 +1,5 @@
+/* FIXME Some of these rules don't belong in WDK */
+
 /* apply a natural box layout model to all elements, but allowing components to change */
 /* See http://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
 html {
@@ -16,27 +18,24 @@ body {
 }
 */
 
-main {
+#wdk-container {
   position: relative;
   min-height: 200px;
 }
-main * {
-  font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif;
-}
-main h1 {
+#wdk-container h1 {
   text-align: left;
   margin: 22px 0;
   font-size: 2.5em;
   font-weight: 300;
 }
-main h2 {
+#wdk-container h2 {
   font-size: 1.8em;
   font-weight: 400;
 }
-main h3 {
+#wdk-container h3 {
   margin: 22px 0 8px 0;
 }
-main h4 {
+#wdk-container h4 {
   margin: 10px 0 8px 0;
 }
 
@@ -244,6 +243,7 @@ main h4 {
 
 .wdk-RecordActions {
   padding: 0;
+  margin: .6em;
 }
 
 .wdk-RecordActionItem {
@@ -252,6 +252,48 @@ main h4 {
 
 .wdk-RecordActionItem {
   padding: 0 2em 0 0;
+}
+
+.wdk-PageColumn {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  overflow: auto;
+  background: white;
+  padding: 0 26px;
+}
+
+.wdk-PageColumn-sidebar {
+  width: 210px;
+  left: 0;
+  padding-top: 1em;
+}
+
+.wdk-PageColumn-main,
+.wdk-PageColumn-main-with-sidebar {
+  left: 0;
+  right: 0;
+  margin: 0;
+  border-left: 1px solid #d8d8d8;
+  transition: left 250ms ease;
+}
+
+.wdk-PageColumn-main-with-sidebar {
+  left: 236px;
+}
+
+.wdk-SidebarToggle {
+  position: fixed;
+  margin-left: -2em;
+  padding: .5em;
+}
+
+.wdk-PageColumn-main .wdk-SidebarToggle {
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 .wdk-Record-main {
@@ -268,19 +310,6 @@ main h4 {
   margin-top: 1.5em;
 }
 
-.wdk-RecordNavigationSection {
-  border: 1px solid #d8d8d8;
-  border-radius: 4px;
-  margin-top: 1em;
-}
-
-.wdk-RecordNavigationSectionHeader {
-  margin: 0;
-  padding: .6em;
-  background: #f2f2f2;
-  border-radius: 4px;
-}
-
 .wdk-RecordNavigationItem {
   position: relative;
 }
@@ -292,9 +321,7 @@ main h4 {
 
 .wdk-Record-sidebar-title {
   display: block;
-  border-top: 1px solid #c0c0c0;
-  padding: .6em;
-  /*padding-left: 2.6em;*/
+  padding: .6em 0;
 }
 
 .wdk-Record-sidebar-checkbox {
