@@ -3,7 +3,9 @@ package org.gusdb.wdk.model.record.attribute;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.gusdb.wdk.model.TreeNode;
+import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.wdk.model.FieldTree;
+import org.gusdb.wdk.model.SelectableItem;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.TableField;
@@ -86,14 +88,21 @@ public class AttributeCategory extends WdkModelBase {
 			cat.appendToStringBuffer(indentation + "  ", builder);
 		}
 	}
-	public TreeNode toTreeNode() {
-		TreeNode node = new TreeNode(getName(), getDisplayName());
-		for (AttributeCategory cat : subcategories) {
-			node.addChildNode(cat.toTreeNode());
+
+	public FieldTree toFieldTree() {
+	    return toFieldTree(getName(), getDisplayName(), subcategories, fields);
+	}
+	
+	public static FieldTree toFieldTree(String rootName, String rootDisplayName,
+	    List<AttributeCategory> rootSubcategories, List<AttributeField> rootSubfields) {
+		FieldTree tree = new FieldTree(new SelectableItem(rootName, rootDisplayName));
+		TreeNode<SelectableItem> root = tree.getRoot();
+		for (AttributeCategory cat : rootSubcategories) {
+			root.addChildNode(cat.toFieldTree().getRoot());
 		}
-		for (AttributeField attrib : fields) {
-			node.addChildNode(new TreeNode(attrib.getName(), attrib.getDisplayName(), attrib.getHelp()));
+		for (AttributeField attrib : rootSubfields) {
+			root.addChild(new SelectableItem(attrib.getName(), attrib.getDisplayName(), attrib.getHelp()));
 		}
-		return node;
+		return tree;
 	}
 }

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.TreeNode;
+import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -133,15 +133,8 @@ public class AttributeCategoryTree extends WdkModelBase {
     return str.toString();
   }
 
-  public TreeNode toTreeNode(String rootName, String rootDisplayName) {
-    TreeNode root = new TreeNode(rootName, rootDisplayName);
-    for (AttributeCategory cat : topLevelCategories) {
-      root.addChildNode(cat.toTreeNode());
-    }
-    for (AttributeField attrib : topLevelAttributes) {
-      root.addChildNode(new TreeNode(attrib.getName(), attrib.getDisplayName(),
-          attrib.getHelp()));
-    }
-    return root;
+  public FieldTree toFieldTree(String rootName, String rootDisplayName) {
+    return AttributeCategory.toFieldTree(rootName, rootDisplayName, topLevelCategories, topLevelAttributes);
   }
+
 }
