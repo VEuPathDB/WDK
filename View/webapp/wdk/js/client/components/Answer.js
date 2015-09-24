@@ -2,12 +2,14 @@ import React from 'react';
 import AnswerFilter from './AnswerFilter';
 import AnswerTable from './AnswerTable';
 import RecordList from './RecordList';
+import Main from './Main';
 import { wrappable } from '../utils/componentUtils';
 
 let $ = window.jQuery;
 
 // Calculate the offset of `node` relative to the top of the document.
 function getOffsetTop(node, sum = 0) {
+  if (node == null) return sum;
   let { offsetTop, offsetParent } = node;
   return offsetTop === 0 ? sum : getOffsetTop(offsetParent, sum + offsetTop);
 }
@@ -60,7 +62,7 @@ let Answer = React.createClass({
     let Records = format === 'list' ? RecordList : AnswerTable;
 
     return (
-      <div>
+      <Main>
         <h1>{question.displayName}</h1>
           <div>{description}</div>
           <div className="wdk-Answer">
@@ -77,7 +79,7 @@ let Answer = React.createClass({
               {...answerEvents}
             />
           </div>
-      </div>
+      </Main>
     );
   }
 

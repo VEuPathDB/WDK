@@ -10,6 +10,8 @@ export { default as Dialog } from './components/Dialog';
 export { default as Doc } from './components/Doc';
 export { default as IndexController } from './components/IndexController';
 export { default as Loading } from './components/Loading';
+export { default as Main } from './components/Main';
+export { default as Sidebar } from './components/Sidebar';
 export { default as NotFoundController } from './components/NotFoundController';
 export { default as QuestionListController } from './components/QuestionListController';
 export { default as Record } from './components/Record';

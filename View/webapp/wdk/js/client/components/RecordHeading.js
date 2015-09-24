@@ -16,7 +16,7 @@ let RecordHeading = React.createClass({
       { name: 'Add a comment', icon: 'comment' },
       { name: 'Add to basket', icon: 'list' },
       { name: 'Add to favorites', icon: 'star-o' },
-      { name: 'Download' + recordClass.displayName, icon: 'download' }
+      { name: 'Download ' + recordClass.displayName, icon: 'download' }
     ];
     return (
       <div>
