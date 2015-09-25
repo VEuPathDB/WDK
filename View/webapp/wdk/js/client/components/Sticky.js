@@ -1,6 +1,11 @@
 import React from 'react';
+import { RequestLoop } from '../utils/timerUtils';
 
 let Sticky = React.createClass({
+
+  statics: {
+    requestLoop: new RequestLoop
+  },
 
   propTypes: {
     className: React.PropTypes.string,
@@ -20,42 +25,48 @@ let Sticky = React.createClass({
 
   componentDidMount() {
     this.node = React.findDOMNode(this);
+    this.$node = $(this.node);
     this.contentNode = React.findDOMNode(this.refs.content);
-    window.addEventListener('scroll', this.updateIsFixed);
+    Sticky.requestLoop.register(this.updateIsFixed);
   },
 
   componentWillUnmount() {
-    window.removeEventListener('scroll', this.updateIsFixed);
+    Sticky.requestLoop.unregister(this.updateIsFixed);
   },
 
   // Set position to fixed if top is above threshold, otherwise
   // set position to absolute.
   updateIsFixed() {
     // See https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
+    let offsetParent = this.node.offsetParent || document.body;
     let rect = this.node.getBoundingClientRect();
+    let parentRect = offsetParent.getBoundingClientRect();
     let contentRect = this.contentNode.getBoundingClientRect();
-    if (rect.top < 0 && this.state.isFixed === false) {
+    let top = rect.top - parentRect.top;
+    if (top < 0 && this.state.isFixed === false) {
       this.setState({
         isFixed: true,
         height: rect.height,
-        width: contentRect.width
+        width: contentRect.width,
+        top: parentRect.top
       });
     }
-    else if (rect.top >= 0 && this.state.isFixed === true) {
+    else if (top >= 0 && this.state.isFixed === true) {
       this.setState({
         isFixed: false,
         height: null,
-        width: null
+        width: null,
+        top: ''
       });
     }
   },
 
   render() {
-    let { isFixed, height, width } = this.state;
+    let { isFixed, height, width, top } = this.state;
     let { className, fixedClassName } = this.props;
     let style = Object.assign({}, this.props.style, {
       position: isFixed ? 'fixed' : '',
-      top: isFixed ? 0 : '',
+      top,
       width
     });
     if (isFixed) {
