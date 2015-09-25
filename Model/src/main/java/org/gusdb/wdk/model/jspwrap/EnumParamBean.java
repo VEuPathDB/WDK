@@ -273,7 +273,6 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   public static void populateParamTree(FieldTree tree, String[] values) {
     if (values != null && values.length > 0) {
       List<String> currentValueList = Arrays.asList(values);
-      logger.info("Populating selected leaves: " + FormatUtil.arrayToString(values));
       tree.setSelectedLeaves(currentValueList);
       tree.addDefaultLeaves(currentValueList);
     }
