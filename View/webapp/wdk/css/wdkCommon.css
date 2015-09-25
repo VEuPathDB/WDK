@@ -1162,7 +1162,7 @@ position: relative;
 z-index: 1;
 overflow: hidden;
 padding: 0;
-/* margin: 1em 0 -1px; */
+margin: 1em 0 -1px;
 }
 
 .Summary_Views .ui-tabs-panel {
@@ -1771,7 +1771,7 @@ color:darkred;font-style:italic;font-size:95%;
      = jQuery 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-.ui-tabs .ui-widget-header {
+.ui-tabs > .ui-widget-header {
     background: none;
     border: none;
 }
