@@ -512,7 +512,11 @@ public class AnswerValueBean {
     public void setPageIndex(int startIndex, int endIndex) {
         answerValue.setPageIndex(startIndex, endIndex);
     }
-    
+
+    public void setSortingMap(Map<String,Boolean> sortingMap) throws WdkModelException {
+        answerValue.setSortingMap(sortingMap);
+    }
+
     /**
      * Temporary method to allow easy on/off of checkbox tree
      * for value selection.
