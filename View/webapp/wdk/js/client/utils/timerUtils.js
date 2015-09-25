@@ -34,6 +34,7 @@ export let cancelAnimationFrame;
       };
 }());
 
+
 /**
  * Add and remove functions to be called using requestAnimationFrame.
  */
@@ -42,16 +43,27 @@ export class RequestLoop {
   constructor() {
     this._reqId = null;
     this._callbacks = [];
-    this._loop = this._loop.bind(this);
   }
 
+  /**
+   * Add a callback function to the list of callbacks. If this is the first
+   * callback, it will cause the loop to start.
+   *
+   * @param {Function} callback
+   */
   register(callback) {
     this._callbacks.push(callback);
     if (this._reqId == null) {
-      this._reqId = requestAnimationFrame(this._loop);
+      this._reqId = requestAnimationFrame(() => this._loop());
     }
   }
 
+  /**
+   * Remove a callback function from the list of callbacks. If this is the last
+   * callback, it will cause the loop to stop.
+   *
+   * @param {Function} callback
+   */
   unregister(callback) {
     let index = this._callbacks.indexOf(callback);
     if (index > -1) this._callbacks.splice(index, 1);
@@ -61,9 +73,10 @@ export class RequestLoop {
     }
   }
 
+  // Calls all callbacks in list and requests a new call
   _loop() {
     this._callbacks.forEach(callback => callback());
-    this._reqId = requestAnimationFrame(this._loop);
+    this._reqId = requestAnimationFrame(() => this._loop());
   }
 
 }
