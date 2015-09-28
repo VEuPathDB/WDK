@@ -1,5 +1,5 @@
 import test from 'tape';
-import Store from '../../../webapp/wdk/js/client/core/store';
+import Store from '../../../webapp/wdk/js/client/lib/store';
 
 // helpers
 // =======
