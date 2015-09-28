@@ -77,6 +77,7 @@ import org.gusdb.wdk.model.query.param.RecordClassReference;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.gusdb.wdk.model.question.AttributeList;
+import org.gusdb.wdk.model.question.CategoryList;
 import org.gusdb.wdk.model.question.CategoryQuestionRef;
 import org.gusdb.wdk.model.question.DynamicAttributeSet;
 import org.gusdb.wdk.model.question.Question;
@@ -564,6 +565,9 @@ public class ModelXmlParser extends XmlParser {
 
     configureNode(digester, "wdkModel/recordClassSet/recordClass/attributesList", AttributeList.class,
         "addAttributeList");
+
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/categoriesList", CategoryList.class,
+        "addCategoryList");
 
     // defaultTestParamValues
     configureParamValuesSet(digester, "wdkModel/recordClassSet/recordClass/testParamValues",
