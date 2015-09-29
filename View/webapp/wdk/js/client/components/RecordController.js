@@ -59,9 +59,12 @@ let RecordController = React.createClass({
     let { params, query } = this.props;
     let key = makeKey(params.class, query);
     let { records, recordClasses, questions } = state.resources;
-    let { hiddenCategories, collapsedCategories } = state.views.record;
     let recordClass = recordClasses.find(r => r.fullName === params.class);
     let record = records[key];
+    let {
+      hiddenCategories = recordClass && recordClass.collapsedCategories || [],
+      collapsedCategories = recordClass && recordClass.collapsesCategories || []
+    } = state.views.record;
 
     this.setState({ hiddenCategories, collapsedCategories, recordClass, recordClasses, questions });
 

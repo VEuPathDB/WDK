@@ -6,7 +6,9 @@ package org.gusdb.wdk.model.query.param;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.gusdb.wdk.model.TreeNode;
+import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.wdk.model.FieldTree;
+import org.gusdb.wdk.model.SelectableItem;
 
 /**
  * This class represents a tree node in the tree display of a enum/flatVocab
@@ -74,16 +76,18 @@ public class EnumParamTermNode {
   /**
    * @return this term node as a tree node for rendering as a checkboxTree
    */
-  public TreeNode toTreeNode() {
-    TreeNode node = new TreeNode(getTerm(), getDisplay());
+  public FieldTree toFieldTree() {
+    FieldTree tree = new FieldTree(new SelectableItem(getTerm(), getDisplay()));
+    TreeNode<SelectableItem> root = tree.getRoot();
     for (EnumParamTermNode paramNode : getChildrenList()) {
       if (paramNode.getChildren().length == 0) {
-        node.addChildNode(new TreeNode(paramNode.getTerm(),
+        root.addChild(new SelectableItem(paramNode.getTerm(),
             paramNode.getDisplay(), paramNode.getDisplay()));
-      } else {
-        node.addChildNode(paramNode.toTreeNode());
+      }
+      else {
+        root.addChildNode(paramNode.toFieldTree().getRoot());
       }
     }
-    return node;
+    return tree;
   }
 }
