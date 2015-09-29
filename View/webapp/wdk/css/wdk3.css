@@ -31,6 +31,7 @@ body {
 #wdk-container h2 {
   font-size: 1.8em;
   font-weight: 400;
+  margin: 12px 0 8px 0;
 }
 #wdk-container h3 {
   margin: 22px 0 8px 0;
@@ -264,10 +265,10 @@ body {
 }
 
 .wdk-PageColumn-sidebar {
-  width: 210px;
+  width: 200px;
   left: 0;
-  padding-top: 1em;
-  padding-right: 0;
+  padding: 18px;
+  background-color: #fcfcfc;
 }
 
 .wdk-PageColumn-main,
@@ -311,8 +312,18 @@ body {
   margin-top: 1.5em;
 }
 
+.wdk-RecordNavigationSectionHeader {
+  margin-left: 0;
+}
+
+.wdk-RecordNavigationSection {
+  margin: 1em 0 2em;
+}
+
 .wdk-RecordNavigationItem {
   position: relative;
+  border-bottom: 1px solid #d8d8d8;
+  margin-top: 2px;
 }
 
 .wdk-Record-sidebar > ul {
