@@ -183,6 +183,17 @@
     </element>
   </define>
 
+  <!-- define default expanded or collapsed categories -->
+  <define name="categoriesList">
+    <element name="categoriesList">
+      <ref name="IncludeExclude"/>
+      <choice>
+        <attribute name="expanded"/>
+        <attribute name="collapsed"/>
+      </choice>
+    </element>
+  </define>
+
   <!-- Attribute List -->
   <define name="attributesList">
     <element name="attributesList">
@@ -997,6 +1008,7 @@
           <ref name="linkAttribute" />
           <ref name="table" />
           <ref name="attributesList" />
+          <ref name="categoriesList" />
           <ref name="summaryView" />
           <ref name="recordView" />
           <ref name="stepAnalysisRef" />

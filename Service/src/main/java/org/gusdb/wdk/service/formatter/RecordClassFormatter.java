@@ -42,6 +42,18 @@ public class RecordClassFormatter {
     json.put("attributes", getAttributesJson(recordClass, expandAttributes));
     json.put("tables", getTablesJson(recordClass, expandTables, expandTableAttributes));
     json.put("attributeCategories", getAttributeCategoriesJson(recordClass));
+    json.put("collapsedCategories",  getCollapsedAttributesJson(recordClass));
+    return json;
+  }
+
+  private static JSONArray getCollapsedAttributesJson(RecordClass recordClass) {
+    JSONArray json = new JSONArray();
+    List<AttributeCategory> catList = recordClass.getCollapsedCategories();
+    if (catList != null) {
+      for (AttributeCategory cat : recordClass.getCollapsedCategories()) {
+        json.put(cat.getName());
+      }
+    }
     return json;
   }
 
