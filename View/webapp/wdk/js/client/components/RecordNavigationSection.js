@@ -34,7 +34,7 @@ let RecordNavigationSection = React.createClass({
     let { categories, hiddenCategories, heading } = this.props;
     return (
       <div className="wdk-RecordNavigationSection">
-        <h3 className="wdk-RecordNavigationSectionHeader">{heading}</h3>
+        <h2 className="wdk-RecordNavigationSectionHeader">{heading}</h2>
         <RecordNavigationSectionCategories
           categories={categories}
           hiddenCategories={hiddenCategories}
