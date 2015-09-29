@@ -4,36 +4,42 @@ import {
 } from '../../constants/actionTypes';
 
 let initialState = {
-  hiddenCategories: [],
-  collapsedCategories: []
+  hiddenCategories: undefined,
+  collapsedCategories: undefined
 };
 
 export default function recordView(state = initialState, action) {
   switch (action.type) {
     case RECORD_CATEGORY_VISIBILITY_TOGGLED:
-      return toggleCategoryVisibility(state, action);
+      return Object.assign({}, state, {
+        hiddenCategories: toggleCategoryVisibility(state.hiddenCategories, action)
+      });
+
     case RECORD_CATEGORY_COLLAPSED_TOGGLED:
-      return toggleCategoryCollapsed(state, action);
+      return Object.assign({}, state, {
+        collapsedCategories: toggleCategoryCollapsed(state.collapsedCategories, action)
+      });
+
     default:
       return state;
   }
 }
 
 // FIXME Key by record class
-function toggleCategoryVisibility(state, action) {
+function toggleCategoryVisibility(hiddenCategories = [], action) {
   let { name, isVisible } = action;
-  let hiddenCategories = isVisible === false ? state.hiddenCategories.concat(name)
-                       : state.hiddenCategories.filter(function(n) {
-                         return n !== name;
-                       });
-  return Object.assign({}, state, { hiddenCategories });
+  return isVisible === false
+    ? hiddenCategories.concat(name)
+    : hiddenCategories.filter(function(n) {
+      return n !== name;
+    });
 }
 
-function toggleCategoryCollapsed(state, action) {
+function toggleCategoryCollapsed(collapsedCategories = [], action) {
   let { name, isCollapsed } = action;
-  let collapsedCategories = isCollapsed === true ? state.collapsedCategories.concat(name)
-                          : state.collapsedCategories.filter(function(n) {
-                              return n !== name;
-                            });
-  return Object.assign({}, state, { collapsedCategories });
+  return isCollapsed === true
+    ? collapsedCategories.concat(name)
+    : collapsedCategories.filter(function(n) {
+      return n !== name;
+    });
 }

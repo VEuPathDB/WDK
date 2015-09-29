@@ -1,5 +1,6 @@
 import React from 'react';
-import Sticky from './Sticky';
+import Sidebar from './Sidebar';
+import Main from './Main';
 import RecordMainSection from './RecordMainSection';
 import RecordHeading from './RecordHeading';
 import RecordNavigationSection from './RecordNavigationSection';
@@ -43,23 +44,21 @@ let Record = React.createClass({
     let { recordClass } = this.props;
     return (
       <div className="wdk-Record">
-        <Sticky className="wdk-Record-sidebar">
-          <div>
-            <RecordNavigationSection
-              {...this.props}
-              categories={recordClass.attributeCategories}
-              onVisibleChange={this.handleVisibleChange}
-            />
-            <p style={{ padding: '0 .6em' }}><a href="#top">Back to top</a></p>
-          </div>
-        </Sticky>
-        <div className="wdk-Record-main">
+        <Sidebar>
+          <RecordNavigationSection
+            {...this.props}
+            categories={recordClass.attributeCategories}
+            onVisibleChange={this.handleVisibleChange}
+          />
+          <p style={{ padding: '0 .6em' }}><a href="#top">Back to top</a></p>
+        </Sidebar>
+        <Main withSidebar="true">
           <RecordHeading {...this.props}/>
           <RecordMainSection
             {...this.props}
             categories={recordClass.attributeCategories}
           />
-        </div>
+        </Main>
       </div>
     );
   }

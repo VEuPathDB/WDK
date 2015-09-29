@@ -14,7 +14,7 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
-import org.gusdb.wdk.model.TreeNode;
+import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -594,7 +594,7 @@ public abstract class AbstractEnumParam extends Param {
         ", countOnlyLeaves = " + getCountOnlyLeaves());
     if (displayType != null && displayType.equals("treeBox") && getCountOnlyLeaves()) {
       EnumParamTermNode[] rootNodes = getEnumParamCache(user, contextValues).getVocabTreeRoots();
-      TreeNode tree = EnumParamBean.getParamTree(getName(), rootNodes);
+      FieldTree tree = EnumParamBean.getParamTree(getName(), rootNodes);
       EnumParamBean.populateParamTree(tree, terms);
       return tree.getSelectedLeaves().size();
     }

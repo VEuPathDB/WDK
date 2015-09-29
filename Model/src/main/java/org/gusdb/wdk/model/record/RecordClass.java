@@ -41,8 +41,10 @@ import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.AttributeList;
+import org.gusdb.wdk.model.question.CategoryList;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
+import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
@@ -291,6 +293,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   
   private BooleanReference _booleanReference;
   private BooleanQuery _booleanQuery;
+
+  private CategoryList _categoryList;
 
   // ////////////////////////////////////////////////////////////////////
   // Called at model creation time
@@ -1415,7 +1419,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     return attributeFields;
   }
-
+  
   public Map<String, Boolean> getSortingAttributeMap() {
     Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
     int count = 0;
@@ -1433,6 +1437,17 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     return map;
+  }
+
+  public void addCategoryList(CategoryList categoryList) {
+    _categoryList = categoryList;
+  }
+  
+  public List<AttributeCategory> getCollapsedCategories() {
+    if (_categoryList == null) {
+      return null;
+    }
+    return _categoryList.getCollapsed(attributeCategoryTree);
   }
 
   public Query getAliasQuery() {
