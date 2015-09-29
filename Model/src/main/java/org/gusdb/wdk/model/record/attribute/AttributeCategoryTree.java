@@ -139,6 +139,7 @@ public class AttributeCategoryTree extends WdkModelBase implements Iterable<Attr
     return AttributeCategory.toFieldTree(rootName, rootDisplayName, topLevelCategories, topLevelAttributes);
   }
   
+  @Override
   public Iterator<AttributeCategory> iterator() {
     return new AttributeCategoryTreeIterator(this);
   }
@@ -173,6 +174,7 @@ public class AttributeCategoryTree extends WdkModelBase implements Iterable<Attr
       return item;
     }
 
+    @Override
     public void remove() {
       throw new UnsupportedOperationException();
     }
