@@ -59,7 +59,7 @@
     }
 
     var spinner = new Spinner();
-    ui.panel.html('<p style="text-align: center; font-size: 150%; margin-bottom: 10em;">Loading</p>');
+    ui.panel.html('<p style="text-align: center; font-size: 150%; margin-bottom: 10em;">Loading...</p>');
     spinner.spin(ui.panel[0]);
 
     ui.jqXHR
