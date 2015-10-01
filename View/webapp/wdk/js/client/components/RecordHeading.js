@@ -14,7 +14,7 @@ let RecordHeading = React.createClass({
     let { record, recordClass } = this.props;
     let actions = [
       { name: 'Add a comment', icon: 'comment' },
-      { name: 'Add to basket', icon: 'list' },
+      { name: 'Add to basket', icon: 'shopping-cart' },
       { name: 'Add to favorites', icon: 'star-o' },
       { name: 'Download ' + recordClass.displayName, icon: 'download' }
     ];

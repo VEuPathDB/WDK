@@ -3,7 +3,13 @@ package org.gusdb.wdk.service.formatter;
 import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,12 +57,23 @@ public class QuestionFormatter {
 
   public static JSONObject getParamJson(Param param)
       throws JSONException, WdkModelException {
-    JSONObject pJson = new JSONObject();
-    pJson.put("name", param.getName());
-    pJson.put("displayName", param.getName());
-    pJson.put("prompt", param.getPrompt());
-    pJson.put("help", param.getHelp());
-    pJson.put("defaultValue", param.getDefault());
+	  
+	  JSONObject pJson = null;
+      if (param instanceof FilterParam) {
+          pJson = FilterParamFormatter.getParamJson((FilterParam)param);
+        }else if (param instanceof AbstractEnumParam) {
+        	pJson = EnumParamFormatter.getParamJson((AbstractEnumParam)param);
+        } else if (param instanceof AnswerParam) {
+        	pJson = AnswerParamFormatter.getParamJson((AnswerParam)param);
+        } else if (param instanceof DatasetParam) {
+        	pJson = DatasetParamFormatter.getParamJson((DatasetParam)param);
+        } else if (param instanceof TimestampParam) {
+        	pJson = TimestampParamFormatter.getParamJson((TimestampParam)param);
+        } else if (param instanceof StringParam) {
+        	pJson = StringParamFormatter.getParamJson((StringParam)param);
+        } else {
+            throw new WdkModelException("Unknown param type: " + param.getClass().getCanonicalName());
+        }
     return pJson;
   }
 }
