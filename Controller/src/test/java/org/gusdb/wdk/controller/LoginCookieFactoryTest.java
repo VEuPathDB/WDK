@@ -24,7 +24,7 @@ public class LoginCookieFactoryTest {
   private static final Cookie[] GOOD_LIST = { new Cookie("a", "1"), new Cookie(LoginCookieFactory.WDK_LOGIN_COOKIE_NAME, "value") };
   
   @Test
-  public void testFindCookie() throws Exception {
+  public void testFindCookie() {
     Cookie c;
     // test null
     c = LoginCookieFactory.findLoginCookie(null);

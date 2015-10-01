@@ -372,7 +372,7 @@ public class ProcessRESTAction extends Action {
     return;
   }
 
-  private String filterDefaultValue(EnumParamBean param, String defaultValue) throws Exception {
+  private String filterDefaultValue(EnumParamBean param, String defaultValue) {
     if (defaultValue == null || defaultValue.length() == 0)
       return defaultValue;
 
@@ -389,7 +389,7 @@ public class ProcessRESTAction extends Action {
     return values.toString();
   }
 
-  private Map<String, String> getDisplayMap(EnumParamBean param) throws Exception {
+  private Map<String, String> getDisplayMap(EnumParamBean param) {
     String displayType = param.getDisplayType();
     boolean isTreeBox = (displayType != null && displayType.equals(AbstractEnumParam.DISPLAY_TREE_BOX));
     logger.debug(param.getFullName() + " as tree: " + isTreeBox);
