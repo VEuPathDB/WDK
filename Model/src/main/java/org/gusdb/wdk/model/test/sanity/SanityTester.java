@@ -82,7 +82,7 @@ public class SanityTester {
     _stats.setNumTestsCreated(_tests.size());
   }
 
-  public List<TestResult> runTests() throws Exception {
+  public List<TestResult> runTests() {
     List<TestResult> results = new ArrayList<>();
     for (int i = 1; i <= _tests.size(); i++) {
       ElementTest element = _tests.get(i-1);
