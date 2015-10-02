@@ -3,8 +3,8 @@ import flattenDeep from 'lodash/array/flattenDeep';
 import {
   APP_ERROR,
   RECORD_DETAILS_ADDED,
-  RECORD_CATEGORY_VISIBILITY_TOGGLED,
-  RECORD_CATEGORY_COLLAPSED_TOGGLED
+  RECORD_CATEGORY_COLLAPSED_TOGGLED,
+  RECORD_TABLE_COLLAPSED_TOGGLED
 } from '../constants/actionTypes';
 import CommonActions from './commonActions';
 import { restAction } from '../filters/restFilter';
@@ -32,20 +32,20 @@ export function fetchRecordDetails(recordClassName, recordSpec) {
   });
 }
 
-export function toggleCategoryVisibility({ recordClass, category, isVisible }) {
-  return {
-    type: RECORD_CATEGORY_VISIBILITY_TOGGLED,
-    recordClass: recordClass.fullName,
-    name: category.name,
-    isVisible
-  };
-}
-
 export function toggleCategoryCollapsed({ recordClass, category, isCollapsed }) {
   return {
     type: RECORD_CATEGORY_COLLAPSED_TOGGLED,
     recordClass: recordClass.fullName,
     name: category.name,
+    isCollapsed
+  }
+}
+
+export function toggleTableCollapsed({ recordClass, tableName, isCollapsed }) {
+  return {
+    type: RECORD_TABLE_COLLAPSED_TOGGLED,
+    recordClass: recordClass.fullName,
+    name: tableName,
     isCollapsed
   }
 }

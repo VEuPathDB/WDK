@@ -62,11 +62,11 @@ let RecordController = React.createClass({
     let recordClass = recordClasses.find(r => r.fullName === params.class);
     let record = records[key];
     let {
-      hiddenCategories = recordClass && recordClass.collapsedCategories || [],
-      collapsedCategories = recordClass && recordClass.collapsesCategories || []
+      collapsedCategories = recordClass && recordClass.collapsesCategories || [],
+      collapsedTables = recordClass && recordClass.collapsesTables || []
     } = state.views.record;
 
-    this.setState({ hiddenCategories, collapsedCategories, recordClass, recordClasses, questions });
+    this.setState({ collapsedCategories, collapsedTables, recordClass, recordClasses, questions });
 
     // only update record when it's available
     if (record) {
