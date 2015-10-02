@@ -36,47 +36,78 @@ export let cancelAnimationFrame;
 
 
 /**
- * Add and remove functions to be called using requestAnimationFrame.
+ * Holds a list of callback functions that are invoked repeatedly with a fixed
+ * time delay between each call, as provided to the constructor. The default is
+ * 200ms. The interval will stop when the list is empty and resume when it is
+ * not empty.
  */
-export class RequestLoop {
+export class IntervalList {
 
-  constructor() {
-    this._reqId = null;
+  /**
+   * @param {number} interval Time in ms.
+   */
+  constructor(interval = 200) {
+    this._interval = interval;
     this._callbacks = [];
+    this._id = null;
   }
 
   /**
-   * Add a callback function to the list of callbacks. If this is the first
-   * callback, it will cause the loop to start.
+   * Add a callback to the list. If the list was empty before this action,
+   * the interval will be started.
    *
    * @param {Function} callback
    */
-  register(callback) {
+  add(callback) {
     this._callbacks.push(callback);
-    if (this._reqId == null) {
-      this._reqId = requestAnimationFrame(() => this._loop());
+    if (this._id == null) {
+      this.start();
     }
   }
 
   /**
-   * Remove a callback function from the list of callbacks. If this is the last
-   * callback, it will cause the loop to stop.
+   * Remove a callback from the list. If this action results in an empty list,
+   * the interval will be stopped.
    *
    * @param {Function} callback
    */
-  unregister(callback) {
-    let index = this._callbacks.indexOf(callback);
-    if (index > -1) this._callbacks.splice(index, 1);
+  remove(callback) {
+    let index = this._callbacks(callback);
+    if (index < 0) return false;
+    this._callbacks.splice(index, 1);
     if (this._callbacks.length === 0) {
-      cancelAnimationFrame(this._reqId);
-      this._reqId = null;
+      this.stop();
     }
   }
 
-  // Calls all callbacks in list and requests a new call
-  _loop() {
-    this._callbacks.forEach(callback => callback());
-    this._reqId = requestAnimationFrame(() => this._loop());
+  isRunning() {
+    return this._id != null;
+  }
+
+  /**
+   * Start the interval.
+   */
+  start() {
+    if (this.isRunning()) {
+      throw new Error("Attempting to start an interval that is already running.");
+    }
+    this._id = setTimeout(() => {
+      this._callbacks.forEach(invoke);
+      this.start();
+    }, this._interval);
+  }
+
+  /**
+   * Stop the interval.
+   */
+  stop() {
+    if (!this.isRunning()) {
+      throw new Error("Attemping to stop an interval that is already stopped.");
+    }
+    this.clearTimeout(this._id);
+    this._id = null;
   }
 
 }
+
+function invoke(fn) { fn(); }
