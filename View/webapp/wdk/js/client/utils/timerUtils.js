@@ -91,10 +91,16 @@ export class IntervalList {
     if (this.isRunning()) {
       throw new Error("Attempting to start an interval that is already running.");
     }
-    this._id = setTimeout(() => {
-      this._callbacks.forEach(invoke);
-      this.start();
-    }, this._interval);
+
+    let loop = () => {
+      this._id = setTimeout(() => {
+        this._callbacks.forEach(invoke);
+        loop();
+      }, this._interval);
+    };
+
+    loop();
+
   }
 
   /**
