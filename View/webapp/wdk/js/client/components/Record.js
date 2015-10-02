@@ -22,15 +22,6 @@ let Record = React.createClass({
     collapsedCategories: React.PropTypes.array.isRequired
   },
 
-  handleVisibleChange({ category, isVisible }) {
-    let { recordClass } = this.props;
-    this.props.recordActions.toggleCategoryVisibility({
-      recordClass,
-      category,
-      isVisible
-    });
-  },
-
   handleCollapsedChange({ category, isCollapsed }) {
     let { recordClass } = this.props;
     this.props.recordActions.toggleCategoryCollapsed({
@@ -48,7 +39,7 @@ let Record = React.createClass({
           <RecordNavigationSection
             {...this.props}
             categories={recordClass.attributeCategories}
-            onVisibleChange={this.handleVisibleChange}
+            onCollapsedChange={this.handleCollapsedChange}
           />
           <p style={{ padding: '0 .6em' }}><a href="#top">Back to top</a></p>
         </Sidebar>
