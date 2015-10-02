@@ -1,10 +1,10 @@
 import React from 'react';
-import { RequestLoop } from '../utils/timerUtils';
+import { IntervalList } from '../utils/timerUtils';
 
 let Sticky = React.createClass({
 
   statics: {
-    requestLoop: new RequestLoop
+    intervalList: new IntervalList()
   },
 
   propTypes: {
@@ -27,38 +27,40 @@ let Sticky = React.createClass({
     this.node = React.findDOMNode(this);
     this.$node = $(this.node);
     this.contentNode = React.findDOMNode(this.refs.content);
-    Sticky.requestLoop.register(this.updateIsFixed);
+    Sticky.intervalList.add(this.updateIsFixed);
   },
 
   componentWillUnmount() {
-    Sticky.requestLoop.unregister(this.updateIsFixed);
+    Sticky.intervalList.remove(this.updateIsFixed);
   },
 
   // Set position to fixed if top is above threshold, otherwise
   // set position to absolute.
   updateIsFixed() {
-    // See https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-    let offsetParent = this.node.offsetParent || document.body;
-    let rect = this.node.getBoundingClientRect();
-    let parentRect = offsetParent.getBoundingClientRect();
-    let contentRect = this.contentNode.getBoundingClientRect();
-    let top = rect.top - parentRect.top;
-    if (top < 0 && this.state.isFixed === false) {
-      this.setState({
-        isFixed: true,
-        height: rect.height,
-        width: contentRect.width,
-        top: parentRect.top
-      });
-    }
-    else if (top >= 0 && this.state.isFixed === true) {
-      this.setState({
-        isFixed: false,
-        height: null,
-        width: null,
-        top: ''
-      });
-    }
+    requestAnimationFrame(() => {
+      // See https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
+      let offsetParent = this.node.offsetParent || document.body;
+      let rect = this.node.getBoundingClientRect();
+      let parentRect = offsetParent.getBoundingClientRect();
+      let contentRect = this.contentNode.getBoundingClientRect();
+      let top = rect.top - parentRect.top;
+      if (top < 0 && this.state.isFixed === false) {
+        this.setState({
+          isFixed: true,
+          height: rect.height,
+          width: contentRect.width,
+          top: parentRect.top
+        });
+      }
+      else if (top >= 0 && this.state.isFixed === true) {
+        this.setState({
+          isFixed: false,
+          height: null,
+          width: null,
+          top: ''
+        });
+      }
+    });
   },
 
   render() {
