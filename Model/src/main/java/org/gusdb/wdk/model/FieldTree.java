@@ -9,6 +9,9 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
+import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class FieldTree {
 
@@ -101,6 +104,59 @@ public class FieldTree {
 
   public boolean isAllLeavesSelected() {
     return _root.reduce(_root.LEAF_PREDICATE, ALL_SELECTED);
+  }
+
+  public JSONObject toJson() {
+    return toJson(_root);
+  }
+
+  private JSONObject toJson2(TreeNode<SelectableItem> node) {
+    SelectableItem item = node.getContents();
+    JSONObject json = new JSONObject();
+    json.put("name", item.getName());
+    json.put("displayName", item.getDisplayName());
+    json.put("isOpenByDefault", item.isOpenByDefault());
+    JSONArray children = new JSONArray();
+    for (TreeNode<SelectableItem> child : node.getChildNodes()) {
+      children.put(toJson(child));
+    }
+    json.put("children", children);
+    return json;
+  }
+
+  // first element is the node name, remaining elements are arrays representing children
+  public JSONArray toNameTree(TreeNode<SelectableItem> node) {
+    return _root.mapStructure(new StructureMapper<SelectableItem, JSONArray>() {
+      @Override
+      public JSONArray map(SelectableItem item, List<JSONArray> mappedChildren) {
+        JSONArray json = new JSONArray();
+        json.put(item.getName());
+        for (JSONArray mappedChild : mappedChildren) {
+          json.put(mappedChild);
+        }
+        return json;
+      }
+    });
+  }
+
+  public JSONObject toJson(TreeNode<SelectableItem> node) {
+    return _root.mapStructure(new StructureMapper<SelectableItem, JSONObject>() {
+      @Override
+      public JSONObject map(SelectableItem item, List<JSONObject> mappedChildren) {
+        JSONObject json = new JSONObject();
+        json.put("name", item.getName());
+        json.put("displayName", item.getDisplayName());
+        json.put("isOpenByDefault", item.isOpenByDefault());
+        if (!mappedChildren.isEmpty()) {
+          JSONArray children = new JSONArray();
+          for (JSONObject mappedChild : mappedChildren) {
+            children.put(mappedChild);
+          }
+          json.put("children", children);
+        }
+        return json;
+      }
+    });
   }
 
   public static class NameMatchPredicate implements Predicate<SelectableItem> {
