@@ -24,7 +24,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
         wdk.basket.checkPageBasket();
         wdk.util.setDraggable(ui.panel.find("div.attributesList"), ".dragHandle");
-        $element.trigger('wdk-results-loaded');
+        ui.panel.trigger('wdk-results-loaded');
       }
     });
 
@@ -181,7 +181,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
           }
           resultsToGrid(data, ignoreFilters, currentDiv, resultOnly);
           updateResultLabels(currentDiv, strat, step);
-          $element.trigger('wdk-results-loaded');
+          currentDiv.trigger('wdk-results-loaded');
         }
         if(strat) wdk.util.removeLoading(strat.frontId);
       },
