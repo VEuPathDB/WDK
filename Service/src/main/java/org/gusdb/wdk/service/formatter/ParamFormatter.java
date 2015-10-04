@@ -21,6 +21,7 @@ public class ParamFormatter {
 		    pJson.put("group", param.getGroup());
 		    pJson.put("isReadOnly", param.isReadonly());
 		    pJson.put("fullName", param.getFullName());
+	        pJson.put("id", param.getId());
 		    return pJson;
 	}
 }

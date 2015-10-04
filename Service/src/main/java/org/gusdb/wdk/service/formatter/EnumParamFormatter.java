@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.Map;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -9,7 +11,7 @@ import org.json.JSONObject;
 
 public class EnumParamFormatter {
 
-	public static JSONObject getParamJson(AbstractEnumParam param) throws JSONException, WdkModelException {
+	public static JSONObject getParamJson(AbstractEnumParam param, boolean includeVocabListing, Map<String, String>dependerParamValues) throws JSONException, WdkModelException {
 
 		JSONObject pJson = ParamFormatter.getParamJson(param);
 		pJson.put("countOnlyLeaves", param.getCountOnlyLeaves());
