@@ -110,21 +110,6 @@ public class FieldTree {
     return toJson(_root);
   }
 
-  @SuppressWarnings("unused")
-  private JSONObject toJson_operatingOnNodes(TreeNode<SelectableItem> node) {
-    SelectableItem item = node.getContents();
-    JSONObject json = new JSONObject();
-    json.put("name", item.getName());
-    json.put("displayName", item.getDisplayName());
-    json.put("isOpenByDefault", item.isOpenByDefault());
-    JSONArray children = new JSONArray();
-    for (TreeNode<SelectableItem> child : node.getChildNodes()) {
-      children.put(toJson(child));
-    }
-    json.put("children", children);
-    return json;
-  }
-
   public JSONObject toJson(TreeNode<SelectableItem> node) {
     return _root.mapStructure(new StructureMapper<SelectableItem, JSONObject>() {
       @Override
