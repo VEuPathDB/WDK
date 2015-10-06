@@ -11,6 +11,10 @@ public class ModelConfig {
 
   public static final String WSF_LOCAL = "local";
 
+  public static enum AuthenticationMethod {
+    USER_DB, OAUTH2;
+  }
+  
   private String modelName;
   private String webServiceUrl;
 
@@ -96,6 +100,15 @@ public class ModelConfig {
    * processQueries, which is always cached.
    */
   private boolean caching = true;
+
+  /**
+   * Authentication can be performed either the traditional way (i.e. directly
+   * by WDK using the userDb), or using an OAuth server to authenticate users
+   * remotely.  The OAuth server must provide access to a user id resource (a la
+   * OpenID Connect).
+   */
+  private AuthenticationMethod authenticationMethod = AuthenticationMethod.USER_DB;
+  private String oauthUrl = ""; // needed if method is OAUTH2
 
   /**
    * If it returns true, a monitoring thread will be turned on when webapp is initialized.
@@ -303,6 +316,36 @@ public class ModelConfig {
    */
   public void setSecretKeyFile(String secretKeyFile) {
     this.secretKeyFile = secretKeyFile;
+  }
+
+  /**
+   * @return configured authentication method
+   */
+  public AuthenticationMethod getAuthenticationMethod() {
+    return authenticationMethod;
+  }
+
+  /**
+   * @param authenticationMethod configured authentication method
+   */
+  public void setAuthenticationMethod(String authenticationMethod) {
+    this.authenticationMethod = AuthenticationMethod.valueOf(authenticationMethod.toUpperCase());
+  }
+
+  /**
+   * @return base URL of OAuth2 server to use for authentication
+   * (called only if authentication method is OAUTH2)
+   */
+  public String getOauthUrl() {
+    return oauthUrl;
+  }
+
+  /**
+   * @param oauthUrl base URL of OAuth2 server to use for authentication
+   * (used only if authentication method is OAUTH2)
+   */
+  public void setOauthUrl(String oauthUrl) {
+    this.oauthUrl = oauthUrl;
   }
 
   /**
