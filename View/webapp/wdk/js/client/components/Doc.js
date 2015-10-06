@@ -2,9 +2,6 @@
  * Use this component to set attributes on `window.document`. Currently, only
  * the title attribute is supported.
  *
- * XXX Should this allow arbitrary properties? Title may be the only meaningful
- * property to set.
- *
  * Example:
  *
  *     <Doc title="My Title">
@@ -12,28 +9,29 @@
  *     </Doc>
  *
  */
-import React from 'react';
+import { Component } from 'react';
 import { wrappable } from '../utils/componentUtils';
 
-let Doc = React.createClass({
-  propTypes: {
-    title: React.PropTypes.string
-  },
+
+class Doc extends Component {
+
   componentDidMount() {
-    this.setTitle();
-  },
+    document.title = this.props.title;
+  }
+
   componentDidUpdate() {
-    this.setTitle();
-  },
-  setTitle() {
-    const { title } = this.props;
-    document.title = title;
-  },
+    document.title = this.props.title;
+  }
+
   render() {
     return (
-      <div>{this.props.children}</div>
+      <div className="wdk-RootContainer">
+        {this.props.children}
+      </div>
     );
   }
-});
+
+}
+
 
 export default wrappable(Doc);
