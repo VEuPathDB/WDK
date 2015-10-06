@@ -6,18 +6,18 @@ let RecordNavigationSectionCategories = React.createClass({
   propTypes: {
     categories: React.PropTypes.array,
     collapsedCategories: React.PropTypes.array,
-    onCollapsedChange: React.PropTypes.func
+    onCategoryToggle: React.PropTypes.func
   },
 
   getDefaultProperties() {
     return {
       collapsedCategories: [],
-      onCollapsedChange: function() {}
+      onCategoryToggle: function() {}
     };
   },
 
   render() {
-    let { categories, collapsedCategories, onCollapsedChange } = this.props;
+    let { categories, collapsedCategories, onCategoryToggle } = this.props;
 
     if (categories == null) return null;
 
@@ -32,14 +32,14 @@ let RecordNavigationSectionCategories = React.createClass({
                 type="checkbox"
                 checked={!isCollapsed}
                 onChange={(e) => {
-                  onCollapsedChange(category, !isCollapsed);
+                  onCategoryToggle(category, !isCollapsed);
                 }}
               />
               <a
                 href={'#' + category.name}
                 className="wdk-Record-sidebar-title"
                 onClick={() => {
-                  if (isCollapsed) onCollapsedChange(category, isCollapsed);
+                  if (isCollapsed) onCategoryToggle(category, !isCollapsed);
                 }}
               >
                 <strong>{category.displayName}</strong>

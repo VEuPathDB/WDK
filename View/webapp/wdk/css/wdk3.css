@@ -4,6 +4,11 @@
 /* See http://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
 html {
   box-sizing: border-box;
+  height: 100%;
+}
+
+body {
+  height: 100%;
 }
 /* Unfortunately, this does not play well with legacy WDK CSS
 *, *:before, *:after {
@@ -18,26 +23,9 @@ body {
 }
 */
 
-#wdk-container {
-  position: relative;
-  min-height: 200px;
-}
-#wdk-container h1 {
-  text-align: left;
-  margin: 22px 0;
-  font-size: 2.5em;
-  font-weight: 300;
-}
-#wdk-container h2 {
-  font-size: 1.8em;
-  font-weight: 400;
-  margin: 12px 0 8px 0;
-}
-#wdk-container h3 {
-  margin: 22px 0 8px 0;
-}
-#wdk-container h4 {
-  margin: 10px 0 8px 0;
+.wdk-RootContainer {
+  height: 100%;
+  background-color: #fcfcfc;
 }
 
 .wdkAnswerLoading {
@@ -49,6 +37,10 @@ body {
   position: absolute;
   top: 2em;
   left: 50%;
+}
+
+.wdk-AnswerContainer {
+  padding: 0 1em;
 }
 
 .wdk-Answer-filter {
@@ -131,10 +123,6 @@ body {
   border: 1px dotted #cccccc;
 }
 
-.wdk-AnswerTable td {
-
-}
-
 .wdk-AnswerTable-header {
   display: inline-block;
 }
@@ -164,7 +152,7 @@ body {
   position: absolute;
   right: 2em;
   top: 3em;
-  font-size:1.2em; 
+  font-size:1.2em;
 }
 .wdk-AnswerTable-attributeValue {
   line-height: 1.6;
@@ -245,6 +233,11 @@ body {
 .wdk-RecordActions {
   padding: 0;
   margin: .6em;
+  float: left;
+}
+
+.wdk-RecordHeading {
+  clear: both;
 }
 
 .wdk-RecordActionItem {
@@ -255,61 +248,62 @@ body {
   padding: 0 2em 0 0;
 }
 
-.wdk-PageColumn {
-  position: fixed;
+.wdk-RecordContainer {
+  position: relative;
+  height: 100%;
+}
+
+.wdk-RecordMain, .wdk-RecordSidebar {
+  position: absolute;
   top: 0;
   bottom: 0;
-  overflow: auto;
-  background: white;
+  overflow-y: auto;
   padding: 0 26px;
+  transition: left 250ms ease;
 }
 
-.wdk-PageColumn-sidebar {
-  width: 200px;
-  left: 0;
-  padding: 18px;
-  background-color: #fcfcfc;
+.wdk-RecordSidebar {
+  width: 216px;
+  left: -236px;
+  padding: 0 10px;
 }
 
-.wdk-PageColumn-main,
-.wdk-PageColumn-main-with-sidebar {
+.wdk-RecordMain {
   left: 0;
   right: 0;
   margin: 0;
   border-left: 1px solid #d8d8d8;
-  transition: left 250ms ease;
 }
 
-.wdk-PageColumn-main-with-sidebar {
+.wdk-RecordSidebarToggle {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  border: 0;
+  background: transparent;
+  transition: left 250ms ease;
+  z-index: 1;
+}
+
+.wdk-RecordSidebarToggle:focus {
+  outline: 1px dotted;
+}
+
+.wdk-RecordContainer__withSidebar .wdk-RecordMain {
   left: 236px;
 }
 
-.wdk-SidebarToggle {
-  position: fixed;
-  margin-left: -2em;
-  padding: .5em;
+.wdk-RecordContainer__withSidebar .wdk-RecordSidebar {
+  left: 0;
 }
 
-.wdk-PageColumn-main .wdk-SidebarToggle {
-  -webkit-transform: rotate(180deg);
-  -moz-transform: rotate(180deg);
-  -ms-transform: rotate(180deg);
-  -o-transform: rotate(180deg);
-  transform: rotate(180deg);
+.wdk-RecordContainer__withSidebar .wdk-RecordSidebarToggle {
+  left: 208px;
+  top: 4px;
 }
 
-.wdk-Record-main {
-  margin-left: 260px;
-}
-
-.wdk-Record-main td {
+.wdk-RecordMain td {
   word-break: break-all;
-}
-
-.wdk-Record-sidebar {
-  width: 235px;
-  float: left;
-  margin-top: 1.5em;
 }
 
 .wdk-RecordNavigationSectionHeader {
@@ -388,6 +382,10 @@ body {
   vertical-align: top;
   padding-left: 0;
   /* text-align: right;*/
+}
+
+.wdk-RecordTableWrapper {
+  overflow-x: auto;
 }
 
 .wdk-RecordTable {
