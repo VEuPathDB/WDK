@@ -10,6 +10,7 @@
 
   <c:set var="title" value="${empty title ? 'Account Login' : title}"/>
   <c:set var="modelConfig" value="${applicationScope.wdkModel.model.modelConfig}"/>
+  <c:set var="authMethod" value="${modelConfig.authenticationMethodEnum.name}"/>
   <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
   <c:set var="isLoggedIn" value="${wdkUser ne null and wdkUser.guest ne true}"/>
   <c:set var="userName" value="${wdkUser.firstName} ${wdkUser.lastName}"/>
@@ -22,10 +23,10 @@
       <li id="user-control">
         <form name="logoutForm" method="post" action="${pageContext.request.contextPath}/processLogout.do"><jsp:text/></form>
         <c:choose>
-          <c:when test="${modelConfig.authenticationMethod.name eq 'OAUTH2'}">
+          <c:when test="${authMethod eq 'OAUTH2'}">
             <a href="javascript:void(0)" onclick="wdk.user.oauthLogout('${modelConfig.oauthUrl}')">Logout</a>
           </c:when>
-          <c:when test="${modelConfig.authenticationMethod.name eq 'USER_DB'}">
+          <c:when test="${authMethod eq 'USER_DB'}">
             <a href="javascript:void(0)" onclick="wdk.user.logout()">Logout</a>
           </c:when>
         </c:choose>
@@ -34,10 +35,10 @@
     <c:otherwise>
       <li>
         <c:choose>
-          <c:when test="${modelConfig.authenticationMethod.name eq 'OAUTH2'}">
+          <c:when test="${authMethod eq 'OAUTH2'}">
             <a href="javascript:void(0)" onclick="wdk.user.oauthLogin('${modelConfig.oauthUrl}')">Login</a>
           </c:when>
-          <c:when test="${modelConfig.authenticationMethod.name eq 'USER_DB'}">
+          <c:when test="${authMethod eq 'USER_DB'}">
             <a href="javascript:void(0)" class="open-dialog-login-form">Login</a>
           </c:when>
         </c:choose>

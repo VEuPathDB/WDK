@@ -118,7 +118,7 @@ public class ProcessLoginAction extends WdkAction {
   }
 
   private ActionResult handleLogin(ParamGroup params, UserBean guest, UserFactoryBean factory) throws WdkModelException {
-    AuthenticationMethod authMethod = getWdkModel().getModel().getModelConfig().getAuthenticationMethod();
+    AuthenticationMethod authMethod = getWdkModel().getModel().getModelConfig().getAuthenticationMethodEnum();
     switch (authMethod) {
       case OAUTH2:
         return handleOauthLogin(params, guest, factory);
