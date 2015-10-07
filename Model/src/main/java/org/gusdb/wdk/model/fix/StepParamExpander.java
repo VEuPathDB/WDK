@@ -17,7 +17,7 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.FilterParam;
@@ -225,14 +225,16 @@ public class StepParamExpander extends BaseCLI {
    */
   @Override
   protected void execute() throws Exception {
-    String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-
-    WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-
-    // expand step params
-    logger.info("Expanding params...");
-    expand(wdkModel);
+    WdkModel wdkModel = null;
+    try {
+      wdkModel = WdkModel.construct(projectId, GusHome.getGusHome());
+      // expand step params
+      logger.info("Expanding params...");
+      expand(wdkModel);
+    }
+    finally {
+      if (wdkModel != null) wdkModel.releaseResources();
+    }
   }
 }
