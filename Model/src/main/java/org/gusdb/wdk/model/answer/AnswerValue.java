@@ -294,10 +294,10 @@ public class AnswerValue {
   }
 
   public int getResultSize() throws WdkModelException, WdkUserException {
-    if (_resultSize == null || !_idsQueryInstance.isCached()) {
+    if (_resultSize == null || !_idsQueryInstance.getIsCacheable()) {
       _resultSize = new DefaultResultSizePlugin().getResultSize(this);
     }
-    logger.debug("getting result size: cache=" + _resultSize + ", isCached=" + _idsQueryInstance.isCached());
+    logger.debug("getting result size: cache=" + _resultSize + ", isCached=" + _idsQueryInstance.getIsCacheable());
     return _resultSize;
   }
 
@@ -1304,7 +1304,7 @@ public class AnswerValue {
   private int getFilterSize(String filterName, boolean useDisplay)
       throws WdkModelException, WdkUserException {
     Integer size = _resultSizesByFilter.get(filterName);
-    if (size != null && _idsQueryInstance.isCached()) {
+    if (size != null && _idsQueryInstance.getIsCacheable()) {
       return size;
     }
 

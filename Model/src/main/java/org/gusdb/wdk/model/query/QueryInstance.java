@@ -131,8 +131,8 @@ public abstract class QueryInstance<T extends Query> {
   /**
    * @return the cached
    */
-  public boolean isCached() {
-    return query.isCached();
+  public boolean getIsCacheable() {
+    return query.getIsCacheable();
   }
 
   public String getChecksum() throws WdkModelException, WdkUserException {
@@ -189,7 +189,7 @@ public abstract class QueryInstance<T extends Query> {
   public ResultList getResults() throws WdkModelException, WdkUserException {
     logger.debug("retrieving results of query [" + query.getFullName() + "]");
 
-    ResultList resultList = (isCached()) ? getCachedResults() : getUncachedResults();
+    ResultList resultList = (getIsCacheable()) ? getCachedResults() : getUncachedResults();
 
     logger.debug("results of query [" + query.getFullName() + "] retrieved.");
 
