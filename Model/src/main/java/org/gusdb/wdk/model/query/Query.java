@@ -98,7 +98,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   protected static final Logger logger = Logger.getLogger(Query.class);
 
   private String name;
-  protected boolean cached = false;
+  protected boolean isCacheable = false;
   /**
    * A flag to check if the cached has been set. if not set, the value from parent querySet will be used.
    */
@@ -163,7 +163,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
     // logger.debug("clone query: " + query.getFullName());
     this.name = query.name;
-    this.cached = query.cached;
+    this.isCacheable = query.isCacheable;
     this.setCache = query.setCache;
     if (query.paramRefList != null)
       this.paramRefList = new ArrayList<>(query.paramRefList);
@@ -196,19 +196,19 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   /**
    * @return the cached
    */
-  public boolean isCached() {
+  public boolean getIsCacheable() {
     // first check if global caching is turned off, if off, then return false; otherwise, use query's own 
     // settings.
     if (!wdkModel.getModelConfig().isCaching()) return false;
-    return this.cached;
+    return this.isCacheable;
   }
 
   /**
-   * @param cached
+   * @param isCacheable
    *          the cached to set
    */
-  public void setIsCacheable(boolean cached) {
-    this.cached = cached;
+  public void setIsCacheable(boolean isCacheable) {
+    this.isCacheable = isCacheable;
     setCache = true;
   }
 
@@ -435,7 +435,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
     // check if we need to use querySet's cache flag
     if (!setCache)
-      cached = getQuerySet().isCacheable();
+      isCacheable = getQuerySet().isCacheable();
 
     // resolve the params
     for (ParamReference paramRef : paramRefList) {
