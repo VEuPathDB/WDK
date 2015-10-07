@@ -13,6 +13,9 @@ public class ModelConfig {
 
   public static enum AuthenticationMethod {
     USER_DB, OAUTH2;
+    public String getName() {
+      return name();
+    }
   }
   
   private String modelName;
