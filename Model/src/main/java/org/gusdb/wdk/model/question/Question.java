@@ -31,6 +31,7 @@ import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
+import org.gusdb.wdk.model.record.ExtraAnswerRowsProducer;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -39,6 +40,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
+import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -870,6 +872,16 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       dynamicSet.setQuestion(this);
       dynamicSet.excludeResources(projectId);
       this.dynamicAttributeSet = dynamicSet;
+    }
+
+    // if this question's record class has an extraAnswerRowsProducer, add its column as a dyn attribute
+	ExtraAnswerRowsProducer earp = getRecordClass().getExtraAnswerRowsProducer();
+    if (earp != null) {
+    	ColumnAttributeField af = new ColumnAttributeField();
+    	af.excludeResources(wdkModel.getProjectId());
+    	af.setName(earp.getDynamicColumnName());
+    	af.setDisplayName(earp.getDynamicColumnDisplayName());
+    	dynamicAttributeSet.addAttributeField(af);
     }
 
     // exclude param refs

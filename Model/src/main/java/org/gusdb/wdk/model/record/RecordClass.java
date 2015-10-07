@@ -199,7 +199,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private String name;
   private String fullName;
-
+  
 
   /**
    * the native versions are the real name of the record class.  the non-native are potentially different,
@@ -215,6 +215,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String displayNamePlural;
   private String shortDisplayName;
   private String shortDisplayNamePlural;
+
+  /**
+   * An option that provides SQL to post-process an Answer result, providing new sql, modifying the original.
+   */
+  private ExtraAnswerRowsProducer extraAnswerRowsProducer = null;
 
   /**
    * An option that provides SQL to post-process an Answer result, providing a custom result size count. 
@@ -481,7 +486,14 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public void addReporterRef(ReporterRef reporter) {
     reporterList.add(reporter);
   }
-
+  
+  public void setExtraAnswerRowsProducer(ExtraAnswerRowsProducer ers) {
+	  extraAnswerRowsProducer = ers;
+  }
+  
+  public ExtraAnswerRowsProducer getExtraAnswerRowsProducer() {
+	  return extraAnswerRowsProducer;
+  }
   public void setDoNotTest(boolean doNotTest) {
     this.doNotTest = doNotTest;
   }
