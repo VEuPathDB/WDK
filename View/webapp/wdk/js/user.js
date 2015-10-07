@@ -39,54 +39,24 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
   };
 
   ns.login = function(redirectUrl) {
-    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    // OLD: used to pop login form in dialog and then hijack form submit
-    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    //$("#wdk-dialog-login-form").dialog("open")
-    //.find("input[name='redirectUrl']").val(redirectUrl);
+    // pop login form in dialog and then hijack form submit
+    $("#wdk-dialog-login-form").dialog("open")
+        .find("input[name='redirectUrl']").val(redirectUrl);
+  };
 
-    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    // NEW: default WDK behavior now pops iframe with OAuth redirect in it
-    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    // build URL to OAuth service
-    var oauthServerBase = 'https://integrate.eupathdb.org/oauth';
+  ns.oauthLogin = function(oauthBaseUrl) {
+    // build URL to OAuth service and redirect
     var clientId = 'apiComponentSite';
     var eventualDestination = window.location.href;
     var redirectUrl = window.location.protocol + "//" + window.location.host +
       wdk.webappUrl('/processLogin.do?redirectUrl=' +
         encodeURIComponent(eventualDestination));
-    var oauthUrl = oauthServerBase + "/authorize?" +
+    var oauthUrl = oauthBaseUrl + "/authorize?" +
         "response_type=code&" +
         "client_id=" + clientId + "&" +
         "redirect_uri=" + encodeURIComponent(redirectUrl);
-    
     window.location = oauthUrl;
     return;
-
-    // create div to house iframe and append generated iframe element
-    var iframe = document.createElement('iframe');
-    iframe.src = oauthUrl;
-    jQuery(iframe).dialog({
-        modal: true,
-        closeOnEscape: false,
-        open: function(event, ui) {
-            jQuery(event.target).parent().find('.ui-dialog-titlebar-close').hide();
-        },
-        width: 'auto',
-        title: 'Login...'
-    });
-
-    // get a handle on the <iframe>d document (in a cross-browser way)
-    //var doc = iframe.contentWindow || iframe.contentDocument;
-    //if (doc.document) {
-    //  doc = doc.document;
-    //}
-
-    // open, write content to, and close the document
-    //doc.open();
-    //doc.write(frameContents);
-    //doc.close();
   };
 
   ns.processLogin = function(submitButton) {
@@ -99,10 +69,15 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
 
   ns.logout = function() {
     if (confirm("Do you want to log out as " + ns.name() + "?")) {
-      var oauthServerBase = 'https://integrate.eupathdb.org/oauth';
+      $("#user-control form[name=logoutForm]").submit();
+    }
+  };
+
+  ns.oauthLogout = function(oauthBaseUrl) {
+    if (confirm("Do you want to log out as " + ns.name() + "?")) {
       var logoutPath = jQuery("#user-control form[name=logoutForm]").attr("action");
       var logoutUrl = window.location.origin + logoutPath;
-      window.location = oauthServerBase + "/logout?redirect_uri=" + encodeURIComponent(logoutUrl);
+      window.location = oauthBaseUrl + "/logout?redirect_uri=" + encodeURIComponent(logoutUrl);
     }
   };
 

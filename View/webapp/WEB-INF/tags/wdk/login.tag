@@ -9,6 +9,7 @@
       description="Value to appear as the login pop-up's title"/>
 
   <c:set var="title" value="${empty title ? 'Account Login' : title}"/>
+  <c:set var="modelConfig" value="${applicationScope.wdkModel.modelConfig}"/>
   <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
   <c:set var="isLoggedIn" value="${wdkUser ne null and wdkUser.guest ne true}"/>
   <c:set var="userName" value="${wdkUser.firstName} ${wdkUser.lastName}"/>
@@ -20,11 +21,27 @@
       <li><a href="${pageContext.request.contextPath}/showProfile.do">${userName}'s Profile</a></li>
       <li id="user-control">
         <form name="logoutForm" method="post" action="${pageContext.request.contextPath}/processLogout.do"><jsp:text/></form>
-        <a href="javascript:void(0)" onclick="wdk.user.logout()">Logout</a>
+        <c:choose>
+          <c:when test="${modelConfig.authenticationMethod.name eq 'OAUTH2'}">
+            <a href="javascript:void(0)" onclick="wdk.user.oauthLogout('${modelConfig.oauthUrl}')">Logout</a>
+          </c:when>
+          <c:when test="${modelConfig.authenticationMethod.name eq 'USER_DB'}">
+            <a href="javascript:void(0)" onclick="wdk.user.logout()">Logout</a>
+          </c:when>
+        </c:choose>
       </li>
     </c:when>
     <c:otherwise>
-      <li><a href="javascript:void(0)" onclick="wdk.user.login()">Login</a></li>
+      <li>
+        <c:choose>
+          <c:when test="${modelConfig.authenticationMethod.name eq 'OAUTH2'}">
+            <a href="javascript:void(0)" onclick="wdk.user.oauthLogin('${modelConfig.oauthUrl}')">Login</a>
+          </c:when>
+          <c:when test="${modelConfig.authenticationMethod.name eq 'USER_DB'}">
+            <a href="javascript:void(0)" class="open-dialog-login-form">Login</a>
+          </c:when>
+        </c:choose>
+      </li>
       <li><a href="${pageContext.request.contextPath}/showRegister.do">Register</a></li>
     </c:otherwise>
   </c:choose>
