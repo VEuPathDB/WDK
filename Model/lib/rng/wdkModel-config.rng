@@ -44,7 +44,12 @@
                     <data type="boolean" />
                 </attribute>
             </optional>
-            
+            <optional>
+                <attribute name="authenticationMethod"/>
+            </optional>
+            <optional>
+                <attribute name="oauthUrl"/>
+            </optional>
             <interleave>
             
                 <optional>

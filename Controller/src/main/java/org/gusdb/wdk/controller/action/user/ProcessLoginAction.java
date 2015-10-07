@@ -20,6 +20,7 @@ import org.gusdb.wdk.controller.actionutil.RequestData;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -116,8 +117,19 @@ public class ProcessLoginAction extends WdkAction {
     }
   }
 
-  private ActionResult handleLogin(ParamGroup params, UserBean guest, UserFactoryBean factory) {
+  private ActionResult handleLogin(ParamGroup params, UserBean guest, UserFactoryBean factory) throws WdkModelException {
+    AuthenticationMethod authMethod = getWdkModel().getModel().getModelConfig().getAuthenticationMethod();
+    switch (authMethod) {
+      case OAUTH2:
+        return handleOauthLogin(params, guest, factory);
+      case USER_DB:
+        return handleUserDbLogin(params, guest, factory);
+      default:
+        throw new WdkModelException("Login action does not yet handle authentication method " + authMethod);
+    }
+  }
 
+  private ActionResult handleOauthLogin(ParamGroup params, UserBean guest, UserFactoryBean factory) {
     // params used to fetch token and validate user
     String redirectUrl = params.getValue("redirectUrl");
     String authCode = params.getValue("code");
@@ -142,11 +154,9 @@ public class ProcessLoginAction extends WdkAction {
     }
   }
 
-  @Deprecated
-  @SuppressWarnings("unused")
-  private ActionResult oldHandleLogin(ParamGroup params, UserBean guest, UserFactoryBean factory) {
+  private ActionResult handleUserDbLogin(ParamGroup params, UserBean guest, UserFactoryBean factory) {
     // get user's input
-    String openid = params.getValue(CConstants.WDK_OPENID_KEY);
+    String openid = params.getValueOrEmpty(CConstants.WDK_OPENID_KEY);
     String email = params.getValue(CConstants.WDK_EMAIL_KEY);
     String password = params.getValue(CConstants.WDK_PASSWORD_KEY);
     boolean remember = params.getSingleCheckboxValue(REMEMBER_PARAM_KEY);

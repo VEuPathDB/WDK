@@ -9,7 +9,7 @@
       description="Value to appear as the login pop-up's title"/>
 
   <c:set var="title" value="${empty title ? 'Account Login' : title}"/>
-  <c:set var="modelConfig" value="${applicationScope.wdkModel.modelConfig}"/>
+  <c:set var="modelConfig" value="${applicationScope.wdkModel.model.modelConfig}"/>
   <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
   <c:set var="isLoggedIn" value="${wdkUser ne null and wdkUser.guest ne true}"/>
   <c:set var="userName" value="${wdkUser.firstName} ${wdkUser.lastName}"/>
