@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.config;
 
+import org.apache.log4j.Logger;
+
 /**
  * An object representaion of the {@code model-config.xml} file. It holds all the configuration information
  * for the WDK system.
@@ -8,6 +10,8 @@ package org.gusdb.wdk.model.config;
  * @modified Jan 6, 2006 - Jerric add a property for the name of query history table
  */
 public class ModelConfig {
+
+  private static final Logger LOG = Logger.getLogger(ModelConfig.class);
 
   public static final String WSF_LOCAL = "local";
 
@@ -324,7 +328,8 @@ public class ModelConfig {
   /**
    * @return configured authentication method
    */
-  public AuthenticationMethod getAuthenticationMethod() {
+  public AuthenticationMethod getAuthenticationMethodEnum() {
+    LOG.info("Returning authentication method: " + authenticationMethod);
     return authenticationMethod;
   }
 
@@ -332,6 +337,7 @@ public class ModelConfig {
    * @param authenticationMethod configured authentication method
    */
   public void setAuthenticationMethod(String authenticationMethod) {
+    LOG.info("Setting authentication method: " + authenticationMethod);
     this.authenticationMethod = AuthenticationMethod.valueOf(authenticationMethod.toUpperCase());
   }
 
@@ -340,6 +346,7 @@ public class ModelConfig {
    * (called only if authentication method is OAUTH2)
    */
   public String getOauthUrl() {
+    LOG.info("Returning OAuth2 URL: " + oauthUrl);
     return oauthUrl;
   }
 
@@ -348,6 +355,7 @@ public class ModelConfig {
    * (used only if authentication method is OAUTH2)
    */
   public void setOauthUrl(String oauthUrl) {
+    LOG.info("Settign OAuth2 URL: " + oauthUrl);
     this.oauthUrl = oauthUrl;
   }
 
