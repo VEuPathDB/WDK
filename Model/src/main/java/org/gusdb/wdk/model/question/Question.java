@@ -691,6 +691,16 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       dynamicAttributeQuery.resolveReferences(model);
       dynamicAttributeSet.resolveReferences(model);
 
+      // if this question's record class has an extraAnswerRowsProducer, add its column as a dyn attribute
+      ExtraAnswerRowsProducer earp = getRecordClass().getExtraAnswerRowsProducer();
+      if (earp != null) {
+        ColumnAttributeField af = new ColumnAttributeField();
+        af.excludeResources(wdkModel.getProjectId());
+        af.setName(earp.getDynamicColumnName());
+        af.setDisplayName(earp.getDynamicColumnDisplayName());
+        dynamicAttributeSet.addAttributeField(af);
+      }
+
       // make sure we always display weight for combined question
       // if (query.isCombined()) {
       // AttributeField weight = dynamicAttributeSet
@@ -872,16 +882,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       dynamicSet.setQuestion(this);
       dynamicSet.excludeResources(projectId);
       this.dynamicAttributeSet = dynamicSet;
-    }
-
-    // if this question's record class has an extraAnswerRowsProducer, add its column as a dyn attribute
-	ExtraAnswerRowsProducer earp = getRecordClass().getExtraAnswerRowsProducer();
-    if (earp != null) {
-    	ColumnAttributeField af = new ColumnAttributeField();
-    	af.excludeResources(wdkModel.getProjectId());
-    	af.setName(earp.getDynamicColumnName());
-    	af.setDisplayName(earp.getDynamicColumnDisplayName());
-    	dynamicAttributeSet.addAttributeField(af);
     }
 
     // exclude param refs
