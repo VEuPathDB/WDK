@@ -994,6 +994,17 @@
         </element>
       </optional>
       <optional>
+        <element name="extraAnswerRowsProducer">
+           <attribute name="dynamicColumnName"/>
+           <attribute name="dynamicColumnDisplayName"/>
+           <attribute name="columnValueForOriginalRows"/>
+           <attribute name="columnValueForExtraRows"/>
+           <element name="sql">
+	     <text/>
+            </element>
+        </element>
+      </optional>
+      <optional>
         <element name="attributeCategories">
           <zeroOrMore>
             <ref name="attributeCategory" />

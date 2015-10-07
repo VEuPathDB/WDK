@@ -185,7 +185,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     // to add an extra column that signals these rows are from the original query
     Question question = getQuery().getContextQuestion();
     ExtraAnswerRowsProducer earp = (question == null)? null : question.getRecordClass().getExtraAnswerRowsProducer();
-    if (earp != null) sql.append(", ").append(earp.getDynamicColumnName());
+    if (earp != null && question.getFullName().equals("daffy duck")) sql.append(", ").append(earp.getDynamicColumnName());
     
     // insert name of weight as the last column, if it doesn't exist
     if (query.isHasWeight() && !columnNames.contains(weightColumn))
@@ -251,7 +251,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     // if this query is part of a question, and that question's record class has an extraAnswerRowsProducer, use it
     // to add an extra column that signals these rows are from the original query
     Question question = getQuery().getContextQuestion();
-    if (question != null) {
+    if (question != null && question.getFullName().equals("daffy duck")) {
     	ExtraAnswerRowsProducer earp = question.getRecordClass().getExtraAnswerRowsProducer();
     	if (earp != null) {
     		String strType = platform.getStringDataType(earp.getExtraColumnWidth());
