@@ -166,7 +166,8 @@ public class StepParamExpander extends BaseCLI {
     Map<String, Set<String>> newValues = new LinkedHashMap<>();
     if (clob != null && clob.length() > 0) {
       // create a temp step to process the json and extract param values.
-      Step step = new Step(null, 0, 0);
+      Step step = new Step(wdkModel.getStepFactory(), 0, 0);
+      step.setInMemoryOnly(true);
       step.setParamFilterJSON(new JSONObject(clob));
       Map<String, String> values = step.getParamValues();
       for (String paramName : values.keySet()) {
