@@ -113,7 +113,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     // if this query is part of a question, and that question's record class has an extraAnswerRowsProducer, use it
     // to add an extra column that signals these rows are from the original query
     Question question = getQuery().getContextQuestion();
-    if (question != null) {
+    if (question != null && question.getFullName().equals("daffy duck")) {
     	ExtraAnswerRowsProducer earp = question.getRecordClass().getExtraAnswerRowsProducer();
     	if (earp != null) {
     		buffer.append("'" + earp.getColumnValueForOriginalRows() + "' AS " + earp.getDynamicColumnName() + ", ");
@@ -213,7 +213,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     // to add an extra column that signals these rows are from the original query
     Question question = getQuery().getContextQuestion();
     if (question != null) {
-    ExtraAnswerRowsProducer earp = question.getRecordClass().getExtraAnswerRowsProducer();
+        ExtraAnswerRowsProducer earp = question.getRecordClass().getExtraAnswerRowsProducer();
     	if (earp != null) {
     		buffer.append("'" + earp.getColumnValueForOriginalRows() + "' AS " + earp.getDynamicColumnName() + ", ");
     	}
