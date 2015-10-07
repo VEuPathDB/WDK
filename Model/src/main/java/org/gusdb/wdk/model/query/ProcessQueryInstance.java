@@ -20,9 +20,10 @@ import org.gusdb.wdk.model.ServiceResolver;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.ExtraAnswerRowsProducer;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.ClientModelException;
 import org.gusdb.wsf.client.ClientRequest;
@@ -180,6 +181,12 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
         sql.append(", ").append(column.getName());
     }
 
+    // if this query is part of a question, and that question's record class has an extraAnswerRowsProducer, use it
+    // to add an extra column that signals these rows are from the original query
+    Question question = getQuery().getContextQuestion();
+    ExtraAnswerRowsProducer earp = (question == null)? null : question.getRecordClass().getExtraAnswerRowsProducer();
+    if (earp != null) sql.append(", ").append(earp.getDynamicColumnName());
+    
     // insert name of weight as the last column, if it doesn't exist
     if (query.isHasWeight() && !columnNames.contains(weightColumn))
       sql.append(", ").append(weightColumn);
@@ -189,6 +196,8 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     for (int i = 0; i < columns.size(); i++) {
       sql.append(", ?");
     }
+
+    if (earp != null) sql.append(", ").append(earp.getColumnValueForOriginalRows()); 
 
     // insert weight to the last column, if doesn't exist
     if (query.isHasWeight() && !columnNames.contains(weightColumn))
@@ -205,36 +214,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
    */
   @Override
   protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
-    // prepare columns
-    Map<String, Column> columns = query.getColumnMap();
-    String[] columnNames = new String[columns.size()];
-    Map<String, Integer> indices = new LinkedHashMap<String, Integer>();
-    for (int i = 0; i < columnNames.length; i++) {
-      // if the wsName is defined, reassign it to the columns
-      Column column = columns.get(columnNames[i]);
-      columnNames[i] = column.getWsName();
-      indices.put(column.getName(), i);
-    }
-
-    // add weight if needed
-    // String weightColumn = Utilities.COLUMN_WEIGHT;
-    // if (query.isHasWeight() && !columns.containsKey(weightColumn)) {
-    // indices.put(weightColumn, indices.size());
-    // for (int i = 0; i < content.length; i++) {
-    // content[i] = ArrayUtil.append(content[i], Integer.toString(assignedWeight));
-    // }
-    // }
-
-    ArrayResultList resultList = new ArrayResultList(indices);
-    resultList.setHasWeight(query.isHasWeight());
-    resultList.setAssignedWeight(assignedWeight);
-
-    invokeWsf(resultList);
-    this.resultMessage = resultList.getMessage();
-
-    logger.debug("WSQI Result Message:" + resultMessage);
-    logger.info("Result Array size = " + resultList.getSize());
-    return resultList;
+    throw new UnsupportedOperationException("Process queries are always cacheable, so ProcessQueryInstance.getUncachedResults() should never be called");
   }
 
   /*
@@ -267,7 +247,18 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     sqlTable.append(CacheFactory.COLUMN_ROW_ID + " " + numberType + " NOT NULL");
     if (query.isHasWeight())
       sqlTable.append(", " + Utilities.COLUMN_WEIGHT + " " + numberType);
-
+    
+    // if this query is part of a question, and that question's record class has an extraAnswerRowsProducer, use it
+    // to add an extra column that signals these rows are from the original query
+    Question question = getQuery().getContextQuestion();
+    if (question != null) {
+    	ExtraAnswerRowsProducer earp = question.getRecordClass().getExtraAnswerRowsProducer();
+    	if (earp != null) {
+    		String strType = platform.getStringDataType(earp.getExtraColumnWidth());
+    		sqlTable.append(", " + earp.getDynamicColumnName() + " " +  strType);
+    	}
+    }
+    
     // define the rest of the columns
     for (Column column : columns) {
       // weight column is already added to the sql.
@@ -322,7 +313,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
    */
   @Override
   public int getResultSize() throws WdkModelException, WdkUserException {
-    if (!isCached()) {
+    if (!getIsCacheable()) {
       int count = 0;
       ResultList resultList = getResults();
       while (resultList.next()) {

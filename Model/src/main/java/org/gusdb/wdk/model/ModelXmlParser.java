@@ -87,6 +87,7 @@ import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
 import org.gusdb.wdk.model.record.BooleanReference;
 import org.gusdb.wdk.model.record.CountReference;
+import org.gusdb.wdk.model.record.ExtraAnswerRowsProducer;
 import org.gusdb.wdk.model.record.NestedRecord;
 import org.gusdb.wdk.model.record.NestedRecordList;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -641,7 +642,13 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/recordClassSet/recordClass/resultPropertyQueryRef",
         ResultPropertyQueryReference.class, "setResultPropertyQueryRef");
 
-   // nested record and record list
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/extraAnswerRowsProducer",
+            ExtraAnswerRowsProducer.class, "setExtraAnswerRowsProducer");
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/extraAnswerRowsProducer/sql",
+            WdkModelText.class, "setSql");
+    digester.addCallMethod("wdkModel/recordClassSet/recordClass/extraAnswerRowsProducer/sql", "setText", 0);
+
+        // nested record and record list
     configureNode(digester, "wdkModel/recordClassSet/recordClass/nestedRecord", NestedRecord.class,
         "addNestedRecordQuestionRef");
 
