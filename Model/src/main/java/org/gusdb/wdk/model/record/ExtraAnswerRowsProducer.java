@@ -59,7 +59,7 @@ public class ExtraAnswerRowsProducer {
 		this.columnValueForOriginalRows = columnValueForOriginalRows;
 	}
 
-	public int getExtraColumnWidth() {
+	public int getDynamicColumnWidth() {
 		return Math.max(columnValueForOriginalRows.length(), columnValueForExtraRows.length());
 	}
 

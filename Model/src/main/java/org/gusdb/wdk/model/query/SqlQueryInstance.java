@@ -110,11 +110,10 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     buffer.append("SELECT ");
     buffer.append(instanceId + " AS " + idColumn + ", ");
     
-    // if this query is part of a question, and that question's record class has an extraAnswerRowsProducer, use it
+    // if this query is an ID query and its record class has an extraAnswerRowsProducer, use it
     // to add an extra column that signals these rows are from the original query
-    Question question = getQuery().getContextQuestion();
-    if (question != null && question.getFullName().equals("daffy duck")) {
-    	ExtraAnswerRowsProducer earp = question.getRecordClass().getExtraAnswerRowsProducer();
+    if (getQuery().getIsIdQuery()) {
+    	ExtraAnswerRowsProducer earp = getQuery().getContextQuestion().getRecordClass().getExtraAnswerRowsProducer();
     	if (earp != null) {
     		buffer.append("'" + earp.getColumnValueForOriginalRows() + "' AS " + earp.getDynamicColumnName() + ", ");
     	}
@@ -139,7 +138,6 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     Map<String, Param> params = query.getParamMap();
     String sql = query.getSql();
     for (String paramName : params.keySet()) {
-      logger.info("---------------------------------------------------------------------------------------- paramName: " + paramName);
       Param param = params.get(paramName);
       String value = internalValues.get(paramName);
       if (value == null) {
@@ -210,11 +208,10 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     buffer.append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID + ", ");
     buffer.append(rowNumber + " AS " + CacheFactory.COLUMN_ROW_ID + ", ");  
     
-    // if this query is part of a question, and that question's record class has an extraAnswerRowsProducer, use it
-    // to add an extra column that signals these rows are from the original query
-    Question question = getQuery().getContextQuestion();
-    if (question != null  && question.getFullName().equals("daffy duck")) {
-        ExtraAnswerRowsProducer earp = question.getRecordClass().getExtraAnswerRowsProducer();
+    // if this query is an ID query, and its recordclass has an extraAnswerRowsProducer,
+    // add an extra column that signals these rows are from the original query
+    if (getQuery().getIsIdQuery()) {
+        ExtraAnswerRowsProducer earp = getQuery().getContextQuestion().getRecordClass().getExtraAnswerRowsProducer();
     	if (earp != null) {
     		buffer.append("'" + earp.getColumnValueForOriginalRows() + "' AS " + earp.getDynamicColumnName() + ", ");
     	}
