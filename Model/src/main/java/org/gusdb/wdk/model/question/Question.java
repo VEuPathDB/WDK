@@ -683,23 +683,25 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
       query.setContextQuestion(this);
 
+      query.setIsIdQuery(true);
+
       // all the id queries should have weight column
       query.setHasWeight(true);
+
+    // if this question's record class has an extraAnswerRowsProducer, add its column as a dyn attribute
+    ExtraAnswerRowsProducer earp = getRecordClass().getExtraAnswerRowsProducer();
+    if (earp != null) {
+      ColumnAttributeField af = new ColumnAttributeField();
+      af.excludeResources(wdkModel.getProjectId());
+      af.setName(earp.getDynamicColumnName());
+      af.setDisplayName(earp.getDynamicColumnDisplayName());
+      dynamicAttributeSet.addAttributeField(af);
+    }
 
       // dynamic attribute set need to be initialized after the id query.
       this.dynamicAttributeQuery = createDynamicAttributeQuery(model);
       dynamicAttributeQuery.resolveReferences(model);
       dynamicAttributeSet.resolveReferences(model);
-
-      // if this question's record class has an extraAnswerRowsProducer, add its column as a dyn attribute
-      ExtraAnswerRowsProducer earp = getRecordClass().getExtraAnswerRowsProducer();
-      if (earp != null) {
-        ColumnAttributeField af = new ColumnAttributeField();
-        af.excludeResources(wdkModel.getProjectId());
-        af.setName(earp.getDynamicColumnName());
-        af.setDisplayName(earp.getDynamicColumnDisplayName());
-        dynamicAttributeSet.addAttributeField(af);
-      }
 
       // make sure we always display weight for combined question
       // if (query.isCombined()) {
@@ -977,6 +979,16 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       column.setWidth(12);
       query.addColumn(column);
     }
+
+      // if this question's record class has an extraAnswerRowsProducer, add its column as a dyn attribute
+      ExtraAnswerRowsProducer earp = getRecordClass().getExtraAnswerRowsProducer();
+      if (earp != null) {
+	Column column = new Column();
+	column.setName(earp.getDynamicColumnName());
+	column.setType(ColumnType.STRING);
+	column.setWidth(earp.getDynamicColumnWidth());
+	query.addColumn(column);
+      }
 
     // dynamic query doesn't have sql defined, here just fill in the stub
     // sql; the real sql will be constructed by answerValue
