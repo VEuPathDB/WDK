@@ -683,7 +683,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
       query.setContextQuestion(this);
 
-      query.setIsIdQuery(true);
+      // query.setIsIdQuery(true);
+      query.setIsIdQuery(false);  // disable extraAnswerRowsProducer logic
 
       // all the id queries should have weight column
       query.setHasWeight(true);
