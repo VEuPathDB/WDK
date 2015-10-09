@@ -71,6 +71,7 @@ class RecordUI extends Component {
         </button>
         <div className="wdk-RecordSidebar">
           <RecordNavigationSection
+            record={this.props.record}
             onShowAdvanced={this.showAdvancedCategories}
             onHideAdvanced={this.hideAdvancedCategories}
             showAdvanced={this.state.showAdvanced}
