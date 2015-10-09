@@ -66,7 +66,7 @@ class RecordController extends Component {
       collapsedTables = recordClass && recordClass.collapsesTables || []
     } = state.views.record;
 
-    this.setState({ collapsedCategories, collapsedTables, recordClass });
+    this.setState({ collapsedCategories, collapsedTables, recordClass, recordClasses, questions });
 
     // only update record when it's available
     if (record) {
