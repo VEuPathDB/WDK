@@ -13,6 +13,7 @@ class Record extends Component {
         <RecordHeading {...this.props}/>
         <RecordMainSection
           record={this.props.record}
+          recordClass={this.props.recordClass}
           categories={categories}
           attributes={attributes}
           tables={tables}
