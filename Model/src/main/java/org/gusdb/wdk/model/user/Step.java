@@ -146,9 +146,9 @@ public class Step {
 
   private Integer strategyId;
 
-    // Set this if this step should not be written to /read from db.  A hack in support of 
-    // summary views, until they are refactored using service.
-  private boolean inMemoryOnly;
+  // Set this if this step should not be written to /read from db.  A hack in support of
+  // summary views, until they are refactored using service.
+  private boolean inMemoryOnly = false;
 
   /**
    * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
@@ -1304,7 +1304,7 @@ public class Step {
     setViewFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_VIEW_FILTERS));
   }
 
-  private JSONArray getFilterArrayOrNull(JSONObject jsContent, String propKey) throws WdkModelException {
+  private static JSONArray getFilterArrayOrNull(JSONObject jsContent, String propKey) throws WdkModelException {
     if (jsContent.has(propKey)) {
       // FIXME: Some steps in the DB have a filters property with a JSON object (usually empty);
       //    Ignore these for now to avoid errors; they will eventually be overwritten or die quietly

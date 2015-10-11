@@ -19,27 +19,16 @@ let RecordMainCategorySection = React.createClass({
   mixins: [ React.addons.PureRenderMixin ],
 
   toggleCollapse() {
-    let { recordClass, category, isCollapsed } = this.props;
-    this.props.recordActions.toggleCategoryCollapsed({
-      recordClass,
-      category,
-      isCollapsed: !isCollapsed
-    });
+    let { category, isCollapsed } = this.props;
+    this.props.onCategoryToggle(category, !isCollapsed);
   },
 
-  toggleTableCollapse(tableName, isCollapsed) {
-    let { recordClass } = this.props;
-    this.props.recordActions.toggleTableCollapsed({
-      recordClass,
-      tableName,
-      isCollapsed: !isCollapsed
-    });
+  toggleTableCollapse(table, isCollapsed) {
+    this.props.onTableToggle(table, !isCollapsed);
   },
 
   render() {
-    let { category, depth, record, recordClass, isCollapsed, collapsedTables } = this.props;
-    let attributes = recordClass.attributes.filter(a => a.category === category.name);
-    let tableMetas = recordClass.tables.filter(t => t.category === category.name);
+    let { category, depth, record, attributes, tables, isCollapsed, collapsedTables } = this.props;
     let headerClass = depth === 1 ? 'wdk-Record-sectionHeader' : 'wdk-Record-sectionSubHeader';
     let Header = 'h' + Math.min(depth + 1, 6);
 
@@ -76,7 +65,7 @@ let RecordMainCategorySection = React.createClass({
                   </tbody>
                 </table>
               }
-              {tableMetas.map(tableMeta => {
+              {tables.map(tableMeta => {
                 let { name, displayName } = tableMeta;
                 let table = record.tables[name];
                 let isCollapsed = collapsedTables.includes(name)
@@ -84,7 +73,7 @@ let RecordMainCategorySection = React.createClass({
                 return (
                   <div key={name} className="wdk-RecordTableWrapper">
                     <h3 style={{ cursor: 'pointer' }}
-                      onClick={() => this.toggleTableCollapse(name, isCollapsed)}>
+                      onClick={() => this.toggleTableCollapse(tableMeta, isCollapsed)}>
                       <i className={'fa fa-' + (isCollapsed? 'caret-right' : 'caret-down')}/>
                       {' ' + displayName}
                     </h3>

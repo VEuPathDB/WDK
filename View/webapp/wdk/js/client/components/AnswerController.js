@@ -93,7 +93,16 @@ let AnswerController = React.createClass({
   mixins: [ Router.Navigation ],
 
   // When the component first mounts, fetch the answer.
+  // This can also be treated as a constructor: it's a good place to initialize
+  // properties of the component.
   componentWillMount() {
+    // Bind methods of `this.answerEvents` to `this`. When they are called by
+    // child elements, any reference to `this` in the methods will refer to
+    // this component.
+    for (let key in this.answerEvents) {
+      this.answerEvents[key] = this.answerEvents[key].bind(this);
+    }
+
     let { store } = this.props;
     store.dispatch(CommonActions.fetchQuestions());
     store.dispatch(CommonActions.fetchRecordClasses());
@@ -378,19 +387,10 @@ let AnswerController = React.createClass({
       recordClasses
     } = this.state;
 
-    let { params } = this.props;
+    let { questionName } = this.props.params;
 
-    let question = questions.find(q => q.name === params.questionName);
+    let question = questions.find(q => q.name === questionName);
     let recordClass = recordClasses.find(r => r.fullName === question.class);
-
-    // Bind methods of `this.answerEvents` to `this`. When they are called by
-    // child elements, any reference to `this` in the methods will refer to
-    // this component.
-    let answerEvents = Object.keys(this.answerEvents)
-      .reduce((events, key) => {
-        events[key] = this.answerEvents[key].bind(this);
-        return events;
-      }, {});
 
     // Valid formats are 'table' and 'list'
     // TODO validation
@@ -410,7 +410,7 @@ let AnswerController = React.createClass({
         filterTables = recordClass.tables.map(t => t.name);
       }
       return (
-        <Doc title={`${question.displayName}`}>
+        <Doc title={question.displayName}>
           {isLoading ? <Loading/> : null}
           <Answer
             meta={meta}
@@ -422,7 +422,7 @@ let AnswerController = React.createClass({
             filterAttributes={filterAttributes}
             filterTables={filterTables}
             format={format}
-            answerEvents={answerEvents}
+            answerEvents={this.answerEvents}
           />
         </Doc>
       );
