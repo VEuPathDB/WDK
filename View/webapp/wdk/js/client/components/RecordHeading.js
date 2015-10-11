@@ -1,14 +1,14 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
 
+let stubHandler = actionName => event => {
+  event.preventDefault();
+  alert('You clicked ' + actionName);
+};
+
 let RecordHeading = React.createClass({
 
   mixins: [ React.addons.PureRenderMixin ],
-
-  stubHandler(actionName, e) {
-    e.preventDefault();
-    alert('You clicked ' + actionName);
-  },
 
   render() {
     let { record, recordClass } = this.props;
@@ -24,7 +24,7 @@ let RecordHeading = React.createClass({
           {actions.map(action => {
             return (
               <li key={action.name} className="wdk-RecordActionItem">
-                <a href="#" onClick={e => this.stubHandler(action.name, e)}>
+                <a href="#" onClick={stubHandler(action.name)}>
                   {action.name} <i style={{ marginLeft: '.4em'}} className={'fa fa-lg fa-' + action.icon}/>
                 </a>
               </li>

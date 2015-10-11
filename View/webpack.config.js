@@ -38,7 +38,8 @@ module.exports = {
     ]
   },
   node: {
-    console: true
+    console: true,
+    fs: 'empty'
   },
   debug: node_env !== 'production',
   devtool: 'source-map',

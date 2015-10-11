@@ -32,19 +32,19 @@ export function fetchRecordDetails(recordClassName, recordSpec) {
   });
 }
 
-export function toggleCategoryCollapsed({ recordClass, category, isCollapsed }) {
+export function toggleCategoryCollapsed(recordClassName, categoryName, isCollapsed) {
   return {
     type: RECORD_CATEGORY_COLLAPSED_TOGGLED,
-    recordClass: recordClass.fullName,
-    name: category.name,
+    recordClass: recordClassName,
+    name: categoryName,
     isCollapsed
   }
 }
 
-export function toggleTableCollapsed({ recordClass, tableName, isCollapsed }) {
+export function toggleTableCollapsed(recordClassName, tableName, isCollapsed) {
   return {
     type: RECORD_TABLE_COLLAPSED_TOGGLED,
-    recordClass: recordClass.fullName,
+    recordClass: recordClassName,
     name: tableName,
     isCollapsed
   }

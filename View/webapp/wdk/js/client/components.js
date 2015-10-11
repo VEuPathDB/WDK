@@ -1,31 +1,16 @@
-export { default as Answer } from './components/Answer';
-export { default as AnswerController } from './components/AnswerController';
-export { default as AnswerFilter } from './components/AnswerFilter';
-export { default as AnswerFilterSelector } from './components/AnswerFilterSelector';
-export { default as AnswerTable } from './components/AnswerTable';
-export { default as AnswerTableCell } from './components/AnswerTableCell';
-export { default as AnswerTableHeader } from './components/AnswerTableHeader';
-export { default as AppController } from './components/AppController';
-export { default as Dialog } from './components/Dialog';
-export { default as Doc } from './components/Doc';
-export { default as IndexController } from './components/IndexController';
-export { default as Loading } from './components/Loading';
-export { default as Main } from './components/Main';
-export { default as Sidebar } from './components/Sidebar';
-export { default as NotFoundController } from './components/NotFoundController';
-export { default as QuestionListController } from './components/QuestionListController';
-export { default as Record } from './components/Record';
-export { default as RecordAttribute } from './components/RecordAttribute';
-export { default as RecordController } from './components/RecordController';
-export { default as RecordHeading } from './components/RecordHeading';
-export { default as RecordList } from './components/RecordList';
-export { default as RecordMainCategorySection } from './components/RecordMainCategorySection';
-export { default as RecordHeading } from './components/RecordHeading';
-export { default as RecordMainSection } from './components/RecordMainSection';
-export { default as RecordNavigationSection } from './components/RecordNavigationSection';
-export { default as RecordTable } from './components/RecordTable';
-export { default as Sticky } from './components/Sticky';
-export { default as TabbableContainer } from './components/TabbableContainer';
-export { default as Table } from './components/Table';
-export { default as Tooltip } from './components/Tooltip';
-export { default as TouchableArea } from './components/TouchableArea';
+// Create a dynamic module using webpack specific functionality, and CommonJS
+// (i.e., Node.js) module syntax. See http://webpack.github.io/docs/context.html#require-context
+//
+// The end result is that this module will export every module in the
+// components directory. This will allow us to expose these modules
+// like `Wdk.client.component.Answer`.
+let req = require.context('./components');
+// Each key is the name of a file in the "components" directory.
+// E.g., "./Answer"
+for (let key of req.keys()) {
+  // remove leading "./" from key
+  let name = key.slice(2);
+  // Assign the value of the module to a named export.
+  // This is using CommonJS module syntax which allows dynamically named exports.
+  exports[name] = req(key);
+}
