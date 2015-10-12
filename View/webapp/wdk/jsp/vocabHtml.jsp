@@ -10,7 +10,7 @@ HTML for Ajax dependent params
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <c:set var="qP" value="${requestScope.vocabParam}" />
-<c:set var="useHtmlFormWrapper" value="${not qP.multiPick || qP.displayType ne 'treeBox'}"/>
+<c:set var="useHtmlFormWrapper" value="${qP.displayType ne 'treeBox'}"/>
 
 <c:if test="${useHtmlFormWrapper}">
   <html:form method="post" enctype='multipart/form-data' action="/processQuestion.do">

@@ -45,8 +45,6 @@ public class GetVocabAction extends Action {
       QuestionForm qForm = (QuestionForm) form;
       RequestParams requestParams = new QuestionRequestParams(request, qForm);
       param.prepareDisplay(user, requestParams);
-      logger.debug("Setting vocabParam to " + param.getName() + " with display type " +
-          param.getDisplayType() + " and multipick " + param.getMultiPick());
       request.setAttribute("vocabParam", param);
 
       boolean getJson = Boolean.valueOf(request.getParameter("json"));
