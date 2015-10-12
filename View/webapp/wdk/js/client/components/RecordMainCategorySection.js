@@ -29,11 +29,11 @@ let RecordMainCategorySection = React.createClass({
 
   render() {
     let { category, depth, record, attributes, tables, isCollapsed, collapsedTables } = this.props;
-    let headerClass = depth === 1 ? 'wdk-Record-sectionHeader' : 'wdk-Record-sectionSubHeader';
+    let headerClass = depth === 1 ? 'wdk-RecordSectionHeader' : 'wdk-RecordSectionSubHeader';
     let Header = 'h' + Math.min(depth + 1, 6);
 
     return isCollapsed && depth === 1 ? null : (
-      <div className="wdk-Record-section">
+      <div className="wdk-RecordSection">
         {depth === 1 ? (
           <Header id={String(category.name)} className={headerClass}>
             {category.displayName}
@@ -45,25 +45,27 @@ let RecordMainCategorySection = React.createClass({
         )}
         {isCollapsed ? null : (
           <div>
-            <div className="wdk-Record-sectionContent">
+            <div className="wdk-RecordSectionContent">
               {attributes.length > 0 &&
-                <table className="wdk-RecordAttributeTable">
-                  <tbody>
-                    {attributes.reduce(function(rows, attribute) {
-                      let { name, displayName } = attribute;
-                      let value = record.attributes[name]
-                      if (value != null) {
-                        rows.push(
-                          <tr key={name}>
-                            <td><strong>{displayName}</strong></td>
-                            <td><RecordAttribute value={value} /></td>
-                          </tr>
-                        );
-                      }
-                      return rows;
-                    }, [])}
-                  </tbody>
-                </table>
+                <div className="wdk-RecordAttributeSection">
+                  {attributes.reduce(function(rows, attribute) {
+                    let { name, displayName } = attribute;
+                    let value = record.attributes[name]
+                    if (value != null) {
+                      rows.push(
+                        <div className="wdk-RecordAttributeSectionItem" key={name}>
+                          <div className="wdk-RecordAttributeName">
+                            <strong>{displayName}</strong>
+                          </div>
+                          <div className="wdk-RecordAttributeValue">
+                            <RecordAttribute value={value} />
+                          </div>
+                        </div>
+                      );
+                    }
+                    return rows;
+                  }, [])}
+                </div>
               }
               {tables.map(tableMeta => {
                 let { name, displayName } = tableMeta;

@@ -336,11 +336,11 @@ body {
   right: .6em;
 }
 
-.wdk-Record-section .wdk-Record-section {
+.wdk-RecordSection .wdk-RecordSection {
   padding-left: 1em;
 }
 
-.wdk-Record-sectionHeader {
+.wdk-RecordSectionHeader {
   /*background-color: #eeeeee;
   padding: .3em;*/
   margin: 8px 0;
@@ -348,20 +348,20 @@ body {
   border-bottom: 1px solid;
 }
 
-.wdk-Record-sectionSubHeader {
+.wdk-RecordSectionSubHeader {
   margin: 12px 0 8px 0;
   position: relative;
   border-bottom: 1px dotted;
   cursor: pointer;
 }
 
-.wdk-Record-sectionHeaderTopLink {
+.wdk-RecordSectionHeaderTopLink {
   position: absolute;
   right: 1em;
   z-index: 1;
 }
 
-.wdk-Record-sectionContent {
+.wdk-RecordSectionContent {
   margin-bottom: 22px;
   padding: 0 1.2em;
   /* background-color: #fafafa; */
@@ -369,19 +369,21 @@ body {
   border-radius: 4px; */
 }
 
-.wdk-Record-attributeContent {
+.wdk-RecordAttributeContent {
   word-break: break-all;
   display: inline-block;
 }
 
-.wdk-RecordAttributeTable tr {
-  /*border-bottom: 1px dotted;*/
+.wdk-RecordAttributeSectionItem {
+  display: inline-block;
+  width: 50%;
+  padding: 4px 0;
 }
 
-.wdk-RecordAttributeTable td:first-child {
-  vertical-align: top;
-  padding-left: 0;
-  /* text-align: right;*/
+.wdk-RecordAttributeName, .wdk-RecordAttributeValue {
+  display: inline-block;
+  padding: 0 4px;
+  vertical-align: middle;
 }
 
 .wdk-RecordTableWrapper {
@@ -389,6 +391,7 @@ body {
 }
 
 .wdk-RecordTable {
+  width: 100%;
   border: 1px solid #d8d8d8;
   background-color: #fdfdfd;
 }
