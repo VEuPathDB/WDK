@@ -17,7 +17,7 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.QueryLogger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.FilterParam;
@@ -166,7 +166,8 @@ public class StepParamExpander extends BaseCLI {
     Map<String, Set<String>> newValues = new LinkedHashMap<>();
     if (clob != null && clob.length() > 0) {
       // create a temp step to process the json and extract param values.
-      Step step = new Step(null, 0, 0);
+      Step step = new Step(wdkModel.getStepFactory(), 0, 0);
+      step.setInMemoryOnly(true);
       step.setParamFilterJSON(new JSONObject(clob));
       Map<String, String> values = step.getParamValues();
       for (String paramName : values.keySet()) {
@@ -225,14 +226,16 @@ public class StepParamExpander extends BaseCLI {
    */
   @Override
   protected void execute() throws Exception {
-    String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-
-    WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-
-    // expand step params
-    logger.info("Expanding params...");
-    expand(wdkModel);
+    WdkModel wdkModel = null;
+    try {
+      wdkModel = WdkModel.construct(projectId, GusHome.getGusHome());
+      // expand step params
+      logger.info("Expanding params...");
+      expand(wdkModel);
+    }
+    finally {
+      if (wdkModel != null) wdkModel.releaseResources();
+    }
   }
 }
