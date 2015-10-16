@@ -104,19 +104,19 @@ public class EmailListsGenerator extends BaseCLI {
     }
     PrintWriter writer = new PrintWriter(new FileWriter(file, true));
 
-		String project_id = wdkModel.getProjectId();
-		String preference = "preference_global_email_" + project_id.toLowerCase();
-		if (project_id.equals("EuPathDB")) {
-			preference = "preference_global_email_apidb";
-		}
+    String project_id = wdkModel.getProjectId();
+    String preference = "preference_global_email_" + project_id.toLowerCase();
+    if (project_id.equals("EuPathDB")) {
+      preference = "preference_global_email_apidb";
+    }
 
-		String sql = "SELECT  email FROM userlogins5.users u,userlogins5.preferences p" + 
-			" where p.user_id = u.user_id" + 
-			" and p.user_id not in (" +  // removing some spam, about 15K users
-			" select user_id from userlogins5.users where last_active is null and (" +
-			" email like '%uukx.info' OR " +
+    String sql = "SELECT  email FROM userlogins5.users u,userlogins5.preferences p" + 
+      " where p.user_id = u.user_id" + 
+      " and p.user_id not in (" +  // removing some spam, about 15K users
+      " select user_id from userlogins5.users where last_active is null and (" +
+      " email like '%uukx.info' OR " +
       " email like '%sina.com' OR " +
-	    " email like '%mail.ru'  OR " +
+      " email like '%mail.ru'  OR " +
       " email like '%qq.com' OR " +
       " email like '%badnewsol.com' OR " +
       " email like '%21cn.com' OR " +
@@ -128,10 +128,10 @@ public class EmailListsGenerator extends BaseCLI {
       " email like '@gmail.com' OR " +
       " email like '%.%.%.%.%@%' OR " +
       " email not like '%@%' " +
-			" ))" +
-			" and preference_name = '" + preference + "'" +
-			" and preference_value = 'on'" +
-			" order by email";   
+      " ))" +
+      " and preference_name = '" + preference + "'" +
+      " and preference_value = 'on'" +
+      " order by email";   
 
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     ResultSet resultSet = null;
@@ -148,6 +148,5 @@ public class EmailListsGenerator extends BaseCLI {
       System.out.println("Emails saved at: " + file.getAbsolutePath());
     }
   }
-
 
 }
