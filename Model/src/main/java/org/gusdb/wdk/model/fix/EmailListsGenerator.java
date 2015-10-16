@@ -121,6 +121,7 @@ public class EmailListsGenerator extends BaseCLI {
       " email like '%badnewsol.com' OR " +
       " email like '%21cn.com' OR " +
       " email like '%sogou.com' OR " +
+      " email like 'kokojunfetree%uvvc.info' OR " +
       " email like '%blackrayban%uvvc.info' OR " +
       " email like 'blackrefsagse%uvvc.info' OR " +
       " email like '%free%uvvc.info' OR " +
