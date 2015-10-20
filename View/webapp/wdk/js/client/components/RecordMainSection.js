@@ -28,8 +28,8 @@ let RecordMainSection = React.createClass({
       <div>
         {categories.map(category => {
           let categoryName = category.name;
-          let attributes = this.props.attributes.filter(attr => attr.category === categoryName);
-          let tables = this.props.tables.filter(table => table.category === categoryName);
+          let attributes = this.props.attributes.filter(attr => attr.category == categoryName);
+          let tables = this.props.tables.filter(table => table.category == categoryName);
 
           return (
             <RecordMainCategorySection

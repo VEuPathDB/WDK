@@ -7,14 +7,14 @@ import { wrappable } from '../utils/componentUtils';
 class Record extends Component {
 
   render() {
-    let { attributeCategories: categories, tables, attributes } = this.props.recordClass;
+    let { tables, attributes } = this.props.recordClass;
     return (
       <div className="wdk-Record">
         <RecordHeading {...this.props}/>
         <RecordMainSection
           record={this.props.record}
           recordClass={this.props.recordClass}
-          categories={categories}
+          categories={this.props.categories}
           attributes={attributes}
           tables={tables}
           collapsedCategories={this.props.collapsedCategories}
