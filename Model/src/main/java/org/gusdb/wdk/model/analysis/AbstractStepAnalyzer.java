@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 
 public abstract class AbstractStepAnalyzer implements StepAnalyzer {
@@ -97,6 +98,17 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   @Override
   public void validateProperties() throws WdkModelException {
     // no required properties
+  }
+  protected void checkPropertyExistence(String propName) throws WdkModelException {
+    if (getProperty(propName) == null) {
+      throw new WdkModelException("Missing required property '" + propName +
+          "' in instanc of Step Analysis Plugin '" + getClass().getName() + "'");
+    }
+  }
+
+  @Override
+  public void validateQuestion(Question question) throws WdkModelException {
+    // any question is fine by default; to be overridden by subclass
   }
 
   protected Map<String,String[]> getFormParams() {
