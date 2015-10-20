@@ -27,10 +27,10 @@ export default class RecordViewStore extends ReduceStore {
 
       case RECORD_UPDATED: {
         let collapsedCategories = state.recordClass === payload.recordClass
-          ? state.collapsedCategories : payload.recordClass.collapsedCategories;
+          ? state.collapsedCategories : payload.recordClass.collapsedCategories || [];
 
         let collapsedTables = state.recordClass === payload.recordClass
-          ? state.collapsedTables : payload.recordClass.collapsedTables;
+          ? state.collapsedTables : payload.recordClass.collapsedTables || [];
 
         return Object.assign({}, state, {
           record: payload.record,
