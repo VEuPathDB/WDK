@@ -4,10 +4,9 @@ import Router from 'react-router';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
-import * as AnswerActions from '../actions/answerActions';
-import * as CommonActions from '../actions/commonActions';
-import * as PreferenceActions from '../actions/preferenceActions';
 import { wrappable } from '../utils/componentUtils';
+import AnswerViewStore from '../stores/AnswerViewStore';
+import AnswerViewActionCreator from '../actioncreators/AnswerViewActionCreator';
 
 /**
  * wrap - Wrap `value` in array.
@@ -96,6 +95,10 @@ let AnswerController = React.createClass({
   // This can also be treated as a constructor: it's a good place to initialize
   // properties of the component.
   componentWillMount() {
+    this.store = this.props.container.get(AnswerViewStore);
+    this.actions = this.props.container.get(AnswerViewActionCreator);
+    this.sortingPreferenceKey = 'sorting::' + this.props.params.questionName;
+
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
     // this component.
@@ -103,13 +106,17 @@ let AnswerController = React.createClass({
       this.answerEvents[key] = this.answerEvents[key].bind(this);
     }
 
-    let { store } = this.props;
-    store.dispatch(CommonActions.fetchQuestions());
-    store.dispatch(CommonActions.fetchRecordClasses());
-    this.sortingPreferenceKey = 'sorting::' + this.props.params.questionName;
-    this.fetchAnswer(this.props);
-    this.selectState(store.getState());
-    this.storeSubscription = store.subscribe(this.selectState);
+    let state = this.store.getState();
+    if (state.question == null || state.question.name !== this.props.params.questionName) {
+      this.fetchAnswer(this.props);
+    }
+    else {
+      this.setState(this.store.getState());
+    }
+
+    this.storeSubscription = this.store.addListener(() => {
+      this.setState(this.store.getState());
+    });
   },
 
   // This is called anytime the component gets new props, just before they are
@@ -154,41 +161,15 @@ let AnswerController = React.createClass({
         attributes: maybeSplit(nextQuery.attrs, ','),
         tables: maybeSplit(nextQuery.tables, ',')
       };
-      this.props.store.dispatch(AnswerActions.updateFilter(filterOpts));
+      this.actions.updateFilter(filterOpts);
     }
 
   },
 
 
   componentWillUnmount() {
-    this.storeSubscription.dispose();
+    this.storeSubscription.remove();
   },
-
-  selectState(state) {
-    let { answer } = state.views;
-    let { questions, recordClasses } = state.resources;
-
-    let { meta } = answer;
-    let { records } = answer;
-    let { isLoading } = answer;
-    let { displayInfo } = answer;
-    let { filterTerm } = answer;
-    let { filterAttributes = [] } = answer;
-    let { filterTables = [] } = answer;
-
-    this.setState({
-      isLoading,
-      meta,
-      records,
-      displayInfo,
-      filterTerm,
-      filterAttributes,
-      filterTables,
-      questions,
-      recordClasses
-    });
-  },
-
 
   // `fetchAnswer` will call the `loadAnswer` action creator. If either
   // `query.numrecs` or `query.offset` is not set, we will replace the current
@@ -196,12 +177,10 @@ let AnswerController = React.createClass({
   // call the `loadAnswer` action creator based on the `params` and `query`
   // objects.
   fetchAnswer(props) {
-    let { store } = this.props;
-    let state = store.getState();
+    let state = this.store.getState();
 
     // props.params and props.query are passed to this component by the Router.
-    let params = props.params;
-    let query = props.query;
+    let { params, query } = props;
 
     // Get pagination info from `query`
     let pagination = {
@@ -210,7 +189,8 @@ let AnswerController = React.createClass({
     };
 
     // XXX Could come from query param: sorting={attributeName}__{direction},...
-    let sorting = state.preferences[this.sortingPreferenceKey];
+    // let sorting = state.preferences[this.sortingPreferenceKey];
+    let sorting;
     if (sorting === undefined) {
       sorting = [{ attributeName: 'primary_key', direction: 'ASC' }];
     }
@@ -238,7 +218,7 @@ let AnswerController = React.createClass({
       params: answerParams
     };
 
-    // Call the AnswerCreator to fetch the Answer resource
+    // Call the ActionCreator to fetch the Answer resource
     let filterOpts = {
       questionName: params.questionName,
       terms: query.q,
@@ -246,8 +226,8 @@ let AnswerController = React.createClass({
       tables: maybeSplit(query.tables, ',')
     };
 
-    store.dispatch(AnswerActions.updateFilter(filterOpts));
-    store.dispatch(AnswerActions.loadAnswer(params.questionName, opts));
+    this.actions.updateFilter(filterOpts);
+    this.actions.loadAnswer(params.questionName, opts);
   },
 
 
@@ -291,7 +271,6 @@ let AnswerController = React.createClass({
       let attributeName = attribute.name;
       let { displayInfo } = this.state;
       let { questionName } = this.props.params;
-      let { dispatch } = this.props.store;
       let newSort = { attributeName, direction };
       // Create a new array by removing existing sort def for attribute
       // and adding the new sort def to the beginning of the array, only
@@ -306,9 +285,9 @@ let AnswerController = React.createClass({
         sorting: { $set: sorting }
       });
 
-      dispatch(AnswerActions.loadAnswer(questionName, { displayInfo }));
+      this.actions.loadAnswer(questionName, { displayInfo });
 
-      dispatch(PreferenceActions.setPreference(this.sortingPreferenceKey, sorting));
+      // dispatch(PreferenceActions.setPreference(this.sortingPreferenceKey, sorting));
     },
 
     // Call the `moveColumn` action creator. This will cause the state of
@@ -316,7 +295,7 @@ let AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onMoveColumn(columnName, newPosition) {
-      this.props.store.dispatch(AnswerActions.moveColumn(columnName, newPosition));
+      this.actions.moveColumn(columnName, newPosition);
     },
 
     // Call the `changeAttributes` action creator. This will cause the state of
@@ -324,20 +303,7 @@ let AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onChangeColumns(attributes) {
-      this.props.store.dispatch(AnswerActions.changeAttributes(attributes));
-    },
-
-    onToggleFormat() {
-      let path = 'answer';
-      let params = this.props.params;
-      let query = this.props.query;
-
-      // update query with format and position
-      query.format = !query.format || query.format === 'table'
-        ? 'list' : 'table';
-
-      // Method provided by Router.Navigation mixin
-      this.transitionTo(path, params, query);
+      this.actions.changeAttributes(attributes);
     },
 
     onFilter(terms, attributes, tables) {
@@ -372,7 +338,8 @@ let AnswerController = React.createClass({
     // parent component simplifying the logic in this component.
     //
     // We return null here to indicate to React that there is nothing to render.
-    if (this.state == null) return null;
+    if (this.state == null || this.state.records == null)
+      return <Loading/>;
 
     // use "destructuring" syntax to assign this.props.params.questionName to questionName
     let {
@@ -383,14 +350,9 @@ let AnswerController = React.createClass({
       filterTerm,
       filterAttributes,
       filterTables,
-      questions,
-      recordClasses
+      question,
+      recordClass
     } = this.state;
-
-    let { questionName } = this.props.params;
-
-    let question = questions.find(q => q.name === questionName);
-    let recordClass = recordClasses.find(r => r.fullName === question.class);
 
     // Valid formats are 'table' and 'list'
     // TODO validation
