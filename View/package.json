@@ -16,6 +16,7 @@
     "flux": "^2.0.3",
     "immutable": "^3.7.4",
     "invariant": "^2.1.0",
+    "json-stable-stringify": "^1.0.0",
     "lodash": "^3.9.3",
     "react": "^0.13.3",
     "react-router": "^0.13.3",

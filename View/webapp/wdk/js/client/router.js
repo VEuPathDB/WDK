@@ -1,0 +1,47 @@
+import React from 'react';
+import ReactRouter from 'react-router';
+
+import AppController from './components/AppController';
+import IndexController from './components/IndexController';
+import RecordController from './components/RecordController';
+import NotFoundController from './components/NotFoundController';
+import AnswerController from './components/AnswerController';
+import QuestionListController from './components/QuestionListController';
+
+let { Route, DefaultRoute, NotFoundRoute } = ReactRouter;
+/**
+ * Get routes based on `rootUrl`.
+ *
+ * @param {string} rootUrl The rootUrl used to match paths below
+ */
+
+export function start(rootUrl, rootElement, props) {
+  let router = ReactRouter.create({
+    routes: (
+      <Route name="app" path={rootUrl} handler={AppController}>
+        <Route name="answer" path="answer/:questionName" handler={AnswerController}/>
+        <Route name="record" path="record/:class" handler={RecordController}/>
+        <Route name="question-list" handler={QuestionListController}/>
+        <DefaultRoute handler={IndexController}/>
+        <NotFoundRoute handler={NotFoundController}/>
+      </Route>
+    ),
+    location: ReactRouter.HistoryLocation
+  });
+
+  router.run((Root, state) => {
+    // Remove the auth_tkt query param from url
+    // XXX Implement router filters?
+    if ('auth_tkt' in state.query) {
+      state.query.auth_tkt = undefined;
+      router.replaceWith(
+        state.pathname,
+        state.params,
+        state.query
+      );
+    }
+    else {
+      React.render(<Root {...state} {...props}/>, rootElement);
+    }
+  });
+}

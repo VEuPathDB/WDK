@@ -735,6 +735,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       // resolve step analysis refs
       for (StepAnalysis stepAnalysis : stepAnalysisMap.values()) {
         ((StepAnalysisXml)stepAnalysis).resolveReferences(model);
+        // make sure each analysis plugin is appropriate for this question
+        stepAnalysis.getAnalyzerInstance().validateQuestion(this);
       }
       
     } catch (WdkModelException ex) {
