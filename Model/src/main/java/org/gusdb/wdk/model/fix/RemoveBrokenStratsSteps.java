@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.WdkModel;
 /**
  * Starting build 25 we move here apicomm cleaning activity previously located in GuestRemover and StepValidator
  * - strategies is_deleted = 1
+ * - steps is_deleted = 1 CANNOT be done we generate valid steps with is_deleted = 1, (booleans, ID and basket steps)  no idea why
  * - strategies with user_id different from user_id in root_step
  * - strategies with project_id different from project_id in root_step
  * - strategies with root_step inexistent
@@ -110,7 +111,7 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
 		SqlUtils.executeUpdate(dataSource, "CREATE TABLE wdk_strats_unknownRC AS SELECT s.strategy_id FROM " +
 				userSchema + "steps st, userlogins5.strategies s WHERE s.root_step_id = st.step_id AND st.question_name NOT in " + 
 						"(select question_name from wdk_questions)", "create-temp-unknownRC-strats-table");
-		//deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
+		deleteByBatch(dataSource, userSchema + "strategies", " strategy_id in (select strategy_id from wdk_strats_unknownRC) ");
 
 
     // after strategies have been cleanedup.. delete unused steps: every deletion will open up more to be deleted.
@@ -157,6 +158,8 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
   }
 
 
+		// deleteByBatch(dataSource, userSchema + "steps", " is_deleted = 1 "); //we generate them when seeing basket results
+
   private int removeUnusedStepAnalysis(DataSource dataSource, String userSchema) throws SQLException {
 		LOG.info("\n\nRemoving unused step_analysis...");
     int count = 1, sum = 0;
@@ -166,7 +169,8 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
           "  SELECT step_id              FROM           " + stepTable +
           "  MINUS SELECT root_step_id   FROM           " + strategyTable +
           "  MINUS SELECT left_child_id  FROM           " + stepTable +
-          "  MINUS SELECT right_child_id FROM           " + stepTable + ")");
+          "  MINUS SELECT right_child_id FROM           " + stepTable + 
+					"  )");
       sum += count;
     }
     LOG.debug(sum + " unused step_analysis deleted");
@@ -180,9 +184,10 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     while (count != 0) {
       count = RemoveBrokenStratsSteps.deleteByBatch(dataSource, stepTable, "step_id IN (" +
           "  SELECT step_id              FROM           " + stepTable +
-          "  MINUS SELECT root_step_id   FROM           " + strategyTable +
-          "  MINUS SELECT left_child_id  FROM           " + stepTable +
-          "  MINUS SELECT right_child_id FROM           " + stepTable + ")");
+          "  MINUS SELECT root_step_id   FROM           " + strategyTable + 
+          "  MINUS SELECT left_child_id  FROM           " + stepTable +   
+          "  MINUS SELECT right_child_id FROM           " + stepTable +     
+					"  )");
       sum += count;
     }
     LOG.debug(sum + " unused steps deleted");
