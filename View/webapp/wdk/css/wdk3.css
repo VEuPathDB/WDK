@@ -125,6 +125,10 @@ body {
 
 .wdk-AnswerTable-header {
   display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: top;
 }
 
 .wdk-AnswerTable-headerWrapper {
