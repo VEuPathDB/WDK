@@ -37,11 +37,13 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   private static final String EXTRACTED_ATTRIBS_PROP_KEY = "columnsToExtract";
   private static final String IFRAME_WIDTH_PROP_KEY = "iframeWidthPx";
   private static final String IFRAME_LENGTH_PROP_KEY = "iframeLengthPx";
+  private static final String ADD_HEADER_PROP_KEY = "addHeader";
 
   private static final String DATA_FILE_NAME = "data.tab";
 
   private static final int DEFAULT_IFRAME_WIDTH_PX = 900;
   private static final int DEFAULT_IFRAME_HEIGHT_PX = 450;
+  private static final boolean ADD_HEADER_BY_DEFAULT = true;
 
   public static class ViewModel {
 
@@ -67,16 +69,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     checkPropertyExistence(EXTRACTED_ATTRIBS_PROP_KEY);
     checkPositiveIntegerIfPresent(IFRAME_WIDTH_PROP_KEY);
     checkPositiveIntegerIfPresent(IFRAME_LENGTH_PROP_KEY);
-  }
-
-  private void checkPositiveIntegerIfPresent(String propName) throws WdkModelException {
-    String prop = getProperty(propName);
-    if (prop != null && !prop.isEmpty() &&
-        !FormatUtil.isInteger(prop) && Integer.parseInt(prop) <= 0) {
-      throw new WdkModelException("Optional property '" + propName +
-          "' in instance of Step Analysis Plugin '" +
-          getClass().getName() + "' must be a positive integer.");
-    }
+    checkBooleanIfPresent(ADD_HEADER_PROP_KEY);
   }
 
   @Override
@@ -105,9 +98,12 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   @Override
   public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log)
       throws WdkModelException, WdkUserException {
+    String hasHeader = getProperty(ADD_HEADER_PROP_KEY);
+    if (hasHeader == null || hasHeader.isEmpty())
+      hasHeader = String.valueOf(ADD_HEADER_BY_DEFAULT);
     Reporter reporter = answerValue.createReport(TABULAR_REPORTER_NAME, new MapBuilder<String,String>()
         .put(StandardReporter.Configuration.ATTACHMENT_TYPE, "text")
-        .put(TabularReporter.FIELD_HAS_HEADER, "false")
+        .put(TabularReporter.FIELD_HAS_HEADER, hasHeader.toLowerCase())
         .put(TabularReporter.FIELD_DIVIDER, FormatUtil.TAB)
         .put(TabularReporter.FIELD_SELECTED_COLUMNS, getProperty(EXTRACTED_ATTRIBS_PROP_KEY))
         .toMap());
