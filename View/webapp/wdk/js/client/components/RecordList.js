@@ -1,6 +1,6 @@
 import React from 'react';
 import Record from './Record';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 /**
  * RecordList displays a list of Record components.

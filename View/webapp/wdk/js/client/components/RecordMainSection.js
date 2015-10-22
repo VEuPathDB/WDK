@@ -1,6 +1,6 @@
 import React from 'react';
 import RecordMainCategorySection from './RecordMainCategorySection';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 let RecordMainSection = React.createClass({
 
@@ -16,10 +16,9 @@ let RecordMainSection = React.createClass({
     let {
       depth,
       record,
-      recordClass,
       categories,
       collapsedCategories,
-      hiddenCategories,
+      collapsedTables,
       recordActions
     } = this.props;
 
@@ -28,21 +27,26 @@ let RecordMainSection = React.createClass({
     return (
       <div>
         {categories.map(category => {
-          if (!hiddenCategories.includes(category.name)) {
-            return (
-              <RecordMainCategorySection
-                key={String(category.name)}
-                depth={depth}
-                category={category}
-                record={record}
-                recordClass={recordClass}
-                isCollapsed={collapsedCategories.includes(category.name)}
-                recordActions={recordActions}
-              >
-                <RecordMainSection {...this.props} depth={depth + 1} categories={category.subCategories}/>
-              </RecordMainCategorySection>
+          let categoryName = category.name;
+          let attributes = this.props.attributes.filter(attr => attr.category == categoryName);
+          let tables = this.props.tables.filter(table => table.category == categoryName);
+
+          return (
+            <RecordMainCategorySection
+              key={String(category.name)}
+              depth={depth}
+              category={category}
+              record={record}
+              attributes={attributes}
+              tables={tables}
+              isCollapsed={collapsedCategories.includes(category.name)}
+              collapsedTables={collapsedTables}
+              onCategoryToggle={this.props.onCategoryToggle}
+              onTableToggle={this.props.onTableToggle}
+            >
+              <RecordMainSection {...this.props} depth={depth + 1} categories={category.subCategories}/>
+            </RecordMainCategorySection>
             );
-          }
         })}
       </div>
     );

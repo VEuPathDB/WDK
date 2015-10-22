@@ -26,8 +26,15 @@ public class ShowErrorPageAction extends WdkAction {
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
 
+    // try to get exception passed on request (forwarded from another page), or
+    //   on session (passed by redirection to this page)
     RequestData requestData = getRequestData();
     Exception causingException = (Exception)requestData.getRequestAttribute(Globals.EXCEPTION_KEY);
+    if (causingException == null) {
+      // try to get exception from session
+      causingException = (Exception)getSessionAttribute(Globals.EXCEPTION_KEY);
+      unsetSessionAttribute(Globals.EXCEPTION_KEY);
+    }
     
     // Alternative mechanism to pass Exception to this action
     //   (see CustomProcessLoginAction.java for example)

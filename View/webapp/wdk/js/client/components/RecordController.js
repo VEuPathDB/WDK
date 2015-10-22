@@ -1,91 +1,54 @@
-import React from 'react';
+import { Component } from 'react';
 import mapValues from 'lodash/object/mapValues';
 import Doc from './Doc';
 import Loading from './Loading';
-import Record from './Record';
-import CommonActions from '../actions/commonActions';
-import RecordActions from '../actions/recordActions';
-import wrappable from '../utils/wrappable';
+import RecordUI from './RecordUI';
+import { wrappable } from '../utils/componentUtils';
 import { makeKey } from '../utils/recordUtils';
 
-let RecordController = React.createClass({
+import RecordViewStore from '../stores/RecordViewStore';
+import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
+
+class RecordController extends Component {
+
+  constructor(props) {
+    super(props);
+    this.store = props.container.get(RecordViewStore);
+    this.actions = props.container.get(RecordViewActionCreator);
+  }
 
   componentWillMount() {
-    let { store } = this.props;
-
-    this.recordActions = mapValues(RecordActions, function(action) {
-      return function dispatchWrapper(...args) {
-        return store.dispatch(action(...args));
-      };
+    this.storeSubscription = this.store.addListener(() => {
+      this.setState(this.store.getState());
     });
-    this.commonActions = mapValues(CommonActions, function(action) {
-      return function dispatchWrapper(...args) {
-        return store.dispatch(action(...args));
-      };
-    });
-    this.fetchRecordDetails(this.props);
-    this.selectState(store.getState());
-    this.storeSubscription = store.subscribe(this.selectState);
-  },
+    this.fetchRecord(this.props);
+  }
 
   componentWillUnmount() {
-    this.storeSubscription.dispose();
-  },
+    this.storeSubscription.remove();
+  }
 
   componentWillReceiveProps(nextProps) {
-    this.fetchRecordDetails(nextProps);
-  },
+    this.fetchRecord(nextProps);
+  }
 
-  fetchRecordDetails(props) {
-    let { params, query, store } = props;
-    let recordClassName = params.class;
-    let primaryKey = query;
-
-    Promise.all([
-      this.commonActions.fetchRecordClasses(),
-      this.commonActions.fetchQuestions()
-    ]).then(() => {
-      let recordClass = store.getState().recordClasses.find(function(recordClass) {
-        return recordClass.fullName === recordClassName;
-      });
-      let attributes = recordClass.attributes.map(a => a.name);
-      let tables = recordClass.tables.map(t => t.name);
-      let recordSpec = { primaryKey, attributes, tables };
-      this.recordActions.fetchRecordDetails(recordClassName, recordSpec);
-    });
-  },
-
-  selectState(state) {
-    let { params, query } = this.props;
-    let key = makeKey(params.class, query);
-    let {
-      record: { records, hiddenCategories, collapsedCategories },
-      recordClasses,
-      questions
-    } = state;
-    let recordClass = recordClasses.find(r => r.fullName === params.class);
-    let record = records[key];
-
-    this.setState({ hiddenCategories, collapsedCategories, recordClass, recordClasses, questions });
-
-    // only update record when it's available
-    if (record) {
-      this.setState({ record });
-    }
-  },
+  fetchRecord(props) {
+    this.actions.fetchRecordDetails(props.params.class, props.query);
+  }
 
   render() {
     if (this.state == null || this.state.record == null) return <Loading/>;
 
-    let { record, recordClass } = this.state;
+    let title = this.state.recordClass.displayName + ' ' +
+      this.state.record.displayName;
 
     return (
-      <Doc title={`${recordClass.displayName} ${record.displayName}`}>
-        <Record {...this.state} recordActions={this.recordActions}/>
+      <Doc title={title}>
+        <RecordUI {...this.state} actions={this.actions}/>
       </Doc>
     );
   }
 
-});
+}
 
 export default wrappable(RecordController);

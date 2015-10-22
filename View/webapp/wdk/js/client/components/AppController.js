@@ -5,9 +5,7 @@
  */
 import React from 'react';
 import { RouteHandler } from 'react-router';
-import wrappable from '../utils/wrappable';
-import CommonActions from '../actions/commonActions';
-import PreferenceActions from '../actions/preferenceActions';
+import { wrappable } from '../utils/componentUtils';
 
 /*
  * RouterHandler is a special React component that the router uses to inject
@@ -19,39 +17,10 @@ let AppController = React.createClass({
 
   mixins: [ React.addons.PureRenderMixin ],
 
-  componentWillMount() {
-    let { store } = this.props;
-
-    // store.dispatch(PreferenceActions.loadPreferences());
-    // store.dispatch(CommonActions.fetchCommonData());
-    this.selectState(store.getState());
-    this.storeSubscription = store.subscribe(this.selectState);
-  },
-
-  componentWillUnmount() {
-    this.storeSubscription.dispose();
-  },
-
-  selectState(state) {
-    this.setState({ errors: state.errors });
-  },
-
   render() {
-    let { errors } = this.state;
-
-    if (errors.length > 0) {
-      return (
-        <div>
-          <h3>An Unexpected Error Occurred</h3>
-          <div className="wdkAnswerError">{errors}</div>
-        </div>
-      );
-    }
-    else {
-      return (
-        <RouteHandler store={this.props.store}/>
-      );
-    }
+    return (
+      <RouteHandler {...this.props}/>
+    );
   }
 
 });

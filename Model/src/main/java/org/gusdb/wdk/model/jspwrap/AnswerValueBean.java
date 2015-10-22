@@ -7,7 +7,7 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.TreeNode;
+import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
@@ -25,6 +25,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONObject;
 
 /**
  * A wrapper on a {@link AnswerValue} that provides simplified access for
@@ -367,6 +368,19 @@ public class AnswerValueBean {
     }
 
     /**
+     * @param reporterName
+     * @param config
+     * @return
+     * @throws WdkUserException 
+     * @see org.gusdb.wdk.model.AnswerValue#getReport(java.lang.String,
+     *      java.util.Map)
+     */
+    public Reporter createReport(String reporterName, JSONObject config)
+            throws WdkModelException, WdkUserException {
+        return answerValue.createReport(reporterName, config);
+    }
+
+    /**
      * @return
      * @see org.gusdb.wdk.model.AnswerValue#getSortingAttributeNames()
      */
@@ -402,11 +416,11 @@ public class AnswerValueBean {
         return fieldBeans;
     }
 
-    public TreeNode getDisplayableAttributeTree() throws WdkModelException {
+    public FieldTree getDisplayableAttributeTree() throws WdkModelException {
     	return answerValue.getDisplayableAttributeTree();
     }
 
-    public TreeNode getReportMakerAttributeTree() throws WdkModelException {
+    public FieldTree getReportMakerAttributeTree() throws WdkModelException {
     	return answerValue.getReportMakerAttributeTree();
     }
 

@@ -13,8 +13,9 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   // Called when a step is selected and the tabs container is inserted in DOM
   function configureSummaryViews($element) {
     var addFeatureTooltipOnce = _.once(addFeatureTooltip); // only call once per step selection
-    // var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);  
+    // var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);
     var currentTab = 0;
+    setupAddAttributes($element);
 
     $element.tabs({
       active : currentTab,
@@ -25,14 +26,14 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         wdk.util.setDraggable(ui.panel.find("div.attributesList"), ".dragHandle");
       }
     });
-    
+
     // if not a child of basket menu, configure analysis tabs
     if ($element.has('#add-analysis').length) {
       wdk.stepAnalysis.configureAnalysisViews($element);
     }
-    
+
   }
-  
+
   // Add a feature tooltip to page for new analysis tools
   //
   // Business rules are:
@@ -96,20 +97,16 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     updateResultsPage($(table), url, false);
   }
 
-  function updateAttrs(attrSelector, commandUrl) {
-    var form = $(attrSelector).parents().parents("form");
-    var selected = $("input:checked",form);
-    var attributes = [];
+  function updateAttrs($form) {
+    var commandUrl = $form.attr('action');
+    var command = $form.find('[name=command]').val();
+    var attributes = $form.find("input:checked").toArray().map(el => el.value);
+    var url = commandUrl + "&command=" + command + "&attribute=" + attributes.join("&attribute=");
 
-    selected.each(function() {
-      attributes.push(this.value);
-    });
-    var url = commandUrl + "&command=update&attribute=" + attributes.join("&attribute=");
-    
     // close the dialog
-    form.parents(".attributesList").dialog("close");
+    $form.parents(".attributesList").dialog("close");
 
-    updateResultsPage(form, url, true);
+    updateResultsPage($form, url, true);
   }
 
   function resetAttr(url, button) {
@@ -219,7 +216,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
 
     // invoke filters
     var wdkFilter = new wdk.filter.WdkFilter(currentDiv.find('.result-filters'));
-    
+
     wdkFilter.initialize();
 
     if (ignoreFilters) {
@@ -267,6 +264,28 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     });
   }
 
+  /**
+   * Add event handlers for Add attributes form. This uses event delegation so
+   * that we can handle multiple such forms on a page (the event handlers are
+   * attached to the element that contains the tabs).
+   *
+   * @param {jQuery} $container Root results container
+   */
+  function setupAddAttributes($container) {
+    $container.on({
+      submit(e) {
+        e.preventDefault();
+        updateAttrs($(e.target));
+      },
+      change(e, reason) {
+        // Update the command element: if reason is default, then we want to
+        // reset everything in the table.
+        $(e.target).find('[name=command]')
+          .val(reason === 'default' ? 'reset' : 'update');
+      }
+    }, 'form[name="addAttributes"]');
+  }
+
   function updatePageCount(element) {
     var advancedPaging = $(element).parent();
     var resultSize = parseInt($("input.resultSize",advancedPaging).val(), 10);
@@ -283,7 +302,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     var pageSize = $(".pageSize",advancedPaging).val();
 
     var pageUrl = $(".pageUrl", advancedPaging).val();
-    
+
     var pageOffset = (pageNumber - 1) * pageSize;
     var gotoPageUrl = pageUrl.replace(/\&pager\.offset=\d+/, "");
     gotoPageUrl = gotoPageUrl.replace(/\&pageSize=\d+/, "");
@@ -326,6 +345,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       var id = "dialog" + Math.floor(Math.random() * 1000000000);
       $(element).attr("dialog", id);
       list.attr("id", id).dialog({
+        appendTo: '#Summary_Views',
         autoOpen: false,
         open: function() {
           var $this = $(this);
@@ -344,7 +364,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     var pluginName = $(ele).attr("plugin");
     var title = $(ele).attr("plugintitle");
     var url = "invokeAttributePlugin.do?step=" + stepId +
-        "&attribute=" + attributeName + "&plugin=" + pluginName;  
+        "&attribute=" + attributeName + "&plugin=" + pluginName;
     $.ajax({
       url: url,
       dataType: "html",
@@ -374,6 +394,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   ns.closeAdvancedPaging = closeAdvancedPaging;
   ns.configureSummaryViews = configureSummaryViews;
   ns.createFlexigridFromTable = createFlexigridFromTable;
+  ns.setupAddAttributes = setupAddAttributes;
   ns.gotoPage = gotoPage;
   ns.invokeAttributePlugin = invokeAttributePlugin;
   ns.openAdvancedPaging = openAdvancedPaging;
@@ -381,8 +402,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   ns.removeAttribute = removeAttribute;
   ns.resetAttr = resetAttr;
   ns.sortResult = sortResult;
-  ns.updateAttrs = updateAttrs;
   ns.updatePageCount = updatePageCount;
   ns.updateResultLabels = updateResultLabels;
-  
+
 });

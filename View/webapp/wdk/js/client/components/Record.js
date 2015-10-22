@@ -1,68 +1,37 @@
-import React from 'react';
-import Sticky from './Sticky';
+import { Component, PropTypes } from 'react';
 import RecordMainSection from './RecordMainSection';
 import RecordHeading from './RecordHeading';
-import RecordNavigationSection from './RecordNavigationSection';
-import wrappable from '../utils/wrappable';
-import {
-  formatAttributeValue
-} from '../utils/stringUtils';
+import { wrappable } from '../utils/componentUtils';
 
 
-let Record = React.createClass({
-
-  propTypes: {
-    record: React.PropTypes.object.isRequired,
-    recordClass: React.PropTypes.object.isRequired,
-    questions: React.PropTypes.array.isRequired,
-    recordClasses: React.PropTypes.array.isRequired,
-    recordActions: React.PropTypes.object.isRequired,
-    hiddenCategories: React.PropTypes.array.isRequired,
-    collapsedCategories: React.PropTypes.array.isRequired
-  },
-
-  handleVisibleChange({ category, isVisible }) {
-    let { recordClass } = this.props;
-    this.props.recordActions.toggleCategoryVisibility({
-      recordClass,
-      category,
-      isVisible
-    });
-  },
-
-  handleCollapsedChange({ category, isCollapsed }) {
-    let { recordClass } = this.props;
-    this.props.recordActions.toggleCategoryCollapsed({
-      recordClass,
-      category,
-      isCollapsed
-    });
-  },
+class Record extends Component {
 
   render() {
-    let { recordClass } = this.props;
+    let { tables, attributes } = this.props.recordClass;
     return (
       <div className="wdk-Record">
-        <Sticky className="wdk-Record-sidebar">
-          <div>
-            <RecordNavigationSection
-              {...this.props}
-              categories={recordClass.attributeCategories}
-              onVisibleChange={this.handleVisibleChange}
-            />
-            <p style={{ padding: '0 .6em' }}><a href="#top">Back to top</a></p>
-          </div>
-        </Sticky>
-        <div className="wdk-Record-main">
-          <RecordHeading {...this.props}/>
-          <RecordMainSection
-            {...this.props}
-            categories={recordClass.attributeCategories}
-          />
-        </div>
+        <RecordHeading {...this.props}/>
+        <RecordMainSection
+          record={this.props.record}
+          recordClass={this.props.recordClass}
+          categories={this.props.categories}
+          attributes={attributes}
+          tables={tables}
+          collapsedCategories={this.props.collapsedCategories}
+          collapsedTables={this.props.collapsedTables}
+          onCategoryToggle={this.props.onCategoryToggle}
+          onTableToggle={this.props.onTableToggle}
+        />
       </div>
     );
   }
-});
+}
+
+Record.propTypes = {
+  record: PropTypes.object.isRequired,
+  recordClass: PropTypes.object.isRequired,
+  onCategoryToggle: PropTypes.func.isRequired
+};
+
 
 export default wrappable(Record);

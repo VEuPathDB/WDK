@@ -272,6 +272,31 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
     }($__ts, _.now(), _.now()));
   }
 
+  /**
+   * Utility for escaping meta-characters in a CSS selector component. This is
+   * useful for both jQuery and DOM API methods (querySelector and
+   * querySelectorAll);
+   *
+   * Example:
+   *
+   *    var questionableId = getIdFromSomewhere();
+   *    $(node).find('#' + escapeSelectorComponent(questionableId));
+   */
+  var cssSpecialChars = [
+    '!', '"', '#', '$', '%',
+    '&', '\'', '(', ')', '*',
+    '+', ',', '.', '/', ':',
+    ';', '<', '=', '>', '?',
+    '@', '[', '\\', ']', '^',
+    '`', '{', '|', '}', '~', ' '];
+
+  var cssSpecialCharsReString = _.escapeRegExp(cssSpecialChars.join(''));
+  var cssSpecialCharsRe = new RegExp('([' + cssSpecialCharsReString + '])', 'g');
+
+  function escapeSelectorComponent(str) {
+    return str.replace(cssSpecialCharsRe, '\\$1');
+  }
+
   ns.getDisplayType = getDisplayType;
   ns.initShowHide = initShowHide;
   ns.parseUrlUtil = parseUrlUtil;
@@ -288,5 +313,6 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
   ns.toggleErrorDetails = toggleErrorDetails;
   ns.elementNearViewport = elementNearViewport;
   ns.addSpamTimestamp = addSpamTimestamp;
+  ns.escapeSelectorComponent = escapeSelectorComponent;
 
 });

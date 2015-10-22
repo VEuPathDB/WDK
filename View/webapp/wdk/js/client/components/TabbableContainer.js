@@ -3,7 +3,7 @@
  * This is useful for components such as dialogs and dropdown menus.
  */
 import React from 'react';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 let $ = window.jQuery;
 

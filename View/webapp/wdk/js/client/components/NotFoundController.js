@@ -2,7 +2,7 @@
  * Rendered whenever a URL does not match a route
  */
 import React from 'react';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 let NotFoundController = React.createClass({
 

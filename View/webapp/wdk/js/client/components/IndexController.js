@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 // Link is a component used to create links to other routes.
 // See https://github.com/rackt/react-router/blob/master/docs/api/components/Link.md

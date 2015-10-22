@@ -6,7 +6,7 @@ import noop from 'lodash/utility/noop';
 import { Table } from 'fixed-data-table';
 import React from 'react/addons';
 import TouchableArea from './TouchableArea';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 // import css file
 import 'fixed-data-table/dist/fixed-data-table.css';
@@ -133,17 +133,18 @@ let WdkTable = React.createClass({
 
   renderHeader(columnComponent, ...rest) {
     let { dataKey, headerRenderer, isRemovable, isSortable } = columnComponent.props;
+    let width = rest[rest.length - 1];
     let className = 'wdk-AnswerTable-headerWrapper' +
       (isSortable ? ' wdk-AnswerTable-headerWrapper_sortable' : '');
     let sortClass = this.props.sortDataKey === columnComponent.props.dataKey
       ? SORT_CLASS_MAP[this.props.sortDirection] : SORT_CLASS_MAP.ASC + ' wdk-AnswerTable-unsorted';
     let sort = isSortable ? partial(this.handleSort, dataKey) : noop;
     let hide = partial(this.handleHideColumn, dataKey);
-    let title = isSortable ? 'Click to sort table by this column.' : '';
+    let title = isSortable ? 'Click to sort table by ' + rest[0] + '.' : '';
 
     return (
       <div title={title} onClick={sort} className={className}>
-        <span>{headerRenderer ? headerRenderer(...rest) : rest[0]}</span>
+        <span className="wdk-AnswerTable-header" style={{width: width - 64}}>{headerRenderer ? headerRenderer(...rest) : rest[0]}</span>
         {isSortable ? <span className={sortClass}/> : null}
         {isRemovable ? (
           <span className="ui-icon ui-icon-close"

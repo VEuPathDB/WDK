@@ -1,45 +1,45 @@
 import React from 'react';
-import wrappable from '../utils/wrappable';
+import { wrappable } from '../utils/componentUtils';
 
 let RecordNavigationSectionCategories = React.createClass({
 
   propTypes: {
     categories: React.PropTypes.array,
-    hiddenCategories: React.PropTypes.array,
-    onVisibleChange: React.PropTypes.func
+    collapsedCategories: React.PropTypes.array,
+    onCategoryToggle: React.PropTypes.func
   },
 
   getDefaultProperties() {
     return {
-      hiddenCategories: [],
-      onVisibleChange: function() {}
+      collapsedCategories: [],
+      onCategoryToggle: function() {}
     };
   },
 
   render() {
-    let { categories, hiddenCategories, onVisibleChange } = this.props;
+    let { categories, collapsedCategories, onCategoryToggle } = this.props;
 
     if (categories == null) return null;
 
     return (
       <div>
         {categories.map(category => {
-          let isHidden = hiddenCategories.includes(category.name);
+          let isCollapsed = collapsedCategories.includes(category.name);
           return (
             <div key={String(category.name)} className="wdk-RecordNavigationItem">
               <input
                 className="wdk-Record-sidebar-checkbox"
                 type="checkbox"
-                checked={!isHidden}
+                checked={!isCollapsed}
                 onChange={(e) => {
-                  onVisibleChange(category, isHidden);
+                  onCategoryToggle(category, !isCollapsed);
                 }}
               />
               <a
                 href={'#' + category.name}
                 className="wdk-Record-sidebar-title"
                 onClick={() => {
-                  if (isHidden) onVisibleChange(category, isHidden);
+                  if (isCollapsed) onCategoryToggle(category, !isCollapsed);
                 }}
               >
                 <strong>{category.displayName}</strong>

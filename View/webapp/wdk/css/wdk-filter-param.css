@@ -475,8 +475,17 @@
 .wdk-AttributeFilter-ItemIgnored {
   color: #9f9f9f;
 }
-/*
-.filter-param .dataTables_wrapper {
-  overflow-x: auto;
+
+/** Field Selector **/
+.wdk-AttributeFilter-FieldSelector {
+  padding: 0 10px;
 }
-*/
+
+.wdk-AttributeFilter-FieldSelector ul {
+  list-style: none;
+  padding-left: 1em;
+}
+
+.wdk-AttributeFilter-FieldSelector h4 {
+  margin: 10px 0 5px 0;
+}

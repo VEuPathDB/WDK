@@ -145,8 +145,12 @@ public class Step {
   private Exception exception;
 
   private Integer strategyId;
-  
-  /**
+
+  // Set this if this step should not be written to /read from db.  A hack in support of
+  // summary views, until they are refactored using service.
+  private boolean inMemoryOnly = false;
+
+/**
    * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
    * for the passed ID if one is required for processing after construction.
    * 
@@ -227,6 +231,7 @@ public class Step {
     revisable = step.revisable;
     exception = step.exception;
     strategyId = step.strategyId;
+    inMemoryOnly = step.inMemoryOnly;
   }
 
   public Step getPreviousStep() throws WdkModelException {
@@ -545,6 +550,9 @@ public class Step {
 
   // saves attributes of the step that do NOT impact results or parent steps
   public void update(boolean updateTime) throws WdkModelException {
+    // HACK: don't update if this is an in-memory only Step                                                                                                                         
+    // remove this once we refactor the world of summary views, so they don't need such Steps                                                                                       
+    if (inMemoryOnly) return;
     stepFactory.updateStep(getUser(), this, updateTime);
   }
 
@@ -839,9 +847,9 @@ public class Step {
     this.paramValues = new LinkedHashMap<String, String>(paramValues);
   }
 
-  public FilterOptionList getFilterOptions() {
+  public FilterOptionList getFilterOptions() throws WdkModelException {
     if (filterOptions == null) {
-      filterOptions = new FilterOptionList(this);
+      filterOptions = new FilterOptionList(getQuestion());
     }
     return filterOptions;
   }
@@ -853,9 +861,9 @@ public class Step {
       answerValue.setFilterOptions(filterOptions);
   }
 
-  public FilterOptionList getViewFilterOptions() {
+  public FilterOptionList getViewFilterOptions() throws WdkModelException {
     if (viewFilterOptions == null) {
-      viewFilterOptions = new FilterOptionList(this);
+      viewFilterOptions = new FilterOptionList(getQuestion());
     }
     return viewFilterOptions;
   }
@@ -872,7 +880,7 @@ public class Step {
     validateFilterOptions(getViewFilterOptions(), false);
   }
 
-  public void removeFilterOption(String filterName) {
+  public void removeFilterOption(String filterName) throws WdkModelException {
     getFilterOptions().removeFilterOption(filterName);
   }
 
@@ -881,7 +889,7 @@ public class Step {
     validateFilterOptions(getViewFilterOptions(), true);
   }
 
-  public void removeViewFilterOption(String filterName) {
+  public void removeViewFilterOption(String filterName) throws WdkModelException {
     getViewFilterOptions().removeFilterOption(filterName);
   }
 
@@ -1361,7 +1369,7 @@ public class Step {
     setViewFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_VIEW_FILTERS));
   }
 
-  private JSONArray getFilterArrayOrNull(JSONObject jsContent, String propKey) throws WdkModelException {
+  private static JSONArray getFilterArrayOrNull(JSONObject jsContent, String propKey) throws WdkModelException {
     if (jsContent.has(propKey)) {
       // FIXME: Some steps in the DB have a filters property with a JSON object (usually empty);
       //    Ignore these for now to avoid errors; they will eventually be overwritten or die quietly
@@ -1423,7 +1431,7 @@ public class Step {
       this.filterOptions = null;
     }
     else {
-      FilterOptionList newList = new FilterOptionList(this, jsOptions);
+      FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
       validateFilterOptions(newList, false);
       this.filterOptions = newList;
     }
@@ -1438,7 +1446,7 @@ public class Step {
       this.viewFilterOptions = null;
     }
     else {
-      FilterOptionList newList = new FilterOptionList(this, jsOptions);
+      FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
       validateFilterOptions(newList, true);
       this.viewFilterOptions = newList;
     }
@@ -1506,5 +1514,9 @@ public class Step {
 
   public void setStrategyId(Integer strategyId) {
     this.strategyId = strategyId;
+  }
+
+  public void setInMemoryOnly(boolean flag) {
+    inMemoryOnly = true;
   }
 }

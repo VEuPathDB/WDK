@@ -21,14 +21,15 @@
 <div class="attributesList formPopup" title="Select Columns">
 
   <div class="attributesFormWrapper">
-  <form>
+    <form name="addAttributes" action="${commandUrl}">
+      <input type="hidden" name="command" value="update"/>
     <div class="formButtonPanel">
-      <input type="button" value="Update Columns" onclick="wdk.resultsPage.updateAttrs(this,'${commandUrl}')"/>
+      <input type="submit" value="Update Columns"/>
     </div>
     <c:if test="${wdkAnswer.useCheckboxTree}">
       <c:set var="checkboxTreeId" value="sfcbt-${wdkAnswer.recordClass.name}-${idgen.nextId}"/>
       <input type="checkbox" name="selectedFields" value="${wdkAnswer.recordClass.primaryKeyAttribute.name}" checked="checked" style="display:none;"/>
-      <imp:checkboxTree id="${checkboxTreeId}" rootNode="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false" showResetCurrent="true" useHelp="true"/>
+      <imp:checkboxTree id="${checkboxTreeId}" tree="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false" showResetCurrent="true" useHelp="true"/>
     </c:if>
     <c:if test="${not wdkAnswer.useCheckboxTree}">
 	    <div class="formButtonPanel">
@@ -73,7 +74,7 @@
       </div>
     </c:if>
     <div class="formButtonPanel">
-      <input type="button" value="Update Columns" onclick="wdk.resultsPage.updateAttrs(this,'${commandUrl}')"/>
+      <input type="submit" value="Update Columns"/>
     </div>
   </form>
   </div>

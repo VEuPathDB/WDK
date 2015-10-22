@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.test.sanity.RangeCountTestUtil;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
 import org.gusdb.wdk.model.test.sanity.TestResult;
@@ -66,6 +67,10 @@ public class QueryTest implements ElementTest {
     return _paramValuesSet;
   }
 
+  protected boolean isFailureOnCountMismatch() {
+    return false;
+  }
+
   @Override
   public final TestResult test(Statistics stats) throws Exception {
     int sanityMin = getMinRows();
@@ -75,7 +80,8 @@ public class QueryTest implements ElementTest {
         ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
     int count = runQuery(_user, _query, _paramValuesSet, result);
     result.setReturned(count + " rows returned");
-    result.setPassed(count >= sanityMin && count <= sanityMax);
+    RangeCountTestUtil.applyCountAssessment(count, sanityMin, sanityMax,
+        isFailureOnCountMismatch(), result);
     return result;
   }
 
