@@ -30,9 +30,11 @@ export default class DataTable extends Component {
     let tableOpts = Object.assign({}, DataTable.defaultDataTableOpts, {
       columns: formatColumns(this.props.columns),
       data: formatData(this.props.data),
-      scrollY: this.props.height,
       searching: this.props.isSearchable
     });
+
+    if (this.props.height != null)
+      tableOpts.scrollY = this.props.height;
 
     this.dataTable = $('<table class="wdk-DataTable">')
     .width(this.props.width)
@@ -105,8 +107,3 @@ DataTable.defaultDataTableOpts = {
   scrollCollapse: true,
   searching: false
 };
-
-
-function getRowHeight(row) {
-  return 30;
-}
