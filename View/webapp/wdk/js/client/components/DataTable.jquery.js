@@ -5,8 +5,6 @@
  */
 
 import { Component, PropTypes } from 'react';
-import striptags from 'striptags';
-import sortBy from 'lodash/collection/sortBy';
 import mapValues from 'lodash/object/mapValues';
 import { formatAttributeValue } from '../utils/stringUtils';
 
