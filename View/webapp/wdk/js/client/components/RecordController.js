@@ -4,7 +4,6 @@ import Doc from './Doc';
 import Loading from './Loading';
 import RecordUI from './RecordUI';
 import { wrappable } from '../utils/componentUtils';
-import { makeKey } from '../utils/recordUtils';
 
 import RecordViewStore from '../stores/RecordViewStore';
 import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
