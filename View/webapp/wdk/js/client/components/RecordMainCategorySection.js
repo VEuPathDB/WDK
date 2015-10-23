@@ -2,9 +2,7 @@ import React from 'react';
 import RecordAttribute from './RecordAttribute';
 import RecordTable from './RecordTable';
 import { wrappable } from '../utils/componentUtils';
-import {
-  formatAttributeValue
-} from '../utils/stringUtils';
+import { formatAttributeValue } from '../utils/recordUtils';
 
 let RecordMainCategorySection = React.createClass({
 
@@ -19,23 +17,21 @@ let RecordMainCategorySection = React.createClass({
   mixins: [ React.addons.PureRenderMixin ],
 
   toggleCollapse() {
-    let { recordClass, category, isCollapsed } = this.props;
-    this.props.recordActions.toggleCategoryCollapsed({
-      recordClass,
-      category,
-      isCollapsed: !isCollapsed
-    });
+    let { category, isCollapsed } = this.props;
+    this.props.onCategoryToggle(category, !isCollapsed);
+  },
+
+  toggleTableCollapse(table, isCollapsed) {
+    this.props.onTableToggle(table, !isCollapsed);
   },
 
   render() {
-    let { category, depth, record, recordClass, isCollapsed } = this.props;
-    let attributes = recordClass.attributes.filter(a => a.category === category.name);
-    let tableMetas = recordClass.tables.filter(t => t.category === category.name);
-    let headerClass = depth === 1 ? 'wdk-Record-sectionHeader' : 'wdk-Record-sectionSubHeader';
+    let { category, depth, record, attributes, tables, isCollapsed, collapsedTables } = this.props;
+    let headerClass = depth === 1 ? 'wdk-RecordSectionHeader' : 'wdk-RecordSectionSubHeader';
     let Header = 'h' + Math.min(depth + 1, 6);
 
-    return (
-      <div className="wdk-Record-section">
+    return isCollapsed && depth === 1 ? null : (
+      <div className="wdk-RecordSection">
         {depth === 1 ? (
           <Header id={String(category.name)} className={headerClass}>
             {category.displayName}
@@ -45,40 +41,50 @@ let RecordMainCategorySection = React.createClass({
             <i className={'fa fa-' + (isCollapsed ? 'caret-right' : 'caret-down')}/> {category.displayName}
           </Header>
         )}
-        {!isCollapsed &&
-          <div className="wdk-Record-sectionContent">
-            {attributes.length > 0 &&
-              <table className="wdk-RecordAttributeTable">
-                <tbody>
+        {isCollapsed ? null : (
+          <div>
+            <div className="wdk-RecordSectionContent">
+              {attributes.length > 0 &&
+                <div className="wdk-RecordAttributeSection">
                   {attributes.reduce(function(rows, attribute) {
                     let { name, displayName } = attribute;
                     let value = record.attributes[name]
                     if (value != null) {
                       rows.push(
-                        <tr key={name}>
-                          <td><strong>{displayName}</strong></td>
-                          <td><RecordAttribute value={value} /></td>
-                        </tr>
+                        <div className="wdk-RecordAttributeSectionItem" key={name}>
+                          <div className="wdk-RecordAttributeName">
+                            <strong>{displayName}</strong>
+                          </div>
+                          <div className="wdk-RecordAttributeValue">
+                            <RecordAttribute value={value} />
+                          </div>
+                        </div>
                       );
                     }
                     return rows;
                   }, [])}
-                </tbody>
-              </table>
-            }
-            {tableMetas.map(tableMeta => {
-              let table = record.tables[tableMeta.name];
-              if (table.length === 0) return null;
-              return (
-                <div key={tableMeta.name} className="wdk-RecordTableWrapper">
-                  <h3>{tableMeta.displayName}</h3>
-                  <RecordTable table={table} tableMeta={tableMeta}/>
                 </div>
-              );
-            })}
+              }
+              {tables.map(tableMeta => {
+                let { name, displayName } = tableMeta;
+                let table = record.tables[name];
+                let isCollapsed = collapsedTables.includes(name)
+                if (table.length === 0) return null;
+                return (
+                  <div key={name} className="wdk-RecordTableWrapper">
+                    <h3 style={{ cursor: 'pointer' }}
+                      onClick={() => this.toggleTableCollapse(tableMeta, isCollapsed)}>
+                      <i className={'fa fa-' + (isCollapsed? 'caret-right' : 'caret-down')}/>
+                      {' ' + displayName}
+                    </h3>
+                    {isCollapsed? null : <RecordTable table={table} tableMeta={tableMeta}/>}
+                  </div>
+                );
+              })}
+            </div>
+            {this.props.children}
           </div>
-        }
-        {!isCollapsed && this.props.children}
+        )}
       </div>
     );
   }

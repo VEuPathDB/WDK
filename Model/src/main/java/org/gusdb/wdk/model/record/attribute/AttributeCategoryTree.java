@@ -2,10 +2,12 @@ package org.gusdb.wdk.model.record.attribute;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.gusdb.wdk.model.TreeNode;
+import java.util.NoSuchElementException;
+import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -19,7 +21,7 @@ import org.gusdb.wdk.model.record.RecordClass;
  * @author jerric
  * 
  */
-public class AttributeCategoryTree extends WdkModelBase {
+public class AttributeCategoryTree extends WdkModelBase implements Iterable<AttributeCategory> {
 
   private static String newline = System.getProperty("line.separator");
 
@@ -133,15 +135,49 @@ public class AttributeCategoryTree extends WdkModelBase {
     return str.toString();
   }
 
-  public TreeNode toTreeNode(String rootName, String rootDisplayName) {
-    TreeNode root = new TreeNode(rootName, rootDisplayName);
-    for (AttributeCategory cat : topLevelCategories) {
-      root.addChildNode(cat.toTreeNode());
-    }
-    for (AttributeField attrib : topLevelAttributes) {
-      root.addChildNode(new TreeNode(attrib.getName(), attrib.getDisplayName(),
-          attrib.getHelp()));
-    }
-    return root;
+  public FieldTree toFieldTree(String rootName, String rootDisplayName) {
+    return AttributeCategory.toFieldTree(rootName, rootDisplayName, topLevelCategories, topLevelAttributes);
   }
+  
+  @Override
+  public Iterator<AttributeCategory> iterator() {
+    return new AttributeCategoryTreeIterator(this);
+  }
+
+
+  private static class AttributeCategoryTreeIterator implements Iterator<AttributeCategory> {
+
+    private LinkedList<AttributeCategory> items = new LinkedList<AttributeCategory>();
+
+    public AttributeCategoryTreeIterator(AttributeCategoryTree attributeCategoryTree) {
+      items.addAll(attributeCategoryTree.getTopLevelCategories());
+    }
+
+    @Override
+    public boolean hasNext() {
+      return items.size() > 0;
+    }
+
+    @Override
+    public AttributeCategory next() {
+      if (!hasNext()) throw new NoSuchElementException();
+
+      // get our next item, which we will return
+      AttributeCategory item = items.pop();
+
+      // check if there are any children, and if so, push that to the iterator stack
+      List<AttributeCategory> children = item.getSubCategories();
+      if (children != null) {
+        items.addAll(0, children);
+      }
+
+      return item;
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
 }

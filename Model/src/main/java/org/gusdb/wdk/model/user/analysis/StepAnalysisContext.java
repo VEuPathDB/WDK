@@ -160,7 +160,7 @@ public class StepAnalysisContext {
       ctx._formParams = new LinkedHashMap<>();
       JSONObject formObj = json.getJSONObject(JsonKey.formParams.name());
       LOG.debug("Retrieved the following params JSON from the DB: " + formObj);
-      
+
       Iterator<String> iter2 = formObj.keys();
       while (iter2.hasNext()) {
         String key = iter2.next();

@@ -458,7 +458,7 @@ public class UserFactory {
           fieldMap[i + 1] == null ? " IS NULL" : " = ?");
     }
     String sqlStr = sql.toString();
-    logger.info("Generated the following SQL: " + sqlStr);
+    logger.debug("Generated the following SQL: " + sqlStr);
     return sqlStr;
   }
 

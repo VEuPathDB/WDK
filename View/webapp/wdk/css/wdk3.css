@@ -1,7 +1,15 @@
+/* FIXME Some of these rules don't belong in WDK */
+/* TODO Put rules into separate files */
+
 /* apply a natural box layout model to all elements, but allowing components to change */
 /* See http://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
 html {
   box-sizing: border-box;
+  height: 100%;
+}
+
+body {
+  height: 100%;
 }
 /* Unfortunately, this does not play well with legacy WDK CSS
 *, *:before, *:after {
@@ -16,28 +24,9 @@ body {
 }
 */
 
-main {
-  position: relative;
-  min-height: 200px;
-}
-main * {
-  font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif;
-}
-main h1 {
-  text-align: left;
-  margin: 22px 0;
-  font-size: 2.5em;
-  font-weight: 300;
-}
-main h2 {
-  font-size: 1.8em;
-  font-weight: 400;
-}
-main h3 {
-  margin: 22px 0 8px 0;
-}
-main h4 {
-  margin: 10px 0 8px 0;
+.wdk-RootContainer {
+  height: 100%;
+  background-color: #fcfcfc;
 }
 
 .wdkAnswerLoading {
@@ -49,6 +38,10 @@ main h4 {
   position: absolute;
   top: 2em;
   left: 50%;
+}
+
+.wdk-AnswerContainer {
+  padding: 0 1em;
 }
 
 .wdk-Answer-filter {
@@ -131,12 +124,12 @@ main h4 {
   border: 1px dotted #cccccc;
 }
 
-.wdk-AnswerTable td {
-
-}
-
 .wdk-AnswerTable-header {
   display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: top;
 }
 
 .wdk-AnswerTable-headerWrapper {
@@ -164,7 +157,7 @@ main h4 {
   position: absolute;
   right: 2em;
   top: 3em;
-  font-size:1.2em; 
+  font-size:1.2em;
 }
 .wdk-AnswerTable-attributeValue {
   line-height: 1.6;
@@ -244,6 +237,12 @@ main h4 {
 
 .wdk-RecordActions {
   padding: 0;
+  margin: .6em;
+  float: left;
+}
+
+.wdk-RecordHeading {
+  clear: both;
 }
 
 .wdk-RecordActionItem {
@@ -254,35 +253,76 @@ main h4 {
   padding: 0 2em 0 0;
 }
 
-.wdk-Record-main {
-  margin-left: 260px;
+.wdk-RecordContainer {
+  position: relative;
+  height: 100%;
 }
 
-.wdk-Record-main td {
+.wdk-RecordMain, .wdk-RecordSidebar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  overflow-y: auto;
+  padding: 0 26px;
+  transition: left 250ms ease;
+}
+
+.wdk-RecordSidebar {
+  width: 216px;
+  left: -236px;
+  padding: 0 10px;
+}
+
+.wdk-RecordMain {
+  left: 0;
+  right: 0;
+  margin: 0;
+  border-left: 1px solid #d8d8d8;
+}
+
+.wdk-RecordSidebarToggle {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  border: 0;
+  background: transparent;
+  transition: left 250ms ease;
+  z-index: 1;
+}
+
+.wdk-RecordSidebarToggle:focus {
+  outline: 1px dotted;
+}
+
+.wdk-RecordContainer__withSidebar .wdk-RecordMain {
+  left: 236px;
+}
+
+.wdk-RecordContainer__withSidebar .wdk-RecordSidebar {
+  left: 0;
+}
+
+.wdk-RecordContainer__withSidebar .wdk-RecordSidebarToggle {
+  left: 208px;
+  top: 4px;
+}
+
+.wdk-RecordMain td {
   word-break: break-all;
 }
 
-.wdk-Record-sidebar {
-  width: 235px;
-  float: left;
-  margin-top: 1.5em;
+.wdk-RecordNavigationSectionHeader {
+  margin-left: 0;
 }
 
 .wdk-RecordNavigationSection {
-  border: 1px solid #d8d8d8;
-  border-radius: 4px;
-  margin-top: 1em;
-}
-
-.wdk-RecordNavigationSectionHeader {
-  margin: 0;
-  padding: .6em;
-  background: #f2f2f2;
-  border-radius: 4px;
+  margin: 1em 0 2em;
 }
 
 .wdk-RecordNavigationItem {
   position: relative;
+  border-bottom: 1px solid #d8d8d8;
+  margin-top: 2px;
 }
 
 .wdk-Record-sidebar > ul {
@@ -292,9 +332,7 @@ main h4 {
 
 .wdk-Record-sidebar-title {
   display: block;
-  border-top: 1px solid #c0c0c0;
-  padding: .6em;
-  /*padding-left: 2.6em;*/
+  padding: .6em 0;
 }
 
 .wdk-Record-sidebar-checkbox {
@@ -303,11 +341,11 @@ main h4 {
   right: .6em;
 }
 
-.wdk-Record-section .wdk-Record-section {
+.wdk-RecordSection .wdk-RecordSection {
   padding-left: 1em;
 }
 
-.wdk-Record-sectionHeader {
+.wdk-RecordSectionHeader {
   /*background-color: #eeeeee;
   padding: .3em;*/
   margin: 8px 0;
@@ -315,20 +353,20 @@ main h4 {
   border-bottom: 1px solid;
 }
 
-.wdk-Record-sectionSubHeader {
+.wdk-RecordSectionSubHeader {
   margin: 12px 0 8px 0;
   position: relative;
   border-bottom: 1px dotted;
   cursor: pointer;
 }
 
-.wdk-Record-sectionHeaderTopLink {
+.wdk-RecordSectionHeaderTopLink {
   position: absolute;
   right: 1em;
   z-index: 1;
 }
 
-.wdk-Record-sectionContent {
+.wdk-RecordSectionContent {
   margin-bottom: 22px;
   padding: 0 1.2em;
   /* background-color: #fafafa; */
@@ -336,39 +374,79 @@ main h4 {
   border-radius: 4px; */
 }
 
-.wdk-Record-attributeContent {
+.wdk-RecordAttributeContent {
   word-break: break-all;
   display: inline-block;
 }
 
-.wdk-RecordAttributeTable tr {
-  /*border-bottom: 1px dotted;*/
+.wdk-RecordAttributeSectionItem {
+  display: inline-block;
+  width: 50%;
+  padding: 4px 0;
 }
 
-.wdk-RecordAttributeTable td:first-child {
-  vertical-align: top;
-  padding-left: 0;
-  /* text-align: right;*/
+.wdk-RecordAttributeName, .wdk-RecordAttributeValue {
+  display: inline-block;
+  padding: 0 4px;
+  vertical-align: middle;
 }
 
-.wdk-RecordTable {
+.wdk-DataTable {
+  width: 100%;
   border: 1px solid #d8d8d8;
   background-color: #fdfdfd;
 }
 
-.wdk-RecordTableHeader {
-  background-color: #eeeeee;
-  padding: .3em;
-  margin: 12px 0 8px 0;
-  position: relative;
-}
-
-.wdk-RecordTable th {
+.wdk-DataTable th {
   background-color: #f2f2f2;
   border: 1px solid #d8d8d8;
   padding: .6em;
+  white-space: nowrap;
 }
 
-.wdk-RecordTable td {
+.wdk-DataTable td {
+  background-color: white;
   border: 1px solid #d8d8d8;
+  word-break: break-all;
+}
+
+
+/** DataTables and FontAwesome integration **/
+
+.wdk-DataTableContainer table.dataTable thead th {
+  position: relative;
+  background-image: none !important;
+  padding-right: 3em;
+  background-clip: padding-box; /** prevent Firefox from painter over cell borders **/
+}
+
+.wdk-DataTableContainer table.dataTable thead th.sorting:after,
+.wdk-DataTableContainer table.dataTable thead th.sorting_asc:after,
+.wdk-DataTableContainer table.dataTable thead th.sorting_desc:after {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  display: block;
+  font-family: FontAwesome;
+}
+.wdk-DataTableContainer table.dataTable thead th.sorting:after {
+  content: "\f175\f176";
+  color: #ccc;
+  font-size: 0.8em;
+  padding-top: 0.12em;
+}
+.wdk-DataTableContainer table.dataTable thead th.sorting_asc:after {
+  content: "\f160";
+}
+.wdk-DataTableContainer table.dataTable thead th.sorting_desc:after {
+  content: "\f161";
+}
+
+.wdk-DataTableContainer .dataTables_scrollBody table.dataTable thead th:after {
+  content: "" !important;
+}
+
+.wdk-DataTableContainer .dataTables_info {
+  display: block;
+  padding: 4px;
 }

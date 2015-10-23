@@ -1,8 +1,6 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
-import {
-  formatAttributeValue
-} from '../utils/stringUtils';
+import { formatAttributeValue } from '../utils/recordUtils';
 
 let RecordAttribute = React.createClass({
 

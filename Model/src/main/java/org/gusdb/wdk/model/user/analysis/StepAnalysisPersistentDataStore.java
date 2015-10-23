@@ -531,7 +531,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     try {
       int changed = new SQLRunner(_appDs, UPDATE_EXECUTION_SQL).executeUpdate(
           new Object[]{ status.name(), getTimestamp(updateDate), charData, binData, contextHash },
-          new Integer[]{ Types.VARCHAR, Types.TIMESTAMP, Types.CLOB, Types.BLOB, Types.VARCHAR });
+          new Integer[]{ Types.VARCHAR, Types.TIMESTAMP, Types.CLOB, _appPlatform.getBlobSqlType(), Types.VARCHAR });
       if (changed == 0) {
         throw new WdkModelException("Unable to find execution with context hash " + contextHash);
       }

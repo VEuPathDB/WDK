@@ -1,10 +1,10 @@
 package org.gusdb.wdk.model.report;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,9 +31,6 @@ public abstract class StandardReporter extends Reporter {
     super(answerValue, startIndex, endIndex);
   }
 
-  /*
-   * 
-   */
 @Override
 public void configure(Map<String, String> config){
   super.configure(config);
@@ -97,7 +94,7 @@ protected Set<Field> validateColumns() throws WdkModelException {
   return columns;
 }
 
-protected Set<AttributeField> validateAttributeColumns() throws WdkModelException {
+protected Set<AttributeField> validateAttributeColumns() {
   // get a map of report maker fields
   Map<String, AttributeField> fieldMap = getQuestion().getAttributeFieldMap();
 
@@ -189,9 +186,11 @@ public class Configuration {
         JSONArray flds = config.getJSONArray(SELECTED_FIELDS);
         for (int i=0; i<flds.length(); i++) {
           String fld = flds.getString(i);
-          fields.add(fld);
-          if (fieldMap.get(fld).getClass().getName().contains("AttributeField")) attributes.add(fld);
-          if (fieldMap.get(fld).getClass().getName().contains("TableField")) tables.add(fld);
+	  if (fieldMap.containsKey(fld))  { // we might get passed category names, that are not fields.  skip these
+            fields.add(fld);
+            if (fieldMap.get(fld).getClass().getName().contains("AttributeField")) attributes.add(fld);
+            if (fieldMap.get(fld).getClass().getName().contains("TableField")) tables.add(fld);
+          }
         }
       }
        
@@ -215,7 +214,7 @@ public class Configuration {
         }
       }
 
-      if (config.has(ATTACHMENT_TYPE)) attachmentType = config.getString(ATTACHMENT_TYPE);
+      if (config.has(ATTACHMENT_TYPE_JSON)) attachmentType = config.getString(ATTACHMENT_TYPE_JSON);
     }
     
     /**
@@ -237,8 +236,10 @@ public class Configuration {
         if (flds.equals("all")) allFields = true;
         else fields = Arrays.asList(flds.split(","));
         for (String fld : fields) {
-          if (fieldMap.get(fld).getClass().getName().contains("AttributeField")) attributes.add(fld);
-          if (fieldMap.get(fld).getClass().getName().contains("TableField")) tables.add(fld);
+ 	  if (fieldMap.containsKey(fld))  { // we might get passed category names, that are not fields.  skip these
+            if (fieldMap.get(fld).getClass().getName().contains("AttributeField")) attributes.add(fld);
+            if (fieldMap.get(fld).getClass().getName().contains("TableField")) tables.add(fld);
+          }
         }
       } else {
 	if (config.containsKey(SELECTED_ATTRS)) {

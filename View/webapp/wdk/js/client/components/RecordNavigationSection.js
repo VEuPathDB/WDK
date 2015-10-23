@@ -6,8 +6,8 @@ let RecordNavigationSection = React.createClass({
 
   propTypes: {
     categories: React.PropTypes.array,
-    hiddenCategories: React.PropTypes.array,
-    onVisibleChange: React.PropTypes.func,
+    collapsedCategories: React.PropTypes.array,
+    onCategoryToggle: React.PropTypes.func,
     heading: React.PropTypes.node
   },
 
@@ -15,7 +15,7 @@ let RecordNavigationSection = React.createClass({
 
   getDefaultProps() {
     return {
-      onVisibleChange: function noop() {},
+      onCategoryToggle: function noop() {},
       heading: 'Categories'
     };
   },
@@ -26,19 +26,15 @@ let RecordNavigationSection = React.createClass({
   handleShowNone() {
   },
 
-  handleToggle(category, isVisible) {
-    this.props.onVisibleChange({ category, isVisible });
-  },
-
   render() {
-    let { categories, hiddenCategories, heading } = this.props;
+    let { categories, collapsedCategories, heading } = this.props;
     return (
       <div className="wdk-RecordNavigationSection">
-        <h3 className="wdk-RecordNavigationSectionHeader">{heading}</h3>
+        <h2 className="wdk-RecordNavigationSectionHeader">{heading}</h2>
         <RecordNavigationSectionCategories
           categories={categories}
-          hiddenCategories={hiddenCategories}
-          onVisibleChange={this.handleToggle}
+          collapsedCategories={collapsedCategories}
+          onCategoryToggle={this.props.onCategoryToggle}
         />
       </div>
     );

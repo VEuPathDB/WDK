@@ -37,7 +37,7 @@ public class TabularReporter extends StandardReporter {
 
     public static final String FIELD_HAS_HEADER = "includeHeader";
     public static final String FIELD_DIVIDER = "divider";
-    public static final String FIELD_SELECTED_COLUMNS = "selectedFields";
+    public static final String FIELD_SELECTED_COLUMNS = StandardReporter.Configuration.SELECTED_FIELDS;
 
     public static final long MAX_EXCEL_LENGTH = 1024 * 1024 * 10;
 

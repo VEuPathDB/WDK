@@ -65,11 +65,14 @@ public class SanityTester {
   private final List<ElementTest> _tests;
 
   public SanityTester(WdkModel wdkModel, TestFilter testFilter, boolean failuresOnly,
-      boolean indexOnly, boolean skipWebSvcQueries) throws WdkModelException {
+      boolean indexOnly, boolean skipWebSvcQueries, boolean verbose,
+      boolean passCountMismatches) throws WdkModelException {
     _appDb = wdkModel.getAppDb();
     _indexOnly = indexOnly;
     _failuresOnly = failuresOnly;
     _testFilter = testFilter;
+    TestResult.setVerbose(verbose);
+    RangeCountTestUtil.setPassCountMismatches(passCountMismatches);
     long testStart = System.currentTimeMillis();
     TestBuilder testBuilder = (USE_CLASSIC_TEST_SETUP ?
         new ClassicTestBuilder() : new TopDownTestBuilder());
@@ -79,7 +82,7 @@ public class SanityTester {
     _stats.setNumTestsCreated(_tests.size());
   }
 
-  public List<TestResult> runTests() throws Exception {
+  public List<TestResult> runTests() {
     List<TestResult> results = new ArrayList<>();
     for (int i = 1; i <= _tests.size(); i++) {
       ElementTest element = _tests.get(i-1);
