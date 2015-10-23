@@ -109,24 +109,19 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
   var FieldList = React.createClass({
     propTypes: {
-      fields: PropTypes.array.isRequired,
+      fieldTree: PropTypes.array.isRequired,
       onFieldSelect: PropTypes.func.isRequired,
-      selectedField: PropTypes.object,
-      trimMetadataTerms: PropTypes.bool
+      selectedField: PropTypes.object
     },
 
     render: function() {
-      var treeOpts = _.pick(this.props, 'trimMetadataTerms');
-      var fieldsToTreeNodes = _.partial(Fields.getTree, treeOpts);
-      var { fields } = this.props;
-      var restProps = _.omit(this.props, 'fields', 'trimMetadataTerms');
-
-      var treeNodes = fieldsToTreeNodes(fields);
+      var { fieldTree } = this.props;
+      var restProps = _.omit(this.props, 'fieldTree');
 
       return (
         <div className="field-list">
           <div className="toggle-links"> </div>
-          <FieldTree {...restProps} ItemComponent={PanelItem} treeNodes={treeNodes}/>
+          <FieldTree {...restProps} ItemComponent={PanelItem} treeNodes={fieldTree}/>
         </div>
       );
     }
@@ -187,7 +182,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     propTypes: {
       tabWidth: PropTypes.number,
       filteredData: PropTypes.array,
-      fields: PropTypes.array,
+      fieldTree: PropTypes.array,
       selectedFields: PropTypes.array,
       ignored: PropTypes.array,
       metadata: PropTypes.object,
@@ -226,15 +221,11 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       });
     },
 
-    handleFieldSelect: function() {
-      var form = this.refs.fieldSelector.getDOMNode();
-      var fields = this.props.fields;
-      var pendingSelectedFields = [].slice.call(form.field)
-        .filter(field => field.checked)
-        .map(field => fields.filter(f => f.term == field.value)[0]);
-      this.setState({
-        pendingSelectedFields: pendingSelectedFields
-      });
+    handleFieldSelect: function(field, isSelected) {
+      let pendingSelectedFields = isSelected
+        ? this.state.pendingSelectedFields.concat(field)
+        : this.state.pendingSelectedFields.filter(f => f != field);
+      this.setState({ pendingSelectedFields });
     },
 
     handleFieldSubmit: function(event) {
@@ -260,7 +251,6 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     getRow: function(index) {
       return this.props.filteredData[index];
-      // return _.cloneDeep(this.props.filteredData[index]);
     },
 
     getRowClassName: function(index) {
@@ -291,8 +281,8 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     render: function() {
-      var { fields, selectedFields, metadata, filteredData, displayName, tabWidth, totalSize } = this.props;
-      var { dialogIsOpen, pendingSelectedFields } = this.state;
+      var { fieldTree, selectedFields, metadata, filteredData, displayName, tabWidth, totalSize } = this.props;
+      var { dialogIsOpen } = this.state;
 
       if (!tabWidth) return null;
 
@@ -312,29 +302,17 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             onClose={this.handleDialogClose}
             title="Select Columns"
           >
-            <div>
+            <div className="wdk-AttributeFilter-FieldSelector">
               <form ref="fieldSelector" onSubmit={this.handleFieldSubmit}>
                 <div style={{textAlign: 'center', padding: 10}}>
                   <button>Update Columns</button>
                 </div>
-                <ul style={{listStyle: 'none'}}>
-                  {fields.map(field => {
-                    return (
-                      <li>
-                        <label>
-                          <input
-                            type="checkbox"
-                            name="field"
-                            checked={pendingSelectedFields.indexOf(field) > -1}
-                            value={field.term}
-                            onChange={this.handleFieldSelect}
-                          />
-                          {' ' + field.display + ' '}
-                        </label>
-                      </li>
-                    );
-                  })}
-                </ul>
+                <FieldTree
+                  onFieldSelect={this.handleFieldSelect}
+                  ItemComponent={SelectorItem}
+                  treeNodes={fieldTree}
+                  selectedFields={this.state.pendingSelectedFields}
+                />
                 <div style={{textAlign: 'center', padding: 10}}>
                   <button>Update Columns</button>
                 </div>
@@ -501,6 +479,11 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
       if (sortDirection == 'DESC') sortedFilteredData.reverse();
 
+      // Create tree from fields
+      var treeOpts = _.pick(this.props, 'trimMetadataTerms');
+      var fieldTree = Fields.getTree(treeOpts, fields);
+
+
       return (
         <div>
           {isLoading ? <Loading className="wdk-AttributeFilter-Loading" radius={4}/> : null}
@@ -540,17 +523,18 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
               <div id="filters">
                 <div className="filters ui-helper-clearfix">
                   <FieldList
-                    fields={fields}
+                    fieldTree={fieldTree}
                     onFieldSelect={actions.selectField}
                     selectedField={selectedField}
-                    trimMetadataTerms={this.props.trimMetadataTerms}/>
+                  />
 
                   <FieldFilter
                     displayName={displayName}
                     field={selectedField}
                     filter={selectedFilter}
                     distribution={distributionMap[_.result(selectedField, 'term')]}
-                    onAddFilter={actions.addFilter}/>
+                    onAddFilter={actions.addFilter}
+                  />
                 </div>
               </div>
 
@@ -568,7 +552,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                   filteredData={sortedFilteredData}
                   totalSize={data.length}
                   selectedFields={columns}
-                  fields={fields}
+                  fieldTree={fieldTree}
                   ignored={ignored}
                   metadata={metadata}/>
               </div>
@@ -693,6 +677,36 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     }
 
   });
+
+  var SelectorItem = React.createClass({
+    propTypes: {
+      field: PropTypes.object.isRequired,
+      onFieldSelect: PropTypes.func.isRequired,
+      selectedFields: PropTypes.array.isRequired
+    },
+
+    handleCheck: function(event) {
+      this.props.onFieldSelect(this.props.field, event.target.checked);
+    },
+
+    render: function() {
+      let { field, selectedFields } = this.props;
+      return (
+        <label>
+          <input
+            type="checkbox"
+            name="field"
+            checked={selectedFields.includes(field)}
+            value={field.term}
+            onChange={this.handleCheck}
+          />
+          {' ' + field.display + ' '}
+        </label>
+      );
+    }
+
+  });
+
 
   // Reusable histogram field component. The parent component
   // is responsible for preparing the data.
