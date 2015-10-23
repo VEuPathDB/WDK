@@ -8,7 +8,7 @@ import Dialog from './Dialog';
 import {
   formatAttributeName,
   formatAttributeValue
-} from '../utils/stringUtils';
+} from '../utils/recordUtils';
 import { wrappable } from '../utils/componentUtils';
 
 /**
