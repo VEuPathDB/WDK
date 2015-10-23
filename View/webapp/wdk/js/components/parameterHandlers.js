@@ -2,6 +2,7 @@
 wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   var XHR_DATA_KEY = 'dependent-xhr';
+  var PARAM_LOADING_EVENT = ns.PARAM_LOADING_EVENT = 'loading.wdk-param';
 
   var displayTermMap;
   var termDisplayMap;
@@ -22,7 +23,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   //==============================================================================
   //
-  // Listen to 'loading.wdkparam' events on question element. The event will come
+  // Listen to PARAM_LOADING_EVENT events on question element. The event will come
   // with an additional boolean param to indicate if it is in a loading state or
   // not. This value will be set on a map. After each event, if some are loading,
   // then the submit button will be disabled; otherwise it will be enabled.
@@ -33,7 +34,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     let submit = element.closest('form').find(':input[name=questionSubmit]');
     let originalValue = submit.val();
 
-    element.on('loading.wdkparam', function(event, isLoading) {
+    element.on(PARAM_LOADING_EVENT, function(event, isLoading) {
       loadingParams.set(event.target, isLoading);
 
       let someLoading = Array.from(loadingParams.values())
@@ -131,17 +132,13 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
             return dependentElement.find(".dependentParam[name='" + dependentName + "']")
               .find("input, select")
                 .prop("disabled", true)
-                .end()
-              .trigger('loading.wdkparam', [ true ]);
+                .end();
           })
           .reduce(function(results, $dependentParam) {
             var result =  updateDependentParam($dependentParam, dependentElement);
             if (result) {
               // stash promises returned by $.ajax
               results.push(result);
-              result.then(function() {
-                $dependentParam.trigger('loading.wdkparam', [ false ]);
-              });
             }
             return results;
           }, []);
@@ -167,13 +164,13 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         } else {
           var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
 
-          $.getJSON(sendReqUrl)
+          getParamJson($param, sendReqUrl)
             .then(function(data) {
               // createAutoComplete(data, paramName, element);
               createFilteredSelect(data, paramName, $param, keepPreviousValue);
             })
-            .done(function() {
-              $param.find('.loading').hide();
+            .always(function() {
+              triggerLoading($param, false);
             });
         }
       });
@@ -200,8 +197,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         var paramName = $param.attr('name');
         var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&json=true';
 
-        $.getJSON(sendReqUrl)
-          .then(createFilterParam.bind(null, $param, questionName, {}));
+        getParamJson($param, sendReqUrl)
+        .then(createFilterParam.bind(null, $param, questionName, {}));
       }
     });
   }
@@ -306,7 +303,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }));
 
       // trigger loading event on $param
-      $param.trigger('loading.wdkparam', value.isLoading);
+      triggerLoading($param, value.isLoading);
     });
 
     // filterParam.on('ready', function() {
@@ -788,13 +785,46 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     });
 
+    // notify listeners that the param is loading
+    triggerLoading(dependentParam, true);
+
     // remove xhr object when it's complete, or if it failed (including abort)
     xhr.always(function() {
       dependentParam.data(XHR_DATA_KEY, undefined);
+      // notify listeners that the param is not loading
+      triggerLoading(dependentParam, false);
     });
 
     // return a Promise
     return xhr.promise();
+  }
+
+  /**
+   * Trigger a PARAM_LOADING_EVENT on the given param.
+   *
+   * @param {jQuery} $param The param
+   * @param {boolean} isLoading The param is loading
+   */
+  function triggerLoading($param, isLoading) {
+    $param.trigger(PARAM_LOADING_EVENT, [ !!isLoading ]);
+  }
+
+  /**
+   * Utility to get param JSON. Handles errors and triggering loading events.
+   */
+  function getParamJson($param, url) {
+    triggerLoading($param, true);
+    return $.getJSON(url)
+    .fail(function(jqXHR, textStatus, reason) {
+      var paramName = $($0).closest('.param-item').find('>label').text().trim() ||
+        'An unknown param';
+      var message = paramName + ' could not be loaded: ' + reason;
+      alert(message);
+      console.error(message);
+    })
+    .always(function() {
+      triggerLoading($param, false);
+    });
   }
 
   //==============================================================================
