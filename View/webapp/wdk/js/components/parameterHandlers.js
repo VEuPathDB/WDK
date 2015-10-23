@@ -11,12 +11,38 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     displayTermMap = [];
     termDisplayMap = [];
 
+    attachLoadingListener(element);
     initTypeAhead(element);
     initDependentParamHandlers(element);
     initFilterParam(element);
 
     // need to trigger the click event so that the stage is set correctly on revise.
     element.find("#operations input[type='radio']:checked").click();
+  }
+
+  //==============================================================================
+  //
+  // Listen to 'loading.wdkparam' events on question element. The event will come
+  // with an additional boolean param to indicate if it is in a loading state or
+  // not. This value will be set on a map. After each event, if some are loading,
+  // then the submit button will be disabled; otherwise it will be enabled.
+  //
+  //==============================================================================
+  function attachLoadingListener(element) {
+    let loadingParams = new Map();
+    let submit = element.closest('form').find(':input[name=questionSubmit]');
+    let originalValue = submit.val();
+
+    element.on('loading.wdkparam', function(event, isLoading) {
+      loadingParams.set(event.target, isLoading);
+
+      let someLoading = Array.from(loadingParams.values())
+      .reduce(function(acc, isLoading) {
+        return acc || isLoading;
+      });
+
+      submit.prop('disabled', someLoading).val(someLoading ? 'Loading...' : originalValue);
+    });
   }
 
   //==============================================================================
@@ -94,9 +120,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   function onDependedParamChange(dependedParam, dependentElement, dependentParamsMap) {
         var dependedName = dependedParam.attr("name");
         var $form = dependedParam.closest("form");
-        var $submitButton = $form.find('input[type=submit]');
-
-        $submitButton.prop('disabled', true);
 
         // map list of names to elements
         // then reduce to a list of $.ajax deferred objects
@@ -108,21 +131,24 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
             return dependentElement.find(".dependentParam[name='" + dependentName + "']")
               .find("input, select")
                 .prop("disabled", true)
-                .end();
+                .end()
+              .trigger('loading.wdkparam', [ true ]);
           })
           .reduce(function(results, $dependentParam) {
             var result =  updateDependentParam($dependentParam, dependentElement);
             if (result) {
               // stash promises returned by $.ajax
               results.push(result);
+              result.then(function() {
+                $dependentParam.trigger('loading.wdkparam', [ false ]);
+              });
             }
             return results;
           }, []);
 
         // trigger form.change only when all deferreds are resolved
-        $.when.apply($, dependentDeferreds).then(function() {
+        $.when(...dependentDeferreds).then(function() {
           $form.change();
-          $submitButton.prop('disabled', false);
         });
   }
 
@@ -278,6 +304,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         ignored: _.pluck(ignored, 'term'),
         filters: _.map(value.filters, _.partialRight(_.omit, 'selection'))
       }));
+
+      // trigger loading event on $param
+      $param.trigger('loading.wdkparam', value.isLoading);
     });
 
     // filterParam.on('ready', function() {
