@@ -3,7 +3,7 @@ import ReactRouter from 'react-router';
 import { wrappable } from '../utils/componentUtils';
 import {
   formatAttributeValue
-} from '../utils/stringUtils';
+} from '../utils/recordUtils';
 
 let { Link, Navigation } = ReactRouter;
 let primaryKeyName = 'primary_key';

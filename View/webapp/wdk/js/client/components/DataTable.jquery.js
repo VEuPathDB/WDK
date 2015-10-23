@@ -6,7 +6,7 @@
 
 import { Component, PropTypes } from 'react';
 import mapValues from 'lodash/object/mapValues';
-import { formatAttributeValue } from '../utils/stringUtils';
+import { formatAttributeValue } from '../utils/recordUtils';
 
 let $ = window.jQuery;
 
