@@ -7,6 +7,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
@@ -42,7 +43,7 @@ public interface StepAnalyzer {
    * @throws WdkModelException 
    */
   public Object getResultViewModel() throws WdkModelException;
-  
+
   /**
    * Sets a property as passed in from the WDK Model
    * 
@@ -50,14 +51,21 @@ public interface StepAnalyzer {
    * @param value property value
    */
   public void setProperty(String key, String value);
-  
+
   /**
    * Validate that property names and values are valid.
    * 
    * @throws WdkModelException if properties set are invalid
    */
   public void validateProperties() throws WdkModelException;
-  
+
+  /**
+   * Validate that this analysis plugin has been assigned to a valid Question.
+   * 
+   * @throws WdkModelException if question is inappropriate to this plugin
+   */
+  public void validateQuestion(Question question) throws WdkModelException;
+
   /**
    * Sets form params retrieved from the submission of this plugin's form
    * 

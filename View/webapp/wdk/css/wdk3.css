@@ -1,4 +1,5 @@
 /* FIXME Some of these rules don't belong in WDK */
+/* TODO Put rules into separate files */
 
 /* apply a natural box layout model to all elements, but allowing components to change */
 /* See http://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
@@ -125,6 +126,10 @@ body {
 
 .wdk-AnswerTable-header {
   display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: top;
 }
 
 .wdk-AnswerTable-headerWrapper {
@@ -382,34 +387,87 @@ body {
 
 .wdk-RecordAttributeName, .wdk-RecordAttributeValue {
   display: inline-block;
-  padding: 0 4px;
   vertical-align: middle;
 }
 
-.wdk-RecordTableWrapper {
-  overflow-x: auto;
+.wdk-RecordAttributeValue {
+  padding: 0 4px;
 }
 
-.wdk-RecordTable {
+.wdk-RecordTableHeader {
+  cursor: pointer;
+  margin: 10px 0;
+  font-weight: bold;
+  position: relative;
+}
+
+.wdk-RecordTableHeader:before {
+  position: absolute;
+  left: -1em;
+  font-family: FontAwesome;
+  content: '\f0d7';
+  line-height: 1.4;
+}
+.wdk-RecordTableHeader__collapsed:before {
+  content: '\f0da';
+}
+
+.wdk-DataTable {
   width: 100%;
   border: 1px solid #d8d8d8;
   background-color: #fdfdfd;
 }
 
-.wdk-RecordTableHeader {
-  background-color: #eeeeee;
-  padding: .3em;
-  margin: 12px 0 8px 0;
-  position: relative;
-}
-
-.wdk-RecordTable th {
+.wdk-DataTable th {
   background-color: #f2f2f2;
   border: 1px solid #d8d8d8;
   padding: .6em;
+  white-space: nowrap;
 }
 
-.wdk-RecordTable td {
+.wdk-DataTable td {
+  background-color: white;
   border: 1px solid #d8d8d8;
   word-break: break-all;
+}
+
+
+/** DataTables and FontAwesome integration **/
+
+.wdk-DataTableContainer table.dataTable thead th {
+  position: relative;
+  background-image: none !important;
+  padding-right: 3em;
+  background-clip: padding-box; /** prevent Firefox from painter over cell borders **/
+}
+
+.wdk-DataTableContainer table.dataTable thead th.sorting:after,
+.wdk-DataTableContainer table.dataTable thead th.sorting_asc:after,
+.wdk-DataTableContainer table.dataTable thead th.sorting_desc:after {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  display: block;
+  font-family: FontAwesome;
+}
+.wdk-DataTableContainer table.dataTable thead th.sorting:after {
+  content: "\f175\f176";
+  color: #ccc;
+  font-size: 0.8em;
+  padding-top: 0.12em;
+}
+.wdk-DataTableContainer table.dataTable thead th.sorting_asc:after {
+  content: "\f160";
+}
+.wdk-DataTableContainer table.dataTable thead th.sorting_desc:after {
+  content: "\f161";
+}
+
+.wdk-DataTableContainer .dataTables_scrollBody table.dataTable thead th:after {
+  content: "" !important;
+}
+
+.wdk-DataTableContainer .dataTables_info {
+  display: block;
+  padding: 4px;
 }
