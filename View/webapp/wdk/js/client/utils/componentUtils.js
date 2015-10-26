@@ -99,3 +99,29 @@ export function wrappable(Component) {
 
   };
 }
+
+export function safeHtml(str, props = null, Component = 'span') {
+  return <Component {...props} dangerouslySetInnerHTML={{__html: str}}/>
+}
+
+/**
+ * Generates HTML markup for an attribute using duck-typing
+ */
+export function formatAttributeValue(value) {
+  return (Object(value) === value && 'url' in value)
+    ? `<a href="${value.url}">${value.displayText || value.url}</a>`
+    : value;
+}
+
+/**
+ * Creates a React-renderable element using the provided `Component`, or 'span'
+ * by default.
+ * TODO Look up or inject custom formatters
+ */
+export function renderAttributeValue(value, props = null, Component = 'span') {
+  return safeHtml(
+    formatAttributeValue(value),
+    props,
+    Component
+  );
+}

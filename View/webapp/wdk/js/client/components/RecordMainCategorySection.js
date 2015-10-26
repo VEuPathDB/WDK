@@ -2,7 +2,6 @@ import React from 'react';
 import RecordAttribute from './RecordAttribute';
 import RecordTable from './RecordTable';
 import { wrappable } from '../utils/componentUtils';
-import { formatAttributeValue } from '../utils/recordUtils';
 
 let RecordMainCategorySection = React.createClass({
 
@@ -69,14 +68,17 @@ let RecordMainCategorySection = React.createClass({
                 let { name, displayName } = tableMeta;
                 let table = record.tables[name];
                 let isCollapsed = collapsedTables.includes(name)
+                let baseHeaderClassName = 'wdk-RecordTableHeader';
+                let headerClassName = isCollapsed
+                  ? baseHeaderClassName + ' ' + baseHeaderClassName + '__collapsed'
+                  : baseHeaderClassName;
                 if (table.length === 0) return null;
                 return (
                   <div key={name} className="wdk-RecordTableWrapper">
-                    <h3 style={{ cursor: 'pointer' }}
+                    <div className={headerClassName}
                       onClick={() => this.toggleTableCollapse(tableMeta, isCollapsed)}>
-                      <i className={'fa fa-' + (isCollapsed? 'caret-right' : 'caret-down')}/>
                       {' ' + displayName}
-                    </h3>
+                    </div>
                     {isCollapsed? null : <RecordTable table={table} tableMeta={tableMeta}/>}
                   </div>
                 );

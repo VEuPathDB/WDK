@@ -1,6 +1,5 @@
 import React from 'react';
-import { wrappable } from '../utils/componentUtils';
-import { formatAttributeValue } from '../utils/recordUtils';
+import { renderAttributeValue, wrappable } from '../utils/componentUtils';
 
 let RecordAttribute = React.createClass({
 
@@ -12,13 +11,7 @@ let RecordAttribute = React.createClass({
   },
 
   render() {
-    let { value } = this.props;
-    return (
-      <div
-        className="wdk-Record-attributeContent"
-        dangerouslySetInnerHTML={{__html: formatAttributeValue(value)}}
-      />
-    );
+    return renderAttributeValue(this.props.value, null, 'div');
   }
 
 });
