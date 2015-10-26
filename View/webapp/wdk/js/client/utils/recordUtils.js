@@ -3,11 +3,6 @@ import flattenDeep from 'lodash/array/flattenDeep';
 import pick from 'lodash/object/pick';
 import values from 'lodash/object/values';
 
-export function makeKey(recordClass, id) {
-  // order keys
-  let idStr = Object.keys(id).sort().map(name => `${name}=${id[name]}`).join('&');
-  return recordClass + '?' + idStr;
-}
 
 /**
  * Filter the results of an answer. The filtered results are stored in a

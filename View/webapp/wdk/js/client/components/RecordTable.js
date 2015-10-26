@@ -1,55 +1,30 @@
 import React from 'react';
-import { wrappable } from '../utils/componentUtils';
-import {
-  formatAttributeValue
-} from '../utils/stringUtils';
+import DataTable from './DataTable.jquery';
+import { renderAttributeValue, wrappable } from '../utils/componentUtils';
 
 let RecordTable = React.createClass({
 
   mixins: [ React.addons.PureRenderMixin ],
 
   render() {
-    let { tableMeta, table } = this.props;
-
-    if (table.length && tableMeta.attributes.length) {
-      // ordered set of attribute names for all table rows
-      let headings = Array.from(new Set(...table.map(Object.keys)));
+    let { table, tableMeta } = this.props;
+    if (table.length === 0 || tableMeta.attributes.length === 0) {
+      return null;
+    }
+    if (tableMeta.attributes.length === 1) {
+      let attributeName = tableMeta.attributes[0].name;
       return (
-        <table className="wdk-RecordTable">
-          <thead>
-            {tableMeta.attributes.map(function(attribute) {
-              return (
-                <th key={attribute.name}>{attribute.displayName}</th>
-              );
-            })}
-          </thead>
-          <tbody>
-            {table.map(function(attributes, index) {
-              return renderTableRow(attributes, tableMeta, index);
-            })}
-          </tbody>
-        </table>
+        <ul>
+          {table.map(
+            (row, index) =>
+            <li key={index}>{renderAttributeValue(row[attributeName])}</li>
+          )}
+        </ul>
       );
     }
-
-    return null;
+    return <DataTable columns={this.props.tableMeta.attributes} data={this.props.table} />;
   }
-});
 
-function renderTableRow(attributes, tableMeta, index) {
-  return (
-    <tr key={index}>
-      {tableMeta.attributes.map(function(attribute) {
-        let { name } = attribute;
-        return (
-          <td
-            key={name}
-            dangerouslySetInnerHTML={{__html: formatAttributeValue(attributes[name])}}
-          />
-          );
-      })}
-    </tr>
-  );
-}
+});
 
 export default wrappable(RecordTable);

@@ -5,10 +5,6 @@ import AnswerTableCell from './AnswerTableCell';
 import AnswerTableHeader from './AnswerTableHeader';
 import Table from './Table';
 import Dialog from './Dialog';
-import {
-  formatAttributeName,
-  formatAttributeValue
-} from '../utils/stringUtils';
 import { wrappable } from '../utils/componentUtils';
 
 /**
@@ -65,7 +61,7 @@ let AttributeSelectorItem = React.createClass({
           onChange={this.props.onChange}
           disabled={!attribute.isRemovable}
           checked={this.props.isChecked}/>
-        <label htmlFor={'column-select-' + name}> {formatAttributeName(displayName)} </label>
+        <label htmlFor={'column-select-' + name}> {displayName} </label>
       </li>
     );
   }

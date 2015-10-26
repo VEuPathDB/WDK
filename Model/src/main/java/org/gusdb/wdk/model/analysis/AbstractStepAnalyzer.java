@@ -7,11 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 
 public abstract class AbstractStepAnalyzer implements StepAnalyzer {
@@ -99,6 +101,11 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
     // no required properties
   }
 
+  @Override
+  public void validateQuestion(Question question) throws WdkModelException {
+    // any question is fine by default; to be overridden by subclass
+  }
+
   protected Map<String,String[]> getFormParams() {
     return _formParams;
   }
@@ -112,10 +119,10 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
     // no validation
     return null;
   }
-  
-    /**
-     * Return an arbitrary object that the parameter form will have access to.  This is the "model" that the form will render.  It can contain info about parameters, such as terms for vocabulary parameters.  Typically you would create an inner class in your plugin for this.
-     */
+
+  /**
+   * Return an arbitrary object that the parameter form will have access to.  This is the "model" that the form will render.  It can contain info about parameters, such as terms for vocabulary parameters.  Typically you would create an inner class in your plugin for this.
+   */
   @Override
   public Object getFormViewModel() throws WdkModelException, WdkUserException {
     return null;
@@ -125,5 +132,34 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   public void validateAnswerValue(AnswerValue answerValue)
       throws IllegalAnswerValueException, WdkModelException, WdkUserException {
     // do nothing
+  }
+  
+  /*%%%%%%%%%%%%%% Helper functions for Property validation %%%%%%%%%%%%%%*/
+
+  protected void checkPropertyExistence(String propName) throws WdkModelException {
+    if (getProperty(propName) == null) {
+      throw new WdkModelException("Missing required property '" + propName +
+          "' in instanc of Step Analysis Plugin '" + getClass().getName() + "'");
+    }
+  }
+
+  protected void checkPositiveIntegerIfPresent(String propName) throws WdkModelException {
+    String prop = getProperty(propName);
+    if (prop != null && !prop.isEmpty() &&
+        !FormatUtil.isInteger(prop) && Integer.parseInt(prop) <= 0) {
+      throw new WdkModelException("Optional property '" + propName +
+          "' in instance of Step Analysis Plugin '" +
+          getClass().getName() + "' must be a positive integer.");
+    }
+  }
+
+  protected void checkBooleanIfPresent(String propName) throws WdkModelException {
+    String prop = getProperty(propName);
+    if (prop != null && !prop.isEmpty() &&
+        !prop.equalsIgnoreCase("true") && !prop.equalsIgnoreCase("false")) {
+      throw new WdkModelException("Optional property '" + propName +
+          "' in instance of Step Analysis Plugin '" +
+          getClass().getName() + "' must have value 'true' or 'false'.");
+    }
   }
 }

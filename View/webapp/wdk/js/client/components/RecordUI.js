@@ -63,6 +63,10 @@ class RecordUI extends Component {
 
     let sidebarIconClass = this.state.showSidebar ? 'fa fa-close' : 'fa fa-bars';
 
+    let categories = this.props.recordClass.attributeCategories.concat(
+      { name: undefined, displayName: 'Uncategorized' }
+    );
+
     return (
       <div className={classNames.join(' ')}>
         <button className="wdk-RecordSidebarToggle" onClick={this.toggleSidebar}>
@@ -76,7 +80,7 @@ class RecordUI extends Component {
             onShowAdvanced={this.showAdvancedCategories}
             onHideAdvanced={this.hideAdvancedCategories}
             showAdvanced={this.state.showAdvanced}
-            categories={this.props.recordClass.attributeCategories}
+            categories={categories}
             collapsedCategories={this.props.collapsedCategories}
             onCategoryToggle={this.toggleCategory}
           />
@@ -85,6 +89,7 @@ class RecordUI extends Component {
           <Record
             record={this.props.record}
             recordClass={this.props.recordClass}
+            categories={categories}
             collapsedCategories={this.props.collapsedCategories}
             collapsedTables={this.props.collapsedTables}
             onCategoryToggle={this.toggleCategory}
