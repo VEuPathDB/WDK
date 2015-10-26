@@ -387,8 +387,29 @@ body {
 
 .wdk-RecordAttributeName, .wdk-RecordAttributeValue {
   display: inline-block;
-  padding: 0 4px;
   vertical-align: middle;
+}
+
+.wdk-RecordAttributeValue {
+  padding: 0 4px;
+}
+
+.wdk-RecordTableHeader {
+  cursor: pointer;
+  margin: 10px 0;
+  font-weight: bold;
+  position: relative;
+}
+
+.wdk-RecordTableHeader:before {
+  position: absolute;
+  left: -1em;
+  font-family: FontAwesome;
+  content: '\f0d7';
+  line-height: 1.4;
+}
+.wdk-RecordTableHeader__collapsed:before {
+  content: '\f0da';
 }
 
 .wdk-DataTable {

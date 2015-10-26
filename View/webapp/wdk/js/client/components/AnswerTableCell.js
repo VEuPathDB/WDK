@@ -1,9 +1,6 @@
 import React from 'react';
 import ReactRouter from 'react-router';
-import { wrappable } from '../utils/componentUtils';
-import {
-  formatAttributeValue
-} from '../utils/recordUtils';
+import { renderAttributeValue, wrappable } from '../utils/componentUtils';
 
 let { Link, Navigation } = ReactRouter;
 let primaryKeyName = 'primary_key';
@@ -31,21 +28,13 @@ let AnswerTableCell = React.createClass({
     if (descriptor.name === primaryKeyName) {
       let href = this.makeHref('record', { class: recordClass }, record.id);
       return (
-        <Link
-          {...this.props}
-          className="wdk-AnswerTable-recordLink"
-          to={href}
-          dangerouslySetInnerHTML={{__html: formatAttributeValue(value, descriptor.type) }}
-        />
+        <Link to={href} className="wdk-AnswerTable-recordLink">
+          {renderAttributeValue(value, this.props)}
+        </Link>
       );
     }
     else {
-      return (
-        <span
-          {...this.props}
-          dangerouslySetInnerHTML={{__html: formatAttributeValue(value, descriptor.type) }}
-        />
-      );
+      return renderAttributeValue(value, this.props);
     }
   }
 
