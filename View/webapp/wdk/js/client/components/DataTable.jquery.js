@@ -6,7 +6,7 @@
 
 import { Component, PropTypes } from 'react';
 import mapValues from 'lodash/object/mapValues';
-import { formatAttributeValue } from '../utils/recordUtils';
+import { formatAttributeValue } from '../utils/componentUtils';
 
 let $ = window.jQuery;
 
@@ -99,6 +99,7 @@ DataTable.defaultProps = {
 
 /** Default DataTables jQuery plugin options. */
 DataTable.defaultDataTableOpts = {
+  info: false,
   scrollX: true,
   deferRender: true,
   paging: false,
