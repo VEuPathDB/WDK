@@ -115,7 +115,9 @@ public class ModelConfig {
    * OpenID Connect).
    */
   private AuthenticationMethod authenticationMethod = AuthenticationMethod.USER_DB;
-  private String oauthUrl = ""; // needed if method is OAUTH2
+  private String oauthUrl = "";          // needed if method is OAUTH2
+  private String oauthClientId = "";     // needed if method is OAUTH2
+  private String oauthClientSecret = ""; // needed if method is OAUTH2
 
   /**
    * If it returns true, a monitoring thread will be turned on when webapp is initialized.
@@ -346,7 +348,6 @@ public class ModelConfig {
    * (called only if authentication method is OAUTH2)
    */
   public String getOauthUrl() {
-    LOG.info("Returning OAuth2 URL: " + oauthUrl);
     return oauthUrl;
   }
 
@@ -355,8 +356,39 @@ public class ModelConfig {
    * (used only if authentication method is OAUTH2)
    */
   public void setOauthUrl(String oauthUrl) {
-    LOG.info("Settign OAuth2 URL: " + oauthUrl);
     this.oauthUrl = oauthUrl;
+  }
+
+  /**
+   * @return OAuth2 client ID to use for authentication
+   * (called only if authentication method is OAUTH2)
+   */
+  public String getOauthClientId() {
+    return oauthClientId;
+  }
+
+  /**
+   * @param oauthUrl OAuth2 client ID to use for authentication
+   * (used only if authentication method is OAUTH2)
+   */
+  public void setOauthClientId(String oauthClientId) {
+    this.oauthClientId = oauthClientId;
+  }
+
+  /**
+   * @return OAuth2 client secret to use for authentication
+   * (called only if authentication method is OAUTH2)
+   */
+  public String getOauthClientSecret() {
+    return oauthClientSecret;
+  }
+
+  /**
+   * @param oauthUrl OAuth2 client secret to use for authentication
+   * (used only if authentication method is OAUTH2)
+   */
+  public void setOauthClientSecret(String oauthClientSecret) {
+    this.oauthClientSecret = oauthClientSecret;
   }
 
   /**
