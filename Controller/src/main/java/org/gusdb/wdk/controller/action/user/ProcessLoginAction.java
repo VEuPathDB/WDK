@@ -135,7 +135,7 @@ public class ProcessLoginAction extends WdkAction {
     String authCode = params.getValue("code");
 
     try {
-      OAuthClient client = new OAuthClient();
+      OAuthClient client = new OAuthClient(getWdkModel().getModel().getModelConfig());
       int userId = client.getUserIdFromAuthCode(authCode, getRequestData().getFullRequestUrl());
 
       UserBean user = factory.login(guest, userId);

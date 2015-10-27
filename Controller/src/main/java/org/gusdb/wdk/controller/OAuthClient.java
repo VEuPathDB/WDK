@@ -22,17 +22,24 @@ import javax.ws.rs.core.Response;
 import org.glassfish.jersey.client.ClientConfig;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.config.ModelConfig;
 import org.json.JSONObject;
 
 public class OAuthClient {
 
+  private final String oauthServerBase;
+  private final String clientId;
+  private final String clientSecret;
+
+  public OAuthClient(ModelConfig modelConfig) {
+    oauthServerBase = modelConfig.getOauthUrl();
+    clientId = modelConfig.getOauthClientId();
+    clientSecret = modelConfig.getOauthClientSecret();
+  }
+  
   public int getUserIdFromAuthCode(String authCode, String authCodeRedirectUrl) throws WdkModelException {
 
     try {
-      // configuration values (to be fetched from model config)
-      String oauthServerBase = "https://integrate.eupathdb.org/oauth";
-      String clientId = "apiComponentSite";
-      String clientSecret = "12345";
       String oauthUrl = oauthServerBase + "/token";
   
       // build form parameters for token request
