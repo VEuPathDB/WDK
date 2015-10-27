@@ -14,7 +14,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.EnumParamCache;
+import org.gusdb.wdk.model.jspwrap.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
@@ -620,7 +620,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     for (Param param : paramMap.values()) {
       if (param instanceof AbstractEnumParam) {
         // for enum/flatVocab params, call a special method to process it
-        Map<String, EnumParamCache> caches = new HashMap<>();
+        Map<String, EnumParamVocabInstance> caches = new HashMap<>();
         ((AbstractEnumParam) param).fetchCorrectValue(user, contextParamValues, caches);
       }
       else if (!(param instanceof DatasetParam)) {

@@ -12,7 +12,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.jspwrap.EnumParamCache;
+import org.gusdb.wdk.model.jspwrap.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
@@ -176,7 +176,7 @@ public class FlatVocabParam extends AbstractEnumParam {
    * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#initVocabMap()
    */
   @Override
-  protected EnumParamCache createEnumParamCache(User user, Map<String, String> dependedParamValues)
+  protected EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException, WdkUserException {
     logger.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
 
@@ -186,7 +186,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     // + getName() + " using depended value "
     // + Utilities.print(dependedParamValues);
 
-    EnumParamCache cache = new EnumParamCache(this, dependedParamValues);
+    EnumParamVocabInstance cache = new EnumParamVocabInstance(this, dependedParamValues);
 
     // check if the query has "display" column
     boolean hasDisplay = vocabQuery.getColumnMap().containsKey(COLUMN_DISPLAY);

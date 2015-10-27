@@ -14,7 +14,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.EnumParamCache;
+import org.gusdb.wdk.model.jspwrap.EnumParamVocabInstance;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -87,7 +87,7 @@ public class EnumParamHandler extends AbstractParamHandler {
       return stableValue;
 
     AbstractEnumParam enumParam = (AbstractEnumParam) param;
-    EnumParamCache cache = enumParam.getValueCache(user, contextValues);
+    EnumParamVocabInstance cache = enumParam.getVocabInstance(user, contextValues);
 
     String[] terms = enumParam.convertToTerms(stableValue);
     Set<String> internals = new LinkedHashSet<>();

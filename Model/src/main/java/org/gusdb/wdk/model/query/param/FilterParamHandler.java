@@ -13,7 +13,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.EnumParamCache;
+import org.gusdb.wdk.model.jspwrap.EnumParamVocabInstance;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -87,7 +87,7 @@ public class FilterParamHandler extends AbstractParamHandler {
       }
 
       AbstractEnumParam enumParam = (AbstractEnumParam) param;
-      EnumParamCache cache = enumParam.getValueCache(user, contextValues);
+      EnumParamVocabInstance cache = enumParam.getVocabInstance(user, contextValues);
 
       Set<String> internals = new LinkedHashSet<>();
       // return stable values, instead of list of terms

@@ -38,7 +38,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
   // if this obj wraps a dependent param, holds depended values
   private boolean _dependedValueChanged = false;
-  private EnumParamCache _cache;
+  private EnumParamVocabInstance _cache;
 
   public EnumParamBean(AbstractEnumParam param) {
     super(param);
@@ -109,9 +109,9 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
   // NOTE: not threadsafe! This class is expected only to be used in a single
   // thread
-  protected EnumParamCache getCache() {
+  protected EnumParamVocabInstance getCache() {
     if (_cache == null || _dependedValueChanged) {
-      _cache = param.getValueCache(user.getUser(), contextValues);
+      _cache = param.getVocabInstance(user.getUser(), contextValues);
       _dependedValueChanged = false;
     }
     return _cache;
@@ -311,7 +311,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * @throws WdkModelException
    * @throws WdkUserException 
    * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#getJSONValues(org.gusdb.wdk.model.user.User,
-   *      java.util.Map, org.gusdb.wdk.model.jspwrap.EnumParamCache)
+   *      java.util.Map, org.gusdb.wdk.model.jspwrap.EnumParamVocabInstance)
    */
   public JSONObject getJsonValues() throws WdkModelException, WdkUserException {
     return enumParam.getJsonValues(user.getUser(), contextValues, getCache());

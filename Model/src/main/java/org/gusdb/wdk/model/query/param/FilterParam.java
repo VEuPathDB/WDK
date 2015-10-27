@@ -21,7 +21,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.jspwrap.EnumParamCache;
+import org.gusdb.wdk.model.jspwrap.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -295,7 +295,7 @@ public class FilterParam extends FlatVocabParam {
 
   public Map<String, List<String>> getMetaData(User user, Map<String, String> contextValues, String property)
       throws WdkModelException, WdkUserException {
-    EnumParamCache cache = createEnumParamCache(user, contextValues);
+    EnumParamVocabInstance cache = createVocabInstance(user, contextValues);
     return getMetaData(user, contextValues, property, cache);
   }
 
@@ -311,7 +311,7 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkUserException
    */
   public Map<String, List<String>> getMetaData(User user, Map<String, String> contextValues, String property,
-      EnumParamCache cache) throws WdkModelException, WdkUserException {
+      EnumParamVocabInstance cache) throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
       return null;
 
@@ -353,7 +353,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  public JSONObject getJsonValues(User user, Map<String, String> contextValues, EnumParamCache cache)
+  public JSONObject getJsonValues(User user, Map<String, String> contextValues, EnumParamVocabInstance cache)
       throws WdkModelException, WdkUserException {
     JSONObject jsParam = super.getJsonValues(user, contextValues, cache);
     try { // add additional info into the json
@@ -404,7 +404,7 @@ public class FilterParam extends FlatVocabParam {
 
   @Override
   protected String getValidStableValue(User user, String stableValue, Map<String, String> contextValues,
-      EnumParamCache cache) throws WdkModelException {
+      EnumParamVocabInstance cache) throws WdkModelException {
     try {
       if (stableValue == null || stableValue.length() == 0) {
         JSONArray jsTerms = convert(getDefault());
