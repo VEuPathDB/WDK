@@ -1,8 +1,13 @@
 package org.gusdb.wdk.service.formatter.param;
 
+import java.util.List;
+import java.util.Map;
+
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.jspwrap.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,9 +36,24 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
       }
       pJson.put("dependedParamNames", dependedParamNames);
     }
-    // vocab treeMap currentValues displayMap
-
+    
     return pJson;
+  }
+  
+  protected JSONArray getVocabJson(User user, Map<String, String> dependedParamValues) throws WdkModelException {
+
+    EnumParamVocabInstance vocabInstance = getParam().getVocabInstance(user, dependedParamValues);
+    List<List<String>> vocabRows = vocabInstance.getFullVocab();
+    JSONArray jsonRows = new JSONArray();
+    for (List<String> row : vocabRows) {
+      if (row.size() != 3) throw new WdkModelException("Enum vocab includes a row that does not contain 3 columns");
+      JSONArray jsonRow = new JSONArray();
+      jsonRow.put(row.get(0));
+      jsonRow.put(row.get(1));
+      jsonRow.put(row.get(2));
+      jsonRows.put(jsonRow);
+    }
+    return jsonRows;
   }
 
 }
