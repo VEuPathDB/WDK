@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
+import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
@@ -311,7 +312,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * @throws WdkModelException
    * @throws WdkUserException 
    * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#getJSONValues(org.gusdb.wdk.model.user.User,
-   *      java.util.Map, org.gusdb.wdk.model.jspwrap.EnumParamVocabInstance)
+   *      java.util.Map, org.gusdb.wdk.model.query.param.EnumParamVocabInstance)
    */
   public JSONObject getJsonValues() throws WdkModelException, WdkUserException {
     return enumParam.getJsonValues(user.getUser(), contextValues, getCache());

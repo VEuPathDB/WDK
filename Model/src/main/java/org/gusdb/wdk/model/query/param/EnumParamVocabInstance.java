@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.jspwrap;
+package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -8,9 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
-import org.gusdb.wdk.model.query.param.EnumParamTermNode;
-import org.gusdb.wdk.model.query.param.SelectMode;
 
 /**
  * This class encapsulates a vocabulary and default value for an

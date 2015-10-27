@@ -25,8 +25,6 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.service.formatter.QuestionFormatter;
-import org.gusdb.wdk.service.request.RequestMisformatException;
-import org.gusdb.wdk.service.request.WdkAnswerRequest;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
