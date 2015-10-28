@@ -113,7 +113,8 @@ public class RecordClassFormatter {
     List<AttributeCategory> subCategories = category.getSubCategories();
     JSONObject attributeCategoryJson = new JSONObject()
       .put("name",  category.getName())
-      .put("displayName",  category.getDisplayName());
+      .put("displayName",  category.getDisplayName())
+      .put("description", category.getDescription());
 
     if (subCategories.size() > 0) {
       JSONArray subCategoriesJson = new JSONArray();

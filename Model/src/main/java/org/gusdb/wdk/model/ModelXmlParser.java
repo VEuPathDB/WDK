@@ -558,6 +558,10 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/recordClassSet/recordClass/attributeCategories",
         AttributeCategoryTree.class, "setAttributeCategoryTree");
     configureNode(digester, "*/attributeCategory", AttributeCategory.class, "addAttributeCategory");
+    configureNode(digester, "*/attributeCategory/description", WdkModelText.class, "setDescription");
+    digester.addCallMethod("*/attributeCategory/description", "setText", 0);
+
+
 
     // favorite references
     configureNode(digester, "wdkModel/recordClassSet/recordClass/favorite", FavoriteReference.class,
