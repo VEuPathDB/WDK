@@ -1,7 +1,10 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.Param;
@@ -32,29 +35,34 @@ public class QuestionFormatter {
 
   public static JSONObject getQuestionJson(Question q, boolean expandParams, User user, Map<String, String> dependedParamValues)
       throws JSONException, WdkModelException {
+      return getQuestionJson(q, expandParams, new HashSet<Param>(Arrays.asList(q.getParams())), user, dependedParamValues);
+  }
+  
+  public static JSONObject getQuestionJson(Question q, boolean expandParams, Set<? extends Param> params, User user, Map<String, String> dependedParamValues)
+      throws JSONException, WdkModelException {
     JSONObject qJson = new JSONObject();
     qJson.put("name", q.getFullName());
     qJson.put("displayName", q.getDisplayName());
     qJson.put("class", q.getRecordClass().getFullName());
-    qJson.put("params", getParamsJson(q, expandParams, user, dependedParamValues));
+    qJson.put("params", getParamsJson(q, expandParams, params, user, dependedParamValues));
     return qJson;
   }
 
-  public static JSONArray getParamsJson(Question q, boolean expandParams, User user, Map<String, String> dependedParamValues)
+  public static JSONArray getParamsJson(Question q, boolean expandParams, Set<? extends Param> params, User user, Map<String, String> dependedParamValues)
       throws JSONException, WdkModelException {
-    JSONArray params = new JSONArray();
-    for (Param param : q.getParams()) {
+    JSONArray paramsJson = new JSONArray();
+    for (Param param : params) {
       if (expandParams) {
         ParamFormatter<?> formatter = ParamFormatterFactory.getFormatter(param);
-        params.put(formatter instanceof VocabProvider ?
+        paramsJson.put(formatter instanceof VocabProvider ?
           ((VocabProvider)formatter).getJson(user, dependedParamValues) :
           formatter.getJson());
       }
       else {
-        params.put(param.getFullName());
+        paramsJson.put(param.getFullName());
       }
     }
-    return params;
+    return paramsJson;
   }
 
 }
