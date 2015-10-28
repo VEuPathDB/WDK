@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.config;
 
+import org.apache.log4j.Logger;
+
 /**
  * An object representaion of the {@code model-config.xml} file. It holds all the configuration information
  * for the WDK system.
@@ -9,8 +11,17 @@ package org.gusdb.wdk.model.config;
  */
 public class ModelConfig {
 
+  private static final Logger LOG = Logger.getLogger(ModelConfig.class);
+
   public static final String WSF_LOCAL = "local";
 
+  public static enum AuthenticationMethod {
+    USER_DB, OAUTH2;
+    public String getName() {
+      return name();
+    }
+  }
+  
   private String modelName;
   private String webServiceUrl;
 
@@ -96,6 +107,17 @@ public class ModelConfig {
    * processQueries, which is always cached.
    */
   private boolean caching = true;
+
+  /**
+   * Authentication can be performed either the traditional way (i.e. directly
+   * by WDK using the userDb), or using an OAuth server to authenticate users
+   * remotely.  The OAuth server must provide access to a user id resource (a la
+   * OpenID Connect).
+   */
+  private AuthenticationMethod authenticationMethod = AuthenticationMethod.USER_DB;
+  private String oauthUrl = "";          // needed if method is OAUTH2
+  private String oauthClientId = "";     // needed if method is OAUTH2
+  private String oauthClientSecret = ""; // needed if method is OAUTH2
 
   /**
    * If it returns true, a monitoring thread will be turned on when webapp is initialized.
@@ -303,6 +325,69 @@ public class ModelConfig {
    */
   public void setSecretKeyFile(String secretKeyFile) {
     this.secretKeyFile = secretKeyFile;
+  }
+
+  /**
+   * @return configured authentication method
+   */
+  public AuthenticationMethod getAuthenticationMethodEnum() {
+    return authenticationMethod;
+  }
+
+  /**
+   * @param authenticationMethod configured authentication method
+   */
+  public void setAuthenticationMethod(String authenticationMethod) {
+    LOG.info("Setting authentication method: " + authenticationMethod);
+    this.authenticationMethod = AuthenticationMethod.valueOf(authenticationMethod.toUpperCase());
+  }
+
+  /**
+   * @return base URL of OAuth2 server to use for authentication
+   * (called only if authentication method is OAUTH2)
+   */
+  public String getOauthUrl() {
+    return oauthUrl;
+  }
+
+  /**
+   * @param oauthUrl base URL of OAuth2 server to use for authentication
+   * (used only if authentication method is OAUTH2)
+   */
+  public void setOauthUrl(String oauthUrl) {
+    this.oauthUrl = oauthUrl;
+  }
+
+  /**
+   * @return OAuth2 client ID to use for authentication
+   * (called only if authentication method is OAUTH2)
+   */
+  public String getOauthClientId() {
+    return oauthClientId;
+  }
+
+  /**
+   * @param oauthUrl OAuth2 client ID to use for authentication
+   * (used only if authentication method is OAUTH2)
+   */
+  public void setOauthClientId(String oauthClientId) {
+    this.oauthClientId = oauthClientId;
+  }
+
+  /**
+   * @return OAuth2 client secret to use for authentication
+   * (called only if authentication method is OAUTH2)
+   */
+  public String getOauthClientSecret() {
+    return oauthClientSecret;
+  }
+
+  /**
+   * @param oauthUrl OAuth2 client secret to use for authentication
+   * (used only if authentication method is OAUTH2)
+   */
+  public void setOauthClientSecret(String oauthClientSecret) {
+    this.oauthClientSecret = oauthClientSecret;
   }
 
   /**

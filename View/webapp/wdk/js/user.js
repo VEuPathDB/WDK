@@ -39,8 +39,24 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
   };
 
   ns.login = function(redirectUrl) {
+    // pop login form in dialog and then hijack form submit
     $("#wdk-dialog-login-form").dialog("open")
-    .find("input[name='redirectUrl']").val(redirectUrl);
+        .find("input[name='redirectUrl']").val(redirectUrl);
+  };
+
+  ns.oauthLogin = function(oauthBaseUrl) {
+    // build URL to OAuth service and redirect
+    var clientId = 'apiComponentSite';
+    var eventualDestination = window.location.href;
+    var redirectUrl = window.location.protocol + "//" + window.location.host +
+      wdk.webappUrl('/processLogin.do?redirectUrl=' +
+        encodeURIComponent(eventualDestination));
+    var oauthUrl = oauthBaseUrl + "/authorize?" +
+        "response_type=code&" +
+        "client_id=" + clientId + "&" +
+        "redirect_uri=" + encodeURIComponent(redirectUrl);
+    window.location = oauthUrl;
+    return;
   };
 
   ns.processLogin = function(submitButton) {
@@ -54,6 +70,14 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
   ns.logout = function() {
     if (confirm("Do you want to log out as " + ns.name() + "?")) {
       $("#user-control form[name=logoutForm]").submit();
+    }
+  };
+
+  ns.oauthLogout = function(oauthBaseUrl) {
+    if (confirm("Do you want to log out as " + ns.name() + "?")) {
+      var logoutPath = jQuery("#user-control form[name=logoutForm]").attr("action");
+      var logoutUrl = window.location.origin + logoutPath;
+      window.location = oauthBaseUrl + "/logout?redirect_uri=" + encodeURIComponent(logoutUrl);
     }
   };
 

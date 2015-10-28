@@ -327,16 +327,21 @@ public class UserFactory {
 
     // authenticate the user; if fails, a WdkUserException will be thrown out
     User user = getUserByOpenId(openId);
-    if (user == null)
-      return user;
+    return getMergedUser(guest, user);
+  }
+
+  private User getMergedUser(User guest, User loggedInUser)
+      throws WdkModelException, WdkUserException {
+    if (loggedInUser == null)
+      return loggedInUser;
 
     // merge the history of the guest into the user
-    user.mergeUser(guest);
+    loggedInUser.mergeUser(guest);
 
     // update user active timestamp
-    updateUser(user);
+    updateUser(loggedInUser);
 
-    return user;
+    return loggedInUser;
   }
 
   public User login(User guest, String email, String password)
@@ -350,14 +355,12 @@ public class UserFactory {
     if (user == null) {
       throw new WdkUserException("Invalid email or password.");
     }
+    return getMergedUser(guest, user);
+  }
 
-    // merge the history of the guest into the user
-    user.mergeUser(guest);
-
-    // update user active timestamp
-    updateUser(user);
-
-    return user;
+  public User login(User guest, int userId)
+      throws WdkModelException, WdkUserException {
+    return getMergedUser(guest, getUser(userId));
   }
 
   private User authenticate(String email, String password)

@@ -177,6 +177,11 @@
     <element name="attributeCategory">
       <attribute name="name" />
       <attribute name="displayName" />
+      <optional>
+        <element name="description">
+          <text/>
+        </element>
+      </optional>
       <zeroOrMore>
         <ref name="attributeCategory" />
       </zeroOrMore>
