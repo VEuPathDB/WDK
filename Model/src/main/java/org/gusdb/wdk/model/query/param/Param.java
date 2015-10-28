@@ -4,6 +4,8 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -118,6 +120,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   protected boolean allowEmpty;
 
   protected ParamSet paramSet;
+  private Set<AbstractEnumParam> dependentParams = new HashSet<AbstractEnumParam>();
 
   private List<ParamConfiguration> noTranslations;
 
@@ -657,4 +660,26 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public String getDisplayValue(User user, String stableValue, Map<String, String> contextValues) throws WdkModelException {
     return handler.getDisplayValue(user, stableValue, contextValues);
   }
+  
+  /**
+   * Backlink to dependent params, set by dependent params.
+   * @param param
+   */
+  public void addDependentParam(AbstractEnumParam param) {
+    if (!dependentParams.contains(param)) dependentParams.add(param);
+  }
+
+  public Set<AbstractEnumParam> getDependentParams() {
+    return Collections.unmodifiableSet(dependentParams);
+  }
+
+  public Set<AbstractEnumParam> getAllDependentParams() {
+    Set<AbstractEnumParam> answer = new HashSet<AbstractEnumParam>();
+    answer.addAll(dependentParams);
+    for (AbstractEnumParam dependent : dependentParams) {
+      answer.addAll(dependent.getAllDependentParams());
+    }
+    return answer;
+  }
+
 }
