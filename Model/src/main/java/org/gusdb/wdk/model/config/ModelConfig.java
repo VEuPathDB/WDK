@@ -331,7 +331,6 @@ public class ModelConfig {
    * @return configured authentication method
    */
   public AuthenticationMethod getAuthenticationMethodEnum() {
-    LOG.info("Returning authentication method: " + authenticationMethod);
     return authenticationMethod;
   }
 
