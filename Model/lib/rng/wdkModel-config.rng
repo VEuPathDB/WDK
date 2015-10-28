@@ -44,7 +44,18 @@
                     <data type="boolean" />
                 </attribute>
             </optional>
-            
+            <optional>
+                <attribute name="authenticationMethod"/>
+            </optional>
+            <optional>
+                <attribute name="oauthUrl"/>
+            </optional>
+            <optional>
+                <attribute name="oauthClientId"/>
+            </optional>
+            <optional>
+                <attribute name="oauthClientSecret"/>
+            </optional>
             <interleave>
             
                 <optional>
