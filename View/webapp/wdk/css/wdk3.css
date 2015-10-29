@@ -259,52 +259,49 @@ body {
 }
 
 .wdk-RecordMain, .wdk-RecordSidebar {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  overflow-y: auto;
   padding: 0 26px;
+  transition: margin-left 250ms ease;
   transition: left 250ms ease;
 }
 
 .wdk-RecordSidebar {
-  width: 216px;
-  left: -236px;
-  padding: 0 10px;
+  left: -322px;
+  width: 270px;
+  position: absolute;
+  padding-right: 48px;
+  transition: right 250ms ease;
 }
 
-.wdk-RecordMain {
-  left: 0;
-  right: 0;
-  margin: 0;
-  border-left: 1px solid #d8d8d8;
+.wdk-RecordSidebar__fixed {
+  position: fixed;
+  top: 0;
 }
 
 .wdk-RecordSidebarToggle {
   position: absolute;
-  top: 5px;
-  left: 0;
-  border: 0;
+  top: 54px;
+  right: 0;
   background: transparent;
-  transition: left 250ms ease;
   z-index: 1;
-}
-
-.wdk-RecordSidebarToggle:focus {
-  outline: 1px dotted;
+  font-size: 1.5em;
+  transform: rotate(-90deg) translateY(76px) translateX(-62px);
+  border: 1px solid;
+  padding: 4px 8px;
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordMain {
-  left: 236px;
+  margin-left: 290px;
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebar {
   left: 0;
+  padding: 0 26px;
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebarToggle {
-  left: 208px;
-  top: 4px;
+  right: 22px;
+  border: 0;
+  transform: rotate(-90deg);
 }
 
 .wdk-RecordMain td {
@@ -319,10 +316,21 @@ body {
   margin: 1em 0 2em;
 }
 
+.wdk-RecordNavigationSearchInput {
+  width: calc(100% - 1em);
+  padding: .5em;
+}
+
+.wdk-RecordNavigationCategories {
+  overflow-y: auto;
+  max-height: 500px;
+}
+
 .wdk-RecordNavigationItem {
   position: relative;
-  border-bottom: 1px solid #d8d8d8;
+  /* border-bottom: 1px solid #d8d8d8; */
   margin-top: 2px;
+  padding-left: 1em;
 }
 
 .wdk-Record-sidebar > ul {
@@ -360,6 +368,18 @@ body {
   cursor: pointer;
 }
 
+.wdk-RecordSectionSubHeader:before {
+  position: absolute;
+  left: -1em;
+  font-family: FontAwesome;
+  content: '\f0d7';
+  line-height: 1.4;
+}
+
+.wdk-RecordSectionSubHeader__collapsed:before {
+  content: '\f0da';
+}
+
 .wdk-RecordSectionHeaderTopLink {
   position: absolute;
   right: 1em;
@@ -387,8 +407,33 @@ body {
 
 .wdk-RecordAttributeName, .wdk-RecordAttributeValue {
   display: inline-block;
-  padding: 0 4px;
   vertical-align: middle;
+}
+
+.wdk-RecordAttributeValue {
+  padding: 0 4px;
+}
+
+.wdk-RecordTableHeader {
+  cursor: pointer;
+  margin: 10px 0;
+  font-weight: bold;
+  position: relative;
+}
+
+.wdk-RecordTableHeader:before {
+  position: absolute;
+  left: -1em;
+  font-family: FontAwesome;
+  content: '\f0d7';
+  line-height: 1.4;
+}
+.wdk-RecordTableHeader__collapsed:before {
+  content: '\f0da';
+}
+
+.wdk-RecordCategoryEnumeration {
+  font-weight: 200;
 }
 
 .wdk-DataTable {

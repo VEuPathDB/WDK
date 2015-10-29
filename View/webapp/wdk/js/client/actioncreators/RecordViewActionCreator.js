@@ -1,4 +1,5 @@
 import ActionCreator from '../utils/ActionCreator';
+import {latest} from '../utils/PromiseUtils';
 
 let actionTypes = {
   RECORD_UPDATED: 'record/updated',
@@ -10,6 +11,11 @@ let actionTypes = {
 
 export default class RecordViewActionCreator extends ActionCreator {
 
+  constructor(...args) {
+    super(...args);
+    this._getLatestRecord = latest(this._getRecord.bind(this));
+  }
+
   /**
    * @param {string} recordClassName
    * @param {Object} spec
@@ -20,21 +26,7 @@ export default class RecordViewActionCreator extends ActionCreator {
   fetchRecordDetails(recordClassName, primaryKey) {
     this._dispatch({ type: actionTypes.LOADING });
 
-    let questionsPromise = this._service.getQuestions();
-    let recordClassesPromise = this._service.getRecordClasses();
-
-    Promise.all([ questionsPromise, recordClassesPromise ])
-    .then(([ questions, recordClasses ]) => {
-      return this._service.getRecordClass(recordClassName)
-      .then(recordClass => {
-        let attributes = recordClass.attributes.map(a => a.name);
-        let tables = recordClass.tables.map(t => t.name);
-        let options = { attributes, tables };
-        return this._service.getRecord(recordClassName, primaryKey, options).then(
-          record => ({ record, recordClass, recordClasses, questions })
-        );
-      })
-    }).then(
+    this._getLatestRecord(recordClassName, primaryKey).then(
       ({ record, recordClass, recordClasses, questions }) => {
         this._dispatch({
           type: actionTypes.RECORD_UPDATED,
@@ -70,6 +62,24 @@ export default class RecordViewActionCreator extends ActionCreator {
         name: tableName,
         isCollapsed
       }
+    });
+  }
+
+  _getRecord(recordClassName, primaryKey) {
+    let questionsPromise = this._service.getQuestions();
+    let recordClassesPromise = this._service.getRecordClasses();
+
+    return Promise.all([ questionsPromise, recordClassesPromise ])
+    .then(([ questions, recordClasses ]) => {
+      return this._service.getRecordClass(recordClassName)
+      .then(recordClass => {
+        let attributes = recordClass.attributes.map(a => a.name);
+        let tables = recordClass.tables.map(t => t.name);
+        let options = { attributes, tables };
+        return this._service.getRecord(recordClassName, primaryKey, options).then(
+          record => ({ record, recordClass, recordClasses, questions })
+        );
+      })
     });
   }
 
