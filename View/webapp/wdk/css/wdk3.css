@@ -436,6 +436,7 @@ body {
 .wdk-RecordTableList {
   vertical-align: top;
   display: inline-block;
+  min-width: 20%;
 }
 
 .wdk-RecordCategoryEnumeration {

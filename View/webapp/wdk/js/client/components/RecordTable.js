@@ -3,7 +3,7 @@ import chunk from 'lodash/array/chunk';
 import DataTable from './DataTable.jquery';
 import { renderAttributeValue, wrappable } from '../utils/componentUtils';
 
-let listColumnSize = 10;
+let maxColumns = 4;
 
 let RecordTable = React.createClass({
 
@@ -16,6 +16,7 @@ let RecordTable = React.createClass({
     }
     if (tableMeta.attributes.length === 1) {
       let attributeName = tableMeta.attributes[0].name;
+      let listColumnSize = Math.max(10, table.length / maxColumns);
       return (
         <div>
           {chunk(table, listColumnSize).map(tableChunk =>
