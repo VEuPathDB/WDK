@@ -428,8 +428,14 @@ body {
   content: '\f0d7';
   line-height: 1.4;
 }
+
 .wdk-RecordTableHeader__collapsed:before {
   content: '\f0da';
+}
+
+.wdk-RecordTableList {
+  vertical-align: top;
+  display: inline-block;
 }
 
 .wdk-RecordCategoryEnumeration {
