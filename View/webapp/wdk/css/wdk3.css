@@ -323,7 +323,7 @@ body {
 
 .wdk-RecordNavigationCategories {
   overflow-y: auto;
-  max-height: 500px;
+  max-height: calc(100vh - 250px);
 }
 
 .wdk-RecordNavigationItem {
@@ -428,8 +428,15 @@ body {
   content: '\f0d7';
   line-height: 1.4;
 }
+
 .wdk-RecordTableHeader__collapsed:before {
   content: '\f0da';
+}
+
+.wdk-RecordTableList {
+  vertical-align: top;
+  display: inline-block;
+  min-width: 20%;
 }
 
 .wdk-RecordCategoryEnumeration {
