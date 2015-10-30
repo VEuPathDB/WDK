@@ -1,8 +1,9 @@
 import React from 'react';
+import classnames from 'classnames';
 import RecordAttribute from './RecordAttribute';
 import RecordTable from './RecordTable';
+import RecordCategoryEnumeration from './RecordCategoryEnumeration';
 import { wrappable } from '../utils/componentUtils';
-import { formatAttributeValue } from '../utils/recordUtils';
 
 let RecordMainCategorySection = React.createClass({
 
@@ -17,8 +18,10 @@ let RecordMainCategorySection = React.createClass({
   mixins: [ React.addons.PureRenderMixin ],
 
   toggleCollapse() {
-    let { category, isCollapsed } = this.props;
-    this.props.onCategoryToggle(category, !isCollapsed);
+    if (this.props.depth > 1) {
+      let { category, isCollapsed } = this.props;
+      this.props.onCategoryToggle(category, !isCollapsed);
+    }
   },
 
   toggleTableCollapse(table, isCollapsed) {
@@ -26,21 +29,28 @@ let RecordMainCategorySection = React.createClass({
   },
 
   render() {
-    let { category, depth, record, attributes, tables, isCollapsed, collapsedTables } = this.props;
-    let headerClass = depth === 1 ? 'wdk-RecordSectionHeader' : 'wdk-RecordSectionSubHeader';
+    let {
+      category,
+      depth,
+      record,
+      attributes,
+      tables,
+      isCollapsed,
+      collapsedTables,
+      enumeration
+    } = this.props;
     let Header = 'h' + Math.min(depth + 1, 6);
+    let headerClass = classnames({
+      'wdk-RecordSectionHeader': depth === 1,
+      'wdk-RecordSectionSubHeader': depth !== 1,
+      'wdk-RecordSectionSubHeader__collapsed': depth !== 1 && isCollapsed
+    });
 
     return isCollapsed && depth === 1 ? null : (
       <div className="wdk-RecordSection">
-        {depth === 1 ? (
-          <Header id={String(category.name)} className={headerClass}>
-            {category.displayName}
-          </Header>
-        ) : (
-          <Header id={String(category.name)} className={headerClass} onClick={this.toggleCollapse}>
-            <i className={'fa fa-' + (isCollapsed ? 'caret-right' : 'caret-down')}/> {category.displayName}
-          </Header>
-        )}
+        <Header id={String(category.name)} className={headerClass} onClick={this.toggleCollapse}>
+          <RecordCategoryEnumeration enumeration={enumeration}/> {category.displayName}
+        </Header>
         {isCollapsed ? null : (
           <div>
             <div className="wdk-RecordSectionContent">
@@ -69,14 +79,17 @@ let RecordMainCategorySection = React.createClass({
                 let { name, displayName } = tableMeta;
                 let table = record.tables[name];
                 let isCollapsed = collapsedTables.includes(name)
+                let headerClass = classnames({
+                  'wdk-RecordTableHeader': true,
+                  'wdk-RecordTableHeader__collapsed': isCollapsed
+                });
                 if (table.length === 0) return null;
                 return (
                   <div key={name} className="wdk-RecordTableWrapper">
-                    <h3 style={{ cursor: 'pointer' }}
+                    <div className={headerClass}
                       onClick={() => this.toggleTableCollapse(tableMeta, isCollapsed)}>
-                      <i className={'fa fa-' + (isCollapsed? 'caret-right' : 'caret-down')}/>
                       {' ' + displayName}
-                    </h3>
+                    </div>
                     {isCollapsed? null : <RecordTable table={table} tableMeta={tableMeta}/>}
                   </div>
                 );

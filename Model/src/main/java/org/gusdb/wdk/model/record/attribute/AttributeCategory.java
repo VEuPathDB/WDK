@@ -7,6 +7,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.SelectableItem;
 import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.TableField;
 
@@ -22,6 +23,7 @@ public class AttributeCategory extends WdkModelBase {
 
 	private String name;
 	private String displayName;
+	private String description;
 	private List<AttributeCategory> subcategories = new ArrayList<AttributeCategory>();
 	private List<AttributeField> fields = new ArrayList<AttributeField>();
 	
@@ -39,7 +41,14 @@ public class AttributeCategory extends WdkModelBase {
 		return displayName;
 	}
 	
-	public void addAttributeCategory(AttributeCategory category) {
+	public String getDescription() {
+    return description;
+  }
+  public void setDescription(WdkModelText description) {
+    this.description = description.getText();
+  }
+
+  public void addAttributeCategory(AttributeCategory category) {
 		subcategories.add(category);
 	}
 	public List<AttributeCategory> getSubCategories() {
@@ -68,6 +77,7 @@ public class AttributeCategory extends WdkModelBase {
 		AttributeCategory copy = new AttributeCategory();
 		copy.name = name;
 		copy.displayName = displayName;
+		copy.description = description;
 		for (AttributeCategory cat : subcategories) {
 			AttributeCategory catCopy = cat.getTrimmedCopy(scope);
 			if (!(catCopy.subcategories.isEmpty() && catCopy.fields.isEmpty())) {

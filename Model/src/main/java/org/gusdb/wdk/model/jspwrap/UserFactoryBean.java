@@ -112,7 +112,14 @@ public class UserFactoryBean {
         if (user == null) return null;
         return new UserBean(user);
     }
-    
+
+    public UserBean login(UserBean guest, int userId)
+        throws WdkModelException, WdkUserException {
+      User user = userFactory.login(guest.getUser(), userId);
+      if (user == null) return null;
+      return new UserBean(user);
+    }
+
     /*
      * (non-Javadoc)
      * 

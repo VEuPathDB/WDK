@@ -19,17 +19,21 @@ let RecordMainSection = React.createClass({
       categories,
       collapsedCategories,
       collapsedTables,
-      recordActions
+      recordActions,
+      parentEnumeration
     } = this.props;
 
     if (categories == null) return null;
 
     return (
       <div>
-        {categories.map(category => {
+        {categories.map((category, index) => {
           let categoryName = category.name;
           let attributes = this.props.attributes.filter(attr => attr.category == categoryName);
           let tables = this.props.tables.filter(table => table.category == categoryName);
+          let enumeration = parentEnumeration == null
+            ? index + 1
+            : parentEnumeration + '.' + (index + 1);
 
           return (
             <RecordMainCategorySection
@@ -43,8 +47,14 @@ let RecordMainSection = React.createClass({
               collapsedTables={collapsedTables}
               onCategoryToggle={this.props.onCategoryToggle}
               onTableToggle={this.props.onTableToggle}
+              enumeration={enumeration}
             >
-              <RecordMainSection {...this.props} depth={depth + 1} categories={category.subCategories}/>
+            <RecordMainSection
+              {...this.props}
+              depth={depth + 1}
+              categories={category.subCategories}
+              parentEnumeration={enumeration}
+            />
             </RecordMainCategorySection>
             );
         })}

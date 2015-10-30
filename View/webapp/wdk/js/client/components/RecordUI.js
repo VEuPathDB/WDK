@@ -1,8 +1,10 @@
 import { Component, PropTypes } from 'react';
+import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
 import Main from './Main';
 import Record from './Record';
 import RecordNavigationSection from './RecordNavigationSection';
+import Sticky from './Sticky';
 
 /**
  * Renders the main UI for the WDK Record page.
@@ -53,27 +55,30 @@ class RecordUI extends Component {
   }
 
   render() {
-    let classNames = [ 'wdk-RecordContainer' ];
+    let classNames = classnames({
+      'wdk-RecordContainer': true,
+      'wdk-RecordContainer__withSidebar': this.state.showSidebar,
+      'wdk-RecordContainer__withAdvanced': this.state.showAdvanced
+    });
 
-    if (this.state.showSidebar)
-      classNames.push('wdk-RecordContainer__withSidebar');
-
-    if (this.state.showSidebar && this.state.showAdvanced)
-      classNames.push('wdk-RecordContainer__withAdvanced');
-
-    let sidebarIconClass = this.state.showSidebar ? 'fa fa-close' : 'fa fa-bars';
+    let sidebarIconClass = classnames({
+      'fa fa-lg': true,
+      'fa-angle-double-down': !this.state.showSidebar,
+      'fa-angle-double-up': this.state.showSidebar
+    });
 
     let categories = this.props.recordClass.attributeCategories.concat(
       { name: undefined, displayName: 'Uncategorized' }
     );
 
     return (
-      <div className={classNames.join(' ')}>
-        <button className="wdk-RecordSidebarToggle" onClick={this.toggleSidebar}>
-          <i className={sidebarIconClass}
-            title={this.state.showSidebar ? 'Close sidebar' : 'Open sidebar'}/>
-        </button>
-        <div className="wdk-RecordSidebar">
+      <div className={classNames}>
+        <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
+          <a href="#" className="wdk-RecordSidebarToggle" onClick={this.toggleSidebar}>
+            {this.state.showSidebar ? '' : 'Show Categories '}
+            <i className={sidebarIconClass}
+              title={this.state.showSidebar ? 'Close sidebar' : 'Open sidebar'}/>
+          </a>
           <RecordNavigationSection
             record={this.props.record}
             recordClass={this.props.recordClass}
@@ -84,7 +89,7 @@ class RecordUI extends Component {
             collapsedCategories={this.props.collapsedCategories}
             onCategoryToggle={this.toggleCategory}
           />
-        </div>
+        </Sticky>
         <Main className="wdk-RecordMain">
           <Record
             record={this.props.record}
