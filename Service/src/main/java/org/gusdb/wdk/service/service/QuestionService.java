@@ -143,7 +143,6 @@ public class QuestionService extends WdkService {
         contextParamValues).toString()).build();
   }
 
- 
   /**
    * Provide information about a question, given a changed parameter value and enough context for dependent params.  (This is 
    * typically used when a user changes a dependent param.)
@@ -179,27 +178,16 @@ public class QuestionService extends WdkService {
       return getBadRequestBodyResponse(e.getMessage());
     }
     
-    // find the param object referred to by the incoming json
+    // find the param object for the changed param, and validate it. (this will also validate the context it needs, if dependent)
     Param changedParam = null;
-    for (Param param : question.getParams())
-      if (param.getName().equals(changedParamName)) changedParam = param;
+    for (Param param : question.getParams()) if (param.getName().equals(changedParamName)) changedParam = param;
     if (changedParam == null) throw new WdkUserException("Param with name '" + changedParamName + "' is no longer valid for question '" + question.getName() + "'");
-
-    // if the changedParam is an enum, get the vocab for it, and validate the change.
-    if (changedParam instanceof AbstractEnumParam) {
-      AbstractEnumParam aep = (AbstractEnumParam) changedParam;
-      EnumParamVocabInstance vocab = aep.getVocabInstance(getCurrentUser(), contextParamValues);
-      if (!vocab.containsTerm(changedParamValue)) throw new WdkUserException("Term '" + changedParamValue + "' is not legal for the parameter " + changedParamName);
-    }
+    changedParam.validate(getCurrentUser(), changedParamValue, contextParamValues);
     
-    // find all dependencies of the changed param.
-    // remove them from the context
-    Set<AbstractEnumParam> allDependentParams = changedParam.getAllDependentParams();
-    for (AbstractEnumParam dependentParam : allDependentParams) {
-      contextParamValues.remove(dependentParam.getName());
-    }
+    // find all dependencies of the changed param.  remove them from the context
+    for (Param dependentParam : changedParam.getAllDependentParams()) contextParamValues.remove(dependentParam.getName());
 
-    return Response.ok(QuestionFormatter.getQuestionJson(question, true, allDependentParams, getCurrentUser(),
+    return Response.ok(QuestionFormatter.getQuestionJson(question, true, changedParam.getAllDependentParams(), getCurrentUser(),
         contextParamValues).toString()).build();
   }
 
