@@ -5,6 +5,8 @@ export default class WdkService {
 
   constructor(serviceUrl) {
     this._serviceUrl = serviceUrl;
+
+    // caches
     this._questions = new Map();
     this._recordClasses = new Map();
     this._records = new Map();
@@ -13,55 +15,67 @@ export default class WdkService {
   getQuestions() {
     let method = 'get';
     let url = this._serviceUrl + '/question?expandQuestions=true';
-    if (this._questions.isFull) {
-      return Promise.resolve([...this._questions.values()]);
-    }
-    return fetchJson(method, url).then(questions => {
-      for (let question of questions) {
-        this._questions.set(question.name, question);
-      }
+
+    if (!this._questions.isFull) {
       this._questions.isFull = true;
-      return [...this._questions.values()];
-    });
+      fetchJson(method, url).then(
+        questions => {
+          for (let question of questions) {
+            this._questions.set(question.name, Promise.resolve(question));
+          }
+        },
+        reason => {
+          this._questions.isFull = false;
+          throw reason;
+        }
+      );
+    }
+
+    return Promise.all(this._questions.values());
   }
 
   getQuestion(questionName) {
     let method = 'get';
     let url = this._serviceUrl + '/question/' + questionName;
-    if (this._questions.has(questionName)) {
-      return Promise.resolve(this._questions.get(questionName));
+
+    if (!this._questions.has(questionName)) {
+      this._questions.set(questionName, fetchJson(method, url));
     }
-    return fetchJson(method, url).then(question => {
-      this._questions.set(questionName, question);
-      return question;
-    });
+
+    return this._questions.get(questionName);
   }
 
   getRecordClasses() {
     let method = 'get';
     let url = this._serviceUrl + '/record?expandRecordClasses=true';
-    if (this._recordClasses.isFull) {
-      return Promise.resolve([...this._recordClasses.values()]);
+
+    if (!this._recordClasses.isFull) {
+      fetchJson(method, url).then(
+        recordClasses => {
+          this._recordClasses.isFull = true;
+          for (let recordClass of recordClasses) {
+            this._recordClasses.set(recordClass.fullName, Promise.resolve(recordClass));
+          }
+        },
+        reason => {
+          this._recordClasses.isFull = false;
+          throw reason;
+        }
+      );
     }
-    return fetchJson(method, url).then(recordClasses => {
-      for (let recordClass of recordClasses) {
-        this._recordClasses.set(recordClass.fullName, recordClass);
-      }
-      this._recordClasses.isFull = true;
-      return [...this._recordClasses.values()];
-    });
+
+    return Promise.all(this._recordClasses.values());
   }
 
   getRecordClass(recordClassName) {
     let method = 'get';
     let url = this._serviceUrl + '/record/' + recordClassName;
-    if (this._recordClasses.has(recordClassName)) {
-      return Promise.resolve(this._recordClasses.get(recordClassName));
+
+    if (!this._recordClasses.has(recordClassName)) {
+      this._recordClasses.set(recordClassName, fetchJson(method, url));
     }
-    return fetchJson(method, url).then(recordClass => {
-      this._recordClasses.set(recordClassName, recordClass);
-      return recordClass;
-    });
+
+    return this._recordClasses.get(recordClassName);
   }
 
   getRecord(recordClassName, primaryKey, options = {}) {
@@ -75,34 +89,36 @@ export default class WdkService {
     // if we don't have the record, fetch whatever is requested
     if (!this._records.has(key)) {
       let body = stringify({ primaryKey, attributes, tables });
-      return fetchJson(method, url, body).then(response => {
-        this._records.set(key, response.record);
-        return response.record;
-      });
+      this._records.set(key, fetchJson(method, url, body).then(response => response.record));
     }
 
-    // determine which tables and attributes we need to retreive
-    let record = this._records.get(key);
-    let reqAttributes = difference(attributes, Object.keys(record.attributes));
-    let reqTables = difference(tables, Object.keys(record.tables));
+    else {
+      // determine which tables and attributes we need to retreive
+      this._records.set(key, this._records.get(key).then(record => {
+        let reqAttributes = difference(attributes, Object.keys(record.attributes));
+        let reqTables = difference(tables, Object.keys(record.tables));
 
-    if (reqAttributes.length > 0 || reqTables.length > 0) {
-      let body = stringify({
-        primaryKey,
-        attributes: reqAttributes,
-        tables: reqTables
-      });
+        // get addition attributes and tables
+        if (reqAttributes.length > 0 || reqTables.length > 0) {
+          let body = stringify({
+            primaryKey,
+            attributes: reqAttributes,
+            tables: reqTables
+          });
 
-      // merge old record attributes and tables with new record
-      return fetchJson(method, url, body).then(response => {
-        Object.assign(response.record.attributes, record.attributes);
-        Object.assign(response.record.tables, record.tables);
-        this._records.set(key, response.record);
-        return response.record;
-      });
+          // merge old record attributes and tables with new record
+          return fetchJson(method, url, body).then(response => {
+            Object.assign(response.record.attributes, record.attributes);
+            Object.assign(response.record.tables, record.tables);
+            return response.record;
+          });
+        }
+
+        return record;
+      }));
     }
 
-    return Promise.resolve(record);
+    return this._records.get(key);
   }
 
   getAnswer(questionDefinition, formatting) {
@@ -114,7 +130,7 @@ export default class WdkService {
       let recordClassName = response.meta.class;
       for (let record of response.records) {
         let key = recordClassName + ':' + stringify(record.id);
-        this._records.set(key, record);
+        this._records.set(key, Promise.resolve(record));
       }
       return response;
     });
