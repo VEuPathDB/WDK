@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.cache.ItemCache;
+import org.gusdb.fgputil.cache.ItemFetcher;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -31,7 +33,7 @@ import org.json.JSONObject;
  * @author jerric
  * 
  */
-public class FlatVocabParam extends AbstractEnumParam {
+public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<String, EnumParamVocabInstance> {
 
   public static final String PARAM_SERVED_QUERY = "ServedQuery";
   public static final String DEPENDED_VALUE = "depended_value";
@@ -43,6 +45,7 @@ public class FlatVocabParam extends AbstractEnumParam {
 
   private Query vocabQuery;
   private String vocabQueryRef;
+  private static ItemCache vocabCache = new ItemCache();
 
   /**
    * The name of the query where is param is used. Please note that each query hold a separate copy of the
@@ -185,7 +188,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     // + getName() + " using depended value "
     // + Utilities.print(dependedParamValues);
 
-    EnumParamVocabInstance cache = new EnumParamVocabInstance(this, dependedParamValues);
+    EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(this, dependedParamValues);
 
     // check if the query has "display" column
     boolean hasDisplay = vocabQuery.getColumnMap().containsKey(COLUMN_DISPLAY);
@@ -252,24 +255,24 @@ public class FlatVocabParam extends AbstractEnumParam {
         throw new WdkModelException(this.getFullName() + ": The parent term cannot contain " + "comma: '" +
             parentTerm + "'");
 
-      cache.addTermValues(term, value, display, parentTerm);
+      vocabInstance.addTermValues(term, value, display, parentTerm);
     }
-    if (cache.isEmpty()) {
+    if (vocabInstance.isEmpty()) {
       if (vocabQuery instanceof SqlQuery)
         logger.warn("vocab query returned 0 rows:" + ((SqlQuery) vocabQuery).getSql());
       throw new WdkModelException("No item returned by the query [" + vocabQuery.getFullName() +
           "] of FlatVocabParam [" + getFullName() + "].");
     }
     else {
-      logger.debug("Query [" + vocabQuery.getFullName() + "] returned " + cache.getNumTerms() +
+      logger.debug("Query [" + vocabQuery.getFullName() + "] returned " + vocabInstance.getNumTerms() +
           " of FlatVocabParam [" + getFullName() + "].");
     }
-    initTreeMap(cache);
-    applySelectMode(cache);
+    initTreeMap(vocabInstance);
+    applySelectMode(vocabInstance);
     logger.debug("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
-    logger.debug("Returning cache with default value '" + cache.getDefaultValue() +
-        "' out of possible terms: " + FormatUtil.arrayToString(cache.getTerms().toArray()));
-    return cache;
+    logger.debug("Returning cache with default value '" + vocabInstance.getDefaultValue() +
+        "' out of possible terms: " + FormatUtil.arrayToString(vocabInstance.getTerms().toArray()));
+    return vocabInstance;
   }
 
   /*
@@ -308,5 +311,24 @@ public class FlatVocabParam extends AbstractEnumParam {
 
     // also print out the vocab query
     vocabQuery.printDependency(writer, indent);
+  }
+  
+  public EnumParamVocabInstance fetchItem(String key) {
+    
+  }
+  
+  private String getCacheKey(Map<String, String> dependedParamValues) {
+    JSONObject cacheKeyJson = new JSONObject();
+    cacheKeyJson.put("paramName", getFullName());
+    cacheKeyJson.put("vocabQueryRef", vocabQueryRef);
+    JSONObject dependedParamValuesJson = new JSONObject();
+    String[] rawValue = stableValue.split(",+");
+
+    
+    return "";
+  }
+  
+  private Map<String, String> parseCacheKey(String key) {
+    
   }
 }
