@@ -42,6 +42,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     if (!(rawValue instanceof String[]))
       new Exception().printStackTrace();
     String[] terms = (String[]) rawValue;
+    Arrays.sort(terms);
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
       if (buffer.length() > 0)
