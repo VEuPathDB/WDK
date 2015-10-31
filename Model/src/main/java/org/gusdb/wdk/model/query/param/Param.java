@@ -120,7 +120,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   protected boolean allowEmpty;
 
   protected ParamSet paramSet;
-  private Set<AbstractEnumParam> dependentParams = new HashSet<AbstractEnumParam>();
+  private Set<Param> dependentParams = new HashSet<Param>();
 
   private List<ParamConfiguration> noTranslations;
 
@@ -665,18 +665,18 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * Backlink to dependent params, set by dependent params.
    * @param param
    */
-  public void addDependentParam(AbstractEnumParam param) {
+  public void addDependentParam(Param param) {
     if (!dependentParams.contains(param)) dependentParams.add(param);
   }
 
-  public Set<AbstractEnumParam> getDependentParams() {
+  public Set<Param> getDependentParams() {
     return Collections.unmodifiableSet(dependentParams);
   }
 
-  public Set<AbstractEnumParam> getAllDependentParams() {
-    Set<AbstractEnumParam> answer = new HashSet<AbstractEnumParam>();
+  public Set<Param> getAllDependentParams() {
+    Set<Param> answer = new HashSet<Param>();
     answer.addAll(dependentParams);
-    for (AbstractEnumParam dependent : dependentParams) {
+    for (Param dependent : dependentParams) {
       answer.addAll(dependent.getAllDependentParams());
     }
     return answer;
