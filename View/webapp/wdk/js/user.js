@@ -74,7 +74,7 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
   };
 
   ns.oauthLogout = function(oauthBaseUrl) {
-    if (confirm("Do you want to log out as " + ns.name() + "?")) {
+    if (confirm("Do you want to log out as " + ns.name() + "?\n\nNote: You must log out of any other EuPathDB sites separately.")) {
       var logoutPath = jQuery("#user-control form[name=logoutForm]").attr("action");
       var logoutUrl = window.location.origin + logoutPath;
       window.location = oauthBaseUrl + "/logout?redirect_uri=" + encodeURIComponent(logoutUrl);

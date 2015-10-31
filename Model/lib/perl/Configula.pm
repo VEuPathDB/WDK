@@ -161,6 +161,11 @@ sub new {
     $self->{'webServiceUrl'} = 'http://' . $self->{'target_site'} . '/' . $self->{'webapp_nover'} . '/services/WsfService';
     
     $self->{'google_analytics_id'} = $self->google_analytics_id($self->{'euparc'}, $self->{'canonical_hostname'});
+
+    $self->{'authenticationMethod'} = 'oauth2'; # oauth2 or userdb
+    $self->{'oauthUrl'} = 'https://eupathdb.org/oauth';
+    $self->{'oauthClientId'} = 'apiComponentSite';
+    $self->{'oauthClientSecret'} = $self->oauth_secret($self->{'euparc'}, $self->{'oauthClientId'});
  
     $self->sanity_check();
     
@@ -248,7 +253,7 @@ sub get_cli_args {
     local $SIG{__WARN__} = sub { 
       my $message = shift;
       die "<$scriptname> FATAL: " . $message;
-    };
+  };
   
   my $optRslt = GetOptions(
         "alogin=s"   => \$appDb_login,
@@ -318,6 +323,21 @@ sub google_analytics_id {
   );
   
   return $rc->{'sites'}->{'site'}->{$site}->{'google_analytics_id'};
+}
+
+# retreive OAuth client secret from user's ~/.euparc
+sub oauth_secret {
+  my ($self, $euparc, $clientid) = @_;
+
+  ($clientid) = map{ lc } ($clientid);
+
+  my $rc = XMLin($euparc,
+    ForceArray => ['client'],
+    ForceContent => 1,
+    KeyAttr => [ user => "clientId"],
+  );
+
+  return $rc->{'oauth'}->{'client'}->{$clientid}->{'clientSecret'};
 }
 
 # return 'class' of host, e.g. qa, beta, integrate or hostname.

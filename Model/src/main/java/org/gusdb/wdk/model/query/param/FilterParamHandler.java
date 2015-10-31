@@ -133,25 +133,13 @@ public class FilterParamHandler extends AbstractParamHandler {
         terms[i] = jsTerms.getString(i);
       }
 
-      // AbstractEnumParam enumParam = (AbstractEnumParam) param;
-      // EnumParamCache cache = enumParam.getValueCache(user, contextValues);
-
-      Set<String> internals = new LinkedHashSet<>();
       // return stable values, instead of list of terms
       if (param.isNoTranslation()) {
         return stableValue;
       }
 
-//      for (String term : terms) {
-//        if (!cache.containsTerm(term))
-//          throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
-//
-//        String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
-//        internals.add(internal);
-//      }
-      String[] array = internals.toArray(new String[0]);
-      Arrays.sort(array);
-      return Utilities.encrypt(Arrays.toString(array));
+      Arrays.sort(terms);
+      return Utilities.encrypt(Arrays.toString(terms));
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);

@@ -1,6 +1,5 @@
 package org.gusdb.wdk.jmx.mbeans.dbms;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -95,15 +94,13 @@ public abstract class AbstractDbInfo implements DbInfo {
     String sql = getServerNameSql();
     if (sql == null) return;
 
-    Connection connection = null;
-    ResultSet rs = null;
     PreparedStatement ps = null;
+    ResultSet rs = null;
     logger.debug("querying database for servername information");    
 
     try {
-      connection = _dataSource.getConnection();
-      String dbVendor = connection.getMetaData().getDatabaseProductName();
       ps = SqlUtils.getPreparedStatement(_dataSource, sql);
+      String dbVendor = ps.getConnection().getMetaData().getDatabaseProductName();
       rs = ps.executeQuery();
       if (rs.next()) {
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -123,15 +120,14 @@ public abstract class AbstractDbInfo implements DbInfo {
         // oracle user needs an ACL for UTL_INADDR
         servernameDataMap.put("is_allowed_utl_inaddr", "false");
       }
-      logger.error("Failed attempting\n" + sql + "\n" + e);
+      logger.error("Failed attempting\n" + sql + "\n", e);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(rs);
-      try {
-        if (connection != null) connection.close();
+      if (rs != null) {
+        SqlUtils.closeResultSetAndStatement(rs);
       }
-      catch(SQLException ex) {
-        logger.error(ex);
+      else {
+        SqlUtils.closeStatement(ps);
       }
     }
   }
