@@ -123,7 +123,12 @@ public abstract class AbstractDbInfo implements DbInfo {
       logger.error("Failed attempting\n" + sql + "\n", e);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(rs);
+      if (rs != null) {
+        SqlUtils.closeResultSetAndStatement(rs);
+      }
+      else {
+        SqlUtils.closeStatement(ps);
+      }
     }
   }
 
