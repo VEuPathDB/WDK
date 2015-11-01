@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.formatter.param;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -16,7 +17,7 @@ public class TypeAheadParamFormatter extends AbstractEnumParamFormatter implemen
 
   @Override
   public JSONObject getJson(User user, Map<String, String> dependedParamValues)
-      throws JSONException, WdkModelException {
+      throws JSONException, WdkModelException, WdkUserException {
     JSONObject pJson = super.getJson();
     pJson.put("vocab", getVocabJson(user, dependedParamValues));
     return pJson;

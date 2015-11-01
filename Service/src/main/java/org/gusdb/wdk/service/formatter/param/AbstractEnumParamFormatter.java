@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.Param;
@@ -19,7 +20,7 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
   }
 
   @Override
-  public JSONObject getJson() throws JSONException, WdkModelException {
+  public JSONObject getJson() throws JSONException, WdkModelException, WdkUserException {
 
     JSONObject pJson = super.getJson();
     pJson.put("countOnlyLeaves", _param.getCountOnlyLeaves());

@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Iterator;
 
 import javax.ws.rs.Consumes;
@@ -21,14 +20,11 @@ import javax.ws.rs.core.Response;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
-import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.service.formatter.QuestionFormatter;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,7 +37,7 @@ public class QuestionService extends WdkService {
       @QueryParam("recordClass") String recordClassStr,
       @QueryParam("expandQuestions") Boolean expandQuestions,
       @QueryParam("expandParams") Boolean expandParams)
-          throws JSONException, WdkModelException {
+          throws JSONException, WdkModelException, WdkUserException {
     try {
       Map<String,String> dependerParams = null;
       return Response.ok(QuestionFormatter.getQuestionsJson(

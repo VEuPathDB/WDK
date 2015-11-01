@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.formatter.param;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,7 +15,7 @@ public class ParamFormatter<T extends Param> {
   }
 
   public JSONObject getJson()
-      throws JSONException, WdkModelException {
+      throws JSONException, WdkModelException, WdkUserException {
     JSONObject pJson = new JSONObject();
     pJson.put("name", _param.getName());
     pJson.put("displayName", _param.getName());
