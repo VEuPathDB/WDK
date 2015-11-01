@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -313,22 +314,30 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
     vocabQuery.printDependency(writer, indent);
   }
   
-  public EnumParamVocabInstance fetchItem(String key) {
-    
+  public boolean itemNeedsUpdating(EnumParamVocabInstance item) {
+   return false;
   }
   
-  private String getCacheKey(Map<String, String> dependedParamValues) {
-    JSONObject cacheKeyJson = new JSONObject();
+  public EnumParamVocabInstance fetchItem(String key) {
+    return null;
+  }
+  
+  public EnumParamVocabInstance updateItem(String key, EnumParamVocabInstance item) {
+    return null;
+  }
+private String getCacheKey(Map<String, String> dependedParamValues) {
+   /*
+   JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put("paramName", getFullName());
     cacheKeyJson.put("vocabQueryRef", vocabQueryRef);
     JSONObject dependedParamValuesJson = new JSONObject();
     String[] rawValue = stableValue.split(",+");
-
-    
-    return "";
+*/
+      return "";
   }
   
+  
   private Map<String, String> parseCacheKey(String key) {
-    
+    return new HashMap<String, String>();
   }
 }
