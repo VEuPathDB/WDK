@@ -74,6 +74,7 @@ class RecordUI extends Component {
     return (
       <div className={classNames}>
         <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
+          <h3 className="wdk-RecordSidebarHeader">{this.props.record.displayName}</h3>
           <a href="#" className="wdk-RecordSidebarToggle" onClick={this.toggleSidebar}>
             {this.state.showSidebar ? '' : 'Show Categories '}
             <i className={sidebarIconClass}
