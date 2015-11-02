@@ -8,9 +8,12 @@ import org.gusdb.wdk.model.query.param.FilterParam;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.log4j.Logger;
+
 
 public class FilterParamFormatter extends AbstractEnumParamFormatter implements VocabProvider  {
 
+  private static final Logger LOG = Logger.getLogger(FilterParamFormatter.class);
   protected FilterParam filterParam; 
   
   FilterParamFormatter(FilterParam param) {
@@ -34,10 +37,7 @@ public class FilterParamFormatter extends AbstractEnumParamFormatter implements 
     JSONObject metaDataJson = new JSONObject();
     for (String term : metaDataMap.keySet()) {
       JSONObject termJson = new JSONObject();
-      for (String prop : metaDataMap.get(term).keySet()) {
-        JSONObject propJson = new JSONObject();
-        propJson.put(prop, metaDataMap.get(term).get(prop));
-      }
+      for (String prop : metaDataMap.get(term).keySet()) termJson.put(prop, metaDataMap.get(term).get(prop));
       metaDataJson.put(term, termJson);
     }
     return metaDataJson; 
@@ -48,10 +48,7 @@ public class FilterParamFormatter extends AbstractEnumParamFormatter implements 
     JSONObject metaDataSpecJson = new JSONObject();
     for (String prop : metaDataSpecMap.keySet()) {
       JSONObject propJson = new JSONObject();
-      for (String specProp : metaDataSpecMap.get(prop).keySet()) {
-        JSONObject specPropJson = new JSONObject();
-        specPropJson.put(specProp, metaDataSpecMap.get(prop).get(specProp));
-      }
+      for (String specProp : metaDataSpecMap.get(prop).keySet()) propJson.put(specProp, metaDataSpecMap.get(prop).get(specProp));
       metaDataSpecJson.put(prop, propJson);
     }
     return metaDataSpecJson; 
