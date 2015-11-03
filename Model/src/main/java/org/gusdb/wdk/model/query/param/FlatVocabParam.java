@@ -341,7 +341,7 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
     cacheKeyJson.put("vocabQueryRef", vocabQueryRef);
     JSONObject dependedParamValuesJson = new JSONObject();
     for (String paramName : dependedParamValues.keySet()) 
-      if (getDependedParams().contains(paramName)) dependedParamValuesJson.put(paramName, dependedParamValues.get(paramName));
+      if (getDependedParams() != null && getDependedParams().contains(paramName)) dependedParamValuesJson.put(paramName, dependedParamValues.get(paramName));
     cacheKeyJson.put("context", dependedParamValuesJson);
     return cacheKeyJson.toString();
   }
