@@ -328,6 +328,7 @@ body {
 .wdk-RecordNavigationCategories {
   overflow-y: auto;
   max-height: calc(100vh - 250px);
+  padding-right: 1em;
 }
 
 .wdk-RecordNavigationItem {
