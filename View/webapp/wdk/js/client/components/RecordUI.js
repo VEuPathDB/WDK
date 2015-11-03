@@ -14,15 +14,12 @@ class RecordUI extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showAdvanced: false,
       showSidebar: true
     };
 
     this.toggleCategory = this.toggleCategory.bind(this);
     this.toggleTable = this.toggleTable.bind(this);
     this.toggleSidebar = this.toggleSidebar.bind(this);
-    this.showAdvancedCategories = this.showAdvancedCategories.bind(this);
-    this.hideAdvancedCategories = this.hideAdvancedCategories.bind(this);
   }
 
   toggleCategory(category, isCollapsed) {
@@ -44,14 +41,6 @@ class RecordUI extends Component {
   toggleSidebar(event) {
     event.preventDefault();
     this.setState({ showSidebar: !this.state.showSidebar });
-  }
-
-  showAdvancedCategories() {
-    this.setState({ showAdvanced: true });
-  }
-
-  hideAdvancedCategories() {
-    this.setState({ showAdvanced: false });
   }
 
   render() {
@@ -83,9 +72,6 @@ class RecordUI extends Component {
           <RecordNavigationSection
             record={this.props.record}
             recordClass={this.props.recordClass}
-            onShowAdvanced={this.showAdvancedCategories}
-            onHideAdvanced={this.hideAdvancedCategories}
-            showAdvanced={this.state.showAdvanced}
             categories={categories}
             collapsedCategories={this.props.collapsedCategories}
             onCategoryToggle={this.toggleCategory}
