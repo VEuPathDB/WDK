@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.query.param;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -10,6 +11,7 @@ import java.util.Set;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.ItemFetcher;
+import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -34,7 +36,7 @@ import org.json.JSONObject;
  * @author jerric
  * 
  */
-public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<String, EnumParamVocabInstance> {
+public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<String, EnumParamVocabInstance>{
 
   public static final String PARAM_SERVED_QUERY = "ServedQuery";
   public static final String DEPENDED_VALUE = "depended_value";
@@ -46,7 +48,7 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
 
   private Query vocabQuery;
   private String vocabQueryRef;
-  private static ItemCache vocabCache = new ItemCache();
+  private static ItemCache<String, EnumParamVocabInstance> vocabCache = new ItemCache<String, EnumParamVocabInstance>();
 
   /**
    * The name of the query where is param is used. Please note that each query hold a separate copy of the
@@ -183,14 +185,13 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
       throws WdkModelException, WdkUserException {
     logger.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
 
-    Set<Param> dependedParams = getDependedParams();
-
-    // String errorStr = "Could not retrieve flat vocab values for param "
-    // + getName() + " using depended value "
-    // + Utilities.print(dependedParamValues);
-
-    EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(this, dependedParamValues);
-
+    EnumParamVocabInstance vocabInstance = null;
+    try {
+      vocabInstance = vocabCache.getItem(getCacheKey(dependedParamValues), this);
+    } catch (UnfetchableItemException e) {
+      throw new WdkModelException(e);
+    }
+    
     // check if the query has "display" column
     boolean hasDisplay = vocabQuery.getColumnMap().containsKey(COLUMN_DISPLAY);
     boolean hasParent = vocabQuery.getColumnMap().containsKey(COLUMN_PARENT_TERM);
@@ -200,6 +201,7 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
     values.put(PARAM_SERVED_QUERY, servedQueryName);
 
     // add depended value if is dependent param
+    Set<Param> dependedParams = getDependedParams();
     if (isDependentParam()) {
       // use the depended param as the input param for the vocab query,
       // since the depended param might be overridden by question or
@@ -314,30 +316,39 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
     vocabQuery.printDependency(writer, indent);
   }
   
-  public boolean itemNeedsUpdating(EnumParamVocabInstance item) {
-   return false;
-  }
-  
-  public EnumParamVocabInstance fetchItem(String key) {
-    return null;
+  /**
+   * We don't need to read the vocabQueryRef from the cache key, because we know it 
+   * is the same as the one in this's state.
+   */
+  public EnumParamVocabInstance fetchItem(String cacheKey) {
+    JSONObject cacheKeyJson = new JSONObject(cacheKey);
+    JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject("context");
+    Iterator<String> paramNames = dependedParamValuesJson.keys();
+    Map<String, String> dependedParamValues = new HashMap<String, String>();
+    while( paramNames.hasNext() ) {
+        String paramName = (String)paramNames.next();
+        dependedParamValues.put(paramName, dependedParamValuesJson.getString(paramName));
+    }
+    return new EnumParamVocabInstance(dependedParamValues);
   }
   
   public EnumParamVocabInstance updateItem(String key, EnumParamVocabInstance item) {
     return null;
   }
-private String getCacheKey(Map<String, String> dependedParamValues) {
-   /*
+
+  private String getCacheKey(Map<String, String> dependedParamValues) throws WdkModelException, JSONException {
    JSONObject cacheKeyJson = new JSONObject();
-    cacheKeyJson.put("paramName", getFullName());
     cacheKeyJson.put("vocabQueryRef", vocabQueryRef);
     JSONObject dependedParamValuesJson = new JSONObject();
-    String[] rawValue = stableValue.split(",+");
-*/
-      return "";
+    for (String paramName : dependedParamValues.keySet()) 
+      if (getDependedParams().contains(paramName)) dependedParamValuesJson.put(paramName, dependedParamValues.get(paramName));
+    cacheKeyJson.put("context", dependedParamValuesJson);
+    return cacheKeyJson.toString();
   }
   
-  
-  private Map<String, String> parseCacheKey(String key) {
-    return new HashMap<String, String>();
-  }
+  public boolean itemNeedsUpdating(EnumParamVocabInstance item) {
+    return false;
+   }
+   
+
 }

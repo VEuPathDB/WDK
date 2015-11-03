@@ -29,7 +29,6 @@ public class EnumParamVocabInstance {
 	private static Logger logger = Logger.getLogger(EnumParamVocabInstance.class);
 	
 	// param this cache was created by
-	private AbstractEnumParam _source;
 	// context values used to create this cache
 	private Map<String, String> _dependedParamValues;
 	// default value based on vocabulary and select mode (or maybe "hard-coded" (in XML) default)
@@ -41,8 +40,7 @@ public class EnumParamVocabInstance {
 	private Map<String, String> _termParentMap = new LinkedHashMap<String, String>();
 	private List<EnumParamTermNode> _termTreeList = new ArrayList<EnumParamTermNode>();
 	
-	public EnumParamVocabInstance(AbstractEnumParam source, Map<String, String> dependedParamValues) {
-		_source = source;
+	public EnumParamVocabInstance(Map<String, String> dependedParamValues) {
 		_dependedParamValues = dependedParamValues;
 	}
 	
@@ -62,17 +60,17 @@ public class EnumParamVocabInstance {
 	 * @param sanitySelectMode select mode form model (ParamValuesSet)
 	 * @return default value for this param, based on cached vocab values
 	 */
-	public String getSanityDefaultValue(SelectMode sanitySelectMode) {
+	public String getSanityDefaultValue(SelectMode sanitySelectMode, boolean isMultiPick, String sanityDefaultNoSelectMode) {
 	  logger.info("Getting sanity default value with passed mode: " + sanitySelectMode);
 	  if (sanitySelectMode != null) {
 	    return AbstractEnumParam.getDefaultWithSelectMode(
-	        getTerms(), sanitySelectMode, _source.getMultiPick(),
+	        getTerms(), sanitySelectMode, isMultiPick,
 	        getTermTreeListRef().isEmpty() ? null : getTermTreeListRef().get(0));
 	  }
 	  String defaultVal;
-	  logger.info("Sanity select mode is null; using sanity default (" + _source.getSanityDefault() +
+	  logger.info("Sanity select mode is null; using sanity default (" + sanityDefaultNoSelectMode +
 	      ") or default (" + getDefaultValue() + ")");
-	  return (((defaultVal = _source.getSanityDefault()) != null) ?
+	  return (((defaultVal = sanityDefaultNoSelectMode) != null) ?
 	    defaultVal : getDefaultValue());
 	  }
 
@@ -148,9 +146,9 @@ public class EnumParamVocabInstance {
         return new EnumParamTermNode[0];
 	}
 
-	public String[] getVocabInternal() {
+	public String[] getVocabInternal(boolean isNoTranslation) {
         String[] array = new String[_termInternalMap.size()];
-        if (_source.isNoTranslation()) _termInternalMap.keySet().toArray(array);
+        if (isNoTranslation) _termInternalMap.keySet().toArray(array);
         else _termInternalMap.values().toArray(array);
         return array;
 	}
