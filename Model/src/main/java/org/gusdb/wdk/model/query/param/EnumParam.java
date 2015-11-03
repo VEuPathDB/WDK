@@ -48,7 +48,7 @@ public class EnumParam extends AbstractEnumParam {
       throws WdkModelException {
     logger.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     Set<Param> dependedParams = getDependedParams();
-    EnumParamVocabInstance cache = new EnumParamVocabInstance(this, dependedParamValues);
+    EnumParamVocabInstance cache = new EnumParamVocabInstance(dependedParamValues);
     EnumItem[] enumItems = enumItemList.getEnumItems();
     for (EnumItem item : enumItems) {
       String term = item.getTerm();
