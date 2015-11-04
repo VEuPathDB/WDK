@@ -234,12 +234,12 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, Map<String, String>> getMetadataSpec(User user, Map<String, String> contextValues)
+  public Map<String, Map<String, String>> getMetadataSpec(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
       return null;
 
-    MetaDataSpecItemFetcher fetcher = new MetaDataSpecItemFetcher(metadataSpecQuery, contextValues, user);
+    MetaDataSpecItemFetcher fetcher = new MetaDataSpecItemFetcher(metadataSpecQuery, contextParamValues, user);
     Map<String, Map<String, String>> map = null;
     try {
       map = metaDataSpecCache.getItem(fetcher.getCacheKey(), fetcher);
@@ -257,12 +257,12 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, Map<String, String>> getMetadata(User user, Map<String, String> contextValues)
+  public Map<String, Map<String, String>> getMetadata(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
       return null;
     
-    MetaDataItemFetcher fetcher = new MetaDataItemFetcher(metadataQuery, contextValues, user);
+    MetaDataItemFetcher fetcher = new MetaDataItemFetcher(metadataQuery, contextParamValues, user);
     Map<String, Map<String, String>> map = null;
     try {
       map = metaDataCache.getItem(fetcher.getCacheKey(), fetcher);
@@ -275,24 +275,24 @@ public class FilterParam extends FlatVocabParam {
     return map;
   }
 
-  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextValues, String property)
+  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextParamValues, String property)
       throws WdkModelException, WdkUserException {
-    EnumParamVocabInstance cache = createVocabInstance(user, contextValues);
-    return getMetaData(user, contextValues, property, cache);
+    EnumParamVocabInstance cache = createVocabInstance(user, contextParamValues);
+    return getMetaData(user, contextParamValues, property, cache);
   }
 
   /**
    * @param user
-   * @param contextValues
+   * @param contextParamValues
    * @param property
    * @param cache
-   *          the cache is needed, to make sure the contextValues are initialized correctly. (it is
+   *          the cache is needed, to make sure the contextParamValues are initialized correctly. (it is
    *          initialized when a cache is created.)
    * @return
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextValues, String property,
+  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextParamValues, String property,
       EnumParamVocabInstance cache) throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
       return null;
@@ -300,7 +300,7 @@ public class FilterParam extends FlatVocabParam {
     
 
     // compose a wrapped sql
-    QueryInstance<?> instance = metadataQuery.makeInstance(user, contextValues, true, 0, contextValues);
+    QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, contextParamValues);
     String sql = instance.getSql();
     sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_PROPERTY + " = ?";
 
@@ -337,11 +337,11 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  public JSONObject getJsonValues(User user, Map<String, String> contextValues, EnumParamVocabInstance cache)
+  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues, EnumParamVocabInstance cache)
       throws WdkModelException, WdkUserException {
-    JSONObject jsParam = super.getJsonValues(user, contextValues, cache);
+    JSONObject jsParam = super.getJsonValues(user, contextParamValues, cache);
     try { // add additional info into the json
-      appendJsonFilterValue(jsParam, user, contextValues);
+      appendJsonFilterValue(jsParam, user, contextParamValues);
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
@@ -349,14 +349,14 @@ public class FilterParam extends FlatVocabParam {
     return jsParam;
   }
 
-  private void appendJsonFilterValue(JSONObject jsParam, User user, Map<String, String> contextValues)
+  private void appendJsonFilterValue(JSONObject jsParam, User user, Map<String, String> contextParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
       return;
 
     // create json for the metadata
     JSONObject jsMetadataSpec = new JSONObject();
-    Map<String, Map<String, String>> metadataSpec = getMetadataSpec(user, contextValues);
+    Map<String, Map<String, String>> metadataSpec = getMetadataSpec(user, contextParamValues);
     for (String property : metadataSpec.keySet()) {
       JSONObject jsSpec = new JSONObject();
       Map<String, String> spec = metadataSpec.get(property);
@@ -371,7 +371,7 @@ public class FilterParam extends FlatVocabParam {
 
     // create json for the properties
     JSONObject jsMetadata = new JSONObject();
-    Map<String, Map<String, String>> metadata = getMetadata(user, contextValues);
+    Map<String, Map<String, String>> metadata = getMetadata(user, contextParamValues);
     for (String term : metadata.keySet()) {
       JSONObject jsProperty = new JSONObject();
       Map<String, String> property = metadata.get(term);
@@ -387,7 +387,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextValues,
+  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues,
       EnumParamVocabInstance cache) throws WdkModelException {
     try {
       if (stableValue == null || stableValue.length() == 0) {
@@ -435,7 +435,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  public String[] getTerms(User user, String stableValue, Map<String, String> contextValues)
+  public String[] getTerms(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0)
       return new String[0];

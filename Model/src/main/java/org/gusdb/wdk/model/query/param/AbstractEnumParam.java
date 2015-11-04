@@ -442,8 +442,8 @@ public abstract class AbstractEnumParam extends Param {
     return getVocabMap(user, null);
   }
 
-  public Map<String, String> getVocabMap(User user, Map<String, String> contextValues) {
-    return getVocabInstance(user, contextValues).getVocabMap();
+  public Map<String, String> getVocabMap(User user, Map<String, String> contextParamValues) {
+    return getVocabInstance(user, contextParamValues).getVocabMap();
   }
 
   public Map<String, String> getDisplayMap(User user) {
@@ -554,19 +554,19 @@ public abstract class AbstractEnumParam extends Param {
    * java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextValues)
+  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (!isSkipValidation()) {
-      String[] terms = getTerms(user, stableValue, contextValues);
+      String[] terms = getTerms(user, stableValue, contextParamValues);
       logger.debug("param=" + getFullName() + " - validating: " + stableValue +
-          ", with contextParamValues=" + FormatUtil.prettyPrint(contextValues));
+          ", with contextParamValues=" + FormatUtil.prettyPrint(contextParamValues));
 
       if (terms.length == 0 && !allowEmpty)
         throw new WdkUserException("At least one value for " + getPrompt() + " must be selected.");
 
       // verify that user did not select too few or too many values for this
       // param
-      int numSelected = getNumSelected(user, terms, contextValues);
+      int numSelected = getNumSelected(user, terms, contextParamValues);
       if ((maxSelectedCount > 0 && numSelected > maxSelectedCount) ||
           (minSelectedCount > 0 && numSelected < minSelectedCount)) {
         String range = (minSelectedCount > 0 ? "[ " + minSelectedCount : "( Inf") + ", " +
@@ -575,7 +575,7 @@ public abstract class AbstractEnumParam extends Param {
             range + " for parameter " + getPrompt());
       }
 
-      Map<String, String> map = getVocabMap(user, contextValues);
+      Map<String, String> map = getVocabMap(user, contextParamValues);
       boolean error = false;
       StringBuilder message = new StringBuilder();
       for (String term : terms) {
@@ -592,11 +592,11 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
   
-  public String[] getTerms(User user, String stableValue, Map<String, String> contextValues) throws WdkModelException {
-    return (String[]) getRawValue(user, stableValue, contextValues);
+  public String[] getTerms(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException {
+    return (String[]) getRawValue(user, stableValue, contextParamValues);
   }
 
-  private int getNumSelected(User user, String[] terms, Map<String, String> contextValues) {
+  private int getNumSelected(User user, String[] terms, Map<String, String> contextParamValues) {
     // if countOnlyLeaves is set, must generate original tree, set values, and
     // count the leaves
     String displayType = getDisplayType();
@@ -604,7 +604,7 @@ public abstract class AbstractEnumParam extends Param {
         ": displayType = " + displayType + ", maxSelectedCount = " + getMaxSelectedCount() +
         ", countOnlyLeaves = " + getCountOnlyLeaves());
     if (displayType != null && displayType.equals("treeBox") && getCountOnlyLeaves()) {
-      EnumParamTermNode[] rootNodes = getVocabInstance(user, contextValues).getVocabTreeRoots();
+      EnumParamTermNode[] rootNodes = getVocabInstance(user, contextParamValues).getVocabTreeRoots();
       FieldTree tree = EnumParamBean.getParamTree(getName(), rootNodes);
       EnumParamBean.populateParamTree(tree, terms);
       return tree.getSelectedLeaves().size();
@@ -801,16 +801,16 @@ public abstract class AbstractEnumParam extends Param {
     return values;
   }
 
-  public void fetchCorrectValue(User user, Map<String, String> contextValues,
+  public void fetchCorrectValue(User user, Map<String, String> contextParamValues,
       Map<String, EnumParamVocabInstance> caches) throws WdkModelException, WdkUserException {
-    logger.debug("Fixing value " + name + "='" + contextValues.get(name) + "'");
+    logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
 
     // make sure the values for depended params are fetched first.
     if (isDependentParam()) {
       for (Param dependedParam : getDependedParams()) {
         logger.debug(name + " depends on " + dependedParam.getName());
         if (dependedParam instanceof AbstractEnumParam) {
-          ((AbstractEnumParam) dependedParam).fetchCorrectValue(user, contextValues, caches);
+          ((AbstractEnumParam) dependedParam).fetchCorrectValue(user, contextParamValues, caches);
         }
       }
     }
@@ -818,24 +818,24 @@ public abstract class AbstractEnumParam extends Param {
     // check if the value for this param is correct
     EnumParamVocabInstance cache = caches.get(name);
     if (cache == null) {
-      cache = createVocabInstance(user, contextValues);
+      cache = createVocabInstance(user, contextParamValues);
       caches.put(name, cache);
     }
   
-    String stableValue = contextValues.get(name);
-    String value = getValidStableValue(user, stableValue, contextValues, cache);
+    String stableValue = contextParamValues.get(name);
+    String value = getValidStableValue(user, stableValue, contextParamValues, cache);
 
     if (value != null)
-    contextValues.put(name, value);
-    logger.debug("Corrected " + name + "\"" + contextValues.get(name) + "\"");
+    contextParamValues.put(name, value);
+    logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
   }
 
-  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextValues,
+  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues,
       EnumParamVocabInstance cache) throws WdkModelException {
     if (stableValue == null)
       return cache.getDefaultValue();
     
-    String[] terms = getTerms(user, stableValue, contextValues);
+    String[] terms = getTerms(user, stableValue, contextParamValues);
     logger.debug("CORRECTING " + name + "=\"" + stableValue + "\"");
     Map<String, String> termMap = cache.getVocabMap();
     Set<String> validValues = new LinkedHashSet<>();
@@ -896,17 +896,17 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
 
-  public JSONObject getJsonValues(User user, Map<String, String> contextValues) throws WdkModelException,
+  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues) throws WdkModelException,
       WdkUserException {
-    EnumParamVocabInstance cache = createVocabInstance(user, contextValues);
-    return getJsonValues(user, contextValues, cache);
+    EnumParamVocabInstance cache = createVocabInstance(user, contextParamValues);
+    return getJsonValues(user, contextParamValues, cache);
   }
 
   /**
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public JSONObject getJsonValues(User user, Map<String, String> contextValues, EnumParamVocabInstance cache)
+  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues, EnumParamVocabInstance cache)
       throws WdkModelException, WdkUserException {
     JSONObject jsParam = new JSONObject();
     try {

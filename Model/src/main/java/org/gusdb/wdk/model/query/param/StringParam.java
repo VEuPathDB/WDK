@@ -177,7 +177,7 @@ public class StringParam extends Param {
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextValues)
+  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException {
     if (number) {
       try {

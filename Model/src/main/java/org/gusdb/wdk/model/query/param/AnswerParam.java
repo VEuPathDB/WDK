@@ -150,7 +150,7 @@ public class AnswerParam extends Param {
    * java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextValues)
+  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     int stepId = Integer.valueOf(stableValue);
     Step step = user.getStep(stepId);

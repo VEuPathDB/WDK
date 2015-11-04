@@ -46,6 +46,9 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
   public static final String COLUMN_DISPLAY = "display";
   public static final String COLUMN_PARENT_TERM = "parentTerm";
 
+  private static final String VOCAB_QUERY_REF_KEY = "vocabQueryRef";
+  private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
+
   private Query vocabQuery;
   private String vocabQueryRef;
   private static ItemCache<String, EnumParamVocabInstance> vocabCache = new ItemCache<String, EnumParamVocabInstance>();
@@ -322,7 +325,7 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
    */
   public EnumParamVocabInstance fetchItem(String cacheKey) {
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
-    JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject("context");
+    JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
     Iterator<String> paramNames = dependedParamValuesJson.keys();
     Map<String, String> dependedParamValues = new HashMap<String, String>();
     while( paramNames.hasNext() ) {
@@ -338,11 +341,11 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
 
   private String getCacheKey(Map<String, String> dependedParamValues) throws WdkModelException, JSONException {
    JSONObject cacheKeyJson = new JSONObject();
-    cacheKeyJson.put("vocabQueryRef", vocabQueryRef);
+    cacheKeyJson.put(VOCAB_QUERY_REF_KEY, vocabQueryRef);
     JSONObject dependedParamValuesJson = new JSONObject();
     for (String paramName : dependedParamValues.keySet()) 
       if (getDependedParams() != null && getDependedParams().contains(paramName)) dependedParamValuesJson.put(paramName, dependedParamValues.get(paramName));
-    cacheKeyJson.put("context", dependedParamValuesJson);
+    cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY, dependedParamValuesJson);
     return cacheKeyJson.toString();
   }
   
