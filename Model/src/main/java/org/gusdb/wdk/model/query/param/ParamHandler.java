@@ -39,11 +39,11 @@ public interface ParamHandler {
    * 
    * @param user
    * @param requestParams
-   * @param contextValues
+   * @param contextParamValues
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
+  void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException;
 
   /**
@@ -51,12 +51,12 @@ public interface ParamHandler {
    * 
    * @param user
    * @param rawValue
-   * @param contextValues
+   * @param contextParamValues
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  String toStableValue(User user, Object rawValue, Map<String, String> contextValues)
+  String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException;
 
   /**
@@ -64,20 +64,20 @@ public interface ParamHandler {
    * 
    * @param user
    * @param stableValue
-   * @param contextValues
+   * @param contextParamValues
    * @return
    * @throws WdkModelException
    */
-  Object toRawValue(User user, String stableValue, Map<String, String> contextValues)
+  Object toRawValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException;
 
-  String toInternalValue(User user, String stableValue, Map<String, String> contextValues)
+  String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException;
 
-  String toSignature(User user, String stableValue, Map<String, String> contextValues)
+  String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException;
 
   ParamHandler clone(Param param);
   
-  String getDisplayValue(User user, String stableValue, Map<String, String> contextValues) throws WdkModelException;
+  String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException;
 }

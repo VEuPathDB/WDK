@@ -38,7 +38,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, Map<String, String> contextValues) {
+  public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues) {
     if (!(rawValue instanceof String[]))
       new Exception().printStackTrace();
     String[] terms = (String[]) rawValue;
@@ -59,7 +59,7 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String[] toRawValue(User user, String stableValue, Map<String, String> contextValues) {
+  public String[] toRawValue(User user, String stableValue, Map<String, String> contextParamValues) {
     if (stableValue == null)
       return null;
     String[] rawValue = stableValue.split(",+");
@@ -81,13 +81,13 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, Map<String, String> contextValues)
+  public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (stableValue == null || stableValue.length() == 0)
       return stableValue;
 
     AbstractEnumParam enumParam = (AbstractEnumParam) param;
-    EnumParamVocabInstance cache = enumParam.getVocabInstance(user, contextValues);
+    EnumParamVocabInstance cache = enumParam.getVocabInstance(user, contextParamValues);
 
     String[] terms = enumParam.convertToTerms(stableValue);
     Set<String> internals = new LinkedHashSet<>();
@@ -116,10 +116,10 @@ public class EnumParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextValues)
+  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     AbstractEnumParam enumParam = (AbstractEnumParam) param;
-    // EnumParamCache cache = enumParam.getValueCache(user, contextValues);
+    // EnumParamCache cache = enumParam.getValueCache(user, contextParamValues);
 
     String[] terms = enumParam.convertToTerms(stableValue);
     // jerric - we should use terms to generate signature, not internal value. I don't remember
@@ -175,12 +175,12 @@ public class EnumParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
+  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     AbstractEnumParam aeParam = (AbstractEnumParam) param;
 
     // set labels
-    Map<String, String> displayMap = aeParam.getDisplayMap(user, contextValues);
+    Map<String, String> displayMap = aeParam.getDisplayMap(user, contextParamValues);
     String[] terms = displayMap.keySet().toArray(new String[0]);
     String[] labels = displayMap.values().toArray(new String[0]);
     requestParams.setArray(param.getName() + LABELS_SUFFIX, labels);
@@ -190,7 +190,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     String stableValue = requestParams.getParam(param.getName());
     Set<String> values = new HashSet<>();
     if (stableValue == null) { // stable value not set, use default
-      stableValue = aeParam.getDefault(user, contextValues);
+      stableValue = aeParam.getDefault(user, contextParamValues);
       if (stableValue != null) {
         // don't validate default, just use it as is.
         for (String term : stableValue.split(",+")) {
@@ -229,11 +229,11 @@ public class EnumParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextValues)
+  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
     AbstractEnumParam aeParam = (AbstractEnumParam) param;
-    Map<String, String> displays = aeParam.getDisplayMap(user, contextValues);
-    String[] terms = toRawValue(user, stableValue, contextValues);
+    Map<String, String> displays = aeParam.getDisplayMap(user, contextParamValues);
+    String[] terms = toRawValue(user, stableValue, contextParamValues);
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
       if (buffer.length() > 0) buffer.append(", ");

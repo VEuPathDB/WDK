@@ -94,7 +94,7 @@ public class TimestampParam extends Param {
    * java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String rawOrDependentValue, Map<String, String> contextValues)
+  protected void validateValue(User user, String rawOrDependentValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     // nothing to validation. the value of timestamp can be any string
   }
