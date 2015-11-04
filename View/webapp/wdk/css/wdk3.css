@@ -283,7 +283,7 @@ body {
 
 .wdk-RecordSidebarToggle {
   position: absolute;
-  top: 12px;
+  top: 16px;
   right: 0;
   background: transparent;
   z-index: 1;
@@ -303,7 +303,7 @@ body {
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebarToggle {
-  right: 22px;
+  right: 2em;
   border: 0;
   transform: rotate(-90deg);
 }
@@ -316,12 +316,8 @@ body {
   margin-left: 0;
 }
 
-.wdk-RecordNavigationSection {
-  margin: 1em 0 2em;
-}
-
 .wdk-RecordNavigationSearchInput {
-  width: calc(100% - 1em);
+  width: calc(100% - 3em);
   padding: .5em;
 }
 

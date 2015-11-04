@@ -20,7 +20,9 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
   private Query query;
   private Map<String, String> paramValues;
   private User user;
-  
+  private static final String QUERY_NAME_KEY = "queryName";
+  private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
+    
   public MetaDataItemFetcher(Query metaDataQuery, Map<String, String> paramValues, User user) {
     this.query = metaDataQuery;
     this.paramValues = paramValues;
@@ -66,11 +68,11 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
 
   public String getCacheKey() throws WdkModelException, JSONException {
    JSONObject cacheKeyJson = new JSONObject();
-    cacheKeyJson.put("queryName", query.getName());
+    cacheKeyJson.put(QUERY_NAME_KEY, query.getName());
     JSONObject paramValuesJson = new JSONObject();
     for (String paramName : paramValues.keySet()) 
       if (query.getParamMap() != null && query.getParamMap().containsKey(paramName)) paramValuesJson.put(paramName, paramValues.get(paramName));
-    cacheKeyJson.put("paramValues", paramValuesJson);
+    cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY, paramValuesJson);
     return cacheKeyJson.toString();
   }
   

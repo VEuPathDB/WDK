@@ -86,7 +86,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
    * @param user
    * @param rawOrDependentValue
    */
-  protected abstract void validateValue(User user, String stableValue, Map<String, String> contextValues)
+  protected abstract void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException;
 
   protected abstract void appendJSONContent(JSONObject jsParam, boolean extra) throws JSONException;
@@ -487,7 +487,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
 
-  public void validate(User user, String stableValue, Map<String, String> contextValues)
+  public void validate(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     // handle the empty case
     if (stableValue == null || stableValue.length() == 0) {
@@ -499,7 +499,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     else {
       // value is not empty, the sub classes will complete further
       // validation
-      validateValue(user, stableValue, contextValues);
+      validateValue(user, stableValue, contextParamValues);
     }
   }
 
@@ -544,14 +544,14 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * 
    * @param user
    * @param rawValue
-   * @param contextValues
+   * @param contextParamValues
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public String getStableValue(User user, Object rawValue, Map<String, String> contextValues)
+  public String getStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    return handler.toStableValue(user, rawValue, contextValues);
+    return handler.toStableValue(user, rawValue, contextParamValues);
   }
 
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
@@ -564,14 +564,14 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * 
    * @param user
    * @param stableValue
-   * @param contextValues
+   * @param contextParamValues
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public Object getRawValue(User user, String stableValue, Map<String, String> contextValues)
+  public Object getRawValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-    return handler.toRawValue(user, stableValue, contextValues);
+    return handler.toRawValue(user, stableValue, contextParamValues);
   }
 
   /**
@@ -582,24 +582,24 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @param stableValue
    *          if the value is empty, and if empty is allow, the assigned empty value will be used as stable
    *          value to be transformed into the internal.
-   * @param contextValues
+   * @param contextParamValues
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public String getInternalValue(User user, String stableValue, Map<String, String> contextValues)
+  public String getInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (stableValue == null || stableValue.length() == 0)
       if (isAllowEmpty())
         stableValue = getEmptyValue();
 
-    return handler.toInternalValue(user, stableValue, contextValues);
+    return handler.toInternalValue(user, stableValue, contextParamValues);
   }
 
-  public String getSignature(User user, String stableValue, Map<String, String> contextValues)
+  public String getSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (stableValue == null) return "";
-    return handler.toSignature(user, stableValue, contextValues);
+    return handler.toSignature(user, stableValue, contextParamValues);
   }
 
   @Override
@@ -639,9 +639,9 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return values;
   }
 
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
+  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
-    handler.prepareDisplay(user, requestParams, contextValues);
+    handler.prepareDisplay(user, requestParams, contextParamValues);
   }
 
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
@@ -661,8 +661,8 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     this.handlerReferences.add(handlerReference);
   }
   
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextValues) throws WdkModelException {
-    return handler.getDisplayValue(user, stableValue, contextValues);
+  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException {
+    return handler.getDisplayValue(user, stableValue, contextParamValues);
   }
   
   /**
