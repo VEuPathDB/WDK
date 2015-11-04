@@ -32,18 +32,19 @@ import org.json.JSONObject;
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends WdkService {
 
+  /**
+   * Get a list of all questions for a recordClass. Does not supply details of the questions (use another endpoint for that).
+   */
   @GET
   public Response getQuestions(
-      @QueryParam("recordClass") String recordClassStr,
-      @QueryParam("expandQuestions") Boolean expandQuestions,
-      @QueryParam("expandParams") Boolean expandParams)
+	  @QueryParam("recordClass") String recordClassStr)
           throws JSONException, WdkModelException, WdkUserException {
     try {
       Map<String,String> dependerParams = null;
       return Response.ok(QuestionFormatter.getQuestionsJson(
           (recordClassStr == null || recordClassStr.isEmpty() ? getAllQuestions(getWdkModel()) :
             getQuestionsForRecordClasses(getWdkModel(), recordClassStr.split(","))),
-          getFlag(expandQuestions), getFlag(expandParams), getCurrentUser(), dependerParams).toString()).build();
+          false, false, getCurrentUser(), dependerParams).toString()).build();
     }
     catch (IllegalArgumentException e) {
       return getBadRequestBodyResponse(e.getMessage());
@@ -75,6 +76,10 @@ public class QuestionService extends WdkService {
     return questions;
   }
   
+  /**
+   * Get the information about a specific question.  Use expandParams=true to get the details of each parameter, including vocabularies and metadata info.
+   * This endpoint is typically used to display a question page (using default values). 
+   */
   @GET
   @Path("/{questionName}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -92,18 +97,21 @@ public class QuestionService extends WdkService {
   }
 
   /**
-   * Provide information about a question, given a complete set of depended param values.  (This is 
-   * typically used for a revise operation.)
+   * Get information about a question, given a complete set of param values.  (This endpoint is 
+   * typically used for a revise operation.)  Throw a WdkUserException if any parameter value
+   * is missing or invalid.  (The exception only describes the first invalid parameter, not all such.)
    * @param questionName
    * @param expandParams
    * @param body
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
+   *
+   * Sample request body:
    * 
    * {
-   *   "context": {
-   *     "size": "5"
+   *   "contextParamValues": {
+   *     "size": "5",
    *     "people": "Sam,Sue"
    *   }
    * }
@@ -122,7 +130,7 @@ public class QuestionService extends WdkService {
     Map<String, String> contextParamValues = new HashMap<String, String>(); 
     try {
       JSONObject jsonBody = new JSONObject(body);
-      contextParamValues = parseContextFromJson(jsonBody, question);
+      contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
     }
     catch (JSONException e) {
       return getBadRequestBodyResponse(e.getMessage());
@@ -140,8 +148,18 @@ public class QuestionService extends WdkService {
   }
 
   /**
-   * Provide information about a question, given a changed parameter value and enough context for dependent params.  (This is 
-   * typically used when a user changes a dependent param.)
+   * Get an updated set of vocabularies (and meta data info) for the parameters that depend on the specified changed parameter.
+   * (Also validate the changed parameter.)
+   * Request must provide the parameter values of any other parameters that those vocabularies depend on.
+   * (This endpoint is typically used when a user changes a depended param.)
+   *
+   * Sample request body:
+   *
+   * {
+   *   "changedParam" : { "name": "height", "value": "12" },
+   *   "contextParamValues" : [see /{questionName} endpoint]
+   * }
+   *
    * @param questionName
    * @param expandParams
    * @param body
@@ -168,34 +186,37 @@ public class QuestionService extends WdkService {
       JSONObject changedParam = jsonBody.getJSONObject("changedParam");
       changedParamName = changedParam.getString("name");
       changedParamValue = changedParam.getString("value");
-      contextParamValues = parseContextFromJson(jsonBody, question);
+      contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
     }
     catch (JSONException e) {
       return getBadRequestBodyResponse(e.getMessage());
     }
-    
-    // find the param object for the changed param, and validate it. (this will also validate the context it needs, if dependent)
+
+    // remove the changed param from the context (maybe we should throw an exception instead?)
+    contextParamValues.remove(changedParamName);
+
+    // find the param object for the changed param, and validate it. (this will also validate the paramValuesContext it needs, if dependent)
     Param changedParam = null;
     for (Param param : question.getParams()) if (param.getName().equals(changedParamName)) changedParam = param;
     if (changedParam == null) throw new WdkUserException("Param with name '" + changedParamName + "' is no longer valid for question '" + question.getName() + "'");
     changedParam.validate(getCurrentUser(), changedParamValue, contextParamValues);
     
-    // find all dependencies of the changed param.  remove them from the context
+    // find all dependencies of the changed param, and remove them from the context
     for (Param dependentParam : changedParam.getAllDependentParams()) contextParamValues.remove(dependentParam.getName());
 
     return Response.ok(QuestionFormatter.getQuestionJson(question, true, changedParam.getAllDependentParams(), getCurrentUser(),
         contextParamValues).toString()).build();
   }
 
-  private Map<String, String> parseContextFromJson(JSONObject bodyJson, Question question) throws JSONException, WdkUserException {
+  private Map<String, String> parseContextParamValuesFromJson(JSONObject bodyJson, Question question) throws JSONException, WdkUserException {
 
     Map<String, String> contextParamValues = new HashMap<String, String>();
-    JSONObject contextJson = bodyJson.getJSONObject("context");
+    JSONObject contextJson = bodyJson.getJSONObject("contextParamValues");
 
     for (Iterator<?> keys = contextJson.keys(); keys.hasNext();) {
       String keyName = (String) keys.next();
       String keyValue = contextJson.getString(keyName);
-      if (keyName == null) throw new WdkUserException("Parameter context has null name");
+      if (keyName == null) throw new WdkUserException("contextParamValues contains a null key");
       if (keyValue == null) throw new WdkUserException("Parameter name '" + keyName + "' has null value");
       if (!question.getParamMap().containsKey(keyName)) throw new WdkUserException("Parameter '" + keyName + "' is not in question '" + question.getFullName() + "'.");
       contextParamValues.put(keyName, keyValue);
