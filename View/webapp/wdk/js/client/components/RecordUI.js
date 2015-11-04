@@ -75,6 +75,8 @@ class RecordUI extends Component {
             categories={categories}
             collapsedCategories={this.props.collapsedCategories}
             onCategoryToggle={this.toggleCategory}
+            navigationQuery={this.props.navigationQuery}
+            updateNavigationQuery={query => this.props.actions.updateNavigationQuery(query)}
           />
         </Sticky>
         <Main className="wdk-RecordMain">

@@ -9,7 +9,8 @@ let RecordNavigationSection = React.createClass({
     categories: React.PropTypes.array,
     collapsedCategories: React.PropTypes.array,
     onCategoryToggle: React.PropTypes.func,
-    heading: React.PropTypes.node
+    heading: React.PropTypes.node,
+    navigationQuery: React.PropTypes.string
   },
 
   mixins: [ React.addons.PureRenderMixin ],
@@ -18,7 +19,6 @@ let RecordNavigationSection = React.createClass({
     // TODO Move state into RecordViewStore
     return {
       navigationExpanded: false,
-      navigationQuery: ''
     };
   },
 
@@ -30,8 +30,8 @@ let RecordNavigationSection = React.createClass({
   },
 
   render() {
-    let { categories, collapsedCategories, heading } = this.props;
-    let { navigationExpanded, navigationQuery } = this.state;
+    let { categories, collapsedCategories, heading, navigationQuery } = this.props;
+    let { navigationExpanded } = this.state;
 
     let expandClassName = classnames({
       'fa': true,
@@ -47,10 +47,12 @@ let RecordNavigationSection = React.createClass({
             placeholder={'Search ' + heading}
             type="text"
             value={navigationQuery}
-            onChange={e => this.setState({
-              navigationQuery: e.target.value,
-              navigationExpanded: true
-            })}
+            onChange={e => {
+              this.props.updateNavigationQuery(e.target.value);
+              this.setState({
+                navigationExpanded: true
+              })
+            }}
           />
         </div>
         <h2 className="wdk-RecordNavigationSectionHeader">
