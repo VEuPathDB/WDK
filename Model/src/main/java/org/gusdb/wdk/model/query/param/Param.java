@@ -181,6 +181,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
       this.handler = param.handler.clone(this);
     this.contextQuestion = param.contextQuestion;
     this.contextQuery = param.contextQuery;
+    this.dependentParams = new HashSet<Param>(param.dependentParams);
   }
 
   @Override
