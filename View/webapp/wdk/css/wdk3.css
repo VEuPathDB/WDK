@@ -313,6 +313,12 @@ body {
   word-break: break-all;
 }
 
+.wdk-RecordNavigationExpand {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
 .wdk-RecordNavigationSectionHeader {
   margin-left: 0;
 }
