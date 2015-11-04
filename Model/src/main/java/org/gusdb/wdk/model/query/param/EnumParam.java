@@ -8,7 +8,6 @@ import java.util.Set;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -45,11 +44,11 @@ public class EnumParam extends AbstractEnumParam {
   // ///////////////////////////////////////////////////////////////////
 
   @Override
-  protected EnumParamCache createEnumParamCache(User user, Map<String, String> dependedParamValues)
+  protected EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException {
     logger.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     Set<Param> dependedParams = getDependedParams();
-    EnumParamCache cache = new EnumParamCache(this, dependedParamValues);
+    EnumParamVocabInstance cache = new EnumParamVocabInstance(dependedParamValues);
     EnumItem[] enumItems = enumItemList.getEnumItems();
     for (EnumItem item : enumItems) {
       String term = item.getTerm();

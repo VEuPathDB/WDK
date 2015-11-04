@@ -5,7 +5,8 @@ let {
   LOADING,
   RECORD_UPDATED,
   CATEGORY_COLLAPSED_TOGGLED,
-  TABLE_COLLAPSED_TOGGLED
+  TABLE_COLLAPSED_TOGGLED,
+  UPDATE_NAVIGATION_QUERY
 } = RecordViewActionCreator.actionTypes;
 
 export default class RecordViewStore extends ReduceStore {
@@ -14,7 +15,8 @@ export default class RecordViewStore extends ReduceStore {
     return {
       record: undefined,
       collapsedCategories: undefined,
-      collapsedTables: undefined
+      collapsedTables: undefined,
+      navigationQuery: ''
     };
   }
 
@@ -60,6 +62,9 @@ export default class RecordViewStore extends ReduceStore {
         );
         return Object.assign({}, state, { collapsedTables });
       }
+
+      case UPDATE_NAVIGATION_QUERY:
+        return Object.assign({}, state, { navigationQuery: payload.query });
 
       default:
         return state;

@@ -9,6 +9,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ParamException.PathParamException;
+import org.gusdb.wdk.model.WdkUserException;
 
 @Provider
 public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exception> {
@@ -25,6 +26,11 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     catch (NotFoundException | PathParamException e404) {
       return Response.status(Status.NOT_FOUND)
           .type(MediaType.TEXT_PLAIN).entity("Not Found").build();
+    }
+
+    catch (WdkUserException e400) {
+      return Response.status(Status.BAD_REQUEST)
+          .type(MediaType.TEXT_PLAIN).entity("User error: " + e400.getMessage()).build();
     }
 
     catch (WebApplicationException eApp) {

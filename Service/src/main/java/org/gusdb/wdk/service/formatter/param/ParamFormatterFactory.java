@@ -16,7 +16,7 @@ public class ParamFormatterFactory {
     }
     if (param instanceof AbstractEnumParam) {
       AbstractEnumParam enumParam = (AbstractEnumParam)param;
-      return (enumParam.getDisplayType().equals("typeAhead") ?
+      return (enumParam.getDisplayType() != null && enumParam.getDisplayType().equals("typeAhead") ?
           new TypeAheadParamFormatter(enumParam) :
           new EnumParamFormatter(enumParam));
     }

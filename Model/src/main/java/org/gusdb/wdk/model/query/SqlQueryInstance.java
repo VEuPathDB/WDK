@@ -39,6 +39,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   /**
    * @param query
    * @param values
+   * @context this does not appear to be used for SqlQueryInstances
    * @throws WdkUserException
    */
   protected SqlQueryInstance(User user, SqlQuery query, Map<String, String> values, boolean validate,
