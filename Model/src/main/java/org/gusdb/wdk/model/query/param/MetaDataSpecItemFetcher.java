@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 import org.gusdb.fgputil.cache.ItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
@@ -28,7 +29,12 @@ public class MetaDataSpecItemFetcher implements ItemFetcher<String, Map<String, 
   public Map<String, Map<String, String>> fetchItem(String cacheKey) throws UnfetchableItemException {
 
     try {
-      QueryInstance<?> instance = query.makeInstance(user, paramValues, true, 0, paramValues);
+      // trim away param values not needed by query, to avoid warnings
+      Map<String, String> requiredParamValues = new HashMap<String, String>();
+      for (String paramName : paramValues.keySet()) 
+	if (query.getParamMap() != null && query.getParamMap().containsKey(paramName)) requiredParamValues.put(paramName, paramValues.get(paramName));
+
+      QueryInstance<?> instance = query.makeInstance(user, requiredParamValues, true, 0, new HashMap<String, String>());
       Map<String, Map<String, String>> metadata = new LinkedHashMap<>();
       ResultList resultList = instance.getResults();
       try {

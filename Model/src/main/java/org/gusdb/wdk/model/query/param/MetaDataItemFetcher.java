@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 import org.gusdb.fgputil.cache.ItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
@@ -29,26 +30,31 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
   public Map<String, Map<String, String>> fetchItem(String cacheKey) throws UnfetchableItemException {
 
     try {
-    QueryInstance<?> instance = query.makeInstance(user, paramValues, true, 0, paramValues);
-    Map<String, Map<String, String>> properties = new LinkedHashMap<>();
-    ResultList resultList = instance.getResults();
-    try {
-      while (resultList.next()) {
-        String term = (String) resultList.get(FilterParam.COLUMN_TERM);
-        String property = (String) resultList.get(FilterParam.COLUMN_PROPERTY);
-        String value = (String) resultList.get(FilterParam.COLUMN_VALUE);
-        Map<String, String> termProp = properties.get(term);
-        if (termProp == null) {
-          termProp = new LinkedHashMap<>();
-          properties.put(term, termProp);
-        }
-        termProp.put(property, value);
+      // trim away param values not needed by query, to avoid warnings
+      Map<String, String> requiredParamValues = new HashMap<String, String>();
+      for (String paramName : paramValues.keySet()) 
+	if (query.getParamMap() != null && query.getParamMap().containsKey(paramName)) requiredParamValues.put(paramName, paramValues.get(paramName));
+
+      QueryInstance<?> instance = query.makeInstance(user, requiredParamValues, true, 0, new HashMap<String, String>());
+      Map<String, Map<String, String>> properties = new LinkedHashMap<>();
+      ResultList resultList = instance.getResults();
+      try {
+	while (resultList.next()) {
+	  String term = (String) resultList.get(FilterParam.COLUMN_TERM);
+	  String property = (String) resultList.get(FilterParam.COLUMN_PROPERTY);
+	  String value = (String) resultList.get(FilterParam.COLUMN_VALUE);
+	  Map<String, String> termProp = properties.get(term);
+	  if (termProp == null) {
+	    termProp = new LinkedHashMap<>();
+	    properties.put(term, termProp);
+	  }
+	  termProp.put(property, value);
+	}
       }
-    }
-    finally {
-      resultList.close();
-    }
-    return properties;
+      finally {
+	resultList.close();
+      }
+      return properties;
     } catch (WdkModelException | WdkUserException ex) {
       throw new UnfetchableItemException(ex);
     }
