@@ -34,7 +34,7 @@ let RecordNavigationSection = React.createClass({
     let { navigationExpanded } = this.state;
 
     let expandClassName = classnames({
-      'fa': true,
+      'wdk-RecordNavigationExpand fa': true,
       'fa-plus-square': !navigationExpanded,
       'fa-minus-square': navigationExpanded
     });
@@ -56,7 +56,7 @@ let RecordNavigationSection = React.createClass({
           />
         </div>
         <h2 className="wdk-RecordNavigationSectionHeader">
-          <i className={expandClassName}
+          <button className={expandClassName}
             onClick={() => this.setState({ navigationExpanded: !navigationExpanded })}
           /> {heading}
         </h2>

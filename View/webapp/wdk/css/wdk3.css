@@ -243,6 +243,7 @@ body {
 
 .wdk-RecordHeading {
   clear: both;
+  padding: 10px 0;
 }
 
 .wdk-RecordActionItem {
@@ -312,6 +313,12 @@ body {
   word-break: break-all;
 }
 
+.wdk-RecordNavigationExpand {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
 .wdk-RecordNavigationSectionHeader {
   margin-left: 0;
 }
@@ -341,7 +348,7 @@ body {
 
 .wdk-Record-sidebar-title {
   display: block;
-  padding: .6em 0;
+  padding: .4em 0;
 }
 
 .wdk-Record-sidebar-checkbox {
