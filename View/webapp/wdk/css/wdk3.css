@@ -243,6 +243,7 @@ body {
 
 .wdk-RecordHeading {
   clear: both;
+  padding: 10px 0;
 }
 
 .wdk-RecordActionItem {
