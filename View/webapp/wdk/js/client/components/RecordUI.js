@@ -14,15 +14,12 @@ class RecordUI extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showAdvanced: false,
       showSidebar: true
     };
 
     this.toggleCategory = this.toggleCategory.bind(this);
     this.toggleTable = this.toggleTable.bind(this);
     this.toggleSidebar = this.toggleSidebar.bind(this);
-    this.showAdvancedCategories = this.showAdvancedCategories.bind(this);
-    this.hideAdvancedCategories = this.hideAdvancedCategories.bind(this);
   }
 
   toggleCategory(category, isCollapsed) {
@@ -46,14 +43,6 @@ class RecordUI extends Component {
     this.setState({ showSidebar: !this.state.showSidebar });
   }
 
-  showAdvancedCategories() {
-    this.setState({ showAdvanced: true });
-  }
-
-  hideAdvancedCategories() {
-    this.setState({ showAdvanced: false });
-  }
-
   render() {
     let classNames = classnames({
       'wdk-RecordContainer': true,
@@ -74,6 +63,7 @@ class RecordUI extends Component {
     return (
       <div className={classNames}>
         <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
+          <h3 className="wdk-RecordSidebarHeader">{this.props.record.displayName}</h3>
           <a href="#" className="wdk-RecordSidebarToggle" onClick={this.toggleSidebar}>
             {this.state.showSidebar ? '' : 'Show Categories '}
             <i className={sidebarIconClass}
@@ -82,9 +72,6 @@ class RecordUI extends Component {
           <RecordNavigationSection
             record={this.props.record}
             recordClass={this.props.recordClass}
-            onShowAdvanced={this.showAdvancedCategories}
-            onHideAdvanced={this.hideAdvancedCategories}
-            showAdvanced={this.state.showAdvanced}
             categories={categories}
             collapsedCategories={this.props.collapsedCategories}
             onCategoryToggle={this.toggleCategory}

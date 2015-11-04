@@ -19,8 +19,8 @@ let RecordTable = React.createClass({
       let listColumnSize = Math.max(10, table.length / maxColumns);
       return (
         <div>
-          {chunk(table, listColumnSize).map(tableChunk =>
-            <ul className="wdk-RecordTableList">
+          {chunk(table, listColumnSize).map((tableChunk, index) =>
+            <ul key={index} className="wdk-RecordTableList">
               {tableChunk.map((row, index) =>
                 <li key={index}>{renderAttributeValue(row[attributeName])}</li>
               )}

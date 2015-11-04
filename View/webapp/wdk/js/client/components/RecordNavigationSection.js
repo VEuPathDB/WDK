@@ -17,7 +17,8 @@ let RecordNavigationSection = React.createClass({
   getInitialState() {
     // TODO Move state into RecordViewStore
     return {
-      navigationExpanded: false
+      navigationExpanded: false,
+      navigationQuery: ''
     };
   },
 
@@ -30,7 +31,7 @@ let RecordNavigationSection = React.createClass({
 
   render() {
     let { categories, collapsedCategories, heading } = this.props;
-    let { navigationExpanded } = this.state;
+    let { navigationExpanded, navigationQuery } = this.state;
 
     let expandClassName = classnames({
       'fa': true,
@@ -45,6 +46,11 @@ let RecordNavigationSection = React.createClass({
             className="wdk-RecordNavigationSearchInput"
             placeholder={'Search ' + heading}
             type="text"
+            value={navigationQuery}
+            onChange={e => this.setState({
+              navigationQuery: e.target.value,
+              navigationExpanded: true
+            })}
           />
         </div>
         <h2 className="wdk-RecordNavigationSectionHeader">
@@ -57,7 +63,8 @@ let RecordNavigationSection = React.createClass({
             categories={categories}
             collapsedCategories={collapsedCategories}
             onCategoryToggle={this.props.onCategoryToggle}
-            expanded={this.state.navigationExpanded}
+            expanded={navigationExpanded}
+            query={navigationQuery.trim().toLowerCase()}
           />
         </div>
       </div>
