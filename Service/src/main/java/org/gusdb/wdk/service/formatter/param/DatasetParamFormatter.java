@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.formatter.param;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.json.JSONArray;
@@ -14,7 +15,7 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
   }
 
   @Override
-  public JSONObject getJson() throws JSONException, WdkModelException {
+  public JSONObject getJson() throws JSONException, WdkModelException, WdkUserException {
 
     JSONObject pJson = super.getJson();
     JSONArray parsersJson = new JSONArray();
