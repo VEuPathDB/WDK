@@ -62,6 +62,7 @@ let RecordNavigationSection = React.createClass({
         </h2>
         <div className="wdk-RecordNavigationCategories">
           <RecordNavigationSectionCategories
+            record={this.props.record}
             recordClass={this.props.recordClass}
             categories={categories}
             collapsedCategories={collapsedCategories}
