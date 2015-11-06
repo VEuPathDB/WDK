@@ -122,7 +122,7 @@ public abstract class AbstractEnumParam extends Param {
   private String dependedParamRef;
   private Set<String> dependedParamRefs;
   private Set<Param> dependedParams;
-  private String displayType = DISPLAY_SELECT;
+  private String displayType = DISPLAY_CHECKBOX;
   private int minSelectedCount = -1;
   private int maxSelectedCount = -1;
   private boolean countOnlyLeaves = false;
