@@ -217,7 +217,9 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   }
 
   public String getFullName() {
-    return paramSet.getName() + "." + name;
+    if (name == null) return null;
+    String paramSetName = (paramSet == null ? "<unknown_param_set>" : paramSet.getName());
+    return paramSetName + "." + name;
   }
 
   public void setPrompt(String prompt) {

@@ -45,9 +45,10 @@ Otherwise a standard select menu is used.
 
 <c:choose>
   <c:when test="${qP.multiPick}">
-    <%-- multiPick is true, use checkboxes or scroll pane --%>
+    <%-- multiPick is true, use input that allows multiple selections --%>
     <c:choose>
-      <c:when test="${displayType eq 'checkBox' or (displayType eq null and fn:length(qP.vocab) lt 15)}"><!-- use checkboxes -->
+      <%-- use checkboxes --%>
+      <c:when test="${displayType eq 'checkBox'}">
         <div class="param enumParam param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
           <c:set var="initialCount" value="${fn:length(qP.currentValues)}"/>
           <imp:enumCountWarning enumParam="${qP}" initialCount="${initialCount}"/>
@@ -79,7 +80,7 @@ Otherwise a standard select menu is used.
           </td></tr></table>
         </div>
       </c:when>
-    
+
       <%-- use a tree list --%>
       <c:when test="${displayType eq 'treeBox'}">
         <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
@@ -106,9 +107,9 @@ Otherwise a standard select menu is used.
           </div>
         </div>
       </c:when>
-  
+
       <%-- use a multi-select box --%>
-      <c:otherwise>
+      <c:when test="${displayType eq 'select'}">
         <div class="param ${dependentClass}" data-type="multi-pick" dependson="${dependedParam}" name="${pNam}">
           <c:set var="initialCount" value="${fn:length(qP.currentValues)}"/>
           <imp:enumCountWarning enumParam="${qP}" initialCount="${initialCount}"/>
@@ -118,51 +119,71 @@ Otherwise a standard select menu is used.
           </html:select>
           <br/><imp:selectAllParamOpt enumParam="${qP}" onchange="${changeCode}"/>
         </div>
+      </c:when>
+
+      <c:otherwise>
+        <div>Invalid display type.</div>
       </c:otherwise>
-      
     </c:choose>
-  </c:when> <%-- end of multipick --%>
-  <c:otherwise> <%-- pick single item --%>
-      <c:choose>
-        <c:when test="${displayType eq 'radioBox'}">
-          <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
-            <ul>
-              <c:forEach items="${qP.displayMap}" var="entity">
-                <li ${v}>
-                  <label>
-                    <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
-                  </label>
-                </li>
-              </c:forEach>
-            </ul>
+  </c:when> <%-- end of multi-pick --%>
+
+  <c:otherwise>
+    <%-- pick single item --%>
+    <c:choose>
+      <%-- use radio boxes --%>
+      <c:when test="${displayType eq 'checkBox'}">
+        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <ul>
+            <c:forEach items="${qP.displayMap}" var="entity">
+              <li ${v}>
+                <label>
+                  <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
+                </label>
+              </li>
+            </c:forEach>
+          </ul>
+        </div>
+      </c:when>
+
+      <%-- use a tree list; only one value allowed --%>
+      <c:when test="${displayType eq 'treeBox'}">
+        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
+          <c:set var="updateCountFunc">window.wdk.parameterHandlers.adjustEnumCountTree('${qP.name}aaa',${qP.countOnlyLeaves})</c:set>
+          <imp:checkboxTree id="${pNam}CBT${idgen.nextId}" tree="${qP.paramTree}" checkboxName="array(${pNam})"
+              buttonAlignment="left" onchange="${updateCountFunc}" onload="${updateCountFunc}"/>
+        </div>
+      </c:when>
+
+      <%-- use a type ahead --%>
+      <c:when test="${displayType eq 'typeAhead'}">
+        <div class="param ${dependentClass}" data-multiple="false" data-type="type-ahead"
+            dependson="${dependedParam}" name="${pNam}">
+          <div class="loading">Loading...</div>
+          <html:hidden property="value(${pNam})" style="width:450px"/>
+          <div class="type-ahead-help" style="margin:2px;">
+            Begin typing to see suggestions from which to choose<br/>
+            <%-- Or use * as a wildcard, like this: *your-term* --%>
           </div>
-        </c:when>
-      
-        <%-- use a type ahead --%>
-        <c:when test="${displayType eq 'typeAhead'}">
-          <div class="param ${dependentClass}" data-multiple="false" data-type="type-ahead"
-              dependson="${dependedParam}" name="${pNam}">
-            <div class="loading">Loading...</div>
-            <html:hidden property="value(${pNam})" style="width:450px"/>
-            <div class="type-ahead-help" style="margin:2px;">
-              Begin typing to see suggestions from which to choose<br/>
-              <%-- Or use * as a wildcard, like this: *your-term* --%>
-            </div>
-          </div>
-        </c:when>
-  
-        <c:otherwise>
-          <%-- multiPick is false, use pull down menu --%>
-          <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
-            <html:select property="array(${pNam})" styleId="${pNam}">
-              <c:set var="opt" value="${opt+1}"/>
-              <c:set var="sel" value=""/>
-              <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-              <html:options property="array(${pNam}-values)" labelProperty="array(${pNam}-labels)"/>
-            </html:select>
-          </div>
-        </c:otherwise>
-      </c:choose>
+        </div>
+      </c:when>
+
+      <%-- use a pull down menu --%>
+      <c:when test="${displayType eq 'select'}">
+        <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <html:select property="array(${pNam})" styleId="${pNam}">
+            <c:set var="opt" value="${opt+1}"/>
+            <c:set var="sel" value=""/>
+            <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
+            <html:options property="array(${pNam}-values)" labelProperty="array(${pNam}-labels)"/>
+          </html:select>
+        </div>
+      </c:when>
+
+      <c:otherwise>
+        <div>Invalid display type.</div>
+      </c:otherwise>
+    </c:choose>
   </c:otherwise> <%-- end of pick single item --%>
 </c:choose>
 

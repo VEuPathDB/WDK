@@ -1,11 +1,9 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
@@ -21,6 +19,8 @@ import org.gusdb.wdk.model.query.Query;
  * @created Feb 16, 2006
  */
 public class ParamReference extends Reference {
+
+  private static final Logger LOG = Logger.getLogger(ParamReference.class);
 
   public static Param resolveReference(WdkModel wdkModel,
       ParamReference paramRef, Query contextQuery) throws WdkModelException {
@@ -95,8 +95,18 @@ public class ParamReference extends Reference {
             + "allowed in param '" + twoPartName + "'");
 
       // if the param has customized multi pick
-      if (multiPick != null)
+      if (multiPick != null) {
+        if (LOG.isDebugEnabled()) {
+          if (!enumParam.getMultiPick().equals(multiPick)) {
+            LOG.debug("ParamRef to '" + enumParam.getFullName() +
+                "' in context query '" + contextQuery.getFullName() +
+                "' is overriding multi-pick: " + enumParam.getMultiPick() +
+                " -> " + multiPick + ", displayType: " + enumParam.getDisplayType() +
+                " -> " + (displayType == null ? "<inherited>" : displayType));
+          }
+        }
         enumParam.setMultiPick(multiPick);
+      }
 
       // if the queryRef is set for FlatVocabParam
       if (queryRef != null) {
