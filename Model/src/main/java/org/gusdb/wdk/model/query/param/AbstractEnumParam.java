@@ -109,8 +109,12 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
 
-  public static final String DISPLAY_TYPE_AHEAD = "typeAhead";
-  public static final String DISPLAY_TREE_BOX = "treeBox";
+  public static final String DISPLAY_SELECT = "select";
+  public static final String DISPLAY_LISTBOX = "listBox"; // deprecated; use select
+  public static final String DISPLAY_CHECKBOX = "checkBox";
+  public static final String DISPLAY_RADIO = "radioBox"; // deprecated; use checkBox
+  public static final String DISPLAY_TREEBOX = "treeBox";
+  public static final String DISPLAY_TYPEAHEAD = "typeAhead";
 
   protected boolean multiPick = false;
   protected boolean quote = true;
@@ -118,7 +122,7 @@ public abstract class AbstractEnumParam extends Param {
   private String dependedParamRef;
   private Set<String> dependedParamRefs;
   private Set<Param> dependedParams;
-  private String displayType;
+  private String displayType = DISPLAY_CHECKBOX;
   private int minSelectedCount = -1;
   private int maxSelectedCount = -1;
   private boolean countOnlyLeaves = false;
@@ -254,6 +258,18 @@ public abstract class AbstractEnumParam extends Param {
    *          the displayType to set
    */
   public void setDisplayType(String displayType) {
+    String paramName = getFullName();
+    if (paramName == null) paramName = "<name_not_yet_set>";
+    if (displayType.equals(DISPLAY_RADIO)) {
+      LOG.warn("Param ['" + paramName + "']: displayType '" + DISPLAY_RADIO +
+          "' is deprecated.  Please use '" + DISPLAY_CHECKBOX + "' instead.");
+      displayType = DISPLAY_CHECKBOX;
+    }
+    else if (displayType.equals(DISPLAY_LISTBOX)) {
+      LOG.warn("Param ['" + paramName + "']: displayType '" + DISPLAY_LISTBOX +
+          "' is deprecated.  Please use '" + DISPLAY_SELECT + "' instead.");
+      displayType = DISPLAY_SELECT;
+    }
     this.displayType = displayType;
   }
 
@@ -279,6 +295,9 @@ public abstract class AbstractEnumParam extends Param {
    *         return -1.
    */
   public int getMaxSelectedCount() {
+    // only allow one value if multiPick set to false
+    if (!getMultiPick())
+      return 1;
     return maxSelectedCount;
   }
 
@@ -603,7 +622,7 @@ public abstract class AbstractEnumParam extends Param {
     logger.debug("Checking whether num selected exceeds max on param " + getFullName() + " with values" +
         ": displayType = " + displayType + ", maxSelectedCount = " + getMaxSelectedCount() +
         ", countOnlyLeaves = " + getCountOnlyLeaves());
-    if (displayType != null && displayType.equals("treeBox") && getCountOnlyLeaves()) {
+    if (displayType != null && displayType.equals(DISPLAY_TREEBOX) && getCountOnlyLeaves()) {
       EnumParamTermNode[] rootNodes = getVocabInstance(user, contextParamValues).getVocabTreeRoots();
       FieldTree tree = EnumParamBean.getParamTree(getName(), rootNodes);
       EnumParamBean.populateParamTree(tree, terms);
