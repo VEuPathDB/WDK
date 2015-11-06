@@ -181,6 +181,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
       this.handler = param.handler.clone(this);
     this.contextQuestion = param.contextQuestion;
     this.contextQuery = param.contextQuery;
+    this.dependentParams = new HashSet<Param>(param.dependentParams);
   }
 
   @Override
@@ -216,7 +217,9 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   }
 
   public String getFullName() {
-    return paramSet.getName() + "." + name;
+    if (name == null) return null;
+    String paramSetName = (paramSet == null ? "<unknown_param_set>" : paramSet.getName());
+    return paramSetName + "." + name;
   }
 
   public void setPrompt(String prompt) {

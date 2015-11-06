@@ -232,9 +232,6 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     Map<String, Boolean> values = new LinkedHashMap<String, Boolean>();
     Map<String, String> terms = getVocabMap();
     // ignore the validation for type-ahead params.
-    String displayType = getDisplayType();
-    if (displayType == null)
-      displayType = "";
     for (String term : originalValues) {
       boolean valid = terms.containsKey(term);
       values.put(term, valid);

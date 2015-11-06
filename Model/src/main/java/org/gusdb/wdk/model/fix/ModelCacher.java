@@ -355,11 +355,9 @@ public class ModelCacher extends BaseCLI {
     DatabaseInstance database = wdkModel.getUserDb();
 
     String type = param.getClass().getSimpleName();
-    if (param instanceof AbstractEnumParam) {
-      AbstractEnumParam enumParam = (AbstractEnumParam) param;
-      String displayType = enumParam.getDisplayType();
-      if (displayType != null && displayType.equalsIgnoreCase("typeAhead"))
-        type += "-TypeAhead";
+    if (param instanceof AbstractEnumParam &&
+        ((AbstractEnumParam)param).getDisplayType().equals(AbstractEnumParam.DISPLAY_TYPEAHEAD)) {
+      type += "-TypeAhead";
     }
 
     int paramId = database.getPlatform().getNextId(database.getDataSource(), schemaWithoutDot, "wdk_params");

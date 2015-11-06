@@ -141,7 +141,9 @@
             Choose a ${recordClass.displayName} strategy:
             <select name="${qp.strategySubParam}" class="strategy">
               <c:forEach items="${strategies}" var="strategy">
-                <c:if test="${strategy.strategyId != currentStrategy}" >
+                <%-- convert strat ID to string to compare with nested strategy ID which is always a string--%>
+                <c:set var="stratIdAsString">${strategy.strategyId}</c:set>
+                <c:if test="${stratIdAsString ne currentStrategy}" >
                   <option value="${strategy.strategyId}">${strategy.name} (${strategy.estimateSize} ${recordClass.displayNamePlural})</option>
                 </c:if>
               </c:forEach>
