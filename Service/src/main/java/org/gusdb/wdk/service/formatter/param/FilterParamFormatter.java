@@ -13,9 +13,11 @@ import org.apache.log4j.Logger;
 
 public class FilterParamFormatter extends AbstractEnumParamFormatter implements VocabProvider  {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamFormatter.class);
+
   protected FilterParam filterParam; 
-  
+
   FilterParamFormatter(FilterParam param) {
     super(param);
     this.filterParam = param;
