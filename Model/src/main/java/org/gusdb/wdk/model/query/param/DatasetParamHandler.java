@@ -49,7 +49,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue, Map<String, String> contextValues)
+  public String toStableValue(User user, Object rawValue, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException {
     Dataset dataset = (Dataset) rawValue;
     return Integer.toString(dataset.getDatasetId());
@@ -64,7 +64,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public Dataset toRawValue(User user, String stableValue, Map<String, String> contextValues)
+  public Dataset toRawValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
     int datasetId = Integer.valueOf(stableValue);
     return user.getDataset(datasetId);
@@ -77,7 +77,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, Map<String, String> contextValues) {
+  public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues) {
     if (param.isNoTranslation())
       return stableValue;
 
@@ -109,7 +109,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
    *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextValues)
+  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
     int datasetId = Integer.valueOf(stableValue);
     Dataset dataset = user.getDataset(datasetId);
@@ -223,7 +223,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
+  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     DatasetParam datasetParam = (DatasetParam) param;
     // check if the stable value is available
@@ -257,8 +257,8 @@ public class DatasetParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextValues)
+  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
-    return toRawValue(user, stableValue, contextValues).getContent();
+    return toRawValue(user, stableValue, contextParamValues).getContent();
   }
 }

@@ -202,7 +202,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
       filter.display = filter.values.length
         ? filter.field.display + ' is ' + filter.values.join(', ')
         : 'No ' + filter.field.display + ' selected';
-      this.updateFilters(filter);
+      this.updateFilters(filter, filter.field !== this.selectedField);
     },
 
     addRangeFilter: function(filter, values) {
@@ -213,23 +213,23 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
       filter.values = values;
       filter.display = filter.field.display + ' between ' + filter.values.min + ' and ' + filter.values.max;
-      this.updateFilters(filter);
+      this.updateFilters(filter, filter.field !== this.selectedField);
     },
 
     removeFilter: function(filter) {
       _.pull(this.filters, filter);
-      this.updateFilters();
+      this.updateFilters(null, filter.field !== this.selectedField);
     },
 
     // Filter is optional. If supplied, calculate it's selection.
     // If @selectedField is undefined, skip updating @distributionMap.
-    updateFilters: function(filter) {
+    updateFilters: function(filter, shouldGetFieldDistribution) {
       this.isLoading = true;
       this.emitChange();
 
       var promises = [
         this.getFilteredData(this.filters),
-        this.selectedField && this.getFieldDistribution(this.selectedField),
+        shouldGetFieldDistribution && this.selectedField && this.getFieldDistribution(this.selectedField),
         filter && this.getFilteredData([filter])
       ];
 

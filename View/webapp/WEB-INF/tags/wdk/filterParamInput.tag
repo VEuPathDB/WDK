@@ -31,7 +31,6 @@ Otherwise a standard select menu is used.
 <c:set var="qP" value="${qp}"/>
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="opt" value="0"/>
-<c:set var="displayType" value="${qP.displayType}"/>
 <c:set var="dependedParams" value="${qP.dependedParamNames}"/>
 <c:if test="${dependedParams != null}">
   <c:set var="dependedParam" value="${dependedParams}" />

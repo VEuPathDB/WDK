@@ -243,6 +243,7 @@ body {
 
 .wdk-RecordHeading {
   clear: both;
+  padding: 10px 0;
 }
 
 .wdk-RecordActionItem {
@@ -277,9 +278,13 @@ body {
   top: 0;
 }
 
+.wdk-RecordSidebarHeader {
+  font-weight: 400;
+}
+
 .wdk-RecordSidebarToggle {
   position: absolute;
-  top: 54px;
+  top: 16px;
   right: 0;
   background: transparent;
   z-index: 1;
@@ -299,7 +304,7 @@ body {
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebarToggle {
-  right: 22px;
+  right: 2em;
   border: 0;
   transform: rotate(-90deg);
 }
@@ -308,22 +313,25 @@ body {
   word-break: break-all;
 }
 
+.wdk-RecordNavigationExpand {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
 .wdk-RecordNavigationSectionHeader {
   margin-left: 0;
 }
 
-.wdk-RecordNavigationSection {
-  margin: 1em 0 2em;
-}
-
 .wdk-RecordNavigationSearchInput {
-  width: calc(100% - 1em);
+  width: calc(100% - 3em);
   padding: .5em;
 }
 
 .wdk-RecordNavigationCategories {
   overflow-y: auto;
   max-height: calc(100vh - 250px);
+  padding-right: 1em;
 }
 
 .wdk-RecordNavigationItem {
@@ -340,7 +348,7 @@ body {
 
 .wdk-Record-sidebar-title {
   display: block;
-  padding: .6em 0;
+  padding: .4em 0;
 }
 
 .wdk-Record-sidebar-checkbox {

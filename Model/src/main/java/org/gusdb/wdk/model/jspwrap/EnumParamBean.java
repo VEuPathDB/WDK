@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
+import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
@@ -38,7 +39,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
   // if this obj wraps a dependent param, holds depended values
   private boolean _dependedValueChanged = false;
-  private EnumParamCache _cache;
+  private EnumParamVocabInstance _cache;
 
   public EnumParamBean(AbstractEnumParam param) {
     super(param);
@@ -104,41 +105,41 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
   @Override
   public String getDefault() throws WdkModelException {
-    return getCache().getDefaultValue();
+    return getVocabInstance().getDefaultValue();
   }
 
   // NOTE: not threadsafe! This class is expected only to be used in a single
   // thread
-  protected EnumParamCache getCache() {
+  protected EnumParamVocabInstance getVocabInstance() {
     if (_cache == null || _dependedValueChanged) {
-      _cache = param.getValueCache(user.getUser(), contextValues);
+      _cache = param.getVocabInstance(user.getUser(), contextValues);
       _dependedValueChanged = false;
     }
     return _cache;
   }
 
   public String[] getVocabInternal() {
-    return getCache().getVocabInternal();
+    return getVocabInstance().getVocabInternal(enumParam.isNoTranslation());
   }
 
   public String[] getVocab() {
-    return getCache().getVocab();
+    return getVocabInstance().getVocab();
   }
 
   public Map<String, String> getVocabMap() {
-    return getCache().getVocabMap();
+    return getVocabInstance().getVocabMap();
   }
 
   public String[] getDisplays() {
-    return getCache().getDisplays();
+    return getVocabInstance().getDisplays();
   }
 
   public Map<String, String> getDisplayMap() {
-    return getCache().getDisplayMap();
+    return getVocabInstance().getDisplayMap();
   }
 
   public Map<String, String> getParentMap() {
-    return getCache().getParentMap();
+    return getVocabInstance().getParentMap();
   }
 
   public String getInternalValue(User user, String dependentValue) throws WdkModelException, WdkUserException {
@@ -171,7 +172,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   public EnumParamTermNode[] getVocabTreeRoots() {
-    return getCache().getVocabTreeRoots();
+    return getVocabInstance().getVocabTreeRoots();
   }
 
   public String[] getTerms(String termList) {
@@ -231,9 +232,6 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     Map<String, Boolean> values = new LinkedHashMap<String, Boolean>();
     Map<String, String> terms = getVocabMap();
     // ignore the validation for type-ahead params.
-    String displayType = getDisplayType();
-    if (displayType == null)
-      displayType = "";
     for (String term : originalValues) {
       boolean valid = terms.containsKey(term);
       values.put(term, valid);
@@ -311,10 +309,10 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * @throws WdkModelException
    * @throws WdkUserException 
    * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#getJSONValues(org.gusdb.wdk.model.user.User,
-   *      java.util.Map, org.gusdb.wdk.model.jspwrap.EnumParamCache)
+   *      java.util.Map, org.gusdb.wdk.model.query.param.EnumParamVocabInstance)
    */
   public JSONObject getJsonValues() throws WdkModelException, WdkUserException {
-    return enumParam.getJsonValues(user.getUser(), contextValues, getCache());
+    return enumParam.getJsonValues(user.getUser(), contextValues, getVocabInstance());
   }
 
   public boolean isFilterParam() {

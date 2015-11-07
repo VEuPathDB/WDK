@@ -542,17 +542,7 @@
         <data type="boolean" />
       </attribute>
     </optional>
-    <optional>
-      <attribute name="displayType">
-        <choice>
-          <value>listBox</value>
-          <value>checkBox</value>
-          <value>treeBox</value>
-          <value>radioBox</value>
-          <value>typeAhead</value>
-        </choice>
-      </attribute>
-    </optional>
+    <ref name="EnumParamDisplayType"/>
     <optional>
       <attribute name="minSelectedCount">
         <data type="unsignedShort" />
@@ -572,6 +562,21 @@
     <optional>
       <attribute name="suppressNode">
         <data type="boolean" />
+      </attribute>
+    </optional>
+  </define>
+
+  <define name="EnumParamDisplayType">
+    <optional>
+      <attribute name="displayType">
+        <choice>
+          <value>select</value>
+          <value>listBox</value> <!-- deprecated; use select instead -->
+          <value>checkBox</value>
+          <value>radioBox</value> <!-- deprecated; use checkBox instead -->
+          <value>treeBox</value>
+          <value>typeAhead</value>
+        </choice>
       </attribute>
     </optional>
   </define>
@@ -740,16 +745,7 @@
           <data type="boolean" />
         </attribute>
       </optional>
-      <optional>
-        <attribute name="displayType">
-          <choice>
-            <value>listBox</value>
-            <value>checkBox</value>
-            <value>treeBox</value>
-            <value>radioBox</value>
-          </choice>
-        </attribute>
-      </optional>
+      <ref name="EnumParamDisplayType"/>
       <optional>
         <attribute name="prompt" />
       </optional>      

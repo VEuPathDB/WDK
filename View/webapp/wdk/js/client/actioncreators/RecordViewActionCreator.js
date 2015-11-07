@@ -6,7 +6,8 @@ let actionTypes = {
   LOADING: 'record/loading',
   ERROR: 'record/error',
   CATEGORY_COLLAPSED_TOGGLED: 'record/category-toggled',
-  TABLE_COLLAPSED_TOGGLED: 'record/table-toggled'
+  TABLE_COLLAPSED_TOGGLED: 'record/table-toggled',
+  UPDATE_NAVIGATION_QUERY: 'record/update-navigation-query'
 };
 
 export default class RecordViewActionCreator extends ActionCreator {
@@ -62,6 +63,13 @@ export default class RecordViewActionCreator extends ActionCreator {
         name: tableName,
         isCollapsed
       }
+    });
+  }
+
+  updateNavigationQuery(query) {
+    this._dispatch({
+      type: actionTypes.UPDATE_NAVIGATION_QUERY,
+      payload: { query }
     });
   }
 

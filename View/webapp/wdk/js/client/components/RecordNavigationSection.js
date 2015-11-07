@@ -9,7 +9,8 @@ let RecordNavigationSection = React.createClass({
     categories: React.PropTypes.array,
     collapsedCategories: React.PropTypes.array,
     onCategoryToggle: React.PropTypes.func,
-    heading: React.PropTypes.node
+    heading: React.PropTypes.node,
+    navigationQuery: React.PropTypes.string
   },
 
   mixins: [ React.addons.PureRenderMixin ],
@@ -17,7 +18,7 @@ let RecordNavigationSection = React.createClass({
   getInitialState() {
     // TODO Move state into RecordViewStore
     return {
-      navigationExpanded: false
+      navigationExpanded: false,
     };
   },
 
@@ -29,11 +30,11 @@ let RecordNavigationSection = React.createClass({
   },
 
   render() {
-    let { categories, collapsedCategories, heading } = this.props;
+    let { categories, collapsedCategories, heading, navigationQuery } = this.props;
     let { navigationExpanded } = this.state;
 
     let expandClassName = classnames({
-      'fa': true,
+      'wdk-RecordNavigationExpand fa': true,
       'fa-plus-square': !navigationExpanded,
       'fa-minus-square': navigationExpanded
     });
@@ -45,19 +46,29 @@ let RecordNavigationSection = React.createClass({
             className="wdk-RecordNavigationSearchInput"
             placeholder={'Search ' + heading}
             type="text"
+            value={navigationQuery}
+            onChange={e => {
+              this.props.updateNavigationQuery(e.target.value);
+              this.setState({
+                navigationExpanded: true
+              })
+            }}
           />
         </div>
         <h2 className="wdk-RecordNavigationSectionHeader">
-          <i className={expandClassName}
+          <button className={expandClassName}
             onClick={() => this.setState({ navigationExpanded: !navigationExpanded })}
           /> {heading}
         </h2>
         <div className="wdk-RecordNavigationCategories">
           <RecordNavigationSectionCategories
+            record={this.props.record}
+            recordClass={this.props.recordClass}
             categories={categories}
             collapsedCategories={collapsedCategories}
             onCategoryToggle={this.props.onCategoryToggle}
-            expanded={this.state.navigationExpanded}
+            expanded={navigationExpanded}
+            query={navigationQuery.trim().toLowerCase()}
           />
         </div>
       </div>

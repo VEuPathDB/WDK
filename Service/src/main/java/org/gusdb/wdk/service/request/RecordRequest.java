@@ -30,12 +30,10 @@ public class RecordRequest {
    * * Input Format:
    * 
    * {
-   * "recordInstanceSpecification": {
-   *  "primaryKey": [ 
-   *     {"name": String, "value": String},
-   *     {"name": String, "value": String}
-   *   ]
-   *  },
+   *  "primaryKey": { 
+   *     "source_id": "12345",
+   *     "project_id": "myProject"
+   *   },
    *  "tables": [ String, String ],
    *  "attributes": [ String, String ]
    * }

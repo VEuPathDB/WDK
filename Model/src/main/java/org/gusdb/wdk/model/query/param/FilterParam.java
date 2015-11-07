@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -16,12 +15,12 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.cache.ItemCache;
+import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -50,11 +49,11 @@ import org.json.JSONObject;
  */
 public class FilterParam extends FlatVocabParam {
 
-  private static final String COLUMN_PROPERTY = "property";
-  private static final String COLUMN_VALUE = "value";
+  static final String COLUMN_PROPERTY = "property";
+  static final String COLUMN_VALUE = "value";
 
-  private static final String COLUMN_SPEC_PROPERTY = "spec_property";
-  private static final String COLUMN_SPEC_VALUE = "spec_value";
+  static final String COLUMN_SPEC_PROPERTY = "spec_property";
+  static final String COLUMN_SPEC_VALUE = "spec_value";
 
   private static final int FETCH_SIZE = 1000;
 
@@ -65,6 +64,9 @@ public class FilterParam extends FlatVocabParam {
   private Query metadataSpecQuery;
 
   private String defaultColumns;
+  
+  private static ItemCache<String, Map<String, Map<String, String>>> metaDataCache = new ItemCache<String, Map<String, Map<String, String>>>();
+  private static ItemCache<String, Map<String, Map<String, String>>> metaDataSpecCache = new ItemCache<String, Map<String, Map<String, String>>>();
 
   // remove non-terminal nodes with a single child
   private boolean trimMetadataTerms = true;
@@ -232,33 +234,22 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, Map<String, String>> getMetadataSpec(User user, Map<String, String> contextValues)
+  public Map<String, Map<String, String>> getMetadataSpec(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
       return null;
 
-    // run metadataQuery.
-    QueryInstance<?> instance = metadataSpecQuery.makeInstance(user, contextValues, true, 0,
-        new HashMap<String, String>());
-    Map<String, Map<String, String>> metadata = new LinkedHashMap<>();
-    ResultList resultList = instance.getResults();
+    MetaDataSpecItemFetcher fetcher = new MetaDataSpecItemFetcher(metadataSpecQuery, contextParamValues, user);
+    Map<String, Map<String, String>> map = null;
     try {
-      while (resultList.next()) {
-        String property = (String) resultList.get(COLUMN_PROPERTY);
-        String info = (String) resultList.get(COLUMN_SPEC_PROPERTY);
-        String data = (String) resultList.get(COLUMN_SPEC_VALUE);
-        Map<String, String> propertyMeta = metadata.get(property);
-        if (propertyMeta == null) {
-          propertyMeta = new LinkedHashMap<>();
-          metadata.put(property, propertyMeta);
-        }
-        propertyMeta.put(info, data);
-      }
+      map = metaDataSpecCache.getItem(fetcher.getCacheKey(), fetcher);
+    } catch (UnfetchableItemException ex) {
+      Throwable nestedException = ex.getCause();
+      if (nestedException == null ) throw new WdkModelException(ex.getMessage());
+      if (nestedException instanceof WdkModelException) throw (WdkModelException) nestedException;
+      if (nestedException instanceof WdkUserException) throw (WdkUserException) nestedException;
     }
-    finally {
-      resultList.close();
-    }
-    return metadata;
+    return map;
   }
 
   /**
@@ -266,57 +257,50 @@ public class FilterParam extends FlatVocabParam {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, Map<String, String>> getMetadata(User user, Map<String, String> contextValues)
+  public Map<String, Map<String, String>> getMetadata(User user, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
       return null;
-
-    QueryInstance<?> instance = metadataQuery.makeInstance(user, contextValues, true, 0, contextValues);
-    Map<String, Map<String, String>> properties = new LinkedHashMap<>();
-    ResultList resultList = instance.getResults();
+    
+    MetaDataItemFetcher fetcher = new MetaDataItemFetcher(metadataQuery, contextParamValues, user);
+    Map<String, Map<String, String>> map = null;
     try {
-      while (resultList.next()) {
-        String term = (String) resultList.get(COLUMN_TERM);
-        String property = (String) resultList.get(COLUMN_PROPERTY);
-        String value = (String) resultList.get(COLUMN_VALUE);
-        Map<String, String> termProp = properties.get(term);
-        if (termProp == null) {
-          termProp = new LinkedHashMap<>();
-          properties.put(term, termProp);
-        }
-        termProp.put(property, value);
-      }
+      map = metaDataCache.getItem(fetcher.getCacheKey(), fetcher);
+    } catch (UnfetchableItemException ex) {
+      Throwable nestedException = ex.getCause();
+      if (nestedException == null ) throw new WdkModelException(ex.getMessage());
+      if (nestedException instanceof WdkModelException) throw (WdkModelException) nestedException;
+      if (nestedException instanceof WdkUserException) throw (WdkUserException) nestedException;
     }
-    finally {
-      resultList.close();
-    }
-    return properties;
+    return map;
   }
 
-  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextValues, String property)
+  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextParamValues, String property)
       throws WdkModelException, WdkUserException {
-    EnumParamCache cache = createEnumParamCache(user, contextValues);
-    return getMetaData(user, contextValues, property, cache);
+    EnumParamVocabInstance cache = createVocabInstance(user, contextParamValues);
+    return getMetaData(user, contextParamValues, property, cache);
   }
 
   /**
    * @param user
-   * @param contextValues
+   * @param contextParamValues
    * @param property
    * @param cache
-   *          the cache is needed, to make sure the contextValues are initialized correctly. (it is
+   *          the cache is needed, to make sure the contextParamValues are initialized correctly. (it is
    *          initialized when a cache is created.)
    * @return
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextValues, String property,
-      EnumParamCache cache) throws WdkModelException, WdkUserException {
+  public Map<String, List<String>> getMetaData(User user, Map<String, String> contextParamValues, String property,
+      EnumParamVocabInstance cache) throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
       return null;
+    
+    
 
     // compose a wrapped sql
-    QueryInstance<?> instance = metadataQuery.makeInstance(user, contextValues, true, 0, contextValues);
+    QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, contextParamValues);
     String sql = instance.getSql();
     sql = "SELECT mq.* FROM (" + sql + ") mq WHERE mq." + COLUMN_PROPERTY + " = ?";
 
@@ -353,11 +337,11 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  public JSONObject getJsonValues(User user, Map<String, String> contextValues, EnumParamCache cache)
+  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues, EnumParamVocabInstance cache)
       throws WdkModelException, WdkUserException {
-    JSONObject jsParam = super.getJsonValues(user, contextValues, cache);
+    JSONObject jsParam = super.getJsonValues(user, contextParamValues, cache);
     try { // add additional info into the json
-      appendJsonFilterValue(jsParam, user, contextValues);
+      appendJsonFilterValue(jsParam, user, contextParamValues);
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
@@ -365,14 +349,14 @@ public class FilterParam extends FlatVocabParam {
     return jsParam;
   }
 
-  private void appendJsonFilterValue(JSONObject jsParam, User user, Map<String, String> contextValues)
+  private void appendJsonFilterValue(JSONObject jsParam, User user, Map<String, String> contextParamValues)
       throws JSONException, WdkModelException, WdkUserException {
     if (metadataSpecQuery == null)
       return;
 
     // create json for the metadata
     JSONObject jsMetadataSpec = new JSONObject();
-    Map<String, Map<String, String>> metadataSpec = getMetadataSpec(user, contextValues);
+    Map<String, Map<String, String>> metadataSpec = getMetadataSpec(user, contextParamValues);
     for (String property : metadataSpec.keySet()) {
       JSONObject jsSpec = new JSONObject();
       Map<String, String> spec = metadataSpec.get(property);
@@ -387,7 +371,7 @@ public class FilterParam extends FlatVocabParam {
 
     // create json for the properties
     JSONObject jsMetadata = new JSONObject();
-    Map<String, Map<String, String>> metadata = getMetadata(user, contextValues);
+    Map<String, Map<String, String>> metadata = getMetadata(user, contextParamValues);
     for (String term : metadata.keySet()) {
       JSONObject jsProperty = new JSONObject();
       Map<String, String> property = metadata.get(term);
@@ -403,8 +387,8 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextValues,
-      EnumParamCache cache) throws WdkModelException {
+  protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues,
+      EnumParamVocabInstance cache) throws WdkModelException {
     try {
       if (stableValue == null || stableValue.length() == 0) {
         JSONArray jsTerms = convert(getDefault());
@@ -451,7 +435,7 @@ public class FilterParam extends FlatVocabParam {
   }
 
   @Override
-  public String[] getTerms(User user, String stableValue, Map<String, String> contextValues)
+  public String[] getTerms(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0)
       return new String[0];
