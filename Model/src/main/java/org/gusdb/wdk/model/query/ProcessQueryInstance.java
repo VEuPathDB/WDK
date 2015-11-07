@@ -22,7 +22,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.ExtraAnswerRowsProducer;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.ClientModelException;
@@ -252,7 +251,6 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     
     // if this query is an id query, and its record class has an extraAnswerRowsProducer, use it
     // to add an extra column that signals these rows are from the original query
-    Question question = getQuery().getContextQuestion();
     if (getQuery().getIsIdQuery()) {
     	ExtraAnswerRowsProducer earp =  getQuery().getContextQuestion().getRecordClass().getExtraAnswerRowsProducer();
     	if (earp != null) {
