@@ -29,6 +29,7 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
     this.user = user;
   }
   
+  @Override
   public Map<String, Map<String, String>> fetchItem(String cacheKey) throws UnfetchableItemException {
 
     try {
@@ -62,11 +63,12 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
     }
   }
   
+  @Override
   public Map<String, Map<String, String>> updateItem(String key, Map<String, Map<String, String>> item) {
     return null;
   }
 
-  public String getCacheKey() throws WdkModelException, JSONException {
+  public String getCacheKey() throws JSONException {
    JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(QUERY_NAME_KEY, query.getName());
     JSONObject paramValuesJson = new JSONObject();
@@ -76,6 +78,7 @@ public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<
     return cacheKeyJson.toString();
   }
   
+  @Override
   public boolean itemNeedsUpdating(Map<String, Map<String, String>> item) {
     return false;
    }
