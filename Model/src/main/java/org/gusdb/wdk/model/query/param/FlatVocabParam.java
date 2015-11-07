@@ -323,18 +323,20 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
    * We don't need to read the vocabQueryRef from the cache key, because we know it 
    * is the same as the one in this's state.
    */
+  @Override
   public EnumParamVocabInstance fetchItem(String cacheKey) {
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
     Iterator<String> paramNames = dependedParamValuesJson.keys();
     Map<String, String> dependedParamValues = new HashMap<String, String>();
     while( paramNames.hasNext() ) {
-        String paramName = (String)paramNames.next();
+        String paramName = paramNames.next();
         dependedParamValues.put(paramName, dependedParamValuesJson.getString(paramName));
     }
     return new EnumParamVocabInstance(dependedParamValues);
   }
   
+  @Override
   public EnumParamVocabInstance updateItem(String key, EnumParamVocabInstance item) {
     return null;
   }
@@ -349,6 +351,7 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
     return cacheKeyJson.toString();
   }
   
+  @Override
   public boolean itemNeedsUpdating(EnumParamVocabInstance item) {
     return false;
    }

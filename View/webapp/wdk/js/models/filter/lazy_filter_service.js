@@ -1,78 +1,16 @@
+import {
+  countByValues,
+  uniqMetadataValues,
+  passesAll,
+  getMemberPredicate,
+  getRangePredicate
+} from './utils';
+
+
 wdk.namespace('wdk.models.filter', function(ns) {
   'use strict';
 
   var FilterService = wdk.models.filter.FilterService;
-
-  // _.flow is a higher-order function that returns a function F composed of the
-  // supplied functions. Each provided function is invoked from left to right.
-  // The left-most function is called with the argument that F is called with.
-  // The next function is called, with the argument returned by the previous
-  // function, and so on. The return value of the last function is the return
-  // value of F.
-
-  /**
-   * Used by lodash sortBy. Returns a value that sortBy will use to
-   * compare with other values in an array.
-   *
-   * FIXME Use natural sort
-   *
-   * @param {any} value
-   */
-  function valueSorter(value) {
-    return typeof value === 'number' ? Number(value)
-         : value === 'Unknown' ? String.fromCharCode(Math.pow(2, 16) - 1)
-         : String(value);
-  }
-
-  var flattenMetadataValues = _.flow(
-    metadata => Object.keys(metadata).map(key => metadata[key]),
-    nestedValues => nestedValues.reduce((a, b) => a.concat(b), []),
-    values => _.sortBy(values, valueSorter)
-  );
-
-  /**
-   * Calculate the occurence of each value present in metadata.
-   *
-   * @param {object} metadata A key-value map of { sample: [ { value } ] }
-   * @returns {object} A key-value map of { value: count }
-   */
-  var countByValues = _.flow(
-    flattenMetadataValues,
-    values => values.reduce((counts, value) => {
-      counts.hasOwnProperty(value) ? counts[value]++ : counts[value] = 1;
-      return counts;
-    }, {})
-  );
-
-  var uniqMetadataValues = _.flow(
-    flattenMetadataValues,
-    values => _.uniq(values)
-  );
-
-  // Helper filtering functions
-  // --------------------------
-
-  var gte = _.curry(function gte(min, value) {
-    return value >= min;
-  });
-
-  var lte = _.curry(function lte(max, value) {
-    return value <= max;
-  });
-
-  var within = _.curry(function within(min, max, value) {
-    return gte(min, value) && lte(max, value);
-  });
-
-  var passes = _.curry(function passes(value, fn) {
-    return fn(value);
-  });
-
-  var passesAll = _.curry(function passesAll(fns, value) {
-    var passesWithValue = passes(value);
-    return _.every(fns, passesWithValue);
-  });
-
 
   ns.LazyFilterService = FilterService.extend({
 
@@ -204,75 +142,20 @@ wdk.namespace('wdk.models.filter', function(ns) {
           // Map filters to a list of predicate functions to call on each data item
           var predicates = filters
             .map(function(filter) {
+              var metadata = this.metadata[filter.field.term];
               if (filter.field.type == 'string') {
-                return this.getMemberPredicate(filter);
+                return getMemberPredicate(metadata, filter);
               } else if (filter.field.type == 'number' || filter.field.type == 'date') {
-                return this.getRangePredicate(filter);
+                return getRangePredicate(metadata, filter);
               }
             }, this);
           // Filter data by applying each predicate above to each data item.
           // If predicates is empty (i.e., no filters), all data is returned.
           var filteredData = _.filter(this.data, passesAll(predicates));
-
-          // We used to only return data when filters were defined
-          // return filters.length === 0
-          //   ? []
-          //   : _.filter(this.get('data'), passesAll(predicates));
           return filteredData;
         }.bind(this));
-    },
-
-    // returns a function to apply to data item
-    // fn(data) // (true | false)
-    getMemberPredicate: function(filter) {
-      var field = filter.field;
-      var metadata = this.metadata[field.term];
-
-      return function memberPredicate(datum) {
-        var filterValues = filter.values;
-        var metadataValues = metadata[datum.term];
-        var index = filterValues.length;
-        var vIndex;
-
-        // Use a for loop for efficiency
-        outer:
-        while(index--) {
-          vIndex = metadataValues.length;
-          while(vIndex--) {
-            if (filterValues[index] === metadataValues[vIndex]) break outer;
-          }
-        }
-
-        return (index > -1);
-      };
-    },
-
-    getRangePredicate: function(filter) {
-      var field = filter.field;
-      var metadata = this.metadata[field.term];
-      var min = filter.values.min;
-      var max = filter.values.max;
-
-      if (min !== null && max !== null) {
-        return function rangePredicate(datum) {
-          var values = metadata[datum.term];
-          return values.some(within(min, max));
-        };
-      }
-      if (min !== null) {
-        return function rangePredicate(datum) {
-          var values = metadata[datum.term];
-          return values.some(gte(min));
-        };
-      }
-      if (max !== null) {
-        return function rangePredicate(datum) {
-          var values = metadata[datum.term];
-          return values.some(lte(max));
-        };
-      }
-      throw new Error('Could not determine range predicate.');
     }
 
   });
+
 });
