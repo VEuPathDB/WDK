@@ -14,6 +14,14 @@ public class ParamFormatter<T extends Param> {
     _param = param;
   }
 
+  /**
+   * Formats this param into JSON.
+   * 
+   * @return This param's data as JSON
+   * @throws JSONException if problem generating JSON
+   * @throws WdkModelException if system problem occurs
+   * @throws WdkUserException if data in param is invalid for some reason
+   */
   public JSONObject getJson()
       throws JSONException, WdkModelException, WdkUserException {
     JSONObject pJson = new JSONObject();
