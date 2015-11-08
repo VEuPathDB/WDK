@@ -765,6 +765,8 @@ public abstract class AbstractEnumParam extends Param {
       }
     }
 
+    resolved = true;
+
     // make sure the depended params exist in the context query.
     if (isDependentParam() && contextQuery != null) {
       Map<String, Param> params = contextQuery.getParamMap();
@@ -782,8 +784,6 @@ public abstract class AbstractEnumParam extends Param {
       throw new WdkModelException("Param ['" + getFullName() +
           "']: TreeBox display type cannot be selected when multiPick is false.");
     }
-
-    resolved = true;
   }
 
   @Override
