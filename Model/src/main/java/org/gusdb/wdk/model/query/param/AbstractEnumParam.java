@@ -377,13 +377,15 @@ public abstract class AbstractEnumParam extends Param {
         }
       }
     }
-    for (Param param : dependedParams) {
-      String vocab = "";
-      if ((param instanceof FlatVocabParam)) {
-        Query query = ((FlatVocabParam) param).getQuery();
-        vocab = (query != null) ? query.getFullName() : "N/A";
+    if (logger.isTraceEnabled()) {
+      for (Param param : dependedParams) {
+        String vocab = "";
+        if ((param instanceof FlatVocabParam)) {
+          Query query = ((FlatVocabParam) param).getQuery();
+          vocab = (query != null) ? query.getFullName() : "N/A";
+        }
+        logger.trace("param " + getName() + " depends on " + param.getName() + "(" + vocab + ")");
       }
-      logger.trace("param " + getName() + " depends on " + param.getName() + "(" + vocab + ")");
     }
     return dependedParams;
   }
