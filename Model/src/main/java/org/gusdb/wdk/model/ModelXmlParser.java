@@ -35,6 +35,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.UIConfig.ExtraLogoutCookies;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
@@ -980,16 +981,17 @@ public class ModelXmlParser extends XmlParser {
 
   public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
+    int exitValue = 0;
 
     // process args
+    WdkModel wdkModel = null;
     try {
       Options options = declareOptions();
       CommandLine cmdLine = parseOptions(cmdName, options, args);
       String projectId = cmdLine.getOptionValue(Utilities.ARGUMENT_PROJECT_ID);
-      String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
       // create a parser, and parse the model file
-      WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+      wdkModel = WdkModel.construct(projectId, GusHome.getGusHome());
 
       if (cmdLine.hasOption(ARG_DEPENDENCY)) { // print out only the dependency
         System.out.println(wdkModel.getDependencyTree());
@@ -997,12 +999,16 @@ public class ModelXmlParser extends XmlParser {
       else { // print out the model content
         System.out.println(wdkModel.toString());
       }
-      System.exit(0);
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      System.exit(1);
+      exitValue = 1;
     }
+    finally {
+      if (wdkModel != null)
+        wdkModel.releaseResources();
+    }
+    System.exit(exitValue);
   }
 
   private static void addOption(Options options, String argName, String desc) {
