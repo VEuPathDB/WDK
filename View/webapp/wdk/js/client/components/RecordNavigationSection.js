@@ -1,24 +1,23 @@
 import React from 'react';
 import classnames from 'classnames';
+import includes from 'lodash/collection/includes';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
 import { wrappable } from '../utils/componentUtils';
 
 let RecordNavigationSection = React.createClass({
 
   propTypes: {
-    categories: React.PropTypes.array,
     collapsedCategories: React.PropTypes.array,
     onCategoryToggle: React.PropTypes.func,
-    heading: React.PropTypes.node,
-    navigationQuery: React.PropTypes.string
+    heading: React.PropTypes.node
   },
 
   mixins: [ React.addons.PureRenderMixin ],
 
   getInitialState() {
-    // TODO Move state into RecordViewStore
     return {
       navigationExpanded: false,
+      navigationQuery: ''
     };
   },
 
@@ -30,8 +29,9 @@ let RecordNavigationSection = React.createClass({
   },
 
   render() {
-    let { categories, collapsedCategories, heading, navigationQuery } = this.props;
-    let { navigationExpanded } = this.state;
+    let { categoryWordsMap, collapsedCategories, heading } = this.props;
+    let { navigationExpanded, navigationQuery } = this.state;
+    let navigationQueryLower = navigationQuery.toLowerCase();
 
     let expandClassName = classnames({
       'wdk-RecordNavigationExpand fa': true,
@@ -47,28 +47,28 @@ let RecordNavigationSection = React.createClass({
             placeholder={'Search ' + heading}
             type="text"
             value={navigationQuery}
-            onChange={e => {
-              this.props.updateNavigationQuery(e.target.value);
-              this.setState({
-                navigationExpanded: true
-              })
-            }}
+            onChange={e => void this.setState({
+              navigationExpanded: true,
+              navigationQuery: e.target.value
+            })}
           />
         </div>
         <h2 className="wdk-RecordNavigationSectionHeader">
           <button className={expandClassName}
-            onClick={() => this.setState({ navigationExpanded: !navigationExpanded })}
+            onClick={() => void this.setState({
+              navigationExpanded: !navigationExpanded
+            })}
           /> {heading}
         </h2>
         <div className="wdk-RecordNavigationCategories">
           <RecordNavigationSectionCategories
             record={this.props.record}
             recordClass={this.props.recordClass}
-            categories={categories}
-            collapsedCategories={collapsedCategories}
+            categories={this.props.recordClass.attributeCategories}
             onCategoryToggle={this.props.onCategoryToggle}
-            expanded={navigationExpanded}
-            query={navigationQuery.trim().toLowerCase()}
+            showChildren={navigationExpanded}
+            isCollapsed={category => includes(collapsedCategories, category.name)}
+            isVisible={category => includes(categoryWordsMap.get(category), navigationQueryLower)}
           />
         </div>
       </div>

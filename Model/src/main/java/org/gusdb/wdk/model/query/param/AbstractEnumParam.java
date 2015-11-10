@@ -750,6 +750,7 @@ public abstract class AbstractEnumParam extends Param {
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
 
+    // resolve depended param refs
     dependedParamRefs.clear();
     if (dependedParamRef != null && dependedParamRef.trim().length() > 0) {
       for (String paramRef : dependedParamRef.split(",")) {
@@ -775,6 +776,13 @@ public abstract class AbstractEnumParam extends Param {
           throw new WdkModelException("Param " + getFullName() + " depends on param " + param.getFullName() +
               ", but the depended param doesn't exist in the same query " + contextQuery.getFullName());
       }
+    }
+
+    // throw error if user selects treeBox displayType but multiSelect=false
+    //   note: no technical reason not to allow this, but we think UX for this is bad
+    if (!getMultiPick() && getDisplayType().equals(DISPLAY_TREEBOX)) {
+      throw new WdkModelException("Param ['" + getFullName() +
+          "']: TreeBox display type cannot be selected when multiPick is false.");
     }
   }
 
