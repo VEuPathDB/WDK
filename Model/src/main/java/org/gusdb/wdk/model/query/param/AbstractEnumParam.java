@@ -116,13 +116,13 @@ public abstract class AbstractEnumParam extends Param {
   public static final String DISPLAY_TREEBOX = "treeBox";
   public static final String DISPLAY_TYPEAHEAD = "typeAhead";
 
-  protected boolean multiPick = false;
+  protected Boolean multiPick = false;
   protected boolean quote = true;
 
   private String dependedParamRef;
   private Set<String> dependedParamRefs;
   private Set<Param> dependedParams;
-  private String displayType = DISPLAY_CHECKBOX;
+  private String displayType = null;
   private int minSelectedCount = -1;
   private int maxSelectedCount = -1;
   private boolean countOnlyLeaves = false;
@@ -216,12 +216,12 @@ public abstract class AbstractEnumParam extends Param {
   // ///////////////////////////////////////////////////////////////////
 
   // used only to initially set this property
-  public void setMultiPick(Boolean multiPick) {
-    this.multiPick = multiPick.booleanValue();
+  public void setMultiPick(boolean multiPick) {
+    this.multiPick = multiPick;
   }
 
-  public Boolean getMultiPick() {
-    return new Boolean(multiPick);
+  public boolean getMultiPick() {
+    return multiPick;
   }
 
   public boolean isSkipValidation() {
@@ -247,10 +247,14 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   /**
-   * @return the displayType
+   * Returns display type configured if set.  Otherwise returns default, which
+   * is checkbox if multi-pick, select if single-pick
+   * 
+   * @return the displayType of this param
    */
   public String getDisplayType() {
-    return displayType;
+    return (displayType != null ? displayType :
+      (getMultiPick() ? DISPLAY_CHECKBOX : DISPLAY_SELECT));
   }
 
   /**
