@@ -187,8 +187,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   @Override
   public WdkModel getInstance(String projectId, String gusHome) throws WdkModelException {
     logger.info("Constructing WDK Model for " + projectId + " with GUS_HOME=" + gusHome);
-    String callingClass = getCallingClass(new Throwable());
-    logger.info("WDK Model contructed by class: " + callingClass);
+    logger.info("WDK Model constructed by class: " + getCallingClass());
 
     Events.init();
     try {
@@ -204,10 +203,13 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     }
   }
 
-  private static String getCallingClass(Throwable throwable) {
-    StackTraceElement[] stackTrace = throwable.getStackTrace();
-    int index = stackTrace.length - 1;
-    return (index >= 0 ? stackTrace[index].getClassName() : "unknown");
+  private static String getCallingClass() {
+    final int stacktraceOffset = 6;
+    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    if (stackTrace.length == 0) return "unknown";
+    int callIndex = (stackTrace.length <= stacktraceOffset ?
+        stackTrace.length - 1 : stacktraceOffset);
+    return stackTrace[callIndex].getClassName();
   }
 
   private void doAdditionalStartup() throws WdkModelException {
