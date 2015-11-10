@@ -114,7 +114,7 @@ public class QueryTester {
     if (param instanceof FlatVocabParam) {
       FlatVocabParam enumParam = (FlatVocabParam) param;
       prompt += " (choose one";
-      if (enumParam.getMultiPick().booleanValue()) prompt += " or more";
+      if (enumParam.getMultiPick()) prompt += " or more";
       prompt += "):";
       // assume independent param
       Map<String, String> vocabs = enumParam.getVocabMap(null);
