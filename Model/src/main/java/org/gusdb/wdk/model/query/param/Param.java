@@ -525,6 +525,10 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     this.contextQuestion = question;
   }
 
+  public Question getContextQuestion() {
+    return contextQuestion;
+  }
+
   public void setContextQuery(Query query) {
     this.contextQuery = query;
   }
