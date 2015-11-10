@@ -186,25 +186,28 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   @Override
   public WdkModel getInstance(String projectId, String gusHome) throws WdkModelException {
-    Events.init();
-    StackTraceElement[] stackTrace = new Throwable().getStackTrace();
-    int index = stackTrace.length - 1;
-    String tip = "";
-    if (index >= 0)
-      tip = "called by " + stackTrace[index].getClassName();
-    logger.debug("Constructing wdk model [" + projectId + "] (GUS_HOME=" + gusHome + "); " + tip);
+    logger.info("Constructing WDK Model for " + projectId + " with GUS_HOME=" + gusHome);
+    String callingClass = getCallingClass(new Throwable());
+    logger.info("WDK Model contructed by class: " + callingClass);
 
+    Events.init();
     try {
       ModelXmlParser parser = new ModelXmlParser(gusHome);
       WdkModel wdkModel = parser.parseModel(projectId);
       wdkModel.doAdditionalStartup();
-      logger.debug("Model ready to use.");
+      logger.info("WDK Model construction complete.");
       return wdkModel;
     }
     catch (Exception ex) {
       ex.printStackTrace();
       throw new WdkModelException(ex);
     }
+  }
+
+  private static String getCallingClass(Throwable throwable) {
+    StackTraceElement[] stackTrace = throwable.getStackTrace();
+    int index = stackTrace.length - 1;
+    return (index >= 0 ? stackTrace[index].getClassName() : "unknown");
   }
 
   private void doAdditionalStartup() throws WdkModelException {
@@ -539,11 +542,13 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   }
 
   public void releaseResources() {
+    logger.info("Releasing WDK Model resources...");
     stepAnalysisFactory.shutDown();
     releaseDb(appDb);
     releaseDb(userDb);
     ThreadMonitor.shutDown(_myThreadMonitor);
     Events.shutDown();
+    logger.info("WDK Model resources released.");
   }
 
   private static void releaseDb(DatabaseInstance db) {
