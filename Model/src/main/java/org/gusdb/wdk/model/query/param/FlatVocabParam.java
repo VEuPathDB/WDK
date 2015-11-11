@@ -1,25 +1,17 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.cache.ItemCache;
-import org.gusdb.fgputil.cache.ItemFetcher;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
+import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -36,22 +28,17 @@ import org.json.JSONObject;
  * @author jerric
  * 
  */
-public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<String, EnumParamVocabInstance>{
+public class FlatVocabParam extends AbstractEnumParam {
 
-  public static final String PARAM_SERVED_QUERY = "ServedQuery";
-  public static final String DEPENDED_VALUE = "depended_value";
+  static final String PARAM_SERVED_QUERY = "ServedQuery";
 
   public static final String COLUMN_TERM = "term";
   public static final String COLUMN_INTERNAL = "internal";
   public static final String COLUMN_DISPLAY = "display";
   public static final String COLUMN_PARENT_TERM = "parentTerm";
 
-  private static final String VOCAB_QUERY_REF_KEY = "vocabQueryRef";
-  private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
-
   private Query vocabQuery;
   private String vocabQueryRef;
-  private static ItemCache<String, EnumParamVocabInstance> vocabCache = new ItemCache<String, EnumParamVocabInstance>();
 
   /**
    * The name of the query where is param is used. Please note that each query hold a separate copy of the
@@ -80,7 +67,6 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
   // ///////////////////////////////////////////////////////////////////
 
   public void setQueryRef(String queryTwoPartName) {
-
     this.vocabQueryRef = queryTwoPartName;
   }
 
@@ -165,7 +151,6 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
     paramSet.addParam(param);
     query.addParam(param);
     return query;
-
   }
 
   /*
@@ -186,99 +171,14 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
   @Override
   protected EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException, WdkUserException {
-    logger.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
-
-    EnumParamVocabInstance vocabInstance = null;
     try {
-      vocabInstance = vocabCache.getItem(getCacheKey(dependedParamValues), this);
-    } catch (UnfetchableItemException e) {
+      FlatVocabularyFetcher fetcher = new FlatVocabularyFetcher(user, this);
+      return CacheMgr.get().getVocabCache().getItem(
+          fetcher.getCacheKey(dependedParamValues), fetcher);
+    }
+    catch (UnfetchableItemException e) {
       throw new WdkModelException(e);
     }
-    
-    // check if the query has "display" column
-    boolean hasDisplay = vocabQuery.getColumnMap().containsKey(COLUMN_DISPLAY);
-    boolean hasParent = vocabQuery.getColumnMap().containsKey(COLUMN_PARENT_TERM);
-
-    // prepare param values
-    Map<String, String> values = new LinkedHashMap<String, String>();
-    values.put(PARAM_SERVED_QUERY, servedQueryName);
-
-    // add depended value if is dependent param
-    Set<Param> dependedParams = getDependedParams();
-    if (isDependentParam()) {
-      // use the depended param as the input param for the vocab query,
-      // since the depended param might be overridden by question or
-      // query, while the original input param in the vocab query
-      // does not know about it.
-      for (Param param : dependedParams) {
-        // preserve the context query
-        Query contextQuery = param.getContextQuery();
-        param = param.clone();
-        vocabQuery.addParam(param);
-        param.setContextQuery(contextQuery);
-        String value = dependedParamValues.get(param.getName());
-        values.put(param.getName(), value);
-      }
-    }
-
-    Map<String, String> context = new LinkedHashMap<String, String>();
-    context.put(Utilities.QUERY_CTX_PARAM, getFullName());
-    if (contextQuestion != null)
-      context.put(Utilities.QUERY_CTX_QUESTION, contextQuestion.getFullName());
-    logger.debug("PARAM [" + getFullName() + "] query=" + vocabQuery.getFullName() + ", context Question: " +
-        ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) + ", context Query: " +
-        ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
-
-    QueryInstance<?> instance = vocabQuery.makeInstance(user, values, false, 0, context);
-    ResultList result = instance.getResults();
-    while (result.next()) {
-      Object objTerm = result.get(COLUMN_TERM);
-      Object objInternal = result.get(COLUMN_INTERNAL);
-      if (objTerm == null)
-        throw new WdkModelException("The term of flatVocabParam [" + getFullName() + "] is null. query [" +
-            vocabQuery.getFullName() + "].\n" + instance.getSql());
-      if (objInternal == null)
-        throw new WdkModelException("The internal of flatVocabParam [" + getFullName() +
-            "] is null. query [" + vocabQuery.getFullName() + "].\n" + instance.getSql());
-
-      String term = objTerm.toString().trim();
-      String value = objInternal.toString().trim();
-      String display = hasDisplay ? result.get(COLUMN_DISPLAY).toString().trim() : term;
-      String parentTerm = null;
-      if (hasParent) {
-        Object parent = result.get(COLUMN_PARENT_TERM);
-        if (parent != null)
-          parentTerm = parent.toString().trim();
-      }
-
-      // escape the term & parentTerm
-      // term = term.replaceAll("[,]", "_");
-      // if (parentTerm != null)
-      // parentTerm = parentTerm.replaceAll("[,]", "_");
-      if (term.indexOf(',') >= 0 && dependedParams != null)
-        throw new WdkModelException(this.getFullName() + ": The term cannot contain comma: '" + term + "'");
-      if (parentTerm != null && parentTerm.indexOf(',') >= 0)
-        throw new WdkModelException(this.getFullName() + ": The parent term cannot contain " + "comma: '" +
-            parentTerm + "'");
-
-      vocabInstance.addTermValues(term, value, display, parentTerm);
-    }
-    if (vocabInstance.isEmpty()) {
-      if (vocabQuery instanceof SqlQuery)
-        logger.warn("vocab query returned 0 rows:" + ((SqlQuery) vocabQuery).getSql());
-      throw new WdkModelException("No item returned by the query [" + vocabQuery.getFullName() +
-          "] of FlatVocabParam [" + getFullName() + "].");
-    }
-    else {
-      logger.debug("Query [" + vocabQuery.getFullName() + "] returned " + vocabInstance.getNumTerms() +
-          " of FlatVocabParam [" + getFullName() + "].");
-    }
-    initTreeMap(vocabInstance);
-    applySelectMode(vocabInstance);
-    logger.debug("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
-    logger.debug("Returning cache with default value '" + vocabInstance.getDefaultValue() +
-        "' out of possible terms: " + FormatUtil.arrayToString(vocabInstance.getTerms().toArray()));
-    return vocabInstance;
   }
 
   /*
@@ -308,7 +208,11 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
   public void setContextQuery(Query query) {
     super.setContextQuery(query);
     if (contextQuery != null)
-      this.servedQueryName = contextQuery.getFullName();
+      servedQueryName = contextQuery.getFullName();
+  }
+
+  public String getServedQueryName() {
+    return servedQueryName;
   }
 
   @Override
@@ -318,40 +222,5 @@ public class FlatVocabParam extends AbstractEnumParam implements ItemFetcher<Str
     // also print out the vocab query
     vocabQuery.printDependency(writer, indent);
   }
-  
-  /**
-   * We don't need to read the vocabQueryRef from the cache key, because we know it 
-   * is the same as the one in this's state.
-   */
-  public EnumParamVocabInstance fetchItem(String cacheKey) {
-    JSONObject cacheKeyJson = new JSONObject(cacheKey);
-    JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
-    Iterator<String> paramNames = dependedParamValuesJson.keys();
-    Map<String, String> dependedParamValues = new HashMap<String, String>();
-    while( paramNames.hasNext() ) {
-        String paramName = (String)paramNames.next();
-        dependedParamValues.put(paramName, dependedParamValuesJson.getString(paramName));
-    }
-    return new EnumParamVocabInstance(dependedParamValues);
-  }
-  
-  public EnumParamVocabInstance updateItem(String key, EnumParamVocabInstance item) {
-    return null;
-  }
-
-  private String getCacheKey(Map<String, String> dependedParamValues) throws WdkModelException, JSONException {
-   JSONObject cacheKeyJson = new JSONObject();
-    cacheKeyJson.put(VOCAB_QUERY_REF_KEY, vocabQueryRef);
-    JSONObject dependedParamValuesJson = new JSONObject();
-    for (String paramName : dependedParamValues.keySet()) 
-      if (getDependedParams() != null && getDependedParams().contains(paramName)) dependedParamValuesJson.put(paramName, dependedParamValues.get(paramName));
-    cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY, dependedParamValuesJson);
-    return cacheKeyJson.toString();
-  }
-  
-  public boolean itemNeedsUpdating(EnumParamVocabInstance item) {
-    return false;
-   }
-   
 
 }

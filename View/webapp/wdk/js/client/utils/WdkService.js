@@ -54,6 +54,9 @@ export default class WdkService {
         recordClasses => {
           this._recordClasses.isFull = true;
           for (let recordClass of recordClasses) {
+            recordClass.attributeCategories.push(
+              { name: undefined, displayName: 'Uncategorized' }
+            );
             this._recordClasses.set(recordClass.fullName, Promise.resolve(recordClass));
           }
         },
@@ -72,7 +75,12 @@ export default class WdkService {
     let url = this._serviceUrl + '/record/' + recordClassName;
 
     if (!this._recordClasses.has(recordClassName)) {
-      this._recordClasses.set(recordClassName, fetchJson(method, url));
+      this._recordClasses.set(recordClassName, fetchJson(method, url).then(recordClass => {
+        recordClass.attributeCategories.push(
+          { name: undefined, displayName: 'Uncategorized' }
+        );
+        return recordClass;
+      }));
     }
 
     return this._recordClasses.get(recordClassName);

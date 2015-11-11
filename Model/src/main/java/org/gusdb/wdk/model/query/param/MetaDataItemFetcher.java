@@ -16,69 +16,74 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MetaDataItemFetcher implements ItemFetcher<String, Map<String, Map<String, String>>> {
-  
+
   private Query query;
   private Map<String, String> paramValues;
   private User user;
   private static final String QUERY_NAME_KEY = "queryName";
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
-    
+
   public MetaDataItemFetcher(Query metaDataQuery, Map<String, String> paramValues, User user) {
     this.query = metaDataQuery;
     this.paramValues = paramValues;
     this.user = user;
   }
-  
-  public Map<String, Map<String, String>> fetchItem(String cacheKey) throws UnfetchableItemException {
 
+  @Override
+  public Map<String, Map<String, String>> fetchItem(String cacheKey) throws UnfetchableItemException {
     try {
       // trim away param values not needed by query, to avoid warnings
       Map<String, String> requiredParamValues = new HashMap<String, String>();
-      for (String paramName : paramValues.keySet()) 
-	if (query.getParamMap() != null && query.getParamMap().containsKey(paramName)) requiredParamValues.put(paramName, paramValues.get(paramName));
+      for (String paramName : paramValues.keySet())
+        if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
+          requiredParamValues.put(paramName, paramValues.get(paramName));
 
-      QueryInstance<?> instance = query.makeInstance(user, requiredParamValues, true, 0, new HashMap<String, String>());
+      QueryInstance<?> instance = query.makeInstance(user, requiredParamValues, true, 0,
+          new HashMap<String, String>());
       Map<String, Map<String, String>> properties = new LinkedHashMap<>();
       ResultList resultList = instance.getResults();
       try {
-	while (resultList.next()) {
-	  String term = (String) resultList.get(FilterParam.COLUMN_TERM);
-	  String property = (String) resultList.get(FilterParam.COLUMN_PROPERTY);
-	  String value = (String) resultList.get(FilterParam.COLUMN_VALUE);
-	  Map<String, String> termProp = properties.get(term);
-	  if (termProp == null) {
-	    termProp = new LinkedHashMap<>();
-	    properties.put(term, termProp);
-	  }
-	  termProp.put(property, value);
-	}
+        while (resultList.next()) {
+          String term = (String) resultList.get(FilterParam.COLUMN_TERM);
+          String property = (String) resultList.get(FilterParam.COLUMN_PROPERTY);
+          String value = (String) resultList.get(FilterParam.COLUMN_VALUE);
+          Map<String, String> termProp = properties.get(term);
+          if (termProp == null) {
+            termProp = new LinkedHashMap<>();
+            properties.put(term, termProp);
+          }
+          termProp.put(property, value);
+        }
       }
       finally {
-	resultList.close();
+        resultList.close();
       }
       return properties;
-    } catch (WdkModelException | WdkUserException ex) {
+    }
+    catch (WdkModelException | WdkUserException ex) {
       throw new UnfetchableItemException(ex);
     }
   }
-  
-  public Map<String, Map<String, String>> updateItem(String key, Map<String, Map<String, String>> item) {
-    return null;
-  }
 
-  public String getCacheKey() throws WdkModelException, JSONException {
-   JSONObject cacheKeyJson = new JSONObject();
+  public String getCacheKey() throws JSONException {
+    JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(QUERY_NAME_KEY, query.getName());
     JSONObject paramValuesJson = new JSONObject();
-    for (String paramName : paramValues.keySet()) 
-      if (query.getParamMap() != null && query.getParamMap().containsKey(paramName)) paramValuesJson.put(paramName, paramValues.get(paramName));
+    for (String paramName : paramValues.keySet())
+      if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
+        paramValuesJson.put(paramName, paramValues.get(paramName));
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY, paramValuesJson);
     return cacheKeyJson.toString();
   }
-  
+
+  @Override
   public boolean itemNeedsUpdating(Map<String, Map<String, String>> item) {
     return false;
-   }
-   
+  }
 
+  @Override
+  public Map<String, Map<String, String>> updateItem(String key, Map<String, Map<String, String>> item) {
+    throw new UnsupportedOperationException(
+        "This method should never be called since itemNeedsUpdating() always returns false.");
+  }
 }

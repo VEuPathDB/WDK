@@ -1,12 +1,12 @@
 import {ReduceStore} from 'flux/utils';
+import memoize from 'lodash/function/memoize';
 import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
 
 let {
   LOADING,
   RECORD_UPDATED,
   CATEGORY_COLLAPSED_TOGGLED,
-  TABLE_COLLAPSED_TOGGLED,
-  UPDATE_NAVIGATION_QUERY
+  TABLE_COLLAPSED_TOGGLED
 } = RecordViewActionCreator.actionTypes;
 
 export default class RecordViewStore extends ReduceStore {
@@ -16,7 +16,8 @@ export default class RecordViewStore extends ReduceStore {
       record: undefined,
       collapsedCategories: undefined,
       collapsedTables: undefined,
-      navigationQuery: ''
+      navigationQuery: '',
+      visibleNavigationCategories: undefined
     };
   }
 
@@ -28,20 +29,43 @@ export default class RecordViewStore extends ReduceStore {
         });
 
       case RECORD_UPDATED: {
-        let collapsedCategories = state.recordClass === payload.recordClass
-          ? state.collapsedCategories : payload.recordClass.collapsedCategories || [];
+        let { record, recordClass, questions, recordClasses } = payload;
 
-        let collapsedTables = state.recordClass === payload.recordClass
-          ? state.collapsedTables : payload.recordClass.collapsedTables || [];
+        let collapsedCategories = state.recordClass === recordClass
+          ? state.collapsedCategories : recordClass.collapsedCategories || [];
+
+        let collapsedTables = state.recordClass === recordClass
+          ? state.collapsedTables : recordClass.collapsedTables || [];
+
+        let categoryWordsMap = reduceCategories(recordClass.attributeCategories, function(map, category) {
+          let words = [];
+
+          for (let attribute of recordClass.attributes) {
+            if (attribute.category == category.name) {
+              words.push(attribute.displayName, attribute.description);
+            }
+          }
+
+          for (let table of recordClass.tables) {
+            if (table.category == category.name) {
+              words.push(table.displayName, table.description);
+            }
+          }
+
+          words.push(category.displayName, category.description);
+
+          return map.set(category, words.join('\0').toLowerCase());
+        }, new Map());
 
         return Object.assign({}, state, {
-          record: payload.record,
-          recordClass: payload.recordClass,
-          questions: payload.questions,
-          recordClasses: payload.recordClasses,
+          record: record,
+          recordClass: recordClass,
+          questions: questions,
+          recordClasses: recordClasses,
           collapsedCategories,
           collapsedTables,
-          isLoading: false
+          isLoading: false,
+          categoryWordsMap
         });
       }
 
@@ -63,9 +87,6 @@ export default class RecordViewStore extends ReduceStore {
         return Object.assign({}, state, { collapsedTables });
       }
 
-      case UPDATE_NAVIGATION_QUERY:
-        return Object.assign({}, state, { navigationQuery: payload.query });
-
       default:
         return state;
     }
@@ -74,4 +95,11 @@ export default class RecordViewStore extends ReduceStore {
 
 function updateList(item, add, list = []) {
   return add ? list.concat(item) : list.filter(x => x !== item);
+}
+
+function reduceCategories(categories, reducer, initialValue) {
+  if (categories == null) return initialValue;
+  return categories.reduce(function(acc, category) {
+    return reduceCategories(category.subCategories, reducer, reducer(acc, category));
+  }, initialValue);
 }

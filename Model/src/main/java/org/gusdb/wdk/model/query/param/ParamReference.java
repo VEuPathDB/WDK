@@ -97,7 +97,7 @@ public class ParamReference extends Reference {
       // if the param has customized multi pick
       if (multiPick != null) {
         if (LOG.isDebugEnabled()) {
-          if (!enumParam.getMultiPick().equals(multiPick)) {
+          if (!enumParam.getMultiPick() != multiPick) {
             LOG.debug("ParamRef to '" + enumParam.getFullName() +
                 "' in context query '" + contextQuery.getFullName() +
                 "' is overriding multi-pick: " + enumParam.getMultiPick() +

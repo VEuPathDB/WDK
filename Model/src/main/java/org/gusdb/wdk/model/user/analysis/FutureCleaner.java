@@ -58,7 +58,7 @@ public class FutureCleaner implements Callable<Boolean> {
       }
     }
     catch (InterruptedException e) {
-      LOG.info("Step Analysis Future cleaner interrupted.  Shutting down.");
+      LOG.info("Step Analysis future cleaner thread was interrupted and will return cleanly.");
       return true;
     }
   }

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.sql.PreparedStatement;
@@ -15,9 +12,9 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -64,19 +61,11 @@ public class FilterParam extends FlatVocabParam {
   private Query metadataSpecQuery;
 
   private String defaultColumns;
-  
-  private static ItemCache<String, Map<String, Map<String, String>>> metaDataCache = new ItemCache<String, Map<String, Map<String, String>>>();
-  private static ItemCache<String, Map<String, Map<String, String>>> metaDataSpecCache = new ItemCache<String, Map<String, Map<String, String>>>();
 
   // remove non-terminal nodes with a single child
   private boolean trimMetadataTerms = true;
 
-  /**
-   * 
-   */
   public FilterParam() {
-    super();
-
     // register handlers
     setHandler(new FilterParamHandler());
   }
@@ -242,12 +231,10 @@ public class FilterParam extends FlatVocabParam {
     MetaDataSpecItemFetcher fetcher = new MetaDataSpecItemFetcher(metadataSpecQuery, contextParamValues, user);
     Map<String, Map<String, String>> map = null;
     try {
-      map = metaDataSpecCache.getItem(fetcher.getCacheKey(), fetcher);
-    } catch (UnfetchableItemException ex) {
-      Throwable nestedException = ex.getCause();
-      if (nestedException == null ) throw new WdkModelException(ex.getMessage());
-      if (nestedException instanceof WdkModelException) throw (WdkModelException) nestedException;
-      if (nestedException instanceof WdkUserException) throw (WdkUserException) nestedException;
+      map = CacheMgr.get().getMetadataSpecCache().getItem(fetcher.getCacheKey(), fetcher);
+    }
+    catch (UnfetchableItemException ex) {
+      decodeException(ex);
     }
     return map;
   }
@@ -261,18 +248,24 @@ public class FilterParam extends FlatVocabParam {
       throws WdkModelException, WdkUserException {
     if (metadataQuery == null)
       return null;
-    
+
     MetaDataItemFetcher fetcher = new MetaDataItemFetcher(metadataQuery, contextParamValues, user);
     Map<String, Map<String, String>> map = null;
     try {
-      map = metaDataCache.getItem(fetcher.getCacheKey(), fetcher);
-    } catch (UnfetchableItemException ex) {
-      Throwable nestedException = ex.getCause();
-      if (nestedException == null ) throw new WdkModelException(ex.getMessage());
-      if (nestedException instanceof WdkModelException) throw (WdkModelException) nestedException;
-      if (nestedException instanceof WdkUserException) throw (WdkUserException) nestedException;
+      map = CacheMgr.get().getMetadataCache().getItem(fetcher.getCacheKey(), fetcher);
+    }
+    catch (UnfetchableItemException ex) {
+      decodeException(ex);
     }
     return map;
+  }
+
+  private void decodeException(UnfetchableItemException ex) throws WdkModelException, WdkUserException {
+    Throwable nestedException = ex.getCause();
+    if (nestedException == null) throw new WdkModelException(ex.getMessage());
+    if (nestedException instanceof WdkModelException) throw (WdkModelException) nestedException;
+    if (nestedException instanceof WdkUserException) throw (WdkUserException) nestedException;
+    throw new WdkModelException(nestedException);
   }
 
   public Map<String, List<String>> getMetaData(User user, Map<String, String> contextParamValues, String property)

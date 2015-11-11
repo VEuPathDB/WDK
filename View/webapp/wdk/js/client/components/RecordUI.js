@@ -56,10 +56,6 @@ class RecordUI extends Component {
       'fa-angle-double-up': this.state.showSidebar
     });
 
-    let categories = this.props.recordClass.attributeCategories.concat(
-      { name: undefined, displayName: 'Uncategorized' }
-    );
-
     return (
       <div className={classNames}>
         <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
@@ -72,18 +68,15 @@ class RecordUI extends Component {
           <RecordNavigationSection
             record={this.props.record}
             recordClass={this.props.recordClass}
-            categories={categories}
             collapsedCategories={this.props.collapsedCategories}
+            categoryWordsMap={this.props.categoryWordsMap}
             onCategoryToggle={this.toggleCategory}
-            navigationQuery={this.props.navigationQuery}
-            updateNavigationQuery={query => this.props.actions.updateNavigationQuery(query)}
           />
         </Sticky>
         <Main className="wdk-RecordMain">
           <Record
             record={this.props.record}
             recordClass={this.props.recordClass}
-            categories={categories}
             collapsedCategories={this.props.collapsedCategories}
             collapsedTables={this.props.collapsedTables}
             onCategoryToggle={this.toggleCategory}
