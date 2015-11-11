@@ -44,7 +44,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
   var { PropTypes } = React;
   var { Column } = FixedDataTable;
-  var { Fields } = wdk.models.filter;
+  var { Field, Fields } = wdk.models.filter;
 
 
   var FilterList = React.createClass({
@@ -480,6 +480,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       if (sortDirection == 'DESC') sortedFilteredData.reverse();
 
       // Create tree from fields
+      // TODO Create tree in service
       var treeOpts = _.pick(this.props, 'trimMetadataTerms');
       var fieldTree = Fields.getTree(treeOpts, fields);
 
@@ -1142,6 +1143,11 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
         values from your overall selection by checking or unchecking the
         corresponding checkboxes.</p>`;
 
+      // sort Unkonwn to end of list
+      var sortedDistribution = _.sortBy(this.props.distribution, function({ value }) {
+        return value === Field.UNKNOWN_VALUE ? '\u200b' : value;
+      })
+
       return (
         <div className="membership-filter">
 
@@ -1167,7 +1173,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                   </tr>
                 </thead>
                 <tbody>
-                  {_.map(this.props.distribution, item => {
+                  {_.map(sortedDistribution, item => {
                     // compute frequency, percentage, filteredPercentage
                     var percentage = (item.count / total) * 100;
                     var filteredPercentage = (item.filteredCount / total) * 100;
@@ -1220,7 +1226,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     render() {
       var [ knownDist, unknownDist ] = _.partition(this.props.distribution, function(entry) {
-        return entry.value !== 'Unknown';
+        return entry.value !== Field.UNKNOWN_VALUE;
       });
 
       var size = knownDist.reduce(function(sum, entry) {
@@ -1284,7 +1290,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     render: function() {
       var [ knownDist, unknownDist ] = _.partition(this.props.distribution, function(entry) {
-        return entry.value !== 'Unknown';
+        return entry.value !== Field.UNKNOWN_VALUE;
       });
 
 
