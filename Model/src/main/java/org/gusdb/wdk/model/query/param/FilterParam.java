@@ -14,7 +14,7 @@ import javax.sql.DataSource;
 
 import org.gusdb.fgputil.cache.UnfetchableItemException;
 import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.wdk.cache.InMemoryCaches;
+import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -231,7 +231,7 @@ public class FilterParam extends FlatVocabParam {
     MetaDataSpecItemFetcher fetcher = new MetaDataSpecItemFetcher(metadataSpecQuery, contextParamValues, user);
     Map<String, Map<String, String>> map = null;
     try {
-      map = InMemoryCaches.get().getMetadataSpecCache().getItem(fetcher.getCacheKey(), fetcher);
+      map = CacheMgr.get().getMetadataSpecCache().getItem(fetcher.getCacheKey(), fetcher);
     }
     catch (UnfetchableItemException ex) {
       decodeException(ex);
@@ -252,7 +252,7 @@ public class FilterParam extends FlatVocabParam {
     MetaDataItemFetcher fetcher = new MetaDataItemFetcher(metadataQuery, contextParamValues, user);
     Map<String, Map<String, String>> map = null;
     try {
-      map = InMemoryCaches.get().getMetadataCache().getItem(fetcher.getCacheKey(), fetcher);
+      map = CacheMgr.get().getMetadataCache().getItem(fetcher.getCacheKey(), fetcher);
     }
     catch (UnfetchableItemException ex) {
       decodeException(ex);

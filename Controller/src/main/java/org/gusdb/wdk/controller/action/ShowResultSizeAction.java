@@ -12,7 +12,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.wdk.cache.InMemoryCaches;
+import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -49,7 +49,7 @@ public class ShowResultSizeAction extends Action {
   private String getSingleFilterResultSize(int stepId, String filterName)
       throws WdkModelException, WdkUserException {
     WdkModel wdkModel = ActionUtility.getWdkModel(getServlet()).getModel();
-    int size = InMemoryCaches.get().getFilterSizeCache()
+    int size = CacheMgr.get().getFilterSizeCache()
         .getFilterSize(stepId, filterName, wdkModel);
     return String.valueOf(size);
   }
@@ -58,7 +58,7 @@ public class ShowResultSizeAction extends Action {
   private String getFilterResultSizes(int stepId)
       throws WdkModelException, WdkUserException {
     WdkModel wdkModel = ActionUtility.getWdkModel(getServlet()).getModel();
-    Map<String, Integer> sizes = InMemoryCaches.get().getFilterSizeCache()
+    Map<String, Integer> sizes = CacheMgr.get().getFilterSizeCache()
         .getFilterSizes(stepId, wdkModel);
     JSONObject json = new JSONObject();
     for (Entry<String, Integer> entry : sizes.entrySet()) {
