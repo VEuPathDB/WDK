@@ -12,15 +12,15 @@ import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
  * 
  * @author rdoherty
  */
-public class InMemoryCaches {
+public class CacheMgr {
 
-  private static InMemoryCaches _instance = new InMemoryCaches();
+  private static CacheMgr _instance = new CacheMgr();
 
-  public static InMemoryCaches get() {
+  public static CacheMgr get() {
     return _instance;
   }
 
-  private InMemoryCaches() { }
+  private CacheMgr() { }
 
   private final FilterSizeCache _filterSizeCache = new FilterSizeCache();
   public FilterSizeCache getFilterSizeCache() { return _filterSizeCache; }

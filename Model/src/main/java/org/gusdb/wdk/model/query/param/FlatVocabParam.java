@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.fgputil.cache.UnfetchableItemException;
-import org.gusdb.wdk.cache.InMemoryCaches;
+import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -173,7 +173,7 @@ public class FlatVocabParam extends AbstractEnumParam {
       throws WdkModelException, WdkUserException {
     try {
       FlatVocabularyFetcher fetcher = new FlatVocabularyFetcher(user, this);
-      return InMemoryCaches.get().getVocabCache().getItem(
+      return CacheMgr.get().getVocabCache().getItem(
           fetcher.getCacheKey(dependedParamValues), fetcher);
     }
     catch (UnfetchableItemException e) {
