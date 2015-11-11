@@ -1,7 +1,7 @@
 import {
   countByValues,
   uniqMetadataValues,
-  passesAll,
+  combinePredicates,
   getMemberPredicate,
   getRangePredicate
 } from './utils';
@@ -11,6 +11,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
   'use strict';
 
   var FilterService = wdk.models.filter.FilterService;
+  var Field = wdk.models.filter.Field;
 
   ns.LazyFilterService = FilterService.extend({
 
@@ -114,8 +115,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
             this.metadata[term] = this.data.reduce(function(parsedMetadata, d) {
               // TODO Add formatting for date type
               var values = _.result(fieldMetadata[d.term], 'values');
-              // TODO Use a Symbol for Unknown
-              parsedMetadata[d.term] = _.isUndefined(values) ? [ 'Unknown' ]
+              parsedMetadata[d.term] = _.isUndefined(values) ? [ Field.UNKNOWN_VALUE ]
                                      : type === 'number' ? values.map(Number)
                                      : values.map(String);
               return parsedMetadata;
@@ -151,7 +151,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
             }, this);
           // Filter data by applying each predicate above to each data item.
           // If predicates is empty (i.e., no filters), all data is returned.
-          var filteredData = _.filter(this.data, passesAll(predicates));
+          var filteredData = _.filter(this.data, combinePredicates(predicates));
           return filteredData;
         }.bind(this));
     }
