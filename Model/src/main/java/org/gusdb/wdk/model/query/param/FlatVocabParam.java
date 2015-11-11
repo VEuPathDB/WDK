@@ -2,14 +2,11 @@ package org.gusdb.wdk.model.query.param;
 
 import java.io.PrintWriter;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.fgputil.cache.ItemCache;
 import org.gusdb.fgputil.cache.UnfetchableItemException;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
-import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.wdk.cache.InMemoryCaches;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -35,15 +32,11 @@ public class FlatVocabParam extends AbstractEnumParam {
 
   static final String PARAM_SERVED_QUERY = "ServedQuery";
   static final String DEPENDED_VALUE = "depended_value";
-  static final String VOCAB_QUERY_REF_KEY = "vocabQueryRef";
-  static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
 
   public static final String COLUMN_TERM = "term";
   public static final String COLUMN_INTERNAL = "internal";
   public static final String COLUMN_DISPLAY = "display";
   public static final String COLUMN_PARENT_TERM = "parentTerm";
-
-  private static ItemCache<String, EnumParamVocabInstance> VOCAB_CACHE = new ItemCache<String, EnumParamVocabInstance>();
 
   private Query vocabQuery;
   private String vocabQueryRef;
@@ -180,35 +173,13 @@ public class FlatVocabParam extends AbstractEnumParam {
   protected EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException, WdkUserException {
     try {
-      return VOCAB_CACHE.getItem(getCacheKey(dependedParamValues), new FlatVocabularyFetcher(user, this));
+      FlatVocabularyFetcher fetcher = new FlatVocabularyFetcher(user, this);
+      return InMemoryCaches.get().getVocabCache().getItem(
+          fetcher.getCacheKey(dependedParamValues), fetcher);
     }
     catch (UnfetchableItemException e) {
       throw new WdkModelException(e);
     }
-  }
-
-  private String getCacheKey(Map<String, String> dependedParamValues) throws WdkModelException, JSONException {
-    JSONObject cacheKeyJson = new JSONObject();
-    cacheKeyJson.put(VOCAB_QUERY_REF_KEY, vocabQueryRef);
-    cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY, getDependedParamValuesJson(dependedParamValues));
-    return cacheKeyJson.toString();
-  }
-
-  private JSONObject getDependedParamValuesJson(Map<String, String> dependedParamValues) throws WdkModelException {
-    JSONObject dependedParamValuesJson = new JSONObject();
-    Set<Param> dependedParams = getDependedParams();
-    if (dependedParams == null || dependedParams.isEmpty())
-      return dependedParamValuesJson;
-    // get depended param names in advance since getDependedParams() is expensive
-    List<String> dependedParamNames = Functions.mapToList(
-        dependedParams, new Function<Param, String>() {
-          @Override public String apply(Param obj) { return obj.getName(); }});
-    for (String paramName : dependedParamValues.keySet()) {
-      if (dependedParamNames.contains(paramName)) {
-        dependedParamValuesJson.put(paramName, dependedParamValues.get(paramName));
-      }
-    }
-    return dependedParamValuesJson;
   }
 
   /*
