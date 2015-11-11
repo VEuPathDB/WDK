@@ -31,7 +31,6 @@ import org.json.JSONObject;
 public class FlatVocabParam extends AbstractEnumParam {
 
   static final String PARAM_SERVED_QUERY = "ServedQuery";
-  static final String DEPENDED_VALUE = "depended_value";
 
   public static final String COLUMN_TERM = "term";
   public static final String COLUMN_INTERNAL = "internal";
