@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model;
 
 import java.io.ByteArrayInputStream;
@@ -29,12 +26,12 @@ import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
 /**
- * This parser serves as a parent class for any Apache Digester based xml parser. It provides common
- * functionalities for an xml parser, such as validating the xml using a provided Relax-NG schema, and using
- * digester to parse the xml and load an object representation of the xml file.
+ * This parser serves as a parent class for any Apache Digester based xml
+ * parser. It provides common functionalities for an xml parser, such as
+ * validating the xml using a provided Relax-NG schema, and using digester to
+ * parse the xml and load an object representation of the xml file.
  * 
  * @author Jerric
- * 
  */
 public abstract class XmlParser {
 
