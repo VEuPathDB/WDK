@@ -348,7 +348,16 @@ body {
 
 .wdk-Record-sidebar-title {
   display: block;
-  padding: .4em 0;
+  padding: .4em;
+}
+
+.wdk-Record-sidebar-title__active:before {
+  font-family: FontAwesome;
+  content: '\f111';
+  position: absolute;
+  left: 4px;
+  top: 7px;
+  font-size: 80%;
 }
 
 .wdk-Record-sidebar-checkbox {
@@ -445,10 +454,6 @@ body {
   vertical-align: top;
   display: inline-block;
   min-width: 20%;
-}
-
-.wdk-RecordCategoryEnumeration {
-  font-weight: 200;
 }
 
 .wdk-DataTable {

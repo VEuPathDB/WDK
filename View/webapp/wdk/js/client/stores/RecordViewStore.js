@@ -1,6 +1,7 @@
-import {ReduceStore} from 'flux/utils';
+import { ReduceStore } from 'flux/utils';
 import memoize from 'lodash/function/memoize';
 import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
+import { reduce } from '../utils/Categories';
 
 let {
   LOADING,
@@ -37,7 +38,7 @@ export default class RecordViewStore extends ReduceStore {
         let collapsedTables = state.recordClass === recordClass
           ? state.collapsedTables : recordClass.collapsedTables || [];
 
-        let categoryWordsMap = reduceCategories(recordClass.attributeCategories, function(map, category) {
+        let categoryWordsMap = reduce(recordClass.attributeCategories, function(map, category) {
           let words = [];
 
           for (let attribute of recordClass.attributes) {
@@ -95,11 +96,4 @@ export default class RecordViewStore extends ReduceStore {
 
 function updateList(item, add, list = []) {
   return add ? list.concat(item) : list.filter(x => x !== item);
-}
-
-function reduceCategories(categories, reducer, initialValue) {
-  if (categories == null) return initialValue;
-  return categories.reduce(function(acc, category) {
-    return reduceCategories(category.subCategories, reducer, reducer(acc, category));
-  }, initialValue);
 }
