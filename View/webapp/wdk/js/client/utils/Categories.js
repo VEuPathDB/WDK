@@ -3,21 +3,36 @@
  */
 
 export function reduce(categories, reducer, initialValue) {
-  if (categories == null) return initialValue;
-  return categories.reduce(function(acc, category) {
-    return reduce(category.subCategories, reducer, reducer(acc, category));
-  }, initialValue);
+  let acc = initialValue;
+  for (let category of iter(categories)) {
+    acc = reducer(acc, category);
+  }
+  return acc;
 }
 
 export function takeWhile(categories, test, includeChildren = true) {
-  let stack = [...categories];
   let acc = [];
-  while (stack.length > 0) {
-    let category = stack.shift();
+  for (let category of iter(categories, includeChildren)) {
     if (test(category) === false) break;
-    if (includeChildren && category.subCategories != null)
-      stack.unshift(...category.subCategories);
     acc.push(category);
   }
   return acc;
+}
+
+
+// Generators - Functions that return an iterable object
+// see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators
+// FIXME Use better names.
+
+export function* itercategory(category, includeChildren = true) {
+  yield category;
+  if (includeChildren)
+    yield* iter(category.subCategories);
+}
+
+export function* iter(categories, includeChildren = true) {
+  if (categories == null) return;
+  for (let category of categories) {
+    yield* itercategory(category, includeChildren);
+  }
 }
