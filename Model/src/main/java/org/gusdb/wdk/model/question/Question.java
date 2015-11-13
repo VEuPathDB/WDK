@@ -760,6 +760,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * 
    * @return
    */
+  @Override
   public Map<String, Boolean> getSortingAttributeMap() {
     Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
 

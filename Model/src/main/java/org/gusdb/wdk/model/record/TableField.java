@@ -86,6 +86,7 @@ public class TableField extends Field implements AttributeFieldContainer {
   /**
    * @return the sortingAttributeMap
    */
+  @Override
   public Map<String, Boolean> getSortingAttributeMap() {
     return this.sortingAttributeMap;
   }
