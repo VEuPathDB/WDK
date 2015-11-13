@@ -1,30 +1,18 @@
 import _ from 'lodash';
 
-// _.flow is a higher-order function that returns a function F composed of the
-// supplied functions. Each provided function is invoked from left to right.
-// The left-most function is called with the argument that F is called with.
-// The next function is called, with the argument returned by the previous
-// function, and so on. The return value of the last function is the return
-// value of F.
 
 /**
- * Used by lodash sortBy. Returns a value that sortBy will use to
- * compare with other values in an array.
+ * Returns a lodash-wrapped array of metadata values.
+ * See https://lodash.com/docs/#_ for details of lodash-wrapped objectd.
  *
- * FIXME Use natural sort
- *
- * @param {any} value
+ * There are two main benefits to the lodash wrapper:
+ *   1. Operations can be expressed fluently as method calls.
+ *   2. lodash will merge operations to use as few overall iterations as
+ *      possible. It will also reduce the number of intermediate objects
+ *      created on each iteration, thus reducing GC pressure.
  */
-function valueSorter(value) {
-  return typeof value === 'number' ? Number(value)
-       : value === 'Unknown' ? String.fromCharCode(Math.pow(2, 16) - 1)
-       : String(value);
-}
-
 function flattenMetadataValues(metadata) {
-  return _(metadata)
-  .values()
-  .flatten();
+  return _(metadata).values().flatten();
 }
 
 /**
@@ -34,37 +22,34 @@ function flattenMetadataValues(metadata) {
  * @returns {object} A key-value map of { value: count }
  */
 export function countByValues(metadata) {
-  return flattenMetadataValues(metadata)
-  .countBy()
-  .value();
+  return flattenMetadataValues(metadata).countBy().value();
 }
 
+/**
+ * Create a array of uniq metadata values
+ */
 export function uniqMetadataValues(metadata) {
-  return flattenMetadataValues(metadata)
-  .sortBy(valueSorter)
-  .uniq(true)
-  .value();
+  return flattenMetadataValues(metadata).sortBy().uniq(true).value();
 }
 
 export function getMemberPredicate(metadata, filter) {
   var field = filter.field;
+  var filterValues = filter.values;
 
   return function memberPredicate(datum) {
-    var filterValues = filter.values;
     var metadataValues = metadata[datum.term];
     var index = filterValues.length;
     var vIndex;
 
     // Use a for loop for efficiency
-    outer:
-      while(index--) {
-        vIndex = metadataValues.length;
-        while(vIndex--) {
-          if (filterValues[index] === metadataValues[vIndex]) break outer;
-        }
+    outer: while(index--) {
+      vIndex = metadataValues.length;
+      while(vIndex--) {
+        if (filterValues[index] === metadataValues[vIndex]) break outer;
       }
+    }
 
-      return (index > -1);
+    return (index > -1);
   };
 }
 
@@ -72,49 +57,49 @@ export function getRangePredicate(metadata, filter) {
   var field = filter.field;
   var min = filter.values.min;
   var max = filter.values.max;
+  var test = min !== null && max !== null ? makeWithin(min, max)
+           : min !== null ? makeGte(min)
+           : max !== null ? makeLte(max)
+           : undefined;
 
-  if (min !== null && max !== null) {
-    return function rangePredicate(datum) {
-      var values = metadata[datum.term];
-      return values.some(within(min, max));
-    };
+  if (test === undefined) throw new Error('Count not determine range predicate.');
+
+  return function rangePredicate(datum) {
+    return metadata[datum.term].some(test);
   }
-  if (min !== null) {
-    return function rangePredicate(datum) {
-      var values = metadata[datum.term];
-      return values.some(gte(min));
-    };
-  }
-  if (max !== null) {
-    return function rangePredicate(datum) {
-      var values = metadata[datum.term];
-      return values.some(lte(max));
-    };
-  }
-  throw new Error('Could not determine range predicate.');
 }
 
 // Helper filtering functions
 // --------------------------
 
-export var gte = _.curry(function gte(min, value) {
-  return value >= min;
-});
+export function makeGte(min) {
+  return function gte(value) {
+    return value >= min;
+  };
+}
 
-export var lte = _.curry(function lte(max, value) {
-  return value <= max;
-});
+export function makeLte(max) {
+  return function lte(value) {
+    return value <= max;
+  };
+}
 
-export var within = _.curry(function within(min, max, value) {
-  return gte(min, value) && lte(max, value);
-});
+export function makeWithin(min, max) {
+  let gte = makeGte(min);
+  let lte = makeLte(max);
+  return function within(value) {
+    return gte(value) && lte(value);
+  };
+}
 
-export var passes = _.curry(function passes(value, fn) {
-  return fn(value);
-});
+export function passesWith(value) {
+  return function passes(predicate) {
+    return predicate(value);
+  };
+}
 
-export var passesAll = _.curry(function passesAll(fns, value) {
-  var passesWithValue = passes(value);
-  return _.every(fns, passesWithValue);
-});
-
+export function combinePredicates(predicates) {
+  return function predicate(value) {
+    return predicates.every(passesWith(value));
+  };
+}

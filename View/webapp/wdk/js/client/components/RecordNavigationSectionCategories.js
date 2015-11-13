@@ -1,6 +1,6 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
-import RecordCategoryEnumeration from './RecordCategoryEnumeration';
+import RecordNavigationItem from './RecordNavigationItem';
 
 let noop = () => void 0;
 let t = () => true;
@@ -13,7 +13,8 @@ let RecordNavigationSectionCategories = React.createClass({
     onCategoryToggle: React.PropTypes.func,
     parentEnumeration: React.PropTypes.string,
     isCollapsed: React.PropTypes.func,
-    isVisible: React.PropTypes.func
+    isVisible: React.PropTypes.func,
+    activeCategory: React.PropTypes.object
   },
 
   getDefaultProperties() {
@@ -32,7 +33,8 @@ let RecordNavigationSectionCategories = React.createClass({
       onCategoryToggle,
       parentEnumeration,
       isCollapsed,
-      isVisible
+      isVisible,
+      activeCategory
     } = this.props;
 
     if (categories == null) return null;
@@ -40,33 +42,21 @@ let RecordNavigationSectionCategories = React.createClass({
     return (
       <div>
         {categories.map((category, index) => {
-          let shouldDisplay = isVisible(category);
           let enumeration = parentEnumeration == null
             ? index + 1
             : parentEnumeration + '.' + (index + 1);
+
           return (
-            <div key={String(category.name)} className="wdk-RecordNavigationItem">
-              {parentEnumeration == null && shouldDisplay &&
-                <input
-                  className="wdk-Record-sidebar-checkbox"
-                  type="checkbox"
-                  checked={!isCollapsed(category)}
-                  onChange={(e) => {
-                    onCategoryToggle(category, !e.target.checked);
-                  }}
-                />
-              }
-              {shouldDisplay &&
-                <a
-                  href={'#' + category.name}
-                  className="wdk-Record-sidebar-title"
-                  onClick={() => {
-                    if (isCollapsed(category)) onCategoryToggle(category, false);
-                  }}
-                >
-                  <RecordCategoryEnumeration enumeration={enumeration}/> <strong>{category.displayName}</strong>
-                </a>
-              }
+            <RecordNavigationItem
+              key={category.name}
+              category={category}
+              enumeration={enumeration}
+              active={activeCategory === category}
+              visible={isVisible(category)}
+              collapsed={isCollapsed(category)}
+              collapsible={parentEnumeration == null}
+              onCategoryToggle={onCategoryToggle}
+            >
               {showChildren && (
                 <RecordNavigationSectionCategories
                   {...this.props}
@@ -78,12 +68,18 @@ let RecordNavigationSectionCategories = React.createClass({
                   }}
                 />
               )}
-            </div>
+            </RecordNavigationItem>
           );
         })}
       </div>
     );
   }
 });
+
+function makeEnumeration(parentEnumeration, index) {
+  return parentEnumeration == null
+    ? String(index + 1)
+    : parentEnumeration + '.' + String(index + 1);
+}
 
 export default wrappable(RecordNavigationSectionCategories);
