@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
@@ -36,6 +35,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.runtime.GusHome;
+import org.gusdb.fgputil.xml.XmlParser;
 import org.gusdb.wdk.model.UIConfig.ExtraLogoutCookies;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
@@ -50,8 +50,8 @@ import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
 import org.gusdb.wdk.model.filter.ColumnFilterDefinition;
 import org.gusdb.wdk.model.filter.FilterReference;
-import org.gusdb.wdk.model.filter.StepFilterDefinition;
 import org.gusdb.wdk.model.filter.FilterSet;
+import org.gusdb.wdk.model.filter.StepFilterDefinition;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
@@ -181,18 +181,19 @@ public class ModelXmlParser extends XmlParser {
   private static final Pattern CONSTANT_PATTERN = Pattern.compile("\\%\\%([\\w\\.\\-]+)\\%\\%",
       Pattern.MULTILINE);
 
+  private final String gusHome;
   private final URL xmlSchemaURL;
   private final String xmlDataDir;
 
   public ModelXmlParser(String gusHome) throws WdkModelException {
-    super(gusHome, "lib/rng/wdkModel.rng");
-
-    // get model schema file and xml schema file
     try {
-      xmlSchemaURL = makeURL(gusHome, "lib/rng/xmlAnswer.rng");
+      this.gusHome = gusHome;
+      configureValidator(gusHome + "/lib/rng/wdkModel.rng");
+      // get model schema file and xml schema file
+      xmlSchemaURL = makeURL(gusHome + "/lib/rng/xmlAnswer.rng");
       xmlDataDir = gusHome + "/lib/xml/";
     }
-    catch (MalformedURLException ex) {
+    catch (SAXException | IOException ex) {
       throw new WdkModelException(ex);
     }
   }
@@ -206,8 +207,8 @@ public class ModelXmlParser extends XmlParser {
     String modelName = config.getModelName();
 
     // construct urls to model file, prop file, and config file
-    URL modelURL = makeURL(gusHome, "lib/wdk/" + modelName + ".xml");
-    URL modelPropURL = makeURL(gusHome, "config/" + projectId + "/model.prop");
+    URL modelURL = makeURL(gusHome + "/lib/wdk/" + modelName + ".xml");
+    URL modelPropURL = makeURL(gusHome + "/config/" + projectId + "/model.prop");
 
     // load property map
     Map<String, String> properties = loadProperties(projectId, modelPropURL, config);
@@ -225,7 +226,7 @@ public class ModelXmlParser extends XmlParser {
     Transformer transformer = TransformerFactory.newInstance().newTransformer();
     transformer.transform(source, result);
     InputStream input = new ByteArrayInputStream(output.toByteArray());
-    WdkModel model = (WdkModel) digester.parse(input);
+    WdkModel model = (WdkModel) getDigester().parse(input);
 
     model.setGusHome(gusHome);
     model.setXmlSchema(xmlSchemaURL); // set schema for xml data
@@ -279,7 +280,7 @@ public class ModelXmlParser extends XmlParser {
 
       // get url to the first import
       String href = importNode.getAttribute("file");
-      URL importURL = makeURL(gusHome, "lib/wdk/" + href);
+      URL importURL = makeURL(gusHome + "/lib/wdk/" + href);
 
       // load constants from import doc, and merge it with master ones
       Map<String, String> subConsts = loadConstants(projectId, importURL);
@@ -317,7 +318,9 @@ public class ModelXmlParser extends XmlParser {
       SAXException, WdkModelException, ParserConfigurationException, URISyntaxException {
     logger.trace("Test parsing " + modelXmlURL.toString());
 
-    validate(modelXmlURL);
+    if (!validate(modelXmlURL)) {
+      throw new WdkModelException("Validation failed: " + modelXmlURL.toExternalForm());
+    }
 
     Map<String, String> constants = new LinkedHashMap<String, String>();
     // load xml document without validation
@@ -377,7 +380,9 @@ public class ModelXmlParser extends XmlParser {
       Map<String, String> constants) throws SAXException, IOException, ParserConfigurationException,
       WdkModelException, URISyntaxException {
     // validate the sub-model
-    validate(modelXmlURL);
+    if (!validate(modelXmlURL)) {
+      throw new WdkModelException("Validation failed: " + modelXmlURL.toExternalForm());
+    }
 
     // load file into string
     File file = new File(modelXmlURL.toURI());
