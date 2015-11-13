@@ -66,7 +66,7 @@ public class FilterSizeCache {
         throws UnfetchableItemException {
       try {
         Step step = _wdkModel.getStepFactory().getStepById(id);
-        AnswerValue answerValue = step.getAnswerValue(false, false);
+        AnswerValue answerValue = step.getAnswerValue(false);
         int size = answerValue.getFilterSize(_filterToFetch);
         previousVersion.sizeMap.put(_filterToFetch, size);
         return previousVersion;
@@ -102,7 +102,7 @@ public class FilterSizeCache {
         throws UnfetchableItemException {
       try {
         Step step = _wdkModel.getStepFactory().getStepById(id);
-        AnswerValue answer = step.getAnswerValue(false, false);
+        AnswerValue answer = step.getAnswerValue(false);
         Map<String, Integer> sizes = answer.getFilterSizes();
         previousVersion.sizeMap = sizes;
         previousVersion.allFiltersLoaded = true;
