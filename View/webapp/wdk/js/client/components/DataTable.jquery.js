@@ -22,13 +22,27 @@ let formatData = data => data.map(
   row => mapValues(row, formatAttributeValue)
 );
 
+let formatSorting = (columns, sorting) => {
+  if (sorting.length === 0) return [ [0, 'asc'] ];
+
+  return sorting.map(sort => {
+    let index = columns.findIndex(column => column.name === sort.name);
+    if (index === -1) {
+      console.warn("Could not determine sort index for the column " + sort.name);
+      return [];
+    }
+    return [ index, sort.direction ]
+  });
+}
+
 export default class DataTable extends Component {
 
   componentDidMount() {
     let tableOpts = Object.assign({}, DataTable.defaultDataTableOpts, {
       columns: formatColumns(this.props.columns),
       data: formatData(this.props.data),
-      searching: this.props.isSearchable
+      searching: this.props.isSearchable,
+      order: formatSorting(this.props.columns, this.props.sorting)
     });
 
     if (this.props.height != null)
@@ -80,6 +94,14 @@ DataTable.propTypes = {
    * to the `name` property in the `columns` prop.
    */
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
+
+  /**
+   * Default sorting for the table. Each item indicates the column and direction.
+   */
+  sorting: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    direction: PropTypes.oneOf(['asc', 'desc']).isRequired
+  })),
 
   /** width of the table - if a string, treated as a CSS unit; if a number, treated as px */
   width: CSSPropType,

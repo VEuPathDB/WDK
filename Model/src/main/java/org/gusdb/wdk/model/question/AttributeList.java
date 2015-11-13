@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.question;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -31,17 +32,7 @@ public class AttributeList extends WdkModelBase {
   }
 
   public void setSorting(String sortList) throws WdkModelException {
-    String[] attrCombines = sortList.split(",");
-    for (String attrCombine : attrCombines) {
-      String[] sorts = attrCombine.trim().split("\\s+");
-      if (sorts.length != 2)
-        throw new WdkModelException("The sorting format is wrong: " + sortList);
-      String attrName = sorts[0].trim();
-      String strAscend = sorts[1].trim().toLowerCase();
-      boolean ascending = strAscend.equals("asc");
-      if (!sortingAttributeMap.containsKey(attrName))
-        sortingAttributeMap.put(attrName, ascending);
-    }
+    sortingAttributeMap = Utilities.parseSortList(sortList);
   }
 
   /**
