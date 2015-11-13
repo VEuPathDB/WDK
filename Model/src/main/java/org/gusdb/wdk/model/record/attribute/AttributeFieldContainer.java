@@ -19,5 +19,6 @@ public interface AttributeFieldContainer {
 
   public Map<String, AttributeField> getAttributeFieldMap();
   public AttributeField[] getAttributeFields();
+  public Map<String, Boolean> getSortingAttributeMap();
 
 }

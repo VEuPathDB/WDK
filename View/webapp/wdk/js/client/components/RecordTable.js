@@ -29,7 +29,13 @@ let RecordTable = React.createClass({
         </div>
       );
     }
-    return <DataTable columns={this.props.tableMeta.attributes} data={this.props.table} />;
+    return (
+      <DataTable
+        columns={this.props.tableMeta.attributes}
+        data={this.props.table}
+        sorting={this.props.tableMeta.sorting}
+      />
+    );
   }
 
 });

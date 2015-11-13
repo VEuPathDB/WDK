@@ -12,8 +12,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
-import org.gusdb.wdk.controller.cache.FilterSizeCache;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -23,9 +23,6 @@ public class ShowResultSizeAction extends Action {
 
   @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(ShowResultSizeAction.class);
-
-  // will use application-wide cache to manage filter result sizes
-  private static final FilterSizeCache FILTER_SIZE_CACHE = new FilterSizeCache();
 
   @Override
   public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -52,7 +49,8 @@ public class ShowResultSizeAction extends Action {
   private String getSingleFilterResultSize(int stepId, String filterName)
       throws WdkModelException, WdkUserException {
     WdkModel wdkModel = ActionUtility.getWdkModel(getServlet()).getModel();
-    int size = FILTER_SIZE_CACHE.getFilterSize(stepId, filterName, wdkModel);
+    int size = CacheMgr.get().getFilterSizeCache()
+        .getFilterSize(stepId, filterName, wdkModel);
     return String.valueOf(size);
   }
 
@@ -60,7 +58,8 @@ public class ShowResultSizeAction extends Action {
   private String getFilterResultSizes(int stepId)
       throws WdkModelException, WdkUserException {
     WdkModel wdkModel = ActionUtility.getWdkModel(getServlet()).getModel();
-    Map<String, Integer> sizes = FILTER_SIZE_CACHE.getFilterSizes(stepId, wdkModel);
+    Map<String, Integer> sizes = CacheMgr.get().getFilterSizeCache()
+        .getFilterSizes(stepId, wdkModel);
     JSONObject json = new JSONObject();
     for (Entry<String, Integer> entry : sizes.entrySet()) {
       json.put(entry.getKey(), entry.getValue());

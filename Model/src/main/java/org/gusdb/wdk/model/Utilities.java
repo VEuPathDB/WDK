@@ -12,6 +12,7 @@ import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -343,4 +344,23 @@ public class Utilities {
     buffer.append("}");
     return buffer.toString().hashCode();
   }
+  
+  public static Map<String, Boolean> parseSortList(String sortList) throws WdkModelException {
+    Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>();
+    String[] attrCombines = sortList.split(",");
+
+    for (String attrCombine : attrCombines) {
+      String[] sorts = attrCombine.trim().split("\\s+");
+      if (sorts.length != 2)
+        throw new WdkModelException("The sorting format is wrong: " + sortList);
+      String attrName = sorts[0].trim();
+      String strAscend = sorts[1].trim().toLowerCase();
+      boolean ascending = strAscend.equals("asc");
+      if (!sortingMap.containsKey(attrName))
+        sortingMap.put(attrName, ascending);
+    }
+    
+    return sortingMap;
+  }
+
 }
