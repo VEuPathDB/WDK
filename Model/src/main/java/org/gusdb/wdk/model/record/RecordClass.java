@@ -1420,6 +1420,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return attributeFields;
   }
   
+  @Override
   public Map<String, Boolean> getSortingAttributeMap() {
     Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
     int count = 0;
