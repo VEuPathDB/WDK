@@ -35,8 +35,7 @@ class RecordNavigationSectionCategories extends Component {
   }
 
   setActiveCategory() {
-    let { attributeCategories } = this.props.recordClass;
-    let scrolledCategories = takeWhile(attributeCategories, function(category) {
+    let scrolledCategories = takeWhile(this.props.categories, function(category) {
       let categoryNode = document.getElementById(category.name);
       if (categoryNode == null) return true;
       return categoryNode.getBoundingClientRect().top < 10;
