@@ -19,6 +19,12 @@ export function takeWhile(categories, test, includeChildren = true) {
   return acc;
 }
 
+export function find(categories, test, includeChildren = true) {
+  for (let category of iter(categories, includeChildren)) {
+    if (test(category) === true) return category;
+  }
+}
+
 
 // Generators - Functions that return an iterable object
 // see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators

@@ -1,7 +1,7 @@
 import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
-import { takeWhile } from '../utils/Categories';
+import { find as findCategory } from '../utils/Categories';
 import shallowEqual from '../utils/shallowEqual';
 import RecordNavigationSectionCategoryTree from './RecordNavigationSectionCategoryTree';
 
@@ -35,12 +35,13 @@ class RecordNavigationSectionCategories extends Component {
   }
 
   setActiveCategory() {
-    let scrolledCategories = takeWhile(this.props.categories, function(category) {
+    let activeCategory = findCategory(this.props.categories, function(category) {
       let categoryNode = document.getElementById(category.name);
       if (categoryNode == null) return true;
-      return categoryNode.getBoundingClientRect().top < 10;
+      let rect = categoryNode.parentElement.getBoundingClientRect();
+      return rect.top < 10 && rect.bottom >= 0;
     }, this.props.showChildren);
-    this.setState({ activeCategory: scrolledCategories.pop() });
+    this.setState({ activeCategory });
   }
 
   render() {
