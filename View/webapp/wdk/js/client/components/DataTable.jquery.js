@@ -42,7 +42,8 @@ export default class DataTable extends Component {
       columns: formatColumns(this.props.columns),
       data: formatData(this.props.data),
       searching: this.props.isSearchable,
-      order: formatSorting(this.props.columns, this.props.sorting)
+      order: formatSorting(this.props.columns, this.props.sorting),
+      scrollY: this.props.height
     });
 
     if (this.props.height != null)
