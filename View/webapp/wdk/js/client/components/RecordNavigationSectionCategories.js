@@ -1,85 +1,55 @@
-import React from 'react';
+import { Component, PropTypes } from 'react';
+import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
-import RecordNavigationItem from './RecordNavigationItem';
+import { takeWhile } from '../utils/Categories';
+import shallowEqual from '../utils/shallowEqual';
+import RecordNavigationSectionCategoryTree from './RecordNavigationSectionCategoryTree';
 
-let noop = () => void 0;
-let t = () => true;
+/**
+ * Handle scroll events to mark the active category in the nav panel.
+ */
+class RecordNavigationSectionCategories extends Component {
 
-let RecordNavigationSectionCategories = React.createClass({
+  constructor() {
+    super(...arguments);
+    this.setActiveCategory = this.setActiveCategory.bind(this);
+  }
 
-  propTypes: {
-    categories: React.PropTypes.array,
-    showChildren: React.PropTypes.bool,
-    onCategoryToggle: React.PropTypes.func,
-    parentEnumeration: React.PropTypes.string,
-    isCollapsed: React.PropTypes.func,
-    isVisible: React.PropTypes.func,
-    activeCategory: React.PropTypes.object
-  },
+  componentDidMount() {
+    window.addEventListener('scroll', this.setActiveCategory);
+  }
 
-  getDefaultProperties() {
-    return {
-      onCategoryToggle: noop,
-      showChildren: false,
-      isCollapsed: t,
-      isVisible: t
-    };
-  },
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.setActiveCategory);
+  }
+
+  componentDidUpdate(previousProps) {
+    if (this.props.collapsedCategories !== previousProps.collapsedCategories ||
+        this.props.showChildren !== previousProps.showChildren ) {
+      this.setActiveCategory();
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return !shallowEqual(nextProps, this.props) || !shallowEqual(nextState, this.state);
+  }
+
+  setActiveCategory() {
+    let { attributeCategories } = this.props.recordClass;
+    let scrolledCategories = takeWhile(attributeCategories, function(category) {
+      let categoryNode = document.getElementById(category.name);
+      if (categoryNode == null) return true;
+      return categoryNode.getBoundingClientRect().top < 10;
+    }, this.props.showChildren);
+    this.setState({ activeCategory: scrolledCategories.pop() });
+  }
 
   render() {
-    let {
-      showChildren,
-      categories,
-      onCategoryToggle,
-      parentEnumeration,
-      isCollapsed,
-      isVisible,
-      activeCategory
-    } = this.props;
-
-    if (categories == null) return null;
-
     return (
-      <div>
-        {categories.map((category, index) => {
-          let enumeration = parentEnumeration == null
-            ? index + 1
-            : parentEnumeration + '.' + (index + 1);
-
-          return (
-            <RecordNavigationItem
-              key={category.name}
-              category={category}
-              enumeration={enumeration}
-              active={activeCategory === category}
-              visible={isVisible(category)}
-              collapsed={isCollapsed(category)}
-              collapsible={parentEnumeration == null}
-              onCategoryToggle={onCategoryToggle}
-            >
-              {showChildren && (
-                <RecordNavigationSectionCategories
-                  {...this.props}
-                  parentEnumeration={enumeration}
-                  categories={category.subCategories}
-                  onCategoryToggle={(subCategory, collapsed) => {
-                    if (isCollapsed(subCategory)) onCategoryToggle(subCategory, collapsed);
-                    if (isCollapsed(category)) onCategoryToggle(category, collapsed);
-                  }}
-                />
-              )}
-            </RecordNavigationItem>
-          );
-        })}
-      </div>
+      <RecordNavigationSectionCategoryTree {...this.props} {...this.state} />
     );
   }
-});
 
-function makeEnumeration(parentEnumeration, index) {
-  return parentEnumeration == null
-    ? String(index + 1)
-    : parentEnumeration + '.' + String(index + 1);
 }
 
 export default wrappable(RecordNavigationSectionCategories);
