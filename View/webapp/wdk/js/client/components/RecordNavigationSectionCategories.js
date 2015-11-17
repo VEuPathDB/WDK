@@ -1,7 +1,7 @@
 import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
-import { find as findCategory } from '../utils/Categories';
+import { findLast } from '../utils/Categories';
 import shallowEqual from '../utils/shallowEqual';
 import RecordNavigationSectionCategoryTree from './RecordNavigationSectionCategoryTree';
 
@@ -35,11 +35,11 @@ class RecordNavigationSectionCategories extends Component {
   }
 
   setActiveCategory() {
-    let activeCategory = findCategory(this.props.categories, function(category) {
+    let activeCategory = findLast(this.props.categories, function(category) {
       let categoryNode = document.getElementById(category.name);
       if (categoryNode == null) return true;
       let rect = categoryNode.parentElement.getBoundingClientRect();
-      return rect.top < 10 && rect.bottom >= 0;
+      return rect.top < 12 && rect.bottom > -12;
     }, this.props.showChildren);
     this.setState({ activeCategory });
   }
