@@ -1,5 +1,8 @@
 /**
- * Utils for common category tree traversal
+ * Utils for common category tree traversal.
+ *
+ * TODO Make CategoryTree recursively iterable, and make the helpers below
+ * generic for all iterables.
  */
 
 export function reduce(categories, reducer, initialValue) {
@@ -19,10 +22,31 @@ export function takeWhile(categories, test, includeChildren = true) {
   return acc;
 }
 
+/**
+ * Ignore items until test returns false.
+ */
+export function dropWhile(categories, test, includeChildren = true) {
+  let take = false;
+  let acc = [];
+  for (let category of iter(categories, includeChildren)) {
+    if (take === false) take = !test(category);
+    if (take === true) acc.push(category);
+  }
+  return acc;
+}
+
 export function find(categories, test, includeChildren = true) {
   for (let category of iter(categories, includeChildren)) {
     if (test(category) === true) return category;
   }
+}
+
+export function findLast(categories, test, includeChildren = true) {
+  let r;
+  for (let category of iter(categories, includeChildren)) {
+    if (test(category)) r = category;
+  }
+  return r;
 }
 
 
