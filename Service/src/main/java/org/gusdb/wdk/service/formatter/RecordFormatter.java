@@ -142,19 +142,24 @@ public class RecordFormatter {
   
   private static Object getAttributeJsonValue(AttributeValue attr) throws
     WdkModelException, WdkUserException {
+
     if (attr instanceof LinkAttributeValue) {
       LinkAttributeValue linkAttr = (LinkAttributeValue) attr;
-      JSONObject value = new JSONObject();
-      value.put("url",  linkAttr.getUrl());
-      value.put("displayText", linkAttr.getDisplayText());
-      return value;
+      String displayText = linkAttr.getDisplayText();
+
+      // Treat an empty displayText as null
+      if (displayText == null || displayText.isEmpty()) {
+        return JSONObject.NULL;
+      }
+
+      return new JSONObject()
+      .put("url",  linkAttr.getUrl())
+      .put("displayText", displayText);
     }
+
     else {
       Object value = attr.getValue();
-      if (value == null) {
-        value = JSONObject.NULL;
-      }
-      return value;
+      return value == null ? JSONObject.NULL : value;
     }
   }
 
