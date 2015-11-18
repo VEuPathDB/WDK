@@ -1,5 +1,6 @@
 // Import modules
-import React from 'react/addons';
+import React from 'react';
+import update from 'react-addons-update';
 import Router from 'react-router';
 import Loading from './Loading';
 import Answer from './Answer';
@@ -31,9 +32,6 @@ function maybeJoin(arr, delimeter) {
 function maybeSplit(str, delimeter) {
   if (str !== undefined) return str.split(delimeter);
 }
-
-// See http://facebook.github.io/react/docs/update.html
-let update = React.addons.update;
 
 // Answer is a React component which acts as a Controller-View, as well as
 // a Route Handler.

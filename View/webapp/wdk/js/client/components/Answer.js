@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import AnswerFilter from './AnswerFilter';
 import AnswerTable from './AnswerTable';
 import RecordList from './RecordList';
@@ -31,7 +32,7 @@ let Answer = React.createClass({
 
   updateHeight() {
     if (this.refs.records) {
-      let node = React.findDOMNode(this.refs.records);
+      let node = ReactDOM.findDOMNode(this.refs.records);
       let nodeOffsetTop = getOffsetTop(node);
       let calculatedHeight = window.innerHeight - nodeOffsetTop - 20;
       let minHeight = 335;

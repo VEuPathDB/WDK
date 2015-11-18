@@ -24,6 +24,7 @@ import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.session.OAuthUtil;
 
 /**
  * @author: Jerric
@@ -47,7 +48,9 @@ public class ProcessLoginAction extends WdkAction {
   
   @Override
   protected boolean shouldValidateParams() {
-    return false;
+    // only validate params if using traditional form
+    return (getWdkModel().getModel().getModelConfig()
+        .getAuthenticationMethodEnum().equals(AuthenticationMethod.USER_DB));
   }
 
   @Override
@@ -133,6 +136,15 @@ public class ProcessLoginAction extends WdkAction {
     // params used to fetch token and validate user
     String redirectUrl = params.getValue("redirectUrl");
     String authCode = params.getValue("code");
+    String stateToken = params.getValue("state");
+
+    // confirm state token for security, then remove regardless of result
+    String storedStateToken = (String)getSessionAttribute(OAuthUtil.STATE_TOKEN_KEY);
+    unsetSessionAttribute(OAuthUtil.STATE_TOKEN_KEY);
+    if (stateToken == null || storedStateToken == null || !stateToken.equals(storedStateToken)) {
+      return getFailedLoginResult(new WdkModelException("Unable to log in; " +
+          "state token missing, incorrect, or expired.  Please try again."));
+    }
 
     try {
       OAuthClient client = new OAuthClient(getWdkModel().getModel().getModelConfig());

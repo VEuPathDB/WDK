@@ -4,7 +4,7 @@ import values from 'lodash/object/values';
 import sum from 'lodash/math/sum';
 import noop from 'lodash/utility/noop';
 import { Table } from 'fixed-data-table';
-import React from 'react/addons';
+import React from 'react';
 import TouchableArea from './TouchableArea';
 import { wrappable } from '../utils/componentUtils';
 
@@ -183,7 +183,7 @@ let WdkTable = React.createClass({
             let isResizable = child.props.isResizable != null
               ? child.props.isResizable : true;
 
-            return React.addons.cloneWithProps(child, {
+            return React.cloneElement(child, {
               headerRenderer,
               isResizable,
               width: this.state.columnWidths[child.props.dataKey]

@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import TabbableContainer from './TabbableContainer';
 import { wrappable } from '../utils/componentUtils';
 
@@ -42,7 +43,7 @@ let AnswerFilterSelector = React.createClass({
 
   handleDocumentClick(e) {
     // close if the click target is not contained by this node
-    let node = React.findDOMNode(this);
+    let node = ReactDOM.findDOMNode(this);
     if ($(e.target).closest(node).length === 0) {
       this.props.onClose();
     }

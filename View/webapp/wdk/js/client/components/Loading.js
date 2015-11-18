@@ -1,5 +1,6 @@
 /* global Spinner */
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { wrappable } from '../utils/componentUtils';
 
 /**
@@ -41,7 +42,7 @@ let Loading = React.createClass({
       left: '50%' // Left position relative to parent
     };
 
-    new Spinner(opts).spin(React.findDOMNode(this));
+    new Spinner(opts).spin(ReactDOM.findDOMNode(this));
   },
 
   render() {
