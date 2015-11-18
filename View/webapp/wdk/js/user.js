@@ -44,19 +44,30 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
         .find("input[name='redirectUrl']").val(redirectUrl);
   };
 
-  ns.oauthLogin = function(oauthBaseUrl) {
-    // build URL to OAuth service and redirect
-    var clientId = 'apiComponentSite';
-    var eventualDestination = window.location.href;
-    var redirectUrl = window.location.protocol + "//" + window.location.host +
-      wdk.webappUrl('/processLogin.do?redirectUrl=' +
-        encodeURIComponent(eventualDestination));
-    var oauthUrl = oauthBaseUrl + "/authorize?" +
-        "response_type=code&" +
-        "client_id=" + clientId + "&" +
-        "redirect_uri=" + encodeURIComponent(redirectUrl);
-    window.location = oauthUrl;
-    return;
+  ns.oauthLogin = function(oauthBaseUrl, oauthClientId) {
+    // first need to get anti-forgery state token for this session
+    var tokenLink = wdk.webappUrl('/service/user/oauthStateToken');
+    $.ajax({
+      method: 'GET',
+      url: tokenLink,
+      dataType: "text",
+      success: function(stateToken) {
+        // build URL to OAuth service and redirect
+        var eventualDestination = window.location.href;
+        var redirectUrl = window.location.protocol + "//" + window.location.host +
+            wdk.webappUrl('/processLogin.do?redirectUrl=' +
+            encodeURIComponent(eventualDestination));
+        var oauthUrl = oauthBaseUrl + "/authorize?" +
+            "response_type=code&" +
+            "state=" + encodeURIComponent(stateToken) + "&" +
+            "client_id=" + oauthClientId + "&" +
+            "redirect_uri=" + encodeURIComponent(redirectUrl);
+        window.location = oauthUrl;
+      },
+      error: function() {
+        alert("Unable to fetch your WDK state token.  Please check your internet connection.");
+      }
+    });
   };
 
   ns.processLogin = function(submitButton) {
