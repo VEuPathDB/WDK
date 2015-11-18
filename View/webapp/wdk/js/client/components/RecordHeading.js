@@ -1,4 +1,5 @@
 import React from 'react';
+import PureRenderMixin from 'react-addons-pure-render-mixin';
 import { wrappable } from '../utils/componentUtils';
 
 let stubHandler = actionName => event => {
@@ -8,7 +9,7 @@ let stubHandler = actionName => event => {
 
 let RecordHeading = React.createClass({
 
-  mixins: [ React.addons.PureRenderMixin ],
+  mixins: [ PureRenderMixin ],
 
   render() {
     let { record, recordClass } = this.props;

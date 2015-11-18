@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { wrappable } from '../utils/componentUtils';
 
 let $ = window.jQuery;
@@ -90,7 +91,7 @@ var Dialog = React.createClass({
    * Render the child component then open or close dialog
    */
   handlePropsChanged() {
-    React.render(
+    ReactDOM.render(
       React.Children.only(this.props.children),
       this.node
     );
@@ -119,7 +120,7 @@ var Dialog = React.createClass({
       title: this.props.title,
       autoOpen: false
     };
-    this.node = React.findDOMNode(this);
+    this.node = ReactDOM.findDOMNode(this);
     $(this.node).dialog(options);
     this.handlePropsChanged();
   },
@@ -130,7 +131,7 @@ var Dialog = React.createClass({
    */
   componentWillUnmount() {
     $(this.node).dialog('destroy');
-    React.unmountComponentAtNode(React.findDOMNode(this));
+    React.unmountComponentAtNode(ReactDOM.findDOMNode(this));
   },
 
   /**

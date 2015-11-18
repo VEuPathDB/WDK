@@ -1,4 +1,5 @@
 import React from 'react';
+import PureRenderMixin from 'react-addons-pure-render-mixin';
 import classnames from 'classnames';
 import RecordAttribute from './RecordAttribute';
 import RecordTable from './RecordTable';
@@ -15,7 +16,7 @@ let RecordMainCategorySection = React.createClass({
     recordClass: React.PropTypes.object.isRequired
   },
 
-  mixins: [ React.addons.PureRenderMixin ],
+  mixins: [ PureRenderMixin ],
 
   toggleCollapse() {
     if (this.props.depth > 1) {

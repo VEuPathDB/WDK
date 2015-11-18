@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 
 /* global Spinner */
 wdk.namespace('wdk.controllers', function(ns) {
@@ -131,7 +132,7 @@ wdk.namespace('wdk.controllers', function(ns) {
       // Render filter param
       // -------------------------------------
 
-      React.render(
+      ReactDOM.render(
         <AttributeFilter
           actions={actions}
           store={filterService}
