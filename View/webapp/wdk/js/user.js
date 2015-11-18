@@ -59,6 +59,7 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
             encodeURIComponent(eventualDestination));
         var oauthUrl = oauthBaseUrl + "/authorize?" +
             "response_type=code&" +
+            "scope=" + encodeURIComponent("openid email") + "&" +
             "state=" + encodeURIComponent(stateToken) + "&" +
             "client_id=" + oauthClientId + "&" +
             "redirect_uri=" + encodeURIComponent(redirectUrl);
