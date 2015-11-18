@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { Link } from 'react-router';
 import { Column } from 'fixed-data-table';
 import AnswerTableCell from './AnswerTableCell';
@@ -161,7 +162,7 @@ let AnswerTable = React.createClass({
   },
 
   componentDidMount() {
-    this.node = React.findDOMNode(this);
+    this.node = ReactDOM.findDOMNode(this);
     this.$node = $(this.node);
     this.addEventListeners();
     this.setupMoveColumn();
@@ -282,7 +283,7 @@ let AnswerTable = React.createClass({
    * Filter unchecked checkboxes and map to attributes
    */
   togglePendingAttribute() {
-    let form = React.findDOMNode(this.refs.attributeSelector);
+    let form = ReactDOM.findDOMNode(this.refs.attributeSelector);
     let attributes = this.props.meta.attributes;
     let visibleAttributes = this.props.displayInfo.visibleAttributes;
 

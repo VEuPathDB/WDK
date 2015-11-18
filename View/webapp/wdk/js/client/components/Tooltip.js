@@ -1,4 +1,6 @@
 import React, { PropTypes } from 'react';
+import ReactDOM from 'react-dom';
+import ReactDOMServer from 'react-dom/server';
 import { wrappable } from '../utils/componentUtils';
 
 let $ = window.jQuery;
@@ -33,9 +35,9 @@ let Tooltip = React.createClass({
 
     let text = typeof content === 'string'
       ? content
-      : React.renderToStaticMarkup(content);
+      : ReactDOMServer.renderToStaticMarkup(content);
 
-    $(React.findDOMNode(this)).wdkTooltip({
+    $(ReactDOM.findDOMNode(this)).wdkTooltip({
       content: { text },
       show: { delay: 1000 },
       position: { my: 'top left', at: 'bottom left' }
@@ -43,7 +45,7 @@ let Tooltip = React.createClass({
   },
 
   _destroyTooltip() {
-    $(React.findDOMNode(this)).qtip('destroy');
+    $(ReactDOM.findDOMNode(this)).qtip('destroy');
   },
 
   render() {

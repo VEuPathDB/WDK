@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 
 let Sticky = React.createClass({
 
@@ -19,9 +20,9 @@ let Sticky = React.createClass({
   },
 
   componentDidMount() {
-    this.node = React.findDOMNode(this);
+    this.node = ReactDOM.findDOMNode(this);
     this.$node = $(this.node);
-    this.contentNode = React.findDOMNode(this.refs.content);
+    this.contentNode = ReactDOM.findDOMNode(this.refs.content);
     window.addEventListener('scroll', this.updateIsFixed);
     window.addEventListener('wheel', this.updateIsFixed);
     window.addEventListener('resize', this.updateIsFixed);

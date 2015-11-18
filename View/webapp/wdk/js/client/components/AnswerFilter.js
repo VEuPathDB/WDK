@@ -1,5 +1,6 @@
 import debounce from 'lodash/function/debounce';
 import React from 'react';
+import ReactDOM from 'react-dom';
 import AnswerFilterSelector from './AnswerFilterSelector';
 import Tooltip from './Tooltip';
 import { wrappable } from '../utils/componentUtils';
@@ -42,7 +43,7 @@ let AnswerFilter = React.createClass({
   },
 
   handleFilter() {
-    let value = React.findDOMNode(this.refs.filterInput).value;
+    let value = ReactDOM.findDOMNode(this.refs.filterInput).value;
     let { filterAttributes, filterTables } = this.state;
     this.props.answerEvents.onFilter(value, filterAttributes, filterTables);
   },

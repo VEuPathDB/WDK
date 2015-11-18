@@ -1,4 +1,5 @@
 import React from 'react';
+import PureRenderMixin from 'react-addons-pure-render-mixin';
 import classnames from 'classnames';
 import includes from 'lodash/collection/includes';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
@@ -12,7 +13,7 @@ let RecordNavigationSection = React.createClass({
     heading: React.PropTypes.node
   },
 
-  mixins: [ React.addons.PureRenderMixin ],
+  mixins: [ PureRenderMixin ],
 
   getInitialState() {
     return {

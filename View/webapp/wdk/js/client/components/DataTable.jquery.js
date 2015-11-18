@@ -5,6 +5,7 @@
  */
 
 import { Component, PropTypes } from 'react';
+import ReactDOM from 'react-dom';
 import mapValues from 'lodash/object/mapValues';
 import { formatAttributeValue } from '../utils/componentUtils';
 
@@ -51,7 +52,7 @@ export default class DataTable extends Component {
 
     this.dataTable = $('<table class="wdk-DataTable">')
     .width(this.props.width)
-    .appendTo(React.findDOMNode(this))
+    .appendTo(ReactDOM.findDOMNode(this))
     .DataTable(tableOpts);
   }
 

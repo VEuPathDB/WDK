@@ -1,4 +1,5 @@
 import React from 'react';
+import PureRenderMixin from 'react-addons-pure-render-mixin';
 import chunk from 'lodash/array/chunk';
 import DataTable from './DataTable.jquery';
 import { renderAttributeValue, wrappable } from '../utils/componentUtils';
@@ -7,7 +8,7 @@ let maxColumns = 4;
 
 let RecordTable = React.createClass({
 
-  mixins: [ React.addons.PureRenderMixin ],
+  mixins: [ PureRenderMixin ],
 
   render() {
     let { table, tableMeta } = this.props;
