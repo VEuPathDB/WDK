@@ -3,6 +3,7 @@
  * This is useful for components such as dialogs and dropdown menus.
  */
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { wrappable } from '../utils/componentUtils';
 
 let $ = window.jQuery;
@@ -10,7 +11,7 @@ let $ = window.jQuery;
 let TabbableContainer = React.createClass({
 
   componentDidMount() {
-    let node = React.findDOMNode(this);
+    let node = ReactDOM.findDOMNode(this);
     this.tabbables = $(':tabbable', node);
     node.focus();
   },

@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import Record from './Record';
 import { wrappable } from '../utils/componentUtils';
 
@@ -106,8 +107,8 @@ let RecordList = React.createClass({
   },
 
   _scrollToTarget() {
-    let recordListNode = React.findDOMNode(this.refs.recordList);
-    let targetNode = React.findDOMNode(this.refs.target);
+    let recordListNode = ReactDOM.findDOMNode(this.refs.recordList);
+    let targetNode = ReactDOM.findDOMNode(this.refs.target);
     recordListNode.scrollTop = targetNode.offsetTop - 30;
   }
 

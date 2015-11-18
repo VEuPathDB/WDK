@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React from 'react/addons';
+import React from 'react';
 import ReactRouter from 'react-router';
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';

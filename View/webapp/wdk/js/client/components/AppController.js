@@ -4,6 +4,7 @@
  * This controller is matched and rendered for __any__ route.
  */
 import React from 'react';
+import PureRenderMixin from 'react-addons-pure-render-mixin';
 import { RouteHandler } from 'react-router';
 import { wrappable } from '../utils/componentUtils';
 
@@ -15,7 +16,7 @@ import { wrappable } from '../utils/componentUtils';
 
 let AppController = React.createClass({
 
-  mixins: [ React.addons.PureRenderMixin ],
+  mixins: [ PureRenderMixin ],
 
   render() {
     return (
