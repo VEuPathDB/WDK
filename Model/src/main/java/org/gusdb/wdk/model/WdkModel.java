@@ -619,7 +619,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     Object element = set.getElement(elementName);
     if (element == null) {
       String s4 = s + " Set '" + setName + "' returned null for '" + elementName + "'";
-      throw new WdkModelException(s4);
+      String s5 = s4 + "\n\nIf you are modifying or trying to access a strategy, your attempt failed because the strategy contains at least a step with an *obsolete search*. Please contact us with the name of the strategy or the link you tried to follow (should be available on your browser's location bar).";
+      throw new WdkModelException(s5);
     }
     return element;
   }
