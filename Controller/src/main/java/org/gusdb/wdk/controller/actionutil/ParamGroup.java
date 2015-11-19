@@ -59,11 +59,24 @@ public class ParamGroup {
 	 * @throws IllegalArgumentException if multiple values exist for this parameter
 	 */
 	public String getValueOrEmpty(String key) {
+	  return getValueOrDefault(key, "");
+	}
+
+    /**
+     * Looks for the key in the parameter set.  If there is no value present,
+     * returns the passed default value.
+     * 
+     * @param key parameter name
+     * @param defaultValue value returned if param not present
+     * @return the value of the parameter or the default if no value exists
+     * @throws IllegalArgumentException if multiple values exist for this parameter
+     */
+	public String getValueOrDefault(String key, String defaultValue) {
 	  String[] values = _values.get(key);
 	  if (values != null && values.length > 1) {
 	    throw new IllegalArgumentException("The key [ " + key + " ] contains multiple values which cannot be retrieved with this method.");
 	  }
-	  return (values == null || values.length == 0 ? "" : values[0]);
+	  return (values == null || values.length == 0 ? defaultValue : values[0]);
 	}
 	
 	public String[] getValues(String key) {

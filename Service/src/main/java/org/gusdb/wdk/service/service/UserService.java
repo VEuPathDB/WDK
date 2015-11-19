@@ -21,16 +21,6 @@ public class UserService extends WdkService {
     return getById(getCurrentUserId());
   }
 
-  @GET
-  @Path("{id}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getById(@PathParam("id") int userId) throws WdkModelException {
-    boolean isOwner = (userId == getCurrentUserId());
-    return Response.ok(
-        UserFormatter.getUserJson(getWdkModel().getUserFactory().getUser(userId), isOwner).toString()
-    ).build();
-  }
-
   // ===== OAuth 2.0 + OpenID Connect Support =====
   /**
    * Create anti-forgery state token, add to session, and return.  This is
@@ -50,5 +40,15 @@ public class UserService extends WdkService {
     String newToken = OAuthUtil.generateStateToken(getWdkModel());
     getSession().setAttribute(OAuthUtil.STATE_TOKEN_KEY, newToken);
     return Response.ok(newToken).build();
+  }
+
+  @GET
+  @Path("{id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getById(@PathParam("id") int userId) throws WdkModelException {
+    boolean isOwner = (userId == getCurrentUserId());
+    return Response.ok(
+        UserFormatter.getUserJson(getWdkModel().getUserFactory().getUser(userId), isOwner).toString()
+    ).build();
   }
 }

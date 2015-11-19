@@ -20,6 +20,7 @@ import org.gusdb.wdk.controller.actionutil.RequestData;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
@@ -107,16 +108,14 @@ public class ProcessLoginAction extends WdkAction {
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
 
     // get the current user
-    UserBean guest = getCurrentUser();
-    UserFactoryBean factory = getWdkModel().getUserFactory();
+    UserBean currentUser = getCurrentUser();
 
-    if (!guest.isGuest()) {
+    if (!currentUser.isGuest()) {
       // then user is already logged in
       return new ActionResult().setViewName(SUCCESS);
     }
     else {
-      //return oldHandleLogin(params, guest, factory);
-      return handleLogin(params, guest, factory);
+      return handleLogin(params, currentUser, getWdkModel().getUserFactory());
     }
   }
 
@@ -133,12 +132,18 @@ public class ProcessLoginAction extends WdkAction {
   }
 
   private ActionResult handleOauthLogin(ParamGroup params, UserBean guest, UserFactoryBean factory) {
-    // params used to fetch token and validate user
-    String redirectUrl = params.getValue("redirectUrl");
-    String authCode = params.getValue("code");
-    String stateToken = params.getValue("state");
+
+    // check for error or to see if user denied us access; they won't be able to log in
+    String error = params.getValueOrDefault("error", null);
+    if (error != null) {
+      String message = (error.equals("access_denied") ?
+        "You did not grant permission to access identifying information so we cannot log you in." :
+        "An error occurred [" + error + "] on the authentication server and you cannot log in at this time.");
+      return getFailedLoginResult(new WdkUserException(message));
+    }
 
     // confirm state token for security, then remove regardless of result
+    String stateToken = params.getValue("state");
     String storedStateToken = (String)getSessionAttribute(OAuthUtil.STATE_TOKEN_KEY);
     unsetSessionAttribute(OAuthUtil.STATE_TOKEN_KEY);
     if (stateToken == null || storedStateToken == null || !stateToken.equals(storedStateToken)) {
@@ -146,13 +151,22 @@ public class ProcessLoginAction extends WdkAction {
           "state token missing, incorrect, or expired.  Please try again."));
     }
 
+    ModelConfig modelConfig = getWdkModel().getModel().getModelConfig();
+
+    // params used to fetch token and validate user
+    String authCode = params.getValue("code");
+    String redirectUrl = params.getValueOrDefault("redirectUrl",
+        modelConfig.getWebAppUrl() + "/home.do");
+
     try {
-      OAuthClient client = new OAuthClient(getWdkModel().getModel().getModelConfig());
-      int userId = client.getUserIdFromAuthCode(authCode, getRequestData().getFullRequestUrl());
+      OAuthClient client = new OAuthClient(modelConfig, factory);
+      int userId = client.getUserIdFromAuthCode(authCode);
 
       UserBean user = factory.login(guest, userId);
       if (user == null) throw new WdkModelException("Unable to find user with ID " +
           userId + ", returned by OAuth service for authCode " + authCode);
+
+      LOG.info("Successfully found user with ID: " + user.getUserId() + " and email '" + user.getEmail() + "'. redirectUrl=" + redirectUrl);
 
       int wdkCookieMaxAge = addLoginCookie(user, true, getWdkModel(), this);
       setCurrentUser(user);
@@ -219,14 +233,15 @@ public class ProcessLoginAction extends WdkAction {
   }
 
   protected ActionResult getSuccessfulLoginResult(String redirectUrl, int wdkCookieMaxAge) {
+    if (redirectUrl.isEmpty()) redirectUrl = "/home.do";
     return new ActionResult().setRedirect(true).setViewPath(redirectUrl);
   }
-  
+
   protected ActionResult getFailedLoginResult(Exception ex) {
     ActionResult result = new ActionResult()
       .setRequestAttribute(CConstants.WDK_LOGIN_ERROR_KEY, ex.getMessage())
       .setRequestAttribute(CConstants.WDK_REDIRECT_URL_KEY, getOriginalReferrer(getParams(), getRequestData()));
-  
+
     String customViewFile = getCustomViewDir() + CConstants.WDK_LOGIN_PAGE;
     if (wdkResourceExists(customViewFile)) {
       return result.setRedirect(false).setViewPath(customViewFile);
@@ -247,8 +262,11 @@ public class ProcessLoginAction extends WdkAction {
     // if no referrer exists, then (presumably) user failed authentication, but in case they got
     // to the login page via bookmark or some other way, return to profile on successful login
     String referrer = requestData.getReferrer();
-    if (referrer.indexOf("showLogin.do") != -1 ||
-        referrer.indexOf("processLogin.do") != -1) {
+    if (referrer == null) {
+      referrer = "home.do";
+    }
+    else if (referrer.indexOf("showLogin.do") != -1 ||
+             referrer.indexOf("processLogin.do") != -1) {
         return "showProfile.do";
     }
 
