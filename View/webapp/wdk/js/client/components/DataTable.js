@@ -46,7 +46,7 @@ export default class DataTable extends Component {
 
   constructor() {
     super(...arguments);
-    this.childRowNodes = new WeakMap();
+    this.childRowNodes = new Map();
   }
 
   componentDidMount() {
@@ -106,10 +106,19 @@ export default class DataTable extends Component {
     .rows().remove()
     .rows.add(nextProps.data)
     .draw();
+    this.removeChildRows();
   }
 
   componentWillUnmount() {
     this.dataTable.destroy();
+    this.removeChildRows();
+  }
+
+  removeChildRows() {
+    for (let childNode of this.childRowNodes.values()) {
+      ReactDOM.unmountComponentAtNode(childNode);
+    }
+    this.childRowNodes.clear();
   }
 
   renderChildRow(row, targetNode) {
