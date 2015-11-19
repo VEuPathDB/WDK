@@ -475,6 +475,24 @@ body {
   word-break: break-all;
 }
 
+td.wdk-DataTableCellExpand {
+  vertical-align: middle;
+}
+
+td.wdk-DataTableCellExpand:before {
+  font-family: FontAwesome;
+  content: "\f0fe";
+  font-size: 1.5em;
+  text-align: center;
+  display: block;
+  cursor: pointer;
+  color: #27AB28;
+}
+
+tr.wdk-DataTableRow__expanded td.wdk-DataTableCellExpand:before {
+  content: "\f146";
+  color: #D04445;
+}
 
 /** DataTables and FontAwesome integration **/
 
