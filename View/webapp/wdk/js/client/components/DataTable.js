@@ -11,6 +11,12 @@ import { formatAttributeValue } from '../utils/componentUtils';
 
 let $ = window.jQuery;
 
+let expandColumn = {
+  className: 'wdk-DataTableCell wdk-DataTableCellExpand',
+  orderable: false,
+  defaultContent: ''
+};
+
 let formatColumns = columns => columns.map(
   column => Object.assign({
     data: column.name,
@@ -38,12 +44,29 @@ let formatSorting = (columns, sorting) => {
 
 export default class DataTable extends Component {
 
+  constructor() {
+    super(...arguments);
+    this.childRowNodes = new WeakMap();
+  }
+
   componentDidMount() {
+    let node = ReactDOM.findDOMNode(this);
+
+    let data = formatData(this.props.data);
+
+    let columns = this.props.childRow
+      ? [ expandColumn, ...formatColumns(this.props.columns) ]
+      : formatColumns(this.props.columns);
+
+
+    let order = formatSorting(columns, this.props.sorting.length === 0
+      ? [ { name: this.props.columns[0].name, direction: 'asc' } ] : this.props.sorting);
+
     let tableOpts = Object.assign({}, DataTable.defaultDataTableOpts, {
-      columns: formatColumns(this.props.columns),
-      data: formatData(this.props.data),
+      columns,
+      data,
+      order,
       searching: this.props.isSearchable,
-      order: formatSorting(this.props.columns, this.props.sorting),
       scrollY: this.props.height
     });
 
@@ -52,10 +75,32 @@ export default class DataTable extends Component {
 
     this.dataTable = $('<table class="wdk-DataTable">')
     .width(this.props.width)
-    .appendTo(ReactDOM.findDOMNode(this))
+    .appendTo(node)
     .DataTable(tableOpts);
+
+    $(node).on('click', 'td.wdk-DataTableCellExpand', e => {
+      let tr = $(e.target).closest('tr');
+      let row = this.dataTable.row(tr);
+
+      if (row.child.isShown()) {
+        row.child.hide();
+        tr.removeClass('wdk-DataTableRow__expanded');
+      }
+
+      else {
+        if (!this.childRowNodes.has(tr.get(0))) {
+          this.childRowNodes.set(tr.get(0), document.createElement('div'));
+          row.child(this.childRowNodes.get(tr.get(0)));
+        }
+        this.renderChildRow(row, this.childRowNodes.get(tr.get(0)));
+        row.child.show();
+        tr.addClass('wdk-DataTableRow__expanded');
+      }
+    });
   }
 
+  // FIXME This is probably not what we want to do. We probably want to call the
+  // appropriate DataTable api method for each property that changed.
   componentWillReceiveProps(nextProps) {
     this.dataTable
     .rows().remove()
@@ -65,6 +110,17 @@ export default class DataTable extends Component {
 
   componentWillUnmount() {
     this.dataTable.destroy();
+  }
+
+  renderChildRow(row, targetNode) {
+    if (typeof this.props.childRow === 'string') {
+      targetNode.innerHTML = this.props.childRow;
+    }
+
+    else {
+      let props = { rowIndex: row.index(), rowData: row.data() };
+      ReactDOM.render(React.createElement(this.props.childRow, props), targetNode);
+    }
   }
 
   render() {
@@ -112,13 +168,31 @@ DataTable.propTypes = {
   height: CSSPropType,
 
   /** can users search the table */
-  isSearchable: PropTypes.bool
+  isSearchable: PropTypes.bool,
+
+  /**
+   * Determines the body of child rows. If this is provided, each table row will
+   * be rendered with an expansion toggle. This can be a string, a function, or
+   * a React Component. If it is a function, the function will receive the same
+   * props argument that the React Component would receive as props:
+   *
+   *    props: {
+   *      rowIndex: number;
+   *      rowData: Object;
+   *    }
+   */
+  childRow: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.func
+  ])
+
 };
 
 DataTable.defaultProps = {
   width: undefined,
   height: undefined,
-  isSearchable: false
+  isSearchable: false,
+  sorting: []
 };
 
 /** Default DataTables jQuery plugin options. */

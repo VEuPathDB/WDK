@@ -36,6 +36,7 @@ let RecordTable = React.createClass({
         data={this.props.table}
         sorting={this.props.tableMeta.sorting}
         height={600}
+        childRow={this.props.childRow}
       />
     );
   }
