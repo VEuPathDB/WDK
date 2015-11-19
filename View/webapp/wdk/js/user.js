@@ -52,17 +52,31 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
       url: tokenLink,
       dataType: "text",
       success: function(stateToken) {
+
         // build URL to OAuth service and redirect
         var eventualDestination = window.location.href;
-        var redirectUrl = window.location.protocol + "//" + window.location.host +
-            wdk.webappUrl('/processLogin.do?redirectUrl=' +
-            encodeURIComponent(eventualDestination));
-        var oauthUrl = oauthBaseUrl + "/authorize?" +
+        var redirectUrlBase = window.location.protocol + "//" +
+            window.location.host + wdk.webappUrl('/processLogin.do');
+
+        var googleSpecific = (oauthBaseUrl.indexOf("google") != -1);
+        if (googleSpecific) {
+          // hacks to conform to google OAuth2 API
+          var redirectUrl = redirectUrlBase;
+          var authEndpoint = "auth";
+        }
+        else {
+          var redirectUrl = redirectUrlBase + '?redirectUrl=' +
+              encodeURIComponent(eventualDestination);
+          var authEndpoint = "authorize";
+        }
+
+        var oauthUrl = oauthBaseUrl + "/" + authEndpoint + "?" +
             "response_type=code&" +
             "scope=" + encodeURIComponent("openid email") + "&" +
             "state=" + encodeURIComponent(stateToken) + "&" +
             "client_id=" + oauthClientId + "&" +
             "redirect_uri=" + encodeURIComponent(redirectUrl);
+
         window.location = oauthUrl;
       },
       error: function() {
@@ -89,7 +103,11 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
     if (confirm("Do you want to log out as " + ns.name() + "?\n\nNote: You must log out of any other EuPathDB sites separately.")) {
       var logoutPath = jQuery("#user-control form[name=logoutForm]").attr("action");
       var logoutUrl = window.location.origin + logoutPath;
-      window.location = oauthBaseUrl + "/logout?redirect_uri=" + encodeURIComponent(logoutUrl);
+      var googleSpecific = (oauthBaseUrl.indexOf("google") != -1);
+      // don't log user out of google, only the eupath oauth server
+      var nextPage = (googleSpecific ? logoutUrl :
+          oauthBaseUrl + "/logout?redirect_uri=" + encodeURIComponent(logoutUrl));
+      window.location = nextPage;
     }
   };
 

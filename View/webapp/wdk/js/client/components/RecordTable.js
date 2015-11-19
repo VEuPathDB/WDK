@@ -1,7 +1,7 @@
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 import chunk from 'lodash/array/chunk';
-import DataTable from './DataTable.jquery';
+import DataTable from './DataTable';
 import { renderAttributeValue, wrappable } from '../utils/componentUtils';
 
 let maxColumns = 4;
@@ -36,6 +36,7 @@ let RecordTable = React.createClass({
         data={this.props.table}
         sorting={this.props.tableMeta.sorting}
         height={600}
+        childRow={this.props.childRow}
       />
     );
   }

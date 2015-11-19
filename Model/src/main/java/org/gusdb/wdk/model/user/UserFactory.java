@@ -132,7 +132,7 @@ public class UserFactory {
         country, openId, globalPreferences, projectPreferences, resetPwdAndSendEmail);
   }
 
-  User createUser(String email, String lastName, String firstName,
+  public User createUser(String email, String lastName, String firstName,
       String middleName, String title, String organization, String department,
       String address, String city, String state, String zipCode,
       String phoneNumber, String country, String openId,
