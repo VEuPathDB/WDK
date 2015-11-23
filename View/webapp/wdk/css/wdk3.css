@@ -514,10 +514,8 @@ body {
 /** DataTables and FontAwesome integration **/
 
 .wdk-DataTableContainer table.dataTable thead th {
-  position: relative;
   background-image: none !important;
-  /* padding-right: 3em; */
-  background-clip: padding-box; /** prevent Firefox from painter over cell borders **/
+  background-clip: padding-box; /** prevent Firefox from painting over cell borders **/
 }
 
 .wdk-DataTableContainer table.dataTable thead th.sorting,
@@ -529,12 +527,6 @@ body {
 .wdk-DataTableContainer table.dataTable thead th.sorting:after,
 .wdk-DataTableContainer table.dataTable thead th.sorting_asc:after,
 .wdk-DataTableContainer table.dataTable thead th.sorting_desc:after {
-  /*
-  right: 8px;
-  display: block;
-  */
-  position: absolute;
-  top: 10px;
   padding-left: 1em;
   font-family: FontAwesome;
 }
