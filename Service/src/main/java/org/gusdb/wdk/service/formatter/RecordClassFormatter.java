@@ -97,9 +97,23 @@ public class RecordClassFormatter {
     json.put("description", table.getDescription());
     json.put("help", table.getHelp());
     json.put("attributes", getAttributesJson(table, expandAttributes));
+    json.put("sorting", getSortingAttributesJson(table));
+    json.put("propertyLists", table.getPropertyLists());
     return json;
   }
   
+  private static JSONArray getSortingAttributesJson(AttributeFieldContainer container) {
+    JSONArray sortingAttributesJson = new JSONArray();
+    Map<String, Boolean> sortingAttributeMap = container.getSortingAttributeMap();
+    for (String attributeName : sortingAttributeMap.keySet()) {
+      JSONObject sortingAttribute = new JSONObject();
+      sortingAttribute.put("name", attributeName);
+      sortingAttribute.put("direction", sortingAttributeMap.get(attributeName) ? "asc" : "desc");
+      sortingAttributesJson.put(sortingAttribute);
+    }
+    return sortingAttributesJson;
+  }
+
   public static JSONArray getAttributeCategoriesJson(RecordClass recordClass) {
     List<AttributeCategory> categories = recordClass.getAttributeCategoryTree(fieldScope).getTopLevelCategories();
     JSONArray attributeCategoriesJson = new JSONArray();

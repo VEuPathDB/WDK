@@ -348,7 +348,16 @@ body {
 
 .wdk-Record-sidebar-title {
   display: block;
-  padding: .4em 0;
+  padding: .4em;
+}
+
+.wdk-Record-sidebar-title__active:before {
+  font-family: FontAwesome;
+  content: '\f111';
+  position: absolute;
+  left: 4px;
+  top: 7px;
+  font-size: 80%;
 }
 
 .wdk-Record-sidebar-checkbox {
@@ -447,14 +456,21 @@ body {
   min-width: 20%;
 }
 
-.wdk-RecordCategoryEnumeration {
-  font-weight: 200;
-}
-
 .wdk-DataTable {
   width: 100%;
   border: 1px solid #d8d8d8;
   background-color: #fdfdfd;
+  table-layout: fixed;
+}
+
+.wdk-DataTableContainer .dataTables_filter {
+  display: block;
+  padding: 1em 0;
+  margin: 0;
+}
+
+.wdk-DataTableContainer .dataTables_scroll {
+  border-bottom: 1px solid lightgrey;
 }
 
 .wdk-DataTable th {
@@ -467,26 +483,51 @@ body {
 .wdk-DataTable td {
   background-color: white;
   border: 1px solid #d8d8d8;
-  word-break: break-all;
+  word-break: break-word;
 }
 
+.wdk-DataTableCellExpand {
+  vertical-align: middle;
+  width: 2em;
+  cursor: pointer;
+}
+
+.wdk-DataTableCellExpand:before {
+  font-family: FontAwesome;
+  content: "\f0fe";
+  font-size: 1.5em;
+  text-align: center;
+  display: block;
+  color: #27AB28;
+}
+
+.wdk-DataTableRow__expanded .wdk-DataTableCellExpand:before {
+  content: "\f146";
+  color: #D04445;
+}
+
+.wdk-DataTableRow__expanded td.wdk-DataTableCell {
+  background-color: #f9f9f9;
+  font-weight: bold;
+}
 
 /** DataTables and FontAwesome integration **/
 
 .wdk-DataTableContainer table.dataTable thead th {
-  position: relative;
   background-image: none !important;
-  padding-right: 3em;
-  background-clip: padding-box; /** prevent Firefox from painter over cell borders **/
+  background-clip: padding-box; /** prevent Firefox from painting over cell borders **/
+}
+
+.wdk-DataTableContainer table.dataTable thead th.sorting,
+.wdk-DataTableContainer table.dataTable thead th.sorting_asc,
+.wdk-DataTableContainer table.dataTable thead th.sorting_desc {
+  cursor: pointer;
 }
 
 .wdk-DataTableContainer table.dataTable thead th.sorting:after,
 .wdk-DataTableContainer table.dataTable thead th.sorting_asc:after,
 .wdk-DataTableContainer table.dataTable thead th.sorting_desc:after {
-  position: absolute;
-  top: 10px;
-  right: 8px;
-  display: block;
+  padding-left: 1em;
   font-family: FontAwesome;
 }
 .wdk-DataTableContainer table.dataTable thead th.sorting:after {

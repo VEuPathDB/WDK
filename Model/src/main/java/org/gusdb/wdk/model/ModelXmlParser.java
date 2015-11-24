@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
@@ -36,6 +35,8 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.runtime.GusHome;
+import org.gusdb.fgputil.xml.XmlParser;
+import org.gusdb.fgputil.xml.XmlValidator;
 import org.gusdb.wdk.model.UIConfig.ExtraLogoutCookies;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
@@ -50,8 +51,8 @@ import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
 import org.gusdb.wdk.model.filter.ColumnFilterDefinition;
 import org.gusdb.wdk.model.filter.FilterReference;
-import org.gusdb.wdk.model.filter.StepFilterDefinition;
 import org.gusdb.wdk.model.filter.FilterSet;
+import org.gusdb.wdk.model.filter.StepFilterDefinition;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
@@ -178,21 +179,24 @@ public class ModelXmlParser extends XmlParser {
   private static final Logger logger = Logger.getLogger(ModelXmlParser.class);
 
   private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\@([\\w\\.\\-]+)\\@", Pattern.MULTILINE);
-  private static final Pattern CONSTANT_PATTERN = Pattern.compile("\\%\\%([\\w\\.\\-]+)\\%\\%",
-      Pattern.MULTILINE);
+  private static final Pattern CONSTANT_PATTERN = Pattern.compile("\\%\\%([\\w\\.\\-]+)\\%\\%", Pattern.MULTILINE);
 
-  private final URL xmlSchemaURL;
-  private final String xmlDataDir;
+  private final String _gusHome;
+  private final URL _xmlSchemaURL;
+  private final String _xmlDataDir;
+  private final XmlValidator _validator;
+  private final Digester _digester;
 
   public ModelXmlParser(String gusHome) throws WdkModelException {
-    super(gusHome, "lib/rng/wdkModel.rng");
-
-    // get model schema file and xml schema file
     try {
-      xmlSchemaURL = makeURL(gusHome, "lib/rng/xmlAnswer.rng");
-      xmlDataDir = gusHome + "/lib/xml/";
+      // get model schema file and xml schema file
+      _gusHome = gusHome;
+      _xmlSchemaURL = makeURL(gusHome + "/lib/rng/xmlAnswer.rng");
+      _xmlDataDir = gusHome + "/lib/xml/";
+      _validator = new XmlValidator(gusHome + "/lib/rng/wdkModel.rng");
+      _digester = configureDigester();
     }
-    catch (MalformedURLException ex) {
+    catch (SAXException | IOException ex) {
       throw new WdkModelException(ex);
     }
   }
@@ -206,8 +210,8 @@ public class ModelXmlParser extends XmlParser {
     String modelName = config.getModelName();
 
     // construct urls to model file, prop file, and config file
-    URL modelURL = makeURL(gusHome, "lib/wdk/" + modelName + ".xml");
-    URL modelPropURL = makeURL(gusHome, "config/" + projectId + "/model.prop");
+    URL modelURL = makeURL(_gusHome + "/lib/wdk/" + modelName + ".xml");
+    URL modelPropURL = makeURL(_gusHome + "/config/" + projectId + "/model.prop");
 
     // load property map
     Map<String, String> properties = loadProperties(projectId, modelPropURL, config);
@@ -225,11 +229,11 @@ public class ModelXmlParser extends XmlParser {
     Transformer transformer = TransformerFactory.newInstance().newTransformer();
     transformer.transform(source, result);
     InputStream input = new ByteArrayInputStream(output.toByteArray());
-    WdkModel model = (WdkModel) digester.parse(input);
+    WdkModel model = (WdkModel) _digester.parse(input);
 
-    model.setGusHome(gusHome);
-    model.setXmlSchema(xmlSchemaURL); // set schema for xml data
-    model.setXmlDataDir(new File(xmlDataDir)); // consider refactoring
+    model.setGusHome(_gusHome);
+    model.setXmlSchema(_xmlSchemaURL); // set schema for xml data
+    model.setXmlDataDir(new File(_xmlDataDir)); // consider refactoring
     model.configure(config);
     model.setResources();
     model.setProperties(properties, replacedMacros);
@@ -242,7 +246,7 @@ public class ModelXmlParser extends XmlParser {
   }
 
   public ModelConfig getModelConfig(String projectId) throws SAXException, IOException, WdkModelException {
-    ModelConfigParser parser = new ModelConfigParser(gusHome);
+    ModelConfigParser parser = new ModelConfigParser(_gusHome);
     return parser.parseConfig(projectId);
   }
 
@@ -279,7 +283,7 @@ public class ModelXmlParser extends XmlParser {
 
       // get url to the first import
       String href = importNode.getAttribute("file");
-      URL importURL = makeURL(gusHome, "lib/wdk/" + href);
+      URL importURL = makeURL(_gusHome + "/lib/wdk/" + href);
 
       // load constants from import doc, and merge it with master ones
       Map<String, String> subConsts = loadConstants(projectId, importURL);
@@ -317,7 +321,9 @@ public class ModelXmlParser extends XmlParser {
       SAXException, WdkModelException, ParserConfigurationException, URISyntaxException {
     logger.trace("Test parsing " + modelXmlURL.toString());
 
-    validate(modelXmlURL);
+    if (!_validator.validate(modelXmlURL)) {
+      throw new WdkModelException("Validation failed: " + modelXmlURL.toExternalForm());
+    }
 
     Map<String, String> constants = new LinkedHashMap<String, String>();
     // load xml document without validation
@@ -377,7 +383,9 @@ public class ModelXmlParser extends XmlParser {
       Map<String, String> constants) throws SAXException, IOException, ParserConfigurationException,
       WdkModelException, URISyntaxException {
     // validate the sub-model
-    validate(modelXmlURL);
+    if (!_validator.validate(modelXmlURL)) {
+      throw new WdkModelException("Validation failed: " + modelXmlURL.toExternalForm());
+    }
 
     // load file into string
     File file = new File(modelXmlURL.toURI());
@@ -470,8 +478,7 @@ public class ModelXmlParser extends XmlParser {
     return buffer.toString();
   }
 
-  @Override
-  protected Digester configureDigester() {
+  private static Digester configureDigester() {
     Digester digester = new Digester();
     digester.setValidating(false);
 
@@ -513,7 +520,7 @@ public class ModelXmlParser extends XmlParser {
     return digester;
   }
 
-  private void configureModel(Digester digester) {
+  private static void configureModel(Digester digester) {
     // Root -- WDK Model
     digester.addObjectCreate("wdkModel", WdkModel.class);
     digester.addSetProperties("wdkModel");
@@ -548,7 +555,7 @@ public class ModelXmlParser extends XmlParser {
 
   }
 
-  private void configureRecordClassSet(Digester digester) {
+  private static void configureRecordClassSet(Digester digester) {
     // record class set
     configureNode(digester, "wdkModel/recordClassSet", RecordClassSet.class, "addRecordClassSet");
 
@@ -670,7 +677,7 @@ public class ModelXmlParser extends XmlParser {
 
 }
 
-  private void configureQuerySet(Digester digester) {
+  private static void configureQuerySet(Digester digester) {
     // QuerySet
     configureNode(digester, "wdkModel/querySet", QuerySet.class, "addQuerySet");
 
@@ -709,7 +716,7 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/querySet/processQuery/wsColumn", Column.class, "addColumn");
   }
 
-  private void configureParamSet(Digester digester) {
+  private static void configureParamSet(Digester digester) {
     // ParamSet
     configureNode(digester, "wdkModel/paramSet", ParamSet.class, "addParamSet");
 
@@ -767,7 +774,7 @@ public class ModelXmlParser extends XmlParser {
     configureParamContent(digester, path, ParamSuggestion.class);
   }
 
-  private void configureParamContent(Digester digester, String paramPath, Class<?> suggestionClass) {
+  private static void configureParamContent(Digester digester, String paramPath, Class<?> suggestionClass) {
     configureNode(digester, paramPath + "/suggest", suggestionClass, "addSuggest");
     configureNode(digester, paramPath + "/noTranslation", ParamConfiguration.class, "addNoTranslation");
     configureNode(digester, paramPath + "/handler", ParamHandlerReference.class, "addHandler");
@@ -775,7 +782,7 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod(paramPath + "/handler/property", "setText", 0);
   }
 
-  private void configureQuestionSet(Digester digester) {
+  private static void configureQuestionSet(Digester digester) {
     // QuestionSet
     configureNode(digester, "wdkModel/questionSet", QuestionSet.class, "addQuestionSet");
 
@@ -823,7 +830,7 @@ public class ModelXmlParser extends XmlParser {
         "addSuggestion");
   }
 
-  private void configureXmlQuestionSet(Digester digester) {
+  private static void configureXmlQuestionSet(Digester digester) {
     // load XmlQuestionSet
     configureNode(digester, "wdkModel/xmlQuestionSet", XmlQuestionSet.class, "addXmlQuestionSet");
 
@@ -838,7 +845,7 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("wdkModel/xmlQuestionSet/xmlQuestion/description", "setText", 0);
   }
 
-  private void configureParamValuesSet(Digester digester, String path, String addMethodName) {
+  private static void configureParamValuesSet(Digester digester, String path, String addMethodName) {
     configureNode(digester, path, ParamValuesSet.class, addMethodName);
     configureNode(digester, path + "/paramValue", ParamValue.class, "addParamValue");
     digester.addCallMethod(path + "/paramValue", "setValue", 0);
@@ -849,7 +856,7 @@ public class ModelXmlParser extends XmlParser {
      */
   }
 
-  private void configureXmlRecordClassSet(Digester digester) {
+  private static void configureXmlRecordClassSet(Digester digester) {
     // load XmlRecordClassSet
     configureNode(digester, "wdkModel/xmlRecordClassSet", XmlRecordClassSet.class, "addXmlRecordClassSet");
 
@@ -870,7 +877,7 @@ public class ModelXmlParser extends XmlParser {
         XmlAttributeField.class, "addAttributeField");
   }
 
-  private void configureGroupSet(Digester digester) {
+  private static void configureGroupSet(Digester digester) {
     // load GroupSet
     configureNode(digester, "wdkModel/groupSet", GroupSet.class, "addGroupSet");
 
@@ -881,7 +888,7 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("wdkModel/groupSet/group/description", "setText", 0);
   }
 
-  private void configureAttributeFields(Digester digester) {
+  private static void configureAttributeFields(Digester digester) {
     // primary key attribute
     String prefixPK = "wdkModel/recordClassSet/recordClass/primaryKeyAttribute";
     configureNode(digester, prefixPK, PrimaryKeyAttributeField.class, "addAttributeField");
@@ -914,7 +921,7 @@ public class ModelXmlParser extends XmlParser {
     configureAttributePlugins(digester, "textAttribute");
   }
 
-  private void configureAttributePlugins(Digester digester, String attribute) {
+  private static void configureAttributePlugins(Digester digester, String attribute) {
     String prefix = "*/" + attribute + "/plugin";
     // configure plugins for
     configureNode(digester, prefix, AttributePluginReference.class, "addAttributePluginReference");
@@ -923,7 +930,7 @@ public class ModelXmlParser extends XmlParser {
 
   }
 
-  private void configureCommonNodes(Digester digester) {
+  private static void configureCommonNodes(Digester digester) {
     configureNode(digester, "*/help", WdkModelText.class, "addHelp");
     digester.addCallMethod("*/help", "setText", 0);
 
@@ -934,14 +941,14 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("*/value", "setText", 0);
   }
 
-  private void configureUiConfig(Digester digester) {
+  private static void configureUiConfig(Digester digester) {
     configureNode(digester, "wdkModel/uiConfig", UIConfig.class, "setUIConfig");
     configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies", ExtraLogoutCookies.class,
         "setExtraLogoutCookies");
     configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies/cookie", WdkCookie.class, "add");
   }
 
-  private void configureStepAnalysis(Digester digester) {
+  private static void configureStepAnalysis(Digester digester) {
     configureNode(digester, "wdkModel/stepAnalysisPlugins", StepAnalysisPlugins.class,
         "setStepAnalysisPlugins");
     configureNode(digester, "wdkModel/stepAnalysisPlugins/viewConfig", StepAnalysisPlugins.ViewConfig.class,
@@ -951,7 +958,7 @@ public class ModelXmlParser extends XmlParser {
     configureStepAnalysisNode(digester, "wdkModel/stepAnalysisPlugins/stepAnalysisPlugin");
   }
 
-  private void configureStepAnalysisNode(Digester digester, String nodeLocation) {
+  private static void configureStepAnalysisNode(Digester digester, String nodeLocation) {
     configureNode(digester, nodeLocation, StepAnalysisXml.class, "addStepAnalysis");
     configureNode(digester, nodeLocation + "/shortDescription", WdkModelText.class, "setShortDescription");
     digester.addCallMethod(nodeLocation + "/shortDescription", "setText", 0);
@@ -959,7 +966,7 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod(nodeLocation + "/description", "setText", 0);
   }
 
-  private void configureFilterSet(Digester digester) {
+  private static void configureFilterSet(Digester digester) {
     // load filter set
     configureNode(digester, "wdkModel/filterSet", FilterSet.class, "addFilterSet");
 

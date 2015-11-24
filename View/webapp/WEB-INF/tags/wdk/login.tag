@@ -36,7 +36,7 @@
       <li>
         <c:choose>
           <c:when test="${authMethod eq 'OAUTH2'}">
-            <a href="javascript:void(0)" onclick="wdk.user.oauthLogin('${modelConfig.oauthUrl}')">Login</a>
+            <a href="javascript:void(0)" onclick="wdk.user.oauthLogin('${modelConfig.oauthUrl}','${modelConfig.oauthClientId}')">Login</a>
           </c:when>
           <c:when test="${authMethod eq 'USER_DB'}">
             <a href="javascript:void(0)" class="open-dialog-login-form">Login</a>

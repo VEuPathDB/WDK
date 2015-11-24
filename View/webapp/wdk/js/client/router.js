@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import ReactRouter from 'react-router';
 
 import AppController from './components/AppController';
@@ -41,7 +42,7 @@ export function start(rootUrl, rootElement, props) {
       );
     }
     else {
-      React.render(<Root {...state} {...props}/>, rootElement);
+      ReactDOM.render(<Root {...state} {...props}/>, rootElement);
     }
   });
 }

@@ -1,89 +1,55 @@
-import React from 'react';
+import { Component, PropTypes } from 'react';
+import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
-import RecordCategoryEnumeration from './RecordCategoryEnumeration';
+import { findLast } from '../utils/Categories';
+import shallowEqual from '../utils/shallowEqual';
+import RecordNavigationSectionCategoryTree from './RecordNavigationSectionCategoryTree';
 
-let noop = () => void 0;
-let t = () => true;
+/**
+ * Handle scroll events to mark the active category in the nav panel.
+ */
+class RecordNavigationSectionCategories extends Component {
 
-let RecordNavigationSectionCategories = React.createClass({
+  constructor() {
+    super(...arguments);
+    this.setActiveCategory = this.setActiveCategory.bind(this);
+  }
 
-  propTypes: {
-    categories: React.PropTypes.array,
-    showChildren: React.PropTypes.bool,
-    onCategoryToggle: React.PropTypes.func,
-    parentEnumeration: React.PropTypes.string,
-    isCollapsed: React.PropTypes.func,
-    isVisible: React.PropTypes.func
-  },
+  componentDidMount() {
+    window.addEventListener('scroll', this.setActiveCategory);
+  }
 
-  getDefaultProperties() {
-    return {
-      onCategoryToggle: noop,
-      showChildren: false,
-      isCollapsed: t,
-      isVisible: t
-    };
-  },
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.setActiveCategory);
+  }
+
+  componentDidUpdate(previousProps) {
+    if (this.props.collapsedCategories !== previousProps.collapsedCategories ||
+        this.props.showChildren !== previousProps.showChildren ) {
+      this.setActiveCategory();
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return !shallowEqual(nextProps, this.props) || !shallowEqual(nextState, this.state);
+  }
+
+  setActiveCategory() {
+    let activeCategory = findLast(this.props.categories, function(category) {
+      let categoryNode = document.getElementById(category.name);
+      if (categoryNode == null) return true;
+      let rect = categoryNode.parentElement.getBoundingClientRect();
+      return rect.top < 12 && rect.bottom > -12;
+    }, this.props.showChildren);
+    this.setState({ activeCategory });
+  }
 
   render() {
-    let {
-      showChildren,
-      categories,
-      onCategoryToggle,
-      parentEnumeration,
-      isCollapsed,
-      isVisible
-    } = this.props;
-
-    if (categories == null) return null;
-
     return (
-      <div>
-        {categories.map((category, index) => {
-          let shouldDisplay = isVisible(category);
-          let enumeration = parentEnumeration == null
-            ? index + 1
-            : parentEnumeration + '.' + (index + 1);
-          return (
-            <div key={String(category.name)} className="wdk-RecordNavigationItem">
-              {parentEnumeration == null && shouldDisplay &&
-                <input
-                  className="wdk-Record-sidebar-checkbox"
-                  type="checkbox"
-                  checked={!isCollapsed(category)}
-                  onChange={(e) => {
-                    onCategoryToggle(category, !e.target.checked);
-                  }}
-                />
-              }
-              {shouldDisplay &&
-                <a
-                  href={'#' + category.name}
-                  className="wdk-Record-sidebar-title"
-                  onClick={() => {
-                    if (isCollapsed(category)) onCategoryToggle(category, false);
-                  }}
-                >
-                  <RecordCategoryEnumeration enumeration={enumeration}/> <strong>{category.displayName}</strong>
-                </a>
-              }
-              {showChildren && (
-                <RecordNavigationSectionCategories
-                  {...this.props}
-                  parentEnumeration={enumeration}
-                  categories={category.subCategories}
-                  onCategoryToggle={(subCategory, collapsed) => {
-                    if (isCollapsed(subCategory)) onCategoryToggle(subCategory, collapsed);
-                    if (isCollapsed(category)) onCategoryToggle(category, collapsed);
-                  }}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <RecordNavigationSectionCategoryTree {...this.props} {...this.state} />
     );
   }
-});
+
+}
 
 export default wrappable(RecordNavigationSectionCategories);

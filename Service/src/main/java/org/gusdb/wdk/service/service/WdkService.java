@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.service;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -41,6 +42,10 @@ public abstract class WdkService {
 
   protected UriInfo getUriInfo() {
     return _uriInfo;
+  }
+
+  protected HttpSession getSession() {
+    return _request.getSession();
   }
 
   protected UserBean getCurrentUserBean() {

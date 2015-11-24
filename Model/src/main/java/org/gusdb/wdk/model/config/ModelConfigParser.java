@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.digester.Digester;
+import org.gusdb.fgputil.xml.XmlParser;
+import org.gusdb.fgputil.xml.XmlValidator;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.XmlParser;
 import org.xml.sax.SAXException;
 
 /**
@@ -17,28 +18,30 @@ import org.xml.sax.SAXException;
  */
 public class ModelConfigParser extends XmlParser {
 
-  // private static final Logger logger =
-  // Logger.getLogger(ModelConfigParser.class);
+  private final String _gusHome;
+  private final Digester _digester;
 
-  public ModelConfigParser(String gusHome) throws WdkModelException {
-    super(gusHome, "lib/rng/wdkModel-config.rng");
+  public ModelConfigParser(String gusHome) {
+    _gusHome = gusHome;
+    _digester = configureDigester();
   }
 
   public ModelConfig parseConfig(String projectId) throws SAXException,
       IOException, WdkModelException {
     // validate the configuration file
-    URL configURL = makeURL(gusHome, "config/" + projectId
-        + "/model-config.xml");
+    URL configURL = makeURL(_gusHome + "/config/" + projectId + "/model-config.xml");
 
-    validate(configURL);
-    ModelConfig modelConfig = (ModelConfig) digester.parse(configURL.openStream());
-    modelConfig.setGusHome(gusHome);
+    XmlValidator validator = new XmlValidator(_gusHome + "/lib/rng/wdkModel-config.rng");
+    if (!validator.validate(configURL)) {
+      throw new WdkModelException("Validation failed: " + configURL.toExternalForm());
+    }
+    ModelConfig modelConfig = (ModelConfig) _digester.parse(configURL.openStream());
+    modelConfig.setGusHome(_gusHome);
     modelConfig.setProjectId(projectId);
     return modelConfig;
   }
 
-  @Override
-  protected Digester configureDigester() {
+  private static Digester configureDigester() {
 
     Digester digester = new Digester();
     digester.setValidating(false);

@@ -73,6 +73,28 @@ public class UserFactoryBean {
     /*
      * (non-Javadoc)
      * 
+     * @see org.gusdb.wdk.model.user.UserFactory#createUser(java.lang.String,
+     * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+     * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+     * java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */
+    public UserBean createUser(String email, String lastName, String firstName,
+            String middleName, String title, String organization,
+            String department, String address, String city, String state,
+            String zipCode, String phoneNumber, String country, String openId,
+            Map<String, String> globalPreferences,
+            Map<String, String> projectPreferences, boolean resetPw) throws WdkUserException,
+            WdkModelException {
+        User user = userFactory.createUser(email, lastName, firstName,
+                middleName, title, organization, department, address, city,
+                state, zipCode, phoneNumber, country, openId, globalPreferences,
+                projectPreferences, resetPw);
+        return new UserBean(user);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.UserFactory#getDefaultRole()
      */
     public String getDefaultRole() {

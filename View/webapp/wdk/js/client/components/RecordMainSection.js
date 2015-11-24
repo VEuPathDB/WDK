@@ -1,10 +1,11 @@
 import React from 'react';
+import PureRenderMixin from 'react-addons-pure-render-mixin';
 import RecordMainCategorySection from './RecordMainCategorySection';
 import { wrappable } from '../utils/componentUtils';
 
 let RecordMainSection = React.createClass({
 
-  mixins: [ React.addons.PureRenderMixin ],
+  mixins: [ PureRenderMixin ],
 
   getDefaultProps() {
     return {

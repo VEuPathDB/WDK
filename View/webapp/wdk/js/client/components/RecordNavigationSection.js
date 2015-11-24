@@ -1,4 +1,5 @@
 import React from 'react';
+import PureRenderMixin from 'react-addons-pure-render-mixin';
 import classnames from 'classnames';
 import includes from 'lodash/collection/includes';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
@@ -12,7 +13,7 @@ let RecordNavigationSection = React.createClass({
     heading: React.PropTypes.node
   },
 
-  mixins: [ React.addons.PureRenderMixin ],
+  mixins: [ PureRenderMixin ],
 
   getInitialState() {
     return {
@@ -47,17 +48,17 @@ let RecordNavigationSection = React.createClass({
             placeholder={'Search ' + heading}
             type="text"
             value={navigationQuery}
-            onChange={e => void this.setState({
-              navigationExpanded: true,
-              navigationQuery: e.target.value
-            })}
+            onChange={e => {
+              this.setState({
+                navigationQuery: e.target.value,
+                navigationExpanded: true
+              });
+            }}
           />
         </div>
         <h2 className="wdk-RecordNavigationSectionHeader">
           <button className={expandClassName}
-            onClick={() => void this.setState({
-              navigationExpanded: !navigationExpanded
-            })}
+            onClick={() => void this.setState({ navigationExpanded: !navigationExpanded })}
           /> {heading}
         </h2>
         <div className="wdk-RecordNavigationCategories">
