@@ -98,6 +98,7 @@ public class RecordClassFormatter {
     json.put("help", table.getHelp());
     json.put("attributes", getAttributesJson(table, expandAttributes));
     json.put("sorting", getSortingAttributesJson(table));
+    json.put("propertyLists", table.getPropertyLists());
     return json;
   }
   

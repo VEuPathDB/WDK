@@ -1,6 +1,9 @@
 package org.gusdb.wdk.controller;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.impl.TextCodec;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -32,6 +35,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class OAuthClient {
@@ -96,7 +100,7 @@ public class OAuthClient {
         String idToken = json.getString("id_token");
         return (_googleSpecific ?
             getUserIdFromGoogleIdToken(idToken) :
-            getUserIdFromIdToken(idToken));
+            getUserIdFromIdToken(idToken, _clientSecret));
       }
       else {
         // Failure; throw exception
@@ -127,10 +131,21 @@ public class OAuthClient {
     }
   }
 
-  private int getUserIdFromIdToken(String idToken) {
-    // expect a JSON object with 'sub' (user id) and 'email' properties
-    JSONObject json = new JSONObject(idToken);
-    return json.getInt("sub");
+  private int getUserIdFromIdToken(String idToken, String clientSecret) throws WdkModelException {
+    try {
+      LOG.debug("Attempting parse of id token [" + idToken + "] using client secret '" + clientSecret +"'");
+      String encodedKey = TextCodec.BASE64.encode(clientSecret);
+      Claims claims = Jwts.parser().setSigningKey(encodedKey).parseClaimsJws(idToken).getBody();
+      // TODO: verify additional claims for security
+      String userIdStr = claims.getSubject();
+      if (FormatUtil.isInteger(userIdStr)) {
+        return Integer.valueOf(userIdStr);
+      }
+      throw new WdkModelException("Subject returned by OAuth server [" + userIdStr + "] is not a valid user ID.");
+    }
+    catch (JSONException e) {
+      throw new WdkModelException("JWT body returned is not a valid JSON object.");
+    }
   }
 
   private String dumpMultiMap(MultivaluedMap<String, String> formData) {
