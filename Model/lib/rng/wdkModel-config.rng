@@ -56,6 +56,12 @@
             <optional>
                 <attribute name="oauthClientSecret"/>
             </optional>
+            <optional>
+                <attribute name="keyStoreFile"/>
+            </optional>
+            <optional>
+                <attribute name="keyStorePassPhrase"/>
+            </optional>
             <interleave>
             
                 <optional>
