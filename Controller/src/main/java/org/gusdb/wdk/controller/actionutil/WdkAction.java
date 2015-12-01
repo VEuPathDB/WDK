@@ -145,7 +145,10 @@ public abstract class WdkAction implements SecondaryValidator, WdkResourceChecke
             result.setFileName(result.getResponseType().getDefaultFileName());
           }
           _response.setContentType(result.getResponseType().getMimeType());
-          _response.setHeader("Content-Disposition", "attachment; filename=\"" + result.getFileName() + "\"");
+          _response.setHeader("Content-Disposition",
+              (ResponseDisposition.ATTACHMENT.equals(result.getResponseDisposition()) ?
+                  "attachment; filename=\"" + result.getFileName() + "\"" :
+                  "inline"));  // default to inline if disposition is null
           IoUtil.transferStream(_response.getOutputStream(), result.getStream());
           return null;
         }
