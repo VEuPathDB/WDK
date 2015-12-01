@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.nio.file.Path;
 import java.security.KeyStore;
@@ -50,10 +51,10 @@ public class WdkTrustManager extends X509ExtendedTrustManager {
   }
 
   public WdkTrustManager(Path keyStoreFile, String passPhrase) throws WdkModelException {
-    try {
+    try (InputStream fileStream = new FileInputStream(keyStoreFile.toAbsolutePath().toString())) {
       // create a "default" JSSE X509ExtendedTrustManager
       KeyStore ks = KeyStore.getInstance("JKS");
-      ks.load(new FileInputStream(keyStoreFile.toAbsolutePath().toString()), passPhrase.toCharArray());
+      ks.load(fileStream, (passPhrase == null || passPhrase.isEmpty() ? null : passPhrase.toCharArray()));
 
       TrustManagerFactory tmf = TrustManagerFactory.getInstance("PKIX");
       tmf.init(ks);
