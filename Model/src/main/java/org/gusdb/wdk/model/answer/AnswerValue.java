@@ -298,7 +298,7 @@ public class AnswerValue {
       String idSql = getIdSql();
       DataSource dataSource = _question.getWdkModel().getAppDb().getDataSource();
       try {
-        Object count = SqlUtils.executeScalar(dataSource, "SELECT count(*) FROM (" + idSql + ")",
+        Object count = SqlUtils.executeScalar(dataSource, "SELECT count(*) FROM (" + idSql + ") ids",
             _question.getFullName() + "__count");
         _resultSize = Integer.valueOf(count.toString());
       }
