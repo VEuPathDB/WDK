@@ -30,7 +30,7 @@ public class DefaultResultSizePlugin implements ResultSize {
     DataSource dataSource = answerValue.getQuestion().getWdkModel().getAppDb().getDataSource();
     try {
       LOG.debug("Executing filter size count for " + countQueryName + " using idSql:\n" + idSql);
-      String countSql = new StringBuilder("SELECT count(*) FROM (").append(idSql).append(")").toString();
+      String countSql = new StringBuilder("SELECT count(*) FROM (").append(idSql).append(") ids").toString();
       Object count = SqlUtils.executeScalar(dataSource, countSql, countQueryName);
       return Integer.valueOf(count.toString());
     }
