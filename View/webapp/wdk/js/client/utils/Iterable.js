@@ -1,6 +1,18 @@
 /**
- * Useful operators for Iterators. All will result in an array. In the future,
- * these will be composable and lazy. I.e., they will return iterables.
+ * Useful operators for Iterators. For the most part, these will return an
+ * iterable object. Iteration will not be performed until the iterable is
+ * reduced to a value.
+ *
+ * The interface is currently functional but is subject to change.
+ *
+ *
+ * A basic example where we square items and then filter out odds:
+ *
+ *   let square = map(n => n * n);
+ *   let even = filter(n => n % 2 === 0);
+ *   let transform = compose(even, square);
+ *
+ *   Array.from(transform([1, 2, 3, 4, 5])); //=> [ 4, 16 ]
  */
 
 export function compose(fn, ...rest) {
