@@ -30,6 +30,7 @@ export function start(rootUrl, rootElement, props) {
     location: ReactRouter.HistoryLocation
   });
 
+  // Root contains the matching handlers, which are a type of React component: View-Controllers
   router.run((Root, state) => {
     // Remove the auth_tkt query param from url
     // XXX Implement router filters?

@@ -40,8 +40,9 @@ public class ActionResult implements Iterable<String> {
    * return an empty result; caller should not try to define his own empty result.
    */
   public static final ActionResult EMPTY_RESULT = getEmptyResult();
-  
+
   private ResponseType _responseType;
+  private ResponseDisposition _disposition = ResponseDisposition.ATTACHMENT;
   private ResultType _type = ResultType.VIEW_NAME;
   private String _viewName = WdkAction.SUCCESS;
   private String _viewPath;
@@ -70,7 +71,7 @@ public class ActionResult implements Iterable<String> {
   public ActionResult(ResponseType responseType) {
     _responseType = responseType;
   }
-  
+
   public ResponseType getResponseType() {
     return _responseType;
   }
@@ -79,7 +80,23 @@ public class ActionResult implements Iterable<String> {
     _responseType = responseType;
     return this;
   }
-  
+
+  public ResponseDisposition getResponseDisposition() {
+    return _disposition;
+  }
+
+  /**
+   * Sets the content disposition to be set in the HTTP header if this is a 
+   * streaming response.
+   * 
+   * @param disposition new disposition
+   * @return this object
+   */
+  public ActionResult setResponseDisposition(ResponseDisposition disposition) {
+    _disposition = disposition;
+    return this;
+  }
+
   public String getViewName() {
     return _viewName;
   }

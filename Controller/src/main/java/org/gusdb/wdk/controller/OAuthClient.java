@@ -7,18 +7,14 @@ import io.jsonwebtoken.impl.TextCodec;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.net.Socket;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509ExtendedTrustManager;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -32,7 +28,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.config.ModelConfig;
+import org.gusdb.wdk.model.config.OAuthConfig;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.json.JSONException;
@@ -48,14 +44,22 @@ public class OAuthClient {
   private final String _clientSecret;
   private final String _redirectUri;
   private final UserFactoryBean _userFactory;
+  private final TrustManager _trustManager;
 
-  public OAuthClient(ModelConfig modelConfig, UserFactoryBean userFactory) {
-    _oauthServerBase = modelConfig.getOauthUrl();
+  public OAuthClient(OAuthConfig config, UserFactoryBean userFactory) throws WdkModelException {
+    _oauthServerBase = config.getOauthUrl();
     _googleSpecific = _oauthServerBase.contains("google");
-    _clientId = modelConfig.getOauthClientId();
-    _clientSecret = modelConfig.getOauthClientSecret();
-    _redirectUri = modelConfig.getWebAppUrl() + "processLogin.do";
+    _clientId = config.getOauthClientId();
+    _clientSecret = config.getOauthClientSecret();
+    _redirectUri = config.getWebAppUrl() + "processLogin.do";
     _userFactory = userFactory;
+    _trustManager = getTrustManager(config);
+  }
+
+  private TrustManager getTrustManager(OAuthConfig config) throws WdkModelException {
+    String keyStoreFile = config.getKeyStoreFile();
+    return (keyStoreFile.isEmpty() ? new WdkTrustManager() :
+      new WdkTrustManager(Paths.get(keyStoreFile), config.getKeyStorePassPhrase()));
   }
 
   public int getUserIdFromAuthCode(String authCode) throws WdkModelException {
@@ -72,9 +76,8 @@ public class OAuthClient {
       formData.add("client_secret", _clientSecret);
 
       HostnameVerifier hostnameVerifier = getHostnameVerifier();
-      TrustManager trustManager = getTrustManager();
       SSLContext sslContext = SSLContext.getInstance("SSL");
-      sslContext.init(null, new TrustManager[]{ trustManager }, null);
+      sslContext.init(null, new TrustManager[]{ _trustManager }, null);
 
       LOG.debug("Building token request with the following URL: " + oauthUrl +
           " and params: " + dumpMultiMap(formData));
@@ -161,39 +164,9 @@ public class OAuthClient {
     return new HostnameVerifier() {
       @Override
       public boolean verify(String hostname, SSLSession session) {
+        LOG.info("Call to HostnameVerifier.verify('" + hostname + "')");
         return true;
       }
-    };
-  }
-
-  private TrustManager getTrustManager() {
-    return new X509ExtendedTrustManager() {
-
-      @Override
-      public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException { }
-
-      @Override
-      public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException { }
-
-      @Override
-      public X509Certificate[] getAcceptedIssuers() {
-        return new X509Certificate[0]; }
-
-      @Override
-      public void checkClientTrusted(X509Certificate[] arg0, String arg1, Socket arg2)
-          throws CertificateException { }
-
-      @Override
-      public void checkClientTrusted(X509Certificate[] arg0, String arg1, SSLEngine arg2)
-          throws CertificateException { }
-
-      @Override
-      public void checkServerTrusted(X509Certificate[] arg0, String arg1, Socket arg2)
-          throws CertificateException { }
-
-      @Override
-      public void checkServerTrusted(X509Certificate[] arg0, String arg1, SSLEngine arg2)
-          throws CertificateException { }
     };
   }
 }

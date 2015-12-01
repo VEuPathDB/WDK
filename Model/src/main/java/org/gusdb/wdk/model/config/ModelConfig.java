@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
  * @author Jerric
  * @modified Jan 6, 2006 - Jerric add a property for the name of query history table
  */
-public class ModelConfig {
+public class ModelConfig implements OAuthConfig {
 
   private static final Logger LOG = Logger.getLogger(ModelConfig.class);
 
@@ -119,6 +119,12 @@ public class ModelConfig {
   private String oauthClientId = "";     // needed if method is OAUTH2
   private String oauthClientSecret = ""; // needed if method is OAUTH2
 
+  /**
+   * Specify keystore file and pass phrase if SSL security checking is desired
+   */
+  private String keyStoreFile = "";
+  private String keyStorePassPhrase = "";
+  
   /**
    * If it returns true, a monitoring thread will be turned on when webapp is initialized.
    * 
@@ -259,6 +265,7 @@ public class ModelConfig {
     this.assetsUrl = assetsUrl;
   }
 
+  @Override
   public String getWebAppUrl() {
     return webAppUrl;
   }
@@ -346,6 +353,7 @@ public class ModelConfig {
    * @return base URL of OAuth2 server to use for authentication
    * (called only if authentication method is OAUTH2)
    */
+  @Override
   public String getOauthUrl() {
     return oauthUrl;
   }
@@ -362,6 +370,7 @@ public class ModelConfig {
    * @return OAuth2 client ID to use for authentication
    * (called only if authentication method is OAUTH2)
    */
+  @Override
   public String getOauthClientId() {
     return oauthClientId;
   }
@@ -378,6 +387,7 @@ public class ModelConfig {
    * @return OAuth2 client secret to use for authentication
    * (called only if authentication method is OAUTH2)
    */
+  @Override
   public String getOauthClientSecret() {
     return oauthClientSecret;
   }
@@ -388,6 +398,40 @@ public class ModelConfig {
    */
   public void setOauthClientSecret(String oauthClientSecret) {
     this.oauthClientSecret = oauthClientSecret;
+  }
+
+  /**
+   * @return key store file containing acceptable SSL hosts/certs
+   * (called only if authentication method is OAUTH2)
+   */
+  @Override
+  public String getKeyStoreFile() {
+    return keyStoreFile;
+  }
+
+  /**
+   * @param keyStoreFile key store file containing acceptable certs
+   * (used only if authentication method is OAUTH2)
+   */
+  public void setKeyStoreFile(String keyStoreFile) {
+    this.keyStoreFile = keyStoreFile;
+  }
+
+  /**
+   * @return pass phrase needed to access key store
+   * (called only if authentication method is OAUTH2)
+   */
+  @Override
+  public String getKeyStorePassPhrase() {
+    return keyStorePassPhrase;
+  }
+
+  /**
+   * @param keyStorePassPhrase pass phrase needed to access key store
+   * (used only if authentication method is OAUTH2)
+   */
+  public void setKeyStorePassPhrase(String keyStorePassPhrase) {
+    this.keyStorePassPhrase = keyStorePassPhrase;
   }
 
   /**
