@@ -1,51 +1,55 @@
 import React from 'react';
 import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
-import RecordCategoryEnumeration from './RecordCategoryEnumeration';
 
-class RecordNavigationItem extends React.Component {
+let RecordNavigationItem = props => {
+  let category = props.node;
+  let parentEnumeration = props.parentEnumeration;
 
-  render() {
-    let {
-      active,
-      visible,
-      category,
-      enumeration,
-      collapsible,
-      collapsed,
-      onCategoryToggle
-    } = this.props;
+  let titleClassnames = classnames({
+    'wdk-Record-sidebar-title': true,
+    'wdk-Record-sidebar-title__active': props.activeCategory === category
+  });
 
-    let titleClassnames = classnames({
-      'wdk-Record-sidebar-title': true,
-      'wdk-Record-sidebar-title__active': active
-    });
+  let visible = props.isVisible(category);
+  let collapsed = props.isCollapsed(category);
 
-    return (
-      <div key={String(category.name)} className="wdk-RecordNavigationItem">
-        {collapsible && visible &&
-          <input
-            className="wdk-Record-sidebar-checkbox"
-            type="checkbox"
-            checked={!collapsed}
-            onChange={(e) => void onCategoryToggle(category, !e.target.checked)}
-          />
-        }
-        {visible &&
-          <a
-            href={'#' + category.name}
-            className={titleClassnames}
-            onClick={() => {
-              if (collapsed) onCategoryToggle(category, false);
-            }}
-          >
-            <RecordCategoryEnumeration enumeration={enumeration}/> {category.displayName}
-          </a>
-        }
-        {this.props.children}
-      </div>
-    );
-  }
-}
+  let enumeration = parentEnumeration == null
+    ? [ props.index + 1 ]
+    : [ parentEnumeration, props.index + 1 ];
+
+  return (
+    <div className="wdk-RecordNavigationItem">
+
+      {parentEnumeration == null && visible &&
+        <input
+          className="wdk-Record-sidebar-checkbox"
+          type="checkbox"
+          checked={!collapsed}
+          onChange={(e) => void props.onCategoryToggle(category, !e.target.checked)}
+        />
+      }
+
+      {visible &&
+        <a
+          href={'#' + category.name}
+          className={titleClassnames}
+          onClick={() => {
+            if (collapsed) props.onCategoryToggle(category, false);
+          }}
+        > {enumeration.join('.') + ' ' + category.displayName} </a>
+      }
+
+      {props.showChildren &&
+        <div style={{ paddingLeft: enumeration.length + 'em' }}>
+          {React.Children.map(props.children, child => React.cloneElement(
+            child,
+            { parentEnumeration: enumeration }
+          ))}
+        </div>
+      }
+    </div>
+  );
+};
 
 export default wrappable(RecordNavigationItem);

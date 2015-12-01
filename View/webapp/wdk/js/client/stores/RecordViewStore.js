@@ -1,7 +1,8 @@
 import { ReduceStore } from 'flux/utils';
 import memoize from 'lodash/function/memoize';
 import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
-import { reduce } from '../utils/Categories';
+import * as i from '../utils/Iterable';
+import { postorder as postorderCategories } from '../utils/CategoryTreeIterators';
 
 let {
   LOADING,
@@ -38,25 +39,7 @@ export default class RecordViewStore extends ReduceStore {
         let collapsedTables = state.recordClass === recordClass
           ? state.collapsedTables : recordClass.collapsedTables || [];
 
-        let categoryWordsMap = reduce(recordClass.attributeCategories, function(map, category) {
-          let words = [];
-
-          for (let attribute of recordClass.attributes) {
-            if (attribute.category == category.name) {
-              words.push(attribute.displayName, attribute.description);
-            }
-          }
-
-          for (let table of recordClass.tables) {
-            if (table.category == category.name) {
-              words.push(table.displayName, table.description);
-            }
-          }
-
-          words.push(category.displayName, category.description);
-
-          return map.set(category, words.join('\0').toLowerCase());
-        }, new Map());
+        let categoryWordsMap = makeCategoryWordsMap(recordClass);;
 
         return Object.assign({}, state, {
           record: record,
@@ -96,4 +79,34 @@ export default class RecordViewStore extends ReduceStore {
 
 function updateList(item, add, list = []) {
   return add ? list.concat(item) : list.filter(x => x !== item);
+}
+
+function makeCategoryWordsMap(recordClass) {
+  return i.reduce((map, category) => {
+    let words = [];
+
+    for (let attribute of recordClass.attributes) {
+      if (attribute.category == category.name) {
+        words.push(attribute.displayName, attribute.description);
+      }
+    }
+
+    for (let table of recordClass.tables) {
+      if (table.category == category.name) {
+        words.push(table.displayName, table.description);
+      }
+    }
+
+    if (category.subCategories != null) {
+      for (let cat of map.keys()) {
+        if (category.subCategories.indexOf(cat) > -1) {
+          words.push(map.get(cat));
+        }
+      }
+    }
+
+    words.push(category.displayName, category.description);
+
+    return map.set(category, words.join('\0').toLowerCase());
+  }, new Map(), postorderCategories(recordClass.attributeCategories));
 }
