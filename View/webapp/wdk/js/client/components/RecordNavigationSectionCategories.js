@@ -2,7 +2,7 @@ import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
 import * as i from '../utils/Iterable';
-import { postorder as postorderCategories } from '../utils/CategoryTreeIterators';
+import { preorder as preorderCategories } from '../utils/CategoryTreeIterators';
 import shallowEqual from '../utils/shallowEqual';
 import RecordNavigationItem from './RecordNavigationItem';
 import Tree from './Tree';
@@ -41,13 +41,13 @@ class RecordNavigationSectionCategories extends Component {
   // that is on-screen. Otherwise, we will only iterate top-level categories.
   setActiveCategory() {
     let categories = this.props.showChildren
-      ? postorderCategories(this.props.categories)
+      ? preorderCategories(this.props.categories)
       : this.props.categories;
 
-    let activeCategory = i.find(function(category) {
+    let activeCategory = i.findLast(function(category) {
       let categoryNode = document.getElementById(category.name);
       if (categoryNode == null) return true;
-      let rect = categoryNode.parentElement.getBoundingClientRect();
+      let rect = categoryNode.getBoundingClientRect();
       return rect.top < 12 && rect.bottom > -12;
     }, categories);
 

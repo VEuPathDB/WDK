@@ -48,8 +48,8 @@ let RecordMainCategorySection = React.createClass({
     });
 
     return isCollapsed && depth === 1 ? null : (
-      <div className="wdk-RecordSection">
-        <Header id={String(category.name)} className={headerClass} onClick={this.toggleCollapse}>
+      <div id={String(category.name)} className="wdk-RecordSection">
+        <Header className={headerClass} onClick={this.toggleCollapse}>
           <RecordCategoryEnumeration enumeration={enumeration}/> {category.displayName}
         </Header>
         {isCollapsed ? null : (
