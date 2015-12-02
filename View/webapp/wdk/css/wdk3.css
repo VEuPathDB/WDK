@@ -370,9 +370,11 @@ body {
   padding-left: 1em;
 }
 
+.wdk-RecordSectionEnumeration {
+  opacity: .5;
+}
+
 .wdk-RecordSectionHeader {
-  /*background-color: #eeeeee;
-  padding: .3em;*/
   margin: 8px 0;
   position: relative;
   border-bottom: 1px solid;
