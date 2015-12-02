@@ -3,7 +3,6 @@ import PureRenderMixin from 'react-addons-pure-render-mixin';
 import classnames from 'classnames';
 import RecordAttribute from './RecordAttribute';
 import RecordTable from './RecordTable';
-import RecordCategoryEnumeration from './RecordCategoryEnumeration';
 import { wrappable } from '../utils/componentUtils';
 
 let RecordMainCategorySection = React.createClass({
@@ -50,7 +49,7 @@ let RecordMainCategorySection = React.createClass({
     return isCollapsed && depth === 1 ? null : (
       <div id={String(category.name)} className="wdk-RecordSection">
         <Header className={headerClass} onClick={this.toggleCollapse}>
-          <RecordCategoryEnumeration enumeration={enumeration}/> {category.displayName}
+          <span className="wdk-RecordSectionEnumeration">{enumeration}</span> {category.displayName}
         </Header>
         {isCollapsed ? null : (
           <div>
