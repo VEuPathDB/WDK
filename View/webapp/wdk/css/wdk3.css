@@ -479,7 +479,6 @@ body {
   background-color: #f2f2f2;
   border: 1px solid #d8d8d8;
   padding: .6em;
-  white-space: nowrap;
 }
 
 .wdk-DataTable td {
@@ -529,13 +528,13 @@ body {
 .wdk-DataTableContainer table.dataTable thead th.sorting:after,
 .wdk-DataTableContainer table.dataTable thead th.sorting_asc:after,
 .wdk-DataTableContainer table.dataTable thead th.sorting_desc:after {
-  padding-left: 1em;
   font-family: FontAwesome;
+  padding-left: 8px;
+  white-space: nowrap;
 }
 .wdk-DataTableContainer table.dataTable thead th.sorting:after {
   content: "\f175\f176";
   color: #ccc;
-  font-size: 0.8em;
   padding-top: 0.12em;
 }
 .wdk-DataTableContainer table.dataTable thead th.sorting_asc:after {
