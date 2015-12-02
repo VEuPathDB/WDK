@@ -305,9 +305,9 @@
         <data type="boolean" />
       </attribute>
       <optional>
-	<attribute name="isSql">
-	  <data type="boolean" />
-	</attribute>
+        <attribute name="isSql">
+          <data type="boolean" />
+        </attribute>
       </optional>
       <optional>
         <attribute name="length">
@@ -510,12 +510,12 @@
       </zeroOrMore>
     </element>
   </define>
- 
+
   <define name="FlatVocabParamBaseProperties">
     <ref name="EnumParamBaseProperties" />
     <attribute name="queryRef" />
   </define>
-  
+
   <define name="FlatVocabParamBaseTags">
     <choice>
       <ref name="ParamBaseTags" />
@@ -977,32 +977,32 @@
         <element name="resultSizeQueryRef">
           <attribute name="recordDisplayName" />
           <attribute name="ref" />
-	  <optional>
-	    <attribute name="recordDisplayNamePlural" />
-	  </optional>
-	  <optional>
-	    <attribute name="recordShortDisplayName" />
-	  </optional>
-	  <optional>
-	    <attribute name="recordShortDisplayNamePlural" />
-	  </optional>
+          <optional>
+            <attribute name="recordDisplayNamePlural" />
+          </optional>
+          <optional>
+            <attribute name="recordShortDisplayName" />
+          </optional>
+          <optional>
+            <attribute name="recordShortDisplayNamePlural" />
+          </optional>
         </element>
       </optional>
       <optional>
         <element name="resultPropertyQueryRef">
- 	    <attribute name="ref" />
-	    <attribute name="propertyName" />        
+          <attribute name="ref" />
+          <attribute name="propertyName" />
         </element>
       </optional>
       <optional>
         <element name="extraAnswerRowsProducer">
-           <attribute name="dynamicColumnName"/>
-           <attribute name="dynamicColumnDisplayName"/>
-           <attribute name="columnValueForOriginalRows"/>
-           <attribute name="columnValueForExtraRows"/>
-           <element name="sql">
-	     <text/>
-            </element>
+          <attribute name="dynamicColumnName"/>
+          <attribute name="dynamicColumnDisplayName"/>
+          <attribute name="columnValueForOriginalRows"/>
+          <attribute name="columnValueForExtraRows"/>
+          <element name="sql">
+            <text/>
+          </element>
         </element>
       </optional>
       <optional>
@@ -1152,12 +1152,12 @@
             <ref name="IncludeExclude" />
           </element>
 
-		  <!-- reference to step filter -->
+          <!-- reference to step filter -->
           <element name="filterRef">
             <ref name="IncludeExclude" />
             <attribute name="name" />
           </element>
-          
+
         </choice>
       </zeroOrMore>
     </element>
@@ -1230,13 +1230,13 @@
               </choice>
             </zeroOrMore>
           </element>
-          
+
           <element name="suggestion">
             <ref name="IncludeExclude" />
             <optional>
                <attribute name="newBuild" />
             </optional>
-            <optional>                  
+            <optional>
                <attribute name="reviseBuild" />
             </optional>
           </element>
@@ -1246,7 +1246,7 @@
           <ref name="sqlParamValue" />
 
           <ref name="summaryView" />
-          
+
           <ref name="stepAnalysisRef" />
 
         </choice>
@@ -1609,7 +1609,7 @@
       <ref name="filterBaseContent" />
     </element>
   </define>
-  
+
   <define name="filterBaseContent">
     <ref name="IncludeExclude" />
     <attribute name="name" />
@@ -1668,7 +1668,7 @@
       </element>
     </zeroOrMore>
   </define>
-  
+
   <define name="stepAnalysisPlugins">
     <optional>
       <element name="stepAnalysisPlugins">
@@ -1717,7 +1717,7 @@
       <ref name="stepAnalysisProperties"/>
     </element>
   </define>
-  
+
   <define name="stepAnalysisRef">
     <element name="stepAnalysisRef">
       <attribute name="name" />
@@ -1762,7 +1762,7 @@
       </choice>
     </zeroOrMore>
   </define>
-  
+
   <define name="uiConfig">
     <element name="uiConfig">
       <ref name="IncludeExclude" />
