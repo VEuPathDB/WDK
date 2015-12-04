@@ -654,12 +654,6 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/recordClassSet/recordClass/resultPropertyQueryRef",
         ResultPropertyQueryReference.class, "setResultPropertyQueryRef");
 
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/extraAnswerRowsProducer",
-            ExtraAnswerRowsProducer.class, "setExtraAnswerRowsProducer");
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/extraAnswerRowsProducer/sql",
-            WdkModelText.class, "setSql");
-    digester.addCallMethod("wdkModel/recordClassSet/recordClass/extraAnswerRowsProducer/sql", "setText", 0);
-
         // nested record and record list
     configureNode(digester, "wdkModel/recordClassSet/recordClass/nestedRecord", NestedRecord.class,
         "addNestedRecordQuestionRef");
