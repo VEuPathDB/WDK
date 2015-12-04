@@ -31,7 +31,6 @@ import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
-import org.gusdb.wdk.model.record.ExtraAnswerRowsProducer;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -40,7 +39,6 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -683,21 +681,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       }
       query.setContextQuestion(this);
 
-      // query.setIsIdQuery(true);
-      query.setIsIdQuery(false);  // disable extraAnswerRowsProducer logic
-
       // all the id queries should have weight column
       query.setHasWeight(true);
-
-    // if this question's record class has an extraAnswerRowsProducer, add its column as a dyn attribute
-    ExtraAnswerRowsProducer earp = getRecordClass().getExtraAnswerRowsProducer();
-    if (earp != null) {
-      ColumnAttributeField af = new ColumnAttributeField();
-      af.excludeResources(wdkModel.getProjectId());
-      af.setName(earp.getDynamicColumnName());
-      af.setDisplayName(earp.getDynamicColumnDisplayName());
-      dynamicAttributeSet.addAttributeField(af);
-    }
 
       // dynamic attribute set need to be initialized after the id query.
       this.dynamicAttributeQuery = createDynamicAttributeQuery(model);
@@ -983,16 +968,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       column.setWidth(12);
       query.addColumn(column);
     }
-
-      // if this question's record class has an extraAnswerRowsProducer, add its column as a dyn attribute
-      ExtraAnswerRowsProducer earp = getRecordClass().getExtraAnswerRowsProducer();
-      if (earp != null) {
-	Column column = new Column();
-	column.setName(earp.getDynamicColumnName());
-	column.setType(ColumnType.STRING);
-	column.setWidth(earp.getDynamicColumnWidth());
-	query.addColumn(column);
-      }
 
     // dynamic query doesn't have sql defined, here just fill in the stub
     // sql; the real sql will be constructed by answerValue

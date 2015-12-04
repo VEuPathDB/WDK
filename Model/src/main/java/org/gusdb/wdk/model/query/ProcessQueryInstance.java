@@ -22,7 +22,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.record.ExtraAnswerRowsProducer;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.ClientModelException;
 import org.gusdb.wsf.client.ClientRequest;
@@ -179,14 +178,6 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
       if (column.getType() == ColumnType.CLOB)
         sql.append(", ").append(column.getName());
     }
-
-    // if this is an ID query, and its record class has an extraAnswerRowsProducer, use it
-    // to add an extra column that signals these rows are from the original query
-    ExtraAnswerRowsProducer earp = null;
-    if (getQuery().getIsIdQuery()) {
-      earp = getQuery().getContextQuestion().getRecordClass().getExtraAnswerRowsProducer();
-      if (earp != null) sql.append(", ").append(earp.getDynamicColumnName());
-    }
     
     // insert name of weight as the last column, if it doesn't exist
     if (query.isHasWeight() && !columnNames.contains(weightColumn))
@@ -197,8 +188,6 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     for (int i = 0; i < columns.size(); i++) {
       sql.append(", ?");
     }
-
-    if (earp != null) sql.append(", ").append(earp.getColumnValueForOriginalRows()); 
 
     // insert weight to the last column, if doesn't exist
     if (query.isHasWeight() && !columnNames.contains(weightColumn))
@@ -248,16 +237,6 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     sqlTable.append(CacheFactory.COLUMN_ROW_ID + " " + numberType + " NOT NULL");
     if (query.isHasWeight())
       sqlTable.append(", " + Utilities.COLUMN_WEIGHT + " " + numberType);
-    
-    // if this query is an id query, and its record class has an extraAnswerRowsProducer, use it
-    // to add an extra column that signals these rows are from the original query
-    if (getQuery().getIsIdQuery()) {
-    	ExtraAnswerRowsProducer earp =  getQuery().getContextQuestion().getRecordClass().getExtraAnswerRowsProducer();
-    	if (earp != null) {
-    		String strType = platform.getStringDataType(earp.getDynamicColumnWidth());
-    		sqlTable.append(", " + earp.getDynamicColumnName() + " " +  strType);
-    	}
-    }
     
     // define the rest of the columns
     for (Column column : columns) {
