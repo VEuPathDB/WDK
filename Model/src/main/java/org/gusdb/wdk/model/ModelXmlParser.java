@@ -90,7 +90,6 @@ import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
 import org.gusdb.wdk.model.record.BooleanReference;
 import org.gusdb.wdk.model.record.CountReference;
-import org.gusdb.wdk.model.record.ExtraAnswerRowsProducer;
 import org.gusdb.wdk.model.record.NestedRecord;
 import org.gusdb.wdk.model.record.NestedRecordList;
 import org.gusdb.wdk.model.record.RecordClass;
