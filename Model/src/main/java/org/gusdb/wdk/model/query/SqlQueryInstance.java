@@ -20,7 +20,6 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.record.ExtraAnswerRowsProducer;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -98,12 +97,6 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
         columnList.append(", " + weightColumn);
     }
 
-    // if this query is an ID query and its record class has an extraAnswerRowsProducer, use it
-    // to add an extra column that signals these rows are from the original query
-    ExtraAnswerRowsProducer earp = null;
-    if (getQuery().getIsIdQuery()) earp = getQuery().getContextQuestion().getRecordClass().getExtraAnswerRowsProducer();
-    if (earp != null) columnList.append(", " + earp.getDynamicColumnName());
-
     DBPlatform platform = wdkModel.getAppDb().getPlatform();
     String rowNumber = platform.getRowNumberColumn();
 
@@ -116,12 +109,9 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     buffer.append("SELECT ");
     buffer.append(instanceId + " AS " + idColumn + ", ");
     
-    String earpSelect = "";
-    if (earp != null) earpSelect = ", '" + earp.getColumnValueForOriginalRows() + "' AS " + earp.getDynamicColumnName();
-    
     buffer.append(rowNumber + " AS " + rowIdColumn);
     
-    buffer.append(columnList + earpSelect + " FROM (" + sql + ") f");
+    buffer.append(columnList + " FROM (" + sql + ") f");
 
     try {
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
@@ -208,15 +198,6 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     buffer.append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID + ", ");
     buffer.append(rowNumber + " AS " + CacheFactory.COLUMN_ROW_ID + ", ");  
     
-    // if this query is an ID query, and its recordclass has an extraAnswerRowsProducer,
-    // add an extra column that signals these rows are from the original query
-    if (getQuery().getIsIdQuery()) {
-        ExtraAnswerRowsProducer earp = getQuery().getContextQuestion().getRecordClass().getExtraAnswerRowsProducer();
-    	if (earp != null) {
-    		buffer.append("'" + earp.getColumnValueForOriginalRows() + "' AS " + earp.getDynamicColumnName() + ", ");
-    	}
-    }
-
     buffer.append(" f.* FROM (").append(sql).append(") f");
 
     try {

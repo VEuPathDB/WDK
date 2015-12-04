@@ -217,11 +217,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String shortDisplayNamePlural;
 
   /**
-   * An option that provides SQL to post-process an Answer result, providing new sql, modifying the original.
-   */
-  private ExtraAnswerRowsProducer extraAnswerRowsProducer = null;
-
-  /**
    * An option that provides SQL to post-process an Answer result, providing a custom result size count. 
    * If present, induces construction of a non-default result size plugin that uses this sql
    */
@@ -487,13 +482,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     reporterList.add(reporter);
   }
   
-  public void setExtraAnswerRowsProducer(ExtraAnswerRowsProducer ers) {
-	  extraAnswerRowsProducer = ers;
-  }
-  
-  public ExtraAnswerRowsProducer getExtraAnswerRowsProducer() {
-	  return extraAnswerRowsProducer;
-  }
   public void setDoNotTest(boolean doNotTest) {
     this.doNotTest = doNotTest;
   }

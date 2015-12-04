@@ -121,7 +121,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   private String[] indexColumns;
 
   private boolean hasWeight;
-  private boolean isIdQuery;
 
   private Question contextQuestion;
 
@@ -151,7 +150,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     columnList = new ArrayList<Column>();
     columnMap = new LinkedHashMap<String, Column>();
     hasWeight = false;
-    isIdQuery = false;
     sortingMap = new LinkedHashMap<>();
   }
 
@@ -177,7 +175,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     this.doNotTest = query.doNotTest;
     this.paramValuesSets = new ArrayList<ParamValuesSet>(query.paramValuesSets);
     this.hasWeight = query.hasWeight;
-    this.isIdQuery = query.isIdQuery;
     this.contextQuestion = query.getContextQuestion();
     this.sortingMap = new LinkedHashMap<>(query.sortingMap);
 
@@ -610,20 +607,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return hasWeight;
   }
 
-  /**
-   * @param hasWeight
-   *          the hasWeight to set
-   */
-  public void setIsIdQuery(boolean isIdQuery) {
-    this.isIdQuery = isIdQuery;
-  }
-
-  /**
-   * @return the hasWeight
-   */
-  public boolean getIsIdQuery() {
-    return isIdQuery;
-  }
   /**
    * for reviseStep action, validate all the values, and if it's invalid, substitute it with default. if the
    * value doesn't exist in the map, I will add default into it.
