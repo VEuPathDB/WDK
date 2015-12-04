@@ -54,6 +54,7 @@ import org.gusdb.wdk.model.filter.FilterReference;
 import org.gusdb.wdk.model.filter.FilterSet;
 import org.gusdb.wdk.model.filter.StepFilterDefinition;
 import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.PostCacheInsertSql;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
@@ -691,6 +692,12 @@ public class ModelXmlParser extends XmlParser {
   private static void configureQuerySet(Digester digester) {
     // QuerySet
     configureNode(digester, "wdkModel/querySet", QuerySet.class, "addQuerySet");
+
+    configureNode(digester, "wdkModel/querySet/postCacheInsertSql",
+            PostCacheInsertSql.class, "setPostCacheInsertSql");
+    configureNode(digester, "wdkModel/querySet/setPostCacheInsertSql/sql",
+            WdkModelText.class, "setSql");
+    digester.addCallMethod("wdkModel/querySet/setPostCacheInsertSql/sql", "setText", 0);
 
     // defaultTestParamValues
     configureParamValuesSet(digester, "wdkModel/querySet/defaultTestParamValues", "addDefaultParamValuesSet");
