@@ -70,7 +70,7 @@ public interface Filter {
    * @param answer
    *          the AnswerValue that the filter will be applied on.
    * @param idSql
-   *          the ID SQL from the answerValue, with all the filters, except the current one, applied.
+   *          the ID SQL from the answerValue, with all the not-view-only filters, except the current one, applied.
    * @return
    * @throws WdkModelException
    * @throws WdkUserException
