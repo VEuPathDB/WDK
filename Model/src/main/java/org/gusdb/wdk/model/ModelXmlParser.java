@@ -694,9 +694,9 @@ public class ModelXmlParser extends XmlParser {
 
     configureNode(digester, "wdkModel/querySet/postCacheInsertSql",
             PostCacheInsertSql.class, "setPostCacheInsertSql");
-    configureNode(digester, "wdkModel/querySet/setPostCacheInsertSql/sql",
+    configureNode(digester, "wdkModel/querySet/postCacheInsertSql/sql",
             WdkModelText.class, "setSql");
-    digester.addCallMethod("wdkModel/querySet/setPostCacheInsertSql/sql", "setText", 0);
+    digester.addCallMethod("wdkModel/querySet/postCacheInsertSql/sql", "setText", 0);
 
     // defaultTestParamValues
     configureParamValuesSet(digester, "wdkModel/querySet/defaultTestParamValues", "addDefaultParamValuesSet");
