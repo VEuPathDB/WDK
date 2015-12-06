@@ -340,25 +340,21 @@ public abstract class QueryInstance<T extends Query> {
   }
   
   protected void executePostCacheInsertSql(String tableName, int instanceId) throws WdkModelException {
-	    PostCacheInsertSql pcis = query.getQuerySet().getPostCacheInsertSql();
-	    if (pcis == null) return;
-	    String sql = pcis.getSql();
-	    sql.replace(Utilities.MACRO_CACHE_TABLE, tableName);
-	    sql.replace(Utilities.MACRO_CACHE_INSTANCE_ID, Integer.toString(instanceId));
+    PostCacheInsertSql pcis = query.getQuerySet().getPostCacheInsertSql();
+    if (pcis == null) return;
+    String sql = pcis.getSql();
+    sql = sql.replace(Utilities.MACRO_CACHE_TABLE, tableName);
+    sql = sql.replace(Utilities.MACRO_CACHE_INSTANCE_ID, Integer.toString(instanceId));
 	    
-	    // get results and time process();
-	    DataSource dataSource = wdkModel.getAppDb().getDataSource();
-	    PreparedStatement psInsert = null;
-	    try {
-	      psInsert = SqlUtils.getPreparedStatement(dataSource, sql);
-	  	  SqlUtils.executePreparedStatement(psInsert, sql, query.getQuerySet().getName() + "__postCacheInsertSql");
-	    }
-	    catch (SQLException ex) {
-	      throw new WdkModelException("Unable to run postCacheinsertSql.", ex);
-	    }
-	    finally {
-	      SqlUtils.closeStatement(psInsert);
-	    }
+    // get results and time process();
+    DataSource dataSource = wdkModel.getAppDb().getDataSource();
+    try {
+      SqlUtils.executeUpdate(dataSource, sql, query.getQuerySet().getName() + "__postCacheInsertSql", false);
+    }
+    catch (SQLException ex) {
+      throw new WdkModelException("Unable to run postCacheinsertSql:  " + sql, ex);
+    }
+
   }
 
   public int getAssignedWeight() {

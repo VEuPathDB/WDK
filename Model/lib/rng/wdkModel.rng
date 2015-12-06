@@ -798,6 +798,13 @@
         </attribute>
       </optional>
       <ref name="IncludeExclude" />
+      <optional>
+        <element name="postCacheInsertSql">
+          <element name="sql">
+            <text/>
+          </element>
+        </element>
+      </optional>
       <zeroOrMore>
         <element name="defaultTestParamValues">
           <ref name="testParamValuesRef" />
@@ -992,17 +999,6 @@
         <element name="resultPropertyQueryRef">
           <attribute name="ref" />
           <attribute name="propertyName" />
-        </element>
-      </optional>
-      <optional>
-        <element name="extraAnswerRowsProducer">
-          <attribute name="dynamicColumnName"/>
-          <attribute name="dynamicColumnDisplayName"/>
-          <attribute name="columnValueForOriginalRows"/>
-          <attribute name="columnValueForExtraRows"/>
-          <element name="sql">
-            <text/>
-          </element>
         </element>
       </optional>
       <optional>
