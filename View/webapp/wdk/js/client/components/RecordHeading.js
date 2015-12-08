@@ -1,6 +1,6 @@
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
-import { wrappable } from '../utils/componentUtils';
+import { safeHtml, wrappable } from '../utils/componentUtils';
 
 let stubHandler = actionName => event => {
   event.preventDefault();
@@ -34,7 +34,7 @@ let RecordHeading = React.createClass({
         </ul>
         <h1 className="wdk-RecordHeading">{recordClass.displayName} {record.displayName}</h1>
         <div>
-          {record.overview}
+          {safeHtml(record.overview)}
         </div>
       </div>
     );
