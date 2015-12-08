@@ -54,7 +54,6 @@ public class TableField extends Field implements AttributeFieldContainer {
   }
 
   public void addAttributeField(AttributeField attributeField) {
-    attributeField.setRecordClass(recordClass);
     attributeField.setContainer(this);
     attributeFieldList.add(attributeField);
   }
@@ -148,6 +147,12 @@ public class TableField extends Field implements AttributeFieldContainer {
         ((ColumnAttributeField) field).setColumn(column);
       } // else, it's okay to have unmatched columns
     }
+
+    for (AttributeField field : attributeFieldMap.values()) {
+      // set recordClass
+      field.setRecordClass(recordClass);
+    }
+
     resolved = true;
   }
 

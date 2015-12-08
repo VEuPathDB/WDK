@@ -42,6 +42,11 @@ let RecordNavigationSection = React.createClass({
 
     return (
       <div className="wdk-RecordNavigationSection">
+        <h2 className="wdk-RecordNavigationSectionHeader">
+          <button className={expandClassName}
+            onClick={() => void this.setState({ navigationExpanded: !navigationExpanded })}
+          /> {heading}
+        </h2>
         <div className="wdk-RecordNavigationSearch">
           <input
             className="wdk-RecordNavigationSearchInput"
@@ -56,11 +61,6 @@ let RecordNavigationSection = React.createClass({
             }}
           />
         </div>
-        <h2 className="wdk-RecordNavigationSectionHeader">
-          <button className={expandClassName}
-            onClick={() => void this.setState({ navigationExpanded: !navigationExpanded })}
-          /> {heading}
-        </h2>
         <div className="wdk-RecordNavigationCategories">
           <RecordNavigationSectionCategories
             record={this.props.record}

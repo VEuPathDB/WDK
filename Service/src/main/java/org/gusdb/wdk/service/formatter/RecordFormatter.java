@@ -111,6 +111,7 @@ public class RecordFormatter {
     JSONObject json = new JSONObject();
     json.put("id", record.getPrimaryKey().getValues());
     json.put("displayName",  record.getPrimaryKey().getDisplay());
+    json.put("overview", record.getOverview());
     JSONObject attributes = new JSONObject();
     for (Entry<String,AttributeValue> attrib : record.getAttributeValueMap().entrySet()) {
       if (attributeNames != null && !attributeNames.contains(attrib.getKey())) continue;

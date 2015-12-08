@@ -5,8 +5,10 @@ package org.gusdb.wdk.model.record.attribute;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
@@ -102,6 +104,29 @@ public abstract class AttributeValueContainer implements AttributeValueMap {
           + fieldName);
     }
     return value;
+  }
+  
+  public String replaceMacrosWithAttributeValues(String text, String label)
+      throws WdkModelException, WdkUserException {
+    Map<String, Object> values = new LinkedHashMap<String, Object>();
+    Map<String, AttributeField> fields = getAttributeFieldMap();
+
+    Matcher matcher = AttributeField.MACRO_PATTERN.matcher(text);
+    while (matcher.find()) {
+      String fieldName = matcher.group(1);
+
+      if (!values.containsKey(fieldName)) {
+
+        if (!fields.containsKey(fieldName)) {
+          logger.warn("Invalid field macro in " + label + ": " + fieldName);
+          continue;
+        }
+
+        AttributeValue value = getAttributeValue(fieldName);
+        values.put(fieldName, value.toString());
+      }
+    }
+    return Utilities.replaceMacros(text, values);
   }
 
   /**

@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
@@ -183,6 +184,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   private RecordClassSet recordClassSet;
+  
+  private String recordOverviewText;
 
   private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<AttributeQueryReference>();
 
@@ -419,6 +422,14 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   
   public String getCustomBooleanQueryClassName() {
 	  return customBooleanQueryClassName;
+  }
+  
+  public void setRecordOverviewText(WdkModelText recordOverviewText) {
+    this.recordOverviewText = recordOverviewText.getText();
+  }
+  
+  public String getRecordOverviewText() {
+    return this.recordOverviewText;
   }
   
   /**
