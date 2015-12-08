@@ -480,9 +480,10 @@ public class RecordInstance extends AttributeValueContainer {
   }
   
   public String getOverview() throws WdkModelException, WdkUserException {
-    if (this.overview == null) {
+    String overviewText = recordClass.getRecordOverviewText();
+    if (this.overview == null && overviewText != null) {
       this.overview = replaceMacrosWithAttributeValues(
-        recordClass.getRecordOverviewText(),
+        overviewText,
         "[recordOverview] of [" + recordClass.getFullName() + "]"
       );
     }
