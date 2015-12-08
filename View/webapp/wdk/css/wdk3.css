@@ -338,10 +338,6 @@ body {
   position: relative;
   /* border-bottom: 1px solid #d8d8d8; */
   margin-top: 2px;
-  padding-left: 1em;
-}
-
-.wdk-RecordNavigationItem .wdk-RecordNavigationItem {
   padding-left: 0;
 }
 
@@ -352,14 +348,14 @@ body {
 
 .wdk-Record-sidebar-title {
   display: block;
-  padding: .4em;
+  padding: .4em 1em;
 }
 
 .wdk-Record-sidebar-title__active:before {
   font-family: FontAwesome;
   content: '\f111';
   position: absolute;
-  left: 4px;
+  left: 0;
   top: 7px;
   font-size: 80%;
 }
