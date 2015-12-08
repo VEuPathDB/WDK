@@ -1002,6 +1002,12 @@
         </element>
       </optional>
       <optional>
+        <!-- describes an instance of a record -->
+        <element name="recordOverview">
+          <text/>
+        </element>
+      </optional>
+      <optional>
         <element name="attributeCategories">
           <zeroOrMore>
             <ref name="attributeCategory" />

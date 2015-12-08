@@ -16,7 +16,7 @@ let RecordNavigationItem = props => {
 
   let enumeration = parentEnumeration == null
     ? [ props.index + 1 ]
-    : [ parentEnumeration, props.index + 1 ];
+    : [ ...parentEnumeration, props.index + 1 ];
 
   return (
     <div className="wdk-RecordNavigationItem">

@@ -3,6 +3,7 @@ import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
 import Main from './Main';
 import Record from './Record';
+import RecordHeading from './RecordHeading';
 import RecordNavigationSection from './RecordNavigationSection';
 import Sticky from './Sticky';
 
@@ -57,9 +58,10 @@ class RecordUI extends Component {
     });
 
     return (
-      <div className={classNames}>
+      <Main className={classNames}>
+        <RecordHeading record={this.props.record} recordClass={this.props.recordClass}/>
         <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
-          <h3 className="wdk-RecordSidebarHeader">{this.props.record.displayName}</h3>
+          {/*<h3 className="wdk-RecordSidebarHeader">{this.props.record.displayName}</h3>*/}
           <a href="#" className="wdk-RecordSidebarToggle" onClick={this.toggleSidebar}>
             {this.state.showSidebar ? '' : 'Show Categories '}
             <i className={sidebarIconClass}
@@ -73,7 +75,7 @@ class RecordUI extends Component {
             onCategoryToggle={this.toggleCategory}
           />
         </Sticky>
-        <Main className="wdk-RecordMain">
+        <div className="wdk-RecordMain">
           <Record
             record={this.props.record}
             recordClass={this.props.recordClass}
@@ -82,8 +84,8 @@ class RecordUI extends Component {
             onCategoryToggle={this.toggleCategory}
             onTableToggle={this.toggleTable}
           />
-        </Main>
-      </div>
+        </div>
+      </Main>
     )
   }
 }

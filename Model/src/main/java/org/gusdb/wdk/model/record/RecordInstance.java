@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -49,6 +48,8 @@ public class RecordInstance extends AttributeValueContainer {
   private AnswerValue answerValue;
 
   private boolean isValidRecord;
+
+  private String overview;
 
   /**
    * 
@@ -477,7 +478,17 @@ public class RecordInstance extends AttributeValueContainer {
       throws WdkModelException, WdkUserException {
     return getAttributeValueMap(FieldScope.NON_INTERNAL);
   }
-
+  
+  public String getOverview() throws WdkModelException, WdkUserException {
+    if (this.overview == null) {
+      this.overview = replaceMacrosWithAttributeValues(
+        recordClass.getRecordOverviewText(),
+        "[recordOverview] of [" + recordClass.getFullName() + "]"
+      );
+    }
+    return this.overview;
+  }
+  
   // /////////////////////////////////////////////////////////////////////////
   // protected methods
   // /////////////////////////////////////////////////////////////////////////

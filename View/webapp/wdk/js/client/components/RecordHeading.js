@@ -20,7 +20,7 @@ let RecordHeading = React.createClass({
       { name: 'Download ' + recordClass.displayName, icon: 'download' }
     ];
     return (
-      <div>
+      <div className="wdk-RecordOverview">
         <ul className="wdk-RecordActions">
           {actions.map(action => {
             return (
@@ -33,6 +33,9 @@ let RecordHeading = React.createClass({
           })}
         </ul>
         <h1 className="wdk-RecordHeading">{recordClass.displayName} {record.displayName}</h1>
+        <div>
+          {record.overview}
+        </div>
       </div>
     );
   }

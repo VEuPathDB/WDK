@@ -27,6 +27,7 @@ body {
 .wdk-RootContainer {
   height: 100%;
   background-color: #fcfcfc;
+  padding: 1em 2em;
 }
 
 .wdkAnswerLoading {
@@ -172,12 +173,6 @@ body {
   float: right;
 }
 
-/*
-.wdk-AnswerTable-headerWrapper:hover .ui-icon-close {
-  visibility: visible;
-}
-*/
-
 .wdk-AnswerTable-headerWrapper .ui-icon {
   display: inline-block;
   vertical-align: middle;
@@ -237,7 +232,7 @@ body {
 
 .wdk-RecordActions {
   padding: 0;
-  margin: .6em;
+  margin: 0;
   float: left;
 }
 
@@ -260,7 +255,7 @@ body {
 }
 
 .wdk-RecordMain, .wdk-RecordSidebar {
-  padding: 0 26px;
+  padding: 2.5em 0;
   transition: margin-left 250ms ease;
   transition: left 250ms ease;
 }
@@ -300,13 +295,18 @@ body {
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebar {
   left: 0;
-  padding: 0 26px;
+  padding: 0;
+}
+
+.wdk-RecordContainer__withSidebar .wdk-RecordSidebar__fixed {
+  left: 2em;
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebarToggle {
-  right: 2em;
+  right: 1em;
   border: 0;
   transform: rotate(-90deg);
+  padding: 0;
 }
 
 .wdk-RecordMain td {
@@ -339,6 +339,10 @@ body {
   /* border-bottom: 1px solid #d8d8d8; */
   margin-top: 2px;
   padding-left: 1em;
+}
+
+.wdk-RecordNavigationItem .wdk-RecordNavigationItem {
+  padding-left: 0;
 }
 
 .wdk-Record-sidebar > ul {

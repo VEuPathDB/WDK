@@ -1,9 +1,5 @@
 package org.gusdb.wdk.model.record.attribute;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
@@ -36,15 +32,11 @@ public class LinkAttributeValue extends AttributeValue {
   }
 
   public String getDisplayText() throws WdkModelException, WdkUserException {
-    if (displayText == null) {
-      String text = ((LinkAttributeField)field).getDisplayText();
-      Map<String, AttributeField> subFields = field.parseFields(text);
-      Map<String, Object> values = new LinkedHashMap<String, Object>();
-      for (String subField : subFields.keySet()) {
-        AttributeValue value = container.getAttributeValue(subField);
-        values.put(subField, value.getValue());
-      }
-      this.displayText = Utilities.replaceMacros(text, values);
+    if (this.displayText == null) {
+      String displayText = ((LinkAttributeField)field).getDisplayText();
+      String label = "attribute" + " [" + field.getName() + "] of ["
+            + field.getRecordClass().getFullName() + "]";
+      this.displayText = container.replaceMacrosWithAttributeValues(displayText, label);
     }
     return this.displayText;
   }
@@ -52,13 +44,9 @@ public class LinkAttributeValue extends AttributeValue {
   public String getUrl() throws WdkModelException, WdkUserException {
     if (this.url == null) {
       String url = ((LinkAttributeField)field).getUrl();
-      Map<String, AttributeField> subFields = field.parseFields(url);
-      Map<String, Object> values = new LinkedHashMap<String, Object>();
-      for (String subField : subFields.keySet()) {
-        AttributeValue value = container.getAttributeValue(subField);
-        values.put(subField, value.getValue());
-      }
-      this.url = Utilities.replaceMacros(url, values);
+      String label = "attribute" + " [" + field.getName() + "] of ["
+          + field.getRecordClass().getFullName() + "]";
+      this.url = container.replaceMacrosWithAttributeValues(url, label);
     }
     return this.url;
   }
