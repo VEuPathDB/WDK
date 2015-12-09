@@ -219,7 +219,6 @@ sub sanity_check {
 
   $wmc->do_configure('templateSiteConfigure', TemplateDB, $wmc->{'meta_config_file'});
 
-
 =cut
 sub do_configure {
   my ($self, $short_cmd, $product, $meta_config_file) = @_;
