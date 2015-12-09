@@ -179,7 +179,7 @@ public class ProcessBasketAction extends Action {
         return user.getStep(stepId);
     }
 
-    private List<String[]> getRecords(HttpServletRequest request,
+    protected List<String[]> getRecords(HttpServletRequest request,
             RecordClassBean recordClass) throws JSONException, WdkUserException {
         String data = request.getParameter(PARAM_DATA);
         if (data == null)
