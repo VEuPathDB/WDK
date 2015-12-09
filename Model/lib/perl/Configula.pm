@@ -188,7 +188,7 @@ sub sanity_check {
 
     die "\nFATAL: I do not know what dblink to use for '" . lc $self->{'userDb_database'} . "'\n" .
       "  I know about: " . join(', ', keys(%dblinkMap)) . "\n\n"
-      if ( (lc($self->{userDb}) ne lc($self->{appDb})) && (! $self->{'userDbLink'} || $self->{'userDbLink'} eq '@') );
+      if ( (lc($self->{userDb_database}) ne lc($self->{appDb_database})) && (! $self->{'userDbLink'} || $self->{'userDbLink'} eq '@') );
       # OK to have no dblink if both user and and app schemas are in the same database
 
     if ( ! $self->{'g_skip_db_test'}) {
@@ -285,9 +285,9 @@ sub get_cli_args {
 =cut
 sub dblink {
     my ($self, $userDb, $appDb) = @_;
-    
+
     # no dblink if both user and and app schemas are in the same database
-    if (lc($userDb) eq lc($appDb)) { 
+    if (defined $appDb && lc($userDb) eq lc($appDb)) { 
       return undef;
     }
     
