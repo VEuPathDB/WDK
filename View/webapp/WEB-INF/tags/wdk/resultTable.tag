@@ -100,15 +100,8 @@
             </th>
 
             <th style="text-align: center; white-space: nowrap; width: 34px;">
-<c:if test="${showNativeCount eq 'true'}">
-<c:choose>
-<c:when test="${missingNative ne 'true'}">
-   <c:set var="trTitle" value="All ${nativeDisplayNamePlural} in the ${displayNamePlural} in your results are included here." />
-</c:when>
-<c:otherwise>
-    <c:set var="trTitle" value="Not all ${nativeDisplayNamePlural} in the ${displayNamePlural} in your results are included here; some have a divergent function or charateristic." />
-</c:otherwise>
-</c:choose>
+
+<%-- <c:if test="${showNativeCount eq 'true'}">   --%>
               <c:if test="${wdkAnswer.question.recordClass.hasResultSizeQuery}">
                 <span style="padding-right: 2em">
                   ${wdkAnswer.displayResultSize eq 1 ? step.recordClass.displayName : step.recordClass.displayNamePlural}:
@@ -119,7 +112,7 @@
                 ${wdkAnswer.resultSize eq 1 ? wdkAnswer.question.recordClass.nativeDisplayName : wdkAnswer.question.recordClass.nativeDisplayNamePlural}:
                 ${wdkAnswer.resultSize}
               </span>
-</c:if>
+<%--  </c:if> --%>
             </th>
 
             <th style="text-align: right; white-space: nowrap; width: 33px;">
