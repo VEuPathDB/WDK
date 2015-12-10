@@ -177,6 +177,9 @@ img[data-assets-src][src] {
 	width: 100%;
 	text-align: center;
 }
+.acenter {
+  text-align: center;
+}
 .aright {
   text-align: right;
 }
