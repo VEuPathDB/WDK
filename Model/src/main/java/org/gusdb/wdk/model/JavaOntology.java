@@ -33,7 +33,13 @@ public class JavaOntology extends Ontology {
   }
 
   @Override
-  public TreeNode<Map<String, List<String>>> getTree() {
+  public TreeNode<Map<String, List<String>>> getTree() throws WdkUserException {
+    TreeNode<Map<String, List<String>>> tree = plugin.getTree(properties);
+    List<List<TreeNode<Map<String, List<String>>>>> circularPaths = tree.findCircularPaths();
+    if (!circularPaths.isEmpty()) {
+      // TODO: print out circular paths
+      throw new WdkUserException("Ontology " + getName() + " contains circular paths");
+    }
     return plugin.getTree(properties);
   }
   

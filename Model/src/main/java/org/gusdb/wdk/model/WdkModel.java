@@ -11,6 +11,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -829,7 +831,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
         ontologyMap.put(name, ontology);
       }
     }
-    categoryList = null;
+    ontologyList = null;
     
     // exclude categories
     for (MacroDeclaration macro : macroList) {
@@ -1140,7 +1142,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     return ontologyMap.get(name);
   }
 
-
+  public Collection<Ontology> getOntologies() {
+    return Collections.unmodifiableCollection(ontologyMap.values());
+  }
 
   public void addMacroDeclaration(MacroDeclaration macro) {
     macroList.add(macro);
