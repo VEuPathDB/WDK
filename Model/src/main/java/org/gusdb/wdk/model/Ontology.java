@@ -15,9 +15,9 @@ public abstract class Ontology extends WdkModelBase {
   
   public String getName() { return name; }
   
-  abstract TreeNode<Map<String, List<String>>> getTree();
+  public abstract TreeNode<Map<String, List<String>>> getTree() throws WdkUserException ;
   
-  TreeNode<Map<String, List<String>>> getTree(Map<String,List<String>> filter) { 
+  public TreeNode<Map<String, List<String>>> getTree(Map<String,List<String>> filter) throws WdkUserException { 
     // TODO: apply filter
     return getTree();
   }
