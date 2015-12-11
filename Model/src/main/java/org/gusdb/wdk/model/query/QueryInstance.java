@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.query;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
