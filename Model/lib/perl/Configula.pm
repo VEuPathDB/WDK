@@ -9,9 +9,10 @@ WDK::Model::Configula - core methods for configula script
 This module is for use by the EuPathDB team to aid internal development.
 It is not supported.
 
-It takes advantage of EuPathDB directory naming conventions to bootstrap several configuration 
-values so that they can be used to generate a metaConfig yaml file to be fed to a WDK configuration 
-script such as eupathSiteConfigure or templateSiteConfigure
+It takes advantage of EuPathDB directory naming conventions to bootstrap
+several configuration values so that they can be used to generate a
+metaConfig yaml file to be fed to a WDK configuration script such as
+eupathSiteConfigure or templateSiteConfigure
 
 =cut
 
@@ -73,7 +74,7 @@ sub new {
       $g_use_map,
       $g_skip_db_test,
     ) = get_cli_args();
-    
+
     $self->{'user_has_specified_values'} = defined ($appDb_login || $appDb_database || $userDb_database);
     $self->{'g_use_map'} = $g_use_map || undef;
 
@@ -88,7 +89,7 @@ sub new {
 
     my $webapp = basename(readlink $site_symlink);
     my ($webapp_nover) = $webapp =~ m/(^[a-zA-Z_]+)/;
-    
+
     # read for product version number. Use the source because it may not
     # yet be present at the dest (e.g. if --usemap is specified but no map data found)
     my $wdk_model_xml = "$gus_home/lib/wdk/${modelName}.xml";
@@ -142,33 +143,33 @@ sub new {
     }
 
     $self->{'userDbLink'} = $self->dblink($self->{'userDb_database'}, $self->{'appDb_database'});
-    
+
     $self->{'appDb_password'} = $self->std_password($self->{'euparc'}, $self->{'appDb_login'}, $self->{'appDb_database'});
-    
+
     if ( ! $self->{'appDb_password'} ) {
       die "Did not find password for $self->{'appDb_login'} in $self->{'euparc'} . Quitting with no changes made.\n";
     }
-    
+
     $self->{'userDb_login'} = $self->{'userDb_login'} || 'uga_fed';
     $self->{'userDb_password'} = $self->std_password($self->{'euparc'}, $self->{'userDb_login'}, $self->{'userDb_database'});;
 
     if ( ! $self->{'userDb_password'} ) {
       die "Did not find password for $self->{'userDb_login'} in $self->{'euparc'} . Quitting with no changes made.\n";
     }
-    
+
     # webapp_nover is always valid thanks to apache redirects, and
     # is especially desired for production sites
     $self->{'webServiceUrl'} = 'http://' . $self->{'target_site'} . '/' . $self->{'webapp_nover'} . '/services/WsfService';
-    
+
     $self->{'google_analytics_id'} = $self->google_analytics_id($self->{'euparc'}, $self->{'canonical_hostname'});
 
     $self->{'authenticationMethod'} = 'oauth2'; # oauth2 or userdb
     $self->{'oauthUrl'} = 'https://eupathdb.org/oauth';
     $self->{'oauthClientId'} = 'apiComponentSite';
     $self->{'oauthClientSecret'} = $self->oauth_secret($self->{'euparc'}, $self->{'oauthClientId'});
- 
+
     $self->sanity_check();
-    
+
     return $self;
 }
 
@@ -181,14 +182,14 @@ sub sanity_check {
     if ( $self->{'g_use_map'} && $self->{'user_has_specified_values'}) {
         die "can not set specific values when using --usemap\n";;
     }
-    
+
     if ($self->{'g_use_map'}) {
         die "--usemap chosen but $self->{'map_file'} not found\n" unless ( -r $self->{'map_file'});
     }
 
     die "\nFATAL: I do not know what dblink to use for '" . lc $self->{'userDb_database'} . "'\n" .
       "  I know about: " . join(', ', keys(%dblinkMap)) . "\n\n"
-      if ( (lc($self->{userDb}) ne lc($self->{appDb})) && (! $self->{'userDbLink'} || $self->{'userDbLink'} eq '@') );
+      if ( (lc($self->{userDb_database}) ne lc($self->{appDb_database})) && (! $self->{'userDbLink'} || $self->{'userDbLink'} eq '@') );
       # OK to have no dblink if both user and and app schemas are in the same database
 
     if ( ! $self->{'g_skip_db_test'}) {
@@ -210,19 +211,18 @@ sub sanity_check {
 =head2 do_configure
 
   run the supported configuration script
-  
+
   Args:
   short_cmd: short name for the supported configuration script in $GUS_HOME/bin - eupathSiteConfigure, templateSiteConfigure
   product: model name, aka. project name, aka. product name. e.g. ToxoDB, CryptoDB, TemplateDB
   path to metaConfig file: This module will write one to $wmc->{'meta_config_file'} .
-  
-  $wmc->do_configure('templateSiteConfigure', TemplateDB, $wmc->{'meta_config_file'});
 
+  $wmc->do_configure('templateSiteConfigure', TemplateDB, $wmc->{'meta_config_file'});
 
 =cut
 sub do_configure {
   my ($self, $short_cmd, $product, $meta_config_file) = @_;
-  
+
   my $cmd = "$self->{'gus_home'}/bin/$short_cmd -model $product -filename $meta_config_file";
   print "<$scriptname> Attempting: '$cmd' ...";
   system("$cmd");
@@ -250,11 +250,11 @@ sub get_cli_args {
   );
 
   {
-    local $SIG{__WARN__} = sub { 
+    local $SIG{__WARN__} = sub {
       my $message = shift;
       die "<$scriptname> FATAL: " . $message;
   };
-  
+
   my $optRslt = GetOptions(
         "alogin=s"   => \$appDb_login,
         "adb=s"      => \$appDb_database,
@@ -263,7 +263,7 @@ sub get_cli_args {
         "skipdbtest" => \$g_skip_db_test, # for when you know this will fail, or know it will succeed!
       );
   }
-  
+
   $target_site = lc $ARGV[0];
 
   return (
@@ -273,24 +273,24 @@ sub get_cli_args {
     $target_site,
     $g_use_map,
     $g_skip_db_test,
-  ); 
+  );
 }
 
 =head2 dblink
 
   Return dblink for given apicomm;
-  
+
   $wmc->dblink('apicommS')
-  
+
 =cut
 sub dblink {
     my ($self, $userDb, $appDb) = @_;
-    
+
     # no dblink if both user and and app schemas are in the same database
-    if (lc($userDb) eq lc($appDb)) { 
+    if (defined $appDb && lc($userDb) eq lc($appDb)) {
       return undef;
     }
-    
+
     return  $dblinkMap{lc($userDb)};
 }
 
@@ -306,7 +306,7 @@ sub std_password {
       KeyAttr => [ user => "login"],
       ContentKey => '-content',
   );
-  
+
   return $rc->{database}->{$database}->{user}->{$login}->{password} ||
       $rc->{database}->{user}->{$login}->{password};
 }
@@ -321,7 +321,7 @@ sub google_analytics_id {
   my $rc = XMLin($euparc,
     KeyAttr => [ site => 'hostname'],
   );
-  
+
   return $rc->{'sites'}->{'site'}->{$site}->{'google_analytics_id'};
 }
 
@@ -405,12 +405,12 @@ sub webapp_from_domain {
 sub site_versions {
   my($self, $wdk_model_xml) = @_;
   my %site_versions;
-  my $acm = new XML::Twig( 
-      keep_spaces => 1, 
+  my $acm = new XML::Twig(
+      keep_spaces => 1,
       PrettyPrint => 'nice',
       keep_atts_order => 1,
       TwigHandlers => {
-        'constant[@name="releaseVersion"]'  => sub { 
+        'constant[@name="releaseVersion"]'  => sub {
            $site_versions{$_[1]->att("includeProjects")} = $_[1]->text;
          },
       }
@@ -428,25 +428,25 @@ sub build_numbers {
   my($self, $wdk_model_xml) = @_;
   my %aggregate_build_numbers;
   my %build_numbers;
-  my $acm = new XML::Twig( 
-      keep_spaces => 1, 
+  my $acm = new XML::Twig(
+      keep_spaces => 1,
       PrettyPrint => 'nice',
       keep_atts_order => 1,
       TwigHandlers => {
-        'constant[@name="buildNumber"]'  => sub { 
+        'constant[@name="buildNumber"]'  => sub {
            $aggregate_build_numbers{$_[1]->att("includeProjects")} = $_[1]->text;
          },
       }
   );
   $acm->parsefile("$wdk_model_xml");
-  
+
   # We now have a hash like
   #    'PiroplasmaDB,TriTrypDB,TrichDB,ToxoDB' => 15,
   #    'FungiDB' => 4,
   # Split the keys on commas.
   for my $projects_included (keys %aggregate_build_numbers) {
       #  $projects_included == 'PiroplasmaDB,TriTrypDB,TrichDB,ToxoDB'
-      my @include_projects = split(',', $projects_included); 
+      my @include_projects = split(',', $projects_included);
       for my $project (@include_projects) {
           $build_numbers{$project} = $aggregate_build_numbers{$projects_included};
       }
@@ -466,7 +466,7 @@ sub testDbConnection {
 
 sub find_euparc  {
   my ($self) = @_;
-  # ibuilder shell sets HOME to be the website and 
+  # ibuilder shell sets HOME to be the website and
   # REAL_HOME to that of joeuser
   if ( defined $ENV{REAL_HOME} && -r "$ENV{REAL_HOME}/.euparc") {
       return "$ENV{REAL_HOME}/.euparc";
@@ -493,7 +493,7 @@ sub validate_meta_config {
   my @extra_found;
 
   print "\n<$scriptname>  Validating the required properties in\n $meta_config\nagainst\n $sample\n\n";
-  
+
   my ($sample_settings) = LoadFile($sample);
   my $meta_settings = LoadFile($meta_config);
 
@@ -533,10 +533,10 @@ sub validate_meta_config {
 =head2 write_meta_config
 
   Write a metaConfig yaml file to $self->{'meta_config_file'}
-  
+
   Args
   content: yaml content for the metaConfig file
-  
+
 =cut
 sub write_meta_config {
   my ($self, $content) = @_;
