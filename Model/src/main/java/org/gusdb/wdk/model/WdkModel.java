@@ -165,6 +165,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   private Map<String, SearchCategory> categoryMap = new LinkedHashMap<String, SearchCategory>();
   private Map<String, SearchCategory> rootCategoryMap = new LinkedHashMap<String, SearchCategory>();
 
+  private List<Ontology> ontologyList = new ArrayList<Ontology>();
+  private Map<String, Ontology> ontologyMap = new LinkedHashMap<String, Ontology>();
+
+  
   private String secretKey;
 
   private ReentrantLock systemUserLock = new ReentrantLock();
@@ -674,6 +678,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       if (category.getParent() == null)
         rootCategoryMap.put(category.getName(), category);
     }
+
+    for (Ontology ontology: this.ontologyMap.values()) {
+      ontology.resolveReferences(this);
+    }
   }
 
   private void excludeResources() throws WdkModelException {
@@ -811,6 +819,18 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     }
     categoryList = null;
 
+    // exclude ontologies
+    for (Ontology ontology : this.ontologyList) {
+      if (ontology.include(projectId)) {
+        String name = ontology.getName();
+        if (ontologyMap.containsKey(name))
+          throw new WdkModelException("The ontology name '" + name + "' is duplicated");
+        ontology.excludeResources(projectId);
+        ontologyMap.put(name, ontology);
+      }
+    }
+    categoryList = null;
+    
     // exclude categories
     for (MacroDeclaration macro : macroList) {
       if (macro.include(projectId)) {
@@ -1111,6 +1131,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     }
     return roots;
   }
+  
+  public void addOntology(Ontology ontology) {
+    this.ontologyList.add(ontology);
+  }
+
+  public Ontology getOntology(String name) {
+    return ontologyMap.get(name);
+  }
+
+
 
   public void addMacroDeclaration(MacroDeclaration macro) {
     macroList.add(macro);
