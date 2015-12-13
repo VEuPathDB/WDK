@@ -12,7 +12,6 @@ public class JavaOntology extends Ontology {
   
   private static final Logger logger = Logger.getLogger(Ontology.class);
 
-
   // values from XML
   private String implementationClassName;
   private List<WdkModelText> propertyList = new ArrayList<>();
@@ -34,12 +33,6 @@ public class JavaOntology extends Ontology {
 
   @Override
   public TreeNode<Map<String, List<String>>> getTree() throws WdkUserException {
-    TreeNode<Map<String, List<String>>> tree = plugin.getTree(properties);
-    List<List<TreeNode<Map<String, List<String>>>>> circularPaths = tree.findCircularPaths();
-    if (!circularPaths.isEmpty()) {
-      // TODO: print out circular paths
-      throw new WdkUserException("Ontology " + getName() + " contains circular paths");
-    }
     return plugin.getTree(properties);
   }
   
@@ -88,10 +81,12 @@ public class JavaOntology extends Ontology {
 
   private JavaOntologyPlugin getPlugin()
       throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-    Class<? extends JavaOntologyPlugin> pluginClass = Class.forName(implementationClassName).asSubclass(
-        JavaOntologyPlugin.class);
-    JavaOntologyPlugin plugin = pluginClass.newInstance();
-
+        
+    if (plugin == null) {
+      Class<? extends JavaOntologyPlugin> pluginClass = Class.forName(implementationClassName).asSubclass(
+          JavaOntologyPlugin.class);
+      plugin = pluginClass.newInstance();
+    }
     return plugin;
   }
 
