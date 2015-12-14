@@ -7,8 +7,8 @@ export default class WdkService {
     this._serviceUrl = serviceUrl;
 
     // caches
-    this._questions = new Map();
-    this._recordClasses = new Map();
+    this._questions = null;
+    this._recordClasses = null;
     this._records = new Map();
   }
 
@@ -16,74 +16,43 @@ export default class WdkService {
     let method = 'get';
     let url = this._serviceUrl + '/question?expandQuestions=true';
 
-    if (!this._questions.isFull) {
-      this._questions.isFull = true;
-      fetchJson(method, url).then(
-        questions => {
-          for (let question of questions) {
-            this._questions.set(question.name, Promise.resolve(question));
-          }
-        },
-        reason => {
-          this._questions.isFull = false;
-          throw reason;
-        }
-      );
+    if (this._questions == null) {
+      this._questions = fetchJson(method, url);
     }
 
-    return Promise.all(this._questions.values());
+    return this._questions;
   }
 
-  getQuestion(questionName) {
-    let method = 'get';
-    let url = this._serviceUrl + '/question/' + questionName;
-
-    if (!this._questions.has(questionName)) {
-      this._questions.set(questionName, fetchJson(method, url));
-    }
-
-    return this._questions.get(questionName);
+  getQuestion(name) {
+    return this._questions.then(qs => qs.find(q => q.name === name));
   }
 
   getRecordClasses() {
     let method = 'get';
     let url = this._serviceUrl + '/record?expandRecordClasses=true';
 
-    if (!this._recordClasses.isFull) {
-      fetchJson(method, url).then(
+    if (this._recordClasses == null) {
+      this._recordClasses = fetchJson(method, url).then(
         recordClasses => {
-          this._recordClasses.isFull = true;
           for (let recordClass of recordClasses) {
             recordClass.attributeCategories.push(
               { name: undefined, displayName: 'Uncategorized' }
-            );
-            this._recordClasses.set(recordClass.fullName, Promise.resolve(recordClass));
+            )
           }
+          return recordClasses;
         },
         reason => {
-          this._recordClasses.isFull = false;
+          this._recordClasses = null;
           throw reason;
         }
       );
     }
 
-    return Promise.all(this._recordClasses.values());
+    return this._recordClasses;
   }
 
-  getRecordClass(recordClassName) {
-    let method = 'get';
-    let url = this._serviceUrl + '/record/' + recordClassName;
-
-    if (!this._recordClasses.has(recordClassName)) {
-      this._recordClasses.set(recordClassName, fetchJson(method, url).then(recordClass => {
-        recordClass.attributeCategories.push(
-          { name: undefined, displayName: 'Uncategorized' }
-        );
-        return recordClass;
-      }));
-    }
-
-    return this._recordClasses.get(recordClassName);
+  getRecordClass(name) {
+    return this._recordClasses.then(rs => rs.find(r => r.fullName === name));
   }
 
   getRecord(recordClassName, primaryKey, options = {}) {
