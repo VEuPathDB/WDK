@@ -180,7 +180,7 @@ public class ProcessBasketAction extends Action {
     }
 
     protected List<String[]> getRecords(HttpServletRequest request,
-            RecordClassBean recordClass) throws JSONException, WdkUserException {
+            RecordClassBean recordClass) throws JSONException, WdkUserException, WdkModelException {
         String data = request.getParameter(PARAM_DATA);
         if (data == null)
             throw new WdkUserException("the record ids list is missing.");
