@@ -76,7 +76,7 @@ public class JavaOntology extends Ontology {
     }
     
     // validate that we have required properties
-    plugin.validateProperties(properties);
+    plugin.validateParameters(properties);
   }
 
   private JavaOntologyPlugin getPlugin()
