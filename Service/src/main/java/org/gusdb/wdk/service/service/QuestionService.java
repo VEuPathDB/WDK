@@ -37,14 +37,16 @@ public class QuestionService extends WdkService {
    */
   @GET
   public Response getQuestions(
-	  @QueryParam("recordClass") String recordClassStr)
-          throws JSONException, WdkModelException, WdkUserException {
+    @QueryParam("recordClass") String recordClassStr,
+    @QueryParam("expandQuestions") Boolean expandQuestions,
+    @QueryParam("expandParams") Boolean expandParams
+  ) throws JSONException, WdkModelException, WdkUserException {
     try {
       Map<String,String> dependerParams = null;
       return Response.ok(QuestionFormatter.getQuestionsJson(
           (recordClassStr == null || recordClassStr.isEmpty() ? getAllQuestions(getWdkModel()) :
             getQuestionsForRecordClasses(getWdkModel(), recordClassStr.split(","))),
-          false, false, getCurrentUser(), dependerParams).toString()).build();
+            getFlag(expandQuestions), getFlag(expandParams), getCurrentUser(), dependerParams).toString()).build();
     }
     catch (IllegalArgumentException e) {
       return getBadRequestBodyResponse(e.getMessage());
