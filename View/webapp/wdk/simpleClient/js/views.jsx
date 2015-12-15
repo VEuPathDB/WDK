@@ -51,16 +51,16 @@ var SearchPage = React.createClass({
       "width": "45%",
       "display": "inline-block",
       "border": "2px solid blue",
-      "border-radius": "10px",
+      "borderRadius": "10px",
       "padding": "5px",
       "margin": "10px",
-      "vertical-align": "top",
+      "verticalAlign": "top",
       "height": "250px",
       "overflow": "scroll"
     };
     var store = this.props.data;
     var loadingStyle = ( !store.isLoading ? {"display":"none"} :
-      {"height":"60px","float":"right","margin-right":"60px"} );
+      {"height":"60px","float":"right","marginRight":"60px"} );
     return (
       <div>
         <h3>Choose a Search<img style={loadingStyle} src="images/loading.gif"/></h3>
@@ -71,7 +71,7 @@ var SearchPage = React.createClass({
           </div>
           <div style={midDivStyle}>
             <strong>To run this search programmatically...</strong><br/>
-            <span style={{"font-size":"0.8em"}}>
+            <span style={{"fontSize":"0.8em"}}>
               POST the JSON below to:<br/>
               {ServiceUrl}/answer
             </span>
@@ -188,9 +188,10 @@ var AnswerResults = React.createClass({
     var records = this.props.results.records;
     var meta = this.props.results.meta;
     var pagination = this.props.pagination;
-    var headerStyle = { "border":"1px solid blue", "background-color":"peachpuff" };
-    var cellStyle = { "border":"1px solid blue", "font-size":"0.8em", "vertical-align":"top" };
-    var cellDivStyle = { "overflow":"scroll", "overflow-x":"hidden", "overflow-y":"auto", "height":"50px" };
+    var headerStyle = { "border":"1px solid blue", "backgroundColor":"peachpuff" };
+    var cellStyle = { "border":"1px solid blue", "fontSize":"0.8em", "verticalAlign":"top" };
+    var cellDivStyle = { "overflow":"scroll", "overflowX":"hidden", "overflowY":"auto", "height":"50px" };
+    // TODO: choose a key for the records- tried record.id and got non-unique instance (unexplored)
     return (
       <div>
         <div style={{"margin":"20px 0"}}>
@@ -199,19 +200,19 @@ var AnswerResults = React.createClass({
             Showing {records.length} records on page {this.props.resultStats.pageNum}.
           </strong>
         </div>
-        <table style={{"border-collapse":"collapse"}}>
+        <table style={{"borderCollapse":"collapse"}}>
           <thead>
             <tr>
-              {meta.attributes.map(function(attrib) {
-                return ( <th style={headerStyle}>{attrib.displayName}</th> ); })}
+              {meta.summaryAttributes.map(function(attrib) {
+                return ( <th style={headerStyle}>{attrib}</th> ); })}
             </tr>
           </thead>
           <tbody>
             {records.map(function(record) { return (
               <tr>
-                {meta.attributes.map(function(attrib) { return (
+                {meta.summaryAttributes.map(function(attrib) { return (
                   <td style={cellStyle}>
-                    <HtmlDiv style={cellDivStyle} contents={record.attributes[attrib.name]}/>
+                    <HtmlDiv style={cellDivStyle} contents={record.attributes[attrib]}/>
                   </td>
                 );})}
               </tr>
