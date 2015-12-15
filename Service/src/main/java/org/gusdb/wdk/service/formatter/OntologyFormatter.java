@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
-import org.gusdb.wdk.model.Ontology;
+import org.gusdb.wdk.model.ontology.Ontology;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONArray;
