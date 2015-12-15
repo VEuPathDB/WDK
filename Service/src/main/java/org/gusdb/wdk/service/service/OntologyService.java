@@ -6,8 +6,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.service.formatter.OntologyFormatter;
 import org.json.JSONException;
 
@@ -18,7 +16,7 @@ import org.json.JSONException;
    */
   @GET
   public Response getOntologies()
-          throws JSONException, WdkModelException, WdkUserException {
+          throws JSONException {
     try {
       return Response.ok(OntologyFormatter.getOntologiesJson(getWdkModel().getOntologies()).toString()).build();
     }
