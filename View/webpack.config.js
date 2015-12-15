@@ -44,14 +44,20 @@ module.exports = {
   debug: node_env !== 'production',
   devtool: 'source-map',
   plugins: node_env !== 'production'
-    ? [ commonsPlugin ]
+    ? [
+        new webpack.DefinePlugin({
+          __DEV__: "true"
+        }),
+        commonsPlugin
+      ]
+
     : [ new webpack.optimize.UglifyJsPlugin({ mangle: false }),
         new webpack.optimize.OccurenceOrderPlugin(true),
         new webpack.DefinePlugin({
           "process.env": {
-            NODE_ENV: JSON.stringify("production")
+            NODE_ENV: JSON.stringify("production"),
+            __DEV__: "false"
           }
         }),
-        // Webpack will fail unless we tell it to ignore the import statement.
         commonsPlugin ]
 };
