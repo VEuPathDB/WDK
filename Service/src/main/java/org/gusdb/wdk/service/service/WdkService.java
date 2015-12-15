@@ -8,7 +8,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -19,8 +18,18 @@ import org.gusdb.wdk.service.factory.WdkAnswerFactory;
 public abstract class WdkService {
 
   protected static final Response getBadRequestBodyResponse(String message) {
-    String responseMsg = "Improperly formatted or incomplete request body: " + message + FormatUtil.NL;
-    return Response.status(Status.BAD_REQUEST).entity(responseMsg).build();
+    return Response.status(Status.BAD_REQUEST).entity(
+        "Improperly formatted or incomplete request body: " + message).build();
+  }
+
+  protected static final Response getPermissionDeniedResponse() {
+    return Response.status(Status.FORBIDDEN).entity(
+        "Permission Denied.  You do not have access to this resource.").build();
+  }
+
+  protected static final Response getNotFoundResponse(String resourceName) {
+    return Response.status(Status.NOT_FOUND).entity(
+        "Resource specified [" + resourceName + "] does not exist.").build();
   }
 
   @Context
