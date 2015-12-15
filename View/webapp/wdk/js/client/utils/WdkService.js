@@ -24,7 +24,7 @@ export default class WdkService {
   }
 
   getQuestion(name) {
-    return this._questions.then(qs => qs.find(q => q.name === name));
+    return this.getQuestions().then(qs => qs.find(q => q.name === name));
   }
 
   getRecordClasses() {
@@ -52,7 +52,7 @@ export default class WdkService {
   }
 
   getRecordClass(name) {
-    return this._recordClasses.then(rs => rs.find(r => r.fullName === name));
+    return this.getRecordClasses().then(rs => rs.find(r => r.fullName === name));
   }
 
   getRecord(recordClassName, primaryKey, options = {}) {
