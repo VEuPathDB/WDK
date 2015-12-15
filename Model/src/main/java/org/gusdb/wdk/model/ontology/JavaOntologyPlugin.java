@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.wdk.model.WdkModelException;
 
 public interface JavaOntologyPlugin {
   
@@ -20,5 +21,5 @@ public interface JavaOntologyPlugin {
    * Validate the parameters that will be provided to the plugin.  This is called by the WDK when it creates its model.
    * @param parameters
    */
-  public void validateParameters(Map<String, String> parameters);
+  public void validateParameters(Map<String, String> parameters) throws WdkModelException;
 }
