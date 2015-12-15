@@ -52,6 +52,8 @@
 
           <ref name="searchCategory" />
 
+          <ref name="javaOntology" />
+
           <ref name="declaredMacro" />
 
           <ref name="constant" />
@@ -120,6 +122,13 @@
         <attribute name="usedBy" />
       </optional>
       <ref name="IncludeExclude" />
+    </element>
+  </define>
+
+  <define name="javaOntology">
+    <element name="javaOntology">
+        <attribute name="implementation"/>
+        <ref name="propertyList" />        
     </element>
   </define>
 

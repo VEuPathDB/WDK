@@ -87,6 +87,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.QuestionSuggestion;
 import org.gusdb.wdk.model.question.SearchCategory;
+import org.gusdb.wdk.model.ontology.JavaOntology;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
 import org.gusdb.wdk.model.record.BooleanReference;
 import org.gusdb.wdk.model.record.CountReference;
@@ -538,6 +539,13 @@ public class ModelXmlParser extends XmlParser {
 
     // default property list
     configureNode(digester, "wdkModel/defaultPropertyList", PropertyList.class, "addDefaultPropertyList");
+
+    // ontologies
+    configureNode(digester, "wdkModel/javaOntology", JavaOntology.class, "addOntology");
+    configureNode(digester, "wdkModel/javaOntology/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod("wdkModel/javaOntology/property", "setText", 0);
+
+    configureNode(digester, "wdkModel/javaOntologydefaultPropertyList", PropertyList.class, "addDefaultPropertyList");
 
     // categories
     configureNode(digester, "wdkModel/searchCategory", SearchCategory.class, "addCategory");
