@@ -1432,11 +1432,17 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     // has to sort at least on something, primary key as default
-    if (map.size() == 0) {
-      String pkName = primaryKeyField.getName();
-      map.put(pkName, true);
+    if (map.isEmpty()) {
+      return getPrimaryKeySortingAttributeMap();
     }
 
+    return map;
+  }
+
+  public Map<String, Boolean> getPrimaryKeySortingAttributeMap() {
+    Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
+    String pkName = primaryKeyField.getName();
+    map.put(pkName, true);
     return map;
   }
 

@@ -51,6 +51,7 @@ public class User /* implements Serializable */{
   private final static String SUMMARY_VIEW_PREFIX = "summary_view_";
   private final static String RECORD_VIEW_PREFIX = "record_view_";
 
+  // represents the maximum number of sorts we apply to an answer
   public static final int SORTING_LEVEL = 3;
 
   private Logger logger = Logger.getLogger(User.class);
