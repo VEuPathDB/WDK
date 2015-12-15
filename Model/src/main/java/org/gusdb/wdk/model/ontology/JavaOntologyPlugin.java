@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model;
+package org.gusdb.wdk.model.ontology;
 
 import java.util.List;
 import java.util.Map;

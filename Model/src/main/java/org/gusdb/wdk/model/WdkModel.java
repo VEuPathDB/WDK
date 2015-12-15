@@ -43,6 +43,7 @@ import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.SearchCategory;
+import org.gusdb.wdk.model.ontology.Ontology;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.user.BasketFactory;

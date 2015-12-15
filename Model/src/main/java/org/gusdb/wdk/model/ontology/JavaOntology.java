@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model;
+package org.gusdb.wdk.model.ontology;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -7,6 +7,11 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.WdkModel;
+
 
 public class JavaOntology extends Ontology {
   

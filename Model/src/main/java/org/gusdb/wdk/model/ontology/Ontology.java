@@ -1,10 +1,12 @@
-package org.gusdb.wdk.model;
+package org.gusdb.wdk.model.ontology;
 
 import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.WdkModelBase;
 
 public abstract class Ontology extends WdkModelBase {
   
