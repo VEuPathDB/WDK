@@ -320,7 +320,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   // /////////////////////////////////////////////////////////////////////
 
   /**
-   * make an answer with default page size
+   * make an answer with default page size and sorting and no filters applied
    * 
    * @param paramErrors
    * @return

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.report;
 
 import java.io.OutputStream;
@@ -31,6 +28,10 @@ import org.json.JSONObject;
  * 
  */
 public abstract class Reporter implements Iterable<AnswerValue> {
+
+  public static enum ContentDisposition {
+    INLINE, ATTACHMENT;
+  }
 
   public static final String PROPERTY_PAGE_SIZE = "page_size";
 
@@ -228,5 +229,10 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     finally {
       complete();
     }
+  }
+
+  public ContentDisposition getContentDisposition() {
+    return (getDownloadFileName() == null ?
+        ContentDisposition.INLINE : ContentDisposition.ATTACHMENT);
   }
 }
