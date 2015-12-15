@@ -179,6 +179,9 @@ public class ProcessBasketAction extends Action {
         return user.getStep(stepId);
     }
 
+    /**
+     * @throws WdkModelException  
+     */
     protected List<String[]> getRecords(HttpServletRequest request,
             RecordClassBean recordClass) throws JSONException, WdkUserException, WdkModelException {
         String data = request.getParameter(PARAM_DATA);

@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
-import org.gusdb.wdk.model.ontology.Ontology;
-import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.ontology.Ontology;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +15,7 @@ import org.json.JSONObject;
 public class OntologyFormatter {
   
   public static JSONArray getOntologiesJson(Collection<Ontology> ontologies)
-      throws JSONException, WdkModelException, WdkUserException {
+      throws JSONException {
     JSONArray json = new JSONArray();
     for (Ontology o : ontologies) {
         json.put(o.getName());
@@ -24,7 +24,7 @@ public class OntologyFormatter {
   }
 
   public static JSONObject getOntologyJson(Ontology o)
-      throws JSONException, WdkModelException, WdkUserException {
+      throws JSONException, WdkUserException {
     JSONObject qJson = new JSONObject();
     qJson.put("name", o.getName());
     TreeNode<Map<String,List<String>>> tree = o.getTree();
@@ -47,7 +47,8 @@ public class OntologyFormatter {
     }f
    */
   
-  private static class treeToJsonMapper implements org.gusdb.fgputil.functional.TreeNode.StructureMapper<Map<String,List<String>>, JSONObject> {
+  private static class treeToJsonMapper implements StructureMapper<Map<String,List<String>>, JSONObject> {
+    @Override
     public JSONObject map(Map<String,List<String>> contents, List<JSONObject> mappedChildren) {
      JSONObject treeJson = new JSONObject();
      JSONObject propertiesJson = new JSONObject();
