@@ -37,10 +37,10 @@ public class QuestionService extends WdkService {
    */
   @GET
   public Response getQuestions(
-    @QueryParam("recordClass") String recordClassStr,
-    @QueryParam("expandQuestions") Boolean expandQuestions,
-    @QueryParam("expandParams") Boolean expandParams
-  ) throws JSONException, WdkModelException, WdkUserException {
+      @QueryParam("recordClass") String recordClassStr,
+      @QueryParam("expandQuestions") Boolean expandQuestions,
+      @QueryParam("expandParams") Boolean expandParams)
+          throws JSONException, WdkModelException, WdkUserException {
     try {
       Map<String,String> dependerParams = null;
       return Response.ok(QuestionFormatter.getQuestionsJson(

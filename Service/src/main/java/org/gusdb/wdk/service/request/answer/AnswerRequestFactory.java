@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.request;
+package org.gusdb.wdk.service.request.answer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,42 +15,49 @@ import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class WdkAnswerRequest {
+public class AnswerRequestFactory {
 
-  private static final Logger LOG = Logger.getLogger(WdkAnswerRequest.class);
-  
+  private static final Logger LOG = Logger.getLogger(AnswerRequest.class);
+
   /**
+   * Creates an AnswerRequest object using the passed JSON.  "questionName" is
+   * the only required property; however "params" must be specified as required
+   * by the question passed.  Legacy and modern filters are optional; omission
+   * means no filters will be applied.  Weight is optional and defaults to 0.
+   * 
    * Input Format:
    * {
    *   “questionName”: String,
    *   “params”: [ {
    *     “name”: String, “value”: Any
    *   } ],
- *     "legacyFilterName": String,
-   *   “filters”: [ {
+   *   "legacyFilterName": (optional) String,
+   *   “filters”: (optional) [ {
    *     “name”: String, value: Any
    *   } ],
-   *   “viewFilters”: [ {
+   *   “viewFilters”: (optional) [ {
    *     “name”: String, value: Any
-   *   } ]
+   *   } ],
+   *   "weight": (optional) Integer
    * }
    * 
-   * @param json
-   * @param model
-   * @return
-   * @throws RequestMisformatException
+   * @param json JSON representation of an answer request
+   * @param model WDK model
+   * @return answer request object constructed
+   * @throws RequestMisformatException if JSON is malformed
    */
-  public static WdkAnswerRequest createFromJson(JSONObject json, WdkModelBean model) throws RequestMisformatException {
+  public static AnswerRequest createFromJson(JSONObject json, WdkModelBean model) throws RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
       String questionFullName = json.getString("questionName");
       model.validateQuestionFullName(questionFullName);
       Question question = model.getModel().getQuestion(questionFullName);
-      WdkAnswerRequest request = new WdkAnswerRequest(question);
+      AnswerRequest request = new AnswerRequest(question);
       // params are required (empty array if no params)
       request.setParamValues(parseParamValues(json.getJSONArray("params"), question, model));
       // all filter fields are optional
@@ -63,6 +70,9 @@ public class WdkAnswerRequest {
       request.setViewFilterValues(json.has("viewFilters") ?
           parseFilterValues(json.getJSONArray("viewFilters"), question, model, true) :
             new FilterOptionList(question));
+      if (json.has("weight")) {
+        request.setWeight(json.getInt("weight"));
+      }
       return request;
     }
     catch (JSONException | WdkUserException e) {
@@ -157,45 +167,4 @@ public class WdkAnswerRequest {
     return contextValues;
   }
 
-  private final Question _question;
-  private Map<String, ParamValue> _params = new HashMap<>();
-  private AnswerFilterInstance _legacyFilter;
-  private FilterOptionList _filters;
-  private FilterOptionList _viewFilters;
-
-  private WdkAnswerRequest(Question question) {
-    _question = question;
-  }
-
-  public Question getQuestion() {
-    return _question;
-  }
-
-  public Map<String, ParamValue> getParamValues() {
-    return _params;
-  }
-  private void setParamValues(Map<String, ParamValue> params) {
-    _params = params;
-  }
-
-  public AnswerFilterInstance getLegacyFilter() {
-    return _legacyFilter;
-  }
-  private void setLegacyFilter(AnswerFilterInstance legacyFilter) {
-    _legacyFilter = legacyFilter;
-  }
-
-  public FilterOptionList getFilterValues() {
-    return _filters;
-  }
-  private void setFilterValues(FilterOptionList filters) {
-    _filters = filters;
-  }
-
-  public FilterOptionList getViewFilterValues() {
-    return _viewFilters;
-  }
-  private void setViewFilterValues(FilterOptionList viewFilters) {
-    _viewFilters = viewFilters;
-  }
 }
