@@ -1,5 +1,4 @@
 import { ReduceStore } from 'flux/utils';
-import memoize from 'lodash/function/memoize';
 import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
 import * as i from '../utils/Iterable';
 import { postorder as postorderCategories } from '../utils/CategoryTreeIterators';

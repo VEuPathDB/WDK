@@ -5,13 +5,13 @@ import { wrappable } from '../utils/componentUtils';
 let QuestionListController = React.createClass({
 
   componentWillMount() {
-    let { store } = this.props;
+    let store = this.stores.QuestionStore;
     this.selectState(store.getState());
     this.storeSubscription = store.subscribe(this.selectState);
   },
 
   componentWillUnmount() {
-    this.storeSubscription.dispose();
+    this.storeSubscription.remove();
   },
 
   selectState(state) {
