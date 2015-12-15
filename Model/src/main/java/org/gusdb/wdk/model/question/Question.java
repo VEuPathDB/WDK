@@ -159,6 +159,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   
   private List<QuestionSuggestion> _suggestions = new ArrayList<>();
 
+  private String _urlPath;
+
 
   // /////////////////////////////////////////////////////////////////////
   // setters called at initialization
@@ -259,6 +261,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
   public void setName(String name) {
     this.name = name;
+  }
+  
+  public void setUrlPath(String urlPath) {
+    this._urlPath = urlPath;
   }
 
   public void addDescription(WdkModelText description) {
@@ -451,6 +457,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
   public String getName() {
     return name;
+  }
+  
+  public String getUrlPath() {
+    return _urlPath;
   }
 
   public String getFullName() {
@@ -926,6 +936,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         this.newBuild = suggestion.getNewBuild();
         this.reviseBuild = suggestion.getReviseBuild();
       }
+    }
+
+    // generate urlPath
+    if (_urlPath == null || _urlPath.isEmpty()) {
+      setUrlPath(name);
     }
   }
 
