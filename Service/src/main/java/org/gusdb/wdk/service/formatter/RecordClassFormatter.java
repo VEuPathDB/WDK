@@ -38,6 +38,7 @@ public class RecordClassFormatter {
     json.put("fullName", recordClass.getFullName());
     json.put("displayName", recordClass.getDisplayName());
     json.put("displayNamePlural", recordClass.getDisplayNamePlural());
+    json.put("urlPath",  recordClass.getUrlPath());
     json.put("description", recordClass.getDescription());
     json.put("attributes", getAttributesJson(recordClass, expandAttributes));
     json.put("tables", getTablesJson(recordClass, expandTables, expandTableAttributes));

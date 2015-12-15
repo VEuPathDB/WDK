@@ -11,6 +11,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -837,6 +839,38 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
     if (stepAnalysisPlugins != null) {
       stepAnalysisPlugins.excludeResources(projectId);
+    }
+    
+    // validate unique urlPaths
+    Set<String> rcUrlPaths = new HashSet<String>();
+
+    // slugs should be unique across all recordClasses
+    for (RecordClassSet set : recordClassSets.values()) {
+      for (RecordClass rc : set.getRecordClasses()) {
+        String urlPath = rc.getUrlPath();
+        if (rcUrlPaths.contains(urlPath))
+          throw new WdkModelException("Duplicate urlPath found in recordClass " +
+              rc.getFullName() + ": [" + urlPath + "].");
+        rcUrlPaths.add(urlPath);
+      }
+    }
+
+    Map<RecordClass, Set<String>> questionUrlPathsByRecordClass = new HashMap<RecordClass, Set<String>>();
+    
+    // urlPaths should be unique per questionSet
+    for (QuestionSet set : questionSets.values()) {
+      for (Question q : set.getQuestions()) {
+        if (!questionUrlPathsByRecordClass.containsKey(q.getRecordClass())) {
+          questionUrlPathsByRecordClass.put(q.getRecordClass(), new HashSet<String>());
+        }
+        Set<String> qUrlPaths = questionUrlPathsByRecordClass.get(q.getRecordClass());
+        String urlPath = q.getUrlPath();
+        if (qUrlPaths.contains(urlPath))
+          throw new WdkModelException("Duplicate question urlPath found in question " +
+              q.getFullName() + " with the recordClass " + q.getRecordClass().getName() +
+              ": [" + urlPath + "].");
+        qUrlPaths.add(urlPath);
+      }
     }
   }
 
