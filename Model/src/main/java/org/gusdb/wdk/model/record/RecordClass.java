@@ -324,6 +324,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   
   private CategoryList _categoryList;
 
+  private String _urlPath;
+
   // ////////////////////////////////////////////////////////////////////
   // Called at model creation time
   // ////////////////////////////////////////////////////////////////////
@@ -394,6 +396,14 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public void setShortDisplayNamePlural(String shortDisplayNamePlural) {
     this.shortDisplayNamePlural = shortDisplayNamePlural;
     this.nativeShortDisplayNamePlural = shortDisplayNamePlural;
+  }
+  
+  public void setUrlPath(String urlPath) {
+    this._urlPath = urlPath;
+  }
+  
+  public String getUrlPath() {
+    return this._urlPath;
   }
 
   private String getPlural(String name) {
@@ -1412,6 +1422,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     _filterReferences.clear();
     _filterReferences.addAll(references);
+
   }
 
   public void addFilter(AnswerFilter filter) {
@@ -1546,11 +1557,17 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     // has to sort at least on something, primary key as default
-    if (map.size() == 0) {
-      String pkName = primaryKeyField.getName();
-      map.put(pkName, true);
+    if (map.isEmpty()) {
+      return getPrimaryKeySortingAttributeMap();
     }
 
+    return map;
+  }
+
+  public Map<String, Boolean> getPrimaryKeySortingAttributeMap() {
+    Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
+    String pkName = primaryKeyField.getName();
+    map.put(pkName, true);
     return map;
   }
 

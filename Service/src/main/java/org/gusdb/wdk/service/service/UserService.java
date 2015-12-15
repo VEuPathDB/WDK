@@ -14,13 +14,6 @@ import org.gusdb.wdk.session.OAuthUtil;
 @Path("/user")
 public class UserService extends WdkService {
 
-  @GET
-  @Path("current")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getCurrent() throws WdkModelException {
-    return getById(getCurrentUserId());
-  }
-
   // ===== OAuth 2.0 + OpenID Connect Support =====
   /**
    * Create anti-forgery state token, add to session, and return.  This is
@@ -45,10 +38,41 @@ public class UserService extends WdkService {
   @GET
   @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getById(@PathParam("id") int userId) throws WdkModelException {
+  public Response getById(@PathParam("id") String userIdStr) throws WdkModelException {
+    Integer userId = getUserId(userIdStr);
+    if (userId == null)
+      return getNotFoundResponse("Unable to find user with ID " + userIdStr);
     boolean isOwner = (userId == getCurrentUserId());
     return Response.ok(
         UserFormatter.getUserJson(getWdkModel().getUserFactory().getUser(userId), isOwner).toString()
     ).build();
+  }
+
+  @GET
+  @Path("{id}/preference")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getUserPrefs(@PathParam("id") String userIdStr) throws WdkModelException {
+    Integer userId = getUserId(userIdStr);
+    if (userId == null)
+      return getNotFoundResponse("Unable to find user with ID " + userIdStr);
+    boolean isOwner = (userId == getCurrentUserId());
+    if (!isOwner)
+      return getPermissionDeniedResponse();
+    return Response.ok(
+        UserFormatter.getUserPrefsJson(
+            getWdkModel().getUserFactory().getUser(userId).getProjectPreferences()).toString()
+    ).build();
+  }
+
+  private Integer getUserId(String userIdStr) throws WdkModelException {
+    if ("current".equals(userIdStr)) {
+      return getCurrentUserId();
+    }
+    try {
+      return Integer.parseInt(userIdStr);
+    }
+    catch (NumberFormatException | NullPointerException e) {
+      return null;
+    }
   }
 }

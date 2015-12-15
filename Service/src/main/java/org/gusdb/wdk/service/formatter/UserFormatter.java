@@ -1,5 +1,8 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -17,8 +20,17 @@ public class UserFormatter {
     // private fields viewable only by owner
     if (isOwner) {
       json.put("email", user.getEmail());
+      json.put("properties", getUserPrefsJson(user.getGlobalPreferences()));
     }
     return json;
+  }
+
+  public static JSONObject getUserPrefsJson(Map<String,String> preferenceMap) {
+    JSONObject prefs = new JSONObject();
+    for (Entry<String,String> pref : preferenceMap.entrySet()) {
+      prefs.put(pref.getKey(), pref.getValue());
+    }
+    return prefs;
   }
 
 }

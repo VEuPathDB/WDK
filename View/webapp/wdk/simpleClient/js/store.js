@@ -46,7 +46,7 @@ var Store = function(dispatcher, initialValue) {
     switch(payload.actionType) {
       case ActionType.CHANGE_QUESTION_ACTION:
         // data is { questionName: String, params: Array }
-        _data.selectedQuestion = payload.data.questionName;
+        _data.selectedQuestion = payload.data.name;
         _data.paramOrdering = payload.data.params.map(function(p) { return p.name; });
         _data.paramValues = {};
         payload.data.params.forEach(function(param) {
@@ -67,7 +67,7 @@ var Store = function(dispatcher, initialValue) {
         break;
       case ActionType.CHANGE_RESULTS_ACTION:
         // data is { results: Any }
-        _data.results = payload.data.results;
+        _data.results = payload.data;
         _data.resultStats = { pageNum: _data.pagination.pageNum };
         break;
       case ActionType.SET_LOADING_ACTION:

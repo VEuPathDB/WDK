@@ -3,6 +3,9 @@ package org.gusdb.wdk.service.formatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -52,6 +55,9 @@ JSON output format:
 }
 */
 public class RecordFormatter {
+
+  private static final Logger LOG = Logger.getLogger(RecordFormatter.class);
+
   public static JSONObject formatRecord(RecordInstance recordInstance, List<String> attributeNames, List<String> tableNames) throws WdkModelException {
     try {
       JSONObject parent = new JSONObject();
@@ -106,6 +112,16 @@ public class RecordFormatter {
       return getRecordJson(record, null, null);
   }
 
+  /**
+   * 
+   * @param record
+   * @param attributeNames
+   * @param tableNames
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException
+   * @throws NullPointerException if any arguments are null
+   */
   public static JSONObject getRecordJson(RecordInstance record, List<String> attributeNames, List<String> tableNames)
       throws WdkModelException, WdkUserException {
     JSONObject json = new JSONObject();
@@ -113,29 +129,29 @@ public class RecordFormatter {
     json.put("displayName",  record.getPrimaryKey().getDisplay());
     json.put("overview", record.getOverview());
     JSONObject attributes = new JSONObject();
-    for (Entry<String,AttributeValue> attrib : record.getAttributeValueMap().entrySet()) {
-      if (attributeNames != null && !attributeNames.contains(attrib.getKey())) continue;
-      attributes.put(attrib.getKey(), getAttributeJsonValue(attrib.getValue()));
+    LOG.debug("Outputting record attributes: " + FormatUtil.arrayToString(attributeNames.toArray()));
+    for (String attributeName : attributeNames) {
+      attributes.put(attributeName, getAttributeJsonValue(record.getAttributeValue(attributeName)));
     }
     json.put("attributes", attributes);
 
-    // FIXME: This can probably be cleaned up / refactored
     JSONObject tables = new JSONObject();
-    for (Entry<String, TableValue> table : record.getTables().entrySet()) {
-      JSONArray tableRowsJSON = new JSONArray();
-
-      if (tableNames != null && !tableNames.contains(table.getKey())) continue;
-
-      for(Map<String, AttributeValue> row : table.getValue()) {
-        JSONObject tableAttrsJSON = new JSONObject();
+    // loop through tables
+    for (String tableName : tableNames) {
+      JSONArray tableRowsJson = new JSONArray();
+      // loop through rows
+      TableValue tableValue = record.getTableValue(tableName);
+      for (Map<String, AttributeValue> row : tableValue) {
+        JSONObject tableAttrsJson = new JSONObject();
+        // loop through columns
         for (Entry<String, AttributeValue> entry : row.entrySet()) {
           if (!entry.getValue().getAttributeField().isInternal()) {
-             tableAttrsJSON.put(entry.getKey(), getAttributeJsonValue(entry.getValue()));
+            tableAttrsJson.put(entry.getKey(), getAttributeJsonValue(entry.getValue()));
           }
         }
-        tableRowsJSON.put(tableAttrsJSON);
+        tableRowsJson.put(tableAttrsJson);
       }
-      tables.put(table.getKey(), tableRowsJSON);
+      tables.put(tableName, tableRowsJson);
     }
     json.put("tables", tables);
     return json;
