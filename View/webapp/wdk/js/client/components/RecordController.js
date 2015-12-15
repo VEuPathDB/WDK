@@ -5,15 +5,12 @@ import Loading from './Loading';
 import RecordUI from './RecordUI';
 import { wrappable } from '../utils/componentUtils';
 
-import RecordViewStore from '../stores/RecordViewStore';
-import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
-
 class RecordController extends Component {
 
   constructor(props) {
     super(props);
-    this.store = props.container.get(RecordViewStore);
-    this.actions = props.container.get(RecordViewActionCreator);
+    this.store = props.store.RecordViewStore;
+    this.actions = props.actionCreators.RecordViewActionCreator;
   }
 
   componentWillMount() {

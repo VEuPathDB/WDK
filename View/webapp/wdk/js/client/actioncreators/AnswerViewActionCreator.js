@@ -32,10 +32,12 @@ export default class AnswerViewActionCreator extends ActionCreator {
    *           “name": String, value: Any
    *         } ]
    *       },
-   *       displayInfo: {
-   *         pagination: { offset: Number, numRecords: Number },
-   *         attributes: [ attributeName: String ],
-   *         sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
+   *       formatting: {
+   *         formatConfig: {
+   *           pagination: { offset: Number, numRecords: Number },
+   *           attributes: [ attributeName: String ],
+   *           sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
+   *         }
    *       }
    *     }
    *
@@ -53,10 +55,10 @@ export default class AnswerViewActionCreator extends ActionCreator {
   loadAnswer(questionName, opts = {}) {
     let { params = [], filters = [], displayInfo } = opts;
 
-    // FIXME Set attributes to whatever we're soring on. This is required by
+    // FIXME Set attributes to whatever we're sorting on. This is required by
     // the service, but it doesn't appear to have any effect at this time. We
     // should be passing the attribute in based on info from the RecordClass.
-    displayInfo.attributes = displayInfo.sorting.map(s => s.attributeName);
+    displayInfo.attributes = "__DISPLAYABLE_ATTRIBUTES__"; // special string for all displayable attributes
     displayInfo.tables = [];
 
     // Build XHR request data for '/answer'

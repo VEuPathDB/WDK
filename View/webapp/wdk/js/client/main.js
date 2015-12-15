@@ -1,51 +1,45 @@
-import _ from 'lodash';
-import React from 'react';
-import ReactRouter from 'react-router';
+import './exposeModules';
+
+import mapValues from 'lodash/object/mapValues';
+import values from 'lodash/object/values';
+
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
-import AnswerViewStore from './stores/AnswerViewStore';
-import RecordViewStore from './stores/RecordViewStore';
-import AnswerViewActionCreator from './actioncreators/AnswerViewActionCreator';
-import RecordViewActionCreator from './actioncreators/RecordViewActionCreator';
 import * as Router from './router';
-import dynamicModules from './dynamicModules';
+import * as ActionCreators from './actioncreators';
+import * as Components from './components';
+import * as Stores from './stores';
 
-export let { ActionCreators, Components, Stores } = dynamicModules;
+export { Components };
 
 export function run({ rootUrl, endpoint, rootElement }) {
   let dispatcher = new Dispatcher;
   let service = new WdkService(endpoint);
-  let container = new Container([
-    [ AnswerViewStore, new AnswerViewStore(dispatcher) ],
-    [ RecordViewStore, new RecordViewStore(dispatcher) ],
-    [ AnswerViewActionCreator, new AnswerViewActionCreator(dispatcher, service) ],
-    [ RecordViewActionCreator, new RecordViewActionCreator(dispatcher, service) ]
-  ]);
-  Router.start(rootUrl, rootElement, { container });
+  let stores = mapValues(Stores, Store => new Store(dispatcher));
+  let actionCreators = mapValues(ActionCreators, ActionCreator => new ActionCreator(dispatcher, service));
+
+  let context = {
+    dispatcher,
+    service,
+    stores,
+    actionCreators
+  };
+
+  if (__DEV__) logActions(context);
+
+  let router = Router.start(rootUrl, rootElement, context);
+
+  return Object.assign({ router }, context);
 }
 
-// expose libraries to global object, but only if they aren't already defined
-if (window._ == null) window._ = _;
-if (window.React == null) window.React = React;
-if (window.ReactRouter == null) window.ReactRouter = ReactRouter;
-
-// Simple wrapper to Map that only exposes `get` method.
-// This is used to hold singleton instance of Stores and ActionCreators
-// and is passed to ViewControllers so they can "look up" dependencies.
-//
-// An alternative approach to is create the singletons in a separate module
-// and to export them from that module. This would remove the need to pass the
-// Container throught the app, but it would also make the singletons globally
-// accessible. Both of these help to make WDK extensible (additional Stores and
-// ActionCreators, custom Components, etc).
-class Container {
-
-  constructor(values) {
-    this._map = new Map(values);
-  }
-
-  get(token) {
-    return this._map.get(token);
-  }
-
+function logActions(context) {
+  let { dispatcher, stores } = context;
+  // Debug logging - TODO Only enable in development environments
+  dispatcher.register(action => {
+    dispatcher.waitFor(values(stores).map(s => s.getDispatchToken()));
+    console.group(action.type);
+    console.info("dispatching", action);
+    console.info("state", mapValues(stores, store => store.getState()));
+    console.groupEnd(action.type);
+  });
 }

@@ -46,10 +46,12 @@ var Util = (function() {
         params: paramPack,
         filters: []
       },
-      displayInfo: {
-        pagination: { offset: offset, numRecords: numRecords },
-        columns: null,
-        sorting: null
+      formatting: {
+        formatConfig: {
+          pagination: { offset: offset, numRecords: numRecords },
+          //attributes: null,
+          //sorting: null
+        }
       }
     };
   }
@@ -95,9 +97,9 @@ var ActionCreator = function(serviceUrl, dispatcher) {
     else {
       jQuery.ajax({
         type: "GET",
-        url: _serviceUrl + "/question/" + questionName + "/params",
+        url: _serviceUrl + "/question/" + questionName + "?expandParams=true",
         success: function(data, textStatus, jqXHR) {
-          action.data.params = data;
+          action.data = data;
           _dispatcher.dispatch(action);
         },
         error: function(jqXHR, textStatus, errorThrown ) {
@@ -121,16 +123,6 @@ var ActionCreator = function(serviceUrl, dispatcher) {
     });
   }
 
-  function convertAttributesToMap(data) {
-    data.records.forEach(function(record) {
-      var newAttributes = {};
-      record.attributes.forEach(function(attrib) {
-        newAttributes[attrib.name] = attrib.value;
-      });
-      record.attributes = newAttributes;
-    });
-  }
-
   function loadResults(data) {
     setLoading(true);
     jQuery.ajax({
@@ -141,8 +133,7 @@ var ActionCreator = function(serviceUrl, dispatcher) {
       dataType: "json",
       success: function(data, textStatus, jqXHR) {
         setLoading(false);
-        convertAttributesToMap(data);
-        _dispatcher.dispatch({ actionType: ActionType.CHANGE_RESULTS_ACTION, data: { results: data }});
+        _dispatcher.dispatch({ actionType: ActionType.CHANGE_RESULTS_ACTION, data: data });
       },
       error: function(jqXHR, textStatus, errorThrown ) {
         // TODO: dispatch a CHANGE_RESULTS_ACTION with the specific error (i.e. probably user input problem)
