@@ -634,6 +634,7 @@ public class AnswerValue {
    * 
    */
   public void integrateAttributesQuery(Query attributeQuery) throws WdkModelException, WdkUserException {
+    logger.debug("Integrating attributes query " + attributeQuery.getFullName());
     initPageRecordInstances();
 
     WdkModel wdkModel = _question.getWdkModel();

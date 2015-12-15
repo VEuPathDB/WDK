@@ -35,7 +35,7 @@ if (window.ReactRouter == null) window.ReactRouter = ReactRouter;
 //
 // An alternative approach to is create the singletons in a separate module
 // and to export them from that module. This would remove the need to pass the
-// Container throught the app, but it would also make the singletons globally
+// Container throughout the app, but it would also make the singletons globally
 // accessible. Both of these help to make WDK extensible (additional Stores and
 // ActionCreators, custom Components, etc).
 class Container {

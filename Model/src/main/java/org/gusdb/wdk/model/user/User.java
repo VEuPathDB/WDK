@@ -53,6 +53,7 @@ public class User /* implements Serializable */{
 
   public final static String DEFAULT_SUMMARY_VIEW_PREF_SUFFIX = "";
 
+  // represents the maximum number of sorts we apply to an answer
   public static final int SORTING_LEVEL = 3;
 
   private Logger logger = Logger.getLogger(User.class);
