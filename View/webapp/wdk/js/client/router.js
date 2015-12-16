@@ -46,4 +46,6 @@ export function start(rootUrl, rootElement, props) {
       ReactDOM.render(<Root {...state} {...props}/>, rootElement);
     }
   });
+
+  return router;
 }
