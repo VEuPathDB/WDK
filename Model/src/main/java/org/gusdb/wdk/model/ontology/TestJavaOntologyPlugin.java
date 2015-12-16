@@ -30,6 +30,30 @@ public class TestJavaOntologyPlugin implements JavaOntologyPlugin {
     TreeNode<Map<String, List<String>>> kid2 = new TreeNode<Map<String, List<String>>>(kid2contents);
     root.addChildNode(kid2);
    
+    Map<String, List<String>> leaf1contents = new HashMap<String, List<String>>();
+    addSingleValueProp(leaf1contents, "type", "category");
+    addSingleValueProp(leaf1contents, "name", "leaf1");
+    TreeNode<Map<String, List<String>>> leaf1 = new TreeNode<Map<String, List<String>>>(leaf1contents);
+    kid1.addChildNode(leaf1);
+   
+    Map<String, List<String>> leaf2contents = new HashMap<String, List<String>>();
+    addSingleValueProp(leaf2contents, "type", "category");
+    addSingleValueProp(leaf2contents, "name", "leaf2");
+    TreeNode<Map<String, List<String>>> leaf2 = new TreeNode<Map<String, List<String>>>(leaf2contents);
+    kid1.addChildNode(leaf2);
+   
+    Map<String, List<String>> leaf3contents = new HashMap<String, List<String>>();
+    addSingleValueProp(leaf3contents, "type", "category");
+    addSingleValueProp(leaf3contents, "name", "leaf3");
+    TreeNode<Map<String, List<String>>> leaf3 = new TreeNode<Map<String, List<String>>>(leaf3contents);
+    kid2.addChildNode(leaf3);
+   
+    Map<String, List<String>> leaf4contents = new HashMap<String, List<String>>();
+    addSingleValueProp(leaf4contents, "type", "category");
+    addSingleValueProp(leaf4contents, "name", "leaf4");
+    TreeNode<Map<String, List<String>>> leaf4 = new TreeNode<Map<String, List<String>>>(leaf4contents);
+    kid2.addChildNode(leaf4);
+   
     return null;
   }
 
