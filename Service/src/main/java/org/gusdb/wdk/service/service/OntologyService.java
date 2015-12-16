@@ -12,9 +12,15 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.ontology.Ontology;
 import org.gusdb.wdk.service.formatter.OntologyFormatter;
 import org.json.JSONException;
+//import org.apache.log4j.Logger;
+
 
 @Path("/ontology")
-@Produces(MediaType.APPLICATION_JSON)public class OntologyService extends WdkService {
+@Produces(MediaType.APPLICATION_JSON)
+public class OntologyService extends WdkService {
+
+  //private static final Logger logger = Logger.getLogger(OntologyService.class);
+
   /**
    * Get a list of all ontologies (names)
    */
@@ -35,7 +41,7 @@ import org.json.JSONException;
   @GET
   @Path("/{ontologyName}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getQuestion(
+  public Response getOntology(
       @PathParam("ontologyName") String ontologyName)
           throws WdkUserException, WdkModelException {
     
