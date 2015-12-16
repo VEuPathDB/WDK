@@ -128,7 +128,10 @@
   <define name="javaOntology">
     <element name="javaOntology">
         <attribute name="implementation"/>
-        <ref name="propertyList" />        
+        <attribute name="name"/>
+	<optional>
+          <ref name="propertyList" />        
+	</optional>
     </element>
   </define>
 

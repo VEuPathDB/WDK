@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.WdkModelException;
@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.WdkModel;
 
 public class JavaOntology extends Ontology {
   
-  private static final Logger logger = Logger.getLogger(Ontology.class);
+  //private static final Logger logger = Logger.getLogger(Ontology.class);
 
   // values from XML
   private String implementationClassName;
@@ -58,8 +58,6 @@ public class JavaOntology extends Ontology {
           throw new WdkModelException("The property " + propName
               + " is duplicated in ontology " + getName());
         properties.put(propName, propValue);
-        logger.trace("reporter property: [" + propName + "]='" + propValue
-            + "'");
       }
     }
     propertyList = null;

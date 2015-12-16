@@ -11,9 +11,12 @@ import org.gusdb.wdk.model.ontology.Ontology;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+//import org.apache.log4j.Logger;
 
 public class OntologyFormatter {
   
+  //  private static final Logger logger = Logger.getLogger(OntologyFormatter.class);
+
   public static JSONArray getOntologiesJson(Collection<Ontology> ontologies)
       throws JSONException {
     JSONArray json = new JSONArray();

@@ -54,7 +54,7 @@ public class TestJavaOntologyPlugin implements JavaOntologyPlugin {
     TreeNode<Map<String, List<String>>> leaf4 = new TreeNode<Map<String, List<String>>>(leaf4contents);
     kid2.addChildNode(leaf4);
    
-    return null;
+    return root;
   }
 
   @Override
