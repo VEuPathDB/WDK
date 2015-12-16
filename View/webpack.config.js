@@ -54,9 +54,9 @@ module.exports = {
     : [ new webpack.optimize.UglifyJsPlugin({ mangle: false }),
         new webpack.optimize.OccurenceOrderPlugin(true),
         new webpack.DefinePlugin({
+          __DEV__: "false",
           "process.env": {
-            NODE_ENV: JSON.stringify("production"),
-            __DEV__: "false"
+            NODE_ENV: JSON.stringify("production")
           }
         }),
         commonsPlugin ]
