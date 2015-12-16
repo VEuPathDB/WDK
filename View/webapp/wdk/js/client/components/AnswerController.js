@@ -6,8 +6,6 @@ import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
 import { wrappable } from '../utils/componentUtils';
-import AnswerViewStore from '../stores/AnswerViewStore';
-import AnswerViewActionCreator from '../actioncreators/AnswerViewActionCreator';
 
 /**
  * wrap - Wrap `value` in array.
@@ -93,8 +91,8 @@ let AnswerController = React.createClass({
   // This can also be treated as a constructor: it's a good place to initialize
   // properties of the component.
   componentWillMount() {
-    this.store = this.props.container.get(AnswerViewStore);
-    this.actions = this.props.container.get(AnswerViewActionCreator);
+    this.store = this.props.stores.AnswerViewStore;
+    this.actions = this.props.actionCreators.AnswerViewActionCreator;
     this.sortingPreferenceKey = 'sorting::' + this.props.params.questionName;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
