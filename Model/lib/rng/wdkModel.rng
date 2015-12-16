@@ -933,7 +933,9 @@
   <define name="recordClass">
     <element name="recordClass">
       <attribute name="name" />
-      <attribute name="urlPath" />
+      <optional>
+        <attribute name="urlPath" />
+      </optional>
       <optional>
         <attribute name="displayName" />
       </optional>
