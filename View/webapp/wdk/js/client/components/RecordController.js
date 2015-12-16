@@ -9,7 +9,7 @@ class RecordController extends Component {
 
   constructor(props) {
     super(props);
-    this.store = props.store.RecordViewStore;
+    this.store = props.stores.RecordViewStore;
     this.actions = props.actionCreators.RecordViewActionCreator;
   }
 
