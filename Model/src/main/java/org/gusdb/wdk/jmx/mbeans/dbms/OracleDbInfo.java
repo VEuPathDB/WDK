@@ -20,7 +20,9 @@ public class OracleDbInfo extends AbstractDbInfo {
     .append(" sys_context('USERENV', 'OS_USER'            ) os_user,          ")
     .append(" sys_context('USERENV', 'CURRENT_USERID'     ) current_userid,   ")
     .append(" sys_context('USERENV', 'SESSION_USER'       ) session_user,     ")
-    .append(" sys_context('USERENV', 'SESSION_USERID'     ) session_userid    ")
+    .append(" sys_context('USERENV', 'SESSION_USERID'     ) session_userid,   ")
+    .append(" (select value from nls_database_parameters                      ")
+    .append("     where parameter='NLS_CHARACTERSET') character_encoding      ")
     .append(" from global_name, v$version ver                                 ")
     .append(" where lower(ver.banner) like '%oracle%'                         ")
     .toString();
