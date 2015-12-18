@@ -75,9 +75,9 @@ public class FutureCleaner implements Callable<Boolean> {
           }
         }
         // only sleep for a little while; wake up to check if interrupted
-        Thread.sleep(timeToWait * 1000);
+        Thread.sleep(FUTURE_CLEANER_SLEEP_SECS * 1000);
         if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-        waitedSecs += timeToWait;
+        waitedSecs += FUTURE_CLEANER_SLEEP_SECS;
       }
     }
     catch (InterruptedException e) {
