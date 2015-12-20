@@ -17,7 +17,7 @@ public class FutureCleaner implements Callable<Boolean> {
   private static final Logger LOG = Logger.getLogger(FutureCleaner.class);
 
   private static final int FUTURE_CLEANUP_INTERVAL_SECS = 20;
-  private static final int FUTURE_CLEANUP_RETRY_SECS = 60 * 60; // 1-hour delay
+  private static final int FUTURE_CLEANUP_RETRY_SECS = 60; //* 60; // 1-hour delay
   private static final int FUTURE_CLEANER_SLEEP_SECS = 2;
 
   public static class RunningAnalysis {
@@ -43,36 +43,37 @@ public class FutureCleaner implements Callable<Boolean> {
     try {
       LOG.info("Step Analysis Thread Monitor initialized and running.");
       int waitedSecs = 0;
-      int timeToWait = FUTURE_CLEANUP_INTERVAL_SECS;
+      boolean mostRecentAttemptSucceeded = true;
       while (true) {
-        if (waitedSecs > timeToWait) {
+        int timeToWait = (mostRecentAttemptSucceeded ?
+            FUTURE_CLEANUP_INTERVAL_SECS : FUTURE_CLEANUP_RETRY_SECS);
+        if (waitedSecs >= timeToWait) {
           try {
             // do the business of this thread
             _analysisMgr.expireLongRunningExecutions();
             removeCompletedThreads();
             removeExpiredThreads();
-            // reset waitSecs for next run
-            waitedSecs = 0;
-            // (re)set to normal wait-time
-            timeToWait = FUTURE_CLEANUP_INTERVAL_SECS;
+            mostRecentAttemptSucceeded = true;
           }
           catch (Exception e) {
             // don't hide  interrupted exceptions
             if (e instanceof InterruptedException) {
               throw e;
             }
-            if (timeToWait == FUTURE_CLEANUP_INTERVAL_SECS) {
+            if (mostRecentAttemptSucceeded) {
               // First loop with exception after recovery, log details
               // Probably DB blink so set wait time to higher interval and retry later
               LOG.error("Could not clean up expired step analysis threads.  Will retry in " +
                   FUTURE_CLEANUP_RETRY_SECS + " seconds.", e);
-              timeToWait = FUTURE_CLEANUP_RETRY_SECS;
             }
             else {
               LOG.error("Expired step analysis thread cleaner still failing (" +
                   e.getClass().getSimpleName() + ")");
             }
+            mostRecentAttemptSucceeded = false;
           }
+          // reset waitSecs for next run
+          waitedSecs = 0;
         }
         // only sleep for a little while; wake up to check if interrupted
         Thread.sleep(FUTURE_CLEANER_SLEEP_SECS * 1000);
