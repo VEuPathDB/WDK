@@ -1,12 +1,10 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.record;
-
 
 /**
  * The scope of a {@link Field}, which will affect the availability of the
- * {@link Field} in certain functions on the website.
+ * {@link Field} in certain functions on the website.  This is a convenient
+ * abstraction over the inReportMaker and internal XML attributes of certain
+ * model objects.
  * 
  * @author xingao
  */
