@@ -25,8 +25,22 @@ export function latest(promiseFactory) {
   return function createPromise(...args) {
     let thisPromise = latestPromise = promiseFactory(...args);
     return thisPromise.then(
-      data => thisPromise === latestPromise ? data : pendingPromise,
-      reason => thisPromise === latestPromise ? reason : pendingPromise
+      data => {
+        if (thisPromise === latestPromise) {
+          return data;
+        }
+        else {
+          return pendingPromise;
+        }
+      },
+      reason => {
+        if (thisPromise === latestPromise) {
+          throw reason;
+        }
+        else {
+          return pendingPromise;
+        }
+      }
     );
   };
 }
