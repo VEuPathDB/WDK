@@ -15,7 +15,7 @@ public interface JavaOntologyPlugin {
    * @param parameters
    * @return
    */
-  public TreeNode<Map<String, List<String>>> getTree(Map<String, String> parameters);
+  public TreeNode<Map<String, List<String>>> getTree(Map<String, String> parameters) throws WdkModelException;
   
   /**
    * Validate the parameters that will be provided to the plugin.  This is called by the WDK when it creates its model.

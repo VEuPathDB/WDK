@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.ontology.Ontology;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,7 +27,7 @@ public class OntologyFormatter {
   }
 
   public static JSONObject getOntologyJson(Ontology o)
-      throws JSONException, WdkUserException {
+      throws JSONException, WdkModelException {
     JSONObject qJson = new JSONObject();
     qJson.put("name", o.getName());
     TreeNode<Map<String,List<String>>> tree = o.getTree();
