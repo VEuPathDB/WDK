@@ -17,7 +17,7 @@ public class FutureCleaner implements Callable<Boolean> {
   private static final Logger LOG = Logger.getLogger(FutureCleaner.class);
 
   private static final int FUTURE_CLEANUP_INTERVAL_SECS = 20;
-  private static final int FUTURE_CLEANUP_RETRY_SECS = 60; //* 60; // 1-hour delay
+  private static final int FUTURE_CLEANUP_RETRY_SECS = 60 * 60; // 1-hour delay
   private static final int FUTURE_CLEANER_SLEEP_SECS = 2;
 
   public static class RunningAnalysis {
