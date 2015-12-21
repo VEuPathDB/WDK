@@ -11,6 +11,7 @@ class RecordController extends Component {
     super(props);
     this.store = props.stores.RecordViewStore;
     this.actions = props.actionCreators.RecordViewActionCreator;
+    this.state = this.store.getState();
   }
 
   componentWillMount() {
@@ -32,16 +33,44 @@ class RecordController extends Component {
     this.actions.fetchRecordDetails(props.params.class, props.query);
   }
 
+  renderLoading() {
+    if (this.state.isLoading) {
+      return (
+        <Loading/>
+      );
+    }
+  }
+
+  renderError() {
+    if (this.state.error) {
+      return (
+        <div style={{padding: '1.5em', fontSize: '2em', color: 'darkred', textAlign: 'center'}}>
+          The requested record could not be loaded.
+        </div>
+      );
+    }
+  }
+
+  renderRecord() {
+    if (this.state.record != null) {
+      let title = this.state.recordClass.displayName + ' ' +
+        this.state.record.displayName;
+
+      return (
+        <Doc title={title}>
+          <RecordUI {...this.state} actions={this.actions}/>
+        </Doc>
+      );
+    }
+  }
+
   render() {
-    if (this.state == null || this.state.record == null) return <Loading/>;
-
-    let title = this.state.recordClass.displayName + ' ' +
-      this.state.record.displayName;
-
     return (
-      <Doc title={title}>
-        <RecordUI {...this.state} actions={this.actions}/>
-      </Doc>
+      <div>
+        {this.renderLoading()}
+        {this.renderError()}
+        {this.renderRecord()}
+      </div>
     );
   }
 
