@@ -7,7 +7,6 @@ import java.util.Map;
 
 //import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkModel;
@@ -37,7 +36,7 @@ public class JavaOntology extends Ontology {
   }
 
   @Override
-  public TreeNode<Map<String, List<String>>> getTree() throws WdkUserException {
+  public TreeNode<Map<String, List<String>>> getTree() throws WdkModelException {
     return plugin.getTree(properties);
   }
   

@@ -7,6 +7,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.WdkModelException;
 
 public abstract class Ontology extends WdkModelBase {
   
@@ -18,19 +19,19 @@ public abstract class Ontology extends WdkModelBase {
   
   public String getName() { return name; }
   
-  public abstract TreeNode<Map<String, List<String>>> getTree() throws WdkUserException ;
+  public abstract TreeNode<Map<String, List<String>>> getTree() throws WdkModelException ;
   
   /**
    * Get the ontology tree.  Throw a WdkUserException if the tree contains circular paths.
    * @return
    * @throws WdkUserException
    */
-  public TreeNode<Map<String, List<String>>> getValidatedTree() throws WdkUserException {
+  public TreeNode<Map<String, List<String>>> getValidatedTree() throws WdkModelException {
     TreeNode<Map<String, List<String>>> tree = getTree();
     List<List<TreeNode<Map<String, List<String>>>>> circularPaths = tree.findCircularPaths();
     if (!circularPaths.isEmpty()) {
       // TODO: print out circular paths
-      throw new WdkUserException("Ontology " + getName() + " contains circular paths");
+      throw new WdkModelException("Ontology " + getName() + " contains circular paths");
     }
     return tree;
   }
@@ -49,7 +50,7 @@ public abstract class Ontology extends WdkModelBase {
    */
   public TreeNode<Map<String, List<String>>> getTree(final String individualFilterKey,
       final String individualFilterValue, final String typeKey, final String categoryTypeValue)
-          throws WdkUserException {
+          throws WdkUserException, WdkModelException {
 
     Predicate<TreeNode<Map<String, List<String>>>> predicate = new Predicate<TreeNode<Map<String, List<String>>>>() {
       @Override
@@ -78,12 +79,8 @@ public abstract class Ontology extends WdkModelBase {
         }
       }
     };
-
-    try {
-      TreeNode<Map<String, List<String>>> tree = getTree().filter(predicate, null, true);
-      return tree;
-    } catch (Exception ex) {
-      throw new WdkUserException(ex);
-    }
+   
+    TreeNode<Map<String, List<String>>> tree = getTree().filter(predicate, null, true);
+    return tree;
   }
 }
