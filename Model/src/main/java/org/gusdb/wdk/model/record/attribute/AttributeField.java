@@ -45,7 +45,7 @@ public abstract class AttributeField extends Field {
   public static final Pattern MACRO_PATTERN = Pattern.compile(
       "\\$\\$([^\\$]+?)\\$\\$", Pattern.MULTILINE);
 
-  private static Logger logger = Logger.getLogger(AttributeField.class);
+  protected static Logger logger = Logger.getLogger(AttributeField.class);
 
   /**
    * The dependent fields are the ones that are embedded in the current field.

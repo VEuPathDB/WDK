@@ -48,7 +48,7 @@ public abstract class AttributeValue {
   }
 
   public String getBriefDisplay() throws WdkModelException, WdkUserException {
-    String display = getDisplay();
+		String display = getDisplay();
     int truncateTo = field.getTruncateTo();
     switch (truncateTo) {
     case -1:

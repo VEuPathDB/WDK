@@ -40,7 +40,10 @@ public class PrimaryKeyAttributeField extends AttributeField {
   private Set<String> columnRefSet = new LinkedHashSet<String>();
 
   private List<WdkModelText> textList = new ArrayList<WdkModelText>();
+  private List<WdkModelText> displays = new ArrayList<WdkModelText>();
   private String text;
+	private String display;
+
 
   /**
    * if an alias query ref is defined, the ids will be passed though this alias
@@ -74,6 +77,14 @@ public class PrimaryKeyAttributeField extends AttributeField {
 
   public String getText() {
     return text;
+  }
+
+ public void addDisplay(WdkModelText display) {
+	 this.displays.add(display);
+  }
+
+  public String getDisplay() {
+    return (display != null) ? display : text;
   }
 
   /*
@@ -112,6 +123,8 @@ public class PrimaryKeyAttributeField extends AttributeField {
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
 
+
+
     // exclude columnRefs
     for (WdkModelText columnRef : columnRefList) {
       if (columnRef.include(projectId)) {
@@ -147,6 +160,19 @@ public class PrimaryKeyAttributeField extends AttributeField {
     if (text == null)
       throw new WdkModelException("No primary key format string defined"
           + " in recordClass " + recordClass.getFullName());
+
+
+ // exclude display, display is optional
+    for (WdkModelText display : displays) {
+      if (display.include(projectId)) {
+        display.excludeResources(projectId);
+        this.display = display.getText();
+        break;
+      }
+    }
+    displays = null;
+
+
   }
 
   /*
