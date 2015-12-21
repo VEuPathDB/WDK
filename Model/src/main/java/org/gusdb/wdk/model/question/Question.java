@@ -620,6 +620,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return attributeFields;
   }
 
+  public Map<String, AttributeField> getDynamicAttributeFieldMap(FieldScope scope) {
+    return dynamicAttributeSet.getAttributeFieldMap(scope);
+  }
+  
   public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope)
       throws WdkModelException {
 

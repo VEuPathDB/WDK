@@ -2,7 +2,7 @@ package org.gusdb.wdk.service.request.answer;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -184,7 +184,7 @@ public class AnswerRequestSpecificsFactory {
   private static Map<String, TableField> parseTables(JSONArray tablesJson,
       Question question) throws RequestMisformatException {
     Map<String, TableField> availableTables = question.getRecordClass().getTableFieldMap();
-    Map<String, TableField> tables = new HashMap<>();
+    Map<String, TableField> tables = new LinkedHashMap<>();
     for (int i = 0; i < tablesJson.length(); i++) {
       String tableName = tablesJson.getString(i);
       TableField table = availableTables.get(tableName);
@@ -200,7 +200,7 @@ public class AnswerRequestSpecificsFactory {
   private static Map<String, AttributeField> parseAttributes(JSONArray attributesJson,
       Question question) throws RequestMisformatException {
     Map<String, AttributeField> availableAttribs = question.getAttributeFieldMap();
-    Map<String, AttributeField> attributes = new HashMap<>();
+    Map<String, AttributeField> attributes = new LinkedHashMap<>();
     for (int i = 0; i < attributesJson.length(); i++) {
       String attribName = attributesJson.getString(i);
       AttributeField attrib = availableAttribs.get(attribName);
