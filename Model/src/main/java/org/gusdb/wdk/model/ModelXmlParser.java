@@ -925,7 +925,9 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod(prefixPK + "/columnRef", "setText", 0);
     configureNode(digester, prefixPK + "/text", WdkModelText.class, "addText");
     digester.addCallMethod(prefixPK + "/text", "setText", 0);
-    configureAttributePlugins(digester, "primaryKeyAttribute");
+		configureNode(digester, prefixPK + "/display", WdkModelText.class, "addDisplay");
+    digester.addCallMethod(prefixPK + "/display", "setText", 0);
+		configureAttributePlugins(digester, "primaryKeyAttribute");
 
     configureNode(digester, "*/columnAttribute", ColumnAttributeField.class, "addAttributeField");
     configureNode(digester, "*/columnAttribute/filterRef", FilterReference.class, "addFilterReference");

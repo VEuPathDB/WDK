@@ -9,13 +9,16 @@
     required="true"
     description="The primary key AttributeValue instance"
   />
-
   <jsp:directive.attribute
     name="recordName"
     required="false"
     description="The full name of the record class"
   />
-
+ <jsp:directive.attribute
+    name="displayValue"
+    required="true"
+    description="The display name of the primarykey"
+  />
   <c:set var="recordLinkKeys" value="" />
   <c:forEach items="${primaryKeyAttributeValue.values}" var="pkValue">
     <c:set var="recordLinkKeys" value="${recordLinkKeys}&amp;${pkValue.key}=${pkValue.value}" />
@@ -23,6 +26,6 @@
 
   <c:url var="recordLink" value="/showRecord.do?name=${recordName}${recordLinkKeys}" />
 
-  <a href="${recordLink}">${primaryKeyAttributeValue.value}</a>
+  <a href="${recordLink}">${displayValue}</a>
 
 </jsp:root>

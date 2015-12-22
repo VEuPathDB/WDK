@@ -1384,6 +1384,10 @@
             <ref name="IncludeExclude" />
             <text />
           </element>
+          <element name="display">
+            <ref name="IncludeExclude" />
+            <text />
+          </element>
         </choice>
       </oneOrMore>
     </element>
