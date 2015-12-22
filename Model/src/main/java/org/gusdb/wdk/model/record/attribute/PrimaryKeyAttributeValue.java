@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.record.attribute;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -24,6 +25,13 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   private final Map<String, Object> pkValues;
   private AttributeValueContainer valueContainer;
   
+  /**
+   * The display will be used in the summary and record page display. if a
+   * display is not specified in the model, the text (in value) will be used as display.
+   */
+  private String display;
+
+
   public PrimaryKeyAttributeValue(PrimaryKeyAttributeField field, Map<String, Object> pkValues) {
     this(field, pkValues, null);
   }
@@ -64,6 +72,32 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
       }
     }
     return value;
+  }
+
+@Override
+  public String getDisplay() throws WdkModelException, WdkUserException {
+    if (this.display == null) {
+      Map<String, Object> values = new LinkedHashMap<String, Object>(pkValues);
+
+      try {
+      // parse the text and look up other fields, so that primaryKey fields can support macros of other column
+      // attributes.
+      Map<String, AttributeField> subFields = field.parseFields(((PrimaryKeyAttributeField)field).getDisplay());
+      for (String fieldName : subFields.keySet()) {
+        if (!values.containsKey(fieldName)) {
+          AttributeValue value = valueContainer.getAttributeValue(fieldName);
+          Object object = value.getValue();
+          values.put(fieldName, (object == null) ? "" : object.toString());
+        }
+      }
+
+      display = Utilities.replaceMacros(((PrimaryKeyAttributeField)field).getDisplay(), values);
+      } catch (Exception ex) {
+         logger.error("Failed to substitute sub-fields.", ex);
+         throw new WdkModelException(ex);
+      }
+    }
+    return display;
   }
 
   /**
