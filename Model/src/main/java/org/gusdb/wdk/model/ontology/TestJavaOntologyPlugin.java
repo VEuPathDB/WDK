@@ -11,7 +11,7 @@ import org.gusdb.wdk.model.WdkModelException;
 public class TestJavaOntologyPlugin implements JavaOntologyPlugin {
 
   @Override
-  public TreeNode<Map<String, List<String>>> getTree(Map<String, String> parameters) {
+  public TreeNode<Map<String, List<String>>> getTree(Map<String, String> parameters, String ontologyName) {
     
     Map<String, List<String>> rootContents = new HashMap<String, List<String>>();
     addSingleValueProp(rootContents, "type", "category");
@@ -58,7 +58,7 @@ public class TestJavaOntologyPlugin implements JavaOntologyPlugin {
   }
 
   @Override
-  public void validateParameters(Map<String, String> parameters) throws WdkModelException {
+  public void validateParameters(Map<String, String> parameters, String ontologyName) throws WdkModelException {
     // TODO Auto-generated method stub
 
   }

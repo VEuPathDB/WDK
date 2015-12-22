@@ -37,7 +37,7 @@ public class JavaOntology extends Ontology {
 
   @Override
   public TreeNode<Map<String, List<String>>> getTree() throws WdkModelException {
-    return plugin.getTree(properties);
+    return plugin.getTree(properties, getName());
   }
   
   /*
@@ -78,7 +78,7 @@ public class JavaOntology extends Ontology {
     }
     
     // validate that we have required properties
-    plugin.validateParameters(properties);
+    plugin.validateParameters(properties, getName());
   }
 
   private JavaOntologyPlugin getPlugin()
