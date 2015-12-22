@@ -25,14 +25,9 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   private final Map<String, Object> pkValues;
   private AttributeValueContainer valueContainer;
   
- /**
-   * The text will be used in the download report.
-   */
-  private String text;
-
   /**
    * The display will be used in the summary and record page display. if a
-   * display is not specified in the model, the text will be used as display.
+   * display is not specified in the model, the text (in value) will be used as display.
    */
   private String display;
 
@@ -104,13 +99,13 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
         }
       }
 
-      value = Utilities.replaceMacros(((PrimaryKeyAttributeField)field).getDisplay(), values);
+      display = Utilities.replaceMacros(((PrimaryKeyAttributeField)field).getDisplay(), values);
       } catch (Exception ex) {
          logger.error("Failed to substitute sub-fields.", ex);
          throw new WdkModelException(ex);
       }
     }
-    return value.toString();
+    return display;
   }
 
   /**
