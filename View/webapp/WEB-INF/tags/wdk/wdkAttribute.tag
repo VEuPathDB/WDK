@@ -31,24 +31,14 @@
     <c:otherwise>${attributeValue.value}</c:otherwise>
   </c:choose>
 </c:set>
-<c:if test="${displayValue eq 'Y' || displayValue eq 'N' }">
-  <c:set var="align" value="align='center'" />
-</c:if>
 
-<td style="padding:2px;vertical-align:middle">
+<td style="padding:2px">
   <div class="attribute-summary" ${align} style="${nowrap}padding:3px 2px">   
   <!-- need to know if fieldVal should be hot linked -->
   <c:choose>
 
     <c:when test="${displayValue == null || fn:length(displayValue) == 0}">
       <span style="color:gray;">N/A</span>
-    </c:when>
-
-   <c:when test="${displayValue eq 'Y'}">
-      <imp:image src="wdk/images/checkY-2.png" width="20px" />
-    </c:when>
-   <c:when test="${displayValue eq 'N'}">
-      <imp:image src="wdk/images/checkN-2.png" width="20px" />
     </c:when>
 
     <c:when test="${attributeValue.class.name eq 'org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue'}">
