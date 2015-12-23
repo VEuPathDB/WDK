@@ -42,6 +42,7 @@ let RecordMainSection = React.createClass({
               depth={depth}
               category={category}
               record={record}
+              recordClass={this.props.recordClass}
               attributes={attributes}
               tables={tables}
               isCollapsed={collapsedCategories.includes(category.name)}
