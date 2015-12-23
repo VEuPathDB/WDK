@@ -545,8 +545,6 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/javaOntology/property", WdkModelText.class, "addProperty");
     digester.addCallMethod("wdkModel/javaOntology/property", "setText", 0);
 
-    configureNode(digester, "wdkModel/javaOntologydefaultPropertyList", PropertyList.class, "addDefaultPropertyList");
-
     // categories
     configureNode(digester, "wdkModel/searchCategory", SearchCategory.class, "addCategory");
 
