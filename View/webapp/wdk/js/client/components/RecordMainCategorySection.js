@@ -33,6 +33,7 @@ let RecordMainCategorySection = React.createClass({
       category,
       depth,
       record,
+      recordClass,
       attributes,
       tables,
       isCollapsed,
@@ -56,23 +57,21 @@ let RecordMainCategorySection = React.createClass({
             <div className="wdk-RecordSectionContent">
               {attributes.length > 0 &&
                 <div className="wdk-RecordAttributeSection">
-                  {attributes.reduce(function(rows, attribute) {
+                  {attributes.map(function(attribute) {
                     let { name, displayName } = attribute;
                     let value = record.attributes[name]
-                    if (value != null) {
-                      rows.push(
-                        <div className="wdk-RecordAttributeSectionItem" key={name}>
-                          <div className="wdk-RecordAttributeName">
-                            <strong>{displayName}</strong>
-                          </div>
-                          <div className="wdk-RecordAttributeValue">
-                            <RecordAttribute value={value} />
-                          </div>
+                    if (value == null) return null;
+                    return (
+                      <div className="wdk-RecordAttributeSectionItem" key={name}>
+                        <div className="wdk-RecordAttributeName">
+                          <strong>{displayName}</strong>
                         </div>
-                      );
-                    }
-                    return rows;
-                  }, [])}
+                        <div className="wdk-RecordAttributeValue">
+                          <RecordAttribute value={value} record={record} recordClass={recordClass}/>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               }
               {tables.map(tableMeta => {
@@ -90,7 +89,7 @@ let RecordMainCategorySection = React.createClass({
                       onClick={() => this.toggleTableCollapse(tableMeta, isCollapsed)}>
                       {' ' + displayName}
                     </div>
-                    {isCollapsed? null : <RecordTable table={table} tableMeta={tableMeta}/>}
+                    {isCollapsed? null : <RecordTable table={table} tableMeta={tableMeta} record={record} recordClass={recordClass}/>}
                   </div>
                 );
               })}
