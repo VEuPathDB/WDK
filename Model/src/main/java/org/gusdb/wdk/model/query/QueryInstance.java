@@ -200,13 +200,13 @@ public abstract class QueryInstance<T extends Query> {
 
   public int getResultSize() throws WdkModelException, WdkUserException {
     try {
-      logger.debug("start getting query size");
+      //logger.debug("start getting query size");
       StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
       sql.append(getSql()).append(") f");
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
       Object objSize = SqlUtils.executeScalar(dataSource, sql.toString(), query.getFullName() + "__count");
       int resultSize = Integer.parseInt(objSize.toString());
-      logger.debug("end getting query size");
+      //logger.debug("end getting query size");
       return resultSize;
     }
     catch (SQLException e) {
@@ -347,6 +347,7 @@ public abstract class QueryInstance<T extends Query> {
     sql = sql.replace(Utilities.MACRO_CACHE_TABLE, tableName);
     sql = sql.replace(Utilities.MACRO_CACHE_INSTANCE_ID, Integer.toString(instanceId));
 	    
+		logger.debug("POST sql: " + sql);
     // get results and time process();
     DataSource dataSource = wdkModel.getAppDb().getDataSource();
     try {
