@@ -213,6 +213,6 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     }
     
     executePostCacheInsertSql(tableName, instanceId);
-
+    logger.debug("created!!  cache table for query " + query.getFullName());
   }
 }
