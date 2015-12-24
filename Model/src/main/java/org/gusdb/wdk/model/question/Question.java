@@ -364,6 +364,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       Map<String, String> dependentValues, int pageStart, int pageEnd,
       Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter,
       boolean validate, int assignedWeight) throws WdkModelException, WdkUserException {
+		logger.debug("makeAnswerValue()");
     Map<String, String> context = new LinkedHashMap<String, String>();
     context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
 

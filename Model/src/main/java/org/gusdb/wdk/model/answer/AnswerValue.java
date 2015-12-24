@@ -225,7 +225,7 @@ public class AnswerValue {
     // get the view
     _filter = filter;
 
-    logger.debug("Answer created.");
+    logger.debug("AnswerValue created for question: " + question.getDisplayName());
   }
 
   /**
@@ -251,6 +251,8 @@ public class AnswerValue {
 
     _sortingMap = new LinkedHashMap<String, Boolean>(answerValue._sortingMap);
     _filter = answerValue._filter;
+
+		logger.debug("AnswerValue created by copying another AnserValue");
   }
 
   // ------------------------------------------------------------------
@@ -297,12 +299,13 @@ public class AnswerValue {
     if (_resultSize == null || !_idsQueryInstance.getIsCacheable()) {
       _resultSize = new DefaultResultSizePlugin().getResultSize(this);
     }
-    logger.debug("getting result size: cache=" + _resultSize + ", isCached=" + _idsQueryInstance.getIsCacheable());
+    logger.debug("getting result size: cache=" + _resultSize + ", isCacheable=" + _idsQueryInstance.getIsCacheable());
     return _resultSize;
   }
 
   public int getDisplayResultSize() throws WdkModelException, WdkUserException {
     ResultSize plugin = _question.getRecordClass().getResultSizePlugin();
+		logger.debug("getting Display result size.");
     return plugin.getResultSize(this);
   }
 
@@ -642,7 +645,7 @@ public class AnswerValue {
     // appended
     attributeQuery = (Query) wdkModel.resolveReference(attributeQuery.getFullName());
 
-    logger.debug("filling attribute values from answer " + attributeQuery.getFullName());
+    //logger.debug("filling attribute values from answer " + attributeQuery.getFullName());
     for (Column column : attributeQuery.getColumns()) {
       logger.trace("column: '" + column.getName() + "'");
     }
@@ -756,11 +759,11 @@ public class AnswerValue {
     Query tableQuery = tableField.getQuery();
     tableQuery = (Query) wdkModel.resolveReference(tableQuery.getFullName());
 
-    logger.debug("integrate table query from answer: " + tableQuery.getFullName());
+    /*logger.debug("integrate table query from answer: " + tableQuery.getFullName());
     for (Param param : tableQuery.getParams()) {
-      logger.debug("param: " + param.getName());
+			 logger.debug("param: " + param.getName());
     }
-
+		*/
     // get and run the paged attribute query sql
     String sql = getPagedTableSql(tableQuery);
 
@@ -990,17 +993,18 @@ public class AnswerValue {
       }
 
       // apply "new" filters
+			logger.debug("applyFilters(): excludeFilter: " + excludeFilter);
       innerSql = applyFilters(innerSql, _filterOptions, excludeFilter);
 
       // apply view filters if requested
       boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
       if (viewFiltersApplied && !excludeViewFilters){
+				logger.debug("apply viewFilters(): excludeFilter: " + excludeFilter);
         innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
       }
-      
+     
       innerSql = "(" + innerSql + ")";
-
-      logger.debug("ID SQL constructed (viewFilters = " + viewFiltersApplied + "):\n" + innerSql);
+      //logger.debug("ID SQL constructed (viewFilters = " + viewFiltersApplied + "):\n" + innerSql);
 
       return innerSql;
     }
@@ -1013,8 +1017,10 @@ public class AnswerValue {
 
   private String applyFilters(String innerSql, FilterOptionList filterOptions, String excludeFilter)
       throws WdkModelException, WdkUserException {
+
     if (filterOptions != null) {
       for (FilterOption filterOption : filterOptions.getFilterOptions().values()) {
+				logger.debug("FilterOption:" + filterOption.getJSON().toString(2));
         if (excludeFilter == null || !filterOption.getKey().equals(excludeFilter)) {
           if (!filterOption.isDisabled()) {
             Filter filter = _question.getFilter(filterOption.getKey());
@@ -1042,7 +1048,7 @@ public class AnswerValue {
       Map<String, ColumnAttributeField> dependents = field.getColumnAttributeFields();
       for (ColumnAttributeField dependent : dependents.values()) {
         Column column = dependent.getColumn();
-        logger.debug("field [" + fieldName + "] depends on column [" + column.getName() + "]");
+        //logger.debug("field [" + fieldName + "] depends on column [" + column.getName() + "]");
         Query query = column.getQuery();
         String queryName = query.getFullName();
         // cannot use the attribute query from record, need to get it
@@ -1103,7 +1109,7 @@ public class AnswerValue {
     if (_pageRecordInstances != null)
       return;
 
-    logger.debug("Initializing paged records......");
+    //logger.debug("Initializing paged records......");
     _pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
     try {
@@ -1168,7 +1174,7 @@ public class AnswerValue {
       throw ex;
     }
 
-    logger.debug("Paged records initialized.");
+    //logger.debug("Paged records initialized.");
   }
 
   /**
