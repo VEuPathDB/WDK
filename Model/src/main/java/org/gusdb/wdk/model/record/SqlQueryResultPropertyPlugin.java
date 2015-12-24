@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.math.BigDecimal;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -18,6 +19,8 @@ import org.gusdb.wdk.model.query.param.Param;
  */
 public class SqlQueryResultPropertyPlugin implements ResultProperty {
 	
+  private static final Logger logger = Logger.getLogger(SqlQueryResultPropertyPlugin.class);
+
 	private final static String WDK_ID_SQL_PARAM = "WDK_ID_SQL";
 	private final static String PROPERTY_COLUMN = "propertyValue";
 	
@@ -33,9 +36,12 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
 	@Override
 	public Integer getPropertyValue(AnswerValue answerValue, String propertyName)
 			throws WdkModelException, WdkUserException {
-
 		RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+		logger.debug("Getting property value: in record class: " + recordClass.getFullName() + " and question: " + answerValue.getQuestion().getDisplayName());
+		logger.debug(" .... with idSQL: " + answerValue.getIdSql());
+
 		if (!propertyName.equals(this.propertyName)) throw new WdkModelException("Accessing result property plugin for record class '"  + recordClass.getName() + "' with illegal property name '" + propertyName + "'.  The allowed property name is '" + this.propertyName + "'");
+
 		QueryInstance<?> queryInstance = getQueryInstance(answerValue);
 		ResultList results = queryInstance.getResults();
 		results.next();
