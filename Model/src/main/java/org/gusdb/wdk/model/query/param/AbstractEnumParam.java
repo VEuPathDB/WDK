@@ -129,6 +129,7 @@ public abstract class AbstractEnumParam extends Param {
 
   /**
    * this property is only used by abstractEnumParams, but have to be initialized from suggest.
+   * it is an enum with values: NONE, ALL, FIRST
    */
   protected SelectMode selectMode;
 
@@ -625,9 +626,9 @@ public abstract class AbstractEnumParam extends Param {
     // if countOnlyLeaves is set, must generate original tree, set values, and
     // count the leaves
     String displayType = getDisplayType();
-    logger.debug("Checking whether num selected exceeds max on param " + getFullName() + " with values" +
-        ": displayType = " + displayType + ", maxSelectedCount = " + getMaxSelectedCount() +
-        ", countOnlyLeaves = " + getCountOnlyLeaves());
+    //logger.debug("Checking whether num selected exceeds max on param " + getFullName() + " with values" +
+		//   ": displayType = " + displayType + ", maxSelectedCount = " + getMaxSelectedCount() +
+		//   ", countOnlyLeaves = " + getCountOnlyLeaves());
     if (displayType != null && displayType.equals(DISPLAY_TREEBOX) && getCountOnlyLeaves()) {
       EnumParamTermNode[] rootNodes = getVocabInstance(user, contextParamValues).getVocabTreeRoots();
       FieldTree tree = EnumParamBean.getParamTree(getName(), rootNodes);
@@ -657,8 +658,8 @@ public abstract class AbstractEnumParam extends Param {
    * Builds the default value (and sanity default value) of the "current" enum values
    */
   protected final void applySelectMode(EnumParamVocabInstance cache) throws WdkModelException {
-    logger.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " +
-        super.getDefault());
+		// logger.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " +
+    //    super.getDefault());
     String defaultFromModel = super.getDefault();
 
     String errorMessage = "The default value from model, '" + defaultFromModel +
@@ -836,7 +837,7 @@ public abstract class AbstractEnumParam extends Param {
 
   public void fetchCorrectValue(User user, Map<String, String> contextParamValues,
       Map<String, EnumParamVocabInstance> caches) throws WdkModelException, WdkUserException {
-    logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
+    //logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
 
     // make sure the values for depended params are fetched first.
     if (isDependentParam()) {
@@ -860,7 +861,7 @@ public abstract class AbstractEnumParam extends Param {
 
     if (value != null)
     contextParamValues.put(name, value);
-    logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
+    //logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
   }
 
   protected String getValidStableValue(User user, String stableValue, Map<String, String> contextParamValues,
@@ -869,7 +870,7 @@ public abstract class AbstractEnumParam extends Param {
       return cache.getDefaultValue();
     
     String[] terms = getTerms(user, stableValue, contextParamValues);
-    logger.debug("CORRECTING " + name + "=\"" + stableValue + "\"");
+    //logger.debug("CORRECTING " + name + "=\"" + stableValue + "\"");
     Map<String, String> termMap = cache.getVocabMap();
     Set<String> validValues = new LinkedHashSet<>();
     for (String term : terms) {

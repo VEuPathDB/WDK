@@ -155,6 +155,8 @@ public abstract class QueryInstance<T extends Query> {
       // include extra info from child
       appendSJONContent(jsInstance);
 
+			logger.debug("json:\n" + jsInstance.toString(2));
+
       return jsInstance;
     }
     catch (JSONException e) {
@@ -187,11 +189,11 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   public ResultList getResults() throws WdkModelException, WdkUserException {
-    logger.debug("retrieving results of query [" + query.getFullName() + "]");
+    //logger.debug("retrieving results of query [" + query.getFullName() + "]");
 
     ResultList resultList = (getIsCacheable()) ? getCachedResults() : getUncachedResults();
 
-    logger.debug("results of query [" + query.getFullName() + "] retrieved.");
+    //logger.debug("results of query [" + query.getFullName() + "] retrieved.");
 
     return resultList;
   }
