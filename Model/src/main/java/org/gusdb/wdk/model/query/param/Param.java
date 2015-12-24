@@ -485,7 +485,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     String regex = "\\$\\$" + name + "\\$\\$";
     // escape all single quotes in the value
 
-    logger.debug("\n\nPARAM SQL:\n\n" + sql.replaceAll(regex, Matcher.quoteReplacement(internalValue)) + "\n\n");
+    //logger.debug("\n\nPARAM SQL:\n\n" + sql.replaceAll(regex, Matcher.quoteReplacement(internalValue)) + "\n\n");
 
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
