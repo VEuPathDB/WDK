@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.filter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -12,6 +13,8 @@ import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
 
 public class FilterOption {
+
+	private static final Logger LOG = Logger.getLogger(FilterOption.class);
 
   public static final String KEY_NAME = "name";
   public static final String KEY_VALUE = "value";
@@ -25,14 +28,22 @@ public class FilterOption {
     String name = jsFilterOption.getString(KEY_NAME);
     this._value = jsFilterOption.getJSONObject(KEY_VALUE);
     this._filter = question.getFilter(name);
-    if (jsFilterOption.has(KEY_DISABLED))
-      this._disabled = jsFilterOption.getBoolean(KEY_DISABLED);
+    if (jsFilterOption.has(KEY_DISABLED)){
+			this._disabled = jsFilterOption.getBoolean(KEY_DISABLED);
+		}
   }
 
   public FilterOption(Question question, Filter filter, JSONObject value) {
     this._filter = filter;
     this._value = value;
-    this._disabled = false;
+		if ( ( question.getQuestionSetName().substring(0,8).equals("Internal") ) && (filter.getKey().contains("matched"))  ) {
+			LOG.debug("FILTEROPTIONS for filter: " + filter.getKey() +  " on question: " +  question.getFullName()  + ":  setting disable TRUE" );
+			this._disabled = true;
+		}
+		else {   
+			LOG.debug("FILTEROPTIONS for filter: " + filter.getKey() +  " on question: " +  question.getFullName()  + ":  setting disable FALSE" ); 
+			this._disabled = false;
+		}
   }
 
   public String getKey() {

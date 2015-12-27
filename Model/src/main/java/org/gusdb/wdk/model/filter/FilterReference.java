@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.filter;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -8,6 +9,7 @@ import org.json.JSONObject;
 
 public class FilterReference extends WdkModelBase {
 
+	private static final Logger LOG = Logger.getLogger(FilterReference.class);
   private String _name;
   private String _defaultValueString = null;
   private JSONObject _defaultValueObject = null;
@@ -38,6 +40,8 @@ public class FilterReference extends WdkModelBase {
 
 	    try {
 	      if (_defaultValueString != null) _defaultValueObject = new JSONObject(_defaultValueString);
+				LOG.debug("FilterReference: " + getDefaultValueObject().toString());
+
 	    }
 	    catch (JSONException ex) {
 	      throw new WdkModelException(ex);
