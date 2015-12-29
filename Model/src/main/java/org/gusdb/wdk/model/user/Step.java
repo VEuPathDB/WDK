@@ -860,11 +860,17 @@ public class Step {
     answerValueCache.invalidateViewAnswers();
   }
 
-  // we need to add/pass the disabled property
+  // we need to pass the disabled property
+  public void addFilterOption(String filterName, JSONObject filterValue, boolean is_disabled) throws WdkModelException {
+    getFilterOptions().addFilterOption(filterName, filterValue, is_disabled);
+    validateFilterOptions(getViewFilterOptions(), false);
+  }
+
   public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
     getFilterOptions().addFilterOption(filterName, filterValue);
     validateFilterOptions(getViewFilterOptions(), false);
   }
+
 
   public void removeFilterOption(String filterName) throws WdkModelException {
     getFilterOptions().removeFilterOption(filterName);

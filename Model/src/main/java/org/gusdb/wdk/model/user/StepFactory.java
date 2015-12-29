@@ -1795,18 +1795,19 @@ public class StepFactory {
   }
   
   // we need to add/pass the disabled property
-	// read property from filter
   private void addDefaultFiltersToStep(Step step) throws WdkModelException {
     for (Filter filter : step.getQuestion().getFilters().values()) {
       logger.debug("adding default filters: found something for filter: " + filter.getKey());
 			logger.debug("CHECKING IF STEP IS COMBINED: " + step.isCombined());
+
+			// will read property from filter, affecting is_disabled
+			boolean is_disabled = false;
+			if(step.isCombined() && filter.getKey().contains("matched")) is_disabled = true;
+
       if (filter.getDefaultValue() != null) {
         logger.debug("adding filter default value (from Filter IMPL): happens to be not null");
-        step.addFilterOption(filter.getKey(), filter.getDefaultValue());
+        step.addFilterOption(filter.getKey(), filter.getDefaultValue(), is_disabled);
       } 
-      else {
-        logger.debug("adding filter default value (from Filter IMPL): happens to be NULL");
-      }
     }
   }
 

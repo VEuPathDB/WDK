@@ -50,7 +50,13 @@ public class FilterOptionList implements Iterable<FilterOption>{
     _options.put(filterName, filterOption);
   }
 
-  // we need to add/pass the disabled property
+  // we need to pass the disabled property
+  public void addFilterOption(String filterName, JSONObject filterValue, boolean is_disabled) throws WdkModelException {
+    Filter filter = _question.getFilter(filterName);
+    FilterOption option = new FilterOption(_question, filter, filterValue, is_disabled);
+    logger.debug("filter option LIST: 3new (filter name -- js value jsobject):ADDING FILTER OPTION to step with question: " + _question.getFullName());
+    _options.put(filterName, option);
+  }
   public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
     Filter filter = _question.getFilter(filterName);
     FilterOption option = new FilterOption(_question, filter, filterValue);

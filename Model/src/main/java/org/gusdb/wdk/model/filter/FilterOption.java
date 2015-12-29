@@ -34,9 +34,12 @@ public class FilterOption {
     }
   }
   // we need to add/pass the disabled property
-  public FilterOption(Question question, Filter filter, JSONObject value) {
+  public FilterOption(Question question, Filter filter, JSONObject value, boolean is_disabled) {
     this._filter = filter; //a Filter
     this._value = value; // a JSON object
+		this._disabled = is_disabled; // boolean
+		LOG.debug("FilterOption created for filter: " + filter.getKey() +  " on step with question: " +  question.getFullName()  + ":  setting disable: " + is_disabled ); 
+		/*
     if ( ( question.getQuestionSetName().substring(0,8).equals("Internal") ) && (filter.getKey().contains("matched"))  ) {
       LOG.debug("FilterOption created for filter: " + filter.getKey() +  " on step with question: " +  question.getFullName()  + ":  setting disable TRUE" );
       this._disabled = true; 
@@ -45,6 +48,14 @@ public class FilterOption {
       LOG.debug("FilterOption created for filter: " + filter.getKey() +  " on step with question: " +  question.getFullName()  + ":  setting disable FALSE" ); 
       this._disabled = false;
     }
+		*/
+  }
+
+ public FilterOption(Question question, Filter filter, JSONObject value) {
+	 LOG.debug("FilterOption created for filter: " + filter.getKey() +  " on step with question: " +  question.getFullName()  + ":  setting disable FALSE" ); 
+    this._filter = filter; //a Filter
+    this._value = value; // a JSON object
+		this._disabled = false;  // boolean
   }
 
   public String getKey() {
