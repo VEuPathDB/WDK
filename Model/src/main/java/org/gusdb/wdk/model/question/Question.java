@@ -335,6 +335,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   public AnswerValue makeAnswerValue(User user,
       Map<String, String> dependentValues, boolean validate, int assignedWeight)
       throws WdkModelException, WdkUserException {
+    logger.debug("makeAnswerValue() with NO FILTERS applied:  FIRST page, (will also query.makeInstance() first)");
     int pageStart = 1;
     int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
     Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(
@@ -364,7 +365,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       Map<String, String> dependentValues, int pageStart, int pageEnd,
       Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter,
       boolean validate, int assignedWeight) throws WdkModelException, WdkUserException {
-		logger.debug("makeAnswerValue()");
+    logger.debug("makeAnswerValue() any page, (will also query.makeInstance() first)");
     Map<String, String> context = new LinkedHashMap<String, String>();
     context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
 
@@ -512,7 +513,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   }
 
     public DynamicAttributeSet getDynamicAttributeSet() {
-	return dynamicAttributeSet;
+  return dynamicAttributeSet;
     }
 
   /**
@@ -1155,6 +1156,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   }
   
   public void addFilter(Filter filter) {
+    logger.debug("QUESTION: ADDING FILTER: " + filter.getKey() + " for question: " + getFullName() + "\n");
     filters.put(filter.getKey(), filter);
   }
 
@@ -1166,9 +1168,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * @return map of all non-view-only filters, from filter name to filter
    */
   public Map<String, Filter> getFilters() {
+    logger.debug("QUESTION: GETTING ALL FILTERs");
     Map<String, Filter> map = new LinkedHashMap<>(recordClass.getFilters());
     for (Entry<String, Filter> filter : this.filters.entrySet()) {
       if (!filter.getValue().getIsViewOnly()) {
+        logger.debug("question: adding one more filter:  name: " + filter.getKey());
         map.put(filter.getKey(), filter.getValue());
       }
     }
@@ -1184,6 +1188,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      * Used when these values are patched in to this Question after the XML parsing and resolution phase is over.
      */
     public void setDefaultSummaryAttributeNames(String[] names) {
-	defaultSummaryAttributeNames = names;
+  defaultSummaryAttributeNames = names;
     }
 }

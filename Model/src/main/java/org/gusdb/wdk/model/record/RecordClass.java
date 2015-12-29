@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
@@ -93,7 +94,7 @@ import org.gusdb.wdk.model.user.User;
  */
 public class RecordClass extends WdkModelBase implements AttributeFieldContainer, OptionallyTestable {
 
-  // private static final Logger logger = Logger.getLogger(RecordClass.class);
+  private static final Logger logger = Logger.getLogger(RecordClass.class);
 
   private static final Set<Character> VOWELS = new HashSet<>(Arrays.asList('a', 'e', 'i', 'o', 'u'));
 
@@ -368,11 +369,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public String getNativeDisplayNamePlural() {
-	    if (nativeDisplayNamePlural != null)
-	      return nativeDisplayNamePlural;
+      if (nativeDisplayNamePlural != null)
+        return nativeDisplayNamePlural;
 
-	    return getPlural(getNativeDisplayName());
-	  }
+      return getPlural(getNativeDisplayName());
+    }
 
   public void setDisplayNamePlural(String displayNamePlural) {
     this.displayNamePlural = displayNamePlural;
@@ -387,11 +388,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public String getNativeShortDisplayNamePlural() {
-	    if (nativeShortDisplayNamePlural != null)
-	      return nativeShortDisplayNamePlural;
+      if (nativeShortDisplayNamePlural != null)
+        return nativeShortDisplayNamePlural;
 
-	    return getPlural(getNativeShortDisplayName());
-	  }
+      return getPlural(getNativeShortDisplayName());
+    }
 
   public void setShortDisplayNamePlural(String shortDisplayNamePlural) {
     this.shortDisplayNamePlural = shortDisplayNamePlural;
@@ -423,15 +424,15 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
   
   public ResultSize getResultSizePlugin() {
-	  return resultSizePlugin;
+    return resultSizePlugin;
   }
 
   public ResultProperty getResultPropertyPlugin() {
-	  return resultPropertyPlugin;
+    return resultPropertyPlugin;
   }
   
   public String getCustomBooleanQueryClassName() {
-	  return customBooleanQueryClassName;
+    return customBooleanQueryClassName;
   }
   
   public void setRecordOverviewText(WdkModelText recordOverviewText) {
@@ -525,15 +526,15 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
   
   public void setResultSizeQueryRef(ResultSizeQueryReference ref) {
-	  resultSizeQueryRef = ref;
+    resultSizeQueryRef = ref;
   }
   
   public void setResultPropertyQueryRef(ResultPropertyQueryReference ref) {
-	  resultPropertyQueryRef = ref;
+    resultPropertyQueryRef = ref;
   }
   
   public void setCustomBooleanQueryClassName(String className) {
-	  this.customBooleanQueryClassName = className;
+    this.customBooleanQueryClassName = className;
   }
 
   // ////////////////////////////////////////////////////////////
@@ -561,8 +562,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     return fields;
   }
-	// used by report maker, adding display names in map so later the tables show sorted by display name
-	public Map<String, TableField> getTableFieldMap(FieldScope scope, String usedbyreportmaker ) {
+  // used by report maker, adding display names in map so later the tables show sorted by display name
+  public Map<String, TableField> getTableFieldMap(FieldScope scope, String usedbyreportmaker ) {
     Map<String, TableField> fields = new LinkedHashMap<String, TableField>();
     for (TableField field : tableFieldsMap.values()) {
       if (scope.isFieldInScope(field)) {
@@ -649,15 +650,15 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
   
   public ResultSizeQueryReference getResultSizeQueryRef() {
-	  return resultSizeQueryRef;	
+    return resultSizeQueryRef;  
   }
   
   public ResultPropertyQueryReference getResultPropertyQueryRef() {
-	  return resultPropertyQueryRef;	
+    return resultPropertyQueryRef;  
   }
   
   public BooleanQuery getBooleanQuery() {
-	  return booleanQuery;
+    return booleanQuery;
   }
 
   @Override
@@ -759,38 +760,38 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     if (resultSizeQueryRef != null) {
-    	resultSizeQueryRef.resolveReferences(model);
-    	displayName = resultSizeQueryRef.getRecordDisplayName();
-    	shortDisplayName = resultSizeQueryRef.getRecordShortDisplayName();
-    	displayNamePlural = resultSizeQueryRef.getRecordDisplayNamePlural();
-    	shortDisplayNamePlural = resultSizeQueryRef.getRecordShortDisplayNamePlural();
+      resultSizeQueryRef.resolveReferences(model);
+      displayName = resultSizeQueryRef.getRecordDisplayName();
+      shortDisplayName = resultSizeQueryRef.getRecordShortDisplayName();
+      displayNamePlural = resultSizeQueryRef.getRecordDisplayNamePlural();
+      shortDisplayNamePlural = resultSizeQueryRef.getRecordShortDisplayNamePlural();
         Query query = (Query) wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
-    	resultSizePlugin = new SqlQueryResultSizePlugin(query);
+      resultSizePlugin = new SqlQueryResultSizePlugin(query);
     }
     
     if (resultPropertyQueryRef != null) {
-    	resultPropertyQueryRef.resolveReferences(model);
+      resultPropertyQueryRef.resolveReferences(model);
         Query query = (Query) wdkModel.resolveReference(resultPropertyQueryRef.getTwoPartName());
-    	resultPropertyPlugin = new SqlQueryResultPropertyPlugin(query, resultPropertyQueryRef.getPropertyName());
+      resultPropertyPlugin = new SqlQueryResultPropertyPlugin(query, resultPropertyQueryRef.getPropertyName());
     }
     
     if (customBooleanQueryClassName != null) {
-		String errmsg = "Can't create java class for customBooleanQueryClassName from class name '" + customBooleanQueryClassName + "'";
-		try {
-			Class<? extends BooleanQuery> classs = Class.forName(
-					customBooleanQueryClassName).asSubclass(BooleanQuery.class);
-			booleanQuery = classs.newInstance();
-			booleanQuery.setRecordClass(this);
-		} catch (ClassNotFoundException ex) {
-			throw new WdkModelException(errmsg, ex);
-		} catch (InstantiationException ex) {
-			throw new WdkModelException(errmsg, ex);
-		} catch (IllegalAccessException ex) {
-			throw new WdkModelException(errmsg, ex);
-		}   	
+    String errmsg = "Can't create java class for customBooleanQueryClassName from class name '" + customBooleanQueryClassName + "'";
+    try {
+      Class<? extends BooleanQuery> classs = Class.forName(
+          customBooleanQueryClassName).asSubclass(BooleanQuery.class);
+      booleanQuery = classs.newInstance();
+      booleanQuery.setRecordClass(this);
+    } catch (ClassNotFoundException ex) {
+      throw new WdkModelException(errmsg, ex);
+    } catch (InstantiationException ex) {
+      throw new WdkModelException(errmsg, ex);
+    } catch (IllegalAccessException ex) {
+      throw new WdkModelException(errmsg, ex);
+    }     
     } else booleanQuery = new BooleanQuery(this);
 
-	
+  
     // resolve the alias query
     resolveAliasQuery(model);
 
@@ -1654,8 +1655,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public String getNativeShortDisplayName() {
-	    return (nativeShortDisplayName != null) ? nativeShortDisplayName : getNativeDisplayName();
-	  }
+      return (nativeShortDisplayName != null) ? nativeShortDisplayName : getNativeDisplayName();
+    }
 
   /**
    * @param shortDisplayName
@@ -1897,10 +1898,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   public Map<String, Filter> getFilters() {
     // get all step filters
+    logger.debug("RECORDCLASS: GETTING ALL FILTERs");
     Map<String, Filter> filters = new LinkedHashMap<>();
     for (StepFilter filter : _stepFilters.values()) {
-      if (!filter.getIsViewOnly())
+      if (!filter.getIsViewOnly()) {
+        logger.debug("RECORDCLASS: filter name: " + filter.getKey());
         filters.put(filter.getKey(), filter);
+      }
     }
 
     // get all column filters

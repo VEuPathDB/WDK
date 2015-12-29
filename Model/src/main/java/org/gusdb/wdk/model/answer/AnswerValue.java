@@ -209,6 +209,7 @@ public class AnswerValue {
    */
   public AnswerValue(User user, Question question, QueryInstance<?> idsQueryInstance, int startIndex,
       int endIndex, Map<String, Boolean> sortingMap, AnswerFilterInstance filter) {
+    logger.debug("AnswerValue being created for question: " + question.getDisplayName());
     _user = user;
     _question = question;
     _attributes = new AnswerValueAttributes(_user, _question);
@@ -222,7 +223,7 @@ public class AnswerValue {
       sortingMap = question.getSortingAttributeMap();
     _sortingMap = sortingMap;
 
-    // get the view
+    // get the view (old filters)
     _filter = filter;
 
     logger.debug("AnswerValue created for question: " + question.getDisplayName());
@@ -252,7 +253,7 @@ public class AnswerValue {
     _sortingMap = new LinkedHashMap<String, Boolean>(answerValue._sortingMap);
     _filter = answerValue._filter;
 
-		logger.debug("AnswerValue created by copying another AnserValue");
+    logger.debug("AnswerValue created by copying another AnswerValue");
   }
 
   // ------------------------------------------------------------------
@@ -305,7 +306,7 @@ public class AnswerValue {
 
   public int getDisplayResultSize() throws WdkModelException, WdkUserException {
     ResultSize plugin = _question.getRecordClass().getResultSizePlugin();
-		logger.debug("getting Display result size.");
+    logger.debug("getting Display result size.");
     return plugin.getResultSize(this);
   }
 
@@ -761,9 +762,9 @@ public class AnswerValue {
 
     /*logger.debug("integrate table query from answer: " + tableQuery.getFullName());
     for (Param param : tableQuery.getParams()) {
-			 logger.debug("param: " + param.getName());
+       logger.debug("param: " + param.getName());
     }
-		*/
+    */
     // get and run the paged attribute query sql
     String sql = getPagedTableSql(tableQuery);
 
@@ -986,25 +987,28 @@ public class AnswerValue {
       innerSql = " /* the ID query */" + innerSql;
 
       int assignedWeight = _idsQueryInstance.getAssignedWeight();
-      // apply filter
+      // apply old filter
       if (_filter != null) {
         innerSql = _filter.applyFilter(_user, innerSql, assignedWeight);
-        innerSql = " /* filter applied on id query */ " + innerSql;
+        innerSql = " /* old filter applied on id query */ " + innerSql;
       }
 
       // apply "new" filters
-			logger.debug("applyFilters(): excludeFilter: " + excludeFilter);
-      innerSql = applyFilters(innerSql, _filterOptions, excludeFilter);
-
+      if (_filterOptions != null) {
+        logger.debug("applyFilters(): found filterOptions to apply to the ID SQL: excludeFilter: " + excludeFilter);
+        innerSql = applyFilters(innerSql, _filterOptions, excludeFilter);
+        innerSql = " /* new filter applied on id query */ " + innerSql;
+      }
       // apply view filters if requested
       boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
       if (viewFiltersApplied && !excludeViewFilters){
-				logger.debug("apply viewFilters(): excludeFilter: " + excludeFilter);
+        logger.debug("apply viewFilters(): excludeFilter: " + excludeFilter);
         innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
+        innerSql = " /* new view filter applied on id query */ " + innerSql;
       }
      
       innerSql = "(" + innerSql + ")";
-      //logger.debug("ID SQL constructed (viewFilters = " + viewFiltersApplied + "):\n" + innerSql);
+      logger.debug("AnswerValue: ID SQL constructed with all filters:\n" + innerSql);
 
       return innerSql;
     }
@@ -1020,7 +1024,7 @@ public class AnswerValue {
 
     if (filterOptions != null) {
       for (FilterOption filterOption : filterOptions.getFilterOptions().values()) {
-				logger.debug("FilterOption:" + filterOption.getJSON().toString(2));
+        logger.debug("applying FilterOption:" + filterOption.getJSON().toString(2));
         if (excludeFilter == null || !filterOption.getKey().equals(excludeFilter)) {
           if (!filterOption.isDisabled()) {
             Filter filter = _question.getFilter(filterOption.getKey());
@@ -1415,6 +1419,13 @@ public class AnswerValue {
   }
 
   public void setFilterOptions(FilterOptionList filterOptions) {
+    logger.debug("****Answer Value: Setting filterOptions");
+    if (_filterOptions != null) {
+      logger.debug("size:" + filterOptions.getSize() + ", and they are: " + filterOptions.getJSON());
+    }
+    else {
+      logger.debug("NULL");
+    }
     _filterOptions = filterOptions;
     reset();
   }
