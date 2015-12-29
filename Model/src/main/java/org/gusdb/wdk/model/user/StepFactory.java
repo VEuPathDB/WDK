@@ -237,6 +237,7 @@ public class StepFactory {
   Step createStep(User user, Integer strategyId, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
       int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
+    logger.debug("Creating step!");
 
     // get summary list and sorting list
     String questionName = question.getFullName();
@@ -307,6 +308,7 @@ public class StepFactory {
     step.setLastRunTime(lastRunTime);
     step.setDeleted(deleted);
     step.setParamValues(dependentValues);
+    logger.debug("Creating step: to set Filter Options and to add Default Filters");
     step.setFilterOptions(filterOptions);
     addDefaultFiltersToStep(step);
     step.setEstimateSize(estimateSize);
@@ -346,6 +348,7 @@ public class StepFactory {
     if (step.isCombined())
       updateStepTree(user, step);
 
+    logger.debug("Step created!!\n\n");
     return step;
   }
 
@@ -764,7 +767,7 @@ public class StepFactory {
    * @throws NoSuchAlgorithmException
    */
   void updateStep(User user, Step step, boolean updateTime) throws WdkModelException {
-    logger.debug("step #" + step.getStepId() + " new custom name: '" + step.getBaseCustomName() + "'");
+    logger.debug("updateStep(): step #" + step.getStepId() + " new custom name: '" + step.getBaseCustomName() + "'");
     // update custom name
     Date lastRunTime = (updateTime) ? new Date() : step.getLastRunTime();
     int estimateSize = step.getEstimateSize();
@@ -805,6 +808,7 @@ public class StepFactory {
     finally {
       SqlUtils.closeStatement(psStep);
     }
+    logger.debug("updateStep(): DONE");
   }
 
   void saveStepParamFilters(Step step) throws WdkModelException {
@@ -1790,11 +1794,18 @@ public class StepFactory {
     return ids;
   }
   
+  // we need to add/pass the disabled property
   private void addDefaultFiltersToStep(Step step) throws WdkModelException {
-	for (Filter filter : step.getQuestion().getFilters().values()) {
-		if (filter.getDefaultValue() != null) {
-			step.addFilterOption(filter.getKey(), filter.getDefaultValue());
-		}
-	}
+    for (Filter filter : step.getQuestion().getFilters().values()) {
+      logger.debug("adding default filters: found something for filter: " + filter.getKey());
+      if (filter.getDefaultValue() != null) {
+        logger.debug("adding filter default value from Filter IMPL: happens to be not null");
+        step.addFilterOption(filter.getKey(), filter.getDefaultValue());
+      } 
+      else {
+        logger.debug("adding default filters: happens to be NULL");
+      }
+    }
   }
+
 }

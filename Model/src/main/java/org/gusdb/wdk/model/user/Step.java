@@ -279,8 +279,8 @@ public class Step {
      * responsible for caching, if any
      */
     public int getResultSize() throws WdkModelException, WdkUserException {
-	estimateSize = getAnswerValue().getDisplayResultSize();
-	return estimateSize;
+  estimateSize = getAnswerValue().getDisplayResultSize();
+  return estimateSize;
     }
 
   // Needs to be updated for transforms
@@ -455,7 +455,7 @@ public class Step {
     if (estimateSize == RESET_SIZE_FLAG) {
       // The flag indicates if the size has been reset, and need to be calculated again.
       try {
-	estimateSize = getResultSize();
+  estimateSize = getResultSize();
       }
       catch (Exception ex) {
         // do not throw error in this method, just return 0, to avoid infinite
@@ -860,6 +860,7 @@ public class Step {
     answerValueCache.invalidateViewAnswers();
   }
 
+  // we need to add/pass the disabled property
   public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {
     getFilterOptions().addFilterOption(filterName, filterValue);
     validateFilterOptions(getViewFilterOptions(), false);

@@ -14,7 +14,7 @@ import org.json.JSONObject;
 
 public class FilterOption {
 
-	private static final Logger LOG = Logger.getLogger(FilterOption.class);
+  private static final Logger LOG = Logger.getLogger(FilterOption.class);
 
   public static final String KEY_NAME = "name";
   public static final String KEY_VALUE = "value";
@@ -26,24 +26,25 @@ public class FilterOption {
 
   public FilterOption(Question question, JSONObject jsFilterOption) throws WdkModelException {
     String name = jsFilterOption.getString(KEY_NAME);
+      LOG.debug("FilterOption created (read from database?) for filter: " + name +  " on step with question: " +  question.getFullName() );
     this._value = jsFilterOption.getJSONObject(KEY_VALUE);
     this._filter = question.getFilter(name);
     if (jsFilterOption.has(KEY_DISABLED)){
-			this._disabled = jsFilterOption.getBoolean(KEY_DISABLED);
-		}
+      this._disabled = jsFilterOption.getBoolean(KEY_DISABLED);
+    }
   }
-
+  // we need to add/pass the disabled property
   public FilterOption(Question question, Filter filter, JSONObject value) {
-    this._filter = filter;
-    this._value = value;
-		if ( ( question.getQuestionSetName().substring(0,8).equals("Internal") ) && (filter.getKey().contains("matched"))  ) {
-			LOG.debug("FILTEROPTIONS for filter: " + filter.getKey() +  " on question: " +  question.getFullName()  + ":  setting disable TRUE" );
-			this._disabled = true;
-		}
-		else {   
-			LOG.debug("FILTEROPTIONS for filter: " + filter.getKey() +  " on question: " +  question.getFullName()  + ":  setting disable FALSE" ); 
-			this._disabled = false;
-		}
+    this._filter = filter; //a Filter
+    this._value = value; // a JSON object
+    if ( ( question.getQuestionSetName().substring(0,8).equals("Internal") ) && (filter.getKey().contains("matched"))  ) {
+      LOG.debug("FilterOption created for filter: " + filter.getKey() +  " on step with question: " +  question.getFullName()  + ":  setting disable TRUE" );
+      this._disabled = true; 
+    }
+    else {   
+      LOG.debug("FilterOption created for filter: " + filter.getKey() +  " on step with question: " +  question.getFullName()  + ":  setting disable FALSE" ); 
+      this._disabled = false;
+    }
   }
 
   public String getKey() {
