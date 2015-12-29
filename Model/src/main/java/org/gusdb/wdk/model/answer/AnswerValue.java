@@ -292,7 +292,7 @@ public class AnswerValue {
     int total = getResultSize();
     int pageSize = _endIndex - _startIndex + 1;
     int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
-    logger.debug("#Pages: " + pageCount + ",\t#Total: " + total + ",\t#PerPage: " + pageSize);
+    //logger.debug("#Pages: " + pageCount + ",\t#Total: " + total + ",\t#PerPage: " + pageSize);
     return pageCount;
   }
 
@@ -995,20 +995,20 @@ public class AnswerValue {
 
       // apply "new" filters
       if (_filterOptions != null) {
-        logger.debug("applyFilters(): found filterOptions to apply to the ID SQL: excludeFilter: " + excludeFilter);
+        //logger.debug("applyFilters(): found filterOptions to apply to the ID SQL: excludeFilter: " + excludeFilter);
         innerSql = applyFilters(innerSql, _filterOptions, excludeFilter);
         innerSql = " /* new filter applied on id query */ " + innerSql;
       }
       // apply view filters if requested
       boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
       if (viewFiltersApplied && !excludeViewFilters){
-        logger.debug("apply viewFilters(): excludeFilter: " + excludeFilter);
+        //logger.debug("apply viewFilters(): excludeFilter: " + excludeFilter);
         innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
         innerSql = " /* new view filter applied on id query */ " + innerSql;
       }
      
       innerSql = "(" + innerSql + ")";
-      logger.debug("AnswerValue: ID SQL constructed with all filters:\n" + innerSql);
+      logger.debug("AnswerValue: ID SQL constructed with all filters:\n");
 
       return innerSql;
     }
@@ -1024,7 +1024,7 @@ public class AnswerValue {
 
     if (filterOptions != null) {
       for (FilterOption filterOption : filterOptions.getFilterOptions().values()) {
-        logger.debug("applying FilterOption:" + filterOption.getJSON().toString(2));
+        //logger.debug("applying FilterOption:" + filterOption.getJSON().toString(2));
         if (excludeFilter == null || !filterOption.getKey().equals(excludeFilter)) {
           if (!filterOption.isDisabled()) {
             Filter filter = _question.getFilter(filterOption.getKey());
@@ -1419,13 +1419,13 @@ public class AnswerValue {
   }
 
   public void setFilterOptions(FilterOptionList filterOptions) {
-    logger.debug("****Answer Value: Setting filterOptions");
-    if (_filterOptions != null) {
+    //logger.debug("****Answer Value: Setting filterOptions");
+		/*   if (_filterOptions != null) {
       logger.debug("size:" + filterOptions.getSize() + ", and they are: " + filterOptions.getJSON());
     }
     else {
       logger.debug("NULL");
-    }
+			}*/
     _filterOptions = filterOptions;
     reset();
   }
