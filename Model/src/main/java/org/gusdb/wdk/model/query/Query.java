@@ -128,7 +128,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   private Map<String, Boolean> sortingMap;
   
   // optionally override what is in the query set.  null means don't override
-  private List<PostCacheInsertSql> postCacheInsertSqls = null;
+  private List<PostCacheUpdateSql> postCacheUpdateSqls = null;
 
   
   // =========================================================================
@@ -339,13 +339,13 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     }
   }
   
-  public List<PostCacheInsertSql> getPostCacheInsertSqls() {
-    return postCacheInsertSqls == null? null : Collections.unmodifiableList(postCacheInsertSqls);
+  public List<PostCacheUpdateSql> getPostCacheUpdateSqls() {
+    return postCacheUpdateSqls == null? null : Collections.unmodifiableList(postCacheUpdateSqls);
   }
 
-  public void addPostCacheInsertSql(PostCacheInsertSql postCacheInsertSql) {
-    if (postCacheInsertSqls == null) postCacheInsertSqls = new ArrayList<PostCacheInsertSql>();
-    postCacheInsertSqls.add(postCacheInsertSql);
+  public void addPostCacheUpdateSql(PostCacheUpdateSql postCacheUpdateSql) {
+    if (postCacheUpdateSqls == null) postCacheUpdateSqls = new ArrayList<PostCacheUpdateSql>();
+    postCacheUpdateSqls.add(postCacheUpdateSql);
   }
 
 

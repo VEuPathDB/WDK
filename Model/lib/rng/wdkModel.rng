@@ -688,6 +688,13 @@
       <attribute name="sorting" />
     </optional>
     <zeroOrMore>
+      <element name="postCacheUpdateSql">
+        <element name="sql">
+          <text/>
+        </element>
+      </element>
+    </zeroOrMore>
+    <zeroOrMore>
       <element name="testParamValues">
         <ref name="testParamValuesRef" />
       </element>
@@ -810,13 +817,13 @@
         </attribute>
       </optional>
       <ref name="IncludeExclude" />
-      <optional>
-        <element name="postCacheInsertSql">
+      <zeroOrMore>
+        <element name="postCacheUpdateSql">
           <element name="sql">
             <text/>
           </element>
         </element>
-      </optional>
+      </zeroOrMore>
       <zeroOrMore>
         <element name="defaultTestParamValues">
           <ref name="testParamValuesRef" />

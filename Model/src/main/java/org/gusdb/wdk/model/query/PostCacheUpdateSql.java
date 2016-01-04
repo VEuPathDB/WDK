@@ -2,7 +2,7 @@ package org.gusdb.wdk.model.query;
 
 import org.gusdb.wdk.model.WdkModelText;
 
-public class PostCacheInsertSql {
+public class PostCacheUpdateSql {
 	
 	private WdkModelText sql;
 

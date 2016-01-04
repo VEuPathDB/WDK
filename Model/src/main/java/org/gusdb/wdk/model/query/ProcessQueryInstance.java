@@ -102,7 +102,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     logger.debug("Process query cache insertion finished, and took " +
         ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
     
-    executePostCacheInsertSql(tableName, instanceId);
+    executePostCacheUpdateSql(tableName, instanceId);
   }
 
   private void invokeWsf(WsfResponseListener listener) throws WdkModelException, WdkUserException {

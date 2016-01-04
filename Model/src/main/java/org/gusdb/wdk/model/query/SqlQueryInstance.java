@@ -122,7 +122,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       throw new WdkModelException("Unable to insert record into cache.", e);
     }
     
-    executePostCacheInsertSql(tableName, instanceId);
+    executePostCacheUpdateSql(tableName, instanceId);
   }
 
   public String getUncachedSql() throws WdkModelException, WdkUserException {
@@ -212,7 +212,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       throw new WdkModelException("Unable to create cache.", e);
     }
     
-    executePostCacheInsertSql(tableName, instanceId);
+    executePostCacheUpdateSql(tableName, instanceId);
     logger.debug("created!!  cache table for query " + query.getFullName());
   }
 }
