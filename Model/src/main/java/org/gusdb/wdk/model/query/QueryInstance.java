@@ -341,10 +341,10 @@ public abstract class QueryInstance<T extends Query> {
       return Collections.unmodifiableMap(paramInternalValues);
   }
   
-  protected void executePostCacheInsertSql(String tableName, int instanceId) throws WdkModelException {
-    List<PostCacheInsertSql> list = query.getPostCacheInsertSqls() != null ? query.getPostCacheInsertSqls()
-        : query.getQuerySet().getPostCacheInsertSqls();
-    for (PostCacheInsertSql pcis : list) {
+  protected void executePostCacheUpdateSql(String tableName, int instanceId) throws WdkModelException {
+    List<PostCacheUpdateSql> list = query.getPostCacheUpdateSqls() != null ? query.getPostCacheUpdateSqls()
+        : query.getQuerySet().getPostCacheUpdateSqls();
+    for (PostCacheUpdateSql pcis : list) {
 
       String sql = pcis.getSql();
       sql = sql.replace(Utilities.MACRO_CACHE_TABLE, tableName);
@@ -354,7 +354,7 @@ public abstract class QueryInstance<T extends Query> {
       // get results and time process();
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
       try {
-        SqlUtils.executeUpdate(dataSource, sql, query.getQuerySet().getName() + "__postCacheInsertSql",
+        SqlUtils.executeUpdate(dataSource, sql, query.getQuerySet().getName() + "__postCacheUpdateSql",
             false);
       }
       catch (SQLException ex) {
