@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.query;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -125,6 +126,10 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   private Question contextQuestion;
 
   private Map<String, Boolean> sortingMap;
+  
+  // optionally override what is in the query set.  null means don't override
+  private List<PostCacheInsertSql> postCacheInsertSqls = null;
+
   
   // =========================================================================
   // Abstract methods
@@ -333,6 +338,17 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
       throw new WdkModelException("Unable to get JSON content for checksum.", e);
     }
   }
+  
+  public List<PostCacheInsertSql> getPostCacheInsertSqls() {
+    return postCacheInsertSqls == null? null : Collections.unmodifiableList(postCacheInsertSqls);
+  }
+
+  public void addPostCacheInsertSql(PostCacheInsertSql postCacheInsertSql) {
+    if (postCacheInsertSqls == null) postCacheInsertSqls = new ArrayList<PostCacheInsertSql>();
+    postCacheInsertSqls.add(postCacheInsertSql);
+  }
+
+
 
   /**
    * @param extra

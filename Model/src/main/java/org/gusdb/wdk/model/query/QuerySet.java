@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
   private List<Query> queryList = new ArrayList<Query>();
   private Map<String, Query> queries = new LinkedHashMap<String, Query>();
   private String name;
-  private PostCacheInsertSql postCacheInsertSql;
+  private List<PostCacheInsertSql> postCacheInsertSqls = new ArrayList<PostCacheInsertSql>();
 
   /* for sanity testing */
   public static enum QueryType {
@@ -127,12 +128,12 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
     return queryType;
   }
 
-  public PostCacheInsertSql getPostCacheInsertSql() {
-    return postCacheInsertSql;
+  public List<PostCacheInsertSql> getPostCacheInsertSqls() {
+    return Collections.unmodifiableList(postCacheInsertSqls);
   }
 
-  public void setPostCacheInsertSql(PostCacheInsertSql postCacheInsertSql) {
-    this.postCacheInsertSql = postCacheInsertSql;
+  public void addPostCacheInsertSql(PostCacheInsertSql postCacheInsertSql) {
+    this.postCacheInsertSqls.add(postCacheInsertSql);
   }
 
   public void setDoNotTest(boolean doNotTest) {
@@ -184,12 +185,13 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
       query.resolveReferences(model);
     }
 
-    if (postCacheInsertSql != null && (postCacheInsertSql.getSql() == null ||
-        !postCacheInsertSql.getSql().contains(Utilities.MACRO_CACHE_TABLE) ||
-        !postCacheInsertSql.getSql().contains(Utilities.MACRO_CACHE_INSTANCE_ID)))
-      throw new WdkModelException(
-          "Invalid PostCacheInsertSql. <sql> must be provided, and include the macros: " +
-              Utilities.MACRO_CACHE_TABLE + " and " + Utilities.MACRO_CACHE_INSTANCE_ID);
+    for (PostCacheInsertSql postCacheInsertSql : postCacheInsertSqls)
+      if (postCacheInsertSql != null && (postCacheInsertSql.getSql() == null ||
+          !postCacheInsertSql.getSql().contains(Utilities.MACRO_CACHE_TABLE) ||
+          !postCacheInsertSql.getSql().contains(Utilities.MACRO_CACHE_INSTANCE_ID)))
+        throw new WdkModelException(
+            "Invalid PostCacheInsertSql. <sql> must be provided, and include the macros: " +
+                Utilities.MACRO_CACHE_TABLE + " and " + Utilities.MACRO_CACHE_INSTANCE_ID);
   }
 
   /*

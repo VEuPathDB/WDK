@@ -703,7 +703,7 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/querySet", QuerySet.class, "addQuerySet");
 
     configureNode(digester, "wdkModel/querySet/postCacheInsertSql",
-            PostCacheInsertSql.class, "setPostCacheInsertSql");
+            PostCacheInsertSql.class, "addPostCacheInsertSql");
     configureNode(digester, "wdkModel/querySet/postCacheInsertSql/sql",
             WdkModelText.class, "setSql");
     digester.addCallMethod("wdkModel/querySet/postCacheInsertSql/sql", "setText", 0);
@@ -732,6 +732,12 @@ public class ModelXmlParser extends XmlParser {
         "addSqlParamValue");
     digester.addCallMethod("wdkModel/querySet/sqlQuery/sqlParamValue", "setText", 0);
 
+    configureNode(digester, "wdkModel/querySet/sqlQuery/postCacheInsertSql",
+        PostCacheInsertSql.class, "addPostCacheInsertSql");
+    configureNode(digester, "wdkModel/querySet/sqlQuery/postCacheInsertSql/sql", WdkModelText.class, "setSql");
+    digester.addCallMethod("wdkModel/querySet/sqlQuery/postCacheInsertSql/sql", "setText", 0);
+
+
     // processQuery
     configureNode(digester, "wdkModel/querySet/processQuery", ProcessQuery.class, "addQuery");
 
@@ -741,6 +747,12 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/querySet/processQuery/paramRef", ParamReference.class, "addParamRef");
 
     configureNode(digester, "wdkModel/querySet/processQuery/wsColumn", Column.class, "addColumn");
+
+    configureNode(digester, "wdkModel/querySet/processQuery/postCacheInsertSql",
+        PostCacheInsertSql.class, "addPostCacheInsertSql");
+    configureNode(digester, "wdkModel/querySet/processQuery/postCacheInsertSql/sql", WdkModelText.class, "setSql");
+    digester.addCallMethod("wdkModel/querySet/processQuery/postCacheInsertSql/sql", "setText", 0);
+
   }
 
   private static void configureParamSet(Digester digester) {

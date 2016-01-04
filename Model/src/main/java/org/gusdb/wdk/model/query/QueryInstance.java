@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.query;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Collections;
 
@@ -341,20 +342,24 @@ public abstract class QueryInstance<T extends Query> {
   }
   
   protected void executePostCacheInsertSql(String tableName, int instanceId) throws WdkModelException {
-    PostCacheInsertSql pcis = query.getQuerySet().getPostCacheInsertSql();
-    if (pcis == null) return;
-    String sql = pcis.getSql();
-    sql = sql.replace(Utilities.MACRO_CACHE_TABLE, tableName);
-    sql = sql.replace(Utilities.MACRO_CACHE_INSTANCE_ID, Integer.toString(instanceId));
-	    
-		logger.debug("POST sql: " + sql);
-    // get results and time process();
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
-    try {
-      SqlUtils.executeUpdate(dataSource, sql, query.getQuerySet().getName() + "__postCacheInsertSql", false);
-    }
-    catch (SQLException ex) {
-      throw new WdkModelException("Unable to run postCacheinsertSql:  " + sql, ex);
+    List<PostCacheInsertSql> list = query.getPostCacheInsertSqls() != null ? query.getPostCacheInsertSqls()
+        : query.getQuerySet().getPostCacheInsertSqls();
+    for (PostCacheInsertSql pcis : list) {
+
+      String sql = pcis.getSql();
+      sql = sql.replace(Utilities.MACRO_CACHE_TABLE, tableName);
+      sql = sql.replace(Utilities.MACRO_CACHE_INSTANCE_ID, Integer.toString(instanceId));
+
+      logger.debug("POST sql: " + sql);
+      // get results and time process();
+      DataSource dataSource = wdkModel.getAppDb().getDataSource();
+      try {
+        SqlUtils.executeUpdate(dataSource, sql, query.getQuerySet().getName() + "__postCacheInsertSql",
+            false);
+      }
+      catch (SQLException ex) {
+        throw new WdkModelException("Unable to run postCacheinsertSql:  " + sql, ex);
+      }
     }
 
   }
