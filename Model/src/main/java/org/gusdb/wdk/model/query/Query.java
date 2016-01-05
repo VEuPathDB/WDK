@@ -503,7 +503,16 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
       if (!columnMap.containsKey(column))
         throw new WdkModelException("Invalid sorting column '" + column + "' in query " + getFullName());
     }
-
+    
+    if (postCacheInsertSqls != null) {
+    for (PostCacheInsertSql postCacheInsertSql : postCacheInsertSqls)
+      if (postCacheInsertSql != null && (postCacheInsertSql.getSql() == null ||
+          !postCacheInsertSql.getSql().contains(Utilities.MACRO_CACHE_TABLE) ||
+          !postCacheInsertSql.getSql().contains(Utilities.MACRO_CACHE_INSTANCE_ID)))
+        throw new WdkModelException(
+            "Invalid PostCacheInsertSql. <sql> must be provided, and include the macros: " +
+                Utilities.MACRO_CACHE_TABLE + " and " + Utilities.MACRO_CACHE_INSTANCE_ID);
+    }
     resolved = true;
   }
 
