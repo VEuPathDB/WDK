@@ -94,7 +94,7 @@ test-server: $(test_sources) $(test_bundle) $(wdk_sources) $(libs_bundle)
 
 
 # =============================================================================
-# Run examples server.
+# Run examples server. See ./client-examples/README.md.
 # =============================================================================
 
 examples-server: node_modules
