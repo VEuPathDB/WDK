@@ -1330,10 +1330,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     for (RecordClassSet set : recordClassSets.values()) {
       for (RecordClass rc : set.getRecordClasses()) {
         String urlPath = rc.getUrlPath();
-        if (rcUrlPaths.contains(urlPath))
-          throw new WdkModelException("Duplicate urlPath found in recordClass " +
-              rc.getFullName() + ": [" + urlPath + "].");
-        rcUrlPaths.add(urlPath);
+        if (urlPath != null) {
+            if (rcUrlPaths.contains(urlPath))
+                throw new WdkModelException("Duplicate urlPath found in recordClass " +
+                                            rc.getFullName() + ": [" + urlPath + "].");
+            rcUrlPaths.add(urlPath);
+        }
       }
     }
 
