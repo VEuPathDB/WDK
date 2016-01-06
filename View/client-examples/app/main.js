@@ -8,7 +8,12 @@ class App extends React.Component {
   renderExample() {
     if (this.props.example != '') {
       let { Example } = req(this.props.example);
-      return <Example/>
+      return (
+        <div>
+          <h2>{this.props.example}</h2>
+          <Example/>
+        </div>
+      );
     }
   }
 
