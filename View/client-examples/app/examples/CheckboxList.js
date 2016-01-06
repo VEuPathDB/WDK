@@ -43,7 +43,7 @@ export class Example extends React.Component {
   render() {
     return (
       <div>
-        <h2>Uncontrolled CheckboxList</h2>
+        <h3>Uncontrolled CheckboxList</h3>
         <CheckboxList
           name="example1"
           onChange={(e, item) => console.log(e.target.checked, item.value)}
@@ -51,7 +51,7 @@ export class Example extends React.Component {
           defaultSelectedItems={selectedItems}
         />
 
-        <h2>Controlled CheckboxList</h2>
+        <h3>Controlled CheckboxList</h3>
         <CheckboxList
           name="example2"
           onChange={(event, item) => this.toggleItem(event, item)}
