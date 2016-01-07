@@ -187,7 +187,6 @@ let AnswerController = React.createClass({
     // filter answer if the filter terms have changed
     else if (filterWillChange) {
       let filterOpts = {
-        questionName: nextParams.questionName,
         terms: nextQuery.q,
         attributes: maybeSplit(nextQuery.attrs, ','),
         tables: maybeSplit(nextQuery.tables, ',')
@@ -251,7 +250,6 @@ let AnswerController = React.createClass({
 
     // Call the ActionCreator to fetch the Answer resource
     let filterOpts = {
-      questionName: params.questionName,
       terms: query.q,
       attributes: maybeSplit(query.attrs, ','),
       tables: maybeSplit(query.tables, ',')
