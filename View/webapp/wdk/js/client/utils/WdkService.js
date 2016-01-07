@@ -35,15 +35,16 @@ export default class WdkService {
       this._recordClasses = fetchJson(method, url).then(
         recordClasses => {
           for (let recordClass of recordClasses) {
-            recordClass.attributeCategories.push(
+            recordClass.categories.push(
               { name: undefined, displayName: 'Uncategorized' }
             )
           }
           return recordClasses;
         },
-        reason => {
+        error => {
+          // clear record classes; don't want partially populated list
           this._recordClasses = null;
-          throw reason;
+          throw error;
         }
       );
     }
@@ -52,7 +53,7 @@ export default class WdkService {
   }
 
   getRecordClass(name) {
-    return this.getRecordClasses().then(rs => rs.find(r => r.fullName === name));
+    return this.getRecordClasses().then(rs => rs.find(r => r.name === name));
   }
 
   getRecord(recordClassName, primaryKey, options = {}) {

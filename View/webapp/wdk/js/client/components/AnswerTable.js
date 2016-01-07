@@ -72,20 +72,22 @@ let AttributeSelectorItem = React.createClass({
 let AttributeSelector = React.createClass({
 
   propTypes: {
-    attributes: PropTypes.array.isRequired,
+    allAttributes: PropTypes.array.isRequired,
     selectedAttributes: PropTypes.array,
     onSubmit: PropTypes.func.isRequired,
     onChange: PropTypes.func.isRequired
   },
 
   render() {
+    // only want to display displayable attributes
+    let displayableAttributes = this.props.allAttributes.filter(attrib => attrib.isDisplayable);
     return (
       <form onSubmit={this.props.onSubmit}>
         <div className="wdk-AnswerTable-AttributeSelectorButtonWrapper">
           <button>Update Columns</button>
         </div>
         <ul className="wdk-AnswerTable-AttributeSelector">
-          {this.props.attributes.map(this._renderItem)}
+          {displayableAttributes.map(this._renderItem)}
         </ul>
         <div className="wdk-AnswerTable-AttributeSelectorButtonWrapper">
           <button>Update Columns</button>
@@ -114,6 +116,8 @@ let AnswerTable = React.createClass({
     meta: PropTypes.object.isRequired,
     displayInfo: PropTypes.object.isRequired,
     records: PropTypes.array.isRequired,
+    allAttributes: PropTypes.array.isRequired,
+    visibleAttributes: PropTypes.array.isRequired,
     onSort: PropTypes.func,
     onMoveColumn: PropTypes.func,
     onChangeColumns: PropTypes.func,
@@ -136,7 +140,7 @@ let AnswerTable = React.createClass({
    */
   getInitialState() {
     return Object.assign({
-      columnWidths: this.props.meta.attributes.reduce((widths, attr) => {
+      columnWidths: this.props.visibleAttributes.reduce((widths, attr) => {
         let name = attr.name;
         let displayName = attr.displayName;
         // 8px per char, plus 12px for sort icon
@@ -157,7 +161,7 @@ let AnswerTable = React.createClass({
 
   componentWillReceiveProps(nextProps) {
     this.setState({
-      pendingVisibleAttributes: nextProps.displayInfo.visibleAttributes
+      pendingVisibleAttributes: nextProps.visibleAttributes
     });
   },
 
@@ -233,7 +237,7 @@ let AnswerTable = React.createClass({
   },
 
   handleSort(name) {
-    let attributes = this.props.meta.attributes;
+    let attributes = this.props.allAttributes;
     let sortSpec = this.props.displayInfo.sorting[0];
     let attribute = attributes.find(attr => attr.name === name);
     // Determine the sort direction. If the attribute is the same, then
@@ -250,7 +254,7 @@ let AnswerTable = React.createClass({
   },
 
   handleHideColumn(name) {
-    let attributes = this.props.displayInfo.visibleAttributes
+    let attributes = this.props.visibleAttributes
       .filter(attr => attr.name !== name);
     this.props.onChangeColumns(attributes);
   },
@@ -284,14 +288,14 @@ let AnswerTable = React.createClass({
    */
   togglePendingAttribute() {
     let form = ReactDOM.findDOMNode(this.refs.attributeSelector);
-    let attributes = this.props.meta.attributes;
-    let visibleAttributes = this.props.displayInfo.visibleAttributes;
+    let attributes = this.props.allAttributes;
+    let visibleAttributes = this.props.visibleAttributes;
 
     let checkedAttrs = [].slice.call(form.pendingAttribute)
       .filter(a => a.checked)
       .map(a => attributes.find(attr => attr.name === a.value));
 
-    // Remove visible atributes that are not checked.
+    // Remove visible attributes that are not checked.
     // Then, concat checked attributes that are not currently visible.
     let pendingVisibleAttributes = visibleAttributes
       .filter(attr => checkedAttrs.find(p => p.name === attr.name))
@@ -337,7 +341,7 @@ let AnswerTable = React.createClass({
 
   _getInitialAttributeSelectorState() {
     return {
-      pendingVisibleAttributes: this.props.displayInfo.visibleAttributes,
+      pendingVisibleAttributes: this.props.visibleAttributes,
       attributeSelectorOpen: false
     };
   },
@@ -346,8 +350,7 @@ let AnswerTable = React.createClass({
   render() {
     // creates variables: meta, records, and visibleAttributes
     let { pendingVisibleAttributes } = this.state;
-    let { meta, records, displayInfo } = this.props;
-    let visibleAttributes = displayInfo.visibleAttributes;
+    let { meta, records, displayInfo, visibleAttributes, allAttributes } = this.props;
     let sortSpec = displayInfo.sorting[0];
 
     return (
@@ -364,7 +367,7 @@ let AnswerTable = React.createClass({
             title="Select Columns">
             <AttributeSelector
               ref="attributeSelector"
-              attributes={meta.attributes}
+              allAttributes={allAttributes}
               selectedAttributes={pendingVisibleAttributes}
               onSubmit={this.handleAttributeSelectorSubmit}
               onChange={this.togglePendingAttribute}
