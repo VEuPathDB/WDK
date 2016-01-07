@@ -64,6 +64,10 @@ public abstract class AttributeField extends Field {
   private List<AttributePluginReference> pluginList = new ArrayList<AttributePluginReference>();
   private Map<String, AttributePluginReference> pluginMap;
 
+  public AttributeFieldContainer getContainer() {
+    return container;
+  }
+
   /**
    * by default, an attribute can be removed from the result page.
    * 
@@ -224,6 +228,17 @@ public abstract class AttributeField extends Field {
       }
     }
     pluginList = null;
+  }
+
+  @Override
+  public Map<String, String[]> getPropertyLists() {
+    // KLUGE!!!  Override getPropertyLists().  If wdkModel is null, then this
+    //   field is contained in a TableField, which does not call resolveReferences
+    //   on its attributes.  Return an empty map in this case.
+    if (wdkModel == null) {
+      return Collections.EMPTY_MAP;
+    }
+    return super.getPropertyLists();
   }
 
   /*
