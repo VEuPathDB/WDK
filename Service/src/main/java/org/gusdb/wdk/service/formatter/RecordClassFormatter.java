@@ -1,22 +1,34 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.gusdb.wdk.model.answer.ReporterRef;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
-import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeCategory;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
+import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+ * Formats WDK RecordClass objects into the following form:
+ * 
+ * {
+ *   fullName: String,
+ *   displayName: String,
+ *   displayNamePlural: String,
+ *   urlPath: String,
+ *   description: String,
+ *   attributes: [ see AttributeFieldFormatter ],
+ *   tables: [ see TableFieldFormatter ],
+ *   categories: Array (nested tree of categories)
+ * }
+ * 
+ * @author rdoherty
+ */
 public class RecordClassFormatter {
-
-  private static FieldScope fieldScope = FieldScope.NON_INTERNAL;
 
   public static JSONArray getRecordClassesJson(RecordClassSet[] recordClassSets,
       boolean expandRecordClasses, boolean expandAttributes,
@@ -34,124 +46,53 @@ public class RecordClassFormatter {
 
   public static JSONObject getRecordClassJson(RecordClass recordClass,
       boolean expandAttributes, boolean expandTables, boolean expandTableAttributes) {
-    JSONObject json = new JSONObject();
-    json.put("fullName", recordClass.getFullName());
-    json.put("displayName", recordClass.getDisplayName());
-    json.put("displayNamePlural", recordClass.getDisplayNamePlural());
-    json.put("urlPath",  recordClass.getUrlSegment());
-    json.put("description", recordClass.getDescription());
-    json.put("attributes", getAttributesJson(recordClass, expandAttributes));
-    json.put("tables", getTablesJson(recordClass, expandTables, expandTableAttributes));
-    json.put("attributeCategories", getAttributeCategoriesJson(recordClass));
-    json.put("collapsedCategories",  getCollapsedAttributesJson(recordClass));
-    return json;
+    return new JSONObject()
+      .put(Keys.NAME, recordClass.getFullName())
+      .put(Keys.DISPLAY_NAME, recordClass.getDisplayName())
+      .put(Keys.DISPLAY_NAME_PLURAL, recordClass.getDisplayNamePlural())
+      .put(Keys.URL_SEGMENT,  recordClass.getUrlSegment())
+      .put(Keys.DESCRIPTION, recordClass.getDescription())
+      .put(Keys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))
+      .put(Keys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
+        recordClass.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
+      .put(Keys.TABLES, TableFieldFormatter.getTablesJson(recordClass.getTableFieldMap().values(),
+        FieldScope.ALL, expandTables, expandTableAttributes))
+      .put(Keys.CATEGORIES, getAttributeCategoriesJson(recordClass));
   }
 
-  private static JSONArray getCollapsedAttributesJson(RecordClass recordClass) {
-    JSONArray json = new JSONArray();
-    List<AttributeCategory> catList = recordClass.getCollapsedCategories();
-    if (catList != null) {
-      for (AttributeCategory cat : recordClass.getCollapsedCategories()) {
-        json.put(cat.getName());
-      }
-    }
-    return json;
-  }
-
-  public static JSONArray getAttributesJson(AttributeFieldContainer container, boolean expandAttributes) {
+  public static JSONArray getAnswerFormatsJson(Collection<ReporterRef> reporters, FieldScope scope) {
     JSONArray array = new JSONArray();
-    for (AttributeField attrib : container.getAttributeFields()) {
-      if (fieldScope.isFieldInScope(attrib)) {
-        array.put(expandAttributes ? attrib.getName() : getAttributeJson(attrib));
+    for (ReporterRef reporter : reporters) {
+      if (scope.isFieldInScope(reporter)) {
+        JSONObject obj = new JSONObject()
+          .put(Keys.NAME, reporter.getName())
+          .put(Keys.DISPLAY_NAME, reporter.getDisplayName())
+          .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(reporter));
+        array.put(obj);
       }
     }
     return array;
   }
 
-  public static JSONObject getAttributeJson(AttributeField attrib) {
-    JSONObject json = new JSONObject();
-    json.put("name", attrib.getName());
-    json.put("type", attrib.getType());
-    json.put("category", attrib.getAttributeCategory());
-    json.put("displayName", attrib.getDisplayName());
-    json.put("help", attrib.getHelp());
-    json.put("align", attrib.getAlign());
-    return json;
-  }
-
-  public static JSONArray getTablesJson(RecordClass recordClass, boolean expandTables, boolean expandAttributes) {
-    JSONArray array = new JSONArray();
-    for (TableField table : recordClass.getTableFields()) {
-      if (fieldScope.isFieldInScope(table)) {
-        array.put(expandTables ? table.getName() : getTableJson(table, expandAttributes));
-      }
-    }
-    return array;
-  }
-
-  public static JSONObject getTableJson(TableField table, boolean expandAttributes) {
-    JSONObject json = new JSONObject();
-    json.put("name", table.getName());
-    json.put("type", table.getType());
-    json.put("category", table.getAttributeCategory());
-    json.put("displayName", table.getDisplayName());
-    json.put("description", table.getDescription());
-    json.put("help", table.getHelp());
-    json.put("attributes", getAttributesJson(table, expandAttributes));
-    json.put("sorting", getSortingAttributesJson(table));
-    json.put("propertyLists", table.getPropertyLists());
-    return json;
-  }
-  
-  private static JSONArray getSortingAttributesJson(AttributeFieldContainer container) {
-    JSONArray sortingAttributesJson = new JSONArray();
-    Map<String, Boolean> sortingAttributeMap = container.getSortingAttributeMap();
-    for (String attributeName : sortingAttributeMap.keySet()) {
-      JSONObject sortingAttribute = new JSONObject();
-      sortingAttribute.put("name", attributeName);
-      sortingAttribute.put("direction", sortingAttributeMap.get(attributeName) ? "asc" : "desc");
-      sortingAttributesJson.put(sortingAttribute);
-    }
-    return sortingAttributesJson;
-  }
-
-  public static JSONArray getAttributeCategoriesJson(RecordClass recordClass) {
-    List<AttributeCategory> categories = recordClass.getAttributeCategoryTree(fieldScope).getTopLevelCategories();
+  private static JSONArray getAttributeCategoriesJson(RecordClass recordClass) {
+    List<AttributeCategory> categories = recordClass.getAttributeCategoryTree(FieldScope.ALL).getTopLevelCategories();
     JSONArray attributeCategoriesJson = new JSONArray();
     for (AttributeCategory category : categories) {
       attributeCategoriesJson.put(getAttributeCategoryJson(category));
     }
     return attributeCategoriesJson;
   }
-  
-  public static JSONObject getAttributeCategoryJson(AttributeCategory category) {
-    List<AttributeCategory> subCategories = category.getSubCategories();
+
+  private static JSONObject getAttributeCategoryJson(AttributeCategory category) {
     JSONObject attributeCategoryJson = new JSONObject()
-      .put("name",  category.getName())
-      .put("displayName",  category.getDisplayName())
-      .put("description", category.getDescription());
-
-    if (subCategories.size() > 0) {
-      JSONArray subCategoriesJson = new JSONArray();
-      for (AttributeCategory subCategory : category.getSubCategories()) {
-        subCategoriesJson.put(getAttributeCategoryJson(subCategory));
-      }
-      attributeCategoryJson.put("subCategories",  subCategoriesJson);
+      .put(Keys.NAME,  category.getName())
+      .put(Keys.DISPLAY_NAME,  category.getDisplayName())
+      .put(Keys.DESCRIPTION, category.getDescription());
+    JSONArray subCategoriesJson = new JSONArray();
+    for (AttributeCategory subCategory : category.getSubCategories()) {
+      subCategoriesJson.put(getAttributeCategoryJson(subCategory));
     }
-
+    attributeCategoryJson.put(Keys.CATEGORIES, subCategoriesJson);
     return attributeCategoryJson;
   }
-  
-  public static JSONArray getAnswerFormatsJson(Map<String, ReporterRef>reporterMap) {
-    JSONArray array = new JSONArray();
-    
-    for (ReporterRef reporter : reporterMap.values()) {
-      JSONObject obj = new JSONObject();
-      obj.put(reporter.getDisplayName(), reporter.getName());
-      array.put(obj);
-    }
-    return array;
-  }
-
-  
 }

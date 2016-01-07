@@ -54,9 +54,9 @@ public class AnswerRequestFactory {
   public static AnswerRequest createFromJson(JSONObject json, WdkModelBean model) throws RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
-      String questionFullName = json.getString("questionName");
-      model.validateQuestionFullName(questionFullName);
-      Question question = model.getModel().getQuestion(questionFullName);
+      String questionName = json.getString("questionName");
+      model.validateQuestionFullName(questionName);
+      Question question = model.getModel().getQuestion(questionName);
       AnswerRequest request = new AnswerRequest(question);
       // params are required (empty array if no params)
       request.setParamValues(parseParamValues(json.getJSONArray("params"), question, model));
@@ -79,7 +79,7 @@ public class AnswerRequestFactory {
       throw new RequestMisformatException("Required value is missing or incorrect type", e);
     }
     catch (WdkModelException e) {
-      throw new WdkRuntimeException("Error creating request from JSON", e);
+      throw new WdkRuntimeException("Error querying model");
     }
   }
 

@@ -65,7 +65,7 @@ let RecordNavigationSection = React.createClass({
           <RecordNavigationSectionCategories
             record={this.props.record}
             recordClass={this.props.recordClass}
-            categories={this.props.recordClass.attributeCategories}
+            categories={this.props.recordClass.categories}
             onCategoryToggle={this.props.onCategoryToggle}
             showChildren={navigationExpanded}
             isCollapsed={category => includes(collapsedCategories, category.name)}

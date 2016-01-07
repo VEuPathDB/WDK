@@ -33,6 +33,10 @@ var Page = (function() {
   }
 
   function loadPage(serviceUrl) {
+    // need to get the following initialization data:
+    //   Records (Objects)
+    //   Question names (array)
+    //   
     jQuery.ajax({
       type: "GET",
       url: serviceUrl + "/question",

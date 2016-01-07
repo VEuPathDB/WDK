@@ -5,12 +5,11 @@ import values from 'lodash/object/values';
 
 
 /**
- * Filter the results of an answer. The filtered results are stored in a
- * separate property.
+ * Filter the results of an answer and return the filtered results.
  *
  * @param {Iterable<Record>} records                     The list of records to filter
  * @param {object}           filterSpec                  The filter specification
- * @param {string}           filterSpec.filterTerm      The query with which to filter records
+ * @param {string}           filterSpec.filterTerm       The query with which to filter records
  * @param {Array<string>}    filterSpec.filterAttributes The attributes to search.
  * @param {Array<string>}    filterSpec.filterTables     The tables to search.
  */

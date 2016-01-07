@@ -8,6 +8,7 @@ import RecordController from './components/RecordController';
 import NotFoundController from './components/NotFoundController';
 import AnswerController from './components/AnswerController';
 import QuestionListController from './components/QuestionListController';
+import StepDownloadFormController from './components/StepDownloadFormController';
 
 let { Route, DefaultRoute, NotFoundRoute } = ReactRouter;
 /**
@@ -22,6 +23,7 @@ export function start(rootUrl, rootElement, props) {
       <Route name="app" path={rootUrl} handler={AppController}>
         <Route name="answer" path="answer/:questionName" handler={AnswerController}/>
         <Route name="record" path="record/:class" handler={RecordController}/>
+        <Route name="stepDownloadForm" path="step/:stepId/download" handler={StepDownloadFormController}/>
         <Route name="question-list" handler={QuestionListController}/>
         <DefaultRoute handler={IndexController}/>
         <NotFoundRoute handler={NotFoundController}/>

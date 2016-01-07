@@ -14,7 +14,7 @@ var Store = function(dispatcher, initialValue) {
   // private data
   var _data = {
     questions: initialValue,
-    selectedQuestion: Store.NO_QUESTION_SELECTED,
+    selectedQuestion: { name: Store.NO_QUESTION_SELECTED, parameters: [] },
     paramOrdering: [],
     paramValues: {},
     results: null,
@@ -45,11 +45,11 @@ var Store = function(dispatcher, initialValue) {
     //   { actionType: ActionType, data: Any }
     switch(payload.actionType) {
       case ActionType.CHANGE_QUESTION_ACTION:
-        // data is { questionName: String, params: Array }
-        _data.selectedQuestion = payload.data.name;
-        _data.paramOrdering = payload.data.params.map(function(p) { return p.name; });
+        // data is from QuestionFormatter
+        _data.selectedQuestion = payload.data;
+        _data.paramOrdering = payload.data.parameters.map(function(p) { return p.name; });
         _data.paramValues = {};
-        payload.data.params.forEach(function(param) {
+        payload.data.parameters.forEach(function(param) {
           _data.paramValues[param.name] = param;
           _data.paramValues[param.name].value = param.defaultValue;
         });

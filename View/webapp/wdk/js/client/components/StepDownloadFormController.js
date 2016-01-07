@@ -2,10 +2,45 @@
 import React from 'react';
 import update from 'react-addons-update';
 import Router from 'react-router';
-import Loading from './Loading';
-import Answer from './Answer';
-import Doc from './Doc';
 import { wrappable } from '../utils/componentUtils';
+
+// What are parameters to this page?
+//  1. Step ID (path param)
+//
+// What data does this page need?
+//  1. Step by passed ID (question name, then params, filters, etc. for eventual form submission)
+//  2. Question of the step (+ record class)
+//  3. User preferences (by question) for attribs, tab selected, maybe other data
+//        (e.g. transcript view vs gene view) from results page
+//  4. Possible formats/reporters for this recordclass
+//  5. RecordClass-specific ontology (from which Reporter-specific ontology subsets for attributes and tables can be extracted)
+//
+// What component tree will be here?
+//  (header/footer still in pageFrame)
+//  - Primary download form
+//     - Drop down for reporter types
+//       - React's <form>
+//         - WDK "standard" reporter form (contains <div> with form elements)
+//         - Reporter-specific form components (can maybe merge some of these together)
+//         - WDK provides submit button
+//
+// Details:
+//    <ReporterForm/>
+
+
+
+//      a. What to display for each reporter
+//           i. handled by custom reporter form components
+//      b. Possible attributes and tables
+//           i. Fetched from a combination of record class and question, organization provided by ontology
+//           ii. Attribute and table trees are components included in custom reporter form components
+//      c. 
+
+
+
+
+import AnswerViewStore from '../stores/AnswerViewStore';
+import AnswerViewActionCreator from '../actioncreators/AnswerViewActionCreator';
 
 /**
  * wrap - Wrap `value` in array.
@@ -91,8 +126,8 @@ let AnswerController = React.createClass({
   // This can also be treated as a constructor: it's a good place to initialize
   // properties of the component.
   componentWillMount() {
-    this.store = this.props.stores.AnswerViewStore;
-    this.actions = this.props.actionCreators.AnswerViewActionCreator;
+    this.store = this.props.container.get(AnswerViewStore);
+    this.actions = this.props.container.get(AnswerViewActionCreator);
     this.sortingPreferenceKey = 'sorting::' + this.props.params.questionName;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
@@ -343,8 +378,6 @@ let AnswerController = React.createClass({
       meta,
       records,
       displayInfo,
-      allAttributes,
-      visibleAttributes,
       filterTerm,
       filterAttributes,
       filterTables,
@@ -378,8 +411,6 @@ let AnswerController = React.createClass({
             question={question}
             recordClass={recordClass}
             displayInfo={displayInfo}
-            allAttributes={allAttributes}
-            visibleAttributes={visibleAttributes}
             filterTerm={filterTerm}
             filterAttributes={filterAttributes}
             filterTables={filterTables}

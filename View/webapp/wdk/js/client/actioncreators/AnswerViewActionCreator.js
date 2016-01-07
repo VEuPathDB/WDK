@@ -127,19 +127,17 @@ export default class AnswerViewActionCreator extends ActionCreator {
   /**
    * Set the filter for the answer table.
    *
-   * FIXME Remove questionName param, and use a service object to filter the answer.
+   * FIXME use a service object to filter the answer.
    *
    * @param {Object} spec The filter specification.
-   * @param {string} spec.questionName The question name associated with the answer.
    * @param {string} spec.terms The string to parse and filter.
    * @param {Array<string>} spec.attributes The set of attribute names whose values should be queried.
    * @param {Array<string>} spec.tables The set of table names whose values should be queried.
    */
-  updateFilter({ questionName, terms, attributes, tables }) {
+  updateFilter({ terms, attributes, tables }) {
     this._dispatch({
       type: actionTypes.ANSWER_UPDATE_FILTER,
       payload: {
-        questionName,
         terms,
         attributes,
         tables

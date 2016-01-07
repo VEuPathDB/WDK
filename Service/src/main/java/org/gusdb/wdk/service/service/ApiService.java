@@ -6,12 +6,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.gusdb.wdk.service.formatter.ProjectFormatter;
+
 @Path("/")
 public class ApiService extends WdkService {
 
   @GET
-  @Produces(MediaType.TEXT_PLAIN)
+  @Produces(MediaType.APPLICATION_JSON)
   public Response getServiceApi() {
-    return Response.ok("Welcome to the WDK 3.0 Web Service").build();
+    return Response.ok(ProjectFormatter.getWdkProjectInfo(getWdkModel()).toString()).build();
   }
 }
