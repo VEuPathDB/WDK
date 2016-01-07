@@ -12,12 +12,13 @@ let RecordTable = React.createClass({
 
   render() {
     let { table, tableMeta } = this.props;
+    let tableAttributes = tableMeta.attributes.filter(a => !a.isInternal);
     let classnames = [ 'wdk-RecordTable', 'wdk-RecordTable__' + tableMeta.name ].join(' ');
-    if (table.length === 0 || tableMeta.attributes.length === 0) {
+    if (table.length === 0 || tableAttributes.length === 0) {
       return <em>No data available</em>;
     }
-    if (tableMeta.attributes.length === 1) {
-      let attributeName = tableMeta.attributes[0].name;
+    if (tableAttributes.length === 1) {
+      let attributeName = tableAttributes[0].name;
       let listColumnSize = Math.max(10, table.length / maxColumns);
       return (
         <div className={classnames}>
@@ -34,7 +35,7 @@ let RecordTable = React.createClass({
     return (
       <div className={classnames}>
         <DataTable
-          columns={this.props.tableMeta.attributes}
+          columns={tableAttributes}
           data={this.props.table}
           sorting={this.props.tableMeta.sorting}
           childRow={this.props.childRow}

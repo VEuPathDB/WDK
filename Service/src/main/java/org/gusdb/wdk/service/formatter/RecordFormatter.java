@@ -145,9 +145,7 @@ public class RecordFormatter {
         JSONObject tableAttrsJson = new JSONObject();
         // loop through columns
         for (Entry<String, AttributeValue> entry : row.entrySet()) {
-          if (!entry.getValue().getAttributeField().isInternal()) {
-            tableAttrsJson.put(entry.getKey(), getAttributeJsonValue(entry.getValue()));
-          }
+          tableAttrsJson.put(entry.getKey(), getAttributeJsonValue(entry.getValue()));
         }
         tableRowsJson.put(tableAttrsJson);
       }

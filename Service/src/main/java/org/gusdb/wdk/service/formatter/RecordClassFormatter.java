@@ -16,7 +16,7 @@ import org.json.JSONObject;
 
 public class RecordClassFormatter {
 
-  private static FieldScope fieldScope = FieldScope.NON_INTERNAL;
+  private static FieldScope fieldScope = FieldScope.ALL;
 
   public static JSONArray getRecordClassesJson(RecordClassSet[] recordClassSets,
       boolean expandRecordClasses, boolean expandAttributes,
@@ -76,6 +76,7 @@ public class RecordClassFormatter {
     json.put("displayName", attrib.getDisplayName());
     json.put("help", attrib.getHelp());
     json.put("align", attrib.getAlign());
+    json.put("isInternal", attrib.isInternal());
     return json;
   }
 
