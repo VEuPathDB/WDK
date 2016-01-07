@@ -62,12 +62,12 @@ class CheckboxList extends Component {
   render() {
     let { selectedItems } = this.controlled ? this.props : this.state;
     return (
-      <div>
+      <div className="wdk-CheckboxList">
         <div>
           {this.props.items.map(item => {
             let id = `${this.id}.${item.value}`;
             return (
-              <div key={item.value}>
+              <div key={item.value} className="wdk-CheckboxListItem">
                 <input
                   id={id}
                   type="checkbox"
