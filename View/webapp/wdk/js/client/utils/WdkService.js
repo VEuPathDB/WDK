@@ -67,7 +67,7 @@ export default class WdkService {
     // if we don't have the record, fetch whatever is requested
     if (!this._records.has(key)) {
       let body = stringify({ primaryKey, attributes, tables });
-      this._records.set(key, fetchJson(method, url, body).then(response => response.record));
+      this._records.set(key, fetchJson(method, url, body));
     }
 
     else {
@@ -85,10 +85,10 @@ export default class WdkService {
           });
 
           // merge old record attributes and tables with new record
-          return fetchJson(method, url, body).then(response => {
-            Object.assign(response.record.attributes, record.attributes);
-            Object.assign(response.record.tables, record.tables);
-            return response.record;
+          return fetchJson(method, url, body).then(record => {
+            Object.assign(record.attributes, record.attributes);
+            Object.assign(record.tables, record.tables);
+            return record;
           });
         }
 
