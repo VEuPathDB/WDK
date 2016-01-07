@@ -17,6 +17,7 @@ public class FutureCleaner implements Callable<Boolean> {
   private static final Logger LOG = Logger.getLogger(FutureCleaner.class);
 
   private static final int FUTURE_CLEANUP_INTERVAL_SECS = 20;
+  private static final int FUTURE_CLEANUP_RETRY_SECS = 60 * 60; // 1-hour delay
   private static final int FUTURE_CLEANER_SLEEP_SECS = 2;
 
   public static class RunningAnalysis {
@@ -41,20 +42,43 @@ public class FutureCleaner implements Callable<Boolean> {
   public Boolean call() throws Exception {
     try {
       LOG.info("Step Analysis Thread Monitor initialized and running.");
-      int waitSecs = 0;
+      int waitedSecs = 0;
+      boolean mostRecentAttemptSucceeded = true;
       while (true) {
-        if (waitSecs > FUTURE_CLEANUP_INTERVAL_SECS) {
-          // do the business of this thread
-          _analysisMgr.expireLongRunningExecutions();
-          removeCompletedThreads();
-          removeExpiredThreads();
+        int timeToWait = (mostRecentAttemptSucceeded ?
+            FUTURE_CLEANUP_INTERVAL_SECS : FUTURE_CLEANUP_RETRY_SECS);
+        if (waitedSecs >= timeToWait) {
+          try {
+            // do the business of this thread
+            _analysisMgr.expireLongRunningExecutions();
+            removeCompletedThreads();
+            removeExpiredThreads();
+            mostRecentAttemptSucceeded = true;
+          }
+          catch (Exception e) {
+            // don't hide  interrupted exceptions
+            if (e instanceof InterruptedException) {
+              throw e;
+            }
+            if (mostRecentAttemptSucceeded) {
+              // First loop with exception after recovery, log details
+              // Probably DB blink so set wait time to higher interval and retry later
+              LOG.error("Could not clean up expired step analysis threads.  Will retry in " +
+                  FUTURE_CLEANUP_RETRY_SECS + " seconds.", e);
+            }
+            else {
+              LOG.error("Expired step analysis thread cleaner still failing (" +
+                  e.getClass().getSimpleName() + ")");
+            }
+            mostRecentAttemptSucceeded = false;
+          }
           // reset waitSecs for next run
-          waitSecs = 0;
+          waitedSecs = 0;
         }
         // only sleep for a little while; wake up to check if interrupted
         Thread.sleep(FUTURE_CLEANER_SLEEP_SECS * 1000);
         if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-        waitSecs += FUTURE_CLEANER_SLEEP_SECS;
+        waitedSecs += FUTURE_CLEANER_SLEEP_SECS;
       }
     }
     catch (InterruptedException e) {

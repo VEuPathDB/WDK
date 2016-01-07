@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 
@@ -17,6 +18,8 @@ import org.gusdb.wdk.model.WdkModelText;
  * 
  */
 public class TextAttributeField extends AttributeField {
+
+
 
   private List<WdkModelText> texts;
   /**
@@ -61,8 +64,12 @@ public class TextAttributeField extends AttributeField {
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
 
+
+
     String rcName = (recordClass == null) ? ""
         : (recordClass.getFullName() + ".");
+
+
 
     // exclude texts
     boolean hasText = false;

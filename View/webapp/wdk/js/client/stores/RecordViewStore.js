@@ -5,6 +5,7 @@ import { postorder as postorderCategories } from '../utils/CategoryTreeIterators
 
 let {
   LOADING,
+  ERROR,
   RECORD_UPDATED,
   CATEGORY_COLLAPSED_TOGGLED,
   TABLE_COLLAPSED_TOGGLED
@@ -24,9 +25,16 @@ export default class RecordViewStore extends ReduceStore {
 
   reduce(state, { type, payload }) {
     switch (type) {
+      case ERROR:
+        return Object.assign({}, this.getInitialState(), {
+          isLoading: false,
+          error: payload.error
+        });
+
       case LOADING:
         return Object.assign({}, state, {
-          isLoading: true
+          isLoading: true,
+          error: null
         });
 
       case RECORD_UPDATED: {

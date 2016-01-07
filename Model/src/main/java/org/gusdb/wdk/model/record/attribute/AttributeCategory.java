@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.record.attribute;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +20,6 @@ import org.gusdb.wdk.model.record.TableField;
  *
  */
 public class AttributeCategory extends WdkModelBase {
-
-    private static String newline = System.getProperty("line.separator");
 
 	private String name;
 	private String displayName;
@@ -93,7 +93,7 @@ public class AttributeCategory extends WdkModelBase {
 	}
 	
 	public void appendToStringBuffer(String indentation, StringBuilder builder) {
-		builder.append(indentation).append(name).append(" (").append(fields.size()).append(")").append(newline);
+		builder.append(indentation).append(name).append(" (").append(fields.size()).append(")").append(NL);
 		for (AttributeCategory cat : subcategories) {
 			cat.appendToStringBuffer(indentation + "  ", builder);
 		}

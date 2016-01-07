@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.record.ScopedField;
 
 /**
  * A reference to the download Reporter class. the full class name of the
@@ -22,7 +23,7 @@ import org.gusdb.wdk.model.WdkModelText;
  * @author xingao
  * 
  */
-public class ReporterRef extends WdkModelBase {
+public class ReporterRef extends WdkModelBase implements ScopedField {
 
   private static final Logger logger = Logger.getLogger(ReporterRef.class);
 
@@ -83,9 +84,16 @@ public class ReporterRef extends WdkModelBase {
     this.displayName = displayName;
   }
 
+  @Override
+  public boolean isInternal() {
+    // all reporters are non-internal
+    return false;
+  }
+
   /**
    * @return the inReportMaker
    */
+  @Override
   public boolean isInReportMaker() {
     return inReportMaker;
   }

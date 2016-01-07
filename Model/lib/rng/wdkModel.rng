@@ -933,9 +933,7 @@
   <define name="recordClass">
     <element name="recordClass">
       <attribute name="name" />
-      <optional>
-        <attribute name="urlPath" />
-      </optional>
+      <attribute name="urlName" />
       <optional>
         <attribute name="displayName" />
       </optional>
@@ -1152,7 +1150,7 @@
       <attribute name="queryRef" />
       <ref name="IncludeExclude" />
       <optional>
-        <attribute name="urlPath" />
+        <attribute name="urlName" />
       </optional>
       <optional>
         <attribute name="shortDisplayName" />
@@ -1342,6 +1340,10 @@
             <text />
           </element>
           <element name="text">
+            <ref name="IncludeExclude" />
+            <text />
+          </element>
+          <element name="display">
             <ref name="IncludeExclude" />
             <text />
           </element>
