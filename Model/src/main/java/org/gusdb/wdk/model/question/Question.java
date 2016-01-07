@@ -159,7 +159,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   
   private List<QuestionSuggestion> _suggestions = new ArrayList<>();
 
-  private String _urlPath;
+  private String _urlSegment;
 
 
   // /////////////////////////////////////////////////////////////////////
@@ -262,9 +262,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   public void setName(String name) {
     this.name = name;
   }
+
+  public void setUrlName(String urlName) {
+    // XML Model alias for URL segment
+    setUrlSegment(urlName);
+  }
   
-  public void setUrlPath(String urlPath) {
-    this._urlPath = urlPath;
+  public void setUrlSegment(String urlSegment) {
+    this._urlSegment = urlSegment;
   }
 
   public void addDescription(WdkModelText description) {
@@ -465,8 +470,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return name;
   }
   
-  public String getUrlPath() {
-    return _urlPath;
+  public String getUrlSegment() {
+    return _urlSegment;
   }
 
   public String getFullName() {
@@ -739,7 +744,15 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         // make sure each analysis plugin is appropriate for this question
         stepAnalysis.getAnalyzerInstance().validateQuestion(this);
       }
-      
+
+      // generate URL segment for this question since optional in XML model
+      if (_urlSegment == null || _urlSegment.isEmpty()) {
+        setUrlSegment(name);
+      }
+
+      // register this URL segment with the model to ensure uniqueness
+      wdkModel.registerQuestionUrlSegment(_urlSegment, getFullName());
+
     } catch (WdkModelException ex) {
       logger.error("resolving question '" + getFullName() + " failed. " + ex);
       throw ex;
@@ -950,11 +963,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         this.newBuild = suggestion.getNewBuild();
         this.reviseBuild = suggestion.getReviseBuild();
       }
-    }
-
-    // generate urlPath
-    if (_urlPath == null || _urlPath.isEmpty()) {
-      setUrlPath(name);
     }
   }
 

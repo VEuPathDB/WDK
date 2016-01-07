@@ -44,7 +44,7 @@ public class QuestionFormatter {
     JSONObject qJson = new JSONObject();
     qJson.put("name", q.getFullName());
     qJson.put("displayName", q.getDisplayName());
-    qJson.put("urlPath",  q.getUrlPath());
+    qJson.put("urlPath",  q.getUrlSegment());
     qJson.put("class", q.getRecordClass().getFullName());
     qJson.put("params", getParamsJson(q, expandParams, params, user, dependedParamValues));
     return qJson;

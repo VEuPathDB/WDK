@@ -325,7 +325,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   
   private CategoryList _categoryList;
 
-  private String _urlPath;
+  private String _urlSegment;
 
   // ////////////////////////////////////////////////////////////////////
   // Called at model creation time
@@ -399,12 +399,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     this.nativeShortDisplayNamePlural = shortDisplayNamePlural;
   }
   
-  public void setUrlPath(String urlPath) {
-    this._urlPath = urlPath;
+  public void setUrlName(String urlName) {
+    // XML Model alias for URL segment
+    setUrlSegment(urlName);
   }
-  
-  public String getUrlPath() {
-    return this._urlPath;
+
+  public void setUrlSegment(String urlSegment) {
+    this._urlSegment = urlSegment;
+  }
+  public String getUrlSegment() {
+    return this._urlSegment;
   }
 
   private String getPlural(String name) {
@@ -857,6 +861,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (StepAnalysis stepAnalysisRef : stepAnalysisMap.values()) {
       ((StepAnalysisXml) stepAnalysisRef).resolveReferences(model);
     }
+
+    // register this URL segment with the model to ensure uniqueness
+    wdkModel.registerRecordClassUrlSegment(_urlSegment, getFullName());
 
     resolved = true;
   }

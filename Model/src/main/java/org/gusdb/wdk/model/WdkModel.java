@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -126,6 +125,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   private List<FilterSet> filterSetList = new ArrayList<>();
   private Map<String, FilterSet> filterSets = new LinkedHashMap<>();
 
+  private Map<String, String> _questionUrlSegmentMap = new HashMap<>();
+  private Map<String, String> _recordClassUrlSegmentMap = new HashMap<>();
+  
   private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
   private String displayName;
   private String version; // use default version
@@ -241,8 +243,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   }
 
   /**
-   * @param initRecordClassList
-   * @return
+   * @param questionFullName question's full name (two-part name)
+   * @return question with the passed name
+   * @throws WdkModelException if unable to resolve name to question
    */
   public Question getQuestion(String questionFullName) throws WdkModelException {
     Reference r = new Reference(questionFullName);
@@ -507,7 +510,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   /**
    * This method should happen after the resolveReferences, since projectId is set by this method from
-   * modelConfig
+   * modelConfig <- I am a horrible comment, explore later (resolveReferences is called in this method)
    */
   public void configure(ModelConfig modelConfig) throws WdkModelException {
 
@@ -549,10 +552,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
     // create boolean questions
     createBooleanQuestions();
-
-    // further validation
-    validateUrls();
-
   }
 
   public void releaseResources() {
@@ -1355,42 +1354,36 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     writer.println("</wdkModel>");
     return stringWriter.toString();
   }
-  
-  private void validateUrls() throws WdkModelException {
-    
-    // validate unique urlPaths
-    Set<String> rcUrlPaths = new HashSet<String>();
 
-    // slugs should be unique across all recordClasses
-    for (RecordClassSet set : recordClassSets.values()) {
-      for (RecordClass rc : set.getRecordClasses()) {
-        String urlPath = rc.getUrlPath();
-        if (rcUrlPaths.contains(urlPath))
-          throw new WdkModelException("Duplicate urlPath found in recordClass " +
-              rc.getFullName() + ": [" + urlPath + "].");
-        rcUrlPaths.add(urlPath);
-      }
+  public void registerRecordClassUrlSegment(String urlSegment, String rcFullName) throws WdkModelException {
+    if (_recordClassUrlSegmentMap.containsKey(urlSegment) &&
+        !_recordClassUrlSegmentMap.get(urlSegment).equals(rcFullName)) { // protects from duplicate identical calls
+      throw new WdkModelException("Duplicate RecordClass URL segment specified [" + urlSegment + "]");
     }
+    _recordClassUrlSegmentMap.put(urlSegment, rcFullName);
+  }
 
-    Map<RecordClass, Set<String>> questionUrlPathsByRecordClass = new HashMap<RecordClass, Set<String>>();
-    
-    // urlPaths should be unique per questionSet
-    for (QuestionSet set : questionSets.values()) {
-      for (Question q : set.getQuestions()) {
-        if (!questionUrlPathsByRecordClass.containsKey(q.getRecordClass())) {
-          questionUrlPathsByRecordClass.put(q.getRecordClass(), new HashSet<String>());
-        }
-        Set<String> qUrlPaths = questionUrlPathsByRecordClass.get(q.getRecordClass());
-        String urlPath = q.getUrlPath();
-        if (qUrlPaths.contains(urlPath)) {
-          logger.info("urlPath validation for question " + q.getFullName() + " with recordClass " + q.getRecordClass());
-          throw new WdkModelException("Duplicate question urlPath found in question " +
-              q.getFullName() + " with the recordClass " + q.getRecordClass().getName() +
-              ": [" + urlPath + "].");
-        }
-        qUrlPaths.add(urlPath);
-      }
+  public RecordClass getRecordClassByUrlSegment(String urlSegment) throws WdkModelException {
+    String rcFullName = _recordClassUrlSegmentMap.get(urlSegment);
+    if (rcFullName == null)
+      throw new WdkModelException("URL segment '" + urlSegment + "' does not resolve to any RecordClass.");
+    return getRecordClass(rcFullName);
+  }
+
+  public void registerQuestionUrlSegment(String urlSegment, String questionFullName) throws WdkModelException {
+    if (_questionUrlSegmentMap.containsKey(urlSegment) &&
+        !_questionUrlSegmentMap.get(urlSegment).equals(questionFullName)) { // protects from duplicate identical calls
+      throw new WdkModelException("Duplicate Question URL segment specified [" + urlSegment +
+          "]. You may need to specify a custom URL segment if you use have " +
+          "two questions with the same name in different Question Sets.");
     }
+    _questionUrlSegmentMap.put(urlSegment, questionFullName);
+  }
 
+  public Question getQuestionByUrlSegment(String urlSegment) throws WdkModelException {
+    String questionFullName = _questionUrlSegmentMap.get(urlSegment);
+    if (questionFullName == null)
+      throw new WdkModelException("URL segment '" + urlSegment + "' does not resolve to any Question.");
+    return getQuestion(questionFullName);
   }
 }

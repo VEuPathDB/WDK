@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jfree.util.Log;
+import org.apache.log4j.Logger;
 
 /**
  * This class is the common parent for most of the classes that are represented
@@ -29,6 +29,9 @@ import org.jfree.util.Log;
  * @author Jerric
  */
 public abstract class WdkModelBase {
+
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(WdkModelBase.class);
 
   private Set<String> includeProjects;
   private Set<String> excludeProjects;
@@ -183,7 +186,6 @@ public abstract class WdkModelBase {
    * @throws WdkModelException if error occurs resolving references
    */
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    Log.info("Am I ever called?");
     this.wdkModel = wdkModel;
   }
 
