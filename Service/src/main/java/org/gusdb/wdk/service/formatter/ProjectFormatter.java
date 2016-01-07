@@ -5,6 +5,24 @@ import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONObject;
 
+/**
+ * Formats WDK project information.  JSON will have the following form:
+ * {
+ *   description: String,
+ *   displayName; String,
+ *   projectId: String,
+ *   buildNumber: Number,
+ *   releaseData: String,
+ *   webAppUrl: String (relative URL),
+ *   webServiceUrl: String (relative URL),
+ *   assetsUrl: String (relative URL),
+ *   authentication: {
+ *     method: String (see AuthenticationMethod enum),
+ *     oauthUrl: String (absolute URL),
+ *     oauthClientId: String
+ *   }
+ * }
+ */
 public class ProjectFormatter {
 
   private static final String WELCOME_MESSAGE = "Welcome to the WDK 3.0 Web Service";

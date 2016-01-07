@@ -13,18 +13,18 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
-JSON output format:
-{
-  meta: {
-    class: String,
-    totalCount: Number,
-    responseCount: Number,
-    attributes: [ String ],
-    tables: [ String ]
-  },
-  records: [ see RecordFormatter ]
-}
-*/
+ * Formats WDK answer service responses.  JSON will have the following form:
+ * {
+ *   meta: {
+ *     class: String,
+ *     totalCount: Number,
+ *     responseCount: Number,
+ *     attributes: [ String ],
+ *     tables: [ String ]
+ *   },
+ *   records: [ see RecordFormatter ]
+ * }
+ */
 public class AnswerFormatter {
 
   @SuppressWarnings("unused")

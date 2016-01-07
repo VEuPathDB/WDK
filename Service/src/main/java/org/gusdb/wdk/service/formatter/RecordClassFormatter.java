@@ -14,13 +14,15 @@ import org.json.JSONObject;
 
 /**
  * Formats WDK RecordClass objects into the following form:
- * 
  * {
- *   fullName: String,
+ *   name: String,
  *   displayName: String,
  *   displayNamePlural: String,
- *   urlPath: String,
+ *   shortDisplayName: String,
+ *   shortDisplayNamePlural: String,
+ *   urlSegment: String,
  *   description: String,
+ *   formats: [ String ],
  *   attributes: [ see AttributeFieldFormatter ],
  *   tables: [ see TableFieldFormatter ],
  *   categories: Array (nested tree of categories)
@@ -50,6 +52,8 @@ public class RecordClassFormatter {
       .put(Keys.NAME, recordClass.getFullName())
       .put(Keys.DISPLAY_NAME, recordClass.getDisplayName())
       .put(Keys.DISPLAY_NAME_PLURAL, recordClass.getDisplayNamePlural())
+      .put(Keys.SHORT_DISPLAY_NAME, recordClass.getShortDisplayName())
+      .put(Keys.SHORT_DISPLAY_NAME_PLURAL, recordClass.getShortDisplayNamePlural())
       .put(Keys.URL_SEGMENT,  recordClass.getUrlSegment())
       .put(Keys.DESCRIPTION, recordClass.getDescription())
       .put(Keys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))
