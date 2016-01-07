@@ -43,7 +43,7 @@ bundles: $(wdk_bundle) $(libs_bundle) $(css_bundle)
 # Install npm packages. This target will prevent unneeded http requests.
 # =============================================================================
 node_modules: npm-shrinkwrap.json
-	npm install
+	npm install --production
 	touch node_modules
 
 node_modules/%: node_modules;
@@ -91,6 +91,14 @@ test: $(test_bundle) $(libs_bundle) node_modules
 test-server: $(test_sources) $(test_bundle) $(wdk_sources) $(libs_bundle)
 	webpack-dev-server --config webpack-test.config.js $<
 	cp $(libs_bundle) test/dist
+
+
+# =============================================================================
+# Run examples server. See ./client-examples/README.md.
+# =============================================================================
+
+examples-server: node_modules
+	cd client-examples && webpack-dev-server --content-base public/
 
 
 # =============================================================================
