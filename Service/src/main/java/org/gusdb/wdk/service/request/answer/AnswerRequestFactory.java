@@ -79,7 +79,7 @@ public class AnswerRequestFactory {
       throw new RequestMisformatException("Required value is missing or incorrect type", e);
     }
     catch (WdkModelException e) {
-      throw new WdkRuntimeException("Error querying model");
+      throw new WdkRuntimeException("Error querying model during answer request parsing", e);
     }
   }
 
