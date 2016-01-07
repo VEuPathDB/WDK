@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.formatter;
 
+
 /**
  * A collection of common keys; this is an attempt to standardize the names
  * of JSON object keys received from and returned to the client.
@@ -27,6 +28,8 @@ public class Keys {
   // UI-related keys
   public static final String DISPLAY_NAME = "displayName";
   public static final String DISPLAY_NAME_PLURAL = "displayNamePlural";
+  public static final String SHORT_DISPLAY_NAME = "shortDisplayName";
+  public static final String SHORT_DISPLAY_NAME_PLURAL = "shortDisplayNamePlural";
   public static final String URL = "url";
   public static final String DISPLAY_TEXT = "displayText";
   public static final String HELP = "help";
@@ -45,6 +48,8 @@ public class Keys {
   public static final String IS_VISIBLE = "isVisible";
   public static final String IS_DISPLAYABLE = "isDisplayable";
   public static final String IS_IN_REPORT = "isInReport";
+  public static final String NEW_BUILD = "newBuild";
+  public static final String REVISE_BUILD = "reviseBuild";
 
   // keys for what and how data is being referenced
   public static final String PARAMETERS = "parameters";
@@ -55,6 +60,11 @@ public class Keys {
   public static final String FORMATS = "formats";
   public static final String SORTING = "sorting";
   public static final String DIRECTION = "direction";
+
+  // question plugin keys
+  public static final String DEFAULT_SUMMARY_VIEW = "defaultSummaryView";
+  public static final String SUMMARY_VIEW_PLUGINS = "summaryViewPlugins";
+  public static final String STEP_ANALYSIS_PLUGINS = "stepAnalysisPlugins";
 
   // param-related keys
   public static final String DEFAULT_VALUE = "defaultValue";

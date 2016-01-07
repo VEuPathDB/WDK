@@ -21,14 +21,22 @@ import org.json.JSONObject;
 
 /**
  * Formats WDK Question objects.  Question JSON will have the following form:
- * 
  * {
  *   name: String,
  *   displayName: String,
+ *   shortDisplayName: String,
+ *   description: String,
+ *   help: String,
+ *   newBuild: Number,
+ *   reviseBuild: Number,
  *   urlSegment: String,
  *   class: String,
  *   parameters: [ see ParamFormatters ],
- *   dynamicAttributes: [ see AttributeFieldFormatter ]
+ *   defaultAttributes, [ String ],
+ *   dynamicAttributes: [ see AttributeFieldFormatter ],
+ *   defaultSummaryView: String,
+ *   summaryViewPlugins: [ String ],
+ *   stepAnalysisPlugins: [ String ]
  * }
  * 
  * @author rdoherty
@@ -61,12 +69,20 @@ public class QuestionFormatter {
     return new JSONObject()
       .put(Keys.NAME, q.getFullName())
       .put(Keys.DISPLAY_NAME, q.getDisplayName())
+      .put(Keys.SHORT_DISPLAY_NAME, q.getShortDisplayName())
+      .put(Keys.DESCRIPTION, q.getDescription())
+      .put(Keys.HELP, q.getHelp())
+      .put(Keys.NEW_BUILD, q.getNewBuild())
+      .put(Keys.REVISE_BUILD, q.getReviseBuild())
       .put(Keys.URL_SEGMENT,  q.getUrlSegment())
       .put(Keys.CLASS, q.getRecordClass().getFullName())
       .put(Keys.PARAMETERS, getParamsJson(params, expandParams, user, dependedParamValues))
       .put(Keys.DEFAULT_ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(q.getSummaryAttributeFieldMap().keySet()))
       .put(Keys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
-          q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true));
+          q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
+      .put(Keys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
+      .put(Keys.SUMMARY_VIEW_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getSummaryViews().keySet()))
+      .put(Keys.STEP_ANALYSIS_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getStepAnalyses().keySet()));
   }
 
   public static JSONArray getParamsJson(Collection<Param> params, boolean expandParams, User user, Map<String, String> dependedParamValues)
