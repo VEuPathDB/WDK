@@ -125,6 +125,10 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     }
     return sql.toString();
   }
+  
+  protected boolean possiblyNonUniquePrimaryKeys() {
+    return false;
+  }
 
   private String getIntersectSql(String leftSql, String rightSql,
       String operator) {
@@ -136,11 +140,15 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     String pkColumnsString = pkColumnsBuf.toString();
     String weightColumn = Utilities.COLUMN_WEIGHT;
     
-    // wrap these to collapse multiple rows in the input that share a primary key, in the event that
-    // the primary key we are using here is not really the record's primary key (eg, gene boolean logic on transcripts)
-    leftSql = "select " + pkColumnsString + ", max(" + weightColumn + ") as " + weightColumn + " from (" + leftSql + ") l group by " + pkColumnsString;
-    rightSql = "select " + pkColumnsString + ", max(" + weightColumn + ") as " + weightColumn + " from (" + rightSql + ") r group by " + pkColumnsString;
-
+    // in rare cases (eg, gene boolean logic on transcripts), the primary key we are using is not really the record's primary key,
+    // and so is not guaranteed to be unique.  if so, collapse them into one row per primary key.
+    // only do this when needed, to avoid unneeded performance hit
+    //  
+    if (possiblyNonUniquePrimaryKeys()) {
+      leftSql = "select " + pkColumnsString + ", max(" + weightColumn + ") as " + weightColumn + " from (" + leftSql + ") l group by " + pkColumnsString;
+      rightSql = "select " + pkColumnsString + ", max(" + weightColumn + ") as " + weightColumn + " from (" + rightSql + ") r group by " + pkColumnsString;
+    }
+    
     StringBuffer sql = new StringBuffer();
     sql.append("SELECT " + pkColumnsString + ", ");
 
@@ -154,7 +162,6 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     sql.append(" (SELECT 2 AS wdk_t, right.* FROM (" + rightSql + ") right)");
     sql.append(") t GROUP BY " + pkColumnsString);
     sql.append(" HAVING count(*) > 1");
-    logger.info("================================================================ " + sql);
     return sql.toString();
   }
 
