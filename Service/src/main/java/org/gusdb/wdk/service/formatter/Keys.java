@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.formatter;
 
 
+
 /**
  * A collection of common keys; this is an attempt to standardize the names
  * of JSON object keys received from and returned to the client.
@@ -17,13 +18,14 @@ public class Keys {
   public static final String URL_SEGMENT = "urlSegment";
 
   // descriptive keys
-  // TODO: see if type and class should be merged into one
-  public static final String CLASS = "class";
   public static final String TYPE = "type";
   public static final String LENGTH = "length";
+  public static final String VALUE = "value";
   public static final String PROPERTIES = "properties";
   public static final String TOTAL_COUNT = "totalCount";
   public static final String RESPONSE_COUNT = "responseCount";
+  public static final String RECORD_CLASS = "recordClass";
+  public static final String QUESTION_NAME = "questionName";
 
   // UI-related keys
   public static final String DISPLAY_NAME = "displayName";
@@ -77,7 +79,21 @@ public class Keys {
   public static final String IS_MULTIPICK = "multiPick";
   public static final String DISPLAY_TYPE = "displayType";
   public static final String PARSERS = "parsers";
-  
+
+  // step- and strategy-specific keys
+  public static final String CUSTOM_NAME = "customName";
+  public static final String BASE_CUSTOM_NAME = "baseCustomName";
+  public static final String COLLAPSED_NAME = "collapsedName";
+  public static final String OWNER_ID = "ownerId";
+  public static final String STRATEGY_ID = "strategyId";
+  public static final String ESTIMATED_SIZE = "estimatedSize";
+  public static final String HAS_COMPLETE_STEP_ANALYSES = "hasCompleteStepAnalyses";
+  public static final String ANSWER_SPEC = "answerSpec";
+  public static final String LEGACY_FILTER_NAME = "legacyFilterName";
+  public static final String FILTERS = "filters";
+  public static final String VIEW_FILTERS = "viewFilters";
+  public static final String WDK_WEIGHT = "wdk_weight";
+
   // site-level keys
   public static final String PROJECT_ID = "projectId";
   public static final String BUILD_NUMBER = "buildNumber";

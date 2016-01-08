@@ -43,7 +43,7 @@ var Util = (function() {
     return {
       questionDefinition: {
         questionName: question.name,
-        params: paramPack,
+        parameters: paramPack,
         filters: []
       },
       formatting: {

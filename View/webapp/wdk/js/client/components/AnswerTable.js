@@ -317,7 +317,7 @@ let AnswerTable = React.createClass({
           descriptor={attributeDescriptor}
           value={attributeValue}
           record={this.props.records[index]}
-          recordClass={this.props.meta.class}
+          recordClass={this.props.meta.recordClass}
           width={width}
         />
       </div>

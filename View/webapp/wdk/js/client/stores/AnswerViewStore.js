@@ -75,7 +75,7 @@ export default class AnswerViewStore extends ReduceStore {
 
     // use previously selected visible attributes unless they don't exist
     let visibleAttributes = state.visibleAttributes;
-    if (!visibleAttributes || state.meta.class !== answer.meta.class) {
+    if (!visibleAttributes || state.meta.recordClass !== answer.meta.recordClass) {
       // need to populate attribute details for visible attributes
       visibleAttributes = answer.meta.attributes.map(attrName => {
         // first try to find attribute in record class

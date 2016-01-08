@@ -6,26 +6,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.gusdb.wdk.model.WdkModel;
-import org.json.JSONObject;
+import org.gusdb.wdk.service.formatter.ProjectFormatter;
 
-@Path("/project")
+@Path("/")
 public class ProjectService extends WdkService {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getProjectInfo() {
-    return Response.ok(getProjectJson(getWdkModel()).toString()).build();
-  }
-
-  private static JSONObject getProjectJson(WdkModel wdkModel) {
-    JSONObject json = new JSONObject();
-    json.put("projectId", wdkModel.getProjectId());
-    json.put("version", wdkModel.getVersion());
-    json.put("buildNumber", wdkModel.getBuildNumber());
-    json.put("releaseDate", wdkModel.getReleaseDate());
-    json.put("introduction", wdkModel.getIntroduction());
-    json.put("webAppUrl", wdkModel.getModelConfig().getWebAppUrl());
-    return json;
+  public Response getServiceApi() {
+    return Response.ok(ProjectFormatter.getWdkProjectInfo(getWdkModel()).toString()).build();
   }
 }
