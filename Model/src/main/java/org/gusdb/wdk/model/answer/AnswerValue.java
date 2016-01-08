@@ -850,7 +850,8 @@ public class AnswerValue {
     }
 
     // replace the id_sql macro.  this sql must include filters (but not view filters)
-    return sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true));
+    String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true));
+    return sqlWithIdSql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, _idsQueryInstance.getSql());
   }
 
   public String getAttributeSql(Query attributeQuery) throws WdkModelException, WdkUserException {
@@ -882,6 +883,7 @@ public class AnswerValue {
 
       // replace the id_sql macro.  the injected sql must include filters (but not view filters)
       sql = sql.replace(Utilities.MACRO_ID_SQL, getIdSql(null, true));
+      sql = sql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, _idsQueryInstance.getSql());
     }
     return sql;
   }
