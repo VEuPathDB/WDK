@@ -128,29 +128,33 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
   private String getIntersectSql(String leftSql, String rightSql,
       String operator) {
-    // just sum the weight from original sql
-    StringBuffer sql = new StringBuffer();
-    sql.append("SELECT ");
 
+    // get easy to use strings for our columns
     String[] pkColumns = getPkColumns();
+    StringBuffer pkColumnsBuf = new StringBuffer(pkColumns[0]);
+    for (int i=1; i<pkColumns.length; i++) pkColumnsBuf.append(", " + pkColumns[i]);
+    String pkColumnsString = pkColumnsBuf.toString();
+    String weightColumn = Utilities.COLUMN_WEIGHT;
+    
+    // wrap these to collapse multiple rows in the input that share a primary key, in the event that
+    // the primary key we are using here is not really the record's primary key (eg, gene boolean logic on transcripts)
+    leftSql = "select " + pkColumnsString + ", max(" + weightColumn + ") as " + weightColumn + " from (" + leftSql + ") l group by " + pkColumnsString;
+    rightSql = "select " + pkColumnsString + ", max(" + weightColumn + ") as " + weightColumn + " from (" + rightSql + ") r group by " + pkColumnsString;
 
-    for (String column : pkColumns) {
-      sql.append(column + ", ");
-    }
+    StringBuffer sql = new StringBuffer();
+    sql.append("SELECT " + pkColumnsString + ", ");
+
+    // sum the weight from original sql
     // weight has to be the last column to ensure the values are inserted
     // correctly
-    String weightColumn = Utilities.COLUMN_WEIGHT;
     sql.append("sum (" + weightColumn + ") AS " + weightColumn);
     sql.append(" FROM (");
-    sql.append("(SELECT 1 AS wdk_t, l.* FROM (" + leftSql + ") l) ");
+    sql.append("(SELECT 1 AS wdk_t, left.* FROM (" + leftSql + ") left) ");
     sql.append(operator);
-    sql.append(" (SELECT 2 AS wdk_t, r.* FROM (" + rightSql + ") r)");
-    sql.append(") t GROUP BY ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      sql.append((i == 0) ? "" : ",");
-      sql.append(pkColumns[i]);
-    }
+    sql.append(" (SELECT 2 AS wdk_t, right.* FROM (" + rightSql + ") right)");
+    sql.append(") t GROUP BY " + pkColumnsString);
     sql.append(" HAVING count(*) > 1");
+    logger.info("================================================================ " + sql);
     return sql.toString();
   }
 
