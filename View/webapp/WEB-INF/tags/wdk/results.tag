@@ -64,15 +64,17 @@
 
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
 
+<c:set var="question" value="${wdkStep.question}" />
+<c:set var="views" value="${question.summaryViews}" />
+<jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />
+<c:set var="currentView" value="${wdkUser.currentSummaryView.name}" />
+
 <div id="Summary_Views" class="Summary_Views"
     data-controller="wdk.resultsPage.configureSummaryViews"
     strategy="${strategy.strategyId}"
     step="${step.stepId}"
+    question="${question.fullName}"
     updateUrl="${pageContext.request.contextPath}/processSummaryView.do">
-  <c:set var="question" value="${wdkStep.question}" />
-  <c:set var="views" value="${question.summaryViews}" />
-  <jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />
-  <c:set var="currentView" value="${wdkUser.currentSummaryView.name}" />
   
   <%-- get the index of the current view --%>
   <c:set var="selectedTab" value="${0}" />

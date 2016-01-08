@@ -13,12 +13,21 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   // Called when a step is selected and the tabs container is inserted in DOM
   function configureSummaryViews($element) {
     var addFeatureTooltipOnce = _.once(addFeatureTooltip); // only call once per step selection
-    // var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);
-    var currentTab = 0;
+    var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);
+    // var currentTab = 0;
     setupAddAttributes($element);
 
     $element.tabs({
       active : currentTab,
+      activate: function(event, ui) {
+        // save summary view preference
+        var summaryViewName = ui.newTab.attr('id');
+        var questionName = $element.attr('question');
+        $.get('savePreference.do', {
+          ['summary_view_' + questionName]: summaryViewName
+        })
+        .error(console.error.bind(console));
+      },
       load: function(event, ui) {
         addFeatureTooltipOnce($element);
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
