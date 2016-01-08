@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.filter;
 
 import org.json.JSONObject;
-
+import org.gusdb.wdk.model.user.Step;
 
 public abstract class AbstractFilter implements Filter {
 
@@ -52,7 +52,7 @@ public abstract class AbstractFilter implements Filter {
   }
   
   @Override
-  public JSONObject getDefaultValue() {
+  public JSONObject getDefaultValue(Step step) {
 	  return _defaultValue;
   }
   

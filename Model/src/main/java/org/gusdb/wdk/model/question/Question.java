@@ -1181,7 +1181,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     Map<String, Filter> map = new LinkedHashMap<>(recordClass.getFilters());
 		for (Entry<String, Filter> map2 : map.entrySet()) {
 			logger.debug("Filters from recordclass: name: " + map2.getKey());
-			logger.debug("Filters from recordclass: default values (from IMPL): " + map2.getValue().getDefaultValue().toString(2));
+			logger.debug("Filters from recordclass: default values (from IMPL): " + map2.getValue().getDefaultValue(null).toString(2));
     }
     for (Entry<String, Filter> filter : this.filters.entrySet()) {
       if (!filter.getValue().getIsViewOnly()) {

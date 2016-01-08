@@ -4,6 +4,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.json.JSONObject;
+import org.gusdb.wdk.model.user.Step;
 
 /**
  * Filter is an interface for step-based or column-based result filter.
@@ -59,7 +60,7 @@ public interface Filter {
    */
   void setDefaultValue(JSONObject defaultValue);
   
-  JSONObject getDefaultValue();
+  JSONObject getDefaultValue(Step step);
   
   String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException;
 
