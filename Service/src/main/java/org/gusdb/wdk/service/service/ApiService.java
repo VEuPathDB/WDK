@@ -8,12 +8,12 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.wdk.service.formatter.ProjectFormatter;
 
-@Path("/")
+@Path("/api")
 public class ApiService extends WdkService {
 
   @GET
-  @Produces(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.TEXT_PLAIN)
   public Response getServiceApi() {
-    return Response.ok(ProjectFormatter.getWdkProjectInfo(getWdkModel()).toString()).build();
+    return Response.ok(ProjectFormatter.WELCOME_MESSAGE).build();
   }
 }

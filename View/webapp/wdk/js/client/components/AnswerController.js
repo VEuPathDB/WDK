@@ -210,7 +210,7 @@ let AnswerController = React.createClass({
 
     let opts = {
       displayInfo,
-      params: answerParams
+      parameters: answerParams
     };
 
     // Call the ActionCreator to fetch the Answer resource

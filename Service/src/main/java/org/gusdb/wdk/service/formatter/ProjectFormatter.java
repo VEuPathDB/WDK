@@ -25,8 +25,8 @@ import org.json.JSONObject;
  */
 public class ProjectFormatter {
 
-  private static final String WELCOME_MESSAGE = "Welcome to the WDK 3.0 Web Service";
-  
+  public static final String WELCOME_MESSAGE = "Welcome to the WDK 3.0 Web Service";
+
   public static JSONObject getWdkProjectInfo(WdkModel wdkModel) {
     ModelConfig config = wdkModel.getModelConfig();
 
@@ -35,7 +35,7 @@ public class ProjectFormatter {
       .put(Keys.AUTHENTICATION_METHOD, config.getAuthenticationMethodEnum().name())
       .put(Keys.OAUTH_URL, config.getOauthUrl())
       .put(Keys.OAUTH_CLIENT_ID, config.getOauthClientId());
-    
+
     return new JSONObject()
       .put(Keys.DESCRIPTION, wdkModel.getIntroduction() == null ?
         WELCOME_MESSAGE : wdkModel.getIntroduction())
