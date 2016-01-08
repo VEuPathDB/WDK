@@ -100,6 +100,7 @@ public class Utilities {
   public static final String PARAM_USER_ID = COLUMN_USER_ID;
 
   public static final String MACRO_ID_SQL = "##WDK_ID_SQL##";
+  public static final String MACRO_ID_SQL_NO_FILTERS = "##WDK_ID_SQL_NO_FILTERS##";
   public static final String MACRO_CACHE_TABLE = "##WDK_CACHE_TABLE##";
   public static final String MACRO_CACHE_INSTANCE_ID = "##WDK_CACHE_INSTANCE_ID##";
 
