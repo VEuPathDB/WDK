@@ -12,6 +12,7 @@ import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * @author xingao
@@ -37,7 +38,7 @@ public class ProcessSavePreferenceAction extends WdkAction {
           logger.info("Saving user " + wdkUser.getEmail() +
               "'s reference " + key + "=" + value);
         }
-        else if (key.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY)) {
+        else if (key.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY) || key.startsWith(User.SUMMARY_VIEW_PREFIX)) {
           wdkUser.setProjectPreference(key, value);
           logger.info("Saving user " + wdkUser.getEmail() +
               "'s reference " + key + "=" + value);

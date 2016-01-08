@@ -48,8 +48,8 @@ public class User /* implements Serializable */{
   public final static String SORTING_ATTRIBUTES_SUFFIX = "_sort";
   public final static String SUMMARY_ATTRIBUTES_SUFFIX = "_summary";
 
-  private final static String SUMMARY_VIEW_PREFIX = "summary_view_";
-  private final static String RECORD_VIEW_PREFIX = "record_view_";
+  public final static String SUMMARY_VIEW_PREFIX = "summary_view_";
+  public final static String RECORD_VIEW_PREFIX = "record_view_";
 
   public final static String DEFAULT_SUMMARY_VIEW_PREF_SUFFIX = "";
 
