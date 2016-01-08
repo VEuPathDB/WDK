@@ -27,7 +27,7 @@
 <c:set var="stepDisplayName" value="${recordClass.displayName}" />
 
 <%-- determine if the current step allows span operation --%>
-<c:set var="allowSpan" value="${stepRcName eq 'GeneRecordClasses.GeneRecordClass' 
+<c:set var="allowSpan" value="${stepRcName eq 'TranscriptRecordClasses.TranscriptRecordClass' 
                                 || stepRcName eq 'OrfRecordClasses.OrfRecordClass'
                                 || stepRcName eq 'DynSpanRecordClasses.DynSpanRecordClass'
                                 || stepRcName eq 'SnpChipRecordClasses.SnpChipRecordClass'
