@@ -36,6 +36,7 @@ public class Keys {
   public static final String DISPLAY_TEXT = "displayText";
   public static final String HELP = "help";
   public static final String DESCRIPTION = "description";
+  public static final String OVERVIEW = "overview";
   public static final String ALIGN = "align";
   public static final String TRUNCATE_TO = "truncateTo";
   public static final String IS_READ_ONLY = "isReadOnly";
