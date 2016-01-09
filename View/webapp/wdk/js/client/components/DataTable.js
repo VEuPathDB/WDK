@@ -35,7 +35,7 @@ export default class DataTable extends Component {
 
 
     let order = formatSorting(columns, this.props.sorting.length === 0
-      ? [ { name: this.props.columns[0].name, direction: 'asc' } ] : this.props.sorting);
+      ? [ { name: this.props.columns[0].name, direction: 'ASC' } ] : this.props.sorting);
 
     let tableOpts = Object.assign({}, DataTable.defaultDataTableOpts, {
       columns,
@@ -193,7 +193,7 @@ let formatSorting = (columns, sorting) => {
       console.warn("Could not determine sort index for the column " + sort.name);
       return [];
     }
-    return [ index, sort.direction ]
+    return [ index, sort.direction.toLowerCase() ]
   });
 }
 
@@ -231,7 +231,7 @@ DataTable.propTypes = {
    */
   sorting: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string.isRequired,
-    direction: PropTypes.oneOf(['asc', 'desc']).isRequired
+    direction: PropTypes.oneOf(['ASC', 'DESC']).isRequired
   })),
 
   /** width of the table - if a string, treated as a CSS unit; if a number, treated as px */
