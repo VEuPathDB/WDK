@@ -196,7 +196,7 @@ var AnswerResults = React.createClass({
       <div>
         <div style={{"margin":"20px 0"}}>
           <strong>
-            Query returned {meta.totalCount} total records of type {meta.class}.<br/>
+            Query returned {meta.totalCount} total records of type {meta.recordClass}.<br/>
             Showing {records.length} records on page {this.props.resultStats.pageNum}.
           </strong>
         </div>
