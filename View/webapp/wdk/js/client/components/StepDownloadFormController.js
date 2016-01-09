@@ -38,7 +38,7 @@ import { wrappable } from '../utils/componentUtils';
 
 let StepDownloadFormController = React.createClass({
   render() {
-    var text = "Hello! I'm a download form!";
+    var text = "Download Step " + this.props.params.stepId + " (passed from view: " + this.props.query.summaryView + ")";
     return ( <div>{text}</div> );
   }
 });
