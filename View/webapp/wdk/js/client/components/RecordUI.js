@@ -25,7 +25,7 @@ class RecordUI extends Component {
 
   toggleCategory(category, isCollapsed) {
     this.props.actions.toggleCategoryCollapsed(
-      this.props.recordClass.fullName,
+      this.props.recordClass.name,
       category.name,
       isCollapsed
     );
@@ -33,7 +33,7 @@ class RecordUI extends Component {
 
   toggleTable(table, isCollapsed) {
     this.props.actions.toggleTableCollapsed(
-      this.props.recordClass.fullName,
+      this.props.recordClass.name,
       table.name,
       isCollapsed
     );
