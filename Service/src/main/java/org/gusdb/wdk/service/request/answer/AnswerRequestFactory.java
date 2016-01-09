@@ -34,9 +34,7 @@ public class AnswerRequestFactory {
    * Input Format:
    * {
    *   “questionName”: String,
-   *   “params”: [ {
-   *     “name”: String, “value”: Any
-   *   } ],
+   *   “parameters  ”: Object (map from paramName -> paramValue),
    *   "legacyFilterName": (optional) String,
    *   “filters”: (optional) [ {
    *     “name”: String, value: Any
@@ -44,7 +42,7 @@ public class AnswerRequestFactory {
    *   “viewFilters”: (optional) [ {
    *     “name”: String, value: Any
    *   } ],
-   *   "weight": (optional) Integer
+   *   "wdk_weight": (optional) Integer
    * }
    * 
    * @param json JSON representation of an answer request
@@ -60,7 +58,7 @@ public class AnswerRequestFactory {
       Question question = model.getModel().getQuestion(questionName);
       AnswerRequest request = new AnswerRequest(question);
       // params are required (empty array if no params)
-      request.setParamValues(parseParamValues(json.getJSONArray(Keys.PARAMETERS), question, model));
+      request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, model));
       // all filter fields are optional
       if (json.has(Keys.LEGACY_FILTER_NAME)) {
         request.setLegacyFilter(getLegacyFilter(json.getString(Keys.LEGACY_FILTER_NAME), question));
@@ -96,7 +94,7 @@ public class AnswerRequestFactory {
   private static FilterOptionList parseFilterValues(JSONArray jsonArray,
       Question question, WdkModelBean model, boolean isViewFilters) throws WdkUserException {
     // parse filter values and validate
-    Map<String, JSONObject> inputValueMap = getContextJsonValues(jsonArray);
+    Map<String, JSONObject> inputValueMap = getContextValues(jsonArray);
     FilterOptionList filterList = new FilterOptionList(question);
     for (String filterName : inputValueMap.keySet()) {
       try {
@@ -113,7 +111,7 @@ public class AnswerRequestFactory {
     return filterList;
   }
 
-  private static Map<String, ParamValue> parseParamValues(JSONArray paramsJson,
+  private static Map<String, ParamValue> parseParamValues(JSONObject paramsJson,
       Question question, WdkModelBean model) throws WdkUserException {
     // parse param values and validate
     Map<String, Param> expectedParams = question.getParamMap();
@@ -141,25 +139,27 @@ public class AnswerRequestFactory {
     return paramValues;
   }
 
-  // TODO: would like to get rid of this and only use getJsonContextValues
+  // TODO: would like to return Map<String,JsonValue> here but need to upgrade to javax.json
   private static Map<String, Object> getContextValues(
-      JSONArray namedObjectArrayJson) throws JSONException {
+      JSONObject contextObject) throws JSONException {
     Map<String, Object> contextValues = new HashMap<>();
-    for (int i = 0; i < namedObjectArrayJson.length(); i++) {
-      JSONObject obj = namedObjectArrayJson.getJSONObject(i);
-      String name = obj.getString(Keys.NAME);
-      contextValues.put(name, obj.get(Keys.VALUE));
+    if (contextObject == null) return contextValues;
+    String[] names = JSONObject.getNames(contextObject);
+    if (names == null) return contextValues;
+    for (String name : names) {
+      contextValues.put(name, contextObject.get(name));
       LOG.info("Added request parameter '" + name +
           "', value = " + contextValues.get(name).toString());
     }
     return contextValues;
   }
 
-  private static Map<String, JSONObject> getContextJsonValues(
-      JSONArray namedObjectArrayJson) throws JSONException {
+  private static Map<String, JSONObject> getContextValues(
+      JSONArray contextArray) throws JSONException {
     Map<String, JSONObject> contextValues = new HashMap<>();
-    for (int i = 0; i < namedObjectArrayJson.length(); i++) {
-      JSONObject obj = namedObjectArrayJson.getJSONObject(i);
+    if (contextArray == null) return contextValues;
+    for (int i = 0; i < contextArray.length(); i++) {
+      JSONObject obj = contextArray.getJSONObject(i);
       String name = obj.getString(Keys.NAME);
       contextValues.put(name, obj.getJSONObject(Keys.VALUE));
       LOG.info("Added request parameter '" + name +

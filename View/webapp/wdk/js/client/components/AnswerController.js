@@ -203,10 +203,12 @@ let AnswerController = React.createClass({
     };
 
     // TODO Add params to loadAnswer call
-    let answerParams = wrap(query.param).map(p => {
-      let parts = p.split('__');
-      return { name: parts[0], value: parts[1] };
-    });
+    // RRD: not sure what this code is doing but I don't think this page needs
+    //   to support params in the query string; sending an empty object for now
+    let answerParams = {}; // wrap(query.param).map(p => {
+    //  let parts = p.split('__');
+    //  return { name: parts[0], value: parts[1] };
+    //});
 
     let opts = {
       displayInfo,

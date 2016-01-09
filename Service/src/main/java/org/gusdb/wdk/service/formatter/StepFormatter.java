@@ -11,21 +11,18 @@ import org.json.JSONObject;
  * Formats WDK Step objects.  Step JSON will have the following form:
  * {
  *   id: Number, 
- *   
- *   answerSpec: {
- *     “questionName”: String,
- *     “params”: [ {
- *       “name”: String, “value”: Any
- *     } ],
- *     "legacyFilterName": (optional) String,
- *     “filters”: (optional) [ {
- *       “name”: String, value: Any
- *     } ],
- *     “viewFilters”: (optional) [ {
- *       “name”: String, value: Any
- *     } ],
- *     "weight": (optional) Integer
- *   }
+ *   displayName: String,
+ *   shortDisplayName: String,
+ *   customName: String,
+ *   baseCustomName: String,
+ *   collapsedName: String,
+ *   description: String,
+ *   ownerId: Number (user ID of owner),
+ *   strategyId: Number (ID of containing strategy),
+ *   estimatedSize: Number (last known number of results),
+ *   hasCompleteStepAnalyses: Boolean,
+ *   recordClass: String (RecordClass full name),
+ *   answerSpec: see AnswerRequest (input and output formats are the same)
  * }
  * 
  * @author rdoherty
@@ -57,6 +54,7 @@ public class StepFormatter {
   private static JSONObject createAnswerSpec(Step step) {
     JSONObject json = new JSONObject()
       .put(Keys.QUESTION_NAME, step.getQuestionName())
+      .put(Keys.PARAMETERS, step.getParamsJSON())
       .put(Keys.FILTERS, getOrEmptyArray(step.getFilterOptionsJSON()))
       .put(Keys.VIEW_FILTERS, getOrEmptyArray(step.getViewFilterOptionsJSON()))
       .put(Keys.WDK_WEIGHT, step.getAssignedWeight());
@@ -64,14 +62,7 @@ public class StepFormatter {
     if (legacyFilter != null) {
       json.put(Keys.LEGACY_FILTER_NAME, legacyFilter.getName());
     }
-    JSONObject internalParamJson = step.getParamsJSON();
-    JSONArray externalParamJson = new JSONArray();
-    for (String paramName : JSONObject.getNames(internalParamJson)) {
-      externalParamJson.put(new JSONObject()
-          .put(Keys.NAME, paramName)
-          .put(Keys.VALUE, internalParamJson.get(paramName)));
-    }
-    return json.put(Keys.PARAMETERS, externalParamJson);
+    return json;
   }
 
   private static JSONArray getOrEmptyArray(JSONArray jsonArrayOrNull) {

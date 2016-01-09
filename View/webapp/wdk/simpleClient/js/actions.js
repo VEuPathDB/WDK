@@ -32,9 +32,9 @@ var Util = (function() {
   }
 
   function getAnswerRequestJson(question, paramMap, pagination) {
-    var paramPack = Object.keys(paramMap).map(function(paramName) {
-      var param = paramMap[paramName];
-      return { name: param.name, value: param.value };
+    var paramPack = {};
+    Object.keys(paramMap).forEach(function(paramName) {
+      paramPack[paramName] = paramMap[paramName].value;
     });
     var offset = (pagination.pageNum - 1) * pagination.pageSize;
     var numRecords = pagination.pageSize;
