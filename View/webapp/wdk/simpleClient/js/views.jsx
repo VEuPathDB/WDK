@@ -31,7 +31,7 @@ var QuestionSelect = React.createClass({
     return (
       <div>
         <label>Question:</label>
-        <select value={this.props.selectedQuestion} onChange={this.props.onChange}>
+        <select value={this.props.selectedQuestion.name} onChange={this.props.onChange}>
           <option key={Store.NO_QUESTION_SELECTED} value={Store.NO_QUESTION_SELECTED}>Select a Search</option> );
           {this.props.questions.map(function(question) {
             return ( <option key={question} value={question}>{question}</option> );
@@ -120,7 +120,7 @@ var QuestionForm = React.createClass({
   render: function() {
     var store = this.props.data;
     var changeParamFunction = this.changeParamValue;
-    if (store.selectedQuestion == Store.NO_QUESTION_SELECTED) {
+    if (store.selectedQuestion.name == Store.NO_QUESTION_SELECTED) {
       // don't display anything if no question selected
       return ( <div/> );
     }
@@ -196,21 +196,21 @@ var AnswerResults = React.createClass({
       <div>
         <div style={{"margin":"20px 0"}}>
           <strong>
-            Query returned {meta.count} total records of type {meta.class}.<br/>
+            Query returned {meta.totalCount} total records of type {meta.class}.<br/>
             Showing {records.length} records on page {this.props.resultStats.pageNum}.
           </strong>
         </div>
         <table style={{"borderCollapse":"collapse"}}>
           <thead>
             <tr>
-              {meta.summaryAttributes.map(function(attrib) {
+              {meta.attributes.map(function(attrib) {
                 return ( <th style={headerStyle}>{attrib}</th> ); })}
             </tr>
           </thead>
           <tbody>
             {records.map(function(record) { return (
               <tr>
-                {meta.summaryAttributes.map(function(attrib) { return (
+                {meta.attributes.map(function(attrib) { return (
                   <td style={cellStyle}>
                     <HtmlDiv style={cellDivStyle} contents={record.attributes[attrib]}/>
                   </td>

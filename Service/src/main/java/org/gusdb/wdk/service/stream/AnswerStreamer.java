@@ -29,7 +29,7 @@ public class AnswerStreamer {
     return new StreamingOutput() {
       @Override
       public void write(OutputStream stream) throws IOException, WebApplicationException {
-        LOG.info("Returning the following answer: " + resultJson.toString(2));
+        LOG.debug("Returning the following answer: " + resultJson.toString(2));
         stream.write(resultJson.toString().getBytes("UTF-8"));
       }
     };

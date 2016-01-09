@@ -21,10 +21,10 @@ function* iterate(categories, categoryIterator) {
 
 function* preorderCategory(category) {
   yield category;
-  yield* preorder(category.subCategories);
+  yield* preorder(category.categories);
 }
 
 function* postorderCategory(category) {
-  yield* postorder(category.subCategories);
+  yield* postorder(category.categories);
   yield category;
 }

@@ -35,15 +35,16 @@ export default class WdkService {
       this._recordClasses = fetchJson(method, url).then(
         recordClasses => {
           for (let recordClass of recordClasses) {
-            recordClass.attributeCategories.push(
+            recordClass.categories.push(
               { name: undefined, displayName: 'Uncategorized' }
             )
           }
           return recordClasses;
         },
-        reason => {
+        error => {
+          // clear record classes; don't want partially populated list
           this._recordClasses = null;
-          throw reason;
+          throw error;
         }
       );
     }
@@ -52,7 +53,7 @@ export default class WdkService {
   }
 
   getRecordClass(name) {
-    return this.getRecordClasses().then(rs => rs.find(r => r.fullName === name));
+    return this.getRecordClasses().then(rs => rs.find(r => r.name === name));
   }
 
   getRecord(recordClassName, primaryKey, options = {}) {
@@ -66,7 +67,7 @@ export default class WdkService {
     // if we don't have the record, fetch whatever is requested
     if (!this._records.has(key)) {
       let body = stringify({ primaryKey, attributes, tables });
-      this._records.set(key, fetchJson(method, url, body).then(response => response.record));
+      this._records.set(key, fetchJson(method, url, body));
     }
 
     else {
@@ -84,10 +85,10 @@ export default class WdkService {
           });
 
           // merge old record attributes and tables with new record
-          return fetchJson(method, url, body).then(response => {
-            Object.assign(response.record.attributes, record.attributes);
-            Object.assign(response.record.tables, record.tables);
-            return response.record;
+          return fetchJson(method, url, body).then(record => {
+            Object.assign(record.attributes, record.attributes);
+            Object.assign(record.tables, record.tables);
+            return record;
           });
         }
 
@@ -104,7 +105,7 @@ export default class WdkService {
     let body = stringify({ questionDefinition, formatting });
     return fetchJson(method, url, body).then(response => {
       // we will only cache individual records
-      let recordClassName = response.meta.class;
+      let recordClassName = response.meta.recordClass;
       for (let record of response.records) {
         let key = recordClassName + ':' + stringify(record.id);
         this._records.set(key, Promise.resolve(record));

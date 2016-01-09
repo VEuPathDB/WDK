@@ -1,6 +1,6 @@
 package org.gusdb.wdk.service.formatter;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -8,133 +8,48 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
-import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.record.attribute.LinkAttributeValue;
+import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
-JSON output format:
-{
-  meta: {
-    count: Number,
-    class: String,
-    attributes: [ {
-      name: String,
-      displayName: String,
-      sortable: Boolean,
-      removable: Boolean,
-      category: String,
-      type: string (comes from “type” property of attribute tag),
-      className: String,
-      properties: Object
-    } ],
-
-    tables: [ {
-      name: String,
-      displayName: String,
-      attributes: [ {
-        name: String,
-        displayName: String,
-        help: String,
-        description: String,
-        type: String
-      } ]
-    } ]
-  },
-  record:  {
-    id: Any,
-    attributes: { [name: String]: [value: Any] },
-    tables: { [name: String]: [ { [name: String]: [value: Any] } ] }
-  }
-}
-*/
+ * Formats WDK RecordInstance objects.  RecordInstance JSON will have the following form:
+ * 
+ * {
+ *   id: Object (map of PK attribute names -> PK attribute values),
+ *   attributes: { [name: String]: [value: Any] },
+ *   tables: { [name: String]: [ { [name: String]: [value: Any] } ] }
+ * }
+ * 
+ * @author rdoherty
+ */
 public class RecordFormatter {
 
   private static final Logger LOG = Logger.getLogger(RecordFormatter.class);
 
-  public static JSONObject formatRecord(RecordInstance recordInstance, List<String> attributeNames, List<String> tableNames) throws WdkModelException {
-    try {
-      JSONObject parent = new JSONObject();
-      parent.put("meta", getMetaData(recordInstance, attributeNames, tableNames));
-      parent.put("record", getRecordJson(recordInstance, attributeNames, tableNames));
-      return parent;
-    }
-    catch (WdkUserException e) {
-      // should already have validated any user input
-      throw new WdkModelException("Internal validation failure", e);
-    }
-  }
-
-  public static JSONObject getMetaData(RecordInstance recordInstance, List<String> attributeNames, List<String> tableNames) {
-    JSONObject meta = new JSONObject();
-    RecordClass recordClass = recordInstance.getRecordClass();
-    meta.put("class", recordClass.getFullName());
-    
-    JSONArray attributes = new JSONArray();
-    for (AttributeField attrib : recordClass.getAttributeFields()) {
-      if (!attributeNames.contains(attrib.getName())) continue;
-      JSONObject attribJson = new JSONObject();
-      attribJson.put("name", attrib.getName());
-      attribJson.put("displayName", attrib.getDisplayName());
-      attribJson.put("help", attrib.getHelp());
-      attribJson.put("align", attrib.getAlign());
-      attribJson.put("isSortable", attrib.isSortable());
-      attribJson.put("isRemovable", attrib.isRemovable());
-      attribJson.put("type", attrib.getType());
-      attributes.put(attribJson);
-    }
-    meta.put("attributes", attributes);
-    
-    JSONArray tables = new JSONArray();
-    for (TableField table : recordClass.getTableFields()) {
-      if (!tableNames.contains(table.getName())) continue;
-      JSONObject tableJson = new JSONObject();
-      tableJson.put("name", table.getName());
-      tableJson.put("displayName", table.getDisplayName());
-      tableJson.put("help", table.getHelp());
-      tableJson.put("description", table.getDescription());
-      tableJson.put("type", table.getType());
-      tables.put(tableJson);
-    }
-    meta.put("tables", tables);
-   
-    return meta;
-  }
-
-  public static JSONObject getRecordJson(RecordInstance record)
+  public static JSONObject getRecordJson(RecordInstance record, Collection<String> attributeNames, Collection<String> tableNames)
       throws WdkModelException, WdkUserException {
-      return getRecordJson(record, null, null);
+    return new JSONObject()
+      .put(Keys.ID, record.getPrimaryKey().getValues())
+      .put(Keys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames))
+      .put(Keys.TABLES, getRecordTablesJson(record, tableNames));
   }
 
-  /**
-   * 
-   * @param record
-   * @param attributeNames
-   * @param tableNames
-   * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
-   * @throws NullPointerException if any arguments are null
-   */
-  public static JSONObject getRecordJson(RecordInstance record, List<String> attributeNames, List<String> tableNames)
-      throws WdkModelException, WdkUserException {
-    JSONObject json = new JSONObject();
-    json.put("id", record.getPrimaryKey().getValues());
-    json.put("displayName",  record.getPrimaryKey().getDisplay());
-    json.put("overview", record.getOverview());
+  private static JSONObject getRecordAttributesJson(RecordInstance record, Collection<String> attributeNames) throws WdkModelException, WdkUserException {
     JSONObject attributes = new JSONObject();
     LOG.debug("Outputting record attributes: " + FormatUtil.arrayToString(attributeNames.toArray()));
     for (String attributeName : attributeNames) {
-      attributes.put(attributeName, getAttributeJsonValue(record.getAttributeValue(attributeName)));
+      attributes.put(attributeName, getAttributeValueJson(record.getAttributeValue(attributeName)));
     }
-    json.put("attributes", attributes);
+    return attributes;
+  }
 
+  private static JSONObject getRecordTablesJson(RecordInstance record, Collection<String> tableNames)
+      throws WdkModelException, WdkUserException {
     JSONObject tables = new JSONObject();
     // loop through tables
     for (String tableName : tableNames) {
@@ -145,18 +60,18 @@ public class RecordFormatter {
         JSONObject tableAttrsJson = new JSONObject();
         // loop through columns
         for (Entry<String, AttributeValue> entry : row.entrySet()) {
-          tableAttrsJson.put(entry.getKey(), getAttributeJsonValue(entry.getValue()));
+          if (!entry.getValue().getAttributeField().isInternal()) {
+            tableAttrsJson.put(entry.getKey(), getAttributeValueJson(entry.getValue()));
+          }
         }
         tableRowsJson.put(tableAttrsJson);
       }
       tables.put(tableName, tableRowsJson);
     }
-    json.put("tables", tables);
-    return json;
+    return tables;
   }
-  
-  private static Object getAttributeJsonValue(AttributeValue attr) throws
-    WdkModelException, WdkUserException {
+
+  private static Object getAttributeValueJson(AttributeValue attr) throws WdkModelException, WdkUserException {
 
     if (attr instanceof LinkAttributeValue) {
       LinkAttributeValue linkAttr = (LinkAttributeValue) attr;
@@ -168,14 +83,15 @@ public class RecordFormatter {
       }
 
       return new JSONObject()
-      .put("url",  linkAttr.getUrl())
-      .put("displayText", displayText);
+        .put(Keys.URL, linkAttr.getUrl())
+        .put(Keys.DISPLAY_TEXT, displayText);
     }
 
     else {
+      // TODO: figure out what kinds of values might be returned here and
+      //     make sure they look pretty in JSON
       Object value = attr.getValue();
       return value == null ? JSONObject.NULL : value;
     }
   }
-
 }

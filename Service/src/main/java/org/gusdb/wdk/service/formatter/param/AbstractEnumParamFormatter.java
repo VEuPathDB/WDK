@@ -7,8 +7,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
-import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,29 +21,27 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
 
   @Override
   public JSONObject getJson() throws JSONException, WdkModelException, WdkUserException {
-
-    JSONObject pJson = super.getJson();
-    pJson.put("countOnlyLeaves", _param.getCountOnlyLeaves());
-    pJson.put("maxSelectedCount", _param.getMaxSelectedCount());
-    pJson.put("minSelectedCount", _param.getMinSelectedCount());
-    pJson.put("multiPick", _param.getMultiPick());
-    pJson.put("displayType", _param.getDisplayType());
-    pJson.put("isDependentParam", _param.isDependentParam());
-
-    if (_param.isDependentParam()) {
-      JSONArray dependedParamNames = new JSONArray();
-      for (Param dp : _param.getDependedParams()) {
-        dependedParamNames.put(dp.getName());
-      }
-      pJson.put("dependedParamNames", dependedParamNames);
-    }
-    
-    return pJson;
+    return super.getJson()
+        .put(Keys.COUNT_ONLY_LEAVES, _param.getCountOnlyLeaves())
+        .put(Keys.MAX_SELECTED_COUNT, _param.getMaxSelectedCount())
+        .put(Keys.MIN_SELECTED_COUNT, _param.getMinSelectedCount())
+        .put(Keys.IS_MULTIPICK, _param.getMultiPick())
+        .put(Keys.DISPLAY_TYPE, _param.getDisplayType());
   }
-  
-  protected JSONArray getVocabJson(User user, Map<String, String> dependedParamValues) throws WdkModelException {
 
-    EnumParamVocabInstance vocabInstance = getParam().getVocabInstance(user, dependedParamValues);
+  /**
+   * Override so we don't unnecessarily calculate context-free default
+   */
+  @Override
+  protected String getDefault() {
+    return null;
+  }
+
+  protected EnumParamVocabInstance getVocabInstance(User user, Map<String,String> dependedParamValues) {
+    return _param.getVocabInstance(user, dependedParamValues);
+  }
+
+  protected JSONArray getVocabJson(EnumParamVocabInstance vocabInstance) throws WdkModelException {
     List<List<String>> vocabRows = vocabInstance.getFullVocab();
     JSONArray jsonRows = new JSONArray();
     for (List<String> row : vocabRows) {

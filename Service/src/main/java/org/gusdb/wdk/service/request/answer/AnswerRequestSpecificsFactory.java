@@ -22,9 +22,11 @@ import org.json.JSONObject;
 public class AnswerRequestSpecificsFactory {
 
   private static final Logger LOG = Logger.getLogger(AnswerRequestSpecificsFactory.class);
-  
+
   private static final String RETURN_ALL_ATTRIBUTES = "__ALL_ATTRIBUTES__";
   private static final String RETURN_DISPLAYABLE_ATTRIBUTES = "__DISPLAYABLE_ATTRIBUTES__";
+  private static final String RETURN_ALL_TABLES = "__ALL_TABLES__";
+  private static final String RETURN_DISPLAYABLE_TABLES = "__DISPLAYABLE_TABLES__";
 
   /**
    * Creates a default request specifics object based on the default attributes
@@ -54,15 +56,18 @@ public class AnswerRequestSpecificsFactory {
    * records to be returned.  Zero or negative values for numRecords will return
    * all records.
    * 
-   * Special values: The attributes property can be either an array of attribute
-   * names, or a special String value indicating a particular set of attributes.
+   * Special values: The attributes and tables properties can be either an array
+   * of names, or a special String value indicating a particular set of values.
    * The following special strings are currently supported:
    * 
    * - '__ALL_ATTRIBUTES__': represents all attributes for the passed question
    * - '__DISPLAYABLE_ATTRIBUTES__': represents all displayable attributes
+   * - '__ALL_TABLES__': represents all tables for the passed question
+   * - '__DISPLAYABLE_TABLES__': represents all displayable tables
    * 
    * If the attributes property is omitted or is an empty array, the default
-   * attributes for the question will be returned.
+   * attributes for the question will be returned.  If the tables property is
+   * omitted or is an empty array, no tables will be returned.
    * 
    * @param specJson JSON value used to create instance. Should have the form:
    * 
@@ -96,39 +101,10 @@ public class AnswerRequestSpecificsFactory {
       }
 
       // set requested attributes
-      if (specJson.has("attributes")) {
-        // see if property value is a String, if so, it could be our special value
-        try {
-          String specialString = specJson.getString("attributes");
-          if (specialString.equals(RETURN_ALL_ATTRIBUTES)) {
-            specs.setAttributes(question.getAttributeFieldMap());
-          }
-          else if (specialString.equals(RETURN_DISPLAYABLE_ATTRIBUTES)) {
-            specs.setAttributes(question.getAttributeFieldMap(FieldScope.NON_INTERNAL));
-          }
-          else {
-            throw new RequestMisformatException("Illegal string found for attributes " +
-                "property.  Must be and array or '" + RETURN_ALL_ATTRIBUTES + "'.");
-          }
-        }
-        // this is the standard case; handle value as an array of attribute names
-        catch (JSONException e) {
-          JSONArray attributesJson = specJson.getJSONArray("attributes");
-          specs.setAttributes(attributesJson.length() > 0 ?
-              parseAttributes(attributesJson, question) :
-              // if empty list is passed, use default attribs from question
-              question.getSummaryAttributeFieldMap());
-        }
-      }
-      else {
-        // if unspecified, use default attribs from question
-        specs.setAttributes(question.getSummaryAttributeFieldMap());
-      }
+      specs.setAttributes(parseAttributeJson(specJson, question));
 
       // set requested tables
-      specs.setTables(specJson.has("tables") ?
-          parseTables(specJson.getJSONArray("tables"), question) :
-          Collections.EMPTY_MAP);
+      specs.setTables(parseTableJson(specJson, question));
 
       // set requested sorting
       if (specJson.has("sorting")) {
@@ -145,6 +121,67 @@ public class AnswerRequestSpecificsFactory {
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Could not parse answer request specs JSON", e);
+    }
+  }
+
+  private static Map<String, TableField> parseTableJson(JSONObject specJson, Question question) throws JSONException, RequestMisformatException {
+    if (specJson.has("tables")) {
+      // see if property value is a String, if so, it could be a special value
+      try {
+        String specialString = specJson.getString("tables");
+        if (specialString.equals(RETURN_ALL_TABLES)) {
+          return question.getRecordClass().getTableFieldMap();
+        }
+        else if (specialString.equals(RETURN_DISPLAYABLE_TABLES)) {
+          return question.getRecordClass().getTableFieldMap(FieldScope.NON_INTERNAL);
+        }
+        else {
+          throw new RequestMisformatException("Illegal string found for " +
+              "tables property.  Must be an array or '" + RETURN_ALL_TABLES +
+              "' or '" + RETURN_DISPLAYABLE_TABLES + "'.");
+        }
+      }
+      // this is the standard case; handle value as an array of table names
+      catch (JSONException e) {
+        JSONArray tablesJson = specJson.getJSONArray("tables");
+        return (tablesJson.length() > 0 ?
+            parseTableArray(tablesJson, question) :
+            Collections.EMPTY_MAP);
+      }
+    }
+    // if unspecified, don't return any tables
+    return Collections.EMPTY_MAP;
+  }
+
+  private static Map<String, AttributeField> parseAttributeJson(JSONObject specJson, Question question) throws RequestMisformatException {
+    if (specJson.has("attributes")) {
+      // see if property value is a String, if so, it could be a special value
+      try {
+        String specialString = specJson.getString("attributes");
+        if (specialString.equals(RETURN_ALL_ATTRIBUTES)) {
+          return question.getAttributeFieldMap();
+        }
+        else if (specialString.equals(RETURN_DISPLAYABLE_ATTRIBUTES)) {
+          return question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
+        }
+        else {
+          throw new RequestMisformatException("Illegal string found for " +
+              "attributes property.  Must be an array or '" + RETURN_ALL_ATTRIBUTES +
+              "' or '" + RETURN_DISPLAYABLE_ATTRIBUTES + "'.");
+        }
+      }
+      // this is the standard case; handle value as an array of attribute names
+      catch (JSONException e) {
+        JSONArray attributesJson = specJson.getJSONArray("attributes");
+        return attributesJson.length() > 0 ?
+            parseAttributeArray(attributesJson, question) :
+            // if empty list is passed, use default attribs from question
+            question.getSummaryAttributeFieldMap();
+      }
+    }
+    else {
+      // if unspecified, use default attribs from question
+      return question.getSummaryAttributeFieldMap();
     }
   }
 
@@ -181,7 +218,7 @@ public class AnswerRequestSpecificsFactory {
     return sorting;
   }
 
-  private static Map<String, TableField> parseTables(JSONArray tablesJson,
+  private static Map<String, TableField> parseTableArray(JSONArray tablesJson,
       Question question) throws RequestMisformatException {
     Map<String, TableField> availableTables = question.getRecordClass().getTableFieldMap();
     Map<String, TableField> tables = new LinkedHashMap<>();
@@ -197,7 +234,7 @@ public class AnswerRequestSpecificsFactory {
     return tables;
   }
 
-  private static Map<String, AttributeField> parseAttributes(JSONArray attributesJson,
+  private static Map<String, AttributeField> parseAttributeArray(JSONArray attributesJson,
       Question question) throws RequestMisformatException {
     Map<String, AttributeField> availableAttribs = question.getAttributeFieldMap();
     Map<String, AttributeField> attributes = new LinkedHashMap<>();

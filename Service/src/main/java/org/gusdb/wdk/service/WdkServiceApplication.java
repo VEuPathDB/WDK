@@ -14,6 +14,7 @@ import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.gusdb.wdk.service.service.OntologyService;
 import org.gusdb.wdk.service.service.SampleService;
+import org.gusdb.wdk.service.service.StepService;
 import org.gusdb.wdk.service.service.UserService;
 
 public class WdkServiceApplication extends Application {
@@ -29,13 +30,14 @@ public class WdkServiceApplication extends Application {
     .add(MethodRewritingFilter.class)
 
     // add service classes
-    .add(ApiService.class)
     .add(ProjectService.class)
+    .add(ApiService.class)
     .add(UserService.class)
-    .add(QuestionService.class)
     .add(RecordService.class)
+    .add(QuestionService.class)
     .add(AnswerService.class)
     .add(OntologyService.class)
+    .add(StepService.class)
 
     // test
     .add(SampleService.class)

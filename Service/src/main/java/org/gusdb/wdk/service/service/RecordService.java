@@ -14,14 +14,18 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
+import org.gusdb.wdk.service.formatter.TableFieldFormatter;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.stream.RecordStreamer;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -71,10 +75,10 @@ public class RecordService extends WdkService {
       @PathParam("recordClassName") String recordClassName,
       @QueryParam("expandAttributes") Boolean expandAttributes) {
     try {
-      RecordClass rc = getWdkModel().getRecordClass(recordClassName);
-      return Response.ok(
-          RecordClassFormatter.getAttributesJson(rc, getFlag(expandAttributes)).toString()
-      ).build();
+      RecordClass recordClass = getWdkModel().getRecordClass(recordClassName);
+      JSONArray attribsJson = AttributeFieldFormatter.getAttributesJson(
+          recordClass.getAttributeFieldMap().values(), FieldScope.ALL, getFlag(expandAttributes));
+      return Response.ok(attribsJson.toString()).build();
     }
     catch (WdkModelException e) {
       return Response.status(Status.NOT_FOUND).build();
@@ -89,11 +93,11 @@ public class RecordService extends WdkService {
       @QueryParam("expandTables") Boolean expandTables,
       @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
     try {
-      RecordClass rc = getWdkModel().getRecordClass(recordClassName);
-      return Response.ok(
-          RecordClassFormatter.getTablesJson(rc, getFlag(expandTables),
-              getFlag(expandTableAttributes)).toString()
-      ).build();
+      RecordClass recordClass = getWdkModel().getRecordClass(recordClassName);
+      JSONArray tablesJson = TableFieldFormatter.getTablesJson(
+          recordClass.getTableFieldMap().values(), FieldScope.ALL,
+          getFlag(expandTables), getFlag(expandTableAttributes));
+      return Response.ok(tablesJson.toString()).build();
     }
     catch (WdkModelException e) {
       return Response.status(Status.NOT_FOUND).build();
@@ -126,10 +130,9 @@ public class RecordService extends WdkService {
   public Response getAnswerFormats(
       @PathParam("recordClassName") String recordClassName) {
     try {
-      RecordClass rc = getWdkModel().getRecordClass(recordClassName);
-      return Response.ok(
-          RecordClassFormatter.getAnswerFormatsJson(rc.getReporterMap()).toString()
-      ).build();
+      RecordClass recordClass = getWdkModel().getRecordClass(recordClassName);
+      JSONArray json = RecordClassFormatter.getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL);
+      return Response.ok(json.toString()).build();
     }
     catch (WdkModelException e) {
       return Response.status(Status.NOT_FOUND).build();
@@ -171,8 +174,9 @@ public class RecordService extends WdkService {
       if (table == null) throw new WdkModelException ("Table '" + tableName +
           "' not found for RecordClass '" + recordClassName + "'");
       return Response.ok((attributesOnly ?
-          RecordClassFormatter.getAttributesJson(table, expandAttributes) :
-          RecordClassFormatter.getTableJson(table, expandAttributes)
+          AttributeFieldFormatter.getAttributesJson(
+              table.getAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, expandAttributes) :
+          TableFieldFormatter.getTableJson(table, expandAttributes)
       ).toString()).build();
     }
     catch (WdkModelException e) {
