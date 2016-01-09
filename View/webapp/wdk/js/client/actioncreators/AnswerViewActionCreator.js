@@ -22,9 +22,7 @@ export default class AnswerViewActionCreator extends ActionCreator {
    *     {
    *       "questionDefinition": {
    *         "questionName": String,
-   *         "parameters": [ {
-   *           "name": String, “value”: Any
-   *         } ],
+   *         "parameters": Object (map of paramName -> paramValue),
    *         "filters": [ {
    *           “name": String, value: Any
    *         } ],
@@ -53,7 +51,7 @@ export default class AnswerViewActionCreator extends ActionCreator {
    * @param {Array<Object>} opts.displayInfo.sorting Array of sorting spec objects: { attributeName: string; direction: "ASC" | "DESC" }
    */
   loadAnswer(questionName, opts = {}) {
-    let { parameters = [], filters = [], displayInfo } = opts;
+    let { parameters = {}, filters = [], displayInfo } = opts;
 
     // FIXME Set attributes to whatever we're sorting on. This is required by
     // the service, but it doesn't appear to have any effect at this time. We
