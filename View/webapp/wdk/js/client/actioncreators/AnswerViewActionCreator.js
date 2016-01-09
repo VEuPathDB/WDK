@@ -22,7 +22,7 @@ export default class AnswerViewActionCreator extends ActionCreator {
    *     {
    *       "questionDefinition": {
    *         "questionName": String,
-   *         "params": [ {
+   *         "parameters": [ {
    *           "name": String, “value”: Any
    *         } ],
    *         "filters": [ {
@@ -43,7 +43,7 @@ export default class AnswerViewActionCreator extends ActionCreator {
    *
    * @param {string} questionName Fully qualified WDK Question name.
    * @param {Object} opts Addition data to include in request.
-   * @param {Array<Object>} opts.params Array of param spec objects: { name: string; value: any }
+   * @param {Array<Object>} opts.parameters Array of param spec objects: { name: string; value: any }
    * @param {Array<Object>} opts.filters Array of filter spec objects: { name: string; value: any }
    * @param {Array<Object>} opts.viewFilters Array of view filter  spec objects: { name: string; value: any }
    * @param {Object} opts.displayInfo.pagination Pagination specification.
@@ -53,7 +53,7 @@ export default class AnswerViewActionCreator extends ActionCreator {
    * @param {Array<Object>} opts.displayInfo.sorting Array of sorting spec objects: { attributeName: string; direction: "ASC" | "DESC" }
    */
   loadAnswer(questionName, opts = {}) {
-    let { params = [], filters = [], displayInfo } = opts;
+    let { parameters = [], filters = [], displayInfo } = opts;
 
     // FIXME Set attributes to whatever we're sorting on. This is required by
     // the service, but it doesn't appear to have any effect at this time. We
@@ -62,7 +62,7 @@ export default class AnswerViewActionCreator extends ActionCreator {
     displayInfo.tables = [];
 
     // Build XHR request data for '/answer'
-    let questionDefinition = { questionName, params, filters };
+    let questionDefinition = { questionName, parameters, filters };
     let formatting = { formatConfig: displayInfo };
 
     this._dispatch({ type: actionTypes.ANSWER_LOADING });
@@ -70,7 +70,7 @@ export default class AnswerViewActionCreator extends ActionCreator {
     let answerPromise = this._service.getAnswer(questionDefinition, formatting);
     let questionPromise = this._service.getQuestion(questionName);
     let recordClassPromise = questionPromise.then(question => {
-      return this._service.getRecordClass(question.class);
+      return this._service.getRecordClass(question.recordClass);
     });
 
     Promise.all([ answerPromise, questionPromise, recordClassPromise ])
@@ -127,19 +127,17 @@ export default class AnswerViewActionCreator extends ActionCreator {
   /**
    * Set the filter for the answer table.
    *
-   * FIXME Remove questionName param, and use a service object to filter the answer.
+   * FIXME use a service object to filter the answer.
    *
    * @param {Object} spec The filter specification.
-   * @param {string} spec.questionName The question name associated with the answer.
    * @param {string} spec.terms The string to parse and filter.
    * @param {Array<string>} spec.attributes The set of attribute names whose values should be queried.
    * @param {Array<string>} spec.tables The set of table names whose values should be queried.
    */
-  updateFilter({ questionName, terms, attributes, tables }) {
+  updateFilter({ terms, attributes, tables }) {
     this._dispatch({
       type: actionTypes.ANSWER_UPDATE_FILTER,
       payload: {
-        questionName,
         terms,
         attributes,
         tables

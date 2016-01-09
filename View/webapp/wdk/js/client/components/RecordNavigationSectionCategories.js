@@ -59,7 +59,7 @@ class RecordNavigationSectionCategories extends Component {
       <Tree
         tree={this.props.categories}
         id={c => c.name}
-        childNodes={c => c.subCategories}
+        childNodes={c => c.categories}
         node={RecordNavigationItem}
         showChildren={this.props.showChildren}
         onCategoryToggle={this.props.onCategoryToggle}

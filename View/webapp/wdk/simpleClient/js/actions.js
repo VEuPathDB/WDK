@@ -31,7 +31,7 @@ var Util = (function() {
     return /^([1-9]\d*)$/.test(str);
   }
 
-  function getAnswerRequestJson(questionName, paramMap, pagination) {
+  function getAnswerRequestJson(question, paramMap, pagination) {
     var paramPack = Object.keys(paramMap).map(function(paramName) {
       var param = paramMap[paramName];
       return { name: param.name, value: param.value };
@@ -42,8 +42,8 @@ var Util = (function() {
     if (numRecords < 1) numRecords = 10;
     return {
       questionDefinition: {
-        questionName: questionName,
-        params: paramPack,
+        questionName: question.name,
+        parameters: paramPack,
         filters: []
       },
       formatting: {
@@ -86,8 +86,8 @@ var ActionCreator = function(serviceUrl, dispatcher) {
     var action = {
       actionType: ActionType.CHANGE_QUESTION_ACTION,
       data: {
-        questionName: questionName,
-        params: []
+        name: questionName,
+        parameters: []
       }
     };
     // no need to load params when user selects none
@@ -95,14 +95,17 @@ var ActionCreator = function(serviceUrl, dispatcher) {
       _dispatcher.dispatch(action);
     }
     else {
+      setLoading(true);
       jQuery.ajax({
         type: "GET",
         url: _serviceUrl + "/question/" + questionName + "?expandParams=true",
         success: function(data, textStatus, jqXHR) {
+          setLoading(false);
           action.data = data;
           _dispatcher.dispatch(action);
         },
         error: function(jqXHR, textStatus, errorThrown ) {
+          setLoading(false);
           alert("Error: Unable to load params for question " + questionName);
         }
       });

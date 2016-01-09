@@ -57,7 +57,7 @@ let RecordMainCategorySection = React.createClass({
             <div className="wdk-RecordSectionContent">
               {attributes.length > 0 &&
                 <div className="wdk-RecordAttributeSection">
-                  {attributes.map(function(attribute) {
+                  {attributes.filter(a => a.isDisplayable).map(function(attribute) {
                     let { name, displayName } = attribute;
                     let value = record.attributes[name]
                     if (value == null) return null;

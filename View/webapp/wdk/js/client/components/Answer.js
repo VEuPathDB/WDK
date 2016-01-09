@@ -50,6 +50,8 @@ let Answer = React.createClass({
       question,
       recordClass,
       displayInfo,
+      allAttributes,
+      visibleAttributes,
       answerEvents,
       format
     } = this.props;
@@ -59,7 +61,7 @@ let Answer = React.createClass({
     let pagination = displayInfo.pagination;
     let firstRec = pagination.offset + 1;
     let lastRec = Math.min(pagination.offset + pagination.numRecords,
-                             meta.count, records.length);
+                             meta.responseCount, records.length);
     let Records = format === 'list' ? RecordList : AnswerTable;
 
     return (
@@ -69,7 +71,7 @@ let Answer = React.createClass({
         <div className="wdk-Answer">
           <AnswerFilter {...this.props}/>
           <p className="wdk-Answer-count">
-            Showing {firstRec} - {lastRec} of {meta.count} {displayNamePlural}
+            Showing {firstRec} - {lastRec} of {meta.totalCount} {displayNamePlural}
           </p>
           <Records
             ref="records"
@@ -77,6 +79,8 @@ let Answer = React.createClass({
             meta={meta}
             records={records}
             displayInfo={displayInfo}
+            allAttributes={allAttributes}
+            visibleAttributes={visibleAttributes}
             {...answerEvents}
           />
         </div>
