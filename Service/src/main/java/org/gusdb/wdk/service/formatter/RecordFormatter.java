@@ -35,6 +35,7 @@ public class RecordFormatter {
       throws WdkModelException, WdkUserException {
     return new JSONObject()
       .put(Keys.DISPLAY_NAME, record.getPrimaryKey().getDisplay())
+      .put(Keys.OVERVIEW, record.getOverview())
       .put(Keys.ID, record.getPrimaryKey().getValues())
       .put(Keys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames))
       .put(Keys.TABLES, getRecordTablesJson(record, tableNames));
