@@ -15,16 +15,18 @@ export default class AnswerViewStore extends ReduceStore {
 
   getInitialState() {
     return {
-      meta: null,
-      records: null,
-      question: null,
-      recordClass: null,
-      unfilteredRecords: null,
-      isLoading: false,
-      filterTerm: '',
-      filterAttributes: null,
-      filterTables: null,
-      displayInfo: {
+      meta: null,                // Object: meta object from last service response
+      records: null,             // Record[]: filtered records
+      question: null,            // Object: question for this answer page
+      recordClass: null,         // Object: record class for this answer page
+      allAttributes: null,       // Attrib[]: all attributes available in the answer (from recordclass and question)
+      visibleAttributes: null,   // String[]: ordered list of attributes currently being displayed
+      unfilteredRecords: null,   // Record[]: list of records from last service response
+      isLoading: false,          // boolean: whether to show loading icon
+      filterTerm: '',            // String: value user typed into filter box
+      filterAttributes: null,    // Attrib[]: list of attributes whose text is searched during filtering
+      filterTables: null,        // Table[]: list of tables whose text is searched during filtering
+      displayInfo: {             // Object: answer formatting object passed on answer request
         sorting: null,
         pagination: null,
         attributes: null,
@@ -57,40 +59,51 @@ export default class AnswerViewStore extends ReduceStore {
         return state;
     }
   }
-
 }
 
   function addAnswer(state, payload) {
-    let { answer, displayInfo } = payload;
+    let { answer, displayInfo, question, recordClass } = payload;
 
-    /*
-     * If state.displayInfo.attributes isn't defined we want to use the
-     * defaults. For now, we will just show whatever is in
-     * answer.meta.attributes by default. This is probably wrong.
-     * We probably also want to persist the user's choice somehow. Using
-     * localStorage is one possble solution.
-     */
-    let visibleAttributes = state.displayInfo.visibleAttributes;
+    // in case we used a magic string to get attributes, reset fetched attributes in displayInfo
+    displayInfo.attributes = answer.meta.attributes;
 
-    if (!visibleAttributes || state.meta.class !== answer.meta.class) {
-      visibleAttributes = answer.meta.summaryAttributes.map(attrName => {
-        return answer.meta.attributes.find(attr => attr.name === attrName);
-      });
+    // need to filter wdk_weight from multiple places;
+    let isNotWeight = attr => attr != 'wdk_weight' && attr.name != 'wdk_weight';
+
+    // collect attributes from recordClass and question
+    let allAttributes = recordClass.attributes.concat(question.dynamicAttributes).filter(isNotWeight);
+
+    // use previously selected visible attributes unless they don't exist
+    let visibleAttributes = state.visibleAttributes;
+    if (!visibleAttributes || state.meta.recordClass !== answer.meta.recordClass) {
+      // need to populate attribute details for visible attributes
+      visibleAttributes = answer.meta.attributes.map(attrName => {
+        // first try to find attribute in record class
+        let value = allAttributes.find(attr => attr.name === attrName);
+        if (value === null) {
+          // null value is bad, but we expect itRemove search weight from answer
+          //   meta since it doens't apply to non-Step answers
+          if (isNotWeight({ name: attrName })) {
+            console.warn("Attribute name '" + attrName +
+                "' does not correspond to a known attribute.  Skipping...");
+          }
+        }
+        return value;
+      }).filter(element => element != null); // filter unfound attributes
     }
 
-    Object.assign(displayInfo, { visibleAttributes });
-
-    // Remove search weight since it doens't apply to non-Step answers
-    answer.meta.attributes = answer.meta.attributes.filter(attr => attr.name != 'wdk_weight');
-
+    // Remove search weight from answer meta since it doens't apply to non-Step answers
+    answer.meta.attributes = answer.meta.attributes.filter(isNotWeight);
 
     /*
      * This will update the keys `filteredRecords`, and `questionDefinition` in `state`.
      */
     return Object.assign({}, state, {
       meta: answer.meta,
-      question: payload.question,
-      recordClass: payload.recordClass,
+      question,
+      recordClass,
+      allAttributes,
+      visibleAttributes,
       unfilteredRecords: answer.records,
       records: filterRecords(answer.records, state),
       isLoading: false,
@@ -101,12 +114,12 @@ export default class AnswerViewStore extends ReduceStore {
   /**
    * Update the position of an attribute in the answer table.
    *
-   * @param {string} columnName The name of the atribute being moved.
+   * @param {string} columnName The name of the attribute being moved.
    * @param {number} newPosition The 0-based index to move the attribute to.
    */
   function moveTableColumn(state, { columnName, newPosition }) {
     /* make a copy of list of attributes we will be altering */
-    let attributes = [ ...state.displayInfo.visibleAttributes ];
+    let attributes = [ ...state.visibleAttributes ];
 
     /* The current position of the attribute being moved */
     let currentPosition = attributes.findIndex(function(attribute) {
@@ -126,14 +139,12 @@ export default class AnswerViewStore extends ReduceStore {
   }
 
   function updateVisibleAttributes(state, { attributes }) {
-    // Create a new copy of displayInfo
-    let displayInfo = Object.assign({}, state.displayInfo, {
-      visibleAttributes: attributes
-    });
+    // Create a new copy of visibleAttributes
+    let visibleAttributes = attributes.slice(0);
 
     // Create a new copy of state
     return Object.assign({}, state, {
-      displayInfo
+      visibleAttributes
     });
   }
 

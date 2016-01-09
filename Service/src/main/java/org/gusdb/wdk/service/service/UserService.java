@@ -4,6 +4,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -13,6 +14,8 @@ import org.gusdb.wdk.session.OAuthUtil;
 
 @Path("/user")
 public class UserService extends WdkService {
+
+  private static final String CURRENT_USER_MAGIC_STRING = "current";
 
   // ===== OAuth 2.0 + OpenID Connect Support =====
   /**
@@ -38,13 +41,17 @@ public class UserService extends WdkService {
   @GET
   @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getById(@PathParam("id") String userIdStr) throws WdkModelException {
+  public Response getById(
+      @PathParam("id") String userIdStr,
+      @QueryParam("includePreferences") Boolean includePreferences)
+          throws WdkModelException {
     Integer userId = getUserId(userIdStr);
     if (userId == null)
       return getNotFoundResponse("Unable to find user with ID " + userIdStr);
     boolean isOwner = (userId == getCurrentUserId());
     return Response.ok(
-        UserFormatter.getUserJson(getWdkModel().getUserFactory().getUser(userId), isOwner).toString()
+        UserFormatter.getUserJson(getWdkModel().getUserFactory().getUser(userId),
+            isOwner, getFlag(includePreferences)).toString()
     ).build();
   }
 
@@ -65,7 +72,7 @@ public class UserService extends WdkService {
   }
 
   private Integer getUserId(String userIdStr) throws WdkModelException {
-    if ("current".equals(userIdStr)) {
+    if (CURRENT_USER_MAGIC_STRING.equals(userIdStr)) {
       return getCurrentUserId();
     }
     try {

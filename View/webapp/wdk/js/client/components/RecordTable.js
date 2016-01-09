@@ -12,7 +12,7 @@ let RecordTable = React.createClass({
 
   render() {
     let { table, tableMeta } = this.props;
-    let tableAttributes = tableMeta.attributes.filter(a => !a.isInternal);
+    let tableAttributes = tableMeta.attributes.filter(a => a.isDisplayable);
     let classnames = [ 'wdk-RecordTable', 'wdk-RecordTable__' + tableMeta.name ].join(' ');
     if (table.length === 0 || tableAttributes.length === 0) {
       return <em>No data available</em>;

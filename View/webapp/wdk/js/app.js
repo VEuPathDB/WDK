@@ -48,10 +48,6 @@ $(document).on('tabsactivate', function() {
   $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
 });
 
-$(window).on('resize', _.throttle(function() {
-  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
-}, 100));
-
 // Break bfcache. The handler doesn't have to do anything for the desired
 // effect. See redmine #18839.
 $(window).on('unload', function() { });

@@ -67,14 +67,14 @@ let RecordList = React.createClass({
    */
   getInitialState() {
     return {
-      pendingVisibleAttributes: this.props.displayInfo.visibleAttributes,
+      pendingVisibleAttributes: this.props.visibleAttributes,
       attributeSelectorOpen: false
     };
   },
 
   componentWillReceiveProps(nextProps) {
     this.setState({
-      pendingVisibleAttributes: nextProps.displayInfo.visibleAttributes
+      pendingVisibleAttributes: nextProps.visibleAttributes
     });
   },
 

@@ -28,6 +28,15 @@ import org.gusdb.wdk.service.formatter.QuestionFormatter;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Provides access to Question data configured in the WDK Model.  All question
+ * name path params can be either the configured question URL segment (which
+ * defaults to the short name but can be overridden in the XML), or the
+ * question's full, two-part name, made by joining the question set name and
+ * question short name with a '.'.
+ * 
+ * @author rdoherty
+ */
 @Path("/question")
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends WdkService {
@@ -89,13 +98,28 @@ public class QuestionService extends WdkService {
       @PathParam("questionName") String questionName,
       @QueryParam("expandParams") Boolean expandParams)
           throws WdkUserException, WdkModelException {
-    
-    getWdkModelBean().validateQuestionFullName(questionName);
-    Question question = getWdkModel().getQuestion(questionName);
+    Question question = getQuestionFromSegment(questionName);
+    if (question == null)
+      return getNotFoundResponse(questionName);
     Map<String,String> dependedParamValues = new HashMap<String, String>();
-    
     return Response.ok(QuestionFormatter.getQuestionJson(question,
         getFlag(expandParams), getCurrentUser(), dependedParamValues).toString()).build();
+  }
+
+  private Question getQuestionFromSegment(String questionName) {
+    try {
+      return getWdkModel().getQuestionByUrlSegment(questionName);
+    }
+    catch (WdkModelException e) {
+      // not a valid question URL segment, try full name
+      try {
+        getWdkModelBean().validateQuestionFullName(questionName);
+        return getWdkModel().getQuestion(questionName);
+      }
+      catch (WdkModelException | WdkUserException e2) {
+        return null;
+      }
+    }
   }
 
   /**
@@ -124,10 +148,9 @@ public class QuestionService extends WdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getQuestionRevise(@PathParam("questionName") String questionName, String body)
           throws WdkUserException, WdkModelException {
-
-    getWdkModelBean().validateQuestionFullName(questionName);
-    Question question = getWdkModel().getQuestion(questionName);
-    
+    Question question = getQuestionFromSegment(questionName);
+    if (question == null)
+      return getNotFoundResponse(questionName);
     // extract context values from body
     Map<String, String> contextParamValues = new HashMap<String, String>(); 
     try {
@@ -141,7 +164,8 @@ public class QuestionService extends WdkService {
     // confirm that we got all param values
     for (Param param : question.getParams()) {
       if (!contextParamValues.containsKey(param.getName()))
-	throw new WdkUserException("This call to the question service requires that the body contain values for all params.  But it is missing one for: " + param.getName());
+        throw new WdkUserException("This call to the question service requires " +
+            "that the body contain values for all params.  But it is missing one for: " + param.getName());
       param.validate(getCurrentUser(), contextParamValues.get(param.getName()), contextParamValues);
     }
 
@@ -175,10 +199,9 @@ public class QuestionService extends WdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getQuestionChange(@PathParam("questionName") String questionName, String body)
           throws WdkUserException, WdkModelException {
-
-    getWdkModelBean().validateQuestionFullName(questionName);
-    Question question = getWdkModel().getQuestion(questionName);
-    
+    Question question = getQuestionFromSegment(questionName);
+    if (question == null)
+      return getNotFoundResponse(questionName);
     Map<String, String> contextParamValues = new HashMap<String, String>();
     String changedParamName = null;
     String changedParamValue = null;
@@ -206,8 +229,8 @@ public class QuestionService extends WdkService {
     // find all dependencies of the changed param, and remove them from the context
     for (Param dependentParam : changedParam.getAllDependentParams()) contextParamValues.remove(dependentParam.getName());
 
-    return Response.ok(QuestionFormatter.getQuestionJson(question, true, changedParam.getAllDependentParams(), getCurrentUser(),
-        contextParamValues).toString()).build();
+    return Response.ok(QuestionFormatter.getQuestionJson(question, true, getCurrentUser(),
+        contextParamValues, changedParam.getAllDependentParams()).toString()).build();
   }
 
   private Map<String, String> parseContextParamValuesFromJson(JSONObject bodyJson, Question question) throws JSONException, WdkUserException {

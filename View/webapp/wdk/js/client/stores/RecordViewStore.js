@@ -104,9 +104,9 @@ function makeCategoryWordsMap(recordClass) {
       }
     }
 
-    if (category.subCategories != null) {
+    if (category.categories != null) {
       for (let cat of map.keys()) {
-        if (category.subCategories.indexOf(cat) > -1) {
+        if (category.categories.indexOf(cat) > -1) {
           words.push(map.get(cat));
         }
       }
@@ -115,5 +115,5 @@ function makeCategoryWordsMap(recordClass) {
     words.push(category.displayName, category.description);
 
     return map.set(category, words.join('\0').toLowerCase());
-  }, new Map(), postorderCategories(recordClass.attributeCategories));
+  }, new Map(), postorderCategories(recordClass.categories));
 }

@@ -54,7 +54,7 @@ let RecordMainSection = React.createClass({
             <RecordMainSection
               {...this.props}
               depth={depth + 1}
-              categories={category.subCategories}
+              categories={category.categories}
               parentEnumeration={enumeration}
             />
             </RecordMainCategorySection>
