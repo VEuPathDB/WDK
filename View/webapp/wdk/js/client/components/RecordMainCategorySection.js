@@ -62,7 +62,7 @@ let RecordMainCategorySection = React.createClass({
                     let value = record.attributes[name]
                     if (value == null) return null;
                     return (
-                      <div className="wdk-RecordAttributeSectionItem" key={name}>
+                      <div className={`wdk-RecordAttributeSectionItem wdk-RecordAttributeSectionItem__${name}`} key={name}>
                         <div className="wdk-RecordAttributeName">
                           <strong>{displayName}</strong>
                         </div>
@@ -77,14 +77,25 @@ let RecordMainCategorySection = React.createClass({
               {tables.map(tableMeta => {
                 let { name, displayName } = tableMeta;
                 let table = record.tables[name];
-                let isCollapsed = collapsedTables.includes(name)
-                let headerClass = classnames({
-                  'wdk-RecordTableHeader': true,
-                  'wdk-RecordTableHeader__collapsed': isCollapsed
-                });
+
                 if (table.length === 0) return null;
+
+                let isCollapsed = collapsedTables.includes(name)
+
+                let wrapperClassBase = 'wdk-RecordTableWrapper';
+                let wrapperClass = classnames(
+                  wrapperClassBase,
+                  `${wrapperClassBase}__${name}`
+                );
+
+                let headerClassBase = 'wdk-RecordTableHeader';
+                let headerClass = classnames({
+                  [headerClassBase]: true,
+                  [`${headerClassBase}__collapsed`]: isCollapsed
+                });
+
                 return (
-                  <div key={name} className="wdk-RecordTableWrapper">
+                  <div key={name} className={wrapperClass}>
                     <div className={headerClass}
                       onClick={() => this.toggleTableCollapse(tableMeta, isCollapsed)}>
                       {' ' + displayName}
