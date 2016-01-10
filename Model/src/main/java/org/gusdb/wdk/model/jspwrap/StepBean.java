@@ -180,6 +180,10 @@ public class StepBean {
         return step.isBoolean();
     }
 
+    public boolean getIsCombined() {
+        return step.isCombined();
+    }
+
     public boolean getIsTransform() {
         return step.isTransform();
     }
