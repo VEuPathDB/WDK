@@ -38,7 +38,7 @@ public class TableFieldFormatter {
     JSONArray array = new JSONArray();
     for (TableField table : tableFields) {
       if (scope.isFieldInScope(table)) {
-        array.put(expandTables ? table.getName() : getTableJson(table, expandAttributes));
+        array.put(expandTables ? getTableJson(table, expandAttributes) :table.getName());
       }
     }
     return array;
