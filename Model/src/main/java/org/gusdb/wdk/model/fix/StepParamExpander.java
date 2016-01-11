@@ -92,6 +92,7 @@ public class StepParamExpander extends BaseCLI {
 
       int count = 0;
       while (resultSet.next()) {
+
         int stepId = resultSet.getInt("step_id");
         String questionName = resultSet.getString("question_name");
         String clob = database.getPlatform().getClobData(resultSet, "display_params");
@@ -101,7 +102,7 @@ public class StepParamExpander extends BaseCLI {
         clob = clob.trim();
         if (!clob.startsWith("{"))
           continue;
-
+				//logger.debug("***** MADE IT HERE : ****:  Step ID:" + stepId + ", questionName: " + questionName + ", clob is: " + clob);
         Map<String, Set<String>> values = parseClob(wdkModel, questionName, clob);
 
         // insert the values
@@ -170,6 +171,7 @@ public class StepParamExpander extends BaseCLI {
       step.setInMemoryOnly(true);
       step.setParamFilterJSON(new JSONObject(clob));
       Map<String, String> values = step.getParamValues();
+
       for (String paramName : values.keySet()) {
         String value = values.get(paramName);
         String[] terms;
