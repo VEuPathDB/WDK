@@ -207,7 +207,7 @@ public abstract class AbstractEnumParam extends Param {
       return createVocabInstance(user, contextParamValues);
     }
     catch (WdkModelException | WdkUserException wme) {
-      throw new WdkRuntimeException("Unable to create EnumParamCache for param " + getName() + " with " +
+      throw new WdkRuntimeException("Unable to create EnumParamVocabInstance for param " + getName() + " with " +
           "depended values " + FormatUtil.prettyPrint(contextParamValues), wme);
     }
   }
