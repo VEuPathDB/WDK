@@ -14,7 +14,7 @@ function timeout(ms) {
 }
 
 test('latest', function(t) {
-  t.plan(1);
+  t.plan(1); // only one assertion should be executed
   let latestTimeout = latest(timeout);
   latestTimeout(100).then(ms => t.equals(ms, 400));
   latestTimeout(200).then(ms => t.equals(ms, 400));
