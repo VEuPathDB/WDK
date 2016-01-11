@@ -182,6 +182,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     this.hasWeight = query.hasWeight;
     this.contextQuestion = query.getContextQuestion();
     this.sortingMap = new LinkedHashMap<>(query.sortingMap);
+    this.postCacheUpdateSqls = query.postCacheUpdateSqls == null ? null : new ArrayList <PostCacheUpdateSql> (query.postCacheUpdateSqls);
 
     // clone columns
     for (String columnName : query.columnMap.keySet()) {
