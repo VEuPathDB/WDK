@@ -30,6 +30,8 @@ import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
  */
 public class QuerySet extends WdkModelBase implements ModelSetI<Query>, OptionallyTestable {
 
+  protected static final Logger logger = Logger.getLogger(Query.class);
+
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(QuerySet.class);
 
