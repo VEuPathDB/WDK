@@ -29,6 +29,7 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
 
   private static final Logger logger = Logger.getLogger(FlatVocabularyFetcher.class);
 
+  private static final String PROJECT_ID = "project_id";
   private static final String VOCAB_QUERY_REF_KEY = "vocabQueryRef";
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
   
@@ -44,6 +45,7 @@ public class FlatVocabularyFetcher implements ItemFetcher<String, EnumParamVocab
 
   public String getCacheKey(Map<String, String> dependedParamValues) throws WdkModelException, JSONException {
     JSONObject cacheKeyJson = new JSONObject();
+    cacheKeyJson.put(PROJECT_ID, _vocabQuery.getWdkModel().getProjectId());
     cacheKeyJson.put(VOCAB_QUERY_REF_KEY, _vocabQuery.getFullName());
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY,
         getDependedParamValuesJson(dependedParamValues, _param.getDependedParams()));
