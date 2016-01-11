@@ -35,7 +35,7 @@ public class AttributeFieldFormatter {
     for (AttributeField attribute : attributes) {
       if (scope.isFieldInScope(attribute)) {
         attributesJson.put(expandAttributes ?
-            attribute.getName() : getAttributeJson(attribute));
+            getAttributeJson(attribute) : attribute.getName());
       }
     }
     return attributesJson;

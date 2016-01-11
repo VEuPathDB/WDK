@@ -47,12 +47,9 @@ public class QuestionFormatter {
       throws JSONException, WdkModelException, WdkUserException {
     JSONArray json = new JSONArray();
     for (Question q : questions) {
-      if (expandQuestions) {
-        json.put(getQuestionJson(q, expandParams, user, dependedParamValues));
-      }
-      else {
-        json.put(q.getFullName());
-      }
+      json.put(expandQuestions ?
+          getQuestionJson(q, expandParams, user, dependedParamValues) :
+          q.getFullName());
     }
     return json;
   }
@@ -96,7 +93,7 @@ public class QuestionFormatter {
           formatter.getJson());
       }
       else {
-        paramsJson.put(param.getFullName());
+        paramsJson.put(param.getName());
       }
     }
     return paramsJson;
