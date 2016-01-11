@@ -785,7 +785,7 @@ public class Step {
   }
 
   public Step getStepByChildId(int childId) throws WdkModelException {
-    logger.debug("gettting step by child id. current=" + this + ", input=" + childId);
+    logger.debug("getting step by child id. current=" + this + ", input=" + childId);
     Step target;
     if (this.childStepId == childId) {
       return this;
@@ -1348,7 +1348,7 @@ public class Step {
       return;
     }
 
-    logger.debug("Parsing json:\n" + jsContent.toString(2));
+    //logger.debug("Parsing json:\n" + jsContent.toString(2));
 
     // legacy records: if no "params" property, assume JSON represents only params
     if (!jsContent.has(KEY_PARAMS)) {
@@ -1365,7 +1365,10 @@ public class Step {
     catch (JSONException e) {
       throw new WdkModelException("Params property value is not a JSON Object", e);
     }
+
+		//logger.debug("**********setting filters for step:");
     setFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_FILTERS));
+		//logger.debug("**********setting VIEW filters for step:");
     setViewFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_VIEW_FILTERS));
   }
 
@@ -1427,13 +1430,14 @@ public class Step {
   }
 
   public void setFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
-    if (jsOptions == null) {
+		// getQuestion() is null when we come from a newly created step from StepExpander in apicomm maint
+		if (jsOptions == null || questionName == null ) {
       this.filterOptions = null;
     }
     else {
-      FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
-      validateFilterOptions(newList, false);
-      this.filterOptions = newList;
+			FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
+			validateFilterOptions(newList, false);
+			this.filterOptions = newList;
     }
   }
 
@@ -1442,7 +1446,7 @@ public class Step {
   }
 
   public void setViewFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
-    if (jsOptions == null) {
+    if (jsOptions == null || questionName == null) {
       this.viewFilterOptions = null;
     }
     else {
