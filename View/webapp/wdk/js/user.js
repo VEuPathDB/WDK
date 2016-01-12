@@ -207,16 +207,18 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
   var hasLocalStorage = Boolean(window.localStorage);
   var sessionId = $.cookie('JSESSIONID');
 
-  // Returns the value for key, null if it doesn't exist
-  ns.getPreference = function getPreference(key) {
+  // Returns the value for key, defaultValue if it doesn't exist
+  ns.getPreference = function getPreference(key, defaultValue) {
     if (hasLocalStorage) {
-      var item = JSON.parse(localStorage.getItem(key));
+      var item;
+      try { item = JSON.parse(localStorage.getItem(key)); }
+      catch(e) {}
       if (item) {
         if (!item.session || item.session === sessionId) {
           return item.value;
         }
       }
-      return null;
+      return defaultValue;
     }
     return $.cookie(key);
   };

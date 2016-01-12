@@ -38,7 +38,7 @@ public class TableFieldFormatter {
     JSONArray array = new JSONArray();
     for (TableField table : tableFields) {
       if (scope.isFieldInScope(table)) {
-        array.put(expandTables ? table.getName() : getTableJson(table, expandAttributes));
+        array.put(expandTables ? getTableJson(table, expandAttributes) :table.getName());
       }
     }
     return array;
@@ -52,6 +52,8 @@ public class TableFieldFormatter {
       .put(Keys.TYPE, table.getType())
       .put(Keys.CATEGORY, table.getAttributeCategory())
       .put(Keys.DESCRIPTION, table.getDescription())
+      .put(Keys.IS_DISPLAYABLE, FieldScope.NON_INTERNAL.isFieldInScope(table))
+      .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(table))
       .put(Keys.PROPERTIES, table.getPropertyLists())
       .put(Keys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
           table.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
