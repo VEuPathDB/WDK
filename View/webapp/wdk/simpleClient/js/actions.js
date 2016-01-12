@@ -98,7 +98,8 @@ var ActionCreator = function(serviceUrl, dispatcher) {
       setLoading(true);
       jQuery.ajax({
         type: "GET",
-        url: _serviceUrl + "/question/" + questionName + "?expandParams=true",
+        url: _serviceUrl + "/question/" + questionName + "?expandParams=true&" +
+          "expandAttributes=true&expandTables=true&expandTableAttributes=true",
         success: function(data, textStatus, jqXHR) {
           setLoading(false);
           action.data = data;
