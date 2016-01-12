@@ -116,6 +116,7 @@ let AnswerTable = React.createClass({
     meta: PropTypes.object.isRequired,
     displayInfo: PropTypes.object.isRequired,
     records: PropTypes.array.isRequired,
+    recordClass: PropTypes.object.isRequired,
     allAttributes: PropTypes.array.isRequired,
     visibleAttributes: PropTypes.array.isRequired,
     onSort: PropTypes.func,
@@ -317,7 +318,7 @@ let AnswerTable = React.createClass({
           descriptor={attributeDescriptor}
           value={attributeValue}
           record={this.props.records[index]}
-          recordClass={this.props.meta.recordClass}
+          recordClass={this.props.recordClass}
           width={width}
         />
       </div>

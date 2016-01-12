@@ -9,10 +9,10 @@ let AnswerTableCell = React.createClass({
 
   propTypes: {
     // TODO Put reusable propTypes in a module
-    value: React.PropTypes.string.isRequired,
+    value: React.PropTypes.string,
     descriptor: React.PropTypes.object.isRequired,
     record: React.PropTypes.object.isRequired,
-    recordClass: React.PropTypes.string.isRequired,
+    recordClass: React.PropTypes.object.isRequired,
     width: React.PropTypes.number.isRequired
   },
 
@@ -26,9 +26,12 @@ let AnswerTableCell = React.createClass({
     let { value, descriptor, record, recordClass, width } = this.props;
 
     if (descriptor.name === primaryKeyName) {
-      let href = this.makeHref('record', { class: recordClass }, record.id);
+      let params = {
+        recordClass: recordClass.urlSegment,
+        splat: record.id.map(p => p.value).join('/')
+      };
       return (
-        <Link to={href} className="wdk-AnswerTable-recordLink">
+        <Link to="record" params={params} className="wdk-AnswerTable-recordLink">
           {renderAttributeValue(value, this.props)}
         </Link>
       );
