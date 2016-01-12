@@ -42,7 +42,7 @@ public class RecordPageAdapter extends WdkAction {
     String path = "/app/record/" + recordClass.getUrlSegment();
     Set<String> paramKeys = params.getKeys();
     paramKeys.remove(PARAM_RECORD_CLASS_NAME);
-    for (String key: paramKeys) {
+    for (String key: recordClass.getPrimaryKeyColumns()) {
       path += "/" + params.getValue(key);
     }
     return webAppRoot + path;
