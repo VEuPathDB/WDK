@@ -173,6 +173,10 @@ public class RecordClassBean {
         return beans;
     }
 
+    public String getUrlSegment() {
+      return recordClass.getUrlSegment();
+    }
+
     public void setChangeType(boolean changeType) {
         this.changeType = changeType;
     }
