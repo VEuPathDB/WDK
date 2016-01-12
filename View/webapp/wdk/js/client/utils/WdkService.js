@@ -29,7 +29,8 @@ export default class WdkService {
 
   getRecordClasses() {
     let method = 'get';
-    let url = this._serviceUrl + '/record?expandRecordClasses=true';
+    let url = this._serviceUrl + '/record?expandRecordClasses=true&' +
+      'expandAttributes=true&expandTables=true&expandTableAttributes=true';
 
     if (this._recordClasses == null) {
       this._recordClasses = fetchJson(method, url).then(
