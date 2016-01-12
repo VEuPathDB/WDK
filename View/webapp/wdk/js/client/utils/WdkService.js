@@ -12,6 +12,11 @@ export default class WdkService {
     this._records = new Map();
   }
 
+  /**
+   * Get all Questions defined in WDK Model.
+   *
+   * @return {Promise<Array<Object>>}
+   */
   getQuestions() {
     let method = 'get';
     let url = this._serviceUrl + '/question?expandQuestions=true';
@@ -23,10 +28,21 @@ export default class WdkService {
     return this._questions;
   }
 
-  getQuestion(name) {
-    return this.getQuestions().then(qs => qs.find(q => q.name === name));
+  /**
+   * Get the first Question that matches `test`.
+   *
+   * @param {Function} test Predicate function the Question must satisfy
+   * @return {Promise<Object?>}
+   */
+  findQuestion(test) {
+    return this.getQuestions().then(qs => qs.find(test));
   }
 
+  /**
+   * Get all RecordClasses defined in WDK Model.
+   *
+   * @return {Promise<Array<Object>>}
+   */
   getRecordClasses() {
     let method = 'get';
     let url = this._serviceUrl + '/record?expandRecordClasses=true&' +
@@ -53,12 +69,18 @@ export default class WdkService {
     return this._recordClasses;
   }
 
-  getRecordClass(name) {
-    return this.getRecordClasses().then(rs => rs.find(r => r.name === name));
+  /**
+   * Get the first RecordClass that matches `test`.
+   *
+   * @param {Function} test Predicate the RecordClass must satisfy.
+   * @return {Promise<Object?>}
+   */
+  findRecordClass(test) {
+    return this.getRecordClasses().then(rs => rs.find(test));
   }
 
-  getRecord(recordClassName, primaryKey, options = {}) {
-    let primaryKeyString = stringify(primaryKey);
+  getRecord(recordClassName, primaryKeyValues, options = {}) {
+    let primaryKeyString = primaryKeyValues.join('/');
     let key = recordClassName + ':' + primaryKeyString;
     let method = 'post';
     let url = this._serviceUrl + '/record/' + recordClassName + '/instance';
@@ -67,7 +89,7 @@ export default class WdkService {
 
     // if we don't have the record, fetch whatever is requested
     if (!this._records.has(key)) {
-      let body = stringify({ primaryKey, attributes, tables });
+      let body = stringify({ primaryKeyValues, attributes, tables });
       this._records.set(key, fetchJson(method, url, body));
     }
 
@@ -80,7 +102,7 @@ export default class WdkService {
         // get addition attributes and tables
         if (reqAttributes.length > 0 || reqTables.length > 0) {
           let body = stringify({
-            primaryKey,
+            primaryKeyValues,
             attributes: reqAttributes,
             tables: reqTables
           });

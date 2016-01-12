@@ -21,8 +21,8 @@ export function start(rootUrl, rootElement, props) {
   let router = ReactRouter.create({
     routes: (
       <Route name="app" path={rootUrl} handler={AppController}>
-        <Route name="answer" path="answer/:questionName" handler={AnswerController}/>
-        <Route name="record" path="record/:class" handler={RecordController}/>
+        <Route name="answer" path="record/:recordClass/search/:question/result" handler={AnswerController}/>
+        <Route name="record" path="record/:recordClass/*" handler={RecordController}/>
         <Route name="stepDownloadForm" path="step/:stepId/download" handler={StepDownloadFormController}/>
         <Route name="question-list" handler={QuestionListController}/>
         <DefaultRoute handler={IndexController}/>

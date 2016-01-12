@@ -93,7 +93,7 @@ let AnswerController = React.createClass({
   componentWillMount() {
     this.store = this.props.stores.AnswerViewStore;
     this.actions = this.props.actionCreators.AnswerViewActionCreator;
-    this.sortingPreferenceKey = 'sorting::' + this.props.params.questionName;
+    this.sortingPreferenceKey = 'sorting::' + this.props.params.question;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
@@ -103,7 +103,7 @@ let AnswerController = React.createClass({
     }
 
     let state = this.store.getState();
-    if (state.question == null || state.question.name !== this.props.params.questionName) {
+    if (state.question == null || state.question.urlSegment !== this.props.params.question) {
       this.fetchAnswer(this.props);
     }
     else {
@@ -127,7 +127,7 @@ let AnswerController = React.createClass({
     let { query: nextQuery, params: nextParams } = nextProps;
 
     // update sortingPreferenceKey value
-    this.sortingPreferenceKey = 'sorting::' + nextParams.questionName;
+    this.sortingPreferenceKey = 'sorting::' + nextParams.question;
 
     // query keys to compare to determine if we need to fetch a new answer
     let answerQueryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
@@ -138,7 +138,7 @@ let AnswerController = React.createClass({
       return willChange || query[key] !== nextQuery[key];
     }, false);
 
-    answerWillChange = answerWillChange || params.questionName !== nextParams.questionName;
+    answerWillChange = answerWillChange || params.question !== nextParams.question;
 
     let filterWillChange = filterQueryKeys.reduce(function(willChange, key) {
       return willChange || query[key] !== nextQuery[key];
@@ -223,7 +223,7 @@ let AnswerController = React.createClass({
     };
 
     this.actions.updateFilter(filterOpts);
-    this.actions.loadAnswer(params.questionName, opts);
+    this.actions.loadAnswer(params.question, params.recordClass, opts);
   },
 
 
@@ -266,7 +266,7 @@ let AnswerController = React.createClass({
       //
       let attributeName = attribute.name;
       let { displayInfo } = this.state;
-      let { questionName } = this.props.params;
+      let { question, recordClass } = this.props.params;
       let newSort = { attributeName, direction };
       // Create a new array by removing existing sort def for attribute
       // and adding the new sort def to the beginning of the array, only
@@ -281,7 +281,7 @@ let AnswerController = React.createClass({
         sorting: { $set: sorting }
       });
 
-      this.actions.loadAnswer(questionName, { displayInfo });
+      this.actions.loadAnswer(question, recordClass, { displayInfo });
 
       // dispatch(PreferenceActions.setPreference(this.sortingPreferenceKey, sorting));
     },
@@ -337,7 +337,7 @@ let AnswerController = React.createClass({
     if (this.state == null || this.state.records == null)
       return <Loading/>;
 
-    // use "destructuring" syntax to assign this.props.params.questionName to questionName
+    // use "destructuring" syntax
     let {
       isLoading,
       meta,
