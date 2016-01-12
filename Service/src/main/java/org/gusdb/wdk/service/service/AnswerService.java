@@ -73,9 +73,8 @@ public class AnswerService extends WdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response buildResult(String body) throws WdkModelException, WdkUserException {
     try {
-      LOG.debug("POST submission to /answer with body:\n" + body);
+
       JSONObject json = new JSONObject(body);
-      LOG.info("POST submission to /answer with body:\n" + json.toString(2));
 
       // 1. Parse result request (question, params, etc.)
 
