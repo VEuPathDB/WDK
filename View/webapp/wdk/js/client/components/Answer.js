@@ -78,6 +78,7 @@ let Answer = React.createClass({
             height={this.state.height}
             meta={meta}
             records={records}
+            recordClass={recordClass}
             displayInfo={displayInfo}
             allAttributes={allAttributes}
             visibleAttributes={visibleAttributes}

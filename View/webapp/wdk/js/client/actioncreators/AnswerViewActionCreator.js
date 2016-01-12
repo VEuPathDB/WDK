@@ -10,6 +10,8 @@ let actionTypes = {
   APP_ERROR: 'answer/error'
 };
 
+let hasUrlSegment = (urlSegment) => (e) => e.urlSegment === urlSegment;
+
 export default class AnswerViewActionCreator extends ActionCreator {
 
   /**
@@ -39,7 +41,7 @@ export default class AnswerViewActionCreator extends ActionCreator {
    *       }
    *     }
    *
-   * @param {string} questionName Fully qualified WDK Question name.
+   * @param {string} questionUrlSegment
    * @param {Object} opts Addition data to include in request.
    * @param {Array<Object>} opts.parameters Array of param spec objects: { name: string; value: any }
    * @param {Array<Object>} opts.filters Array of filter spec objects: { name: string; value: any }
@@ -50,7 +52,7 @@ export default class AnswerViewActionCreator extends ActionCreator {
    * @param {Array<string>} opts.displayInfo.attributes Array of attribute names to include.
    * @param {Array<Object>} opts.displayInfo.sorting Array of sorting spec objects: { attributeName: string; direction: "ASC" | "DESC" }
    */
-  loadAnswer(questionName, opts = {}) {
+  loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {}) {
     let { parameters = {}, filters = [], displayInfo } = opts;
 
     // FIXME Set attributes to whatever we're sorting on. This is required by
@@ -59,16 +61,15 @@ export default class AnswerViewActionCreator extends ActionCreator {
     displayInfo.attributes = "__DISPLAYABLE_ATTRIBUTES__"; // special string for all displayable attributes
     displayInfo.tables = [];
 
-    // Build XHR request data for '/answer'
-    let questionDefinition = { questionName, parameters, filters };
-    let formatting = { formatConfig: displayInfo };
-
     this._dispatch({ type: actionTypes.ANSWER_LOADING });
 
-    let answerPromise = this._service.getAnswer(questionDefinition, formatting);
-    let questionPromise = this._service.getQuestion(questionName);
-    let recordClassPromise = questionPromise.then(question => {
-      return this._service.getRecordClass(question.recordClass);
+    let questionPromise = this._service.findQuestion(hasUrlSegment(questionUrlSegment));
+    let recordClassPromise = this._service.findRecordClass(hasUrlSegment(recordClassUrlSegment));
+    let answerPromise = questionPromise.then(question => {
+      // Build XHR request data for '/answer'
+      let questionDefinition = { questionName: question.name, parameters, filters };
+      let formatting = { formatConfig: displayInfo };
+      return this._service.getAnswer(questionDefinition, formatting);
     });
 
     Promise.all([ answerPromise, questionPromise, recordClassPromise ])

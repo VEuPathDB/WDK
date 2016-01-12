@@ -35,9 +35,17 @@ public class RecordFormatter {
       throws WdkModelException, WdkUserException {
     return new JSONObject()
       .put(Keys.DISPLAY_NAME, record.getPrimaryKey().getDisplay())
-      .put(Keys.ID, record.getPrimaryKey().getValues())
+      .put(Keys.ID, getRecordPrimaryKeyJson(record))
       .put(Keys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames))
       .put(Keys.TABLES, getRecordTablesJson(record, tableNames));
+  }
+
+  private static JSONArray getRecordPrimaryKeyJson(RecordInstance record) {
+    JSONArray pkJson = new JSONArray();
+    for (Map.Entry<String, String> entry : record.getPrimaryKey().getValues().entrySet()) {
+      pkJson.put(new JSONObject().put(Keys.NAME, entry.getKey()).put(Keys.VALUE, entry.getValue()));
+    }
+    return pkJson;
   }
 
   private static JSONObject getRecordAttributesJson(RecordInstance record, Collection<String> attributeNames) throws WdkModelException, WdkUserException {
