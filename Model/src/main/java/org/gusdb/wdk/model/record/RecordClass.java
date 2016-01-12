@@ -178,6 +178,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       String idSql = idqBuilder.toString();
       String sql = builder.toString();
       sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
+      sql = sql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, idSql);
 
       ((SqlQuery) newQuery).setSql(sql);
     }
