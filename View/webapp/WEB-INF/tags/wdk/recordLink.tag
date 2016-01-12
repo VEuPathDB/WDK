@@ -10,8 +10,9 @@
     description="The primary key AttributeValue instance"
   />
   <jsp:directive.attribute
-    name="recordName"
-    required="false"
+    name="recordClass"
+    type="org.gusdb.wdk.model.jspwrap.RecordClassBean"
+    required="true"
     description="The full name of the record class"
   />
  <jsp:directive.attribute
@@ -24,7 +25,7 @@
     <c:set var="recordLinkKeys" value="${recordLinkKeys}&amp;${pkValue.key}=${pkValue.value}" />
   </c:forEach>
 
-  <c:url var="recordLink" value="/showRecord.do?name=${recordName}${recordLinkKeys}" />
+  <c:url var="recordLink" value="/showRecord.do?name=${recordClass.fullName}${recordLinkKeys}" />
 
   <a href="${recordLink}">${displayValue}</a>
 

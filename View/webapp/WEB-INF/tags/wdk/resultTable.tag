@@ -21,8 +21,9 @@
 
   <c:set var="qName" value="${wdkAnswer.question.fullName}" />
   <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
-  <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
-  <c:set var="recHasBasket" value="${wdkAnswer.question.recordClass.useBasket}" />
+  <c:set var="recordClass" value="${wdkAnswer.question.recordClass}" />
+  <c:set var="recordName" value="${recordClass.fullName}" />
+  <c:set var="recHasBasket" value="${recordClass.useBasket}" />
   <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
 
  <c:set var="displayNamePlural" value="${wdkAnswer.question.recordClass.displayNamePlural}" />
@@ -276,7 +277,6 @@
 <%-- FOR EACH ROW --%>
                   <c:forEach items="${answerRecords}" var="record">
                     <c:set value="${record.primaryKey}" var="primaryKey"/>
-                    <c:set var="recNam" value="${record.recordClass.fullName}"/>
                     <tr class="${i % 2 eq 0 ? 'lines' : 'linesalt'}">
 <%--------- BASKET COLUMN  ----------%>
                       <c:if test="${recHasBasket}">            
@@ -291,7 +291,7 @@
                                 <c:set var="basket_img" value="basket_color.png"/>
                                 <c:set var="basketTitle" value="Click to remove this item from the basket." />
                               </c:if>
-                              <c:set var="basketClick" value="wdk.basket.updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recNam}')" />
+                              <c:set var="basketClick" value="wdk.basket.updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recordName}')" />
                             </c:when>
                             <c:otherwise>
                               <c:set var="basketClick" value="wdk.user.login();" />
@@ -310,7 +310,7 @@
                         <%--------- SHOW Prim Key COLUMN IF showPrimKey defined  ----------%>
                         <c:if test="${not empty showPrimKey ||  j != 0}"> 
                           <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
-                          <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
+                          <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordClass="${recordClass}" />
                         </c:if>    
                         <c:set var="j" value="${j+1}"/>
                       </c:forEach>
