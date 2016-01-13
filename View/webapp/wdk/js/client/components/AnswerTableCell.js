@@ -26,7 +26,7 @@ let AnswerTableCell = React.createClass({
     if (descriptor.name === primaryKeyName) {
       return (
         <RecordLink
-          record={record}
+          recordId={record.id}
           recordClass={recordClass}
           className="wdk-AnswerTable-recordLink"
         >
