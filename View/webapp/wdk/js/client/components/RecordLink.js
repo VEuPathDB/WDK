@@ -5,7 +5,7 @@ import { wrappable } from '../utils/componentUtils';
 function RecordLink(props) {
   let params = {
     recordClass: props.recordClass.urlSegment,
-    splat: props.record.id.map(p => p.value).join('/')
+    splat: props.recordId.map(p => p.value).join('/')
   };
   return (
     <Link to="record" params={params} {...props}>
@@ -15,7 +15,7 @@ function RecordLink(props) {
 }
 
 RecordLink.propTypes = {
-  record: React.PropTypes.object.isRequired,
+  recordId: React.PropTypes.object.isRequired,
   recordClass: React.PropTypes.object.isRequired
 };
 
