@@ -8,7 +8,6 @@ import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
-import org.gusdb.wdk.model.record.RecordClass;
 
 /**
  * Redirect the browser to the SOA Record Page. This simply maps urls, without
@@ -19,6 +18,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 public class RecordPageAdapter extends WdkAction {
 
   private static final String PARAM_RECORD_CLASS_NAME = "name";
+  private static final String PARAM_PRIMARY_KEY = "primary_key";
 
   @Override
   protected boolean shouldValidateParams() {
@@ -42,9 +42,19 @@ public class RecordPageAdapter extends WdkAction {
     String path = "/app/record/" + recordClass.getUrlSegment();
     Set<String> paramKeys = params.getKeys();
     paramKeys.remove(PARAM_RECORD_CLASS_NAME);
-    for (String key: recordClass.getPrimaryKeyColumns()) {
-      path += "/" + params.getValue(key);
+
+    // support urls of the form ?primary_key={primaryKeyValue}
+    if (paramKeys.contains(PARAM_PRIMARY_KEY)) {
+      path += "/" + params.getValue(PARAM_PRIMARY_KEY);
     }
+
+    // treat each query param as a part of the primary key
+    else {
+      for (String key: recordClass.getPrimaryKeyColumns()) {
+        path += "/" + params.getValue(key);
+      }
+    }
+
     return webAppRoot + path;
   }
 }

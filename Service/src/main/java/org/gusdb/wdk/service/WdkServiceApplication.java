@@ -6,6 +6,7 @@ import javax.ws.rs.core.Application;
 
 import org.gusdb.fgputil.SetBuilder;
 import org.gusdb.wdk.service.filter.MethodRewritingFilter;
+import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.service.ApiService;
 import org.gusdb.wdk.service.service.ProjectService;
@@ -28,6 +29,7 @@ public class WdkServiceApplication extends Application {
 
     // add filter classes
     .add(MethodRewritingFilter.class)
+    .add(RequestLoggingFilter.class)
 
     // add service classes
     .add(ProjectService.class)
