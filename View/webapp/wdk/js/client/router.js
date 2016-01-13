@@ -45,7 +45,7 @@ export function start(rootUrl, rootElement, props) {
       );
     }
     else {
-      ReactDOM.render(<Root {...state} {...props}/>, rootElement);
+      ReactDOM.render(<Root {...state} {...props} router={router} />, rootElement);
     }
   });
 
