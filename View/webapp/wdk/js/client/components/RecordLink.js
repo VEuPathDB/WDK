@@ -2,6 +2,11 @@ import React from 'react';
 import { Link } from 'react-router';
 import { wrappable } from '../utils/componentUtils';
 
+let idPartPropType = React.PropTypes.shape({
+  name: React.PropTypes.string.isRequired,
+  value: React.PropTypes.string.isRequired
+});
+
 function RecordLink(props) {
   let params = {
     recordClass: props.recordClass.urlSegment,
@@ -15,7 +20,7 @@ function RecordLink(props) {
 }
 
 RecordLink.propTypes = {
-  recordId: React.PropTypes.object.isRequired,
+  recordId: React.PropTypes.arrayOf(idPartPropType).isRequired,
   recordClass: React.PropTypes.object.isRequired
 };
 
