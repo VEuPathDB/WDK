@@ -34,27 +34,28 @@ public class RecordPageAdapter extends WdkAction {
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
     String recordClassRef = params.getValue(PARAM_RECORD_CLASS_NAME);
     RecordClassBean recordClass = getWdkModel().findRecordClass(recordClassRef);
-    String url = createUrl(getWebAppRoot(), recordClass, params);
+    String url = createUrl(recordClass, params.getParamMap());
     return new ActionResult().setExternalPath(url);
   }
   
-  private static String createUrl(String webAppRoot, RecordClassBean recordClass, ParamGroup params) {
-    String path = "/app/record/" + recordClass.getUrlSegment();
-    Set<String> paramKeys = params.getKeys();
+  public static String createUrl(RecordClassBean recordClass, Map<String, String[]> params) {
+    String path = "/record/" + recordClass.getUrlSegment();
+    Set<String> paramKeys = params.keySet();
     paramKeys.remove(PARAM_RECORD_CLASS_NAME);
 
     // support urls of the form ?primary_key={primaryKeyValue}
     if (paramKeys.contains(PARAM_PRIMARY_KEY)) {
-      path += "/" + params.getValue(PARAM_PRIMARY_KEY);
+      path += "/" + params.get(PARAM_PRIMARY_KEY)[0];
     }
 
     // treat each query param as a part of the primary key
     else {
       for (String key: recordClass.getPrimaryKeyColumns()) {
-        path += "/" + params.getValue(key);
+        if (params.containsKey(key))
+          path += "/" + params.get(key)[0];
       }
     }
 
-    return webAppRoot + path;
+    return path;
   }
 }
