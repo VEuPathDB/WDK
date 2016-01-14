@@ -1,12 +1,9 @@
 package org.gusdb.wdk.service.request;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 
 //import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -16,7 +13,6 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
@@ -60,9 +56,9 @@ public class RecordRequest {
       throw new WdkRuntimeException("Error creating request from JSON", e);
     }
   }
-  
+
   private static Map<String, Object> parsePrimaryKey(JSONArray primaryKeyJson,
-      RecordClass recordClass) throws WdkUserException, WdkModelException {
+      RecordClass recordClass) throws WdkUserException {
 
     PrimaryKeyAttributeField pkAttrField = recordClass.getPrimaryKeyAttributeField();
     String[] columnRefs =  pkAttrField.getColumnRefs();
