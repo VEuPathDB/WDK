@@ -50,6 +50,7 @@ public class PrimaryKeyAttributeField extends AttributeField {
    * query to get the new ids whenever a recordInstance is created.
    */
   private String aliasQueryRef = null;
+  private String aliasPluginClassName = null;
 
   public PrimaryKeyAttributeField() {
     // this step should be deprecated
@@ -112,6 +113,20 @@ public class PrimaryKeyAttributeField extends AttributeField {
    */
   public void setAliasQueryRef(String aliasQueryRef) {
     this.aliasQueryRef = aliasQueryRef;
+  }
+
+  /**
+   * @return the aliasPluginClassName
+   */
+  public String getAliasPluginClassName() {
+    return aliasPluginClassName;
+  }
+
+  /**
+   * @param aliasPluginClassName
+   */
+  public void setAliasPluginClassName(String aliasPluginClassName) {
+    this.aliasPluginClassName = aliasPluginClassName;
   }
 
   /*
