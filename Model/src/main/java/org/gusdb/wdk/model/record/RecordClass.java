@@ -280,6 +280,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   private String aliasQueryRef = null;
   private Query aliasQuery = null;
+  private String aliasPluginClassName = null;
+  private PrimaryKeyAliasPlugin aliasPlugin = null;
 
   private List<ReporterRef> reporterList = new ArrayList<ReporterRef>();
   private Map<String, ReporterRef> reporterMap = new LinkedHashMap<String, ReporterRef>();
@@ -799,6 +801,18 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   
     // resolve the alias query
     resolveAliasQuery(model);
+    
+    // resolve the alias plugin
+    try {
+      if (aliasPluginClassName != null && aliasPlugin == null) {
+        Class<? extends PrimaryKeyAliasPlugin> pluginClass = Class.forName(aliasPluginClassName).asSubclass(
+            PrimaryKeyAliasPlugin.class);
+        aliasPlugin = pluginClass.newInstance();
+      }
+    }
+    catch (Exception e) {
+      throw new WdkModelException("Failed instantiating aliasPlugin for class " + aliasPluginClassName, e);
+    }
 
     // resolve the references for table queries
     resolveTableFieldReferences(model);
@@ -1229,6 +1243,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       throw new WdkModelException("The primaryKeyField of recordClass " + getFullName() +
           " is not set. Please define a " + "<primaryKeyAttribute> in the recordClass.");
     this.aliasQueryRef = primaryKeyField.getAliasQueryRef();
+    this.aliasPluginClassName = primaryKeyField.getAliasPluginClassName();
 
     // exclude table fields
     for (TableField field : tableFieldList) {
@@ -1774,12 +1789,29 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   List<Map<String, Object>> lookupPrimaryKeys(User user, Map<String, Object> pkValues)
       throws WdkModelException, WdkUserException {
-    List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
-    // nothing to look up
-    if (aliasQuery == null) {
+   
+
+    if (aliasQuery != null) {
+      return getPrimaryKeyFromAliasQuery(user, pkValues);
+    } else if (aliasPlugin != null) {
+      return getPrimaryKeyFromAliasPlugin(user, pkValues);
+    } else {
+      List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
       records.add(pkValues);
       return records;
     }
+  }
+    
+  List<Map<String, Object>> getPrimaryKeyFromAliasPlugin(User user, Map<String, Object> pkValues)
+      throws WdkModelException, WdkUserException {
+    return aliasPlugin.getPrimaryKey(user, pkValues);
+  }
+  
+  
+  List<Map<String, Object>> getPrimaryKeyFromAliasQuery(User user, Map<String, Object> pkValues)
+      throws WdkModelException, WdkUserException {
+
+    List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
 
     // get alias from the alias query
     Map<String, String> oldValues = new LinkedHashMap<String, String>();
