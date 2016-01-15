@@ -106,7 +106,7 @@
                     <c:set var="rcName" value="${item.key.fullName}" />
                     <c:if test="${count > 0 
                                   && ((stepRcName eq rcName) 
-                                      || ((rcName eq 'GeneRecordClasses.GeneRecordClass' 
+                                      || ((rcName eq 'TranscriptRecordClasses.TranscriptRecordClass' 
                                            || rcName eq 'OrfRecordClasses.OrfRecordClass' 
                                            || rcName eq 'DynSpanRecordClasses.DynSpanRecordClass' 
                                            || rcName eq 'SnpChipRecordClasses.SnpChipRecordClass'
