@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.request;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -112,7 +113,7 @@ public class RecordRequest {
   private final RecordClass _recordClass;
   private List<String> _attrNames = new ArrayList<String>();
   private List<String> _tableNames = new ArrayList<String>();
-  private Map<String,Object> _primaryKey = new HashMap<String,Object>();
+  private Map<String,Object> _primaryKey = new LinkedHashMap<String,Object>();
 
   private RecordRequest(RecordClass recordClass) {
     _recordClass = recordClass;
