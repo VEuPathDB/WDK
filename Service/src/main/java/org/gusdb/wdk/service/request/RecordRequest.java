@@ -1,7 +1,6 @@
 package org.gusdb.wdk.service.request;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +71,7 @@ public class RecordRequest {
           "[ provided: " + providedLength + "; expected: " + expectedLength + " ]");
     }
 
-    Map<String,Object> pkMap = new HashMap<String,Object>();
+    Map<String,Object> pkMap = new LinkedHashMap<String,Object>();
     for (int i = 0; i < providedLength; i++) {
       String keyName = columnRefs[i];
       String keyValue = primaryKeyJson.getString(i);
