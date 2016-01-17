@@ -137,6 +137,17 @@ export default class WdkService {
     });
   }
 
+  getCurrentUser() {
+    return fetchJson('get', this._serviceUrl + '/user/current');
+  }
+
+  getCurrentUserPreferences() {
+    return fetchJson('get', this._serviceUrl + '/user/current/preference');
+  }
+
+  findStep(stepId) {
+    return fetchJson('get', this._serviceUrl + '/step/' + stepId);
+  }
 }
 
 
