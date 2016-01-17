@@ -23,7 +23,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
 
   private static final Logger LOG = Logger.getLogger(RequestLoggingFilter.class);
 
-  private static final Level LOG_LEVEL = Level.DEBUG;
+  private static final Level LOG_LEVEL = Level.INFO;
 
   private static final String EMPTY_ENTITY = "<empty>";
 
@@ -33,12 +33,23 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
     // don't impact performance if logging is turned off
     if (!LOG.isEnabledFor(LOG_LEVEL)) return;
 
-    LOG.log(LOG_LEVEL, new StringBuilder("HTTP Request: ")
+    StringBuilder log = new StringBuilder("HTTP Request: ")
       .append(requestContext.getMethod()).append(" /")
-      .append(requestContext.getUriInfo().getPath()).append(NL)
-      .append("Query Parameters: ").append(toJson(requestContext.getUriInfo().getQueryParameters())).append(NL)
-      .append("Request Body: ").append(getRequestBody(requestContext))
-      .toString());
+      .append(requestContext.getUriInfo().getPath());
+
+    // add query params if present
+    MultivaluedMap<String,String> query = requestContext.getUriInfo().getQueryParameters();
+    if (!query.isEmpty()) {
+      log.append(NL).append("Query Parameters: ").append(toJson(requestContext.getUriInfo().getQueryParameters()));
+    }
+
+    // add request body if present
+    String body = getRequestBody(requestContext);
+    if (!EMPTY_ENTITY.equals(body)) {
+      log.append(NL).append("Request Body: ").append(getRequestBody(requestContext));
+    }
+
+    LOG.log(LOG_LEVEL, log.toString());
   }
 
   private String toJson(MultivaluedMap<String, String> map) {
