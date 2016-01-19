@@ -74,6 +74,8 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
   
   private static String getRequestBody(ContainerRequestContext requestContext) {
     String contentType = requestContext.getHeaderString("Content-Type");
+    if (contentType == null)
+      contentType = MediaType.APPLICATION_JSON; // assume JSON input if unspecified
     switch (contentType) {
       case MediaType.APPLICATION_JSON:
         return getJsonRequestBody(requestContext);
