@@ -1,3 +1,6 @@
+let pushInto = (array, ...values) =>
+  (array.push(...values), array);
+
 /**
  * Given a node `root`, returns a new node such that all leaves pass
  * `leafPredicate`. If no descendant of `root` passes, and if `root` does not
@@ -8,7 +11,7 @@
  * @param {Function} leafPredicate Predicate function to determine if a node will be a leaf.
  * @return {Object}
  */
-export function pruneTreeByLeaves(root, leafPredicate) {
+export let pruneTreeByLeaves = (root, leafPredicate) => {
   let clonedRoot = Object.assign({}, root, {
     children: (root.children || []).map(c => pruneTreeByLeaves(c, leafPredicate)).filter(c => c != null)
   })
@@ -22,7 +25,21 @@ export function pruneTreeByLeaves(root, leafPredicate) {
 
 /**
  * For any node in a tree that does not pass `nodePredicate`, replace it with
- * its children. A new array of nodes will be returned.
+ * its children. A new tree will be returned.
+ *
+ * @param {Object} root Root node of a tree.
+ * @param {Function} nodePredicate Predicate function to determine if a node
+ * will be kept.
+ * @return {Object}
+ */
+export let pruneDescendantNodes = (root, nodePredicte) =>
+  Object.assign({}, root, {
+    children: pruneNodes(root.children, nodePredicte)
+  })
+
+/**
+ * Recursively replace any node that does not pass `nodePredicate` with its
+ * children. A new array of nodes will be returned.
  *
  * @param {Array} nodes An array of nodes. This will typically be the children
  * of a node in a tree.
@@ -30,34 +47,20 @@ export function pruneTreeByLeaves(root, leafPredicate) {
  * will be kept.
  * @return {Array}
  */
-export function pruneDescendantNodes(root, nodePredicate) {
-  let prunedRoot = Object.assign({}, root, {
-    children: pruneNodes(root.children, nodePredicate)
-  });
-  return prunedRoot;
-}
-
-export function pruneNodes(nodes, nodePredicate) {
-  return nodes.reduce((prunedNodes, node) => {
+export let pruneNodes = (nodes, nodePredicate) =>
+  nodes.reduce((prunedNodes, node) => {
     let prunedNode = pruneDescendantNodes(node, nodePredicate);
     return nodePredicate(prunedNode)
       ? pushInto(prunedNodes, prunedNode)
       : pushInto(prunedNodes, ...prunedNode.children);
-  }, []);
-}
+  }, [])
 
 /**
- * If the root node has only one child, and that child only has one child,
- * replace the root node with it's child.
+ * If the root node has only one child, replace the root node with it's child.
  *
+ * @param {Object} root Root node of a tree
+ * @return {Object} Tree
  */
-export function compactRootNodes(root) {
-  return root.children.length === 1 && root.children[0].children.length === 1
-    ? compactRootNodes(root.children[0])
-    : root;
-}
-
-function pushInto(array, ...values) {
-  array.push(...values);
-  return array;
-}
+export let compactRootNodes = (root) =>
+  root.children.length === 1 ? compactRootNodes(root.children[0])
+  : root
