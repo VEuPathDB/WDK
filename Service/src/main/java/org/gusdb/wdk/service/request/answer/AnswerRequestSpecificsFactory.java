@@ -76,6 +76,7 @@ public class AnswerRequestSpecificsFactory {
    *   attributes: [ attributeName: String ], or special string,
    *   tables: [ tableName: String ],
    *   sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ]
+   *   contentDisposition: 'inline' (default) OR 'attachment' 
    * }
    * 
    * All values are optional.
