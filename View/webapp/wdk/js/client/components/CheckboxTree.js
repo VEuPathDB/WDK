@@ -1,6 +1,6 @@
 import React from 'react';
-import IndeterminateCheckbox from './IndeterminateCheckbox.jsx';
-import AccordionButton from './AccordionButton.jsx';
+import IndeterminateCheckbox from './IndeterminateCheckbox.js';
+import AccordionButton from './AccordionButton.js';
 
 export default class CheckboxTree extends React.Component {
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import CheckboxTree from './CheckboxTree.jsx';
+import CheckboxTree from './CheckboxTree.js';
 
 // serves as view controller for checkbox tree React component
 export default class CheckboxTreeController extends React.Component {
