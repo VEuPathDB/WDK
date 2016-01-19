@@ -1,22 +1,20 @@
 import React from 'react';
 import ReactRouter from 'react-router';
+import RecordLink from './RecordLink';
 import { renderAttributeValue, wrappable } from '../utils/componentUtils';
 
-let { Link, Navigation } = ReactRouter;
 let primaryKeyName = 'primary_key';
 
 let AnswerTableCell = React.createClass({
 
   propTypes: {
     // TODO Put reusable propTypes in a module
-    value: React.PropTypes.string.isRequired,
+    value: React.PropTypes.string,
     descriptor: React.PropTypes.object.isRequired,
     record: React.PropTypes.object.isRequired,
-    recordClass: React.PropTypes.string.isRequired,
+    recordClass: React.PropTypes.object.isRequired,
     width: React.PropTypes.number.isRequired
   },
-
-  mixins: [ Navigation ],
 
   render() {
     if (this.props.value == null) {
@@ -26,11 +24,14 @@ let AnswerTableCell = React.createClass({
     let { value, descriptor, record, recordClass, width } = this.props;
 
     if (descriptor.name === primaryKeyName) {
-      let href = this.makeHref('record', { class: recordClass }, record.id);
       return (
-        <Link to={href} className="wdk-AnswerTable-recordLink">
+        <RecordLink
+          recordId={record.id}
+          recordClass={recordClass}
+          className="wdk-AnswerTable-recordLink"
+        >
           {renderAttributeValue(value, this.props)}
-        </Link>
+        </RecordLink>
       );
     }
     else {

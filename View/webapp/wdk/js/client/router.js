@@ -9,21 +9,23 @@ import NotFoundController from './components/NotFoundController';
 import AnswerController from './components/AnswerController';
 import QuestionListController from './components/QuestionListController';
 import StepDownloadFormController from './components/StepDownloadFormController';
+import UserProfileController from './components/UserProfileController';
 
 let { Route, DefaultRoute, NotFoundRoute } = ReactRouter;
+
 /**
  * Get routes based on `rootUrl`.
  *
  * @param {string} rootUrl The rootUrl used to match paths below
  */
-
 export function start(rootUrl, rootElement, props) {
   let router = ReactRouter.create({
     routes: (
       <Route name="app" path={rootUrl} handler={AppController}>
-        <Route name="answer" path="answer/:questionName" handler={AnswerController}/>
-        <Route name="record" path="record/:class" handler={RecordController}/>
+        <Route name="answer" path="search/:recordClass/:question/result" handler={AnswerController}/>
+        <Route name="record" path="record/:recordClass/*" handler={RecordController}/>
         <Route name="stepDownloadForm" path="step/:stepId/download" handler={StepDownloadFormController}/>
+        <Route name="userProfile" path="user/profile" handler={UserProfileController}/>
         <Route name="question-list" handler={QuestionListController}/>
         <DefaultRoute handler={IndexController}/>
         <NotFoundRoute handler={NotFoundController}/>
@@ -45,7 +47,7 @@ export function start(rootUrl, rootElement, props) {
       );
     }
     else {
-      ReactDOM.render(<Root {...state} {...props}/>, rootElement);
+      ReactDOM.render(<Root {...state} {...props} router={router} />, rootElement);
     }
   });
 

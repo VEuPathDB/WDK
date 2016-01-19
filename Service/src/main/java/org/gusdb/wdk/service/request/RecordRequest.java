@@ -1,11 +1,9 @@
 package org.gusdb.wdk.service.request;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 
 //import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -30,10 +28,7 @@ public class RecordRequest {
    * * Input Format:
    * 
    * {
-   *  "primaryKey": { 
-   *     "source_id": "12345",
-   *     "project_id": "myProject"
-   *   },
+   *  "primaryKey": [ "12345", "myProject" ],
    *  "tables": [ String, String ],
    *  "attributes": [ String, String ]
    * }
@@ -51,7 +46,7 @@ public class RecordRequest {
       RecordRequest request = new RecordRequest(recordClass);
       request.setAttributeNames(parseAttributeNames(json.getJSONArray("attributes"), recordClass));
       request.setTableNames(parseTableNames(json.getJSONArray("tables"), recordClass));
-      request.setPrimaryKey(parsePrimaryKey(json.getJSONObject("primaryKey"), recordClass));
+      request.setPrimaryKey(parsePrimaryKey(json.getJSONArray("primaryKeyValues"), recordClass));
       return request;
     }
     catch (JSONException | WdkUserException e) {
@@ -61,19 +56,25 @@ public class RecordRequest {
       throw new WdkRuntimeException("Error creating request from JSON", e);
     }
   }
-  
-  private static Map<String, Object> parsePrimaryKey(JSONObject primaryKeyJson,
+
+  private static Map<String, Object> parsePrimaryKey(JSONArray primaryKeyJson,
       RecordClass recordClass) throws WdkUserException {
 
     PrimaryKeyAttributeField pkAttrField = recordClass.getPrimaryKeyAttributeField();
+    String[] columnRefs =  pkAttrField.getColumnRefs();
 
-    Map<String,Object> pkMap = new HashMap<String,Object>();
-    for (Iterator<?> keys = primaryKeyJson.keys(); keys.hasNext();) {
-      String keyName = (String) keys.next();
-      String keyValue = primaryKeyJson.getString(keyName);
-      if (keyName == null) throw new WdkUserException("Primary key part has null name");
-      if (keyValue == null) throw new WdkUserException("Primary key name '" + keyName + "' has null value");
-      if (!pkAttrField.hasColumn(keyName)) throw new WdkUserException("Primary key name '" + keyName + "' is not in record class '" + recordClass.getFullName() + "'.");
+    int providedLength = primaryKeyJson.length();
+    int expectedLength = columnRefs.length;
+
+    if (providedLength != expectedLength) {
+      throw new WdkUserException("The provided primary key does not have the expected number of parts:\n" +
+          "[ provided: " + providedLength + "; expected: " + expectedLength + " ]");
+    }
+
+    Map<String,Object> pkMap = new LinkedHashMap<String,Object>();
+    for (int i = 0; i < providedLength; i++) {
+      String keyName = columnRefs[i];
+      String keyValue = primaryKeyJson.getString(i);
       pkMap.put(keyName, keyValue);
     }
 
@@ -111,7 +112,7 @@ public class RecordRequest {
   private final RecordClass _recordClass;
   private List<String> _attrNames = new ArrayList<String>();
   private List<String> _tableNames = new ArrayList<String>();
-  private Map<String,Object> _primaryKey = new HashMap<String,Object>();
+  private Map<String,Object> _primaryKey = new LinkedHashMap<String,Object>();
 
   private RecordRequest(RecordClass recordClass) {
     _recordClass = recordClass;

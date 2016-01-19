@@ -7,6 +7,7 @@ import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 
 /**
  * Redirect the browser to the SOA Record Page. This simply maps urls, without
@@ -17,6 +18,7 @@ import org.gusdb.wdk.controller.actionutil.WdkAction;
 public class RecordPageAdapter extends WdkAction {
 
   private static final String PARAM_RECORD_CLASS_NAME = "name";
+  private static final String PARAM_PRIMARY_KEY = "primary_key";
 
   @Override
   protected boolean shouldValidateParams() {
@@ -30,19 +32,29 @@ public class RecordPageAdapter extends WdkAction {
 
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
-    String url = createUrl(getWebAppRoot(), params);
+    String recordClassRef = params.getValue(PARAM_RECORD_CLASS_NAME);
+    RecordClassBean recordClass = getWdkModel().findRecordClass(recordClassRef);
+    String url = createUrl(getWebAppRoot(), recordClass, params);
     return new ActionResult().setExternalPath(url);
   }
   
-  private static String createUrl(String webAppRoot, ParamGroup params) {
-    String path = "/app/record/" + params.getValue(PARAM_RECORD_CLASS_NAME);
-    String query = "";
+  private static String createUrl(String webAppRoot, RecordClassBean recordClass, ParamGroup params) {
+    String path = "/app/record/" + recordClass.getUrlSegment();
     Set<String> paramKeys = params.getKeys();
     paramKeys.remove(PARAM_RECORD_CLASS_NAME);
-    for (String key: paramKeys) {
-      query += query.length() == 0 ? "?" : "&";
-      query += key + "=" + params.getValue(key);
+
+    // support urls of the form ?primary_key={primaryKeyValue}
+    if (paramKeys.contains(PARAM_PRIMARY_KEY)) {
+      path += "/" + params.getValue(PARAM_PRIMARY_KEY);
     }
-    return webAppRoot + path + query;
+
+    // treat each query param as a part of the primary key
+    else {
+      for (String key: recordClass.getPrimaryKeyColumns()) {
+        path += "/" + params.getValue(key);
+      }
+    }
+
+    return webAppRoot + path;
   }
 }

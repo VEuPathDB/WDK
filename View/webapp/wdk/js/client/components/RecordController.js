@@ -30,7 +30,8 @@ class RecordController extends Component {
   }
 
   fetchRecord(props) {
-    this.actions.fetchRecordDetails(props.params.class, props.query);
+    let { recordClass, splat } = props.params;
+    this.actions.fetchRecordDetails(recordClass, splat.split('/'));
   }
 
   renderLoading() {
