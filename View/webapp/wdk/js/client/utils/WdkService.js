@@ -128,7 +128,7 @@ export default class WdkService {
 
   getAnswer(questionDefinition, formatting) {
     let method = 'post';
-    let url = getAnswerServiceUrl();
+    let url = this.getAnswerServiceUrl();
     let body = stringify({ questionDefinition, formatting });
     return fetchJson(method, url, body).then(response => {
       // we will only cache individual records
