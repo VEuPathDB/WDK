@@ -1,8 +1,8 @@
 // Import modules
 import React from 'react';
-import update from 'react-addons-update';
-import Router from 'react-router';
 import { wrappable } from '../utils/componentUtils';
+import Loading from './Loading';
+import StepDownloadForm from './StepDownloadForm';
 
 // What are parameters to this page?
 //  1. Step ID (path param)
@@ -37,9 +37,100 @@ import { wrappable } from '../utils/componentUtils';
 //      c. 
 
 let StepDownloadFormController = React.createClass({
+
+  componentWillMount() {
+
+    // load actions for this view
+    this.actions = this.props.actionCreators.StepDownloadFormViewActionCreator;
+    this.userActions = this.props.actionCreators.UserActionCreator;
+
+    // get the user store, subscribe and initialize if needed
+    this.userStore = this.props.stores.UserStore;
+    this.userStoreSubscription = this.userStore.addListener(() => {
+      this.setState(Object.assign({}, this.state, { userData: this.userStore.getState() }));
+    });
+    // initialize user store if it isn't already
+    let userState = this.userStore.getState();
+    if (userState.user == null) {
+      this.userActions.loadCurrentUser();
+    }
+    else {
+      this.setState(Object.assign({}, this.state, { userData: this.userStore.getState() }));
+    }
+
+    // get view store and subscribe; must reinitialize with every new props
+    this.store = this.props.stores.StepDownloadFormViewStore;
+    this.storeSubscription = this.store.addListener(() => {
+      this.setState(Object.assign({}, this.state, { viewData: this.store.getState() }));
+    });
+
+    // initialize page data
+    this.reloadPageData(this.props);
+
+    // Bind methods of `this.formEvents` to `this`. When they are called by
+    // child elements, any reference to `this` in the methods will refer to
+    // this component.
+    for (let key in this.formEvents) {
+      this.formEvents[key] = this.formEvents[key].bind(this);
+    }
+  },
+
+  componentWillReceiveProps(nextProps) {
+    // reload step each time this page is displayed
+    this.reloadPageData(nextProps);
+  },
+
+  // reloads step and associated question and recordClass
+  reloadPageData(props) {
+    this.actions.reloadData(props.params.stepId);
+  },
+
+  componentWillUnmount() {
+    this.userStoreSubscription.remove();
+    this.storeSubscription.remove();
+  },
+  
   render() {
-    var text = "Download Step " + this.props.params.stepId + " (passed from view: " + this.props.query.summaryView + ")";
-    return ( <div>{text}</div> );
+
+    if (this.state == null ||
+        this.state.userData == null || this.state.userData.isLoading ||
+        this.state.viewData == null || this.state.viewData.isLoading) {
+      return ( <Loading/> );
+    }
+
+    // build props object to pass to form component
+    let formProps = {
+      step: this.state.viewData.step,
+      summaryView: this.props.query.summaryView,
+      question: this.state.viewData.question,
+      recordClass: this.state.viewData.recordClass,
+      user: this.state.userData.user,
+      preferences: this.state.userData.preferences,
+      selectedReporter: this.state.viewData.selectedReporter,
+      onReporterChange: this.formEvents.changeReporter,
+      formState: this.state.viewData.formState,
+      onFormChange: this.formEvents.changeForm,
+      onFormSubmit: this.formEvents.submitForm
+    };
+
+    // render form
+    return ( <StepDownloadForm {...formProps}/> );
+  },
+  
+  formEvents: {
+
+    changeReporter(newReporterName) {
+      this.actions.selectReporter(newReporterName);
+    },
+
+    changeForm(newFormState) {
+      this.actions.updateFormState(newFormState);
+    },
+
+    submitForm() {
+      let { step, selectedReporter, formState } = this.state.viewData;
+      this.actions.submitForm(step, selectedReporter, formState);
+    }
   }
 });
 

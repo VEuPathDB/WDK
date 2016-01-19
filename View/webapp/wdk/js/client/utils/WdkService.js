@@ -12,6 +12,10 @@ export default class WdkService {
     this._records = new Map();
   }
 
+  getAnswerServiceUrl() {
+    return this._serviceUrl + '/answer';
+  }
+
   /**
    * Get all Questions defined in WDK Model.
    *
@@ -124,7 +128,7 @@ export default class WdkService {
 
   getAnswer(questionDefinition, formatting) {
     let method = 'post';
-    let url = this._serviceUrl + '/answer';
+    let url = this.getAnswerServiceUrl();
     let body = stringify({ questionDefinition, formatting });
     return fetchJson(method, url, body).then(response => {
       // we will only cache individual records
@@ -137,6 +141,17 @@ export default class WdkService {
     });
   }
 
+  getCurrentUser() {
+    return fetchJson('get', this._serviceUrl + '/user/current');
+  }
+
+  getCurrentUserPreferences() {
+    return fetchJson('get', this._serviceUrl + '/user/current/preference');
+  }
+
+  findStep(stepId) {
+    return fetchJson('get', this._serviceUrl + '/step/' + stepId);
+  }
 }
 
 

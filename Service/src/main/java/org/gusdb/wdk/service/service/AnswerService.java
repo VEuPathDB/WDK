@@ -14,6 +14,8 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
+import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.request.answer.AnswerRequest;
 import org.gusdb.wdk.service.request.answer.AnswerRequestFactory;
@@ -63,9 +65,16 @@ public class AnswerService extends WdkService {
 
   private static final Logger LOG = Logger.getLogger(AnswerService.class);
 
+  private static final String DEFAULT_JSON_FILENAME = "result.json";
+
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response buildResultFromForm(@FormParam("data") String data) throws WdkModelException, WdkUserException {
+    // log this request's JSON here since filter will not log form data
+    if (RequestLoggingFilter.isLogEnabled()) {
+      RequestLoggingFilter.logRequest("POST", getUriInfo(),
+          RequestLoggingFilter.toJsonBodyString(data));
+    }
     return buildResult(data);
   }
 
@@ -87,7 +96,8 @@ public class AnswerService extends WdkService {
       if (!json.has("formatting")) {
         // request is for standard JSON with default specifics
         return getStandardJsonResponse(request,
-            AnswerRequestSpecificsFactory.createDefault(request.getQuestion()));
+            AnswerRequestSpecificsFactory.createDefault(request.getQuestion()),
+            ContentDisposition.INLINE);
       }
 
       // user passed formatting object; check to see if asking for default JSON
@@ -107,7 +117,10 @@ public class AnswerService extends WdkService {
           
           // request is for standard JSON with configured specifics
           getStandardJsonResponse(request,
-              AnswerRequestSpecificsFactory.createFromJson(formatConfig, request.getQuestion())));
+              AnswerRequestSpecificsFactory.createFromJson(formatConfig, request.getQuestion()),
+              formatConfig.has("contentDisposition") ?
+                  ContentDisposition.valueOf(formatConfig.getString("contentDisposition").toUpperCase()) :
+                  ContentDisposition.INLINE));
 
     }
     catch (JSONException | RequestMisformatException e) {
@@ -117,14 +130,29 @@ public class AnswerService extends WdkService {
   }
 
   private Response getStandardJsonResponse(AnswerRequest request,
-      AnswerRequestSpecifics requestSpecifics) throws WdkModelException {
+      AnswerRequestSpecifics requestSpecifics, ContentDisposition disposition) throws WdkModelException {
 
     // make an answer value
     AnswerValueBean answerValue = getResultFactory().createAnswer(request, requestSpecifics);
 
     // format to standard WDK JSON and stream response
-    return Response.ok(AnswerStreamer.getAnswerAsStream(answerValue, requestSpecifics))
-        .type(MediaType.APPLICATION_JSON).build();
+    return applyDisposition(Response.ok(AnswerStreamer.getAnswerAsStream(answerValue, requestSpecifics))
+        .type(MediaType.APPLICATION_JSON), disposition, DEFAULT_JSON_FILENAME).build();
+  }
+
+  private ResponseBuilder applyDisposition(ResponseBuilder response,
+      ContentDisposition disposition, String filename) throws WdkModelException {
+    switch(disposition) {
+      case INLINE:
+        response.header("Pragma", "Public");
+        break;
+      case ATTACHMENT:
+        response.header("Content-disposition", "attachment; filename=" + filename);
+        break;
+      default:
+        throw new WdkModelException("Unsupported content disposition: " + disposition);
+    }
+    return response;
   }
 
   private Response getReporterResponse(AnswerRequest request, String format, JSONObject formatConfig)
@@ -142,17 +170,7 @@ public class AnswerService extends WdkService {
 
     ResponseBuilder builder = Response.ok(AnswerStreamer.getAnswerAsStream(reporter))
         .type(reporter.getHttpContentType());
-    switch(reporter.getContentDisposition()) {
-      case INLINE:
-        builder.header("Pragma", "Public");
-        break;
-      case ATTACHMENT:
-        builder.header("Content-disposition", "attachment; filename=" + reporter.getDownloadFileName());
-        break;
-      default:
-        throw new WdkModelException("Unsupported content disposition: " + reporter.getContentDisposition());
-    }
 
-    return builder.build();
+    return applyDisposition(builder, reporter.getContentDisposition(), reporter.getDownloadFileName()).build();
   }
 }

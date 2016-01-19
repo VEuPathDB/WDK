@@ -48,7 +48,7 @@ test('compactRootNodes', function(t) {
 
   let compactedTree = TreeUtils.compactRootNodes(tree);
 
-  t.ok(compactedTree.id === 3, 'compactedTree does not have expected root.');
+  t.ok(compactedTree.id === 4, 'compactedTree does not have expected root.');
 
   t.end();
 });

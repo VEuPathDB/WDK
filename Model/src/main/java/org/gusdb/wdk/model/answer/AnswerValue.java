@@ -1153,7 +1153,7 @@ public class AnswerValue {
 
       // check if the number of records is expected
       int resultSize = getResultSize();
-      int expected = Math.min(_endIndex, resultSize) - _startIndex + 1;
+      int expected = (_endIndex == -1 ? resultSize : Math.min(_endIndex, resultSize)) - _startIndex + 1;
 
       if (expected != _pageRecordInstances.size()) {
         StringBuffer buffer = new StringBuffer();
