@@ -110,6 +110,7 @@ let StepDownloadFormController = React.createClass({
       onReporterChange: this.formEvents.changeReporter,
       formState: this.state.viewData.formState,
       onFormChange: this.formEvents.changeForm,
+      onFormSubmit: this.formEvents.submitForm
     };
 
     // render form
@@ -124,6 +125,11 @@ let StepDownloadFormController = React.createClass({
 
     changeForm(newFormState) {
       this.actions.updateFormState(newFormState);
+    },
+
+    submitForm() {
+      let { step, selectedReporter, formState } = this.state.viewData;
+      this.actions.submitForm(step, selectedReporter, formState);
     }
   }
 });
