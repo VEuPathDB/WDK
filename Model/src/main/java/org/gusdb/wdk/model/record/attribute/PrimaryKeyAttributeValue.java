@@ -62,6 +62,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
       try {
         String label = "attribute" + " [" + field.getName() + "] of ["
             + field.getRecordClass().getFullName() + "]";
+				// NOTE: valueContainer is null when (.value) called in favorites.tag, changed to use (.display) anyway
         value = valueContainer.replaceMacrosWithAttributeValues(
           ((PrimaryKeyAttributeField)field).getText(),
           label
