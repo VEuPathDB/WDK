@@ -3,7 +3,7 @@
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
-<c:set var="allFavorites" value="${wdkUser.favorites}" /><%-- a map of (RecordClass, List<Favorite>) --%>
+<c:set var="allFavorites" value="${wdkUser.favorites}" /><%-- a Map of <RecordClassBean, List<FavoriteBean>>  --%>
 
 <div data-controller="wdk.favorite.init">
   <span class ="h3left">My Favorites</span><br><br>
@@ -54,7 +54,7 @@
       <c:set var="recordClass" value="${fav_item.key}" />
       <c:set var="idTag" value="${fn:replace(recordClass.fullName, '.', '_')}" /> 
       <div id="favorites_${idTag}" class="favorites_panel">
-        <c:set var="favorites" value="${fav_item.value}" /> <%-- a list of favorites of a record type --%>
+        <c:set var="favorites" value="${fav_item.value}" /> <%-- a list of favoriteBeans of a record type --%>
 
         <table class="favorite-list mytableStyle" width="100%">
         <tr>
@@ -71,13 +71,10 @@
           <c:set var="basketValue" value="0"/>
           <c:set var="primaryKey" value="${favorite.primaryKey}"/>
           <c:set var="pkValues" value="${primaryKey.values}" />
-          <c:set value="${pkValues['source_id']}" var="id"/>
-          <c:set value="${pkValues['project_id']}" var="pid"/>
 
           <tr class="wdk-record" recordClass="${recordClass.fullName}">
- 
-           <!-- RECORDCLASS NAME -->
-           <td width="10%" class="mytdStyle" nowrap>
+            <!-- ID -->
+            <td width="10%" class="mytdStyle" nowrap>
               <span class="primaryKey">
                 <c:forEach var="pk_item" items="${pkValues}">
                   <span key="${pk_item.key}">${pk_item.value}</span>
@@ -87,19 +84,18 @@
                 title="Click to remove this item from favorites and reload page"
                 height="16px" style="vertical-align:text-bottom"
                 onClick="wdk.favorite.updateFavorite(this, 'remove')"/>&nbsp;
-
-              <c:set var="url" value="/showRecord.do?name=${recordClass.fullName}&source_id=${id}" />
-              <a title="Click to access this ID's page" href="<c:url value='${url}' />">${primaryKey.value}</a>
+              <%-- opportunity for WDK users to use different PKvalues fields for diff recordtypes --%>
+              <imp:assignRecordPK recordClass="${recordClass}" favorite="${favorite}" /> 
             </td>
             <!-- NOTES -->
-           <td width="60%"  class="mytdStyle" >
+            <td width="60%"  class="mytdStyle" >
               <c:set var="favNote" value="${favorite.note}"/>
               <span class="favorite-note">${fn:escapeXml(favNote)}</span>
               <textarea class="favorite-note hidden input" rows="2" cols="198" name="favorite-note">${favNote}</textarea>
               <div class="favorite-button-div"><a href="javascript:void(0)" class="favorite-note-button" onClick="wdk.favorite.showInputBox(this, 'note', 'wdk.favorite.updateFavoriteNote(this)')" >edit</a></div>
             </td>
             <!-- PROJECT -->
-           <td width="30%"  class="mytdStyle" >
+            <td width="30%"  class="mytdStyle" >
               <c:set var="favGroup" value="${favorite.group}"/>
               <input type="text" class="favorite-group hidden input" name="favorite-group" maxlength="42" value="${favGroup}"/>
               <c:set var="favGroupStyle" value=""/>
@@ -111,6 +107,7 @@
               <a href="javascript:void(0)" class="favorite-group-button" onClick="wdk.favorite.showInputBox(this, 'group', 'wdk.favorite.updateFavoriteGroup(this)')">edit</a>
             </td>
           </tr>
+
         </c:forEach>
         </table>
       </div>
