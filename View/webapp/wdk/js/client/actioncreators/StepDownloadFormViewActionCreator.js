@@ -54,7 +54,29 @@ export default class StepDownloadFormViewActionCreator extends ActionCreator {
       });
     })
     .catch(error => console.assert(error));
+  }
 
+  submitForm(step, selectedReporter, formState) {
+    // a submission must trigger a form download, meaning we must POST the form
+    let submissionJson = {
+      questionDefinition: step.answerSpec,
+      formatting: {}
+    };
+    if (selectedReporter != null) {
+      submissionJson.formatting.format = selectedReporter;
+    }
+    submissionJson.formatting.formatConfig = (formState == null ?
+        { contentDisposition: 'attachment' } :
+        formState);
+    // build the form and submit
+    let form = document.createElement("form");
+    form.setAttribute("method", "post");
+    form.setAttribute("action", this._service.getAnswerServiceUrl());
+    let input = document.createElement("input");
+    input.setAttribute("name", "data");
+    input.setAttribute("value", JSON.stringify(submissionJson));
+    form.appendChild(input);
+    form.submit();
   }
 }
 
