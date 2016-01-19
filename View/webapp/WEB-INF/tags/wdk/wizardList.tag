@@ -236,7 +236,7 @@ ${rcDisplay} basket
                 <c:if test="${(rcs.value.name eq stepRcName) 
                               || (allowSpan
                                   &&
-                                  (rcs.value.name eq 'GeneRecordClasses.GeneRecordClass' 
+                                  (rcs.value.name eq 'TranscriptRecordClasses.TranscriptRecordClass' 
                                    || rcs.value.name eq 'OrfRecordClasses.OrfRecordClass'
 				                           || rcs.value.name eq 'DynSpanRecordClasses.DynSpanRecordClass'
                                    || rcs.value.name eq 'SnpChipRecordClasses.SnpChipRecordClass'
