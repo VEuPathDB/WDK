@@ -12,11 +12,17 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.model.WdkUserException;
 
+/**
+ * A special case of TreeNode<OntologyNode> that represents the root of an
+ * ontology tree.
+ * 
+ * @author rdoherty
+ */
 public class Ontology extends TreeNode<OntologyNode> {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(Ontology.class);
-  
+
   private String _name;
 
   public Ontology(String name, TreeNode<OntologyNode> root) {
@@ -29,23 +35,25 @@ public class Ontology extends TreeNode<OntologyNode> {
     return _name;
   }
 
+  /******** Utility methods to filter and operate on ontologies ********/
+
   /**
-   * This method finds nodes that meet the passed criteria (i.e. matches all
-   * passed property values) and returns a list of paths to those nodes, where
-   * a path is made up of the nodes in the tree from the root to the matching
-   * node.
+   * This method finds nodes that pass the predicate and returns a list of paths
+   * to those nodes, where a path is made up of the nodes in the tree from the
+   * root to the matching node.
    * 
-   * @param criteria map of properties nodes passing should contain
+   * @param predicate predicate nodes will be tested against
    * @return list of paths to matching nodes
    */
-  public List<List<OntologyNode>> getAllPaths(Map<String,String> criteria) {
-    List<List<OntologyNode>> paths = new ArrayList<>();
-    Deque<OntologyNode> nodeStack = new ArrayDeque<>();
-    addPaths(paths, nodeStack, new PropertyPredicate(criteria), this);
-    return paths;
+  public List<List<OntologyNode>> getAllPaths(Predicate<OntologyNode> predicate) {
+    return addPaths(
+        new ArrayList<List<OntologyNode>>(),
+        new ArrayDeque<OntologyNode>(),
+        predicate, this);
   }
 
-  private static void addPaths(List<List<OntologyNode>> paths, Deque<OntologyNode> nodeStack,
+  private static List<List<OntologyNode>> addPaths(
+      List<List<OntologyNode>> paths, Deque<OntologyNode> nodeStack,
       Predicate<OntologyNode> predicate, TreeNode<OntologyNode> node) {
     nodeStack.push(node.getContents());
     if (predicate.test(node.getContents())) {
@@ -56,6 +64,7 @@ public class Ontology extends TreeNode<OntologyNode> {
       addPaths(paths, nodeStack, predicate, child);
     }
     nodeStack.pop();
+    return paths;
   }
 
   private static List<OntologyNode> getPathAsList(Deque<OntologyNode> nodeStack) {
@@ -67,10 +76,66 @@ public class Ontology extends TreeNode<OntologyNode> {
     return path;
   }
 
+  /**
+   * This method will, given an ontology tree, do the following:
+   * 
+   * 1. Clone the tree (original tree will not be modified)
+   * 2. Trim any nodes who do not either pass predicate or have children that do
+   * 3. (optionally) Remove non-leaf nodes that have only one child and add that child to the removed node's parent
+   * 
+   * @param root root of the tree to be operated on
+   * @param predicate test for whether to retain nodes
+   * @return cloned tree with modifications as above
+   */
+  public static TreeNode<OntologyNode> getFilteredOntology(
+      TreeNode<OntologyNode> root, final Predicate<OntologyNode> predicate, final boolean collapseSingleChildParents) {
+    return root.mapStructure(new StructureMapper<OntologyNode, TreeNode<OntologyNode>>() {
+      @Override
+      public TreeNode<OntologyNode> map(OntologyNode obj, List<TreeNode<OntologyNode>> mappedChildren) {
+
+        // set up our cases
+        trimNulls(mappedChildren);
+        boolean thisNodePasses = predicate.test(obj);
+
+        // zero-passing-children cases
+        if (mappedChildren.isEmpty()) {
+          // Case 1: no children, and this node fails the predicate; return null
+          if (!thisNodePasses) return null;
+          // Case 2: no passing children, but this node passes, return new node with these contents
+          return new TreeNode<OntologyNode>(obj);
+        }
+
+        // Case 3: this node is a parent with a single passing child and collapse = true
+        if (mappedChildren.size() == 1 && collapseSingleChildParents) {
+          TreeNode<OntologyNode> onlyChild = mappedChildren.get(0);
+          return createNodeAndApplyChildren(onlyChild.getContents(), onlyChild.getChildNodes());
+        }
+
+        // Case 4: keep this node and its children
+        return createNodeAndApplyChildren(obj, mappedChildren);
+      }
+    });
+  }
+
+  private static TreeNode<OntologyNode> createNodeAndApplyChildren(OntologyNode obj,
+      List<TreeNode<OntologyNode>> children) {
+    TreeNode<OntologyNode> clone = new TreeNode<OntologyNode>(obj);
+    for (TreeNode<OntologyNode> child : children) {
+      clone.addChildNode(child);
+    }
+    return clone;
+  }
+
+  private static void trimNulls(List<?> list) {
+    for (int i = 0; i < list.size(); i++) {
+      if (list.get(i) == null) list.remove(i);
+      i--;
+    }
+  }
+
   /**********************************************************************************************/
   /******** EVERYTHING BELOW IS UNTESTED CODE THAT MAY OR MAY NOT WORK; USE WITH CAUTION ********/
   /**********************************************************************************************/
-
 
   /**
    * Get an ontology tree, filtering away individuals that do not match the key-value filter provided.
@@ -117,7 +182,7 @@ public class Ontology extends TreeNode<OntologyNode> {
       }
     };
    
-    TreeNode<OntologyNode> tree = steveFilter(this, predicate, null, true);
+    TreeNode<OntologyNode> tree = filter(this, predicate, null, true);
     return tree;
   }
 
@@ -130,7 +195,7 @@ public class Ontology extends TreeNode<OntologyNode> {
    * @param keepAllValidKids set to true if kids of a failed node should be propagated to its parent
    * @return null if this TreeNode fails the predicates, otherwise, a copy of this TreeNode, with children pruned to include only those that satisfy the predicates
    */
-  private static <T> TreeNode<T> steveFilter(TreeNode<T> root, Predicate<TreeNode<T>> nodePred, Predicate<T> pred, boolean keepAllValidKids) {
+  private static <T> TreeNode<T> filter(TreeNode<T> root, Predicate<TreeNode<T>> nodePred, Predicate<T> pred, boolean keepAllValidKids) {
     if ((nodePred == null || nodePred.test(root)) &&
         (pred == null || pred.test(root.getContents()))) {
      return filterSub(root, nodePred, pred, keepAllValidKids);
@@ -141,7 +206,7 @@ public class Ontology extends TreeNode<OntologyNode> {
     // make a list of copies of my children, each updated with their filtered children
     List<TreeNode<T>> newChildren = new ArrayList<TreeNode<T>>();
     for (TreeNode<T> childNode : node.getChildNodes()) {
-      newChildren.add(steveFilter(childNode, nodePred, pred, keepAllValidKids));
+      newChildren.add(filter(childNode, nodePred, pred, keepAllValidKids));
     }
 
     // make a copy of me

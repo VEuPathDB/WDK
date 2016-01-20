@@ -12,9 +12,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.ontology.Ontology;
+import org.gusdb.wdk.model.ontology.PropertyPredicate;
 import org.gusdb.wdk.service.formatter.OntologyFormatter;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,6 +25,8 @@ import org.json.JSONObject;
 @Path("/ontology")
 @Produces(MediaType.APPLICATION_JSON)
 public class OntologyService extends WdkService {
+
+  private static final Logger LOG = Logger.getLogger(OntologyService.class);
 
   /**
    * Get a list of all ontologies (names)
@@ -60,7 +64,9 @@ public class OntologyService extends WdkService {
       for (String key : JSONObject.getNames(criteriaJson)) {
         criteria.put(key, criteriaJson.getString(key));
       }
-      JSONArray pathsList = OntologyFormatter.pathsToJson(ontology.getAllPaths(criteria));
+      JSONArray pathsList = OntologyFormatter.pathsToJson(
+          ontology.getAllPaths(new PropertyPredicate(criteria)));
+      LOG.info(pathsList.toString(2));
       return Response.ok(pathsList.toString()).build();
     }
     catch (JSONException e) {
