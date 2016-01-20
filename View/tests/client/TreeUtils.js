@@ -23,6 +23,28 @@ test('reduce', function(t) {
   t.end();
 });
 
+test('reduceBottom', function(t) {
+  let tree = {
+    id: 1,
+    children: [
+      { id: 2, children: [] },
+      { id: 3, children: [
+        { id: 4, children: [] }
+      ]}
+    ]
+  };
+
+  // without initial value
+  let max = TreeUtils.reduceBottom((max, node) => max.id > node.id ? max : node, tree);
+  t.equal(max, tree.children[1].children[0]);
+
+  // with initial values
+  let rev = TreeUtils.reduceBottom((list, node) => list.concat(node.id), [], tree);
+  t.deepEqual(rev, [ 2, 4, 3, 1 ]);
+
+  t.end();
+});
+
 test('filter', function(t) {
   let tree = {
     id: 1,
