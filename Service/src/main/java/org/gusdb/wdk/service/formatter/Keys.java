@@ -56,6 +56,8 @@ public class Keys {
   public static final String REVISE_BUILD = "reviseBuild";
 
   // keys for what and how data is being referenced
+  public static final String TREE = "tree";
+  public static final String CHILDREN = "children";
   public static final String PARAMETERS = "parameters";
   public static final String ATTRIBUTES = "attributes";
   public static final String DYNAMIC_ATTRIBUTES = "dynamicAttributes";
