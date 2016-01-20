@@ -108,7 +108,7 @@ public class AnswerValueAttributes {
       _summaryAttributeMap = buildSummaryAttributeFieldMap(_user, _question, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX, pkField);
     }
     //LOG.debug("Returning summary field map with keys: " +
-        FormatUtil.arrayToString(_summaryAttributeMap.keySet().toArray()));
+    FormatUtil.arrayToString(_summaryAttributeMap.keySet().toArray());
     return _summaryAttributeMap;
   }
 
