@@ -87,20 +87,23 @@ public class Ontology extends TreeNode<OntologyNode> {
    * @param predicate test for whether to retain nodes
    * @return cloned tree with modifications as above
    */
-  public static TreeNode<OntologyNode> getFilteredOntology(
-      TreeNode<OntologyNode> root, final Predicate<OntologyNode> predicate, final boolean collapseSingleChildParents) {
+  public static TreeNode<OntologyNode> getFilteredOntology(TreeNode<OntologyNode> root,
+      final Predicate<OntologyNode> predicate, final boolean collapseSingleChildParents) {
+
     return root.mapStructure(new StructureMapper<OntologyNode, TreeNode<OntologyNode>>() {
+
       @Override
       public TreeNode<OntologyNode> map(OntologyNode obj, List<TreeNode<OntologyNode>> mappedChildren) {
 
-        // set up our cases
+        // trim null children to get an accurate list
         trimNulls(mappedChildren);
-        boolean thisNodePasses = predicate.test(obj);
 
         // zero-passing-children cases
         if (mappedChildren.isEmpty()) {
+
           // Case 1: no children, and this node fails the predicate; return null
-          if (!thisNodePasses) return null;
+          if (!predicate.test(obj)) return null;
+
           // Case 2: no passing children, but this node passes, return new node with these contents
           return new TreeNode<OntologyNode>(obj);
         }
