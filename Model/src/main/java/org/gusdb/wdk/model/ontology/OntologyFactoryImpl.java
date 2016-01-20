@@ -5,28 +5,39 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+
+
+
 //import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkUserException;
 
 
-public class JavaOntology extends Ontology {
-  
-  //private static final Logger logger = Logger.getLogger(Ontology.class);
+public class OntologyFactoryImpl extends WdkModelBase implements OntologyFactory {
 
-  // values from XML
-  private String implementationClassName;
+  private String name;
+  private String pluginClassName;
   private List<WdkModelText> propertyList = new ArrayList<>();
 
-  private JavaOntologyPlugin plugin;
+  private OntologyFactoryPlugin plugin;
   private Map<String, String> properties = new LinkedHashMap<>();
 
-  public void setImplementation(String implementationClassName) {
-    this.implementationClassName = implementationClassName;
+  public String getName() {
+    return this.name;
   }
   
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setPluginClass(String pluginClassName) {
+    this.pluginClassName = pluginClassName;
+  }
+
   public void addProperty(WdkModelText property) {
     this.propertyList.add(property);
   }
@@ -36,10 +47,27 @@ public class JavaOntology extends Ontology {
   }
 
   @Override
-  public TreeNode<Map<String, List<String>>> getTree() throws WdkModelException {
-    return plugin.getTree(properties, getName());
+  public Ontology getOntology() throws WdkModelException {
+    TreeNode<OntologyNode> rawTree = plugin.getTree(properties, name);
+    return new Ontology(name, rawTree);
   }
-  
+
+  /**
+   * Get the ontology tree.  Throw a WdkUserException if the tree contains circular paths (TODO).
+   * @return
+   * @throws WdkUserException
+   */
+  @Override
+  public Ontology getValidatedOntology() throws WdkModelException {
+    Ontology rawOntology = getOntology();
+    List<List<TreeNode<OntologyNode>>> circularPaths = rawOntology.findCircularPaths();
+    if (!circularPaths.isEmpty()) {
+      // TODO: print out circular paths
+      throw new WdkModelException("Ontology " + rawOntology.getName() + " contains circular paths.");
+    }
+    return rawOntology;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -74,19 +102,19 @@ public class JavaOntology extends Ontology {
     try {
       plugin = getPlugin();
     } catch (Exception ex) {
-      throw new WdkModelException("Failed instantiating JavaOntology plugin for class " + implementationClassName, ex);
+      throw new WdkModelException("Failed instantiating JavaOntology plugin for class " + pluginClassName, ex);
     }
     
     // validate that we have required properties
     plugin.validateParameters(properties, getName());
   }
 
-  private JavaOntologyPlugin getPlugin()
+  private OntologyFactoryPlugin getPlugin()
       throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         
     if (plugin == null) {
-      Class<? extends JavaOntologyPlugin> pluginClass = Class.forName(implementationClassName).asSubclass(
-          JavaOntologyPlugin.class);
+      Class<? extends OntologyFactoryPlugin> pluginClass = Class.forName(pluginClassName).asSubclass(
+          OntologyFactoryPlugin.class);
       plugin = pluginClass.newInstance();
     }
     return plugin;

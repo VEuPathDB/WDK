@@ -52,7 +52,7 @@
 
           <ref name="searchCategory" />
 
-          <ref name="javaOntology" />
+          <ref name="ontology" />
 
           <ref name="declaredMacro" />
 
@@ -125,10 +125,10 @@
     </element>
   </define>
 
-  <define name="javaOntology">
-    <element name="javaOntology">
-      <attribute name="implementation"/>
+  <define name="ontology">
+    <element name="ontology">
       <attribute name="name"/>
+      <attribute name="pluginClass"/>
       <zeroOrMore>
         <ref name="property" />
       </zeroOrMore>

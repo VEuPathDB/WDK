@@ -11,7 +11,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -38,6 +37,8 @@ import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.filter.FilterSet;
 import org.gusdb.wdk.model.ontology.Ontology;
+import org.gusdb.wdk.model.ontology.OntologyFactory;
+import org.gusdb.wdk.model.ontology.OntologyFactoryImpl;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.Param;
@@ -172,10 +173,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   private Map<String, SearchCategory> categoryMap = new LinkedHashMap<String, SearchCategory>();
   private Map<String, SearchCategory> rootCategoryMap = new LinkedHashMap<String, SearchCategory>();
 
-  private List<Ontology> ontologyList = new ArrayList<Ontology>();
-  private Map<String, Ontology> ontologyMap = new LinkedHashMap<String, Ontology>();
+  private List<OntologyFactoryImpl> ontologyFactoryList = new ArrayList<>();
+  private Map<String, OntologyFactory> ontologyFactoryMap = new LinkedHashMap<>();
 
-  
   private String secretKey;
 
   private ReentrantLock systemUserLock = new ReentrantLock();
@@ -685,9 +685,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       if (category.getParent() == null)
         rootCategoryMap.put(category.getName(), category);
     }
-
-    for (Ontology ontology: this.ontologyMap.values()) {
-      ontology.resolveReferences(this);
+    for (OntologyFactory ontology: this.ontologyFactoryMap.values()) {
+      ((OntologyFactoryImpl)ontology).resolveReferences(this);
     }
   }
 
@@ -827,16 +826,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     categoryList = null;
 
     // exclude ontologies
-    for (Ontology ontology : this.ontologyList) {
+    for (OntologyFactoryImpl ontology : this.ontologyFactoryList) {
       if (ontology.include(projectId)) {
         String name = ontology.getName();
-        if (ontologyMap.containsKey(name))
+        if (ontologyFactoryMap.containsKey(name))
           throw new WdkModelException("The ontology name '" + name + "' is duplicated");
         ontology.excludeResources(projectId);
-        ontologyMap.put(name, ontology);
+        ontologyFactoryMap.put(name, ontology);
       }
     }
-    ontologyList = null;
+    ontologyFactoryList = null;
     
     // exclude categories
     for (MacroDeclaration macro : macroList) {
@@ -1138,17 +1137,23 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     }
     return roots;
   }
-  
-  public void addOntology(Ontology ontology) {
-    this.ontologyList.add(ontology);
+
+  public void addOntology(OntologyFactoryImpl ontologyFactory) {
+    this.ontologyFactoryList.add(ontologyFactory);
   }
 
-  public Ontology getOntology(String name) {
-    return ontologyMap.get(name);
+  public Set<String> getOntologyNames() {
+    return Collections.unmodifiableSet(ontologyFactoryMap.keySet());
   }
 
-  public Collection<Ontology> getOntologies() {
-    return Collections.unmodifiableCollection(ontologyMap.values());
+  private OntologyFactory getOntologyFactory(String name) {
+    return ontologyFactoryMap.get(name);
+  }
+
+  public Ontology getOntology(String name) throws WdkModelException {
+    OntologyFactory factory = getOntologyFactory(name);
+    if (factory == null) return null;
+    return factory.getOntology();
   }
 
   public void addMacroDeclaration(MacroDeclaration macro) {
