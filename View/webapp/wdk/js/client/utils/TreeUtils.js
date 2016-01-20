@@ -19,6 +19,20 @@ export let reduce = (fn, value, root) =>
   : root.children.reduce(reduce.bind(null, fn), fn(value, root))
 
 /**
+ * Like reduce, but iterate bottom-up.
+ *
+ * @param {Function} fn Reducer function called with two arguments for each
+ * node: (accumulatedValue, node)
+ * @param {any} value Seed value used for the initial accumulatedValue of `fn`.
+ * If ommitted, the root node will be used for the initialValue, and the first
+ * child of the root node will be used for the first node.
+ * @param {Object} root Root node of tree.
+ */
+export let reduceBottom = (fn, value, root) =>
+  root === undefined ? fn(value.children.reduce(reduceBottom.bind(null, fn)), value)
+  : fn(root.children.reduce(reduceBottom.bind(null, fn), value), root)
+
+/**
  * Create an array of nodes that satisfy a condition.
  *
  * @param {Function} fn Predicate function. Nodes for which this returns true
