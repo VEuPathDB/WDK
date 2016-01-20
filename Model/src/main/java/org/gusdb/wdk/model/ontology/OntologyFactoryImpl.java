@@ -102,7 +102,7 @@ public class OntologyFactoryImpl extends WdkModelBase implements OntologyFactory
     try {
       plugin = getPlugin();
     } catch (Exception ex) {
-      throw new WdkModelException("Failed instantiating JavaOntology plugin for class " + pluginClassName, ex);
+      throw new WdkModelException("Failed instantiating OntologyFactoryPlugin for class " + pluginClassName, ex);
     }
     
     // validate that we have required properties
