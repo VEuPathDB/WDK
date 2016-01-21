@@ -3,7 +3,7 @@ import {
   pruneDescendantNodes
 } from './TreeUtils';
 
-let nodeIsLeaf = node => node.children.length === 0;
+let hasChildren = node => node.children.length > 0;
 
 /**
  * Get a sub-tree from an Ontology. The `leafPredicate` function
@@ -12,9 +12,13 @@ let nodeIsLeaf = node => node.children.length === 0;
  * @param {Ontology} ontology
  * @param {Function} leafPredicate
  */
-export function getTree(ontology, leafPredicate) {
-  let nodePredicate = node => !nodeIsLeaf(node) || leafPredicate(node);
-  return compactRootNodes(
-    pruneDescendantNodes(ontology.tree, nodePredicate));
-}
+export let getTree = (ontology, leafPredicate) =>
+  compactRootNodes(
+    pruneDescendantNodes(node => hasChildren(node) || leafPredicate(node), ontology.tree));
 
+
+let includes = (array, value) => array != null && array.indexOf(value) > -1;
+
+export let nodeHasProperty = (name, value, node) => includes(node.properties[name], value);
+
+export let getPropertyValues = (name, node) => node.properties[name] || [];

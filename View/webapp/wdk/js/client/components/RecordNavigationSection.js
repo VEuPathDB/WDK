@@ -65,11 +65,11 @@ let RecordNavigationSection = React.createClass({
           <RecordNavigationSectionCategories
             record={this.props.record}
             recordClass={this.props.recordClass}
-            categories={this.props.recordClass.categories}
+            categories={this.props.categoryTree.children}
             onCategoryToggle={this.props.onCategoryToggle}
             showChildren={navigationExpanded}
             isCollapsed={category => includes(collapsedCategories, category.name)}
-            isVisible={category => includes(categoryWordsMap.get(category), navigationQueryLower)}
+            isVisible={category => includes(categoryWordsMap.get(category.properties), navigationQueryLower)}
           />
         </div>
       </div>

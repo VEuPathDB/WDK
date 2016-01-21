@@ -1,11 +1,24 @@
 import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
+import get from 'lodash/object/get';
 import { wrappable } from '../utils/componentUtils';
-import * as i from '../utils/Iterable';
-import { preorder as preorderCategories } from '../utils/CategoryTreeIterators';
+import * as t from '../utils/TreeUtils';
 import shallowEqual from '../utils/shallowEqual';
 import RecordNavigationItem from './RecordNavigationItem';
 import Tree from './Tree';
+
+let categoryNodeIsActive = (node) => {
+  let categoryName = get(node, [ 'properties', 'label', 0 ]);
+  let categoryNode = document.getElementById(categoryName);
+  if (categoryNode == null) return true;
+  let rect = categoryNode.getBoundingClientRect();
+  return rect.top < 12 && rect.bottom > -12;
+}
+
+let activeNodeReducer = (found, node) => {
+  return found == null && categoryNodeIsActive(node) ? node
+  : found;
+}
 
 /**
  * Handle scroll events to mark the active category in the nav panel.
@@ -40,16 +53,9 @@ class RecordNavigationSectionCategories extends Component {
   // If showChildren is true, iterate postorder to get the first left-most child
   // that is on-screen. Otherwise, we will only iterate top-level categories.
   setActiveCategory() {
-    let categories = this.props.showChildren
-      ? preorderCategories(this.props.categories)
-      : this.props.categories;
-
-    let activeCategory = i.findLast(function(category) {
-      let categoryNode = document.getElementById(category.name);
-      if (categoryNode == null) return true;
-      let rect = categoryNode.getBoundingClientRect();
-      return rect.top < 12 && rect.bottom > -12;
-    }, categories);
+    let activeCategory = this.props.showChildren
+      ? t.reduce(activeNodeReducer, null, { children: this.props.categories })
+      : this.props.categories.reduce(activeNodeReducer, null);
 
     this.setState({ activeCategory });
   }
@@ -58,8 +64,8 @@ class RecordNavigationSectionCategories extends Component {
     return (
       <Tree
         tree={this.props.categories}
-        id={c => c.name}
-        childNodes={c => c.categories}
+        id={c => c.properties.label[0]}
+        childNodes={c => c.children}
         node={RecordNavigationItem}
         showChildren={this.props.showChildren}
         onCategoryToggle={this.props.onCategoryToggle}

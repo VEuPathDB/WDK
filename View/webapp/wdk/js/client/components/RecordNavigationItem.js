@@ -3,6 +3,10 @@ import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
 
 let RecordNavigationItem = props => {
+  if (props.node.children.length === 0) {
+    return <div/>
+  };
+
   let category = props.node;
   let parentEnumeration = props.parentEnumeration;
 
@@ -32,12 +36,12 @@ let RecordNavigationItem = props => {
 
       {visible &&
         <a
-          href={'#' + category.name}
+          href={'#' + category.properties.label[0]}
           className={titleClassnames}
           onClick={() => {
             if (collapsed) props.onCategoryToggle(category, false);
           }}
-        > {enumeration.join('.') + ' ' + category.displayName} </a>
+        > {enumeration.join('.') + ' ' + category.properties.label[0]} </a>
       }
 
       {props.showChildren &&
