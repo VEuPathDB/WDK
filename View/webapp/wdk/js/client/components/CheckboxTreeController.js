@@ -25,6 +25,10 @@ export default class CheckboxTreeController extends React.Component {
     // remove all invalid selected nodes from provided list (nodes must exist and be leaves only)
     this.selectedList = this.validateSelectedList(this.initialData.selected, this.initialData.tree);
 
+    // Use the expanded list given but apply business rules to populate the business list if no
+    // expanded list is provided.
+    this.expandedList = this.initialData.expanded || this.setExpandedList(this.initialData.tree, this.selectedList);
+
     this.actions.loadCheckboxTree({"name":this.initialData.name,
                                    "tree": this.initialData.tree,
                                    "selected": this.selectedList,
@@ -35,6 +39,25 @@ export default class CheckboxTreeController extends React.Component {
   // remove the store listener upon unmounting the component.
   componentWillUnmount() {
     this.storeSubscription.remove();
+  }
+
+  // Used the replace a non-existant expanded list with one obeying business rules (called recursively)
+  setExpandedList(nodes, selectedList, expandedList=[]) {
+    nodes.forEach(function(node) {
+      let leafIds = this.getLeafIds(node);
+
+      // if only some of the leaf nodes for the given node are selected, expand the given node
+      let total = leafIds.reduce(function (count, leafId) {
+        return selectedList.indexOf(leafId) > -1 ? count + 1 : count;
+      }, 0);
+      if (total > 0 && total < leafIds.length) {
+        expandedList.push(node.id);
+      }
+      if(!this.isLeafNode(node)) {
+        this.setExpandedList(node.children, selectedList, expandedList);
+      }
+    },this);
+    return expandedList;
   }
 
 
@@ -92,9 +115,16 @@ export default class CheckboxTreeController extends React.Component {
   // convey branch to be toggled to action creator - id indicates the node id to
   // be changed.
   toggleExpansion(id) {
-    let newExpandedList = this.store.getState().expandedList;
+    let state = this.store.getState();
+    let newExpandedList = state.expandedList;
+
+    // if the expanded list is null (unlikely, but possible) create an intial
+    // expanded list that obeys business rules.
+    if(newExpandedList === null || newExpandedList === undefined) {
+      newExpandedList = this.setExpandedList(state.tree, state.selectedList);
+    }
     let index = newExpandedList.indexOf(id);
-    index <= -1 ? newExpandedList.push(id) : newExpandedList.splice(index,1);
+    index <= -1 ? newExpandedList.push(id) : newExpandedList.splice(index, 1);
     this.actions.toggleExpansion(newExpandedList);
   }
 
