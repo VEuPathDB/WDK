@@ -1,5 +1,6 @@
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
+import get from 'lodash/object/get';
 import RecordMainCategorySection from './RecordMainCategorySection';
 import { wrappable } from '../utils/componentUtils';
 
@@ -29,7 +30,7 @@ let RecordMainSection = React.createClass({
     return (
       <div>
         {categories.map((category, index) => {
-          let categoryName = category.name;
+          let categoryName = get(category, [ 'properties', 'label', 0 ]);
           let attributes = this.props.attributes.filter(attr => attr.category == categoryName);
           let tables = this.props.tables.filter(table => table.category == categoryName);
           let enumeration = parentEnumeration == null
@@ -38,14 +39,14 @@ let RecordMainSection = React.createClass({
 
           return (
             <RecordMainCategorySection
-              key={String(category.name)}
+              key={categoryName}
               depth={depth}
               category={category}
               record={record}
               recordClass={this.props.recordClass}
               attributes={attributes}
               tables={tables}
-              isCollapsed={collapsedCategories.includes(category.name)}
+              isCollapsed={collapsedCategories.includes(categoryName)}
               collapsedTables={collapsedTables}
               onCategoryToggle={this.props.onCategoryToggle}
               onTableToggle={this.props.onTableToggle}
@@ -54,7 +55,7 @@ let RecordMainSection = React.createClass({
             <RecordMainSection
               {...this.props}
               depth={depth + 1}
-              categories={category.categories}
+              categories={category.children}
               parentEnumeration={enumeration}
             />
             </RecordMainCategorySection>

@@ -10,6 +10,7 @@ export default class WdkService {
     this._questions = null;
     this._recordClasses = null;
     this._records = new Map();
+    this._ontologies = new Map();
   }
 
   getAnswerServiceUrl() {
@@ -83,6 +84,7 @@ export default class WdkService {
     return this.getRecordClasses().then(rs => rs.find(test));
   }
 
+  // FIXME Create cache key from response, not request
   getRecord(recordClassName, primaryKeyValues, options = {}) {
     let primaryKeyString = primaryKeyValues.join('/');
     let key = recordClassName + ':' + primaryKeyString;
@@ -152,7 +154,16 @@ export default class WdkService {
   findStep(stepId) {
     return fetchJson('get', this._serviceUrl + '/step/' + stepId);
   }
+
+  getOntology(name) {
+    if (!this._ontologies.has(name)) {
+      this._ontologies.set(name, fetchJson('get', this._serviceUrl + '/ontology/Categories'));
+    }
+    return this._ontologies.get(name);
+  }
+
 }
+
 
 
 function fetchJson(method, url, body) {

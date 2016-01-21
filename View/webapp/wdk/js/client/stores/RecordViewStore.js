@@ -1,6 +1,8 @@
 import { ReduceStore } from 'flux/utils';
 import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
 import * as i from '../utils/Iterable';
+import { reduceBottom as reduceTree } from '../utils/TreeUtils';
+import { nodeHasProperty, getPropertyValues } from '../utils/OntologyUtils';
 import { postorder as postorderCategories } from '../utils/CategoryTreeIterators';
 
 let {
@@ -38,7 +40,7 @@ export default class RecordViewStore extends ReduceStore {
         });
 
       case RECORD_UPDATED: {
-        let { record, recordClass, questions, recordClasses } = payload;
+        let { record, recordClass, questions, recordClasses, categoryTree } = payload;
 
         let collapsedCategories = state.recordClass === recordClass
           ? state.collapsedCategories : recordClass.collapsedCategories || [];
@@ -46,7 +48,7 @@ export default class RecordViewStore extends ReduceStore {
         let collapsedTables = state.recordClass === recordClass
           ? state.collapsedTables : recordClass.collapsedTables || [];
 
-        let categoryWordsMap = makeCategoryWordsMap(recordClass);;
+        let categoryWordsMap = makeCategoryWordsMap(recordClass, categoryTree);;
 
         return Object.assign({}, state, {
           record: record,
@@ -56,7 +58,8 @@ export default class RecordViewStore extends ReduceStore {
           collapsedCategories,
           collapsedTables,
           isLoading: false,
-          categoryWordsMap
+          categoryWordsMap,
+          categoryTree
         });
       }
 
@@ -88,32 +91,30 @@ function updateList(item, add, list = []) {
   return add ? list.concat(item) : list.filter(x => x !== item);
 }
 
-function makeCategoryWordsMap(recordClass) {
-  return i.reduce((map, category) => {
+function makeCategoryWordsMap(recordClass, root) {
+  return reduceTree((map, node) => {
     let words = [];
 
-    for (let attribute of recordClass.attributes) {
-      if (attribute.category == category.name) {
-        words.push(attribute.displayName, attribute.description);
-      }
+    // add current node's displayName and description
+    words.push(...getPropertyValues('hasDefinition', node), ...getPropertyValues('hasNarrowSynonym', node));
+
+    // add displayName and desription of attribute
+    if (nodeHasProperty('targetType', 'attribute', node)) {
+      let attribute = recordClass.attributes.find(a => a.name === getPropertyValues('name', node)[0]);
+      words.push(attribute.displayName, attribute.description);
     }
 
-    for (let table of recordClass.tables) {
-      if (table.category == category.name) {
-        words.push(table.displayName, table.description);
-      }
+    // add displayName and desription of table
+    if (nodeHasProperty('targetType', 'table', node)) {
+      let table = recordClass.tables.find(a => a.name === getPropertyValues('name', node)[0]);
+      words.push(table.displayName, table.description);
     }
 
-    if (category.categories != null) {
-      for (let cat of map.keys()) {
-        if (category.categories.indexOf(cat) > -1) {
-          words.push(map.get(cat));
-        }
-      }
+    // add words from any children
+    for (let child of node.children) {
+      words.push(map.get(child.properties));
     }
 
-    words.push(category.displayName, category.description);
-
-    return map.set(category, words.join('\0').toLowerCase());
-  }, new Map(), postorderCategories(recordClass.categories));
+    return map.set(node.properties, words.join('\0').toLowerCase());
+  }, new Map, root);
 }

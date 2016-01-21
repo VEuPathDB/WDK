@@ -70,6 +70,7 @@ class RecordUI extends Component {
           <RecordNavigationSection
             record={this.props.record}
             recordClass={this.props.recordClass}
+            categoryTree={this.props.categoryTree}
             collapsedCategories={this.props.collapsedCategories}
             categoryWordsMap={this.props.categoryWordsMap}
             onCategoryToggle={this.toggleCategory}
@@ -79,6 +80,7 @@ class RecordUI extends Component {
           <Record
             record={this.props.record}
             recordClass={this.props.recordClass}
+            categoryTree={this.props.categoryTree}
             collapsedCategories={this.props.collapsedCategories}
             collapsedTables={this.props.collapsedTables}
             onCategoryToggle={this.toggleCategory}

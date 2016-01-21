@@ -12,7 +12,7 @@ class Record extends Component {
         <RecordMainSection
           record={this.props.record}
           recordClass={this.props.recordClass}
-          categories={this.props.recordClass.categories}
+          categories={this.props.categoryTree.children}
           attributes={attributes}
           tables={tables}
           collapsedCategories={this.props.collapsedCategories}
