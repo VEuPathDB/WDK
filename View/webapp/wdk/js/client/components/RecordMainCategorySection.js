@@ -71,7 +71,7 @@ let RecordMainCategorySection = React.createClass({
       let { displayName } = tableMeta;
       let table = record.tables[name];
 
-      if (table == null || table.length === 0) return null;
+      if (table == null) return null;
 
       let isCollapsed = collapsedTables.includes(name)
 
