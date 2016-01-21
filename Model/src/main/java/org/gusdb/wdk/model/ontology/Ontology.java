@@ -80,11 +80,13 @@ public class Ontology extends TreeNode<OntologyNode> {
    * This method will, given an ontology tree, do the following:
    * 
    * 1. Clone the tree (original tree will not be modified)
-   * 2. Trim any nodes who do not either pass predicate or have children that do
+   * 2. Trim any nodes who neither pass the predicate nor have children that do
    * 3. (optionally) Remove non-leaf nodes that have only one child and add that child to the removed node's parent
    * 
    * @param root root of the tree to be operated on
    * @param predicate test for whether to retain nodes
+   * @param collapseSingleChildParents if true, each post-op single child
+   *    parent will be removed, its child will be inherited by its parent
    * @return cloned tree with modifications as above
    */
   public static TreeNode<OntologyNode> getFilteredOntology(TreeNode<OntologyNode> root,
@@ -101,10 +103,10 @@ public class Ontology extends TreeNode<OntologyNode> {
         // zero-passing-children cases
         if (mappedChildren.isEmpty()) {
 
-          // Case 1: no children, and this node fails the predicate; return null
+          // Case 1: no passing children, and this node fails the predicate; return null
           if (!predicate.test(obj)) return null;
 
-          // Case 2: no passing children, but this node passes, return new node with these contents
+          // Case 2: no passing children, but this node passes; return new node with these contents
           return new TreeNode<OntologyNode>(obj);
         }
 
