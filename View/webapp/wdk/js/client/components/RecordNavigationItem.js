@@ -1,7 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
-import { getPropertyValue } from '../utils/OntologyUtils';
+import { getId, getPropertyValue } from '../utils/OntologyUtils';
 
 let RecordNavigationItem = props => {
   if (props.node.children.length === 0) {
@@ -10,6 +10,7 @@ let RecordNavigationItem = props => {
 
   let category = props.node;
   let parentEnumeration = props.parentEnumeration;
+  let id = getId(category);
   let label = getPropertyValue('label', category)
 
   let titleClassnames = classnames({
@@ -38,7 +39,7 @@ let RecordNavigationItem = props => {
 
       {visible &&
         <a
-          href={'#' + label}
+          href={'#' + id}
           className={titleClassnames}
           onClick={() => {
             if (collapsed) props.onCategoryToggle(category, false);

@@ -5,7 +5,7 @@ import get from 'lodash/object/get';
 import RecordAttribute from './RecordAttribute';
 import RecordTable from './RecordTable';
 import { wrappable } from '../utils/componentUtils';
-import { getPropertyValue } from '../utils/OntologyUtils';
+import { getId, getPropertyValue } from '../utils/OntologyUtils';
 
 let RecordMainCategorySection = React.createClass({
 
@@ -53,7 +53,7 @@ let RecordMainCategorySection = React.createClass({
       let value = record.attributes[name]
       if (value == null) return null;
       return (
-        <div className={`wdk-RecordAttributeSectionItem wdk-RecordAttributeSectionItem__${name}`} key={name}>
+        <div id={name} className={`wdk-RecordAttributeSectionItem wdk-RecordAttributeSectionItem__${name}`}>
           <div className="wdk-RecordAttributeName">
             <strong>{displayName}</strong>
           </div>
@@ -89,7 +89,7 @@ let RecordMainCategorySection = React.createClass({
       });
 
       return (
-        <div key={name} className={wrapperClass}>
+        <div id={name} className={wrapperClass}>
           <div className={headerClass}
             onClick={() => this.toggleTableCollapse(tableMeta, isCollapsed)}>
             {' ' + displayName}
@@ -99,6 +99,7 @@ let RecordMainCategorySection = React.createClass({
       );
     }
 
+    let id = getId(category);
     let categoryName = getPropertyValue('label', category);
     let Header = 'h' + Math.min(depth + 1, 6);
     let headerClass = classnames({
@@ -108,7 +109,7 @@ let RecordMainCategorySection = React.createClass({
     });
 
     return isCollapsed && depth === 1 ? null : (
-      <div id={String(categoryName)} className="wdk-RecordSection">
+      <div id={id} className="wdk-RecordSection">
         <Header className={headerClass} onClick={this.toggleCollapse}>
           <span className="wdk-RecordSectionEnumeration">{enumeration}</span> {categoryName}
         </Header>

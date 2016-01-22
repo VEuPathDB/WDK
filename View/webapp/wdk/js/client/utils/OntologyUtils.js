@@ -1,3 +1,5 @@
+import kebabCase from 'lodash/string/kebabCase';
+import get from 'lodash/object/get';
 import {
   compactRootNodes,
   pruneDescendantNodes
@@ -21,6 +23,8 @@ let includes = (array, value) => array != null && array.indexOf(value) > -1;
 
 export let nodeHasProperty = (name, value, node) => includes(node.properties[name], value);
 
-export let getPropertyValues = (name, node) => node.properties[name] || [];
+export let getPropertyValues = (name, node) => get(node, [ 'properties', name ]) || [];
 
-export let getPropertyValue = (name, node) => getPropertyValues(name, node)[0];
+export let getPropertyValue = (name, node) => get(node, [ 'properties', name, 0 ]);
+
+export let getId = node => kebabCase(getPropertyValue('label', node));
