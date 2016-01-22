@@ -467,6 +467,16 @@ body {
   margin: 0;
 }
 
+.wdk-DataTableContainer .dataTables_filter input {
+  padding: 4px;
+  width: 200px;
+  transition: width 250ms ease;
+}
+
+.wdk-DataTableContainer .dataTables_filter input:focus {
+  width: 300px;
+}
+
 .wdk-DataTableContainer .dataTables_scroll {
   border-bottom: 1px solid lightgrey;
 }

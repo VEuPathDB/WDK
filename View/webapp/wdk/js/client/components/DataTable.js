@@ -275,6 +275,7 @@ DataTable.defaultDataTableOpts = {
   paging: false,
   searching: true,
   language: {
-    search: 'Filter table: '
+    search: '_INPUT_',
+    searchPlaceholder: 'Search table'
   }
 };
