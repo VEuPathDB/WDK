@@ -366,10 +366,6 @@ body {
   right: .6em;
 }
 
-.wdk-RecordSection .wdk-RecordSection {
-  padding-left: 1em;
-}
-
 .wdk-RecordSectionEnumeration {
   opacity: .5;
 }
@@ -407,7 +403,7 @@ body {
 
 .wdk-RecordSectionContent {
   margin-bottom: 22px;
-  padding: 0 1.2em;
+  padding-left: 0 1.2em;
   /* background-color: #fafafa; */
   /* border: 1px solid #e8e8e8;
   border-radius: 4px; */

@@ -113,7 +113,7 @@ let RecordMainCategorySection = React.createClass({
         <Header className={headerClass} onClick={this.toggleCollapse}>
           <span className="wdk-RecordSectionEnumeration">{enumeration}</span> {categoryName}
         </Header>
-        {isCollapsed || this.props.children}
+        {isCollapsed || <div className="wdk-RecordSectionContent">{this.props.children}</div> }
       </div>
     );
   }
