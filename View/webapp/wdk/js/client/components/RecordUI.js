@@ -1,6 +1,7 @@
 import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
+import { getPropertyValue } from '../utils/OntologyUtils';
 import Main from './Main';
 import Record from './Record';
 import RecordHeading from './RecordHeading';
@@ -26,7 +27,7 @@ class RecordUI extends Component {
   toggleCategory(category, isCollapsed) {
     this.props.actions.toggleCategoryCollapsed(
       this.props.recordClass.name,
-      category.name,
+      getPropertyValue('label', category),
       isCollapsed
     );
   }
