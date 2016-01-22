@@ -2,15 +2,15 @@ import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
 import get from 'lodash/object/get';
 import { wrappable } from '../utils/componentUtils';
-import { getPropertyValue } from '../utils/OntologyUtils';
+import { getId, getPropertyValue } from '../utils/OntologyUtils';
 import * as t from '../utils/TreeUtils';
 import shallowEqual from '../utils/shallowEqual';
 import RecordNavigationItem from './RecordNavigationItem';
 import Tree from './Tree';
 
 let categoryNodeIsActive = (node) => {
-  let categoryName = getPropertyValue('label', node);
-  let categoryNode = document.getElementById(categoryName);
+  let id = getId(node);
+  let categoryNode = document.getElementById(id);
   if (categoryNode == null) return true;
   let rect = categoryNode.getBoundingClientRect();
   return rect.top < 12 && rect.bottom > -12;
