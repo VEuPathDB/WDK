@@ -413,7 +413,7 @@ body {
 .wdk-RecordAttributeSectionItem {
   display: inline-block;
   width: 50%;
-  padding: 4px 0;
+  padding: 4px 1em;
 }
 
 .wdk-RecordAttributeName, .wdk-RecordAttributeValue {
@@ -423,6 +423,10 @@ body {
 
 .wdk-RecordAttributeValue {
   padding: 0 4px;
+}
+
+.wdk-RecordTableWrapper {
+  padding: 0 1em;
 }
 
 .wdk-RecordTableHeader {
