@@ -96,7 +96,11 @@ function makeCategoryWordsMap(recordClass, root) {
     let words = [];
 
     // add current node's displayName and description
-    words.push(...getPropertyValues('hasDefinition', node), ...getPropertyValues('hasNarrowSynonym', node));
+    words.push(
+      ...getPropertyValues('hasDefinition', node),
+      ...getPropertyValues('hasExactSynonym', node),
+      ...getPropertyValues('hasNarrowSynonym', node)
+    );
 
     // add displayName and desription of attribute
     if (nodeHasProperty('targetType', 'attribute', node)) {

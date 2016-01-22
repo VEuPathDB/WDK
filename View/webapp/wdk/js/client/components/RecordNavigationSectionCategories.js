@@ -2,13 +2,14 @@ import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
 import get from 'lodash/object/get';
 import { wrappable } from '../utils/componentUtils';
+import { getPropertyValue } from '../utils/OntologyUtils';
 import * as t from '../utils/TreeUtils';
 import shallowEqual from '../utils/shallowEqual';
 import RecordNavigationItem from './RecordNavigationItem';
 import Tree from './Tree';
 
 let categoryNodeIsActive = (node) => {
-  let categoryName = get(node, [ 'properties', 'label', 0 ]);
+  let categoryName = getPropertyValue('label', node);
   let categoryNode = document.getElementById(categoryName);
   if (categoryNode == null) return true;
   let rect = categoryNode.getBoundingClientRect();
@@ -64,7 +65,7 @@ class RecordNavigationSectionCategories extends Component {
     return (
       <Tree
         tree={this.props.categories}
-        id={c => c.properties.label[0]}
+        id={c => getPropertyValue('label', c)}
         childNodes={c => c.children}
         node={RecordNavigationItem}
         showChildren={this.props.showChildren}
