@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import includes from 'lodash/collection/includes';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
 import { wrappable } from '../utils/componentUtils';
+import { getPropertyValue } from '../utils/OntologyUtils';
 
 let RecordNavigationSection = React.createClass({
 
@@ -68,7 +69,7 @@ let RecordNavigationSection = React.createClass({
             categories={this.props.categoryTree.children}
             onCategoryToggle={this.props.onCategoryToggle}
             showChildren={navigationExpanded}
-            isCollapsed={category => includes(collapsedCategories, category.name)}
+            isCollapsed={category => includes(collapsedCategories, getPropertyValue('label', category))}
             isVisible={category => includes(categoryWordsMap.get(category.properties), navigationQueryLower)}
           />
         </div>
