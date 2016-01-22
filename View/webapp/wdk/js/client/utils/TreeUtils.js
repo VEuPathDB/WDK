@@ -92,3 +92,33 @@ export let pruneNodes = (fn, nodes) =>
 export let compactRootNodes = (root) =>
   root.children.length === 1 ? compactRootNodes(root.children[0])
   : root
+
+  
+//Utility functions for CheckboxTree React component
+
+  /** 
+   * Simple convenience method to identify nodes that are leaves
+   * @param {Object} node representing root of subtree (possibly a leaf)
+   * @return {Boolean} indicates true if the node is a leaf and false otherwise
+   */
+  export let isLeafNode = node => node.children.length === 0;
+
+  /**
+   * Using recursion to return all the leaf node ids for the given node.
+   * @param {Object} node representing root of subtree
+   * @param {Array} initial list of leaf node ids (optional)
+   * @return {Array} updated list of leaf node ids
+   */
+  export let getLeaves = (node, leaves=[]) => {
+   if(!isLeafNode(node)) {
+     node.children.map(function(child) {
+
+       // push only leaf nodes into the array
+       if(isLeafNode(child)) {
+         leaves.push(child);
+       }
+       getLeaves(child,leaves);
+     });
+   }
+   return leaves;
+  };
