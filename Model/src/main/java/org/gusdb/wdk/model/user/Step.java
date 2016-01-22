@@ -627,11 +627,18 @@ public class Step {
       }
     }
 
-    // check previous and child steps if still valid
-    Step prevStep, childStep;
-    if (valid &&
-        (((prevStep = getPreviousStep()) != null && !prevStep.isValid()) || ((childStep = getChildStep()) != null && !childStep.isValid()))) {
+    try {
+      // check previous and child steps if still valid
+      Step prevStep, childStep;
+      if (valid &&
+          (((prevStep = getPreviousStep()) != null && !prevStep.isValid()) || ((childStep = getChildStep()) != null && !childStep.isValid()))) {
+        invalidateStep();
+      }
+    }
+    catch (WdkModelException ex) {
+      // question doesn't exist, return false
       invalidateStep();
+      return valid = false;
     }
 
     // mark validity checked so we don't do the work above again
@@ -1308,9 +1315,9 @@ public class Step {
       throw new WdkModelException("Params property value is not a JSON Object", e);
     }
 
-		//logger.debug("**********setting filters for step:");
+    //logger.debug("**********setting filters for step:");
     setFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_FILTERS));
-		//logger.debug("**********setting VIEW filters for step:");
+    //logger.debug("**********setting VIEW filters for step:");
     setViewFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_VIEW_FILTERS));
   }
 
@@ -1372,14 +1379,14 @@ public class Step {
   }
 
   public void setFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
-		// getQuestion() is null when we come from a newly created step from StepExpander in apicomm maint
-		if (jsOptions == null || questionName == null ) {
+    // getQuestion() is null when we come from a newly created step from StepExpander in apicomm maint
+    if (jsOptions == null || questionName == null ) {
       this.filterOptions = null;
     }
     else {
-			FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
-			validateFilterOptions(newList, false);
-			this.filterOptions = newList;
+      FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
+      validateFilterOptions(newList, false);
+      this.filterOptions = newList;
     }
   }
 
