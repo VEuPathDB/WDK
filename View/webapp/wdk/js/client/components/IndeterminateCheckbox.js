@@ -35,12 +35,10 @@ export default class IndeterminateCheckbox extends React.Component {
   }
 
   render() {
-    const { indeterminate, type, ...props } = this.props;
     let handleChange = this.handleChange;
-    let icon = this.props.icon;
     let id = this.props.id;
     return (
-        <input type="checkbox" onChange={handleChange.bind(this)} {...props} />
+        <input {...this.props} type="checkbox" onChange={handleChange.bind(this)} />
     )
   }
 }

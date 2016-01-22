@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import CheckboxTree from './CheckboxTree.js';
+import CheckboxTree from './CheckboxTree';
+import {isLeafNode} from '../utils/TreeUtils';
+import {getLeaves} from '../utils/TreeUtils';
+
 
 // serves as view controller for checkbox tree React component
 export default class CheckboxTreeController extends React.Component {
@@ -11,6 +14,7 @@ export default class CheckboxTreeController extends React.Component {
     this.store = props.store;
     this.actions = props.actions;
     this.state = this.store.getState();
+
     // hard bind the toggle functions to the view controller
     this.toggleCheckbox = this.toggleCheckbox.bind(this);
     this.toggleExpansion = this.toggleExpansion.bind(this);
@@ -43,52 +47,35 @@ export default class CheckboxTreeController extends React.Component {
 
   // Used the replace a non-existant expanded list with one obeying business rules (called recursively)
   setExpandedList(nodes, selectedList, expandedList=[]) {
-    nodes.forEach(function(node) {
-      let leafIds = this.getLeafIds(node);
+    nodes.forEach(node => {
 
-      // if only some of the leaf nodes for the given node are selected, expand the given node
-      let total = leafIds.reduce(function (count, leafId) {
-        return selectedList.indexOf(leafId) > -1 ? count + 1 : count;
-      }, 0);
-      if (total > 0 && total < leafIds.length) {
-        expandedList.push(node.id);
-      }
-      if(!this.isLeafNode(node)) {
+      // Leaf nodes don't get expanded.  So don't bother to test if the node is a leaf.
+      if(!isLeafNode(node)) {
+        let leafIds = getLeaves(node).map(leaf => leaf.id);
+
+        // if only some of the leaf nodes for the given node are selected, expand the given node
+        let total = leafIds.reduce(function (count, leafId) {
+          return selectedList.indexOf(leafId) > -1 ? count + 1 : count;
+        }, 0);
+        if (total > 0 && total < leafIds.length) {
+          expandedList.push(node.id);
+        }
+
+        // descend the tree
         this.setExpandedList(node.children, selectedList, expandedList);
       }
-    },this);
+    });
     return expandedList;
   }
 
 
-  // convenience method to identify nodes that are leaves
-  isLeafNode(node) {
-    return node.children.length === 0;
-  }
-
-
-  // return the leaf node ids for the given node;
-  getLeafIds(node, leafIds=[]) {
-    if(node.children.length > 0) {
-      node.children.map(function(child) {
-
-        // push only leaf nodes into the array
-        if(child.children.length === 0) {
-          leafIds.push(child.id);
-        }
-        this.getLeafIds(child,leafIds);
-      }, this);
-    }
-    return leafIds;
-  }
-
-  // as a protection,remove any selected non-child nodes from the selected list (they should be there
+  // as a protection,remove any selected non-child nodes from the selected list (they should not be there
   // in the first place)
   validateSelectedList(selectedList, nodes) {
     let validSelectedList = [];
     selectedList.forEach(function(selectedItem){
       let node = this.getNodeById(selectedItem, nodes);
-      if(node != undefined && this.isLeafNode(node)) {
+      if(node != undefined && isLeafNode(node)) {
         validSelectedList.push(node.id);
       }
     }, this);
@@ -138,21 +125,21 @@ export default class CheckboxTreeController extends React.Component {
     let state = this.store.getState();
     let newSelectedList = state.selectedList;
     let node = this.getNodeById(nodeId, state.tree);
-    if(this.isLeafNode(node)) {
+    if(isLeafNode(node)) {
       let index =  newSelectedList.indexOf(nodeId);
       index > -1 ? newSelectedList.splice(index, 1) : newSelectedList.push(nodeId);
     }
     else {
-      let leaves = this.getLeafIds(node);
-      leaves.forEach(function(leaf) {
-        let index =  newSelectedList.indexOf(leaf);
+      let leafIds = getLeaves(node).map(leafNode => leafNode.id);
+      leafIds.forEach(leafId => {
+        let index =  newSelectedList.indexOf(leafId);
         if(selected && index === -1) {
-          newSelectedList.push(leaf);
+          newSelectedList.push(leafId);
         }
         if(!selected && index > -1) {
           newSelectedList.splice(index, 1);
         }
-      },this);
+      });
     }
 
     // convey new selected list back to action creator
@@ -162,17 +149,15 @@ export default class CheckboxTreeController extends React.Component {
 
   // render wraps the top-level component, passing latest state
   render() {
-    let store = this.store;
-    let data = store.getState();
-    let toggleCheckbox = this.toggleCheckbox;
-    let toggleExpansion = this.toggleExpansion;
+    let data = this.store.getState();
     return (
-      <div className="wdk-CheckboxTree" data-name={this.props.name}>
+      <div className="wdk-CheckboxTree" id={data.name}>
         <CheckboxTree tree={data.tree}
+                      key="Root"
                       selectedList={data.selectedList}
                       expandedList={data.expandedList}
-                      toggleCheckbox={toggleCheckbox}
-                      toggleExpansion={toggleExpansion}
+                      toggleCheckbox={this.toggleCheckbox}
+                      toggleExpansion={this.toggleExpansion}
         />
       </div>
     )
