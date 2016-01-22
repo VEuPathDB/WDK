@@ -3,6 +3,7 @@ import PureRenderMixin from 'react-addons-pure-render-mixin';
 import get from 'lodash/object/get';
 import RecordMainCategorySection from './RecordMainCategorySection';
 import { wrappable } from '../utils/componentUtils';
+import { getPropertyValue } from '../utils/OntologyUtils';
 
 let RecordMainSection = React.createClass({
 
@@ -30,7 +31,7 @@ let RecordMainSection = React.createClass({
     return (
       <div>
         {categories.map((category, index) => {
-          let categoryName = get(category, [ 'properties', 'label', 0 ]);
+          let categoryName = getPropertyValue('label', category);
           let attributes = this.props.attributes.filter(attr => attr.category == categoryName);
           let tables = this.props.tables.filter(table => table.category == categoryName);
           let enumeration = parentEnumeration == null

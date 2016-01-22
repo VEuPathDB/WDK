@@ -2,7 +2,8 @@ import ActionCreator from '../utils/ActionCreator';
 import {latest} from '../utils/PromiseUtils';
 import {
   getTree,
-  nodeHasProperty
+  nodeHasProperty,
+  getPropertyValue
 } from '../utils/OntologyUtils';
 import {
   filter as filterTree
@@ -29,6 +30,8 @@ let getAttributes = tree =>
 
 let getTables = tree =>
   filterTree(node => nodeHasProperty('targetType', 'table', node), tree)
+
+let getNodeName = node => getPropertyValue('name', node);
 
 export default class RecordViewActionCreator extends ActionCreator {
 
@@ -105,8 +108,8 @@ export default class RecordViewActionCreator extends ActionCreator {
     ]) => {
       let recordClass = recordClasses.find(r => r.urlSegment == recordClassUrlSegment);
       let categoryTree = getTree(categoriesOntology, isLeafFor(recordClass.name));
-      let attributes = getAttributes(categoryTree).map(n => n.properties.name[0]);
-      let tables = getTables(categoryTree).map(n => n.properties.name[0]);
+      let attributes = getAttributes(categoryTree).map(getNodeName);
+      let tables = getTables(categoryTree).map(getNodeName);
       let options = { attributes, tables };
       return this._service.getRecord(recordClass.name, primaryKeyValues, options).then(
         record => ({ record, recordClass, recordClasses, questions, categoryTree })

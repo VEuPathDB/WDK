@@ -5,6 +5,7 @@ import get from 'lodash/object/get';
 import RecordAttribute from './RecordAttribute';
 import RecordTable from './RecordTable';
 import { wrappable } from '../utils/componentUtils';
+import { getPropertyValue } from '../utils/OntologyUtils';
 
 let RecordMainCategorySection = React.createClass({
 
@@ -41,11 +42,11 @@ let RecordMainCategorySection = React.createClass({
       collapsedTables,
       enumeration
     } = this.props;
-    let targetType = get(category, [ 'properties', 'targetType', 0 ]);
+    let targetType = getPropertyValue('targetType', category);
 
     if (targetType === 'attribute') {
       // render attribute
-      let name = get(category, [ 'properties', 'name', 0 ]);
+      let name = getPropertyValue('name', category);
       let attribute = recordClass.attributes.find(a => a.name === name);
       if (attribute == null) throw new Error('Expected attribute for `' + name + '`, but got null');
       let { displayName } = attribute;
@@ -65,7 +66,7 @@ let RecordMainCategorySection = React.createClass({
 
     if (targetType === 'table') {
       // render table
-      let name = get(category, [ 'properties', 'name', 0 ]);
+      let name = getPropertyValue('name', category);
       let tableMeta = recordClass.tables.find(t => t.name === name);
       if (tableMeta == null) throw new Error('Expected table for `' + name + '`, but got null');
       let { displayName } = tableMeta;
@@ -98,7 +99,7 @@ let RecordMainCategorySection = React.createClass({
       );
     }
 
-    let categoryName = get(category, [ 'properties', 'label', 0 ]);
+    let categoryName = getPropertyValue('label', category);
     let Header = 'h' + Math.min(depth + 1, 6);
     let headerClass = classnames({
       'wdk-RecordSectionHeader': depth === 1,

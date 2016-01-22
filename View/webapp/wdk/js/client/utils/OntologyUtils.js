@@ -22,3 +22,5 @@ let includes = (array, value) => array != null && array.indexOf(value) > -1;
 export let nodeHasProperty = (name, value, node) => includes(node.properties[name], value);
 
 export let getPropertyValues = (name, node) => node.properties[name] || [];
+
+export let getPropertyValue = (name, node) => getPropertyValues(name, node)[0];
