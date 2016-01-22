@@ -229,6 +229,14 @@ public class SearchCategory extends WdkModelBase {
       this.parent.children.put(name, this);
     }
   }
+  
+  /**
+   * an alternate means to build the tree
+   * @param kids
+   */
+  public void addChild(SearchCategory kid) {
+      children.put(kid.getName(), kid);
+  }
 
   /*
    * (non-Javadoc)
