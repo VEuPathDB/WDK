@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.ontology;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.TreeNode;
@@ -11,31 +12,37 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.question.CategoryQuestionRef;
 import org.gusdb.wdk.model.question.SearchCategory;
+import org.apache.log4j.Logger;
 
 public class EuPathCategoriesFactory {
   
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(EuPathCategoriesFactory.class);
+
   // scopes
   private final String INTERNAL = "internal";
   private final String MENU = "menu";
   private final String WEBSERVICE = "webservice";
   
-  private Map<String, SearchCategory> websiteRootCategories = null;
-  private Map<String, SearchCategory> webserviceRootCategories = null;
-  private Map<String, SearchCategory> datasetRootCategories = null;
+  private Map<String, SearchCategory> websiteRootCategories = new HashMap<String, SearchCategory>();
+  private Map<String, SearchCategory> webserviceRootCategories = new HashMap<String, SearchCategory>();
+  private Map<String, SearchCategory> datasetRootCategories = new HashMap<String, SearchCategory>();
   WdkModel model;
   
-  private String[] webSiteAndServiceClasses = {"CompoundRecordClasses.CompoundRecordClass", "DatasetRecordClasses.DatasetRecordClass", "DynSpanRecordClasses.DynSpanRecordClass", "EstRecordClasses.EstRecordClass", 
-      "IsolateRecordClasses.IsolateRecordClass", "OrfRecordClasses.OrfRecordClass", "PathwayRecordClasses.PathwayRecordClass", "SequenceRecordClasses.SequenceRecordClass", "SnpChipRecordClasses.SnpChipRecordClass", "SnpRecordClasses.SnpRecordClass"};
+  private String[][] webSiteAndServiceClasses = {{"", "CompoundRecordClasses.CompoundRecordClass"}, {"", "DatasetRecordClasses.DatasetRecordClass"}, {"", "DynSpanRecordClasses.DynSpanRecordClass"}, {"", "EstRecordClasses.EstRecordClass"}, 
+      {"", "IsolateRecordClasses.IsolateRecordClass"}, {"", "OrfRecordClasses.OrfRecordClass"}, {"", "PathwayRecordClasses.PathwayRecordClass"}, {"", "SequenceRecordClasses.SequenceRecordClass"}, {"", "SnpChipRecordClasses.SnpChipRecordClass"}, {"", "SnpRecordClasses.SnpRecordClass"}};
   
-  private String[] webServiceClasses = {"OrganismRecordClasses.OrganismRecordClass", "TranscriptRecordClasses.TranscriptRecordClass"};
+  private String[][] webServiceClasses = {{"", "OrganismRecordClasses.OrganismRecordClass"}, {"", "TranscriptRecordClasses.TranscriptRecordClass"}};
   
-  private String[] webSiteClasses = {"TranscriptRecordClasses.TranscriptRecordClass"};
+  private String[][] webSiteClasses = {{"", "TranscriptRecordClasses.TranscriptRecordClass"}};
   
-  private String[] datasetClasses = {"TranscriptRecordClasses.TranscriptRecordClass"};
+  private String[][] datasetClasses = {{"", "TranscriptRecordClasses.TranscriptRecordClass"}};
   
   public EuPathCategoriesFactory(WdkModel model) throws WdkModelException {
     this.model = model;
+    LOG.info("calling getCategories");
     getCategories();
+    LOG.info("done calling getCategories");
   }
   
   public Map<String, SearchCategory> getRootCategories(String usedBy) {
@@ -48,43 +55,49 @@ public class EuPathCategoriesFactory {
   private  void getCategories() throws WdkModelException {
 
     Ontology ontology = model.getOntology("Categories");
+   LOG.info("done getting ontology");
 
     // either webservice or website
     String[] scopes1 = { MENU, WEBSERVICE };
-    for (String recordClassName : webSiteAndServiceClasses) {
-      TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassName, scopes1);
+    for (String[] recordClassInfo : webSiteAndServiceClasses) {
+      TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes1);
       SearchCategory rootCategory = prunedOntologyTree.mapStructure(new TreeNodeToSeachCategoryMapper());
+      rootCategory.setDisplayName(recordClassInfo[0]);
       websiteRootCategories.put(rootCategory.getName(), rootCategory);
       webserviceRootCategories.put(rootCategory.getName(), rootCategory);
     }
 
     // website only
     String[] scopes2 = { MENU};
-    for (String recordClassName : webSiteClasses) {
-      TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassName, scopes2);
+    for (String[] recordClassInfo : webSiteClasses) {
+      TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes2);
       SearchCategory rootCategory = prunedOntologyTree.mapStructure(new TreeNodeToSeachCategoryMapper());
+      rootCategory.setDisplayName(recordClassInfo[0]);
       websiteRootCategories.put(rootCategory.getName(), rootCategory);
     }
 
     // webservice only
     String[] scopes3 = { WEBSERVICE };
-    for (String recordClassName : webServiceClasses) {
-      TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassName, scopes3);
+    for (String[] recordClassInfo : webServiceClasses) {
+      TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes3);
       SearchCategory rootCategory = prunedOntologyTree.mapStructure(new TreeNodeToSeachCategoryMapper());
+      rootCategory.setDisplayName(recordClassInfo[0]);
       webserviceRootCategories.put(rootCategory.getName(), rootCategory);
     }
 
     // dataset only
     String[] scopes4 = { INTERNAL };
-    for (String recordClassName : datasetClasses) {
-      TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassName, scopes4);
+    for (String[] recordClassInfo : datasetClasses) {
+      TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes4);
       SearchCategory rootCategory = prunedOntologyTree.mapStructure(new TreeNodeToSeachCategoryMapper());
+      rootCategory.setDisplayName(recordClassInfo[0]);
       webserviceRootCategories.put(rootCategory.getName(), rootCategory);
     }
   }
 
   private TreeNode<OntologyNode> findPrunedOntology(Ontology ontology, String recordClassName, String scopes[]) {
     Predicate<OntologyNode> predicate = new IsSearchPredicate(recordClassName, scopes);
+   LOG.info("done making predicate");
     return Ontology.getFilteredOntology(ontology, predicate, true) ;
   }
   
@@ -109,9 +122,10 @@ public class EuPathCategoriesFactory {
           category.setUsedBy(SearchCategory.USED_BY_DATASET);
       }
       else {
+	LOG.info("Node label: " + nodeContents.get("label"));
         category.setDescription(
             nodeContents.containsKey("hasDefinition") ? nodeContents.get("hasDefinition").get(0) : null);
-        category.setName(nodeContents.get("label").get(0));
+        category.setName( nodeContents.containsKey("label") ? nodeContents.get("label").get(0) : null);
         category.setDisplayName(
             nodeContents.containsKey("displayName") ? nodeContents.get("displayName").get(0) : null);
         category.setShortDisplayName(nodeContents.containsKey("shortDisplayName")
@@ -144,8 +158,10 @@ public class EuPathCategoriesFactory {
     @Override
       public boolean test(OntologyNode node) {
         boolean hasScope = false;
-        for (String scope : scopes) if (node.get("scope").contains(scope)) hasScope = true;
-        return node.get("targetType").contains("search") && node.get("recordClass").contains(recordClass) && hasScope;
+        for (String scope : scopes) if (node.containsKey("scope") && node.get("scope").contains(scope)) hasScope = true;
+        return node.containsKey("targetType") && node.get("targetType").contains("search")
+	  && node.containsKey("recordClassName") && node.get("recordClassName").contains(recordClass)
+	  && hasScope;
       }
   }
 
