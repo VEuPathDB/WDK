@@ -98,7 +98,7 @@ public class Ontology extends TreeNode<OntologyNode> {
       public TreeNode<OntologyNode> map(OntologyNode obj, List<TreeNode<OntologyNode>> mappedChildren) {
 
         // trim null children to get an accurate list
-        trimNulls(mappedChildren);
+	       trimNulls(mappedChildren);
 
         // zero-passing-children cases
         if (mappedChildren.isEmpty()) {
@@ -132,10 +132,15 @@ public class Ontology extends TreeNode<OntologyNode> {
   }
 
   private static void trimNulls(List<?> list) {
+    for (Iterator<?> itr = list.iterator(); itr.hasNext();) {
+      if (itr.next() == null) { itr.remove(); }
+    }
+    /*  original code below goes into infinite loop
     for (int i = 0; i < list.size(); i++) {
       if (list.get(i) == null) list.remove(i);
       i--;
     }
+   */
   }
 
   /**********************************************************************************************/
