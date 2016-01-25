@@ -71,14 +71,20 @@ public class EuPathCategoriesFactory {
     String[] scopes1 = { MENU, WEBSERVICE };
     for (String[] recordClassInfo : webSiteAndServiceClasses) {
       TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes1);
-      List mapList =  new ArrayList<Map<String, SearchCategory>>();
+      List<Map<String, SearchCategory>> mapList =  new ArrayList<Map<String, SearchCategory>>();
       mapList.add(webserviceCategories);
       mapList.add(websiteCategories);
-      SearchCategory rootCategory = prunedOntologyTree.mapStructure(new TreeNodeToSeachCategoryMapper(mapList));
+      SearchCategory almostRootCategory = prunedOntologyTree.mapStructure(new TreeNodeToSeachCategoryMapper(mapList));
+      almostRootCategory.setDisplayName(recordClassInfo[0]);
+      almostRootCategory.setName("almostRoot");
+      SearchCategory rootCategory = new SearchCategory();
+      rootCategory.setWdkModel(model); // do this before adding question refs
       rootCategory.setDisplayName(recordClassInfo[0]);
       rootCategory.setName(recordClassInfo[1]);
+      rootCategory.addChild(almostRootCategory);
       StringBuilder builder = new StringBuilder();
       rootCategory.prettyPrint(builder, "");
+      LOG.info(System.lineSeparator() + builder.toString());
       websiteRootCategories.put(rootCategory.getName(), rootCategory);
       webserviceRootCategories.put(rootCategory.getName(), rootCategory);
     }
@@ -87,13 +93,14 @@ public class EuPathCategoriesFactory {
     String[] scopes2 = { MENU};
     for (String[] recordClassInfo : webSiteClasses) {
       TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes2);
-      List mapList =  new ArrayList<Map<String, SearchCategory>>();
+      List<Map<String, SearchCategory>> mapList =  new ArrayList<Map<String, SearchCategory>>();
       mapList.add(websiteCategories);
       SearchCategory rootCategory = prunedOntologyTree.mapStructure(new TreeNodeToSeachCategoryMapper(mapList));
       rootCategory.setDisplayName(recordClassInfo[0]);
       rootCategory.setName(recordClassInfo[1]);
       StringBuilder builder = new StringBuilder();
       rootCategory.prettyPrint(builder, "");
+      LOG.info(System.lineSeparator() + builder.toString());
       websiteRootCategories.put(rootCategory.getName(), rootCategory);
     }
 
@@ -101,7 +108,7 @@ public class EuPathCategoriesFactory {
     String[] scopes3 = { WEBSERVICE };
     for (String[] recordClassInfo : webServiceClasses) {
       TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes3);
-      List mapList =  new ArrayList<Map<String, SearchCategory>>();
+      List<Map<String, SearchCategory>> mapList =  new ArrayList<Map<String, SearchCategory>>();
       mapList.add(webserviceCategories);
       SearchCategory rootCategory = prunedOntologyTree.mapStructure(new TreeNodeToSeachCategoryMapper(mapList));
       rootCategory.setDisplayName(recordClassInfo[0]);
@@ -115,7 +122,7 @@ public class EuPathCategoriesFactory {
     String[] scopes4 = { INTERNAL };
     for (String[] recordClassInfo : datasetClasses) {
       TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes4);
-      List mapList =  new ArrayList<Map<String, SearchCategory>>();
+      List<Map<String, SearchCategory>> mapList =  new ArrayList<Map<String, SearchCategory>>();
       mapList.add(datasetCategories);
       SearchCategory rootCategory = prunedOntologyTree.mapStructure(new TreeNodeToSeachCategoryMapper(mapList));
       rootCategory.setDisplayName(recordClassInfo[0]);
