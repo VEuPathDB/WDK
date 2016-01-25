@@ -135,7 +135,7 @@ public class GuestRemover extends BaseCLI {
     }
     // create a new guest table with the guests created before the cutoff date
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + GUEST_TABLE + " AS SELECT user_id FROM " +
-        userSchema + "users " + " WHERE (is_guest = 1 OR (last_active is NULL AND user_id NOT IN (select distinct user_id from USERLOGINS5.COMMENTS) ) ) AND register_time < to_date('" + cutoffDate +
+        userSchema + "users " + " WHERE (is_guest = 1 OR last_active is NULL) AND register_time < to_date('" + cutoffDate +
         "', 'yyyy/mm/dd')", "backup-create-guest-table");
     SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX " + GUEST_TABLE + "_ix01 ON " + GUEST_TABLE +
         " (user_id)", "create-guest-index");
