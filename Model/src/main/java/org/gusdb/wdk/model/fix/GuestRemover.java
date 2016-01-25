@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.WdkModel;
  * Starting from build-23, we no longer back up user data, and will just delete guest data for each release.
  * Starting build 24 we add deletion of deleted strategies/steps and deletion of steps not connected to a strategy
  * Starting build 25 we move all cleaning activity to its own script CleanBrokenStratsSteps
+ * Starting build 27 we select not only guest users but also last_active null users
  * @author Jerric
  *
  */
