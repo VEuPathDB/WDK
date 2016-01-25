@@ -156,6 +156,7 @@ public class SearchCategory extends WdkModelBase {
       if ((strict && usedBy != null && cusedBy != null && cusedBy.equalsIgnoreCase(usedBy)) ||
           (usedBy == null || cusedBy == null || cusedBy.equalsIgnoreCase(usedBy))) {
         categories.put(child.getName(), child);
+	logger.info("++++++++++++++++++" + child.getDisplayName());
       }
     }
     return categories;
@@ -296,7 +297,7 @@ public class SearchCategory extends WdkModelBase {
   }
 
   public void prettyPrint(StringBuilder builder, String indent) {
-    builder.append(indent + getDisplayName() + System.lineSeparator());
+    builder.append(indent + getName() + " : " + getDisplayName() + System.lineSeparator());
     for (String name : questionRefMap.keySet()) builder.append(indent + "  --" + name + System.lineSeparator());
     for (SearchCategory kid : children.values()) kid.prettyPrint(builder, indent + " ");
   }
