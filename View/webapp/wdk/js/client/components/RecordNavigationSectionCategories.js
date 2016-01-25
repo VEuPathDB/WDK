@@ -1,7 +1,7 @@
 import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
-import * as i from '../utils/Iterable';
+import * as i from '../utils/IterableUtils';
 import { preorder as preorderCategories } from '../utils/CategoryTreeIterators';
 import shallowEqual from '../utils/shallowEqual';
 import RecordNavigationItem from './RecordNavigationItem';

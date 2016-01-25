@@ -1,8 +1,42 @@
+import { seq } from './IterableUtils';
+
 // Helper function to push values into an array, and to return that array.
 // `push` returns the value added, so this is useful when we want the array
 // back. This is more performant than using `concat` which creates a new array.
 let pushInto = (array, ...values) =>
   (array.push(...values), array);
+
+// Tree iterators. These can be used in combination with for-of loops, or
+// with the Iterable util functions.
+function* preorder(root) {
+  yield root;
+  for (let child of root.children) {
+    yield* preorder(child);
+  }
+}
+
+function* postorder(root) {
+  for (let child of root.children) {
+    yield* postorder(child);
+  }
+  yield root;
+}
+
+export function preorderSeq(root) {
+  return seq({
+    [Symbol.iterator]() {
+      return preorder(root);
+    }
+  });
+}
+
+export function postorderSeq(root) {
+  return seq({
+    [Symbol.iterator]() {
+      return postorder(root);
+    }
+  });
+}
 
 /**
  * Reduce a tree to a single value.
