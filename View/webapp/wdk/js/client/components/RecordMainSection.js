@@ -1,6 +1,5 @@
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
-import get from 'lodash/object/get';
 import RecordMainCategorySection from './RecordMainCategorySection';
 import { wrappable } from '../utils/componentUtils';
 import { getPropertyValue } from '../utils/OntologyUtils';
@@ -32,8 +31,6 @@ let RecordMainSection = React.createClass({
       <div>
         {categories.map((category, index) => {
           let categoryName = getPropertyValue('label', category);
-          let attributes = this.props.attributes.filter(attr => attr.category == categoryName);
-          let tables = this.props.tables.filter(table => table.category == categoryName);
           let enumeration = parentEnumeration == null
             ? index + 1
             : parentEnumeration + '.' + (index + 1);
@@ -45,8 +42,6 @@ let RecordMainSection = React.createClass({
               category={category}
               record={record}
               recordClass={this.props.recordClass}
-              attributes={attributes}
-              tables={tables}
               isCollapsed={collapsedCategories.includes(categoryName)}
               collapsedTables={collapsedTables}
               onCategoryToggle={this.props.onCategoryToggle}

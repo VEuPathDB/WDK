@@ -1,11 +1,15 @@
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 import classnames from 'classnames';
-import get from 'lodash/object/get';
 import RecordAttribute from './RecordAttribute';
 import RecordTable from './RecordTable';
 import { wrappable } from '../utils/componentUtils';
-import { getId, getPropertyValue } from '../utils/OntologyUtils';
+import {
+  getId,
+  getTargetType,
+  getRefName,
+  getDisplayName
+} from '../utils/OntologyUtils';
 
 let RecordMainCategorySection = React.createClass({
 
@@ -42,11 +46,11 @@ let RecordMainCategorySection = React.createClass({
       collapsedTables,
       enumeration
     } = this.props;
-    let targetType = getPropertyValue('targetType', category);
+    let targetType = getTargetType(category);
 
     if (targetType === 'attribute') {
       // render attribute
-      let name = getPropertyValue('name', category);
+      let name = getRefName(category);
       let attribute = recordClass.attributes.find(a => a.name === name);
       if (attribute == null) throw new Error('Expected attribute for `' + name + '`, but got null');
       let { displayName } = attribute;
@@ -66,7 +70,7 @@ let RecordMainCategorySection = React.createClass({
 
     if (targetType === 'table') {
       // render table
-      let name = getPropertyValue('name', category);
+      let name = getRefName(category);
       let tableMeta = recordClass.tables.find(t => t.name === name);
       if (tableMeta == null) throw new Error('Expected table for `' + name + '`, but got null');
       let { displayName } = tableMeta;
@@ -100,7 +104,7 @@ let RecordMainCategorySection = React.createClass({
     }
 
     let id = getId(category);
-    let categoryName = getPropertyValue('label', category);
+    let categoryName = getDisplayName(category);
     let Header = 'h' + Math.min(depth + 1, 6);
     let headerClass = classnames({
       'wdk-RecordSectionHeader': depth === 1,
