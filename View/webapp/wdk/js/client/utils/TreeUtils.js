@@ -126,10 +126,10 @@ export let compactRootNodes = (root) =>
   export let isLeafNode = node => node.children.length === 0;
 
   /**
-   * Using recursion to return all the leaf node ids for the given node.
+   * Using recursion to return all the leaf nodes for the given node.
    * @param {Object} node representing root of subtree
-   * @param {Array} initial list of leaf node ids (optional)
-   * @return {Array} updated list of leaf node ids
+   * @param {Array} initial list of leaf nodes (optional)
+   * @return {Array} updated list of leaf nodes
    */
   export let getLeaves = (node, leaves=[]) => {
    if(!isLeafNode(node)) {
@@ -144,3 +144,41 @@ export let compactRootNodes = (root) =>
    }
    return leaves;
   };
+  
+  /**
+   * Using recursion to return all the branch nodes for a given node
+   * @param {Object} node representing root of subtree
+   * @param {Array} initial list of branch nodes (optional)
+   * @return {Array} updated list of branch nodes
+   */
+  export let getBranches = (node, branches=[]) => {
+	  if(!isLeafNode(node)) {
+	    branches.push(node);
+	    node.children.map(child => getBranches(child, branches));
+	  }
+	  return branches;
+	}
+
+
+	/**
+	 * Using recursion to descend the tree to find the node associate with the node id given
+	 * @param {String} nodeId of the node to find
+	 * @param {Array} list of the tree's top level nodes
+	 * @return {Object} the node corresponding to the node id or undefined if
+	 * not found.
+	 */ 
+	export let getNodeById = (nodeId, nodes) => {
+	  for(let i = 0; i < nodes.length; i++) {
+	    let node = undefined;
+	    if(nodes[i].id === nodeId) {
+	      return nodes[i];
+	    }
+	    if(nodes[i].children.length > 0) {
+	      node = getNodeById(nodeId, nodes[i].children);
+	      if(node !== undefined) {
+	        return node;
+	      }
+	    }
+	  }
+	  return undefined;
+	}
