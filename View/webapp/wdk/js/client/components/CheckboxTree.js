@@ -3,6 +3,7 @@ import IndeterminateCheckbox from './IndeterminateCheckbox';
 import AccordionButton from './AccordionButton';
 import {isLeafNode} from '../utils/TreeUtils';
 import {getLeaves} from '../utils/TreeUtils';
+import {getBranches} from '../utils/TreeUtils';
 import {getNodeById} from '../utils/TreeUtils';
 
 export default class CheckboxTree extends React.Component {
@@ -11,6 +12,12 @@ export default class CheckboxTree extends React.Component {
     super(props);
 
     // hard bind the toggle functions to the this checkbox tree component
+    this.selectAll = this.selectAll.bind(this);
+    this.clearAll = this.clearAll.bind(this);
+    this.expandAll = this.expandAll.bind(this);
+    this.collapseAll = this.collapseAll.bind(this);
+    this.toCurrent = this.toCurrent.bind(this);
+    this.toDefault = this.toDefault.bind(this);
     this.toggleExpansion = this.toggleExpansion.bind(this);
     this.toggleCheckbox = this.toggleCheckbox.bind(this);
   }
@@ -18,13 +25,11 @@ export default class CheckboxTree extends React.Component {
   componentWillMount() {
     // Use the expanded list given but apply business rules to populate the business list if no
     // expanded list is provided.
-    if(this.props.root) {
-      if(this.props.selectedList === null || this.props.selectedList === undefined) {
-        this.setSelectedList()
-      }
-      if (this.props.expandedList===null || this.props.expandedList===undefined) {
-        this.setExpandedList(this.props.tree, this.props.selectedList);
-      }
+    if(this.props.selectedList === null || this.props.selectedList === undefined) {
+      this.setSelectedList()
+    }
+    if (this.props.expandedList===null || this.props.expandedList===undefined) {
+      this.setExpandedList(this.props.tree, this.props.selectedList);
     }
   }
 
@@ -54,6 +59,52 @@ export default class CheckboxTree extends React.Component {
     this.props.updateExpandedListAction(expandedList);
   }
 
+
+  // selects all the tree's leaves and calls the appropriate update method in the action creator
+  selectAll() {
+    let selectedList = [];
+    this.props.tree.forEach(node =>
+      isLeafNode(node) ? selectedList.push(node.id) : selectedList.push(...getLeaves(node).map(leaf => leaf.id))
+    );
+    this.props.updateSelectedListAction(selectedList);
+  }
+
+
+  // clears the selected list and calls the appropriate update method in the action creator
+  clearAll() {
+    this.props.updateSelectedListAction([]);
+  }
+
+
+  // selects all the tree's branches and calls the appropriate update method in the action creator
+  expandAll() {
+    let expandedList = [];
+    this.props.tree.forEach(node => {
+      expandedList.push(...getBranches(node).map(branch => branch.id));
+    });
+    this.props.updateExpandedListAction(expandedList);
+  }
+
+
+  // clears the expanded list and calls the appropriate update method in the action creator
+  collapseAll() {
+    let expandedList = [];
+    this.props.updateExpandedListAction(expandedList);
+  }
+
+
+  // calls the appropriate method in the action creator to reload the original selects
+  toCurrent() {
+    console.log("toCurrent called");
+    this.props.loadCurrentSelectedListAction();
+  }
+
+
+  // calls the appropriate method in the action creator to load the default selects
+  toDefault() {
+    console.log("toDefault called");
+    this.props.loadDefaultSelectedListAction();
+  }
 
 
   // convey branch to be toggled to action creator - id indicates the node id to
@@ -163,51 +214,74 @@ export default class CheckboxTree extends React.Component {
 
   // render the checkbox tree at the current node
   render() {
-    let selectedList = this.props.selectedList;
+    return (
+      <div className="wdk-CheckboxTree" id={this.props.name}>
+        {this.renderLinks()}
+        <ul className="fa-ul wdk-CheckboxTree-list" key={"list_root"}>
+          {this.props.tree.map(function(node) {
+            return this.renderTreeNode(node);
+          }, this)}
+        </ul>
+        {this.renderLinks()}
+      </div>
+    );
+  }
+
+  renderTreeNode(node) {
     let expandedList = this.props.expandedList || this.defaultExpandedList;
     let toggleCheckbox = this.toggleCheckbox;
     let toggleExpansion = this.toggleExpansion;
+    let indeterminate = this.isIndeterminate(node, this.props.selectedList);
+    let selected = this.isSelected(node, this.props.selectedList);
+    let expanded = this.isExpanded(node, expandedList, this.props.selectedList);
+    let leaf = isLeafNode(node);
+    let nodeType = !leaf && !expanded ? "wdk-CheckboxTree-collapsedItem" :
+                   leaf ? "wdk-CheckboxTree-leafItem" : "wdk-CheckboxTree-expandedItem";
+
     return (
-        <ul className="fa-ul wdk-CheckboxTree-list" key={"list_" + parent}>
-          {this.props.tree.map(function(node) {
-            let indeterminate = this.isIndeterminate(node, selectedList);
-            let selected = this.isSelected(node, selectedList);
-            let expanded = this.isExpanded(node, expandedList, selectedList);
-            let leaf = isLeafNode(node);
-            let nodeType = !leaf && !expanded ? "wdk-CheckboxTree-collapsedItem" :
-                                         leaf ? "wdk-CheckboxTree-leafItem" : "wdk-CheckboxTree-expandedItem";
+      <li className={nodeType} key={"item_" + node.id}>
 
-            return (
-                <li className={nodeType} key={"item_" + node.id}>
+        <AccordionButton leaf={leaf}
+                         expanded={expanded}
+                         id={node.id}
+                         key = {"accordion_" + node.id}
+                         toggleExpansion={toggleExpansion}
+        />
+        <IndeterminateCheckbox
+          checked = {selected}
+          indeterminate = {indeterminate}
+          id={node.id}
+          key={"checkbox_" + node.id}
+          value={node.id}
+          toggleCheckbox={toggleCheckbox}
+        />
+        <label title={node.description} key={"label_" + node.id}>{node.displayName}</label>
+        {!leaf && expanded  ?
+          <ul className="fa-ul wdk-CheckboxTree-list" key={"list_" + node.id}>
+            {node.children.map(child => this.renderTreeNode(child))}
+          </ul> : "" }
+      </li>
+    )
+  }
 
-                  <AccordionButton leaf={leaf}
-                                   expanded={expanded}
-                                   id={node.id}
-                                   key = {"accordion_" + node.id}
-                                   toggleExpansion={toggleExpansion}
-                  />
-                  <IndeterminateCheckbox
-                      checked = {selected}
-                      indeterminate = {indeterminate}
-                      id={node.id}
-                      key={"checkbox_" + node.id}
-                      value={node.id}
-                      toggleCheckbox={toggleCheckbox}
-                  />
-                  <label title={node.description} key={"label_" + node.id}>{node.displayName}</label>
-                  {!leaf && expanded  ? <CheckboxTree tree={node.children}
-                                                            selectedList={selectedList}
-                                                            expandedList={expandedList}
-                                                            key={"childOf_" + node.id}
-                                                            updateSelectedListAction={this.props.updateSelectedListAction}
-                                                            updateExpandedListAction={this.props.updateExpandedListAction}
-                                                            root={false}
-                  /> : ""}
-                </li>
-            )
-          }, this)}
-        </ul>
-    );
+  renderLinks() {
+    let selectAll = this.selectAll;
+    let clearAll = this.clearAll;
+    let expandAll = this.expandAll;
+    let collapseAll = this.collapseAll;
+    let toCurrent = this.toCurrent;
+    let toDefault = this.toDefault;
+    return (
+      <div className="wdk-CheckboxTree-links">
+        <a href="#" onClick={selectAll}>select all</a> |
+        <a href="#" onClick={clearAll}> clear all</a> |
+        <a href="#" onClick={expandAll}> expand all</a> |
+        <a href="#" onClick={collapseAll}> collapse all</a>
+        <br />
+        <a href="#" onClick={toCurrent}>reset to current</a> |
+        <a href="#" onClick={toDefault}> reset to default</a>
+      </div>
+    )
   }
 
 }

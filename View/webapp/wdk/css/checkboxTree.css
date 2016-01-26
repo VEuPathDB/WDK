@@ -1,6 +1,9 @@
 /* Enclosing div for checkbox tree */
-.wdk-checkboxTree {
-  margin-left: 1em;
+.wdk-CheckboxTree {
+  padding: 1em;
+  width:15em;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .wdk-CheckboxTree-list {
@@ -43,4 +46,9 @@
   font-size: 0.75em;
   top: 0.4em;
   left: -2.0em;
+}
+
+.wdk-CheckboxTree-links {
+  text-align: center;
+  font-size: 0.7em;
 }
