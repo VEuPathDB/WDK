@@ -43,42 +43,42 @@
         <div id="span_logic" class="qf_section">
           <ul class="menu_section">
 
-						<li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_recordclasses',2)">Run a new Search for</li>
+            <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_recordclasses',2)">Run a new Search for</li>
             
-						<%-- only allow transform if the step has previous step --%>
-						<c:if test="${step.previousStep != null || action != 'insert'}">
-							<%--   <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_transforms',2)">Convert results</li>    --%>
+            <%-- only allow transform if the step has previous step --%>
+            <c:if test="${step.previousStep != null || action != 'insert'}">
+              <%--   <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_transforms',2)">Convert results</li>    --%>
 
-							<c:set var="transforms" value="${recordClass.transformQuestions}" />
+              <c:set var="transforms" value="${recordClass.transformQuestions}" />
               <c:forEach items="${transforms}" var="transform">
-								<c:if test="${ fn:containsIgnoreCase(transform.displayName, 'ortholog')}">
+                <c:if test="${ fn:containsIgnoreCase(transform.displayName, 'ortholog')}">
                   <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',null,'sl_transforms',2,'next')">
                     ${transform.displayName}
                   </li>
-								</c:if>
+                </c:if>
               </c:forEach>
-							<%-- do not display anything if there is not transform for the record type
-									 <c:if test="${fn:length(transforms) == 0}">
+              <%-- do not display anything if there is not transform for the record type
+                   <c:if test="${fn:length(transforms) == 0}">
                      <li>No transform is available.</li>
-									 </c:if>
-									 --%>
+                   </c:if>
+                   --%>
 
-						</c:if>
+            </c:if>
 
-						<li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_baskets',2)">Add contents of Basket</li>
- 						<li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
+            <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_baskets',2)">Add contents of Basket</li>
+            <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
 
-						<%-- add rest of transforms --%>
+            <%-- add rest of transforms --%>
 
-						<c:if test="${step.previousStep != null || action != 'insert'}">
+            <c:if test="${step.previousStep != null || action != 'insert'}">
               <c:forEach items="${transforms}" var="transform">
-								<c:if test="${! fn:containsIgnoreCase(transform.displayName, 'ortholog')}">
-									<li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',null,'sl_transforms',2,'next')">
+                <c:if test="${! fn:containsIgnoreCase(transform.displayName, 'ortholog')}">
+                  <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',null,'sl_transforms',2,'next')">
                     ${transform.displayName}
                   </li>
-								</c:if>
+                </c:if>
               </c:forEach>
-						</c:if>
+            </c:if>
 
 
           </ul>  <%-- class menu_section --%>
@@ -118,7 +118,7 @@
         <c:set var="basketRecordClass" value="${recordClasses[rcName]}" />
         <c:set var="rcDisplay" value="${basketRecordClass.displayName}" />
         <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=basket&recordClass=${rcName}',null,'sl_baskets',3,'next')">
-					${rcDisplay} basket
+          ${rcDisplay} basket
         </li>
       </c:if>
     </c:forEach>
@@ -238,7 +238,7 @@
                   &&
                   (rcs.value.name eq 'TranscriptRecordClasses.TranscriptRecordClass' 
                   || rcs.value.name eq 'OrfRecordClasses.OrfRecordClass'
-				          || rcs.value.name eq 'DynSpanRecordClasses.DynSpanRecordClass'
+                  || rcs.value.name eq 'DynSpanRecordClasses.DynSpanRecordClass'
                   || rcs.value.name eq 'SnpChipRecordClasses.SnpChipRecordClass'
                   || rcs.value.name eq 'SnpRecordClasses.SnpRecordClass')
                   )}">
@@ -276,9 +276,9 @@
             <c:set var="cat" value="${catEntry.value}" />
             <c:forEach items="${cat.websiteQuestions}" var="q">
               <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',null,'sl_${cat.name}',5,'next')">${q.displayName}
-								<imp:questionFeature question="${q}" />
+                <imp:questionFeature question="${q}" />
 
-							</li>
+              </li>
             </c:forEach>
           </c:forEach>
         </c:otherwise>
@@ -308,20 +308,20 @@
 
 <%-- Initialize Add Step panel --%>
 <script type="text/javascript">
-	rclass = "${fn:replace(recordClass.fullName, '.', '_')}";
-	sdName = "${recordClass.shortDisplayName}";
+  rclass = "${fn:replace(recordClass.fullName, '.', '_')}";
+  sdName = "${recordClass.shortDisplayName}";
 
-	ele = $("li[onclick*='sl_recordclasses']")[0];
-	wdk.addStepPopup.callWizard(null,ele,'sl_recordclasses',2);
+  ele = $("li[onclick*='sl_recordclasses']")[0];
+  wdk.addStepPopup.callWizard(null,ele,'sl_recordclasses',2);
   // $("td#section-1 ul.menu_section:first > li:first").click();
 
   ele = $('li.category[onclick*= "' + rclass + '" ]')[0];
   wdk.addStepPopup.callWizard(null,ele,'sl_'+ rclass ,3);
   // $("td#section-2 ul.menu_section:first > li:first").click();
 
-	if( sdName === "Gene" ) {
-	ele = $('li.category[onclick*= "other_attributes" ]')[0];
-	wdk.addStepPopup.callWizard(null,ele,'sl_other_attributes',4);
-	}
+  if( sdName === "Gene" ) {
+  ele = $('li.category[onclick*= "other_attributes" ]')[0];
+  wdk.addStepPopup.callWizard(null,ele,'sl_other_attributes',4);
+  }
 
 </script>
