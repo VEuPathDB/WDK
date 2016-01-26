@@ -2,25 +2,12 @@ import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
 import get from 'lodash/object/get';
 import { wrappable } from '../utils/componentUtils';
-import { getId, getPropertyValue } from '../utils/OntologyUtils';
+import { getId, getLabel } from '../utils/OntologyUtils';
 import * as t from '../utils/TreeUtils';
 import * as i from '../utils/IterableUtils';
 import shallowEqual from '../utils/shallowEqual';
 import RecordNavigationItem from './RecordNavigationItem';
 import Tree from './Tree';
-
-let categoryNodeIsActive = (node) => {
-  let id = getId(node);
-  let categoryNode = document.getElementById(id);
-  if (categoryNode == null) return true;
-  let rect = categoryNode.getBoundingClientRect();
-  return rect.top < 12 && rect.bottom > -12;
-}
-
-let activeNodeReducer = (found, node) => {
-  return found == null && categoryNodeIsActive(node) ? node
-  : found;
-}
 
 /**
  * Handle scroll events to mark the active category in the nav panel.
@@ -55,10 +42,17 @@ class RecordNavigationSectionCategories extends Component {
   // If showChildren is true, iterate postorder to get the first left-most child
   // that is on-screen. Otherwise, we will only iterate top-level categories.
   setActiveCategory() {
-    let activeCategory = this.props.showChildren
+    let categories = this.props.showChildren
       ? t.preorderSeq({ children: this.props.categories })
-        .reduce(activeNodeReducer, null)
-      : this.props.categories.reduce(activeNodeReducer, null);
+      : this.props.categories;
+
+    let activeCategory = i.seq(categories).findLast(node => {
+      let id = getId(node);
+      let domNode = document.getElementById(id);
+      if (domNode == null) return;
+      let rect = domNode.getBoundingClientRect();
+      return rect.top < 12 && rect.bottom > -12;
+    });
 
     this.setState({ activeCategory });
   }
@@ -67,7 +61,7 @@ class RecordNavigationSectionCategories extends Component {
     return (
       <Tree
         tree={this.props.categories}
-        id={c => getPropertyValue('label', c)}
+        id={c => getLabel(c)}
         childNodes={c => c.children}
         node={RecordNavigationItem}
         showChildren={this.props.showChildren}
