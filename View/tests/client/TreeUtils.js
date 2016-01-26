@@ -104,12 +104,10 @@ test('pruneDescendantNodes', function(t) {
 
   t.deepEqual(prunedTree, expectedTree, 'prunedTree does not have expected shape.');
 
-  t.end();
 
-});
+  // Generate a tree where leaves have certain properties
 
-test('pruneDescendantNodes can replace pruneTreeByLeaves', function(t) {
-  let tree = {
+  let tree2 = {
     id: 1,
     children: [
       { id: 2, children: [] },
@@ -119,14 +117,14 @@ test('pruneDescendantNodes can replace pruneTreeByLeaves', function(t) {
     ]
   };
 
-  let prunedTree = TreeUtils.pruneDescendantNodes(n => n.children.length > 0 || n.id === 2, tree);
+  let prunedTree2 = TreeUtils.pruneDescendantNodes(n => n.children.length > 0 || n.id === 2, tree2);
 
-  t.deepEqual(prunedTree, {
+  t.deepEqual(prunedTree2, {
     id: 1,
     children: [
       { id: 2, children: [] }
     ]
-  }, 'prunedTree does not have expected shape.');
+  }, 'prunedTree2 does not have expected shape.');
 
   t.end();
 });
