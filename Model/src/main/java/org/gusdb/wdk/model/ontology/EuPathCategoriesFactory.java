@@ -33,8 +33,8 @@ public class EuPathCategoriesFactory {
   private Map<String, SearchCategory> datasetCategories = new HashMap<String, SearchCategory>();
   WdkModel model;
   
-  private String[][] webSiteAndServiceClasses = {{"Compounds", "CompoundRecordClasses.CompoundRecordClass"},  {"Genomic Segments", "DynSpanRecordClasses.DynSpanRecordClass"}, {"", "EstRecordClasses.EstRecordClass"}, 
-      {"Isolates", "IsolateRecordClasses.IsolateRecordClass"}, {"ORFs", "OrfRecordClasses.OrfRecordClass"}, {"Metabolic Pathways", "PathwayRecordClasses.PathwayRecordClass"}, {"Genomic Sequences", "SequenceRecordClasses.SequenceRecordClass"}, {"", "SnpChipRecordClasses.SnpChipRecordClass"}, {"SNPs", "SnpRecordClasses.SnpRecordClass"}};
+  private String[][] webSiteAndServiceClasses = {{"Compounds", "CompoundRecordClasses.CompoundRecordClass"},  {"Genomic Segments", "DynSpanRecordClasses.DynSpanRecordClass"}, {"ESTs", "EstRecordClasses.EstRecordClass"}, 
+      {"Isolates", "IsolateRecordClasses.IsolateRecordClass"}, {"ORFs", "OrfRecordClasses.OrfRecordClass"}, {"Metabolic Pathways", "PathwayRecordClasses.PathwayRecordClass"}, {"Genomic Sequences", "SequenceRecordClasses.SequenceRecordClass"}, {"SNPs (from Chips)", "SnpChipRecordClasses.SnpChipRecordClass"}, {"SNPs", "SnpRecordClasses.SnpRecordClass"}};
   
   //  private String[][] webServiceClasses = {{"Organisms", "OrganismRecordClasses.OrganismRecordClass"}, {"Genes", "TranscriptRecordClasses.TranscriptRecordClass"}};
   
