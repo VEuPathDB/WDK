@@ -207,12 +207,9 @@ export function first(iterable) {
 }
 
 export function last(iterable) {
-  let iterator = iterable[Symbol.iterator]();
-  let current, value;
-  while ( current = iterator.next(), !current.done) {
-    value = current.value;
-  }
-  return value;
+  let last;
+  for (last of iterable) { }
+  return last;
 }
 
 export function rest(iterable) {

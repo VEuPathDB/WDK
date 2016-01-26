@@ -22,68 +22,56 @@ function* postorder(root) {
   yield root;
 }
 
-export function preorderSeq(root) {
-  return seq({
+
+/**
+ * Create a Seq of tree nodes in preorder sequence.
+ *
+ *              1
+ *             / \
+ *            /   \
+ *           /     \
+ *          2       3
+ *         / \     /
+ *        4   5   6
+ *       /       / \
+ *      7       8   9
+ *
+ *     preorder:    1 2 4 7 5 3 6 8 9
+ *
+ * @param {Object} root
+ * @return {Seq}
+ */
+export let preorderSeq = (root) =>
+  seq({
     [Symbol.iterator]() {
       return preorder(root);
     }
-  });
-}
+  })
 
-export function postorderSeq(root) {
-  return seq({
+/**
+ * Create a Seq of tree nodes in postorder sequence.
+ *
+ *              1
+ *             / \
+ *            /   \
+ *           /     \
+ *          2       3
+ *         / \     /
+ *        4   5   6
+ *       /       / \
+ *      7       8   9
+ *
+ *     postorder:   7 4 5 2 8 9 6 3 1
+ *
+ * @param {Object} root
+ * @return {Seq}
+ */
+export let postorderSeq = (root) =>
+  seq({
     [Symbol.iterator]() {
       return postorder(root);
     }
-  });
-}
-
-/**
- * Reduce a tree to a single value.
- *
- * @param {Function} fn Reducer function called with two arguments for each
- * node: (accumulatedValue, node)
- * @param {any} value Seed value used for the initial accumulatedValue of `fn`.
- * If ommitted, the root node will be used for the initialValue, and the first
- * child of the root node will be used for the first node.
- * @param {Object} root Root node of tree.
- */
-export let reduce = (fn, value, root) =>
-  root == undefined ? value.children.reduce(reduce.bind(null, fn), value)
-  : root.children.reduce(reduce.bind(null, fn), fn(value, root))
-
-/**
- * Like reduce, but iterate bottom-up.
- *
- * @param {Function} fn Reducer function called with two arguments for each
- * node: (accumulatedValue, node)
- * @param {any} value Seed value used for the initial accumulatedValue of `fn`.
- * If ommitted, the root node will be used for the initialValue, and the first
- * child of the root node will be used for the first node.
- * @param {Object} root Root node of tree.
- */
-export let reduceBottom = (fn, value, root) =>
-  root === undefined ? fn(value.children.reduce(reduceBottom.bind(null, fn)), value)
-  : fn(root.children.reduce(reduceBottom.bind(null, fn), value), root)
-
-/**
- * Create an array of nodes that satisfy a condition.
- *
- * @param {Function} fn Predicate function. Nodes for which this returns true
- * will be included in the returned list.
- * @param {Object} root Root of tree.
- */
-export let filter = (fn, root) =>
-  reduce((items, node) => fn(node) ? pushInto(items, node) : items, [], root)
-
-/**
- * Return the first node that satisfies a condition.
- *
- * @param {Function} fn Predicate function.
- * @param {Object} root Root of tree.
- */
-export let find = (fn, root) =>
-  reduce((found, node) => found == null && fn(node) ? node : found, null, root)
+  })
 
 /**
  * For any node in a tree that does not pass `nodePredicate`, replace it with
@@ -127,10 +115,10 @@ export let compactRootNodes = (root) =>
   root.children.length === 1 ? compactRootNodes(root.children[0])
   : root
 
-  
+
 //Utility functions for CheckboxTree React component
 
-  /** 
+  /**
    * Simple convenience method to identify nodes that are leaves
    * @param {Object} node representing root of subtree (possibly a leaf)
    * @return {Boolean} indicates true if the node is a leaf and false otherwise
