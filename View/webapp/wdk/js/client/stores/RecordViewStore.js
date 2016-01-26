@@ -1,9 +1,7 @@
 import { ReduceStore } from 'flux/utils';
 import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
-import * as i from '../utils/IterableUtils';
-import { reduceBottom as reduceTree } from '../utils/TreeUtils';
+import { postorderSeq } from '../utils/TreeUtils';
 import { nodeHasProperty, getPropertyValues } from '../utils/OntologyUtils';
-import { postorder as postorderCategories } from '../utils/CategoryTreeIterators';
 
 let {
   LOADING,
@@ -87,12 +85,11 @@ export default class RecordViewStore extends ReduceStore {
   }
 }
 
-function updateList(item, add, list = []) {
-  return add ? list.concat(item) : list.filter(x => x !== item);
-}
+let updateList = (item, add, list = []) =>
+  add ? list.concat(item) : list.filter(x => x !== item)
 
-function makeCategoryWordsMap(recordClass, root) {
-  return reduceTree((map, node) => {
+let makeCategoryWordsMap = (recordClass, root) =>
+  postorderSeq(root).reduce((map, node) => {
     let words = [];
 
     // add current node's displayName and description
@@ -120,5 +117,4 @@ function makeCategoryWordsMap(recordClass, root) {
     }
 
     return map.set(node.properties, words.join('\0').toLowerCase());
-  }, new Map, root);
-}
+  }, new Map)
