@@ -1,6 +1,6 @@
 import { ReduceStore } from 'flux/utils';
 import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
-import * as i from '../utils/Iterable';
+import * as i from '../utils/IterableUtils';
 import { reduceBottom as reduceTree } from '../utils/TreeUtils';
 import { nodeHasProperty, getPropertyValues } from '../utils/OntologyUtils';
 import { postorder as postorderCategories } from '../utils/CategoryTreeIterators';

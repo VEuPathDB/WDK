@@ -4,6 +4,7 @@ import get from 'lodash/object/get';
 import { wrappable } from '../utils/componentUtils';
 import { getId, getPropertyValue } from '../utils/OntologyUtils';
 import * as t from '../utils/TreeUtils';
+import * as i from '../utils/IterableUtils';
 import shallowEqual from '../utils/shallowEqual';
 import RecordNavigationItem from './RecordNavigationItem';
 import Tree from './Tree';
@@ -55,7 +56,8 @@ class RecordNavigationSectionCategories extends Component {
   // that is on-screen. Otherwise, we will only iterate top-level categories.
   setActiveCategory() {
     let activeCategory = this.props.showChildren
-      ? t.reduce(activeNodeReducer, null, { children: this.props.categories })
+      ? t.preorderSeq({ children: this.props.categories })
+        .reduce(activeNodeReducer, null)
       : this.props.categories.reduce(activeNodeReducer, null);
 
     this.setState({ activeCategory });
