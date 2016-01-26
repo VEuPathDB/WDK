@@ -18,12 +18,14 @@ export default class AccordionButton extends React.Component {
 
   render() {
     let handleExpansion = this.handleExpansion;
-    let icon = this.props.icon;
+    let expanded = this.props.expanded;
+    let leaf = this.props.leaf;
     let id = this.props.id;
 
     return (
       <span className="wdk-CheckboxTree-accordionButton" onClick={handleExpansion}>
-        {icon}
+        {expanded && !leaf ? <i className="fa-li fa fa-caret-down"></i> : ""}
+        {!expanded && !leaf ? <i className="fa-li fa wdk-CheckboxTree-icon fa-caret-right"></i> : ""}
       </span>
     )
   }

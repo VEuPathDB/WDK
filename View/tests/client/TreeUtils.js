@@ -1,6 +1,48 @@
 import test from 'tape';
 import * as TreeUtils from '../../webapp/wdk/js/client/utils/TreeUtils';
 
+test('preorderSeq', function(t) {
+  let tree = {
+    id: 1,
+    children: [
+      { id: 2, children: [] },
+      { id: 3, children: [
+        { id: 4, children: [] }
+      ]}
+    ]
+  };
+
+  let ids = TreeUtils.preorderSeq(tree)
+    .map(n => n.id)
+    .toArray();
+
+  t.deepEqual(ids, [ 1, 2, 3, 4]);
+
+  t.end();
+
+});
+
+test('postorderSeq', function(t) {
+  let tree = {
+    id: 1,
+    children: [
+      { id: 2, children: [] },
+      { id: 3, children: [
+        { id: 4, children: [] }
+      ]}
+    ]
+  };
+
+  let ids = TreeUtils.postorderSeq(tree)
+    .map(n => n.id)
+    .toArray();
+
+  t.deepEqual(ids, [ 2, 4, 3, 1 ]);
+
+  t.end();
+
+});
+
 test('reduce', function(t) {
   let tree = {
     id: 1,

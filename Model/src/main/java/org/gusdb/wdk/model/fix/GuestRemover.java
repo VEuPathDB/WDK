@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.WdkModel;
  * Starting from build-23, we no longer back up user data, and will just delete guest data for each release.
  * Starting build 24 we add deletion of deleted strategies/steps and deletion of steps not connected to a strategy
  * Starting build 25 we move all cleaning activity to its own script CleanBrokenStratsSteps
+ * Starting build 27 we select not only guest users but also last_active null users
  * @author Jerric
  *
  */
@@ -135,7 +136,7 @@ public class GuestRemover extends BaseCLI {
     }
     // create a new guest table with the guests created before the cutoff date
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + GUEST_TABLE + " AS SELECT user_id FROM " +
-        userSchema + "users " + " WHERE is_guest = 1 AND register_time < to_date('" + cutoffDate +
+        userSchema + "users " + " WHERE (is_guest = 1 OR last_active is NULL) AND register_time < to_date('" + cutoffDate +
         "', 'yyyy/mm/dd')", "backup-create-guest-table");
     SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX " + GUEST_TABLE + "_ix01 ON " + GUEST_TABLE +
         " (user_id)", "create-guest-index");
