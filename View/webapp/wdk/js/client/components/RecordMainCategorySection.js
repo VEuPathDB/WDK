@@ -57,14 +57,14 @@ let RecordMainCategorySection = React.createClass({
       let value = record.attributes[name]
       if (value == null) return null;
       return (
-        <div id={name} className={`wdk-RecordAttributeSectionItem wdk-RecordAttributeSectionItem__${name}`}>
-          <div className="wdk-RecordAttributeName">
-            <strong>{displayName}</strong>
-          </div>
-          <div className="wdk-RecordAttributeValue">
-            <RecordAttribute value={value} record={record} recordClass={recordClass}/>
-          </div>
-        </div>
+        <RecordAttribute
+          {...attribute}
+          value={value}
+          record={record}
+          recordClass={recordClass}
+          id={name}
+          className={`wdk-RecordAttributeSectionItem wdk-RecordAttributeSectionItem__${name}`}
+        />
       );
     }
 
