@@ -87,7 +87,7 @@
       <td id="section-2"><div class="qf_section"></div></td>
       <td id="section-3"><div class="qf_section"></div></td>
       <td id="section-4"><div class="qf_section"></div></td>
-      <!--<td id="section-5"><div class="qf_section"></div></td>-->    
+  <!--     <td id="section-5"><div class="qf_section"></div></td> -->
   </tr></table>
 </div> <!--End Section Div-->
 
@@ -95,6 +95,7 @@
 
 <imp:addStepFooter/>
 
+<!-- ====================================== SECTION 2 contents for each option in SECTION 1 above , initially hidden divs ============================= -->
 
 <%-- insert/add basket section --%>
 <div class="original" id="sl_baskets" style="display:none">
@@ -228,7 +229,8 @@
 </c:forEach>
 
 
-<%-- section to render question list --%>
+<!-- SECTION 2 content (first option in SECTION will be opened by default --in script below); it contains question categories first level: the recordtypes -->
+
 <div id="sl_recordclasses" class="original" style="display:none">
   <ul class="menu_section">
     <c:forEach var="rcs" items="${model.websiteRootCategories}">
@@ -248,16 +250,20 @@
   </ul>
 </div>
 
+
+
+<!-- ==================  SECTION 3 content : in each record type: questions OR (for genes : multicategory true ) question categories  ============================= -->
+
 <c:forEach var="rcs" items="${model.websiteRootCategories}">
   <c:set var="classId" value="${fn:replace(rcs.value.name,'.','_')}"/>
   <div class="original" id="sl_${classId}" style="display:none">
-    <ul class="menu_section">
+    <ul class="menu_section">                                   <%--  <li>${rcs.value.name} is multicategory: ${rcs.value.multiCategory}</li> --%>
       <c:choose>
-        <c:when test="${rcs.value.multiCategory}">
-          <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
-            <c:set var="cat" value="${catEntry.value}" />
+        <c:when test="${rcs.value.multiCategory}">                           
+          <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">    <%-- GENES : section 3 CATEGORIES --%>
+            <c:set var="cat" value="${catEntry.value}" />       
             <c:choose>
-              <c:when test="${cat.flattenInMenu eq true}">
+              <c:when test="${cat.flattenInMenu eq true}">      <!-- if flattenInMenu true, we show questions instead of categories -->
                 <c:forEach items="${cat.websiteQuestions}" var="question">
                   <li data-flatten="${cat.flattenInMenu}" onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${question.fullName}&stage=question',null,'sl_${cat.name}',4,'next')">
                     ${question.displayName}
@@ -265,46 +271,55 @@
                   </li>
                 </c:forEach>
               </c:when>
-              <c:otherwise>
+              <c:otherwise>                                          
                 <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_${cat.name}',4)">${cat.displayName}</li>
               </c:otherwise>
             </c:choose>
           </c:forEach>
         </c:when>
-        <c:otherwise>
+        <c:otherwise>                                                     <%-- OTHER RECORDTYPES : section 3 QUESTIONS--%>
           <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
             <c:set var="cat" value="${catEntry.value}" />
-            <c:forEach items="${cat.websiteQuestions}" var="q">
-              <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',null,'sl_${cat.name}',5,'next')">${q.displayName}
+            <c:forEach items="${cat.websiteQuestions}" var="q">                                                                 <%-- check this number, was 5 --%>
+              <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',null,'sl_${cat.name}',3,'next')">${q.displayName}
                 <imp:questionFeature question="${q}" />
-
               </li>
             </c:forEach>
           </c:forEach>
         </c:otherwise>
-      </c:choose>
+      </c:choose> 
     </ul>
     
     
   </div>
 </c:forEach>
 
-<c:forEach var="rcs" items="${model.websiteRootCategories}">
+<!-- ==================  SECTION 4 content ( only for Section 3 GENE categories) :  QUESTIONS and subcategories    ============================= -->
+
+<c:forEach var="rcs" items="${model.websiteRootCategories}">        
   <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
     <c:set var="cat" value="${catEntry.value}" />
     <div class="original" id="sl_${cat.name}" style="display:none">
       <ul class="menu_section">
         <c:forEach items="${cat.websiteQuestions}" var="question">
-          <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${question.fullName}&stage=question',null,'sl_${cat.name}',4,'next')">
+          <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${question.fullName}&stage=question',null,'sl_${cat.name}',5,'next')">
             ${question.displayName}
             <imp:questionFeature question="${question}" />
           </li>
         </c:forEach>
+
+        <c:forEach items="${cat.websiteChildren}" var="categories">
+            <c:set var="cat" value="${categories.value}" />
+            <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_${cat.name}',5)">${cat.displayName}</li>
+        </c:forEach>
+
       </ul>
     </div>
   </c:forEach>
 </c:forEach>
 
+
+<!-- ==================  INIT PAGE WITH DEFAULT OPENED ==================  -->
 
 <%-- Initialize Add Step panel --%>
 <script type="text/javascript">
@@ -320,8 +335,8 @@
   // $("td#section-2 ul.menu_section:first > li:first").click();
 
   if( sdName === "Gene" ) {
-  ele = $('li.category[onclick*= "other_attributes" ]')[0];
-  wdk.addStepPopup.callWizard(null,ele,'sl_other_attributes',4);
+  ele = $('li.category[onclick*= "Evolutionary_biology" ]')[0];
+  wdk.addStepPopup.callWizard(null,ele,'sl_Evolutionary_biology',4);
   }
 
 </script>

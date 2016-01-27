@@ -691,7 +691,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       ((OntologyFactoryImpl)ontology).resolveReferences(this);
     }
     
-		//  if (ontologyFactoryMap.size() != 0) eupathCategoriesFactory = new EuPathCategoriesFactory(this);
+    // comment out to use old categories
+    if (ontologyFactoryMap.size() != 0) eupathCategoriesFactory = new EuPathCategoriesFactory(this);
   }
 
   private void excludeResources() throws WdkModelException {
