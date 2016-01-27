@@ -46,7 +46,10 @@ module.exports = {
   plugins: node_env !== 'production'
     ? [
         new webpack.DefinePlugin({
-          __DEV__: "true"
+          __DEV__: "true",
+          "process.env": {
+            NODE_ENV: JSON.stringify("development")
+          }
         }),
         commonsPlugin
       ]
