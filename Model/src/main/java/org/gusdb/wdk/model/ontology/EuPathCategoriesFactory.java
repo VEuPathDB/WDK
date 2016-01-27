@@ -157,12 +157,8 @@ public class EuPathCategoriesFactory {
       else {
         category.setDescription(
             nodeContents.containsKey("hasDefinition") ? nodeContents.get("hasDefinition").get(0) : null);
-	String label = nodeContents.containsKey("label") ? nodeContents.get("label").get(0) : null;
-	String name = nodeContents.containsKey("name") ? nodeContents.get("name").get(0) : label;
-	String displayName = nodeContents.containsKey("displayName") ? nodeContents.get("displayName").get(0) : name;
-	name = displayName;
+	String displayName = nodeContents.containsKey("EuPathDB alternative term") ? nodeContents.get("EuPathDB alternative term").get(0) : null;
 
-        category.setName( name);
         category.setDisplayName(displayName);
         category.setShortDisplayName(nodeContents.containsKey("shortDisplayName")
             ? nodeContents.get("shortDisplayName").get(0) : null);
@@ -177,8 +173,9 @@ public class EuPathCategoriesFactory {
           }
         }
       }
-      if (category.getName() != null) {
-	category.setName(category.getName().replaceAll(" ", "_"));
+      if (category.getDisplayName() != null) {
+	category.setName(category.getDisplayName().replaceAll(" ", "_"));
+	category.setName(category.getName().replaceAll(",", "_"));
 	for (Map<String, SearchCategory> map : maps) map.put(category.getName(), category);
       }
       return category;
