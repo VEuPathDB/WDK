@@ -30,11 +30,10 @@ export default class UserActionCreator extends ActionCreator {
       })
     }, error => {
       this._dispatch({
-        type: APP_ERROR,
+        type: actionTypes.APP_ERROR,
         payload: { error }
       });
-    })
-    .catch(error => console.assert(error));
+    });
   }
 }
 
