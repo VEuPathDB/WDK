@@ -1136,7 +1136,7 @@ white-space: nowrap;
   margin-left: -5px;
 }
 .qf_section{
-  height:190px;
+  height:250px;   /* 190px; */
   margin-bottom:-11px;
   margin-top:22px;
   overflow-y:scroll;
