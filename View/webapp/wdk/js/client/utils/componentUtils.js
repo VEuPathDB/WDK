@@ -105,6 +105,16 @@ export function safeHtml(str, props = null, Component = 'span') {
 }
 
 /**
+ * Makes a copy of the passed original object, subtracting the properties with
+ * names in the propsToFilter arg, which should be Array[String].
+ */
+export function filterOutProps(orig, propsToFilter) {
+  return Object.keys(orig).reduce((obj, key) =>
+    (propsToFilter.indexOf(key) !== -1 ? obj :
+      Object.assign(obj, { [key]: orig[key] })), {});
+};
+
+/**
  * Generates HTML markup for an attribute using duck-typing
  */
 export function formatAttributeValue(value) {

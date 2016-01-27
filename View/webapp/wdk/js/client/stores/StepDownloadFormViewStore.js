@@ -7,6 +7,7 @@ let {
   STEP_DOWNLOAD_INITIALIZE_STORE,
   STEP_DOWNLOAD_SELECT_REPORTER,
   STEP_DOWNLOAD_FORM_UPDATE,
+  STEP_DOWNLOAD_FORM_UI_UPDATE,
   APP_ERROR
 } = StepDownloadFormViewActionCreator.actionTypes;
 
@@ -25,6 +26,7 @@ export default class StepDownloadFormViewStore extends ReduceStore {
       isLoading: false,
       selectedReporter: null,
       formState: null,
+      formUiState: null
 
     };
   }
@@ -43,6 +45,9 @@ export default class StepDownloadFormViewStore extends ReduceStore {
 
       case STEP_DOWNLOAD_FORM_UPDATE:
         return updateFormState(state, payload);
+
+      case STEP_DOWNLOAD_FORM_UI_UPDATE:
+        return updateFormUiState(state, payload);
 
       case APP_ERROR:
         return formLoading(state, { isLoading: false });
@@ -77,5 +82,11 @@ function updateReporter(state, payload) {
 function updateFormState(state, payload) {
   return Object.assign({}, state, {
     formState : payload.formState
+  });
+}
+
+function updateFormUiState(state, payload) {
+  return Object.assign({}, state, {
+    formUiState : payload.formUiState
   });
 }
