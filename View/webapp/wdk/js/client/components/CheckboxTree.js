@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{PropTypes} from 'react';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import AccordionButton from './AccordionButton';
 import {isLeafNode} from '../utils/TreeUtils';
@@ -8,6 +8,10 @@ import {getNodeById} from '../utils/TreeUtils';
 
 export default class CheckboxTree extends React.Component {
 
+  /**
+   * Hards binds all the user interaction methods to this object.
+   * @param props - component properties
+   */
   constructor(props) {
     super(props);
 
@@ -22,29 +26,39 @@ export default class CheckboxTree extends React.Component {
     this.toggleCheckbox = this.toggleCheckbox.bind(this);
   }
 
+
+  /**
+   * Insure that null selectedList or expandedList are replaced with appropriate defaults.
+   */
   componentWillMount() {
     // Use the expanded list given but apply business rules to populate the business list if no
     // expanded list is provided.
-    if(this.props.selectedList === null || this.props.selectedList === undefined) {
+    if (this.props.selectedList === null || this.props.selectedList === undefined) {
       this.setSelectedList()
     }
-    if (this.props.expandedList===null || this.props.expandedList===undefined) {
+    if (this.props.expandedList === null || this.props.expandedList === undefined) {
       this.setExpandedList(this.props.tree, this.props.selectedList);
     }
   }
 
-  // Used to update a selected list
+  /**
+   *  Used to update a selected list
+   *  Invokes action callback for updating the new selected list.
+   */
   setSelectedList(selectedList = []) {
-    this.props.updateSelectedListAction(selectedList);
+    this.props.onSelectedListUpdated(selectedList);
   }
 
 
-  // Used to replace a non-existant expanded list with one obeying business rules (called recursively)
-  setExpandedList(nodes, selectedList, expandedList=[]) {
+  /**
+   * Used to replace a non-existant expanded list with one obeying business rules (called recursively).
+   * Invokes action callback for updating the new expanded list.
+   */
+  setExpandedList(nodes, selectedList, expandedList = []) {
 
     // If the selected list is empty or non-existant, the expanded list is likewise empty and there is nothing
     // more to do.
-    if(!selectedList) {
+    if (!selectedList) {
       nodes.forEach(node => {
 
         // According to the business rule, indeterminate nodes get expanded.
@@ -56,110 +70,126 @@ export default class CheckboxTree extends React.Component {
         this.setExpandedList(node.children, selectedList, expandedList);
       });
     }
-    this.props.updateExpandedListAction(expandedList);
+    this.props.onExpandedListUpdated(expandedList);
   }
 
 
-  // selects all the tree's leaves and calls the appropriate update method in the action creator
+  /**
+   * Selects all the tree's leaves and calls the appropriate update method in the action creator
+   */
   selectAll() {
     let selectedList = [];
     this.props.tree.forEach(node =>
       isLeafNode(node) ? selectedList.push(node.id) : selectedList.push(...getLeaves(node).map(leaf => leaf.id))
     );
-    this.props.updateSelectedListAction(selectedList);
+    this.setSelectedList(selectedList);
   }
 
 
-  // clears the selected list and calls the appropriate update method in the action creator
+  /**
+   * Clears the selected list and calls the appropriate update method in the action creator
+   */
   clearAll() {
-    this.props.updateSelectedListAction([]);
+    this.setSelectedList();
   }
 
 
-  // selects all the tree's branches and calls the appropriate update method in the action creator
+  /**
+   * Selects all the tree's branches and calls the appropriate update method in the action creator
+   */
   expandAll() {
     let expandedList = [];
     this.props.tree.forEach(node => {
       expandedList.push(...getBranches(node).map(branch => branch.id));
     });
-    this.props.updateExpandedListAction(expandedList);
+    this.props.onExpandedListUpdated(expandedList);
   }
 
 
-  // clears the expanded list and calls the appropriate update method in the action creator
+  /**
+   * Clears the expanded list and calls the appropriate update method in the action creator
+   */
   collapseAll() {
     let expandedList = [];
-    this.props.updateExpandedListAction(expandedList);
+    this.props.onExpandedListUpdated(expandedList);
   }
 
 
-  // calls the appropriate method in the action creator to reload the original selects
+  /**
+   * Calls the appropriate method in the action creator to reload the original selects
+   */
   toCurrent() {
     console.log("toCurrent called");
-    this.props.loadCurrentSelectedListAction();
+    this.props.onCurrentSelectedListLoaded();
   }
 
 
-  // calls the appropriate method in the action creator to load the default selects
+  /**
+   * Calls the appropriate method in the action creator to load the default selects
+   */
   toDefault() {
     console.log("toDefault called");
-    this.props.loadDefaultSelectedListAction();
+    this.props.onDefaultSelectedListLoaded();
   }
 
 
-  // convey branch to be toggled to action creator - id indicates the node id to
-  // be changed.
+  /**
+   * Convey branch to be toggled to action creator - id indicates the node id to
+   * be changed.
+   */
   toggleExpansion(id) {
     let newExpandedList = this.props.expandedList;
 
     // if the expanded list is null (unlikely, but possible) create an intial
     // expanded list that obeys business rules.
-    if(newExpandedList === null || newExpandedList === undefined) {
+    if (newExpandedList === null || newExpandedList === undefined) {
       newExpandedList = this.setExpandedList(this.props.tree, this.props.selectedList);
     }
     let index = newExpandedList.indexOf(id);
     index <= -1 ? newExpandedList.push(id) : newExpandedList.splice(index, 1);
-    this.props.updateExpandedListAction(newExpandedList);
+    this.props.onExpandedListUpdated(newExpandedList);
   }
 
 
-  // convey checkbox to be toggled to action creator
-  // new approach:
-  // if toggled checkbox is a selected leaf - add the leaf to the select list to be returned
-  // if toggled checkbox is an unselected leaf - remove the leaf from the select list to be returned
-  // if toggled checkbox is a selected non-leaf - identify the node's leaves (cached) and add them to the select list to be returned
-  // if toggled checkbox is an unselected leaf - identify the node's leaves (cached) and remove them from the select list to be returned
+  /**
+   * Convey checkbox to be toggled to action creator
+   * If toggled checkbox is a selected leaf - add the leaf to the select list to be returned
+   * If toggled checkbox is an unselected leaf - remove the leaf from the select list to be returned
+   * If toggled checkbox is a selected non-leaf - identify the node's leaves (cached) and add them to the select list to be returned
+   * If toggled checkbox is an unselected leaf - identify the node's leaves (cached) and remove them from the select list to be returned
+   */
   toggleCheckbox(nodeId, selected) {
     let newSelectedList = this.props.selectedList;
     let node = getNodeById(nodeId, this.props.tree);
-    if(isLeafNode(node)) {
-      let index =  newSelectedList.indexOf(nodeId);
+    if (isLeafNode(node)) {
+      let index = newSelectedList.indexOf(nodeId);
       index > -1 ? newSelectedList.splice(index, 1) : newSelectedList.push(nodeId);
     }
     else {
       let leafIds = getLeaves(node).map(leafNode => leafNode.id);
       leafIds.forEach(leafId => {
-        let index =  newSelectedList.indexOf(leafId);
-        if(selected && index === -1) {
+        let index = newSelectedList.indexOf(leafId);
+        if (selected && index === -1) {
           newSelectedList.push(leafId);
         }
-        if(!selected && index > -1) {
+        if (!selected && index > -1) {
           newSelectedList.splice(index, 1);
         }
       });
     }
 
     // convey new selected list back to action creator
-    this.props.updateSelectedListAction(newSelectedList);
+    this.props.onSelectedListUpdated(newSelectedList);
   }
 
 
-
-  // returns boolean indicating whether the given node is selected
+  /**
+   * Returns boolean indicating whether the given node is selected
+   */
   isSelected(node, selectedList) {
 
     // If the selected list is empty or non-existant, no check is needed.  The node is not selected.
-    if(selectedList) {
+    if (selectedList) {
       if (!isLeafNode(node)) {
 
         // When the node is not a leaf, it is considered selected if every one of its leaf nodes
@@ -174,7 +204,9 @@ export default class CheckboxTree extends React.Component {
     return false;
   }
 
-  // returns boolean indicating whether the given node is indeterminate
+  /**
+   * Returns boolean indicating whether the given node is indeterminate
+   */
   isIndeterminate(node, selectedList) {
 
     // if only some of the descendent leaf nodes are in the selected nodes list, the given
@@ -182,7 +214,7 @@ export default class CheckboxTree extends React.Component {
     let indeterminate = false;
 
     // If the selected list is empty, or non-existant no nodes are intermediate and there is nothing to do.
-    if(selectedList) {
+    if (selectedList) {
       if (!isLeafNode(node)) {
         let leafIds = getLeaves(node).map(leafNode => leafNode.id);
         let total = leafIds.reduce(function (count, leafId) {
@@ -197,13 +229,15 @@ export default class CheckboxTree extends React.Component {
   }
 
 
-  // returns boolean indicating whether given node should be shown expanded or collapsed.
+  /**
+   * Returns boolean indicating whether given node should be shown expanded or collapsed.
+   */
   isExpanded(node, expandedList, selectedList) {
 
     // The expandedList exists, empty or not, at this point, but if somehow it isn't
     // the business rules are used to decide whether the node is expanded or collapsed.
     // The business expand only indeterminate nodes.
-    if (this.props.expandedList===null || this.props.expandedList===undefined) {
+    if (this.props.expandedList === null || this.props.expandedList === undefined) {
       return this.isIndeterminate(node, selectedList);
     }
     else {
@@ -212,13 +246,15 @@ export default class CheckboxTree extends React.Component {
   }
 
 
-  // render the checkbox tree at the current node
+  /**
+   * Render the checkbox tree
+   */
   render() {
     return (
       <div className="wdk-CheckboxTree" id={this.props.name}>
         {this.renderLinks()}
         <ul className="fa-ul wdk-CheckboxTree-list" key={"list_root"}>
-          {this.props.tree.map(function(node) {
+          {this.props.tree.map(function (node) {
             return this.renderTreeNode(node);
           }, this)}
         </ul>
@@ -227,6 +263,11 @@ export default class CheckboxTree extends React.Component {
     );
   }
 
+  /**
+   * Render each node of the checkbox tree
+   * @param node
+   * @returns {XML}
+   */
   renderTreeNode(node) {
     let expandedList = this.props.expandedList || this.defaultExpandedList;
     let toggleCheckbox = this.toggleCheckbox;
@@ -236,7 +277,7 @@ export default class CheckboxTree extends React.Component {
     let expanded = this.isExpanded(node, expandedList, this.props.selectedList);
     let leaf = isLeafNode(node);
     let nodeType = !leaf && !expanded ? "wdk-CheckboxTree-collapsedItem" :
-                   leaf ? "wdk-CheckboxTree-leafItem" : "wdk-CheckboxTree-expandedItem";
+      leaf ? "wdk-CheckboxTree-leafItem" : "wdk-CheckboxTree-expandedItem";
 
     return (
       <li className={nodeType} key={"item_" + node.id}>
@@ -244,19 +285,21 @@ export default class CheckboxTree extends React.Component {
         <AccordionButton leaf={leaf}
                          expanded={expanded}
                          id={node.id}
-                         key = {"accordion_" + node.id}
+                         key={"accordion_" + node.id}
                          toggleExpansion={toggleExpansion}
         />
-        <IndeterminateCheckbox
-          checked = {selected}
-          indeterminate = {indeterminate}
-          id={node.id}
-          key={"checkbox_" + node.id}
-          value={node.id}
-          toggleCheckbox={toggleCheckbox}
-        />
-        <label title={node.description} key={"label_" + node.id}>{node.displayName}</label>
-        {!leaf && expanded  ?
+        <label title={node.description} key={"label_" + node.id}>
+          <IndeterminateCheckbox
+            checked={selected}
+            indeterminate={indeterminate}
+            id={node.id}
+            key={"checkbox_" + node.id}
+            value={node.id}
+            toggleCheckbox={toggleCheckbox}
+          />
+          {node.displayName}
+        </label>
+        {!leaf && expanded ?
           <ul className="fa-ul wdk-CheckboxTree-list" key={"list_" + node.id}>
             {node.children.map(child => this.renderTreeNode(child))}
           </ul> : "" }
@@ -264,6 +307,10 @@ export default class CheckboxTree extends React.Component {
     )
   }
 
+  /**
+   * Render the checkbox tree links
+   * @returns {XML}
+   */
   renderLinks() {
     let selectAll = this.selectAll;
     let clearAll = this.clearAll;
@@ -283,5 +330,53 @@ export default class CheckboxTree extends React.Component {
       </div>
     )
   }
-
 }
+
+CheckboxTree.propTypes = {
+
+  /** Value to use for name of checkbox tree - used as id of enclosing div  */
+  name: PropTypes.string,
+
+  /** Array representing top level nodes in the checkbox tree **/
+  tree: PropTypes.array.isRequired,
+
+  /**
+   * List of selected nodes as represented by their ids.
+   */
+  selectedList: PropTypes.array,
+
+  /**
+   * List of expanded nodes as represented by their ids.
+   */
+  expandedList: PropTypes.array,
+
+  /**
+   * Called when the set of selected (leaf) nodes changes.
+   * The function will be called with the array of the selected node
+   * ids.
+   */
+  onSelectedListUpdated: PropTypes.func,
+
+  /**
+   * Called when the set of expanded (branch) nodes changes.
+   * The function will be called with the array of the expanded node
+   * ids.
+   */
+  onExpandedListUpdated: PropTypes.func,
+
+  /**
+   * Called when the user reverts to the default select list.
+   * The function will be called with no arguments as the default
+   * state is maintained by the store.
+   */
+  onDefaultSelectedListLoaded: PropTypes.func,
+
+  /**
+   * Called when the user reverts to the select list with which he/she started.
+   * The function will be called with no arguments as the original
+   * state is maintained by the store.
+   */
+  onCurrentSelectedListLoaded: PropTypes.func
+
+};
+
