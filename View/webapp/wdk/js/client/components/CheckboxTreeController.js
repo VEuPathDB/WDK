@@ -46,10 +46,10 @@ export default class CheckboxTreeController extends React.Component {
                       selectedList={data.selectedList}
                       expandedList={data.expandedList}
                       name={data.name}
-                      updateSelectedListAction={this.actions.updateSelectedList}
-                      updateExpandedListAction={this.actions.updateExpandedList}
-                      loadDefaultSelectedListAction={this.actions.loadDefaultSelectedList}
-                      loadCurrentSelectedListAction={this.actions.loadCurrentSelectedList}
+                      onSelectedListUpdated={this.actions.updateSelectedList}
+                      onExpandedListUpdated={this.actions.updateExpandedList}
+                      onDefaultSelectedListLoaded={this.actions.loadDefaultSelectedList}
+                      onCurrentSelectedListLoaded={this.actions.loadCurrentSelectedList}
       />
     )
   }
