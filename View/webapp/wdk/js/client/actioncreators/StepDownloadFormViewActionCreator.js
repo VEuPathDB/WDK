@@ -62,8 +62,7 @@ export default class StepDownloadFormViewActionCreator extends ActionCreator {
         payload: { error }
       });
       throw error;
-    })
-    .catch(error => console.assert(error));
+    });
   }
 
   submitForm(step, selectedReporter, formState, target = '_blank') {
