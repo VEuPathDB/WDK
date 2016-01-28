@@ -39,6 +39,7 @@ export default class RecordViewActionCreator extends ActionCreator {
           type: actionTypes.ERROR,
           payload: { error }
         });
+        throw error;
       }
     );
   }
