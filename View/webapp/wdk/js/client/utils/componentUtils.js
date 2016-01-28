@@ -112,7 +112,7 @@ export function filterOutProps(orig, propsToFilter) {
   return Object.keys(orig).reduce((obj, key) =>
     (propsToFilter.indexOf(key) !== -1 ? obj :
       Object.assign(obj, { [key]: orig[key] })), {});
-};
+}
 
 /**
  * Generates HTML markup for an attribute using duck-typing
@@ -134,4 +134,19 @@ export function renderAttributeValue(value, props = null, Component = 'span') {
     props,
     Component
   );
+}
+
+/**
+ * Makes a copy of current, adds value if not present, removes if present, and
+ * returns the copy.
+ * @param {Array<T>} array array to modify
+ * @param {<T>} value to check against
+ * @return {Array<T>} modified copy of original array
+ */
+export function addOrRemove(array, value) {
+  return (array.indexOf(value) == -1 ?
+    // not currently present; add
+    array.concat(value) :
+    // already there; remove
+    array.filter(elem => elem != value));
 }

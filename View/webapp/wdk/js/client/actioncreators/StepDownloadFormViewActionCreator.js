@@ -17,7 +17,7 @@ export default class StepDownloadFormViewActionCreator extends ActionCreator {
     this._dispatch({
       type: actionTypes.STEP_DOWNLOAD_SELECT_REPORTER,
       payload: { selectedReporter: reporterName }
-    })
+    });
   }
 
   updateFormState(newState) {

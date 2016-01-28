@@ -1,5 +1,5 @@
 import React from 'react';
-import { wrappable, commaDelimitedStringToArray } from '../utils/componentUtils';
+import { wrappable, addOrRemove } from '../utils/componentUtils';
 import CheckboxList from './CheckboxList';
 
 let StepDownloadForm = React.createClass({
@@ -48,27 +48,13 @@ let StepDownloadForm = React.createClass({
     }, 0);
   },
 
-  // makes a copy of current, modifies accordingly, and returns
-  handleSingleMod(current, clickedValue) {
-    if (current.indexOf(clickedValue) == -1) {
-      // not currently present; add
-      let copy = current.slice(0);
-      copy.push(clickedValue);
-      return copy;
-    }
-    else {
-      // already there; remove
-      return current.filter(elem => elem != clickedValue);
-    }
-  },
-
   onAttributeChange(event) {
     if (this.props.formState == null || this.props.formState.attributes == null) {
       // ignore for now; user can click again
       return;
     }
     // call update with modified list
-    this.updateAttribs(this.handleSingleMod(
+    this.updateAttribs(addOrRemove(
         this.props.formState.attributes, event.target.value));
   },
 
@@ -78,7 +64,7 @@ let StepDownloadForm = React.createClass({
       return;
     }
     // call update with modified list
-    this.updateTables(this.handleSingleMod(
+    this.updateTables(addOrRemove(
         this.props.formState.tables, event.target.value));
   },
 
