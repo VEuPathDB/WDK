@@ -58,7 +58,7 @@ export default class StepDownloadFormViewActionCreator extends ActionCreator {
       })
     }, error => {
       this._dispatch({
-        type: APP_ERROR,
+        type: actionTypes.APP_ERROR,
         payload: { error }
       });
       throw error;

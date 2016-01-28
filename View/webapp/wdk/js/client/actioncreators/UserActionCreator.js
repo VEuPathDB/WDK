@@ -33,6 +33,7 @@ export default class UserActionCreator extends ActionCreator {
         type: actionTypes.APP_ERROR,
         payload: { error }
       });
+      throw error;
     });
   }
 }

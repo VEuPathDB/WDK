@@ -88,6 +88,7 @@ export default class AnswerViewActionCreator extends ActionCreator {
         type: actionTypes.APP_ERROR,
         payload: { error }
       });
+      throw error;
     });
 
   }
