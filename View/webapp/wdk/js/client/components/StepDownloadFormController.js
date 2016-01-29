@@ -1,8 +1,9 @@
 // Import modules
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
+import Doc from './Doc';
 import Loading from './Loading';
-import StepDownloadForm from './StepDownloadForm';
+import StepDownloadFormPage from './StepDownloadFormPage';
 
 // What are parameters to this page?
 //  1. Step ID (path param)
@@ -38,6 +39,14 @@ import StepDownloadForm from './StepDownloadForm';
 
 let StepDownloadFormController = React.createClass({
 
+  loadUserState() {
+    this.setState(Object.assign({}, this.state, { userData: this.userStore.getState() }));
+  },
+
+  loadViewState() {
+    this.setState(Object.assign({}, this.state, { viewData: this.store.getState() }));
+  },
+
   componentWillMount() {
 
     // load actions for this view
@@ -46,23 +55,20 @@ let StepDownloadFormController = React.createClass({
 
     // get the user store, subscribe and initialize if needed
     this.userStore = this.props.stores.UserStore;
-    this.userStoreSubscription = this.userStore.addListener(() => {
-      this.setState(Object.assign({}, this.state, { userData: this.userStore.getState() }));
-    });
+    this.userStoreSubscription = this.userStore.addListener(this.loadUserState);
+
     // initialize user store if it isn't already
     let userState = this.userStore.getState();
     if (userState.user == null) {
       this.userActions.loadCurrentUser();
     }
     else {
-      this.setState(Object.assign({}, this.state, { userData: this.userStore.getState() }));
+      this.loadUserState();
     }
 
     // get view store and subscribe; must reinitialize with every new props
     this.store = this.props.stores.StepDownloadFormViewStore;
-    this.storeSubscription = this.store.addListener(() => {
-      this.setState(Object.assign({}, this.state, { viewData: this.store.getState() }));
-    });
+    this.storeSubscription = this.store.addListener(this.loadViewState);
 
     // initialize page data
     this.reloadPageData(this.props);
@@ -92,10 +98,12 @@ let StepDownloadFormController = React.createClass({
   
   render() {
 
+    let title = "Download Step Result";
+
     if (this.state == null ||
         this.state.userData == null || this.state.userData.isLoading ||
         this.state.viewData == null || this.state.viewData.isLoading) {
-      return ( <Loading/> );
+      return ( <Doc title={title}><Loading/></Doc> );
     }
 
     // build props object to pass to form component
@@ -109,12 +117,15 @@ let StepDownloadFormController = React.createClass({
       selectedReporter: this.state.viewData.selectedReporter,
       onReporterChange: this.formEvents.changeReporter,
       formState: this.state.viewData.formState,
-      onFormChange: this.formEvents.changeForm,
+      formUiState: this.state.viewData.formUiState,
+      onFormChange: this.formEvents.changeFormState,
+      onFormUiChange: this.formEvents.changeFormUiState,
       onFormSubmit: this.formEvents.submitForm
     };
 
     // render form
-    return ( <StepDownloadForm {...formProps}/> );
+    title = title + ": " + this.state.viewData.step.displayName;
+    return ( <Doc title={title}><StepDownloadFormPage {...formProps}/></Doc> );
   },
   
   formEvents: {
@@ -123,8 +134,12 @@ let StepDownloadFormController = React.createClass({
       this.actions.selectReporter(newReporterName);
     },
 
-    changeForm(newFormState) {
+    changeFormState(newFormState) {
       this.actions.updateFormState(newFormState);
+    },
+
+    changeFormUiState(newFormUiState) {
+      this.actions.updateFormUiState(newFormUiState);
     },
 
     submitForm() {

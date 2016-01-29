@@ -62,7 +62,7 @@ export default class RecordViewActionCreator extends ActionCreator {
           type: actionTypes.ERROR,
           payload: { error }
         });
-        console.assert(false, error);
+        throw error;
       }
     );
   }

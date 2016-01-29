@@ -7,16 +7,15 @@ let stubHandler = actionName => event => {
   alert('You clicked ' + actionName);
 };
 
-export default wrappable(function RecordHeading(props) {
+let RecordHeading = props => {
   let { record, recordClass } = props;
   let actions = [
-    { name: 'Add a comment', icon: 'comment' },
     { name: 'Add to basket', icon: 'shopping-cart' },
     { name: 'Add to favorites', icon: 'star-o' },
     { name: 'Download ' + recordClass.displayName, icon: 'download' }
   ];
   return (
-    <div className="wdk-RecordHeadingSection">
+    <div>
       <ul className="wdk-RecordActions">
         {actions.map(action => {
           return (
@@ -29,7 +28,13 @@ export default wrappable(function RecordHeading(props) {
         })}
       </ul>
       <h1 className="wdk-RecordHeading">{recordClass.displayName} {record.displayName}</h1>
-      <RecordOverview record={record} recordClass={recordClass}/>
     </div>
   );
-});
+}
+
+RecordHeading.propTypes = {
+  record: React.PropTypes.object.isRequired,
+  recordClass: React.PropTypes.object.isRequired
+}
+
+export default wrappable(RecordHeading);

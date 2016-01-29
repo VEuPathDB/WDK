@@ -9,11 +9,11 @@ import * as Router from './router';
 import * as ActionCreators from './actioncreators';
 import * as Components from './components';
 import * as Stores from './stores';
-
+import * as ReporterUtils from './utils/reporterUtils';
 import * as TreeUtils from './utils/TreeUtils';
 import * as OntologyUtils from './utils/OntologyUtils';
 
-export { Components, TreeUtils, OntologyUtils };
+export { Components, ReporterUtils, TreeUtils, OntologyUtils };
 
 export function run({ rootUrl, endpoint, rootElement }) {
   let dispatcher = new Dispatcher;

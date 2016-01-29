@@ -26,7 +26,8 @@ export default class CheckboxTreeController extends React.Component {
     this.actions.loadCheckboxTree({"name":this.initialData.name,
                                    "tree": this.initialData.tree,
                                    "selected": this.initialData.selected,
-                                   "expanded": this.initialData.expanded
+                                   "expanded": this.initialData.expanded,
+                                   "defaultSelected" : this.initialData.defaultSelected
     });
   }
 
@@ -40,16 +41,16 @@ export default class CheckboxTreeController extends React.Component {
   render() {
     let data = this.store.getState();
     return (
-      <div className="wdk-CheckboxTree" id={data.name}>
-        <CheckboxTree tree={data.tree}
+      <CheckboxTree tree={data.tree}
                       key="Root"
                       selectedList={data.selectedList}
                       expandedList={data.expandedList}
-                      updateSelectedListAction={this.actions.updateSelectedList}
-                      updateExpandedListAction={this.actions.updateExpandedList}
-                      root={true}
-        />
-      </div>
+                      name={data.name}
+                      onSelectedListUpdated={this.actions.updateSelectedList}
+                      onExpandedListUpdated={this.actions.updateExpandedList}
+                      onDefaultSelectedListLoaded={this.actions.loadDefaultSelectedList}
+                      onCurrentSelectedListLoaded={this.actions.loadCurrentSelectedList}
+      />
     )
   }
 }
