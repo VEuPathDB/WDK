@@ -223,7 +223,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     stratTD = undefined;
   }
 
-  // used from ooth the history tab and the public strategies tab
+  // used from both the history tab and the public strategies tab
   function showDescriptionDialog(el, save, fromHist) {
     var dialog_container = $('#wdk-dialog-strat-desc');
     var row = $(el).closest('.strategy-data');
@@ -279,9 +279,6 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
         title = (save) ? "Save Strategy" : "Update Strategy",
         submitValue = (save) ? "Save strategy" : "Update strategy",
         form;
-
-    //strat is a global object, not sure the .isPublic value is correct
-    console.log("strat.isPublic contains: ", strat.isPublic);
 
     dialog_container.dialog("option", "title", title)
       .find(".download").click(function(e) {
