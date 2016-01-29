@@ -1,6 +1,7 @@
 // Import modules
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
+import Doc from './Doc';
 import Loading from './Loading';
 import UserProfile from './UserProfile';
 
@@ -29,10 +30,11 @@ let UserProfileController = React.createClass({
   },
 
   render() {
+    let title = "User Profile";
     if (this.state == null || this.state.isLoading) {
-      return ( <Loading/> );
+      return ( <Doc title={title}><Loading/></Doc> );
     }
-    return ( <UserProfile {...this.state}/> );
+    return ( <Doc title={title}><UserProfile {...this.state}/></Doc> );
   }
 });
 

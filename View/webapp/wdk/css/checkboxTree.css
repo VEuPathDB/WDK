@@ -1,6 +1,9 @@
 /* Enclosing div for checkbox tree */
-.wdk-checkboxTree {
-  margin-left: 1em;
+.wdk-CheckboxTree {
+  padding: 1em;
+  width:15em;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .wdk-CheckboxTree-list {
@@ -13,7 +16,11 @@
 }
 
 .wdk-CheckboxTree-list li label {
-  cursor: text;
+  cursor: default;
+}
+
+.wdk-CheckboxTree-list li label input {
+  margin-left: 0px;
 }
 
 .wdk-CheckboxTree-expandedItem {
@@ -25,10 +32,9 @@
   content:"";
   position:absolute;
   top:20px;
-  left:-3px;
+  left:-5px;
   right:0;
   bottom:0;
-  background-position: -3px 0;
   width: 5px;
   background:url("../images/checkboxTree-vertical-line.png") repeat-y;
 }
@@ -42,5 +48,11 @@
   color: #AAA;
   font-size: 0.75em;
   top: 0.4em;
-  left: -2.0em;
+  left: -1.4em;
+  width: 0.2em;
+}
+
+.wdk-CheckboxTree-links {
+  text-align: center;
+  font-size: 0.7em;
 }

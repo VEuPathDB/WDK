@@ -43,84 +43,6 @@ test('postorderSeq', function(t) {
 
 });
 
-test('reduce', function(t) {
-  let tree = {
-    id: 1,
-    children: [
-      { id: 2, children: [] },
-      { id: 3, children: [
-        { id: 4, children: [] }
-      ]}
-    ]
-  };
-
-  // without initial value
-  let max = TreeUtils.reduce((max, node) => max.id > node.id ? max : node, tree);
-  t.equal(max, tree.children[1].children[0]);
-
-  // with initial values
-  let sum = TreeUtils.reduce((sum, node) => sum + node.id, 0, tree);
-  t.equal(sum, 1 + 2 + 3 + 4);
-
-  t.end();
-});
-
-test('reduceBottom', function(t) {
-  let tree = {
-    id: 1,
-    children: [
-      { id: 2, children: [] },
-      { id: 3, children: [
-        { id: 4, children: [] }
-      ]}
-    ]
-  };
-
-  // without initial value
-  let max = TreeUtils.reduceBottom((max, node) => max.id > node.id ? max : node, tree);
-  t.equal(max, tree.children[1].children[0]);
-
-  // with initial values
-  let rev = TreeUtils.reduceBottom((list, node) => list.concat(node.id), [], tree);
-  t.deepEqual(rev, [ 2, 4, 3, 1 ]);
-
-  t.end();
-});
-
-test('filter', function(t) {
-  let tree = {
-    id: 1,
-    children: [
-      { id: 2, children: [] },
-      { id: 3, children: [
-        { id: 4, children: [] }
-      ]}
-    ]
-  };
-
-  let matchingNodes = TreeUtils.filter(node => node.id > 2, tree);
-  t.deepEqual(matchingNodes, [ tree.children[1], tree.children[1].children[0] ]);
-
-  t.end();
-});
-
-test('find', function(t) {
-  let tree = {
-    id: 1,
-    children: [
-      { id: 2, children: [] },
-      { id: 3, children: [
-        { id: 4, children: [] }
-      ]}
-    ]
-  };
-
-  let matchingNode = TreeUtils.find(node => node.id > 2, tree);
-  t.equal(matchingNode, tree.children[1]);
-
-  t.end();
-});
-
 test('compactRootNodes', function(t) {
   let tree = {
     id: 1,
@@ -182,12 +104,10 @@ test('pruneDescendantNodes', function(t) {
 
   t.deepEqual(prunedTree, expectedTree, 'prunedTree does not have expected shape.');
 
-  t.end();
 
-});
+  // Generate a tree where leaves have certain properties
 
-test('pruneDescendantNodes can replace pruneTreeByLeaves', function(t) {
-  let tree = {
+  let tree2 = {
     id: 1,
     children: [
       { id: 2, children: [] },
@@ -197,14 +117,14 @@ test('pruneDescendantNodes can replace pruneTreeByLeaves', function(t) {
     ]
   };
 
-  let prunedTree = TreeUtils.pruneDescendantNodes(n => n.children.length > 0 || n.id === 2, tree);
+  let prunedTree2 = TreeUtils.pruneDescendantNodes(n => n.children.length > 0 || n.id === 2, tree2);
 
-  t.deepEqual(prunedTree, {
+  t.deepEqual(prunedTree2, {
     id: 1,
     children: [
       { id: 2, children: [] }
     ]
-  }, 'prunedTree does not have expected shape.');
+  }, 'prunedTree2 does not have expected shape.');
 
   t.end();
 });
