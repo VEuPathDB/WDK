@@ -1,6 +1,9 @@
 
 export function submitAsForm(conf) {
 
+  // allow missing or null config
+  if (conf == undefined || conf == null) conf == {};
+
   // get supported values from conf
   let method = conf.method || 'post';
   let target = conf.target || '_self';
