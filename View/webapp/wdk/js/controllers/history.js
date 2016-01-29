@@ -223,12 +223,15 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     stratTD = undefined;
   }
 
+	// used from ooth the history page and the public strategies page
   function showDescriptionDialog(el, save, fromHist) {
     var dialog_container = $('#wdk-dialog-strat-desc');
     var row = $(el).closest('.strategy-data');
-    var strat = row.data();
+		// in tag file where we generate the div element:
+		// this data field tells us if public or not, if saved or not etc 
+    var strat = row.data(); 
     var editText = '';
-
+		
     dialog_container.find('.description').html(
       strat.description
         .replace(/</g, '&lt;')
@@ -239,24 +242,25 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
 
     dialog_container.dialog('option', 'title', strat.name);
     dialog_container.dialog('option', 'width', 600);
+		
 
-    if (wdk.user.isGuest()) {
-      // login
-      editText = 'Login to save and edit';
+		if (strat.isPublic) {  // in Public Starts tab
+			 $(".edit a").remove();
+    } else                 // in History page
+			if (wdk.user.isGuest()) {  
+				editText = 'Login to save and edit';
     } else if (!strat.saved) {
-      // save to update
-      editText = 'Save to edit';
+				editText = 'Save to edit';
     } else {
-      // update
-      editText = 'Edit';
-    }
+				editText = 'Edit';
+    } 
 
     dialog_container.find('.edit a')
       .html(editText)
       .on('click', function(e) {
         e.preventDefault();
         dialog_container.dialog('close');
-        if (wdk.user.isGuest()) {
+        if (wdk.user.isGuest() || strat.isPublic) {
           // TODO Don't use DOM ID to open dialogs
           // For instance, wdk.showLoginForm()
           $('#wdk-dialog-login-form').dialog('open');
@@ -276,6 +280,9 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
         title = (save) ? "Save Strategy" : "Update Strategy",
         submitValue = (save) ? "Save strategy" : "Update strategy",
         form;
+
+		//strat is a global object, not sure the .isPublic value is correct
+		console.log("strat.isPublic contains: ", strat.isPublic);
 
     dialog_container.dialog("option", "title", title)
       .find(".download").click(function(e) {

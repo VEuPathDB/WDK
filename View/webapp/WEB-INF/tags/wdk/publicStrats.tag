@@ -43,11 +43,12 @@
             <c:set var="isExample" value="${strategy.user.displayName eq examplesAuthor ? '1' : '0'}"/>
             <c:set var="addtlClass" value="${isExample eq '1' ? ' exampleStratRow' : ''}"/>
             <tr id="public_strat_${strategyId}"
-                class="strategy-data${addtlClass}"
+                class="strategy-data ${addtlClass}"
                 data-back-id="${strategyId}"
                 data-name="${strategy.name}"
                 data-description="${strategyDesc}"
                 data-saved="${strategy.isSaved}"
+								data-is-public="${strategy.isPublic}"
                 data-step-id="${strategy.latestStepId}">
               <td>${isExample}</td>
               <td>
@@ -60,7 +61,7 @@
               <td nowrap="nowrap">${strategy.latestStep.question.recordClass.displayNamePlural}</td>
               <td class="strategy_description">
                 <div class="full" title="Click to view entire description"
-                     onclick="wdk.history.showDescriptionDialog(this, false, true, false);">
+                     onclick="wdk.history.showDescriptionDialog(this, false, true);">
                   <c:set var="maxDescriptionLen" value="70"/>
                   <c:choose>
                     <c:when test="${fn:length(strategy.description) gt maxDescriptionLen}">
