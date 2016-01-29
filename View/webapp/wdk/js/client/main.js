@@ -9,8 +9,9 @@ import * as Router from './router';
 import * as ActionCreators from './actioncreators';
 import * as Components from './components';
 import * as Stores from './stores';
+import * as ReporterUtils from './utils/reporterUtils';
 
-export { Components };
+export { Components, ReporterUtils };
 
 export function run({ rootUrl, endpoint, rootElement }) {
   let dispatcher = new Dispatcher;
