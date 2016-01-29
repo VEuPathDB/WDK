@@ -223,15 +223,15 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     stratTD = undefined;
   }
 
-	// used from ooth the history page and the public strategies page
+  // used from ooth the history tab and the public strategies tab
   function showDescriptionDialog(el, save, fromHist) {
     var dialog_container = $('#wdk-dialog-strat-desc');
     var row = $(el).closest('.strategy-data');
-		// in tag file where we generate the div element:
-		// this data field tells us if public or not, if saved or not etc 
+
+    // tag file where we generate the hrmlelement with data attribute:
     var strat = row.data(); 
     var editText = '';
-		
+    
     dialog_container.find('.description').html(
       strat.description
         .replace(/</g, '&lt;')
@@ -242,17 +242,16 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
 
     dialog_container.dialog('option', 'title', strat.name);
     dialog_container.dialog('option', 'width', 600);
-		
-
-		if (strat.isPublic) {  // in Public Starts tab
-			 $(".edit a").remove();
-    } else                 // in History page
-			if (wdk.user.isGuest()) {  
-				editText = 'Login to save and edit';
+    
+    if (strat.isPublic) {  // in Public Strats tab
+       $(".edit a").remove();
+    } else                 // in History tab
+      if (wdk.user.isGuest()) {  
+        editText = 'Login to save and edit';
     } else if (!strat.saved) {
-				editText = 'Save to edit';
+        editText = 'Save to edit';
     } else {
-				editText = 'Edit';
+        editText = 'Edit';
     } 
 
     dialog_container.find('.edit a')
@@ -281,8 +280,8 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
         submitValue = (save) ? "Save strategy" : "Update strategy",
         form;
 
-		//strat is a global object, not sure the .isPublic value is correct
-		console.log("strat.isPublic contains: ", strat.isPublic);
+    //strat is a global object, not sure the .isPublic value is correct
+    console.log("strat.isPublic contains: ", strat.isPublic);
 
     dialog_container.dialog("option", "title", title)
       .find(".download").click(function(e) {
