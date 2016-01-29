@@ -1,5 +1,6 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
+import RecordActionLink from './RecordActionLink';
 
 let stubHandler = actionName => event => {
   event.preventDefault();
@@ -9,19 +10,17 @@ let stubHandler = actionName => event => {
 let RecordHeading = props => {
   let { record, recordClass } = props;
   let actions = [
-    { name: 'Add to basket', icon: 'shopping-cart' },
-    { name: 'Add to favorites', icon: 'star-o' },
-    { name: 'Download ' + recordClass.displayName, icon: 'download' }
+    { label: 'Add to basket', iconClassName: 'fa fa-shopping-basket' },
+    { label: 'Add to favorites', iconClassName: 'fa fa-lg fa-star' },
+    { label: 'Download ' + recordClass.displayName, iconClassName: 'fa fa-lg fa-download' }
   ];
   return (
     <div>
       <ul className="wdk-RecordActions">
-        {actions.map(action => {
+        {actions.map((action, index) => {
           return (
-            <li key={action.name} className="wdk-RecordActionItem">
-              <a href="#" onClick={stubHandler(action.name)}>
-                {action.name} <i style={{ marginLeft: '.4em'}} className={'fa fa-lg fa-' + action.icon}/>
-              </a>
+            <li key={index} className="wdk-RecordActionItem">
+              <RecordActionLink {...props} {...action} onClick={stubHandler(action.label)}/>
             </li>
           );
         })}
