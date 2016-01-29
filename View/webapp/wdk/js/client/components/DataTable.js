@@ -29,6 +29,9 @@ export default wrappable(DataTable);
 let setupTable = (node, props) => {
   if (node == null) return;
 
+  // Destroy DataTable instance, removing DOM node and event handlers
+  $(node).find('table:first').DataTable().destroy(true);
+
   let {
     childRow,
     sorting,
@@ -43,9 +46,8 @@ let setupTable = (node, props) => {
     ? [ expandColumn, ...formatColumns(props.columns) ]
     : formatColumns(props.columns);
 
-
   let order = formatSorting(columns, sorting.length === 0
-    ? [ { name: columns[0].name, direction: 'ASC' } ] : sorting);
+    ? [ { name: props.columns[0].name, direction: 'ASC' } ] : sorting);
 
   let tableOpts = Object.assign({}, DataTable.defaultDataTableOpts, {
     columns,
@@ -61,15 +63,16 @@ let setupTable = (node, props) => {
       scrollCollapse: !childRow
     });
 
-  let dataTable = $('<table class="wdk-DataTable">')
+  let $table = $('<table class="wdk-DataTable">')
   .width(width)
-  .appendTo(node)
-  .DataTable(tableOpts);
+  .appendTo(node);
+
+  let dataTable = $table.DataTable(tableOpts);
 
   let showChildRow_ = partial(showChildRow, dataTable, childRow);
   let hideChildRow_ = partial(hideChildRow, dataTable);
 
-  $(node).on('click', 'td.wdk-DataTableCellExpand', e => {
+  $table.on('click', 'td.wdk-DataTableCellExpand', e => {
     updateChildRows(() => {
       let tr = $(e.target).closest('tr');
       let row = dataTable.row(tr);
@@ -80,10 +83,10 @@ let setupTable = (node, props) => {
       else {
         showChildRow_(row.node());
       }
-    }, dataTable, node);
+    }, dataTable, $table);
   });
 
-  $(node).on('click', 'th.wdk-DataTableCellExpand', () => {
+  $table.on('click', 'th.wdk-DataTableCellExpand', () => {
     updateChildRows(() => {
       let allShown = isAllChildRowsShown(dataTable);
       let update = allShown ? hideChildRow_ : showChildRow_;
@@ -91,11 +94,11 @@ let setupTable = (node, props) => {
       for (let tr of dataTable.rows().nodes().toArray()) {
         update(tr);
       }
-    }, dataTable, node);
+    }, dataTable, $table);
   });
 };
 
-let updateChildRows = (fn, dataTable, node) => {
+let updateChildRows = (fn, dataTable, $table) => {
   // update state of row children with provided function
   fn();
 
@@ -109,7 +112,7 @@ let updateChildRows = (fn, dataTable, node) => {
     allShown = allShown && isShown;
   }
 
-  $(node).find('th.wdk-DataTableCellExpand').closest('tr')
+  $table.find('th.wdk-DataTableCellExpand').closest('tr')
   .toggleClass('wdk-DataTableRow__expanded', allShown);
 };
 
