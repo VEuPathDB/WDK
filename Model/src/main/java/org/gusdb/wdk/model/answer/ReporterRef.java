@@ -27,6 +27,8 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
 
   private static final Logger logger = Logger.getLogger(ReporterRef.class);
 
+  public static final String WDK_SERVICE_JSON_REPORTER_RESERVED_NAME = "wdk-service-json";
+
   private String name;
   private String displayName;
   private String implementation;
@@ -150,6 +152,13 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    */
   @Override
   public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
-    // do nothing
+    // check to make sure a service JSON reporter reference is complete
+    String reporterName = WDK_SERVICE_JSON_REPORTER_RESERVED_NAME;
+    String className = org.gusdb.wdk.model.report.WdkServiceJsonReporter.class.getName();
+    if ((reporterName.equals(getName()) && !className.equals(getImplementation())) ||
+        (className.equals(getImplementation()) && !reporterName.equals(getName()))) {
+      throw new WdkModelException("Reporter reserved name '" + reporterName + "' " +
+          "must be used in combination with implementation class " + className);
+    }
   }
 }
