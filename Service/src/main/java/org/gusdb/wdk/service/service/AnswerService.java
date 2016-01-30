@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.ReporterRef;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.report.Reporter;
@@ -109,8 +110,9 @@ public class AnswerService extends WdkService {
       }
       JSONObject formatConfig = formatting.getJSONObject("formatConfig");
 
-      // determine which formatter/reporter to use, or standard JSON if none specified
-      return (formatting.has("format") ?
+      // determine which formatter/reporter to use, or standard JSON if none (or service json reserved word) is specified
+      return (formatting.has("format") &&
+          !formatting.getString("format").equals(ReporterRef.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME) ?
 
           // request is for a named format/reporter
           getReporterResponse(request, formatting.getString("format"), formatConfig) :
