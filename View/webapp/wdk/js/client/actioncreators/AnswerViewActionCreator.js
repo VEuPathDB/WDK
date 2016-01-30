@@ -85,11 +85,11 @@ export default class AnswerViewActionCreator extends ActionCreator {
       })
     }, error => {
       this._dispatch({
-        type: APP_ERROR,
+        type: actionTypes.APP_ERROR,
         payload: { error }
       });
-    })
-    .catch(error => console.assert(error));
+      throw error;
+    });
 
   }
 

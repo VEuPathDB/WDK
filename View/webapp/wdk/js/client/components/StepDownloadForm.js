@@ -1,22 +1,11 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
+import WdkServiceJsonReporterForm from './WdkServiceJsonReporterForm';
 
 let StepDownloadForm = React.createClass({
-
   render() {
-    let inputs = JSON.stringify(this.props, null, '  ');
-    let text = "Download Step " + this.props.step.id + " (passed from view: " + this.props.summaryView + ")";
-    return (
-      <div>
-        <hr/>
-        <span>{text}</span><br/>
-        <input type="button" value="Submit" onClick={this.props.onFormSubmit}/>
-        <hr/>
-        <pre>{inputs}</pre>
-      </div>
-    );
+    return ( <WdkServiceJsonReporterForm {...this.props}/> );
   }
-
 });
 
 export default wrappable(StepDownloadForm);

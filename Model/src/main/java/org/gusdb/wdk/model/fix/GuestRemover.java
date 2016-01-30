@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.WdkModel;
  * Starting from build-23, we no longer back up user data, and will just delete guest data for each release.
  * Starting build 24 we add deletion of deleted strategies/steps and deletion of steps not connected to a strategy
  * Starting build 25 we move all cleaning activity to its own script CleanBrokenStratsSteps
+ * Starting build 27 we select not only guest users but also last_active null users
  * @author Jerric
  *
  */
@@ -52,7 +53,7 @@ public class GuestRemover extends BaseCLI {
     LOG.info("\n\nDeleting from table: " + table + " with condition: " + condition);
     PreparedStatement psDelete = null;
     try {
-      String sql = "DELETE FROM " + table + " WHERE " + condition + " AND rownum <= " + PAGE_SIZE;
+      String sql = "DELETE FROM " + table + " WHERE " + condition + " AND rownum < " + PAGE_SIZE;
       psDelete = SqlUtils.getPreparedStatement(dataSource, sql);
 
       int sum = 0;
@@ -135,31 +136,33 @@ public class GuestRemover extends BaseCLI {
     }
     // create a new guest table with the guests created before the cutoff date
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + GUEST_TABLE + " AS SELECT user_id FROM " +
-        userSchema + "users " + " WHERE is_guest = 1 AND register_time < to_date('" + cutoffDate +
+        userSchema + "users " + " WHERE (is_guest = 1 OR last_active is NULL) AND register_time < to_date('" + cutoffDate +
         "', 'yyyy/mm/dd')", "backup-create-guest-table");
     SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX " + GUEST_TABLE + "_ix01 ON " + GUEST_TABLE +
         " (user_id)", "create-guest-index");
-    return "SELECT user_id FROM " + GUEST_TABLE;
+    //return "SELECT user_id FROM " + GUEST_TABLE;
+		return "SELECT '1' FROM " + GUEST_TABLE + " g WHERE g.user_id = t.user_id";
   }
 
   private void removeGuests(String guestSql) throws SQLException {
     LOG.info("****IN REMOVEGUESTS ******");
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    String userClause = "user_id IN (" + guestSql + ")";
+    //String userClause = "user_id IN (" + guestSql + ")";
+		String userClause = " EXISTS (" + guestSql + ")";
 
     deleteByBatch(dataSource, userSchema + "dataset_values", " dataset_id IN (SELECT dataset_id FROM " +
-        userSchema + "datasets WHERE " + userClause + ")");
-    deleteByBatch(dataSource, userSchema + "datasets", userClause);
-    deleteByBatch(dataSource, userSchema + "preferences", userClause);
-    deleteByBatch(dataSource, userSchema + "user_baskets", userClause); // we dont know why we get some
-    deleteByBatch(dataSource, userSchema + "favorites", userClause);
-    deleteByBatch(dataSource, userSchema + "strategies", userClause);
+        userSchema + "datasets t WHERE " + userClause + ")");
+    deleteByBatch(dataSource, userSchema + "datasets t", userClause);
+    deleteByBatch(dataSource, userSchema + "preferences t", userClause);
+    deleteByBatch(dataSource, userSchema + "user_baskets t", userClause); // we dont know why we get some
+    deleteByBatch(dataSource, userSchema + "favorites t", userClause);
+    deleteByBatch(dataSource, userSchema + "strategies t", userClause);
     deleteByBatch(dataSource, userSchema + "step_analysis", " step_id IN (SELECT step_id FROM " + userSchema +
-        "steps WHERE " + userClause + ")");
-    deleteByBatch(dataSource, userSchema + "steps", userClause);
+        "steps t WHERE " + userClause + ")");
+    deleteByBatch(dataSource, userSchema + "steps t", userClause);
 								//	" AND step_id NOT IN (SELECT root_step_id FROM " + userSchema + "strategies)");
-    deleteByBatch(dataSource, userSchema + "user_roles", userClause);
-    deleteByBatch(dataSource, userSchema + "users", userClause);
+    deleteByBatch(dataSource, userSchema + "user_roles t", userClause);
+    deleteByBatch(dataSource, userSchema + "users t", userClause);
 									// " AND user_id NOT IN (SELECT user_id FROM " + userSchema + "steps)");
   }
 

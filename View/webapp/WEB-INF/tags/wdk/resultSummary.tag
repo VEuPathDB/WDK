@@ -57,8 +57,15 @@
       </c:choose>
       <c:if test="${recHasBasket}"><a id="basketStep" style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add ${r_count} to Basket</b></a>&nbsp;|&nbsp;</c:if>
      </c:if>
-      <a style="font-size:120%" href="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}"><b>Download ${r_count}</b></a>
-   
+      <c:url var="downloadLink" value="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}"/>
+
+      <c:if test="${false}"> <!-- true = use React download page; false = use JSP download page-->
+        <c:set var="summaryViewName" value="${empty requestScope.wdkView.name ? '_default' : requestScope.wdkView.name}"/>
+        <c:url var="downloadLink" value="app/step/${step.stepId}/download?summaryView=${summaryViewName}"/>
+      </c:if>
+
+      <a style="font-size:120%" href="${downloadLink}"><b>Download ${r_count}</b></a>
+
     <c:if test="${!empty sessionScope.GALAXY_URL}">
       &nbsp;|&nbsp;<a href="downloadStep.do?step_id=${step.stepId}&wdkReportFormat=tabular"><b class="galaxy">SEND TO GALAXY</b></a>
     </c:if>
