@@ -321,6 +321,7 @@ body {
 
 .wdk-RecordNavigationSectionHeader {
   margin-left: 0;
+  color: #777;
 }
 
 .wdk-RecordNavigationSearchInput {
@@ -330,8 +331,9 @@ body {
 
 .wdk-RecordNavigationCategories {
   overflow-y: auto;
-  max-height: calc(100vh - 250px);
+  max-height: calc(100vh - 150px);
   padding-right: 1em;
+  border-bottom: 1px solid lightgrey;
 }
 
 .wdk-RecordNavigationItem {

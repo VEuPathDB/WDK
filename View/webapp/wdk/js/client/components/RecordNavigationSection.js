@@ -26,7 +26,7 @@ let RecordNavigationSection = React.createClass({
   getDefaultProps() {
     return {
       onCategoryToggle: function noop() {},
-      heading: 'Categories'
+      heading: 'Contents'
     };
   },
 
