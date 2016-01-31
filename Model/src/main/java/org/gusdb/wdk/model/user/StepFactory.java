@@ -348,7 +348,7 @@ public class StepFactory {
     if (step.isCombined())
       updateStepTree(user, step);
 
-    logger.debug("Step created!!\n\n");
+    logger.debug("Step created!!: " + stepId + "\n\n");
     return step;
   }
 
