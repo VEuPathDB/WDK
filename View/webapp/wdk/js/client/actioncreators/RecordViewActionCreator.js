@@ -6,7 +6,7 @@ import {
   getPropertyValue
 } from '../utils/OntologyUtils';
 import {
-  filter as filterTree
+  preorderSeq
 } from '../utils/TreeUtils';
 
 let actionTypes = {
@@ -26,10 +26,10 @@ let isLeafFor = recordClassName => node => {
 }
 
 let getAttributes = tree =>
-  filterTree(node => nodeHasProperty('targetType', 'attribute', node), tree)
+  preorderSeq(tree).filter(node => nodeHasProperty('targetType', 'attribute', node)).toArray()
 
 let getTables = tree =>
-  filterTree(node => nodeHasProperty('targetType', 'table', node), tree)
+  preorderSeq(tree).filter(node => nodeHasProperty('targetType', 'table', node)).toArray()
 
 let getNodeName = node => getPropertyValue('name', node);
 
