@@ -1,5 +1,6 @@
 import ActionCreator from '../utils/ActionCreator';
 import { submitAsForm } from '../utils/FormSubmitter';
+import { getStepBundle } from '../utils/actionCreatorUtils';
 
 // Action types
 let actionTypes = {
@@ -35,34 +36,13 @@ export default class StepDownloadFormViewActionCreator extends ActionCreator {
   }
 
   reloadData(stepId) {
-
     this._dispatch({ type: actionTypes.STEP_DOWNLOAD_LOADING });
-
-    let stepPromise = this._service.findStep(stepId);
-    let questionPromise = stepPromise.then(step => {
-      return this._service.findQuestion( q => q.name === step.answerSpec.questionName );
-    });
-    let recordClassPromise = questionPromise.then(question => {
-      return this._service.findRecordClass( rc => rc.name === question.recordClass );
-    });
-
-    Promise.all([ stepPromise, questionPromise, recordClassPromise ])
-    .then(([ step, question, recordClass]) => {
+    getStepBundle(stepId, this._service).then(stepBundle => {
       this._dispatch({
         type: actionTypes.STEP_DOWNLOAD_INITIALIZE_STORE,
-        payload: {
-          step,
-          question,
-          recordClass
-        }
-      })
-    }, error => {
-      this._dispatch({
-        type: actionTypes.APP_ERROR,
-        payload: { error }
+        payload: stepBundle
       });
-      throw error;
-    });
+    }, this._errorHandler(actionTypes.APP_ERROR));
   }
 
   submitForm(step, selectedReporter, formState, target = '_blank') {
