@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import CheckboxTreeController from '../controllers/CheckboxTreeController';
+import CheckboxTreeController from '../controllers/checkboxTreeController';
 import {
   getTree,
   nodeHasProperty,
