@@ -329,12 +329,12 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
 
     // Very ugly kludge to reset checkbox tree to default
     // values when dialog is closed.
-    $('#' + dialogId).on('dialogclose', function(e) {
-      var cbtId = $(e.target)
-        .find('[data-controller="wdk.checkboxTree.setUpCheckboxTree"]')
-        .data('id');
-      wdk.checkboxTree.selectCurrentNodes(cbtId);
-    });
+    //$('#' + dialogId).on('dialogclose', function(e) {
+    //  var cbtId = $(e.target)
+    //    .find('[data-controller="wdk.checkboxTree.setUpCheckboxTree"]')
+    //    .data('id');
+    //  wdk.checkboxTree.selectCurrentNodes(cbtId);
+    //});
   }
 
   function openAdvancedPaging(element){
