@@ -23,18 +23,9 @@ export default class UserActionCreator extends ActionCreator {
     .then(([ user, preferences ]) => {
       this._dispatch({
         type: actionTypes.USER_INITIALIZE_STORE,
-        payload: {
-          user,
-          preferences
-        }
+        payload: { user, preferences }
       })
-    }, error => {
-      this._dispatch({
-        type: actionTypes.APP_ERROR,
-        payload: { error }
-      });
-      throw error;
-    });
+    }, this._errorHandler(actionTypes.APP_ERROR));
   }
 }
 
