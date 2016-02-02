@@ -56,14 +56,7 @@ export default class RecordViewActionCreator extends ActionCreator {
           type: actionTypes.RECORD_UPDATED,
           payload: { record, recordClass, recordClasses, questions, categoryTree }
         });
-      },
-      error => {
-        this._dispatch({
-          type: actionTypes.ERROR,
-          payload: { error }
-        });
-        throw error;
-      }
+      }, this._errorHandler(actionTypes.ERROR)
     );
   }
 
