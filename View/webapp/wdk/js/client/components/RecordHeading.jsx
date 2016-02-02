@@ -1,6 +1,7 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
 import RecordActionLink from './RecordActionLink';
+import RecordOverview from './RecordOverview';
 
 let stubHandler = actionName => event => {
   event.preventDefault();
@@ -26,6 +27,7 @@ let RecordHeading = props => {
         })}
       </ul>
       <h1 className="wdk-RecordHeading">{recordClass.displayName} {record.displayName}</h1>
+      <RecordOverview record={record} recordClass={recordClass}/>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import includes from 'lodash/collection/includes';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
 import { wrappable } from '../utils/componentUtils';
+import { getPropertyValue } from '../utils/OntologyUtils';
 
 let RecordNavigationSection = React.createClass({
 
@@ -25,7 +26,7 @@ let RecordNavigationSection = React.createClass({
   getDefaultProps() {
     return {
       onCategoryToggle: function noop() {},
-      heading: 'Categories'
+      heading: 'Contents'
     };
   },
 
@@ -42,6 +43,11 @@ let RecordNavigationSection = React.createClass({
 
     return (
       <div className="wdk-RecordNavigationSection">
+        <h2 className="wdk-RecordNavigationSectionHeader">
+          <button className={expandClassName}
+            onClick={() => void this.setState({ navigationExpanded: !navigationExpanded })}
+          /> {heading}
+        </h2>
         <div className="wdk-RecordNavigationSearch">
           <input
             className="wdk-RecordNavigationSearchInput"
@@ -56,20 +62,15 @@ let RecordNavigationSection = React.createClass({
             }}
           />
         </div>
-        <h2 className="wdk-RecordNavigationSectionHeader">
-          <button className={expandClassName}
-            onClick={() => void this.setState({ navigationExpanded: !navigationExpanded })}
-          /> {heading}
-        </h2>
         <div className="wdk-RecordNavigationCategories">
           <RecordNavigationSectionCategories
             record={this.props.record}
             recordClass={this.props.recordClass}
-            categories={this.props.recordClass.categories}
+            categories={this.props.categoryTree.children}
             onCategoryToggle={this.props.onCategoryToggle}
             showChildren={navigationExpanded}
-            isCollapsed={category => includes(collapsedCategories, category.name)}
-            isVisible={category => includes(categoryWordsMap.get(category), navigationQueryLower)}
+            isCollapsed={category => includes(collapsedCategories, getPropertyValue('label', category))}
+            isVisible={category => includes(categoryWordsMap.get(category.properties), navigationQueryLower)}
           />
         </div>
       </div>
