@@ -1,9 +1,11 @@
 /* Enclosing div for checkbox tree */
 .wdk-CheckboxTree {
-  padding: 1em;
-  width:15em;
+  padding: 2em;
+  /*
+  width:20em;
   margin-left: auto;
   margin-right: auto;
+  */
 }
 
 .wdk-CheckboxTree-list {
@@ -16,11 +18,16 @@
 }
 
 .wdk-CheckboxTree-list li label {
+  line-height: 16px;
   cursor: default;
 }
 
 .wdk-CheckboxTree-list li label input {
   margin-left: 0px;
+}
+
+.wdk-CheckboxTree-list li label span {
+  padding-left: 0.2em;
 }
 
 .wdk-CheckboxTree-expandedItem {
