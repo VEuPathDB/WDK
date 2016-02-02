@@ -1,8 +1,10 @@
 import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
+import get from 'lodash/object/get';
 import { wrappable } from '../utils/componentUtils';
+import { getId, getLabel } from '../utils/OntologyUtils';
+import * as t from '../utils/TreeUtils';
 import * as i from '../utils/IterableUtils';
-import { preorder as preorderCategories } from '../utils/CategoryTreeIterators';
 import shallowEqual from '../utils/shallowEqual';
 import RecordNavigationItem from './RecordNavigationItem';
 import Tree from './Tree';
@@ -41,15 +43,16 @@ class RecordNavigationSectionCategories extends Component {
   // that is on-screen. Otherwise, we will only iterate top-level categories.
   setActiveCategory() {
     let categories = this.props.showChildren
-      ? preorderCategories(this.props.categories)
+      ? t.preorderSeq({ children: this.props.categories })
       : this.props.categories;
 
-    let activeCategory = i.findLast(function(category) {
-      let categoryNode = document.getElementById(category.name);
-      if (categoryNode == null) return true;
-      let rect = categoryNode.getBoundingClientRect();
+    let activeCategory = i.seq(categories).findLast(node => {
+      let id = getId(node);
+      let domNode = document.getElementById(id);
+      if (domNode == null) return;
+      let rect = domNode.getBoundingClientRect();
       return rect.top < 12 && rect.bottom > -12;
-    }, categories);
+    });
 
     this.setState({ activeCategory });
   }
@@ -58,8 +61,8 @@ class RecordNavigationSectionCategories extends Component {
     return (
       <Tree
         tree={this.props.categories}
-        id={c => c.name}
-        childNodes={c => c.categories}
+        id={c => getLabel(c)}
+        childNodes={c => c.children}
         node={RecordNavigationItem}
         showChildren={this.props.showChildren}
         onCategoryToggle={this.props.onCategoryToggle}

@@ -1,10 +1,17 @@
 import React from 'react';
 import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
+import { getId, getDisplayName } from '../utils/OntologyUtils';
 
 let RecordNavigationItem = props => {
+  if (props.node.children.length === 0) {
+    return <div/>
+  };
+
   let category = props.node;
   let parentEnumeration = props.parentEnumeration;
+  let id = getId(category);
+  let displayName = getDisplayName(category)
 
   let titleClassnames = classnames({
     'wdk-Record-sidebar-title': true,
@@ -16,7 +23,7 @@ let RecordNavigationItem = props => {
 
   let enumeration = parentEnumeration == null
     ? [ props.index + 1 ]
-    : [ parentEnumeration, props.index + 1 ];
+    : [ ...parentEnumeration, props.index + 1 ];
 
   return (
     <div className="wdk-RecordNavigationItem">
@@ -32,12 +39,12 @@ let RecordNavigationItem = props => {
 
       {visible &&
         <a
-          href={'#' + category.name}
+          href={'#' + id}
           className={titleClassnames}
           onClick={() => {
             if (collapsed) props.onCategoryToggle(category, false);
           }}
-        > {enumeration.join('.') + ' ' + category.displayName} </a>
+        > {enumeration.join('.') + ' ' + displayName} </a>
       }
 
       {props.showChildren &&

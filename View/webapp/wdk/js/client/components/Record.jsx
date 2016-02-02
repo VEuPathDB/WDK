@@ -1,6 +1,5 @@
 import { Component, PropTypes } from 'react';
 import RecordMainSection from './RecordMainSection';
-import RecordHeading from './RecordHeading';
 import { wrappable } from '../utils/componentUtils';
 
 
@@ -10,11 +9,10 @@ class Record extends Component {
     let { tables, attributes } = this.props.recordClass;
     return (
       <div className="wdk-Record">
-        <RecordHeading {...this.props}/>
         <RecordMainSection
           record={this.props.record}
           recordClass={this.props.recordClass}
-          categories={this.props.recordClass.categories}
+          categories={this.props.categoryTree.children}
           attributes={attributes}
           tables={tables}
           collapsedCategories={this.props.collapsedCategories}

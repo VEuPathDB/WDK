@@ -1,8 +1,10 @@
 import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
+import { getPropertyValue } from '../utils/OntologyUtils';
 import Main from './Main';
 import Record from './Record';
+import RecordHeading from './RecordHeading';
 import RecordNavigationSection from './RecordNavigationSection';
 import Sticky from './Sticky';
 
@@ -24,15 +26,15 @@ class RecordUI extends Component {
 
   toggleCategory(category, isCollapsed) {
     this.props.actions.toggleCategoryCollapsed(
-      this.props.recordClass.fullName,
-      category.name,
+      this.props.recordClass.name,
+      getPropertyValue('label', category),
       isCollapsed
     );
   }
 
   toggleTable(table, isCollapsed) {
     this.props.actions.toggleTableCollapsed(
-      this.props.recordClass.fullName,
+      this.props.recordClass.name,
       table.name,
       isCollapsed
     );
@@ -57,33 +59,36 @@ class RecordUI extends Component {
     });
 
     return (
-      <div className={classNames}>
+      <Main className={classNames}>
+        <RecordHeading record={this.props.record} recordClass={this.props.recordClass}/>
         <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
-          <h3 className="wdk-RecordSidebarHeader">{this.props.record.displayName}</h3>
+          {/*<h3 className="wdk-RecordSidebarHeader">{this.props.record.displayName}</h3>*/}
           <a href="#" className="wdk-RecordSidebarToggle" onClick={this.toggleSidebar}>
-            {this.state.showSidebar ? '' : 'Show Categories '}
+            {this.state.showSidebar ? '' : 'Show Contents '}
             <i className={sidebarIconClass}
               title={this.state.showSidebar ? 'Close sidebar' : 'Open sidebar'}/>
           </a>
           <RecordNavigationSection
             record={this.props.record}
             recordClass={this.props.recordClass}
+            categoryTree={this.props.categoryTree}
             collapsedCategories={this.props.collapsedCategories}
             categoryWordsMap={this.props.categoryWordsMap}
             onCategoryToggle={this.toggleCategory}
           />
         </Sticky>
-        <Main className="wdk-RecordMain">
+        <div className="wdk-RecordMain">
           <Record
             record={this.props.record}
             recordClass={this.props.recordClass}
+            categoryTree={this.props.categoryTree}
             collapsedCategories={this.props.collapsedCategories}
             collapsedTables={this.props.collapsedTables}
             onCategoryToggle={this.toggleCategory}
             onTableToggle={this.toggleTable}
           />
-        </Main>
-      </div>
+        </div>
+      </Main>
     )
   }
 }
