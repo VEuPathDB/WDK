@@ -14,6 +14,8 @@ export default class CheckboxTree extends React.Component {
    */
   constructor(props) {
     super(props);
+    this.newSelectedList = this.props.selectedList;
+    this.newExpandedList = this.props.expandedList;
 
     // hard bind the toggle functions to the this checkbox tree component
     this.selectAll = this.selectAll.bind(this);
@@ -34,11 +36,20 @@ export default class CheckboxTree extends React.Component {
     // Use the expanded list given but apply business rules to populate the business list if no
     // expanded list is provided.
     if (this.props.selectedList === null || this.props.selectedList === undefined) {
-      this.setSelectedList()
+      this.newSelectedList = this.props.selectedList;
     }
     if (this.props.expandedList === null || this.props.expandedList === undefined) {
       this.setExpandedList(this.props.tree, this.props.selectedList);
     }
+  }
+
+  /**
+   * Once initial rendering is complete, return any changes made to the selectedList or expandedList
+   * to the controller.
+   */
+  componentDidMount() {
+    this.setSelectedList(this.newSelectedList);
+    this.setExpandedList(this.newExpandedList);
   }
 
   /**
@@ -70,8 +81,7 @@ export default class CheckboxTree extends React.Component {
         this.setExpandedList(node.children, selectedList, expandedList);
       });
     }
-    this.props.onExpandedListUpdated(expandedList);
-    return expandedList;
+    this.newExpandedList = expandedList;
   }
 
 
@@ -144,7 +154,8 @@ export default class CheckboxTree extends React.Component {
     // if the expanded list is null (unlikely, but possible) create an intial
     // expanded list that obeys business rules.
     if (newExpandedList === null || newExpandedList === undefined) {
-      newExpandedList = this.setExpandedList(this.props.tree, this.props.selectedList);
+      this.setExpandedList(this.props.tree, this.props.selectedList);
+      newExpandedList = this.newExpandedList;
     }
     let index = newExpandedList.indexOf(id);
     index <= -1 ? newExpandedList.push(id) : newExpandedList.splice(index, 1);
@@ -158,9 +169,9 @@ export default class CheckboxTree extends React.Component {
    * If toggled checkbox is an unselected leaf - remove the leaf from the select list to be returned
    * If toggled checkbox is a selected non-leaf - identify the node's leaves (cached) and add them to the select list to be returned
    * If toggled checkbox is an unselected leaf - identify the node's leaves (cached) and remove them from the select list to be returned
-   */
+   */ƒ
   toggleCheckbox(nodeId, selected) {
-    let newSelectedList = this.props.selectedList;
+    let newSelectedList = this.props.selectedList || [];
     let node = getNodeById(nodeId, this.props.tree);
     if (isLeafNode(node)) {
       let index = newSelectedList.indexOf(nodeId);
