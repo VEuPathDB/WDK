@@ -20,6 +20,7 @@
 .wdk-CheckboxTree-list li label {
   line-height: 16px;
   cursor: default;
+  white-space:nowrap;
 }
 
 .wdk-CheckboxTree-list li label input {
@@ -53,10 +54,11 @@
 /* Modifies size and color of accordion (expand/collapse) icon */
 .wdk-CheckboxTree-list i {
   color: #AAA;
-  font-size: 0.75em;
-  top: 0.4em;
-  left: -1.4em;
-  width: 0.2em;
+  font-size: 1.25em;
+  top: 0;
+  left: -1.3em;
+  width: 0.6em;
+  padding: 2px 0px 4px 4px;
 }
 
 .wdk-CheckboxTree-links {
