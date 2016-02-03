@@ -120,7 +120,7 @@ let StepDownloadFormController = React.createClass({
       formUiState: this.state.viewData.formUiState,
       onFormChange: this.formEvents.changeFormState,
       onFormUiChange: this.formEvents.changeFormUiState,
-      onFormSubmit: this.formEvents.submitForm
+      onSubmit: this.formEvents.submitForm
     };
 
     // render form
