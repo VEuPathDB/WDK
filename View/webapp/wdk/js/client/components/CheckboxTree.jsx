@@ -58,7 +58,7 @@ export default class CheckboxTree extends React.Component {
 
     // If the selected list is empty or non-existant, the expanded list is likewise empty and there is nothing
     // more to do.
-    if (!selectedList) {
+    if (selectedList && selectedList.length > 0) {
       nodes.forEach(node => {
 
         // According to the business rule, indeterminate nodes get expanded.
