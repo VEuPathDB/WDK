@@ -42,6 +42,8 @@ public class Keys {
   public static final String IS_READ_ONLY = "isReadOnly";
   public static final String IS_SORTABLE = "isSortable";
   public static final String IS_REMOVABLE = "isRemovable";
+  public static final String USE_BASKET = "useBasket";
+
 
   // scoping-related keys
   public static final String CATEGORIES = "categories";
