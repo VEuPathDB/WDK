@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -67,6 +68,12 @@ public class TabularReporter extends StandardReporter {
         }
     }
 
+    @Override
+    public void configure(JSONObject config) {
+      super.configure(config);
+      hasHeader = (config.has(FIELD_HAS_HEADER) ? config.getBoolean(FIELD_HAS_HEADER) : true);
+    }
+    
     @Override
     public String getConfigInfo() {
 	    return "This reporter does not have config info yet.";
