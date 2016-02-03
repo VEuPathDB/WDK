@@ -71,6 +71,7 @@ export default class CheckboxTree extends React.Component {
       });
     }
     this.props.onExpandedListUpdated(expandedList);
+    return expandedList;
   }
 
 
@@ -269,12 +270,11 @@ export default class CheckboxTree extends React.Component {
    * @returns {XML}
    */
   renderTreeNode(node) {
-    let expandedList = this.props.expandedList || this.defaultExpandedList;
     let toggleCheckbox = this.toggleCheckbox;
     let toggleExpansion = this.toggleExpansion;
     let indeterminate = this.isIndeterminate(node, this.props.selectedList);
     let selected = this.isSelected(node, this.props.selectedList);
-    let expanded = this.isExpanded(node, expandedList, this.props.selectedList);
+    let expanded = this.isExpanded(node, this.props.expandedList, this.props.selectedList);
     let leaf = isLeafNode(node);
     let nodeType = !leaf && !expanded ? "wdk-CheckboxTree-collapsedItem" :
       leaf ? "wdk-CheckboxTree-leafItem" : "wdk-CheckboxTree-expandedItem";
