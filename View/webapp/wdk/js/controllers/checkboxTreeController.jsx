@@ -27,8 +27,8 @@ export default class CheckboxTreeController {
                     onDefaultSelectedListLoaded={this.loadDefaultSelectedList}
                     onCurrentSelectedListLoaded={this.loadCurrentSelectedList}
       />, document.getElementById("newAttributeCheckboxTree"));
-    console.log("Checkbox Tree rendered");
   }
+
 
   updateSelectedList(selectedList) {
     this.selectedList = selectedList;
