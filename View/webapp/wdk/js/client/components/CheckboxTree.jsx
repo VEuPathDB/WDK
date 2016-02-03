@@ -100,47 +100,60 @@ export default class CheckboxTree extends React.Component {
   /**
    * Clears the selected list and calls the appropriate update method in the action creator
    */
-  clearAll() {
+  clearAll(event) {
     this.setSelectedList();
+
+    // prevent update to URL
+    event.preventDefault();
   }
 
 
   /**
    * Selects all the tree's branches and calls the appropriate update method in the action creator
    */
-  expandAll() {
+  expandAll(event) {
     let expandedList = [];
     this.props.tree.forEach(node => {
       expandedList.push(...getBranches(node).map(branch => branch.id));
     });
     this.props.onExpandedListUpdated(expandedList);
+
+    // prevent update to URL
+    event.preventDefault();
   }
 
 
   /**
    * Clears the expanded list and calls the appropriate update method in the action creator
    */
-  collapseAll() {
+  collapseAll(event) {
     let expandedList = [];
     this.props.onExpandedListUpdated(expandedList);
+
+    // prevent update to URL
+    event.preventDefault();
   }
 
 
   /**
    * Calls the appropriate method in the action creator to reload the original selects
    */
-  toCurrent() {
-    console.log("toCurrent called");
+  toCurrent(event) {
     this.props.onCurrentSelectedListLoaded();
+
+    // prevent update to URL
+    event.preventDefault();
   }
 
 
   /**
    * Calls the appropriate method in the action creator to load the default selects
    */
-  toDefault() {
-    console.log("toDefault called");
+  toDefault(event) {
     this.props.onDefaultSelectedListLoaded();
+
+    // prevent update to URL
+    event.preventDefault();
   }
 
 
