@@ -7,37 +7,32 @@
               type="org.gusdb.wdk.model.jspwrap.StepBean"
               required="true"
               description="Step bean we are looking at" %>
-<%@ attribute name="showNativeCount"
+<%@ attribute name="excludeBasketColumn"
               type="java.lang.String"
               required="false"
-              description="if true, we show the native count" %>
-<%@ attribute name="missingNative"
-              type="java.lang.String"
-              required="false"
-              description="if true, we have missing native ids in result" %>
+              description="if true, the basket column will not be included" %>
+
+  <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
+  <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
 
   <c:set var="wdkAnswer" value="${step.answerValue}"/>
   <c:set var="wdkViewAnswer" value="${step.viewAnswerValue}"/>
-
   <c:set var="qName" value="${wdkAnswer.question.fullName}" />
-  <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
   <c:set var="recordClass" value="${wdkAnswer.question.recordClass}" />
   <c:set var="recordName" value="${recordClass.fullName}" />
-  <c:set var="recHasBasket" value="${recordClass.useBasket}" />
-  <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
+  <c:set var="displayName" value="${step.recordClass.displayName}"/>
+  <c:set var="displayNamePlural" value="${wdkAnswer.question.recordClass.displayNamePlural}" />
+  <c:set var="nativeDisplayNamePlural" value="${wdkAnswer.question.recordClass.nativeDisplayNamePlural}" />
 
- <c:set var="displayNamePlural" value="${wdkAnswer.question.recordClass.displayNamePlural}" />
- <c:set var="nativeDisplayNamePlural" value="${wdkAnswer.question.recordClass.nativeDisplayNamePlural}" />
+  <c:set var="recHasBasket" value="${recordClass.useBasket}" />
+  <c:set var="wdkView" value="${requestScope.wdkView}" />
+  <c:set var="isBasket" value="${fn:contains(step.questionName, 'ByRealtimeBasket')}"/>
 
   <%-- catch raised exception so we can show the user a nice message --%>
   <c:catch var="answerValueRecords_exception">
     <%-- FIXME This should probably be logged to wdk logger --%>
     <c:set var="answerRecords" value="${wdkViewAnswer.records}" />
   </c:catch>
-
-  <c:set var="wdkView" value="${requestScope.wdkView}" />
-  <c:set var="displayName" value="${step.recordClass.displayName}"/>
-  <c:set var="isBasket" value="${fn:contains(step.questionName, 'ByRealtimeBasket')}"/>
 
   <c:choose>
 
@@ -163,10 +158,11 @@
 
               <table  style="width:100%" class="Results_Table" step="${step.stepId}">
 
+<%-- ================================================= --%>
 <%-- TABLE HEADER ROW --%>
                 <thead>
                   <tr class="headerrow">
-                    <c:if test="${recHasBasket}">  
+                    <c:if test="${recHasBasket && excludeBasketColumn ne 'true'}">  
 <%--------- BASKET COLUMN  ----------%>
                       <th>
                         <c:choose>
@@ -183,6 +179,7 @@
                         </a>
                       </th>
                     </c:if>
+
                     <c:set var="j" value="0"/>
                     <c:forEach items="${wdkViewAnswer.summaryAttributes}" var="sumAttrib">   
 
@@ -270,6 +267,7 @@
                   </tr>
                 </thead>
 
+<%-- ================================================= --%>
 <%-- TABLE RESULT ROWS --%>
                 <tbody class="rootBody">
                   <c:set var="i" value="0"/>
@@ -279,7 +277,7 @@
                     <c:set value="${record.primaryKey}" var="primaryKey"/>
                     <tr class="${i % 2 eq 0 ? 'lines' : 'linesalt'}">
 <%--------- BASKET COLUMN  ----------%>
-                      <c:if test="${recHasBasket}">            
+                      <c:if test="${recHasBasket && excludeBasketColumn ne 'true'}">            
                         <td>
                           <c:set var="basket_img" value="basket_gray.png"/>
                           <c:set var="basketId" value="basket${fn:replace(primaryKey.value,'.','_')}" />
