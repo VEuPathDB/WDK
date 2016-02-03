@@ -17,22 +17,26 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
   "use strict";
   
   function setupCheckboxTree(element, attributes) {
+    let questionName = attributes.questionName;
     let recordClassName = attributes.recordClassName;
-    console.log("Set up checkbox tree for record " + recordClassName);
+    console.log("Set up checkbox tree for question " + questionName + " and record " + recordClassName);
     let ServiceUrl = window.location.href.substring(0,
         window.location.href.indexOf("showApplication.do")) + "service";
     let service = new WdkService(ServiceUrl);
     return Promise.all(
-      [service.getOntology('Categories'),service.findRecordClass(recordClass => recordClass.name === recordClassName)]
-    ).then(([categoriesOntology, recordClass]) => {
+      [service.getOntology('Categories'),
+       service.findQuestion(question => question.name === questionName),
+       service.findRecordClass(recordClass => recordClass.name === recordClassName)]
+    ).then(([categoriesOntology, question, recordClass]) => {
         let categoryTree = getTree(categoriesOntology, isQualifying(recordClassName));
         mungeTree(categoryTree.children, recordClass);
+        addSearchSpecificSubtree(question, categoryTree);
         let selectedList = null;
         let controller = new CheckboxTreeController(categoryTree.children, selectedList, null);
         controller.displayCheckboxTree();
 
-    }).catch(function() {
-      throw new Error('Error somewhere');
+    }).catch(function(error) {
+      throw new Error(error.message);
     });
   }
 
@@ -40,6 +44,28 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
     return (
       nodeHasProperty('targetType', 'attribute', node) && nodeHasProperty('recordClassName', recordClassName, node) && nodeHasProperty('scope', 'results', node)
     )
+  }
+
+  //TODO replace XXXXs
+  function addSearchSpecificSubtree(question, categoryTree) {
+    if(question.dynamicAttributes.length > 0) {
+      let subtree = {
+        "id": "search-specific-subtree",
+        "displayName": "Search Specific",
+        "description": "Information about the XXXXs returned that is specific to the search you ran, and the parameters you specified",
+        "children": []
+      };
+      question.dynamicAttributes.forEach(attribute => {
+        let node = {
+          "id": attribute.name,
+          "displayName": attribute.displayName,
+          "description": attribute.help,
+          "children":[]
+        }
+        subtree.children.push(node);
+      })
+      categoryTree.children.unshift(subtree);
+    }
   }
 
 
@@ -57,7 +83,6 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
 
         }
         else {
-          console.log("Attribute: " + attribute.displayName);
           node.displayName = attribute.displayName;
           node.description = attribute.help;
         }

@@ -15,9 +15,13 @@
               required="true"
               type="java.lang.String"
 %>
+<c:set var="questionName" value="${wdkStep.question.fullName}" />
 <c:set var="recordClassName" value="${wdkAnswer.recordClass.fullName}" />
+<!--  questionName: ${questionName} -->
 <!-- recordClassName: ${recordClassName} -->
-<span class="ontology-checkbox-tree-setup" data-record-class-name="${recordClassName}"
+<span class="ontology-checkbox-tree-setup"
+      data-question-name="${questionName}"
+      data-record-class-name="${recordClassName}"
       data-controller="wdk.attributeCheckboxTree.setupCheckboxTree"></span>
 <input type="button" onclick="wdk.resultsPage.openAttributeList(this);" class="addAttributesButton" value="Add Columns" />
 
