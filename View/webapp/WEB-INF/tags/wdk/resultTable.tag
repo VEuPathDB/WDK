@@ -308,7 +308,7 @@
                         <%--------- SHOW Prim Key COLUMN IF showPrimKey defined  ----------%>
                         <c:if test="${not empty showPrimKey ||  j != 0}"> 
                           <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
-                          <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordClass="${recordClass}" />
+                          <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordClass="${recordClass}" record="${record}" />
                         </c:if>    
                         <c:set var="j" value="${j+1}"/>
                       </c:forEach>
