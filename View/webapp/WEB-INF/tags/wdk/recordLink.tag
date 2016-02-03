@@ -20,6 +20,14 @@
     required="true"
     description="The display name of the primarykey"
   />
+
+  <jsp:directive.attribute
+    name="record"
+    type="org.gusdb.wdk.model.jspwrap.RecordBean"
+    required="false"
+    description="not currently needed"
+  />
+
   <c:set var="recordLinkKeys" value="" />
   <c:forEach items="${primaryKeyAttributeValue.values}" var="pkValue">
     <c:set var="recordLinkKeys" value="${recordLinkKeys}&amp;${pkValue.key}=${pkValue.value}" />
