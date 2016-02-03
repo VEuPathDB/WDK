@@ -28,23 +28,6 @@ let ReporterSelect = React.createClass({
   }
 });
 
-let ReporterSubmit = React.createClass({
-  render() {
-    let { reporters, selected, onSubmit } = this.props;
-    if (reporters.length == 0 // show button since standard JSON form should appear
-        || selected != NO_REPORTER_SELECTED) { // show since some form is selected
-      return (
-        <div style={{width:'30em',textAlign:'center', margin:'0.6em 0'}}>
-          <input type="button" value="Submit" onClick={this.props.onSubmit}/>
-        </div>
-      );
-    }
-    else {
-      return null;
-    }
-  }
-});
-
 let StepDownloadFormPage = React.createClass({
 
   changeReporter(event) {
@@ -59,10 +42,10 @@ let StepDownloadFormPage = React.createClass({
   render() {
 
     // get the props needed in this component's render
-    let { selectedReporter, recordClass, onFormSubmit } = this.props;
+    let { selectedReporter, recordClass, onSubmit } = this.props;
 
     // filter props we don't want to send to the child form
-    let formProps = filterOutProps(this.props, [ 'onReporterChange', 'onFormSubmit' ]);
+    let formProps = filterOutProps(this.props, [ 'onReporterChange' ]);
 
     // incoming store value of null indicates no format currently selected
     if (selectedReporter == null) {
@@ -76,10 +59,7 @@ let StepDownloadFormPage = React.createClass({
       <div style={{margin: '1em 3em'}}>
         <h1>Download Step Result: {this.props.step.displayName}</h1>
         <ReporterSelect reporters={reporters} selected={selectedReporter} onChange={this.changeReporter}/>
-        <div>
-          <StepDownloadForm {...formProps}/>
-        </div>
-        <ReporterSubmit reporters={reporters} selected={selectedReporter} onSubmit={onFormSubmit}/>
+        <StepDownloadForm {...formProps}/>
       </div>
     );
   }
