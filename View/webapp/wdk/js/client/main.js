@@ -12,8 +12,9 @@ import * as Stores from './stores';
 import * as ReporterUtils from './utils/reporterUtils';
 import * as TreeUtils from './utils/TreeUtils';
 import * as OntologyUtils from './utils/OntologyUtils';
+import * as ComponentUtils from './utils/componentUtils';
 
-export { Components, ReporterUtils, TreeUtils, OntologyUtils };
+export { Components, ComponentUtils, ReporterUtils, TreeUtils, OntologyUtils };
 
 export function run({ rootUrl, endpoint, rootElement }) {
   let dispatcher = new Dispatcher;

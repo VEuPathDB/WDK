@@ -150,3 +150,14 @@ export function addOrRemove(array, value) {
     // already there; remove
     array.filter(elem => elem != value));
 }
+
+/**
+ * Looks for the property with the passed name in the given object.  If the
+ * object or the property is null or undefined, returns default value.
+ * Otherwise returns the value found.
+ */
+export function getValueOrDefault(object, propertyName, defaultValue) {
+  return (object == null || object == undefined ||
+      object[propertyName] == null || object[propertyName] == undefined ?
+      defaultValue : object[propertyName]);
+}
