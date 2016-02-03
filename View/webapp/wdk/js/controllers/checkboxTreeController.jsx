@@ -6,13 +6,17 @@ import CheckboxTree from '../client/components/CheckboxTree';
 // serves as MVC controller for checkbox tree on results page
 export default class CheckboxTreeController {
 
-  constructor(tree, selectedList, expandedList) {
+  constructor(tree, selectedList, expandedList, defaultSelectedList) {
     this.tree = tree;
     this.selectedList = selectedList;
     this.expandedList = expandedList;
+    this.defaultSelectedList = defaultSelectedList;
+    this.currentSelectedList = selectedList;
     this.displayCheckboxTree = this.displayCheckboxTree.bind(this);
     this.updateSelectedList = this.updateSelectedList.bind(this);
     this.updateExpandedList = this.updateExpandedList.bind(this);
+    this.loadDefaultSelectedList = this.loadDefaultSelectedList.bind(this);
+    this.loadCurrentSelectedList = this.loadCurrentSelectedList.bind(this);
   }
 
   displayCheckboxTree() {
@@ -41,10 +45,10 @@ export default class CheckboxTreeController {
   }
 
   loadDefaultSelectedList() {
-    console.log("TBD");
+    this.updateSelectedList(this.defaultSelectedList);
   }
 
   loadCurrentSelectedList() {
-    console.log("TBD");
+    this.updateSelectedList(this.currentSelectedList);
   }
 }

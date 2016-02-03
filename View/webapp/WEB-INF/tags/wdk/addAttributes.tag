@@ -17,11 +17,17 @@
 %>
 <c:set var="questionName" value="${wdkStep.question.fullName}" />
 <c:set var="recordClassName" value="${wdkAnswer.recordClass.fullName}" />
+<c:set var="defaultSelectedList" value="${wdkAnswer.displayableAttributeTree.defaultAsList}" />
+<c:set var="currentSelectedList" value="${wdkAnswer.displayableAttributeTree.selectedAsList}" />
 <!--  questionName: ${questionName} -->
 <!-- recordClassName: ${recordClassName} -->
+<!-- default selected list: ${defaultSelectedList} -->
+<!-- current selected list: ${currentSelectedList} -->
 <span class="ontology-checkbox-tree-setup"
       data-question-name="${questionName}"
       data-record-class-name="${recordClassName}"
+      data-default-selected-list="${defaultSelectedList}"
+      data-current-selected-list="${currentSelectedList}"
       data-controller="wdk.attributeCheckboxTree.setupCheckboxTree"></span>
 <input type="button" onclick="wdk.resultsPage.openAttributeList(this);" class="addAttributesButton" value="Add Columns" />
 

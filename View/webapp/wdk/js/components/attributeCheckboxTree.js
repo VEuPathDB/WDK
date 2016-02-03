@@ -19,6 +19,8 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
   function setupCheckboxTree(element, attributes) {
     let questionName = attributes.questionName;
     let recordClassName = attributes.recordClassName;
+    let defaultSelectedList = attributes.defaultSelectedList.replace(/'/g,"").split(",");
+    let currentSelectedList = attributes.currentSelectedList.replace(/'/g,"").split(",");
     console.log("Set up checkbox tree for question " + questionName + " and record " + recordClassName);
     let ServiceUrl = window.location.href.substring(0,
         window.location.href.indexOf("showApplication.do")) + "service";
@@ -31,10 +33,9 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
         let categoryTree = getTree(categoriesOntology, isQualifying(recordClassName));
         mungeTree(categoryTree.children, recordClass);
         addSearchSpecificSubtree(question, categoryTree);
-        let selectedList = null;
-        let controller = new CheckboxTreeController(categoryTree.children, selectedList, null);
+        let selectedList = currentSelectedList || defaultSelectedList;
+        let controller = new CheckboxTreeController(categoryTree.children, selectedList, null, defaultSelectedList);
         controller.displayCheckboxTree();
-
     }).catch(function(error) {
       throw new Error(error.message);
     });
@@ -80,13 +81,13 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
           console.log("No attribute for " + name);
           node.displayName = name + "??";
           node.description = name + "??";
-
+          node.id = "attribute_" + getId(node);
         }
         else {
           node.displayName = attribute.displayName;
           node.description = attribute.help;
+          node.id = name;
         }
-        node.id = "attribute_" + getId(node);
 
       }
       else {
