@@ -73,10 +73,12 @@ export default class RecordViewActionCreator extends ActionCreator {
     return Promise.all([ questionsPromise, recordClassesPromise ])
     .then(([ questions, recordClasses ]) => {
       let recordClass = recordClasses.find(r => r.urlSegment == recordClassUrlSegment);
+      let primaryKey = recordClass.primaryKeyColumnRefs
+        .map((ref, index) => ({ name: ref, value: primaryKeyValues[index] }));
       let attributes = recordClass.attributes.map(a => a.name);
       let tables = recordClass.tables.map(t => t.name);
       let options = { attributes, tables };
-      return this._service.getRecord(recordClass.name, primaryKeyValues, options).then(
+      return this._service.getRecord(recordClass.name, primaryKey, options).then(
         record => ({ record, recordClass, recordClasses, questions })
       );
     });

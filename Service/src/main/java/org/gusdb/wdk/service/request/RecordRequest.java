@@ -46,7 +46,7 @@ public class RecordRequest {
       RecordRequest request = new RecordRequest(recordClass);
       request.setAttributeNames(parseAttributeNames(json.getJSONArray("attributes"), recordClass));
       request.setTableNames(parseTableNames(json.getJSONArray("tables"), recordClass));
-      request.setPrimaryKey(parsePrimaryKey(json.getJSONArray("primaryKeyValues"), recordClass));
+      request.setPrimaryKey(parsePrimaryKey(json.getJSONArray("primaryKey"), recordClass));
       return request;
     }
     catch (JSONException | WdkUserException e) {
@@ -73,8 +73,9 @@ public class RecordRequest {
 
     Map<String,Object> pkMap = new LinkedHashMap<String,Object>();
     for (int i = 0; i < providedLength; i++) {
-      String keyName = columnRefs[i];
-      String keyValue = primaryKeyJson.getString(i);
+      JSONObject part = primaryKeyJson.getJSONObject(i);
+      String keyName = part.getString("name");
+      String keyValue = part.getString("value");
       pkMap.put(keyName, keyValue);
     }
 
