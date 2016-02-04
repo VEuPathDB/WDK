@@ -6,7 +6,9 @@ import CheckboxTree from '../client/components/CheckboxTree';
 // serves as MVC controller for checkbox tree on results page
 export default class CheckboxTreeController {
 
-  constructor(tree, selectedList, expandedList, defaultSelectedList) {
+  constructor(element, name, tree, selectedList, expandedList, defaultSelectedList) {
+    this.parentElement = element;
+    this.name = name;
     this.tree = tree;
     this.selectedList = selectedList;
     this.expandedList = expandedList;
@@ -25,7 +27,7 @@ export default class CheckboxTreeController {
                     key="Root"
                     selectedList={this.selectedList}
                     expandedList={this.expandedList}
-                    name="AttributeList"
+                    name={this.name}
                     onSelectedListUpdated={this.updateSelectedList}
                     onExpandedListUpdated={this.updateExpandedList}
                     onDefaultSelectedListLoaded={this.loadDefaultSelectedList}

@@ -21,7 +21,10 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
     let recordClassName = attributes.recordClassName;
     let defaultSelectedList = attributes.defaultSelectedList.replace(/'/g,"").split(",");
     let currentSelectedList = attributes.currentSelectedList.replace(/'/g,"").split(",");
-    console.log("Set up checkbox tree for question " + questionName + " and record " + recordClassName);
+    let viewName = attributes.viewName;
+    let viewMap = {'_default':'gene', 'transcript-view':'transcript'};
+    viewName = viewMap[viewName];
+    console.log("Set up checkbox tree for question " + questionName + " and record " + recordClassName + " and view name " + viewName);
     let ServiceUrl = window.location.href.substring(0,
         window.location.href.indexOf("showApplication.do")) + "service";
     let service = new WdkService(ServiceUrl);
@@ -34,17 +37,21 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
         mungeTree(categoryTree.children, recordClass);
         addSearchSpecificSubtree(question, categoryTree);
         let selectedList = currentSelectedList || defaultSelectedList;
-        let controller = new CheckboxTreeController(categoryTree.children, selectedList, null, defaultSelectedList);
+        let controller = new CheckboxTreeController(element, "attributeList_" + viewName, categoryTree.children, selectedList, null, defaultSelectedList);
         controller.displayCheckboxTree();
     }).catch(function(error) {
       throw new Error(error.message);
     });
   }
 
-  let isQualifying = recordClassName => node => {
-    return (
-      nodeHasProperty('targetType', 'attribute', node) && nodeHasProperty('recordClassName', recordClassName, node) && nodeHasProperty('scope', 'results', node)
-    )
+  let isQualifying = (recordClassName, viewName) => node => {
+      let qualified = nodeHasProperty('targetType', 'attribute', node)
+                    && nodeHasProperty('recordClassName', recordClassName, node)
+                    && nodeHasProperty('scope', 'results', node);
+      if(recordClassName === 'TranscriptRecordClasses.TranscriptRecordClass') {
+        qualified === qualified && nodeHasProperty('geneOrTranscript', viewName, node);
+      }
+      return qualified;
   }
 
   //TODO replace XXXXs
