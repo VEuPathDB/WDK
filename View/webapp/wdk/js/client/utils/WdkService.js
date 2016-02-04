@@ -138,7 +138,7 @@ export default class WdkService {
     let body = stringify({ questionDefinition, formatting });
     return fetchJson(method, url, body).then(response => {
       // we will only cache individual records
-      let recordClassName = response.meta.recordClass;
+      let { recordClassName } = response.meta;
       for (let record of response.records) {
         let key = makeRecordKey(recordClassName, record.id);
         this._records.set(key, Promise.resolve(record));
