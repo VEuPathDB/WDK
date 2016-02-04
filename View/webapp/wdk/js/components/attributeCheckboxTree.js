@@ -37,6 +37,7 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
         mungeTree(categoryTree.children, recordClass);
         addSearchSpecificSubtree(question, categoryTree);
         let selectedList = currentSelectedList || defaultSelectedList;
+        console.log("Element: " + element[0]);
         let controller = new CheckboxTreeController(element, "attributeList_" + viewName, categoryTree.children, selectedList, null, defaultSelectedList);
         controller.displayCheckboxTree();
     }).catch(function(error) {
@@ -85,7 +86,7 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
         let attribute = recordClass.attributes.find(a => a.name === name);
         //if(attribute == null) throw new Error('Expected attribute for `' + name + '`, but got null');
         if(attribute == null) {
-          console.log("No attribute for " + name);
+          //console.log("No attribute for " + name);
           node.displayName = name + "??";
           node.description = name + "??";
           node.id = "attribute_" + getId(node);
