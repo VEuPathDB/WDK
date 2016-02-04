@@ -14,7 +14,7 @@ export default class RecordViewActionCreator extends ActionCreator {
 
   constructor(...args) {
     super(...args);
-    this._getLatestRecord = latest(this._getRecord.bind(this));
+    this._latestFetchRecordDetails = latest(this._fetchRecordDetails.bind(this));
   }
 
   /**
@@ -27,7 +27,7 @@ export default class RecordViewActionCreator extends ActionCreator {
   fetchRecordDetails(recordClassName, primaryKeyValues) {
     this._dispatch({ type: actionTypes.LOADING });
 
-    this._getLatestRecord(recordClassName, primaryKeyValues).then(
+    this._latestFetchRecordDetails(recordClassName, primaryKeyValues).then(
       ({ record, recordClass, recordClasses, questions }) => {
         this._dispatch({
           type: actionTypes.RECORD_UPDATED,
@@ -66,22 +66,21 @@ export default class RecordViewActionCreator extends ActionCreator {
     });
   }
 
-  _getRecord(recordClassUrlSegment, primaryKeyValues) {
+  _fetchRecordDetails(recordClassUrlSegment, primaryKeyValues) {
     let questionsPromise = this._service.getQuestions();
     let recordClassesPromise = this._service.getRecordClasses();
-
-    return Promise.all([ questionsPromise, recordClassesPromise ])
-    .then(([ questions, recordClasses ]) => {
-      let recordClass = recordClasses.find(r => r.urlSegment == recordClassUrlSegment);
+    let recordClassPromise = this._service.findRecordClass(r => r.urlSegment === recordClassUrlSegment);
+    let recordPromise = recordClassPromise.then(recordClass => {
       let primaryKey = recordClass.primaryKeyColumnRefs
         .map((ref, index) => ({ name: ref, value: primaryKeyValues[index] }));
       let attributes = recordClass.attributes.map(a => a.name);
       let tables = recordClass.tables.map(t => t.name);
       let options = { attributes, tables };
-      return this._service.getRecord(recordClass.name, primaryKey, options).then(
-        record => ({ record, recordClass, recordClasses, questions })
-      );
+      return this._service.getRecord(recordClass.name, primaryKey, options)
     });
+
+    return Promise.all([ questionsPromise, recordClassesPromise, recordPromise, recordClassPromise])
+    .then(([ questions, recordClasses, record, recordClass ]) => ({ questions, recordClasses, recordClass, record }));
   }
 
 }
