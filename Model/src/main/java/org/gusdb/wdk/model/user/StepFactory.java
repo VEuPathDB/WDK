@@ -370,7 +370,8 @@ public class StepFactory {
         psHistory = SqlUtils.getPreparedStatement(dataSource, sql);
       }
       else { // hide the step
-        sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_IS_DELETED + " = 1 WHERE " +
+        sql = "UPDATE " + userSchema + TABLE_STEP + " SET " + COLUMN_IS_DELETED + " = " +
+            userDb.getPlatform().convertBoolean(true) + " WHERE " +
             COLUMN_STEP_ID + " = ?";
         psHistory = SqlUtils.getPreparedStatement(dataSource, sql);
       }

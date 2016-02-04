@@ -103,8 +103,10 @@ export default class RecordViewActionCreator extends ActionCreator {
       let categoryTree = getTree(categoriesOntology, isLeafFor(recordClass.name));
       let attributes = getAttributes(categoryTree).map(getNodeName);
       let tables = getTables(categoryTree).map(getNodeName);
+      let primaryKey = recordClass.primaryKeyColumnRefs
+        .map((ref, index) => ({ name: ref, value: primaryKeyValues[index] }));
       let options = { attributes, tables };
-      return this._service.getRecord(recordClass.name, primaryKeyValues, options).then(
+      return this._service.getRecord(recordClass.name, primaryKey, options).then(
         record => ({ record, recordClass, recordClasses, questions, categoryTree })
       );
     });

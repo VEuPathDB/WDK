@@ -75,7 +75,9 @@ function initialize(state, payload) {
 
 function updateReporter(state, payload) {
   return Object.assign({}, state, {
-    selectedReporter : payload.selectedReporter
+    selectedReporter: payload.selectedReporter,
+    formState: null,
+    formUiState: null
   });
 }
 
