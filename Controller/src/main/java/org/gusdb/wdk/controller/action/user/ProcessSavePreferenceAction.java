@@ -20,15 +20,14 @@ import org.gusdb.wdk.model.user.User;
  */
 public class ProcessSavePreferenceAction extends WdkAction {
 
-    private static Logger logger = Logger.getLogger(ProcessSavePreferenceAction.class.getName());
+  private static Logger logger = Logger.getLogger(ProcessSavePreferenceAction.class.getName());
 
-    //  since params are dynamic, do not validate
-    @Override protected boolean shouldValidateParams() { return false; }
-    @Override protected Map<String, ParamDef> getParamDefs() { return null; }
+  //  since params are dynamic, do not validate
+  @Override protected boolean shouldValidateParams() { return false; }
+  @Override protected Map<String, ParamDef> getParamDefs() { return null; }
 
-    @Override
+  @Override
     protected ActionResult handleRequest(ParamGroup params) throws Exception {
-
       UserBean wdkUser = getCurrentUser();
       
       for (String key : params.getKeys()) {
@@ -46,6 +45,7 @@ public class ProcessSavePreferenceAction extends WdkAction {
       }
 
       wdkUser.save();
-      return new ActionResult().setRedirect(true).setViewPath("/");
+      //return new ActionResult().setRedirect(true).setViewPath("/");
+      return new ActionResult().EMPTY_RESULT;
     }
 }
