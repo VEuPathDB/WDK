@@ -10,6 +10,7 @@ import AnswerController from './components/AnswerController';
 import QuestionListController from './components/QuestionListController';
 import StepDownloadFormController from './components/StepDownloadFormController';
 import UserProfileController from './components/UserProfileController';
+import SiteMapController from './components/SiteMapController';
 
 let { Route, DefaultRoute, NotFoundRoute } = ReactRouter;
 
@@ -26,6 +27,7 @@ export function start(rootUrl, rootElement, props) {
         <Route name="record" path="record/:recordClass/*" handler={RecordController}/>
         <Route name="stepDownloadForm" path="step/:stepId/download" handler={StepDownloadFormController}/>
         <Route name="userProfile" path="user/profile" handler={UserProfileController}/>
+        <Route name="siteMap" path="siteMap" handler={SiteMapController}/>
         <Route name="question-list" handler={QuestionListController}/>
         <DefaultRoute handler={IndexController}/>
         <NotFoundRoute handler={NotFoundController}/>
