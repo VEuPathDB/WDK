@@ -94,13 +94,7 @@ export default class WdkService {
     // if we don't have the record, fetch whatever is requested
     if (!this._records.has(key)) {
       let body = stringify({ primaryKey, attributes, tables });
-      let recordPromise = fetchJson(method, url, body).then(record => {
-        // FIXME Remove basket related hacks when the basket service is up.
-        // Make sure we always request in_basket and add it to the basketStatus cache.
-        this._basketStatus.set(key, Boolean(Number(record.attributes.in_basket)));
-        return record;
-      })
-      this._records.set(key, recordPromise);
+      this._records.set(key, fetchJson(method, url, body));
     }
 
     else {
@@ -142,9 +136,6 @@ export default class WdkService {
       for (let record of response.records) {
         let key = makeRecordKey(recordClassName, record.id);
         this._records.set(key, Promise.resolve(record));
-        // FIXME Remove basket related hacks when the basket service is up.
-        // Make sure we always request in_basket and add it to the basketStatus cache.
-        this._basketStatus.set(key, Boolean(Number(record.attributes.in_basket)));
       }
       return response;
     });
@@ -153,7 +144,13 @@ export default class WdkService {
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
   getBasketStatus(recordClassName, primaryKey) {
     let key = makeRecordKey(recordClassName, primaryKey);
-    return Promise.resolve(this._basketStatus.has(key) ? this._basketStatus.get(key) : false);
+    if (!this._basketStatus.has(key)) {
+      // get record then udpate map
+      let basketPromise = this.getRecord(recordClassName, primaryKey, { attributes: [ 'in_basket'] })
+      .then(record => Boolean(Number(record.attributes.in_basket)));
+      this._basketStatus.set(key, basketPromise);
+    }
+    return this._basketStatus.get(key);
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
@@ -163,10 +160,7 @@ export default class WdkService {
     let data = JSON.stringify([ primaryKey.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
     let url = `${this._serviceUrl}/../processBasket.do?action=${action}&type=${recordClassName}&data=${data}`;
-    return fetchJson(method, url).then(() => {
-      this._basketStatus.set(key, status);
-      return status;
-    });
+    return fetchJson(method, url).then(() => this._basketStatus.set(key, Promise.resolve(status)).get(key));
   }
 
   getCurrentUser() {
