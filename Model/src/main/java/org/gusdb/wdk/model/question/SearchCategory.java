@@ -120,8 +120,13 @@ public class SearchCategory extends WdkModelBase {
     for (CategoryQuestionRef questionRef : questionRefMap.values()) {
       if (questionRef.isUsedBy(usedBy, strict)) {
         String questionName = questionRef.getQuestionFullName();
-        Question question = (Question) wdkModel.resolveReference(questionName);
-        questions.add(question);
+				try {
+					Question question = (Question) wdkModel.resolveReference(questionName);
+					questions.add(question);
+				} 
+				catch (WdkModelException e ){
+					logger.debug("************* question not resolved: " + questionName);
+				}
       }
     }
     Question[] array = new Question[questions.size()];
