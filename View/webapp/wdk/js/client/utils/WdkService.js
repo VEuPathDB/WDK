@@ -10,6 +10,7 @@ export default class WdkService {
     this._questions = null;
     this._recordClasses = null;
     this._records = new Map();
+    this._basketStatus = new Map();
   }
 
   getAnswerServiceUrl() {
@@ -83,9 +84,8 @@ export default class WdkService {
     return this.getRecordClasses().then(rs => rs.find(test));
   }
 
-  getRecord(recordClassName, primaryKeyValues, options = {}) {
-    let primaryKeyString = primaryKeyValues.join('/');
-    let key = recordClassName + ':' + primaryKeyString;
+  getRecord(recordClassName, primaryKey, options = {}) {
+    let key = makeRecordKey(recordClassName, primaryKey);
     let method = 'post';
     let url = this._serviceUrl + '/record/' + recordClassName + '/instance';
 
@@ -93,8 +93,14 @@ export default class WdkService {
 
     // if we don't have the record, fetch whatever is requested
     if (!this._records.has(key)) {
-      let body = stringify({ primaryKeyValues, attributes, tables });
-      this._records.set(key, fetchJson(method, url, body));
+      let body = stringify({ primaryKey, attributes, tables });
+      let recordPromise = fetchJson(method, url, body).then(record => {
+        // FIXME Remove basket related hacks when the basket service is up.
+        // Make sure we always request in_basket and add it to the basketStatus cache.
+        this._basketStatus.set(key, Boolean(Number(record.attributes.in_basket)));
+        return record;
+      })
+      this._records.set(key, recordPromise);
     }
 
     else {
@@ -106,15 +112,15 @@ export default class WdkService {
         // get addition attributes and tables
         if (reqAttributes.length > 0 || reqTables.length > 0) {
           let body = stringify({
-            primaryKeyValues,
+            primaryKey,
             attributes: reqAttributes,
             tables: reqTables
           });
 
           // merge old record attributes and tables with new record
-          return fetchJson(method, url, body).then(record => {
-            Object.assign(record.attributes, record.attributes);
-            Object.assign(record.tables, record.tables);
+          return fetchJson(method, url, body).then(newRecord => {
+            Object.assign(record.attributes, newRecord.attributes);
+            Object.assign(record.tables, newRecord.tables);
             return record;
           });
         }
@@ -134,10 +140,32 @@ export default class WdkService {
       // we will only cache individual records
       let recordClassName = response.meta.recordClass;
       for (let record of response.records) {
-        let key = recordClassName + ':' + stringify(record.id);
+        let key = makeRecordKey(recordClassName, record.id);
         this._records.set(key, Promise.resolve(record));
+        // FIXME Remove basket related hacks when the basket service is up.
+        // Make sure we always request in_basket and add it to the basketStatus cache.
+        this._basketStatus.set(key, Boolean(Number(record.attributes.in_basket)));
       }
       return response;
+    });
+  }
+
+  // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
+  getBasketStatus(recordClassName, primaryKey) {
+    let key = makeRecordKey(recordClassName, primaryKey);
+    return Promise.resolve(this._basketStatus.has(key) ? this._basketStatus.get(key) : false);
+  }
+
+  // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
+  updateBasketStatus(recordClassName, primaryKey, status) {
+    let key = makeRecordKey(recordClassName, primaryKey);
+    let action = status ? 'add' : 'remove';
+    let data = JSON.stringify([ primaryKey.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
+    let method = 'get';
+    let url = `${this._serviceUrl}/../processBasket.do?action=${action}&type=${recordClassName}&data=${data}`;
+    return fetchJson(method, url).then(() => {
+      this._basketStatus.set(key, status);
+      return status;
     });
   }
 
@@ -154,6 +182,9 @@ export default class WdkService {
   }
 }
 
+function makeRecordKey(recordClassName, primaryKeyValues) {
+  return recordClassName + ':' + stringify(primaryKeyValues);
+}
 
 function fetchJson(method, url, body) {
   return new Promise(function(resolve, reject) {
