@@ -14,7 +14,7 @@ class RecordController extends Component {
     this.state = this.store.getState();
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.storeSubscription = this.store.addListener(() => {
       this.setState(this.store.getState());
     });
