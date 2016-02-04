@@ -7,7 +7,7 @@ import CheckboxTree from '../client/components/CheckboxTree';
 export default class CheckboxTreeController {
 
   constructor(element, name, tree, selectedList, expandedList, defaultSelectedList) {
-    this.parentElement = element;
+    this.element = element;
     this.name = name;
     this.tree = tree;
     this.selectedList = selectedList;
@@ -22,6 +22,7 @@ export default class CheckboxTreeController {
   }
 
   displayCheckboxTree() {
+    console.log("Using element " + this.element[0]);
     ReactDOM.render(
       <CheckboxTree tree={this.tree}
                     key="Root"
@@ -32,7 +33,8 @@ export default class CheckboxTreeController {
                     onExpandedListUpdated={this.updateExpandedList}
                     onDefaultSelectedListLoaded={this.loadDefaultSelectedList}
                     onCurrentSelectedListLoaded={this.loadCurrentSelectedList}
-      />, document.getElementById("newAttributeCheckboxTree"));
+      />, this.element[0]);
+    console.log("Rendered checkbox " + this.name + " under element " + JSON.stringify(this.element));
   }
 
 

@@ -26,13 +26,7 @@
 <!-- default selected list: ${defaultSelectedList} -->
 <!-- current selected list: ${currentSelectedList} -->
     <!-- current view: ${viewName} -->
-<span class="ontology-checkbox-tree-setup"
-      data-question-name="${questionName}"
-      data-record-class-name="${recordClassName}"
-      data-default-selected-list="${defaultSelectedList}"
-      data-current-selected-list="${currentSelectedList}"
-      data-view-name="${viewName}"
-      data-controller="wdk.attributeCheckboxTree.setupCheckboxTree"></span>
+
 <input type="button" onclick="wdk.resultsPage.openAttributeList(this);" class="addAttributesButton" value="Add Columns" />
 
 <div class="attributesList formPopup" title="Select Columns">
@@ -43,7 +37,14 @@
     <div class="formButtonPanel">
       <input type="submit" value="Update Columns"/>
     </div>
-    <div id="newAttributeCheckboxTree"></div>
+    <div id="newAttributeCheckboxTree"
+         data-question-name="${questionName}"
+         data-record-class-name="${recordClassName}"
+         data-default-selected-list="${defaultSelectedList}"
+         data-current-selected-list="${currentSelectedList}"
+         data-view-name="${viewName}"
+         data-controller="wdk.attributeCheckboxTree.setupCheckboxTree">
+    </div>
    
     <div class="formButtonPanel">
       <input type="submit" value="Update Columns"/>
