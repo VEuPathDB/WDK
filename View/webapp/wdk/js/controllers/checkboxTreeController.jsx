@@ -13,7 +13,8 @@ export default class CheckboxTreeController {
     this.selectedList = selectedList;
     this.expandedList = expandedList;
     this.defaultSelectedList = defaultSelectedList;
-    this.currentSelectedList = selectedList;
+    this.currentSelectedList = (selectedList || []).concat();
+    console.log("Current selected list: " + JSON.stringify(this.currentSelectedList));
     this.displayCheckboxTree = this.displayCheckboxTree.bind(this);
     this.updateSelectedList = this.updateSelectedList.bind(this);
     this.updateExpandedList = this.updateExpandedList.bind(this);
@@ -44,6 +45,7 @@ export default class CheckboxTreeController {
   }
 
   updateExpandedList(expandedList) {
+    console.log("Updating Expanded list to " + JSON.stringify(expandedList));
     this.expandedList = expandedList;
     this.displayCheckboxTree();
   }
@@ -53,6 +55,7 @@ export default class CheckboxTreeController {
   }
 
   loadCurrentSelectedList() {
+    console.log("Current selected list " + JSON.stringify(this.currentSelectedList));
     this.updateSelectedList(this.currentSelectedList);
   }
 }
