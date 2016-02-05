@@ -25,7 +25,7 @@ public class Keys {
   public static final String PROPERTIES = "properties";
   public static final String TOTAL_COUNT = "totalCount";
   public static final String RESPONSE_COUNT = "responseCount";
-  public static final String RECORD_CLASS = "recordClass";
+  public static final String RECORD_CLASS_NAME = "recordClassName";
   public static final String QUESTION_NAME = "questionName";
 
   // UI-related keys

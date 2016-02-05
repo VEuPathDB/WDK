@@ -1,5 +1,4 @@
 import { Component } from 'react';
-import mapValues from 'lodash/object/mapValues';
 import Doc from './Doc';
 import Loading from './Loading';
 import RecordUI from './RecordUI';
@@ -9,20 +8,31 @@ class RecordController extends Component {
 
   constructor(props) {
     super(props);
-    this.store = props.stores.RecordViewStore;
-    this.actions = props.actionCreators.RecordViewActionCreator;
-    this.state = this.store.getState();
+    this.recordViewStore = props.stores.RecordViewStore;
+    this.userStore = props.stores.UserStore;
+    this.recordViewActions = props.actionCreators.RecordViewActionCreator;
+    this.userActions = props.actionCreators.UserActionCreator;
+    this.state = this.getStateFromStores();
   }
 
-  componentWillMount() {
-    this.storeSubscription = this.store.addListener(() => {
-      this.setState(this.store.getState());
-    });
+  getStateFromStores() {
+    return {
+      recordView: this.recordViewStore.getState(),
+      user: this.userStore.getState()
+    };
+  }
+
+  componentDidMount() {
+    this.storeSubscriptions = [
+      this.recordViewStore.addListener(() => this.setState(this.getStateFromStores())),
+      this.userStore.addListener(() => this.setState(this.getStateFromStores()))
+    ];
+    this.userActions.loadCurrentUser();
     this.fetchRecord(this.props);
   }
 
   componentWillUnmount() {
-    this.storeSubscription.remove();
+    this.storeSubscriptions.forEach(s => s.remove());
   }
 
   componentWillReceiveProps(nextProps) {
@@ -31,11 +41,11 @@ class RecordController extends Component {
 
   fetchRecord(props) {
     let { recordClass, splat } = props.params;
-    this.actions.fetchRecordDetails(recordClass, splat.split('/'));
+    this.recordViewActions.fetchRecordDetails(recordClass, splat.split('/'));
   }
 
   renderLoading() {
-    if (this.state.isLoading) {
+    if (this.state.recordView.isLoading || this.state.user.isLoading) {
       return (
         <Loading/>
       );
@@ -43,7 +53,7 @@ class RecordController extends Component {
   }
 
   renderError() {
-    if (this.state.error) {
+    if (this.state.recordView.error) {
       return (
         <div style={{padding: '1.5em', fontSize: '2em', color: 'darkred', textAlign: 'center'}}>
           The requested record could not be loaded.
@@ -53,13 +63,19 @@ class RecordController extends Component {
   }
 
   renderRecord() {
-    if (this.state.record != null) {
-      let title = this.state.recordClass.displayName + ' ' +
-        this.state.record.displayName;
+    let { recordView, user } = this.state;
+    if (recordView.record != null) {
+      let title = this.state.recordView.recordClass.displayName + ' ' +
+        recordView.record.displayName;
 
       return (
         <Doc title={title}>
-          <RecordUI {...this.state} actions={this.actions}/>
+          <RecordUI
+            {...recordView}
+            {...user}
+            recordActions={this.recordViewActions}
+            userActions={this.userActions}
+          />
         </Doc>
       );
     }

@@ -43,7 +43,7 @@ public class StepFormatter {
         .put(Keys.STRATEGY_ID, step.getStrategyId())
         .put(Keys.ESTIMATED_SIZE, step.getEstimateSize())
         .put(Keys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
-        .put(Keys.RECORD_CLASS, step.getType())
+        .put(Keys.RECORD_CLASS_NAME, step.getType())
         .put(Keys.ANSWER_SPEC, createAnswerSpec(step));
     }
     catch (JSONException e) {
