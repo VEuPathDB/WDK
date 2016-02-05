@@ -1,5 +1,6 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
+import CheckboxTree from './CheckboxTree';
 
 let SiteMap = React.createClass({
 
