@@ -1,4 +1,5 @@
 import ActionCreator from '../utils/ActionCreator';
+import UserActionCreator from './UserActionCreator';
 import {latest} from '../utils/PromiseUtils';
 
 let actionTypes = {
@@ -15,6 +16,7 @@ export default class RecordViewActionCreator extends ActionCreator {
   constructor(...args) {
     super(...args);
     this._latestFetchRecordDetails = latest(this._fetchRecordDetails.bind(this));
+    this._userActionCreator = new UserActionCreator(...args);
   }
 
   /**
@@ -76,11 +78,13 @@ export default class RecordViewActionCreator extends ActionCreator {
       let attributes = recordClass.attributes.map(a => a.name);
       let tables = recordClass.tables.map(t => t.name);
       let options = { attributes, tables };
+      this._userActionCreator.loadBasketStatus(recordClass.name, primaryKey);
       return this._service.getRecord(recordClass.name, primaryKey, options)
     });
 
-    return Promise.all([ questionsPromise, recordClassesPromise, recordPromise, recordClassPromise])
-    .then(([ questions, recordClasses, record, recordClass ]) => ({ questions, recordClasses, recordClass, record }));
+    return Promise.all([ questionsPromise, recordClassesPromise, recordPromise, recordClassPromise ])
+    .then(([ questions, recordClasses, record, recordClass ]) =>
+      ({ questions, recordClasses, recordClass, record }));
   }
 
 }

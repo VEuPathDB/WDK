@@ -38,7 +38,7 @@ export default class RecordViewStore extends ReduceStore {
         });
 
       case RECORD_UPDATED: {
-        let { record, recordClass, questions, recordClasses } = payload;
+        let { record, recordClass, questions, recordClasses, user, inBasket } = payload;
 
         let collapsedCategories = state.recordClass === recordClass
           ? state.collapsedCategories : recordClass.collapsedCategories || [];
@@ -56,7 +56,9 @@ export default class RecordViewStore extends ReduceStore {
           collapsedCategories,
           collapsedTables,
           isLoading: false,
-          categoryWordsMap
+          categoryWordsMap,
+          user,
+          inBasket
         });
       }
 
