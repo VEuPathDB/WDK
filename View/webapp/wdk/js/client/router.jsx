@@ -27,7 +27,7 @@ export function start(rootUrl, rootElement, props) {
         <Route name="record" path="record/:recordClass/*" handler={RecordController}/>
         <Route name="stepDownloadForm" path="step/:stepId/download" handler={StepDownloadFormController}/>
         <Route name="userProfile" path="user/profile" handler={UserProfileController}/>
-        <Route name="siteMap" path="siteMap" handler={SiteMapController}/>
+        <Route name="site-map" handler={SiteMapController}/>
         <Route name="question-list" handler={QuestionListController}/>
         <DefaultRoute handler={IndexController}/>
         <NotFoundRoute handler={NotFoundController}/>
