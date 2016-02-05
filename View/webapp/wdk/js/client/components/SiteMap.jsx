@@ -4,13 +4,17 @@ import { wrappable } from '../utils/componentUtils';
 let SiteMap = React.createClass({
 
   render() {
-
-   
-
     return (
-      <div style={{ margin: "0 2em"}}>
-        <h1>Hello World, this is a Site Map</h1>
-      </div>
+
+      <CheckboxTree tree={this.props.tree}
+                   selectedList={[]}
+                   expandedList={this.props.expandedList}
+                   name="SiteMapTree"
+                   onSelectedListUpdated={()=>{}}
+                   onExpandedListUpdated={this.props.siteMapActions.updateExpanded}
+                   onDefaultSelectedListLoaded={()=>{}}
+                   onCurrentSelectedListLoaded={()=>{}}
+     />
     );
   }
 });
