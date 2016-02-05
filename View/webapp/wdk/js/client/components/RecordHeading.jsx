@@ -13,11 +13,15 @@ let RecordHeading = props => {
   let { record, recordClass, user, basket, userActions } = props;
   let actions = [
     {
-      label: basket.inBasket ? 'Remove from basket' : 'Add to basket',
+      label: user.isGuest ? 'Login to manage basket'
+           : basket.inBasket ? 'Remove from basket'
+           : 'Add to basket',
       iconClassName: basket.isLoading ? loadingClassName : 'fa fa-shopping-basket',
       onClick(event) {
         event.preventDefault();
-        userActions.updateBasketStatus(record.recordClassName, record.id, !basket.inBasket)
+        if (!user.isGuest) {
+          userActions.updateBasketStatus(record.recordClassName, record.id, !basket.inBasket)
+        }
       }
     },
     {
