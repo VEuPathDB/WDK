@@ -33,7 +33,7 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
        service.findQuestion(question => question.name === questionName),
        service.findRecordClass(recordClass => recordClass.name === recordClassName)]
     ).then(([categoriesOntology, question, recordClass]) => {
-        let categoryTree = getTree(categoriesOntology, isQualifying(recordClassName));
+        let categoryTree = getTree(categoriesOntology, isQualifying(recordClassName, viewName));
         mungeTree(categoryTree.children, recordClass);
         addSearchSpecificSubtree(question, categoryTree);
         let selectedList = currentSelectedList || defaultSelectedList;
@@ -49,8 +49,8 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
       let qualified = nodeHasProperty('targetType', 'attribute', node)
                     && nodeHasProperty('recordClassName', recordClassName, node)
                     && nodeHasProperty('scope', 'results', node);
-      if(recordClassName === 'TranscriptRecordClasses.TranscriptRecordClass') {
-        qualified === qualified && nodeHasProperty('geneOrTranscript', viewName, node);
+      if(qualified && recordClassName === 'TranscriptRecordClasses.TranscriptRecordClass') {
+        qualified = nodeHasProperty('geneOrTranscript', viewName, node);
       }
       return qualified;
   }
