@@ -1,4 +1,5 @@
 import ActionCreator from '../utils/ActionCreator';
+import UserActionCreator from './UserActionCreator';
 import {latest} from '../utils/PromiseUtils';
 import {
   getTree,
@@ -37,7 +38,8 @@ export default class RecordViewActionCreator extends ActionCreator {
 
   constructor(...args) {
     super(...args);
-    this._getLatestRecord = latest(this._getRecord.bind(this));
+    this._latestFetchRecordDetails = latest(this._fetchRecordDetails.bind(this));
+    this._userActionCreator = new UserActionCreator(...args);
   }
 
   /**
@@ -50,7 +52,7 @@ export default class RecordViewActionCreator extends ActionCreator {
   fetchRecordDetails(recordClassName, primaryKeyValues) {
     this._dispatch({ type: actionTypes.LOADING });
 
-    this._getLatestRecord(recordClassName, primaryKeyValues).then(
+    this._latestFetchRecordDetails(recordClassName, primaryKeyValues).then(
       ({ record, recordClass, recordClasses, questions, categoryTree }) => {
         this._dispatch({
           type: actionTypes.RECORD_UPDATED,
@@ -89,27 +91,28 @@ export default class RecordViewActionCreator extends ActionCreator {
     });
   }
 
-  _getRecord(recordClassUrlSegment, primaryKeyValues) {
-    return Promise.all([
-      this._service.getQuestions(),
-      this._service.getRecordClasses(),
-      this._service.getOntology('Categories')
-    ]).then(([
-      questions,
-      recordClasses,
-      categoriesOntology
-    ]) => {
-      let recordClass = recordClasses.find(r => r.urlSegment == recordClassUrlSegment);
-      let categoryTree = getTree(categoriesOntology, isLeafFor(recordClass.name));
+  _fetchRecordDetails(recordClassUrlSegment, primaryKeyValues) {
+    let questionsPromise = this._service.getQuestions();
+    let recordClassesPromise = this._service.getRecordClasses();
+    let recordClassPromise = this._service.findRecordClass(r => r.urlSegment === recordClassUrlSegment);
+    let categoryTreePromise = Promise.all([ recordClassPromise, this._service.getOntology('Categories') ])
+      .then(([ recordClass, ontology ]) => getTree(ontology, isLeafFor(recordClass.name)));
+
+    let recordPromise = Promise.all([ recordClassPromise, categoryTreePromise ]).then(([ recordClass, categoryTree ]) => {
       let attributes = getAttributes(categoryTree).map(getNodeName);
       let tables = getTables(categoryTree).map(getNodeName);
       let primaryKey = recordClass.primaryKeyColumnRefs
         .map((ref, index) => ({ name: ref, value: primaryKeyValues[index] }));
       let options = { attributes, tables };
-      return this._service.getRecord(recordClass.name, primaryKey, options).then(
-        record => ({ record, recordClass, recordClasses, questions, categoryTree })
-      );
+      return this._service.getRecord(recordClass.name, primaryKey, options).then(record => {
+        this._userActionCreator.loadBasketStatus(recordClass.name, record.id);
+        return record;
+      });
     });
+
+    return Promise.all([ recordPromise, categoryTreePromise, recordClassPromise, recordClassesPromise, questionsPromise ])
+    .then(([ record, categoryTree, recordClass, recordClasses, questions ]) =>
+      ({ record, categoryTree, recordClass, recordClasses, questions }));
   }
 
 }

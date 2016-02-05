@@ -25,7 +25,7 @@ class RecordUI extends Component {
   }
 
   toggleCategory(category, isCollapsed) {
-    this.props.actions.toggleCategoryCollapsed(
+    this.props.recordActions.toggleCategoryCollapsed(
       this.props.recordClass.name,
       getPropertyValue('label', category),
       isCollapsed
@@ -33,7 +33,7 @@ class RecordUI extends Component {
   }
 
   toggleTable(table, isCollapsed) {
-    this.props.actions.toggleTableCollapsed(
+    this.props.recordActions.toggleTableCollapsed(
       this.props.recordClass.name,
       table.name,
       isCollapsed
@@ -60,7 +60,13 @@ class RecordUI extends Component {
 
     return (
       <Main className={classNames}>
-        <RecordHeading record={this.props.record} recordClass={this.props.recordClass}/>
+        <RecordHeading
+          record={this.props.record}
+          recordClass={this.props.recordClass}
+          user={this.props.user}
+          basket={this.props.baskets[this.props.recordClass.name][JSON.stringify(this.props.record.id)]}
+          userActions={this.props.userActions}
+        />
         <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
           {/*<h3 className="wdk-RecordSidebarHeader">{this.props.record.displayName}</h3>*/}
           <a href="#" className="wdk-RecordSidebarToggle" onClick={this.toggleSidebar}>
@@ -98,7 +104,10 @@ RecordUI.propTypes = {
   recordClass: PropTypes.object.isRequired,
   collapsedCategories: PropTypes.array.isRequired,
   collapsedTables: PropTypes.array.isRequired,
-  actions: PropTypes.object.isRequired
+  user: PropTypes.object.isRequired,
+  baskets: PropTypes.object.isRequired,
+  recordActions: PropTypes.object.isRequired,
+  userActions: PropTypes.object.isRequired
 };
 
 
