@@ -31,14 +31,19 @@ export default class RecordViewActionCreator extends ActionCreator {
   fetchRecordDetails(recordClassName, primaryKeyValues) {
     this._dispatch({ type: actionTypes.SET_ACTIVE_RECORD_LOADING });
 
-    this._latestFetchRecordDetails(recordClassName, primaryKeyValues).then(
-      ({ record, recordClass, recordClasses, questions }) => {
+    this._latestFetchRecordDetails(recordClassName, primaryKeyValues).then(details => {
+      let { record, recordClass, recordClasses, questions } = details;
+      let payload = { record, recordClass, recordClasses, questions };
+      let basketAction = this._userActionCreator.loadBasketStatus(recordClass.name, record.id);
+
+      basketAction.then(() => {
         this._dispatch({
           type: actionTypes.SET_ACTIVE_RECORD,
-          payload: { record, recordClass, recordClasses, questions }
+          payload
         });
-      }, this._errorHandler(actionTypes.SET_ERROR)
-    );
+      });
+
+    }, this._errorHandler(actionTypes.SET_ERROR));
   }
 
   toggleCategoryCollapsed(recordClassName, categoryName, isCollapsed) {
@@ -78,7 +83,6 @@ export default class RecordViewActionCreator extends ActionCreator {
       let attributes = recordClass.attributes.map(a => a.name);
       let tables = recordClass.tables.map(t => t.name);
       let options = { attributes, tables };
-      this._userActionCreator.loadBasketStatus(recordClass.name, primaryKey);
       return this._service.getRecord(recordClass.name, primaryKey, options)
     });
 
