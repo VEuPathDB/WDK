@@ -22,17 +22,18 @@ export default class UserActionCreator extends ActionCreator {
     let userPromise = this._service.getCurrentUser();
     let preferencePromise = this._service.getCurrentUserPreferences();
 
-    Promise.all([ userPromise, preferencePromise ])
+    return Promise.all([ userPromise, preferencePromise ])
     .then(([ user, preferences ]) => {
       this._dispatch({
         type: actionTypes.USER_INITIALIZE_STORE,
         payload: { user, preferences }
       });
+      return { user, preferences };
     }, this._errorHandler(actionTypes.APP_ERROR));
   }
 
   loadBasketStatus(recordClassName, primaryKey) {
-    this._basketStatusAction(
+    return this._basketStatusAction(
       recordClassName,
       primaryKey,
       this._service.getBasketStatus(recordClassName, primaryKey)
@@ -40,7 +41,7 @@ export default class UserActionCreator extends ActionCreator {
   }
 
   updateBasketStatus(recordClassName, primaryKey, inBasket) {
-    this._basketStatusAction(
+    return this._basketStatusAction(
       recordClassName,
       primaryKey,
       this._service.updateBasketStatus(recordClassName, primaryKey, inBasket)
@@ -53,11 +54,12 @@ export default class UserActionCreator extends ActionCreator {
       payload: { recordClassName, primaryKey }
     });
 
-    basketStatusPromise.then(inBasket => {
+    return basketStatusPromise.then(inBasket => {
       this._dispatch({
         type: actionTypes.BASKET_STATUS_RECEIVED,
         payload: { recordClassName, primaryKey, inBasket }
       });
+      return { recordClassName, primaryKey, inBasket };
     }, this._errorHandler(actionTypes.BASKET_STATUS_ERROR));
   }
 }
