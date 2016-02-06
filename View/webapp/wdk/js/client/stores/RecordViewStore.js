@@ -4,11 +4,14 @@ import { postorderSeq } from '../utils/TreeUtils';
 import { nodeHasProperty, getPropertyValues } from '../utils/OntologyUtils';
 
 let {
-  LOADING,
-  ERROR,
-  RECORD_UPDATED,
-  CATEGORY_COLLAPSED_TOGGLED,
-  TABLE_COLLAPSED_TOGGLED
+  SET_ACTIVE_RECORD,
+  SET_ACTIVE_RECORD_LOADING,
+  SET_ERROR,
+  SHOW_CATEGORY,
+  HIDE_CATEGORY,
+  SHOW_TABLE,
+  HIDE_TABLE,
+  UPDATE_NAVIGATION_QUERY
 } = RecordViewActionCreator.actionTypes;
 
 export default class RecordViewStore extends ReduceStore {
@@ -25,19 +28,19 @@ export default class RecordViewStore extends ReduceStore {
 
   reduce(state, { type, payload }) {
     switch (type) {
-      case ERROR:
+      case SET_ERROR:
         return Object.assign({}, this.getInitialState(), {
           isLoading: false,
           error: payload.error
         });
 
-      case LOADING:
+      case SET_ACTIVE_RECORD_LOADING:
         return Object.assign({}, state, {
           isLoading: true,
           error: null
         });
 
-      case RECORD_UPDATED: {
+      case SET_ACTIVE_RECORD: {
         let { record, recordClass, questions, recordClasses, categoryTree } = payload;
 
         let collapsedCategories = state.recordClass === recordClass
@@ -61,19 +64,37 @@ export default class RecordViewStore extends ReduceStore {
         });
       }
 
-      case CATEGORY_COLLAPSED_TOGGLED: {
+      case SHOW_CATEGORY: {
         let collapsedCategories = updateList(
           payload.name,
-          payload.isCollapsed,
+          false,
           state.collapsedCategories
         );
         return Object.assign({}, state, { collapsedCategories });
       }
 
-      case TABLE_COLLAPSED_TOGGLED: {
+      case HIDE_CATEGORY: {
+        let collapsedCategories = updateList(
+          payload.name,
+          true,
+          state.collapsedCategories
+        );
+        return Object.assign({}, state, { collapsedCategories });
+      }
+
+      case SHOW_TABLE: {
         let collapsedTables = updateList(
           payload.name,
-          payload.isCollapsed,
+          false,
+          state.collapsedTables
+        );
+        return Object.assign({}, state, { collapsedTables });
+      }
+
+      case HIDE_TABLE: {
+        let collapsedTables = updateList(
+          payload.name,
+          true,
           state.collapsedTables
         );
         return Object.assign({}, state, { collapsedTables });
