@@ -54,14 +54,19 @@ export default class RecordViewActionCreator extends ActionCreator {
   fetchRecordDetails(recordClassName, primaryKeyValues) {
     this._dispatch({ type: actionTypes.SET_ACTIVE_RECORD_LOADING });
 
-    this._latestFetchRecordDetails(recordClassName, primaryKeyValues).then(
-      ({ record, recordClass, recordClasses, questions, categoryTree }) => {
+    this._latestFetchRecordDetails(recordClassName, primaryKeyValues).then(details => {
+      let { record, recordClass, recordClasses, questions, categoryTree } = details;
+      let payload = { record, recordClass, recordClasses, questions, categoryTree };
+      let basketAction = this._userActionCreator.loadBasketStatus(recordClass.name, record.id);
+
+      basketAction.then(() => {
         this._dispatch({
           type: actionTypes.SET_ACTIVE_RECORD,
-          payload: { record, recordClass, recordClasses, questions, categoryTree }
+          payload
         });
-      }, this._errorHandler(actionTypes.SET_ERROR)
-    );
+      });
+
+    }, this._errorHandler(actionTypes.SET_ERROR));
   }
 
   toggleCategoryCollapsed(recordClassName, categoryName, isCollapsed) {
@@ -104,10 +109,7 @@ export default class RecordViewActionCreator extends ActionCreator {
       let primaryKey = recordClass.primaryKeyColumnRefs
         .map((ref, index) => ({ name: ref, value: primaryKeyValues[index] }));
       let options = { attributes, tables };
-      return this._service.getRecord(recordClass.name, primaryKey, options).then(record => {
-        this._userActionCreator.loadBasketStatus(recordClass.name, record.id);
-        return record;
-      });
+      return this._service.getRecord(recordClass.name, primaryKey, options)
     });
 
     return Promise.all([ recordPromise, categoryTreePromise, recordClassPromise, recordClassesPromise, questionsPromise ])
