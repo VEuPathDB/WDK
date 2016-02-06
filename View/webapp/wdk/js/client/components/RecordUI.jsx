@@ -102,7 +102,7 @@ RecordUI.propTypes = {
   collapsedCategories: PropTypes.array.isRequired,
   collapsedTables: PropTypes.array.isRequired,
   user: PropTypes.object.isRequired,
-  basket: PropTypes.object.isRequired,
+  baskets: PropTypes.object.isRequired,
   recordActions: PropTypes.object.isRequired,
   userActions: PropTypes.object.isRequired
 };
