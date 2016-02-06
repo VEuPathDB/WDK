@@ -6,6 +6,12 @@ import {getLeaves} from '../utils/TreeUtils';
 import {getBranches} from '../utils/TreeUtils';
 import {getNodeById} from '../utils/TreeUtils';
 
+/**
+ * A null or undefined selected list should be made into an empty array
+ * @type {Array}
+ */
+//CheckboxTree.selectedList = [];
+
 export default class CheckboxTree extends React.Component {
 
   /**
@@ -28,16 +34,12 @@ export default class CheckboxTree extends React.Component {
     this.toggleCheckbox = this.toggleCheckbox.bind(this);
   }
 
-
   /**
    * Insure that null selectedList or expandedList are replaced with appropriate defaults.
    */
   componentWillMount() {
     // Use the expanded list given but apply business rules to populate the business list if no
     // expanded list is provided.
-    if (this.props.selectedList === null || this.props.selectedList === undefined) {
-      this.newSelectedList = this.props.selectedList;
-    }
     if (this.props.expandedList === null || this.props.expandedList === undefined) {
       this.setExpandedList(this.props.tree, this.props.selectedList);
     }
@@ -48,8 +50,7 @@ export default class CheckboxTree extends React.Component {
    * to the controller.
    */
   componentDidMount() {
-    this.setSelectedList(this.newSelectedList);
-    this.setExpandedList(this.newExpandedList);
+    this.props.onExpandedListUpdated(this.newExpandedList);
   }
 
   /**
@@ -88,12 +89,15 @@ export default class CheckboxTree extends React.Component {
   /**
    * Selects all the tree's leaves and calls the appropriate update method in the action creator
    */
-  selectAll() {
+  selectAll(event) {
     let selectedList = [];
     this.props.tree.forEach(node =>
       isLeafNode(node) ? selectedList.push(node.id) : selectedList.push(...getLeaves(node).map(leaf => leaf.id))
     );
     this.setSelectedList(selectedList);
+    
+    // prevent update to URL
+    event.preventDefault();
   }
 
 

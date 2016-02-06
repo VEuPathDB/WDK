@@ -17,7 +17,9 @@ module.exports = {
     path: outputPath,
     filename: 'wdk.[name].js',
     library: [ 'Wdk', '[name]' ],
-    libraryTarget: 'umd'
+    libraryTarget: 'umd',
+    devtoolModuleFilenameTemplate: 'file://[absolute-resource-path]',
+    devtoolFallbackModuleFilenameTemplate: 'file://[absolute-resource-path]?[hash]',
   },
   bail: true,
   resolve: {
