@@ -3,11 +3,13 @@ import UserActionCreator from './UserActionCreator';
 import {latest} from '../utils/PromiseUtils';
 
 let actionTypes = {
-  RECORD_UPDATED: 'record/updated',
-  LOADING: 'record/loading',
-  ERROR: 'record/error',
-  CATEGORY_COLLAPSED_TOGGLED: 'record/category-toggled',
-  TABLE_COLLAPSED_TOGGLED: 'record/table-toggled',
+  SET_ACTIVE_RECORD: 'record/set-active-record',
+  SET_ACTIVE_RECORD_LOADING: 'record/set-active-record-loading',
+  SET_ERROR: 'record/set-error',
+  SHOW_CATEGORY: 'record/show-category',
+  HIDE_CATEGORY: 'record/hide-category',
+  SHOW_TABLE: 'record/show-table',
+  HIDE_TABLE: 'record/hide-table',
   UPDATE_NAVIGATION_QUERY: 'record/update-navigation-query'
 };
 
@@ -27,36 +29,34 @@ export default class RecordViewActionCreator extends ActionCreator {
    * @param {Array<string>}  spec.tables
    */
   fetchRecordDetails(recordClassName, primaryKeyValues) {
-    this._dispatch({ type: actionTypes.LOADING });
+    this._dispatch({ type: actionTypes.SET_ACTIVE_RECORD_LOADING });
 
     this._latestFetchRecordDetails(recordClassName, primaryKeyValues).then(
       ({ record, recordClass, recordClasses, questions }) => {
         this._dispatch({
-          type: actionTypes.RECORD_UPDATED,
+          type: actionTypes.SET_ACTIVE_RECORD,
           payload: { record, recordClass, recordClasses, questions }
         });
-      }, this._errorHandler(actionTypes.ERROR)
+      }, this._errorHandler(actionTypes.SET_ERROR)
     );
   }
 
   toggleCategoryCollapsed(recordClassName, categoryName, isCollapsed) {
     this._dispatch({
-      type: actionTypes.CATEGORY_COLLAPSED_TOGGLED,
+      type: isCollapsed ? actionTypes.HIDE_CATEGORY : actionTypes.SHOW_CATEGORY,
       payload: {
         recordClass: recordClassName,
-        name: categoryName,
-        isCollapsed
+        name: categoryName
       }
     });
   }
 
   toggleTableCollapsed(recordClassName, tableName, isCollapsed) {
     this._dispatch({
-      type: actionTypes.TABLE_COLLAPSED_TOGGLED,
+      type: isCollapsed ? actionTypes.HIDE_TABLE : actionTypes.SHOW_TABLE,
       payload: {
         recordClass: recordClassName,
-        name: tableName,
-        isCollapsed
+        name: tableName
       }
     });
   }
