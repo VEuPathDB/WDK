@@ -36,6 +36,7 @@ export default class RecordViewActionCreator extends ActionCreator {
       let payload = { record, recordClass, recordClasses, questions };
       let basketAction = this._userActionCreator.loadBasketStatus(recordClass.name, record.id);
 
+      // FIXME propagate basketActionError
       basketAction.then(() => {
         this._dispatch({
           type: actionTypes.SET_ACTIVE_RECORD,
