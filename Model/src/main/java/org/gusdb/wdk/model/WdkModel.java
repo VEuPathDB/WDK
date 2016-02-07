@@ -202,7 +202,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       return wdkModel;
     }
     catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception occurred while loading model.", ex);
       throw new WdkModelException(ex);
     }
   }
