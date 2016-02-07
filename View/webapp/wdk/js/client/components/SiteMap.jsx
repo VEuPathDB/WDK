@@ -7,12 +7,12 @@ let SiteMap = React.createClass({
   render() {
     return (
 
-      <CheckboxTree tree={this.props.tree}
+      <CheckboxTree tree={this.props.tree.children}
                    selectedList={[]}
                    expandedList={this.props.expandedList}
                    name="SiteMapTree"
                    onSelectedListUpdated={()=>{}}
-                   onExpandedListUpdated={this.props.siteMapActions.updateExpanded}
+                   onExpandedListUpdated={this.props.siteMapActions.updateExpanded.bind(this.props.siteMapActions)}
                    onDefaultSelectedListLoaded={()=>{}}
                    onCurrentSelectedListLoaded={()=>{}}
      />

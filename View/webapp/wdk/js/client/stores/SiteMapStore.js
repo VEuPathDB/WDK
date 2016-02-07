@@ -9,7 +9,7 @@ export default class SiteMapStore extends ReduceStore {
   getInitialState() {
     return {
       tree: null,
-      isLoading: false,
+      isLoading: true,
       expandedList : []
     };
   }
