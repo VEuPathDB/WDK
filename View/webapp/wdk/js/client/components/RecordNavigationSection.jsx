@@ -2,7 +2,10 @@ import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 import classnames from 'classnames';
 import includes from 'lodash/collection/includes';
+import memoize from 'lodash/function/memoize';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
+import * as i from '../utils/IterableUtils';
+import { postorder as postorderCategories } from '../utils/CategoryTreeIterators';
 import { wrappable } from '../utils/componentUtils';
 
 let RecordNavigationSection = React.createClass({
@@ -30,10 +33,10 @@ let RecordNavigationSection = React.createClass({
   },
 
   render() {
-    let { categoryWordsMap, collapsedCategories, heading } = this.props;
     let { navigationExpanded, navigationQuery } = this.state;
+    let { collapsedCategories, heading } = this.props;
     let navigationQueryLower = navigationQuery.toLowerCase();
-
+    let categoryWordsMap = makeCategoryWordsMap(this.props.recordClass);
     let expandClassName = classnames({
       'wdk-RecordNavigationExpand fa': true,
       'fa-plus-square': !navigationExpanded,
@@ -78,3 +81,33 @@ let RecordNavigationSection = React.createClass({
 });
 
 export default wrappable(RecordNavigationSection);
+
+let makeCategoryWordsMap = memoize((recordClass) => {
+  return i.reduce((map, category) => {
+    let words = [];
+
+    for (let attribute of recordClass.attributes) {
+      if (attribute.category == category.name) {
+        words.push(attribute.displayName, attribute.description);
+      }
+    }
+
+    for (let table of recordClass.tables) {
+      if (table.category == category.name) {
+        words.push(table.displayName, table.description);
+      }
+    }
+
+    if (category.categories != null) {
+      for (let cat of map.keys()) {
+        if (category.categories.indexOf(cat) > -1) {
+          words.push(map.get(cat));
+        }
+      }
+    }
+
+    words.push(category.displayName, category.description);
+
+    return map.set(category, words.join('\0').toLowerCase());
+  }, new Map(), postorderCategories(recordClass.categories));
+});
