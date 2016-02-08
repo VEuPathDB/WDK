@@ -75,7 +75,7 @@ export default class CheckboxTree extends React.Component {
 
         // According to the business rule, indeterminate nodes get expanded.
         if (this.isIndeterminate(node, selectedList)) {
-          expandedList.push(this.props.onGetId(node));
+          expandedList.push(this.props.onGetNodeProperties(node).id);
         }
 
         // descend the tree
@@ -92,7 +92,9 @@ export default class CheckboxTree extends React.Component {
   selectAll(event) {
     let selectedList = [];
     this.props.tree.forEach(node =>
-      isLeafNode(node) ? selectedList.push(this.props.onGetId(node)) : selectedList.push(...getLeaves(node).map(leaf => this.props.onGetId(leaf)))
+      isLeafNode(node) ?
+        selectedList.push(this.props.onGetNodeProperties(node).id) :
+        selectedList.push(...getLeaves(node).map(leaf => this.props.onGetNodeProperties(leaf).id))
     );
     this.setSelectedList(selectedList);
     
@@ -118,7 +120,7 @@ export default class CheckboxTree extends React.Component {
   expandAll(event) {
     let expandedList = [];
     this.props.tree.forEach(node => {
-      expandedList.push(...getBranches(node).map(branch => this.props.onGetId(branch)));
+      expandedList.push(...getBranches(node).map(branch => this.props.onGetNodeProperties(branch).id));
     });
     this.props.onExpandedListUpdated(expandedList);
 
@@ -189,7 +191,7 @@ export default class CheckboxTree extends React.Component {
    */ƒ
   toggleCheckbox(nodeId, selected) {
     let newSelectedList = this.props.selectedList || [];
-    let node = getNodeById(nodeId, this.props.tree, this.props.onGetId);
+    let node = getNodeById(nodeId, this.props.tree, this.props.onGetNodeProperties);
     if (isLeafNode(node)) {
       let index = newSelectedList.indexOf(nodeId);
       index > -1 ? newSelectedList.splice(index, 1) : newSelectedList.push(nodeId);
@@ -223,11 +225,11 @@ export default class CheckboxTree extends React.Component {
 
         // When the node is not a leaf, it is considered selected if every one of its leaf nodes
         // is in the selected list.
-        let leafIds = getLeaves(node).map(leafNode => this.props.onGetId(leafNode));
+        let leafIds = getLeaves(node).map(leafNode => this.props.onGetNodeProperties(leafNode).id);
         return leafIds.every(leafId => selectedList.indexOf(leafId) > -1);
       }
       else {
-        return selectedList.indexOf(this.props.onGetId(node)) > -1;
+        return selectedList.indexOf(this.props.onGetNodeProperties(node).id) > -1;
       }
     }
     return false;
@@ -245,7 +247,7 @@ export default class CheckboxTree extends React.Component {
     // If the selected list is empty, or non-existant no nodes are intermediate and there is nothing to do.
     if (selectedList) {
       if (!isLeafNode(node)) {
-        let leafIds = getLeaves(node).map(leafNode => this.props.onGetId(leafNode));
+        let leafIds = getLeaves(node).map(leafNode => this.props.onGetNodeProperties(leafNode).id);
         let total = leafIds.reduce(function (count, leafId) {
           return selectedList.indexOf(leafId) > -1 ? count + 1 : count;
         }, 0);
@@ -304,9 +306,10 @@ export default class CheckboxTree extends React.Component {
     let selected = this.isSelected(node, this.props.selectedList);
     let expanded = this.isExpanded(node, this.props.expandedList, this.props.selectedList);
     let leaf = isLeafNode(node);
-    let id = this.props.onGetId(node);
-    let displayName = this.props.onGetDisplayName(node);
-    let description = this.props.onGetDescription(node);
+    let properties = this.props.onGetNodeProperties(node);
+    let id = properties.id;
+    let displayName = properties.displayName;
+    let description = properties.description;
     let nodeType = !leaf && !expanded ? "wdk-CheckboxTree-collapsedItem" :
       leaf ? "wdk-CheckboxTree-leafItem" : "wdk-CheckboxTree-expandedItem";
 
