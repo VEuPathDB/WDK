@@ -1,4 +1,3 @@
-// Import modules
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
 import Doc from './Doc';
@@ -9,34 +8,37 @@ let UserProfileController = React.createClass({
 
   componentWillMount() {
 
-    this.store = this.props.stores.UserStore;
-    this.actions = this.props.actionCreators.UserActionCreator;
+    // get actions and store used in this view controller
+    this.userActions = this.props.actionCreators.UserActionCreator;
+    this.userStore = this.props.stores.UserStore;
 
-    let state = this.store.getState();
-    if (state.user == null) {
-      this.actions.loadCurrentUser();
-    }
-    else {
-      this.setState(this.store.getState());
-    }
-
-    this.storeSubscription = this.store.addListener(() => {
-      this.setState(this.store.getState());
+    // subscribe to changes in user store
+    this.userStoreSubscription = this.userStore.addListener(() => {
+      this.setState(this.userStore.getState());
     });
+
+    // get current user store state
+    this.setState(this.userStore.getState());
+  },
+
+  componentDidMount() {
+    // load user if not yet present
+    if (this.state.user == null) {
+      this.userActions.loadCurrentUser();
+    }
   },
 
   componentWillUnmount() {
-    this.storeSubscription.remove();
+    this.userStoreSubscription.remove();
   },
 
   render() {
     let title = "User Profile";
-    if (this.state == null || this.state.isLoading) {
+    if (this.state.user == null || this.state.isLoading) {
       return ( <Doc title={title}><Loading/></Doc> );
     }
     return ( <Doc title={title}><UserProfile {...this.state}/></Doc> );
   }
 });
 
-// Export the React Component class we just created.
 export default wrappable(UserProfileController);

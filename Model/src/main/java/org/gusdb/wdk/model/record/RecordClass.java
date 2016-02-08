@@ -877,6 +877,23 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       ((StepAnalysisXml) stepAnalysisRef).resolveReferences(model);
     }
 
+    // resolve reporters
+    for (ReporterRef reporterRef : reporterMap.values()) {
+      reporterRef.resolveReferences(model);
+    }
+
+    // resolve count plugin
+    if (_countReference != null) {
+      _countReference.resolveReferences(model);
+      _countPlugin = _countReference.getPlugin();
+    }
+    
+    // resolve custom boolean
+    if (_booleanReference != null) {
+      _booleanReference.resolveReferences(model);
+      _booleanQuery = _booleanReference.getQuery();
+    }
+
     // register this URL segment with the model to ensure uniqueness
     wdkModel.registerRecordClassUrlSegment(_urlSegment, getFullName());
 

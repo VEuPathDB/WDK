@@ -6,6 +6,7 @@ import { getStepBundle } from '../utils/actionCreatorUtils';
 let actionTypes = {
   STEP_DOWNLOAD_LOADING: 'stepDownload/loading',
   STEP_DOWNLOAD_INITIALIZE_STORE: 'stepDownload/initialize',
+  STEP_DOWNLOAD_RESET_STORE: 'stepDownload/initialize',
   STEP_DOWNLOAD_SELECT_REPORTER: 'stepDownload/selectReporter',
   STEP_DOWNLOAD_FORM_UPDATE: 'stepDownload/formUpdate',
   STEP_DOWNLOAD_FORM_UI_UPDATE: 'stepDownload/formUiUpdate',
@@ -35,7 +36,7 @@ export default class StepDownloadFormViewActionCreator extends ActionCreator {
     });
   }
 
-  reloadData(stepId) {
+  loadPageData(stepId) {
     this._dispatch({ type: actionTypes.STEP_DOWNLOAD_LOADING });
     getStepBundle(stepId, this._service).then(stepBundle => {
       this._dispatch({
@@ -43,6 +44,13 @@ export default class StepDownloadFormViewActionCreator extends ActionCreator {
         payload: stepBundle
       });
     }, this._errorHandler(actionTypes.APP_ERROR));
+  }
+
+  unloadPageData() {
+    this._dispatch({
+      type: actionTypes.STEP_DOWNLOAD_RESET_STORE,
+      payload: null
+    });
   }
 
   submitForm(step, selectedReporter, formState, target = '_blank') {

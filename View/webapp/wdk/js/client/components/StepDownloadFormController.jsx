@@ -49,29 +49,19 @@ let StepDownloadFormController = React.createClass({
 
   componentWillMount() {
 
-    // load actions for this view
+    // get actions for this view
     this.actions = this.props.actionCreators.StepDownloadFormViewActionCreator;
     this.userActions = this.props.actionCreators.UserActionCreator;
 
-    // get the user store, subscribe and initialize if needed
+    // get the user store, load data from it, and subscribe
     this.userStore = this.props.stores.UserStore;
     this.userStoreSubscription = this.userStore.addListener(this.loadUserState);
+    this.loadUserState();
 
-    // initialize user store if it isn't already
-    let userState = this.userStore.getState();
-    if (userState.user == null) {
-      this.userActions.loadCurrentUser();
-    }
-    else {
-      this.loadUserState();
-    }
-
-    // get view store and subscribe; must reinitialize with every new props
+    // get the view store, load data from it, and subscribe
     this.store = this.props.stores.StepDownloadFormViewStore;
     this.storeSubscription = this.store.addListener(this.loadViewState);
-
-    // initialize page data
-    this.reloadPageData(this.props);
+    this.loadViewState();
 
     // Bind methods of `this.formEvents` to `this`. When they are called by
     // child elements, any reference to `this` in the methods will refer to
@@ -81,28 +71,33 @@ let StepDownloadFormController = React.createClass({
     }
   },
 
-  componentWillReceiveProps(nextProps) {
-    // reload step each time this page is displayed
-    this.reloadPageData(nextProps);
-  },
+  componentDidMount() {
+    // initialize user store if it isn't already
+    if (this.state.userData.user == null) {
+      this.userActions.loadCurrentUser();
+    }
 
-  // reloads step and associated question and recordClass
-  reloadPageData(props) {
-    this.actions.reloadData(props.params.stepId);
+    // must reinitialize with every new props
+    this.actions.loadPageData(this.props.params.stepId);
   },
 
   componentWillUnmount() {
+    this.actions.unloadPageData();
     this.userStoreSubscription.remove();
     this.storeSubscription.remove();
   },
-  
+
+  isStateIncomplete(state) {
+    return (this.state == null ||
+      this.state.userData.isLoading || this.state.userData.user == null ||
+      this.state.viewData.isLoading || this.state.viewData.step == null);
+  },
+
   render() {
 
     let title = "Download Step Result";
 
-    if (this.state == null ||
-        this.state.userData == null || this.state.userData.isLoading ||
-        this.state.viewData == null || this.state.viewData.isLoading) {
+    if (this.isStateIncomplete(this.state)) {
       return ( <Doc title={title}><Loading/></Doc> );
     }
 
@@ -149,5 +144,4 @@ let StepDownloadFormController = React.createClass({
   }
 });
 
-// Export the React Component class we just created.
 export default wrappable(StepDownloadFormController);

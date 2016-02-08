@@ -19,7 +19,7 @@ let { Route, DefaultRoute, NotFoundRoute } = ReactRouter;
  *
  * @param {string} rootUrl The rootUrl used to match paths below
  */
-export function start(rootUrl, rootElement, props) {
+export function start(rootUrl, rootElement, props, additionalRoutes = []) {
   let router = ReactRouter.create({
     routes: (
       <Route name="app" path={rootUrl} handler={AppController}>
@@ -29,6 +29,7 @@ export function start(rootUrl, rootElement, props) {
         <Route name="userProfile" path="user/profile" handler={UserProfileController}/>
         <Route name="site-map" handler={SiteMapController}/>
         <Route name="question-list" handler={QuestionListController}/>
+        {additionalRoutes.map(route => ( <Route key={route.name} {...route}/> ))}
         <DefaultRoute handler={IndexController}/>
         <NotFoundRoute handler={NotFoundController}/>
       </Route>

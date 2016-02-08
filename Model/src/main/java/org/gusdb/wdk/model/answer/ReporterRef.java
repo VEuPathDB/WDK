@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.record.ScopedField;
+import org.gusdb.wdk.model.report.Reporter;
 
 /**
  * A reference to the download Reporter class. the full class name of the
@@ -159,6 +160,17 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
         (className.equals(getImplementation()) && !reporterName.equals(getName()))) {
       throw new WdkModelException("Reporter reserved name '" + reporterName + "' " +
           "must be used in combination with implementation class " + className);
+    }
+    // try to find implementation class
+    String msgStart = "Implementation class for reporter '" + getName() + "' [" + getImplementation() + "] ";
+    try {
+      Class<?> implClass = Class.forName(getImplementation());
+      if (!Reporter.class.isAssignableFrom(implClass)) {
+        throw new WdkModelException(msgStart + "must be a subclass of " + Reporter.class.getName());
+      }
+    }
+    catch (ClassNotFoundException e) {
+      throw new WdkModelException(msgStart + "cannot be found.", e);
     }
   }
 }
