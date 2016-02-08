@@ -8,7 +8,7 @@
  * @param {Object} recordClass
  * @param {string} name Name of attribute as defined in the WDK Model XML
  */
-export function getAttributeDefinition(recordClass, name) {
+export function getAttribute(recordClass, name) {
   return getRecordClassIndexItem(recordClass, 'attributes', name);
 }
 
@@ -18,7 +18,7 @@ export function getAttributeDefinition(recordClass, name) {
  * @param {Object} recordClass
  * @param {string} name Name of table as defined in the WDK Model XML
  */
-export function getTableDefinition(recordClass, name) {
+export function getTable(recordClass, name) {
   return getRecordClassIndexItem(recordClass, 'tables', name);
 }
 
