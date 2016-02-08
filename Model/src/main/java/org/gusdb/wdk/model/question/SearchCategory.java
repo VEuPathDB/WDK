@@ -103,30 +103,30 @@ public class SearchCategory extends WdkModelBase {
     this.questionRefMap.put(questionRef.getQuestionFullName(), questionRef);
   }
 
-  public Question[] getWebsiteQuestions() throws WdkModelException {
+  public Question[] getWebsiteQuestions() {
     return getQuestions(USED_BY_WEBSITE, false);
   }
 
-  public Question[] getWebserviceQuestions() throws WdkModelException {
+  public Question[] getWebserviceQuestions() {
     return getQuestions(USED_BY_WEBSERVICE, false);
   }
 
-  public Question[] getDatasetQuestions() throws WdkModelException {
+  public Question[] getDatasetQuestions() {
     return getQuestions(USED_BY_DATASET, true);
   }
 
-  private Question[] getQuestions(String usedBy, boolean strict) throws WdkModelException {
+  private Question[] getQuestions(String usedBy, boolean strict) {
     List<Question> questions = new ArrayList<Question>();
     for (CategoryQuestionRef questionRef : questionRefMap.values()) {
       if (questionRef.isUsedBy(usedBy, strict)) {
         String questionName = questionRef.getQuestionFullName();
-				try {
-					Question question = (Question) wdkModel.resolveReference(questionName);
-					questions.add(question);
-				} 
-				catch (WdkModelException e ){
-					logger.debug("************* question not resolved: " + questionName);
-				}
+        try {
+          Question question = (Question) wdkModel.resolveReference(questionName);
+          questions.add(question);
+        } 
+        catch (WdkModelException e ){
+          logger.debug("************* question not resolved: " + questionName);
+        }
       }
     }
     Question[] array = new Question[questions.size()];

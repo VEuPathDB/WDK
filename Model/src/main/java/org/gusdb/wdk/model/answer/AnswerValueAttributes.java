@@ -34,6 +34,7 @@ import org.gusdb.wdk.model.user.User;
  */
 public class AnswerValueAttributes {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(AnswerValueAttributes.class);
 
   private final User _user;

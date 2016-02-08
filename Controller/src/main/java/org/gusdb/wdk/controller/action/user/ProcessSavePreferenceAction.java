@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.controller.action.user;
 
 import java.util.Map;
@@ -45,7 +42,6 @@ public class ProcessSavePreferenceAction extends WdkAction {
       }
 
       wdkUser.save();
-      //return new ActionResult().setRedirect(true).setViewPath("/");
-      return new ActionResult().EMPTY_RESULT;
+      return ActionResult.EMPTY_RESULT;
     }
 }
