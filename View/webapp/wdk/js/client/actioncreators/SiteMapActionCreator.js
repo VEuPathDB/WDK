@@ -3,7 +3,7 @@ import {
   getId,
   getDisplayName,
   getDescription
-} from '../client/utils/OntologyUtils';
+} from '../utils/OntologyUtils';
 
 // Action types
 let actionTypes = {
