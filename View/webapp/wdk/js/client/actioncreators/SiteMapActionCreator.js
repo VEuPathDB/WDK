@@ -1,4 +1,9 @@
 import ActionCreator from '../utils/ActionCreator';
+import {
+  getId,
+  getDisplayName,
+  getDescription
+} from '../client/utils/OntologyUtils';
 
 // Action types
 let actionTypes = {
@@ -10,7 +15,19 @@ let actionTypes = {
 
 export default class SiteMapActionCreator extends ActionCreator {
 
-  loadCurrentSiteMap() {
+  mungeTree(nodes) {
+    nodes.forEach((node) => {
+      node.id = getId(node);
+      node.displayName = getDisplayName(node);
+      node.description = getDescription(node);
+      delete(node.properties);
+      if(node.children.length > 0) {
+        this.mungeTree(node.children);
+      }
+   });
+ }
+
+loadCurrentSiteMap() {
     this._dispatch({ type: actionTypes.SITEMAP_LOADING });
 
     let ontologyPromise = this._service.getOntology('Categories');
@@ -18,7 +35,7 @@ export default class SiteMapActionCreator extends ActionCreator {
     ontologyPromise.then((ontology) => {
       this._dispatch({
         type: actionTypes.SITEMAP_INITIALIZE_STORE,
-        payload: { tree: ontology.tree }
+        payload: { tree: this.mungeTree(ontology.tree) }
       });
     }, this._errorHandler(actionTypes.APP_ERROR));
   }
@@ -29,6 +46,7 @@ export default class SiteMapActionCreator extends ActionCreator {
       payload: { expandedList: expandedList}
     });
   }
+
 }
 
 SiteMapActionCreator.actionTypes = actionTypes;
