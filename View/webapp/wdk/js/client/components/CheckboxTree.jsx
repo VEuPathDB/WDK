@@ -75,7 +75,7 @@ export default class CheckboxTree extends React.Component {
 
         // According to the business rule, indeterminate nodes get expanded.
         if (this.isIndeterminate(node, selectedList)) {
-          expandedList.push(node.id);
+          expandedList.push(this.props.onGetId(node));
         }
 
         // descend the tree
@@ -92,7 +92,7 @@ export default class CheckboxTree extends React.Component {
   selectAll(event) {
     let selectedList = [];
     this.props.tree.forEach(node =>
-      isLeafNode(node) ? selectedList.push(node.id) : selectedList.push(...getLeaves(node).map(leaf => leaf.id))
+      isLeafNode(node) ? selectedList.push(this.props.onGetId(node)) : selectedList.push(...getLeaves(node).map(leaf => this.props.onGetId(leaf)))
     );
     this.setSelectedList(selectedList);
     
@@ -118,7 +118,7 @@ export default class CheckboxTree extends React.Component {
   expandAll(event) {
     let expandedList = [];
     this.props.tree.forEach(node => {
-      expandedList.push(...getBranches(node).map(branch => branch.id));
+      expandedList.push(...getBranches(node).map(branch => this.props.onGetId(branch)));
     });
     this.props.onExpandedListUpdated(expandedList);
 
@@ -189,7 +189,7 @@ export default class CheckboxTree extends React.Component {
    */ƒ
   toggleCheckbox(nodeId, selected) {
     let newSelectedList = this.props.selectedList || [];
-    let node = getNodeById(nodeId, this.props.tree);
+    let node = getNodeById(nodeId, this.props.tree, this.props.onGetId);
     if (isLeafNode(node)) {
       let index = newSelectedList.indexOf(nodeId);
       index > -1 ? newSelectedList.splice(index, 1) : newSelectedList.push(nodeId);
@@ -223,11 +223,11 @@ export default class CheckboxTree extends React.Component {
 
         // When the node is not a leaf, it is considered selected if every one of its leaf nodes
         // is in the selected list.
-        let leafIds = getLeaves(node).map(leafNode => leafNode.id);
+        let leafIds = getLeaves(node).map(leafNode => this.props.onGetId(leafNode));
         return leafIds.every(leafId => selectedList.indexOf(leafId) > -1);
       }
       else {
-        return selectedList.indexOf(node.id) > -1;
+        return selectedList.indexOf(this.props.onGetId(node)) > -1;
       }
     }
     return false;
@@ -245,7 +245,7 @@ export default class CheckboxTree extends React.Component {
     // If the selected list is empty, or non-existant no nodes are intermediate and there is nothing to do.
     if (selectedList) {
       if (!isLeafNode(node)) {
-        let leafIds = getLeaves(node).map(leafNode => leafNode.id);
+        let leafIds = getLeaves(node).map(leafNode => this.props.onGetId(leafNode));
         let total = leafIds.reduce(function (count, leafId) {
           return selectedList.indexOf(leafId) > -1 ? count + 1 : count;
         }, 0);
@@ -304,31 +304,34 @@ export default class CheckboxTree extends React.Component {
     let selected = this.isSelected(node, this.props.selectedList);
     let expanded = this.isExpanded(node, this.props.expandedList, this.props.selectedList);
     let leaf = isLeafNode(node);
+    let id = this.props.onGetId(node);
+    let displayName = this.props.onGetDisplayName(node);
+    let description = this.props.onGetDescription(node);
     let nodeType = !leaf && !expanded ? "wdk-CheckboxTree-collapsedItem" :
       leaf ? "wdk-CheckboxTree-leafItem" : "wdk-CheckboxTree-expandedItem";
 
     return (
-      <li className={nodeType} key={"item_" + node.id}>
+      <li className={nodeType} key={"item_" + id}>
 
         <AccordionButton leaf={leaf}
                          expanded={expanded}
-                         id={node.id}
-                         key={"accordion_" + node.id}
+                         id={id}
+                         key={"accordion_" + id}
                          toggleExpansion={toggleExpansion}
         />
-        <label title={node.description} key={"label_" + node.id}>
+        <label title={description} key={"label_" + id}>
           <IndeterminateCheckbox
             checked={selected}
             indeterminate={indeterminate}
-            id={node.id}
-            key={"checkbox_" + node.id}
-            value={node.id}
+            id={id}
+            key={"checkbox_" + id}
+            value={id}
             toggleCheckbox={toggleCheckbox}
           />
-          {node.displayName}
+          {displayName}
         </label>
         {!leaf && expanded ?
-          <ul className="fa-ul wdk-CheckboxTree-list" key={"list_" + node.id}>
+          <ul className="fa-ul wdk-CheckboxTree-list" key={"list_" + id}>
             {node.children.map(child => this.renderTreeNode(child))}
           </ul> : "" }
       </li>
