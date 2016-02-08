@@ -9,12 +9,13 @@ import * as Router from './router';
 import * as ActionCreators from './actioncreators';
 import * as Components from './components';
 import * as Stores from './stores';
-import * as ReporterUtils from './utils/reporterUtils';
 import * as ComponentUtils from './utils/componentUtils';
+import * as ReporterUtils from './utils/reporterUtils';
+import * as FormSubmitter from './utils/FormSubmitter';
 
-export { Components, ComponentUtils, ReporterUtils };
+export { Components, ComponentUtils, ReporterUtils, FormSubmitter };
 
-export function run({ rootUrl, endpoint, rootElement }) {
+export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
   let dispatcher = new Dispatcher;
   let service = new WdkService(endpoint);
   let stores = mapValues(Stores, Store => new Store(dispatcher));
@@ -29,7 +30,7 @@ export function run({ rootUrl, endpoint, rootElement }) {
 
   if (__DEV__) logActions(context);
 
-  let router = Router.start(rootUrl, rootElement, context);
+  let router = Router.start(rootUrl, rootElement, context, applicationRoutes);
 
   return Object.assign({ router }, context);
 }
