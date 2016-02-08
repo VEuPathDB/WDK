@@ -5,14 +5,12 @@ import ReporterCheckboxList from './ReporterCheckboxList';
 
 let WdkServiceJsonReporterForm = React.createClass({
 
-  componentWillMount() {
+  componentDidMount() {
     let { formState, preferences, question, onFormChange, onFormUiChange } = this.props;
     let newFormState = this.discoverFormState(formState, preferences, question);
-    setTimeout(() => {
-      onFormChange(newFormState);
-      // currently no special UI state on this form
-      onFormUiChange({});
-    }, 0);
+    onFormChange(newFormState);
+    // currently no special UI state on this form
+    onFormUiChange({});
   },
 
   discoverFormState(formState, preferences, question) {
@@ -25,21 +23,15 @@ let WdkServiceJsonReporterForm = React.createClass({
   },
 
   onAttributesChange(newAttributes) {
-    this.props.onFormChange({
-      attributes: newAttributes,
-      tables: this.props.formState.tables
-    });
+    this.props.onFormChange(Object.assign({}, this.props.formState, { attributes: newAttributes }));
   },
 
   onTablesChange(newTables) {
-    this.props.onFormChange({
-      attributes: this.props.formState.attributes,
-      tables: newTables
-    });
+    this.props.onFormChange(Object.assign({}, this.props.formState, { tables: newTables }));
   },
 
   render() {
-    let { question, recordClass, preferences, formState } = this.props;
+    let { question, recordClass, preferences, formState, onSubmit } = this.props;
     let realFormState = this.discoverFormState(formState, preferences, question);
     return (
       <div>
@@ -53,6 +45,9 @@ let WdkServiceJsonReporterForm = React.createClass({
           allValues={util.getAllTables(recordClass, util.isInReport)}
           selectedValueNames={realFormState.tables}
           onChange={this.onTablesChange}/>
+        <div style={{width:'30em',textAlign:'center', margin:'0.6em 0'}}>
+          <input type="button" value="Submit" onClick={onSubmit}/>
+        </div>
       </div>
     );
   }

@@ -25,7 +25,7 @@ public class Keys {
   public static final String PROPERTIES = "properties";
   public static final String TOTAL_COUNT = "totalCount";
   public static final String RESPONSE_COUNT = "responseCount";
-  public static final String RECORD_CLASS = "recordClass";
+  public static final String RECORD_CLASS_NAME = "recordClassName";
   public static final String QUESTION_NAME = "questionName";
 
   // UI-related keys
@@ -42,6 +42,8 @@ public class Keys {
   public static final String IS_READ_ONLY = "isReadOnly";
   public static final String IS_SORTABLE = "isSortable";
   public static final String IS_REMOVABLE = "isRemovable";
+  public static final String USE_BASKET = "useBasket";
+
 
   // scoping-related keys
   public static final String CATEGORIES = "categories";
@@ -115,6 +117,7 @@ public class Keys {
   public static final String LAST_NAME = "lastName";
   public static final String EMAIL = "email";
   public static final String ORGANIZATION = "organization";
+  public static final String IS_GUEST = "isGuest";
   public static final String PREFERENCES = "preferences";
 
 }

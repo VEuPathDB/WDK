@@ -36,6 +36,7 @@ public class RecordFormatter {
     return new JSONObject()
       .put(Keys.DISPLAY_NAME, record.getPrimaryKey().getDisplay())
       .put(Keys.ID, getRecordPrimaryKeyJson(record))
+      .put(Keys.RECORD_CLASS_NAME, record.getRecordClass().getFullName())
       .put(Keys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames))
       .put(Keys.TABLES, getRecordTablesJson(record, tableNames));
   }

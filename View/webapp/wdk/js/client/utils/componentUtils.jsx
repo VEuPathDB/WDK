@@ -21,7 +21,7 @@ import React from 'react';
  * what will most likely be a common task: modifying a WDK Component.
  *
  * There are other approaches that would require a uniform JavaScript build
- * environment, which would allow the implementor to preform overriding at
+ * environment, which would allow the implementor to perform overriding at
  * build time (similar to how we do this with JSP tags). We aren't quite at a
  * point where we can do this, and it might not be desirable.
  *
@@ -75,9 +75,9 @@ export function wrappable(Component) {
      * Used to modify the Component being wrapped. Use it by passing a function
      * that returns a new Component.
      *
-     * The funciton will receive the current Component as an argument. This
+     * The function will receive the current Component as an argument. This
      * makes it possible to render the current Component in the new component,
-     * similar to Aspect Oriented Programming techiniques.
+     * similar to Aspect Oriented Programming techniques.
      *
      * The new Component will replace the existing Component.
      *
@@ -149,4 +149,15 @@ export function addOrRemove(array, value) {
     array.concat(value) :
     // already there; remove
     array.filter(elem => elem != value));
+}
+
+/**
+ * Looks for the property with the passed name in the given object.  If the
+ * object or the property is null or undefined, returns default value.
+ * Otherwise returns the value found.
+ */
+export function getValueOrDefault(object, propertyName, defaultValue) {
+  return (object == null || object == undefined ||
+      object[propertyName] == null || object[propertyName] == undefined ?
+      defaultValue : object[propertyName]);
 }

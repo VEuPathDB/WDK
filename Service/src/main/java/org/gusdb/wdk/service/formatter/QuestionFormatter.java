@@ -72,7 +72,7 @@ public class QuestionFormatter {
       .put(Keys.NEW_BUILD, q.getNewBuild())
       .put(Keys.REVISE_BUILD, q.getReviseBuild())
       .put(Keys.URL_SEGMENT,  q.getUrlSegment())
-      .put(Keys.RECORD_CLASS, q.getRecordClass().getFullName())
+      .put(Keys.RECORD_CLASS_NAME, q.getRecordClass().getFullName())
       .put(Keys.PARAMETERS, getParamsJson(params, expandParams, user, dependedParamValues))
       .put(Keys.DEFAULT_ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(q.getSummaryAttributeFieldMap().keySet()))
       .put(Keys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(

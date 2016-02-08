@@ -17,7 +17,9 @@ module.exports = {
     path: outputPath,
     filename: 'wdk.[name].js',
     library: [ 'Wdk', '[name]' ],
-    libraryTarget: 'umd'
+    libraryTarget: 'umd',
+    devtoolModuleFilenameTemplate: 'file://[absolute-resource-path]',
+    devtoolFallbackModuleFilenameTemplate: 'file://[absolute-resource-path]?[hash]',
   },
   bail: true,
   resolve: {
@@ -33,7 +35,8 @@ module.exports = {
   ],
   module: {
     loaders: [
-      { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: 'babel-loader' },
+      { test: /\.js$/, exclude: /node_modules/, loader: 'babel', query: { blacklist: [ 'react' ] } }, // blacklist react for non-jsx extension
+      { test: /\.jsx$/, exclude: /node_modules/, loader: 'babel' },
       { test: /\.css$/, loader: "style-loader!css-loader?sourceMap" }
     ]
   },

@@ -57,7 +57,7 @@ public class AnswerFormatter {
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
       throws WdkModelException, WdkUserException {
     JSONObject meta = new JSONObject();
-    meta.put(Keys.RECORD_CLASS, answerValue.getRecordClass().getFullName());
+    meta.put(Keys.RECORD_CLASS_NAME, answerValue.getRecordClass().getFullName());
     meta.put(Keys.TOTAL_COUNT, answerValue.getResultSize());
     meta.put(Keys.RESPONSE_COUNT, numRecordsReturned);
     meta.put(Keys.ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(includedAttributes));
