@@ -57,9 +57,13 @@ export default class WdkService {
       this._recordClasses = fetchJson(method, url).then(
         recordClasses => {
           for (let recordClass of recordClasses) {
-            recordClass.categories.push(
-              { name: undefined, displayName: 'Uncategorized' }
-            )
+            // create indexes by name property for attributes and tables
+            Object.assign(recordClass, {
+              _indexes: {
+                attributes: makeIndex(recordClass.attributes, 'name'),
+                tables: makeIndex(recordClass.tables, 'name')
+              }
+            });
           }
           return recordClasses;
         },
@@ -179,6 +183,15 @@ export default class WdkService {
 function makeRecordKey(recordClassName, primaryKeyValues) {
   return recordClassName + ':' + stringify(primaryKeyValues);
 }
+
+/**
+ * Create a Map of `array` keyed by each element's `key` property.
+ *
+ * @param {Array<T>} array
+ * @param {string} key
+ * @return {Map<T>}
+ */
+let makeIndex = (array, key) => array.reduce((index, item) => index.set(item[key], item), new Map);
 
 function fetchJson(method, url, body) {
   return new Promise(function(resolve, reject) {
