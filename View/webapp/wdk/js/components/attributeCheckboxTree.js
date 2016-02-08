@@ -15,7 +15,15 @@ import WdkService from '../client/utils/WdkService';
 
 wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
   "use strict";
-  
+
+  /**
+   * Entry into checkbox tree load for the attribute checkbox tree which appears when the user
+   * clicks the Add Columns button on the header of the results table.
+   * @param element - div from which this function was called.
+   * @param attributes - attributes derived from the div - question name, record class name, default selected list, current selected list,
+   * view name
+   * @returns {Promise.<T>}
+   */
   function setupCheckboxTree(element, attributes) {
     let questionName = attributes.questionName;
     let recordClassName = attributes.recordClassName;
@@ -35,16 +43,24 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
     ).then(([categoriesOntology, question, recordClass]) => {
         let categoryTree = getTree(categoriesOntology, isQualifying(recordClassName, viewName));
         mungeTree(categoryTree.children, recordClass);
-        addSearchSpecificSubtree(question, categoryTree);
+        addSearchSpecificSubtree(question, categoryTree, viewName);
         let selectedList = currentSelectedList || defaultSelectedList;
         console.log("Element: " + element[0]);
-        let controller = new CheckboxTreeController(element, "attributeList_" + viewName, categoryTree.children, selectedList, null, defaultSelectedList);
+        let callback = getAttribute(recordClass);
+        let controller = new CheckboxTreeController(element, "attributeList_" + viewName, categoryTree.children, selectedList, null, defaultSelectedList, callback);
         controller.displayCheckboxTree();
     }).catch(function(error) {
       throw new Error(error.message);
     });
   }
 
+  /**
+   * Create a predicate function to filter out of the Categories ontology tree those items appropriate for the
+   * results page that identify attributes for the current record class.  In the case of the Transcript Record Class, a
+   * distinction is made depending on whether the summary view applies to transcripts or genes.
+   * @param recordClassName - full name of the current record class
+   * @param viewName - either gene or transcript depending on the summary view
+   */
   let isQualifying = (recordClassName, viewName) => node => {
       let qualified = nodeHasProperty('targetType', 'attribute', node)
                     && nodeHasProperty('recordClassName', recordClassName, node)
@@ -55,29 +71,51 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
       return qualified;
   }
 
-  //TODO replace XXXXs
-  function addSearchSpecificSubtree(question, categoryTree) {
+  /**
+   * Create a separate search specific subtree, based upon the question asked and tack it onto the start of top level array
+   * of nodes in the ontology tree
+   * @param question - question posited
+   * @param categoryTree - the munged ontology tree
+   * @param viewName - the name of the view (not sure how that will fly if everything else is _default
+   */
+  function addSearchSpecificSubtree(question, categoryTree, viewName) {
     if(question.dynamicAttributes.length > 0) {
       let subtree = {
         "id": "search-specific-subtree",
+        "name": "search-specific-subtree",
         "displayName": "Search Specific",
-        "description": "Information about the XXXXs returned that is specific to the search you ran, and the parameters you specified",
+        "EuPathDB alternative term": "Search Specific",
+        "description": "Information about the " + viewName + "s returned that is specific to the search you ran, and the parameters you specified",
         "children": []
       };
       question.dynamicAttributes.forEach(attribute => {
         let node = {
           "id": attribute.name,
+          "name": attribute.name,
           "displayName": attribute.displayName,
+          "EuPathDB alternative term": attribute.displayName,
           "description": attribute.help,
           "children":[]
-        }
+        };
         subtree.children.push(node);
-      })
+      });
       categoryTree.children.unshift(subtree);
     }
   }
 
+  function getAttribute(recordClass) {
+    return node => {
+      let attribute = recordClass.attributes.find(a => a.name === getRefName(node));
+    }
+  }
 
+  /**
+   * Convert filtered/compacted tree provided by ontology service into a tree organized in the
+   * matter expected by the checkbox tree component.
+   * @param nodes - array of the top level nodes of the filtered/compacted ontology tree
+   * @param recordClass - The record class data applying to the current results page - used to properly identify the
+   * attributes (leafs) of the tree.
+   */
   function mungeTree(nodes, recordClass) {
     nodes.forEach((node) => {
       let targetType = getTargetType(node);
@@ -103,7 +141,7 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
         node.displayName = getDisplayName(node);
         node.description = getDescription(node);
       }
-      delete(node.properties);
+      //delete(node.properties);
       if(node.children.length > 0) {
         mungeTree(node.children, recordClass);
       }
