@@ -14,8 +14,9 @@ import * as ReporterUtils from './utils/reporterUtils';
 import * as TreeUtils from './utils/TreeUtils';
 import * as OntologyUtils from './utils/OntologyUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
+import * as WdkUtils from './utils/WdkUtils';
 
-export { Components, ComponentUtils, ReporterUtils, TreeUtils, OntologyUtils, FormSubmitter };
+export { Components, ComponentUtils, ReporterUtils, FormSubmitter, WdkUtils, TreeUtils, OntologyUtils };
 
 export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
   let dispatcher = new Dispatcher;

@@ -179,17 +179,18 @@ export let compactRootNodes = (root) =>
 	 * Using recursion to descend the tree to find the node associate with the node id given
 	 * @param {String} nodeId of the node to find
 	 * @param {Array} list of the tree's top level nodes
+   * @param {Function} callback method to get the node attributes needed by the checkbox tree
 	 * @return {Object} the node corresponding to the node id or undefined if
 	 * not found.
 	 */ 
-	export let getNodeById = (nodeId, nodes, getId) => {
+	export let getNodeById = (nodeId, nodes, getNodeProperties) => {
 	  for(let i = 0; i < nodes.length; i++) {
 	    let node = undefined;
-	    if(getId(nodes[i]) === nodeId) {
+	    if(getNodeProperties(nodes[i]).id === nodeId) {
 	      return nodes[i];
 	    }
 	    if(nodes[i].children.length > 0) {
-	      node = getNodeById(nodeId, nodes[i].children, getId);
+	      node = getNodeById(nodeId, nodes[i].children, getNodeProperties);
 	      if(node !== undefined) {
 	        return node;
 	      }
