@@ -34,10 +34,24 @@ export default class CheckboxTreeController {
                     onExpandedListUpdated={this.updateExpandedList}
                     onDefaultSelectedListLoaded={this.loadDefaultSelectedList}
                     onCurrentSelectedListLoaded={this.loadCurrentSelectedList}
+                    onGetId={this.getId}
+                    onGetDisplayName={this.getDisplayName}
+                    onGetDescription={this.getDescription}
       />, this.element[0]);
     console.log("Rendered checkbox " + this.name + " under element " + JSON.stringify(this.element));
   }
 
+  getId(node) {
+    return node.id;
+  }
+
+  getDisplayName(node) {
+    return node.displayName;
+  }
+
+  getDescription(node) {
+    return node.description;
+  }
 
   updateSelectedList(selectedList) {
     this.selectedList = selectedList;
@@ -45,7 +59,6 @@ export default class CheckboxTreeController {
   }
 
   updateExpandedList(expandedList) {
-    console.log("Updating Expanded list to " + JSON.stringify(expandedList));
     this.expandedList = expandedList;
     this.displayCheckboxTree();
   }
