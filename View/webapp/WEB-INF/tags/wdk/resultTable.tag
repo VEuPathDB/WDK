@@ -130,9 +130,14 @@
                   </c:otherwise>
                 </c:choose>
 
-                <a style="padding-right: 1em;" href="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}">
-                  <b>Download</b>
-                </a>
+                <c:url var="downloadLink" value="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}"/>
+
+                <c:if test="${true}"> <!-- true = use React download page; false = use JSP download page-->
+                  <c:set var="summaryViewName" value="${empty requestScope.wdkView.name ? '_default' : requestScope.wdkView.name}"/>
+                  <c:url var="downloadLink" value="app/step/${step.stepId}/download?summaryView=${summaryViewName}"/>
+                </c:if>
+
+                <a style="padding-right: 1em;" href="${downloadLink}"><b>Download</b></a>
 
                 <c:if test="${recHasBasket}">
                   <a style="padding-right: 1em;" id="basketStep" href="javascript:void(0)" onClick="${basketClick}">
