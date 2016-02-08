@@ -11,7 +11,7 @@ export function getStepBundle(stepId, service) {
     return service.findQuestion( q => q.name === step.answerSpec.questionName );
   });
   let recordClassPromise = questionPromise.then(question => {
-    return service.findRecordClass( rc => rc.name === question.recordClass );
+    return service.findRecordClass( rc => rc.name === question.recordClassName );
   });
 
   return Promise.all([ stepPromise, questionPromise, recordClassPromise ])
