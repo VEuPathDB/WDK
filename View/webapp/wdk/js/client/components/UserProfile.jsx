@@ -34,7 +34,7 @@ function tableOf(objArray, addHeader, nameTitle, valueTitle) {
     <table>
       <tbody>
         { addHeader ? ( <tr><th>{nameTitle}</th><th>{valueTitle}</th></tr> ) : null }
-        { objArray.map(val => ( <tr><td>{val.name}</td><td>{val.value}</td></tr> )) }
+        { objArray.map(val => ( <tr key={val.name}><td>{val.name}</td><td>{val.value}</td></tr> )) }
       </tbody>
     </table>
   );
