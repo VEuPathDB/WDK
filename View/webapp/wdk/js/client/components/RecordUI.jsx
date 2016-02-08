@@ -79,7 +79,6 @@ class RecordUI extends Component {
             recordClass={this.props.recordClass}
             categoryTree={this.props.categoryTree}
             collapsedCategories={this.props.collapsedCategories}
-            categoryWordsMap={this.props.categoryWordsMap}
             onCategoryToggle={this.toggleCategory}
           />
         </Sticky>

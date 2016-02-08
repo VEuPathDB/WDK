@@ -1,7 +1,5 @@
 import { ReduceStore } from 'flux/utils';
 import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
-import { postorderSeq } from '../utils/TreeUtils';
-import { nodeHasProperty, getPropertyValues } from '../utils/OntologyUtils';
 
 let {
   SET_ACTIVE_RECORD,
@@ -49,8 +47,6 @@ export default class RecordViewStore extends ReduceStore {
         let collapsedTables = state.recordClass === recordClass
           ? state.collapsedTables : recordClass.collapsedTables || [];
 
-        let categoryWordsMap = makeCategoryWordsMap(recordClass, categoryTree);;
-
         return Object.assign({}, state, {
           record: record,
           recordClass: recordClass,
@@ -59,7 +55,6 @@ export default class RecordViewStore extends ReduceStore {
           collapsedCategories,
           collapsedTables,
           isLoading: false,
-          categoryWordsMap,
           categoryTree
         });
       }
@@ -108,34 +103,3 @@ export default class RecordViewStore extends ReduceStore {
 
 let updateList = (item, add, list = []) =>
   add ? list.concat(item) : list.filter(x => x !== item)
-
-let makeCategoryWordsMap = (recordClass, root) =>
-  postorderSeq(root).reduce((map, node) => {
-    let words = [];
-
-    // add current node's displayName and description
-    words.push(
-      ...getPropertyValues('hasDefinition', node),
-      ...getPropertyValues('hasExactSynonym', node),
-      ...getPropertyValues('hasNarrowSynonym', node)
-    );
-
-    // add displayName and desription of attribute
-    if (nodeHasProperty('targetType', 'attribute', node)) {
-      let attribute = recordClass.attributes.find(a => a.name === getPropertyValues('name', node)[0]);
-      words.push(attribute.displayName, attribute.description);
-    }
-
-    // add displayName and desription of table
-    if (nodeHasProperty('targetType', 'table', node)) {
-      let table = recordClass.tables.find(a => a.name === getPropertyValues('name', node)[0]);
-      words.push(table.displayName, table.description);
-    }
-
-    // add words from any children
-    for (let child of node.children) {
-      words.push(map.get(child.properties));
-    }
-
-    return map.set(node.properties, words.join('\0').toLowerCase());
-  }, new Map)
