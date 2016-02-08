@@ -182,14 +182,14 @@ export let compactRootNodes = (root) =>
 	 * @return {Object} the node corresponding to the node id or undefined if
 	 * not found.
 	 */ 
-	export let getNodeById = (nodeId, nodes) => {
+	export let getNodeById = (nodeId, nodes, getId) => {
 	  for(let i = 0; i < nodes.length; i++) {
 	    let node = undefined;
-	    if(nodes[i].id === nodeId) {
+	    if(getId(nodes[i]) === nodeId) {
 	      return nodes[i];
 	    }
 	    if(nodes[i].children.length > 0) {
-	      node = getNodeById(nodeId, nodes[i].children);
+	      node = getNodeById(nodeId, nodes[i].children, getId);
 	      if(node !== undefined) {
 	        return node;
 	      }
