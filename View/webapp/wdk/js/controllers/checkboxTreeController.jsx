@@ -1,12 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import CheckboxTree from '../client/components/CheckboxTree';
+import {
+  getTargetType,
+  getRefName,
+  getId,
+  getDisplayName,
+  getDescription
+} from '../client/utils/OntologyUtils';
 
 
 // serves as MVC controller for checkbox tree on results page
 export default class CheckboxTreeController {
 
-  constructor(element, name, tree, selectedList, expandedList, defaultSelectedList) {
+  constructor(element, name, tree, selectedList, expandedList, defaultSelectedList, getAttribute) {
     this.element = element;
     this.name = name;
     this.tree = tree;
@@ -14,12 +21,13 @@ export default class CheckboxTreeController {
     this.expandedList = expandedList;
     this.defaultSelectedList = defaultSelectedList;
     this.currentSelectedList = (selectedList || []).concat();
-    console.log("Current selected list: " + JSON.stringify(this.currentSelectedList));
+    this.getAttribute = getAttribute;
     this.displayCheckboxTree = this.displayCheckboxTree.bind(this);
     this.updateSelectedList = this.updateSelectedList.bind(this);
     this.updateExpandedList = this.updateExpandedList.bind(this);
     this.loadDefaultSelectedList = this.loadDefaultSelectedList.bind(this);
     this.loadCurrentSelectedList = this.loadCurrentSelectedList.bind(this);
+    this.getNodeProperties = this.getNodeProperties.bind(this);
   }
 
   displayCheckboxTree() {
@@ -34,23 +42,35 @@ export default class CheckboxTreeController {
                     onExpandedListUpdated={this.updateExpandedList}
                     onDefaultSelectedListLoaded={this.loadDefaultSelectedList}
                     onCurrentSelectedListLoaded={this.loadCurrentSelectedList}
-                    onGetId={this.getId}
-                    onGetDisplayName={this.getDisplayName}
-                    onGetDescription={this.getDescription}
+                    onGetNodeProperties={this.getNodeProperties}
       />, this.element[0]);
-    console.log("Rendered checkbox " + this.name + " under element " + JSON.stringify(this.element));
+    console.log("Rendered checkbox with selectedList: " + JSON.stringify(this.selectedList));
   }
 
-  getId(node) {
-    return node.id;
-  }
-
-  getDisplayName(node) {
-    return node.displayName;
-  }
-
-  getDescription(node) {
-    return node.description;
+  getNodeProperties(node) {
+    let properties = {};
+    let targetType = getTargetType(node);
+    if (targetType === 'attribute') {
+      let attribute = this.getAttribute(node);
+      if(attribute == null) {
+      // This should not happen...will replace with an exception
+      properties.displayName = getRefName(node) + "??";
+      properties.description = getRefName(node) + "??";
+      properties.id =  "attribute_" + getId(node);
+      }
+      else {
+        properties.displayName = attribute.displayName;
+        properties.description = attribute.help;
+        properties.id = getRefName(node);
+      }
+    }
+    else {
+      properties.id = getId(node);
+      properties.displayName = getDisplayName(node);
+      properties.description = getDescription(node);
+    }
+    //return properties;
+    return {"id":node.id, "displayName":node.displayName, "description":node.description};
   }
 
   updateSelectedList(selectedList) {
