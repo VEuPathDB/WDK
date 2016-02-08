@@ -2,14 +2,7 @@ import {ReduceStore} from 'flux/utils';
 import {filterRecords} from '../utils/recordUtils';
 import StepDownloadFormViewActionCreator from '../actioncreators/StepDownloadFormViewActionCreator';
 
-let {
-  STEP_DOWNLOAD_LOADING,
-  STEP_DOWNLOAD_INITIALIZE_STORE,
-  STEP_DOWNLOAD_SELECT_REPORTER,
-  STEP_DOWNLOAD_FORM_UPDATE,
-  STEP_DOWNLOAD_FORM_UI_UPDATE,
-  APP_ERROR
-} = StepDownloadFormViewActionCreator.actionTypes;
+let actionTypes = StepDownloadFormViewActionCreator.actionTypes;
 
 export default class StepDownloadFormViewStore extends ReduceStore {
 
@@ -34,22 +27,25 @@ export default class StepDownloadFormViewStore extends ReduceStore {
   reduce(state, { type, payload }) {
     switch(type) {
 
-      case STEP_DOWNLOAD_LOADING:
+      case actionTypes.STEP_DOWNLOAD_LOADING:
         return formLoading(state, { isLoading: true });
 
-      case STEP_DOWNLOAD_INITIALIZE_STORE:
+      case actionTypes.STEP_DOWNLOAD_INITIALIZE_STORE:
         return initialize(state, payload);
 
-      case STEP_DOWNLOAD_SELECT_REPORTER:
+      case actionTypes.STEP_DOWNLOAD_RESET_STORE:
+        return getInitialState();
+
+      case actionTypes.STEP_DOWNLOAD_SELECT_REPORTER:
         return updateReporter(state, payload);
 
-      case STEP_DOWNLOAD_FORM_UPDATE:
+      case actionTypes.STEP_DOWNLOAD_FORM_UPDATE:
         return updateFormState(state, payload);
 
-      case STEP_DOWNLOAD_FORM_UI_UPDATE:
+      case actionTypes.STEP_DOWNLOAD_FORM_UI_UPDATE:
         return updateFormUiState(state, payload);
 
-      case APP_ERROR:
+      case actionTypes.APP_ERROR:
         return formLoading(state, { isLoading: false });
 
       default:
