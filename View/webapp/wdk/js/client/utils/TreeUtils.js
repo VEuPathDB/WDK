@@ -6,6 +6,15 @@ import { seq } from './IterableUtils';
 let pushInto = (array, ...values) =>
   (array.push(...values), array);
 
+// Shallow comparison of two arrays
+let shallowEqual = (array1, array2) => {
+  if (array1.length !== array2.length) return false;
+  for (let i = 0; i < array1.length; i++) {
+    if (array1[i] !== array2[i]) return false;
+  }
+  return true;
+}
+
 // Tree iterators. These can be used in combination with for-of loops, or
 // with the Iterable util functions.
 function* preorder(root) {
@@ -82,10 +91,14 @@ export let postorderSeq = (root) =>
  * @param {Object} root Root node of a tree.
  * @return {Object}
  */
-export let pruneDescendantNodes = (fn, root) =>
-  Object.assign({}, root, {
-    children: pruneNodes(fn, root.children)
-  })
+export let pruneDescendantNodes = (fn, root) => {
+  let prunedChildren = pruneNodes(fn, root.children);
+  return prunedChildren === root.children
+    ? root
+    : Object.assign({}, root, {
+      children: pruneNodes(fn, root.children)
+    })
+}
 
 /**
  * Recursively replace any node that does not pass `nodePredicate` with its
@@ -97,13 +110,15 @@ export let pruneDescendantNodes = (fn, root) =>
  * of a node in a tree.
  * @return {Array}
  */
-export let pruneNodes = (fn, nodes) =>
-  nodes.reduce((prunedNodes, node) => {
+export let pruneNodes = (fn, nodes) => {
+  let prunedNodes = nodes.reduce((prunedNodes, node) => {
     let prunedNode = pruneDescendantNodes(fn, node);
     return fn(prunedNode)
       ? pushInto(prunedNodes, prunedNode)
       : pushInto(prunedNodes, ...prunedNode.children);
-  }, [])
+  }, []);
+  return shallowEqual(nodes, prunedNodes) ? nodes : prunedNodes;
+}
 
 /**
  * If the root node has only one child, replace the root node with it's child.
@@ -167,14 +182,14 @@ export let compactRootNodes = (root) =>
 	 * @return {Object} the node corresponding to the node id or undefined if
 	 * not found.
 	 */ 
-	export let getNodeById = (nodeId, nodes) => {
+	export let getNodeById = (nodeId, nodes, getId) => {
 	  for(let i = 0; i < nodes.length; i++) {
 	    let node = undefined;
-	    if(nodes[i].id === nodeId) {
+	    if(getId(nodes[i]) === nodeId) {
 	      return nodes[i];
 	    }
 	    if(nodes[i].children.length > 0) {
-	      node = getNodeById(nodeId, nodes[i].children);
+	      node = getNodeById(nodeId, nodes[i].children, getId);
 	      if(node !== undefined) {
 	        return node;
 	      }
