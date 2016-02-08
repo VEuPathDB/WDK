@@ -12,8 +12,9 @@ import * as Stores from './stores';
 import * as ComponentUtils from './utils/componentUtils';
 import * as ReporterUtils from './utils/reporterUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
+import * as WdkUtils from './utils/WdkUtils';
 
-export { Components, ComponentUtils, ReporterUtils, FormSubmitter };
+export { Components, ComponentUtils, ReporterUtils, FormSubmitter, WdkUtils };
 
 export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
   let dispatcher = new Dispatcher;
