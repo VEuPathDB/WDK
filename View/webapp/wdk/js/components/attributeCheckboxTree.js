@@ -13,7 +13,7 @@ import {
 } from '../client/utils/OntologyUtils';
 import {
   getAttributeDefinition
-} from '../client/utils/WDKUtils';
+} from '../client/utils/WdkUtils';
 import WdkService from '../client/utils/WdkService';
 
 wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
