@@ -11,6 +11,9 @@ import {
   getDisplayName,
   getDescription
 } from '../client/utils/OntologyUtils';
+import {
+  getAttributeDefinition
+} from '../client/utils/WDKUtils';
 import WdkService from '../client/utils/WdkService';
 
 wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
@@ -105,7 +108,7 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
 
   function getAttribute(recordClass) {
     return node => {
-      let attribute = recordClass.attributes.find(a => a.name === getRefName(node));
+      return getAttributeDefinition(recordClass, getRefName(node));
     }
   }
 
