@@ -6,7 +6,6 @@ export default class IndeterminateCheckbox extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      "id": props.id,
       "indeterminate": props.indeterminate,
       "checked": props.checked
     };
@@ -31,14 +30,12 @@ export default class IndeterminateCheckbox extends React.Component {
 
   handleChange(e) {
     let selected = e.target.checked;
-    this.props.toggleCheckbox(this.state.id, selected);
+    this.props.toggleCheckbox(this.props.node, selected);
   }
 
   render() {
-    let handleChange = this.handleChange;
-    let id = this.props.id;
     return (
-        <input {...this.props} type="checkbox" onChange={handleChange.bind(this)} />
+        <input id={this.props.value} value={this.props.value} checked={this.props.checked} type="checkbox" onChange={this.handleChange} />
     )
   }
 }
