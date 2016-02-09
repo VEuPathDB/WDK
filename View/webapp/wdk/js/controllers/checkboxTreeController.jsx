@@ -69,8 +69,8 @@ export default class CheckboxTreeController {
       properties.displayName = getDisplayName(node);
       properties.description = getDescription(node);
     }
-    //return properties;
-    return {"id":node.id, "displayName":node.displayName, "description":node.description};
+    return properties;
+    //return {"id":node.id, "displayName":node.displayName, "description":node.description};
   }
 
   updateSelectedList(selectedList) {
