@@ -106,7 +106,7 @@ public class AnswerValueAttributes {
   public Map<String, AttributeField> getSummaryAttributeFieldMap() throws WdkModelException {
     if (_summaryAttributeMap == null) {
       PrimaryKeyAttributeField pkField = _question.getRecordClass().getPrimaryKeyAttributeField();
-      _summaryAttributeMap = buildSummaryAttributeFieldMap(_user, _question, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX, pkField);
+      _summaryAttributeMap = buildSummaryAttributeFieldMap(_user, _question, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX, new AttributeField[]{ pkField });
     }
     //LOG.debug("Returning summary field map with keys: " +
     FormatUtil.arrayToString(_summaryAttributeMap.keySet().toArray());
@@ -114,14 +114,15 @@ public class AnswerValueAttributes {
   }
 
   public static Map<String, AttributeField> buildSummaryAttributeFieldMap(
-      User user, Question question, String keySuffix, AttributeField pkField) throws WdkModelException {
+      User user, Question question, String keySuffix, AttributeField[] leftmostFields) throws WdkModelException {
     // get preferred attribs from user and initialize map
     String[] userPrefAttributes = user.getSummaryAttributes(question.getFullName(), keySuffix);
     Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
 
-    // always put the primary key as the first attribute
-    summaryFields.put(pkField.getName(), pkField);
-
+    // always put the primary key (all leftmostFields) as the first attribute
+		for(AttributeField a : leftmostFields) {
+			summaryFields.put(a.getName(), a);
+		}
     // add remainder of attributes to map and return
     Map<String, AttributeField> allFields = question.getAttributeFieldMap();
     for (String attributeName : userPrefAttributes) {
