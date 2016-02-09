@@ -108,7 +108,7 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
 
   function getAttribute(recordClass) {
     return node => {
-      return getAttributeDefinition(recordClass, getRefName(node));
+      return getAttribute(recordClass, getRefName(node));
     }
   }
 
