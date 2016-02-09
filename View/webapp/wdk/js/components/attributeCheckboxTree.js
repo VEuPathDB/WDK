@@ -12,7 +12,7 @@ import {
   getDescription
 } from '../client/utils/OntologyUtils';
 import {
-  getAttributeDefinition
+  getAttribute
 } from '../client/utils/WdkUtils';
 import WdkService from '../client/utils/WdkService';
 
@@ -45,11 +45,11 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
        service.findRecordClass(recordClass => recordClass.name === recordClassName)]
     ).then(([categoriesOntology, question, recordClass]) => {
         let categoryTree = getTree(categoriesOntology, isQualifying(recordClassName, viewName));
-        mungeTree(categoryTree.children, recordClass);
-        addSearchSpecificSubtree(question, categoryTree, viewName);
+        //mungeTree(categoryTree.children, recordClass);
+        //addSearchSpecificSubtree(question, categoryTree, viewName);
         let selectedList = currentSelectedList || defaultSelectedList;
         console.log("Element: " + element[0]);
-        let callback = getAttribute(recordClass);
+        let callback = getAttributes(recordClass);
         let controller = new CheckboxTreeController(element, "attributeList_" + viewName, categoryTree.children, selectedList, null, defaultSelectedList, callback);
         controller.displayCheckboxTree();
     }).catch(function(error) {
@@ -106,7 +106,7 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
     }
   }
 
-  function getAttribute(recordClass) {
+  function getAttributes(recordClass) {
     return node => {
       return getAttribute(recordClass, getRefName(node));
     }
