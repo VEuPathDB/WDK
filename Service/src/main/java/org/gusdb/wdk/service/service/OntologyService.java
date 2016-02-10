@@ -66,7 +66,6 @@ public class OntologyService extends WdkService {
       }
       JSONArray pathsList = OntologyFormatter.pathsToJson(
           ontology.getAllPaths(new PropertyPredicate(criteria)));
-      LOG.info(pathsList.toString(2));
       return Response.ok(pathsList.toString()).build();
     }
     catch (JSONException e) {
