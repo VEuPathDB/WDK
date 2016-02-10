@@ -4,7 +4,7 @@ import AccordionButton from './AccordionButton';
 import {isLeafNode} from '../utils/TreeUtils';
 import {getLeaves} from '../utils/TreeUtils';
 import {getBranches} from '../utils/TreeUtils';
-import {getNodeByValue} from '../utils/TreeUtils';
+
 
 /**
  * A null or undefined selected list should be made into an empty array
@@ -20,8 +20,6 @@ export default class CheckboxTree extends React.Component {
    */
   constructor(props) {
     super(props);
-    this.newSelectedList = this.props.selectedList;
-    this.newExpandedList = this.props.expandedList;
 
     // hard bind the toggle functions to the this checkbox tree component
     this.selectAll = this.selectAll.bind(this);
@@ -34,24 +32,6 @@ export default class CheckboxTree extends React.Component {
     this.toggleCheckbox = this.toggleCheckbox.bind(this);
   }
 
-  /**
-   * Insure that null selectedList or expandedList are replaced with appropriate defaults.
-   */
-  componentWillMount() {
-    // Use the expanded list given but apply business rules to populate the business list if no
-    // expanded list is provided.
-    if (this.props.expandedList === null || this.props.expandedList === undefined) {
-      this.setExpandedList(this.props.tree, this.props.selectedList);
-    }
-  }
-
-  /**
-   * Once initial rendering is complete, return any changes made to the selectedList or expandedList
-   * to the controller.
-   */
-  componentDidMount() {
-    this.props.onExpandedListUpdated(this.newExpandedList);
-  }
 
   /**
    *  Used to update a selected list
@@ -59,30 +39,6 @@ export default class CheckboxTree extends React.Component {
    */
   setSelectedList(selectedList = []) {
     this.props.onSelectedListUpdated(selectedList);
-  }
-
-
-  /**
-   * Used to replace a non-existant expanded list with one obeying business rules (called recursively).
-   * Invokes action callback for updating the new expanded list.
-   */
-  setExpandedList(nodes, selectedList, expandedList = []) {
-
-    // If the selected list is empty or non-existant, the expanded list is likewise empty and there is nothing
-    // more to do.
-    if (selectedList && selectedList.length > 0) {
-      nodes.forEach(node => {
-
-        // According to the business rule, indeterminate nodes get expanded.
-        if (this.isIndeterminate(node, selectedList)) {
-          expandedList.push(node);
-        }
-
-        // descend the tree
-        this.setExpandedList(this.props.getNodeChildren(node), selectedList, expandedList);
-      });
-    }
-    this.newExpandedList = expandedList;
   }
 
 
@@ -120,7 +76,7 @@ export default class CheckboxTree extends React.Component {
   expandAll(event) {
     let expandedList = [];
     this.props.tree.forEach(node => {
-      expandedList.push(...getBranches(node, this.props.getNodeChildren));
+      expandedList.push(...getBranches(node, this.props.getNodeChildren).map(branch => this.props.getNodeFormValue(branch)));
     });
     this.props.onExpandedListUpdated(expandedList);
 
@@ -168,9 +124,10 @@ export default class CheckboxTree extends React.Component {
    * be changed.
    */
   toggleExpansion(node) {
+    let value = this.props.getNodeFormValue(node);
     let newExpandedList = this.props.expandedList || [];
-    let index = newExpandedList.indexOf(node);
-    index <= -1 ? newExpandedList.push(node) : newExpandedList.splice(index, 1);
+    let index = newExpandedList.indexOf(value);
+    index <= -1 ? newExpandedList.push(value) : newExpandedList.splice(index, 1);
     this.props.onExpandedListUpdated(newExpandedList);
   }
 
@@ -266,7 +223,7 @@ export default class CheckboxTree extends React.Component {
       return this.isIndeterminate(node, selectedList);
     }
     else {
-      return expandedList.indexOf(node) > -1;
+      return expandedList.indexOf(this.props.getNodeFormValue(node)) > -1;
     }
   }
 
