@@ -9,6 +9,8 @@ import {
   getDescription
 } from '../client/utils/OntologyUtils';
 import {
+  isLeafNode,
+  getLeaves,
   getNodeByValue
 } from '../client/utils/TreeUtils';
 
@@ -16,7 +18,7 @@ import {
 // serves as MVC controller for checkbox tree on results page
 export default class CheckboxTreeController {
 
-  constructor(element, name, tree, selectedList, expandedList, defaultSelectedList, getAttributes) {
+  constructor(element, name, tree, selectedList, defaultSelectedList, getAttributes) {
     this.element = element;
     this.name = name;
     this.tree = tree;
@@ -31,7 +33,7 @@ export default class CheckboxTreeController {
     this.getNodeChildren = this.getNodeChildren.bind(this);
     this.getNodeData = this.getNodeData.bind(this);
     this.selectedList = selectedList;
-    this.expandedList = expandedList;
+    this.expandedList = this.setExpandedList(this.tree, this.selectedList);
     this.defaultSelectedList = defaultSelectedList;
     this.currentSelectedList = (selectedList || []).concat();
   }
@@ -52,9 +54,61 @@ export default class CheckboxTreeController {
       />, this.element[0]);
   }
 
+  /**
+   * Returns boolean indicating whether the given node is indeterminate
+   */
+  isIndeterminate(node, selectedList) {
+
+    // if only some of the descendent leaf nodes are in the selected nodes list, the given
+    // node is indeterminate.  If the given node is a leaf node, it cannot be indeterminate
+    let indeterminate = false;
+
+    // If the selected list is empty, or non-existant no nodes are intermediate and there is nothing to do.
+    if (selectedList) {
+      if (!isLeafNode(node, this.getNodeChildren)) {
+        let leafNodes = getLeaves(node, this.getNodeChildren);
+        let total = leafNodes.reduce((count, leafNode) => {
+          return selectedList.indexOf(this.getNodeFormValue(leafNode)) > -1 ? count + 1 : count;
+        }, 0);
+        if (total > 0 && total < leafNodes.length) {
+          indeterminate = true;
+        }
+      }
+    }
+    return indeterminate;
+  }
+
+
+  /**
+   * Used to replace a non-existant expanded list with one obeying business rules (called recursively).
+   * Invokes action callback for updating the new expanded list.
+   */
+  setExpandedList(nodes, selectedList, expandedList = []) {
+
+    // If the selected list is empty or non-existant, the expanded list is likewise empty and there is nothing
+    // more to do.
+    if (selectedList && selectedList.length > 0) {
+      nodes.forEach(node => {
+
+        // According to the business rule, indeterminate nodes get expanded.
+        if (this.isIndeterminate(node, selectedList)) {
+          expandedList.push(this.getNodeFormValue(node));
+        }
+        // descend the tree
+        this.setExpandedList(this.getNodeChildren(node), selectedList, expandedList);
+      });
+    }
+    return expandedList;
+  }
 
   getNodeData(node) {
     let data = {};
+    if(node.question) {
+      data.id = node.id;
+      data.displayName = node.displayName;
+      data.description = node.description;
+      return data;
+    }
     let targetType = getTargetType(node);
     if (targetType === 'attribute') {
       let attribute = this.getAttributes(node);

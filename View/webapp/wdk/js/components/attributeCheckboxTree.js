@@ -45,12 +45,11 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
        service.findRecordClass(recordClass => recordClass.name === recordClassName)]
     ).then(([categoriesOntology, question, recordClass]) => {
         let categoryTree = getTree(categoriesOntology, isQualifying(recordClassName, viewName));
-        //mungeTree(categoryTree.children, recordClass);
-        //addSearchSpecificSubtree(question, categoryTree, viewName);
+        addSearchSpecificSubtree(question, categoryTree, viewName);
         let selectedList = currentSelectedList || defaultSelectedList;
         console.log("Element: " + element[0]);
         let callback = getAttributes(recordClass);
-        let controller = new CheckboxTreeController(element, "attributeList_" + viewName, categoryTree.children, selectedList, null, defaultSelectedList, callback);
+        let controller = new CheckboxTreeController(element, "attributeList_" + viewName, categoryTree.children, selectedList, defaultSelectedList, callback);
         controller.displayCheckboxTree();
     }).catch(function(error) {
       throw new Error(error.message);
@@ -68,11 +67,11 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
       let qualified = nodeHasProperty('targetType', 'attribute', node)
                     && nodeHasProperty('recordClassName', recordClassName, node)
                     && nodeHasProperty('scope', 'results', node);
-      if(qualified && recordClassName === 'TranscriptRecordClasses.TranscriptRecordClass') {
-        qualified = nodeHasProperty('geneOrTranscript', viewName, node);
+      if(qualified && recordClassName === 'TranscriptRecordClasses.TranscriptRecordClass' && viewName==="gene") {
+        qualified = nodeHasProperty('geneOrTranscript', "gene", node);
       }
       return qualified;
-  }
+  };
 
   /**
    * Create a separate search specific subtree, based upon the question asked and tack it onto the start of top level array
@@ -84,20 +83,18 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
   function addSearchSpecificSubtree(question, categoryTree, viewName) {
     if(question.dynamicAttributes.length > 0) {
       let subtree = {
+        "question":true,
         "id": "search-specific-subtree",
-        "name": "search-specific-subtree",
         "displayName": "Search Specific",
-        "EuPathDB alternative term": "Search Specific",
         "description": "Information about the " + viewName + "s returned that is specific to the search you ran, and the parameters you specified",
         "children": []
       };
       question.dynamicAttributes.forEach(attribute => {
         let node = {
+          "question":true,
           "id": attribute.name,
-          "name": attribute.name,
           "displayName": attribute.displayName,
-          "EuPathDB alternative term": attribute.displayName,
-          "description": attribute.help,
+          "descripton": attribute.help,
           "children":[]
         };
         subtree.children.push(node);
@@ -106,51 +103,18 @@ wdk.util.namespace("wdk.attributeCheckboxTree", function(ns) {
     }
   }
 
+  /**
+   * Curried function that returned an record class attribute lookup based upon record class and given node.
+   * @param recordClass - the record class containing the attributes to check
+   * @returns {Function} - function with node argument to return the record class attribute, if found, related to the given node
+   */
   function getAttributes(recordClass) {
     return node => {
       return getAttribute(recordClass, getRefName(node));
     }
   }
 
-  /**
-   * Convert filtered/compacted tree provided by ontology service into a tree organized in the
-   * matter expected by the checkbox tree component.
-   * @param nodes - array of the top level nodes of the filtered/compacted ontology tree
-   * @param recordClass - The record class data applying to the current results page - used to properly identify the
-   * attributes (leafs) of the tree.
-   */
-  function mungeTree(nodes, recordClass) {
-    nodes.forEach((node) => {
-      let targetType = getTargetType(node);
-      if (targetType === 'attribute') {
-        let name = getRefName(node);
-        let attribute = recordClass.attributes.find(a => a.name === name);
-        //if(attribute == null) throw new Error('Expected attribute for `' + name + '`, but got null');
-        if(attribute == null) {
-          //console.log("No attribute for " + name);
-          node.displayName = name + "??";
-          node.description = name + "??";
-          node.id = "attribute_" + getId(node);
-        }
-        else {
-          node.displayName = attribute.displayName;
-          node.description = attribute.help;
-          node.id = name;
-        }
 
-      }
-      else {
-        node.id = getId(node);
-        node.displayName = getDisplayName(node);
-        node.description = getDescription(node);
-      }
-      //delete(node.properties);
-      if(node.children.length > 0) {
-        mungeTree(node.children, recordClass);
-      }
-    });
-  }
-  
   ns.setupCheckboxTree = setupCheckboxTree;
 
 });
