@@ -43,8 +43,8 @@
 
 <c:set var="tableClassName">
   <c:choose>
-    <c:when test="${dataTable eq true}">recordTable wdk-data-table</c:when> 
-    <c:otherwise>recordTable</c:otherwise> 
+    <c:when test="${dataTable eq true}">recordTable wdk-data-table</c:when>
+    <c:otherwise>recordTable</c:otherwise>
   </c:choose>
 </c:set>
 
@@ -100,7 +100,7 @@
           <c:set var="attributeValue" value="${rColEntry.value}"/>
           <c:if test="${attributeValue.attributeField.internal == false}">
             <c:set var="j" value="${j+1}"/>
-            <imp:wdkAttribute attributeValue="${attributeValue}" truncate="false" />
+            <imp:wdkAttribute record="${wdkRecord}" recordClass="${wdkRecord.recordClass}" attributeValue="${attributeValue}" truncate="false" />
           </c:if>
         </c:forEach>
 
