@@ -28,6 +28,7 @@ import org.gusdb.fgputil.runtime.InstanceManager;
 import org.gusdb.fgputil.runtime.Manageable;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
+import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
@@ -250,6 +251,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
    * @throws WdkModelException if unable to resolve name to question
    */
   public Question getQuestion(String questionFullName) throws WdkModelException {
+    // special case to fetch a single record of a recordClass (by primary keys)
+    if (SingleRecordQuestion.isSingleQuestionName(questionFullName, this)){
+      return new SingleRecordQuestion(questionFullName, this);
+    }
     Reference r = new Reference(questionFullName);
     QuestionSet ss = getQuestionSet(r.getSetName());
     return ss.getQuestion(r.getElementName());

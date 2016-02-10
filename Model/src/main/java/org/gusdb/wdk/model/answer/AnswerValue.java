@@ -163,7 +163,7 @@ public class AnswerValue {
   // Instance variables
   // ------------------------------------------------------------------
 
-  private User _user;
+  protected User _user;
 
   private ResultFactory _resultFactory;
   private Question _question;
