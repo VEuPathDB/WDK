@@ -32,7 +32,7 @@ import org.json.JSONObject;
  *   urlSegment: String,
  *   class: String,
  *   parameters: [ see ParamFormatters ],
- *   defaultAttributes, [ String ],
+ *   defaultAttributes: [ String ],
  *   dynamicAttributes: [ see AttributeFieldFormatter ],
  *   defaultSummaryView: String,
  *   summaryViewPlugins: [ String ],

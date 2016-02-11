@@ -108,7 +108,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   private Map<String, Boolean> defaultSortingMap = new LinkedHashMap<String, Boolean>();
 
   private List<DynamicAttributeSet> dynamicAttributeSets = new ArrayList<DynamicAttributeSet>();
-  private DynamicAttributeSet dynamicAttributeSet;
+  protected DynamicAttributeSet dynamicAttributeSet;
   private Query dynamicAttributeQuery;
 
   /**

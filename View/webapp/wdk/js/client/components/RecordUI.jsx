@@ -69,6 +69,7 @@ class RecordUI extends Component {
           user={this.props.user}
           basket={this.props.baskets[this.props.recordClass.name][JSON.stringify(this.props.record.id)]}
           userActions={this.props.userActions}
+          router={this.props.router}
         />
         <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
           {/*<h3 className="wdk-RecordSidebarHeader">{this.props.record.displayName}</h3>*/}

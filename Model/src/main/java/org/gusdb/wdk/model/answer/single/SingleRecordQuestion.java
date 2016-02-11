@@ -1,9 +1,9 @@
 package org.gusdb.wdk.model.answer.single;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.WdkModel;
@@ -15,14 +15,13 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.question.DynamicAttributeSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.user.User;
 
 public class SingleRecordQuestion extends Question {
-
-  private static final Logger LOG = Logger.getLogger(SingleRecordQuestion.class);
 
   public static final String SINGLE_RECORD_QUESTION_NAME_PREFIX = "__";
   public static final String SINGLE_RECORD_QUESTION_NAME_SUFFIX = "__singleRecordQuestion__";
@@ -37,14 +36,12 @@ public class SingleRecordQuestion extends Question {
   }
 
   private static QuestionNameParts parseQuestionName(String questionName, WdkModel wdkModel) {
-    LOG.info("Parsing question name: " + questionName);
     QuestionNameParts parts = new QuestionNameParts();
     if (questionName.startsWith(SINGLE_RECORD_QUESTION_NAME_PREFIX) &&
         questionName.endsWith(SINGLE_RECORD_QUESTION_NAME_SUFFIX)) {
       String recordClassName = questionName.substring(
           SINGLE_RECORD_QUESTION_NAME_PREFIX.length(),
           questionName.length() - SINGLE_RECORD_QUESTION_NAME_SUFFIX.length());
-      LOG.info("Found recordClassName: " + recordClassName);
       try {
         new WdkModelBean(wdkModel).validateRecordClassName(recordClassName);
         parts.recordClass = wdkModel.getRecordClass(recordClassName);
@@ -66,6 +63,8 @@ public class SingleRecordQuestion extends Question {
     }
     setWdkModel(wdkModel);
     setRecordClass(parts.recordClass);
+    dynamicAttributeSet = new DynamicAttributeSet();
+    dynamicAttributeSet.setQuestion(this);
   }
 
   @Override
@@ -98,6 +97,12 @@ public class SingleRecordQuestion extends Question {
     return new MapBuilder<String, Param>()
         .put(PRIMARY_KEY_PARAM_NAME, createStringParam(PRIMARY_KEY_PARAM_NAME))
         .toMap();
+  }
+
+  @Override
+  public Param[] getParams() {
+    Collection<Param> params = getParamMap().values();
+    return params.toArray(new Param[params.size()]);
   }
 
   private Param createStringParam(String name) {

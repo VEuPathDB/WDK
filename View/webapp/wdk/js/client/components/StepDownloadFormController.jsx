@@ -78,7 +78,16 @@ let StepDownloadFormController = React.createClass({
     }
 
     // must reinitialize with every new props
-    this.actions.loadPageData(this.props.params.stepId);
+    let params = this.props.params;
+    if ('stepId' in params) {
+      this.actions.loadPageData(params.stepId);
+    }
+    else if ('recordClass' in params) {
+      this.actions.loadPageDataFromRecord(params.recordClass, params.splat.split('/').join(','));
+    }
+    else {
+      console.error("Neither stepId nor recordClass param passed to StepDownloadFormController component");
+    }
   },
 
   componentWillUnmount() {
@@ -95,7 +104,7 @@ let StepDownloadFormController = React.createClass({
 
   render() {
 
-    let title = "Download Step Result";
+    let title = "Download Records";
 
     if (this.isStateIncomplete(this.state)) {
       return ( <Doc title={title}><Loading/></Doc> );

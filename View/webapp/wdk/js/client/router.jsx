@@ -24,6 +24,7 @@ export function start(rootUrl, rootElement, props, additionalRoutes = []) {
     routes: (
       <Route name="app" path={rootUrl} handler={AppController}>
         <Route name="answer" path="search/:recordClass/:question/result" handler={AnswerController}/>
+        <Route name="recordDownloadForm" path="record/:recordClass/download/*" handler={StepDownloadFormController}/>
         <Route name="record" path="record/:recordClass/*" handler={RecordController}/>
         <Route name="stepDownloadForm" path="step/:stepId/download" handler={StepDownloadFormController}/>
         <Route name="userProfile" path="user/profile" handler={UserProfileController}/>

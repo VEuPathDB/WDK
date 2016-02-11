@@ -74,7 +74,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
       logger.debug("Getting records #" + _startIndex + " to #" + pageEndIndex);
 
-      AnswerValue answerValue = new AnswerValue(_baseAnswer, _startIndex, pageEndIndex);
+      AnswerValue answerValue = _baseAnswer.cloneWithNewPaging(_startIndex, pageEndIndex);
 
       // disable sorting if the total size is bigger than threshold
       if (_resultSize > SORTING_THRESHOLD)

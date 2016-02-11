@@ -17,3 +17,36 @@ export function getStepBundle(stepId, service) {
   return Promise.all([ stepPromise, questionPromise, recordClassPromise ])
     .then(([ step, question, recordClass ]) => ({ step, question, recordClass }));
 }
+
+export function getSingleRecordStepBundle(recordClass, primaryKeyString) {
+  let questionName = '__' + recordClass.name + '__singleRecordQuestion__';
+  let step = {
+    displayName: 'Single Record',
+    answerSpec: {
+      questionName: questionName,
+      parameters: {
+        "primaryKeys": primaryKeyString
+      }
+    }
+  };
+  // TODO: if this is used in places other than step download form, may need
+  //   to fill in more fields and think about what their values should be
+  let question = {
+    name: questionName,
+    displayName: 'Single Record',
+    //shortDisplayName: 'Single Record',
+    //description: 'Retrieves a single record by ID',
+    //help: '',
+    //newBuild: 0,
+    //reviseBuild: 0,
+    //urlSegment: 'singleRecord',
+    //'class': recordClass.name,
+    //parameters: [ { name: 'primaryKeys' } ],
+    defaultAttributes: [ ],
+    dynamicAttributes: [ ],
+    defaultSummaryView: '_default',
+    //summaryViewPlugins: [ ],
+    //stepAnalysisPlugins: [ ]
+  };
+  return { recordClass, question, step };
+}
