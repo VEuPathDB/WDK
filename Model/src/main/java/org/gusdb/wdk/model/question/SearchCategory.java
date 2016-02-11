@@ -161,7 +161,6 @@ public class SearchCategory extends WdkModelBase {
       if ((strict && usedBy != null && cusedBy != null && cusedBy.equalsIgnoreCase(usedBy)) ||
           (usedBy == null || cusedBy == null || cusedBy.equalsIgnoreCase(usedBy))) {
         categories.put(child.getName(), child);
-	logger.info("++++++++++++++++++" + child.getDisplayName());
       }
     }
     return categories;
