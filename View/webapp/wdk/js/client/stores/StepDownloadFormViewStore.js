@@ -34,7 +34,7 @@ export default class StepDownloadFormViewStore extends ReduceStore {
         return initialize(state, payload);
 
       case actionTypes.STEP_DOWNLOAD_RESET_STORE:
-        return getInitialState();
+        return initialize(state, this.getInitialState());
 
       case actionTypes.STEP_DOWNLOAD_SELECT_REPORTER:
         return updateReporter(state, payload);
