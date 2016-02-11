@@ -1,9 +1,4 @@
 import ActionCreator from '../utils/ActionCreator';
-import {
-  getId,
-  getDisplayName,
-  getDescription
-} from '../utils/OntologyUtils';
 
 // Action types
 let actionTypes = {
@@ -12,30 +7,26 @@ let actionTypes = {
   SITEMAP_UPDATE_EXPANDED: 'sitemap/updateExpanded',
   APP_ERROR: 'sitemap/error'
 };
+import {
+  getTree,
+  nodeHasProperty,
+} from '../utils/OntologyUtils';
 
 export default class SiteMapActionCreator extends ActionCreator {
 
-  mungeTree(nodes) {
-    nodes.forEach((node) => {
-      node.id = getId(node);
-      node.displayName = getDisplayName(node);
-      node.description = getDescription(node);
-      delete(node.properties);
-      if(node.children.length > 0) {
-        this.mungeTree(node.children);
-      }
-   });
- }
-
-loadCurrentSiteMap() {
+ loadCurrentSiteMap() {
     this._dispatch({ type: actionTypes.SITEMAP_LOADING });
 
     let ontologyPromise = this._service.getOntology('Categories');
 
+    let isQualifying =  node => {
+      return nodeHasProperty('scope', 'record', node) || nodeHasProperty('scope', 'search', node) ;
+    }
+
     ontologyPromise.then((ontology) => {
       this._dispatch({
         type: actionTypes.SITEMAP_INITIALIZE_STORE,
-        payload: { tree: this.mungeTree(ontology.tree) }
+          payload: { tree: getTree(ontology, isQualifying).children }
       });
     }, this._errorHandler(actionTypes.APP_ERROR));
   }
