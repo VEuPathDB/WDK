@@ -26,6 +26,7 @@ import org.json.JSONObject;
 @Produces(MediaType.APPLICATION_JSON)
 public class OntologyService extends WdkService {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(OntologyService.class);
 
   /**

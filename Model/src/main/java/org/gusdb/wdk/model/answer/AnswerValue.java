@@ -260,6 +260,10 @@ public class AnswerValue {
   // Public Methods
   // ------------------------------------------------------------------
 
+  public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
+    return new AnswerValue(this, startIndex, endIndex);
+  }
+  
   /**
    * provide property that user's term for question
    */

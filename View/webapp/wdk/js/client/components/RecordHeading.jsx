@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactRouter from 'react-router';
 import { wrappable } from '../utils/componentUtils';
 import RecordActionLink from './RecordActionLink';
 import RecordOverview from './RecordOverview';
@@ -11,7 +12,7 @@ let stubHandler = actionName => event => {
 const loadingClassName = 'fa fa-circle-o-notch fa-spin';
 
 let RecordHeading = props => {
-  let { record, recordClass, user, basket, userActions } = props;
+  let { record, recordClass, user, basket, userActions, router } = props;
   let actions = [
     {
       label: user.isGuest ? 'Login to manage basket'
@@ -33,7 +34,10 @@ let RecordHeading = props => {
     {
       label: 'Download ' + recordClass.displayName,
       iconClassName: 'fa fa-lg fa-download',
-      onClick: stubHandler('download')
+      onClick: () => {
+        router.transitionTo(wdk.webappUrl('app') + '/record/' + recordClass.urlSegment +
+            '/download/' + record.id.map(pk => pk.value).join('/'));
+      }
     }
   ];
   return (

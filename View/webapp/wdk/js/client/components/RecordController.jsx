@@ -75,6 +75,7 @@ class RecordController extends Component {
             {...user}
             recordActions={this.recordViewActions}
             userActions={this.userActions}
+            router={this.props.router}
           />
         </Doc>
       );
