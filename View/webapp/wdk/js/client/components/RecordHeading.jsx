@@ -51,7 +51,7 @@ let RecordHeading = props => {
           );
         })}
       </ul>
-      <h1 className="wdk-RecordHeading">{recordClass.displayName} {record.displayName}</h1>
+      <h1 className="wdk-RecordHeading">{record.displayName}</h1>
       <RecordOverview record={record} recordClass={recordClass}/>
     </div>
   );
