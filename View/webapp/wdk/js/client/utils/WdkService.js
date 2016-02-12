@@ -1,5 +1,20 @@
 import stringify from 'json-stable-stringify';
 import difference from 'lodash/array/difference';
+import predicate from './Predicate';
+import {
+  preorderSeq
+} from './TreeUtils';
+import {
+  getTree,
+  getTargetType,
+  getRefName,
+  getPropertyValue,
+  getDisplayName
+} from './OntologyUtils';
+import {
+  getAttribute,
+  getTable
+} from './WdkUtils';
 
 export default class WdkService {
 
@@ -182,7 +197,18 @@ export default class WdkService {
 
   getOntology(name) {
     if (!this._ontologies.has(name)) {
-      this._ontologies.set(name, fetchJson('get', this._serviceUrl + '/ontology/Categories'));
+      let ontology$ = fetchJson('get', this._serviceUrl + '/ontology/Categories');
+      let recordClasses$ = this.getRecordClasses().then(r => makeIndex(r, 'name'));
+      let questions$ = this.getQuestions().then(q => makeIndex(q, 'name'));
+      let entities$ = Promise.all([ recordClasses$, questions$ ])
+      .then(([ recordClasses, questions ]) => ({ recordClasses, questions }));
+
+      let finalOntology$ = ontology$
+      .then(resolveWdkReferences(entities$))
+      .then(pruneUnresolvedReferences)
+      .then(sortOntology);
+
+      this._ontologies.set(name, finalOntology$);
     }
     return this._ontologies.get(name);
   }
@@ -194,13 +220,104 @@ function makeRecordKey(recordClassName, primaryKeyValues) {
 }
 
 /**
+ * Adds the related WDK reference to each node. This function mutates the
+ * ontology tree, which is ok since we are doing this before we cache the
+ * result. It might be useful for this to return a new copy of the ontology
+ * in the future, but for now this saves some performance.
+ */
+function resolveWdkReferences(entities$) {
+  return ontology => entities$.then(({ recordClasses, questions }) => {
+    for (let node of preorderSeq(ontology.tree)) {
+      switch (getTargetType(node)) {
+        case 'attribute': {
+          let attributeName = getRefName(node);
+          let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
+          let wdkReference = getAttribute(recordClass, attributeName);
+          Object.assign(node, { wdkReference });
+          break;
+        }
+
+        case 'table': {
+          let tableName = getRefName(node);
+          let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
+          let wdkReference = getTable(recordClass, tableName);
+          Object.assign(node, { wdkReference });
+          break;
+        }
+
+        case 'search': {
+          let questionName = getRefName(node);
+          let wdkReference = questions.get(questionName);
+          Object.assign(node, { wdkReference });
+          break;
+        }
+      }
+    }
+    return ontology;
+  });
+}
+
+function pruneUnresolvedReferences(ontology) {
+  ontology.unprunedTree = ontology.tree;
+  ontology.tree = getTree(ontology, node => node.wdkReference != null);
+  return ontology;
+}
+
+/**
+ * Compare nodes based on the "sort order" property. If it is undefined,
+ * compare based on displayName.
+ */
+let compareOntologyNodes = predicate(compareOnotologyNodesBySortNumber)
+  .or(compareOntologyNodesByDisplayName);
+
+/**
+ * Sort onotlogy node siblings. This function mutates the tree, so should
+ * only be used before caching the ontology.
+ */
+function sortOntology(ontology) {
+  for (let node of preorderSeq(ontology.tree)) {
+    node.children.sort(compareOntologyNodes);
+  }
+  return ontology;
+}
+
+function compareOnotologyNodesBySortNumber(nodeA, nodeB) {
+  let sortOrderA = getPropertyValue('display order', nodeA);
+  let sortOrderB = getPropertyValue('display order', nodeB);
+
+  if (sortOrderA && sortOrderB) {
+    return sortOrderA - sortOrderB;
+  }
+
+  if (sortOrderA) {
+    return -1;
+  }
+
+  if (sortOrderB) {
+    return 1;
+  }
+
+  return 0;
+}
+
+function compareOntologyNodesByDisplayName(nodeA, nodeB) {
+  // attempt to sort by displayName
+  let nameA = getDisplayName(nodeA) || '';
+  let nameB = getDisplayName(nodeB) || '';
+
+  return nameA < nameB ? -1 : 1;
+}
+
+/**
  * Create a Map of `array` keyed by each element's `key` property.
  *
  * @param {Array<T>} array
  * @param {string} key
  * @return {Map<T>}
  */
-let makeIndex = (array, key) => array.reduce((index, item) => index.set(item[key], item), new Map);
+function makeIndex(array, key) {
+  return array.reduce((index, item) => index.set(item[key], item), new Map);
+}
 
 function fetchJson(method, url, body) {
   return new Promise(function(resolve, reject) {
