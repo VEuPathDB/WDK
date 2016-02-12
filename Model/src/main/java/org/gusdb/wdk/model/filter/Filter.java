@@ -4,6 +4,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.json.JSONObject;
+import org.gusdb.wdk.model.user.Step;
 
 /**
  * Filter is an interface for step-based or column-based result filter.
@@ -57,6 +58,10 @@ public interface Filter {
    * @throws WdkModelException
    * @throws WdkUserException
    */
+  void setDefaultValue(JSONObject defaultValue);
+  
+  JSONObject getDefaultValue(Step step);
+  
   String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException;
 
   /**
@@ -66,7 +71,7 @@ public interface Filter {
    * @param answer
    *          the AnswerValue that the filter will be applied on.
    * @param idSql
-   *          the ID SQL from the answerValue, with all the filters, except the current one, applied.
+   *          the ID SQL from the answerValue, with all the not-view-only filters, except the current one, applied.
    * @return
    * @throws WdkModelException
    * @throws WdkUserException
@@ -88,4 +93,11 @@ public interface Filter {
    */
   String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException,
       WdkUserException;
+  
+  /**
+   * return true if supplied value equals default value.  return false if no default value.
+   * @param value
+   * @return
+   */
+  boolean defaultValueEquals(JSONObject value) throws WdkModelException;
 }

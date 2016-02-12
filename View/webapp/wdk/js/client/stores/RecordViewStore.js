@@ -39,7 +39,7 @@ export default class RecordViewStore extends ReduceStore {
         });
 
       case SET_ACTIVE_RECORD: {
-        let { record, recordClass, questions, recordClasses, user, inBasket } = payload;
+        let { record, recordClass, questions, recordClasses, categoryTree } = payload;
 
         let collapsedCategories = state.recordClass === recordClass
           ? state.collapsedCategories : recordClass.collapsedCategories || [];
@@ -55,8 +55,7 @@ export default class RecordViewStore extends ReduceStore {
           collapsedCategories,
           collapsedTables,
           isLoading: false,
-          user,
-          inBasket
+          categoryTree
         });
       }
 
@@ -102,6 +101,5 @@ export default class RecordViewStore extends ReduceStore {
   }
 }
 
-function updateList(item, add, list = []) {
-  return add ? list.concat(item) : list.filter(x => x !== item);
-}
+let updateList = (item, add, list = []) =>
+  add ? list.concat(item) : list.filter(x => x !== item)

@@ -43,6 +43,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
+import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
@@ -236,14 +237,17 @@ public class StepFactory {
   Step createStep(User user, Integer strategyId, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
       int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
+    logger.debug("Creating step!");
 
     // get summary list and sorting list
     String questionName = question.getFullName();
-    Map<String, Boolean> sortingAttributes = user.getSortingAttributes(questionName);
+    Map<String, Boolean> sortingAttributes = user.getSortingAttributes(
+        questionName, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
 
     // create answer
     AnswerValue answerValue = question.makeAnswerValue(user, dependentValues, pageStart, pageEnd,
         sortingAttributes, filter, validate, assignedWeight);
+    answerValue.setFilterOptions(filterOptions);
 
     logger.debug("id query name  :" + answerValue.getIdsQueryInstance().getQuery().getFullName());
     logger.debug("answer checksum:" + answerValue.getChecksum());
@@ -256,12 +260,7 @@ public class StepFactory {
     int estimateSize;
     Exception exception = null;
     try {
-      if (filter != null) {
-        filterName = filter.getName();
-        estimateSize = answerValue.getFilterSize(filterName);
-      }
-      else
-        estimateSize = answerValue.getResultSize();
+        estimateSize = answerValue.getDisplayResultSize();
     }
     catch (Exception ex) {
       estimateSize = 0;
@@ -309,8 +308,9 @@ public class StepFactory {
     step.setLastRunTime(lastRunTime);
     step.setDeleted(deleted);
     step.setParamValues(dependentValues);
+    logger.debug("Creating step: to set Filter Options and to add Default Filters");
     step.setFilterOptions(filterOptions);
-    step.setAnswerValue(answerValue);
+    addDefaultFiltersToStep(step);
     step.setEstimateSize(estimateSize);
     step.setAssignedWeight(assignedWeight);
     step.setException(exception);
@@ -348,6 +348,7 @@ public class StepFactory {
     if (step.isCombined())
       updateStepTree(user, step);
 
+    logger.debug("Step created!!: " + stepId + "\n\n");
     return step;
   }
 
@@ -580,6 +581,11 @@ public class StepFactory {
     return steps;
   }
 
+  /**
+   * @param stepId step ID for which to retrieve step
+   * @return step by step ID
+   * @throws WdkModelException if step not found or problem occurs
+   */
   public Step getStepById(int stepId) throws WdkModelException {
     return loadStep(null, stepId);
   }
@@ -762,7 +768,7 @@ public class StepFactory {
    * @throws NoSuchAlgorithmException
    */
   void updateStep(User user, Step step, boolean updateTime) throws WdkModelException {
-    logger.debug("step #" + step.getStepId() + " new custom name: '" + step.getBaseCustomName() + "'");
+    logger.debug("updateStep(): step #" + step.getStepId() + " new custom name: '" + step.getBaseCustomName() + "'");
     // update custom name
     Date lastRunTime = (updateTime) ? new Date() : step.getLastRunTime();
     int estimateSize = step.getEstimateSize();
@@ -803,6 +809,7 @@ public class StepFactory {
     finally {
       SqlUtils.closeStatement(psStep);
     }
+    logger.debug("updateStep(): DONE");
   }
 
   void saveStepParamFilters(Step step) throws WdkModelException {
@@ -1787,4 +1794,20 @@ public class StepFactory {
     });
     return ids;
   }
+  
+  // we need to add/pass the disabled property
+  private void addDefaultFiltersToStep(Step step) throws WdkModelException {
+    for (Filter filter : step.getQuestion().getFilters().values()) {
+      //logger.debug("adding default filters: found something for filter: " + filter.getKey());
+			//logger.debug("CHECKING IF STEP IS COMBINED: " + step.isCombined());
+			// will read property from filter, affecting is_disabled
+			//	if(step.isCombined() && filter.getKey().contains("matched")) is_disabled = true;
+			boolean is_disabled = false;
+      if (filter.getDefaultValue(step) != null) {
+        logger.debug("adding filter default value (from Filter java IMPL): not null");
+        step.addFilterOption(filter.getKey(), filter.getDefaultValue(step), is_disabled);
+      } 
+    }
+  }
+
 }

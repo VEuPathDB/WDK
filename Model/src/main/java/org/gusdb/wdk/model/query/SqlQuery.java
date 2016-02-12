@@ -67,7 +67,7 @@ public class SqlQuery extends Query {
     super(query);
     this.clobRow = query.clobRow;
     this.sql = query.sql;
-    this.cached = query.cached;
+    this.isCacheable = query.isCacheable;
     this._useDBLink = query._useDBLink;
 
     if (query.sqlList != null) this.sqlList = new ArrayList<>(query.sqlList);

@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -36,6 +37,10 @@ import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.filter.FilterSet;
+import org.gusdb.wdk.model.ontology.EuPathCategoriesFactory;
+import org.gusdb.wdk.model.ontology.Ontology;
+import org.gusdb.wdk.model.ontology.OntologyFactory;
+import org.gusdb.wdk.model.ontology.OntologyFactoryImpl;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.Param;
@@ -169,6 +174,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   private List<SearchCategory> categoryList = new ArrayList<SearchCategory>();
   private Map<String, SearchCategory> categoryMap = new LinkedHashMap<String, SearchCategory>();
   private Map<String, SearchCategory> rootCategoryMap = new LinkedHashMap<String, SearchCategory>();
+
+  private List<OntologyFactoryImpl> ontologyFactoryList = new ArrayList<>();
+  private Map<String, OntologyFactory> ontologyFactoryMap = new LinkedHashMap<>();
+  private EuPathCategoriesFactory eupathCategoriesFactory = null;
 
   private String secretKey;
 
@@ -469,7 +478,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       booleanQuery = (BooleanQuery) internalQuerySet.getQuery(queryName);
     }
     else {
-      booleanQuery = new BooleanQuery(recordClass);
+      booleanQuery = recordClass.getBooleanQuery();
 
       // make sure we create index on primary keys
       booleanQuery.setIndexColumns(recordClass.getIndexColumns());
@@ -683,6 +692,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       if (category.getParent() == null)
         rootCategoryMap.put(category.getName(), category);
     }
+    for (OntologyFactory ontology: this.ontologyFactoryMap.values()) {
+      ((OntologyFactoryImpl)ontology).resolveReferences(this);
+    }
+    
+    // comment out to use old categories
+    if (ontologyFactoryMap.size() != 0) eupathCategoriesFactory = new EuPathCategoriesFactory(this);
   }
 
   private void excludeResources() throws WdkModelException {
@@ -820,6 +835,18 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     }
     categoryList = null;
 
+    // exclude ontologies
+    for (OntologyFactoryImpl ontology : this.ontologyFactoryList) {
+      if (ontology.include(projectId)) {
+        String name = ontology.getName();
+        if (ontologyFactoryMap.containsKey(name))
+          throw new WdkModelException("The ontology name '" + name + "' is duplicated");
+        ontology.excludeResources(projectId);
+        ontologyFactoryMap.put(name, ontology);
+      }
+    }
+    ontologyFactoryList = null;
+    
     // exclude categories
     for (MacroDeclaration macro : macroList) {
       if (macro.include(projectId)) {
@@ -1102,6 +1129,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   }
 
   public Map<String, SearchCategory> getCategories(String usedBy, boolean strict) {
+    if (eupathCategoriesFactory != null) {
+      return eupathCategoriesFactory.getCategories(usedBy);
+    }
     Map<String, SearchCategory> categories = new LinkedHashMap<>();
     for (String name : categoryMap.keySet()) {
       SearchCategory category = categoryMap.get(name);
@@ -1112,6 +1142,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   }
 
   public Map<String, SearchCategory> getRootCategories(String usedBy) {
+    if (eupathCategoriesFactory != null) {
+      return eupathCategoriesFactory.getRootCategories(usedBy);
+    }
+    
     Map<String, SearchCategory> roots = new LinkedHashMap<String, SearchCategory>();
     for (SearchCategory root : rootCategoryMap.values()) {
       String cusedBy = root.getUsedBy();
@@ -1119,6 +1153,24 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
         roots.put(root.getName(), root);
     }
     return roots;
+  }
+
+  public void addOntology(OntologyFactoryImpl ontologyFactory) {
+    this.ontologyFactoryList.add(ontologyFactory);
+  }
+
+  public Set<String> getOntologyNames() {
+    return Collections.unmodifiableSet(ontologyFactoryMap.keySet());
+  }
+
+  private OntologyFactory getOntologyFactory(String name) {
+    return ontologyFactoryMap.get(name);
+  }
+
+  public Ontology getOntology(String name) throws WdkModelException {
+    OntologyFactory factory = getOntologyFactory(name);
+    if (factory == null) return null;
+    return factory.getOntology();
   }
 
   public void addMacroDeclaration(MacroDeclaration macro) {

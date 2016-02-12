@@ -16,14 +16,15 @@
 
 <%@ attribute name="recordClass"
               type="org.gusdb.wdk.model.jspwrap.RecordClassBean"
-              required="false"
+              required="true"
               description="The full name of the record class, to be used to render primary key attribute"
 %> 
-<!-- these have the same content, both in a PK or a textAttribute they have
-     "text" in the model (no "display")
-<br> 
-*************==${attributeValue}==${attributeValue.value}==
--->
+
+<%@ attribute name="record"
+              type="org.gusdb.wdk.model.jspwrap.RecordBean"
+              required="true"
+              description="this record which contains the ID and all the attributes"
+%> 
 
 <c:set var="toTruncate" value="${truncate != null && truncate == 'true'}" />
 <c:set var="attributeField" value="${attributeValue.attributeField}" />
@@ -35,22 +36,22 @@
 <!-- we are setting truncate true in all columns (default is 100)
      we use briefDisplay to access display value when available 
 -->
-<c:set var="displayValue">
+<!-- attributeValue.value is "text" in the model (no "display")
+-->
+<c:set var="displayValue1">
   <c:choose>
     <c:when test="${toTruncate}">${attributeValue.briefDisplay}</c:when>
     <c:otherwise>${attributeValue.value}</c:otherwise>
   </c:choose>
 </c:set>
+<!-- modifying the displayValue for a nicer UX -->
+<c:set var="displayValue">
+  <imp:updateDisplayValue displayValue = "${displayValue1}" /> 
+</c:set>
 
-
-<td style="padding:2px">
+<td style="padding:2px;vertical-align:middle">
   <div class="attribute-summary" ${align} style="${nowrap}padding:3px 2px">   
-  <!-- need to know if fieldVal should be hot linked -->
   <c:choose>
-
-    <c:when test="${displayValue == null || fn:length(displayValue) == 0}">
-      <span style="color:gray;">N/A</span>
-    </c:when>
 
 <%-- PRIMARY KEY --%>
     <c:when test="${attributeValue.class.name eq 'org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue'}">
@@ -61,11 +62,12 @@
         </c:forEach>
       </div>
 
-      <!-- display a link to record page -->
+      <!-- display a link to record page, will include the line:  <a href="${recordLink}">${displayValue}</a> -->
       <imp:recordLink
         primaryKeyAttributeValue="${attributeValue}"
         recordClass="${recordClass}"
         displayValue = "${displayValue}"
+        record="${record}"
       />
     </c:when>
 

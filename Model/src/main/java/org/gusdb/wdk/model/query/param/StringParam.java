@@ -43,6 +43,7 @@ public class StringParam extends Param {
      * 
      */
   private boolean number = false;
+  private boolean isSql = false;
   private boolean multiLine = false;
 
   public StringParam() {
@@ -59,6 +60,7 @@ public class StringParam extends Param {
     this.regex = param.regex;
     this.length = param.length;
     this.number = param.number;
+    this.isSql = param.isSql;
     this.multiLine = param.multiLine;
   }
 
@@ -106,6 +108,21 @@ public class StringParam extends Param {
    */
   public void setNumber(boolean isNumber) {
     this.number = isNumber;
+  }
+
+  /**
+   * @return the isSql
+   */
+  public boolean getIsSql() {
+    return isSql;
+  }
+
+  /**
+   * @param isNumber
+   *          the isNumber to set
+   */
+  public void setIsSql(boolean isSql) {
+    this.isSql = isSql;
   }
 
   /**

@@ -28,14 +28,16 @@ public abstract class Field extends WdkModelBase implements ScopedField {
 
   protected RecordClass recordClass;
 
-  /**
-     * 
-     */
   public Field() {
     // initialize the optional properties
     internal = false;
     inReportMaker = true;
     truncateTo = Utilities.TRUNCATE_DEFAULT;
+  }
+
+  @Override
+  public Field clone() {
+    return (Field) super.clone();
   }
 
   /**

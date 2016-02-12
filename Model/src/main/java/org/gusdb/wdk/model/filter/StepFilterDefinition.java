@@ -13,11 +13,11 @@ public class StepFilterDefinition extends FilterDefinition {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
-
     try {
-      String impl = getImplementation();
-      LOG.debug("Checking filter '" + getName() + "' implementation class: " + impl);
-      _class = Class.forName(impl).asSubclass(StepFilter.class);
+      String className = getImplementation();
+      if (className == null) throw new WdkModelException("null implementation for StepFilter '" + getName() + "'");
+      LOG.debug("Checking filter '" + getName() + "' implementation class: " + className);
+      _class = Class.forName(className).asSubclass(StepFilter.class);
     }
     catch (ClassNotFoundException | ClassCastException ex) {
       throw new WdkModelException(ex);

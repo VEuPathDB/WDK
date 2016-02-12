@@ -1,15 +1,8 @@
 package org.gusdb.wdk.model.filter;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.sql.DataSource;
-
-import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -17,13 +10,12 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class ListColumnFilter extends ColumnFilter {
+public class ListColumnFilter extends SqlColumnFilter {
 
   public static final String FILTER_NAME = "WdkListColumnFilter";
 
   public static final int MAX_DISPLAY_LENGTH = 30;
 
-  private static final String COLUMN_COUNT = "counts";
   private static final String KEY_VALUES = "values";
 
   public static ColumnFilterDefinition getDefinition() {
@@ -41,50 +33,23 @@ public class ListColumnFilter extends ColumnFilter {
   }
 
   @Override
-  public FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException,
+  public String getSummarySql(String inputSql) throws WdkModelException,
       WdkUserException {
-    String attributeSql = getAttributeSql(answer, idSql);
     String columnName = attribute.getName();
 
-    Map<String, Integer> counts = new LinkedHashMap<>();
     // group by the query and get a count
-    String sql = "SELECT " + columnName + ", count(*) AS " + COLUMN_COUNT + " FROM (" + attributeSql +
+    String sql = "SELECT " + columnName + " as " + COLUMN_PROPERTY + ", count(*) AS " + COLUMN_COUNT + " FROM (" + inputSql +
         ") GROUP BY " + columnName;
-    ResultSet resultSet = null;
-    DataSource dataSource = answer.getQuestion().getWdkModel().getAppDb().getDataSource();
-    try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql, getKey() + "-summary");
-      while (resultSet.next()) {
-        String value = resultSet.getString(columnName);
-        int count = resultSet.getInt(COLUMN_COUNT);
-        counts.put(value, count);
-      }
-    }
-    catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
-    }
-
-    return new ListColumnFilterSummary(counts);
+ 
+    return sql;
   }
 
   @Override
-  public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException,
+  public String getFilterSql(String inputSql, JSONObject jsValue) throws WdkModelException,
       WdkUserException {
-    String attributeSql = getAttributeSql(answer, idSql);
     String columnName = attribute.getName();
-    StringBuilder sql = new StringBuilder("SELECT idq.* ");
 
-    // need to join with idsql here to get extra (dynamic) columns from idq
-    String[] pkColumns = answer.getQuestion().getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
-    sql.append(" FROM (" + idSql + ") idq, (" + attributeSql + ") aq ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      sql.append((i == 0) ? " WHERE " : " AND ");
-      sql.append(" idq." + pkColumns[i] + " = aq." + pkColumns[i]);
-    }
-    sql.append(" AND " + columnName + " IN (");
+    StringBuilder sql = new StringBuilder("select * from (" + inputSql + ") where " + columnName + " in (");
 
     // put the filter values as join conditions
     List<String> values = getValues(jsValue);
@@ -136,5 +101,18 @@ public class ListColumnFilter extends ColumnFilter {
       }
     }
     return values;
+  }
+  
+  @Override
+  public void setDefaultValue(JSONObject defaultValue) {
+	  throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
+  }
+  
+  @Override
+  /**
+   * Not fully implemented yet.
+   */
+  public boolean defaultValueEquals(JSONObject value)  throws WdkModelException {
+	  return false;
   }
 }

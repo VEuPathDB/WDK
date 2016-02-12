@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.query;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -98,7 +99,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   protected static final Logger logger = Logger.getLogger(Query.class);
 
   private String name;
-  protected boolean cached = false;
+  protected boolean isCacheable = false;
   /**
    * A flag to check if the cached has been set. if not set, the value from parent querySet will be used.
    */
@@ -125,6 +126,10 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   private Question contextQuestion;
 
   private Map<String, Boolean> sortingMap;
+  
+  // optionally override what is in the query set.  null means don't override
+  private List<PostCacheUpdateSql> postCacheUpdateSqls = null;
+
   
   // =========================================================================
   // Abstract methods
@@ -163,7 +168,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
     // logger.debug("clone query: " + query.getFullName());
     this.name = query.name;
-    this.cached = query.cached;
+    this.isCacheable = query.isCacheable;
     this.setCache = query.setCache;
     if (query.paramRefList != null)
       this.paramRefList = new ArrayList<>(query.paramRefList);
@@ -177,6 +182,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     this.hasWeight = query.hasWeight;
     this.contextQuestion = query.getContextQuestion();
     this.sortingMap = new LinkedHashMap<>(query.sortingMap);
+    this.postCacheUpdateSqls = query.postCacheUpdateSqls == null ? null : new ArrayList <PostCacheUpdateSql> (query.postCacheUpdateSqls);
 
     // clone columns
     for (String columnName : query.columnMap.keySet()) {
@@ -196,19 +202,19 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   /**
    * @return the cached
    */
-  public boolean isCached() {
+  public boolean getIsCacheable() {
     // first check if global caching is turned off, if off, then return false; otherwise, use query's own 
     // settings.
     if (!wdkModel.getModelConfig().isCaching()) return false;
-    return this.cached;
+    return this.isCacheable;
   }
 
   /**
-   * @param cached
+   * @param isCacheable
    *          the cached to set
    */
-  public void setIsCacheable(boolean cached) {
-    this.cached = cached;
+  public void setIsCacheable(boolean isCacheable) {
+    this.isCacheable = isCacheable;
     setCache = true;
   }
 
@@ -216,7 +222,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return contextQuestion;
   }
 
-  public void setContextQuestion(Question contextQuestion) {
+  public void setContextQuestion(Question contextQuestion) throws WdkModelException {
     this.contextQuestion = contextQuestion;
     for (Param param : paramMap.values()) {
       param.setContextQuestion(contextQuestion);
@@ -333,6 +339,17 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
       throw new WdkModelException("Unable to get JSON content for checksum.", e);
     }
   }
+  
+  public List<PostCacheUpdateSql> getPostCacheUpdateSqls() {
+    return postCacheUpdateSqls == null? null : Collections.unmodifiableList(postCacheUpdateSqls);
+  }
+
+  public void addPostCacheUpdateSql(PostCacheUpdateSql postCacheUpdateSql) {
+    if (postCacheUpdateSqls == null) postCacheUpdateSqls = new ArrayList<PostCacheUpdateSql>();
+    postCacheUpdateSqls.add(postCacheUpdateSql);
+  }
+
+
 
   /**
    * @param extra
@@ -435,7 +452,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
     // check if we need to use querySet's cache flag
     if (!setCache)
-      cached = getQuerySet().isCacheable();
+      isCacheable = getQuerySet().isCacheable();
 
     // resolve the params
     for (ParamReference paramRef : paramRefList) {
@@ -487,7 +504,16 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
       if (!columnMap.containsKey(column))
         throw new WdkModelException("Invalid sorting column '" + column + "' in query " + getFullName());
     }
-
+    
+    if (postCacheUpdateSqls != null) {
+    for (PostCacheUpdateSql postCacheUpdateSql : postCacheUpdateSqls)
+      if (postCacheUpdateSql != null && (postCacheUpdateSql.getSql() == null ||
+          !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_TABLE) ||
+          !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_INSTANCE_ID)))
+        throw new WdkModelException(
+            "Invalid PostCacheInsertSql. <sql> must be provided, and include the macros: " +
+                Utilities.MACRO_CACHE_TABLE + " and " + Utilities.MACRO_CACHE_INSTANCE_ID);
+    }
     resolved = true;
   }
 

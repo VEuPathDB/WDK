@@ -108,7 +108,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   private Map<String, Boolean> defaultSortingMap = new LinkedHashMap<String, Boolean>();
 
   private List<DynamicAttributeSet> dynamicAttributeSets = new ArrayList<DynamicAttributeSet>();
-  private DynamicAttributeSet dynamicAttributeSet;
+  protected DynamicAttributeSet dynamicAttributeSet;
   private Query dynamicAttributeQuery;
 
   /**
@@ -340,6 +340,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   public AnswerValue makeAnswerValue(User user,
       Map<String, String> dependentValues, boolean validate, int assignedWeight)
       throws WdkModelException, WdkUserException {
+    logger.debug("makeAnswerValue() with NO FILTERS applied:  FIRST page, (will also query.makeInstance() first)");
     int pageStart = 1;
     int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
     Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(
@@ -369,6 +370,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       Map<String, String> dependentValues, int pageStart, int pageEnd,
       Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter,
       boolean validate, int assignedWeight) throws WdkModelException, WdkUserException {
+    logger.debug("makeAnswerValue() any page, (will also query.makeInstance() first)");
     Map<String, String> context = new LinkedHashMap<String, String>();
     context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
 
@@ -454,7 +456,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return this.query;
   }
 
-  public void setQuery(Query q) {
+    /**
+     * Instead of calling this, call setQueryRef() and resolveReferences()
+     */
+    @Deprecated
+    public void setQuery(Query q) throws WdkModelException {
     this.query = q;
     this.idQueryRef = q.getFullName();
     query.setContextQuestion(this);
@@ -510,6 +516,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   public boolean isDynamic() {
     return dynamicAttributeSet != null;
   }
+
+    public DynamicAttributeSet getDynamicAttributeSet() {
+  return dynamicAttributeSet;
+    }
 
   /**
    * A indicator to the controller whether this question should make answers
@@ -1153,7 +1163,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     writer.print(indent + "</question>");
   }
   
+	// used to set question specific filters
   public void addFilter(Filter filter) {
+    logger.debug("QUESTION: ADDING FILTER: " + filter.getKey() + " for question: " + getFullName() + "\n");
     filters.put(filter.getKey(), filter);
   }
 
@@ -1165,9 +1177,15 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * @return map of all non-view-only filters, from filter name to filter
    */
   public Map<String, Filter> getFilters() {
+    logger.debug("QUESTION: GETTING ALL FILTERs");
     Map<String, Filter> map = new LinkedHashMap<>(recordClass.getFilters());
+		for (Entry<String, Filter> map2 : map.entrySet()) {
+			logger.debug("Filters from recordclass: name: " + map2.getKey());
+			logger.debug("Filters from recordclass: default values (from IMPL): " + map2.getValue().getDefaultValue(null).toString(2));
+    }
     for (Entry<String, Filter> filter : this.filters.entrySet()) {
       if (!filter.getValue().getIsViewOnly()) {
+        logger.debug("question: adding one more filter:  name: " + filter.getKey());
         map.put(filter.getKey(), filter.getValue());
       }
     }
@@ -1178,4 +1196,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     Filter filter = filters.get(filterName);
     return (filter != null) ? filter : recordClass.getFilter(filterName); 
   }
+
+    /**
+     * Used when these values are patched in to this Question after the XML parsing and resolution phase is over.
+     */
+    public void setDefaultSummaryAttributeNames(String[] names) {
+  defaultSummaryAttributeNames = names;
+    }
 }

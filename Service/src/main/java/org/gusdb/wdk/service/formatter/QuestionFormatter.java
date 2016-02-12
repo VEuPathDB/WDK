@@ -32,7 +32,7 @@ import org.json.JSONObject;
  *   urlSegment: String,
  *   class: String,
  *   parameters: [ see ParamFormatters ],
- *   defaultAttributes, [ String ],
+ *   defaultAttributes: [ String ],
  *   dynamicAttributes: [ see AttributeFieldFormatter ],
  *   defaultSummaryView: String,
  *   summaryViewPlugins: [ String ],
@@ -79,7 +79,8 @@ public class QuestionFormatter {
           q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
       .put(Keys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
       .put(Keys.SUMMARY_VIEW_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getSummaryViews().keySet()))
-      .put(Keys.STEP_ANALYSIS_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getStepAnalyses().keySet()));
+      .put(Keys.STEP_ANALYSIS_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getStepAnalyses().keySet()))
+      .put(Keys.PROPERTIES, q.getPropertyLists());
   }
 
   public static JSONArray getParamsJson(Collection<Param> params, boolean expandParams, User user, Map<String, String> dependedParamValues)

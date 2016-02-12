@@ -29,6 +29,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
 /**
@@ -39,9 +40,6 @@ import org.json.JSONObject;
  */
 
 public class ShowSummaryAction extends ShowQuestionAction {
-
-    private static final String KEY_SIZE_CACHE_MAP = "size_cache";
-    private static final int MAX_SIZE_CACHE_MAP = 100;
 
     private static final String PARAM_HIDDEN_STEP = "hidden";
     private static final String PARAM_CUSTOM_NAME = "customName";
@@ -99,6 +97,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             AnswerValueBean answerValue = step.getAnswerValue();
 
             // return only the result size, if requested
+            /* deprecated; does not appear to be used anywhere */
             if (request.getParameterMap().containsKey(
                     CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
                 String filterName = request.getParameter("filter");
@@ -377,8 +376,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         if (start != answerValue.getStartIndex()
                 || end != answerValue.getEndIndex()) {
-            answerValue = answerValue.makeAnswerValue(start, end);
-            step.setAnswerValue(answerValue);
+            step.setAnswerValuePaging(start, end);
         }
 
         prepareAttributes(request, wdkUser, step);
@@ -484,7 +482,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
     String sortingAttributes = request.getParameter(CConstants.WDK_SORTING_KEY);
     boolean updated = false;
     if (sortingAttributes != null) {
-      wdkUser.setSortingAttributes(questionName, sortingAttributes);
+      wdkUser.getUser().setSortingAttributes(questionName,
+          sortingAttributes, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
       updated = true;
     }
     logger.debug("sorting columns for question " + questionName + ": " + sortingAttributes);
@@ -492,7 +491,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
     // get summary key, if have
     String summaryAttributes = request.getParameter(CConstants.WDK_SUMMARY_KEY);
     if (summaryAttributes != null) {
-      wdkUser.setSummaryAttributes(questionName, summaryAttributes.split(","));
+      wdkUser.getUser().setSummaryAttributes(questionName,
+          summaryAttributes.split(","), User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
       updated = true;
     }
     logger.debug("summary columns for question " + questionName + ": " + summaryAttributes);
@@ -508,6 +508,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
      * @return
      * @throws WdkUserException 
      */
+    @Deprecated
     private int getSize(AnswerValueBean answerValue, String filterName)
             throws WdkModelException, WdkUserException {
 
@@ -517,10 +518,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
         ServletContext application = servlet.getServletContext();
 
         @SuppressWarnings("unchecked")
-        Map<String, Integer> sizeCache = (Map<String, Integer>)application.getAttribute(KEY_SIZE_CACHE_MAP);
+        Map<String, Integer> sizeCache = (Map<String, Integer>)application
+            .getAttribute("size_cache");
         if (sizeCache == null) {
             sizeCache = new LinkedHashMap<String, Integer>();
-            application.setAttribute(KEY_SIZE_CACHE_MAP, sizeCache);
+            application.setAttribute("size_cache", sizeCache);
         }
 
         // check if the size value has been cached
@@ -530,7 +532,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         int size = (filterName == null) ? answerValue.getResultSize()
                 : answerValue.getFilterSize(filterName);
 
-        if (sizeCache.size() >= MAX_SIZE_CACHE_MAP) {
+        if (sizeCache.size() >= 100) {
             String oldKey = sizeCache.keySet().iterator().next();
             sizeCache.remove(oldKey);
         }

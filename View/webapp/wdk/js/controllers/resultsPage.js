@@ -13,17 +13,27 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   // Called when a step is selected and the tabs container is inserted in DOM
   function configureSummaryViews($element) {
     var addFeatureTooltipOnce = _.once(addFeatureTooltip); // only call once per step selection
-    // var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);
-    var currentTab = 0;
+    var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);
+    // var currentTab = 0;
     setupAddAttributes($element);
 
     $element.tabs({
       active : currentTab,
+      activate: function(event, ui) {
+        // save summary view preference
+        var summaryViewName = ui.newTab.attr('id');
+        var questionName = $element.attr('question');
+        $.get('savePreference.do', {
+          ['summary_view_' + questionName]: summaryViewName
+        })
+        .error(console.error.bind(console));
+      },
       load: function(event, ui) {
         addFeatureTooltipOnce($element);
         createFlexigridFromTable(ui.panel.find(".Results_Table"));
         wdk.basket.checkPageBasket();
         wdk.util.setDraggable(ui.panel.find("div.attributesList"), ".dragHandle");
+        ui.panel.trigger('wdk-results-loaded');
       }
     });
 
@@ -180,6 +190,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
           }
           resultsToGrid(data, ignoreFilters, currentDiv, resultOnly);
           updateResultLabels(currentDiv, strat, step);
+          currentDiv.trigger('wdk-results-loaded');
         }
         if(strat) wdk.util.removeLoading(strat.frontId);
       },
@@ -319,10 +330,11 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     // Very ugly kludge to reset checkbox tree to default
     // values when dialog is closed.
     $('#' + dialogId).on('dialogclose', function(e) {
-      var cbtId = $(e.target)
-        .find('[data-controller="wdk.checkboxTree.setUpCheckboxTree"]')
-        .data('id');
-      wdk.checkboxTree.selectCurrentNodes(cbtId);
+      var cbt = $(e.target).find('[data-controller="wdk.checkboxTree.setUpCheckboxTree"]');
+      if(cbt.length > 0) {
+        var cbtId = cbt.data('id');
+        wdk.checkboxTree.selectCurrentNodes(cbtId);
+      }
     });
   }
 

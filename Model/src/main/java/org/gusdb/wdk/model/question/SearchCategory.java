@@ -98,25 +98,35 @@ public class SearchCategory extends WdkModelBase {
     this.questionRefList.add(questionRef);
   }
 
-  public Question[] getWebsiteQuestions() throws WdkModelException {
+  // temporary method
+  public void addResolvedQuestionRef(CategoryQuestionRef questionRef) {
+    this.questionRefMap.put(questionRef.getQuestionFullName(), questionRef);
+  }
+
+  public Question[] getWebsiteQuestions() {
     return getQuestions(USED_BY_WEBSITE, false);
   }
 
-  public Question[] getWebserviceQuestions() throws WdkModelException {
+  public Question[] getWebserviceQuestions() {
     return getQuestions(USED_BY_WEBSERVICE, false);
   }
 
-  public Question[] getDatasetQuestions() throws WdkModelException {
+  public Question[] getDatasetQuestions() {
     return getQuestions(USED_BY_DATASET, true);
   }
 
-  private Question[] getQuestions(String usedBy, boolean strict) throws WdkModelException {
+  private Question[] getQuestions(String usedBy, boolean strict) {
     List<Question> questions = new ArrayList<Question>();
     for (CategoryQuestionRef questionRef : questionRefMap.values()) {
       if (questionRef.isUsedBy(usedBy, strict)) {
         String questionName = questionRef.getQuestionFullName();
-        Question question = (Question) wdkModel.resolveReference(questionName);
-        questions.add(question);
+        try {
+          Question question = (Question) wdkModel.resolveReference(questionName);
+          questions.add(question);
+        } 
+        catch (WdkModelException e ){
+          logger.debug("************* question not resolved: " + questionName);
+        }
       }
     }
     Question[] array = new Question[questions.size()];
@@ -229,6 +239,14 @@ public class SearchCategory extends WdkModelBase {
       this.parent.children.put(name, this);
     }
   }
+  
+  /**
+   * an alternate means to build the tree
+   * @param kids
+   */
+  public void addChild(SearchCategory kid) {
+      children.put(kid.getName(), kid);
+  }
 
   /*
    * (non-Javadoc)
@@ -280,5 +298,16 @@ public class SearchCategory extends WdkModelBase {
     if (ref == null)
       return false;
     return ref.isUsedBy(usedBy);
+  }
+
+  public void prettyPrint(StringBuilder builder, String indent) {
+    builder.append(indent + getName() + " : " + getDisplayName() + System.lineSeparator());
+    for (String name : questionRefMap.keySet()) builder.append(indent + "  --" + name + System.lineSeparator());
+    for (SearchCategory kid : children.values()) kid.prettyPrint(builder, indent + "|");
+  }
+
+  // temporary method for EuPathCategoriesFactory
+  public void setWdkModel(WdkModel model) {
+    this.wdkModel = model;
   }
 }

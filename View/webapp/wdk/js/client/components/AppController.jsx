@@ -18,6 +18,20 @@ let AppController = React.createClass({
 
   mixins: [ PureRenderMixin ],
 
+  childContextTypes: {
+    stores: React.PropTypes.object,
+    actionCreators: React.PropTypes.object,
+    router: React.PropTypes.func
+  },
+
+  getChildContext() {
+    return {
+      stores: this.props.stores,
+      actionCreators: this.props.actionCreators,
+      router: this.props.router
+    };
+  },
+
   render() {
     return (
       <RouteHandler {...this.props}/>

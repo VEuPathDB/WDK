@@ -5,6 +5,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.record.RecordClass;
 
+// a SummaryView is generated from the information on the WDK Model (xml)
 public class SummaryView extends WdkView {
 
     public static SummaryView[] createSupportedSummaryViews(RecordClass recordClass)

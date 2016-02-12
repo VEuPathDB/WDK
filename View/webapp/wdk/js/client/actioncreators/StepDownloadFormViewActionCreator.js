@@ -1,6 +1,6 @@
 import ActionCreator from '../utils/ActionCreator';
 import { submitAsForm } from '../utils/FormSubmitter';
-import { getStepBundle } from '../utils/actionCreatorUtils';
+import { getStepBundle, getSingleRecordStepBundle } from '../utils/actionCreatorUtils';
 
 // Action types
 let actionTypes = {
@@ -42,6 +42,16 @@ export default class StepDownloadFormViewActionCreator extends ActionCreator {
       this._dispatch({
         type: actionTypes.STEP_DOWNLOAD_INITIALIZE_STORE,
         payload: stepBundle
+      });
+    }, this._errorHandler(actionTypes.APP_ERROR));
+  }
+
+  loadPageDataFromRecord(recordClassUrlSegment, primaryKeyString) {
+    this._dispatch({ type: actionTypes.STEP_DOWNLOAD_LOADING });
+    this._service.findRecordClass(r => r.urlSegment === recordClassUrlSegment).then( recordClass => {
+      this._dispatch({
+        type: actionTypes.STEP_DOWNLOAD_INITIALIZE_STORE,
+        payload: getSingleRecordStepBundle(recordClass, primaryKeyString)
       });
     }, this._errorHandler(actionTypes.APP_ERROR));
   }

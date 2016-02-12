@@ -4,9 +4,9 @@ import classnames from 'classnames';
 import includes from 'lodash/collection/includes';
 import memoize from 'lodash/function/memoize';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
-import * as i from '../utils/IterableUtils';
-import { postorder as postorderCategories } from '../utils/CategoryTreeIterators';
+import { postorderSeq } from '../utils/TreeUtils';
 import { wrappable } from '../utils/componentUtils';
+import { getPropertyValue, getPropertyValues, nodeHasProperty } from '../utils/OntologyUtils';
 
 let RecordNavigationSection = React.createClass({
 
@@ -28,7 +28,7 @@ let RecordNavigationSection = React.createClass({
   getDefaultProps() {
     return {
       onCategoryToggle: function noop() {},
-      heading: 'Categories'
+      heading: 'Contents'
     };
   },
 
@@ -36,7 +36,7 @@ let RecordNavigationSection = React.createClass({
     let { navigationExpanded, navigationQuery } = this.state;
     let { collapsedCategories, heading } = this.props;
     let navigationQueryLower = navigationQuery.toLowerCase();
-    let categoryWordsMap = makeCategoryWordsMap(this.props.recordClass);
+    let categoryWordsMap = makeCategoryWordsMap(this.props.recordClass, this.props.categoryTree);
     let expandClassName = classnames({
       'wdk-RecordNavigationExpand fa': true,
       'fa-plus-square': !navigationExpanded,
@@ -45,6 +45,11 @@ let RecordNavigationSection = React.createClass({
 
     return (
       <div className="wdk-RecordNavigationSection">
+        <h2 className="wdk-RecordNavigationSectionHeader">
+          <button className={expandClassName}
+            onClick={() => void this.setState({ navigationExpanded: !navigationExpanded })}
+          /> {heading}
+        </h2>
         <div className="wdk-RecordNavigationSearch">
           <input
             className="wdk-RecordNavigationSearchInput"
@@ -59,20 +64,15 @@ let RecordNavigationSection = React.createClass({
             }}
           />
         </div>
-        <h2 className="wdk-RecordNavigationSectionHeader">
-          <button className={expandClassName}
-            onClick={() => void this.setState({ navigationExpanded: !navigationExpanded })}
-          /> {heading}
-        </h2>
         <div className="wdk-RecordNavigationCategories">
           <RecordNavigationSectionCategories
             record={this.props.record}
             recordClass={this.props.recordClass}
-            categories={this.props.recordClass.categories}
+            categories={this.props.categoryTree.children}
             onCategoryToggle={this.props.onCategoryToggle}
             showChildren={navigationExpanded}
-            isCollapsed={category => includes(collapsedCategories, category.name)}
-            isVisible={category => includes(categoryWordsMap.get(category), navigationQueryLower)}
+            isCollapsed={category => includes(collapsedCategories, getPropertyValue('label', category))}
+            isVisible={category => includes(categoryWordsMap.get(category.properties), navigationQueryLower)}
           />
         </div>
       </div>
@@ -82,32 +82,33 @@ let RecordNavigationSection = React.createClass({
 
 export default wrappable(RecordNavigationSection);
 
-let makeCategoryWordsMap = memoize((recordClass) => {
-  return i.reduce((map, category) => {
+let makeCategoryWordsMap = memoize((recordClass, root) =>
+  postorderSeq(root).reduce((map, node) => {
     let words = [];
 
-    for (let attribute of recordClass.attributes) {
-      if (attribute.category == category.name) {
-        words.push(attribute.displayName, attribute.description);
-      }
+    // add current node's displayName and description
+    words.push(
+      ...getPropertyValues('hasDefinition', node),
+      ...getPropertyValues('hasExactSynonym', node),
+      ...getPropertyValues('hasNarrowSynonym', node)
+    );
+
+    // add displayName and desription of attribute
+    if (nodeHasProperty('targetType', 'attribute', node)) {
+      let attribute = recordClass.attributes.find(a => a.name === getPropertyValues('name', node)[0]);
+      words.push(attribute.displayName, attribute.description);
     }
 
-    for (let table of recordClass.tables) {
-      if (table.category == category.name) {
-        words.push(table.displayName, table.description);
-      }
+    // add displayName and desription of table
+    if (nodeHasProperty('targetType', 'table', node)) {
+      let table = recordClass.tables.find(a => a.name === getPropertyValues('name', node)[0]);
+      words.push(table.displayName, table.description);
     }
 
-    if (category.categories != null) {
-      for (let cat of map.keys()) {
-        if (category.categories.indexOf(cat) > -1) {
-          words.push(map.get(cat));
-        }
-      }
+    // add words from any children
+    for (let child of node.children) {
+      words.push(map.get(child.properties));
     }
 
-    words.push(category.displayName, category.description);
-
-    return map.set(category, words.join('\0').toLowerCase());
-  }, new Map(), postorderCategories(recordClass.categories));
-});
+    return map.set(node.properties, words.join('\0').toLowerCase());
+  }, new Map))

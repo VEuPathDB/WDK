@@ -179,8 +179,11 @@ public class ProcessBasketAction extends Action {
         return user.getStep(stepId);
     }
 
-    private List<String[]> getRecords(HttpServletRequest request,
-            RecordClassBean recordClass) throws JSONException, WdkUserException {
+    /**
+     * @throws WdkModelException  
+     */
+    protected List<String[]> getRecords(HttpServletRequest request,
+            RecordClassBean recordClass) throws JSONException, WdkUserException, WdkModelException {
         String data = request.getParameter(PARAM_DATA);
         if (data == null)
             throw new WdkUserException("the record ids list is missing.");

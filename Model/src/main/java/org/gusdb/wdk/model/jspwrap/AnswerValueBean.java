@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -12,6 +13,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValueAttributes;
 import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -20,6 +22,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.ResultPropertyQueryReference;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.Reporter;
@@ -77,6 +80,7 @@ public class AnswerValueBean {
     private static Logger logger = Logger.getLogger(AnswerValueBean.class);
 
     private AnswerValue answerValue;
+    private HashMap<String, Integer> resultProperties;
     Map<?, ?> downloadConfigMap = null;
 
     String customName = null;
@@ -182,7 +186,11 @@ public class AnswerValueBean {
         return answerValue.getResultSize();
     }
 
-    public Map<String, Integer> getResultSizesByProject()
+    public int getDisplayResultSize() throws WdkModelException, WdkUserException {
+        return answerValue.getDisplayResultSize();
+    }
+
+   public Map<String, Integer> getResultSizesByProject()
             throws WdkModelException, WdkUserException {
         return answerValue.getResultSizesByProject();
     }
@@ -226,7 +234,7 @@ public class AnswerValueBean {
     }
 
     public AttributeFieldBean[] getSummaryAttributes() throws WdkModelException {
-        Map<String, AttributeField> attribs = answerValue.getSummaryAttributeFieldMap();
+        Map<String, AttributeField> attribs = answerValue.getAttributes().getSummaryAttributeFieldMap();
         AttributeFieldBean[] beans = new AttributeFieldBean[attribs.size()];
         int index = 0;
         for (AttributeField field : attribs.values()) {
@@ -406,7 +414,7 @@ public class AnswerValueBean {
     }
 
     public AttributeFieldBean[] getDisplayableAttributes() {
-        List<AttributeField> fields = answerValue.getDisplayableAttributes();
+        List<AttributeField> fields = answerValue.getAttributes().getDisplayableAttributes();
         AttributeFieldBean[] fieldBeans = new AttributeFieldBean[fields.size()];
         int index = 0;
         for (AttributeField field : fields) {
@@ -417,11 +425,11 @@ public class AnswerValueBean {
     }
 
     public FieldTree getDisplayableAttributeTree() throws WdkModelException {
-    	return answerValue.getDisplayableAttributeTree();
+    	return answerValue.getAttributes().getDisplayableAttributeTree();
     }
 
     public FieldTree getReportMakerAttributeTree() throws WdkModelException {
-    	return answerValue.getReportMakerAttributeTree();
+    	return answerValue.getAttributes().getReportMakerAttributeTree();
     }
 
     public void setFilter(String filterName) {
@@ -432,11 +440,18 @@ public class AnswerValueBean {
             throws WdkModelException, WdkUserException {
         return answerValue.getFilterSize(filterName);
     }
-    
-    
 
     public Map<String, Integer> getFilterSizes() {
       return answerValue.getFilterSizes();
+    }
+
+    public int getFilterDisplaySize(String filterName)
+            throws WdkModelException, WdkUserException {
+        return answerValue.getFilterDisplaySize(filterName);
+    }
+
+    public Map<String, Integer> getFilterDisplaySizes() {
+      return answerValue.getFilterDisplaySizes();
     }
 
     public AnswerFilterInstanceBean getFilter() {
@@ -497,7 +512,11 @@ public class AnswerValueBean {
     public void setPageIndex(int startIndex, int endIndex) {
         answerValue.setPageIndex(startIndex, endIndex);
     }
-    
+
+    public void setSortingMap(Map<String,Boolean> sortingMap) throws WdkModelException {
+        answerValue.setSortingMap(sortingMap);
+    }
+
     /**
      * Temporary method to allow easy on/off of checkbox tree
      * for value selection.
@@ -505,7 +524,11 @@ public class AnswerValueBean {
      * @return whether checkbox tree should be used (columns layout otherwise)
      */
     public boolean getUseCheckboxTree() {
-    	return true;
+      return true;
+    }
+
+    public AnswerValueAttributes getAttributes() {
+      return answerValue.getAttributes();
     }
 
     public FilterSummary getFilterSummary(String filterName) throws WdkModelException, WdkUserException {
@@ -515,4 +538,23 @@ public class AnswerValueBean {
     public String getIdSql() throws WdkModelException, WdkUserException {
       return answerValue.getIdSql();
     }    
+
+    public HashMap<String, Integer> getResultProperties() throws WdkModelException, WdkUserException {
+      // defer creation of map until properties are requested
+      if (resultProperties == null) {
+        resultProperties = new HashMap<String, Integer>();
+        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        ResultPropertyQueryReference ref = recordClass.getResultPropertyQueryRef();
+
+        if (ref != null) {
+          String name = ref.getPropertyName();
+          Integer value = recordClass.getResultPropertyPlugin()
+            .getPropertyValue(answerValue, name);
+          resultProperties.put(name, value);
+          logger.debug("Getting result property " + name + ": " + value);
+        }
+      }
+
+      return resultProperties;
+    }
 }

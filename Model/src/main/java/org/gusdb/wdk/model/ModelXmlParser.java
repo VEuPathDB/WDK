@@ -54,6 +54,7 @@ import org.gusdb.wdk.model.filter.FilterReference;
 import org.gusdb.wdk.model.filter.FilterSet;
 import org.gusdb.wdk.model.filter.StepFilterDefinition;
 import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.PostCacheUpdateSql;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
@@ -86,6 +87,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.QuestionSuggestion;
 import org.gusdb.wdk.model.question.SearchCategory;
+import org.gusdb.wdk.model.ontology.OntologyFactoryImpl;
 import org.gusdb.wdk.model.record.AttributeQueryReference;
 import org.gusdb.wdk.model.record.BooleanReference;
 import org.gusdb.wdk.model.record.CountReference;
@@ -94,6 +96,8 @@ import org.gusdb.wdk.model.record.NestedRecordList;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordView;
+import org.gusdb.wdk.model.record.ResultSizeQueryReference;
+import org.gusdb.wdk.model.record.ResultPropertyQueryReference;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
@@ -536,6 +540,11 @@ public class ModelXmlParser extends XmlParser {
     // default property list
     configureNode(digester, "wdkModel/defaultPropertyList", PropertyList.class, "addDefaultPropertyList");
 
+    // ontologies
+    configureNode(digester, "wdkModel/ontology", OntologyFactoryImpl.class, "addOntology");
+    configureNode(digester, "wdkModel/ontology/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod("wdkModel/ontology/property", "setText", 0);
+
     // categories
     configureNode(digester, "wdkModel/searchCategory", SearchCategory.class, "addCategory");
 
@@ -561,6 +570,10 @@ public class ModelXmlParser extends XmlParser {
 
     // record class
     configureNode(digester, "wdkModel/recordClassSet/recordClass", RecordClass.class, "addRecordClass");
+
+    // record overview
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/recordOverview", WdkModelText.class, "setRecordOverviewText");
+    digester.addCallMethod("wdkModel/recordClassSet/recordClass/recordOverview", "setText", 0);
 
     // attribute categories
     configureNode(digester, "wdkModel/recordClassSet/recordClass/attributeCategories",
@@ -643,7 +656,15 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/recordClassSet/recordClass/table/columnAttribute",
         ColumnAttributeField.class, "addAttributeField");
 
-    // nested record and record list
+    // result size query ref
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/resultSizeQueryRef",
+        ResultSizeQueryReference.class, "setResultSizeQueryRef");
+
+    // result properties plugin ref
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/resultPropertyQueryRef",
+        ResultPropertyQueryReference.class, "setResultPropertyQueryRef");
+
+        // nested record and record list
     configureNode(digester, "wdkModel/recordClassSet/recordClass/nestedRecord", NestedRecord.class,
         "addNestedRecordQuestionRef");
 
@@ -681,6 +702,12 @@ public class ModelXmlParser extends XmlParser {
     // QuerySet
     configureNode(digester, "wdkModel/querySet", QuerySet.class, "addQuerySet");
 
+    configureNode(digester, "wdkModel/querySet/postCacheUpdateSql",
+            PostCacheUpdateSql.class, "addPostCacheUpdateSql");
+    configureNode(digester, "wdkModel/querySet/postCacheUpdateSql/sql",
+            WdkModelText.class, "setSql");
+    digester.addCallMethod("wdkModel/querySet/postCacheUpdateSql/sql", "setText", 0);
+
     // defaultTestParamValues
     configureParamValuesSet(digester, "wdkModel/querySet/defaultTestParamValues", "addDefaultParamValuesSet");
 
@@ -705,6 +732,12 @@ public class ModelXmlParser extends XmlParser {
         "addSqlParamValue");
     digester.addCallMethod("wdkModel/querySet/sqlQuery/sqlParamValue", "setText", 0);
 
+    configureNode(digester, "wdkModel/querySet/sqlQuery/postCacheUpdateSql",
+        PostCacheUpdateSql.class, "addPostCacheUpdateSql");
+    configureNode(digester, "wdkModel/querySet/sqlQuery/postCacheUpdateSql/sql", WdkModelText.class, "setSql");
+    digester.addCallMethod("wdkModel/querySet/sqlQuery/postCacheUpdateSql/sql", "setText", 0);
+
+
     // processQuery
     configureNode(digester, "wdkModel/querySet/processQuery", ProcessQuery.class, "addQuery");
 
@@ -714,6 +747,12 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/querySet/processQuery/paramRef", ParamReference.class, "addParamRef");
 
     configureNode(digester, "wdkModel/querySet/processQuery/wsColumn", Column.class, "addColumn");
+
+    configureNode(digester, "wdkModel/querySet/processQuery/postCacheUpdateSql",
+        PostCacheUpdateSql.class, "addPostCacheUpdateSql");
+    configureNode(digester, "wdkModel/querySet/processQuery/postCacheUpdateSql/sql", WdkModelText.class, "setSql");
+    digester.addCallMethod("wdkModel/querySet/processQuery/postCacheUpdateSql/sql", "setText", 0);
+
   }
 
   private static void configureParamSet(Digester digester) {

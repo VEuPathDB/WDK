@@ -13,6 +13,7 @@ import org.gusdb.wdk.service.service.ProjectService;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
+import org.gusdb.wdk.service.service.OntologyService;
 import org.gusdb.wdk.service.service.SampleService;
 import org.gusdb.wdk.service.service.StepService;
 import org.gusdb.wdk.service.service.UserService;
@@ -37,6 +38,7 @@ public class WdkServiceApplication extends Application {
     .add(RecordService.class)
     .add(QuestionService.class)
     .add(AnswerService.class)
+    .add(OntologyService.class)
     .add(StepService.class)
 
     // test

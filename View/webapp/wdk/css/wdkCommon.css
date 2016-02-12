@@ -145,6 +145,10 @@ img[data-assets-src][src] {
 	text-align: left;
 }
 
+.muted {
+  color: #9f9f9f;
+}
+
 .clear {
    clear:both;
 }
@@ -173,7 +177,15 @@ img[data-assets-src][src] {
 	width: 100%;
 	text-align: center;
 }
-
+.acenter {
+  text-align: center;
+}
+.aright {
+  text-align: right;
+}
+.aleft {
+  text-align: left;
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    =Plugin styling

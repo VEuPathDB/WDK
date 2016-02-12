@@ -59,21 +59,14 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   @Override
   public Object getValue() throws WdkModelException, WdkUserException {
     if (value == null) {
-      Map<String, Object> values = new LinkedHashMap<String, Object>(pkValues);
-
       try {
-      // parse the text and look up other fields, so that primaryKey fields can support macros of other column
-      // attributes.
-      Map<String, AttributeField> subFields = field.parseFields(((PrimaryKeyAttributeField)field).getText());
-      for (String fieldName : subFields.keySet()) {
-        if (!values.containsKey(fieldName)) {
-          AttributeValue value = valueContainer.getAttributeValue(fieldName);
-          Object object = value.getValue();
-          values.put(fieldName, (object == null) ? "" : object.toString());
-        }
-      }
-
-      value = Utilities.replaceMacros(((PrimaryKeyAttributeField)field).getText(), values);
+        String label = "attribute" + " [" + field.getName() + "] of ["
+            + field.getRecordClass().getFullName() + "]";
+				// NOTE: valueContainer is null when (.value) called in favorites.tag, changed to use (.display) anyway
+        value = valueContainer.replaceMacrosWithAttributeValues(
+          ((PrimaryKeyAttributeField)field).getText(),
+          label
+        );
       } catch (Exception ex) {
          logger.error("Failed to substitute sub-fields.", ex);
          throw new WdkModelException(ex);

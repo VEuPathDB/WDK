@@ -62,6 +62,17 @@ public abstract class WdkModelBase {
           base.propertyListMap);
   }
 
+  @Override
+  public WdkModelBase clone() {
+    try {
+      return (WdkModelBase) super.clone();
+    }
+    catch (CloneNotSupportedException e) {
+      // this should never happen since we implement Cloneable
+      throw new WdkRuntimeException(e);
+    }
+  }
+
   /**
    * @param excludeProjects
    *          the excludeProjects to set
@@ -126,7 +137,7 @@ public abstract class WdkModelBase {
    * default property list from the WdkModel.
    * 
    * @param propertyListName
-   * @return
+   * @return list for the given name, or null if no list exists
    */
   public String[] getPropertyList(String propertyListName) {
     if (!propertyListMap.containsKey(propertyListName))

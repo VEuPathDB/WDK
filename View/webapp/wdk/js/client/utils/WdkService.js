@@ -10,6 +10,7 @@ export default class WdkService {
     this._questions = null;
     this._recordClasses = null;
     this._records = new Map();
+    this._ontologies = new Map();
     this._basketStatus = new Map();
   }
 
@@ -178,6 +179,14 @@ export default class WdkService {
   findStep(stepId) {
     return fetchJson('get', this._serviceUrl + '/step/' + stepId);
   }
+
+  getOntology(name) {
+    if (!this._ontologies.has(name)) {
+      this._ontologies.set(name, fetchJson('get', this._serviceUrl + '/ontology/Categories'));
+    }
+    return this._ontologies.get(name);
+  }
+
 }
 
 function makeRecordKey(recordClassName, primaryKeyValues) {

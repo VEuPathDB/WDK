@@ -10,6 +10,7 @@ import AnswerController from './components/AnswerController';
 import QuestionListController from './components/QuestionListController';
 import StepDownloadFormController from './components/StepDownloadFormController';
 import UserProfileController from './components/UserProfileController';
+import SiteMapController from './components/SiteMapController';
 
 let { Route, DefaultRoute, NotFoundRoute } = ReactRouter;
 
@@ -23,9 +24,11 @@ export function start(rootUrl, rootElement, props, additionalRoutes = []) {
     routes: (
       <Route name="app" path={rootUrl} handler={AppController}>
         <Route name="answer" path="search/:recordClass/:question/result" handler={AnswerController}/>
+        <Route name="recordDownloadForm" path="record/:recordClass/download/*" handler={StepDownloadFormController}/>
         <Route name="record" path="record/:recordClass/*" handler={RecordController}/>
         <Route name="stepDownloadForm" path="step/:stepId/download" handler={StepDownloadFormController}/>
         <Route name="userProfile" path="user/profile" handler={UserProfileController}/>
+        <Route name="site-map" handler={SiteMapController}/>
         <Route name="question-list" handler={QuestionListController}/>
         {additionalRoutes.map(route => ( <Route key={route.name} {...route}/> ))}
         <DefaultRoute handler={IndexController}/>

@@ -37,6 +37,7 @@ public class Keys {
   public static final String DISPLAY_TEXT = "displayText";
   public static final String HELP = "help";
   public static final String DESCRIPTION = "description";
+  public static final String OVERVIEW = "overview";
   public static final String ALIGN = "align";
   public static final String TRUNCATE_TO = "truncateTo";
   public static final String IS_READ_ONLY = "isReadOnly";
@@ -57,6 +58,8 @@ public class Keys {
   public static final String REVISE_BUILD = "reviseBuild";
 
   // keys for what and how data is being referenced
+  public static final String TREE = "tree";
+  public static final String CHILDREN = "children";
   public static final String PARAMETERS = "parameters";
   public static final String ATTRIBUTES = "attributes";
   public static final String DYNAMIC_ATTRIBUTES = "dynamicAttributes";

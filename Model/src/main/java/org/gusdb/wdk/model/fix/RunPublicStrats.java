@@ -100,7 +100,7 @@ public class RunPublicStrats extends BaseCLI {
         //   this takes longer, but the alternative (getResultSize) masks bad
         //   strategies because it can't tell whether the exception is due to a
         //   bad strat or due to something else
-        st.getLatestStep().getAnswerValue(true, true);
+        st.getLatestStep().getViewAnswerValue();
       }
       catch (Exception ex) {
         // check if strategy is already invalid, ignore if user NOT eupathdb

@@ -110,15 +110,18 @@ public class UserTest {
         Question question = UnitTestHelper.getNormalQuestion();
         String questionName = question.getFullName();
         AttributeField[] attributes = question.getRecordClass().getAttributeFields();
-        Map<String, Boolean> columns = user.getSortingAttributes(questionName);
+        Map<String, Boolean> columns = user.getSortingAttributes(
+            questionName, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
         
         int length = Math.min(Utilities.SORTING_LEVEL, attributes.length);
         Random random = new Random();
         for (int i = 0; i < length; i++) {
             String attrName = attributes[i].getName();
             boolean order = random.nextBoolean();
-            user.addSortingAttribute(questionName, attrName, order);
-            columns = user.getSortingAttributes(questionName);
+            user.addSortingAttribute(questionName, attrName,
+                order, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+            columns = user.getSortingAttributes(questionName,
+                User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
             Assert.assertTrue(columns.size() > i);
             Assert.assertEquals(attrName, columns.keySet().iterator().next());
             Assert.assertEquals(order, columns.get(attrName));
@@ -127,8 +130,10 @@ public class UserTest {
         for (int i = length -1 ; i >=0; i--) {
             String attrName = attributes[i].getName();
             boolean order = random.nextBoolean();
-            user.addSortingAttribute(questionName, attrName, order);
-            columns = user.getSortingAttributes(questionName);
+            user.addSortingAttribute(questionName, attrName,
+                order, User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+            columns = user.getSortingAttributes(questionName,
+                User.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
             Assert.assertEquals(length, columns.size());
             Assert.assertEquals(attrName, columns.keySet().iterator().next());
             Assert.assertEquals(order, columns.get(attrName));

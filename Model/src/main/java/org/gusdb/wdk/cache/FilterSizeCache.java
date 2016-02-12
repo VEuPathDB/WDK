@@ -66,7 +66,7 @@ public class FilterSizeCache {
         throws UnfetchableItemException {
       try {
         Step step = _wdkModel.getStepFactory().getStepById(id);
-        AnswerValue answerValue = step.getAnswerValue(false, false);
+        AnswerValue answerValue = step.getAnswerValue(false);
         int size = answerValue.getFilterSize(_filterToFetch);
         previousVersion.sizeMap.put(_filterToFetch, size);
         return previousVersion;
@@ -102,7 +102,7 @@ public class FilterSizeCache {
         throws UnfetchableItemException {
       try {
         Step step = _wdkModel.getStepFactory().getStepById(id);
-        AnswerValue answer = step.getAnswerValue(false, false);
+        AnswerValue answer = step.getAnswerValue(false);
         Map<String, Integer> sizes = answer.getFilterSizes();
         previousVersion.sizeMap = sizes;
         previousVersion.allFiltersLoaded = true;
@@ -140,12 +140,12 @@ public class FilterSizeCache {
       public void eventTriggered(Event event) throws Exception {
         if (event instanceof StepRevisedEvent) {
           int stepId = ((StepRevisedEvent)event).getRevisedStep().getStepId();
-          LOG.info("Notification of step revision, step ID: " + stepId);
+          LOG.info("Notification of step revision, step ID: " + stepId + " and question: " + ((StepRevisedEvent)event).getRevisedStep().getQuestionName() );
           _cache.expireCachedItems(stepId);
         }
         else if (event instanceof StepsModifiedEvent) {
           List<Integer> stepIds = ((StepsModifiedEvent)event).getStepIds();
-          LOG.info("Notification of steps revision, step IDs: " + FormatUtil.arrayToString(stepIds.toArray()));
+          LOG.info("Notification of steps modification, step IDs: " + FormatUtil.arrayToString(stepIds.toArray()));
           _cache.expireCachedItems(stepIds.toArray(new Integer[stepIds.size()]));
         }
       }
@@ -154,6 +154,7 @@ public class FilterSizeCache {
 
   public int getFilterSize(int stepId, String filterName, WdkModel wdkModel)
       throws WdkModelException, WdkUserException {
+    LOG.debug("getFilterSize:  filterName : " + filterName +" and stepID: " + stepId);
     try {
       return _cache.getItem(stepId, new SingleSizeFetcher(filterName, wdkModel)).sizeMap.get(filterName);
     }

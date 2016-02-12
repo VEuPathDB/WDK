@@ -101,16 +101,11 @@ public class ApplyFilterAction extends Action {
       if (name.equals(PARAM_FILTER) || name.equals(PARAM_STEP))
         continue;
       String[] values = request.getParameterValues(name);
-      if (values.length > 1) {
-        JSONArray jsValues = new JSONArray();
-        for (String value : values) {
-          jsValues.put(value);
-        }
-        jsOptions.put(name, jsValues);
+      JSONArray jsValues = new JSONArray();
+      for (String value : values) {
+        jsValues.put(value);
       }
-      else {
-        jsOptions.put(name, request.getParameter(name));
-      }
+      jsOptions.put(name, jsValues);
     }
     return jsOptions;
   }

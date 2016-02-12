@@ -20,7 +20,6 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -32,18 +31,17 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterOption;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.filter.FilterSummary;
-import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.record.DefaultResultSizePlugin;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.ResultSize;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
-import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
@@ -132,17 +130,21 @@ public class AnswerValue {
     private final AnswerValue _answer;
     private final ConcurrentMap<String, Integer> _sizes;
     private final String _filterName;
+    private final boolean _useDisplay;
 
-    public FilterSizeTask(AnswerValue answer, ConcurrentMap<String, Integer> sizes, String filterName) {
+    public FilterSizeTask(AnswerValue answer, ConcurrentMap<String, Integer> sizes, String filterName, boolean useDisplay) {
       _answer = answer;
       _sizes = sizes;
       _filterName = filterName;
+      _useDisplay = useDisplay;
     }
 
     @Override
     public void run() {
       try {
-        int size = _answer.getFilterSize(_filterName);
+        int size = (_useDisplay ?
+            _answer.getFilterDisplaySize(_filterName) :
+            _answer.getFilterSize(_filterName));
         _sizes.put(_filterName, size);
       }
       catch (WdkModelException | WdkUserException ex) {
@@ -186,11 +188,9 @@ public class AnswerValue {
   private FilterOptionList _filterOptions;
   private FilterOptionList _viewFilterOptions;
 
-  // by default do not apply view filters;
-  //   we want the full result in many more cases
-  private boolean _applyViewFilters = false;
-
   private String _checksum;
+
+  private AnswerValueAttributes _attributes;
 
   // ------------------------------------------------------------------
   // Constructor
@@ -209,8 +209,10 @@ public class AnswerValue {
    */
   public AnswerValue(User user, Question question, QueryInstance<?> idsQueryInstance, int startIndex,
       int endIndex, Map<String, Boolean> sortingMap, AnswerFilterInstance filter) {
+    logger.debug("AnswerValue being created for question: " + question.getDisplayName());
     _user = user;
     _question = question;
+    _attributes = new AnswerValueAttributes(_user, _question);
     _resultFactory = question.getWdkModel().getResultFactory();
     _idsQueryInstance = idsQueryInstance;
     _startIndex = startIndex;
@@ -221,10 +223,10 @@ public class AnswerValue {
       sortingMap = question.getSortingAttributeMap();
     _sortingMap = sortingMap;
 
-    // get the view
+    // get the view (old filters)
     _filter = filter;
 
-    logger.debug("Answer created.");
+    logger.debug("AnswerValue created for question: " + question.getDisplayName());
   }
 
   /**
@@ -241,6 +243,7 @@ public class AnswerValue {
     _user = answerValue._user;
     _idsQueryInstance = answerValue._idsQueryInstance;
     _question = answerValue._question;
+    _attributes = new AnswerValueAttributes(_user, _question);
     _resultFactory = answerValue._resultFactory;
     _resultSize = answerValue._resultSize;
     _resultSizesByFilter = new LinkedHashMap<String, Integer>(answerValue._resultSizesByFilter);
@@ -249,18 +252,18 @@ public class AnswerValue {
 
     _sortingMap = new LinkedHashMap<String, Boolean>(answerValue._sortingMap);
     _filter = answerValue._filter;
-    _applyViewFilters = answerValue._applyViewFilters;
+
+    logger.debug("AnswerValue created by copying another AnswerValue");
   }
 
   // ------------------------------------------------------------------
   // Public Methods
   // ------------------------------------------------------------------
 
-  public void setApplyViewFilters(boolean applyViewFilters) {
-    _applyViewFilters = applyViewFilters;
-    reset();
+  public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
+    return new AnswerValue(this, startIndex, endIndex);
   }
-
+  
   /**
    * provide property that user's term for question
    */
@@ -273,6 +276,10 @@ public class AnswerValue {
 
   public User getUser() {
     return _user;
+  }
+
+  public AnswerValueAttributes getAttributes() {
+    return _attributes;
   }
 
   /**
@@ -289,25 +296,22 @@ public class AnswerValue {
     int total = getResultSize();
     int pageSize = _endIndex - _startIndex + 1;
     int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
-    logger.debug("#Pages: " + pageCount + ",\t#Total: " + total + ",\t#PerPage: " + pageSize);
+    //logger.debug("#Pages: " + pageCount + ",\t#Total: " + total + ",\t#PerPage: " + pageSize);
     return pageCount;
   }
 
   public int getResultSize() throws WdkModelException, WdkUserException {
-    if (_resultSize == null || !_idsQueryInstance.isCached()) {
-      String idSql = getIdSql();
-      DataSource dataSource = _question.getWdkModel().getAppDb().getDataSource();
-      try {
-        Object count = SqlUtils.executeScalar(dataSource, "SELECT count(*) FROM (" + idSql + ") ids",
-            _question.getFullName() + "__count");
-        _resultSize = Integer.valueOf(count.toString());
-      }
-      catch (SQLException ex) {
-        throw new WdkModelException(ex);
-      }
+    if (_resultSize == null || !_idsQueryInstance.getIsCacheable()) {
+      _resultSize = new DefaultResultSizePlugin().getResultSize(this);
     }
-    logger.debug("getting result size: cache=" + _resultSize + ", isCached=" + _idsQueryInstance.isCached());
+    logger.debug("getting result size: cache=" + _resultSize + ", isCacheable=" + _idsQueryInstance.getIsCacheable());
     return _resultSize;
+  }
+
+  public int getDisplayResultSize() throws WdkModelException, WdkUserException {
+    ResultSize plugin = _question.getRecordClass().getResultSizePlugin();
+    logger.debug("getting Display result size.");
+    return plugin.getResultSize(this);
   }
 
   public Map<String, Integer> getResultSizesByProject() throws WdkModelException, WdkUserException {
@@ -508,7 +512,7 @@ public class AnswerValue {
     if (_pageRecordInstances.size() == 0)
       return buf.toString();
 
-    Map<String, AttributeField> attributes = getSummaryAttributeFieldMap();
+    Map<String, AttributeField> attributes = _attributes.getSummaryAttributeFieldMap();
     for (String nextAttName : attributes.keySet()) {
       buf.append(nextAttName + "\t");
     }
@@ -646,7 +650,7 @@ public class AnswerValue {
     // appended
     attributeQuery = (Query) wdkModel.resolveReference(attributeQuery.getFullName());
 
-    logger.debug("filling attribute values from answer " + attributeQuery.getFullName());
+    //logger.debug("filling attribute values from answer " + attributeQuery.getFullName());
     for (Column column : attributeQuery.getColumns()) {
       logger.trace("column: '" + column.getName() + "'");
     }
@@ -760,11 +764,11 @@ public class AnswerValue {
     Query tableQuery = tableField.getQuery();
     tableQuery = (Query) wdkModel.resolveReference(tableQuery.getFullName());
 
-    logger.debug("integrate table query from answer: " + tableQuery.getFullName());
+    /*logger.debug("integrate table query from answer: " + tableQuery.getFullName());
     for (Param param : tableQuery.getParams()) {
-      logger.debug("param: " + param.getName());
+       logger.debug("param: " + param.getName());
     }
-
+    */
     // get and run the paged attribute query sql
     String sql = getPagedTableSql(tableQuery);
 
@@ -849,19 +853,19 @@ public class AnswerValue {
       sql.append("tq.").append(column).append(" = pidq.").append(column);
     }
 
-    // replace the id_sql macro
-    return sql.toString().replace(Utilities.MACRO_ID_SQL, idSql);
+    // replace the id_sql macro.  this sql must include filters (but not view filters)
+    String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true));
+    return sqlWithIdSql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + _idsQueryInstance.getSql() + ")");
   }
 
   public String getAttributeSql(Query attributeQuery) throws WdkModelException, WdkUserException {
     String queryName = attributeQuery.getFullName();
     Query dynaQuery = _question.getDynamicAttributeQuery();
-    String idSql = _idsQueryInstance.getSql();
     String sql;
     if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
       // the dynamic query doesn't have sql defined, the sql will be
       // constructed from the id query cache table.
-      sql = idSql;
+      sql = _idsQueryInstance.getSql();
     }
     else {
       // make an instance from the original attribute query, and attribute
@@ -871,30 +875,34 @@ public class AnswerValue {
       Map<String, String> params = new LinkedHashMap<String, String>();
       String userId = Integer.toString(_user.getUserId());
       params.put(Utilities.PARAM_USER_ID, userId);
-      QueryInstance<?> queryInstance;
+      QueryInstance<?> attributeQueryInstance;
       try {
-        queryInstance = attributeQuery.makeInstance(_user, params, true, 0,
+        attributeQueryInstance = attributeQuery.makeInstance(_user, params, true, 0,
             new LinkedHashMap<String, String>());
       }
       catch (WdkUserException ex) {
         throw new WdkModelException(ex);
       }
-      sql = queryInstance.getSql();
+      sql = attributeQueryInstance.getSql();
 
-      // replace the id_sql macro
-      sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
+      // replace the id_sql macro.  the injected sql must include filters (but not view filters)
+      sql = sql.replace(Utilities.MACRO_ID_SQL, getIdSql(null, true));
+      sql = sql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS,  "(" + _idsQueryInstance.getSql() + ")");
     }
     return sql;
   }
 
   public String getSortedIdSql() throws WdkModelException, WdkUserException {
-    if (_sortedIdSql != null)
+      if (_sortedIdSql == null) _sortedIdSql = getSortedIdSql(false);
       return _sortedIdSql;
+  }
+
+  private String getSortedIdSql(boolean excludeViewFilters) throws WdkModelException, WdkUserException {
 
     String[] pkColumns = _question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
 
     // get id sql
-    String idSql = getIdSql();
+    String idSql = getIdSql(null, excludeViewFilters);
 
     // get sorting attribute queries
     Map<String, String> attributeSqls = new LinkedHashMap<String, String>();
@@ -951,14 +959,17 @@ public class AnswerValue {
         sql.append(", ");
       sql.append("idq.").append(column);
     }
-    _sortedIdSql = sql.toString();
 
     logger.debug("sorted id sql constructed.");
-    return _sortedIdSql;
+    return sql.toString();
   }
 
   private String getPagedIdSql() throws WdkModelException, WdkUserException {
-    String sortedIdSql = getSortedIdSql();
+      return getPagedIdSql(false);
+  }
+
+  private String getPagedIdSql(boolean excludeViewFilters) throws WdkModelException, WdkUserException {
+    String sortedIdSql = getSortedIdSql(excludeViewFilters);
     DatabaseInstance platform = _question.getWdkModel().getAppDb();
     String sql = platform.getPlatform().getPagedSql(sortedIdSql, _startIndex, _endIndex);
 
@@ -971,10 +982,10 @@ public class AnswerValue {
   }
 
   public String getIdSql() throws WdkModelException, WdkUserException {
-    return getIdSql(null);
+      return getIdSql(null, false);
   }
 
-  private String getIdSql(String excludeFilter) throws WdkModelException, WdkUserException {
+  private String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException, WdkUserException {
     try {
       String innerSql = _idsQueryInstance.getSql();
 
@@ -982,23 +993,28 @@ public class AnswerValue {
       innerSql = " /* the ID query */" + innerSql;
 
       int assignedWeight = _idsQueryInstance.getAssignedWeight();
-      // apply filter
+      // apply old filter
       if (_filter != null) {
         innerSql = _filter.applyFilter(_user, innerSql, assignedWeight);
-        innerSql = " /* filter applied on id query */ " + innerSql;
+        innerSql = " /* old filter applied on id query */ " + innerSql;
       }
 
       // apply "new" filters
-      innerSql = applyFilters(innerSql, _filterOptions, excludeFilter);
-
-      // apply view filters if requested
-      if (_applyViewFilters) {
-        innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
+      if (_filterOptions != null) {
+        //logger.debug("applyFilters(): found filterOptions to apply to the ID SQL: excludeFilter: " + excludeFilter);
+        innerSql = applyFilters(innerSql, _filterOptions, excludeFilter);
+        innerSql = " /* new filter applied on id query */ " + innerSql;
       }
-      
+      // apply view filters if requested
+      boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
+      if (viewFiltersApplied && !excludeViewFilters){
+        //logger.debug("apply viewFilters(): excludeFilter: " + excludeFilter);
+        innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
+        innerSql = " /* new view filter applied on id query */ " + innerSql;
+      }
+     
       innerSql = "(" + innerSql + ")";
-
-      logger.debug("ID SQL constructed (viewFilters = " + _applyViewFilters + "):\n" + innerSql);
+      logger.debug("AnswerValue: ID SQL constructed with all filters:\n");
 
       return innerSql;
     }
@@ -1011,8 +1027,10 @@ public class AnswerValue {
 
   private String applyFilters(String innerSql, FilterOptionList filterOptions, String excludeFilter)
       throws WdkModelException, WdkUserException {
+
     if (filterOptions != null) {
       for (FilterOption filterOption : filterOptions.getFilterOptions().values()) {
+        //logger.debug("applying FilterOption:" + filterOption.getJSON().toString(2));
         if (excludeFilter == null || !filterOption.getKey().equals(excludeFilter)) {
           if (!filterOption.isDisabled()) {
             Filter filter = _question.getFilter(filterOption.getKey());
@@ -1040,7 +1058,7 @@ public class AnswerValue {
       Map<String, ColumnAttributeField> dependents = field.getColumnAttributeFields();
       for (ColumnAttributeField dependent : dependents.values()) {
         Column column = dependent.getColumn();
-        logger.debug("field [" + fieldName + "] depends on column [" + column.getName() + "]");
+        //logger.debug("field [" + fieldName + "] depends on column [" + column.getName() + "]");
         Query query = column.getQuery();
         String queryName = query.getFullName();
         // cannot use the attribute query from record, need to get it
@@ -1101,7 +1119,7 @@ public class AnswerValue {
     if (_pageRecordInstances != null)
       return;
 
-    logger.debug("Initializing paged records......");
+    //logger.debug("Initializing paged records......");
     _pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
     try {
@@ -1143,7 +1161,7 @@ public class AnswerValue {
 
       if (expected != _pageRecordInstances.size()) {
         StringBuffer buffer = new StringBuffer();
-        for (String name : getSummaryAttributeFieldMap().keySet()) {
+        for (String name : _attributes.getSummaryAttributeFieldMap().keySet()) {
           if (buffer.length() > 0)
             buffer.append(", ");
           buffer.append(name);
@@ -1166,7 +1184,7 @@ public class AnswerValue {
       throw ex;
     }
 
-    logger.debug("Paged records initialized.");
+    //logger.debug("Paged records initialized.");
   }
 
   /**
@@ -1229,75 +1247,6 @@ public class AnswerValue {
     _pageRecordInstances = null;
   }
 
-  public List<AttributeField> getDisplayableAttributes() {
-    Map<String, AttributeField> map = getDisplayableAttributeMap();
-    return new ArrayList<AttributeField>(map.values());
-  }
-
-  /**
-   * The displayable includes all attributes that is not internal. It also contains all the summary attributes
-   * that are currently displayed.
-   * 
-   * @return
-   */
-  public Map<String, AttributeField> getDisplayableAttributeMap() {
-    Map<String, AttributeField> displayAttributes = new LinkedHashMap<String, AttributeField>();
-    Map<String, AttributeField> attributes = _question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
-    // Map<String, AttributeField> summaryAttributes =
-    // this.getSummaryAttributeFieldMap();
-    for (String attriName : attributes.keySet()) {
-      AttributeField attribute = attributes.get(attriName);
-
-      // skip the attributes that are already displayed
-      // if (summaryAttributes.containsKey(attriName)) continue;
-
-      displayAttributes.put(attriName, attribute);
-    }
-    return displayAttributes;
-  }
-
-  public FieldTree getDisplayableAttributeTree() throws WdkModelException {
-    return convertAttributeTree(_question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
-  }
-
-  public FieldTree getReportMakerAttributeTree() throws WdkModelException {
-    return convertAttributeTree(_question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
-  }
-
-  private FieldTree convertAttributeTree(AttributeCategoryTree rawAttributeTree) throws WdkModelException {
-    FieldTree tree = rawAttributeTree.toFieldTree("category root", "Attribute Categories");
-    List<String> currentlySelectedFields = new ArrayList<String>();
-    for (AttributeField field : getSummaryAttributeFieldMap().values()) {
-      currentlySelectedFields.add(field.getName());
-    }
-    tree.addSelectedLeaves(currentlySelectedFields);
-    tree.addDefaultLeaves(new ArrayList<String>(_question.getSummaryAttributeFieldMap().keySet()));
-    return tree;
-  }
-
-  // private Map<String, AttributeField> summaryFieldMap;
-  // this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
-
-  public Map<String, AttributeField> getSummaryAttributeFieldMap() throws WdkModelException {
-
-    // get preferred attribs from user and initialize map
-    String[] userPrefAttributes = _user.getSummaryAttributes(_question.getFullName());
-    Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
-
-    // always put the primary key as the first attribute
-    PrimaryKeyAttributeField pkField = _question.getRecordClass().getPrimaryKeyAttributeField();
-    summaryFields.put(pkField.getName(), pkField);
-
-    // add remainder of attributes to map and return
-    Map<String, AttributeField> allFields = _question.getAttributeFieldMap();
-    for (String attributeName : userPrefAttributes) {
-      AttributeField field = allFields.get(attributeName);
-      if (field != null)
-        summaryFields.put(attributeName, field);
-    }
-    return summaryFields;
-  }
-
   /**
    * This method is redundant with getAllIds(), consider deprecate either one of them.
    * 
@@ -1326,7 +1275,25 @@ public class AnswerValue {
     return ids;
   }
 
+  public int getFilterDisplaySize(String filterName)
+      throws WdkModelException, WdkUserException {
+    return getFilterSize(filterName, true);
+  }
+
+  public int getFilterSize(String filterName)
+      throws WdkModelException, WdkUserException {
+    return getFilterSize(filterName, false);
+  }
+
+  public Map<String, Integer> getFilterDisplaySizes() {
+    return getFilterSizes(true);
+  }
+
   public Map<String, Integer> getFilterSizes() {
+    return getFilterSizes(false);
+  }
+
+  private Map<String, Integer> getFilterSizes(boolean useDisplay) {
     RecordClass recordClass = _question.getRecordClass();
     AnswerFilterInstance[] filters = recordClass.getFilterInstances();
     ConcurrentMap<String, Integer> sizes = new ConcurrentHashMap<>(filters.length);
@@ -1334,7 +1301,7 @@ public class AnswerValue {
     // use a thread pool to get filter sizes in parallel
     ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     for (AnswerFilterInstance filter : filters) {
-      executor.execute(new FilterSizeTask(this, sizes, filter.getName()));
+      executor.execute(new FilterSizeTask(this, sizes, filter.getName(), useDisplay));
     }
 
     // wait for executor to finish.
@@ -1351,38 +1318,31 @@ public class AnswerValue {
     return sizes;
   }
 
-  public int getFilterSize(String filterName) throws WdkModelException, WdkUserException {
+  private int getFilterSize(String filterName, boolean useDisplay)
+      throws WdkModelException, WdkUserException {
     Integer size = _resultSizesByFilter.get(filterName);
-    if (size != null && _idsQueryInstance.isCached()) {
+    if (size != null && _idsQueryInstance.getIsCacheable()) {
       return size;
     }
-    try {
-      RecordClass recordClass = _question.getRecordClass();
 
-      String innerSql = _idsQueryInstance.getSql();
-      int assignedWeight = _idsQueryInstance.getAssignedWeight();
+    RecordClass recordClass = _question.getRecordClass();
+    String innerSql = _idsQueryInstance.getSql();
+    int assignedWeight = _idsQueryInstance.getAssignedWeight();
 
-      // ignore invalid filters
-      AnswerFilterInstance filter = recordClass.getFilterInstance(filterName);
-      if (filter != null)
-        innerSql = filter.applyFilter(_user, innerSql, assignedWeight);
+    // ignore invalid filters
+    AnswerFilterInstance filter = recordClass.getFilterInstance(filterName);
+    if (filter != null)
+      innerSql = filter.applyFilter(_user, innerSql, assignedWeight);
 
-      StringBuffer sql = new StringBuffer("SELECT count(*) FROM ");
-      sql.append("(").append(innerSql).append(") f");
+    // if display count requested, use custom plugin; else use default
+    ResultSize countPlugin = (useDisplay ?
+        _question.getRecordClass().getResultSizePlugin() :
+        new DefaultResultSizePlugin());
 
-      WdkModel wdkModel = _question.getWdkModel();
-      DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      Object result = SqlUtils.executeScalar(dataSource, sql.toString(),
-          _idsQueryInstance.getQuery().getFullName() + "__" + filterName + "-filter-size");
-      size = Integer.parseInt(result.toString());
-
-      _resultSizesByFilter.put(filterName, size);
-
-      return size;
-    }
-    catch (SQLException e) {
-      throw new WdkModelException("Unable to get filter size for filter " + filterName, e);
-    }
+    // get size, cache, and return
+    size = countPlugin.getResultSize(this, innerSql);
+    _resultSizesByFilter.put(filterName, size);
+    return size;
   }
 
   /**
@@ -1457,14 +1417,6 @@ public class AnswerValue {
     return pkValues;
   }
 
-  public boolean isUseBooleanFilter() {
-    if (_idsQueryInstance instanceof BooleanQueryInstance) {
-      return ((BooleanQueryInstance) _idsQueryInstance).isUseBooleanFilter();
-    }
-    else
-      return false;
-  }
-
   public void setPageIndex(int startIndex, int endIndex) {
     _startIndex = startIndex;
     _endIndex = endIndex;
@@ -1473,6 +1425,13 @@ public class AnswerValue {
   }
 
   public void setFilterOptions(FilterOptionList filterOptions) {
+    //logger.debug("****Answer Value: Setting filterOptions");
+		/*   if (_filterOptions != null) {
+      logger.debug("size:" + filterOptions.getSize() + ", and they are: " + filterOptions.getJSON());
+    }
+    else {
+      logger.debug("NULL");
+			}*/
     _filterOptions = filterOptions;
     reset();
   }
@@ -1489,12 +1448,8 @@ public class AnswerValue {
   public FilterSummary getFilterSummary(String filterName) throws WdkModelException, WdkUserException {
     // need to exclude the given filter from the idSql, so that the selection of the current filter won't
     // affect the background;
-    String idSql = getIdSql(filterName);
+    String idSql = getIdSql(filterName, false);
     Filter filter = _question.getFilter(filterName);
     return filter.getSummary(this, idSql);
-  }
-
-  public boolean getApplyViewFilters() {
-    return _applyViewFilters;
   }
 }

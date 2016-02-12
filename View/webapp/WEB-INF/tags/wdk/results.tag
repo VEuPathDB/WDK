@@ -50,27 +50,31 @@
                      answerValue="${wdkAnswer}" />
 </c:if>
 
-<br />
+
 <!-- ================ New filter architecture ================= -->
 
 
+<!-- FIXME Uncomment sometime
 <c:if test="${strategy != null}">
   <imp:resultFilters step="${step}" />
 </c:if> 
+-->
 
 <!--<div><a href="javascript:wdk.stepAnalysis.showAllAnalyses()">Magic Button</a></div>-->
 
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
 
+<c:set var="question" value="${wdkStep.question}" />
+<c:set var="views" value="${question.summaryViews}" />
+<jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />
+<c:set var="currentView" value="${wdkUser.currentSummaryView.name}" />
+
 <div id="Summary_Views" class="Summary_Views"
     data-controller="wdk.resultsPage.configureSummaryViews"
     strategy="${strategy.strategyId}"
     step="${step.stepId}"
+    question="${question.fullName}"
     updateUrl="${pageContext.request.contextPath}/processSummaryView.do">
-  <c:set var="question" value="${wdkStep.question}" />
-  <c:set var="views" value="${question.summaryViews}" />
-  <jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />
-  <c:set var="currentView" value="${wdkUser.currentSummaryView.name}" />
   
   <%-- get the index of the current view --%>
   <c:set var="selectedTab" value="${0}" />
@@ -85,11 +89,15 @@
   <ul style="overflow:visible" currentTab="${selectedTab}">
     <c:forEach items="${views}" var="item">
       <c:set var="view" value="${item.value}" />
-      <li id="${view.name}">
-        <a href="${pageContext.request.contextPath}/showSummaryView.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}"
-           title="${view.description}"
-        >${view.display} <span> </span></a>
-      </li>
+      <c:set var="viewCountProp" value="${view.name}Count" />
+      <c:set var="viewCount" value="${step.answerValue.resultProperties[viewCountProp]}"/>
+      <c:if test="${ fn:contains(view.name, 'default') || viewCount ne 0 }"> 
+        <li id="${view.name}">
+          <a href="${pageContext.request.contextPath}/showSummaryView.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}"
+             title="${view.description}"
+          >${view.display} <span> </span></a>
+        </li>
+      </c:if>
     </c:forEach>
     <c:forEach items="${wdkStep.appliedAnalyses}" var="analysisEntry">
       <c:set var="analysisId" value="${analysisEntry.key}"/>

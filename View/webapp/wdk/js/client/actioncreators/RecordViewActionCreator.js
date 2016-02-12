@@ -1,6 +1,14 @@
 import ActionCreator from '../utils/ActionCreator';
 import UserActionCreator from './UserActionCreator';
 import {latest} from '../utils/PromiseUtils';
+import {
+  getTree,
+  nodeHasProperty,
+  getPropertyValue
+} from '../utils/OntologyUtils';
+import {
+  preorderSeq
+} from '../utils/TreeUtils';
 
 let actionTypes = {
   SET_ACTIVE_RECORD: 'record/set-active-record',
@@ -12,6 +20,21 @@ let actionTypes = {
   HIDE_TABLE: 'record/hide-table',
   UPDATE_NAVIGATION_QUERY: 'record/update-navigation-query'
 };
+
+let isLeafFor = recordClassName => node => {
+  return (
+    nodeHasProperty('targetType', 'attribute', node) || nodeHasProperty('targetType', 'table', node)
+  ) && nodeHasProperty('recordClassName', recordClassName, node) && nodeHasProperty('scope', 'record', node);
+
+}
+
+let getAttributes = tree =>
+  preorderSeq(tree).filter(node => nodeHasProperty('targetType', 'attribute', node)).toArray()
+
+let getTables = tree =>
+  preorderSeq(tree).filter(node => nodeHasProperty('targetType', 'table', node)).toArray()
+
+let getNodeName = node => getPropertyValue('name', node);
 
 export default class RecordViewActionCreator extends ActionCreator {
 
@@ -73,18 +96,21 @@ export default class RecordViewActionCreator extends ActionCreator {
     let questions$ = this._service.getQuestions();
     let recordClasses$ = this._service.getRecordClasses();
     let recordClass$ = this._service.findRecordClass(r => r.urlSegment === recordClassUrlSegment);
-    let record$ = recordClass$.then(recordClass => {
+    let categoryTree$ = Promise.all([ recordClass$, this._service.getOntology('Categories') ])
+      .then(([ recordClass, ontology ]) => getTree(ontology, isLeafFor(recordClass.name)));
+
+    let record$ = Promise.all([ recordClass$, categoryTree$ ]).then(([ recordClass, categoryTree ]) => {
+      let attributes = getAttributes(categoryTree).map(getNodeName);
+      let tables = getTables(categoryTree).map(getNodeName);
       let primaryKey = recordClass.primaryKeyColumnRefs
         .map((ref, index) => ({ name: ref, value: primaryKeyValues[index] }));
-      let attributes = recordClass.attributes.map(a => a.name);
-      let tables = recordClass.tables.map(t => t.name);
       let options = { attributes, tables };
       return this._service.getRecord(recordClass.name, primaryKey, options)
     });
 
-    return Promise.all([ questions$, recordClasses$, record$, recordClass$ ])
-    .then(([ questions, recordClasses, record, recordClass ]) =>
-      ({ questions, recordClasses, recordClass, record }));
+    return Promise.all([ record$, categoryTree$, recordClass$, recordClasses$, questions$ ])
+    .then(([ record, categoryTree, recordClass, recordClasses, questions ]) =>
+      ({ record, categoryTree, recordClass, recordClasses, questions }));
   }
 
 }

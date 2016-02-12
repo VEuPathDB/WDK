@@ -24,7 +24,7 @@ public abstract class FilterDefinition extends WdkModelBase {
   }
 
   public void setName(String name) {
-    this._name = name;
+     this._name = name;
   }
 
   public String getDisplay() {

@@ -98,7 +98,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   private List<WdkModelText> helps;
   protected String help;
 
-	// requested by PRISM, array will contain different values for diffeent projects
+	// requested by PRISM, array will contain different values for different projects
   private List<WdkModelText> visibleHelps;
   protected String visibleHelp;
 
@@ -484,6 +484,9 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public final String replaceSql(String sql, String internalValue) {
     String regex = "\\$\\$" + name + "\\$\\$";
     // escape all single quotes in the value
+
+    //logger.debug("\n\nPARAM SQL:\n\n" + sql.replaceAll(regex, Matcher.quoteReplacement(internalValue)) + "\n\n");
+
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
 
@@ -520,8 +523,9 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * initialized, therefore, each param object will refer to one question uniquely.
    * 
    * @param question
+   * @throws WdkModelException
    */
-  public void setContextQuestion(Question question) {
+  public void setContextQuestion(Question question) throws WdkModelException {
     this.contextQuestion = question;
   }
 

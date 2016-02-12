@@ -108,7 +108,9 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     buffer.append(" (" + idColumn + ", " + rowIdColumn + columnList + ") ");
     buffer.append("SELECT ");
     buffer.append(instanceId + " AS " + idColumn + ", ");
+    
     buffer.append(rowNumber + " AS " + rowIdColumn);
+    
     buffer.append(columnList + " FROM (" + sql + ") f");
 
     try {
@@ -119,6 +121,8 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     catch (SQLException e) {
       throw new WdkModelException("Unable to insert record into cache.", e);
     }
+    
+    executePostCacheUpdateSql(tableName, instanceId);
   }
 
   public String getUncachedSql() throws WdkModelException, WdkUserException {
@@ -171,7 +175,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
    */
   @Override
   public String getSql() throws WdkModelException, WdkUserException {
-    if (isCached())
+    if (getIsCacheable())
       return getCachedSql();
     else
       return getUncachedSql();
@@ -194,7 +198,8 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     StringBuffer buffer = new StringBuffer("CREATE TABLE " + tableName);
     buffer.append(" AS SELECT ");
     buffer.append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID + ", ");
-    buffer.append(rowNumber + " AS " + CacheFactory.COLUMN_ROW_ID + ", ");
+    buffer.append(rowNumber + " AS " + CacheFactory.COLUMN_ROW_ID + ", ");  
+    
     buffer.append(" f.* FROM (").append(sql).append(") f");
 
     try {
@@ -206,5 +211,8 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       logger.error("Failed to run sql:\n" + buffer);
       throw new WdkModelException("Unable to create cache.", e);
     }
+    
+    executePostCacheUpdateSql(tableName, instanceId);
+    logger.debug("created!!  cache table for query " + query.getFullName());
   }
 }

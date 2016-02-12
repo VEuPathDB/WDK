@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.answer.SummaryViewHandler;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 public class ShowSummaryViewAction extends Action {
 
@@ -36,7 +37,7 @@ public class ShowSummaryViewAction extends Action {
             throws Exception {
         logger.debug("Entering ShowSummaryViewAction");
 
-        // get step
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
 
         String strStep = request.getParameter(PARAM_STEP);
@@ -71,8 +72,9 @@ public class ShowSummaryViewAction extends Action {
         if (handler == null) {
           handler = new DefaultSummaryViewHandler();
         }
-        ActionUtility.applyModel(request,
-            handler.process(step.getStep(), request.getParameterMap()));
+				// add to request scope
+        ActionUtility.applyModel(request, handler.process(
+            step.getStep(), request.getParameterMap(), wdkUser.getUser(), wdkModel.getModel()));
 
         logger.debug("request uri: " + request.getRequestURI());
         request.setAttribute(ATTR_REQUEST_URI, request.getRequestURI());

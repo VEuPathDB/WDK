@@ -52,6 +52,8 @@
 
           <ref name="searchCategory" />
 
+          <ref name="ontology" />
+
           <ref name="declaredMacro" />
 
           <ref name="constant" />
@@ -120,6 +122,16 @@
         <attribute name="usedBy" />
       </optional>
       <ref name="IncludeExclude" />
+    </element>
+  </define>
+
+  <define name="ontology">
+    <element name="ontology">
+      <attribute name="name"/>
+      <attribute name="pluginClass"/>
+      <zeroOrMore>
+        <ref name="property" />
+      </zeroOrMore>
     </element>
   </define>
 
@@ -304,6 +316,11 @@
       <attribute name="number">
         <data type="boolean" />
       </attribute>
+      <optional>
+        <attribute name="isSql">
+          <data type="boolean" />
+        </attribute>
+      </optional>
       <optional>
         <attribute name="length">
           <data type="positiveInteger" />
@@ -505,12 +522,12 @@
       </zeroOrMore>
     </element>
   </define>
- 
+
   <define name="FlatVocabParamBaseProperties">
     <ref name="EnumParamBaseProperties" />
     <attribute name="queryRef" />
   </define>
-  
+
   <define name="FlatVocabParamBaseTags">
     <choice>
       <ref name="ParamBaseTags" />
@@ -671,6 +688,13 @@
       <attribute name="sorting" />
     </optional>
     <zeroOrMore>
+      <element name="postCacheUpdateSql">
+        <element name="sql">
+          <text/>
+        </element>
+      </element>
+    </zeroOrMore>
+    <zeroOrMore>
       <element name="testParamValues">
         <ref name="testParamValuesRef" />
       </element>
@@ -793,6 +817,13 @@
         </attribute>
       </optional>
       <ref name="IncludeExclude" />
+      <zeroOrMore>
+        <element name="postCacheUpdateSql">
+          <element name="sql">
+            <text/>
+          </element>
+        </element>
+      </zeroOrMore>
       <zeroOrMore>
         <element name="defaultTestParamValues">
           <ref name="testParamValuesRef" />
@@ -950,6 +981,9 @@
         <attribute name="description" />
       </optional>
       <optional>
+        <attribute name="customBooleanQueryClassName" />
+      </optional>
+      <optional>
         <attribute name="doNotTest">
           <data type="boolean" />
         </attribute>
@@ -965,6 +999,33 @@
       </optional>
       <optional>
         <attribute name="summaryAttributesList" />
+      </optional>
+      <optional>
+        <element name="resultSizeQueryRef">
+          <attribute name="recordDisplayName" />
+          <attribute name="ref" />
+          <optional>
+            <attribute name="recordDisplayNamePlural" />
+          </optional>
+          <optional>
+            <attribute name="recordShortDisplayName" />
+          </optional>
+          <optional>
+            <attribute name="recordShortDisplayNamePlural" />
+          </optional>
+        </element>
+      </optional>
+      <optional>
+        <element name="resultPropertyQueryRef">
+          <attribute name="ref" />
+          <attribute name="propertyName" />
+        </element>
+      </optional>
+      <optional>
+        <!-- describes an instance of a record -->
+        <element name="recordOverview">
+          <text/>
+        </element>
       </optional>
       <optional>
         <element name="attributeCategories">
@@ -1113,27 +1174,12 @@
             <ref name="IncludeExclude" />
           </element>
 
-		  <!-- reference to step filter -->
+          <!-- reference to step filter -->
           <element name="filterRef">
             <ref name="IncludeExclude" />
             <attribute name="name" />
           </element>
-          
-          <!-- custom count plugin/query definition -->
-          <element name="count">
-            <ref name="IncludeExclude" />
-            <choice>
-              <attribute name="plugin" />
-              <attribute name="query" />
-            </choice>
-          </element>
-          
-          <!-- custom boolean query definition -->
-          <element name="boolean">
-          	<ref name="IncludeExclude" />
-          	<attribute name="query" />
-          </element>
-          
+
         </choice>
       </zeroOrMore>
     </element>
@@ -1209,13 +1255,13 @@
               </choice>
             </zeroOrMore>
           </element>
-          
+
           <element name="suggestion">
             <ref name="IncludeExclude" />
             <optional>
                <attribute name="newBuild" />
             </optional>
-            <optional>                  
+            <optional>
                <attribute name="reviseBuild" />
             </optional>
           </element>
@@ -1225,7 +1271,7 @@
           <ref name="sqlParamValue" />
 
           <ref name="summaryView" />
-          
+
           <ref name="stepAnalysisRef" />
 
         </choice>
@@ -1331,7 +1377,10 @@
     <element name="primaryKeyAttribute">
       <ref name="AttributeFieldContent" />
       <optional>
-        <attribute name="aliasQueryRef" />
+	<choice>
+          <attribute name="aliasQueryRef" />
+          <attribute name="aliasPluginClassName" />
+	</choice>
       </optional>
       <oneOrMore>
         <choice>
@@ -1592,7 +1641,7 @@
       <ref name="filterBaseContent" />
     </element>
   </define>
-  
+
   <define name="filterBaseContent">
     <ref name="IncludeExclude" />
     <attribute name="name" />
@@ -1651,7 +1700,7 @@
       </element>
     </zeroOrMore>
   </define>
-  
+
   <define name="stepAnalysisPlugins">
     <optional>
       <element name="stepAnalysisPlugins">
@@ -1700,7 +1749,7 @@
       <ref name="stepAnalysisProperties"/>
     </element>
   </define>
-  
+
   <define name="stepAnalysisRef">
     <element name="stepAnalysisRef">
       <attribute name="name" />
@@ -1745,7 +1794,7 @@
       </choice>
     </zeroOrMore>
   </define>
-  
+
   <define name="uiConfig">
     <element name="uiConfig">
       <ref name="IncludeExclude" />
