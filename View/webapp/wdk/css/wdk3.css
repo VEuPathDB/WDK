@@ -420,7 +420,7 @@ body {
 
 .wdk-RecordAttributeName, .wdk-RecordAttributeValue {
   display: inline-block;
-  vertical-align: middle;
+  vertical-align: top;
 }
 
 .wdk-RecordAttributeValue {
