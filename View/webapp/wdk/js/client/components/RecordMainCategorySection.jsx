@@ -50,10 +50,8 @@ let RecordMainCategorySection = React.createClass({
 
     if (targetType === 'attribute') {
       // render attribute
-      let name = getRefName(category);
-      let attribute = recordClass.attributes.find(a => a.name === name);
-      if (attribute == null) throw new Error('Expected attribute for `' + name + '`, but got null');
-      let { displayName } = attribute;
+      let attribute = category.wdkReference;
+      let { name, displayName } = attribute;
       let value = record.attributes[name]
       if (value == null) return null;
       return (
@@ -70,13 +68,11 @@ let RecordMainCategorySection = React.createClass({
 
     if (targetType === 'table') {
       // render table
-      let name = getRefName(category);
-      let tableMeta = recordClass.tables.find(t => t.name === name);
-      if (tableMeta == null) throw new Error('Expected table for `' + name + '`, but got null');
-      let { displayName } = tableMeta;
-      let table = record.tables[name];
+      let table = category.wdkReference;
+      let { name, displayName } = table;
+      let value = record.tables[name];
 
-      if (table == null) return null;
+      if (value == null) return null;
 
       let isCollapsed = collapsedTables.includes(name)
 
@@ -95,10 +91,10 @@ let RecordMainCategorySection = React.createClass({
       return (
         <div id={name} className={wrapperClass}>
           <div className={headerClass}
-            onClick={() => this.toggleTableCollapse(tableMeta, isCollapsed)}>
+            onClick={() => this.toggleTableCollapse(table, isCollapsed)}>
             {' ' + displayName}
           </div>
-          {isCollapsed? null : <RecordTable table={table} tableMeta={tableMeta} record={record} recordClass={recordClass}/>}
+          {isCollapsed? null : <RecordTable value={value} table={table} record={record} recordClass={recordClass}/>}
         </div>
       );
     }
