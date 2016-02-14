@@ -10,13 +10,14 @@ import * as ActionCreators from './actioncreators';
 import * as Components from './components';
 import * as Stores from './stores';
 import * as ComponentUtils from './utils/componentUtils';
+import * as IterableUtils from './utils/IterableUtils';
 import * as ReporterUtils from './utils/reporterUtils';
 import * as TreeUtils from './utils/TreeUtils';
 import * as OntologyUtils from './utils/OntologyUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
 import * as WdkUtils from './utils/WdkUtils';
 
-export { Components, ComponentUtils, ReporterUtils, FormSubmitter, WdkUtils, TreeUtils, OntologyUtils };
+export { Components, ComponentUtils, ReporterUtils, FormSubmitter, WdkUtils, IterableUtils, TreeUtils, OntologyUtils };
 
 export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
   let dispatcher = new Dispatcher;
