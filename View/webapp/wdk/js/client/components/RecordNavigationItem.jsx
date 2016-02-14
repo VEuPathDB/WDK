@@ -5,7 +5,7 @@ import { getId, getDisplayName } from '../utils/OntologyUtils';
 
 let RecordNavigationItem = props => {
   if (props.node.children.length === 0) {
-    return <div/>
+    return <noscript/>
   };
 
   let category = props.node;

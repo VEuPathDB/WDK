@@ -131,6 +131,12 @@ export let compactRootNodes = (root) =>
   : root
 
 
+export let mapNodes = (nodeTransform, root) => {
+  return Object.assign({}, nodeTransform(root), {
+    children: root.children.map(child => mapNodes(nodeTransform, child))
+  });
+}
+
 //Utility functions for CheckboxTree React component
 
   /**
@@ -159,7 +165,7 @@ export let compactRootNodes = (root) =>
    }
    return leaves;
   };
-  
+
   /**
    * Using recursion to return all the branch nodes for a given node
    * @param {Object} node representing root of subtree
@@ -182,7 +188,7 @@ export let compactRootNodes = (root) =>
    * @param {Function} callback method to get the node attributes needed by the checkbox tree
 	 * @return {Object} the node corresponding to the node id or undefined if
 	 * not found.
-	 */ 
+	 */
 	export let getNodeByValue = (value, nodes, getNodeChildren, getNodeFormValue) => {
 	  for(let i = 0; i < nodes.length; i++) {
 	    let node = undefined;
