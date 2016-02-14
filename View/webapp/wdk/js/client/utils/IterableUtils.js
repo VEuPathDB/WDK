@@ -53,6 +53,14 @@ class Seq {
     return new Seq(map(fn, this));
   }
 
+  flatMap(fn) {
+    return new Seq(flatMap(fn, this));
+  }
+
+  uniq(fn) {
+    return new Seq(uniq(this));
+  }
+
   filter(fn) {
     return new Seq(filter(fn, this));
   }
@@ -113,6 +121,30 @@ export function map(fn, iterable) {
     *[Symbol.iterator]() {
       for (let x of iterable) {
         yield fn(x);
+      }
+    }
+  }
+}
+
+export function flatMap(fn, iterable) {
+  return {
+    *[Symbol.iterator]() {
+      for (let x of iterable) {
+        yield* fn(x);
+      }
+    }
+  }
+}
+
+export function uniq(iterable) {
+  return {
+    *[Symbol.iterator]() {
+      let values = new Set();
+      for (let x of iterable) {
+        if (values.has(x) === false) {
+          values.add(x);
+          yield x;
+        }
       }
     }
   }
