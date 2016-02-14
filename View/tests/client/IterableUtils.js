@@ -52,6 +52,26 @@ test('map', function(t) {
   t.end();
 });
 
+test('flatMap', function(t) {
+  t.deepEqual(
+    Array.from(i.flatMap(c => c.name.split(''), [ { name: 'ABC' }, { name: 'DEF' }, { name: 'GHI' } ])),
+    [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I' ],
+    'flatMap should apply the transform to each item in an iterable and flatten the resulting iterables'
+  );
+
+  t.end();
+});
+
+test('uniq', function(t) {
+  t.deepEqual(
+    Array.from(i.uniq([ 1, 2, 3, 2, 1, 4, 5, 6 ])),
+    [ 1, 2, 3, 4, 5, 6 ],
+    'uniq should apply the transform to each item in an iterable'
+  );
+
+  t.end();
+});
+
 test('filter', function(t) {
   t.deepEqual(
     Array.from(i.filter(n => n % 2 === 0, [1,2,3,4,5,6,7,8,9,10])),
