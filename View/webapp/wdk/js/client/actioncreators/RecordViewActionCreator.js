@@ -23,9 +23,14 @@ let actionTypes = {
 
 let isLeafFor = recordClassName => node => {
   return (
-    nodeHasProperty('targetType', 'attribute', node) || nodeHasProperty('targetType', 'table', node)
-  ) && nodeHasProperty('recordClassName', recordClassName, node) && nodeHasProperty('scope', 'record', node);
+    (nodeHasProperty('targetType', 'attribute', node) || nodeHasProperty('targetType', 'table', node))
+    && nodeHasProperty('recordClassName', recordClassName, node)
+    && (nodeHasProperty('scope', 'record', node) || nodeHasProperty('scope', 'record-internal', node))
+    )
+}
 
+let isNotInternal = node => {
+  return nodeHasProperty('scope', 'record', node);
 }
 
 let getAttributes = tree =>
@@ -98,7 +103,6 @@ export default class RecordViewActionCreator extends ActionCreator {
     let recordClass$ = this._service.findRecordClass(r => r.urlSegment === recordClassUrlSegment);
     let categoryTree$ = Promise.all([ recordClass$, this._service.getOntology('Categories') ])
       .then(([ recordClass, ontology ]) => getTree(ontology, isLeafFor(recordClass.name)));
-
     let record$ = Promise.all([ recordClass$, categoryTree$ ]).then(([ recordClass, categoryTree ]) => {
       let attributes = getAttributes(categoryTree).map(getNodeName);
       let tables = getTables(categoryTree).map(getNodeName);
@@ -109,8 +113,13 @@ export default class RecordViewActionCreator extends ActionCreator {
     });
 
     return Promise.all([ record$, categoryTree$, recordClass$, recordClasses$, questions$ ])
-    .then(([ record, categoryTree, recordClass, recordClasses, questions ]) =>
-      ({ record, categoryTree, recordClass, recordClasses, questions }));
+    .then(([ record, categoryTree, recordClass, recordClasses, questions ]) => {
+       let newTree = getTree({tree: categoryTree}, isNotInternal);
+       return {
+          record, categoryTree: newTree, recordClass, recordClasses, questions
+        }
+      }
+    );
   }
 
 }
