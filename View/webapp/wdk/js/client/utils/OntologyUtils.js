@@ -50,6 +50,7 @@ export let getDisplayName = node =>
   getPropertyValue('EuPathDB alternative term', node);
 
 export let getDescription = node =>
+  get(node, [ 'wdkReference', 'help' ]) ||
   getPropertyValue('hasDefinition', node);
 
 export let getSynonyms = node =>
