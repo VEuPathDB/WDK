@@ -456,7 +456,7 @@ public class AnswerValueBean {
      */
     public String getAllIdList() throws WdkModelException, WdkUserException {
         List<String[]> pkValues = answerValue.getAllIds();
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         for (String[] pkValue : pkValues) {
             if (buffer.length() > 0) buffer.append("\n");
             for (int i = 0; i < pkValue.length; i++) {
