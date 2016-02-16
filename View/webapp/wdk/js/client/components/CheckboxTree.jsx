@@ -10,8 +10,6 @@ import {getBranches} from '../utils/TreeUtils';
  * A null or undefined selected list should be made into an empty array
  * @type {Array}
  */
-//CheckboxTree.selectedList = [];
-
 export default class CheckboxTree extends React.Component {
 
   /**
@@ -256,6 +254,10 @@ export default class CheckboxTree extends React.Component {
     let indeterminate = this.isIndeterminate(node, this.props.selectedList);
     let selected = this.isSelected(node, this.props.selectedList);
     let expanded = this.isExpanded(node, this.props.expandedList, this.props.selectedList);
+    // Hiding unexpanded checkbox subtrees rather then not constructing them.  More compatible
+    // with more standard (non-React) form submission.
+    let display = expanded ? "block" : "none";
+    let fieldName = this.props.fieldName;
     let value = this.props.getNodeFormValue(node);
     let leaf = isLeafNode(node, this.props.getNodeChildren);
     let nodeType = !leaf && !expanded ? "wdk-CheckboxTree-collapsedItem" :
@@ -271,6 +273,7 @@ export default class CheckboxTree extends React.Component {
         />
         <label>
           <IndeterminateCheckbox
+            name={fieldName}
             checked={selected}
             indeterminate={indeterminate}
             node={node}
@@ -279,8 +282,8 @@ export default class CheckboxTree extends React.Component {
           />
           {this.props.getNodeReactElement(node)}
         </label>
-        {!leaf && expanded ?
-          <ul className="fa-ul wdk-CheckboxTree-list" key={"list_" + value}>
+        {!leaf ?
+          <ul className="fa-ul wdk-CheckboxTree-list" key={"list_" + value} style={{display}}>
             {this.props.getNodeChildren(node).map(child => this.renderTreeNode(child))}
           </ul> : "" }
       </li>
@@ -320,14 +323,13 @@ CheckboxTree.propTypes = {
   /** Array representing top level nodes in the checkbox tree **/
   tree: PropTypes.array.isRequired,
 
-  /**
-   * List of selected nodes as represented by their ids.
-   */
+  /** Value to use for the name of the checkboxes in the tree */
+  fieldName: PropTypes.String,
+
+  /** List of selected nodes as represented by their ids. */
   selectedList: PropTypes.array,
 
-  /**
-   * List of expanded nodes as represented by their ids.
-   */
+  /** List of expanded nodes as represented by their ids. */
   expandedList: PropTypes.array,
 
   /**
@@ -356,7 +358,16 @@ CheckboxTree.propTypes = {
    * The function will be called with no arguments as the original
    * state is maintained by the store.
    */
-  onCurrentSelectedListLoaded: PropTypes.func
+  onCurrentSelectedListLoaded: PropTypes.func,
+
+  /** Called during rendering to create the react element holding the display name and tooltip for the current node */
+  getNodeReactElement: PropTypes.func,
+
+  /** Called during rendering to provide the input value for the current node */
+  getNodeFormValue: PropTypes.func,
+
+  /** Called during rendering to provide the children for the current node */
+  getNodeChildren:  PropTypes.func
 
 };
 
