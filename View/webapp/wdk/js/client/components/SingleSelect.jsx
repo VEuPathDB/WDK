@@ -28,6 +28,7 @@ SingleSelect.propTypes = {
   name: PropTypes.string,
 
   /** Array of items to display in the list **/
+  /** [ { value, display } ] */
   items: PropTypes.array.isRequired,
 
   /** Value of the option element that should be selected **/
