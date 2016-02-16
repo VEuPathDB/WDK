@@ -171,8 +171,7 @@ public class Configuration {
     public void configure(JSONObject config) {
     
       if (config.has(INCLUDE_EMPTY_TABLES_JSON)) {
-        String value = config.getString(INCLUDE_EMPTY_TABLES_JSON);
-        includeEmptyTables = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true : false;
+        includeEmptyTables = config.getBoolean(INCLUDE_EMPTY_TABLES_JSON);
       } 
 
       Map<String, Field> fieldMap = getQuestion().getFields(

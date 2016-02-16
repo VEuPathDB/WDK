@@ -113,6 +113,7 @@ let StepDownloadFormController = React.createClass({
       onReporterChange: this.formEvents.changeReporter,
       formState: this.state.viewData.formState,
       formUiState: this.state.viewData.formUiState,
+      initializeFormState: this.formEvents.initializeFormState,
       onFormChange: this.formEvents.changeFormState,
       onFormUiChange: this.formEvents.changeFormUiState,
       onSubmit: this.formEvents.submitForm
@@ -127,6 +128,13 @@ let StepDownloadFormController = React.createClass({
 
     changeReporter(newReporterName) {
       this.actions.selectReporter(newReporterName);
+    },
+
+    initializeFormState(newFormState, newFormUiState) {
+      setTimeout(() => { this.actions.updateFormState(newFormState); }, 0);
+      if (newFormUiState !== undefined) {
+        setTimeout(() => { this.actions.updateFormUiState(newFormUiState); }, 0);
+      }
     },
 
     changeFormState(newFormState) {
