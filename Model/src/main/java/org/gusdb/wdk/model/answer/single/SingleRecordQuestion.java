@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.answer.single;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.WdkModel;
@@ -22,8 +21,6 @@ import org.gusdb.wdk.model.user.User;
 
 public class SingleRecordQuestion extends Question {
 
-  private static final Logger LOG = Logger.getLogger(SingleRecordQuestion.class);
-
   public static final String SINGLE_RECORD_QUESTION_NAME_PREFIX = "__";
   public static final String SINGLE_RECORD_QUESTION_NAME_SUFFIX = "__singleRecordQuestion__";
 
@@ -37,14 +34,12 @@ public class SingleRecordQuestion extends Question {
   }
 
   private static QuestionNameParts parseQuestionName(String questionName, WdkModel wdkModel) {
-    LOG.info("Parsing question name: " + questionName);
     QuestionNameParts parts = new QuestionNameParts();
     if (questionName.startsWith(SINGLE_RECORD_QUESTION_NAME_PREFIX) &&
         questionName.endsWith(SINGLE_RECORD_QUESTION_NAME_SUFFIX)) {
       String recordClassName = questionName.substring(
           SINGLE_RECORD_QUESTION_NAME_PREFIX.length(),
           questionName.length() - SINGLE_RECORD_QUESTION_NAME_SUFFIX.length());
-      LOG.info("Found recordClassName: " + recordClassName);
       try {
         new WdkModelBean(wdkModel).validateRecordClassName(recordClassName);
         parts.recordClass = wdkModel.getRecordClass(recordClassName);

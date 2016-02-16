@@ -1,3 +1,12 @@
+import CheckboxList from '../components/CheckboxList';
+
+/**
+ * Typical attachment type vocabulary for reporter forms
+ */
+export let attachmentTypes = [
+  { value: "text", display: "File" },
+  { value: "plain", display: "Show in Browser" }
+];
 
 /**
  * Predicate to tell whether a given object should be shown in a reporter form
@@ -50,4 +59,16 @@ export function getAttributeSelections(currentAttributes, userPrefs, question) {
  */
 export function getTableSelections(currentTables) {
   return (currentTables != null && currentTables != undefined ? currentTables : []);
+}
+
+export function getReporterCheckboxList(title, onChange, fields, selectedFields) {
+  let mappedFields = fields.map(val => ({ value: val.name, display: val.displayName }));
+  return (
+    <div>
+      <h3>{title}</h3>
+      <div style={{padding: '0 2em'}}>
+        <CheckboxList onChange={onChange} items={mappedFields} value={selectedFields}/>
+      </div>
+    </div>
+  );
 }
