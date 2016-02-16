@@ -4,7 +4,7 @@ import CheckboxList from '../components/CheckboxList';
  * Typical attachment type vocabulary for reporter forms
  */
 export let attachmentTypes = [
-  { value: "text", display: "File" },
+  { value: "text", display: "Text File" },
   { value: "plain", display: "Show in Browser" }
 ];
 
