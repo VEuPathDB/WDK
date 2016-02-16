@@ -161,3 +161,15 @@ export function getValueOrDefault(object, propertyName, defaultValue) {
       object[propertyName] == null || object[propertyName] == undefined ?
       defaultValue : object[propertyName]);
 }
+
+/**
+ * Returns a change handler that will 'bubble' a state change to the
+ * onParentChange function passed in.  The value passed to the parent handler is
+ * a copy of previousState with a new value applied to the name this function
+ * was called with.
+ */
+export function getChangeHandler(inputName, onParentChange, previousState) {
+  return newValue => {
+    onParentChange(Object.assign({}, previousState, { [inputName]: newValue }));
+  };
+}

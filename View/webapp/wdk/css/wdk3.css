@@ -233,7 +233,6 @@ body {
 .wdk-RecordActions {
   padding: 0;
   margin: 0;
-  float: left;
 }
 
 .wdk-RecordHeading {
@@ -425,6 +424,7 @@ body {
 
 .wdk-RecordAttributeValue {
   padding: 0 4px;
+  word-break: break-word;
 }
 
 .wdk-RecordTableWrapper {

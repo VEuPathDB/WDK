@@ -335,8 +335,8 @@
   // $("td#section-2 ul.menu_section:first > li:first").click();
 
   if( sdName === "Gene" ) {
-  ele = $('li.category[onclick*= "Gene_Models" ]')[0];
-  wdk.addStepPopup.callWizard(null,ele,'sl_Gene_Models',4);
+    ele = $('li.category[onclick*= "Annotation_and_curation" ]')[0];
+    wdk.addStepPopup.callWizard(null,ele,'sl_Annotation_and_curation',4);
   }
 
 </script>

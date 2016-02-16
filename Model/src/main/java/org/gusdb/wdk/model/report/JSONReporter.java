@@ -99,7 +99,7 @@ public class JSONReporter extends StandardReporter {
         logger.info("Internal format: " + reporterConfig.getAttachmentType());
         String name = getQuestion().getName();
         if (reporterConfig.getAttachmentType().equalsIgnoreCase("text")) {
-            return name + "_detail.txt";
+            return name + "_detail.json";
         } else if (reporterConfig.getAttachmentType().equalsIgnoreCase("pdf")) {
             return name + "_detail.pdf";
         } else { // use the default file name defined in the parent

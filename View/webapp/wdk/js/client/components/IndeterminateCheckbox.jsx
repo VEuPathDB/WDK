@@ -1,29 +1,32 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
 
+/**
+ * React Component that provides a 3-state checkbox
+ */
 export default class IndeterminateCheckbox extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      "indeterminate": props.indeterminate,
-      "checked": props.checked
-    };
+
     // hard bind the handleChange functions to the IndeterminateCheckbox object
     this.handleChange = this.handleChange.bind(this);
   }
 
   componentDidMount() {
-    if(this.props.indeterminate === true) {
-      this._setIndeterminate(true);
-    }
+    this.setIndeterminate(this.props.indeterminate);
   }
 
   componentDidUpdate(previousProps) {
-    this._setIndeterminate(this.props.indeterminate);
+    this.setIndeterminate(this.props.indeterminate);
   }
 
-  _setIndeterminate(indeterminate) {
+  /**
+   * Sets the checkbox to the indeterminate state based on the the provided property.
+   * This can only be set via JS.
+   * @param indeterminate
+   */
+  setIndeterminate(indeterminate) {
     const node = ReactDOM.findDOMNode(this);
     node.indeterminate = indeterminate;
   }
@@ -35,7 +38,10 @@ export default class IndeterminateCheckbox extends React.Component {
 
   render() {
     return (
-        <input id={this.props.value} value={this.props.value} checked={this.props.checked} type="checkbox" onChange={this.handleChange} />
+        <input name={this.props.name} value={this.props.value}
+               checked={this.props.checked ? "checked" : ""}
+               type="checkbox"
+               onChange={this.handleChange} />
     )
   }
 }

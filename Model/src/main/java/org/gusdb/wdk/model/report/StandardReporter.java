@@ -200,7 +200,7 @@ public abstract class StandardReporter extends Reporter {
 
       if (config.has(INCLUDE_EMPTY_TABLES_JSON)) {
         includeEmptyTables = config.getBoolean(INCLUDE_EMPTY_TABLES_JSON);
-      }
+      } 
 
       Map<String, Field> fieldMap = getQuestion().getFields(FieldScope.REPORT_MAKER);
 

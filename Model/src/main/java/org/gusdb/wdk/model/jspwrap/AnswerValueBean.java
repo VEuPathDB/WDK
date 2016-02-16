@@ -551,7 +551,7 @@ public class AnswerValueBean {
           Integer value = recordClass.getResultPropertyPlugin()
             .getPropertyValue(answerValue, name);
           resultProperties.put(name, value);
-          logger.debug("Getting result property " + name + ": " + value);
+          logger.debug("AnswerBean: Getting result property: " + name + ": " + value);
         }
       }
 
