@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
 
@@ -30,6 +31,8 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
 	public SqlQueryResultPropertyPlugin(Query query, String propertyName) throws WdkModelException{
 		this.query = query;
 		this.propertyName = propertyName;
+		logger.debug("*******Result Property: " + propertyName + " and Query: " + query.toString() + " and SQL: \n" + ((SqlQuery)query).getSql() );
+
 		validateQuery(query);
 	}
 	
@@ -37,8 +40,8 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
 	public Integer getPropertyValue(AnswerValue answerValue, String propertyName)
 			throws WdkModelException, WdkUserException {
 		RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-		logger.debug("Getting property value: in record class: " + recordClass.getFullName() + " and question: " + answerValue.getQuestion().getDisplayName());
-		logger.debug(" .... with idSQL: " + answerValue.getIdSql());
+		logger.debug("Getting property : " + propertyName + " in record class: " + recordClass.getFullName() + " and question: " + answerValue.getQuestion().getDisplayName());
+		//logger.debug(" .... with idSQL: " + answerValue.getIdSql());
 
 		if (!propertyName.equals(this.propertyName)) throw new WdkModelException("Accessing result property plugin for record class '"  + recordClass.getName() + "' with illegal property name '" + propertyName + "'.  The allowed property name is '" + this.propertyName + "'");
 
@@ -72,7 +75,8 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
 			throw new WdkModelException("ResultSizeQuery '" + query.getFullName() + "' must have exactly one paramter, with name '" + WDK_ID_SQL_PARAM + "'");
 
 		Map<String, Column> columnMap = query.getColumnMap();
-		
+		logger.debug("ResultSizeQuery '" + query.getFullName() + "' must have exactly one column, with name '" + PROPERTY_COLUMN + "'");
+			
 		if (columnMap.size() != 1 || !columnMap.containsKey(PROPERTY_COLUMN))
 			throw new WdkModelException("ResultSizeQuery '" + query.getFullName() + "' must have exactly one column, with name '" + PROPERTY_COLUMN + "'");
 	}
