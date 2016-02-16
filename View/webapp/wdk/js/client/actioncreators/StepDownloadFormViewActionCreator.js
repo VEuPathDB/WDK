@@ -6,7 +6,7 @@ import { getStepBundle } from '../utils/actionCreatorUtils';
 let actionTypes = {
   STEP_DOWNLOAD_LOADING: 'stepDownload/loading',
   STEP_DOWNLOAD_INITIALIZE_STORE: 'stepDownload/initialize',
-  STEP_DOWNLOAD_RESET_STORE: 'stepDownload/initialize',
+  STEP_DOWNLOAD_RESET_STORE: 'stepDownload/reset',
   STEP_DOWNLOAD_SELECT_REPORTER: 'stepDownload/selectReporter',
   STEP_DOWNLOAD_FORM_UPDATE: 'stepDownload/formUpdate',
   STEP_DOWNLOAD_FORM_UI_UPDATE: 'stepDownload/formUiUpdate',

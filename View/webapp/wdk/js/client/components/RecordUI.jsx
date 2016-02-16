@@ -45,11 +45,14 @@ class RecordUI extends Component {
   }
 
   render() {
-    let classNames = classnames({
-      'wdk-RecordContainer': true,
-      'wdk-RecordContainer__withSidebar': this.state.showSidebar,
-      'wdk-RecordContainer__withAdvanced': this.state.showAdvanced
-    });
+    let classNames = classnames(
+      'wdk-RecordContainer',
+      'wdk-RecordContainer__' + this.props.recordClass.name,
+      {
+        'wdk-RecordContainer__withSidebar': this.state.showSidebar,
+        'wdk-RecordContainer__withAdvanced': this.state.showAdvanced
+      }
+    );
 
     let sidebarIconClass = classnames({
       'fa fa-lg': true,
@@ -77,7 +80,6 @@ class RecordUI extends Component {
             record={this.props.record}
             recordClass={this.props.recordClass}
             collapsedCategories={this.props.collapsedCategories}
-            categoryWordsMap={this.props.categoryWordsMap}
             onCategoryToggle={this.toggleCategory}
           />
         </Sticky>

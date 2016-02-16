@@ -6,6 +6,15 @@ import { seq } from './IterableUtils';
 let pushInto = (array, ...values) =>
   (array.push(...values), array);
 
+// Shallow comparison of two arrays
+let shallowEqual = (array1, array2) => {
+  if (array1.length !== array2.length) return false;
+  for (let i = 0; i < array1.length; i++) {
+    if (array1[i] !== array2[i]) return false;
+  }
+  return true;
+}
+
 // Tree iterators. These can be used in combination with for-of loops, or
 // with the Iterable util functions.
 function* preorder(root) {
@@ -82,10 +91,14 @@ export let postorderSeq = (root) =>
  * @param {Object} root Root node of a tree.
  * @return {Object}
  */
-export let pruneDescendantNodes = (fn, root) =>
-  Object.assign({}, root, {
-    children: pruneNodes(fn, root.children)
-  })
+export let pruneDescendantNodes = (fn, root) => {
+  let prunedChildren = pruneNodes(fn, root.children);
+  return prunedChildren === root.children
+    ? root
+    : Object.assign({}, root, {
+      children: pruneNodes(fn, root.children)
+    })
+}
 
 /**
  * Recursively replace any node that does not pass `nodePredicate` with its
@@ -97,13 +110,15 @@ export let pruneDescendantNodes = (fn, root) =>
  * of a node in a tree.
  * @return {Array}
  */
-export let pruneNodes = (fn, nodes) =>
-  nodes.reduce((prunedNodes, node) => {
+export let pruneNodes = (fn, nodes) => {
+  let prunedNodes = nodes.reduce((prunedNodes, node) => {
     let prunedNode = pruneDescendantNodes(fn, node);
     return fn(prunedNode)
       ? pushInto(prunedNodes, prunedNode)
       : pushInto(prunedNodes, ...prunedNode.children);
-  }, [])
+  }, []);
+  return shallowEqual(nodes, prunedNodes) ? nodes : prunedNodes;
+}
 
 /**
  * If the root node has only one child, replace the root node with it's child.
@@ -123,7 +138,7 @@ export let compactRootNodes = (root) =>
    * @param {Object} node representing root of subtree (possibly a leaf)
    * @return {Boolean} indicates true if the node is a leaf and false otherwise
    */
-  export let isLeafNode = node => node.children.length === 0;
+  export let isLeafNode = (node, getNodeChildren) => getNodeChildren(node).length === 0;
 
   /**
    * Using recursion to return all the leaf nodes for the given node.
@@ -131,15 +146,15 @@ export let compactRootNodes = (root) =>
    * @param {Array} initial list of leaf nodes (optional)
    * @return {Array} updated list of leaf nodes
    */
-  export let getLeaves = (node, leaves=[]) => {
-   if(!isLeafNode(node)) {
-     node.children.map(function(child) {
+  export let getLeaves = (node, getNodeChildren, leaves=[]) => {
+   if(!isLeafNode(node, getNodeChildren)) {
+     getNodeChildren(node).map(function(child) {
 
        // push only leaf nodes into the array
-       if(isLeafNode(child)) {
+       if(isLeafNode(child, getNodeChildren)) {
          leaves.push(child);
        }
-       getLeaves(child,leaves);
+       getLeaves(child, getNodeChildren, leaves);
      });
    }
    return leaves;
@@ -151,30 +166,31 @@ export let compactRootNodes = (root) =>
    * @param {Array} initial list of branch nodes (optional)
    * @return {Array} updated list of branch nodes
    */
-  export let getBranches = (node, branches=[]) => {
-	  if(!isLeafNode(node)) {
+  export let getBranches = (node, getNodeChildren, branches=[]) => {
+	  if(!isLeafNode(node, getNodeChildren)) {
 	    branches.push(node);
-	    node.children.map(child => getBranches(child, branches));
+	    getNodeChildren(node).map(child => getBranches(child, getNodeChildren, branches));
 	  }
 	  return branches;
-	}
+	};
 
 
 	/**
 	 * Using recursion to descend the tree to find the node associate with the node id given
 	 * @param {String} nodeId of the node to find
 	 * @param {Array} list of the tree's top level nodes
+   * @param {Function} callback method to get the node attributes needed by the checkbox tree
 	 * @return {Object} the node corresponding to the node id or undefined if
 	 * not found.
 	 */ 
-	export let getNodeById = (nodeId, nodes) => {
+	export let getNodeByValue = (value, nodes, getNodeChildren, getNodeFormValue) => {
 	  for(let i = 0; i < nodes.length; i++) {
 	    let node = undefined;
-	    if(nodes[i].id === nodeId) {
+	    if(getNodeFormValue(nodes[i]) === value) {
 	      return nodes[i];
 	    }
-	    if(nodes[i].children.length > 0) {
-	      node = getNodeById(nodeId, nodes[i].children);
+	    if(getNodeChildren(nodes[i]).length > 0) {
+	      node = getNodeByValue(value, getNodeChildren(nodes[i]), getNodeChildren, getNodeFormValue);
 	      if(node !== undefined) {
 	        return node;
 	      }
