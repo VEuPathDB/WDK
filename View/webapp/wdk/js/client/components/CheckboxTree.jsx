@@ -324,7 +324,7 @@ CheckboxTree.propTypes = {
   tree: PropTypes.array.isRequired,
 
   /** Value to use for the name of the checkboxes in the tree */
-  fieldName: PropTypes.String,
+  fieldName: PropTypes.string,
 
   /** List of selected nodes as represented by their ids. */
   selectedList: PropTypes.array,
