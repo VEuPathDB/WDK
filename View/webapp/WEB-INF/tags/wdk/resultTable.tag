@@ -103,11 +103,11 @@
                   ${wdkAnswer.displayResultSize eq 1 ? step.recordClass.displayName : step.recordClass.displayNamePlural}:
                   ${wdkAnswer.displayResultSize}
                 </span>
+                <span style="padding-right: 2em" title="${trTitle}">
+                  ${wdkAnswer.resultSize eq 1 ? wdkAnswer.question.recordClass.nativeDisplayName : wdkAnswer.question.recordClass.nativeDisplayNamePlural}:
+                  ${wdkAnswer.resultSize}
+                </span>
               </c:if>
-              <span style="padding-right: 2em" title="${trTitle}">
-                ${wdkAnswer.resultSize eq 1 ? wdkAnswer.question.recordClass.nativeDisplayName : wdkAnswer.question.recordClass.nativeDisplayNamePlural}:
-                ${wdkAnswer.resultSize}
-              </span>
 <%--  </c:if> --%>
             </th>
 
