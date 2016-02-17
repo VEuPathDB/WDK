@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model.record;
 
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.math.BigDecimal;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -11,7 +11,6 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
 
@@ -20,6 +19,7 @@ import org.gusdb.wdk.model.query.param.Param;
  */
 public class SqlQueryResultPropertyPlugin implements ResultProperty {
 	
+  @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(SqlQueryResultPropertyPlugin.class);
 
 	private final static String WDK_ID_SQL_PARAM = "WDK_ID_SQL";
