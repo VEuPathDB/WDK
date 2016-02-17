@@ -129,6 +129,11 @@
     <element name="ontology">
       <attribute name="name"/>
       <attribute name="pluginClass"/>
+      <optional>
+        <attribute name="useAsWdkCategories">
+          <data type="boolean" />
+        </attribute>
+      </optional>
       <zeroOrMore>
         <ref name="property" />
       </zeroOrMore>

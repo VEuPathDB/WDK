@@ -178,6 +178,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   private List<OntologyFactoryImpl> ontologyFactoryList = new ArrayList<>();
   private Map<String, OntologyFactory> ontologyFactoryMap = new LinkedHashMap<>();
   private EuPathCategoriesFactory eupathCategoriesFactory = null;
+  private String categoriesOntologyName = null;
 
   private String secretKey;
 
@@ -309,6 +310,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   public Map<String, String> getProperties() {
     return properties;
+  }
+
+  public String getCategoriesOntologyName() {
+    return categoriesOntologyName;
   }
 
   public void setProperties(Map<String, String> properties, Set<String> replacedMacros)
@@ -692,12 +697,49 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
       if (category.getParent() == null)
         rootCategoryMap.put(category.getName(), category);
     }
-    for (OntologyFactory ontology: this.ontologyFactoryMap.values()) {
-      ((OntologyFactoryImpl)ontology).resolveReferences(this);
+
+    // resolve ontology references and determine WDK Categories ontology
+    OntologyFactoryImpl ontologyFactory;
+    switch (this.ontologyFactoryMap.size()) {
+
+      case 0:
+        throw new WdkModelException(
+            "At least one ontology element must be specified in WDK Model XML.");
+
+      case 1:
+        ontologyFactory = (OntologyFactoryImpl)this.ontologyFactoryMap.values().iterator().next();
+        ontologyFactory.resolveReferences(this);
+        ontologyFactory.setUseAsWdkCategories(true);
+        this.categoriesOntologyName = ontologyFactory.getName();
+        break;
+
+      default: // more than one ontology
+        String wdkCategoriesOntologyName = null;
+        for (OntologyFactory ontology: this.ontologyFactoryMap.values()) {
+          // cast as (known) implementation
+          ontologyFactory = (OntologyFactoryImpl)ontology;
+          ontologyFactory.resolveReferences(this);
+          // make sure only one ontology is set to be the WDK categories ontology
+          if (ontologyFactory.getUseAsWdkCategories()) {
+            if (wdkCategoriesOntologyName == null) {
+              wdkCategoriesOntologyName = ontologyFactory.getName();
+            }
+            else {
+              throw new WdkModelException("More than one ontology [" +
+                  wdkCategoriesOntologyName + ", " + ontologyFactory.getName() +
+                  "] is specified as the WDK Categories Ontology.  Only one can be used.");
+            }
+          }
+        }
+        if (wdkCategoriesOntologyName == null) {
+            throw new WdkModelException("You must specify an ontology as the WDK Categories " +
+                "Ontology.  Use the 'useAsWdkCategories' flag in the ontology XML tag.");
+        }
+        this.categoriesOntologyName = wdkCategoriesOntologyName;
     }
-    
+
     // comment out to use old categories
-    if (ontologyFactoryMap.size() != 0) eupathCategoriesFactory = new EuPathCategoriesFactory(this);
+    if (!ontologyFactoryMap.isEmpty()) eupathCategoriesFactory = new EuPathCategoriesFactory(this);
   }
 
   private void excludeResources() throws WdkModelException {

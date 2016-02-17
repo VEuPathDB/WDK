@@ -197,7 +197,7 @@ export default class WdkService {
 
   getOntology(name) {
     if (!this._ontologies.has(name)) {
-      let ontology$ = fetchJson('get', this._serviceUrl + '/ontology/Categories');
+      let ontology$ = fetchJson('get', this._serviceUrl + '/ontology/__wdk_categories__');
       let recordClasses$ = this.getRecordClasses().then(r => makeIndex(r, 'name'));
       let questions$ = this.getQuestions().then(q => makeIndex(q, 'name'));
       let entities$ = Promise.all([ recordClasses$, questions$ ])
