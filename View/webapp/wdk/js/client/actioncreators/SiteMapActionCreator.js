@@ -20,7 +20,7 @@ export default class SiteMapActionCreator extends ActionCreator {
     let ontologyPromise = this._service.getOntology('Categories');
 
     let isQualifying =  node => {
-      return nodeHasProperty('scope', 'record', node) || nodeHasProperty('scope', 'search', node) ;
+      return nodeHasProperty('scope', 'record', node) || nodeHasProperty('scope', 'menu', node) ;
     }
 
     ontologyPromise.then((ontology) => {
