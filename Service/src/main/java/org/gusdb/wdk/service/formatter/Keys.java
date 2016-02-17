@@ -107,6 +107,7 @@ public class Keys {
   public static final String WEBAPP_URL = "webAppUrl";
   public static final String WEBSERVICE_URL = "webServiceUrl";
   public static final String ASSETS_URL = "assetsUrl";
+  public static final String CATEGORIES_ONTOLOGY_NAME = "categoriesOntologyName";
 
   // authentication keys
   public static final String AUTHENTICATION = "authentication";

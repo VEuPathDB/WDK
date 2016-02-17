@@ -124,7 +124,7 @@ public class EuPathCategoriesFactory {
 
   private TreeNode<OntologyNode> findPrunedOntology(Ontology ontology, String recordClassName, String scopes[]) {
     Predicate<OntologyNode> predicate = new IsSearchPredicate(recordClassName, scopes);
-    return Ontology.getFilteredOntology(ontology, predicate, true) ;
+    return Ontology.getFilteredOntology(ontology, predicate, false) ;
   }
   
   private class TreeNodeToSeachCategoryMapper implements StructureMapper<OntologyNode, SearchCategory> {

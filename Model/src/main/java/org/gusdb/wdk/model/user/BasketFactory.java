@@ -60,6 +60,7 @@ public class BasketFactory {
   public static final String COLUMN_USER_ID = "user_id";
   public static final String COLUMN_PROJECT_ID = "project_id";
   public static final String COLUMN_RECORD_CLASS = "record_class";
+  public static final String COLUMN_UNIQUE_ID = "pk_column_1";
 
   private static final Logger logger = Logger.getLogger(BasketFactory.class);
 
@@ -285,8 +286,8 @@ public class BasketFactory {
     }
     // load the unique counts
     String sql = "SELECT " + COLUMN_RECORD_CLASS + ", count(*) AS record_size "
-        + " FROM (SELECT DISTINCT * FROM " + schema + TABLE_BASKET + " WHERE "
-        + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ?) t "
+        + " FROM (SELECT " + COLUMN_UNIQUE_ID + "," +  COLUMN_RECORD_CLASS + " FROM " + schema + TABLE_BASKET + " WHERE "
+        + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ? GROUP BY " + COLUMN_UNIQUE_ID + "," +  COLUMN_RECORD_CLASS + " ) t "
         + " GROUP BY " + COLUMN_RECORD_CLASS;
     DataSource ds = wdkModel.getUserDb().getDataSource();
     ResultSet rs = null;

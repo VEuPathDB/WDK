@@ -5,16 +5,80 @@ import { getTargetType, getRefName, getDisplayName, getDescription, getId } from
 
 let SiteMap = React.createClass({
 
-getNodeData(node) {
+/**
+ *  "properties": {
+    "scope": [
+      "download"
+    ],
+    "recordClassName": [
+      "OrganismRecordClasses.OrganismRecordClass"
+    ],
+    "name": [
+      "is_reference_strain"
+    ],
+    "label": [
+      "OrganismRecordClasses.OrganismRecordClass.is_reference_strain"
+    ],
+    "targetType": [
+      "attribute"
+    ]
+  },
+
+ * AttributeField JSON will have the following form:
+ * {
+ *   name: String,
+ *   displayName: String,
+ *   help: String,
+ *   align: String,
+ *   isSortable: Boolean,
+ *   isRemovable: Boolean,
+ *   type: String (comes from “type” property of attribute tag),
+ *   category: String,
+ *   truncateTo: Integer,
+ *   isDisplayable: Boolean,
+ *   isInReport: Boolean,
+ *   properties: Object
+ * }
+ *
+ * WDK Question objects have the following form:
+ * {
+ *   name: String,
+ *   displayName: String,
+ *   shortDisplayName: String,
+ *   description: String,
+ *   help: String,
+ *   newBuild: Number,
+ *   reviseBuild: Number,
+ *   urlSegment: String,
+ *   class: String,
+ *   parameters: [ see ParamFormatters ],
+ *   defaultAttributes: [ String ],
+ *   dynamicAttributes: [ see AttributeFieldFormatter ],
+ *   defaultSummaryView: String,
+ *   summaryViewPlugins: [ String ],
+ *   stepAnalysisPlugins: [ String ]
+ * }
+ */
+
+ getNodeData(node) {
   let data = {};
+  data.id = getId(node);
   let targetType = getTargetType(node);
-  if (node.children.length == 0) {
-     data.id = data.displayName = data.description = getRefName(node);
-  }
-  else {
-    data.id = getId(node);
+  if (node.wdkReference) {
+    data.displayName = targetType + ": " + node.wdkReference.displayName;
+    data.description = node.wdkReference.description;
+  } else {
     data.displayName = getDisplayName(node);
     data.description = getDescription(node);
+  }
+  if (targetType === "dataset") {
+
+  } else if (targetType === "search") {
+
+  } else if (targetType === "attribute" || targetType === "table") {
+
+  } else {
+
   }
   return data;
 },
