@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.ontology.Ontology;
 import org.gusdb.wdk.model.ontology.PropertyPredicate;
@@ -28,6 +29,8 @@ public class OntologyService extends WdkService {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(OntologyService.class);
+
+  private static final String CATEGORIES_ONTOLOGY_ALIAS = "__wdk_categories__";
 
   /**
    * Get a list of all ontologies (names)
@@ -44,8 +47,8 @@ public class OntologyService extends WdkService {
   @GET
   @Path("{ontologyName}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getOntology(@PathParam("ontologyName") String ontologyName) throws WdkModelException {
-    Ontology ontology = getWdkModel().getOntology(ontologyName);
+  public Response getOntologyByName(@PathParam("ontologyName") String ontologyName) throws WdkModelException {
+    Ontology ontology = getOntology(ontologyName);
     if (ontology == null)
       return getNotFoundResponse(ontologyName);
     return Response.ok(OntologyFormatter.getOntologyJson(ontology).toString()).build();
@@ -56,7 +59,7 @@ public class OntologyService extends WdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getPathsToMatchingNodes(@PathParam("ontologyName") String ontologyName, String body) throws WdkModelException {
-    Ontology ontology = getWdkModel().getOntology(ontologyName);
+    Ontology ontology = getOntology(ontologyName);
     if (ontology == null)
       return getNotFoundResponse(ontologyName);
     try {
@@ -73,4 +76,13 @@ public class OntologyService extends WdkService {
       return getBadRequestBodyResponse(e.toString());
     }
   }
+
+  private Ontology getOntology(String ontologyName) throws WdkModelException {
+    WdkModel model = getWdkModel();
+    if (CATEGORIES_ONTOLOGY_ALIAS.equals(ontologyName)) {
+      ontologyName = model.getCategoriesOntologyName();
+    }
+    return model.getOntology(ontologyName);
+  }
+
 }

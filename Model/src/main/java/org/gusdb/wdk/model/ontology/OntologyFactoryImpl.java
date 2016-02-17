@@ -22,6 +22,7 @@ public class OntologyFactoryImpl extends WdkModelBase implements OntologyFactory
   private String name;
   private String pluginClassName;
   private List<WdkModelText> propertyList = new ArrayList<>();
+  private boolean useAsWdkCategories = false;
 
   private OntologyFactoryPlugin plugin;
   private Map<String, String> properties = new LinkedHashMap<>();
@@ -36,6 +37,14 @@ public class OntologyFactoryImpl extends WdkModelBase implements OntologyFactory
 
   public void setPluginClass(String pluginClassName) {
     this.pluginClassName = pluginClassName;
+  }
+
+  public void setUseAsWdkCategories(boolean useAsWdkCategories) {
+    this.useAsWdkCategories = useAsWdkCategories;
+  }
+
+  public boolean getUseAsWdkCategories() {
+    return useAsWdkCategories;
   }
 
   public void addProperty(WdkModelText property) {

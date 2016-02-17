@@ -46,6 +46,7 @@ public class ProjectFormatter {
       .put(Keys.WEBAPP_URL, config.getWebAppUrl())
       .put(Keys.WEBSERVICE_URL, config.getWebServiceUrl())
       .put(Keys.ASSETS_URL, config.getAssetsUrl())
-      .put(Keys.AUTHENTICATION, authConfig);
+      .put(Keys.AUTHENTICATION, authConfig)
+      .put(Keys.CATEGORIES_ONTOLOGY_NAME, wdkModel.getCategoriesOntologyName());
   }
 }
