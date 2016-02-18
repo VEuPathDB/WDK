@@ -73,7 +73,7 @@ class NativeCheckboxList extends Component {
                   type="checkbox"
                   name={this.props.name}
                   value={item.value}
-                  checked={selectedItems.includes(item)}
+                  checked={selectedItems.includes(item.value)}
                   onChange={e => this.toggle(e, item)}
                 />
                 <label htmlFor={id}> {item.display} </label>
