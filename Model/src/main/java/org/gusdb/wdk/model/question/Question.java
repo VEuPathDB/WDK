@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Group;
@@ -753,7 +754,19 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       // register this URL segment with the model to ensure uniqueness
       wdkModel.registerQuestionUrlSegment(_urlSegment, getFullName());
 
-    } catch (WdkModelException ex) {
+      // make sure this question's query provides columns for each part of the primary key
+      Set<String> queryColumnNames = query.getColumnMap().keySet();
+      String[] requiredColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+      for (String requiredColumn : requiredColumns) {
+        if (!queryColumnNames.contains(requiredColumn)) {
+          throw new WdkModelException("Question '" + getFullName() + "' refers to query '" +
+              query.getFullName() + "' which does not contain column '"  + requiredColumn +
+              "' required by record class '" + recordClass.getFullName() + "'.");
+        }
+      }
+
+    }
+    catch (WdkModelException ex) {
       logger.error("resolving question '" + getFullName() + " failed. " + ex);
       throw ex;
     }
