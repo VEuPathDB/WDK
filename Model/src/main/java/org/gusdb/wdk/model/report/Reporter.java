@@ -116,7 +116,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     return propInfo.toString();
   }
 
-  public abstract void write(OutputStream out) throws WdkModelException, NoSuchAlgorithmException,
+  protected abstract void write(OutputStream out) throws WdkModelException, NoSuchAlgorithmException,
       SQLException, JSONException, WdkUserException;
 
   protected Map<String, String> properties;
