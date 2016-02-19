@@ -14,12 +14,14 @@ module.exports = {
   resolve: {
     alias: {
       'wdk-client': path.resolve(__dirname, '../webapp/wdk/js/client')
-    }
+    },
+    // adding .jsx; the rest are defaults (this overwrites, so we're including them)
+    extensions: ["", ".webpack.js", ".web.js", ".js", ".jsx"]
   },
 
   module: {
     loaders: [
-      { test: /^(?!.*(bower_components|node_modules))+.+\.jsx?$/, loader: 'babel-loader' },
+      { test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel' },
       { test: /\.css$/, loader: "style-loader!css-loader?sourceMap" }
     ]
   },
