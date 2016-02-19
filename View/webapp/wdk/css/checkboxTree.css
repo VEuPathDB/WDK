@@ -1,11 +1,7 @@
+
 /* Enclosing div for checkbox tree */
 .wdk-CheckboxTree {
-  padding: 2em;
-  /*
-  width:20em;
-  margin-left: auto;
-  margin-right: auto;
-  */
+  padding: 0.2em;
 }
 
 .wdk-CheckboxTree-list {
@@ -18,7 +14,7 @@
 }
 
 .wdk-CheckboxTree-list li label {
-  line-height: 16px;
+  line-height: 15px;
   cursor: default;
   white-space:nowrap;
 }
@@ -54,11 +50,11 @@
 /* Modifies size and color of accordion (expand/collapse) icon */
 .wdk-CheckboxTree-list i {
   color: #AAA;
-  font-size: 1.25em;
-  top: 0;
-  left: -1.3em;
-  width: 0.6em;
-  padding: 2px 0px 4px 4px;
+  font-size: 14px;
+  /* Attempt to center arrow vertically with checkbox */
+  line-height: 10px;
+  left: -1.4em;
+  width: 1.0em;
 }
 
 .wdk-CheckboxTree-links {
