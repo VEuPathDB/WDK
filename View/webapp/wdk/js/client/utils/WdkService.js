@@ -257,9 +257,18 @@ function resolveWdkReferences(entities$) {
   });
 }
 
+function isWdkReference(node) {
+  let targetType = getTargetType(node);
+  return targetType === 'attribute' || targetType === 'table' || targetType === 'search';
+}
+
+function isResolved(node) {
+  return isWdkReference(node) ? node.wdkReference != null : true;
+}
+
 function pruneUnresolvedReferences(ontology) {
   ontology.unprunedTree = ontology.tree;
-  ontology.tree = getTree(ontology, node => node.wdkReference != null);
+  ontology.tree = getTree(ontology, isResolved);
   return ontology;
 }
 
