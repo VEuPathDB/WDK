@@ -63,27 +63,19 @@ let SiteMap = React.createClass({
  getNodeData(node) {
   let data = {};
   data.id = getId(node);
-  let targetType = getTargetType(node);
+  data.targetType = getTargetType(node);
+  data.siteMapSpecial = getPropertyValue('SiteMapSpecial', node)
   if (node.wdkReference) {
-    let tt = targetType === "search"? "" : " (" + targetType + ")";
+    let tt = data.targetType === "search"? "" : " (" + data.targetType + ")";
     data.displayName = node.wdkReference.displayName + tt;
     data.description = node.wdkReference.description;
-  } else if (targetType === "track"){
+  } else if (data.targetType === "track"){
     data.displayName = getPropertyValue('name', node);
-  } else if (targetType === "dataset"){
-    data.displayName = targetType + ": " + getDisplayName(node);
+  } else if (data.targetType === "dataset"){
+    data.displayName = data.targetType + ": " + getDisplayName(node);
   } else {
     data.displayName = getDisplayName(node);
     data.description = getDescription(node);
-  }
-  if (targetType === "dataset") {
-
-  } else if (targetType === "search") {
-
-  } else if (targetType === "attribute" || targetType === "table") {
-
-  } else {
-
   }
   return data;
 },
@@ -95,6 +87,8 @@ getNodeFormValue(node) {
 
 getNodeReactElement(node) {
   let data = this.getNodeData(node);
+  if (data.siteMapSpecial) return <span title={data.description}><em>{data.displayName}</em></span>
+  if (!data.targetType) return <span title={data.description}><strong>{data.displayName}</strong></span>
   return <span title={data.description}>{data.displayName}</span>
 },
 
