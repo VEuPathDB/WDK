@@ -6,7 +6,12 @@ import memoize from 'lodash/function/memoize';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
 import { postorderSeq } from '../utils/TreeUtils';
 import { wrappable } from '../utils/componentUtils';
-import { getPropertyValue, getPropertyValues, nodeHasProperty } from '../utils/OntologyUtils';
+import {
+  getDisplayName,
+  getPropertyValue,
+  getPropertyValues,
+  nodeHasProperty
+} from '../utils/OntologyUtils';
 
 let RecordNavigationSection = React.createClass({
 
@@ -88,6 +93,7 @@ let makeCategoryWordsMap = memoize((recordClass, root) =>
 
     // add current node's displayName and description
     words.push(
+      getDisplayName(node),
       ...getPropertyValues('hasDefinition', node),
       ...getPropertyValues('hasExactSynonym', node),
       ...getPropertyValues('hasNarrowSynonym', node)

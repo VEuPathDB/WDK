@@ -23,6 +23,9 @@ export let getTree = (ontology, leafPredicate) =>
 let includes = (array, value) =>
   array != null && array.indexOf(value) > -1;
 
+// TODO Move this into a Category specific module and refine/normalize
+// property names.
+
 export let nodeHasProperty = (name, value, node) =>
   includes(node.properties[name], value);
 
