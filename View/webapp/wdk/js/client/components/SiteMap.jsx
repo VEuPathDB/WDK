@@ -1,7 +1,7 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
 import CheckboxTree from './CheckboxTree';
-import { getTargetType, getRefName, getDisplayName, getDescription, getId } from '../utils/OntologyUtils';
+import { getTargetType, getRefName, getDisplayName, getDescription, getId, getPropertyValue } from '../utils/OntologyUtils';
 
 let SiteMap = React.createClass({
 
@@ -65,8 +65,13 @@ let SiteMap = React.createClass({
   data.id = getId(node);
   let targetType = getTargetType(node);
   if (node.wdkReference) {
-    data.displayName = targetType + ": " + node.wdkReference.displayName;
+    let tt = targetType === "search"? "" : " (" + targetType + ")";
+    data.displayName = node.wdkReference.displayName + tt;
     data.description = node.wdkReference.description;
+  } else if (targetType === "track"){
+    data.displayName = getPropertyValue('name', node);
+  } else if (targetType === "dataset"){
+    data.displayName = targetType + ": " + getDisplayName(node);
   } else {
     data.displayName = getDisplayName(node);
     data.description = getDescription(node);
