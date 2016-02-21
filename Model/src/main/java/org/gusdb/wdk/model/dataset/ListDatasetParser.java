@@ -25,7 +25,7 @@ public class ListDatasetParser extends AbstractDatasetParser {
     String[] rows = rawValue.split(rowDivider);
     String columnDivider = getColumnDivider(rows[0]);
 
-    logger.debug("row divider='" + rowDivider + "', col divider='" + columnDivider + "' for content '" + rawValue);
+    logger.info("row divider='" + rowDivider + "', col divider='" + columnDivider + "' for content '" + rawValue);
 
     List<String[]> records = new ArrayList<String[]>();
     int columnCount = 0;
