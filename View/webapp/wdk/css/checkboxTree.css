@@ -4,6 +4,19 @@
   padding: 0.2em;
 }
 
+.wdk-CheckboxTree-searchBoxEnabled, .wdk-CheckboxTree-searchBoxDisabled {
+  padding: 0.5em 0 0 1.6em;
+}
+
+.wdk-CheckboxTree-searchBoxEnabled i, .wdk-CheckboxTree-searchBoxDisabled i {
+  margin-left: -1em;
+  margin-top: -0.2em;
+}
+
+.wdk-CheckboxTree-searchBoxEnabled i {
+  color: #CCC;
+}
+
 .wdk-CheckboxTree-list {
   margin-left: 1.6em;
 }
