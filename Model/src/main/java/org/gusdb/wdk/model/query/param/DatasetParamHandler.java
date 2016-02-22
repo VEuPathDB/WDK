@@ -184,7 +184,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
         data = toString(records);
     }
 
-    logger.debug("dataset parser: " + parserName + ", data: '" + data + "'");
+    logger.info("dataset parser: " + parserName + ", data: '" + data + "'");
     if (data == null) {
       if (!param.isAllowEmpty())
         throw new WdkUserException("The dataset param '" + param.getPrompt() + "' does't allow empty value.");
@@ -198,7 +198,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
         parserName = ListDatasetParser.NAME; // use default parser.
       DatasetParser parser = datasetParam.getParser(parserName);
       Dataset dataset = datasetFactory.createOrGetDataset(user, parser, data, uploadFile);
-      logger.debug("User #" + user.getUserId() + " - dataset created: #" + dataset.getDatasetId());
+      logger.info("User #" + user.getUserId() + " - dataset created: #" + dataset.getDatasetId());
       return Integer.toString(dataset.getDatasetId());
     }
     else
