@@ -16,9 +16,10 @@ export default class AccordionButton extends React.Component {
   render() {
     let expanded = this.props.expanded;
     let leaf = this.props.leaf;
+    let display = this.props.visible == undefined || this.props.visible == null ? "visible" : this.props.visible ? "visible" : "hidden";
 
     return (
-      <span className="wdk-CheckboxTree-accordionButton" onClick={this.handleExpansion}>
+      <span className="wdk-CheckboxTree-accordionButton" onClick={this.handleExpansion} style={{visibility: display}}>
         {expanded && !leaf ? <i className="fa-li fa fa-caret-down"></i> : ""}
         {!expanded && !leaf ? <i className="fa-li fa wdk-CheckboxTree-icon fa-caret-right"></i> : ""}
       </span>
