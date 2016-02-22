@@ -62,6 +62,9 @@ export function getTableSelections(currentTables) {
 }
 
 export function getReporterCheckboxList(title, onChange, fields, selectedFields) {
+  if (fields.length == 0) {
+    return ( <noscript/> );
+  }
   let mappedFields = fields.map(val => ({ value: val.name, display: val.displayName }));
   return (
     <div>

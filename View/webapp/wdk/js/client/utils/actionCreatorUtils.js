@@ -13,9 +13,10 @@ export function getStepBundle(stepId, service) {
   let recordClassPromise = questionPromise.then(question => {
     return service.findRecordClass( rc => rc.name === question.recordClassName );
   });
+  let ontologyPromise = service.getOntology();
 
-  return Promise.all([ stepPromise, questionPromise, recordClassPromise ])
-    .then(([ step, question, recordClass ]) => ({ step, question, recordClass }));
+  return Promise.all([ stepPromise, questionPromise, recordClassPromise, ontologyPromise ])
+    .then(([ step, question, recordClass, ontology ]) => ({ step, question, recordClass, ontology }));
 }
 
 export function getSingleRecordStepBundle(recordClass, primaryKeyString) {
