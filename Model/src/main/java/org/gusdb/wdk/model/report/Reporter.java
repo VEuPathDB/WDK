@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.report;
 import java.io.OutputStream;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -116,7 +117,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     return propInfo.toString();
   }
 
-  public abstract void write(OutputStream out) throws WdkModelException, NoSuchAlgorithmException,
+  protected abstract void write(OutputStream out) throws WdkModelException, NoSuchAlgorithmException,
       SQLException, JSONException, WdkUserException;
 
   protected Map<String, String> properties;
@@ -141,7 +142,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
    *           if error while setting properties on reporter
    */
   public void setProperties(Map<String, String> properties) throws WdkModelException {
-    this.properties = properties;
+    this.properties = new HashMap<>(properties);
     if (properties.containsKey(PROPERTY_PAGE_SIZE))
       maxPageSize = Integer.valueOf(properties.get(PROPERTY_PAGE_SIZE));
   }

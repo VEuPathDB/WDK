@@ -6,7 +6,12 @@ import memoize from 'lodash/function/memoize';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
 import { postorderSeq } from '../utils/TreeUtils';
 import { wrappable } from '../utils/componentUtils';
-import { getPropertyValue, getPropertyValues, nodeHasProperty } from '../utils/OntologyUtils';
+import {
+  getDisplayName,
+  getPropertyValue,
+  getPropertyValues,
+  nodeHasProperty
+} from '../utils/OntologyUtils';
 
 let RecordNavigationSection = React.createClass({
 
@@ -36,7 +41,7 @@ let RecordNavigationSection = React.createClass({
     let { navigationExpanded, navigationQuery } = this.state;
     let { collapsedCategories, heading } = this.props;
     let navigationQueryLower = navigationQuery.toLowerCase();
-    let categoryWordsMap = makeCategoryWordsMap(this.props.recordClass, this.props.categoryTree);
+    let categoryWordsMap = makeCategoryWordsMap(this.props.categoryTree);
     let expandClassName = classnames({
       'wdk-RecordNavigationExpand fa': true,
       'fa-plus-square': !navigationExpanded,
@@ -82,27 +87,21 @@ let RecordNavigationSection = React.createClass({
 
 export default wrappable(RecordNavigationSection);
 
-let makeCategoryWordsMap = memoize((recordClass, root) =>
+let makeCategoryWordsMap = memoize((root) =>
   postorderSeq(root).reduce((map, node) => {
     let words = [];
 
     // add current node's displayName and description
     words.push(
+      getDisplayName(node),
       ...getPropertyValues('hasDefinition', node),
       ...getPropertyValues('hasExactSynonym', node),
       ...getPropertyValues('hasNarrowSynonym', node)
     );
 
-    // add displayName and desription of attribute
-    if (nodeHasProperty('targetType', 'attribute', node)) {
-      let attribute = recordClass.attributes.find(a => a.name === getPropertyValues('name', node)[0]);
-      words.push(attribute.displayName, attribute.description);
-    }
-
-    // add displayName and desription of table
-    if (nodeHasProperty('targetType', 'table', node)) {
-      let table = recordClass.tables.find(a => a.name === getPropertyValues('name', node)[0]);
-      words.push(table.displayName, table.description);
+    // add displayName and desription of attribute or table
+    if (nodeHasProperty('targetType', 'attribute', node) || nodeHasProperty('targetType', 'table', node)) {
+      words.push(node.wdkReference.displayName, node.wdkReference.description);
     }
 
     // add words from any children

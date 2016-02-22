@@ -11,7 +11,6 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
 

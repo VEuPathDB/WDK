@@ -195,9 +195,9 @@ export default class WdkService {
     return fetchJson('get', this._serviceUrl + '/step/' + stepId);
   }
 
-  getOntology(name) {
+  getOntology(name = '__wdk_categories__') {
     if (!this._ontologies.has(name)) {
-      let ontology$ = fetchJson('get', this._serviceUrl + '/ontology/__wdk_categories__');
+      let ontology$ = fetchJson('get', this._serviceUrl + '/ontology/' + name);
       let recordClasses$ = this.getRecordClasses().then(r => makeIndex(r, 'name'));
       let questions$ = this.getQuestions().then(q => makeIndex(q, 'name'));
       let entities$ = Promise.all([ recordClasses$, questions$ ])
@@ -257,9 +257,18 @@ function resolveWdkReferences(entities$) {
   });
 }
 
+function isWdkReference(node) {
+  let targetType = getTargetType(node);
+  return targetType === 'attribute' || targetType === 'table' || targetType === 'search';
+}
+
+function isResolved(node) {
+  return isWdkReference(node) ? node.wdkReference != null : true;
+}
+
 function pruneUnresolvedReferences(ontology) {
   ontology.unprunedTree = ontology.tree;
-  ontology.tree = getTree(ontology, node => node.wdkReference != null);
+  ontology.tree = getTree(ontology, isResolved);
   return ontology;
 }
 

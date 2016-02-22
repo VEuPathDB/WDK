@@ -101,7 +101,7 @@ export default class RecordViewActionCreator extends ActionCreator {
     let questions$ = this._service.getQuestions();
     let recordClasses$ = this._service.getRecordClasses();
     let recordClass$ = this._service.findRecordClass(r => r.urlSegment === recordClassUrlSegment);
-    let categoryTree$ = Promise.all([ recordClass$, this._service.getOntology('Categories') ])
+    let categoryTree$ = Promise.all([ recordClass$, this._service.getOntology() ])
       .then(([ recordClass, ontology ]) => getTree(ontology, isLeafFor(recordClass.name)));
     let record$ = Promise.all([ recordClass$, categoryTree$ ]).then(([ recordClass, categoryTree ]) => {
       let attributes = getAttributes(categoryTree).map(getNodeName);

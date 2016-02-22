@@ -17,10 +17,10 @@ export default class SiteMapActionCreator extends ActionCreator {
  loadCurrentSiteMap() {
     this._dispatch({ type: actionTypes.SITEMAP_LOADING });
 
-    let ontologyPromise = this._service.getOntology('Categories');
+    let ontologyPromise = this._service.getOntology('SiteMap');
 
     let isQualifying =  node => {
-      return nodeHasProperty('scope', 'record', node) || nodeHasProperty('scope', 'menu', node) ;
+      return nodeHasProperty('scope', 'record', node) || nodeHasProperty('scope', 'menu', node) || nodeHasProperty('scope', 'gbrowse', node) || nodeHasProperty('targetType', 'dataset', node) || nodeHasProperty('targetType', 'track', node);
     }
 
     ontologyPromise.then((ontology) => {
