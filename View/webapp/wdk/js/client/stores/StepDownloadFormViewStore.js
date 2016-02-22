@@ -14,6 +14,7 @@ export default class StepDownloadFormViewStore extends ReduceStore {
       step: null,
       question: null,
       recordClass: null,
+      ontology: null,
 
       // 'dynamic' data that is updated with user actions
       isLoading: false,
@@ -65,6 +66,7 @@ function initialize(state, payload) {
     step: payload.step,
     question: payload.question,
     recordClass: payload.recordClass,
+    ontology: payload.ontology,
     isLoading: false
   });
 }

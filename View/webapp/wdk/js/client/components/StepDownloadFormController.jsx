@@ -118,6 +118,7 @@ let StepDownloadFormController = React.createClass({
       recordClass: this.state.viewData.recordClass,
       user: this.state.userData.user,
       preferences: this.state.userData.preferences,
+      ontology: this.state.viewData.ontology,
       selectedReporter: this.state.viewData.selectedReporter,
       onReporterChange: this.formEvents.changeReporter,
       formState: this.state.viewData.formState,
