@@ -21,7 +21,9 @@ public class ListDatasetParser extends AbstractDatasetParser {
 
   @Override
   public List<String[]> parse(String rawValue) throws WdkDatasetException {
-    String rowDivider = getRowDivider(rawValue);
+    //String rowDivider = getRowDivider(rawValue);
+    // scrum Feb 2 2016: we allow all these charaters as row dividers, do not expect columns
+    String rowDivider = "[\\s,;]+";
     String[] rows = rawValue.split(rowDivider);
     String columnDivider = getColumnDivider(rows[0]);
 
