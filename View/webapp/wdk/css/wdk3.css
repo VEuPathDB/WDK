@@ -24,6 +24,28 @@ body {
 }
 */
 
+.wdk-CollapsibleSectionHeader {
+  cursor: pointer;
+  margin: 10px 0;
+  position: relative;
+}
+
+.wdk-CollapsibleSectionHeader:before {
+  position: absolute;
+  left: -1em;
+  font-family: FontAwesome;
+  content: '\f0d7';
+  line-height: 1.4;
+}
+
+.wdk-CollapsibleSectionHeader__collapsed:before {
+  content: '\f0da';
+}
+
+.wdk-CollapsibleSectionContent__collapsed {
+  display: none;
+}
+
 .wdk-RootContainer {
   height: 100%;
   background-color: #fcfcfc;
@@ -375,16 +397,21 @@ body {
   margin: 8px 0;
   position: relative;
   border-bottom: 1px solid;
+  cursor: default;
 }
 
-.wdk-RecordSectionSubHeader {
+.wdk-RecordSectionHeader:before, .wdk-RecordSectionHeader__collapsed:before {
+  content: '';
+}
+
+.wdk-RecordSubsectionHeader {
   margin: 12px 0 8px 0;
   position: relative;
   border-bottom: 1px dotted;
   cursor: pointer;
 }
 
-.wdk-RecordSectionSubHeader:before {
+.wdk-RecordSubsectionHeader:before {
   position: absolute;
   left: -1em;
   font-family: FontAwesome;
@@ -392,7 +419,7 @@ body {
   line-height: 1.4;
 }
 
-.wdk-RecordSectionSubHeader__collapsed:before {
+.wdk-RecordSubsectionHeader__collapsed:before {
   content: '\f0da';
 }
 
@@ -427,27 +454,12 @@ body {
   word-break: break-word;
 }
 
-.wdk-RecordTableWrapper {
+.wdk-RecordTableContainer {
   padding: 0 1em;
 }
 
-.wdk-RecordTableHeader {
-  cursor: pointer;
-  margin: 10px 0;
+.wdk-RecordTableContainerHeader {
   font-weight: bold;
-  position: relative;
-}
-
-.wdk-RecordTableHeader:before {
-  position: absolute;
-  left: -1em;
-  font-family: FontAwesome;
-  content: '\f0d7';
-  line-height: 1.4;
-}
-
-.wdk-RecordTableHeader__collapsed:before {
-  content: '\f0da';
 }
 
 .wdk-RecordTableList {
