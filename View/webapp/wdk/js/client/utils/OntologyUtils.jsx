@@ -1,3 +1,5 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
 import kebabCase from 'lodash/string/kebabCase';
 import get from 'lodash/object/get';
 import {
@@ -58,3 +60,32 @@ export let getDescription = node =>
 
 export let getSynonyms = node =>
   [ ...getPropertyValues('hasNarrowSynonym'), ...getPropertyValues('hasExactSynonym') ]
+
+
+
+/**
+ * Callback to provide the value/id of the node (i.e., checkbox value).  Using 'name' for
+ * leaves and processed 'label' for branches
+ * @param node - given id
+ * @returns {*} - id/value of node
+ */
+export let getNodeFormValue = node =>
+  getTargetType(node) === 'attribute' ? getRefName(node) : getId(node);
+
+
+/**
+ * Callback to provide a React element holding the display name and description for the node
+ * @param node - given node
+ * @returns {XML} - React element
+ */
+export let getBasicNodeReactElement = node =>
+  <span title={getDescription(node)}>{getDisplayName(node)}</span>
+
+
+/**
+ * Callback to provide the node children
+ * @param node - given node
+ * @returns {Array}  child nodes
+ */
+export let getNodeChildren = node =>
+  node.children;

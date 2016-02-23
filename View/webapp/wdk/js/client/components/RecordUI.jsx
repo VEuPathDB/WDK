@@ -24,6 +24,14 @@ class RecordUI extends Component {
     this.toggleSidebar = this.toggleSidebar.bind(this);
   }
 
+  componentDidMount() {
+    let { hash } = window.location;
+    let target = document.getElementById(hash.slice(1));
+    if (target != null) {
+      target.scrollIntoView();
+    }
+  }
+
   toggleCategory(category, isCollapsed) {
     this.props.recordActions.toggleCategoryCollapsed(
       this.props.recordClass.name,

@@ -39,6 +39,39 @@ export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
   return Object.assign({ router }, context);
 }
 
+export function wrapComponents(componentWrappers) {
+  for (let key in componentWrappers) {
+    let Component = Components[key];
+    if (Component == null) {
+      console.warn("Cannot wrap unknown WDK Component '" + key + "'.  Skipping...");
+      continue;
+    }
+    if (!("wrapComponent" in Components[key])) {
+      console.warn("WDK Component '" + key + "' is not wrappable.  WDK version will be used.");
+      continue;
+    }
+    Components[key].wrapComponent(componentWrappers[key]);
+  }
+}
+
+export function wrapStores(storeWrappers) {
+  for (let key in storeWrappers) {
+    let Store = Stores[key];
+    if (Store == null) {
+      console.warn("Cannot wrap unknown WDK Store '" + key + "'.  Skipping...");
+      continue;
+    }
+    // wrapper should be an object with two function properties
+    let override = storeWrappers[key];
+    [ 'getInitialState', 'reduce' ].forEach(method => {
+      if (method in override) {
+        // actually reset prototype method to a custom implementation
+        Store.prototype[method] = override[method](Store.prototype[method]);
+      }
+    });
+  }
+}
+
 function logActions(context) {
   let { dispatcher, stores } = context;
   // Debug logging - TODO Only enable in development environments
