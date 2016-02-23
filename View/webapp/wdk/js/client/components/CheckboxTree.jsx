@@ -385,7 +385,7 @@ CheckboxTree.propTypes = {
   getNodeChildren:  PropTypes.func,
 
   /** Indicates whether a search is ongoing - use to suppress expand/collapse functionality */
-  isSearchMode: PropTypes.boolean,
+  isSearchMode: PropTypes.bool,
 
   /** Provides the search box React element to drop in */
   getSearchBox: PropTypes.func,
