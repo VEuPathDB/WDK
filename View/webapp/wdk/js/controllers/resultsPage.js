@@ -326,7 +326,8 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   function openAttributeList(element){
     var dialogId = getDialogId(element, "attributesList");
     openBlockingDialog("#" + dialogId);
-
+    // Removing re-sizing of Add Columns dialog because jQuery UI resizing is broken - crisl 23FEB2016
+    $("#" + dialogId).dialog({resizable : false});
     // Very ugly kludge to reset checkbox tree to default
     // values when dialog is closed.
     $('#' + dialogId).on('dialogclose', function(e) {
