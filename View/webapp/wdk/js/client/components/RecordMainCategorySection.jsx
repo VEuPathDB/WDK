@@ -91,6 +91,7 @@ let RecordMainCategorySection = React.createClass({
 
       return (
         <CollapsibleSection
+          id={name}
           className="wdk-RecordTableContainer"
           headerContent={displayName}
           isCollapsed={collapsedTables.includes(name)}
