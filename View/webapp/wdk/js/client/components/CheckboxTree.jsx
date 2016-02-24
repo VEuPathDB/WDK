@@ -267,7 +267,7 @@ export default class CheckboxTree extends React.Component {
     let fieldName = this.props.fieldName;
     let value = this.props.getNodeFormValue(node);
     let leaf = isLeafNode(node, this.props.getNodeChildren);
-    let nodeType = !leaf && !expanded ? "wdk-CheckboxTree-collapsedItem" :
+    let nodeType = !leaf && !expanded && !isSearchMode ? "wdk-CheckboxTree-collapsedItem" :
       leaf ? "wdk-CheckboxTree-leafItem" : "wdk-CheckboxTree-expandedItem";
 
     return (
@@ -385,7 +385,7 @@ CheckboxTree.propTypes = {
   getNodeChildren:  PropTypes.func,
 
   /** Indicates whether a search is ongoing - use to suppress expand/collapse functionality */
-  isSearchMode: PropTypes.boolean,
+  isSearchMode: PropTypes.bool,
 
   /** Provides the search box React element to drop in */
   getSearchBox: PropTypes.func,

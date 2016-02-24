@@ -3,6 +3,7 @@ import PureRenderMixin from 'react-addons-pure-render-mixin';
 import classnames from 'classnames';
 import RecordAttribute from './RecordAttribute';
 import RecordTable from './RecordTable';
+import CollapsibleSection from './CollapsibleSection';
 import { wrappable } from '../utils/componentUtils';
 import {
   getId,
@@ -89,32 +90,37 @@ let RecordMainCategorySection = React.createClass({
       });
 
       return (
-        <div id={name} className={wrapperClass}>
-          <div className={headerClass}
-            onClick={() => this.toggleTableCollapse(table, isCollapsed)}>
-            {' ' + displayName}
-          </div>
-          {isCollapsed? null : <RecordTable value={value} table={table} record={record} recordClass={recordClass}/>}
-        </div>
+        <CollapsibleSection
+          className="wdk-RecordTableContainer"
+          headerContent={displayName}
+          isCollapsed={collapsedTables.includes(name)}
+          onCollapsedChange={() => this.toggleTableCollapse(table, isCollapsed)}
+        >
+          <RecordTable value={value} table={table} record={record} recordClass={recordClass}/>
+        </CollapsibleSection>
       );
     }
 
     let id = getId(category);
     let categoryName = getDisplayName(category);
     let Header = 'h' + Math.min(depth + 1, 6);
-    let headerClass = classnames({
-      'wdk-RecordSectionHeader': depth === 1,
-      'wdk-RecordSectionSubHeader': depth !== 1,
-      'wdk-RecordSectionSubHeader__collapsed': depth !== 1 && isCollapsed
-    });
-
-    return isCollapsed && depth === 1 ? null : (
-      <div id={id} className="wdk-RecordSection">
-        <Header className={headerClass} onClick={this.toggleCollapse}>
-          <span className="wdk-RecordSectionEnumeration">{enumeration}</span> {categoryName}
-        </Header>
-        {isCollapsed || <div className="wdk-RecordSectionContent">{this.props.children}</div> }
+    let headerContent = (
+      <div>
+        <span className="wdk-RecordSectionEnumeration">{enumeration}</span> {categoryName}
       </div>
+    );
+    return (
+      <CollapsibleSection
+        id={id}
+        className={depth === 1 ? 'wdk-RecordSection' : 'wdk-RecordSubsection'}
+        headerComponent={Header}
+        headerContent={headerContent}
+        isCollapsed={isCollapsed}
+        onCollapsedChange={this.toggleCollapse}
+      >
+        {this.props.children}
+      </CollapsibleSection>
+
     );
   }
 
