@@ -32,9 +32,12 @@
   color: #CCC;
 }
 
+.wdk-CheckboxTree > ul {
+  margin-top: 0.5em;
+}
+
 .wdk-CheckboxTree-list {
   margin-left: 2.3em;
-  margin-top: 0.4em;
 }
 
 .wdk-CheckboxTree-accordionButton {
