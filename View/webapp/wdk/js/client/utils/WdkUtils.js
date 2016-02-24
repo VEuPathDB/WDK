@@ -9,7 +9,7 @@
  * @param {string} name Name of attribute as defined in the WDK Model XML
  */
 export function getAttribute(recordClass, name) {
-  return getRecordClassIndexItem(recordClass, 'attributes', name);
+    return recordClass.attributesMap.get(name);
 }
 
 /**
@@ -19,9 +19,5 @@ export function getAttribute(recordClass, name) {
  * @param {string} name Name of table as defined in the WDK Model XML
  */
 export function getTable(recordClass, name) {
-  return getRecordClassIndexItem(recordClass, 'tables', name);
-}
-
-function getRecordClassIndexItem(recordClass, index, name) {
-  return recordClass._indexes[index].get(name);
+    return recordClass.tablesMap.get(name);
 }

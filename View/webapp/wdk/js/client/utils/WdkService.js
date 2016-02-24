@@ -75,10 +75,8 @@ export default class WdkService {
           for (let recordClass of recordClasses) {
             // create indexes by name property for attributes and tables
             Object.assign(recordClass, {
-              _indexes: {
-                attributes: makeIndex(recordClass.attributes, 'name'),
-                tables: makeIndex(recordClass.tables, 'name')
-              }
+              attributesMap: makeIndex(recordClass.attributes, 'name'),
+              tablesMap: makeIndex(recordClass.tables, 'name')
             });
           }
           return recordClasses;
