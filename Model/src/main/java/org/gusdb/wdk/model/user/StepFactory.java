@@ -234,7 +234,7 @@ public class StepFactory {
   }
 
   // parse boolexp to pass left_child_id, right_child_id to loadAnswer
-  Step createStep(User user, Integer strategyId, Question question, Map<String, String> dependentValues,
+  public Step createStep(User user, Integer strategyId, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
       int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
     logger.debug("Creating step!");
