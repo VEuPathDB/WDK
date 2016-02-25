@@ -1,5 +1,6 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
+import { Link } from 'react-router';
 import CheckboxTree from './CheckboxTree';
 import { getTargetType, getRefName, getDisplayName, getDescription, getId, getPropertyValue } from '../utils/OntologyUtils';
 
@@ -64,7 +65,10 @@ let SiteMap = React.createClass({
   let data = {};
   data.id = getId(node);
   data.targetType = getTargetType(node);
-  data.siteMapSpecial = getPropertyValue('SiteMapSpecial', node)
+  data.siteMapSpecial = getPropertyValue('SiteMapSpecial', node);
+  data.ontologyParent = getPropertyValue('ontologyParent', node);
+  data.recordClassDisplayName = getPropertyValue('recordClassDisplayName', node);
+  data.name = getRefName(node);
   if (node.wdkReference) {
     let tt = data.targetType === "search"? "" : " (" + data.targetType + ")";
     data.displayName = node.wdkReference.displayName + tt;
@@ -85,10 +89,21 @@ getNodeFormValue(node) {
 },
 
 
-getNodeReactElement(node) {
+getBasicNodeReactElement(node) {
   let data = this.getNodeData(node);
-  if (data.siteMapSpecial) return <span title={data.description}><em>{data.displayName}</em></span>
+
+  if (data.targetType === 'search') return <a href={"../showQuestion.do?questionFullName=" + data.name}><span title={data.description}><em>{data.recordClassDisplayName} by {data.displayName}</em></span></a>;
+
+  if (data.siteMapSpecial) {
+      if (data.displayName.match(/ Page$/))
+     //     return <Link to={'record/gene/PF3D7_1133400' + '#' + data.ontologyParent}><span title={data.description}>{data.displayName}</span></Link>;
+          return <Link to="record" params={{ recordClass:'gene', splat: 'PF3D7_1133400' + '#' + data.ontologyParent }}><span title={data.description}>{data.displayName}</span></Link>;
+
+      return <span title={data.description}><em>{data.displayName}</em></span>;
+  }
+
   if (!data.targetType) return <span title={data.description}><strong>{data.displayName}</strong></span>
+
   return <span title={data.description}>{data.displayName}</span>
 },
 
@@ -110,7 +125,7 @@ getNodeChildren(node) {
                    onExpandedListUpdated={this.props.siteMapActions.updateExpanded.bind(this.props.siteMapActions)}
                    onDefaultSelectedListLoaded={()=>{}}
                    onCurrentSelectedListLoaded={()=>{}}
-                   getNodeReactElement={this.getNodeReactElement}
+                   getBasicNodeReactElement={this.getBasicNodeReactElement}
                    getNodeFormValue={this.getNodeFormValue}
                    getNodeChildren={this.getNodeChildren}
 
