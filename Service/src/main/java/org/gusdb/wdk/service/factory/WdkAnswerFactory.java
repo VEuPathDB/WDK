@@ -41,7 +41,7 @@ public class WdkAnswerFactory {
     }
   }
 
-  private Map<String, String> convertParams(Map<String, ParamValue> params) {
+  static Map<String, String> convertParams(Map<String, ParamValue> params) {
     Map<String, String> conversion = new HashMap<>();
     for (ParamValue param : params.values()) {
       conversion.put(param.getName(), param.getObjectValue().toString());
