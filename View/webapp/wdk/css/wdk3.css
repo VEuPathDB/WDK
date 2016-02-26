@@ -436,6 +436,8 @@ body {
 .wdk-RecordAttributeName, .wdk-RecordAttributeValue {
   display: inline-block;
   vertical-align: top;
+  position: relative;
+  z-index: 1;
 }
 
 .wdk-RecordAttributeValue {
