@@ -1,12 +1,12 @@
-PATH         := node_modules/.bin:$(PATH)
+PATH         := $(shell pwd)/node_modules/.bin:$(PATH)
 SHELL        := /bin/bash
 
 # The recipe for this target creates three files, wdk.common.js, wdk.app.js, and wdk.client.js.
 # wdk.common.js contains common code between wdk.app.js and wdk.client.js.
-wdk_bundle    := dist/wdk/js/wdk.common.js
-libs_bundle   := dist/wdk/js/wdk.libs.js
-css_bundle    := dist/wdk/css/wdk.min.css
-test_bundle   := test/dist/tests.js
+wdk_bundle    := $(shell pwd)/dist/wdk/js/wdk.common.js
+libs_bundle   := $(shell pwd)/dist/wdk/js/wdk.libs.js
+css_bundle    := $(shell pwd)/dist/wdk/css/wdk.min.css
+test_bundle   := $(shell pwd)/test/dist/tests.js
 
 wdk_sources  := $(shell find webapp/wdk/js -name '*.js' -or -name '*.jsx') webpack.config.js
 
@@ -70,7 +70,7 @@ $(libs_bundle): $(libs_sources)
 
 $(css_bundle): $(css_sources) node_modules
 	mkdir -p $(dir $@)
-	cleancss --source-map --skip-rebase -o $@ $<
+	cd $(dir $<) && cleancss --source-map -o $@ $(notdir $<)
 
 
 # =============================================================================
