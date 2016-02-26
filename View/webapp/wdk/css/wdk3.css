@@ -428,8 +428,6 @@ body {
 }
 
 .wdk-RecordAttributeSectionItem {
-  display: inline-block;
-  width: 50%;
   padding: 4px 1em;
 }
 
@@ -443,6 +441,7 @@ body {
 .wdk-RecordAttributeValue {
   padding: 0 4px;
   word-break: break-word;
+  top: 1px;
 }
 
 .wdk-RecordTableContainer {
