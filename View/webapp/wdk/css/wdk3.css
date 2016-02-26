@@ -35,7 +35,8 @@ body {
   left: -1em;
   font-family: FontAwesome;
   content: '\f0d7';
-  line-height: 1.4;
+  line-height: 1.2;
+  font-size: 1.2em;
 }
 
 .wdk-CollapsibleSectionHeader__collapsed:before {
@@ -409,18 +410,6 @@ body {
   position: relative;
   border-bottom: 1px dotted;
   cursor: pointer;
-}
-
-.wdk-RecordSubsectionHeader:before {
-  position: absolute;
-  left: -1em;
-  font-family: FontAwesome;
-  content: '\f0d7';
-  line-height: 1.4;
-}
-
-.wdk-RecordSubsectionHeader__collapsed:before {
-  content: '\f0da';
 }
 
 .wdk-RecordSectionHeaderTopLink {

@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.FieldScope;
@@ -57,7 +58,7 @@ public class RecordService extends WdkService {
       @QueryParam("expandTables") Boolean expandTables,
       @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
     try {
-      RecordClass rc = getWdkModel().getRecordClass(recordClassName);
+      RecordClass rc = getRecordClass(recordClassName);
       return Response.ok(
           RecordClassFormatter.getRecordClassJson(rc, getFlag(expandAttributes),
               getFlag(expandTables), getFlag(expandTableAttributes)).toString()
@@ -75,7 +76,7 @@ public class RecordService extends WdkService {
       @PathParam("recordClassName") String recordClassName,
       @QueryParam("expandAttributes") Boolean expandAttributes) {
     try {
-      RecordClass recordClass = getWdkModel().getRecordClass(recordClassName);
+      RecordClass recordClass = getRecordClass(recordClassName);
       JSONArray attribsJson = AttributeFieldFormatter.getAttributesJson(
           recordClass.getAttributeFieldMap().values(), FieldScope.ALL, getFlag(expandAttributes));
       return Response.ok(attribsJson.toString()).build();
@@ -93,7 +94,7 @@ public class RecordService extends WdkService {
       @QueryParam("expandTables") Boolean expandTables,
       @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
     try {
-      RecordClass recordClass = getWdkModel().getRecordClass(recordClassName);
+      RecordClass recordClass = getRecordClass(recordClassName);
       JSONArray tablesJson = TableFieldFormatter.getTablesJson(
           recordClass.getTableFieldMap().values(), FieldScope.ALL,
           getFlag(expandTables), getFlag(expandTableAttributes));
@@ -130,7 +131,7 @@ public class RecordService extends WdkService {
   public Response getAnswerFormats(
       @PathParam("recordClassName") String recordClassName) {
     try {
-      RecordClass recordClass = getWdkModel().getRecordClass(recordClassName);
+      RecordClass recordClass = getRecordClass(recordClassName);
       JSONArray json = RecordClassFormatter.getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL);
       return Response.ok(json.toString()).build();
     }
@@ -146,9 +147,9 @@ public class RecordService extends WdkService {
   public Response buildResult(@PathParam("recordClassName") String recordClassName, String body) throws WdkModelException, WdkUserException {
     try {
       JSONObject json = new JSONObject(body);
-
+      RecordClass rc = getRecordClass(recordClassName);
       RecordRequest request = RecordRequest.createFromJson(
-          getCurrentUser(), json, recordClassName, getWdkModelBean());
+          getCurrentUser(), json, rc, getWdkModelBean());
       
       RecordInstance recordInstance = getRecordInstance(getCurrentUser(), request);
 
@@ -159,16 +160,22 @@ public class RecordService extends WdkService {
       return getBadRequestBodyResponse(e.getMessage());
     }
   }
-  
+
+  private RecordClass getRecordClass(String recordClassName) throws WdkModelException {
+    WdkModel model = getWdkModel();
+    RecordClass rc = model.getRecordClassByUrlSegment(recordClassName);
+    return (rc == null ? model.getRecordClass(recordClassName) : rc);
+  }
+
   private static RecordInstance getRecordInstance(User user, RecordRequest recordRequest) throws WdkModelException, WdkUserException {
     RecordClass recordClass = recordRequest.getRecordClass();
     return new RecordInstance(user, recordClass, recordRequest.getPrimaryKey());
   }
-  
+
   private Response getTableResponse(String recordClassName, String tableName,
       Boolean expandTableAttributes, boolean attributesOnly) {
     try {
-      RecordClass rc = getWdkModel().getRecordClass(recordClassName);
+      RecordClass rc = getRecordClass(recordClassName);
       TableField table = rc.getTableFieldMap().get(tableName);
       boolean expandAttributes = getFlag(expandTableAttributes);
       if (table == null) throw new WdkModelException ("Table '" + tableName +

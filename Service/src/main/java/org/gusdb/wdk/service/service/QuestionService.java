@@ -106,20 +106,10 @@ public class QuestionService extends WdkService {
         getFlag(expandParams), getCurrentUser(), dependedParamValues).toString()).build();
   }
 
-  private Question getQuestionFromSegment(String questionName) {
-    try {
-      return getWdkModel().getQuestionByUrlSegment(questionName);
-    }
-    catch (WdkModelException e) {
-      // not a valid question URL segment, try full name
-      try {
-        getWdkModelBean().validateQuestionFullName(questionName);
-        return getWdkModel().getQuestion(questionName);
-      }
-      catch (WdkModelException | WdkUserException e2) {
-        return null;
-      }
-    }
+  private Question getQuestionFromSegment(String questionName) throws WdkModelException {
+    WdkModel model = getWdkModel();
+    Question q = model.getQuestionByUrlSegment(questionName);
+    return (q == null ? model.getQuestion(questionName) : q);
   }
 
   /**

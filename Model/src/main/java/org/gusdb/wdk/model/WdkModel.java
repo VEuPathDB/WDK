@@ -1428,10 +1428,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   }
 
   public RecordClass getRecordClassByUrlSegment(String urlSegment) throws WdkModelException {
-    String rcFullName = _recordClassUrlSegmentMap.get(urlSegment);
-    if (rcFullName == null)
-      throw new WdkModelException("URL segment '" + urlSegment + "' does not resolve to any RecordClass.");
-    return getRecordClass(rcFullName);
+    String recordClassFullName = _recordClassUrlSegmentMap.get(urlSegment);
+    return (recordClassFullName == null ? null : getRecordClass(recordClassFullName));
   }
 
   public void registerQuestionUrlSegment(String urlSegment, String questionFullName) throws WdkModelException {
@@ -1446,8 +1444,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   public Question getQuestionByUrlSegment(String urlSegment) throws WdkModelException {
     String questionFullName = _questionUrlSegmentMap.get(urlSegment);
-    if (questionFullName == null)
-      throw new WdkModelException("URL segment '" + urlSegment + "' does not resolve to any Question.");
-    return getQuestion(questionFullName);
+    return (questionFullName == null ? null : getQuestion(questionFullName));
   }
 }
