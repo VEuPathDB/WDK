@@ -137,7 +137,7 @@
                   <c:url var="downloadLink" value="app/step/${step.stepId}/download?summaryView=${summaryViewName}"/>
                 </c:if>
 
-                <a style="padding-right: 1em;" href="${downloadLink}"><b>Download</b></a>
+                <a class="step-download-link" style="padding-right: 1em;" href="${downloadLink}"><b>Download</b></a>
 
                 <c:if test="${recHasBasket}">
                   <a style="padding-right: 1em;" id="basketStep" href="javascript:void(0)" onClick="${basketClick}">
