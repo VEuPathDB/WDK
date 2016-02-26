@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.question;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +102,10 @@ public class SearchCategory extends WdkModelBase {
   // temporary method
   public void addResolvedQuestionRef(CategoryQuestionRef questionRef) {
     this.questionRefMap.put(questionRef.getQuestionFullName(), questionRef);
+  }
+  
+  public Collection<CategoryQuestionRef> getQuestionRefs() {
+    return questionRefMap.values();
   }
 
   public Question[] getWebsiteQuestions() {
