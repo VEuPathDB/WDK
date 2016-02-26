@@ -68,12 +68,15 @@ export default class SearchableCheckboxTree extends React.Component {
 
   /**
    * The CheckboxTree rendered with appropriate search controls.  The CheckboxTree will work without these
-   * search controls present for basic operation.
+   * search controls present for basic operation.  Search controls are needed to identify that (1) the user
+   * is indeed conducting a search and (2) provide the predicate for determining which nodes match in real time.
+   * During a search, expand/collapse needs to be disabed and hidden.
    * @returns {XML}
    */
   render() {
     return (
         <CheckboxTree tree = {this.props.tree}
+                     removeCheckboxes = {this.props.removeCheckboxes}
                      selectedList = {this.props.selectedList}
                      expandedList = {this.props.expandedList}
                      name = {this.props.name}
@@ -94,64 +97,9 @@ export default class SearchableCheckboxTree extends React.Component {
 }
 
 
+SearchableCheckboxTree.propTypes = CheckboxTree.propTypes;
+
 SearchableCheckboxTree.propTypes = {
-
-  /** Value to use for name of checkbox tree - used as id of enclosing div  */
-  name: PropTypes.string,
-
-  /** Array representing top level nodes in the checkbox tree **/
-  tree: PropTypes.array.isRequired,
-
-  /** Value to use for the name of the checkboxes in the tree */
-  fieldName: PropTypes.string,
-
-  /** List of selected nodes as represented by their ids. */
-  selectedList: PropTypes.array,
-
-  /** List of expanded nodes as represented by their ids. */
-  expandedList: PropTypes.array,
-
-  /**
-   * Called when the set of selected (leaf) nodes changes.
-   * The function will be called with the array of the selected node
-   * ids.
-   */
-  onSelectedListUpdated: PropTypes.func,
-
-  /**
-   * Called when the set of expanded (branch) nodes changes.
-   * The function will be called with the array of the expanded node
-   * ids.
-   */
-  onExpandedListUpdated: PropTypes.func,
-
-  /**
-   * Called when the user reverts to the default select list.
-   * The function will be called with no arguments as the default
-   * state is maintained by the store.
-   */
-  onDefaultSelectedListLoaded: PropTypes.func,
-
-  /**
-   * Called when the user reverts to the select list with which he/she started.
-   * The function will be called with no arguments as the original
-   * state is maintained by the store.
-   */
-  onCurrentSelectedListLoaded: PropTypes.func,
-
-  /** Called during rendering to create the react element holding the display name and tooltip for the current node */
-  getBasicNodeReactElement: PropTypes.func,
-
-  /** Called during rendering to provide the input value for the current node */
-  getNodeFormValue: PropTypes.func,
-
-  /** Called during rendering to provide the children for the current node */
-  getNodeChildren:  PropTypes.func,
-
-  /** Called during rendering to identify whether a given node should be made visible based upon whether it or
-   *  its ancestors match the search criteria.
-   */
-  onSearch: PropTypes.func,
 
   /** Called when user alters text in the search box  */
   onSearchTextSet: PropTypes.func,
