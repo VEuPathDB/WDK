@@ -27,8 +27,8 @@ class NativeCheckboxList extends Component {
     if (!this.controlled && !event.defaultPrevented) {
       this.setState({
         selectedItems: event.target.checked
-          ? this.state.selectedItems.concat(item)
-          : this.state.selectedItems.filter(i => i !== item)
+          ? this.state.selectedItems.concat(item.value)
+          : this.state.selectedItems.filter(i => i.value !== item.value)
       });
     }
   }
@@ -38,7 +38,7 @@ class NativeCheckboxList extends Component {
 
     if (!this.controlled && !event.defaultPrevented) {
       this.setState({
-        selectedItems: this.props.items.slice()
+        selectedItems: this.props.items.map(item => item.value)
       });
     }
 
