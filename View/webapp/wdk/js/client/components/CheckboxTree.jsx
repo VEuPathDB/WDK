@@ -280,14 +280,14 @@ export default class CheckboxTree extends React.Component {
                          toggleExpansion={toggleExpansion} />
 
         <label>
+          {!this.props.removeCheckboxes ?
           <IndeterminateCheckbox
             name={fieldName}
             checked={selected}
             indeterminate={indeterminate}
             node={node}
             value={value}
-            toggleCheckbox={toggleCheckbox}
-          />
+            toggleCheckbox={toggleCheckbox} /> : "" }
           {this.props.getBasicNodeReactElement(node)}
         </label>
         {!leaf ?
@@ -311,9 +311,13 @@ export default class CheckboxTree extends React.Component {
     let toDefault = this.toDefault;
     return (
       <div className="wdk-CheckboxTree-links">
-        <a href="#" onClick={selectAll}>select all</a> |
-        <a href="#" onClick={clearAll}> clear all</a>
-        <br />
+        {!this.props.removeCheckboxes ?
+        <span>
+          <a href="#" onClick={selectAll}>select all</a> |
+          <a href="#" onClick={clearAll}> clear all</a>
+          <br />
+        </span> :
+        "" }
 
         {!isSearchMode ?
           <span>
@@ -323,8 +327,12 @@ export default class CheckboxTree extends React.Component {
           </span> :
           "" }
 
-        <a href="#" onClick={toCurrent}>reset to current</a> |
-        <a href="#" onClick={toDefault}> reset to default</a>
+        {!this.props.removeCheckboxes ?
+          <span>
+            <a href="#" onClick={toCurrent}>reset to current</a> |
+            <a href="#" onClick={toDefault}> reset to default</a>
+          </span> :
+          "" }
       </div>
     )
   }
@@ -393,7 +401,10 @@ CheckboxTree.propTypes = {
   /** Called during rendering to identify whether a given node should be made visible based upon whether it or
    *  its ancestors match the search criteria.
    */
-  onSearch: PropTypes.func
+  onSearch: PropTypes.func,
+
+  /** Indicates whether checkboxes (the default L&F) should be omitted */
+  removeCheckboxes: PropTypes.bool
 
 };
 

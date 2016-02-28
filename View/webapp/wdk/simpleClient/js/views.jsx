@@ -204,14 +204,14 @@ var AnswerResults = React.createClass({
           <thead>
             <tr>
               {meta.attributes.map(function(attrib) {
-                return ( <th style={headerStyle}>{attrib}</th> ); })}
+                return ( <th key={attrib.name} style={headerStyle}>{attrib}</th> ); })}
             </tr>
           </thead>
           <tbody>
             {records.map(function(record) { return (
-              <tr>
+              <tr key={record.displayName}>
                 {meta.attributes.map(function(attrib) { return (
-                  <td style={cellStyle}>
+                  <td key={attrib.name} style={cellStyle}>
                     <HtmlDiv style={cellDivStyle} contents={record.attributes[attrib]}/>
                   </td>
                 );})}
