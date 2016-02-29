@@ -22,6 +22,7 @@
     "react": "^0.14",
     "react-dom": "^0.14",
     "react-addons-pure-render-mixin": "^0.14",
+    "react-addons-shallow-compare": "^0.14",
     "react-addons-update": "^0.14",
     "react-router": "^0.13.3",
     "style-loader": "^0.12.3",
