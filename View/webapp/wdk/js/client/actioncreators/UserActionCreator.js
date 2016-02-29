@@ -1,7 +1,5 @@
-import ActionCreator from '../utils/ActionCreator';
-
 // Action types
-let actionTypes = {
+export let actionTypes = {
   USER_LOADING: 'user/loading',
   USER_INITIALIZE_STORE: 'user/initialize',
   USER_PROFILE_UPDATE: 'user/profile-update',
@@ -13,55 +11,69 @@ let actionTypes = {
   APP_ERROR: 'user/error'
 };
 
-export default class UserActionCreator extends ActionCreator {
+export function loadCurrentUser() {
+  return function run(dispatch, { wdkService }) {
+    dispatch({ type: actionTypes.USER_LOADING });
 
-  loadCurrentUser() {
-
-    this._dispatch({ type: actionTypes.USER_LOADING });
-
-    let userPromise = this._service.getCurrentUser();
-    let preferencePromise = this._service.getCurrentUserPreferences();
+    let userPromise = wdkService.getCurrentUser();
+    let preferencePromise = wdkService.getCurrentUserPreferences();
 
     return Promise.all([ userPromise, preferencePromise ])
     .then(([ user, preferences ]) => {
-      this._dispatch({
+      dispatch({
         type: actionTypes.USER_INITIALIZE_STORE,
         payload: { user, preferences }
       });
       return { user, preferences };
-    }, this._errorHandler(actionTypes.APP_ERROR));
-  }
+    }, error => {
+      dispatch({
+        type: actionTypes.APP_ERROR,
+        payload: { error }
+      });
+      throw error;
+    });
+  };
+}
 
-  loadBasketStatus(recordClassName, primaryKey) {
-    return this._basketStatusAction(
+export function loadBasketStatus(recordClassName, primaryKey) {
+  return function run(dispatch, { wdkService }) {
+    return dispatch(setBasketStatus(
       recordClassName,
       primaryKey,
-      this._service.getBasketStatus(recordClassName, primaryKey)
-    );
-  }
+      wdkService.getBasketStatus(recordClassName, primaryKey)
+    ));
+  };
+}
 
-  updateBasketStatus(recordClassName, primaryKey, inBasket) {
-    return this._basketStatusAction(
+export function updateBasketStatus(recordClassName, primaryKey, inBasket) {
+  return function run(dispatch, { wdkService }) {
+    return dispatch(setBasketStatus(
       recordClassName,
       primaryKey,
-      this._service.updateBasketStatus(recordClassName, primaryKey, inBasket)
-    );
-  }
+      wdkService.updateBasketStatus(recordClassName, primaryKey, inBasket)
+    ));
+  };
+}
 
-  _basketStatusAction(recordClassName, primaryKey, basketStatusPromise) {
-    this._dispatch({
+function setBasketStatus(recordClassName, primaryKey, basketStatusPromise) {
+  return function run(dispatch) {
+    dispatch({
       type: actionTypes.BASKET_STATUS_LOADING,
       payload: { recordClassName, primaryKey }
     });
 
     return basketStatusPromise.then(inBasket => {
-      this._dispatch({
+      dispatch({
         type: actionTypes.BASKET_STATUS_RECEIVED,
         payload: { recordClassName, primaryKey, inBasket }
       });
       return { recordClassName, primaryKey, inBasket };
-    }, this._errorHandler(actionTypes.BASKET_STATUS_ERROR));
-  }
+    }, error => {
+      dispatch({
+        type: actionTypes.BASKET_STATUS_ERROR,
+        payload: { error }
+      });
+      throw error;
+    });
+  };
 }
-
-UserActionCreator.actionTypes = actionTypes;

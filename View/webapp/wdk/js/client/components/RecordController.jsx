@@ -3,6 +3,9 @@ import Doc from './Doc';
 import Loading from './Loading';
 import RecordUI from './RecordUI';
 import { wrappable } from '../utils/componentUtils';
+import { wrapActions } from '../utils/actionHelpers';
+import * as RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
+import * as UserActionCreator from '../actioncreators/UserActionCreator';
 
 class RecordController extends Component {
 
@@ -10,8 +13,9 @@ class RecordController extends Component {
     super(props);
     this.recordViewStore = props.stores.RecordViewStore;
     this.userStore = props.stores.UserStore;
-    this.recordViewActions = props.actionCreators.RecordViewActionCreator;
-    this.userActions = props.actionCreators.UserActionCreator;
+    this.recordViewActions =
+      wrapActions(this.props.dispatchAction, RecordViewActionCreator);
+    this.userActions = wrapActions(this.props.dispatchAction, UserActionCreator);
     this.state = this.getStateFromStores();
   }
 
@@ -41,7 +45,7 @@ class RecordController extends Component {
 
   fetchRecord(props) {
     let { recordClass, splat } = props.params;
-    this.recordViewActions.fetchRecordDetails(recordClass, splat.split('/'));
+    this.recordViewActions.setActiveRecord(recordClass, splat.split('/'));
   }
 
   renderLoading() {

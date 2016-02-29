@@ -1,8 +1,6 @@
 import {ReduceStore} from 'flux/utils';
 import {filterRecords} from '../utils/recordUtils';
-import UserActionCreator from '../actioncreators/UserActionCreator';
-
-let action = UserActionCreator.actionTypes;
+import { actionTypes } from '../actioncreators/UserActionCreator';
 
 export default class UserStore extends ReduceStore {
 
@@ -18,31 +16,31 @@ export default class UserStore extends ReduceStore {
 
   reduce(state, { type, payload }) {
     switch(type) {
-      case action.USER_LOADING:
+      case actionTypes.USER_LOADING:
         return userLoading(state, { isLoading: true });
 
-      case action.USER_INITIALIZE_STORE:
+      case actionTypes.USER_INITIALIZE_STORE:
         return initializeUser(state, payload);
 
-      case action.USER_PROFILE_UPDATE:
+      case actionTypes.USER_PROFILE_UPDATE:
         return updateProfile(state, payload);
 
-      case action.USER_PROPERTY_UPDATE:
+      case actionTypes.USER_PROPERTY_UPDATE:
         return updateProperties(state, payload);
 
-      case action.USER_PREFERENCE_UPDATE:
+      case actionTypes.USER_PREFERENCE_UPDATE:
         return updatePreferences(state, payload);
 
-      case action.BASKET_STATUS_LOADING:
+      case actionTypes.BASKET_STATUS_LOADING:
         return basketStatusLoading(state, payload);
 
-      case action.BASKET_STATUS_RECEIVED:
+      case actionTypes.BASKET_STATUS_RECEIVED:
         return basketStatus(state, payload);
 
-      case action.BASKET_STATUS_ERROR:
+      case actionTypes.BASKET_STATUS_ERROR:
         return basketStatusError(state, payload);
 
-      case action.APP_ERROR:
+      case actionTypes.APP_ERROR:
         return userLoading(state, { isLoading: false });
 
       default:

@@ -1,9 +1,8 @@
-import ActionCreator from '../utils/ActionCreator';
 import { submitAsForm } from '../utils/FormSubmitter';
 import { getStepBundle, getSingleRecordStepBundle } from '../utils/actionCreatorUtils';
 
 // Action types
-let actionTypes = {
+export let actionTypes = {
   STEP_DOWNLOAD_LOADING: 'stepDownload/loading',
   STEP_DOWNLOAD_INITIALIZE_STORE: 'stepDownload/initialize',
   STEP_DOWNLOAD_RESET_STORE: 'stepDownload/reset',
@@ -13,57 +12,72 @@ let actionTypes = {
   APP_ERROR: 'stepDownload/error'
 };
 
-export default class StepDownloadFormViewActionCreator extends ActionCreator {
+export function selectReporter(reporterName) {
+  return {
+    type: actionTypes.STEP_DOWNLOAD_SELECT_REPORTER,
+    payload: { selectedReporter: reporterName }
+  };
+}
 
-  selectReporter(reporterName) {
-    this._dispatch({
-      type: actionTypes.STEP_DOWNLOAD_SELECT_REPORTER,
-      payload: { selectedReporter: reporterName }
-    });
-  }
+export function updateFormState(newState) {
+  return {
+    type: actionTypes.STEP_DOWNLOAD_FORM_UPDATE,
+    payload: { formState: newState }
+  };
+}
 
-  updateFormState(newState) {
-    this._dispatch({
-      type: actionTypes.STEP_DOWNLOAD_FORM_UPDATE,
-      payload: { formState: newState }
-    });
-  }
+export function updateFormUiState(newUiState) {
+  return {
+    type: actionTypes.STEP_DOWNLOAD_FORM_UI_UPDATE,
+    payload: { formUiState: newUiState }
+  };
+}
 
-  updateFormUiState(newUiState) {
-    this._dispatch({
-      type: actionTypes.STEP_DOWNLOAD_FORM_UI_UPDATE,
-      payload: { formUiState: newUiState }
-    });
-  }
-
-  loadPageData(stepId) {
-    this._dispatch({ type: actionTypes.STEP_DOWNLOAD_LOADING });
-    getStepBundle(stepId, this._service).then(stepBundle => {
-      this._dispatch({
+export function loadPageData(stepId) {
+  return function run(dispatch, { wdkService }) {
+    dispatch({ type: actionTypes.STEP_DOWNLOAD_LOADING });
+    return getStepBundle(stepId, wdkService).then(stepBundle => {
+      return dispatch({
         type: actionTypes.STEP_DOWNLOAD_INITIALIZE_STORE,
         payload: stepBundle
       });
-    }, this._errorHandler(actionTypes.APP_ERROR));
+    }, error => {
+      dispatch({
+        type: actionTypes.APP_ERROR,
+        payload: { error }
+      });
+      throw error;
+    });
   }
+}
 
-  loadPageDataFromRecord(recordClassUrlSegment, primaryKeyString) {
-    this._dispatch({ type: actionTypes.STEP_DOWNLOAD_LOADING });
-    this._service.findRecordClass(r => r.urlSegment === recordClassUrlSegment).then( recordClass => {
-      this._dispatch({
+export function loadPageDataFromRecord(recordClassUrlSegment, primaryKeyString) {
+  return function run(dispatch, { wdkService }) {
+    dispatch({ type: actionTypes.STEP_DOWNLOAD_LOADING });
+    return wdkService.findRecordClass(r => r.urlSegment === recordClassUrlSegment).then( recordClass => {
+      return dispatch({
         type: actionTypes.STEP_DOWNLOAD_INITIALIZE_STORE,
         payload: getSingleRecordStepBundle(recordClass, primaryKeyString)
       });
-    }, this._errorHandler(actionTypes.APP_ERROR));
-  }
-
-  unloadPageData() {
-    this._dispatch({
-      type: actionTypes.STEP_DOWNLOAD_RESET_STORE,
-      payload: null
+    }, error => {
+      dispatch({
+        type: actionTypes.APP_ERROR,
+        payload: { error }
+      });
+      throw error;
     });
   }
+}
 
-  submitForm(step, selectedReporter, formState, target = '_blank') {
+export function unloadPageData() {
+  return {
+    type: actionTypes.STEP_DOWNLOAD_RESET_STORE,
+    payload: null
+  };
+}
+
+export function submitForm(step, selectedReporter, formState, target = '_blank') {
+  return function run(dispatch, { wdkService }) {
     // a submission must trigger a form download, meaning we must POST the form
     let submissionJson = {
       questionDefinition: step.answerSpec,
@@ -76,7 +90,7 @@ export default class StepDownloadFormViewActionCreator extends ActionCreator {
         { contentDisposition: 'attachment' } : formState);
     submitAsForm({
       method: 'post',
-      action: this._service.getAnswerServiceUrl(),
+      action: wdkService.getAnswerServiceUrl(),
       target: target,
       inputs: {
         data: JSON.stringify(submissionJson)
@@ -84,5 +98,3 @@ export default class StepDownloadFormViewActionCreator extends ActionCreator {
     });
   }
 }
-
-StepDownloadFormViewActionCreator.actionTypes = actionTypes;

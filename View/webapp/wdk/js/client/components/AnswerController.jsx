@@ -6,6 +6,12 @@ import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
 import { wrappable } from '../utils/componentUtils';
+import {
+  updateFilter,
+  loadAnswer,
+  moveColumn,
+  changeAttributes
+} from '../actioncreators/AnswerViewActionCreator';
 
 /**
  * wrap - Wrap `value` in array.
@@ -92,7 +98,6 @@ let AnswerController = React.createClass({
   // properties of the component.
   componentWillMount() {
     this.store = this.props.stores.AnswerViewStore;
-    this.actions = this.props.actionCreators.AnswerViewActionCreator;
     this.sortingPreferenceKey = 'sorting::' + this.props.params.question;
 
     // Bind methods of `this.answerEvents` to `this`. When they are called by
@@ -156,7 +161,7 @@ let AnswerController = React.createClass({
         attributes: maybeSplit(nextQuery.attrs, ','),
         tables: maybeSplit(nextQuery.tables, ',')
       };
-      this.actions.updateFilter(filterOpts);
+      this.props.dispatchAction(updateFilter(filterOpts));
     }
 
   },
@@ -222,8 +227,8 @@ let AnswerController = React.createClass({
       tables: maybeSplit(query.tables, ',')
     };
 
-    this.actions.updateFilter(filterOpts);
-    this.actions.loadAnswer(params.question, params.recordClass, opts);
+    this.props.dispatchAction(updateFilter(filterOpts));
+    this.props.dispatchAction(loadAnswer(params.question, params.recordClass, opts));
   },
 
 
@@ -281,7 +286,7 @@ let AnswerController = React.createClass({
         sorting: { $set: sorting }
       });
 
-      this.actions.loadAnswer(question, recordClass, { displayInfo });
+      this.props.dispatchAction(loadAnswer(question, recordClass, { displayInfo }));
 
       // dispatch(PreferenceActions.setPreference(this.sortingPreferenceKey, sorting));
     },
@@ -291,7 +296,7 @@ let AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onMoveColumn(columnName, newPosition) {
-      this.actions.moveColumn(columnName, newPosition);
+      this.props.dispatchAction(moveColumn(columnName, newPosition));
     },
 
     // Call the `changeAttributes` action creator. This will cause the state of
@@ -299,7 +304,7 @@ let AnswerController = React.createClass({
     // component to be updated, which will cause the `render` method to be
     // called.
     onChangeColumns(attributes) {
-      this.actions.changeAttributes(attributes);
+      this.props.dispatchAction(changeAttributes(attributes));
     },
 
     onFilter(terms, attributes, tables) {
