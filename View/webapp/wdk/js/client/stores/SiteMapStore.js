@@ -1,7 +1,5 @@
 import {ReduceStore} from 'flux/utils';
-import SiteMapActionCreator from '../actioncreators/SiteMapActionCreator';
-
-let actionTypes = SiteMapActionCreator.actionTypes;
+import { actionTypes } from '../actioncreators/SiteMapActionCreator';
 
 export default class SiteMapStore extends ReduceStore {
 

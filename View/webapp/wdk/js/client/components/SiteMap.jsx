@@ -122,7 +122,7 @@ getNodeChildren(node) {
                    expandedList={this.props.expandedList}
                    name="SiteMapTree"
                    onSelectedListUpdated={()=>{}}
-                   onExpandedListUpdated={this.props.siteMapActions.updateExpanded.bind(this.props.siteMapActions)}
+                   onExpandedListUpdated={this.props.siteMapActions.updateExpanded}
                    onDefaultSelectedListLoaded={()=>{}}
                    onCurrentSelectedListLoaded={()=>{}}
                    getBasicNodeReactElement={this.getBasicNodeReactElement}

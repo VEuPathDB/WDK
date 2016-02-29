@@ -1,6 +1,6 @@
 import {ReduceStore} from 'flux/utils';
 import {filterRecords} from '../utils/recordUtils';
-import AnswerViewActionCreator from '../actioncreators/AnswerViewActionCreator';
+import { actionTypes } from '../actioncreators/AnswerViewActionCreator';
 
 let {
   ANSWER_ADDED,
@@ -9,7 +9,7 @@ let {
   ANSWER_MOVE_COLUMN,
   ANSWER_UPDATE_FILTER,
   APP_ERROR
-} = AnswerViewActionCreator.actionTypes;
+} = actionTypes;
 
 export default class AnswerViewStore extends ReduceStore {
 
