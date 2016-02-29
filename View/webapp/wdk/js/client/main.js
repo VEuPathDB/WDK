@@ -68,9 +68,13 @@ function makeDispatchAction(dispatcher, services) {
       // Call the function with dispatchAction and services
       return action(dispatchAction, services);
     }
-    else {
-      return dispatcher.dispatch(action);
+    else if (action == null) {
+      console.warn("Action received is not defined or is null");
     }
+    else if (action.type == null) {
+      console.warn("Action received does not have a `type` property", action);
+    }
+    return dispatcher.dispatch(action);
   }
 }
 
