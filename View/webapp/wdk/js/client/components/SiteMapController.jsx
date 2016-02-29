@@ -1,15 +1,18 @@
 // Import modules
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
+import { wrapActions } from '../utils/actionHelpers';
 import Doc from './Doc';
 import Loading from './Loading';
 import SiteMap from './SiteMap';
+import * as SiteMapActionCreator from '../actioncreators/SiteMapActionCreator';
 
 let SiteMapController = React.createClass({
 
  componentWillMount() {
     this.siteMapStore = this.props.stores.SiteMapStore;
-    this.siteMapActions = this.props.actionCreators.SiteMapActionCreator;
+    this.siteMapActions =
+      wrapActions(this.props.dispatchAction, SiteMapActionCreator);
     this.setState(this.siteMapStore.getState());
 
     this.siteMapStoreSubscription = this.siteMapStore.addListener(() => {

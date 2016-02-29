@@ -20,14 +20,14 @@ let AppController = React.createClass({
 
   childContextTypes: {
     stores: React.PropTypes.object,
-    actionCreators: React.PropTypes.object,
+    dispatchAction: React.PropTypes.func,
     router: React.PropTypes.func
   },
 
   getChildContext() {
     return {
       stores: this.props.stores,
-      actionCreators: this.props.actionCreators,
+      dispatchAction: this.props.dispatchAction,
       router: this.props.router
     };
   },

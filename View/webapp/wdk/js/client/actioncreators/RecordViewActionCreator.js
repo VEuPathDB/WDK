@@ -1,6 +1,4 @@
-import ActionCreator from '../utils/ActionCreator';
-import UserActionCreator from './UserActionCreator';
-import {latest} from '../utils/PromiseUtils';
+import { loadBasketStatus } from './UserActionCreator';
 import {
   getTree,
   nodeHasProperty,
@@ -10,7 +8,7 @@ import {
   preorderSeq
 } from '../utils/TreeUtils';
 
-let actionTypes = {
+export let actionTypes = {
   SET_ACTIVE_RECORD: 'record/set-active-record',
   SET_ACTIVE_RECORD_LOADING: 'record/set-active-record-loading',
   SET_ERROR: 'record/set-error',
@@ -41,88 +39,83 @@ let getTables = tree =>
 
 let getNodeName = node => getPropertyValue('name', node);
 
-export default class RecordViewActionCreator extends ActionCreator {
+/**
+ * @param {string} recordClassName
+ * @param {Object} spec
+ * @param {Object} spec.primaryKey
+ * @param {Array<string>}  spec.attributes
+ * @param {Array<string>}  spec.tables
+ */
+export function setActiveRecord(recordClassName, primaryKeyValues) {
+  return function run(dispatch, { wdkService }) {
+    dispatch({ type: actionTypes.SET_ACTIVE_RECORD_LOADING });
 
-  constructor(...args) {
-    super(...args);
-    this._latestFetchRecordDetails = latest(this._fetchRecordDetails.bind(this));
-    this._userActionCreator = new UserActionCreator(...args);
-  }
-
-  /**
-   * @param {string} recordClassName
-   * @param {Object} spec
-   * @param {Object} spec.primaryKey
-   * @param {Array<string>}  spec.attributes
-   * @param {Array<string>}  spec.tables
-   */
-  fetchRecordDetails(recordClassName, primaryKeyValues) {
-    this._dispatch({ type: actionTypes.SET_ACTIVE_RECORD_LOADING });
-
-    let details$ = this._latestFetchRecordDetails(recordClassName, primaryKeyValues);
-    let basketAction$ = details$.then(details => this._userActionCreator.loadBasketStatus(details.recordClass.name, details.record.id));
+    let details$ = fetchRecordDetails(wdkService, recordClassName, primaryKeyValues);
+    let basketAction$ = details$.then(details => dispatch(loadBasketStatus(details.recordClass.name, details.record.id)));
 
     return Promise.all([ details$, basketAction$ ]).then(([ details ]) => {
-      return this._dispatch({
+      return dispatch({
         type: actionTypes.SET_ACTIVE_RECORD,
         payload: details
       });
-    }, this._errorHandler(actionTypes.SET_ERROR));
-  }
-
-  toggleCategoryCollapsed(recordClassName, categoryName, isCollapsed) {
-    return this._dispatch({
-      type: isCollapsed ? actionTypes.HIDE_CATEGORY : actionTypes.SHOW_CATEGORY,
-      payload: {
-        recordClass: recordClassName,
-        name: categoryName
-      }
+    }, error => {
+      dispatch({
+        type: actionTypes.SET_ERROR,
+        payload: { error }
+      });
+      throw error;
     });
   }
-
-  toggleTableCollapsed(recordClassName, tableName, isCollapsed) {
-    return this._dispatch({
-      type: isCollapsed ? actionTypes.HIDE_TABLE : actionTypes.SHOW_TABLE,
-      payload: {
-        recordClass: recordClassName,
-        name: tableName
-      }
-    });
-  }
-
-  updateNavigationQuery(query) {
-    return this._dispatch({
-      type: actionTypes.UPDATE_NAVIGATION_QUERY,
-      payload: { query }
-    });
-  }
-
-  _fetchRecordDetails(recordClassUrlSegment, primaryKeyValues) {
-    let questions$ = this._service.getQuestions();
-    let recordClasses$ = this._service.getRecordClasses();
-    let recordClass$ = this._service.findRecordClass(r => r.urlSegment === recordClassUrlSegment);
-    let categoryTree$ = Promise.all([ recordClass$, this._service.getOntology() ])
-      .then(([ recordClass, ontology ]) => getTree(ontology, isLeafFor(recordClass.name)));
-    let record$ = Promise.all([ recordClass$, categoryTree$ ]).then(([ recordClass, categoryTree ]) => {
-      let attributes = getAttributes(categoryTree).map(getNodeName);
-      let tables = getTables(categoryTree).map(getNodeName);
-      let primaryKey = recordClass.primaryKeyColumnRefs
-        .map((ref, index) => ({ name: ref, value: primaryKeyValues[index] }));
-      let options = { attributes, tables };
-      return this._service.getRecord(recordClass.name, primaryKey, options)
-    });
-
-    return Promise.all([ record$, categoryTree$, recordClass$, recordClasses$, questions$ ])
-    .then(([ record, categoryTree, recordClass, recordClasses, questions ]) => {
-       let newTree = getTree({tree: categoryTree}, isNotInternal);
-       return {
-          record, categoryTree: newTree, recordClass, recordClasses, questions
-        }
-      }
-    );
-  }
-
 }
 
-// Action types
-RecordViewActionCreator.actionTypes = actionTypes;
+export function toggleCategoryCollapsed(recordClassName, categoryName, isCollapsed) {
+  return {
+    type: isCollapsed ? actionTypes.HIDE_CATEGORY : actionTypes.SHOW_CATEGORY,
+    payload: {
+      recordClass: recordClassName,
+      name: categoryName
+    }
+  };
+}
+
+export function toggleTableCollapsed(recordClassName, tableName, isCollapsed) {
+  return {
+    type: isCollapsed ? actionTypes.HIDE_TABLE : actionTypes.SHOW_TABLE,
+    payload: {
+      recordClass: recordClassName,
+      name: tableName
+    }
+  };
+}
+
+export function updateNavigationQuery(query) {
+  return {
+    type: actionTypes.UPDATE_NAVIGATION_QUERY,
+    payload: { query }
+  };
+}
+
+function fetchRecordDetails(wdkService, recordClassUrlSegment, primaryKeyValues) {
+  let questions$ = wdkService.getQuestions();
+  let recordClasses$ = wdkService.getRecordClasses();
+  let recordClass$ = wdkService.findRecordClass(r => r.urlSegment === recordClassUrlSegment);
+  let categoryTree$ = Promise.all([ recordClass$, wdkService.getOntology() ])
+    .then(([ recordClass, ontology ]) => getTree(ontology, isLeafFor(recordClass.name)));
+  let record$ = Promise.all([ recordClass$, categoryTree$ ]).then(([ recordClass, categoryTree ]) => {
+    let attributes = getAttributes(categoryTree).map(getNodeName);
+    let tables = getTables(categoryTree).map(getNodeName);
+    let primaryKey = recordClass.primaryKeyColumnRefs
+      .map((ref, index) => ({ name: ref, value: primaryKeyValues[index] }));
+    let options = { attributes, tables };
+    return wdkService.getRecord(recordClass.name, primaryKey, options)
+  });
+
+  return Promise.all([ record$, categoryTree$, recordClass$, recordClasses$, questions$ ])
+  .then(([ record, categoryTree, recordClass, recordClasses, questions ]) => {
+     let newTree = getTree({tree: categoryTree}, isNotInternal);
+     return {
+        record, categoryTree: newTree, recordClass, recordClasses, questions
+      }
+    }
+  );
+}

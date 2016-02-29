@@ -1,5 +1,5 @@
 import { ReduceStore } from 'flux/utils';
-import RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
+import { actionTypes } from '../actioncreators/RecordViewActionCreator';
 
 let {
   SET_ACTIVE_RECORD,
@@ -10,7 +10,7 @@ let {
   SHOW_TABLE,
   HIDE_TABLE,
   UPDATE_NAVIGATION_QUERY
-} = RecordViewActionCreator.actionTypes;
+} = actionTypes;
 
 export default class RecordViewStore extends ReduceStore {
 

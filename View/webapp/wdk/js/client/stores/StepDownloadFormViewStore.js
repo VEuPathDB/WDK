@@ -1,8 +1,6 @@
 import {ReduceStore} from 'flux/utils';
 import {filterRecords} from '../utils/recordUtils';
-import StepDownloadFormViewActionCreator from '../actioncreators/StepDownloadFormViewActionCreator';
-
-let actionTypes = StepDownloadFormViewActionCreator.actionTypes;
+import { actionTypes } from '../actioncreators/StepDownloadFormViewActionCreator';
 
 export default class StepDownloadFormViewStore extends ReduceStore {
 

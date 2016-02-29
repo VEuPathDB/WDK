@@ -1,9 +1,12 @@
 // Import modules
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
+import { wrapActions } from '../utils/actionHelpers';
 import Doc from './Doc';
 import Loading from './Loading';
 import StepDownloadFormPage from './StepDownloadFormPage';
+import * as StepDownloadFormViewActionCreator from '../actioncreators/StepDownloadFormViewActionCreator';
+import * as UserActionCreator from '../actioncreators/UserActionCreator';
 
 // What are parameters to this page?
 //  1. Step ID (path param)
@@ -50,8 +53,8 @@ let StepDownloadFormController = React.createClass({
   componentWillMount() {
 
     // get actions for this view
-    this.actions = this.props.actionCreators.StepDownloadFormViewActionCreator;
-    this.userActions = this.props.actionCreators.UserActionCreator;
+    this.actions = wrapActions(this.props.dispatchAction, StepDownloadFormViewActionCreator);
+    this.userActions = wrapActions(this.props.dispatchAction, UserActionCreator);
 
     // get the user store, load data from it, and subscribe
     this.userStore = this.props.stores.UserStore;

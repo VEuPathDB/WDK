@@ -20,24 +20,58 @@ import * as WdkUtils from './utils/WdkUtils';
 
 export { Components, ComponentUtils, ReporterUtils, FormSubmitter, WdkUtils, IterableUtils, TreeUtils, OntologyUtils, SearchableTreeUtils };
 
+/**
+ * Run the application.
+ *
+ * @param {string} option.rootUrl Root URL used by the router.
+ * @param {string} option.endpoint Base URL for WdkService.
+ * @param {HTMLElement} option.rootElement DOM node to render the applicaiton.
+ * @param {Array} option.applicationRoutes Addtional routes to register with the Router.
+ */
 export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
   let dispatcher = new Dispatcher;
-  let service = new WdkService(endpoint);
+  let wdkService = new WdkService(endpoint);
+  let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
   let stores = mapValues(Stores, Store => new Store(dispatcher));
-  let actionCreators = mapValues(ActionCreators, ActionCreator => new ActionCreator(dispatcher, service));
 
   let context = {
-    dispatcher,
-    service,
+    dispatchAction,
     stores,
-    actionCreators
   };
 
-  if (__DEV__) logActions(context);
+  if (__DEV__) logActions(dispatcher, stores);
 
   let router = Router.start(rootUrl, rootElement, context, applicationRoutes);
 
   return Object.assign({ router }, context);
+}
+
+/**
+ * Create a dispatch function `dispatchAction` that forwards calls to
+ * `dispatcher.dispatch`.
+ *
+ * If `action` is a function, it will be called with `dispatchAction` and
+ * `services`. Calling it with `dispatchAction` allows for composability since
+ * an action function can in turn call another action function. This is useful
+ * for creating higher-order dispatch helpers, such as latest, once, etc.
+ *
+ * If `action` is an object, `dispatcher.dispatch` will be called with it.
+ *
+ * An `action` function should ultimately return an object to invoke a dispatch.
+ *
+ * @param {Dispatcher} dispatcher
+ * @param {any?} services
+ */
+function makeDispatchAction(dispatcher, services) {
+  return function dispatchAction(action) {
+    if (typeof action === 'function') {
+      // Call the function with dispatchAction and services
+      return action(dispatchAction, services);
+    }
+    else {
+      return dispatcher.dispatch(action);
+    }
+  }
 }
 
 export function wrapComponents(componentWrappers) {
@@ -73,8 +107,7 @@ export function wrapStores(storeWrappers) {
   }
 }
 
-function logActions(context) {
-  let { dispatcher, stores } = context;
+function logActions(dispatcher, stores) {
   // Debug logging - TODO Only enable in development environments
   dispatcher.register(action => {
     dispatcher.waitFor(values(stores).map(s => s.getDispatchToken()));
