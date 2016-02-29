@@ -116,11 +116,11 @@ getNodeChildren(node) {
 
   render() {
     return (
-
       <CheckboxTree tree={this.props.tree}
                    selectedList={[]}
                    expandedList={this.props.expandedList}
                    name="SiteMapTree"
+                   removeCheckboxes="true"
                    onSelectedListUpdated={()=>{}}
                    onExpandedListUpdated={this.props.siteMapActions.updateExpanded}
                    onDefaultSelectedListLoaded={()=>{}}
