@@ -70,7 +70,7 @@ $(libs_bundle): $(libs_sources)
 
 $(css_bundle): $(css_sources) node_modules
 	mkdir -p $(dir $@)
-	cd $(dir $<) && cleancss --source-map -o $@ $(notdir $<)
+	cd $(dir $<) && cleancss --skip-rebase --source-map -o $@ $(notdir $<)
 
 
 # =============================================================================
