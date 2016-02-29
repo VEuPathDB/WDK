@@ -453,6 +453,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return this.recordClass;
   }
 
+  public String getRecordClassName() {
+    return this.recordClassRef;
+  }
+
   public Query getQuery() {
     return this.query;
   }
@@ -1176,7 +1180,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     writer.print(indent + "</question>");
   }
   
-	// used to set question specific filters
+  // used to set question specific filters
   public void addFilter(Filter filter) {
     logger.debug("QUESTION: ADDING FILTER: " + filter.getKey() + " for question: " + getFullName() + "\n");
     filters.put(filter.getKey(), filter);
@@ -1192,9 +1196,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   public Map<String, Filter> getFilters() {
     logger.debug("QUESTION: GETTING ALL FILTERs");
     Map<String, Filter> map = new LinkedHashMap<>(recordClass.getFilters());
-		for (Entry<String, Filter> map2 : map.entrySet()) {
-			logger.debug("Filters from recordclass: name: " + map2.getKey());
-			logger.debug("Filters from recordclass: default values (from IMPL): " + map2.getValue().getDefaultValue(null).toString(2));
+    for (Entry<String, Filter> map2 : map.entrySet()) {
+      logger.debug("Filters from recordclass: name: " + map2.getKey());
+      logger.debug("Filters from recordclass: default values (from IMPL): " + map2.getValue().getDefaultValue(null).toString(2));
     }
     for (Entry<String, Filter> filter : this.filters.entrySet()) {
       if (!filter.getValue().getIsViewOnly()) {
