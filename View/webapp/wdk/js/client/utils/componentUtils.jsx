@@ -1,8 +1,19 @@
 import React from 'react';
+import shallowCompare from 'react-addons-shallow-compare';
 
 /**
  * React Component utils
  */
+
+/**
+ * Implements a shallow-equals algorithm for incoming props and state.
+ * If they are shallowly equal, the component update will be skipped.
+ */
+export class PureComponent extends React.Component {
+  shouldComponentUpdate(nextState, nextProps) {
+    return shallowCompare(this, nextProps, nextState);
+  }
+}
 
 /**
  * A Component decorator that wraps the Component passed to it and returns a new
