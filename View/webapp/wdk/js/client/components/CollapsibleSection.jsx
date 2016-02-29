@@ -7,17 +7,21 @@
 
 import React from 'react';
 import zipWith from 'lodash/array/zipWith';
-import {wrappable} from '../utils/componentUtils';
+import {wrappable, PureComponent} from '../utils/componentUtils';
 
 let {Component, PropTypes} = React;
 
 let defaultClassName = 'wdk-CollapsibleSection';
 
-class CollapsibleSection extends Component {
+class CollapsibleSection extends PureComponent {
   constructor(...args) {
     super(...args);
     // don't render initially if collpased
     this._renderChildren = !this.props.isCollapsed;
+
+    this.handleCollapsedChange = () => {
+      this.props.onCollapsedChange(!this.props.isCollapsed);
+    };
   }
 
   componentDidMount() {
@@ -31,7 +35,7 @@ class CollapsibleSection extends Component {
     let Header = this.props.headerComponent;
     return(
       <div id={id} className={containerClassName}>
-        <Header className={headerClassName} onClick={() => onCollapsedChange(!isCollapsed)}>
+        <Header className={headerClassName} onClick={this.handleCollapsedChange}>
           {headerContent}
         </Header>
         <div className={contentClassName}>
