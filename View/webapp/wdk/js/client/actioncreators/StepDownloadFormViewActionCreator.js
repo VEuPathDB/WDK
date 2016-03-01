@@ -33,7 +33,7 @@ export function updateFormUiState(newUiState) {
   };
 }
 
-export function loadPageData(stepId) {
+export function loadPageDataFromStepId(stepId) {
   return function run(dispatch, { wdkService }) {
     dispatch({ type: actionTypes.STEP_DOWNLOAD_LOADING });
     return getStepBundle(stepId, wdkService).then(stepBundle => {
@@ -54,18 +54,20 @@ export function loadPageData(stepId) {
 export function loadPageDataFromRecord(recordClassUrlSegment, primaryKeyString) {
   return function run(dispatch, { wdkService }) {
     dispatch({ type: actionTypes.STEP_DOWNLOAD_LOADING });
-    return wdkService.findRecordClass(r => r.urlSegment === recordClassUrlSegment).then( recordClass => {
-      return dispatch({
-        type: actionTypes.STEP_DOWNLOAD_INITIALIZE_STORE,
-        payload: getSingleRecordStepBundle(recordClass, primaryKeyString)
+    wdkService.findRecordClass(r => r.urlSegment === recordClassUrlSegment).then(recordClass =>
+      getSingleRecordStepBundle(recordClass, primaryKeyString, wdkService)).then(stepBundle => {
+        return dispatch({
+          type: actionTypes.STEP_DOWNLOAD_INITIALIZE_STORE,
+          payload: stepBundle
+        });
+      },
+      error => {
+        dispatch({
+          type: actionTypes.APP_ERROR,
+          payload: { error }
+        });
+        throw error;
       });
-    }, error => {
-      dispatch({
-        type: actionTypes.APP_ERROR,
-        payload: { error }
-      });
-      throw error;
-    });
   }
 }
 

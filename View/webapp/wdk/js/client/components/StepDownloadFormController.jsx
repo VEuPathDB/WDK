@@ -44,7 +44,7 @@ let StepDownloadFormController = React.createClass({
     // must reinitialize with every new props
     let params = this.props.params;
     if ('stepId' in params) {
-      this.viewActions.loadPageData(params.stepId);
+      this.viewActions.loadPageDataFromStepId(params.stepId);
     }
     else if ('recordClass' in params) {
       this.viewActions.loadPageDataFromRecord(params.recordClass, params.splat.split('/').join(','));
