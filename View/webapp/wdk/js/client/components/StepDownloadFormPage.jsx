@@ -4,29 +4,20 @@ import StepDownloadForm from './StepDownloadForm';
 
 let NO_REPORTER_SELECTED = "_none_";
 
-let ReporterOption = React.createClass({
-  render() {
-    let reporter = this.props.reporter;
-    return ( <option value={reporter.name}>{reporter.displayName}</option> );
-  }
-});
-
-let ReporterSelect = React.createClass({
-  render() {
-    let { reporters, selected, onChange } = this.props;
-    if (reporters.length == 0) return null;
-    return (
-      <div>
-        <span style={{marginRight:'0.5em'}}>Choose a Reporter:</span>
-        <select value={selected} onChange={onChange}>
-          <option value={NO_REPORTER_SELECTED}>Please Select...</option>
-          {reporters.filter(f => f.isInReport).map(reporter =>
-            ( <ReporterOption key={reporter.name} reporter={reporter}/> ))}
-        </select>
-      </div>
-    );
-  }
-});
+let ReporterSelect = props => {
+  let { reporters, selected, onChange } = props;
+  if (reporters.length == 0) return ( <noscript/> );
+  return (
+    <div>
+      <span style={{marginRight:'0.5em'}}>Choose a Reporter:</span>
+      <select value={selected} onChange={onChange}>
+        <option value={NO_REPORTER_SELECTED}>Please Select...</option>
+        {reporters.filter(f => f.isInReport).map(reporter =>
+          ( <option key={reporter.name} value={reporter.name}>{reporter.displayName}</option> ))}
+      </select>
+    </div>
+  );
+}
 
 let StepDownloadFormPage = React.createClass({
 
