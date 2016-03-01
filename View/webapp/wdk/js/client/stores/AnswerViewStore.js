@@ -1,4 +1,4 @@
-import {ReduceStore} from 'flux/utils';
+import WdkStore from './WdkStore';
 import {filterRecords} from '../utils/recordUtils';
 import { actionTypes } from '../actioncreators/AnswerViewActionCreator';
 
@@ -11,7 +11,7 @@ let {
   APP_ERROR
 } = actionTypes;
 
-export default class AnswerViewStore extends ReduceStore {
+export default class AnswerViewStore extends WdkStore {
 
   getInitialState() {
     return {
