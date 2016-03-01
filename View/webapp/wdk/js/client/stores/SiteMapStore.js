@@ -1,7 +1,7 @@
-import {ReduceStore} from 'flux/utils';
+import WdkStore from './WdkStore';
 import { actionTypes } from '../actioncreators/SiteMapActionCreator';
 
-export default class SiteMapStore extends ReduceStore {
+export default class SiteMapStore extends WdkStore {
 
   // defines the structure of this store's data
   getInitialState() {

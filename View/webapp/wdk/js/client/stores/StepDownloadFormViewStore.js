@@ -1,8 +1,9 @@
-import {ReduceStore} from 'flux/utils';
-import {filterRecords} from '../utils/recordUtils';
+import WdkStore from './WdkStore';
 import { actionTypes } from '../actioncreators/StepDownloadFormViewActionCreator';
 
-export default class StepDownloadFormViewStore extends ReduceStore {
+let WDK_SERVICE_JSON_REPORTER_NAME = 'wdk-service-json';
+
+export default class StepDownloadFormViewStore extends WdkStore {
 
   // defines the structure of this store's data
   getInitialState() {
@@ -53,6 +54,8 @@ export default class StepDownloadFormViewStore extends ReduceStore {
   }
 }
 
+StepDownloadFormViewStore.actionTypes = actionTypes;
+
 function formLoading(state, payload) {
   return Object.assign({}, state, {
     isLoading: payload.isLoading
@@ -70,10 +73,15 @@ function initialize(state, payload) {
 }
 
 function updateReporter(state, payload) {
+  let { formState, formUiState } = (
+      payload.selectedReporter == WDK_SERVICE_JSON_REPORTER_NAME ?
+          WdkServiceJsonReporterForm.getInitialState(
+              state, _storeContainer.UserStore.getState()) :
+          { formState: null, formUiState: null });
   return Object.assign({}, state, {
     selectedReporter: payload.selectedReporter,
-    formState: null,
-    formUiState: null
+    formState: formState,
+    formUiState: formUiState
   });
 }
 

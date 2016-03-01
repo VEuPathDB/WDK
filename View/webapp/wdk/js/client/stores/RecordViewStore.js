@@ -1,4 +1,4 @@
-import { ReduceStore } from 'flux/utils';
+import WdkStore from './WdkStore';
 import { actionTypes } from '../actioncreators/RecordViewActionCreator';
 
 let {
@@ -12,7 +12,7 @@ let {
   UPDATE_NAVIGATION_QUERY
 } = actionTypes;
 
-export default class RecordViewStore extends ReduceStore {
+export default class RecordViewStore extends WdkStore {
 
   getInitialState() {
     return {

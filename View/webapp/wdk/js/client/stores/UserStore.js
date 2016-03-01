@@ -1,8 +1,8 @@
-import {ReduceStore} from 'flux/utils';
+import WdkStore from './WdkStore';
 import {filterRecords} from '../utils/recordUtils';
 import { actionTypes } from '../actioncreators/UserActionCreator';
 
-export default class UserStore extends ReduceStore {
+export default class UserStore extends WdkStore {
 
   // defines the structure of this store's data
   getInitialState() {

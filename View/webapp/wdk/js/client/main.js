@@ -2,6 +2,7 @@ import './exposeModules';
 
 import mapValues from 'lodash/object/mapValues';
 import values from 'lodash/object/values';
+import pick from 'lodash/object/pick';
 
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
@@ -18,7 +19,7 @@ import * as SearchableTreeUtils from './utils/SearchableTreeUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
 import * as WdkUtils from './utils/WdkUtils';
 
-export { Components, ComponentUtils, ReporterUtils, FormSubmitter, WdkUtils, IterableUtils, TreeUtils, OntologyUtils, SearchableTreeUtils };
+export { Components, Stores, ComponentUtils, ReporterUtils, FormSubmitter, WdkUtils, IterableUtils, TreeUtils, OntologyUtils, SearchableTreeUtils };
 
 /**
  * Run the application.
@@ -32,8 +33,7 @@ export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
   let dispatcher = new Dispatcher;
   let wdkService = new WdkService(endpoint);
   let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
-  let stores = mapValues(Stores, Store => new Store(dispatcher));
-
+  let stores = configureStores(dispatcher);
   let context = {
     dispatchAction,
     stores,
@@ -44,6 +44,14 @@ export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
   let router = Router.start(rootUrl, rootElement, context, applicationRoutes);
 
   return Object.assign({ router }, context);
+}
+
+function configureStores(dispatcher) {
+  let stores = {};
+  return Object.assign(stores,
+      // filter WdkStore since it is "abstract" (does not provide implementation)
+      mapValues(pick(Stores, store => store.name != 'WdkStore' ),
+          Store => new Store(dispatcher, stores)));
 }
 
 /**
