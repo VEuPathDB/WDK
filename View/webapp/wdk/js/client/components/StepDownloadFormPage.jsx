@@ -33,7 +33,7 @@ let StepDownloadFormPage = React.createClass({
   render() {
 
     // get the props needed in this component's render
-    let { selectedReporter, recordClass, onSubmit } = this.props;
+    let { availableReporters, selectedReporter, recordClass, onSubmit } = this.props;
 
     // filter props we don't want to send to the child form
     let formProps = filterOutProps(this.props, [ 'onReporterChange' ]);
@@ -43,13 +43,10 @@ let StepDownloadFormPage = React.createClass({
       selectedReporter = NO_REPORTER_SELECTED;
     }
 
-    // only use reporters configured for the report download page
-    let reporters = recordClass.formats.filter(f => f.isInReport);
-
     return (
       <div style={{margin: '1em 3em'}}>
         <h1>Download Step Result: {this.props.step.displayName}</h1>
-        <ReporterSelect reporters={reporters} selected={selectedReporter} onChange={this.changeReporter}/>
+        <ReporterSelect reporters={availableReporters} selected={selectedReporter} onChange={this.changeReporter}/>
         <StepDownloadForm {...formProps}/>
       </div>
     );

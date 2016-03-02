@@ -1,12 +1,9 @@
-import React from 'react';
-import * as componentUtil from '../utils/componentUtils';
-import * as reporterUtil from '../utils/reporterUtils';
+import { getChangeHandler, wrappable } from '../utils/componentUtils';
+import * as util from '../utils/reporterUtils';
 
-let util = Object.assign({}, componentUtil, reporterUtil);
-
-let WdkServiceJsonReporterForm = props => {
+let WdkServiceJsonReporterForm = wrappable(props => {
   let { question, recordClass, formState, onFormChange, onSubmit } = props;
-  let getUpdateHandler = fieldName => util.getChangeHandler(fieldName, onFormChange, formState);
+  let getUpdateHandler = fieldName => getChangeHandler(fieldName, onFormChange, formState);
   return (
     <div>
       {util.getReporterCheckboxList("Choose Attributes", getUpdateHandler('attributes'),
@@ -18,7 +15,7 @@ let WdkServiceJsonReporterForm = props => {
       </div>
     </div>
   );
-};
+});
 
 WdkServiceJsonReporterForm.getInitialState = (downloadFormStoreState, userStoreState) => ({
   formState: {
@@ -29,4 +26,4 @@ WdkServiceJsonReporterForm.getInitialState = (downloadFormStoreState, userStoreS
   formUiState: null
 });
 
-export default util.wrappable(WdkServiceJsonReporterForm);
+export default WdkServiceJsonReporterForm;

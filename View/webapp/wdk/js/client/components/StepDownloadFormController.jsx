@@ -85,6 +85,7 @@ let StepDownloadFormController = React.createClass({
       summaryView: this.props.query.summaryView,
       question: this.state.viewData.question,
       recordClass: this.state.viewData.recordClass,
+      availableReporters: this.state.viewData.availableReporters,
       user: this.state.userData.user,
       preferences: this.state.userData.preferences,
       ontology: this.state.viewData.ontology,
