@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactRouter from 'react-router';
 import RecordLink from './RecordLink';
 import { renderAttributeValue, wrappable } from '../utils/componentUtils';
 

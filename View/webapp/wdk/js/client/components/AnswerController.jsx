@@ -1,7 +1,7 @@
 // Import modules
 import React from 'react';
 import update from 'react-addons-update';
-import Router from 'react-router';
+import { History } from 'react-router';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
@@ -91,7 +91,7 @@ let AnswerController = React.createClass({
   // Declare context properties used by this component. The context object is
   // defined in AppController (the application root component). React uses
   // `contextTypes` to determine which properties to add to `this.context`.
-  mixins: [ Router.Navigation ],
+  mixins: [ History ],
 
   // When the component first mounts, fetch the answer.
   // This can also be treated as a constructor: it's a good place to initialize
@@ -126,10 +126,10 @@ let AnswerController = React.createClass({
   // to be fetched. If not, then we will check if the filter needs to be updated.
   componentWillReceiveProps(nextProps) {
     // current query and params
-    let { query, params } = this.props;
+    let { location: { query }, params } = this.props;
 
     // incoming query and params
-    let { query: nextQuery, params: nextParams } = nextProps;
+    let { loacation: { query: nextQuery }, params: nextParams } = nextProps;
 
     // update sortingPreferenceKey value
     this.sortingPreferenceKey = 'sorting::' + nextParams.question;
@@ -180,7 +180,7 @@ let AnswerController = React.createClass({
     let state = this.store.getState();
 
     // props.params and props.query are passed to this component by the Router.
-    let { params, query } = props;
+    let { params, location: { query } } = props;
 
     // Get pagination info from `query`
     let pagination = {
@@ -312,7 +312,7 @@ let AnswerController = React.createClass({
         terms = attributes = tables = undefined;
       }
 
-      let query = update(this.props.query, {
+      let query = update(this.props.location.query, {
         $merge: {
           q: terms,
           attrs: maybeJoin(attributes, ',') || undefined,
@@ -320,7 +320,7 @@ let AnswerController = React.createClass({
         }
       });
 
-      this.transitionTo('answer', this.props.params, query);
+      this.history.pushState('answer', this.props.params, query);
     }
 
   },
@@ -359,7 +359,7 @@ let AnswerController = React.createClass({
 
     // Valid formats are 'table' and 'list'
     // TODO validation
-    let format = this.props.query.format || 'table';
+    let format = this.props.location.query.format || 'table';
 
     // `{...this.state}` is JSX short-hand syntax to pass each key-value pair of
     // this.state as a property to the component. It intentionally resembles

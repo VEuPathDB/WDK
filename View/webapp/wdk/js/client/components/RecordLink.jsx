@@ -8,12 +8,11 @@ let idPartPropType = React.PropTypes.shape({
 });
 
 function RecordLink(props) {
-  let params = {
-    recordClass: props.recordClass.urlSegment,
-    splat: props.recordId.map(p => p.value).join('/')
-  };
+  let { recordClass, recordId } = props;
+  let pkValues = recordId.map(p => p.value).join('/');
+
   return (
-    <Link to="record" params={params} {...props}>
+    <Link to={`/record/${recordClass.urlSegment}/${pkValues}`}>
       {props.children}
     </Link>
   );

@@ -1,7 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ReactRouter from 'react-router';
+import { Router, Route, IndexRoute } from 'react-router';
+import { createHistory, useBasename } from 'history';
 
+import WdkContext from './WdkContext';
 import AppController from './components/AppController';
 import IndexController from './components/IndexController';
 import RecordController from './components/RecordController';
@@ -12,48 +14,32 @@ import StepDownloadFormController from './components/StepDownloadFormController'
 import UserProfileController from './components/UserProfileController';
 import SiteMapController from './components/SiteMapController';
 
-let { Route, DefaultRoute, NotFoundRoute } = ReactRouter;
-
 /**
  * Get routes based on `rootUrl`.
  *
  * @param {string} rootUrl The rootUrl used to match paths below
  */
-export function start(rootUrl, rootElement, props, additionalRoutes = []) {
-  let router = ReactRouter.create({
-    routes: (
-      <Route name="app" path={rootUrl} handler={AppController}>
-        <Route name="answer" path="search/:recordClass/:question/result" handler={AnswerController}/>
-        <Route name="recordDownloadForm" path="record/:recordClass/download/*" handler={StepDownloadFormController}/>
-        <Route name="record" path="record/:recordClass/*" handler={RecordController}/>
-        <Route name="stepDownloadForm" path="step/:stepId/download" handler={StepDownloadFormController}/>
-        <Route name="userProfile" path="user/profile" handler={UserProfileController}/>
-        <Route name="site-map" handler={SiteMapController}/>
-        <Route name="question-list" handler={QuestionListController}/>
-        {additionalRoutes.map(route => ( <Route key={route.name} {...route}/> ))}
-        <DefaultRoute handler={IndexController}/>
-        <NotFoundRoute handler={NotFoundController}/>
-      </Route>
-    ),
-    location: ReactRouter.HistoryLocation
+export function start(rootUrl, rootElement, context, additionalRoutes = []) {
+  // This makes it possible to use relative urls in Link, etc.
+  let history = useBasename(createHistory)({
+    basename: rootUrl
   });
-
-  // Root contains the matching handlers, which are a type of React component: View-Controllers
-  router.run((Root, state) => {
-    // Remove the auth_tkt query param from url
-    // XXX Implement router filters?
-    if ('auth_tkt' in state.query) {
-      state.query.auth_tkt = undefined;
-      router.replaceWith(
-        state.pathname,
-        state.params,
-        state.query
-      );
-    }
-    else {
-      ReactDOM.render(<Root {...state} {...props} router={router} />, rootElement);
-    }
-  });
-
-  return router;
+  return ReactDOM.render((
+    <WdkContext {...context}>
+      <Router history={history}>
+        <Route path="/" component={AppController}>
+          <IndexRoute component={IndexController}/>
+          <Route path="search/:recordClass/:question/result" component={AnswerController}/>
+          <Route path="record/:recordClass/download/*" component={StepDownloadFormController}/>
+          <Route path="record/:recordClass/*" component={RecordController}/>
+          <Route path="step/:stepId/download" component={StepDownloadFormController}/>
+          <Route path="user/profile" component={UserProfileController}/>
+          <Route path="site-map" component={SiteMapController}/>
+          <Route path="question-list" component={QuestionListController}/>
+          {additionalRoutes.map(route => ( <Route key={route.name} {...route}/> ))}
+          <Route path="*" component={NotFoundController}/>
+        </Route>
+      </Router>
+    </WdkContext>
+  ), rootElement);
 }

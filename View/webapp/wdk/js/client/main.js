@@ -41,9 +41,7 @@ export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
 
   if (__DEV__) logActions(dispatcher, stores);
 
-  let router = Router.start(rootUrl, rootElement, context, applicationRoutes);
-
-  return Object.assign({ router }, context);
+  return Router.start(rootUrl, rootElement, context, applicationRoutes);
 }
 
 function configureStores(dispatcher) {

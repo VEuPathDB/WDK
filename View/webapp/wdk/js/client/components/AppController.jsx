@@ -4,9 +4,7 @@
  * This controller is matched and rendered for __any__ route.
  */
 import React from 'react';
-import PureRenderMixin from 'react-addons-pure-render-mixin';
-import { RouteHandler } from 'react-router';
-import { wrappable } from '../utils/componentUtils';
+import { wrappable, PureComponent } from '../utils/componentUtils';
 
 /*
  * RouterHandler is a special React component that the router uses to inject
@@ -14,30 +12,20 @@ import { wrappable } from '../utils/componentUtils';
  * AnswerPage will be rendered as a child of RouteHandler.
  */
 
-let AppController = React.createClass({
-
-  mixins: [ PureRenderMixin ],
-
-  childContextTypes: {
-    stores: React.PropTypes.object,
-    dispatchAction: React.PropTypes.func,
-    router: React.PropTypes.func
-  },
-
-  getChildContext() {
-    return {
-      stores: this.props.stores,
-      dispatchAction: this.props.dispatchAction,
-      router: this.props.router
-    };
-  },
+class AppController extends PureComponent {
 
   render() {
-    return (
-      <RouteHandler {...this.props}/>
-    );
+    let child = React.Children.only(this.props.children);
+    let childProps = Object.assign({}, this.props, this.context);
+    return React.cloneElement(child, childProps);
   }
 
-});
+}
+
+AppController.contextTypes = {
+  stores: React.PropTypes.object.isRequired,
+  dispatchAction: React.PropTypes.func.isRequired,
+  router: React.PropTypes.object.isRequired
+};
 
 export default wrappable(AppController);

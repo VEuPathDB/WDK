@@ -28,7 +28,7 @@ let QuestionListController = React.createClass({
           {questions.map(question => (
             <li key={question.name}>
               {question.displayName + ' - '}
-              <Link to="answer" params={{ questionName: question.name }}>answer page</Link>
+              <Link to={`/answer/${question.name}`}>answer page</Link>
             </li>
           ))}
         </ol>

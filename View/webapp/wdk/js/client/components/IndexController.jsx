@@ -30,7 +30,7 @@ let IndexController = React.createClass({
 
         <h2>Resources under development</h2>
         <ul>
-          <li><Link to="question-list">Question list</Link></li>
+          <li><Link to="/question-list">Question list</Link></li>
         </ul>
       </div>
     );

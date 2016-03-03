@@ -96,8 +96,7 @@ getBasicNodeReactElement(node) {
 
   if (data.siteMapSpecial) {
       if (data.displayName.match(/ Page$/))
-     //     return <Link to={'record/gene/PF3D7_1133400' + '#' + data.ontologyParent}><span title={data.description}>{data.displayName}</span></Link>;
-          return <Link to="record" params={{ recordClass:'gene', splat: 'PF3D7_1133400' + '#' + data.ontologyParent }}><span title={data.description}>{data.displayName}</span></Link>;
+          return <Link to={'/record/gene/PF3D7_1133400#' + data.ontologyParent}><span title={data.description}>{data.displayName}</span></Link>;
 
       return <span title={data.description}><em>{data.displayName}</em></span>;
   }
