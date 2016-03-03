@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, IndexRoute } from 'react-router';
+import { Router, Route, IndexRoute, useRouterHistory } from 'react-router';
 import { createHistory, useBasename } from 'history';
 
 import WdkContext from './WdkContext';
@@ -21,7 +21,8 @@ import SiteMapController from './components/SiteMapController';
  */
 export function start(rootUrl, rootElement, context, additionalRoutes = []) {
   // This makes it possible to use relative urls in Link, etc.
-  let history = useBasename(createHistory)({
+  let createAppHistory = useRouterHistory(useBasename(createHistory));
+  let history = createAppHistory({
     basename: rootUrl
   });
   return ReactDOM.render((
