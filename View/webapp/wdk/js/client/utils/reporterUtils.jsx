@@ -41,10 +41,7 @@ export function getAllTables(recordClass, predicate) {
  *   2. user preferences if they exist
  *   3. default columns for the question
  */
-export function getAttributeSelections(currentAttributes, userPrefs, question) {
-  if (currentAttributes != null && currentAttributes != undefined) {
-    return currentAttributes;
-  }
+export function getAttributeSelections(userPrefs, question) {
   // try initializing based on user prefs
   let userPrefKey = question.name + "_summary";
   if (userPrefKey in userPrefs) {
@@ -52,13 +49,6 @@ export function getAttributeSelections(currentAttributes, userPrefs, question) {
   }
   // otherwise, use default attribs from question
   return question.defaultAttributes;
-}
-
-/**
- * Initializes form table state to be an empty array if not already set
- */
-export function getTableSelections(currentTables) {
-  return (currentTables != null && currentTables != undefined ? currentTables : []);
 }
 
 export function getReporterCheckboxList(title, onChange, fields, selectedFields) {

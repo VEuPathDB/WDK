@@ -4,29 +4,20 @@ import StepDownloadForm from './StepDownloadForm';
 
 let NO_REPORTER_SELECTED = "_none_";
 
-let ReporterOption = React.createClass({
-  render() {
-    let reporter = this.props.reporter;
-    return ( <option value={reporter.name}>{reporter.displayName}</option> );
-  }
-});
-
-let ReporterSelect = React.createClass({
-  render() {
-    let { reporters, selected, onChange } = this.props;
-    if (reporters.length == 0) return null;
-    return (
-      <div>
-        <span style={{marginRight:'0.5em'}}>Choose a Reporter:</span>
-        <select value={selected} onChange={onChange}>
-          <option value={NO_REPORTER_SELECTED}>Please Select...</option>
-          {reporters.filter(f => f.isInReport).map(reporter =>
-            ( <ReporterOption key={reporter.name} reporter={reporter}/> ))}
-        </select>
-      </div>
-    );
-  }
-});
+let ReporterSelect = props => {
+  let { reporters, selected, onChange } = props;
+  if (reporters.length == 0) return ( <noscript/> );
+  return (
+    <div>
+      <span style={{marginRight:'0.5em'}}>Choose a Reporter:</span>
+      <select value={selected} onChange={onChange}>
+        <option value={NO_REPORTER_SELECTED}>Please Select...</option>
+        {reporters.filter(f => f.isInReport).map(reporter =>
+          ( <option key={reporter.name} value={reporter.name}>{reporter.displayName}</option> ))}
+      </select>
+    </div>
+  );
+}
 
 let StepDownloadFormPage = React.createClass({
 
@@ -42,7 +33,7 @@ let StepDownloadFormPage = React.createClass({
   render() {
 
     // get the props needed in this component's render
-    let { selectedReporter, recordClass, onSubmit } = this.props;
+    let { availableReporters, selectedReporter, recordClass, onSubmit } = this.props;
 
     // filter props we don't want to send to the child form
     let formProps = filterOutProps(this.props, [ 'onReporterChange' ]);
@@ -52,13 +43,10 @@ let StepDownloadFormPage = React.createClass({
       selectedReporter = NO_REPORTER_SELECTED;
     }
 
-    // only use reporters configured for the report download page
-    let reporters = recordClass.formats.filter(f => f.isInReport);
-
     return (
       <div style={{margin: '1em 3em'}}>
         <h1>Download Step Result: {this.props.step.displayName}</h1>
-        <ReporterSelect reporters={reporters} selected={selectedReporter} onChange={this.changeReporter}/>
+        <ReporterSelect reporters={availableReporters} selected={selectedReporter} onChange={this.changeReporter}/>
         <StepDownloadForm {...formProps}/>
       </div>
     );
