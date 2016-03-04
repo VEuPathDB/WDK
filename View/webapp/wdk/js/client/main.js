@@ -33,13 +33,19 @@ export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
   let dispatcher = new Dispatcher;
   let wdkService = new WdkService(endpoint);
   let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
-  let stores = configureStores(dispatcher);
+  let stores = configureStores(Stores, dispatcher);
   let context = { dispatchAction, stores, };
   if (__DEV__) logActions(dispatcher, stores);
   return Router.start(rootUrl, rootElement, context, applicationRoutes);
 }
 
-function configureStores(dispatcher) {
+/**
+ * Creates a `stores` object.
+ *
+ * @param {Object} Stores
+ * @param {Dispatcher} dispatcher
+ */
+function configureStores(Stores, dispatcher) {
   let stores = {};
   return Object.assign(stores,
       // filter WdkStore since it is "abstract" (does not provide implementation)
@@ -79,6 +85,13 @@ function makeDispatchAction(dispatcher, services) {
   }
 }
 
+/**
+ * Apply Component wrappers to WDK coponents. Keys of `componentWrappers`
+ * should correspond to Component names in WDK. Values of `componentWrappers`
+ * are factories that return a new Component.
+ *
+ * @param {Object} componentWrappers
+ */
 export function wrapComponents(componentWrappers) {
   for (let key in componentWrappers) {
     let Component = Components[key];
@@ -94,6 +107,14 @@ export function wrapComponents(componentWrappers) {
   }
 }
 
+/**
+ * Apply WDK Store wrappers. Keys of `storeWrappers` should correspond to WDK
+ * Store names. Values of `storeWrappers` are objects of
+ * { methodName => overrideFactory } where overrideFactory returns the
+ * overridden method.
+ *
+ * @param {Object} storeWrappers
+ */
 export function wrapStores(storeWrappers) {
   for (let key in storeWrappers) {
     let Store = Stores[key];
@@ -112,8 +133,13 @@ export function wrapStores(storeWrappers) {
   }
 }
 
+/**
+ * Log all actions and Store state changes to the browser console.
+ *
+ * @param {Dispatcher} dispatcher
+ * @param {Object} stores
+ */
 function logActions(dispatcher, stores) {
-  // Debug logging - TODO Only enable in development environments
   dispatcher.register(action => {
     dispatcher.waitFor(values(stores).map(s => s.getDispatchToken()));
     console.group(action.type);
