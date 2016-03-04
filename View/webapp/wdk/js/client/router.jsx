@@ -20,11 +20,11 @@ import SiteMapController from './components/SiteMapController';
  * @param {string} rootUrl The rootUrl used to match paths below
  */
 export function start(rootUrl, rootElement, context, additionalRoutes = []) {
-  // This makes it possible to use relative urls in Link, etc.
+  // This makes it possible to omit the rootUrl in the Link Component, etc.
+  // The custom history object will preprend the rootUrl.
+  // E.g., it will convert "/record/gene/123" => "/{rootUrl}/record/gene/123".
   let createAppHistory = useRouterHistory(useBasename(createHistory));
-  let history = createAppHistory({
-    basename: rootUrl
-  });
+  let history = createAppHistory({ basename: rootUrl });
   return ReactDOM.render((
     <WdkContext {...context}>
       <Router history={history}>
