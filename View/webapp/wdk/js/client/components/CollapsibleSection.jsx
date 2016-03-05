@@ -24,8 +24,10 @@ class CollapsibleSection extends PureComponent {
     };
   }
 
-  componentDidMount() {
-    this._renderChildren = true;
+  componentWillReceiveProps(nextProps) {
+    if (!this._renderChildren) {
+      this._renderChildren = !nextProps.isCollapsed;      
+    }
   }
 
   render() {
