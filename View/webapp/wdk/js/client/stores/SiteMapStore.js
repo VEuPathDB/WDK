@@ -47,8 +47,7 @@ function initializeSiteMap(state, payload) {
   return Object.assign({}, state, {
     tree: payload.tree,
     searchableTextMap: createSearchableTextMap(payload.tree),
-    isLoading: false,
-    expandedList: payload.expandedList });
+    isLoading: false });
 }
 
 function setSearchText(state, payload) {

@@ -89,7 +89,8 @@ getNodeFormValue(node) {
 },
 
 onSearch(node)   {
-  if (this.props.searchText === "") return true;
+ // if (this.props.searchText === "") return true;
+return true;
 },
 
 getBasicNodeReactElement(node) {
