@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
-import ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router';
 
 // expose libraries to global object, but only if they aren't already defined
 if (window._ == null) window._ = _;

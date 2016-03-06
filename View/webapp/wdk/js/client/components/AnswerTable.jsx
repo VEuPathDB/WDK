@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Link } from 'react-router';
 import { Column } from 'fixed-data-table';
 import AnswerTableCell from './AnswerTableCell';
 import AnswerTableHeader from './AnswerTableHeader';

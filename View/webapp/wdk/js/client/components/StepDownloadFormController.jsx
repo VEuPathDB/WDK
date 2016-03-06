@@ -82,7 +82,7 @@ let StepDownloadFormController = React.createClass({
     // build props object to pass to form component
     let formProps = {
       step: this.state.viewData.step,
-      summaryView: this.props.query.summaryView,
+      summaryView: this.props.location.query.summaryView,
       question: this.state.viewData.question,
       recordClass: this.state.viewData.recordClass,
       availableReporters: this.state.viewData.availableReporters,

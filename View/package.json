@@ -24,10 +24,11 @@
     "react-addons-pure-render-mixin": "^0.14",
     "react-addons-shallow-compare": "^0.14",
     "react-addons-update": "^0.14",
-    "react-router": "^0.13.3",
+    "react-router": "^2.0.0",
     "style-loader": "^0.12.3",
     "warning": "^2.0.0",
-    "webpack": "^1.9.11"
+    "webpack": "^1.9.11",
+    "history": "~2.0.0"
   },
   "devDependencies": {
     "babel-eslint": "^4.1.1",

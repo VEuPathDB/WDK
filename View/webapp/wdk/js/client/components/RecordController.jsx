@@ -1,13 +1,13 @@
-import { Component } from 'react';
+import React from 'react';
 import Doc from './Doc';
 import Loading from './Loading';
 import RecordUI from './RecordUI';
-import { wrappable } from '../utils/componentUtils';
+import { wrappable, PureComponent } from '../utils/componentUtils';
 import { wrapActions } from '../utils/actionHelpers';
 import * as RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
 import * as UserActionCreator from '../actioncreators/UserActionCreator';
 
-class RecordController extends Component {
+class RecordController extends PureComponent {
 
   constructor(props) {
     super(props);
@@ -40,7 +40,11 @@ class RecordController extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.fetchRecord(nextProps);
+    // We need to do this to ignore hash changes.
+    // Seems like there is a better way to do this.
+    if (this.props.location.pathname !== nextProps.location.pathname) {
+      this.fetchRecord(nextProps);
+    }
   }
 
   fetchRecord(props) {
