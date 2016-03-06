@@ -78,7 +78,7 @@ export let createSearchableTextMap = function(nodes) {
       nodeList.push(getNodeFormValue(leaf));
       // Start an array of searchable text, beginning with the leaf's display name and description (if any)
       let searchableText = [];
-      searchableText.push(getDisplayName(leaf).toLowerCase());
+      if (getDisplayName(leaf) != undefined) searchableText.push(getDisplayName(leaf).toLowerCase());
       if(getDescription(leaf) != undefined) {
         searchableText.push(getDescription(leaf).toLowerCase());
       }
@@ -86,7 +86,7 @@ export let createSearchableTextMap = function(nodes) {
       // searchable text array
       getAncestors(leaf, parentMap).forEach(ancestor => {
         nodeList.push(getNodeFormValue(ancestor));
-        searchableText.push(getDisplayName(ancestor).toLowerCase());
+        if (getDisplayName(leaf) != undefined) searchableText.push(getDisplayName(ancestor).toLowerCase());
         if(getDescription(ancestor) != undefined) {
           searchableText.push(getDescription(ancestor).toLowerCase());
         }

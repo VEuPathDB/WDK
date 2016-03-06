@@ -3,6 +3,7 @@ export let actionTypes = {
   SITEMAP_LOADING: 'sitemap/loading',
   SITEMAP_INITIALIZE_STORE: 'sitemap/initialize',
   SITEMAP_UPDATE_EXPANDED: 'sitemap/updateExpanded',
+  SITEMAP_SET_SEARCH_TEXT: 'sitemap/setSearchText',
   APP_ERROR: 'sitemap/error'
 };
 import {
@@ -41,3 +42,18 @@ export function updateExpanded (expandedList) {
     payload: { expandedList: expandedList}
   };
 }
+
+export function setSearchText (searchText) {
+  return {
+    type: actionTypes.SITEMAP_SET_SEARCH_TEXT,
+    payload: { searchText: searchText}
+  };
+}
+
+export function resetSearchText () {
+  return {
+    type: actionTypes.SITEMAP_SET_SEARCH_TEXT,
+    payload: { searchText: ""}
+  };
+}
+
