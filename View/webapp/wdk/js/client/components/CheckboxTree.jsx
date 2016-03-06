@@ -253,7 +253,7 @@ export default class CheckboxTree extends React.Component {
    * @returns {XML}
    */
   renderTreeNode(node, isSearchMode) {
-    let matchingNode = this.props.onSearch === undefined || this.props.onSearch === null ? undefined : this.props.onSearch(node);
+    let matchingNode = isSearchMode ? undefined : this.props.onSearch(node);
     let toggleCheckbox = this.toggleCheckbox;
     let toggleExpansion = this.toggleExpansion;
     let indeterminate = this.isIndeterminate(node, this.props.selectedList);
@@ -400,8 +400,7 @@ CheckboxTree.propTypes = {
 
   /** Called during rendering to identify whether a given node should be made visible based upon whether it or
    *  its ancestors match the search criteria.  The predicate function accepts a node as input and outputs a
-   *  boolean indicating whether or not the node matches the criteria or undefined if the search is currently
-   *  unused (i.e., the search box is empty).
+   *  boolean indicating whether or not the node matches the criteria.
    */
   onSearch: PropTypes.func,
 
