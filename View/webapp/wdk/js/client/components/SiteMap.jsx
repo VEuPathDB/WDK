@@ -1,7 +1,7 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
 import { Link } from 'react-router';
-import CheckboxTree from './CheckboxTree';
+import SearchableCheckboxTree from './SearchableCheckboxTree';
 import { getTargetType, getRefName, getDisplayName, getDescription, getId, getPropertyValue } from '../utils/OntologyUtils';
 
 let SiteMap = React.createClass({
@@ -88,6 +88,9 @@ getNodeFormValue(node) {
   return this.getNodeData(node).id
 },
 
+onSearch(node)   {
+  if (this.props.searchText === "") return true;
+},
 
 getBasicNodeReactElement(node) {
   let data = this.getNodeData(node);
@@ -115,7 +118,7 @@ getNodeChildren(node) {
 
   render() {
     return (
-      <CheckboxTree tree={this.props.tree}
+      <SearchableCheckboxTree tree={this.props.tree}
                    selectedList={[]}
                    expandedList={this.props.expandedList}
                    name="SiteMapTree"
@@ -127,8 +130,11 @@ getNodeChildren(node) {
                    getBasicNodeReactElement={this.getBasicNodeReactElement}
                    getNodeFormValue={this.getNodeFormValue}
                    getNodeChildren={this.getNodeChildren}
+                   onSearch = {this.onSearch}
+                   onSearchTextReset = {this.props.siteMapActions.resetSearchText}
+                   onSearchTextSet = {this.props.siteMapActions.setSearchText}
 
-     />
+      />
     );
   }
 });
