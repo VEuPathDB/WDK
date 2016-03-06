@@ -95,7 +95,7 @@ class Seq {
   }
 
   toArray() {
-    return Array.from(this);
+    return this.reduce((arr, item) => (arr.push(item), arr), []);
   }
 
   into(Type) {
