@@ -1,8 +1,6 @@
 import test from 'tape';
 import * as i from '../../webapp/wdk/js/client/utils/IterableUtils';
 
-let GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
-
 function integers() {
   return {
     *[Symbol.iterator]() {
