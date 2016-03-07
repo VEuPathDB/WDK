@@ -89,7 +89,7 @@ getNodeFormValue(node) {
 },
 
 onSearch(node)   {
-      let nodeSearchText = this.searchableTextMap[getNodeFormValue(node)];
+      let nodeSearchText = this.props.searchableTextMap[this.getNodeFormValue(node)];
       return nodeSearchText == undefined || nodeSearchText == null ? false : nodeSearchText.indexOf(this.props.searchText.toLowerCase()) > -1;
 },
 
