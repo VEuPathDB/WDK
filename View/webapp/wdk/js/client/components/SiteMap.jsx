@@ -89,8 +89,8 @@ getNodeFormValue(node) {
 },
 
 onSearch(node)   {
- // if (this.props.searchText === "") return true;
-return true;
+      let nodeSearchText = this.searchableTextMap[getNodeFormValue(node)];
+      return nodeSearchText == undefined || nodeSearchText == null ? false : nodeSearchText.indexOf(this.props.searchText.toLowerCase()) > -1;
 },
 
 getBasicNodeReactElement(node) {
