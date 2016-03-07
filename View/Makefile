@@ -13,7 +13,7 @@ wdk_sources  := $(shell find webapp/wdk/js -name '*.js' -or -name '*.jsx') webpa
 # This exists mainly for legacy support. These should eventually
 # be included via npm and webpack. This will make it possible to
 # lazy-load these libraries with not-too-much effort.
-libs_sources := node_modules/babel-core/browser-polyfill.min.js \
+libs_sources := node_modules/babel-polyfill/dist/polyfill.min.js \
                 webapp/wdk/lib/jquery.js \
                 webapp/wdk/lib/jquery-migrate-1.2.1.min.js \
                 webapp/wdk/lib/jquery-ui.js \
@@ -106,7 +106,7 @@ examples-server: node_modules
 # =============================================================================
 
 client-tests: node_modules
-	tape -r babel-core/register tests/client/**/*.js
+	tape -r babel-core/register -r babel-polyfill tests/client/**/*.js
 
 
 # =============================================================================

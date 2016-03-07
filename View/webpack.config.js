@@ -35,8 +35,7 @@ module.exports = {
   ],
   module: {
     loaders: [
-      { test: /\.js$/, exclude: /node_modules/, loader: 'babel', query: { blacklist: [ 'react' ] } }, // blacklist react for non-jsx extension
-      { test: /\.jsx$/, exclude: /node_modules/, loader: 'babel' },
+      { test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel', query: { cacheDirectory: true }  },
       { test: /\.css$/, loader: "style-loader!css-loader?sourceMap" }
     ]
   },
