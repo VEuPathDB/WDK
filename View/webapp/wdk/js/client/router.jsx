@@ -35,7 +35,7 @@ export function start(rootUrl, rootElement, context, additionalRoutes = []) {
           <Route path="record/:recordClass/*" component={RecordController}/>
           <Route path="step/:stepId/download" component={StepDownloadFormController}/>
           <Route path="user/profile" component={UserProfileController}/>
-          <Route path="site-map" component={SiteMapController}/>
+          <Route path="data-finder" component={SiteMapController}/>
           <Route path="question-list" component={QuestionListController}/>
           {additionalRoutes.map(route => ( <Route key={route.name} {...route}/> ))}
           <Route path="*" component={NotFoundController}/>

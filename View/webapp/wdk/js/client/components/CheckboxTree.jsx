@@ -253,7 +253,7 @@ export default class CheckboxTree extends React.Component {
    * @returns {XML}
    */
   renderTreeNode(node, isSearchMode) {
-    let matchingNode = this.props.onSearch === undefined || this.props.onSearch === null ? undefined : this.props.onSearch(node);
+    let matchingNode = isSearchMode ? this.props.onSearch(node) : undefined;
     let toggleCheckbox = this.toggleCheckbox;
     let toggleExpansion = this.toggleExpansion;
     let indeterminate = this.isIndeterminate(node, this.props.selectedList);

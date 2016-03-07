@@ -31,12 +31,12 @@ let SiteMapController = React.createClass({
   },
 
   render() {
-    let title = "Site Map";
+    let title = "Data Finder";
     if (this.state.isLoading) {
       return ( <Doc title={title}><Loading/></Doc> );
     }
 
-    return ( <Doc title={title}><SiteMap {...this.state} siteMapActions={this.siteMapActions}/></Doc> );
+    return ( <Doc title={title}> <h1>Data Finder</h1>Use this tool to find searches, tracks and data pages that might contain data you are interested in. <SiteMap {...this.state} siteMapActions={this.siteMapActions}/></Doc> );
   }
 });
 
