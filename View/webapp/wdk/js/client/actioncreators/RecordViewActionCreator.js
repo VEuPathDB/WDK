@@ -12,10 +12,8 @@ export let actionTypes = {
   SET_ACTIVE_RECORD: 'record/set-active-record',
   SET_ACTIVE_RECORD_LOADING: 'record/set-active-record-loading',
   SET_ERROR: 'record/set-error',
-  SHOW_CATEGORY: 'record/show-category',
-  HIDE_CATEGORY: 'record/hide-category',
-  SHOW_TABLE: 'record/show-table',
-  HIDE_TABLE: 'record/hide-table',
+  SHOW_SECTION: 'record/show-section',
+  HIDE_SECTION: 'record/hide-section',
   UPDATE_NAVIGATION_QUERY: 'record/update-navigation-query'
 };
 
@@ -68,22 +66,13 @@ export function setActiveRecord(recordClassName, primaryKeyValues) {
   }
 }
 
-export function toggleCategoryCollapsed(recordClassName, categoryName, isCollapsed) {
+/** Update a section's collapsed status */
+export function updateSectionCollapsed(recordClassName, sectionName, isCollapsed) {
   return {
-    type: isCollapsed ? actionTypes.HIDE_CATEGORY : actionTypes.SHOW_CATEGORY,
+    type: isCollapsed ? actionTypes.HIDE_SECTION : actionTypes.SHOW_SECTION,
     payload: {
       recordClass: recordClassName,
-      name: categoryName
-    }
-  };
-}
-
-export function toggleTableCollapsed(recordClassName, tableName, isCollapsed) {
-  return {
-    type: isCollapsed ? actionTypes.HIDE_TABLE : actionTypes.SHOW_TABLE,
-    payload: {
-      recordClass: recordClassName,
-      name: tableName
+      name: sectionName
     }
   };
 }
@@ -95,6 +84,10 @@ export function updateNavigationQuery(query) {
   };
 }
 
+/**
+ * Helper to fetch record details from Wdk Service.
+ * Returns a Promise that resolves to an Object of data needed by View store.
+ */
 function fetchRecordDetails(wdkService, recordClassUrlSegment, primaryKeyValues) {
   let questions$ = wdkService.getQuestions();
   let recordClasses$ = wdkService.getRecordClasses();

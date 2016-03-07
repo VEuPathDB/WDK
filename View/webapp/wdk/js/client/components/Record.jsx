@@ -15,9 +15,8 @@ class Record extends Component {
           categories={this.props.categoryTree.children}
           attributes={attributes}
           tables={tables}
-          collapsedCategories={this.props.collapsedCategories}
-          collapsedTables={this.props.collapsedTables}
-          onCategoryToggle={this.props.onCategoryToggle}
+          collapsedSections={this.props.collapsedSections}
+          onSectionToggle={this.props.onSectionToggle}
           onTableToggle={this.props.onTableToggle}
         />
       </div>
@@ -28,7 +27,7 @@ class Record extends Component {
 Record.propTypes = {
   record: PropTypes.object.isRequired,
   recordClass: PropTypes.object.isRequired,
-  onCategoryToggle: PropTypes.func.isRequired
+  onSectionToggle: PropTypes.func.isRequired
 };
 
 

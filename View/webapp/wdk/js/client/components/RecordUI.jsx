@@ -19,8 +19,7 @@ class RecordUI extends Component {
       showSidebar: true
     };
 
-    this.toggleCategory = this.toggleCategory.bind(this);
-    this.toggleTable = this.toggleTable.bind(this);
+    this.toggleSection = this.toggleSection.bind(this);
     this.toggleSidebar = this.toggleSidebar.bind(this);
   }
 
@@ -32,18 +31,10 @@ class RecordUI extends Component {
     }
   }
 
-  toggleCategory(category, isCollapsed) {
-    this.props.recordActions.toggleCategoryCollapsed(
+  toggleSection(sectionName, isCollapsed) {
+    this.props.recordActions.updateSectionCollapsed(
       this.props.recordClass.name,
-      getPropertyValue('label', category),
-      isCollapsed
-    );
-  }
-
-  toggleTable(table, isCollapsed) {
-    this.props.recordActions.toggleTableCollapsed(
-      this.props.recordClass.name,
-      table.name,
+      sectionName,
       isCollapsed
     );
   }
@@ -90,8 +81,8 @@ class RecordUI extends Component {
             record={this.props.record}
             recordClass={this.props.recordClass}
             categoryTree={this.props.categoryTree}
-            collapsedCategories={this.props.collapsedCategories}
-            onCategoryToggle={this.toggleCategory}
+            collapsedSections={this.props.collapsedSections}
+            onSectionToggle={this.toggleSection}
           />
         </Sticky>
         <div className="wdk-RecordMain">
@@ -99,10 +90,8 @@ class RecordUI extends Component {
             record={this.props.record}
             recordClass={this.props.recordClass}
             categoryTree={this.props.categoryTree}
-            collapsedCategories={this.props.collapsedCategories}
-            collapsedTables={this.props.collapsedTables}
-            onCategoryToggle={this.toggleCategory}
-            onTableToggle={this.toggleTable}
+            collapsedSections={this.props.collapsedSections}
+            onSectionToggle={this.toggleSection}
           />
         </div>
       </Main>
@@ -113,8 +102,7 @@ class RecordUI extends Component {
 RecordUI.propTypes = {
   record: PropTypes.object.isRequired,
   recordClass: PropTypes.object.isRequired,
-  collapsedCategories: PropTypes.array.isRequired,
-  collapsedTables: PropTypes.array.isRequired,
+  collapsedSections: PropTypes.array.isRequired,
   user: PropTypes.object.isRequired,
   baskets: PropTypes.object.isRequired,
   recordActions: PropTypes.object.isRequired,
