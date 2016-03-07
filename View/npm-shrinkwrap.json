@@ -332,7 +332,7 @@
       "dependencies": {
         "loader-utils": {
           "version": "0.2.12",
-          "from": "loader-utils@^0.2.7",
+          "from": "loader-utils@^0.2.11",
           "dependencies": {
             "big.js": {
               "version": "3.1.3",
@@ -522,7 +522,7 @@
                 },
                 "babel-template": {
                   "version": "6.6.5",
-                  "from": "babel-template@^6.6.5",
+                  "from": "babel-template@^6.6.0",
                   "dependencies": {
                     "babylon": {
                       "version": "6.6.5",
@@ -3061,7 +3061,6 @@
     "babel-polyfill": {
       "version": "6.6.1",
       "from": "babel-polyfill@^6.0.0",
-      "resolved": "https://registry.npmjs.org/babel-polyfill/-/babel-polyfill-6.6.1.tgz",
       "dependencies": {
         "core-js": {
           "version": "2.1.3",
@@ -3069,8 +3068,7 @@
         },
         "babel-regenerator-runtime": {
           "version": "6.5.0",
-          "from": "babel-regenerator-runtime@^6.3.13",
-          "resolved": "https://registry.npmjs.org/babel-regenerator-runtime/-/babel-regenerator-runtime-6.5.0.tgz"
+          "from": "babel-regenerator-runtime@^6.3.13"
         },
         "babel-runtime": {
           "version": "5.8.35",
@@ -3159,7 +3157,7 @@
                   "from": "num2fraction@^1.1.0"
                 },
                 "caniuse-db": {
-                  "version": "1.0.30000419",
+                  "version": "1.0.30000420",
                   "from": "caniuse-db@^1.0.30000214"
                 }
               }
@@ -3874,7 +3872,7 @@
       "dependencies": {
         "loader-utils": {
           "version": "0.2.12",
-          "from": "loader-utils@^0.2.7",
+          "from": "loader-utils@^0.2.11",
           "dependencies": {
             "big.js": {
               "version": "3.1.3",
@@ -4514,7 +4512,7 @@
                 },
                 "inherits": {
                   "version": "2.0.1",
-                  "from": "inherits@~2.0.1"
+                  "from": "inherits@2.0.1"
                 },
                 "is-binary-path": {
                   "version": "1.0.1",
@@ -4623,8 +4621,8 @@
       }
     },
     "history": {
-      "version": "2.0.1",
-      "from": "history@~2.0.0",
+      "version": "2.0.0",
+      "from": "history@2.0.0",
       "dependencies": {
         "deep-equal": {
           "version": "1.0.1",
