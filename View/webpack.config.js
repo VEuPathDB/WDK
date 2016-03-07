@@ -44,7 +44,7 @@ module.exports = {
     fs: 'empty'
   },
   debug: node_env !== 'production',
-  devtool: 'source-map',
+  devtool: 'cheap-module-source-map',
   plugins: node_env !== 'production'
     ? [
         new webpack.DefinePlugin({
