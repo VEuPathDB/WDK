@@ -27,12 +27,8 @@ let RecordMainCategorySection = React.createClass({
   toggleCollapse() {
     if (this.props.depth > 1) {
       let { category, isCollapsed } = this.props;
-      this.props.onCategoryToggle(category, !isCollapsed);
+      this.props.onSectionToggle(getId(category), !isCollapsed);
     }
-  },
-
-  toggleTableCollapse(table, isCollapsed) {
-    this.props.onTableToggle(table, !isCollapsed);
   },
 
   render() {
@@ -44,7 +40,6 @@ let RecordMainCategorySection = React.createClass({
       attributes,
       tables,
       isCollapsed,
-      collapsedTables,
       enumeration
     } = this.props;
     let targetType = getTargetType(category);
@@ -75,8 +70,6 @@ let RecordMainCategorySection = React.createClass({
 
       if (value == null) return null;
 
-      let isCollapsed = collapsedTables.includes(name)
-
       let wrapperClassBase = 'wdk-RecordTableWrapper';
       let wrapperClass = classnames(
         wrapperClassBase,
@@ -94,8 +87,8 @@ let RecordMainCategorySection = React.createClass({
           id={name}
           className="wdk-RecordTableContainer"
           headerContent={displayName}
-          isCollapsed={collapsedTables.includes(name)}
-          onCollapsedChange={() => this.toggleTableCollapse(table, isCollapsed)}
+          isCollapsed={isCollapsed}
+          onCollapsedChange={this.toggleCollapse}
         >
           <RecordTable value={value} table={table} record={record} recordClass={recordClass}/>
         </CollapsibleSection>
