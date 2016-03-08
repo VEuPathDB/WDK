@@ -143,7 +143,7 @@ export function wrapStores(storeWrappers) {
       );
       continue;
     }
-    Stores[key] = storeWrappers[key](Store);
+    Stores[key] = storeWrapper(Store);
   }
 }
 
