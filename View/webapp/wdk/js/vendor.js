@@ -14,3 +14,7 @@ window.ReactDOM = ReactDOM;
 
 import ReactRouter from 'react-router';
 window.ReactRouter = ReactRouter;
+
+if (process.env.NODE_ENV !== 'production') {
+  window.ReactPerf = require('react-addons-perf');
+}
