@@ -76,5 +76,7 @@ export default class RecordViewStore extends WdkStore {
   }
 }
 
+RecordViewStore.actionTypes = actionTypes;
+
 let updateList = (item, add, list = []) =>
   add ? list.concat(item) : list.filter(x => x !== item)
