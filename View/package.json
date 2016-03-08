@@ -26,6 +26,7 @@
     "react-addons-pure-render-mixin": "^0.14",
     "react-addons-shallow-compare": "^0.14",
     "react-addons-update": "^0.14",
+    "react-addons-perf": "^0.14",
     "react-router": "^2.0.0",
     "style-loader": "^0.12.3",
     "warning": "^2.0.0",
