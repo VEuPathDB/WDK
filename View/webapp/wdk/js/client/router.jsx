@@ -17,7 +17,10 @@ import SiteMapController from './components/SiteMapController';
 /**
  * Get routes based on `rootUrl`.
  *
- * @param {string} rootUrl The rootUrl used to match paths below
+ * @param {string} rootUrl The rootUrl used to match paths below.
+ * @param {HTMLElement} rootElement Element to render app.
+ * @param {Object} context Context object passed to WdkContext.
+ * @param {Array<Object>} additionalRoutes Route configs to add to router.
  */
 export function start(rootUrl, rootElement, context, additionalRoutes = []) {
   // This makes it possible to omit the rootUrl in the Link Component, etc.

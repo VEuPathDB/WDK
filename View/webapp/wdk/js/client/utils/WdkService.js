@@ -16,8 +16,15 @@ import {
   getTable
 } from './WdkUtils';
 
+/**
+ * A helper to request resources from a Wdk REST Service.
+ * @class WdkService
+ */
 export default class WdkService {
 
+  /**
+   * @param {string} serviceUrl Base url for Wdk REST Service.
+   */
   constructor(serviceUrl) {
     this._serviceUrl = serviceUrl;
 
