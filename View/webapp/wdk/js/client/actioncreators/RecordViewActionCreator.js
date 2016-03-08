@@ -39,10 +39,7 @@ let getNodeName = node => getPropertyValue('name', node);
 
 /**
  * @param {string} recordClassName
- * @param {Object} spec
- * @param {Object} spec.primaryKey
- * @param {Array<string>}  spec.attributes
- * @param {Array<string>}  spec.tables
+ * @param {Object} primaryKeyValues
  */
 export function setActiveRecord(recordClassName, primaryKeyValues) {
   return function run(dispatch, { wdkService }) {
