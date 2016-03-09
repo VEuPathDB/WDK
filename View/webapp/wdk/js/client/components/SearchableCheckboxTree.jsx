@@ -50,12 +50,12 @@ export default class SearchableCheckboxTree extends React.Component {
    */
   getSearchBoxReactElement() {
     let searchText = this.state.searchText;
-    let isSearchMode = (searchText != undefined || searchText != null) && searchText.length > 0;
+    let isSearchMode = searchText != null && searchText.length > 0;
     let searchBoxClass = isSearchMode
       ? "wdk-CheckboxTree-searchBoxEnabled" : "wdk-CheckboxTree-searchBoxDisabled";
     return (
       <div className={searchBoxClass}>
-        <input type="text" onChange={this.setSearchText} name="search" placeholder="Search Columns" value={searchText}  />
+        <input type="text" onChange={this.setSearchText} name="search" placeholder={this.props.searchBoxPlaceholder || ""} value={searchText}  />
         {isSearchMode ?
           <span onClick={this.resetSearchText}>
             <i className="fa fa-lg fa-times"></i>
@@ -108,6 +108,12 @@ SearchableCheckboxTree.propTypes = {
    *  Called when user clicks close button in the search box.  Empties the search box of text, restores
    *  normal operation, and applies business rules to intial expansion of tree.
    */
-  onSearchTextReset: PropTypes.func
+  onSearchTextReset: PropTypes.func,
+
+  /**
+   * The placeholder string to use in the search box.  If no string is provided the search
+   * box have no placeholder text.
+   */
+  searchBoxPlaceholder: PropTypes.string
 
 }
