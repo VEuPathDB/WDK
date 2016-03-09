@@ -399,7 +399,8 @@ CheckboxTree.propTypes = {
   getSearchBox: PropTypes.func,
 
   /** Called during rendering to identify whether a given node should be made visible based upon whether it or
-   *  its ancestors match the search criteria.
+   *  its ancestors match the search criteria.  The predicate function accepts a node as input and outputs a
+   *  boolean indicating whether or not the node matches the criteria.
    */
   onSearch: PropTypes.func,
 
