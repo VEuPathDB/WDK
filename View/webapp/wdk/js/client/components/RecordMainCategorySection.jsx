@@ -101,6 +101,7 @@ let RecordMainCategorySection = React.createClass({
     let headerContent = (
       <div>
         <span className="wdk-RecordSectionEnumeration">{enumeration}</span> {categoryName}
+        <a className="wdk-RecordSectionLink" onClick={e => e.stopPropagation()} href={'#' + id}>&sect;</a>
       </div>
     );
     return (
