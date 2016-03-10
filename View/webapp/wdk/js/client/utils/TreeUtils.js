@@ -101,10 +101,10 @@ export let postorderSeq = (root) =>
  * @param {any} root The root node of the tree whose structure is being mapped.
  */
 export function mapStructure(mapFn, getChildren, root) {
-  let mappedChildren = Array.from(map(child => {
+  let mappedChildren = map(child => {
     return mapStructure(mapFn, getChildren, child)
-  }, getChildren(root)));
-  return mapFn(root, mappedChildren);
+  }, getChildren(root));
+  return mapFn(root, Array.from(mappedChildren));
 }
 
 /**
