@@ -43,6 +43,37 @@ test('postorderSeq', function(t) {
 
 });
 
+test('mapStructure', function(t) {
+  let tree = {
+    id: 1,
+    children: [
+      { id: 2, children: [] },
+      { id: 3, children: [
+        { id: 4, children: [] }
+      ]}
+    ]
+  };
+  let expectedStructure = {
+    number: 1,
+    subNumbers: [
+      { number: 2, subNumbers: [] },
+      { number: 3, subNumbers: [
+        { number: 4, subNumbers: [] }
+      ]}
+    ]
+  };
+  let mappedStructure = TreeUtils.mapStructure(
+    (node, mappedChildren) => {
+      return {
+        number: node.id,
+        subNumbers: mappedChildren
+      };
+    },
+    node => node.children, tree);
+  t.deepEqual(mappedStructure, expectedStructure, 'mappedStructure does not match expectedStructure');
+  t.end();
+});
+
 test('compactRootNodes', function(t) {
   let tree = {
     id: 1,
