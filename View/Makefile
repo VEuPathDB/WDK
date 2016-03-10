@@ -26,8 +26,7 @@ libs_sources := node_modules/babel-polyfill/dist/polyfill.min.js \
                 webapp/wdk/lib/flot/jquery.flot.categories.min.js \
                 webapp/wdk/lib/flot/jquery.flot.selection.min.js \
                 webapp/wdk/lib/flot/jquery.flot.time.min.js \
-                webapp/wdk/lib/jquery.dataTables.min.js \
-                webapp/wdk/lib/dataTables.colVis.min.js \
+                webapp/wdk/lib/datatables.min.js \
                 webapp/wdk/lib/jstree/jquery.jstree.js \
                 webapp/wdk/lib/spin.min.js \
                 webapp/wdk/lib/zynga-scroller/Animate.js \
