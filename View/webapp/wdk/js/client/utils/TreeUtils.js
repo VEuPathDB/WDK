@@ -1,4 +1,4 @@
-import { seq } from './IterableUtils';
+import { seq, map } from './IterableUtils';
 
 // Helper function to push values into an array, and to return that array.
 // `push` returns the value added, so this is useful when we want the array
@@ -81,6 +81,31 @@ export let postorderSeq = (root) =>
       return postorder(root);
     }
   })
+
+/**
+ * A mapping function to pass to `mapStructure`.
+ *
+ * @callback mapFn
+ * @param {any} node
+ * @param {Array} array of mapped children
+ */
+
+/**
+ * Convert a tree into a new tree-like structure. The tree is traversed bottom-
+ * up, and for each node, its mapped children are passed to the mapping
+ * function. This allows the mapping function to integrate the mapped children
+ * however it needs to.
+ *
+ * @param {mapFn} mapFn Mapping function to apply to each node.
+ * @param {Function} getChildren A function that returns an iterable object over a node's children.
+ * @param {any} root The root node of the tree whose structure is being mapped.
+ */
+export function mapStructure(mapFn, getChildren, root) {
+  let mappedChildren = Array.from(map(child => {
+    return mapStructure(mapFn, getChildren, child)
+  }, getChildren(root)));
+  return mapFn(root, mappedChildren);
+}
 
 /**
  * For any node in a tree that does not pass `nodePredicate`, replace it with
