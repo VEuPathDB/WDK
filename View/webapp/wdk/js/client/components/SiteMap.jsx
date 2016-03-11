@@ -123,7 +123,7 @@ getNodeChildren(node) {
                    selectedList={[]}
                    expandedList={this.props.expandedList}
                    name="SiteMapTree"
-                   removeCheckboxes="true"
+                   removeCheckboxes={true}
                    onSelectedListUpdated={()=>{}}
                    onExpandedListUpdated={this.props.siteMapActions.updateExpanded}
                    onDefaultSelectedListLoaded={()=>{}}
