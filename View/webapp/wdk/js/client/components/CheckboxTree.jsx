@@ -1,9 +1,11 @@
 import React,{PropTypes} from 'react';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import AccordionButton from './AccordionButton';
+import CheckboxTreeNode from './CheckboxTreeNode';
 import {isLeafNode} from '../utils/TreeUtils';
 import {getLeaves} from '../utils/TreeUtils';
 import {getBranches} from '../utils/TreeUtils';
+import {mapStructure} from '../utils/TreeUtils';
 
 
 /**
@@ -51,7 +53,7 @@ export default class CheckboxTree extends React.Component {
         selectedList.push(...getLeaves(node, this.props.getNodeChildren).map(leaf => this.props.getNodeFormValue(leaf)))
     );
     this.setSelectedList(selectedList);
-    
+
     // prevent update to URL
     event.preventDefault();
   }
@@ -164,139 +166,64 @@ export default class CheckboxTree extends React.Component {
 
 
   /**
-   * Returns boolean indicating whether the given node is selected
-   */
-  isSelected(node, selectedList) {
-
-    // If the selected list is empty or non-existant, no check is needed.  The node is not selected.
-    if (selectedList) {
-      if (!isLeafNode(node, this.props.getNodeChildren)) {
-
-        // When the node is not a leaf, it is considered selected if every one of its leaf nodes
-        // is in the selected list.
-        let leafNodes = getLeaves(node, this.props.getNodeChildren);
-        return leafNodes.every(leafNode => selectedList.indexOf(this.props.getNodeFormValue(leafNode)) > -1);
-      }
-      else {
-        return selectedList.indexOf(this.props.getNodeFormValue(node)) > -1;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Returns boolean indicating whether the given node is indeterminate
-   */
-  isIndeterminate(node, selectedList) {
-
-    // if only some of the descendent leaf nodes are in the selected nodes list, the given
-    // node is indeterminate.  If the given node is a leaf node, it cannot be indeterminate
-    let indeterminate = false;
-
-    // If the selected list is empty, or non-existant no nodes are intermediate and there is nothing to do.
-    if (selectedList) {
-      if (!isLeafNode(node, this.props.getNodeChildren)) {
-        let leafNodes = getLeaves(node, this.props.getNodeChildren);
-        let total = leafNodes.reduce((count, leafNode) => {
-          return selectedList.indexOf(this.props.getNodeFormValue(leafNode)) > -1 ? count + 1 : count;
-        }, 0);
-        if (total > 0 && total < leafNodes.length) {
-          indeterminate = true;
-        }
-      }
-    }
-    return indeterminate;
-  }
-
-
-  /**
-   * Returns boolean indicating whether given node should be shown expanded or collapsed.
-   */
-  isExpanded(node, expandedList, selectedList) {
-
-    // The expandedList exists, empty or not, at this point, but if somehow it isn't
-    // the business rules are used to decide whether the node is expanded or collapsed.
-    // The business expand only indeterminate nodes.
-    if (this.props.expandedList === null || this.props.expandedList === undefined) {
-      return this.isIndeterminate(node, selectedList);
-    }
-    else {
-      return expandedList.indexOf(this.props.getNodeFormValue(node)) > -1;
-    }
-  }
-
-
-  /**
    * Render the checkbox tree
    */
   render() {
-    let getSearchBox = this.props.getSearchBox;
-    let isSearchMode = this.props.isSearchMode;
+    let {
+      tree,
+      getSearchBox,
+      isSearchMode,
+      onSearch,
+      selectedList,
+      expandedList,
+      fieldName,
+      removeCheckboxes,
+      getNodeFormValue,
+      getNodeChildren,
+      getBasicNodeReactElement
+      } = this.props;
+      let toggleCheckbox = this.toggleCheckbox;
+      let toggleExpansion = this.toggleExpansion;
     return (
       <div className="wdk-CheckboxTree" id={this.props.name}>
         {this.renderLinks(isSearchMode)}
         {getSearchBox ? getSearchBox() : ""}
-        <ul className="fa-ul wdk-CheckboxTree-list" key={"list_root"}>
-          {this.props.tree.map(function (node) {
-            return this.renderTreeNode(node, isSearchMode);
-          }, this)}
+        <ul className="fa-ul wdk-CheckboxTree-list">
+          {tree.map(node => {
+            let mappedChildren = getNodeChildren(node);
+            let nodeType = getNodeChildren(node) === 0 && !isExpanded && !isSearchMode ? "wdk-CheckboxTree-collapsedItem" :
+                getNodeChildren(node) > 0 ? "wdk-CheckboxTree-leafItem" : "wdk-CheckboxTree-expandedItem";
+            return mapStructure(function(node, mappedChildren) {
+              return (
+                <CheckboxTreeNode
+                  key={"node_" + getNodeFormValue(node)}
+                  node={node}
+                  nodeType={nodeType}
+                  isSearchMode={isSearchMode}
+                  toggleCheckbox={toggleCheckbox}
+                  toggleExpansion={toggleExpansion}
+                  removeCheckboxes={removeCheckboxes}
+                  isSelected={CheckboxTree.isSelected(node, selectedList, getNodeFormValue, getNodeChildren)}
+                  isIndeterminate={CheckboxTree.isIndeterminate(node, selectedList, getNodeFormValue, getNodeChildren)}
+                  isExpanded={CheckboxTree.isExpanded(node, expandedList, getNodeFormValue)}
+                  isVisible={CheckboxTree.isVisible(node, expandedList, isSearchMode, onSearch, getNodeFormValue)}
+                  isMatching={CheckboxTree.isMatching(node, isSearchMode, onSearch)}
+                  fieldName={fieldName}
+                  getNodeFormValue={getNodeFormValue}
+                  getNodeChildren={getNodeChildren}
+                  getBasicNodeReactElement={getBasicNodeReactElement}>
+                  {mappedChildren}
+                </CheckboxTreeNode>
+              );
+            }, getNodeChildren, node);
+           })
+          }
         </ul>
         {this.renderLinks(isSearchMode)}
       </div>
     );
   }
 
-
-  /**
-   * Render each node of the checkbox tree
-   * @param node
-   * @returns {XML}
-   */
-  renderTreeNode(node, isSearchMode) {
-    let matchingNode = isSearchMode ? this.props.onSearch(node) : undefined;
-    let toggleCheckbox = this.toggleCheckbox;
-    let toggleExpansion = this.toggleExpansion;
-    let indeterminate = this.isIndeterminate(node, this.props.selectedList);
-    let selected = this.isSelected(node, this.props.selectedList);
-    let expanded = this.isExpanded(node, this.props.expandedList, this.props.selectedList);
-    // Hiding unexpanded checkbox subtrees rather then not constructing them.  More compatible
-    // with more standard (non-React) form submission.
-    let display = expanded ? "block" : "none";
-    let match = matchingNode === undefined ? "block" : matchingNode ? "block" : "none";
-    display = matchingNode === undefined ? display : matchingNode ? "block" : "none";
-    let fieldName = this.props.fieldName;
-    let value = this.props.getNodeFormValue(node);
-    let leaf = isLeafNode(node, this.props.getNodeChildren);
-    let nodeType = !leaf && !expanded && !isSearchMode ? "wdk-CheckboxTree-collapsedItem" :
-      leaf ? "wdk-CheckboxTree-leafItem" : "wdk-CheckboxTree-expandedItem";
-
-    return (
-      <li className={nodeType} key={"item_" + value} style={{display: match}}>
-
-        <AccordionButton leaf={leaf}
-                         expanded={expanded}
-                         visible={!isSearchMode}
-                         node={node}
-                         toggleExpansion={toggleExpansion} />
-
-        <label>
-          {!this.props.removeCheckboxes ?
-          <IndeterminateCheckbox
-            name={fieldName}
-            checked={selected}
-            indeterminate={indeterminate}
-            node={node}
-            value={value}
-            toggleCheckbox={toggleCheckbox} /> : "" }
-          {this.props.getBasicNodeReactElement(node)}
-        </label>
-        {!leaf ?
-          <ul className="fa-ul wdk-CheckboxTree-list" key={"list_" + value} style={{display}}>
-            {this.props.getNodeChildren(node).map(child => this.renderTreeNode(child, isSearchMode))}
-          </ul> : "" }
-      </li>
-    )
-  }
 
   /**
    * Render the checkbox tree links
@@ -410,6 +337,58 @@ CheckboxTree.propTypes = {
 };
 
 
+/**
+ * Returns boolean indicating whether the given node is selected
+ */
+CheckboxTree.isSelected = function(node, selectedList, getNodeFormValue, getNodeChildren) {
+
+  // If the selected list is empty or non-existant, no check is needed.  The node is not selected.
+  if (selectedList) {
+    if (!isLeafNode(node, getNodeChildren)) {
+
+      // When the node is not a leaf, it is considered selected if every one of its leaf nodes
+      // is in the selected list.
+      let leafNodes = getLeaves(node, getNodeChildren);
+      return leafNodes.every(leafNode => selectedList.indexOf(getNodeFormValue(leafNode)) > -1);
+    }
+    else {
+      return selectedList.indexOf(getNodeFormValue(node)) > -1;
+    }
+  }
+  return false;
+};
+
+
+/**
+ * Returns boolean indicating whether given node should be shown expanded or collapsed.
+ */
+CheckboxTree.isExpanded = function(node, expandedList, getNodeFormValue) {
+  return expandedList == null ? false : expandedList.indexOf(getNodeFormValue(node)) > -1;
+};
+
+/**
+ * Return boolean indicating whether node matches the search parameter as defined
+ * by the included search predicate.  If no search is in progress, the function returns true.
+ * @param node
+ * @param isSearchMode
+ * @param onSearch - fn - search predicate which takes the node and returns true for a match and false otherwise
+ */
+CheckboxTree.isMatching = function(node, isSearchMode, onSearch) {
+  return isSearchMode ? onSearch(node) : true;
+};
+
+
+/**
+ * Return boolean indicating whether given node's children should be visible.  This is governed
+ * by whether the node is expanded but is overriden by the isMatching fn when a search is in progress.
+ * @param node
+ * @param expandedList
+ * @returns {*}
+ */
+CheckboxTree.isVisible = function(node, expandedList, isSearchMode, onSearch, getNodeFormValue) {
+  return isSearchMode ? onSearch(node) : CheckboxTree.isExpanded(node, expandedList, getNodeFormValue);
+};
+
 
 /**
  * Returns boolean indicating whether the given node is indeterminate
@@ -433,7 +412,7 @@ CheckboxTree.isIndeterminate = function(node, selectedList, getNodeFormValue, ge
     }
   }
   return indeterminate;
-}
+};
 
 
 /**
@@ -452,8 +431,8 @@ CheckboxTree.setExpandedList = function(nodes, getNodeFormValue, getNodeChildren
         expandedList.push(getNodeFormValue(node));
       }
       // descend the tree
-      this.setExpandedList(getNodeChildren(node), selectedList, expandedList);
+      CheckboxTree.setExpandedList(getNodeChildren(node), selectedList, expandedList);
     });
   }
   return expandedList;
-}
+};
