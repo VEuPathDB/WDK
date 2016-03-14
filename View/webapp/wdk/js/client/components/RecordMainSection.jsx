@@ -2,7 +2,7 @@ import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 import RecordMainCategorySection from './RecordMainCategorySection';
 import { wrappable } from '../utils/componentUtils';
-import { getPropertyValue } from '../utils/OntologyUtils';
+import { getId, getLabel } from '../utils/OntologyUtils';
 
 let RecordMainSection = React.createClass({
 
@@ -19,8 +19,7 @@ let RecordMainSection = React.createClass({
       depth,
       record,
       categories,
-      collapsedCategories,
-      collapsedTables,
+      collapsedSections,
       recordActions,
       parentEnumeration
     } = this.props;
@@ -30,7 +29,8 @@ let RecordMainSection = React.createClass({
     return (
       <div>
         {categories.map((category, index) => {
-          let categoryName = getPropertyValue('label', category);
+          let categoryName = getLabel(category);
+          let categoryId = getId(category);
           let enumeration = parentEnumeration == null
             ? index + 1
             : parentEnumeration + '.' + (index + 1);
@@ -42,9 +42,8 @@ let RecordMainSection = React.createClass({
               category={category}
               record={record}
               recordClass={this.props.recordClass}
-              isCollapsed={collapsedCategories.includes(categoryName)}
-              collapsedTables={collapsedTables}
-              onCategoryToggle={this.props.onCategoryToggle}
+              isCollapsed={collapsedSections.includes(categoryId)}
+              onSectionToggle={this.props.onSectionToggle}
               onTableToggle={this.props.onTableToggle}
               enumeration={enumeration}
             >

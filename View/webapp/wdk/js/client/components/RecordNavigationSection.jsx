@@ -7,8 +7,8 @@ import RecordNavigationSectionCategories from './RecordNavigationSectionCategori
 import { postorderSeq } from '../utils/TreeUtils';
 import { wrappable } from '../utils/componentUtils';
 import {
+  getId,
   getDisplayName,
-  getPropertyValue,
   getPropertyValues,
   nodeHasProperty
 } from '../utils/OntologyUtils';
@@ -16,8 +16,8 @@ import {
 let RecordNavigationSection = React.createClass({
 
   propTypes: {
-    collapsedCategories: React.PropTypes.array,
-    onCategoryToggle: React.PropTypes.func,
+    collapsedSections: React.PropTypes.array,
+    onSectionToggle: React.PropTypes.func,
     heading: React.PropTypes.node
   },
 
@@ -32,14 +32,14 @@ let RecordNavigationSection = React.createClass({
 
   getDefaultProps() {
     return {
-      onCategoryToggle: function noop() {},
+      onSectionToggle: function noop() {},
       heading: 'Contents'
     };
   },
 
   render() {
     let { navigationExpanded, navigationQuery } = this.state;
-    let { collapsedCategories, heading } = this.props;
+    let { collapsedSections, heading } = this.props;
     let navigationQueryLower = navigationQuery.toLowerCase();
     let categoryWordsMap = makeCategoryWordsMap(this.props.categoryTree);
     let expandClassName = classnames({
@@ -74,9 +74,9 @@ let RecordNavigationSection = React.createClass({
             record={this.props.record}
             recordClass={this.props.recordClass}
             categories={this.props.categoryTree.children}
-            onCategoryToggle={this.props.onCategoryToggle}
+            onSectionToggle={this.props.onSectionToggle}
             showChildren={navigationExpanded}
-            isCollapsed={category => includes(collapsedCategories, getPropertyValue('label', category))}
+            isCollapsed={category => includes(collapsedSections, getId(category))}
             isVisible={category => includes(categoryWordsMap.get(category.properties), navigationQueryLower)}
           />
         </div>

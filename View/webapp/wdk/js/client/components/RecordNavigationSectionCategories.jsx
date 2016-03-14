@@ -29,7 +29,7 @@ class RecordNavigationSectionCategories extends Component {
   }
 
   componentDidUpdate(previousProps) {
-    if (this.props.collapsedCategories !== previousProps.collapsedCategories ||
+    if (this.props.collapsedSections !== previousProps.collapsedSections ||
         this.props.showChildren !== previousProps.showChildren ) {
       this.setActiveCategory();
     }
@@ -65,7 +65,7 @@ class RecordNavigationSectionCategories extends Component {
         childNodes={c => c.children}
         node={RecordNavigationItem}
         showChildren={this.props.showChildren}
-        onCategoryToggle={this.props.onCategoryToggle}
+        onSectionToggle={this.props.onSectionToggle}
         isCollapsed={this.props.isCollapsed}
         isVisible={this.props.isVisible}
         activeCategory={this.state.activeCategory}

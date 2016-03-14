@@ -89,8 +89,8 @@ getNodeFormValue(node) {
 },
 
 onSearch(node)   {
- // if (this.props.searchText === "") return true;
-return true;
+      let nodeSearchText = this.props.searchableTextMap[this.getNodeFormValue(node)];
+      return nodeSearchText == undefined || nodeSearchText == null ? false : nodeSearchText.indexOf(this.props.searchText.toLowerCase()) > -1;
 },
 
 getBasicNodeReactElement(node) {
@@ -123,7 +123,7 @@ getNodeChildren(node) {
                    selectedList={[]}
                    expandedList={this.props.expandedList}
                    name="SiteMapTree"
-                   removeCheckboxes="true"
+                   removeCheckboxes={true}
                    onSelectedListUpdated={()=>{}}
                    onExpandedListUpdated={this.props.siteMapActions.updateExpanded}
                    onDefaultSelectedListLoaded={()=>{}}

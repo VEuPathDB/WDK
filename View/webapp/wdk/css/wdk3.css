@@ -401,6 +401,16 @@ body {
   cursor: default;
 }
 
+.wdk-RecordSectionLink {
+  visibility: hidden;
+  margin-left: 1ex;
+}
+
+.wdk-RecordSectionHeader:hover .wdk-RecordSectionLink,
+.wdk-RecordSubsectionHeader:hover .wdk-RecordSectionLink {
+  visibility: visible;
+}
+
 .wdk-RecordSectionHeader:before, .wdk-RecordSectionHeader__collapsed:before {
   content: '';
 }

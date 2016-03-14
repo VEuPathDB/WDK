@@ -87,12 +87,6 @@ function initialize(state, payload, userStore) {
 
 function tryInitCompletion(state, userStore) {
 
-  // calculate initial form state for WDK JSON reporter only if no reporters
-  //    configured for this record class
-  if (state.availableReporters.length != 0) {
-    return state;
-  }
-
   // otherwise, calculate form state for WDK JSON reporter
   let userStoreState = userStore.getState();
   if (state.step != null && userStoreState.user != null) {

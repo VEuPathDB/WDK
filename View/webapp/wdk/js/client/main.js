@@ -71,17 +71,23 @@ function configureStores(Stores, dispatcher) {
  */
 function makeDispatchAction(dispatcher, services) {
   return function dispatchAction(action) {
-    if (typeof action === 'function') {
-      // Call the function with dispatchAction and services
-      return action(dispatchAction, services);
+    try {
+      if (typeof action === 'function') {
+        // Call the function with dispatchAction and services
+        return action(dispatchAction, services);
+      }
+      else if (action == null) {
+        console.error("Warning: Action received is not defined or is null");
+      }
+      else if (action.type == null) {
+        console.error("Warning: Action received does not have a `type` property", action);
+      }
+      return dispatcher.dispatch(action);
     }
-    else if (action == null) {
-      console.error("Warning: Action received is not defined or is null");
+    catch (error) {
+      console.error(error);
+      throw error;
     }
-    else if (action.type == null) {
-      console.error("Warning: Action received does not have a `type` property", action);
-    }
-    return dispatcher.dispatch(action);
   }
 }
 
@@ -100,7 +106,10 @@ export function wrapComponents(componentWrappers) {
       continue;
     }
     if (!("wrapComponent" in Components[key])) {
-      console.warn("WDK Component '" + key + "' is not wrappable.  WDK version will be used.");
+      console.error(
+        "Warning: WDK Component `%s` is not wrappable.  WDK version will be used.",
+        key
+      );
       continue;
     }
     Components[key].wrapComponent(componentWrappers[key]);
@@ -109,9 +118,8 @@ export function wrapComponents(componentWrappers) {
 
 /**
  * Apply WDK Store wrappers. Keys of `storeWrappers` should correspond to WDK
- * Store names. Values of `storeWrappers` are objects of
- * { methodName => overrideFactory } where overrideFactory returns the
- * overridden method.
+ * Store names. Values of `storeWrappers` are functions that take the current
+ * Store class and return a new Store class.
  *
  * @param {Object} storeWrappers
  */
@@ -119,17 +127,23 @@ export function wrapStores(storeWrappers) {
   for (let key in storeWrappers) {
     let Store = Stores[key];
     if (Store == null) {
-      console.warn("Cannot wrap unknown WDK Store '" + key + "'.  Skipping...");
+      console.error(
+        "Warning: Cannot wrap unknown WDK Store `%s`.  Skipping...",
+        key
+      );
       continue;
     }
-    // wrapper should be an object with two function properties
-    let override = storeWrappers[key];
-    [ 'getInitialState', 'reduce' ].forEach(method => {
-      if (method in override) {
-        // actually reset prototype method to a custom implementation
-        Store.prototype[method] = override[method](Store.prototype[method]);
-      }
-    });
+    let storeWrapper = storeWrappers[key];
+    let storeWrapperType = typeof storeWrapper;
+    if (storeWrapperType !== 'function') {
+      console.error(
+        "Expected Store wrapper for `%s` to be a `function`, but got `%s`.",
+        key,
+        storeWrapperType
+      );
+      continue;
+    }
+    Stores[key] = storeWrapper(Store);
   }
 }
 

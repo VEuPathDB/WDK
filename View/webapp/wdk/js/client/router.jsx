@@ -17,7 +17,10 @@ import SiteMapController from './components/SiteMapController';
 /**
  * Get routes based on `rootUrl`.
  *
- * @param {string} rootUrl The rootUrl used to match paths below
+ * @param {string} rootUrl The rootUrl used to match paths below.
+ * @param {HTMLElement} rootElement Element to render app.
+ * @param {Object} context Context object passed to WdkContext.
+ * @param {Array<Object>} additionalRoutes Route configs to add to router.
  */
 export function start(rootUrl, rootElement, context, additionalRoutes = []) {
   // This makes it possible to omit the rootUrl in the Link Component, etc.
@@ -35,7 +38,7 @@ export function start(rootUrl, rootElement, context, additionalRoutes = []) {
           <Route path="record/:recordClass/*" component={RecordController}/>
           <Route path="step/:stepId/download" component={StepDownloadFormController}/>
           <Route path="user/profile" component={UserProfileController}/>
-          <Route path="site-map" component={SiteMapController}/>
+          <Route path="data-finder" component={SiteMapController}/>
           <Route path="question-list" component={QuestionListController}/>
           {additionalRoutes.map(route => ( <Route key={route.name} {...route}/> ))}
           <Route path="*" component={NotFoundController}/>

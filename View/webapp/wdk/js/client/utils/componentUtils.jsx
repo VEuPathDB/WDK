@@ -10,7 +10,7 @@ import shallowCompare from 'react-addons-shallow-compare';
  * If they are shallowly equal, the component update will be skipped.
  */
 export class PureComponent extends React.Component {
-  shouldComponentUpdate(nextState, nextProps) {
+  shouldComponentUpdate(nextProps, nextState) {
     return shallowCompare(this, nextProps, nextState);
   }
 }
@@ -109,6 +109,51 @@ export function wrappable(Component) {
     }
 
   };
+}
+
+/**
+ * Takes a component and returns an intrumented wrapper component
+ * that will log details about props, etc.
+ *
+ * This should never be used in production code!
+ */
+export function instrument(Component, options = {}) {
+  let {
+    compareProps = true
+  } = options;
+  let componentName = Component.displayName || Component.name || Component;
+
+  return class IntrumentWrapper extends React.Component {
+    shouldComponentUpdate(nextProps) {
+      if (compareProps) {
+        logShallowComparison(
+          this.props,
+          nextProps,
+          'Comparing props for ' + componentName
+        );
+      }
+      return true;
+    }
+    render() {
+      return (
+        <Component {...this.props}/>
+      );
+    }
+  }
+}
+
+/** Helper to log the results of a shallow comparison */
+function logShallowComparison(obj1, obj2, label = 'Shallow comparison') {
+  console.group(label)
+  console.log('Comparing %o and %o', obj1, obj2);
+  let allKeys = new Set(Object.keys(obj1).concat(Object.keys(obj2)));
+  for (let key of allKeys) {
+    let equal = obj1[key] === obj2[key];
+    if (!equal) {
+      console.log('`%s` not equal', key);
+    }
+  }
+  console.groupEnd(label)
 }
 
 export function safeHtml(str, props = null, Component = 'span') {
