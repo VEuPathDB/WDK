@@ -31,7 +31,7 @@ let CheckboxTreeNode = function(props) {
 
   return (
     <li className={nodeType} style={nodeVisibility}>
-      {getNodeChildren(node) && !isSearchMode ?
+      {children.length > 0 && !isSearchMode ?
       <AccordionButton expanded={isExpanded}
                        node={node}
                        toggleExpansion={toggleExpansion} /> : "" }
