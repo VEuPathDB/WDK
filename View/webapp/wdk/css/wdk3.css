@@ -469,10 +469,8 @@ body {
 }
 
 .wdk-DataTable {
-  width: 100%;
   border: 1px solid #d8d8d8;
   background-color: #fdfdfd;
-  table-layout: fixed;
 }
 
 .wdk-DataTableContainer .dataTables_filter {
@@ -505,6 +503,7 @@ body {
   background-color: white;
   border: 1px solid #d8d8d8;
   word-break: break-word;
+  padding: 6px 8px;
 }
 
 .wdk-DataTableCellExpand {
