@@ -1,4 +1,5 @@
 import React,{PropTypes} from 'react';
+import pick from 'lodash/object/pick';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import AccordionButton from './AccordionButton';
 import CheckboxTreeNode from './CheckboxTreeNode';
@@ -7,6 +8,43 @@ import {getLeaves} from '../utils/TreeUtils';
 import {getBranches} from '../utils/TreeUtils';
 import {mapStructure} from '../utils/TreeUtils';
 
+/**
+ * Render the checkbox tree links
+ * @returns {XML}
+ */
+let TreeLinks = props => {
+  let {
+    showSelectionLinks, showExpansionLinks,
+    onSelectAll, onClearAll, onExpandAll, onCollapseAll,
+    onResetToCurrent, onResetToDefault } = props;
+  return (
+    <div className="wdk-CheckboxTree-links">
+      {showSelectionLinks ?
+        <span>
+          <a href="#" onClick={onSelectAll}>select all</a> |
+          <a href="#" onClick={onClearAll}> clear all</a>
+          <br />
+        </span> :
+        "" }
+
+      {showExpansionLinks ?
+        <span>
+          <a href="#" onClick={onExpandAll}> expand all</a> |
+          <a href="#" onClick={onCollapseAll}> collapse all</a>
+          <br />
+        </span> :
+        "" }
+
+      {showSelectionLinks ?
+        <span>
+          <a href="#" onClick={onResetToCurrent}>reset to current</a> |
+          <a href="#" onClick={onResetToDefault}>reset to default</a>
+          <br />
+        </span> :
+        "" }
+    </div>
+  );
+}
 
 /**
  * A null or undefined selected list should be made into an empty array
@@ -45,7 +83,7 @@ export default class CheckboxTree extends React.Component {
   /**
    * Selects all the tree's leaves and calls the appropriate update method in the action creator
    */
-  selectAll(event) {
+  onSelectAll(event) {
     let selectedList = [];
     this.props.tree.forEach(node =>
       isLeafNode(node, this.props.getNodeChildren) ?
@@ -62,7 +100,7 @@ export default class CheckboxTree extends React.Component {
   /**
    * Clears the selected list and calls the appropriate update method in the action creator
    */
-  clearAll(event) {
+  onClearAll(event) {
     this.setSelectedList();
 
     // prevent update to URL
@@ -73,7 +111,7 @@ export default class CheckboxTree extends React.Component {
   /**
    * Selects all the tree's branches and calls the appropriate update method in the action creator
    */
-  expandAll(event) {
+  onExpandAll(event) {
     let expandedList = [];
     this.props.tree.forEach(node => {
       expandedList.push(...getBranches(node, this.props.getNodeChildren).map(branch => this.props.getNodeFormValue(branch)));
@@ -88,7 +126,7 @@ export default class CheckboxTree extends React.Component {
   /**
    * Clears the expanded list and calls the appropriate update method in the action creator
    */
-  collapseAll(event) {
+  onCollapseAll(event) {
     let expandedList = [];
     this.props.onExpandedListUpdated(expandedList);
 
@@ -100,7 +138,7 @@ export default class CheckboxTree extends React.Component {
   /**
    * Calls the appropriate method in the action creator to reload the original selects
    */
-  toCurrent(event) {
+  onResetToCurrent(event) {
     this.props.onCurrentSelectedListLoaded();
 
     // prevent update to URL
@@ -111,7 +149,7 @@ export default class CheckboxTree extends React.Component {
   /**
    * Calls the appropriate method in the action creator to load the default selects
    */
-  toDefault(event) {
+  onResetToDefault(event) {
     this.props.onDefaultSelectedListLoaded();
 
     // prevent update to URL
@@ -181,12 +219,16 @@ export default class CheckboxTree extends React.Component {
       getNodeFormValue,
       getNodeChildren,
       getBasicNodeReactElement
-      } = this.props;
-      let toggleCheckbox = this.toggleCheckbox;
-      let toggleExpansion = this.toggleExpansion;
+    } = this.props;
+    let toggleCheckbox = this.toggleCheckbox;
+    let toggleExpansion = this.toggleExpansion;
+    let treeLinkHandlers =
+      pick(this, [ 'onSelectAll', 'onClearAll',
+                   'onExpandAll', 'onCollapseAll',
+                   'onResetToCurrent', 'onResetToDefault' ]);
     return (
       <div className="wdk-CheckboxTree" id={this.props.name}>
-        {this.renderLinks(isSearchMode)}
+        <TreeLinks showSelectionLinks={!removeCheckboxes} showExpansionLinks={!isSearchMode} {...treeLinkHandlers} />
         {getSearchBox ? getSearchBox() : ""}
         <ul className="fa-ul wdk-CheckboxTree-list">
           {tree.map(node => {
@@ -219,49 +261,9 @@ export default class CheckboxTree extends React.Component {
            })
           }
         </ul>
-        {this.renderLinks(isSearchMode)}
+        <TreeLinks showSelectionLinks={!removeCheckboxes} showExpansionLinks={!isSearchMode} {...treeLinkHandlers} />
       </div>
     );
-  }
-
-
-  /**
-   * Render the checkbox tree links
-   * @returns {XML}
-   */
-  renderLinks(isSearchMode) {
-    let selectAll = this.selectAll;
-    let clearAll = this.clearAll;
-    let expandAll = this.expandAll;
-    let collapseAll = this.collapseAll;
-    let toCurrent = this.toCurrent;
-    let toDefault = this.toDefault;
-    return (
-      <div className="wdk-CheckboxTree-links">
-        {!this.props.removeCheckboxes ?
-        <span>
-          <a href="#" onClick={selectAll}>select all</a> |
-          <a href="#" onClick={clearAll}> clear all</a>
-          <br />
-        </span> :
-        "" }
-
-        {!isSearchMode ?
-          <span>
-            <a href="#" onClick={expandAll}> expand all</a> |
-            <a href="#" onClick={collapseAll}> collapse all</a>
-            <br />
-          </span> :
-          "" }
-
-        {!this.props.removeCheckboxes ?
-          <span>
-            <a href="#" onClick={toCurrent}>reset to current</a> |
-            <a href="#" onClick={toDefault}> reset to default</a>
-          </span> :
-          "" }
-      </div>
-    )
   }
 }
 
