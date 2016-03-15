@@ -262,6 +262,7 @@ DataTable.defaultProps = {
 /** Default DataTables jQuery plugin options. */
 DataTable.defaultDataTableOpts = {
   info: false,
+  autoWidth: false,
   deferRender: true,
   paging: false,
   searching: true,
