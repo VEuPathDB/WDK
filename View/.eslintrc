@@ -23,11 +23,11 @@
     "camelcase": 0,
     "no-underscore-dangle": 0,
     "require-jsdoc": [2, {
-        "require": {
-            "FunctionDeclaration": true,
-            "MethodDefinition": false,
-            "ClassDeclaration": true
-        }
+      "require": {
+        "FunctionDeclaration": true,
+        "MethodDefinition": false,
+        "ClassDeclaration": true
+      }
     }]
   }
 }
