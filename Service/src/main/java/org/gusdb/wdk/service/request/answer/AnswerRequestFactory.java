@@ -33,14 +33,14 @@ public class AnswerRequestFactory {
    * 
    * Input Format:
    * {
-   *   “questionName”: String,
-   *   “parameters”: Object (map from paramName -> paramValue),
+   *   "questionName" : String,
+   *   "parameters": Object (map from paramName -> paramValue),
    *   "legacyFilterName": (optional) String,
-   *   “filters”: (optional) [ {
-   *     “name”: String, value: Any
+   *   "filters": (optional) [ {
+   *     "name": String, value: Any
    *   } ],
-   *   “viewFilters”: (optional) [ {
-   *     “name”: String, value: Any
+   *   "viewFilters": (optional) [ {
+   *     "name": String, value: Any
    *   } ],
    *   "wdk_weight": (optional) Integer
    * }
