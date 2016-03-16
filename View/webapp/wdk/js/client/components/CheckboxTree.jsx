@@ -60,12 +60,12 @@ export default class CheckboxTree extends React.Component {
     super(props);
 
     // hard bind the toggle functions to the this checkbox tree component
-    this.selectAll = this.selectAll.bind(this);
-    this.clearAll = this.clearAll.bind(this);
-    this.expandAll = this.expandAll.bind(this);
-    this.collapseAll = this.collapseAll.bind(this);
-    this.toCurrent = this.toCurrent.bind(this);
-    this.toDefault = this.toDefault.bind(this);
+    this.onSelectAll = this.onSelectAll.bind(this);
+    this.onClearAll = this.onClearAll.bind(this);
+    this.onExpandAll = this.onExpandAll.bind(this);
+    this.onCollapseAll = this.onCollapseAll.bind(this);
+    this.onResetToCurrent = this.onResetToCurrent.bind(this);
+    this.onResetToDefault = this.onResetToDefault.bind(this);
     this.toggleExpansion = this.toggleExpansion.bind(this);
     this.toggleCheckbox = this.toggleCheckbox.bind(this);
   }
