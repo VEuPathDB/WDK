@@ -282,6 +282,11 @@ body {
   transition: left 250ms ease;
 }
 
+.wdk-RecordMain {
+  /* make prevent contents panel from being clipped. */
+  min-height: 65vh;
+}
+
 .wdk-RecordSidebar {
   left: -322px;
   width: 270px;
