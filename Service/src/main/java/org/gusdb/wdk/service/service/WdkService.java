@@ -17,9 +17,11 @@ import org.gusdb.wdk.service.factory.WdkAnswerFactory;
 
 public abstract class WdkService {
 
+  
+
   protected static final Response getBadRequestBodyResponse(String message) {
     return Response.status(Status.BAD_REQUEST).entity(
-        "Improperly formatted or incomplete request body: " + message).build();
+        "Improperly formatted or incomplete service request body: " + message).build();
   }
 
   protected static final Response getPermissionDeniedResponse() {
