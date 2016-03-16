@@ -30,18 +30,8 @@ import org.json.JSONObject;
  * <p>JSON input format:</p>
  * <pre>
  * {
- *   “questionDefinition”: {
- *     “questionName”: String,
- *     “params”: [ {
- *       “name”: String, “value”: Any
- *     } ],
- *     (optional) "legacyFilterName": String,
- *     (optional) “filters”: [ {
- *       “name”: String, value: Any
- *     } ],
- *     (optional) “viewFilters”: [ {
- *       “name”: String, value: Any
- *     } ]
+ *   "questionDefinition": {
+ *       see AnswerRequestFactory for details
  *   },
  *   formatting: {
  *     format: String,   (reporter internal name. optional.  if not provided, use WDK standard JSON)
