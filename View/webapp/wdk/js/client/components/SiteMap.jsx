@@ -90,6 +90,10 @@ getNodeFormValue(node) {
 
 onSearch(node)   {
       let nodeSearchText = this.props.searchableTextMap[this.getNodeFormValue(node)];
+      let dn = getDisplayName(node);
+      if (dn === 'RNA Seq') { 
+      	 let nothing = 1; 
+	 }
       return nodeSearchText == undefined || nodeSearchText == null ? false : nodeSearchText.indexOf(this.props.searchText.toLowerCase()) > -1;
 },
 
@@ -134,6 +138,7 @@ getNodeChildren(node) {
                    onSearch = {this.onSearch}
                    onSearchTextReset = {this.props.siteMapActions.resetSearchText}
                    onSearchTextSet = {this.props.siteMapActions.setSearchText}
+		   searchBoxPlaceholder = "Search for data"
 
       />
     );
