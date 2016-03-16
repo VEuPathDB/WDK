@@ -18,10 +18,7 @@ let hasChildren = node =>
  * @param {Function} leafPredicate
  */
 export function getTree(ontology, leafPredicate) {
-  let tree = pruneDescendantNodes(node => hasChildren(node) || leafPredicate(node), ontology.tree);
-  return Object.assign({}, tree, {
-    children: tree.children.map(child => compactRootNodes(child))
-  });
+  return pruneDescendantNodes(node => hasChildren(node) || leafPredicate(node), ontology.tree);
 }
 
 
