@@ -11,9 +11,9 @@
   //  adjust-x: Number|String x-offset to position tooltip
   //  adjust-y: Number|String y-offset to position tooltip
   //  content : String selector containing content
+  //  url : String url (content will supercede this)
   //
   // opts are sent to qtip. Data opts win
-
   $.fn.wdkTooltip = function(opts) {
     return this.each(function(idx, node) {
       var settings = $.extend(true, {}, $.fn.wdkTooltip.defaults, opts);
@@ -47,6 +47,28 @@
         dataOpts.content = {
           text: $node.find($data.content)
         };
+      }
+      else if ($data.url) {
+        var xhr;
+        dataOpts.content = {
+          text: function(event, api) {
+            xhr = $.ajax({
+              url: $data.url
+            });
+            xhr.then(function(content) {
+              api.set('content.text', content);
+            }, function(xhr, status, error) {
+              if (status === 'abort') return;
+              api.set('content.text', status + ': ' + error);
+            });
+            return 'Loading...';
+          }
+        };
+        dataOpts.events = {
+          hide: function() {
+            if (xhr != null) xhr.abort();
+          }
+        }
       }
 
       var dataSettings = $.extend(true, settings, dataOpts);
