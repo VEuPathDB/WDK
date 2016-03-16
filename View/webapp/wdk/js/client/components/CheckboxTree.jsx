@@ -209,7 +209,7 @@ export default class CheckboxTree extends React.Component {
   render() {
     let {
       tree,
-      getSearchBox,
+      SearchBoxComponent,
       isSearchMode,
       onSearch,
       selectedList,
@@ -229,7 +229,7 @@ export default class CheckboxTree extends React.Component {
     return (
       <div className="wdk-CheckboxTree" id={this.props.name}>
         <TreeLinks showSelectionLinks={!removeCheckboxes} showExpansionLinks={!isSearchMode} {...treeLinkHandlers} />
-        {getSearchBox ? getSearchBox() : ""}
+        {SearchBoxComponent ? <SearchBoxComponent/> : ""}
         <ul className="fa-ul wdk-CheckboxTree-list">
           {tree.map(node => {
             let mappedChildren = getNodeChildren(node);
@@ -325,7 +325,7 @@ CheckboxTree.propTypes = {
   isSearchMode: PropTypes.bool,
 
   /** Provides the search box React element to drop in */
-  getSearchBox: PropTypes.func,
+  SearchBoxComponent: PropTypes.func,
 
   /** Called during rendering to identify whether a given node should be made visible based upon whether it or
    *  its ancestors match the search criteria.  The predicate function accepts a node as input and outputs a
