@@ -163,7 +163,7 @@ sub new {
 
     $self->{'google_analytics_id'} = $self->google_analytics_id($self->{'euparc'}, $self->{'canonical_hostname'});
 
-    $self->{'authenticationMethod'} = 'user_db'; # oauth2 or user_db
+    $self->{'authenticationMethod'} = 'oauth2'; # oauth2 or userdb
     $self->{'oauthUrl'} = 'https://eupathdb.org/oauth';
     $self->{'oauthClientId'} = 'apiComponentSite';
     $self->{'oauthClientSecret'} = $self->oauth_secret($self->{'euparc'}, $self->{'oauthClientId'});
