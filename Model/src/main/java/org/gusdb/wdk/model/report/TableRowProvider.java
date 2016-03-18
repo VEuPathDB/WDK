@@ -21,8 +21,7 @@ import org.apache.log4j.Logger;
 
 import org.gusdb.wdk.model.dbms.ResultList;
 
-public class TableRowProvider implements SingleTableReporterRowsProvider {
-     private static Logger LOG = Logger.getLogger(SingleTableReporterRowsProvider.class);
+public class TableRowProvider implements ColumnarReporterRowsProvider {
 
   AnswerValue answerValuePage;
   private int recordInstancesCursor = 0;

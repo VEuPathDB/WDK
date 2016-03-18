@@ -12,11 +12,11 @@ import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.WdkModelException;
 
-public class TableTabDelimitedReporter extends SingleTableReporter {
+public class TableColumnarReporter extends ColumnarReporter {
 
   private TableField tableField;
 
-  public TableTabDelimitedReporter(AnswerValue answerValue, int startIndex, int endIndex) {
+  public TableColumnarReporter(AnswerValue answerValue, int startIndex, int endIndex) {
     super(answerValue, startIndex, endIndex);
   }
 
@@ -42,7 +42,7 @@ public class TableTabDelimitedReporter extends SingleTableReporter {
     return list;
   }
   
-  protected SingleTableReporterRowsProvider getRowsProvider(AnswerValue answerValuePage) throws WdkUserException, WdkModelException {
+  protected ColumnarReporterRowsProvider getRowsProvider(AnswerValue answerValuePage) throws WdkUserException, WdkModelException {
     return new TableRowProvider(answerValuePage, getTableField());
   }
 

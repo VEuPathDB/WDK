@@ -27,7 +27,7 @@ import com.lowagie.text.pdf.PdfWriter;
  * @author steve
  *
  */
-public abstract class SingleTableReporter extends StandardReporter {
+public abstract class ColumnarReporter extends StandardReporter {
 
 
   private static Logger logger = Logger.getLogger(TabularReporter.class);
@@ -40,7 +40,7 @@ public abstract class SingleTableReporter extends StandardReporter {
   private boolean showHeader = true;
   private String columnDivider = "\t";
 
-  public SingleTableReporter(AnswerValue answerValue, int startIndex, int endIndex) {
+  public ColumnarReporter(AnswerValue answerValue, int startIndex, int endIndex) {
       super(answerValue, startIndex, endIndex);
   }
 
@@ -136,7 +136,7 @@ public abstract class SingleTableReporter extends StandardReporter {
   
   protected abstract List<String> getHeader() throws WdkUserException, WdkModelException;
   
-  protected abstract SingleTableReporterRowsProvider getRowsProvider(AnswerValue answerValue) throws WdkUserException, WdkModelException;
+  protected abstract ColumnarReporterRowsProvider getRowsProvider(AnswerValue answerValue) throws WdkUserException, WdkModelException;
 
   private void format2Text(PrintWriter writer)
       throws WdkModelException, WdkUserException {
@@ -153,7 +153,7 @@ public abstract class SingleTableReporter extends StandardReporter {
     // get page based answers with a maximum size (defined in
     // PageAnswerIterator)
     for (AnswerValue answerValuePage : this) {
-      SingleTableReporterRowsProvider rows = getRowsProvider(answerValuePage);
+      ColumnarReporterRowsProvider rows = getRowsProvider(answerValuePage);
       try {
 	while (rows.hasNext()) {
 	  List<Object> row = rows.next();
@@ -195,7 +195,7 @@ public abstract class SingleTableReporter extends StandardReporter {
           // get page based answers with a maximum size (defined in
           // PageAnswerIterator)
           for (AnswerValue answerValuePage : this) {
-	    SingleTableReporterRowsProvider rows = getRowsProvider(answerValuePage);
+	    ColumnarReporterRowsProvider rows = getRowsProvider(answerValuePage);
 	    try {
 	      while (rows.hasNext()) {
                 List<Object> row = rows.next();
@@ -269,7 +269,7 @@ public abstract class SingleTableReporter extends StandardReporter {
       // get page based answers with a maximum size (defined in
       // PageAnswerIterator)
       for (AnswerValue answerValuePage : this) {
-	SingleTableReporterRowsProvider rows = getRowsProvider(answerValuePage);
+	ColumnarReporterRowsProvider rows = getRowsProvider(answerValuePage);
 	try {
 	  while (rows.hasNext()) {
 	    List<Object> row = rows.next();
