@@ -12,7 +12,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 
-public class AttributesRowProvider implements SingleTableReporterRowsProvider {
+public class AttributesRowProvider implements ColumnarReporterRowsProvider {
   
   AnswerValue answerValuePage;
   private Set<AttributeField> fields;
