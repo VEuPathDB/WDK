@@ -8,4 +8,6 @@ import org.gusdb.wdk.model.WdkUserException;
 public interface SingleTableReporterRowsProvider {
   boolean hasNext() throws WdkModelException, WdkUserException;
   List<Object> next() throws WdkModelException, WdkUserException;
+  void close() throws WdkModelException, WdkUserException;
+
 }

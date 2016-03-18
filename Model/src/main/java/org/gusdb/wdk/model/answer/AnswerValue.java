@@ -319,7 +319,7 @@ public class AnswerValue {
       _resultSizesByProject = new LinkedHashMap<String, Integer>();
 
       // make sure the project_id is defined in the record
-      PrimaryKeyAttributeField primaryKey = _question.getRecordClass().getPrimaryKeyAttributeField();
+      PrimaryKeyAttributeField primaryKey = getPrimaryKeyAttributeField();
       if (!primaryKey.hasColumn(Utilities.COLUMN_PROJECT_ID)) {
         String projectId = _question.getWdkModel().getProjectId();
         // no project_id defined in the record, use the full size
@@ -670,16 +670,11 @@ public class AnswerValue {
           "__attr-paged"));
 
       // fill in the column attributes
-      PrimaryKeyAttributeField pkField = _question.getRecordClass().getPrimaryKeyAttributeField();
+      PrimaryKeyAttributeField pkField = getPrimaryKeyAttributeField();
       Map<String, AttributeField> fields = _question.getAttributeFieldMap();
 
       while (resultList.next()) {
-        // get primary key
-        Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-        for (String column : pkField.getColumnRefs()) {
-          pkValues.put(column, resultList.get(column));
-        }
-        PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(pkField, pkValues);
+	PrimaryKeyAttributeValue primaryKey = getPrimaryKeyFromResultList(resultList, pkField);
         RecordInstance record = _pageRecordInstances.get(primaryKey);
 
         if (record == null) {
@@ -688,10 +683,7 @@ public class AnswerValue {
           error.append(attributeQuery.getFullName());
           error.append("] returns rows that doesn't match the paged ");
           error.append("records. (");
-          for (String pkName : pkValues.keySet()) {
-            error.append(pkName).append(" = ");
-            error.append(pkValues.get(pkName)).append(", ");
-          }
+	  error.append(primaryKey.getValuesAsString());
           error.append(").\nPaged Attribute SQL:\n").append(sql);
           error.append("\n").append("Paged ID SQL:\n").append(getPagedIdSql());
           throw new WdkModelException(error.toString());
@@ -726,6 +718,19 @@ public class AnswerValue {
     logger.debug("Attribute query [" + attributeQuery.getFullName() + "] integrated.");
   }
 
+  public static PrimaryKeyAttributeValue getPrimaryKeyFromResultList(ResultList resultList, PrimaryKeyAttributeField pkField) throws WdkModelException, WdkUserException {
+
+    Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+    for (String column : pkField.getColumnRefs()) {
+      pkValues.put(column, resultList.get(column));
+    }
+    return new PrimaryKeyAttributeValue(pkField, pkValues);
+  }
+
+  public PrimaryKeyAttributeField getPrimaryKeyAttributeField() {
+     return _question.getRecordClass().getPrimaryKeyAttributeField();
+  }
+
   // ------------------------------------------------------------------
   // Private Methods
   // ------------------------------------------------------------------
@@ -734,7 +739,7 @@ public class AnswerValue {
     // get the paged SQL of id query
     String idSql = getPagedIdSql();
 
-    PrimaryKeyAttributeField pkField = _question.getRecordClass().getPrimaryKeyAttributeField();
+    PrimaryKeyAttributeField pkField = getPrimaryKeyAttributeField();
 
     // combine the id query with attribute query
     String attributeSql = getAttributeSql(attributeQuery);
@@ -758,6 +763,43 @@ public class AnswerValue {
   public void integrateTableQuery(TableField tableField) throws WdkModelException, WdkUserException {
     initPageRecordInstances();
 
+    ResultList resultList = getTableFieldResultList(tableField);
+
+    // initialize table values
+    for (RecordInstance record : _pageRecordInstances.values()) {
+      PrimaryKeyAttributeValue primaryKey = record.getPrimaryKey();
+      TableValue tableValue = new TableValue(_user, primaryKey, tableField, true);
+      record.addTableValue(tableValue);
+    }
+
+    // make table values
+    PrimaryKeyAttributeField pkField = getPrimaryKeyAttributeField();
+    Query tableQuery = tableField.getQuery();
+
+    while (resultList.next()) {
+      PrimaryKeyAttributeValue primaryKey = getPrimaryKeyFromResultList(resultList, pkField);
+      RecordInstance record = _pageRecordInstances.get(primaryKey);
+      primaryKey.setValueContainer(record);
+
+      if (record == null) {
+        StringBuffer error = new StringBuffer();
+        error.append("Paged table query [" + tableQuery.getFullName());
+        error.append("] returned rows that doesn't match the paged ");
+        error.append("records. (");
+	error.append(primaryKey.getValuesAsString());
+        error.append(").\nPaged table SQL:\n" + getPagedTableSql(tableQuery));
+        error.append("\n" + "Paged ID SQL:\n" + getPagedIdSql());
+        throw new WdkModelException(error.toString());
+      }
+
+      TableValue tableValue = record.getTableValue(tableField.getName());
+      // initialize a row in table value
+      tableValue.initializeRow(resultList);
+    }
+    logger.debug("Table query [" + tableQuery + "] integrated.");
+  }
+
+  public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException, WdkUserException {
     WdkModel wdkModel = _question.getWdkModel();
     // has to get a clean copy of the attribute query, without pk params
     // appended
@@ -769,7 +811,7 @@ public class AnswerValue {
        logger.debug("param: " + param.getName());
     }
     */
-    // get and run the paged attribute query sql
+    // get and run the paged table query sql
     String sql = getPagedTableSql(tableQuery);
 
     DatabaseInstance platform = wdkModel.getAppDb();
@@ -781,53 +823,15 @@ public class AnswerValue {
     catch (SQLException e) {
       throw new WdkModelException(e);
     }
-    ResultList resultList = new SqlResultList(resultSet);
 
-    // initialize table values
-    for (RecordInstance record : _pageRecordInstances.values()) {
-      PrimaryKeyAttributeValue primaryKey = record.getPrimaryKey();
-      TableValue tableValue = new TableValue(_user, primaryKey, tableField, true);
-      record.addTableValue(tableValue);
-    }
-
-    // make table values
-    PrimaryKeyAttributeField pkField = _question.getRecordClass().getPrimaryKeyAttributeField();
-    while (resultList.next()) {
-      // get primary key
-      Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-      for (String column : pkField.getColumnRefs()) {
-        pkValues.put(column, resultList.get(column));
-      }
-      PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(pkField, pkValues);
-      RecordInstance record = _pageRecordInstances.get(primaryKey);
-      primaryKey.setValueContainer(record);
-
-      if (record == null) {
-        StringBuffer error = new StringBuffer();
-        error.append("Paged table query [" + tableQuery.getFullName());
-        error.append("] returned rows that doesn't match the paged ");
-        error.append("records. (");
-        for (String pkName : pkValues.keySet()) {
-          Object pkValue = pkValues.get(pkName);
-          error.append(pkName + " = " + pkValue + ", ");
-        }
-        error.append(").\nPaged table SQL:\n" + sql);
-        error.append("\n" + "Paged ID SQL:\n" + getPagedIdSql());
-        throw new WdkModelException(error.toString());
-      }
-
-      TableValue tableValue = record.getTableValue(tableField.getName());
-      // initialize a row in table value
-      tableValue.initializeRow(resultList);
-    }
-    logger.debug("Table query [" + tableQuery.getFullName() + "] integrated.");
+    return new SqlResultList(resultSet);
   }
 
   private String getPagedTableSql(Query tableQuery) throws WdkModelException, WdkUserException {
     // get the paged SQL of id query
     String idSql = getPagedIdSql();
 
-    PrimaryKeyAttributeField pkField = _question.getRecordClass().getPrimaryKeyAttributeField();
+    PrimaryKeyAttributeField pkField = getPrimaryKeyAttributeField();
 
     // combine the id query with attribute query
     // make an instance from the original attribute query, and attribute
