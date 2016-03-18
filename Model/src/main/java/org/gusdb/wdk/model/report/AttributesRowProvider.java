@@ -37,5 +37,6 @@ public class AttributesRowProvider implements SingleTableReporterRowsProvider {
     }
     return values;
   }
-  
+ 
+  public void close() throws WdkModelException, WdkUserException {}
 }

@@ -56,6 +56,15 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
     return values;
   }
 
+  public String getValuesAsString() {
+    StringBuilder s = new StringBuilder();
+    for (String pkName : pkValues.keySet()) {
+      s.append(pkName).append(" = ");
+      s.append(pkValues.get(pkName)).append(", ");
+    }
+    return s.toString();
+  }
+
   @Override
   public Object getValue() throws WdkModelException, WdkUserException {
     if (value == null) {
