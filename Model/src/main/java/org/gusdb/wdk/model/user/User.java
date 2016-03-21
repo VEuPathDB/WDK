@@ -1445,7 +1445,7 @@ public class User /* implements Serializable */{
     return sb.toString();
   }
 
-  public SummaryView getCurrentSummaryView(Question question) throws WdkUserException {
+  public SummaryView getCurrentSummaryView(Question question) {
     String key = SUMMARY_VIEW_PREFIX + question.getRecordClassName();
     String viewName = projectPreferences.get(key);
     SummaryView view;
@@ -1453,7 +1453,13 @@ public class User /* implements Serializable */{
       view = question.getDefaultSummaryView();
     }
     else {
-      view = question.getSummaryView(viewName);
+      try {
+        view = question.getSummaryView(viewName);
+      }
+      catch (WdkUserException e) {
+        // stored user preference is no longer valid; choose default instead
+        view = question.getDefaultSummaryView();
+      }
     }
     return view;
   }
