@@ -20,6 +20,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
 
   protected String name;
   protected String displayName;
+  protected String longDisplayName; // a longer version, for UIs that have the room
   protected String help;
   protected String type;
   protected int truncateTo;
@@ -53,6 +54,22 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    */
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+  }
+
+  /**
+   * For use in UIs that have space for a long display name.  Defaults to display name.
+   * @return Returns the longDisplayName.
+   */
+  public String getLongDisplayName() {
+    return (longDisplayName == null) ? getDisplayName() : longDisplayName;
+  }
+
+  /**
+   * @param displayName
+   *          The displayName to set.
+   */
+  public void setLongDisplayName(String longDisplayName) {
+    this.longDisplayName = longDisplayName;
   }
 
   /**
