@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,7 +28,7 @@ import org.json.JSONObject;
 public abstract class StandardReporter extends Reporter {
 
   protected Configuration reporterConfig = new Configuration();
-  private static Logger logger = Logger.getLogger(XMLReporter.class);
+  //private static Logger logger = Logger.getLogger(XMLReporter.class);
 
   protected StandardReporter(AnswerValue answerValue, int startIndex, int endIndex) {
     super(answerValue, startIndex, endIndex);
@@ -49,65 +51,58 @@ public abstract class StandardReporter extends Reporter {
     return "This reporter does not have config info yet.";
   }
 
-  protected Set<Field> validateColumns() throws WdkModelException {
+  protected Set<Field> validateColumns() throws WdkModelException, WdkUserException {
     // get a map of report maker fields
     Map<String, Field> fieldMap = getQuestion().getFields(FieldScope.REPORT_MAKER);
 
     // the config map contains a list of column names;
-    Set<Field> columns = new LinkedHashSet<Field>();
 
+    Set<Field> columns = new LinkedHashSet<Field>();
+    
     if (reporterConfig.getIsAllFields()) {
       columns.addAll(fieldMap.values());
     }
     else {
-      if (reporterConfig.getIsAllAttributes()) {
-        for (String k : fieldMap.keySet()) {
-          Field f = fieldMap.get(k);
-          if (f.getClass().getName().contains("AttributeField"))
-            columns.add(f);
-        }
-      }
-      else {
-        for (String column : reporterConfig.getAttributes()) {
-          column = column.trim();
-          if (fieldMap.containsKey(column)) {
-            columns.add(fieldMap.get(column));
-          }
-        }
-      }
-
+      Set<AttributeField> attrColumns = validateAttributeColumns();
+      columns.addAll(attrColumns);
+      
       if (reporterConfig.getIsAllTables()) {
         for (String k : fieldMap.keySet()) {
           Field f = fieldMap.get(k);
-          if (f.getClass().getName().contains("TableField"))
+          // if this is a table field
+          if (TableField.class.isAssignableFrom(f.getClass()))
             columns.add(f);
         }
       }
       else {
-        for (String column : reporterConfig.getTables()) {
-          column = column.trim();
-          if (!fieldMap.containsKey(column))
-            throw new WdkModelException("The column '" + column + "' cannot be included in the report");
-          columns.add(fieldMap.get(column));
+        for (String table : reporterConfig.getTables()) {
+          table = table.trim();
+          if (!fieldMap.containsKey(table))
+            throw new WdkUserException("The table '" + table + "' is requested for the report, but is not available for this type of record");
+          columns.add(fieldMap.get(table));
         }
       }
     }
     return columns;
   }
-
-  protected Set<AttributeField> validateAttributeColumns() {
-    // get a map of report maker fields
+  
+  /**
+   * Find the requested fields that are Attribute columns and add to provided set
+   * @param fieldMap the requested fields
+   * @param columns add the attribute columns here
+   * @throws WdkUserException 
+   */
+  public Set<AttributeField> validateAttributeColumns() throws WdkUserException {
+    
     Map<String, AttributeField> fieldMap = getQuestion().getAttributeFieldMap();
-
-    // the config map contains a list of column names;
     Set<AttributeField> columns = new LinkedHashSet<AttributeField>();
-
+    
     if (reporterConfig.getIsAllAttributes()) {
-      logger.info("FIELDSLIST ALL");
       for (String k : fieldMap.keySet()) {
-        AttributeField f = fieldMap.get(k);
-        if (f.getClass().getName().contains("AttributeField"))
-          columns.add(f);
+        Field f = fieldMap.get(k);
+        // if this is an attribute field
+        if (AttributeField.class.isAssignableFrom(f.getClass()))
+          columns.add((AttributeField)f);
       }
     }
     else {
@@ -115,10 +110,10 @@ public abstract class StandardReporter extends Reporter {
         column = column.trim();
         if (fieldMap.containsKey(column)) {
           columns.add(fieldMap.get(column));
-        }
+        } else throw new WdkUserException("Column '" + column + "' is requested for the report, but is not available for this type of record");
       }
     }
-    return columns;
+    return columns;    
   }
 
   /**
