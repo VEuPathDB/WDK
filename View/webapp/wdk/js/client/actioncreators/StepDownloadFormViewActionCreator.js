@@ -42,6 +42,7 @@ export function loadPageDataFromStepId(stepId) {
         payload: stepBundle
       });
     }, error => {
+      console.error(error);
       dispatch({
         type: actionTypes.APP_ERROR,
         payload: { error }

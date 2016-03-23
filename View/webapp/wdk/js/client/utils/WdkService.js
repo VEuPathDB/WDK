@@ -6,11 +6,13 @@ import {
 } from './TreeUtils';
 import {
   getTree,
+  getPropertyValue,
+} from './OntologyUtils';
+import {
   getTargetType,
   getRefName,
-  getPropertyValue,
   getDisplayName
-} from './OntologyUtils';
+} from './CategoryUtils';
 import {
   getAttribute,
   getTable

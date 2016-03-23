@@ -5,12 +5,8 @@ import memoize from 'lodash/function/memoize';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
 import { postorderSeq } from '../utils/TreeUtils';
 import { wrappable, PureComponent } from '../utils/componentUtils';
-import {
-  getId,
-  getDisplayName,
-  getPropertyValues,
-  nodeHasProperty
-} from '../utils/OntologyUtils';
+import { getPropertyValues, nodeHasProperty } from '../utils/OntologyUtils';
+import { getId, getDisplayName } from '../utils/CategoryUtils';
 
 class RecordNavigationSection extends PureComponent {
 

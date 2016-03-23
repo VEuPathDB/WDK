@@ -1,6 +1,5 @@
 import WdkStore from './WdkStore';
 import { actionTypes } from '../actioncreators/SiteMapActionCreator';
-import { createSearchableTextMap } from '../utils/SearchableTreeUtils';
 
 export default class SiteMapStore extends WdkStore {
 
@@ -10,8 +9,7 @@ export default class SiteMapStore extends WdkStore {
       tree: null,
       isLoading: true,
       expandedList : [],
-      searchText: "",
-      searchableTextMap: null
+      searchText: ""
     };
   }
 
@@ -46,7 +44,6 @@ function siteMapLoading(state, payload) {
 function initializeSiteMap(state, payload) {
   return Object.assign({}, state, {
     tree: payload.tree,
-    searchableTextMap: createSearchableTextMap(payload.tree),
     isLoading: false });
 }
 

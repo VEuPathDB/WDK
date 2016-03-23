@@ -15,11 +15,11 @@ import * as IterableUtils from './utils/IterableUtils';
 import * as ReporterUtils from './utils/reporterUtils';
 import * as TreeUtils from './utils/TreeUtils';
 import * as OntologyUtils from './utils/OntologyUtils';
-import * as SearchableTreeUtils from './utils/SearchableTreeUtils';
+import * as CategoryUtils from './utils/CategoryUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
 import * as WdkUtils from './utils/WdkUtils';
 
-export { Components, Stores, ComponentUtils, ReporterUtils, FormSubmitter, WdkUtils, IterableUtils, TreeUtils, OntologyUtils, SearchableTreeUtils };
+export { Components, Stores, ComponentUtils, ReporterUtils, FormSubmitter, WdkUtils, IterableUtils, TreeUtils, OntologyUtils, CategoryUtils };
 
 /**
  * Run the application.

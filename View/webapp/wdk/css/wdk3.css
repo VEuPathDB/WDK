@@ -587,3 +587,7 @@ ul.wdk-RadioList {
 ul.wdk-RadioList li span {
   margin-left: 0.5em
 }
+
+.wdk-searchboxInfoIcon {
+  color: blue;
+}

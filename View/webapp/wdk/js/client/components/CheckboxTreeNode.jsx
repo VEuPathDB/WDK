@@ -1,59 +1,77 @@
-import React,{PropTypes} from 'react';
+import { Component, PropTypes } from 'react';
+import { isLeaf } from '../utils/TreeUtils';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import AccordionButton from './AccordionButton';
 
 const visibleElement = {display: "block"};
 const hiddenElement = {display: "none"};
 
-let CheckboxTreeNode = function(props) {
+class CheckboxTreeNode extends Component {
 
-  let {
+  shouldComponentUpdate(nextProps) {
+    return (nextProps.node !== this.props.node);
+  }
+
+  render() {
+    let {
+      name,
       node,
-      nodeType,
-      fieldName,
-      isSearchMode,
-      isExpanded,
-      isSelected,
-      isIndeterminate,
-      isVisible,
-      isMatching,
-      removeCheckboxes,
-      toggleCheckbox,
+      getNodeState,
+      isSelectable,
+      isActiveSearch,
+      toggleSelection,
       toggleExpansion,
-      getNodeFormValue,
-      getBasicNodeReactElement,
+      getNodeId,
       getNodeChildren,
-      children
-    } = props;
+      nodeComponent
+    } = this.props;
 
-  let nodeVisibility = isMatching ? visibleElement : hiddenElement;
-  let childrenVisibility = isVisible ? visibleElement : hiddenElement;
+    let { isSelected, isIndeterminate, isVisible, isExpanded } = getNodeState(node);
+    let isLeafNode = isLeaf(node, getNodeChildren);
+    let nodeVisibilityCss = isVisible ? visibleElement : hiddenElement;
+    let childrenVisibilityCss = isExpanded ? visibleElement : hiddenElement;
+    let nodeType = isLeafNode ? "wdk-CheckboxTree-leafItem" :
+      isExpanded ? "wdk-CheckboxTree-expandedItem" : "wdk-CheckboxTree-collapsedItem";
+    let NodeComponent = nodeComponent;
 
-  return (
-    <li className={nodeType} style={nodeVisibility}>
-      {children.length > 0 && !isSearchMode ?
-      <AccordionButton expanded={isExpanded}
-                       node={node}
-                       toggleExpansion={toggleExpansion} /> : "" }
-      <label>
-        {!removeCheckboxes ?
-          <IndeterminateCheckbox
-            name={fieldName}
-            checked={isSelected}
-            indeterminate={isIndeterminate}
-            node={node}
-            value={getNodeFormValue(node)}
-            toggleCheckbox={toggleCheckbox} />
-          : ""
+    return (
+      <li className={nodeType} style={nodeVisibilityCss}>
+        {isLeafNode || isActiveSearch ? "" :
+          (<AccordionButton expanded={isExpanded} node={node} toggleExpansion={toggleExpansion} />) }
+        <label>
+          {isSelectable ?
+            <IndeterminateCheckbox
+              name={name}
+              checked={isSelected}
+              indeterminate={isIndeterminate}
+              node={node}
+              value={getNodeId(node)}
+              toggleCheckbox={toggleSelection} />
+            : ""
+          }
+          <NodeComponent node={node} />
+        </label>
+        {isLeafNode ? "" :
+          <ul className="fa-ul wdk-CheckboxTree-list" style={childrenVisibilityCss}>
+            {getNodeChildren(node).map(child =>
+              <CheckboxTreeNode
+                key={"node_" + getNodeId(child)}
+                name={name}
+                node={child}
+                getNodeState={getNodeState}
+                isSelectable={isSelectable}
+                isActiveSearch={isActiveSearch}
+                toggleSelection={toggleSelection}
+                toggleExpansion={toggleExpansion}
+                getNodeId={getNodeId}
+                getNodeChildren={getNodeChildren}
+                nodeComponent={nodeComponent} />
+            )}
+          </ul>
         }
-        {getBasicNodeReactElement(node)}
-      </label>
-      {children.length > 0 ?
-        <ul className="fa-ul wdk-CheckboxTree-list" style={childrenVisibility}>
-          {props.children}
-        </ul> : "" }
       </li>
-  );
+    );
+  }
 };
 
 export default CheckboxTreeNode;

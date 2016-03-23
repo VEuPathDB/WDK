@@ -24,7 +24,7 @@ export function loadCurrentSiteMap() {
     return ontologyPromise.then((ontology) => {
       return dispatch({
         type: actionTypes.SITEMAP_INITIALIZE_STORE,
-          payload: { tree: getTree(ontology, isQualifying).children }
+          payload: { tree: getTree(ontology, isQualifying) }
       });
     }, error => {
       dispatch({
@@ -49,11 +49,3 @@ export function setSearchText (searchText) {
     payload: { searchText: searchText}
   };
 }
-
-export function resetSearchText () {
-  return {
-    type: actionTypes.SITEMAP_SET_SEARCH_TEXT,
-    payload: { searchText: ""}
-  };
-}
-

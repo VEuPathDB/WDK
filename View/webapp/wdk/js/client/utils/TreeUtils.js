@@ -155,77 +155,70 @@ export let compactRootNodes = (root) =>
   root.children.length === 1 ? compactRootNodes(root.children[0])
   : root
 
-
 export let mapNodes = (nodeTransform, root) => {
   return Object.assign({}, nodeTransform(root), {
     children: root.children.map(child => mapNodes(nodeTransform, child))
   });
 }
 
-//Utility functions for CheckboxTree React component
+/**
+ * Simple convenience method to identify nodes that are leaves
+ * @param {Object} node representing root of subtree (possibly a leaf)
+ * @return {Boolean} indicates true if the node is a leaf and false otherwise
+ */
+export let isLeaf = (node, getNodeChildren) => getNodeChildren(node).length === 0;
 
-  /**
-   * Simple convenience method to identify nodes that are leaves
-   * @param {Object} node representing root of subtree (possibly a leaf)
-   * @return {Boolean} indicates true if the node is a leaf and false otherwise
-   */
-  export let isLeafNode = (node, getNodeChildren) => getNodeChildren(node).length === 0;
+/**
+ * Using recursion to return all the leaf nodes for the given node.
+ * @param {Object} node representing root of subtree
+ * @param {Array} initial list of leaf nodes (optional)
+ * @return {Array} updated list of leaf nodes
+ */
+export let getLeaves = (node, getNodeChildren, leaves=[]) => {
+ if(!isLeaf(node, getNodeChildren)) {
+   getNodeChildren(node).map(function(child) {
 
-  /**
-   * Using recursion to return all the leaf nodes for the given node.
-   * @param {Object} node representing root of subtree
-   * @param {Array} initial list of leaf nodes (optional)
-   * @return {Array} updated list of leaf nodes
-   */
-  export let getLeaves = (node, getNodeChildren, leaves=[]) => {
-   if(!isLeafNode(node, getNodeChildren)) {
-     getNodeChildren(node).map(function(child) {
+     // push only leaf nodes into the array
+     if(isLeaf(child, getNodeChildren)) {
+       leaves.push(child);
+     }
+     getLeaves(child, getNodeChildren, leaves);
+   });
+ }
+ return leaves;
+};
 
-       // push only leaf nodes into the array
-       if(isLeafNode(child, getNodeChildren)) {
-         leaves.push(child);
-       }
-       getLeaves(child, getNodeChildren, leaves);
-     });
-   }
-   return leaves;
-  };
+/**
+ * Using recursion to return all the branch nodes for a given node
+ * @param {Object} node representing root of subtree
+ * @param {Array} initial list of branch nodes (optional)
+ * @return {Array} updated list of branch nodes
+ */
+export let getBranches = (node, getNodeChildren, branches=[]) => {
+  if(!isLeaf(node, getNodeChildren)) {
+    branches.push(node);
+    getNodeChildren(node).map(child => getBranches(child, getNodeChildren, branches));
+  }
+  return branches;
+};
 
-  /**
-   * Using recursion to return all the branch nodes for a given node
-   * @param {Object} node representing root of subtree
-   * @param {Array} initial list of branch nodes (optional)
-   * @return {Array} updated list of branch nodes
-   */
-  export let getBranches = (node, getNodeChildren, branches=[]) => {
-	  if(!isLeafNode(node, getNodeChildren)) {
-	    branches.push(node);
-	    getNodeChildren(node).map(child => getBranches(child, getNodeChildren, branches));
-	  }
-	  return branches;
-	};
-
-
-	/**
-	 * Using recursion to descend the tree to find the node associate with the node id given
-	 * @param {String} nodeId of the node to find
-	 * @param {Array} list of the tree's top level nodes
-   * @param {Function} callback method to get the node attributes needed by the checkbox tree
-	 * @return {Object} the node corresponding to the node id or undefined if
-	 * not found.
-	 */
-	export let getNodeByValue = (value, nodes, getNodeChildren, getNodeFormValue) => {
-	  for(let i = 0; i < nodes.length; i++) {
-	    let node = undefined;
-	    if(getNodeFormValue(nodes[i]) === value) {
-	      return nodes[i];
-	    }
-	    if(getNodeChildren(nodes[i]).length > 0) {
-	      node = getNodeByValue(value, getNodeChildren(nodes[i]), getNodeChildren, getNodeFormValue);
-	      if(node !== undefined) {
-	        return node;
-	      }
-	    }
-	  }
-	  return undefined;
-	}
+/**
+ * Using recursion to descend the tree to find the node associated with the node id given
+ * @param {String} nodeId of the node to find
+ * @param {Object} root node of subtree to search
+ * @param {Function} function that returns array of child nodes of the passed node
+ * @param {Function} function that returns the id of the passed node
+ * @return {Object} the node corresponding to the node id or undefined if
+ * not found.
+ */
+export let findNodeById = (nodeId, root, getNodeChildren, getNodeId) => {
+  if (getNodeId(root) === nodeId) {
+    return root;
+  }
+  let children = getNodeChildren(root);
+  for (let i = 0; i < children.length; i++) {
+    let node = findNodeById(nodeId, children[i], getNodeChildren, getNodeId);
+    if (node !== undefined) return node;
+  }
+  return undefined;
+}

@@ -2,7 +2,7 @@ import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 import RecordMainCategorySection from './RecordMainCategorySection';
 import { wrappable } from '../utils/componentUtils';
-import { getId, getLabel } from '../utils/OntologyUtils';
+import { getId, getLabel } from '../utils/CategoryUtils';
 
 let RecordMainSection = React.createClass({
 

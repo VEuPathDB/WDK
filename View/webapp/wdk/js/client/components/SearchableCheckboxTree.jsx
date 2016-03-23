@@ -1,6 +1,6 @@
 import React,{PropTypes} from 'react';
 import CheckboxTree from './CheckboxTree';
-import SearchableCheckboxTreeSearchBox from './SearchableCheckboxTreeSearchBox';
+import RealTimeSearchBox from './RealTimeSearchBox';
 
 /**
  * This component wraps the CheckboxTree component and introduces searchable functionality.
@@ -11,13 +11,12 @@ export default class SearchableCheckboxTree extends React.Component {
     super(props);
     this.handleSearchTextSet = this.handleSearchTextSet.bind(this);
     this.handleSearchTextReset = this.handleSearchTextReset.bind(this);
-    // Partially apply SearchableCheckboxTreeSearchBox props
+    // Partially apply RealTimeSearchBox props
     this.SearchBoxComponent = props => {
       return (
-        <SearchableCheckboxTreeSearchBox
-          onSearchTextSet={this.handleSearchTextSet}
-          onSearchTextReset={this.handleSearchTextReset}
-          searchBoxPlaceholder={this.props.searchBoxPlaceholder}
+        <RealTimeSearchBox
+          onSearchTextChange={this.handleSearchTextSet}
+          placeholderText={this.props.searchBoxPlaceholder}
         />
       );
     };
@@ -33,6 +32,16 @@ export default class SearchableCheckboxTree extends React.Component {
     this.setState({ isSearchMode: false });
     this.props.onSearchTextSet(searchText);
   }
+
+  /**
+   * Responds to user clicking 'close' button in search text box.  Causes the text box to empty.  In so
+   * doing, nominal (non-search) behavior is restored.
+   */
+  resetSearchText() {
+    this.setState({searchText : ""});
+    this.props.onSearchTextReset();
+  }
+
 
   /**
    * The CheckboxTree rendered with appropriate search controls.  The CheckboxTree will work without these
@@ -64,8 +73,22 @@ export default class SearchableCheckboxTree extends React.Component {
   }
 }
 
+// inherit CheckboxTree's propTypes and add a few of our own
+SearchableCheckboxTree.propTypes = Object.assign({}, CheckboxTree.propTypes, {
 
-// SearchableCheckboxTree is composed of CheckboxTree and
-// SearchableCheckboxTreeSearchBox. It passes its props to those Components,
-// it will extend their propTypes.
-SearchableCheckboxTree.propTypes = Object.assign({}, CheckboxTree.propTypes, SearchableCheckboxTreeSearchBox.propTypes);
+  /** Called when user alters text in the search box  */
+  onSearchTextSet: PropTypes.func,
+
+  /**
+   *  Called when user clicks close button in the search box.  Empties the search box of text, restores
+   *  normal operation, and applies business rules to intial expansion of tree.
+   */
+  onSearchTextReset: PropTypes.func,
+
+  /**
+   * The placeholder string to use in the search box.  If no string is provided the search
+   * box have no placeholder text.
+   */
+  searchBoxPlaceholder: PropTypes.string
+
+});
