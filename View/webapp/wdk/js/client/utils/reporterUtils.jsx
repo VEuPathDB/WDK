@@ -1,3 +1,4 @@
+import { getTree, nodeHasProperty } from './OntologyUtils';
 import CheckboxList from '../components/CheckboxList';
 
 /**
@@ -49,4 +50,14 @@ export function getAttributeSelections(userPrefs, question) {
   }
   // otherwise, use default attribs from question
   return question.defaultAttributes;
+}
+
+export function getAttributeTree(categoriesOntology, question, recordClass) {
+  let qualified = node => (
+      nodeHasProperty('targetType', 'attribute', node) &&
+      nodeHasProperty('recordClassName', recordClass.name, node) &&
+      nodeHasProperty('scope', 'download', node));
+  let categoryTree = getTree(categoriesOntology, qualified);
+  addSearchSpecificSubtree(question, categoryTree);
+  return categoryTree;
 }

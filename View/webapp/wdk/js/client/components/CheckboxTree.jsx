@@ -1,56 +1,273 @@
-import React,{PropTypes} from 'react';
+import { Component, PropTypes } from 'react';
 import pick from 'lodash/object/pick';
-import IndeterminateCheckbox from './IndeterminateCheckbox';
-import AccordionButton from './AccordionButton';
+
 import CheckboxTreeNode from './CheckboxTreeNode';
-import {isLeafNode} from '../utils/TreeUtils';
-import {getLeaves} from '../utils/TreeUtils';
-import {getBranches} from '../utils/TreeUtils';
-import {mapStructure} from '../utils/TreeUtils';
+import RealTimeSearchBox from './RealTimeSearchBox';
+
+import { addOrRemove, propsDiffer } from '../utils/componentUtils';
+import { isLeaf, getLeaves, getBranches, mapStructure } from '../utils/TreeUtils';
+
+const NODE_STATE_PROPERTY = '__expandableTreeState';
+const NODE_CHILDREN_PROPERTY = '__expandableTreeChildren';
 
 /**
- * Render the checkbox tree links
- * @returns {XML}
+ * Renders tree links to select, clear, expand, collapse all nodes, or reset to current or default
  */
 let TreeLinks = props => {
   let {
-    showSelectionLinks, showExpansionLinks,
-    onSelectAll, onClearAll, onExpandAll, onCollapseAll,
-    onResetToCurrent, onResetToDefault } = props;
+    showSelectionLinks, showExpansionLinks, showCurrentLink, showDefaultLink,
+    selectAll, selectNone, expandAll, expandNone, selectCurrentList, selectDefaultList
+  } = props;
   return (
     <div className="wdk-CheckboxTree-links">
-      {showSelectionLinks ?
+      { showSelectionLinks &&
         <span>
-          <a href="#" onClick={onSelectAll}>select all</a> |
-          <a href="#" onClick={onClearAll}> clear all</a>
-          <br />
-        </span> :
-        "" }
+          <a href="#" onClick={selectAll}>select all</a> |
+          <a href="#" onClick={selectNone}> clear all</a>
+          <br/>
+        </span> }
 
-      {showExpansionLinks ?
+      { showExpansionLinks &&
         <span>
-          <a href="#" onClick={onExpandAll}> expand all</a> |
-          <a href="#" onClick={onCollapseAll}> collapse all</a>
-          <br />
-        </span> :
-        "" }
+          <a href="#" onClick={expandAll}> expand all</a> |
+          <a href="#" onClick={expandNone}> collapse all</a>
+          <br/>
+        </span> }
 
-      {showSelectionLinks ?
+      { showSelectionLinks &&
         <span>
-          <a href="#" onClick={onResetToCurrent}>reset to current</a> |
-          <a href="#" onClick={onResetToDefault}>reset to default</a>
-          <br />
-        </span> :
-        "" }
+          { showCurrentLink && <a href="#" onClick={selectCurrentList}>reset to current</a> }
+          { showCurrentLink && showDefaultLink ? " | " : "" }
+          { showDefaultLink && <a href="#" onClick={selectDefaultList}>reset to default</a> }
+          { (showCurrentLink || showDefaultLink) && <br/> }
+        </span> }
     </div>
   );
-}
+};
 
 /**
- * A null or undefined selected list should be made into an empty array
- * @type {Array}
+ * Creates a function that will handle a click of one of the tree links above
  */
-export default class CheckboxTree extends React.Component {
+let createLinkHandler = (treeObj, idListFetcher, changeHandlerProp) => {
+  return (event => {
+
+    // prevent update to URL
+    event.preventDefault();
+
+    // call instance's change handler with the appropriate ids
+    let idList = idListFetcher();
+    if (idList !== undefined && idList !== null) {
+      treeObj.props[changeHandlerProp](idList);
+    }
+
+  });
+};
+
+/**
+ * Creates a function that will handle expansion-related tree link clicks
+ */
+let createExpander = (treeObj, listFetcher) =>
+  createLinkHandler(treeObj, listFetcher, 'onExpansionChange');
+
+/**
+ * Creates a function that will handle selection-related tree link clicks
+ */
+let createSelector = (treeObj, listFetcher) =>
+  createLinkHandler(treeObj, listFetcher, 'onSelectionChange');
+
+/**
+ * Creates appropriate initial state values for a node in the stateful tree
+ */
+let getInitialNodeState = (node, getNodeChildren) => (
+  Object.assign({}, {
+    // these state properties apply to all nodes
+    isSelected: false, isVisible: true
+  }, isLeaf(node, getNodeChildren) ? {} : {
+    // these state properties only apply to branch nodes (not leaves)
+    isExpanded: false, isIndeterminate: false
+  })
+);
+
+
+/**
+ * Creates a copy of the input tree, populating each node with initial state.
+ * Note this initial state is generic and not dependent on props.  The first
+ * call to applyPropsToStatefulTree() applies props to an existing stateful tree.
+ */
+let createStatefulTree = (root, getNodeChildren) => {
+  let mapFunction = (node, mappedChildren) =>
+      Object.assign({}, node, { [NODE_CHILDREN_PROPERTY]: mappedChildren,
+        [NODE_STATE_PROPERTY]: getInitialNodeState(node, getNodeChildren) });
+  return mapStructure(mapFunction, getNodeChildren, root);
+};
+
+/**
+ * Applies a set of expandable tree props to an existing stateful tree (a copy
+ * of the input tree with additional state applied).  The resulting tree is a
+ * copy of the input stateful tree, with any unchanged nodes staying the same
+ * (i.e. same object) so node rendering components can use referential equality
+ * to decide whether to re-render.  Any parent of a modified node is replaced
+ * with a new node to ensure any modified branches are re-rendered up to the
+ * root node.
+ * 
+ * In addition to the replaced tree, the returned object contains the list of
+ * expanded nodes.  If an expanded node list is sent in as a prop, it is used,
+ * but if the prop is empty or null, the expanded list is generated by the
+ * checkbox tree according to the following rules:
+ * 
+ * - if all descendent leaves are selected, the node is collapsed
+ * - if no descendent leaves are selected, the node is collapsed
+ * - if some but not all descendent leaves are selected, the node is expanded
+ */
+let applyPropsToStatefulTree = (root, props, isLeafVisible) => {
+
+  let { getNodeId, getNodeChildren, expandedList, isSelectable, selectedList } = props;
+
+  // if expanded list is null, then use default rules to determine expansion rather than explicit list
+  let expansionListProvided = (expandedList != null);
+  let generatedExpandedList = [];
+
+  let mapFunction = (node, mappedChildren) => {
+
+    let nodeId = getNodeId(node);
+    let { isSelected, isVisible, isExpanded, isIndeterminate } = node[NODE_STATE_PROPERTY];
+    let newState = Object.assign({}, node[NODE_STATE_PROPERTY]);
+    let modifyThisNode = false;
+
+    if (isLeaf(node, getNodeChildren)) {
+      // only leaves can change via direct selectedness and direct visibility
+      let newIsSelected = (isSelectable && selectedList.indexOf(nodeId) !== -1);
+      let newIsVisible = isLeafVisible(nodeId);
+      if (newIsSelected !== isSelected || newIsVisible != isVisible) {
+        modifyThisNode = true;
+        newState = Object.assign(newState, {
+          isSelected: newIsSelected,
+          isVisible: newIsVisible
+        });
+      }
+    }
+    else {
+      // branches can change in all ways; first inspect children to gather information
+      let selectedChildFound = false;
+      let unselectedChildFound = false;
+      let indeterminateChildFound = false;
+      let visibleChildFound = false;
+
+      let oldChildren = node[NODE_CHILDREN_PROPERTY];
+      for (let i = 0; i < oldChildren.length; i++) {
+        let newChild = mappedChildren[i];
+        if (newChild !== oldChildren[i]) {
+          // reference equality check failed; a child has been modified, so must modify this node
+          modifyThisNode = true;
+        }
+        let newChildState = newChild[NODE_STATE_PROPERTY];
+        if (newChildState.isSelected)
+          selectedChildFound = true;
+        else
+          unselectedChildFound = true;
+        if (newChildState.isIndeterminate)
+          indeterminateChildFound = true;
+        if (newChildState.isVisible)
+          visibleChildFound = true;
+      }
+
+      // determine new state and compare with old to determine if this node should be modified
+      let newIsSelected = (!indeterminateChildFound && !unselectedChildFound);
+      let newIsIndeterminate = !newIsSelected && (indeterminateChildFound || selectedChildFound);
+      let newIsVisible = visibleChildFound;
+      let newIsExpanded = (isActiveSearch(props) && newIsVisible) ||
+          (expansionListProvided ?
+              (expandedList.indexOf(nodeId) !== -1) :
+              (indeterminateChildFound || (selectedChildFound && unselectedChildFound)));
+
+      if (!expansionListProvided && newIsExpanded) {
+        generatedExpandedList.push(nodeId);
+      }
+
+      if (modifyThisNode ||
+          newIsSelected !== isSelected ||
+          newIsIndeterminate !== isIndeterminate ||
+          newIsExpanded !== isExpanded ||
+          newIsVisible !== isVisible) {
+        modifyThisNode = true;
+        newState = Object.assign(newState, {
+          isSelected: newIsSelected,
+          isVisible: newIsVisible,
+          isIndeterminate: newIsIndeterminate,
+          isExpanded: newIsExpanded
+        });
+      }
+    }
+
+    // return the existing node if no changes present in this or children; otherwise create new
+    return (!modifyThisNode ? node : Object.assign({}, node,
+        { [NODE_CHILDREN_PROPERTY]: mappedChildren, [NODE_STATE_PROPERTY]: newState }));
+  }
+
+  // generate the new stateful tree, and expanded list (if necessary)
+  let newStatefulTree = mapStructure(mapFunction, getStatefulChildren, root);
+  return {
+    expandedList: (expansionListProvided ? expandedList : generatedExpandedList),
+    statefulTree: newStatefulTree
+  };
+};
+
+/**
+ * Returns true if a search is being actively performed (i.e. if this tree is
+ * searchable, and search text is non-empty).
+ */
+let isActiveSearch = ({ isSearchable, searchText }) =>
+    isSearchable && searchText.length > 0;
+
+/**
+ * Returns a function that takes a leaf node ID and returns true if leaf node
+ * should be visible.  If no search is being performed, all leaves are visible,
+ * unless one of their ancestors is collapsed.  In that case visibility of the
+ * leaf container is controlled by a parent, so the function returned here will
+ * still return true.
+ * 
+ * If a search is being actively performed, matching nodes, their children, and
+ * their ancestors, will be visible (expansion is locked and all branches are
+ * expanded).  The function returned by createIsLeafVisible does not care about
+ * branches, but tells absolutely if a leaf should be visible (i.e. if the leaf
+ * matches the search or if any ancestor matches the search).
+ */
+let createIsLeafVisible =  props => {
+  let { tree, isSearchable, searchText, searchPredicate, getNodeId, getNodeChildren } = props;
+  // if not searching, then all nodes are visible
+  if (!isActiveSearch({ isSearchable, searchText })) {
+    return nodeId => true;
+  }
+  // otherwise must construct array of visible leaves
+  let visibleLeaves = [];
+  let addVisibleLeaves = (node, parentMatches) => {
+    // if parent matches, automatically match (always show children of matching parents)
+    let nodeMatches = (parentMatches || searchPredicate(node, searchText));
+    if (isLeaf(node, getNodeChildren)) {
+      if (nodeMatches) {
+        visibleLeaves.push(getNodeId(node));
+      }
+    }
+    else {
+      getNodeChildren(node).forEach(child => {
+        addVisibleLeaves(child, nodeMatches);
+      });
+    }
+  }
+  addVisibleLeaves(tree, false);
+  return nodeId => (visibleLeaves.indexOf(nodeId) !== -1);
+};
+
+/**
+ * Returns the stateful children of a node in a stateful tree.  Should be used
+ * in lieu of the getNodeChildren prop when rendering the tree.
+ */
+let getStatefulChildren = node => node[NODE_CHILDREN_PROPERTY];
+
+/**
+ * Expandable tree component
+ */
+export default class CheckboxTree extends Component {
 
   /**
    * Hards binds all the user interaction methods to this object.
@@ -59,382 +276,233 @@ export default class CheckboxTree extends React.Component {
   constructor(props) {
     super(props);
 
-    // hard bind the toggle functions to the this checkbox tree component
-    this.onSelectAll = this.onSelectAll.bind(this);
-    this.onClearAll = this.onClearAll.bind(this);
-    this.onExpandAll = this.onExpandAll.bind(this);
-    this.onCollapseAll = this.onCollapseAll.bind(this);
-    this.onResetToCurrent = this.onResetToCurrent.bind(this);
-    this.onResetToDefault = this.onResetToDefault.bind(this);
+    // destructure props needed in this function
+    let { tree, getNodeId, getNodeChildren } = props;
+
+    // create stateful isLeafVisible function based on props; this will be stored in state
+    let isLeafVisible = createIsLeafVisible(props);
+
+    // initialize stateful tree; this immutable tree structure will be replaced with each state change
+    this.state = {
+      isLeafVisible: isLeafVisible,
+      generated: applyPropsToStatefulTree(createStatefulTree(tree, getNodeChildren), props, isLeafVisible)
+    };
+
+    // define event handlers related to expansion
+    this.expandAll = createExpander(this, () => getBranches(this.props.tree, getNodeChildren).map(node => getNodeId(node)));
+    this.expandNone = createExpander(this, () => []);
     this.toggleExpansion = this.toggleExpansion.bind(this);
-    this.toggleCheckbox = this.toggleCheckbox.bind(this);
+
+    // define event handlers related to selection
+    this.selectAll = createSelector(this, () => getLeaves(this.props.tree, getNodeChildren).map(node => getNodeId(node)));
+    this.selectNone = createSelector(this, () => []);
+    this.selectCurrentList = createSelector(this, () => this.props.currentList);
+    this.selectDefaultList = createSelector(this, () => this.props.defaultList);
+    this.toggleSelection = this.toggleSelection.bind(this);
   }
 
-
   /**
-   *  Used to update a selected list
-   *  Invokes action callback for updating the new selected list.
+   * When new props are passed, the checkbox tree must apply them to the existing
+   * stateful tree to determine which nodes have changed due to changing props.
+   * 
+   * Also if search-related props have changed, the isLeafVisible function must
+   * be regenerated so the currently-matching nodes are made visible.
    */
-  setSelectedList(selectedList = []) {
-    this.props.onSelectedListUpdated(selectedList);
-  }
+  componentWillReceiveProps(nextProps) {
+    let { tree, getNodeChildren, isSearchMode, searchText, searchPredicate } = nextProps;
 
+    // create new isLeafVisible if relevant props have changed
+    let recreateIsLeafVisible = propsDiffer(this.props, nextProps,
+        ['isSearchable', 'searchText', 'searchPredicate']);
+    let isLeafVisible = (recreateIsLeafVisible ? createIsLeafVisible(nextProps) : this.state.isLeafVisible);
 
-  /**
-   * Selects all the tree's leaves and calls the appropriate update method in the action creator
-   */
-  onSelectAll(event) {
-    let selectedList = [];
-    this.props.tree.forEach(node =>
-      isLeafNode(node, this.props.getNodeChildren) ?
-        selectedList.push(this.props.getNodeFormValue(node)) :
-        selectedList.push(...getLeaves(node, this.props.getNodeChildren).map(leaf => this.props.getNodeFormValue(leaf)))
-    );
-    this.setSelectedList(selectedList);
-
-    // prevent update to URL
-    event.preventDefault();
-  }
-
-
-  /**
-   * Clears the selected list and calls the appropriate update method in the action creator
-   */
-  onClearAll(event) {
-    this.setSelectedList();
-
-    // prevent update to URL
-    event.preventDefault();
-  }
-
-
-  /**
-   * Selects all the tree's branches and calls the appropriate update method in the action creator
-   */
-  onExpandAll(event) {
-    let expandedList = [];
-    this.props.tree.forEach(node => {
-      expandedList.push(...getBranches(node, this.props.getNodeChildren).map(branch => this.props.getNodeFormValue(branch)));
+    // if certain props have changed, then recreate stateful tree from scratch;
+    //     otherwise apply props to the existing tree to improve performance
+    let recreateGeneratedState = propsDiffer(this.props, nextProps,
+        [ 'tree', 'name', 'getNodeId', 'getNodeChildren', 'nodeComponent' ]);
+    this.setState({
+      isLeafVisible: isLeafVisible,
+      generated: applyPropsToStatefulTree((recreateGeneratedState ?
+          createStatefulTree(tree, getNodeChildren) :
+          this.state.generated.statefulTree), nextProps, isLeafVisible)
     });
-    this.props.onExpandedListUpdated(expandedList);
-
-    // prevent update to URL
-    event.preventDefault();
   }
 
-
   /**
-   * Clears the expanded list and calls the appropriate update method in the action creator
-   */
-  onCollapseAll(event) {
-    let expandedList = [];
-    this.props.onExpandedListUpdated(expandedList);
-
-    // prevent update to URL
-    event.preventDefault();
-  }
-
-
-  /**
-   * Calls the appropriate method in the action creator to reload the original selects
-   */
-  onResetToCurrent(event) {
-    this.props.onCurrentSelectedListLoaded();
-
-    // prevent update to URL
-    event.preventDefault();
-  }
-
-
-  /**
-   * Calls the appropriate method in the action creator to load the default selects
-   */
-  onResetToDefault(event) {
-    this.props.onDefaultSelectedListLoaded();
-
-    // prevent update to URL
-    event.preventDefault();
-  }
-
-
-  /**
-   * Convey branch to be toggled to action creator - id indicates the node id to
-   * be changed.
+   * Toggle expansion of the given node.  If node is a leaf, does nothing.
    */
   toggleExpansion(node) {
-    let value = this.props.getNodeFormValue(node);
-    let newExpandedList = this.props.expandedList || [];
-    let index = newExpandedList.indexOf(value);
-    index <= -1 ? newExpandedList.push(value) : newExpandedList.splice(index, 1);
-    this.props.onExpandedListUpdated(newExpandedList);
+    let { getNodeId, getNodeChildren, onExpansionChange } = this.props;
+    if (!isActiveSearch(this.props) && !isLeaf(node, getNodeChildren)) {
+      this.props.onExpansionChange(addOrRemove(this.state.generated.expandedList, getNodeId(node)));
+    }
   }
 
-
   /**
-   * Convey checkbox to be toggled to action creator
+   * Toggle selection of the given node.
    * If toggled checkbox is a selected leaf - add the leaf to the select list to be returned
    * If toggled checkbox is an unselected leaf - remove the leaf from the select list to be returned
-   * If toggled checkbox is a selected non-leaf - identify the node's leaves (cached) and add them to the select list to be returned
-   * If toggled checkbox is an unselected leaf - identify the node's leaves (cached) and remove them from the select list to be returned
+   * If toggled checkbox is a selected non-leaf - identify the node's leaves and add them to the select list to be returned
+   * If toggled checkbox is an unselected non-leaf - identify the node's leaves and remove them from the select list to be returned
    */
-  toggleCheckbox(node, selected) {
-    let value = this.props.getNodeFormValue(node);
-    let newSelectedList = this.props.selectedList || [];
-    if (isLeafNode(node, this.props.getNodeChildren)) {
-      let index = newSelectedList.indexOf(value);
-      index > -1 ? newSelectedList.splice(index, 1) : newSelectedList.push(value);
+  toggleSelection(node, selected) {
+    let { isSelectable, getNodeId, getNodeChildren, selectedList, onSelectionChange } = this.props;
+    if (!isSelectable) {
+      return;
+    }
+    if (isLeaf(node, getNodeChildren)) {
+      onSelectionChange(addOrRemove(selectedList, getNodeId(node)));
     }
     else {
-      let leafNodes = getLeaves(node, this.props.getNodeChildren);
+      //
+      let newSelectedList = (selectedList ? selectedList.slice() : []);
+      let leafNodes = getLeaves(node, getNodeChildren);
       leafNodes.forEach(leafNode => {
-        let leafValue = this.props.getNodeFormValue(leafNode);
-        let index = newSelectedList.indexOf(leafValue);
+        let leafId = getNodeId(leafNode);
+        let index = newSelectedList.indexOf(leafId);
         if (selected && index === -1) {
-          newSelectedList.push(leafValue);
+          newSelectedList.push(leafId);
         }
-        if (!selected && index > -1) {
+        else if (!selected && index > -1) {
           newSelectedList.splice(index, 1);
         }
       });
+      onSelectionChange(newSelectedList);
     }
-
-    // convey new selected list back to action creator
-    this.props.onSelectedListUpdated(newSelectedList);
   }
 
-
   /**
-   * Render the checkbox tree
+   * Renders the expandable tree and related components
    */
   render() {
     let {
-      tree,
-      SearchBoxComponent,
-      isSearchMode,
-      onSearch,
-      selectedList,
-      expandedList,
-      fieldName,
-      removeCheckboxes,
-      getNodeFormValue,
-      getNodeChildren,
-      getBasicNodeReactElement
+      name, showRoot, getNodeId, nodeComponent, isSelectable,
+      isSearchable, currentList, defaultList, showSearchBox, searchText,
+      searchBoxPlaceholder, searchBoxHelp, onSearchTextChange
     } = this.props;
-    let toggleCheckbox = this.toggleCheckbox;
-    let toggleExpansion = this.toggleExpansion;
     let treeLinkHandlers =
-      pick(this, [ 'onSelectAll', 'onClearAll',
-                   'onExpandAll', 'onCollapseAll',
-                   'onResetToCurrent', 'onResetToDefault' ]);
+      pick(this, [ 'selectAll', 'selectNone', 'expandAll', 'expandNone',
+                   'selectCurrentList', 'selectDefaultList' ]);
+    let topLevelNodes = (showRoot ? [ this.state.generated.statefulTree ] :
+      getStatefulChildren(this.state.generated.statefulTree));
+    let treeLinks = (
+      <TreeLinks {...treeLinkHandlers} showSelectionLinks={isSelectable}
+        showCurrentLink={currentList != null} showDefaultLink={defaultList != null}
+        showExpansionLinks={!isActiveSearch({ isSearchable, searchText })} />
+    );
     return (
-      <div className="wdk-CheckboxTree" id={this.props.name}>
-        <TreeLinks showSelectionLinks={!removeCheckboxes} showExpansionLinks={!isSearchMode} {...treeLinkHandlers} />
-        {SearchBoxComponent ? <SearchBoxComponent/> : ""}
+      <div className="wdk-CheckboxTree">
+        {treeLinks}
+        {!isSearchable || !showSearchBox ? "" : (
+          <RealTimeSearchBox
+            initialSearchText={searchText}
+            onSearchTextChange={onSearchTextChange}
+            placeholderText={searchBoxPlaceholder}
+            helpText={searchBoxHelp} />
+        )}
         <ul className="fa-ul wdk-CheckboxTree-list">
-          {tree.map(node => {
-            let mappedChildren = getNodeChildren(node);
-            let nodeType = getNodeChildren(node) === 0 && !isExpanded && !isSearchMode ? "wdk-CheckboxTree-collapsedItem" :
-                getNodeChildren(node) > 0 ? "wdk-CheckboxTree-leafItem" : "wdk-CheckboxTree-expandedItem";
-            return mapStructure(function(node, mappedChildren) {
-              return (
-                <CheckboxTreeNode
-                  key={"node_" + getNodeFormValue(node)}
-                  node={node}
-                  nodeType={nodeType}
-                  isSearchMode={isSearchMode}
-                  toggleCheckbox={toggleCheckbox}
-                  toggleExpansion={toggleExpansion}
-                  removeCheckboxes={removeCheckboxes}
-                  isSelected={CheckboxTree.isSelected(node, selectedList, getNodeFormValue, getNodeChildren)}
-                  isIndeterminate={CheckboxTree.isIndeterminate(node, selectedList, getNodeFormValue, getNodeChildren)}
-                  isExpanded={CheckboxTree.isExpanded(node, expandedList, getNodeFormValue)}
-                  isVisible={CheckboxTree.isVisible(node, expandedList, isSearchMode, onSearch, getNodeFormValue)}
-                  isMatching={CheckboxTree.isMatching(node, isSearchMode, onSearch)}
-                  fieldName={fieldName}
-                  getNodeFormValue={getNodeFormValue}
-                  getNodeChildren={getNodeChildren}
-                  getBasicNodeReactElement={getBasicNodeReactElement}>
-                  {mappedChildren}
-                </CheckboxTreeNode>
-              );
-            }, getNodeChildren, node);
-           })
-          }
+          {topLevelNodes.map(node =>
+            <CheckboxTreeNode
+              key={"node_" + getNodeId(node)}
+              name={name}
+              node={node}
+              getNodeState={node => node[NODE_STATE_PROPERTY]}
+              isSelectable={isSelectable}
+              isActiveSearch={isActiveSearch(this.props)}
+              toggleSelection={this.toggleSelection}
+              toggleExpansion={this.toggleExpansion}
+              getNodeId={getNodeId}
+              getNodeChildren={getStatefulChildren}
+              nodeComponent={nodeComponent} />
+          )}
         </ul>
-        <TreeLinks showSelectionLinks={!removeCheckboxes} showExpansionLinks={!isSearchMode} {...treeLinkHandlers} />
+        {treeLinks}
       </div>
     );
   }
 }
 
+CheckboxTree.defaultProps = {
+  showRoot: false,
+  expandedList: null,
+  isSelectable: false,
+  selectedList: [],
+  onSelectionChange: () => {},
+  isSearchable: false,
+  showSearchBox: true,
+  searchBoxPlaceholder: "Search...",
+  searchBoxHelp: '',
+  searchText: '',
+  onSearchTextChange: () => {},
+  searchPredicate: () => true
+}
+
 CheckboxTree.propTypes = {
 
-  /** Value to use for name of checkbox tree - used as id of enclosing div  */
-  name: PropTypes.string,
+  //%%%%%%%%%%% Basic expandable tree props %%%%%%%%%%%
 
-  /** Array representing top level nodes in the checkbox tree **/
-  tree: PropTypes.array.isRequired,
+  /** Node representing root of the data to be rendered as an expandable tree */
+  tree: PropTypes.object.isRequired,
 
-  /** Value to use for the name of the checkboxes in the tree */
-  fieldName: PropTypes.string,
+  /** Takes a node, returns unique ID for this node; ID is used as input value of the nodes checkbox if using selectability */
+  getNodeId: PropTypes.func.isRequired,
 
-  /** List of selected nodes as represented by their ids. */
-  selectedList: PropTypes.array,
+  /** Takes a node, Called during rendering to provide the children for the current node */
+  getNodeChildren:  PropTypes.func.isRequired,
 
-  /** List of expanded nodes as represented by their ids. */
+  /** Called when the set of expanded (branch) nodes changes.  The function will be called with the array of the expanded node ids.  If omitted, no handler is called. */
+  onExpansionChange: PropTypes.func.isRequired,
+
+  /** Whether to show the root node or start with the array of children; optional, defaults to false */
+  showRoot: PropTypes.bool,
+
+  /** Called during rendering to create the react element holding the display name and tooltip for the current node, defaults to <span>{this.props.getNodeId(node)</span> */
+  nodeComponent: PropTypes.func,
+
+  /** List of expanded nodes as represented by their ids, default to null; if null, expandedList will be generated by the expandable tree. */
   expandedList: PropTypes.array,
 
-  /**
-   * Called when the set of selected (leaf) nodes changes.
-   * The function will be called with the array of the selected node
-   * ids.
-   */
-  onSelectedListUpdated: PropTypes.func,
+  //%%%%%%%%%%% Properties associated with selectability %%%%%%%%%%%
 
-  /**
-   * Called when the set of expanded (branch) nodes changes.
-   * The function will be called with the array of the expanded node
-   * ids.
-   */
-  onExpandedListUpdated: PropTypes.func,
+  /** If true, checkboxes and ‘select…’ links are shown and the following parameters are honored, else no checkboxes or ‘select…’ links are shown and props below are ignored; default to false */
+  isSelectable: PropTypes.bool,
 
-  /**
-   * Called when the user reverts to the default select list.
-   * The function will be called with no arguments as the default
-   * state is maintained by the store.
-   */
-  onDefaultSelectedListLoaded: PropTypes.func,
+  /** List of selected nodes as represented by their ids, defaults to [ ] */
+  selectedList: PropTypes.array,
 
-  /**
-   * Called when the user reverts to the select list with which he/she started.
-   * The function will be called with no arguments as the original
-   * state is maintained by the store.
-   */
-  onCurrentSelectedListLoaded: PropTypes.func,
+  /** Value to use for the name of the checkboxes in the tree */
+  name: PropTypes.string,
 
-  /** Called during rendering to create the react element holding the display name and tooltip for the current node */
-  getBasicNodeReactElement: PropTypes.func,
+  /** Takes array of ids, thus encapsulates:
+       selectAll, clearAll, selectDefault, selectCurrent (i.e. reset) */
+  onSelectionChange: PropTypes.func,
+ 
+ /** List of “current” ids, if omitted (undefined or null), then don’t display link */
+  currentList: PropTypes.array,
 
-  /** Called during rendering to provide the input value for the current node */
-  getNodeFormValue: PropTypes.func,
+  /** List of default ids, if omitted (undefined or null), then don’t display link */
+  defaultList: PropTypes.array,
 
-  /** Called during rendering to provide the children for the current node */
-  getNodeChildren:  PropTypes.func,
+  //%%%%%%%%%%% Properties associated with search %%%%%%%%%%%
 
-  /** Indicates whether a search is ongoing - use to suppress expand/collapse functionality */
-  isSearchMode: PropTypes.bool,
+  /** Indicates whether this is a searchable CBT.  If so, then show boxes and respect the optional parameters below, also turn off expansion; default to false */
+  isSearchable: PropTypes.bool,
 
-  /** Provides the search box React element to drop in */
-  SearchBoxComponent: PropTypes.func,
+  /** Whether to show search box; defaults to true (but only if isSearchable is true).  Useful if searching is controlled elsewhere */
+  showSearchBox: PropTypes.bool,
 
-  /** Called during rendering to identify whether a given node should be made visible based upon whether it or
-   *  its ancestors match the search criteria.  The predicate function accepts a node as input and outputs a
-   *  boolean indicating whether or not the node matches the criteria.
-   */
-  onSearch: PropTypes.func,
+  /** PlaceHolder text; shown in grey if searchText is empty */
+  searchBoxPlaceholder: PropTypes.string,
 
-  /** Indicates whether checkboxes (the default L&F) should be omitted */
-  removeCheckboxes: PropTypes.bool
+  /** Search box help text: if present, a help icon will appear; mouseover the icon and a tooltip will appear with this text */
+  searchBoxHelp: PropTypes.string,
 
-};
+  /** Current search text; if non-empty, expandability is disabled */
+  searchText: PropTypes.string,
 
+  /** Takes single arg: the new search text.  Called when user types into the search box */
+  onSearchTextChange: PropTypes.func,
 
-/**
- * Returns boolean indicating whether the given node is selected
- */
-CheckboxTree.isSelected = function(node, selectedList, getNodeFormValue, getNodeChildren) {
-
-  // If the selected list is empty or non-existant, no check is needed.  The node is not selected.
-  if (selectedList) {
-    if (!isLeafNode(node, getNodeChildren)) {
-
-      // When the node is not a leaf, it is considered selected if every one of its leaf nodes
-      // is in the selected list.
-      let leafNodes = getLeaves(node, getNodeChildren);
-      return leafNodes.every(leafNode => selectedList.indexOf(getNodeFormValue(leafNode)) > -1);
-    }
-    else {
-      return selectedList.indexOf(getNodeFormValue(node)) > -1;
-    }
-  }
-  return false;
-};
-
-
-/**
- * Returns boolean indicating whether given node should be shown expanded or collapsed.
- */
-CheckboxTree.isExpanded = function(node, expandedList, getNodeFormValue) {
-  return expandedList == null ? false : expandedList.indexOf(getNodeFormValue(node)) > -1;
-};
-
-/**
- * Return boolean indicating whether node matches the search parameter as defined
- * by the included search predicate.  If no search is in progress, the function returns true.
- * @param node
- * @param isSearchMode
- * @param onSearch - fn - search predicate which takes the node and returns true for a match and false otherwise
- */
-CheckboxTree.isMatching = function(node, isSearchMode, onSearch) {
-  return isSearchMode ? onSearch(node) : true;
-};
-
-
-/**
- * Return boolean indicating whether given node's children should be visible.  This is governed
- * by whether the node is expanded but is overriden by the isMatching fn when a search is in progress.
- * @param node
- * @param expandedList
- * @returns {*}
- */
-CheckboxTree.isVisible = function(node, expandedList, isSearchMode, onSearch, getNodeFormValue) {
-  return isSearchMode ? onSearch(node) : CheckboxTree.isExpanded(node, expandedList, getNodeFormValue);
-};
-
-
-/**
- * Returns boolean indicating whether the given node is indeterminate
- */
-CheckboxTree.isIndeterminate = function(node, selectedList, getNodeFormValue, getNodeChildren) {
-
-  // if only some of the descendent leaf nodes are in the selected nodes list, the given
-  // node is indeterminate.  If the given node is a leaf node, it cannot be indeterminate
-  let indeterminate = false;
-
-  // If the selected list is empty, or non-existant no nodes are intermediate and there is nothing to do.
-  if (selectedList) {
-    if (!isLeafNode(node, getNodeChildren)) {
-      let leafNodes = getLeaves(node, getNodeChildren);
-      let total = leafNodes.reduce((count, leafNode) => {
-        return selectedList.indexOf(getNodeFormValue(leafNode)) > -1 ? count + 1 : count;
-      }, 0);
-      if (total > 0 && total < leafNodes.length) {
-        indeterminate = true;
-      }
-    }
-  }
-  return indeterminate;
-};
-
-
-/**
- * Used to replace a non-existant expanded list with one obeying business rules (called recursively).
- * Invokes action callback for updating the new expanded list.
- */
-CheckboxTree.setExpandedList = function(nodes, getNodeFormValue, getNodeChildren, selectedList, expandedList = [])  {
-
-  // If the selected list is empty or non-existant, the expanded list is likewise empty and there is nothing
-  // more to do.
-  if (selectedList && selectedList.length > 0) {
-    nodes.forEach(node => {
-
-      // According to the business rule, indeterminate nodes get expanded.
-      if (this.isIndeterminate(node, selectedList, getNodeFormValue, getNodeChildren)) {
-        expandedList.push(getNodeFormValue(node));
-      }
-      // descend the tree
-      CheckboxTree.setExpandedList(getNodeChildren(node), selectedList, expandedList);
-    });
-  }
-  return expandedList;
+  /** Takes (node, searchText) and returns boolean. Tells whether a node matches search criteria and should be shown */
+  searchPredicate: PropTypes.func
 };

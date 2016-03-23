@@ -229,3 +229,22 @@ export function getChangeHandler(inputName, onParentChange, previousState) {
     onParentChange(Object.assign({}, previousState, { [inputName]: newValue }));
   };
 }
+
+/**
+ * For each property in propertyNameList, examines each property in both
+ * oldProps and newProps to check for referential equality.  If any prop differs
+ * returns true, else returns false.
+ * 
+ * @param {Object} oldProps props object
+ * @param {Object} newProps another props object
+ * @param {Array<String>} propertyNameList list of properties to examine
+ * @return {boolean} false if all properties are referentially identical, else true
+ */
+export function propsDiffer(oldProps, newProps, propertyNameList) {
+  for (let i = 0; i < propertyNameList.length; i++) {
+    if (oldProps[propertyNameList[i]] !== newProps[propertyNameList[i]]) {
+      return true;
+    }
+  }
+  return false;
+}

@@ -10,7 +10,7 @@ import {
   getTargetType,
   getRefName,
   getDisplayName
-} from '../utils/OntologyUtils';
+} from '../utils/CategoryUtils';
 
 let RecordMainCategorySection = React.createClass({
 

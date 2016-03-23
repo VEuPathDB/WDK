@@ -1,7 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
 import { wrappable } from '../utils/componentUtils';
-import { getId, getDisplayName } from '../utils/OntologyUtils';
+import { getId, getDisplayName } from '../utils/CategoryUtils';
 
 let RecordNavigationItem = props => {
   if (props.node.children.length === 0) {
