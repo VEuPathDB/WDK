@@ -45,7 +45,7 @@ public class StepService extends WdkService {
   public Response createStep(String body) throws WdkModelException {
     try {
       JSONObject json = new JSONObject(body);
-      AnswerRequest request = AnswerRequestFactory.createFromJson(json, getWdkModelBean());
+      AnswerRequest request = AnswerRequestFactory.createFromJson(json, getWdkModelBean(), getCurrentUser());
       Step step = WdkStepFactory.createStep(request, getCurrentUser(), getWdkModel().getStepFactory());
       return Response.ok(StepFormatter.getStepJson(step).toString()).build();
     }
