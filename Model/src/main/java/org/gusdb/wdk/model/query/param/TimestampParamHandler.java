@@ -68,13 +68,19 @@ public class TimestampParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    String value = requestParams.getParam(param.getName());
-    if (value == null) {
+    return cleanAndValidateStableValue(user, requestParams.getParam(param.getName()));
+  }
+  
+  @Override 
+  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException,
+  WdkModelException {
+    String stableValue = inputStableValue;
+    if (inputStableValue == null) {
       if (!param.isAllowEmpty())
         throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required");
-      value = param.getEmptyValue();
+      stableValue = param.getEmptyValue();
     }
-    return value;
+    return stableValue;
   }
 
   @Override
