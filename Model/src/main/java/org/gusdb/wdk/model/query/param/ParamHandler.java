@@ -42,7 +42,7 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException, WdkModelException;
+   String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException, WdkModelException;
   
   /**
    * Prepare the display of the param in the question form.
