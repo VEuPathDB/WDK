@@ -156,7 +156,12 @@ public class FilterParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    String stableValue = requestParams.getParam(param.getName());
+    return cleanAndValidateStableValue(user, requestParams.getParam(param.getName()));
+  }
+  
+  @Override
+  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException, WdkModelException {
+    String stableValue = inputStableValue;
     if (stableValue == null || stableValue.length() == 0) {
       // use empty value if needed
       if (!param.isAllowEmpty())
@@ -167,7 +172,7 @@ public class FilterParamHandler extends AbstractParamHandler {
     stableValue = normalizeStableValue(stableValue);
     return stableValue;
   }
-
+  
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {

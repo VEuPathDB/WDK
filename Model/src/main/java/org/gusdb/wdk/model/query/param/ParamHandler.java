@@ -35,6 +35,16 @@ public interface ParamHandler {
   String getStableValue(User user, RequestParams requestParams) throws WdkUserException, WdkModelException;
 
   /**
+   * Clean (eg, trim whitespace) and validate a stable value (from a user).  Should be called by getStableValue
+   * @param user
+   * @param inputStableValue
+   * @return a cleaned stable value.
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
+  String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException, WdkModelException;
+  
+  /**
    * Prepare the display of the param in the question form.
    * 
    * @param user

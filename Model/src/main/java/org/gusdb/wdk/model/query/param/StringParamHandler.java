@@ -92,17 +92,22 @@ public class StringParamHandler extends AbstractParamHandler {
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
-    String value = requestParams.getParam(param.getName());
-    if (value == null) {
-      if (!param.isAllowEmpty())
-        throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required");
-      value = param.getEmptyValue();
-    }
-    if (value != null)
-      value = value.trim();
-    return value;
+    return cleanAndValidateStableValue(user, requestParams.getParam(param.getName()));
   }
 
+  @Override
+  public String cleanAndValidateStableValue(User user, String inputStableValue) throws WdkUserException, WdkModelException {
+    String stableValue = inputStableValue;
+    if (stableValue == null) {
+      if (!param.isAllowEmpty())
+        throw new WdkUserException("The input to parameter '" + param.getPrompt() + "' is required");
+      stableValue = param.getEmptyValue();
+    }
+    if (stableValue != null)
+      stableValue = stableValue.trim();
+    return stableValue;
+  }
+  
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
