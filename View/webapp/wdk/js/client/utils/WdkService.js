@@ -169,28 +169,39 @@ export default class WdkService {
   }
 
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
-  getBasketStatus(recordClassName, primaryKey) {
-    let key = makeRecordKey(recordClassName, primaryKey);
-    if (!this._basketStatus.has(key)) {
-      let key = makeRecordKey(recordClassName, primaryKey);
-      let action = 'check';
-      let data = JSON.stringify([ primaryKey.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
-      let method = 'get';
-      let url = `${this._serviceUrl}/../processBasket.do?action=${action}&type=${recordClassName}&data=${data}`;
-      return fetchJson(method, url).then(
-        data => this._basketStatus.set(key, Promise.resolve(data.processed > 0)).get(key));
-    }
-    return this._basketStatus.get(key);
+  getBasketStatus(record) {
+    let action = 'check';
+    let data = JSON.stringify([ record.id.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
+    let method = 'get';
+    let url = `${this._serviceUrl}/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
+    return fetchJson(method, url).then(data => data.processed > 0);
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
-  updateBasketStatus(recordClassName, primaryKey, status) {
-    let key = makeRecordKey(recordClassName, primaryKey);
+  updateBasketStatus(record, status) {
     let action = status ? 'add' : 'remove';
-    let data = JSON.stringify([ primaryKey.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
+    let data = JSON.stringify([ record.id.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
-    let url = `${this._serviceUrl}/../processBasket.do?action=${action}&type=${recordClassName}&data=${data}`;
-    return fetchJson(method, url).then(() => this._basketStatus.set(key, Promise.resolve(status)).get(key));
+    let url = `${this._serviceUrl}/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
+    return fetchJson(method, url).then(() => status);
+  }
+
+  // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
+  getFavoriteStatus(record) {
+    let action = 'check';
+    let data = JSON.stringify([ record.id.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
+    let method = 'get';
+    let url = `${this._serviceUrl}/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
+    return fetchJson(method, url).then(data => data.processed > 0);
+  }
+
+  // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
+  updateFavoriteStatus(record, status) {
+    let action = status ? 'add' : 'remove';
+    let data = JSON.stringify([ record.id.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
+    let method = 'get';
+    let url = `${this._serviceUrl}/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
+    return fetchJson(method, url).then(data => data.processed > 0);
   }
 
   getCurrentUser() {

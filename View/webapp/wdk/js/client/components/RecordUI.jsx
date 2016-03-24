@@ -15,12 +15,11 @@ class RecordUI extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      showSidebar: true
-    };
-
-    this.toggleSection = this.toggleSection.bind(this);
-    this.toggleSidebar = this.toggleSidebar.bind(this);
+    this.state = { showSidebar: true };
+    this.toggleSidebar = event => {
+      event.preventDefault();
+      this.setState({ showSidebar: !this.state.showSidebar });
+    }
   }
 
   componentDidMount() {
@@ -29,19 +28,6 @@ class RecordUI extends Component {
     if (target != null) {
       target.scrollIntoView();
     }
-  }
-
-  toggleSection(sectionName, isCollapsed) {
-    this.props.recordActions.updateSectionCollapsed(
-      this.props.recordClass.name,
-      sectionName,
-      isCollapsed
-    );
-  }
-
-  toggleSidebar(event) {
-    event.preventDefault();
-    this.setState({ showSidebar: !this.state.showSidebar });
   }
 
   render() {
@@ -66,12 +52,11 @@ class RecordUI extends Component {
           record={this.props.record}
           recordClass={this.props.recordClass}
           user={this.props.user}
-          basket={this.props.baskets[this.props.recordClass.name][JSON.stringify(this.props.record.id)]}
-          userActions={this.props.userActions}
+          basketEntry={this.props.basketEntry}
           router={this.props.router}
+          updateBasketStatus={this.props.updateBasketStatus}
         />
         <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
-          {/*<h3 className="wdk-RecordSidebarHeader">{this.props.record.displayName}</h3>*/}
           <a href="#" className="wdk-RecordSidebarToggle" onClick={this.toggleSidebar}>
             {this.state.showSidebar ? '' : 'Show Contents '}
             <i className={sidebarIconClass}
@@ -82,7 +67,7 @@ class RecordUI extends Component {
             recordClass={this.props.recordClass}
             categoryTree={this.props.categoryTree}
             collapsedSections={this.props.collapsedSections}
-            onSectionToggle={this.toggleSection}
+            onSectionToggle={this.props.toggleSection}
           />
         </Sticky>
         <div className="wdk-RecordMain">
@@ -91,7 +76,7 @@ class RecordUI extends Component {
             recordClass={this.props.recordClass}
             categoryTree={this.props.categoryTree}
             collapsedSections={this.props.collapsedSections}
-            onSectionToggle={this.toggleSection}
+            onSectionToggle={this.props.toggleSection}
           />
         </div>
       </Main>
@@ -100,11 +85,7 @@ class RecordUI extends Component {
 }
 
 RecordUI.propTypes = {
-  record: PropTypes.object.isRequired,
-  recordClass: PropTypes.object.isRequired,
-  collapsedSections: PropTypes.array.isRequired,
   user: PropTypes.object.isRequired,
-  baskets: PropTypes.object.isRequired,
   recordActions: PropTypes.object.isRequired,
   userActions: PropTypes.object.isRequired
 };

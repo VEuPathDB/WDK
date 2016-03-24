@@ -11,24 +11,34 @@ let stubHandler = actionName => event => {
 const loadingClassName = 'fa fa-circle-o-notch fa-spin';
 
 let RecordHeading = props => {
-  let { record, recordClass, user, basket, userActions, router } = props;
+  let { record, recordClass, basketEntry, user, updateBasketStatus, router } = props;
+  let isInBasket = basketEntry && basketEntry.isInBasket;
+  let isInFavorites = false;
+  let favoriteStatusLoading = false;
   let actions = [
     {
       label: user.isGuest ? 'Login to manage basket'
-           : basket.inBasket ? 'Remove from basket'
+           : isInBasket ? 'Remove from basket'
            : 'Add to basket',
-      iconClassName: basket.isLoading ? loadingClassName : 'fa fa-shopping-basket',
+      iconClassName: basketEntry && basketEntry.isLoading ? loadingClassName : 'fa fa-shopping-basket',
       onClick(event) {
         event.preventDefault();
         if (!user.isGuest) {
-          userActions.updateBasketStatus(record.recordClassName, record.id, !basket.inBasket)
+          updateBasketStatus(!isInBasket)
         }
       }
     },
     {
-      label: 'Add to favorites',
-      iconClassName: 'fa fa-lg fa-star',
-      onClick: stubHandler('favorites')
+      label: user.isGuest ? 'Login to manage favorites'
+           : isInFavorites ? 'Remove from favorite'
+           : 'Add to favorite',
+      iconClassName: favoriteStatusLoading ? loadingClassName : 'fa fa-lg fa-star',
+      onClick(event) {
+        event.preventDefault();
+        if (!user.isGuest) {
+          userActions.updateFavoriteStatus(record, !isInFavorites)
+        }
+      }
     },
     {
       label: 'Download ' + recordClass.displayName,
