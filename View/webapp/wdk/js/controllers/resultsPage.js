@@ -323,7 +323,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     getResultsPage(gotoPageUrl, true, true);
   }
 
-  function openAttributeList(element){
+  function openAttributeList(element, viewName){
     var dialogId = getDialogId(element, "attributesList");
     var element = $("#" + dialogId);
     openBlockingDialog("#" + dialogId);
@@ -336,9 +336,14 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     element.dialog({maxWidth : viewportWidth * 0.75 });
     $('#' + dialogId).on('dialogclose', function(e) {
       var cbt = $(e.target).find('[data-controller="wdk.checkboxTree.setUpCheckboxTree"]');
-      if(cbt.length > 0) {
+      if (cbt.length > 0) {
         var cbtId = cbt.data('id');
         wdk.checkboxTree.selectCurrentNodes(cbtId);
+      }
+      // hack for apicommon...
+      cbt = $(e.target).find('[data-controller="eupathdb.attributeCheckboxTree.setupCheckboxTree"]');
+      if (cbt.length > 0) {
+        eupathdb.attributeCheckboxTree.resetCheckboxTree(viewName);
       }
     });
   }
