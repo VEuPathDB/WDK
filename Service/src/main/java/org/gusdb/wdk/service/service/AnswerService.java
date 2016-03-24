@@ -155,7 +155,7 @@ public class AnswerService extends WdkService {
 
     RecordClassBean recordClass = answerValue.getQuestion().getRecordClass();
     if (!recordClass.getReporterMap().keySet().contains(format)) {
-      throw new WdkUserException("Request for an invalid WDK answer format: " + format);
+      throw new WdkUserException("Request for an invalid answer format: " + format);
     }
 
     Reporter reporter = answerValue.createReport(format, formatConfig);
