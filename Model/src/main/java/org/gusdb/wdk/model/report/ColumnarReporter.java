@@ -27,7 +27,7 @@ import com.lowagie.text.pdf.PdfWriter;
  * @author steve
  *
  */
-public abstract class SingleTableReporter extends StandardReporter {
+public abstract class ColumnarReporter extends StandardReporter {
 
 
   private static Logger logger = Logger.getLogger(TabularReporter.class);
@@ -40,7 +40,7 @@ public abstract class SingleTableReporter extends StandardReporter {
   private boolean showHeader = true;
   private String columnDivider = "\t";
 
-  public SingleTableReporter(AnswerValue answerValue, int startIndex, int endIndex) {
+  public ColumnarReporter(AnswerValue answerValue, int startIndex, int endIndex) {
       super(answerValue, startIndex, endIndex);
   }
 
@@ -134,10 +134,9 @@ public abstract class SingleTableReporter extends StandardReporter {
       }
   }
   
-  protected abstract List<String> getHeader();
+  protected abstract List<String> getHeader() throws WdkUserException, WdkModelException;
   
-  protected abstract SingleTableReporterRowsProvider getRowsProvider(AnswerValue answerValue);
-
+  protected abstract ColumnarReporterRowsProvider getRowsProvider(AnswerValue answerValue) throws WdkUserException, WdkModelException;
 
   private void format2Text(PrintWriter writer)
       throws WdkModelException, WdkUserException {
@@ -154,16 +153,20 @@ public abstract class SingleTableReporter extends StandardReporter {
     // get page based answers with a maximum size (defined in
     // PageAnswerIterator)
     for (AnswerValue answerValuePage : this) {
-      SingleTableReporterRowsProvider rows = getRowsProvider(answerValuePage);
-      while (rows.hasNext()) {
-        List<Object> row = rows.next();
-        for (Object value : row) {
+      ColumnarReporterRowsProvider rows = getRowsProvider(answerValuePage);
+      try {
+	while (rows.hasNext()) {
+	  List<Object> row = rows.next();
+	  for (Object value : row) {
 
-          writer.print((value == null) ? "N/A" : value);
-          writer.print(columnDivider);
-        }
-        writer.println();
-        writer.flush();
+	    writer.print((value == null) ? "N/A" : value);
+	    writer.print(columnDivider);
+	  }
+	  writer.println();
+	  writer.flush();
+	}
+      } finally {
+	rows.close();
       }
     }
   }
@@ -192,27 +195,31 @@ public abstract class SingleTableReporter extends StandardReporter {
           // get page based answers with a maximum size (defined in
           // PageAnswerIterator)
           for (AnswerValue answerValuePage : this) {
-            SingleTableReporterRowsProvider rows = getRowsProvider(answerValuePage);
-            while (rows.hasNext()) {
+	    ColumnarReporterRowsProvider rows = getRowsProvider(answerValuePage);
+	    try {
+	      while (rows.hasNext()) {
                 List<Object> row = rows.next();
-                  count++;
+		count++;
 
-                  if (count % 2 == 1) {
-                      datatable.getDefaultCell().setGrayFill(0.9f);
-                  }
+		if (count % 2 == 1) {
+		  datatable.getDefaultCell().setGrayFill(0.9f);
+		}
 
-                  for (Object value : row) {
-                      datatable.addCell("" + value);
-                  }
+		for (Object value : row) {
+		  datatable.addCell("" + value);
+		}
 
-                  if (count % 2 == 1) {
-                      datatable.getDefaultCell().setGrayFill(1);
-                  }
+		if (count % 2 == 1) {
+		  datatable.getDefaultCell().setGrayFill(1);
+		}
 
-                  if (count % 500 == 0) {
-                      pwriter.flush();
-                  }
+		if (count % 500 == 0) {
+		  pwriter.flush();
+		}
               }
+	    } finally {
+	      rows.close();
+	    }
           }
 
           datatable.setSplitLate(false);
@@ -262,37 +269,41 @@ public abstract class SingleTableReporter extends StandardReporter {
       // get page based answers with a maximum size (defined in
       // PageAnswerIterator)
       for (AnswerValue answerValuePage : this) {
-        SingleTableReporterRowsProvider rows = getRowsProvider(answerValuePage);
-        while (rows.hasNext()) {
-              List<Object> row = rows.next();
-              writer.println("<tr>");
-              count += 5;
-              for (Object value : row) {
-                  String val = "<td>" + value + "</td>";
-                  writer.print(val);
-                  count += val.length();
-              }
-              writer.println();
-              writer.println("</tr>");
-              writer.flush();
-              count += 7;
+	ColumnarReporterRowsProvider rows = getRowsProvider(answerValuePage);
+	try {
+	  while (rows.hasNext()) {
+	    List<Object> row = rows.next();
+	    writer.println("<tr>");
+	    count += 5;
+	    for (Object value : row) {
+	      String val = "<td>" + value + "</td>";
+	      writer.print(val);
+	      count += val.length();
+	    }
+	    writer.println();
+	    writer.println("</tr>");
+	    writer.flush();
+	    count += 7;
 
-              // logger.debug("Excel download - written: " + count);
-              // check if the output exceeds the max allowed size
-              if (count > MAX_EXCEL_LENGTH) {
-                  writer.print("<tr><td colspan=\"" + getHeader().size() + "\">");
-                  writer.print("The result size exceeds the maximum allowed "
-                          + "size for downloading excel files. The rest of "
-                          + "the results are ignored. Opening huge excel "
-                          + "files may crash your system. If you need to "
-                          + "get the complete results, please choose the "
-                          + "download type as Text File, or Show in Browser.");
-                  writer.println("</td></tr>");
-                  break;
-              }
-              if (count > MAX_EXCEL_LENGTH) break;
+	    // logger.debug("Excel download - written: " + count);
+	    // check if the output exceeds the max allowed size
+	    if (count > MAX_EXCEL_LENGTH) {
+	      writer.print("<tr><td colspan=\"" + getHeader().size() + "\">");
+	      writer.print("The result size exceeds the maximum allowed "
+			   + "size for downloading excel files. The rest of "
+			   + "the results are ignored. Opening huge excel "
+			   + "files may crash your system. If you need to "
+			   + "get the complete results, please choose the "
+			   + "download type as Text File, or Show in Browser.");
+	      writer.println("</td></tr>");
+	      break;
+	    }
+	    if (count > MAX_EXCEL_LENGTH) break;
           }
           if (count > MAX_EXCEL_LENGTH) break;
+	} finally {
+	  rows.close();
+	}
       }
       writer.println("</table>");
       writer.flush();

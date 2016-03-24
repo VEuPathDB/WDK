@@ -1,41 +1,22 @@
 import React from 'react';
-import PureRenderMixin from 'react-addons-pure-render-mixin';
 import classnames from 'classnames';
 import includes from 'lodash/collection/includes';
 import memoize from 'lodash/function/memoize';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
 import { postorderSeq } from '../utils/TreeUtils';
-import { wrappable } from '../utils/componentUtils';
-import {
-  getId,
-  getDisplayName,
-  getPropertyValues,
-  nodeHasProperty
-} from '../utils/OntologyUtils';
+import { wrappable, PureComponent } from '../utils/componentUtils';
+import { getPropertyValues, nodeHasProperty } from '../utils/OntologyUtils';
+import { getId, getDisplayName } from '../utils/CategoryUtils';
 
-let RecordNavigationSection = React.createClass({
+class RecordNavigationSection extends PureComponent {
 
-  propTypes: {
-    collapsedSections: React.PropTypes.array,
-    onSectionToggle: React.PropTypes.func,
-    heading: React.PropTypes.node
-  },
-
-  mixins: [ PureRenderMixin ],
-
-  getInitialState() {
-    return {
+  constructor(props) {
+    super(props);
+    this.state = {
       navigationExpanded: false,
       navigationQuery: ''
     };
-  },
-
-  getDefaultProps() {
-    return {
-      onSectionToggle: function noop() {},
-      heading: 'Contents'
-    };
-  },
+  }
 
   render() {
     let { navigationExpanded, navigationQuery } = this.state;
@@ -83,7 +64,18 @@ let RecordNavigationSection = React.createClass({
       </div>
     );
   }
-});
+}
+
+RecordNavigationSection.propTypes = {
+  collapsedSections: React.PropTypes.array,
+  onSectionToggle: React.PropTypes.func,
+  heading: React.PropTypes.node
+};
+
+RecordNavigationSection.defaultProps = {
+  onSectionToggle: function noop() {},
+  heading: 'Contents'
+};
 
 export default wrappable(RecordNavigationSection);
 

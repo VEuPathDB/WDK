@@ -692,5 +692,9 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     }
     return answer;
   }
+  
+  public ParamHandler getParamHandler() {
+    return this.handler;
+  }
 
 }

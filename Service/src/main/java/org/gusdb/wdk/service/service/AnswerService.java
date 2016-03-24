@@ -30,18 +30,8 @@ import org.json.JSONObject;
  * <p>JSON input format:</p>
  * <pre>
  * {
- *   “questionDefinition”: {
- *     “questionName”: String,
- *     “params”: [ {
- *       “name”: String, “value”: Any
- *     } ],
- *     (optional) "legacyFilterName": String,
- *     (optional) “filters”: [ {
- *       “name”: String, value: Any
- *     } ],
- *     (optional) “viewFilters”: [ {
- *       “name”: String, value: Any
- *     } ]
+ *   "questionDefinition": {
+ *       see AnswerRequestFactory for details
  *   },
  *   formatting: {
  *     format: String,   (reporter internal name. optional.  if not provided, use WDK standard JSON)
@@ -89,7 +79,7 @@ public class AnswerService extends WdkService {
       // 1. Parse result request (question, params, etc.)
 
       JSONObject questionDefJson = json.getJSONObject("questionDefinition");
-      AnswerRequest request = AnswerRequestFactory.createFromJson(questionDefJson, getWdkModelBean());
+      AnswerRequest request = AnswerRequestFactory.createFromJson(questionDefJson, getWdkModelBean(), getCurrentUser());
 
       // 2. Parse (optional) request specifics (columns, pagination, etc.)
 
@@ -165,7 +155,7 @@ public class AnswerService extends WdkService {
 
     RecordClassBean recordClass = answerValue.getQuestion().getRecordClass();
     if (!recordClass.getReporterMap().keySet().contains(format)) {
-      throw new WdkUserException("Request for an invalid WDK answer format: " + format);
+      throw new WdkUserException("Request for an invalid answer format: " + format);
     }
 
     Reporter reporter = answerValue.createReport(format, formatConfig);

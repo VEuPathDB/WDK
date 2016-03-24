@@ -6,11 +6,13 @@ import {
 } from './TreeUtils';
 import {
   getTree,
+  getPropertyValue,
+} from './OntologyUtils';
+import {
   getTargetType,
   getRefName,
-  getPropertyValue,
   getDisplayName
-} from './OntologyUtils';
+} from './CategoryUtils';
 import {
   getAttribute,
   getTable
@@ -170,10 +172,13 @@ export default class WdkService {
   getBasketStatus(recordClassName, primaryKey) {
     let key = makeRecordKey(recordClassName, primaryKey);
     if (!this._basketStatus.has(key)) {
-      // get record then udpate map
-      let basketPromise = this.getRecord(recordClassName, primaryKey, { attributes: [ 'in_basket'] })
-      .then(record => Boolean(Number(record.attributes.in_basket)));
-      this._basketStatus.set(key, basketPromise);
+      let key = makeRecordKey(recordClassName, primaryKey);
+      let action = 'check';
+      let data = JSON.stringify([ primaryKey.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
+      let method = 'get';
+      let url = `${this._serviceUrl}/../processBasket.do?action=${action}&type=${recordClassName}&data=${data}`;
+      return fetchJson(method, url).then(
+        data => this._basketStatus.set(key, Promise.resolve(data.processed > 0)).get(key));
     }
     return this._basketStatus.get(key);
   }

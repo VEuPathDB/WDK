@@ -2,7 +2,7 @@ import { Component, PropTypes } from 'react';
 import classnames from 'classnames';
 import get from 'lodash/object/get';
 import { wrappable } from '../utils/componentUtils';
-import { getId, getLabel } from '../utils/OntologyUtils';
+import { getId, getLabel } from '../utils/CategoryUtils';
 import * as t from '../utils/TreeUtils';
 import * as i from '../utils/IterableUtils';
 import shallowEqual from '../utils/shallowEqual';
