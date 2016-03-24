@@ -1,38 +1,44 @@
-import React from 'react';
+import {Component} from 'react';
+import {wrappable} from '../utils/componentUtils';
+import {setActiveRecord, updateSectionCollapsed} from '../actioncreators/RecordViewActionCreator';
+import {loadCurrentUser} from '../actioncreators/UserActionCreator';
+import {loadBasketStatus, updateBasketStatus} from '../actioncreators/BasketActionCreator';
 import Doc from './Doc';
 import Loading from './Loading';
 import RecordUI from './RecordUI';
-import { wrappable, PureComponent } from '../utils/componentUtils';
-import { wrapActions } from '../utils/actionHelpers';
-import * as RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
-import * as UserActionCreator from '../actioncreators/UserActionCreator';
 
-class RecordController extends PureComponent {
+class RecordController extends Component {
 
   constructor(props) {
     super(props);
-    this.recordViewStore = props.stores.RecordViewStore;
-    this.userStore = props.stores.UserStore;
-    this.recordViewActions =
-      wrapActions(this.props.dispatchAction, RecordViewActionCreator);
-    this.userActions = wrapActions(this.props.dispatchAction, UserActionCreator);
+    let { dispatchAction } = props;
     this.state = this.getStateFromStores();
+
+    this.toggleSection = (sectionName, isCollapsed) => {
+      return dispatchAction(updateSectionCollapsed(sectionName, isCollapsed));
+    };
+
+    this.updateBasketStatus = (status) => {
+      let { record } = this.state.recordView;
+      return dispatchAction(updateBasketStatus(record, status));
+    };
   }
 
   getStateFromStores() {
-    return {
-      recordView: this.recordViewStore.getState(),
-      user: this.userStore.getState()
-    };
+    let recordView = this.props.stores.RecordViewStore.getState();
+    let user = this.props.stores.UserStore.getState().user;
+    let record = recordView.record;
+    let basketEntry = record && this.props.stores.BasketStore.getEntry(record);
+    return { recordView, basketEntry, user };
   }
 
   componentDidMount() {
     this.storeSubscriptions = [
-      this.recordViewStore.addListener(() => this.setState(this.getStateFromStores())),
-      this.userStore.addListener(() => this.setState(this.getStateFromStores()))
+      this.props.stores.RecordViewStore.addListener(() => this.setState(this.getStateFromStores())),
+      this.props.stores.UserStore.addListener(() => this.setState(this.getStateFromStores())),
+      this.props.stores.BasketStore.addListener(() => this.setState(this.getStateFromStores()))
     ];
-    this.userActions.loadCurrentUser();
-    this.fetchRecord(this.props);
+    this.loadData(this.props);
   }
 
   componentWillUnmount() {
@@ -43,17 +49,25 @@ class RecordController extends PureComponent {
     // We need to do this to ignore hash changes.
     // Seems like there is a better way to do this.
     if (this.props.location.pathname !== nextProps.location.pathname) {
-      this.fetchRecord(nextProps);
+      this.loadData(nextProps);
     }
   }
 
-  fetchRecord(props) {
+  loadData(props) {
+    let { dispatchAction } = props;
     let { recordClass, splat } = props.params;
-    this.recordViewActions.setActiveRecord(recordClass, splat.split('/'));
+    if (this.state.user == null) {
+      dispatchAction(loadCurrentUser());
+    }
+    dispatchAction(setActiveRecord(recordClass, splat.split('/')))
+    .then(() => {
+      let record = props.stores.RecordViewStore.getState().record;
+      dispatchAction(loadBasketStatus(record));
+    });
   }
 
   renderLoading() {
-    if (this.state.recordView.isLoading || this.state.user.isLoading) {
+    if (this.state.recordView.isLoading) {
       return (
         <Loading/>
       );
@@ -71,7 +85,7 @@ class RecordController extends PureComponent {
   }
 
   renderRecord() {
-    let { recordView, user } = this.state;
+    let { recordView, basketEntry, user } = this.state;
     if (recordView.record != null) {
       let title = this.state.recordView.recordClass.displayName + ' ' +
         recordView.record.displayName;
@@ -80,9 +94,10 @@ class RecordController extends PureComponent {
         <Doc title={title}>
           <RecordUI
             {...recordView}
-            {...user}
-            recordActions={this.recordViewActions}
-            userActions={this.userActions}
+            user={user}
+            basketEntry={basketEntry}
+            updateBasketStatus={this.updateBasketStatus}
+            toggleSection={this.toggleSection}
             router={this.props.router}
           />
         </Doc>

@@ -2,9 +2,9 @@ import WdkStore from './WdkStore';
 import { actionTypes } from '../actioncreators/RecordViewActionCreator';
 
 let {
-  SET_ACTIVE_RECORD,
-  SET_ACTIVE_RECORD_LOADING,
-  SET_ERROR,
+  ACTIVE_RECORD_RECEIVED,
+  ACTIVE_RECORD_LOADING,
+  ERROR_RECEIVED,
   SHOW_SECTION,
   HIDE_SECTION,
   UPDATE_NAVIGATION_QUERY
@@ -20,25 +20,29 @@ export default class RecordViewStore extends WdkStore {
       quesitons: undefined,
       collapsedSections: undefined,
       isLoading: undefined,
+      isInBasket: undefined,
+      isInFavorites: undefined,
+      basketStatusLoading: undefined,
+      favoriteStatusLoading: undefined,
       categoryTree: undefined
     };
   }
 
   reduce(state, { type, payload }) {
     switch (type) {
-      case SET_ERROR:
+      case ERROR_RECEIVED:
         return Object.assign({}, this.getInitialState(), {
           isLoading: false,
           error: payload.error
         });
 
-      case SET_ACTIVE_RECORD_LOADING:
+      case ACTIVE_RECORD_LOADING:
         return Object.assign({}, state, {
           isLoading: true,
           error: null
         });
 
-      case SET_ACTIVE_RECORD: {
+      case ACTIVE_RECORD_RECEIVED: {
         let { record, recordClass, questions, recordClasses, categoryTree } = payload;
 
         return Object.assign({}, state, {
