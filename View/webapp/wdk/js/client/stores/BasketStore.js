@@ -1,4 +1,3 @@
-import update from 'react-addons-update';
 import WdkStore from './WdkStore';
 import {actionTypes} from '../actioncreators/BasketActionCreator';
 
