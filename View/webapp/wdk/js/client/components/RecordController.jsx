@@ -8,25 +8,15 @@ import Doc from './Doc';
 import Loading from './Loading';
 import RecordUI from './RecordUI';
 
+/** View Controller for record page */
 class RecordController extends Component {
 
   constructor(props) {
     super(props);
     let { dispatchAction } = props;
     this.state = this.getStateFromStores();
-
     this.toggleSection = (sectionName, isCollapsed) => {
       return dispatchAction(updateSectionCollapsed(sectionName, isCollapsed));
-    };
-
-    this.updateBasketStatus = (status) => {
-      let { record } = this.state.recordView;
-      return dispatchAction(updateBasketStatus(record, status));
-    };
-
-    this.updateFavoritesStatus = (status) => {
-      let { record } = this.state.recordView;
-      return dispatchAction(updateFavoritesStatus(record, status));
     };
   }
 
