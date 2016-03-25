@@ -18,13 +18,13 @@
               type="org.gusdb.wdk.model.jspwrap.RecordClassBean"
               required="true"
               description="The full name of the record class, to be used to render primary key attribute"
-%> 
+%>
 
 <%@ attribute name="record"
               type="org.gusdb.wdk.model.jspwrap.RecordBean"
               required="true"
               description="this record which contains the ID and all the attributes"
-%> 
+%>
 
 <c:set var="toTruncate" value="${truncate != null && truncate == 'true'}" />
 <c:set var="attributeField" value="${attributeValue.attributeField}" />
@@ -34,7 +34,7 @@
 </c:set>
 
 <!-- we are setting truncate true in all columns (default is 100)
-     we use briefDisplay to access display value when available 
+     we use briefDisplay to access display value when available
 -->
 <!-- attributeValue.value is "text" in the model (no "display")
 -->
@@ -46,11 +46,11 @@
 </c:set>
 <!-- modifying the displayValue for a nicer UX -->
 <c:set var="displayValue">
-  <imp:updateDisplayValue displayValue = "${displayValue1}" /> 
+  <imp:updateDisplayValue displayValue = "${displayValue1}" />
 </c:set>
 
 <td style="padding:2px;vertical-align:middle">
-  <div class="attribute-summary" ${align} style="${nowrap}padding:3px 2px">   
+  <div class="attribute-summary" ${align} style="${nowrap}padding:3px 2px">
   <c:choose>
 
 <%-- PRIMARY KEY --%>
@@ -67,7 +67,6 @@
         primaryKeyAttributeValue="${attributeValue}"
         recordClass="${recordClass}"
         displayValue = "${displayValue}"
-        record="${record}"
       />
     </c:when>
 
