@@ -40,7 +40,7 @@ export function start(rootUrl, rootElement, context, additionalRoutes = []) {
           <Route path="user/profile" component={UserProfileController}/>
           <Route path="data-finder" component={SiteMapController}/>
           <Route path="question-list" component={QuestionListController}/>
-          {additionalRoutes.map(route => ( <Route key={route.name} {...route}/> ))}
+          {additionalRoutes.map(route => ( <Route key={route.path} {...route}/> ))}
           <Route path="*" component={NotFoundController}/>
         </Route>
       </Router>
