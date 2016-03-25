@@ -25,13 +25,13 @@ export function loadBasketStatus(record) {
 
 /**
  * @param {RecordDescriptor} record
- * @param {Boolean} inBasket
+ * @param {Boolean} status
  */
-export function updateBasketStatus(record, inBasket) {
+export function updateBasketStatus(record, status) {
   return function run(dispatch, { wdkService }) {
     return dispatch(setBasketStatus(
       record,
-      wdkService.updateBasketStatus(record, inBasket)
+      wdkService.updateBasketStatus(record, status)
     ));
   };
 }
