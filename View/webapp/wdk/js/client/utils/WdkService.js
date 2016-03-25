@@ -187,21 +187,21 @@ export default class WdkService {
   }
 
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
-  getFavoriteStatus(record) {
+  getFavoritesStatus(record) {
     let action = 'check';
     let data = JSON.stringify([ record.id.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
     let url = `${this._serviceUrl}/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return fetchJson(method, url).then(data => data.processed > 0);
+    return fetchJson(method, url).then(data => data.countProcessed > 0);
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
-  updateFavoriteStatus(record, status) {
+  updateFavoritesStatus(record, status) {
     let action = status ? 'add' : 'remove';
     let data = JSON.stringify([ record.id.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
     let url = `${this._serviceUrl}/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return fetchJson(method, url).then(data => data.processed > 0);
+    return fetchJson(method, url).then(() => status);
   }
 
   getCurrentUser() {

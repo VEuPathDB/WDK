@@ -51,10 +51,7 @@ class RecordUI extends Component {
         <RecordHeading
           record={this.props.record}
           recordClass={this.props.recordClass}
-          user={this.props.user}
-          basketEntry={this.props.basketEntry}
-          router={this.props.router}
-          updateBasketStatus={this.props.updateBasketStatus}
+          headerActions={this.props.headerActions}
         />
         <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
           <a href="#" className="wdk-RecordSidebarToggle" onClick={this.toggleSidebar}>
@@ -83,13 +80,5 @@ class RecordUI extends Component {
     )
   }
 }
-
-RecordUI.propTypes = {
-  user: PropTypes.object.isRequired,
-  recordActions: PropTypes.object.isRequired,
-  userActions: PropTypes.object.isRequired
-};
-
-
 
 export default wrappable(RecordUI);

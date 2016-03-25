@@ -3,6 +3,7 @@ import {wrappable} from '../utils/componentUtils';
 import {setActiveRecord, updateSectionCollapsed} from '../actioncreators/RecordViewActionCreator';
 import {loadCurrentUser} from '../actioncreators/UserActionCreator';
 import {loadBasketStatus, updateBasketStatus} from '../actioncreators/BasketActionCreator';
+import {loadFavoritesStatus, updateFavoritesStatus} from '../actioncreators/FavoritesActionCreator';
 import Doc from './Doc';
 import Loading from './Loading';
 import RecordUI from './RecordUI';
@@ -22,6 +23,11 @@ class RecordController extends Component {
       let { record } = this.state.recordView;
       return dispatchAction(updateBasketStatus(record, status));
     };
+
+    this.updateFavoritesStatus = (status) => {
+      let { record } = this.state.recordView;
+      return dispatchAction(updateFavoritesStatus(record, status));
+    };
   }
 
   getStateFromStores() {
@@ -29,14 +35,16 @@ class RecordController extends Component {
     let user = this.props.stores.UserStore.getState().user;
     let record = recordView.record;
     let basketEntry = record && this.props.stores.BasketStore.getEntry(record);
-    return { recordView, basketEntry, user };
+    let favoritesEntry = record && this.props.stores.FavoritesStore.getEntry(record);
+    return { recordView, basketEntry, favoritesEntry, user };
   }
 
   componentDidMount() {
     this.storeSubscriptions = [
       this.props.stores.RecordViewStore.addListener(() => this.setState(this.getStateFromStores())),
       this.props.stores.UserStore.addListener(() => this.setState(this.getStateFromStores())),
-      this.props.stores.BasketStore.addListener(() => this.setState(this.getStateFromStores()))
+      this.props.stores.BasketStore.addListener(() => this.setState(this.getStateFromStores())),
+      this.props.stores.FavoritesStore.addListener(() => this.setState(this.getStateFromStores()))
     ];
     this.loadData(this.props);
   }
@@ -63,6 +71,7 @@ class RecordController extends Component {
     .then(() => {
       let record = props.stores.RecordViewStore.getState().record;
       dispatchAction(loadBasketStatus(record));
+      dispatchAction(loadFavoritesStatus(record));
     });
   }
 
@@ -85,20 +94,60 @@ class RecordController extends Component {
   }
 
   renderRecord() {
-    let { recordView, basketEntry, user } = this.state;
+    let { recordView, basketEntry, favoritesEntry, user } = this.state;
+    let { router, dispatchAction } = this.props;
     if (recordView.record != null) {
-      let title = this.state.recordView.recordClass.displayName + ' ' +
+      let title = recordView.recordClass.displayName + ' ' +
         recordView.record.displayName;
+      let loadingClassName = 'fa fa-circle-o-notch fa-spin';
+      let isInBasket = basketEntry && basketEntry.isInBasket;
+      let basketLoading = basketEntry && basketEntry.isLoading;
+      let isInFavorites = favoritesEntry && favoritesEntry.isInFavorites;
+      let favoritesLoading = favoritesEntry && favoritesEntry.isLoading;
+      let headerActions = (user.isGuest ? [
+        {
+          label: 'Login for basket and favorites',
+          className: 'open-dialog-login-form',
+          iconClassName: 'fa fa-lg fa-sign-in',
+          onClick(event) {
+            event.preventDefault();
+            console.warn('Replace the className based dialog opening with something else.');
+          }
+        }
+      ] : [
+        {
+          label: isInBasket ? 'Remove from basket' : 'Add to basket',
+          iconClassName: basketLoading ? loadingClassName : 'fa fa-shopping-basket',
+          onClick(event) {
+            event.preventDefault();
+            dispatchAction(updateBasketStatus(recordView.record, !isInBasket));
+          }
+        },
+        {
+          label: isInFavorites ? 'Remove from favorites' : 'Add to favorites',
+          iconClassName: favoritesLoading ? loadingClassName : 'fa fa-lg fa-star',
+          onClick(event) {
+            event.preventDefault();
+            dispatchAction(updateFavoritesStatus(recordView.record, !isInFavorites));
+          }
+        },
+      ])
+      .concat({
+        label: 'Download ' + recordView.recordClass.displayName,
+        iconClassName: 'fa fa-lg fa-download',
+        onClick(event) {
+          event.preventDefault();
+          router.push('/record/' + recordView.recordClass.urlSegment +
+                      '/download/' + record.id.map(pk => pk.value).join('/'));
+        }
+      });
 
       return (
         <Doc title={title}>
           <RecordUI
             {...recordView}
-            user={user}
-            basketEntry={basketEntry}
-            updateBasketStatus={this.updateBasketStatus}
             toggleSection={this.toggleSection}
-            router={this.props.router}
+            headerActions={headerActions}
           />
         </Doc>
       );
