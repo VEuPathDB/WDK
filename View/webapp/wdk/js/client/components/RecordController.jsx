@@ -137,8 +137,8 @@ class RecordController extends Component {
         iconClassName: 'fa fa-lg fa-download',
         onClick(event) {
           event.preventDefault();
-          router.push('/record/' + recordView.recordClass.urlSegment +
-                      '/download/' + record.id.map(pk => pk.value).join('/'));
+          router.push('/record/' + recordView.recordClass.urlSegment + '/download/' +
+                      recordView.record.id.map(pk => pk.value).join('/'));
         }
       });
 
