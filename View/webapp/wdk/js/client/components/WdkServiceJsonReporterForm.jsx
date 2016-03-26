@@ -4,22 +4,16 @@ import ReporterCheckboxList from './ReporterCheckboxList';
 import CategoriesCheckboxTree from './CategoriesCheckboxTree';
 
 let WdkServiceJsonReporterForm = props => {
-  let { question, recordClass, ontology, formState, formUiState, onFormChange, onFormUiChange, onSubmit } = props;
+  let { question, recordClass, summaryView, ontology, formState, formUiState, onFormChange, onFormUiChange, onSubmit } = props;
   let getUpdateHandler = fieldName => getChangeHandler(fieldName, onFormChange, formState);
   let getUiUpdateHandler = fieldName => getChangeHandler(fieldName, onFormUiChange, formUiState);
   return (
     <div>
-      <ReporterCheckboxList title="Choose Attributes"
-          onChange={getUpdateHandler('attributes')}
-          fields={getAllAttributes(recordClass, question, isInReport)}
-          selectedFields={formState.attributes}/>
-
       <CategoriesCheckboxTree
-
           // title and layout of the tree
           title="Choose Attributes"
           searchBoxPlaceholder="Search Attributes..."
-          tree={getAttributeTree(ontology, question, recordClass)}
+          tree={getAttributeTree(ontology, question, recordClass, summaryView)}
 
           // state of the tree
           selectedLeaves={formState.attributes}
@@ -44,7 +38,6 @@ let WdkServiceJsonReporterForm = props => {
   );
 };
 
-// TODO: use initial selections to determine initial expansion state
 WdkServiceJsonReporterForm.getInitialState = (downloadFormStoreState, userStoreState) => ({
   formState: {
     attributes: getAttributeSelections(
@@ -52,9 +45,9 @@ WdkServiceJsonReporterForm.getInitialState = (downloadFormStoreState, userStoreS
     tables: []
   },
   formUiState: {
-    expandedAttributeNodes: [],
+    expandedAttributeNodes: null,
     attributeSearchText: "",
-    expandedTableNodes: [],
+    expandedTableNodes: null,
     tableSearchText: ""
   }
 });
