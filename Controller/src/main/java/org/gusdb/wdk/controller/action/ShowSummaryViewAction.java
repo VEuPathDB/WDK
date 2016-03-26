@@ -67,12 +67,13 @@ public class ShowSummaryViewAction extends Action {
             wdkUser.setCurrentSummaryView(question, view);
         }
 
-        // process the view handler
+        // automatic views return null handlers; use default if this is the case
         SummaryViewHandler handler = view.getHandler();
         if (handler == null) {
           handler = new DefaultSummaryViewHandler();
         }
-				// add to request scope
+
+        // process the handler and add resulting view data to request scope
         ActionUtility.applyModel(request, handler.process(
             step.getStep(), request.getParameterMap(), wdkUser.getUser(), wdkModel.getModel()));
 
