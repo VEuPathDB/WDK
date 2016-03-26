@@ -9,6 +9,7 @@ import org.gusdb.wdk.service.filter.MethodRewritingFilter;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.service.ApiService;
+import org.gusdb.wdk.service.service.DatasetService;
 import org.gusdb.wdk.service.service.ProjectService;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.QuestionService;
@@ -40,6 +41,7 @@ public class WdkServiceApplication extends Application {
     .add(AnswerService.class)
     .add(OntologyService.class)
     .add(StepService.class)
+    .add(DatasetService.class)
 
     // test
     .add(SampleService.class)
