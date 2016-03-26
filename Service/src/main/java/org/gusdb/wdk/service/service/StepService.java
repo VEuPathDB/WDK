@@ -44,6 +44,9 @@ public class StepService extends WdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response createStep(String body) throws WdkModelException {
     try {
+      // TODO: This should NOT be the final API of a POST to /step.  The answerSpec should
+      //   be a property of the input JSON, with other (optional?) properties containing other
+      //   step properties like custom name, etc.
       JSONObject json = new JSONObject(body);
       AnswerRequest request = AnswerRequestFactory.createFromJson(json, getWdkModelBean(), getCurrentUser());
       Step step = WdkStepFactory.createStep(request, getCurrentUser(), getWdkModel().getStepFactory());
