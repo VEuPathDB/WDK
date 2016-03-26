@@ -15,8 +15,6 @@ import org.gusdb.wdk.session.OAuthUtil;
 @Path("/user")
 public class UserService extends WdkService {
 
-  private static final String CURRENT_USER_MAGIC_STRING = "current";
-
   // ===== OAuth 2.0 + OpenID Connect Support =====
   /**
    * Create anti-forgery state token, add to session, and return.  This is
@@ -45,41 +43,25 @@ public class UserService extends WdkService {
       @PathParam("id") String userIdStr,
       @QueryParam("includePreferences") Boolean includePreferences)
           throws WdkModelException {
-    Integer userId = getUserId(userIdStr);
-    if (userId == null)
+    UserBundle userBundle = parseUserId(userIdStr);
+    if (userBundle == null)
       return getNotFoundResponse("Unable to find user with ID " + userIdStr);
-    boolean isOwner = (userId == getCurrentUserId());
     return Response.ok(
-        UserFormatter.getUserJson(getWdkModel().getUserFactory().getUser(userId),
-            isOwner, getFlag(includePreferences)).toString()
+        UserFormatter.getUserJson(userBundle.getUser(),
+            userBundle.isCurrentUser(), getFlag(includePreferences)).toString()
     ).build();
   }
 
   @GET
   @Path("{id}/preference")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getUserPrefs(@PathParam("id") String userIdStr) throws WdkModelException {
-    Integer userId = getUserId(userIdStr);
-    if (userId == null)
+  public Response getUserPrefs(@PathParam("id") String userIdStr) {
+    UserBundle userBundle = parseUserId(userIdStr);
+    if (userBundle == null)
       return getNotFoundResponse("Unable to find user with ID " + userIdStr);
-    boolean isOwner = (userId == getCurrentUserId());
-    if (!isOwner)
+    if (!userBundle.isCurrentUser())
       return getPermissionDeniedResponse();
-    return Response.ok(
-        UserFormatter.getUserPrefsJson(
-            getWdkModel().getUserFactory().getUser(userId).getProjectPreferences()).toString()
-    ).build();
-  }
-
-  private Integer getUserId(String userIdStr) throws WdkModelException {
-    if (CURRENT_USER_MAGIC_STRING.equals(userIdStr)) {
-      return getCurrentUserId();
-    }
-    try {
-      return Integer.parseInt(userIdStr);
-    }
-    catch (NumberFormatException | NullPointerException e) {
-      return null;
-    }
+    return Response.ok(UserFormatter.getUserPrefsJson(
+        userBundle.getUser().getProjectPreferences()).toString()).build();
   }
 }
