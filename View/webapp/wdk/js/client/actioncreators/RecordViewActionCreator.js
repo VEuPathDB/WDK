@@ -1,4 +1,3 @@
-import { loadBasketStatus } from './UserActionCreator';
 import {
   getTree,
   nodeHasProperty,
@@ -9,9 +8,9 @@ import {
 } from '../utils/TreeUtils';
 
 export let actionTypes = {
-  SET_ACTIVE_RECORD: 'record/set-active-record',
-  SET_ACTIVE_RECORD_LOADING: 'record/set-active-record-loading',
-  SET_ERROR: 'record/set-error',
+  ACTIVE_RECORD_RECEIVED: 'record/active-record-received',
+  ACTIVE_RECORD_LOADING: 'record/active-record-loading',
+  ERROR_RECEIVED: 'record/error-received',
   SHOW_SECTION: 'record/show-section',
   HIDE_SECTION: 'record/hide-section',
   UPDATE_NAVIGATION_QUERY: 'record/update-navigation-query'
@@ -39,23 +38,20 @@ let getNodeName = node => getPropertyValue('name', node);
 
 /**
  * @param {string} recordClassName
- * @param {Object} primaryKeyValues
+ * @param {Array} primaryKeyValues
  */
 export function setActiveRecord(recordClassName, primaryKeyValues) {
   return function run(dispatch, { wdkService }) {
-    dispatch({ type: actionTypes.SET_ACTIVE_RECORD_LOADING });
-
     let details$ = fetchRecordDetails(wdkService, recordClassName, primaryKeyValues);
-    let basketAction$ = details$.then(details => dispatch(loadBasketStatus(details.recordClass.name, details.record.id)));
-
-    return Promise.all([ details$, basketAction$ ]).then(([ details ]) => {
+    dispatch({ type: actionTypes.ACTIVE_RECORD_LOADING });
+    return details$.then(details => {
       return dispatch({
-        type: actionTypes.SET_ACTIVE_RECORD,
+        type: actionTypes.ACTIVE_RECORD_RECEIVED,
         payload: details
       });
     }, error => {
       dispatch({
-        type: actionTypes.SET_ERROR,
+        type: actionTypes.ERROR_RECEIVED,
         payload: { error }
       });
       throw error;
@@ -64,16 +60,14 @@ export function setActiveRecord(recordClassName, primaryKeyValues) {
 }
 
 /** Update a section's collapsed status */
-export function updateSectionCollapsed(recordClassName, sectionName, isCollapsed) {
+export function updateSectionCollapsed(sectionName, isCollapsed) {
   return {
     type: isCollapsed ? actionTypes.HIDE_SECTION : actionTypes.SHOW_SECTION,
-    payload: {
-      recordClass: recordClassName,
-      name: sectionName
-    }
+    payload: { name: sectionName }
   };
 }
 
+/** Update navigation section search term -- currently unused */
 export function updateNavigationQuery(query) {
   return {
     type: actionTypes.UPDATE_NAVIGATION_QUERY,

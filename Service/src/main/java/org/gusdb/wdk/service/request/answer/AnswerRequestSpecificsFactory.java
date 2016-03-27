@@ -125,7 +125,7 @@ public class AnswerRequestSpecificsFactory {
     }
   }
 
-  private static Map<String, TableField> parseTableJson(JSONObject specJson, Question question) throws JSONException, RequestMisformatException {
+  private static Map<String, TableField> parseTableJson(JSONObject specJson, Question question) throws RequestMisformatException {
     if (specJson.has("tables")) {
       // see if property value is a String, if so, it could be a special value
       try {

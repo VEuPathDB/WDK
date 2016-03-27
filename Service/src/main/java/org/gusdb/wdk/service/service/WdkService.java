@@ -8,6 +8,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -16,6 +18,19 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.factory.WdkAnswerFactory;
 
 public abstract class WdkService {
+
+  private static final Logger LOG = Logger.getLogger(WdkService.class);
+
+  public static final String CURRENT_USER_MAGIC_STRING = "current";
+
+  public static class UserBundle extends ThreeTuple<Integer,Boolean,User> {
+    public UserBundle(Integer userId, Boolean isCurrentUser, User user) {
+      super(userId, isCurrentUser, user);
+    }
+    public int getUserId() { return getFirst(); }
+    public boolean isCurrentUser() { return getSecond(); }
+    public User getUser() { return getThird(); }
+  }
 
   protected static final Response getBadRequestBodyResponse(String message) {
     return Response.status(Status.BAD_REQUEST).entity(
@@ -102,5 +117,30 @@ public abstract class WdkService {
    */
   protected boolean getFlag(Boolean boolValue, boolean defaultValue) {
     return (boolValue == null ? defaultValue : boolValue);
+  }
+
+  /**
+   * Returns a tuple of <user_id, is_current_user, user> based on the input string.
+   * 
+   * @param userIdStr potential user ID as string, or special string indicating current user
+   * @return Tuple of user information, or null if userIdStr is null or misformatted, or no user by the passed ID could be found
+   */
+  protected UserBundle parseUserId(String userIdStr) {
+    try {
+      User currentUser = getCurrentUser();
+      if (CURRENT_USER_MAGIC_STRING.equals(userIdStr)) {
+        return new UserBundle(currentUser.getUserId(), true, currentUser);
+      }
+      int userId = Integer.parseInt(userIdStr);
+      if (userId == currentUser.getUserId()) {
+        return new UserBundle(currentUser.getUserId(), true, currentUser);
+      }
+      User user = getWdkModel().getUserFactory().getUser(userId);
+      return new UserBundle(userId, false, user);
+    }
+    catch (WdkModelException | NumberFormatException | NullPointerException e) {
+      LOG.warn("User requested by ID that is misformatted or does not exist", e);
+      return null;
+    }
   }
 }

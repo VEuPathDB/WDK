@@ -56,7 +56,7 @@ function createNode(id, displayName, description) {
  * @param question question whose dynamic attributes should be added
  * @param categoryTree root node of a categories ontology tree to modify
  */
-function addSearchSpecificSubtree(question, categoryTree) {
+export function addSearchSpecificSubtree(question, categoryTree) {
   if (question.dynamicAttributes.length > 0) {
     let subtree = createNode("search_specific_subtree","Search Specific",
                              "Information about the records returned that is specific to the search you ran, and the parameters you specified");
@@ -78,15 +78,6 @@ export let getNodeId = node =>
   // FIXME: document why the special case for attributes
   getTargetType(node) === 'attribute' ? getRefName(node) : getId(node);
 
-
-/**
- * Callback to provide a React element holding the display name and description for the node
- * @param node - given node
- * @returns {XML} - React element
- */
-export let BasicNodeComponent = props =>
-  ( <span title={getDescription(props.node)}>{getDisplayName(props.node)}</span> );
-
 /**
  * Create a predicate function to filter out of the Categories ontology tree those items appropriate for the given
  * scope that identify attributes for the current record class.  In the case of the Transcript Record Class, a
@@ -106,47 +97,12 @@ export let isQualifying = (recordClassName, viewName, scope) => node => {
 };
 
 /**
- * Create a separate search specific subtree, based upon the question asked and tack it onto the start of top level array
- * of nodes in the ontology tree
- * @param question - question posited
- * @param categoryTree - the munged ontology tree
- * @param recordClassName - full name of the record class
- * @param viewName - the name of the view (not sure how that will fly if everything else is _default
+ * Callback to provide a React element holding the display name and description for the node
+ * @param node - given node
+ * @returns {XML} - React element
  */
-export function addSearchSpecificSubtree(question, categoryTree, recordClassName, viewName) {
-  if(question.dynamicAttributes.length > 0 && (recordClassName != 'TranscriptRecordClasses.TranscriptRecordClass' ||
-     (!question.properties.questionType || (question.properties.questionType.indexOf('transcript') > -1 && viewName==="transcript")))) {
-    let subtree = createNode("search_specific_subtree","Search Specific",
-                             "Information about the records returned that is specific to the search you ran, and the parameters you specified");
-    question.dynamicAttributes.forEach(attribute => {
-      let node = createNode(attribute.name, attribute.displayName, attribute.help);
-      subtree.children.push(node);
-    });
-    categoryTree.children.unshift(subtree);
-  }
-}
-
-/**
- * Returns a JSON object representing a simplified category tree node that will be properly interpreted
- * by the checkboxTreeController
- * @param id - name or id of the node
- * @param displayName - name to be displayed
- * @param description - tooltip
- * @returns {{properties: {targetType: string[], name: *[]}, wdkReference: {displayName: *, help: *}, children: Array}}
- */
-function createNode(id, displayName, description) {
-  return {
-    "properties" : {
-      "targetType" : ["attribute"],
-      "name" : [id]
-    },
-    "wdkReference" : {
-      "displayName" : displayName,
-      "help" : description
-    },
-    "children":[]
-  }
-}
+export let BasicNodeComponent = props =>
+  ( <span title={getDescription(props.node)}>{getDisplayName(props.node)}</span> );
 
 /**
  * Returns whether the passed node 'matches' the passed node's display name
@@ -157,14 +113,18 @@ function createNode(id, displayName, description) {
  * @returns true if node 'matches' the passed search text
  */
 export function nodeSearchPredicate(node, searchText) {
-  let nodeContents = getAggregateSearchText([ getDisplayName(node), getDescription(node) ]);
-  return (nodeContents.indexOf(searchText.toLowerCase()) !== -1);
+  return searchAggregateSearchText(searchText, [ getDisplayName(node), getDescription(node) ]);
 }
 
-export function getAggregateSearchText(textStrings) {
-  let searchText = '';
-  textStrings.forEach(str => {
-    if (str != null) searchText += str.toLowerCase() + ' ';
-  });
-  return searchText;
+/**
+ * Joins the values in textStrings, lower-cases the result, and searches it
+ * for a lower-cased version of searchText.  Returns whether a match is found.
+ * 
+ * @param searchText value being searched for
+ * @param textStrings array of strings to search
+ * @return true if searchText is found, else false
+ */
+export function searchAggregateSearchText(searchText, textStrings) {
+  let aggregateText = textStrings.join(' ').toLowerCase();
+  return (aggregateText.indexOf(searchText.toLowerCase()) !== -1);
 }

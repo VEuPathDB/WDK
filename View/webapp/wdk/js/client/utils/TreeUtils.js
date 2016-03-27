@@ -201,24 +201,3 @@ export let getBranches = (node, getNodeChildren, branches=[]) => {
   }
   return branches;
 };
-
-/**
- * Using recursion to descend the tree to find the node associated with the node id given
- * @param {String} nodeId of the node to find
- * @param {Object} root node of subtree to search
- * @param {Function} function that returns array of child nodes of the passed node
- * @param {Function} function that returns the id of the passed node
- * @return {Object} the node corresponding to the node id or undefined if
- * not found.
- */
-export let findNodeById = (nodeId, root, getNodeChildren, getNodeId) => {
-  if (getNodeId(root) === nodeId) {
-    return root;
-  }
-  let children = getNodeChildren(root);
-  for (let i = 0; i < children.length; i++) {
-    let node = findNodeById(nodeId, children[i], getNodeChildren, getNodeId);
-    if (node !== undefined) return node;
-  }
-  return undefined;
-}

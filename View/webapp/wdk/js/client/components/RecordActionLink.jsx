@@ -8,8 +8,9 @@ let clickHandler = props => e => {
 }
 
 let RecordActionLink = props => {
+  let className = 'wdk-RecordActionLink ' + props.className;
   return (
-    <a href="#" title={props.label} className="wdk-RecordActionLink" onClick={clickHandler(props)}>
+    <a href="#" title={props.label} className={className} onClick={clickHandler(props)}>
       {props.showLabel ? props.label : ''} <i className={props.iconClassName}/>
     </a>
   );
@@ -18,6 +19,7 @@ let RecordActionLink = props => {
 RecordActionLink.propTypes = {
   record: React.PropTypes.object.isRequired,
   recordClass: React.PropTypes.object.isRequired,
+  className: React.PropTypes.string,
   iconClassName: React.PropTypes.string,
   onClick: React.PropTypes.func,
   label: React.PropTypes.string,
@@ -26,6 +28,7 @@ RecordActionLink.propTypes = {
 
 RecordActionLink.defaultProps = {
   onClick: (e, record) => console.log('Record action clicked', e, record),
+  className: '',
   label: 'Record action',
   iconClassName: 'fa fa-bolt',
   showLabel: true

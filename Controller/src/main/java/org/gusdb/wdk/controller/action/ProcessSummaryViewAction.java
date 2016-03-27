@@ -13,9 +13,11 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.summary.DefaultSummaryViewHandler;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.SummaryView;
+import org.gusdb.wdk.model.answer.SummaryViewHandler;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -44,7 +46,13 @@ public class ProcessSummaryViewAction extends Action {
     SummaryView summaryView = getSummaryView(question, request);
     Map<String, String[]> params = getParamMap(request);
 
-    String newQueryString = summaryView.getHandler().processUpdate(
+    // automatic views return null handlers; use default if this is the case
+    SummaryViewHandler handler = summaryView.getHandler();
+    if (handler == null) {
+      handler = new DefaultSummaryViewHandler();
+    }
+
+    String newQueryString = handler.processUpdate(
         step.getStep(), params, user.getUser(), wdkModel.getModel());
 
     if (isRequestFromBasket(request)) {

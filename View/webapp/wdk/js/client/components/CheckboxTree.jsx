@@ -88,7 +88,6 @@ let getInitialNodeState = (node, getNodeChildren) => (
   })
 );
 
-
 /**
  * Creates a copy of the input tree, populating each node with initial state.
  * Note this initial state is generic and not dependent on props.  The first
@@ -130,8 +129,8 @@ let applyPropsToStatefulTree = (root, props, isLeafVisible) => {
   let mapFunction = (node, mappedChildren) => {
 
     let nodeId = getNodeId(node);
-    let { isSelected, isVisible, isExpanded, isIndeterminate } = node[NODE_STATE_PROPERTY];
-    let newState = Object.assign({}, node[NODE_STATE_PROPERTY]);
+    let { isSelected, isVisible, isExpanded, isIndeterminate } = getNodeState(node);
+    let newState = Object.assign({}, getNodeState(node));
     let modifyThisNode = false;
 
     if (isLeaf(node, getNodeChildren)) {
@@ -153,14 +152,14 @@ let applyPropsToStatefulTree = (root, props, isLeafVisible) => {
       let indeterminateChildFound = false;
       let visibleChildFound = false;
 
-      let oldChildren = node[NODE_CHILDREN_PROPERTY];
+      let oldChildren = getStatefulChildren(node);
       for (let i = 0; i < oldChildren.length; i++) {
         let newChild = mappedChildren[i];
         if (newChild !== oldChildren[i]) {
           // reference equality check failed; a child has been modified, so must modify this node
           modifyThisNode = true;
         }
-        let newChildState = newChild[NODE_STATE_PROPERTY];
+        let newChildState = getNodeState(newChild);
         if (newChildState.isSelected)
           selectedChildFound = true;
         else
@@ -239,13 +238,13 @@ let createIsLeafVisible =  props => {
     return nodeId => true;
   }
   // otherwise must construct array of visible leaves
-  let visibleLeaves = [];
+  let visibleLeaves = new Set();
   let addVisibleLeaves = (node, parentMatches) => {
     // if parent matches, automatically match (always show children of matching parents)
     let nodeMatches = (parentMatches || searchPredicate(node, searchText));
     if (isLeaf(node, getNodeChildren)) {
       if (nodeMatches) {
-        visibleLeaves.push(getNodeId(node));
+        visibleLeaves.add(getNodeId(node));
       }
     }
     else {
@@ -255,7 +254,7 @@ let createIsLeafVisible =  props => {
     }
   }
   addVisibleLeaves(tree, false);
-  return nodeId => (visibleLeaves.indexOf(nodeId) !== -1);
+  return nodeId => visibleLeaves.has(nodeId);
 };
 
 /**
@@ -263,6 +262,11 @@ let createIsLeafVisible =  props => {
  * in lieu of the getNodeChildren prop when rendering the tree.
  */
 let getStatefulChildren = node => node[NODE_CHILDREN_PROPERTY];
+
+/**
+ * Returns the state of a node in the stateful tree
+ */
+let getNodeState = node => node[NODE_STATE_PROPERTY];
 
 /**
  * Expandable tree component
@@ -354,7 +358,6 @@ export default class CheckboxTree extends Component {
       onSelectionChange(addOrRemove(selectedList, getNodeId(node)));
     }
     else {
-      //
       let newSelectedList = (selectedList ? selectedList.slice() : []);
       let leafNodes = getLeaves(node, getNodeChildren);
       leafNodes.forEach(leafNode => {
@@ -390,6 +393,8 @@ export default class CheckboxTree extends Component {
         showCurrentLink={currentList != null} showDefaultLink={defaultList != null}
         showExpansionLinks={!isActiveSearch({ isSearchable, searchText })} />
     );
+    let myNodeComponent = (nodeComponent != null ? nodeComponent :
+      (props => <span>{getNodeId(props.node)}</span>));
     return (
       <div className="wdk-CheckboxTree">
         {treeLinks}
@@ -406,14 +411,14 @@ export default class CheckboxTree extends Component {
               key={"node_" + getNodeId(node)}
               name={name}
               node={node}
-              getNodeState={node => node[NODE_STATE_PROPERTY]}
+              getNodeState={getNodeState}
               isSelectable={isSelectable}
               isActiveSearch={isActiveSearch(this.props)}
               toggleSelection={this.toggleSelection}
               toggleExpansion={this.toggleExpansion}
               getNodeId={getNodeId}
               getNodeChildren={getStatefulChildren}
-              nodeComponent={nodeComponent} />
+              nodeComponent={myNodeComponent} />
           )}
         </ul>
         {treeLinks}

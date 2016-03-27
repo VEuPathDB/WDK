@@ -1,38 +1,42 @@
-import React from 'react';
+import {Component} from 'react';
+import {wrappable} from '../utils/componentUtils';
+import {setActiveRecord, updateSectionCollapsed} from '../actioncreators/RecordViewActionCreator';
+import {loadCurrentUser} from '../actioncreators/UserActionCreator';
+import {loadBasketStatus, updateBasketStatus} from '../actioncreators/BasketActionCreator';
+import {loadFavoritesStatus, updateFavoritesStatus} from '../actioncreators/FavoritesActionCreator';
 import Doc from './Doc';
 import Loading from './Loading';
 import RecordUI from './RecordUI';
-import { wrappable, PureComponent } from '../utils/componentUtils';
-import { wrapActions } from '../utils/actionHelpers';
-import * as RecordViewActionCreator from '../actioncreators/RecordViewActionCreator';
-import * as UserActionCreator from '../actioncreators/UserActionCreator';
 
-class RecordController extends PureComponent {
+/** View Controller for record page */
+class RecordController extends Component {
 
   constructor(props) {
     super(props);
-    this.recordViewStore = props.stores.RecordViewStore;
-    this.userStore = props.stores.UserStore;
-    this.recordViewActions =
-      wrapActions(this.props.dispatchAction, RecordViewActionCreator);
-    this.userActions = wrapActions(this.props.dispatchAction, UserActionCreator);
+    let { dispatchAction } = props;
     this.state = this.getStateFromStores();
+    this.toggleSection = (sectionName, isCollapsed) => {
+      return dispatchAction(updateSectionCollapsed(sectionName, isCollapsed));
+    };
   }
 
   getStateFromStores() {
-    return {
-      recordView: this.recordViewStore.getState(),
-      user: this.userStore.getState()
-    };
+    let recordView = this.props.stores.RecordViewStore.getState();
+    let user = this.props.stores.UserStore.getState().user;
+    let record = recordView.record;
+    let basketEntry = record && this.props.stores.BasketStore.getEntry(record);
+    let favoritesEntry = record && this.props.stores.FavoritesStore.getEntry(record);
+    return { recordView, basketEntry, favoritesEntry, user };
   }
 
   componentDidMount() {
     this.storeSubscriptions = [
-      this.recordViewStore.addListener(() => this.setState(this.getStateFromStores())),
-      this.userStore.addListener(() => this.setState(this.getStateFromStores()))
+      this.props.stores.RecordViewStore.addListener(() => this.setState(this.getStateFromStores())),
+      this.props.stores.UserStore.addListener(() => this.setState(this.getStateFromStores())),
+      this.props.stores.BasketStore.addListener(() => this.setState(this.getStateFromStores())),
+      this.props.stores.FavoritesStore.addListener(() => this.setState(this.getStateFromStores()))
     ];
-    this.userActions.loadCurrentUser();
-    this.fetchRecord(this.props);
+    this.loadData(this.props);
   }
 
   componentWillUnmount() {
@@ -43,17 +47,26 @@ class RecordController extends PureComponent {
     // We need to do this to ignore hash changes.
     // Seems like there is a better way to do this.
     if (this.props.location.pathname !== nextProps.location.pathname) {
-      this.fetchRecord(nextProps);
+      this.loadData(nextProps);
     }
   }
 
-  fetchRecord(props) {
+  loadData(props) {
+    let { dispatchAction } = props;
     let { recordClass, splat } = props.params;
-    this.recordViewActions.setActiveRecord(recordClass, splat.split('/'));
+    if (this.state.user == null) {
+      dispatchAction(loadCurrentUser());
+    }
+    dispatchAction(setActiveRecord(recordClass, splat.split('/')))
+    .then(() => {
+      let record = props.stores.RecordViewStore.getState().record;
+      dispatchAction(loadBasketStatus(record));
+      dispatchAction(loadFavoritesStatus(record));
+    });
   }
 
   renderLoading() {
-    if (this.state.recordView.isLoading || this.state.user.isLoading) {
+    if (this.state.recordView.isLoading) {
       return (
         <Loading/>
       );
@@ -71,19 +84,60 @@ class RecordController extends PureComponent {
   }
 
   renderRecord() {
-    let { recordView, user } = this.state;
+    let { recordView, basketEntry, favoritesEntry, user } = this.state;
+    let { router, dispatchAction } = this.props;
     if (recordView.record != null) {
-      let title = this.state.recordView.recordClass.displayName + ' ' +
+      let title = recordView.recordClass.displayName + ' ' +
         recordView.record.displayName;
+      let loadingClassName = 'fa fa-circle-o-notch fa-spin';
+      let isInBasket = basketEntry && basketEntry.isInBasket;
+      let basketLoading = basketEntry && basketEntry.isLoading;
+      let isInFavorites = favoritesEntry && favoritesEntry.isInFavorites;
+      let favoritesLoading = favoritesEntry && favoritesEntry.isLoading;
+      let headerActions = (user.isGuest ? [
+        {
+          label: 'Login for basket and favorites',
+          className: 'open-dialog-login-form',
+          iconClassName: 'fa fa-lg fa-sign-in',
+          onClick(event) {
+            event.preventDefault();
+            console.warn('Replace the className based dialog opening with something else.');
+          }
+        }
+      ] : [
+        {
+          label: isInBasket ? 'Remove from basket' : 'Add to basket',
+          iconClassName: basketLoading ? loadingClassName : 'fa fa-shopping-basket',
+          onClick(event) {
+            event.preventDefault();
+            dispatchAction(updateBasketStatus(recordView.record, !isInBasket));
+          }
+        },
+        {
+          label: isInFavorites ? 'Remove from favorites' : 'Add to favorites',
+          iconClassName: favoritesLoading ? loadingClassName : 'fa fa-lg fa-star',
+          onClick(event) {
+            event.preventDefault();
+            dispatchAction(updateFavoritesStatus(recordView.record, !isInFavorites));
+          }
+        },
+      ])
+      .concat({
+        label: 'Download ' + recordView.recordClass.displayName,
+        iconClassName: 'fa fa-lg fa-download',
+        onClick(event) {
+          event.preventDefault();
+          router.push('/record/' + recordView.recordClass.urlSegment + '/download/' +
+                      recordView.record.id.map(pk => pk.value).join('/'));
+        }
+      });
 
       return (
         <Doc title={title}>
           <RecordUI
             {...recordView}
-            {...user}
-            recordActions={this.recordViewActions}
-            userActions={this.userActions}
-            router={this.props.router}
+            toggleSection={this.toggleSection}
+            headerActions={headerActions}
           />
         </Doc>
       );

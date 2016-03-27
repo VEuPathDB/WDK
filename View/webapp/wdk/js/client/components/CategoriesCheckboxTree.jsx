@@ -1,12 +1,17 @@
 import { wrappable } from '../utils/componentUtils';
-import { getNodeId, getNodeChildren, nodeSearchPredicate, BasicNodeComponent } from '../utils/CategoryUtils';
+import { getNodeChildren } from '../utils/OntologyUtils';
+import { getNodeId, nodeSearchPredicate, BasicNodeComponent } from '../utils/CategoryUtils';
 import CheckboxTree from './CheckboxTree';
 
 let CategoriesCheckboxTree = props => {
-  let { title, searchBoxPlaceholder, tree, selectedLeaves, expandedBranches, searchText, onChange, onUiChange, onSearchTextChange } = props;
+
+  let { title, searchBoxPlaceholder, tree, selectedLeaves, expandedBranches,
+    searchText, onChange, onUiChange, onSearchTextChange } = props;
+
   if (tree.children.length == 0) {
     return ( <noscript/> );
   }
+
   let treeProps = {
 
     // set hard-coded values for searchable, selectable, expandable tree
@@ -21,6 +26,7 @@ let CategoriesCheckboxTree = props => {
     // set event handlers
     onSelectionChange: onChange, onExpansionChange: onUiChange, onSearchTextChange: onSearchTextChange
   };
+
   return (
     <div>
       <h3>{title}</h3>

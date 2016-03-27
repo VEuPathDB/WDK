@@ -41,8 +41,7 @@ export default class IndeterminateCheckbox extends React.Component {
     let nameProp = this.props.name ? { name: this.props.name } : {};
     return (
         <input type="checkbox" {...nameProp} value={this.props.value}
-               checked={this.props.checked ? "checked" : ""}
-               onChange={this.handleChange} />
+               checked={this.props.checked} onChange={this.handleChange} />
     );
   }
 }
