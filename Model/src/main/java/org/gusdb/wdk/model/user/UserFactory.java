@@ -838,7 +838,10 @@ public class UserFactory {
         toDelete.add(key);
       } else { // key exist, check if need to update
         String newValue = newPreferences.get(key);
-        if (!oldPreferences.get(key).equals(newValue))
+	String oldValue = oldPreferences.get(key);
+	// if both are not null, and one is null or their values differ
+	if ((newValue != null || oldValue != null) &&
+	    (oldValue == null || newValue == null || oldPreferences.get(key).equals(newValue)))
           toUpdate.put(key, newValue);
       }
     }
