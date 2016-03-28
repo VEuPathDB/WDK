@@ -113,7 +113,7 @@ export let BasicNodeComponent = props =>
  * @returns true if node 'matches' the passed search text
  */
 export function nodeSearchPredicate(node, searchText) {
-  return searchAggregateSearchText(searchText, [ getDisplayName(node), getDescription(node) ]);
+  return searchAggregateText(searchText, [ getDisplayName(node), getDescription(node) ]);
 }
 
 /**
@@ -124,7 +124,7 @@ export function nodeSearchPredicate(node, searchText) {
  * @param textStrings array of strings to search
  * @return true if searchText is found, else false
  */
-export function searchAggregateSearchText(searchText, textStrings) {
+export function searchAggregateText(searchText, textStrings) {
   let aggregateText = textStrings.join(' ').toLowerCase();
   return (aggregateText.indexOf(searchText.toLowerCase()) !== -1);
 }
