@@ -1,21 +1,11 @@
-interface Xform<T, U> {
-  (x: T): U;
-}
-interface XformI<T, U> {
-  (x: T): Iterable<U>;
-}
-interface IFilter<T> {
-  (x: T): Iterable<T>;
-}
-interface IPredicate<T> {
-  (x: T): boolean;
-}
-interface IReducer<T, U> {
-  (acc: U | T, x: T): U;
-}
-interface ICollector<T> {
+// Type definitions
+type IMapper<T, U> = (x: T) => U;
+type IFlatMapper<T, U> = (x: T) => Iterable<U>;
+type IPredicate<T> = (x: T) => boolean;
+type IReducer<T, U> = (acc: U | T, x: T) => U;
+type ICollector<T> = {
   from: (i: Iterable<T>) => ICollector<T>;
-}
+};
 
 /**
  * Useful operators for Iterables.
@@ -70,11 +60,11 @@ class Seq<T> {
     this[Symbol.iterator] = iterable[Symbol.iterator].bind(iterable);
   }
 
-  map<U>(fn: Xform<T, U>) {
+  map<U>(fn: IMapper<T, U>) {
     return new Seq(map(fn, this));
   }
 
-  flatMap<U>(fn: XformI<T, U>) {
+  flatMap<U>(fn: IFlatMapper<T, U>) {
     return new Seq(flatMap(fn, this));
   }
 
@@ -82,7 +72,7 @@ class Seq<T> {
     return new Seq(uniq(this));
   }
 
-  filter(fn: IFilter<T>) {
+  filter(fn: IPredicate<T>) {
     return new Seq(filter(fn, this));
   }
 
@@ -110,8 +100,8 @@ class Seq<T> {
     return findLast(fn, this);
   }
 
-  reduce<U>(fn: IReducer<T, U>, value: U) {
-    return arguments.length === 1 ? reduce(fn, this)
+  reduce<U>(fn: IReducer<T, U>, value?: U) {
+    return value == null ? reduce(fn, this)
     : reduce(fn, value, this);
   }
 
@@ -137,7 +127,7 @@ class Seq<T> {
 
 }
 
-export function map<T, U>(fn: Xform<T, U>, iterable: Iterable<T>) {
+export function map<T, U>(fn: IMapper<T, U>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       for (let x of iterable) {
@@ -147,7 +137,7 @@ export function map<T, U>(fn: Xform<T, U>, iterable: Iterable<T>) {
   }
 }
 
-export function flatMap<T, U>(fn: XformI<T, U>, iterable: Iterable<T>) {
+export function flatMap<T, U>(fn: IFlatMapper<T, U>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       for (let x of iterable) {
@@ -171,7 +161,7 @@ export function uniq<T>(iterable: Iterable<T>) {
   }
 }
 
-export function filter<T>(fn: IFilter<T>, iterable: Iterable<T>) {
+export function filter<T>(fn: IPredicate<T>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       for (let x of iterable) {
