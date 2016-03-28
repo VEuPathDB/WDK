@@ -18,8 +18,6 @@ module.exports = {
     filename: 'wdk.[name].js',
     library: [ 'Wdk', '[name]' ],
     libraryTarget: 'umd',
-    devtoolModuleFilenameTemplate: 'file://[absolute-resource-path]',
-    devtoolFallbackModuleFilenameTemplate: 'file://[absolute-resource-path]?[hash]',
   },
   bail: true,
   resolve: {
@@ -28,14 +26,15 @@ module.exports = {
       underscore: 'lodash'
     },
     // adding .jsx; the rest are defaults (this overwrites, so we're including them)
-    extensions: ["", ".webpack.js", ".web.js", ".js", ".jsx"]
+    extensions: ["", ".webpack.js", ".web.js", ".ts", ".js", ".jsx"]
   },
   externals: [
     { jquery: 'jQuery' }
   ],
   module: {
     loaders: [
-      { test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel', query: { cacheDirectory: true }  },
+      { test: /\.tsx?$/, exclude: /node_modules/, loader: 'babel!ts' },
+      { test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel' },
       { test: /\.css$/, loader: "style-loader!css-loader?sourceMap" }
     ]
   },
@@ -44,7 +43,7 @@ module.exports = {
     fs: 'empty'
   },
   debug: node_env !== 'production',
-  devtool: 'cheap-module-source-map',
+  devtool: 'source-map',
   plugins: node_env !== 'production'
     ? [
         new webpack.DefinePlugin({
