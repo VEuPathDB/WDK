@@ -1479,7 +1479,7 @@ public class User /* implements Serializable */{
   }
 
   public SummaryView getCurrentSummaryView(Question question) {
-    String key = SUMMARY_VIEW_PREFIX + question.getRecordClassName();
+    String key = SUMMARY_VIEW_PREFIX + question.getFullName(); //+ question.getRecordClassName();
     String viewName = projectPreferences.get(key);
     SummaryView view;
     if (viewName == null) { // no summary view set, use the default one
@@ -1498,7 +1498,7 @@ public class User /* implements Serializable */{
   }
 
   public void setCurrentSummaryView(Question question, SummaryView summaryView) throws WdkModelException {
-    String key = SUMMARY_VIEW_PREFIX + question.getRecordClassName();
+    String key = SUMMARY_VIEW_PREFIX + question.getFullName(); //+ question.getRecordClassName();
     if (summaryView == null) { // remove the current summary view
       projectPreferences.remove(key);
     }
