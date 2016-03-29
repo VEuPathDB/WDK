@@ -118,7 +118,7 @@ public class UserService extends WdkService {
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
       Map<UserProfileProperty, String> profileMap = request.getProfileMap();
       validateRequiredProfileProperties(profileMap, "PUT");
-      loginCookie = processEmail(user, profileMap.get(UserProfileProperty.EMAIL), cookie);
+      loginCookie = processEmail(user, profileMap.get(UserProfileProperty.EMAIL));
       user.clearProfileProperties();
       for(UserProfileProperty key : profileMap.keySet()) {
         user.setProfileProperty(key, profileMap.get(key));
@@ -166,7 +166,7 @@ public class UserService extends WdkService {
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
       Map<UserProfileProperty, String> profileMap = request.getProfileMap();
       validateRequiredProfileProperties(profileMap, "PATCH");
-      loginCookie = processEmail(user, profileMap.get(UserProfileProperty.EMAIL), cookie);
+      loginCookie = processEmail(user, profileMap.get(UserProfileProperty.EMAIL));
       for(UserProfileProperty key : profileMap.keySet()) {
         user.setProfileProperty(key, profileMap.get(key));
       }
@@ -282,7 +282,7 @@ public class UserService extends WdkService {
    * @throws WdkModelException
    * @throws WdkUserException - thrown if the provided email address duplicates that of another account.
    */
-  protected NewCookie processEmail(User user, String email, Cookie cookie) throws WdkModelException, WdkUserException {
+  protected NewCookie processEmail(User user, String email) throws WdkModelException, WdkUserException {
     // Check to see if this email address matches that of the given user.  If so, no need to check further.
     if(email != null && !email.equalsIgnoreCase(user.getEmail())) {
       User emailUser = getWdkModel().getUserFactory().getUserByEmail(email);
@@ -290,7 +290,7 @@ public class UserService extends WdkService {
       if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
         throw new WdkUserException("This email is already in use by another account.  Please choose another.");
       }
-      return setUpdatedCookie(user, email, cookie);
+      return setUpdatedCookie(user, email);
     }
     return null;
   }
@@ -300,22 +300,18 @@ public class UserService extends WdkService {
    * may be a temporary solution to the problem of email address changes invalidating the authentication cookie.
    * @param user - the user whose email is altered
    * @param email - the new email
-   * @param cookie - the current authentication cookie
    * @return - an updated authentication cookie or null if the original cookie is null
    * @throws WdkModelException - thrown in the new cookie value cannot be encoded.
    */
-  private NewCookie setUpdatedCookie(User user, String email, Cookie cookie) throws WdkModelException {
-    if(cookie != null) {
-      String uncodedCookieValue = email + "-" + UserFactoryBean.md5(email + getWdkModel().getSecretKey());
-      String codedCookieValue;
-      try {
-         codedCookieValue = URLEncoder.encode(uncodedCookieValue, "utf-8");
-      }
-      catch (UnsupportedEncodingException e) {
-        throw new WdkModelException("Unable to encode login cookie value: " + uncodedCookieValue, e);
-      }
-      return new NewCookie(cookie.getName(), codedCookieValue, "/", null, null, -1, false);
+  private NewCookie setUpdatedCookie(User user, String email) throws WdkModelException {
+    String uncodedCookieValue = email + "-" + UserFactoryBean.md5(email + getWdkModel().getSecretKey());
+    String codedCookieValue;
+    try {
+       codedCookieValue = URLEncoder.encode(uncodedCookieValue, "utf-8");
     }
-    return null;
+    catch (UnsupportedEncodingException e) {
+      throw new WdkModelException("Unable to encode login cookie value: " + uncodedCookieValue, e);
+    }
+    return new NewCookie(LOGIN_COOKIE_NAME, codedCookieValue, "/", null, null, -1, false);
   }
 }
