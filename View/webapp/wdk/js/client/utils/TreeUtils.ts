@@ -125,7 +125,7 @@ export let pruneDescendantNodes = (fn: (node: INode) => boolean, root: INode) =>
   return prunedChildren === root.children
     ? root
     : Object.assign({}, root, {
-      children: pruneNodes(fn, root.children)
+      children: prunedChildren
     })
 }
 
