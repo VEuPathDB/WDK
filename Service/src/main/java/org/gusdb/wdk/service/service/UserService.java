@@ -100,6 +100,9 @@ public class UserService extends WdkService {
       return getPermissionDeniedResponse();
     try {
       User user = userBundle.getUser();
+      if(user.isGuest()) {
+        throw new WdkUserException("A guest user cannot update any records");
+      }
       JSONObject json = new JSONObject(body);
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
       Map<UserProfileProperty, String> profileMap = request.getProfileMap();
@@ -144,6 +147,9 @@ public class UserService extends WdkService {
       return getPermissionDeniedResponse();
     try {
       User user = userBundle.getUser();
+      if(user.isGuest()) {
+        throw new WdkUserException("A guest user cannot update any records");
+      }
       JSONObject json = new JSONObject(body);
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
       Map<UserProfileProperty, String> profileMap = request.getProfileMap();
