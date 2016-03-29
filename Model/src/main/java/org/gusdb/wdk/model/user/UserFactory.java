@@ -839,13 +839,15 @@ public class UserFactory {
       } else { // key exist, check if need to update
         String newValue = newPreferences.get(key);
 	String oldValue = oldPreferences.get(key);
-	// if both are not null, and one is null or their values differ
-	if ((newValue != null || oldValue != null) &&
-	    (oldValue == null || newValue == null || oldPreferences.get(key).equals(newValue)))
+	if (newValue == null || oldValue == null) 
+	  throw new WdkModelException("Null values not allowed for preferences. Key: " + key + " Old pref: " + oldValue + " New pref: " + newValue);
+	if (oldPreferences.get(key).equals(newValue))
           toUpdate.put(key, newValue);
       }
     }
     for (String key : newPreferences.keySet()) {
+      if (newPreferences.get(key) == null) 
+	  throw new WdkModelException("Null values not allowed for new preference values. Key: " + key);
       if (!oldPreferences.containsKey(key))
         toInsert.put(key, newPreferences.get(key));
     }

@@ -526,12 +526,13 @@ public class StepFactory {
 
   int getStepCount(User user) throws WdkModelException {
     String stepTable = userSchema + TABLE_STEP;
+    PreparedStatement psHistory = null;
     ResultSet rsStep = null;
     String sql = "SELECT count(*) AS num FROM " + stepTable + " WHERE " + Utilities.COLUMN_USER_ID +
         " = ? AND " + COLUMN_PROJECT_ID + " = ? " + " AND is_deleted = ?";
     try {
       long start = System.currentTimeMillis();
-      PreparedStatement psHistory = SqlUtils.getPreparedStatement(dataSource, sql);
+      psHistory = SqlUtils.getPreparedStatement(dataSource, sql);
       psHistory.setInt(1, user.getUserId());
       psHistory.setString(2, wdkModel.getProjectId());
       psHistory.setBoolean(3, false);
@@ -544,7 +545,12 @@ public class StepFactory {
       throw new WdkModelException("Could not get step count for user " + user.getEmail(), ex);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(rsStep);
+      if (rsStep == null) {
+        SqlUtils.closeStatement(psHistory);
+      }
+      else {
+        SqlUtils.closeResultSetAndStatement(rsStep);
+      }
     }
   }
 

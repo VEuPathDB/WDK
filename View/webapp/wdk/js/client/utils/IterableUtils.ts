@@ -1,3 +1,12 @@
+// Type definitions
+type IMapper<T, U> = (x: T) => U;
+type IFlatMapper<T, U> = (x: T) => Iterable<U>;
+type IPredicate<T> = (x: T) => boolean;
+type IReducer<T, U> = (acc: U | T, x: T) => U;
+type ICollector<T> = {
+  from: (i: Iterable<T>) => ICollector<T>;
+};
+
 /**
  * Useful operators for Iterables.
  *
@@ -33,73 +42,75 @@
  * @param {Iterable<T>} iterable
  * @return {Seq<T>}
  */
-export function seq(iterable) {
+export function seq<T>(iterable: Iterable<T>) {
   return new Seq(iterable);
 }
 
 /**
  * Underlying class used by `seq`.
  */
-class Seq {
+class Seq<T> {
+
+  [Symbol.iterator]: <T>() => Iterator<T>;
 
   /**
    * @param {Iterable<T>} iterable
    */
-  constructor(iterable) {
+  constructor(iterable: Iterable<T>) {
     this[Symbol.iterator] = iterable[Symbol.iterator].bind(iterable);
   }
 
-  map(fn) {
+  map<U>(fn: IMapper<T, U>) {
     return new Seq(map(fn, this));
   }
 
-  flatMap(fn) {
+  flatMap<U>(fn: IFlatMapper<T, U>) {
     return new Seq(flatMap(fn, this));
   }
 
-  uniq(fn) {
+  uniq(fn: IPredicate<T>) {
     return new Seq(uniq(this));
   }
 
-  filter(fn) {
+  filter(fn: IPredicate<T>) {
     return new Seq(filter(fn, this));
   }
 
-  take(n) {
+  take(n: number) {
     return new Seq(take(n, this));
   }
 
-  takeWhile(fn) {
+  takeWhile(fn: IPredicate<T>) {
     return new Seq(takeWhile(fn, this));
   }
 
-  drop(n) {
+  drop(n: number) {
     return new Seq(drop(n, this));
   }
 
-  dropWhile(fn) {
+  dropWhile(fn: IPredicate<T>) {
     return new Seq(dropWhile(fn, this));
   }
 
-  find(fn) {
+  find(fn: IPredicate<T>) {
     return find(fn, this);
   }
 
-  findLast(fn) {
+  findLast(fn: IPredicate<T>) {
     return findLast(fn, this);
   }
 
-  reduce(fn, value) {
-    return arguments.length === 1 ? reduce(fn, this)
+  reduce<U>(fn: IReducer<T, U>, value?: U) {
+    return value == null ? reduce(fn, this)
     : reduce(fn, value, this);
   }
 
   toArray() {
-    return this.reduce((arr, item) => (arr.push(item), arr), []);
+    return this.reduce((arr: T[], item: T) => (arr.push(item), arr), []);
   }
 
-  into(Type) {
-    return Type.from(this);
+  into(Collector: ICollector<T>) {
+    return Collector.from(this);
   }
 
   first() {
@@ -116,7 +127,7 @@ class Seq {
 
 }
 
-export function map(fn, iterable) {
+export function map<T, U>(fn: IMapper<T, U>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       for (let x of iterable) {
@@ -126,7 +137,7 @@ export function map(fn, iterable) {
   }
 }
 
-export function flatMap(fn, iterable) {
+export function flatMap<T, U>(fn: IFlatMapper<T, U>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       for (let x of iterable) {
@@ -136,7 +147,7 @@ export function flatMap(fn, iterable) {
   }
 }
 
-export function uniq(iterable) {
+export function uniq<T>(iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       let values = new Set();
@@ -150,7 +161,7 @@ export function uniq(iterable) {
   }
 }
 
-export function filter(fn, iterable) {
+export function filter<T>(fn: IPredicate<T>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       for (let x of iterable) {
@@ -160,7 +171,7 @@ export function filter(fn, iterable) {
   }
 }
 
-export function take(n, iterable) {
+export function take<T>(n: number, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       let count = 0;
@@ -175,7 +186,7 @@ export function take(n, iterable) {
 /**
  * Keep items until test returns false.
  */
-export function takeWhile(fn, iterable) {
+export function takeWhile<T>(fn: IPredicate<T>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       for (let x of iterable) {
@@ -186,7 +197,7 @@ export function takeWhile(fn, iterable) {
   }
 }
 
-export function drop(n, iterable) {
+export function drop<T>(n: number, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       for (let x of iterable) {
@@ -199,7 +210,7 @@ export function drop(n, iterable) {
 /**
  * Ignore items until test returns false.
  */
-export function dropWhile(fn, iterable) {
+export function dropWhile<T>(fn: IPredicate<T>, iterable: Iterable<T>) {
   return {
     *[Symbol.iterator]() {
       let take = false;
@@ -217,7 +228,7 @@ export function dropWhile(fn, iterable) {
 /**
  * Find the first item that test returns true for.
  */
-export function find(test, iter) {
+export function find<T>(test: IPredicate<T>, iter: Iterable<T>) {
   for (let item of iter) {
     if (test(item) === true) return item;
   }
@@ -226,38 +237,44 @@ export function find(test, iter) {
 /**
  * Find the last item that the test returns true for.
  */
-export function findLast(test, iter) {
-  let last;
+export function findLast<T>(test: IPredicate<T>, iter: Iterable<T>) {
+  let last: T | void;
   for (let item of iter) {
     if (test(item)) last = item;
   }
   return last;
 }
 
-export function first(iterable) {
+export function first<T>(iterable: Iterable<T>) {
   return iterable[Symbol.iterator]().next().value;
 }
 
-export function last(iterable) {
-  let last;
+export function last<T>(iterable: Iterable<T>) {
+  let last: T;
   for (last of iterable) { }
   return last;
 }
 
-export function rest(iterable) {
+export function rest<T>(iterable: Iterable<T>) {
   return drop(1, iterable);
 }
 
 /**
  * Reduce collection to a single value.
  */
-export function reduce(fn, value, iterable) {
+export function reduce<T, U>(fn: IReducer<T, U>, iterable: Iterable<T>): U;
+export function reduce<T, U>(fn: IReducer<T, U>, value: U, iterable: Iterable<T>): U;
+export function reduce<T, U>(fn: IReducer<T, U>, value: U | Iterable<T>, iterable?: Iterable<T>) {
+  let seed: U|T;
   if (arguments.length === 2) {
-    iterable = rest(value);
-    value = first(value);
+    iterable = rest(<Iterable<T>>value);
+    seed = first(<Iterable<T>>value);
+  }
+  else {
+    seed = <U>value;
   }
   for (let item of iterable) {
-    value = fn(value, item);
+    seed = fn(seed, item);
   }
   return value;
 }

@@ -258,7 +258,7 @@ public class ModelConfig implements OAuthConfig {
   }
 
   public String getAssetsUrl() {
-    return assetsUrl;
+    return (assetsUrl != null ? assetsUrl : webAppUrl);
   }
 
   public void setAssetsUrl(String assetsUrl) {

@@ -118,11 +118,13 @@ let createStatefulTree = (root, getNodeChildren) => {
  * - if no descendent leaves are selected, the node is collapsed
  * - if some but not all descendent leaves are selected, the node is expanded
  */
-let applyPropsToStatefulTree = (root, props, isLeafVisible) => {
+let applyPropsToStatefulTree = (root, props, isLeafVisible, stateExpandedList) => {
 
-  let { getNodeId, getNodeChildren, expandedList, isSelectable, selectedList } = props;
+  let { getNodeId, getNodeChildren, isSelectable, selectedList } = props;
+  let propsExpandedList = props.expandedList;
 
   // if expanded list is null, then use default rules to determine expansion rather than explicit list
+  let expandedList = propsExpandedList != null ? propsExpandedList : stateExpandedList;
   let expansionListProvided = (expandedList != null);
   let generatedExpandedList = [];
 
@@ -289,7 +291,7 @@ export default class CheckboxTree extends Component {
     // initialize stateful tree; this immutable tree structure will be replaced with each state change
     this.state = {
       isLeafVisible: isLeafVisible,
-      generated: applyPropsToStatefulTree(createStatefulTree(tree, getNodeChildren), props, isLeafVisible)
+      generated: applyPropsToStatefulTree(createStatefulTree(tree, getNodeChildren), props, isLeafVisible, null)
     };
 
     // define event handlers related to expansion
@@ -328,7 +330,8 @@ export default class CheckboxTree extends Component {
       isLeafVisible: isLeafVisible,
       generated: applyPropsToStatefulTree((recreateGeneratedState ?
           createStatefulTree(tree, getNodeChildren) :
-          this.state.generated.statefulTree), nextProps, isLeafVisible)
+          this.state.generated.statefulTree),
+        nextProps, isLeafVisible, this.state.generated.expandedList)
     });
   }
 
