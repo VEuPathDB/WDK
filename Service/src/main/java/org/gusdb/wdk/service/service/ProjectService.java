@@ -16,4 +16,14 @@ public class ProjectService extends WdkService {
   public Response getServiceApi() {
     return Response.ok(ProjectFormatter.getWdkProjectInfo(getWdkModel()).toString()).build();
   }
+
+  @GET
+  @Path("teapot")
+  @Produces(MediaType.TEXT_HTML)
+  public Response getTeapot() {
+    String assetsUrl = getWdkModel().getModelConfig().getAssetsUrl();
+    String imageLink = assetsUrl + "wdk/images/r2d2_ceramic_teapot.jpg";
+    String html = "<!DOCTYPE html><html><body><img src=\"" + imageLink + "\"/></body></html>";
+    return Response.status(418).entity(html).build();
+  }
 }
