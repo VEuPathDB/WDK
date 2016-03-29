@@ -914,7 +914,11 @@ public class User /* implements Serializable */{
   public void clearGlobalPreferences() {
     globalPreferences.clear();
   }
-
+  
+  public void clearProjectPreferences() {
+    projectPreferences.clear();
+  }
+  
   public void clearPreferences() {
     globalPreferences.clear();
     projectPreferences.clear();
