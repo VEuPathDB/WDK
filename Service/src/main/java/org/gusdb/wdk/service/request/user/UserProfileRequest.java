@@ -75,23 +75,18 @@ public class UserProfileRequest {
    * key/value pairs that belong in a user profile.
    * @param json
    * @return - map of user profile property enum | value pairs
-   * @throws JSONException - caught & re-thrown so as to allow exception chaining so we can grab the root cause
+   * @throws JSONException - among other reasons, thrown in the event of a non-string value
    * detail message.
    */
   protected static Map<UserProfileProperty,String> parseProfile(JSONObject json) throws JSONException {
     List<String> profileNames = UserProfileProperty.JSON_PROPERTY_NAMES;
     Map<UserProfileProperty,String> map = new HashMap<>();
-    //try {
-      for(Object key : json.keySet()) {
-        if(profileNames.contains(key)) {
-          map.put(UserProfileProperty.fromJsonPropertyName((String) key), json.getString((String) key));
-        }
+    for(Object key : json.keySet()) {
+      if(profileNames.contains(key)) {
+        map.put(UserProfileProperty.fromJsonPropertyName((String) key), json.getString((String) key).trim());
       }
-      return map;
-    //}
-    //catch(JSONException e) {
-    //  throw new JSONException(e);
-    //}
+    }
+    return map;
   }
   
   /**
@@ -99,20 +94,14 @@ public class UserProfileRequest {
    * be dynamically determined, no attempt is made to cull the list
    * @param json - Object containing application specific properties
    * @return - map of key | value pairs - no filtering
-   * @throws JSONException - caught & re-thrown so as to allow exception chaining so we can grab the root cause
-   * detail message.
+   * @throws JSONException - among other reasons, thrown in the event of a non-string value
    */
   protected static Map<String,String> parseProperties(JSONObject json) throws JSONException {
     Map<String, String> map = new HashMap<>();
-    try {
-      for(Object key : json.keySet()) {
-        map.put((String) key, json.getString((String) key));
-      }
-      return map;
+    for(Object key : json.keySet()) {
+      map.put((String) key, json.getString((String) key).trim());
     }
-    catch(JSONException e) {
-      throw new JSONException(e);
-    }
+    return map;
   }
 
 }
