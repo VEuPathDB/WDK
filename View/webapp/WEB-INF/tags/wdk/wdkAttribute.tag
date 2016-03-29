@@ -49,7 +49,7 @@
   <imp:updateDisplayValue displayValue = "${displayValue1}" />
 </c:set>
 
-<td style="padding:2px;vertical-align:middle">
+<td>
   <div class="attribute-summary" ${align} style="${nowrap}padding:3px 2px">
   <c:choose>
 
