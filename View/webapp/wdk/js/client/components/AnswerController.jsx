@@ -1,7 +1,6 @@
 // Import modules
 import React from 'react';
 import update from 'react-addons-update';
-import { History } from 'react-router';
 import Loading from './Loading';
 import Answer from './Answer';
 import Doc from './Doc';
@@ -87,12 +86,6 @@ function maybeSplit(str, delimeter) {
 // See http://facebook.github.io/react/docs/top-level-api.html#react.createclass
 let AnswerController = React.createClass({
 
-
-  // Declare context properties used by this component. The context object is
-  // defined in AppController (the application root component). React uses
-  // `contextTypes` to determine which properties to add to `this.context`.
-  mixins: [ History ],
-
   // When the component first mounts, fetch the answer.
   // This can also be treated as a constructor: it's a good place to initialize
   // properties of the component.
@@ -129,7 +122,7 @@ let AnswerController = React.createClass({
     let { location: { query }, params } = this.props;
 
     // incoming query and params
-    let { loacation: { query: nextQuery }, params: nextParams } = nextProps;
+    let { location: { query: nextQuery }, params: nextParams } = nextProps;
 
     // update sortingPreferenceKey value
     this.sortingPreferenceKey = 'sorting::' + nextParams.question;
@@ -308,11 +301,12 @@ let AnswerController = React.createClass({
     },
 
     onFilter(terms, attributes, tables) {
+      let { location, router } = this.props;
       if (!terms) {
         terms = attributes = tables = undefined;
       }
 
-      let query = update(this.props.location.query, {
+      let query = update(location.query, {
         $merge: {
           q: terms,
           attrs: maybeJoin(attributes, ',') || undefined,
@@ -320,7 +314,9 @@ let AnswerController = React.createClass({
         }
       });
 
-      this.history.pushState('answer', this.props.params, query);
+      let { pathname } = location;
+
+      router.replace({ pathname, query });
     }
 
   },
