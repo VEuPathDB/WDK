@@ -3,8 +3,10 @@ package org.gusdb.wdk.model.user;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -33,6 +35,11 @@ import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.user.StepFactory.NameCheckInfo;
 import org.json.JSONException;
+
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
+
+import static org.gusdb.fgputil.functional.Functions.*;
 
 /**
  * @author xingao
@@ -67,30 +74,22 @@ public class User /* implements Serializable */{
 
   // basic user information
   private String emailPrefix;
-  private String email;
-  private String lastName;
-  private String firstName;
-  private String middleName;
-  private String title;
-  private String organization;
-  private String department;
-  private String address;
-  private String city;
-  private String state;
-  private String zipCode;
-  private String phoneNumber;
-  private String country;
   private String openId;
 
   private Set<String> userRoles;
   private boolean guest = true;
-
+  
   /**
    * the preferences for the user: <prefName, prefValue>. It only contains the preferences for the current
    * project
    */
   private Map<String, String> globalPreferences;
   private Map<String, String> projectPreferences;
+  
+  /**
+   * Holds all key/value pairs associated with the user's profile.
+   */
+  private Map<UserProfileProperty,String> profile = new HashMap<>();
 
   // keep track in session , but don't serialize:
   // currently open strategies
@@ -103,7 +102,7 @@ public class User /* implements Serializable */{
 
   User(WdkModel model, int userId, String email, String signature) {
     this._userId = userId;
-    this.email = email;
+    setEmail(email);
     this.signature = signature;
 
     userRoles = new LinkedHashSet<String>();
@@ -168,13 +167,14 @@ public class User /* implements Serializable */{
    * @throws WdkModelException
    */
   public synchronized String getEmail() throws WdkModelException {
-    if (email == null)
+    if (this.profile.get(UserProfileProperty.EMAIL) == null) {
       userFactory.saveTemporaryUser(this);
-    return email;
+    }
+    return this.profile.get(UserProfileProperty.EMAIL);
   }
 
   public void setEmail(String email) {
-    this.email = email;
+    this.profile.put(UserProfileProperty.EMAIL, email);
   }
 
   public String getEmailPrefix() {
@@ -184,12 +184,37 @@ public class User /* implements Serializable */{
   public void setEmailPrefix(String emailPrefix) {
     this.emailPrefix = emailPrefix;
   }
-
+  
+  /**
+   * Sets the value of the profile property given by the UserProfileProperty enum
+   * @param key
+   * @param value
+   */
+  public void setProfileProperty(UserProfileProperty key, String value) {
+    this.profile.put(key, value);
+  }
+  
+  /**
+   * Return the entire user profile property map
+   * @return
+   */
+  public Map<UserProfileProperty, String> getProfileProperties() {
+    return this.profile;  
+  }
+  
+  /**
+   * Removes all existing user profile properties
+   */
+  public void clearProfileProperties() {
+    this.profile.clear();
+  }
+  
+  
   /**
    * @return Returns the address.
    */
   public String getAddress() {
-    return address;
+    return this.profile.get(UserProfileProperty.ADDRESS);
   }
 
   /**
@@ -197,14 +222,14 @@ public class User /* implements Serializable */{
    *          The address to set.
    */
   public void setAddress(String address) {
-    this.address = address;
+    this.profile.put(UserProfileProperty.ADDRESS, address);
   }
 
   /**
    * @return Returns the city.
    */
   public String getCity() {
-    return city;
+    return this.profile.get(UserProfileProperty.CITY);
   }
 
   /**
@@ -212,14 +237,14 @@ public class User /* implements Serializable */{
    *          The city to set.
    */
   public void setCity(String city) {
-    this.city = city;
+    this.profile.put(UserProfileProperty.CITY, city);
   }
 
   /**
    * @return Returns the country.
    */
   public String getCountry() {
-    return country;
+    return this.profile.get(UserProfileProperty.COUNTRY);
   }
 
   /**
@@ -227,14 +252,14 @@ public class User /* implements Serializable */{
    *          The country to set.
    */
   public void setCountry(String country) {
-    this.country = country;
+    this.profile.put(UserProfileProperty.COUNTRY, country);
   }
 
   /**
    * @return Returns the department.
    */
   public String getDepartment() {
-    return department;
+    return this.profile.get(UserProfileProperty.DEPARTMENT);
   }
 
   /**
@@ -242,14 +267,14 @@ public class User /* implements Serializable */{
    *          The department to set.
    */
   public void setDepartment(String department) {
-    this.department = department;
+    this.profile.put(UserProfileProperty.DEPARTMENT, department);
   }
 
   /**
    * @return Returns the firstName.
    */
   public String getFirstName() {
-    return firstName;
+    return this.profile.get(UserProfileProperty.FIRST_NAME);
   }
 
   /**
@@ -257,14 +282,14 @@ public class User /* implements Serializable */{
    *          The firstName to set.
    */
   public void setFirstName(String firstName) {
-    this.firstName = firstName;
+    this.profile.put(UserProfileProperty.FIRST_NAME, firstName);
   }
 
   /**
    * @return Returns the lastName.
    */
   public String getLastName() {
-    return lastName;
+    return this.profile.get(UserProfileProperty.LAST_NAME);
   }
 
   /**
@@ -272,14 +297,14 @@ public class User /* implements Serializable */{
    *          The lastName to set.
    */
   public void setLastName(String lastName) {
-    this.lastName = lastName;
+    this.profile.put(UserProfileProperty.LAST_NAME, lastName);
   }
 
   /**
    * @return Returns the middleName.
    */
   public String getMiddleName() {
-    return middleName;
+    return this.profile.get(UserProfileProperty.MIDDLE_NAME);
   }
 
   /**
@@ -287,7 +312,7 @@ public class User /* implements Serializable */{
    *          The middleName to set.
    */
   public void setMiddleName(String middleName) {
-    this.middleName = middleName;
+    this.profile.put(UserProfileProperty.MIDDLE_NAME, middleName);
   }
 
   /**
@@ -305,7 +330,7 @@ public class User /* implements Serializable */{
    * @return Returns the organization.
    */
   public String getOrganization() {
-    return organization;
+    return this.profile.get(UserProfileProperty.ORGANIZATION);
   }
 
   /**
@@ -313,14 +338,14 @@ public class User /* implements Serializable */{
    *          The organization to set.
    */
   public void setOrganization(String organization) {
-    this.organization = organization;
+    this.profile.put(UserProfileProperty.ORGANIZATION, organization);
   }
 
   /**
    * @return Returns the phoneNumber.
    */
   public String getPhoneNumber() {
-    return phoneNumber;
+    return this.profile.get(UserProfileProperty.PHONE_NUMBER);
   }
 
   /**
@@ -328,14 +353,14 @@ public class User /* implements Serializable */{
    *          The phoneNumber to set.
    */
   public void setPhoneNumber(String phoneNumber) {
-    this.phoneNumber = phoneNumber;
+    this.profile.put(UserProfileProperty.PHONE_NUMBER, phoneNumber);
   }
 
   /**
    * @return Returns the state.
    */
   public String getState() {
-    return state;
+    return this.profile.get(UserProfileProperty.STATE);
   }
 
   /**
@@ -343,14 +368,14 @@ public class User /* implements Serializable */{
    *          The state to set.
    */
   public void setState(String state) {
-    this.state = state;
+    this.profile.put(UserProfileProperty.STATE, state);
   }
 
   /**
    * @return Returns the title.
    */
   public String getTitle() {
-    return title;
+    return this.profile.get(UserProfileProperty.TITLE);
   }
 
   /**
@@ -358,14 +383,14 @@ public class User /* implements Serializable */{
    *          The title to set.
    */
   public void setTitle(String title) {
-    this.title = title;
+    this.profile.put(UserProfileProperty.TITLE, title);
   }
 
   /**
    * @return Returns the zipCode.
    */
   public String getZipCode() {
-    return zipCode;
+    return this.profile.get(UserProfileProperty.ZIP_CODE);
   }
 
   /**
@@ -373,7 +398,7 @@ public class User /* implements Serializable */{
    *          The zipCode to set.
    */
   public void setZipCode(String zipCode) {
-    this.zipCode = zipCode;
+    this.profile.put(UserProfileProperty.ZIP_CODE, zipCode);
   }
 
   /**
@@ -885,6 +910,10 @@ public class User /* implements Serializable */{
   public Map<String, String> getGlobalPreferences() {
     return new LinkedHashMap<String, String>(globalPreferences);
   }
+  
+  public void clearGlobalPreferences() {
+    globalPreferences.clear();
+  }
 
   public void clearPreferences() {
     globalPreferences.clear();
@@ -899,7 +928,7 @@ public class User /* implements Serializable */{
 
   public void changePassword(String oldPassword, String newPassword, String confirmPassword)
       throws WdkUserException {
-    userFactory.changePassword(email, oldPassword, newPassword, confirmPassword);
+    userFactory.changePassword(this.profile.get(UserProfileProperty.EMAIL), oldPassword, newPassword, confirmPassword);
   }
 
   DatasetFactory getDatasetFactory() {
@@ -1229,7 +1258,7 @@ public class User /* implements Serializable */{
       catch (WdkModelException ex) {
         new WdkRuntimeException(ex);
       }
-      if (!email.equals(user.email))
+      if (!this.profile.get(UserProfileProperty.EMAIL).equals(user.profile.get(UserProfileProperty.EMAIL)))
         return false;
       if (!signature.equals(user.signature))
         return false;
@@ -1504,11 +1533,100 @@ public class User /* implements Serializable */{
   @Override
   public String toString() {
     try {
-      return "User #" + getUserId() + " - " + email;
+      return "User #" + getUserId() + " - " + getEmail();
     }
     catch (WdkModelException ex) {
       // TODO Auto-generated catch block
       throw new WdkRuntimeException(ex);
     }
   }
+
+  /**
+   * Enumeration describing all the user attributes associated with a user profile
+   */
+  public static enum UserProfileProperty {
+    FIRST_NAME("firstName", "first_name", "First Name", true),
+    MIDDLE_NAME("middleName", "middle_name", "Middle Name", false),
+    LAST_NAME("lastName", "last_name", "Last Name", true),
+    TITLE("title", "title", "Title", false),
+    DEPARTMENT("department", "department", "Department", false),
+    ORGANIZATION("organization", "organization", "Organization", true),
+    EMAIL("email", "email", "Email", true),
+    ADDRESS("address", "address", "Address", false),
+    CITY("city", "city", "City", false),
+    STATE("state", "state", "State", false),
+    ZIP_CODE("zipCode", "zip_code", "ZipCode", false),
+    COUNTRY("country", "country", "Country", false),
+    PHONE_NUMBER("phoneNumber", "phone_number", "Phone Number", false);
+
+    private final String _jsonPropertyName;
+    private final String _dbColumnName;
+    private final String _display;
+    private final boolean _isRequired;
+    
+    /**
+     * Returns a list of all json property names applicable to the user profile.  
+     */
+    public static final List<String> JSON_PROPERTY_NAMES = mapToList(Arrays.asList(UserProfileProperty.values()),
+      new Function<UserProfileProperty, String>() {
+        @Override
+        public String apply(UserProfileProperty property) {
+          return property.getJsonPropertyName();
+        }
+      }
+    );
+    
+    /**
+     * Returns a list of all required user profile property enums
+     */
+    public static final List<UserProfileProperty> REQUIRED_PROPERTIES = filter(Arrays.asList(UserProfileProperty.values()),
+      new Predicate<UserProfileProperty>() {
+        @Override
+        public boolean test(UserProfileProperty property) {
+          return property.isRequired(); 
+        }
+      }
+    );
+    
+
+    /**
+     * Construction of new enumeration item
+     * @param jsonPropertyName - name used in the json object delivered/received by REST web services
+     * @param dbColumnName - database field name
+     * @param display - display name for view
+     * @param isRequired
+     */
+    private UserProfileProperty(String jsonPropertyName, String dbColumnName, String display, boolean isRequired) {
+      _jsonPropertyName = jsonPropertyName;
+      _dbColumnName = dbColumnName;
+      _display = display;
+      _isRequired = isRequired;
+    }
+    
+    public String getJsonPropertyName() {
+      return _jsonPropertyName;
+    }
+    
+    public String getDbColumnName() {
+      return _dbColumnName;
+    }  
+    
+    public String getDisplay() {
+      return _display;
+    }
+    
+    public boolean isRequired() {
+      return _isRequired;
+    }
+    
+    public static UserProfileProperty fromJsonPropertyName(String jsonPropertyName) {
+      for(UserProfileProperty property : UserProfileProperty.values()) {
+        if(property.getJsonPropertyName().equals(jsonPropertyName)) {
+          return property;
+        }
+      }
+      return null;
+    }
+    
+  }  
 }
