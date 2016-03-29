@@ -148,6 +148,7 @@ public class UserService extends WdkService {
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
       Map<UserProfileProperty, String> profileMap = request.getProfileMap();
       validateRequiredProfileProperties(profileMap, "PATCH");
+      validateNonDuplicateEmail(user, profileMap.get(UserProfileProperty.EMAIL));
       for(UserProfileProperty key : profileMap.keySet()) {
         user.setProfileProperty(key, profileMap.get(key));
       }
@@ -165,7 +166,7 @@ public class UserService extends WdkService {
   
   /**
    * Validates whether are required properties are in place and non-empty.  PUT must
-   * have all required properties.  PATCH only requires that any required porperties
+   * have all required properties.  PATCH only requires that any required properties
    * specified be non-empty.
    * @param profileMap - map of values of user profile properties to values
    * @throws WdkUserException - thrown if one or more user profile properties is required to be present and/or non-empty.
