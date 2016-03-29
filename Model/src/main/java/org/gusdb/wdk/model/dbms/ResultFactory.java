@@ -54,16 +54,19 @@ public class ResultFactory {
     try {
       if (queryInfo.isExist()) { // cache table exists
         instanceId = getInstanceId(queryInfo, queryInstance);
+				logger.debug("   ..... EXISTING table,  instanceid?: " + instanceId + "(if 0 we need a new one)");
         if (instanceId == 0) { // instance doesn't exist
           logger.debug("creating cache instance and cache...");
           // create cache
           instanceId = createCache(queryInfo, queryInstance);
+          logger.debug("   ..... EXISTING table, NEW instanceid: " + instanceId);
           createCacheInstance(queryInfo, queryInstance, instanceId);
         }
       } else { // cache table doesn't exist
         logger.debug("creating cache query, instance and cache...");
         // get a new instance id, and created cache
         instanceId = createCache(queryInfo, queryInstance);
+				logger.debug("   ..... NEW table and instanceid: " + instanceId);
         // create query info
         cacheFactory.createQueryInfo(queryInfo);
         createCacheInstance(queryInfo, queryInstance, instanceId);
@@ -71,6 +74,7 @@ public class ResultFactory {
     } catch (SQLException ex) {
       throw new WdkModelException(ex);
     }
+		logger.debug("   ..... FINAL instanceid: " + instanceId);
     queryInstance.setInstanceId(instanceId);
 
     // get the cached sql
@@ -103,6 +107,8 @@ public class ResultFactory {
   public ResultList getCachedResults(QueryInstance<?> queryInstance)
       throws WdkModelException, WdkUserException {
     String sql = getCachedSql(queryInstance);
+		logger.debug("********* SQL to get the IDs from datasetparam: " + sql);
+
     // get the resultList
     try {
       DataSource dataSource = database.getDataSource();
@@ -131,6 +137,7 @@ public class ResultFactory {
 
     DataSource dataSource = database.getDataSource();
     ResultSet resultSet = null;
+		logger.debug("testing if we should reuse a wdk_instance_id in cache table: " +  sql.toString());
     try {
       resultSet = SqlUtils.executeQuery(dataSource, sql.toString(),
           "wdk-check-instance-exist");

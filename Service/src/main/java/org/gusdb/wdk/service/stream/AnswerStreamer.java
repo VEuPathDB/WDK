@@ -41,7 +41,7 @@ public class AnswerStreamer {
       @Override
       public void write(OutputStream stream) throws IOException, WebApplicationException {
         try {
-          reporter.write(stream);
+          reporter.report(stream);
         }
         catch (WdkModelException | NoSuchAlgorithmException | JSONException | WdkUserException
             | SQLException e) {

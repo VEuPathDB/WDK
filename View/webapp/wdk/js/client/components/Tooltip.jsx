@@ -1,3 +1,9 @@
+/**
+ * Wrapper for the jquery plugin q-tip (http://qtip2.com/).
+ *
+ * This will eventually be replaced by a pure React component, as a part of an
+ * initiative to remove our jQuery dependency.
+ */
 import React, { PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import ReactDOMServer from 'react-dom/server';
