@@ -66,8 +66,8 @@ p {
 }
 
 td { 
-    padding: 4px 4px 4px 4px;
-    vertical-align: baseline;
+  padding: 4px 4px 4px 4px;
+  vertical-align: baseline;
 }
 
 img[data-assets-src] {
@@ -1055,8 +1055,9 @@ tr.linesalt > td {
 }
 
 tr.lines td, tr.linesalt td {
-	padding: 0px 2px;
-	border-left: 1px solid #CCCCCC;
+  padding: 2px;  /* padding: 0px 2px;*/
+  vertical-align: middle;  /* results table:  basket in the middle */
+  border-left: 1px solid #CCCCCC;
 }
 
 
