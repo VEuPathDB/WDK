@@ -8,7 +8,7 @@ libs_bundle   := $(shell pwd)/dist/wdk/js/wdk.libs.js
 css_bundle    := $(shell pwd)/dist/wdk/css/wdk.min.css
 test_bundle   := $(shell pwd)/test/dist/tests.js
 
-wdk_sources  := $(shell find webapp/wdk/js -name '*.js' -or -name '*.jsx') webpack.config.js
+wdk_sources  := $(shell find webapp/wdk/js -name '*.js' -or -name '*.jsx' -or -name '*.ts') webpack.config.js
 
 # This exists mainly for legacy support. These should eventually
 # be included via npm and webpack. This will make it possible to
