@@ -120,9 +120,9 @@ public class AnswerValueAttributes {
     Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
 
     // always put the primary key (all leftmostFields) as the first attribute
-		for(AttributeField a : leftmostFields) {
-			summaryFields.put(a.getName(), a);
-		}
+    for(AttributeField a : leftmostFields) {
+      summaryFields.put(a.getName(), a);
+    }
     // add remainder of attributes to map and return
     Map<String, AttributeField> allFields = question.getAttributeFieldMap();
     for (String attributeName : userPrefAttributes) {
