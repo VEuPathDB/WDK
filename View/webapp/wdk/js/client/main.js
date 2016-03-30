@@ -36,7 +36,8 @@ export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
   let stores = configureStores(Stores, dispatcher);
   let context = { dispatchAction, stores, };
   if (__DEV__) logActions(dispatcher, stores);
-  return Router.start(rootUrl, rootElement, context, applicationRoutes);
+  Router.start(rootUrl, rootElement, context, applicationRoutes);
+  return { dispatcher, wdkService, stores };
 }
 
 /**
