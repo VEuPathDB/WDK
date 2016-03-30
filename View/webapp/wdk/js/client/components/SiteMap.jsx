@@ -57,7 +57,7 @@ import { wrappable } from '../utils/componentUtils';
 import { Link } from 'react-router';
 import CheckboxTree from './CheckboxTree';
 import { getNodeChildren, getPropertyValue } from '../utils/OntologyUtils';
-import { getTargetType, getRefName, getDisplayName, getDescription, getNodeId, getId, getAggregateSearchText } from '../utils/CategoryUtils';
+import { getTargetType, getRefName, getDisplayName, getDescription, getNodeId, getId, searchAggregateText } from '../utils/CategoryUtils';
 
 /**
  * Displays site map page, basically just a custom expandable tree
@@ -118,8 +118,7 @@ let getNodeData = node => {
  */
 let siteMapSearchPredicate = (node, searchText) => {
   let data = getNodeData(node);
-  let searchableText = getAggregateSearchText([ data.recordClassDisplayName, data.displayName, data.description ]);
-  return (searchableText.indexOf(searchText.toLowerCase()) !== -1);
+  return searchAggregateText(searchText, [ data.recordClassDisplayName, data.displayName, data.description ]);
 }
 
 /**
