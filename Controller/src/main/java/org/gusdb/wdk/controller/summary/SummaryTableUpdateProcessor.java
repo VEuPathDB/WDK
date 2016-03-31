@@ -71,7 +71,7 @@ public class SummaryTableUpdateProcessor {
         else {
           String[] summary = user.getSummaryAttributes(questionName, preferenceSuffix);
           List<String> summaryList = new ArrayList<String>();
-          String[] attributeNames = params.get(CConstants.WDK_SUMMARY_ATTRIBUTE_KEY);
+          String[] attributeNames = params.get(PARAM_ATTRIBUTE);
           if (attributeNames == null) attributeNames = new String[0];
 
           if (command.equalsIgnoreCase("update")) {
