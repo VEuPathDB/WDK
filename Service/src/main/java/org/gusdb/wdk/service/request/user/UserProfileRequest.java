@@ -48,7 +48,7 @@ public class UserProfileRequest {
    *  applicationSpecificProperties: { key: String, key; String ... }
    * }
    * 
-   * The 'properties' key is optional
+   * The 'applicationSpecificProperties' key is optional
    * 
    * @param json
    * @param model
