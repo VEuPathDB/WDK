@@ -324,6 +324,10 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   }
 
   function openAttributeList(element, viewName){
+    // first hack for apicommon (overridden addAttributes.tag), see second hack below
+    if ($(element).closest('.ui-tabs-panel').find('[data-controller="eupathdb.attributeCheckboxTree.setUpCheckboxTree"]').length > 0) {
+      eupathdb.attributeCheckboxTree.mountCheckboxTree(viewName);
+    }
     var dialogId = getDialogId(element, "attributesList");
     var element = $("#" + dialogId);
     openBlockingDialog("#" + dialogId);
@@ -340,10 +344,10 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
         var cbtId = cbt.data('id');
         wdk.checkboxTree.selectCurrentNodes(cbtId);
       }
-      // hack for apicommon...
-      cbt = $(e.target).find('[data-controller="eupathdb.attributeCheckboxTree.setupCheckboxTree"]');
+      // second hack for apicommon (overridden addAttributes.tag), see first hack below
+      cbt = $(e.target).find('[data-controller="eupathdb.attributeCheckboxTree.setUpCheckboxTree"]');
       if (cbt.length > 0) {
-        eupathdb.attributeCheckboxTree.resetCheckboxTree(viewName);
+        eupathdb.attributeCheckboxTree.unmountCheckboxTree(viewName);
       }
     });
   }
@@ -362,12 +366,13 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   }
 
   function getDialogId(element, dialogClass) {
+    var containingTabId = $(element).closest(".ui-tabs-panel").attr("id");
     var list = $(element).next("." + dialogClass);
     if (list.length > 0) {
       var id = "dialog" + Math.floor(Math.random() * 1000000000);
       $(element).attr("dialog", id);
       list.attr("id", id).dialog({
-        appendTo: '#Summary_Views',
+        appendTo: "#" + containingTabId,
         autoOpen: false,
         open: function() {
           var $this = $(this);

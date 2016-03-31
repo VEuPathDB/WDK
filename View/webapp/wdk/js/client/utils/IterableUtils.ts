@@ -51,13 +51,17 @@ export function seq<T>(iterable: Iterable<T>) {
  */
 class Seq<T> {
 
-  [Symbol.iterator]: <T>() => Iterator<T>;
+  _iterable: Iterable<T>;
 
   /**
    * @param {Iterable<T>} iterable
    */
   constructor(iterable: Iterable<T>) {
-    this[Symbol.iterator] = iterable[Symbol.iterator].bind(iterable);
+    this._iterable = iterable;
+  }
+
+  [Symbol.iterator]() {
+    return this._iterable[Symbol.iterator]();
   }
 
   map<U>(fn: IMapper<T, U>) {
@@ -238,7 +242,7 @@ export function find<T>(test: IPredicate<T>, iter: Iterable<T>) {
  * Find the last item that the test returns true for.
  */
 export function findLast<T>(test: IPredicate<T>, iter: Iterable<T>) {
-  let last: T | void;
+  let last: T;
   for (let item of iter) {
     if (test(item)) last = item;
   }

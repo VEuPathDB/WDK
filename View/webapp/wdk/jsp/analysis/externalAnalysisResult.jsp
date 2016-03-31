@@ -13,7 +13,7 @@
   <c:url var="downloadUrl" value="${scheme}://${serverName}:${serverPort}${contextPath}/stepAnalysisResource.do?analysisId=${analysisId}&amp;path=${viewModel.downloadPath}"/>
 
   <!-- Add query params to iframe URL to be passed to external analysis tool -->
-  <c:url var="iframeUrl" value="${viewModel.iframeBaseUrl}">
+  <c:url var="iframeUrl" context="/" value="${viewModel.iframeBaseUrl}">
     <c:param name="contextHash" value="${contextHash}"/>
     <c:param name="dataUrl" value="${downloadUrl}"/>
   </c:url>
