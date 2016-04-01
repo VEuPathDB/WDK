@@ -132,7 +132,7 @@ public class UserService extends WdkService {
         }
       }
       user.save();
-      return Response.noContent().build();
+      return loginCookie == null ? Response.noContent().build() : Response.noContent().cookie(loginCookie).build();
     }
     catch(JSONException | RequestMisformatException | WdkUserException e) {
       return WdkService.getBadRequestBodyResponse(e.getMessage());
