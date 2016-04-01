@@ -841,7 +841,7 @@ public class UserFactory {
 	String oldValue = oldPreferences.get(key);
 	if (newValue == null || oldValue == null) 
 	  throw new WdkModelException("Null values not allowed for preferences. Key: " + key + " Old pref: " + oldValue + " New pref: " + newValue);
-	if (oldPreferences.get(key).equals(newValue))
+	if (!oldPreferences.get(key).equals(newValue))
           toUpdate.put(key, newValue);
       }
     }
