@@ -928,8 +928,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         String fieldName = field.getName();
         // check if the attribute is duplicated
         if (attributeFieldsMap.containsKey(fieldName))
-          throw new WdkModelException("The AttributeField " + fieldName +
+          throw new WdkModelException("The attribute " + fieldName +
               " is duplicated in the recordClass " + getFullName());
+
+        if (tableFieldsMap.containsKey(fieldName))
+          throw new WdkModelException("The attribute " + fieldName +
+              " has the same name as a table in the recordClass " + getFullName());
 
         // link columnAttributes with columns
         if (field instanceof ColumnAttributeField) {
@@ -1234,8 +1238,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         }
         else { // other attribute fields
           if (attributeFieldsMap.containsKey(fieldName))
-            throw new WdkModelException("The attributeField " + fieldName + " is duplicated in recordClass " +
+            throw new WdkModelException("The attribute " + fieldName + " is duplicated in recordClass " +
                 getFullName());
+          if (tableFieldsMap.containsKey(fieldName))
+            throw new WdkModelException("The attribute " + fieldName +
+                " has the same name as a table in the recordClass " + getFullName());
+
         }
         attributeFieldsMap.put(fieldName, field);
         newFieldList.add(field);
@@ -1255,9 +1263,14 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       if (field.include(projectId)) {
         field.excludeResources(projectId);
         String fieldName = field.getName();
-        if (attributeFieldsMap.containsKey(fieldName))
+        if (tableFieldsMap.containsKey(fieldName))
           throw new WdkModelException("The table " + fieldName + " is duplicated in recordClass " +
               getFullName());
+        if (attributeFieldsMap.containsKey(fieldName))
+          throw new WdkModelException("The table" + fieldName +
+              " has the same name as an attribute in the recordClass " + getFullName());
+
+
         tableFieldsMap.put(fieldName, field);
       }
     }
