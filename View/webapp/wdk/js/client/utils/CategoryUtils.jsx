@@ -84,16 +84,11 @@ export let getNodeId = node =>
  * distinction is made depending on whether the summary view applies to transcripts or genes.
  * 
  * @param recordClassName - full name of the current record class
- * @param viewName - either gene or transcript depending on the summary view
  */
-export let isQualifying = (recordClassName, viewName, scope) => node => {
-  let qualified = nodeHasProperty('targetType', 'attribute', node)
-                && nodeHasProperty('recordClassName', recordClassName, node)
-                && nodeHasProperty('scope', scope, node);
-  if(qualified && recordClassName === 'TranscriptRecordClasses.TranscriptRecordClass' && viewName==="gene") {
-    qualified = nodeHasProperty('geneOrTranscript', "gene", node);
-  }
-  return qualified;
+export let isQualifying = (recordClassName, scope) => node => {
+  return nodeHasProperty('targetType', 'attribute', node)
+      && nodeHasProperty('recordClassName', recordClassName, node)
+      && nodeHasProperty('scope', scope, node);
 };
 
 /**
