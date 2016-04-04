@@ -290,9 +290,10 @@ public class BasketFactory {
         + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ? GROUP BY " + COLUMN_UNIQUE_ID + "," +  COLUMN_RECORD_CLASS + " ) t "
         + " GROUP BY " + COLUMN_RECORD_CLASS;
     DataSource ds = wdkModel.getUserDb().getDataSource();
+    PreparedStatement ps = null;
     ResultSet rs = null;
     try {
-      PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
+      ps = SqlUtils.getPreparedStatement(ds, sql);
       ps.setInt(1, user.getUserId());
       ps.setString(2, wdkModel.getProjectId());
       rs = ps.executeQuery();
@@ -309,11 +310,18 @@ public class BasketFactory {
               + " has basket entries on it.");
         }
       }
-    } catch (SQLException e) {
+    }
+    catch (SQLException e) {
       throw new WdkModelException("Cannot retrieve basket counts for user "
           + user.getEmail(), e);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(rs);
+    }
+    finally {
+      if (rs == null) {
+        SqlUtils.closeStatement(ps);
+      }
+      else {
+        SqlUtils.closeResultSetAndStatement(rs);
+      }
     }
     return counts;
   }

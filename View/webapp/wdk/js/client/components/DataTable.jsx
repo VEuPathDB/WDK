@@ -166,8 +166,7 @@ let formatColumns = columns => columns.map(
   column => Object.assign({
     data: column.name,
     className: 'wdk-DataTableCell wdk-DataTableCell__' + column.name,
-    title: column.displayName || column.name,
-    // defaultContent: '<i class="wdk-DataTableCell____n_a">N/A</i>'
+    title: column.displayName || column.name
   }, column)
 );
 

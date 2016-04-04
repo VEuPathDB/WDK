@@ -89,16 +89,12 @@ public class FilterParamHandler extends AbstractParamHandler {
       EnumParamVocabInstance cache = enumParam.getVocabInstance(user, contextParamValues);
 
       Set<String> internals = new LinkedHashSet<>();
-      // return stable values, instead of list of terms
-      if (param.isNoTranslation()) {
-        return stableValue;
-      }
 
       for (String term : terms) {
         if (!cache.containsTerm(term))
           continue;
 
-        String internal = cache.getInternal(term);
+        String internal = param.isNoTranslation() ? term : cache.getInternal(term);
 
         if (enumParam.getQuote() && !(internal.startsWith("'") && internal.endsWith("'")))
           internal = "'" + internal.replaceAll("'", "''") + "'";

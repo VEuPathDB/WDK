@@ -1,13 +1,9 @@
 package org.gusdb.wdk.service.formatter;
 
 import java.util.Collection;
-import java.util.Map.Entry;
-
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.TableField;
-import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.service.formatter.Keys;
-import org.gusdb.wdk.service.request.answer.SortItem.Direction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -23,11 +19,7 @@ import org.json.JSONObject;
  *   isDisplayable: Boolean,
  *   isInReport: Boolean,
  *   properties: Object,
- *   attributes: [ see AttributeFieldFormatter ],
- *   sorting: [ {
- *     name: String,
- *     direction: ASC | DESC
- *   } ]
+ *   attributes: [ see AttributeFieldFormatter ]
  * }
  * 
  * @author rdoherty
@@ -56,17 +48,7 @@ public class TableFieldFormatter {
       .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(table))
       .put(Keys.PROPERTIES, table.getPropertyLists())
       .put(Keys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
-          table.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
-      .put(Keys.SORTING, getSortingAttributesJson(table));
+          table.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes));
   }
 
-  private static JSONArray getSortingAttributesJson(AttributeFieldContainer container) {
-    JSONArray json = new JSONArray();
-    for (Entry<String,Boolean> attribute : container.getSortingAttributeMap().entrySet()) {
-      json.put(new JSONObject()
-        .put(Keys.NAME, attribute.getKey())
-        .put(Keys.DIRECTION, Direction.fromBoolean(attribute.getValue()).name()));
-    }
-    return json;
-  }
 }
