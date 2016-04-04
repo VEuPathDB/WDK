@@ -47,7 +47,7 @@ export default class RealTimeSearchBox extends Component {
     let showHelpIcon = (helpText != null && helpText != '');
     let cancelButtonStyle = { visibility: isActiveSearch ? 'visible' : 'hidden' };
     return (
-      <div>
+      <div className="wdk-searchBoxInfo">
         <span className={searchBoxClass}>
           <input type="text"
             onChange={this.handleSearchTextChange}
@@ -60,7 +60,7 @@ export default class RealTimeSearchBox extends Component {
         </span>
         {showHelpIcon &&
           <Tooltip content={helpText}>
-            <i style={{marginLeft:'1.0em'}} className="fa fa-question-circle fa-lg wdk-searchboxInfoIcon"/>
+            <i className="fa fa-question-circle fa-lg wdk-searchboxInfoIcon"/>
           </Tooltip>
         }
       </div>
