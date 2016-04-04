@@ -32,12 +32,20 @@ let RecordTable = React.createClass({
         </div>
       );
     }
+
+    let columns = [{
+      name: '@@defaultSort@@',
+      visible: false,
+      searchable: false
+    }].concat(tableAttributes);
+    let data = this.props.value.map((row, index) => {
+      return Object.assign({}, row, { '@@defaultSort@@': index });
+    });
     return (
       <div className={classnames}>
         <DataTable
-          columns={tableAttributes}
-          data={this.props.value}
-          sorting={this.props.table.sorting}
+          columns={columns}
+          data={data}
           childRow={this.props.childRow}
           searchable={this.props.value.length > 10}
         />
