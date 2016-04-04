@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
@@ -39,7 +38,6 @@ public class TableField extends Field implements AttributeFieldContainer {
   private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
   private String description;
   private String categoryName;
-  private Map<String, Boolean> sortingAttributeMap = new LinkedHashMap<String, Boolean>();
 
   public Query getQuery() {
     return query;
@@ -79,7 +77,7 @@ public class TableField extends Field implements AttributeFieldContainer {
   }
   
   public void setSorting(String sortList) throws WdkModelException {
-    sortingAttributeMap = Utilities.parseSortList(sortList);
+    // noop
   }
 
   /**
@@ -87,7 +85,7 @@ public class TableField extends Field implements AttributeFieldContainer {
    */
   @Override
   public Map<String, Boolean> getSortingAttributeMap() {
-    return this.sortingAttributeMap;
+    return null;
   }
 
   /*
