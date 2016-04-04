@@ -23,6 +23,9 @@
   <c:set var="displayName" value="${step.recordClass.displayName}"/>
   <c:set var="displayNamePlural" value="${wdkAnswer.question.recordClass.displayNamePlural}" />
   <c:set var="nativeDisplayNamePlural" value="${wdkAnswer.question.recordClass.nativeDisplayNamePlural}" />
+  <c:if test="${step.answerValue.resultSize != step.answerValue.displayResultSize}">
+    <c:set var="highlight" value="background-color:#FFFFAD" />
+  </c:if>
 
   <c:set var="recHasBasket" value="${recordClass.useBasket}" />
   <c:set var="wdkView" value="${requestScope.wdkView}" />
@@ -95,20 +98,19 @@
               <imp:pager wdkAnswer="${wdkViewAnswer}" pager_id="top"/> 
             </th>
 
-            <th style="text-align: center; white-space: nowrap; width: 34px;">
+            <th style="text-align: right; white-space: nowrap; width: 34px;">
 
-<%-- <c:if test="${showNativeCount eq 'true'}">   --%>
               <c:if test="${wdkAnswer.question.recordClass.hasResultSizeQuery}">
                 <span style="padding-right: 2em">
                   ${wdkAnswer.displayResultSize eq 1 ? step.recordClass.displayName : step.recordClass.displayNamePlural}:
-                  ${wdkAnswer.displayResultSize}
+                  <span style="${highlight}">${wdkAnswer.displayResultSize}</span>
                 </span>
-                <span style="padding-right: 2em" title="${trTitle}">
+                <span style="padding-right: 2em">
                   ${wdkAnswer.resultSize eq 1 ? wdkAnswer.question.recordClass.nativeDisplayName : wdkAnswer.question.recordClass.nativeDisplayNamePlural}:
-                  ${wdkAnswer.resultSize}
+                   <span style="${highlight}">${wdkAnswer.resultSize}</span>
                 </span>
               </c:if>
-<%--  </c:if> --%>
+
             </th>
 
             <th style="text-align: right; white-space: nowrap; width: 33px;">
