@@ -1,17 +1,22 @@
 import { seq, map } from './IterableUtils';
 
-interface INode {
-  children: INode[];
+export interface Node {
+  children: Array<Node>;
+}
+
+export interface ChildrenGetter<T> {
+  (t: T): T[];
 }
 
 // Helper function to push values into an array, and to return that array.
 // `push` returns the value added, so this is useful when we want the array
 // back. This is more performant than using `concat` which creates a new array.
-let pushInto = <T>(array: T[], ...values: T[]) =>
-  (array.push(...values), array);
+function pushInto <T>(array: T[], ...values: T[]) {
+  return (array.push(...values), array);
+}
 
 // Shallow comparison of two arrays
-let shallowEqual = <T>(array1: T[], array2: T[]) => {
+function shallowEqual <T>(array1: T[], array2: T[]) {
   if (array1.length !== array2.length) return false;
   for (let i = 0; i < array1.length; i++) {
     if (array1[i] !== array2[i]) return false;
@@ -20,17 +25,17 @@ let shallowEqual = <T>(array1: T[], array2: T[]) => {
 }
 
 /** top-down tree node iterator */
-function* preorder(root: INode): Iterable<INode> {
+function* preorder<T>(root: T, getChildren: ChildrenGetter<T>): Iterable<T> {
   yield root;
-  for (let child of root.children) {
-    yield* preorder(child);
+  for (let child of getChildren(root)) {
+    yield* preorder(child, getChildren);
   }
 }
 
 /** bottom-up tree node iterator */
-function* postorder(root: INode): Iterable<INode> {
-  for (let child of root.children) {
-    yield* postorder(child);
+function* postorder<T>(root: T, getChildren: ChildrenGetter<T>): Iterable<T> {
+  for (let child of getChildren(root)) {
+    yield* postorder(child, getChildren);
   }
   yield root;
 }
@@ -54,12 +59,13 @@ function* postorder(root: INode): Iterable<INode> {
  * @param {Object} root
  * @return {Seq}
  */
-export let preorderSeq = (root: INode) =>
-  seq({
+export function preorderSeq(root: Node) {
+  return seq({
     *[Symbol.iterator]() {
-      yield* preorder(root);
+      yield* preorder(root, n => n.children);
     }
   })
+}
 
 /**
  * Create a Seq of tree nodes in postorder sequence.
@@ -79,20 +85,13 @@ export let preorderSeq = (root: INode) =>
  * @param {Object} root
  * @return {Seq}
  */
-export let postorderSeq = (root: INode) =>
-  seq({
+export function postorderSeq (root: Node) {
+  return seq({
     *[Symbol.iterator]() {
-      yield* postorder(root);
+      yield* postorder(root, n => n.children);
     }
   })
-
-/**
- * A mapping function to pass to `mapStructure`.
- *
- * @callback mapFn
- * @param {any} node
- * @param {Array} array of mapped children
- */
+}
 
 /**
  * Convert a tree into a new tree-like structure. The tree is traversed bottom-
@@ -104,7 +103,7 @@ export let postorderSeq = (root: INode) =>
  * @param {Function} getChildren A function that returns an iterable object over a node's children.
  * @param {any} root The root node of the tree whose structure is being mapped.
  */
-export function mapStructure<T, U>(mapFn: (root: T, children: U[]) => U, getChildren: (x: T) => Iterable<T>, root: T): U {
+export function mapStructure<T, U>(mapFn: (root: T, children: U[]) => U, getChildren: ChildrenGetter<T>, root: T): U {
   let mappedChildren = map(child => {
     return mapStructure(mapFn, getChildren, child)
   }, getChildren(root));
@@ -120,7 +119,7 @@ export function mapStructure<T, U>(mapFn: (root: T, children: U[]) => U, getChil
  * @param {Object} root Root node of a tree.
  * @return {Object}
  */
-export let pruneDescendantNodes = (fn: (node: INode) => boolean, root: INode) => {
+export function pruneDescendantNodes (fn: (node: Node) => boolean, root: Node) {
   let prunedChildren = pruneNodes(fn, root.children);
   return prunedChildren === root.children
     ? root
@@ -139,7 +138,7 @@ export let pruneDescendantNodes = (fn: (node: INode) => boolean, root: INode) =>
  * of a node in a tree.
  * @return {Array}
  */
-export let pruneNodes = (fn: (node: INode) => boolean, nodes: INode[]): INode[] => {
+export function pruneNodes (fn: (node: Node) => boolean, nodes: Node[]): Node[] {
   let prunedNodes = nodes.reduce((prunedNodes, node) => {
     let prunedNode = pruneDescendantNodes(fn, node);
     return fn(prunedNode)
@@ -155,11 +154,12 @@ export let pruneNodes = (fn: (node: INode) => boolean, nodes: INode[]): INode[] 
  * @param {Object} root Root node of a tree
  * @return {Object} Tree
  */
-export let compactRootNodes = (root: INode): INode =>
-  root.children.length === 1 ? compactRootNodes(root.children[0])
+export function compactRootNodes (root: Node): Node {
+  return root.children.length === 1 ? compactRootNodes(root.children[0])
   : root
+}
 
-export let mapNodes = (nodeTransform: (root: INode) => INode, root: INode): INode => {
+export function mapNodes (nodeTransform: (root: Node) => Node, root: Node): Node {
   return Object.assign({}, nodeTransform(root), {
     children: root.children.map(child => mapNodes(nodeTransform, child))
   });
@@ -170,7 +170,9 @@ export let mapNodes = (nodeTransform: (root: INode) => INode, root: INode): INod
  * @param {Object} node representing root of subtree (possibly a leaf)
  * @return {Boolean} indicates true if the node is a leaf and false otherwise
  */
-export let isLeaf = (node: INode, getNodeChildren: (node: INode) => INode[]) => getNodeChildren(node).length === 0;
+export function isLeaf <T>(node: T, getNodeChildren: ChildrenGetter<T>) {
+   return getNodeChildren(node).length === 0;
+}
 
 /**
  * Using recursion to return all the leaf nodes for the given node.
@@ -178,7 +180,7 @@ export let isLeaf = (node: INode, getNodeChildren: (node: INode) => INode[]) => 
  * @param {Array} initial list of leaf nodes (optional)
  * @return {Array} updated list of leaf nodes
  */
-export let getLeaves = (node: INode, getNodeChildren: (node: INode) => INode[], leaves: INode[] = []) => {
+export function getLeaves <T>(node: T, getNodeChildren: ChildrenGetter<T>, leaves: T[] = []) {
  if(!isLeaf(node, getNodeChildren)) {
    getNodeChildren(node).map(function(child) {
 
@@ -198,7 +200,7 @@ export let getLeaves = (node: INode, getNodeChildren: (node: INode) => INode[], 
  * @param {Array} initial list of branch nodes (optional)
  * @return {Array} updated list of branch nodes
  */
-export let getBranches = (node: INode, getNodeChildren: (node: INode) => INode[], branches: INode[] = []) => {
+export function getBranches <T>(node: T, getNodeChildren: ChildrenGetter<T>, branches: T[] = []) {
   if(!isLeaf(node, getNodeChildren)) {
     branches.push(node);
     getNodeChildren(node).map(child => getBranches(child, getNodeChildren, branches));
