@@ -1478,9 +1478,6 @@
         </choice>
       </zeroOrMore>
       <optional>
-        <attribute name="sorting" />
-      </optional>
-      <optional>
         <attribute name="attributeCategory" />
       </optional>
     </element>
