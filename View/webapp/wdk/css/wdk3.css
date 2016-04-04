@@ -588,6 +588,14 @@ ul.wdk-RadioList li span {
   margin-left: 0.5em
 }
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     = tree search box (jsx)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 .wdk-searchboxInfoIcon {
   color: blue;
+  margin-left: 0.5em;  // 1em forces a htal scrollbar in add Columns popup
+}
+
+div.wdk-searchBoxInfo {
+  white-space: nowrap;
 }
