@@ -6,15 +6,15 @@ let isExternal = url => /^https?:\/\//.test(url);
 
 let RecordActionLink = props => {
   let className = 'wdk-RecordActionLink ' + props.className;
-  let LinkComponent = isExternal(props.href) ? 'a' : Link;
+  let LinkComponent = props.external ? 'a' : Link;
+  let linkProps = {
+    [props.external ? 'href' : 'to']: props.href,
+    title: props.label,
+    className: className,
+    onClick: props.onClick
+  };
   return (
-    <LinkComponent
-      to={props.href}
-      href={props.href}
-      title={props.label}
-      className={className}
-      onClick={props.onClick}
-    >
+    <LinkComponent {...linkProps}>
       {props.showLabel ? props.label : ''} <i className={props.iconClassName}/>
     </LinkComponent>
   );
@@ -33,6 +33,7 @@ RecordActionLink.propTypes = {
 
 RecordActionLink.defaultProps = {
   href: '#',
+  external: false,
   className: '',
   label: 'Record action',
   iconClassName: 'fa fa-bolt',
