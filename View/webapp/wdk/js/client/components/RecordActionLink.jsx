@@ -1,18 +1,22 @@
 import React from 'react';
-import classnames from 'classnames';
-import { wrappable } from '../utils/componentUtils';
+import {Link} from 'react-router';
+import {wrappable} from '../utils/componentUtils';
 
-let clickHandler = props => e => {
-  e.preventDefault();
-  props.onClick(e, props.record);
-}
+let isExternal = url => /^https?:\/\//.test(url);
 
 let RecordActionLink = props => {
   let className = 'wdk-RecordActionLink ' + props.className;
+  let LinkComponent = props.external ? 'a' : Link;
+  let linkProps = {
+    [props.external ? 'href' : 'to']: props.href,
+    title: props.label,
+    className: className,
+    onClick: props.onClick
+  };
   return (
-    <a href="#" title={props.label} className={className} onClick={clickHandler(props)}>
+    <LinkComponent {...linkProps}>
       {props.showLabel ? props.label : ''} <i className={props.iconClassName}/>
-    </a>
+    </LinkComponent>
   );
 }
 
@@ -22,12 +26,14 @@ RecordActionLink.propTypes = {
   className: React.PropTypes.string,
   iconClassName: React.PropTypes.string,
   onClick: React.PropTypes.func,
+  href: React.PropTypes.string,
   label: React.PropTypes.string,
   showLabel: React.PropTypes.bool
 }
 
 RecordActionLink.defaultProps = {
-  onClick: (e, record) => console.log('Record action clicked', e, record),
+  href: '#',
+  external: false,
   className: '',
   label: 'Record action',
   iconClassName: 'fa fa-bolt',

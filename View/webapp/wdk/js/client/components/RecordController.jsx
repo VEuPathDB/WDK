@@ -125,11 +125,8 @@ class RecordController extends Component {
       .concat({
         label: 'Download ' + recordView.recordClass.displayName,
         iconClassName: 'fa fa-lg fa-download',
-        onClick(event) {
-          event.preventDefault();
-          router.push('/record/' + recordView.recordClass.urlSegment + '/download/' +
-                      recordView.record.id.map(pk => pk.value).join('/'));
-        }
+        href: '/record/' + recordView.recordClass.urlSegment + '/download/' +
+          recordView.record.id.map(pk => pk.value).join('/')
       });
 
       return (
