@@ -19,7 +19,19 @@ import * as CategoryUtils from './utils/CategoryUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
 import * as WdkUtils from './utils/WdkUtils';
 
-export { Components, Stores, ComponentUtils, ReporterUtils, FormSubmitter, WdkUtils, IterableUtils, TreeUtils, OntologyUtils, CategoryUtils };
+export {
+  Components,
+  Stores,
+  ComponentUtils,
+  ReporterUtils,
+  FormSubmitter,
+  WdkUtils,
+  WdkService,
+  IterableUtils,
+  TreeUtils,
+  OntologyUtils,
+  CategoryUtils
+};
 
 /**
  * Run the application.
