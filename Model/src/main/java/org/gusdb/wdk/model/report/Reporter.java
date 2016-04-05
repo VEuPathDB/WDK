@@ -125,8 +125,8 @@ public abstract class Reporter implements Iterable<AnswerValue> {
   protected WdkModel wdkModel;
 
   protected AnswerValue baseAnswer;
-  private int startIndex;
-  private int endIndex;
+  protected int startIndex;
+  protected int endIndex;
 
   private String description = null;
 
