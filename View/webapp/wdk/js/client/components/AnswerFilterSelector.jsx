@@ -76,15 +76,19 @@ let AnswerFilterSelector = React.createClass({
           <a href="#" onClick={clearAll}>clear all</a>
         </p>
 
-        {recordClass.attributes.map(attr => {
-          let isChecked = filterAttributes.includes(attr.name);
-          return renderFilterField(attr, isChecked, toggleAttribute);
-        })}
+        {recordClass.attributes
+          .filter(attr => attr.isDisplayable)
+          .map(attr => {
+            let isChecked = filterAttributes.includes(attr.name);
+            return renderFilterField(attr, isChecked, toggleAttribute);
+          })}
 
-        {recordClass.tables.map(table => {
-          let isChecked = filterTables.includes(table.name);
-          return renderFilterField(table, isChecked, toggleTable);
-        })}
+        {recordClass.tables
+          .filter(table => table.isDisplayable)
+          .map(table => {
+            let isChecked = filterTables.includes(table.name);
+            return renderFilterField(table, isChecked, toggleTable);
+          })}
 
         <div className="wdk-Answer-filterFieldSelectorCloseIconWrapper">
           <button
