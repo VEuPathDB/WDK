@@ -67,6 +67,8 @@ public abstract class ColumnarReporter extends StandardReporter {
   public void configure(JSONObject config) {
     super.configure(config);
     showHeader = (config.has(PROP_INCLUDE_HEADER) ? config.getBoolean(PROP_INCLUDE_HEADER) : true);
+    if (config.has(PROP_COLUMN_DIVIDER)) columnDivider = config.getString(PROP_COLUMN_DIVIDER);
+
   }
   
   @Override
