@@ -1549,24 +1549,25 @@ public class User /* implements Serializable */{
    * Enumeration describing all the user attributes associated with a user profile
    */
   public static enum UserProfileProperty {
-    FIRST_NAME("firstName", "first_name", "First Name", true),
-    MIDDLE_NAME("middleName", "middle_name", "Middle Name", false),
-    LAST_NAME("lastName", "last_name", "Last Name", true),
-    TITLE("title", "title", "Title", false),
-    DEPARTMENT("department", "department", "Department", false),
-    ORGANIZATION("organization", "organization", "Organization", true),
-    EMAIL("email", "email", "Email", true),
-    ADDRESS("address", "address", "Address", false),
-    CITY("city", "city", "City", false),
-    STATE("state", "state", "State", false),
-    ZIP_CODE("zipCode", "zip_code", "ZipCode", false),
-    COUNTRY("country", "country", "Country", false),
-    PHONE_NUMBER("phoneNumber", "phone_number", "Phone Number", false);
+    FIRST_NAME("firstName", "first_name", "First Name", true, 50),
+    MIDDLE_NAME("middleName", "middle_name", "Middle Name", false, 50),
+    LAST_NAME("lastName", "last_name", "Last Name", true, 50),
+    TITLE("title", "title", "Title", false, 255),
+    DEPARTMENT("department", "department", "Department", false, 255),
+    ORGANIZATION("organization", "organization", "Organization", true, 255),
+    EMAIL("email", "email", "Email", true, 255),
+    ADDRESS("address", "address", "Address", false, 500),
+    CITY("city", "city", "City", false, 255),
+    STATE("state", "state", "State", false, 255),
+    ZIP_CODE("zipCode", "zip_code", "ZipCode", false, 20),
+    COUNTRY("country", "country", "Country", false, 255),
+    PHONE_NUMBER("phoneNumber", "phone_number", "Phone Number", false, 50);
 
     private final String _jsonPropertyName;
     private final String _dbColumnName;
     private final String _display;
     private final boolean _isRequired;
+    private final int _maxLength;
     
     /**
      * Returns a list of all json property names applicable to the user profile.  
@@ -1599,12 +1600,14 @@ public class User /* implements Serializable */{
      * @param dbColumnName - database field name
      * @param display - display name for view
      * @param isRequired
+     * @param maxLength - maximum length allowed for this property
      */
-    private UserProfileProperty(String jsonPropertyName, String dbColumnName, String display, boolean isRequired) {
+    private UserProfileProperty(String jsonPropertyName, String dbColumnName, String display, boolean isRequired, int maxLength) {
       _jsonPropertyName = jsonPropertyName;
       _dbColumnName = dbColumnName;
       _display = display;
       _isRequired = isRequired;
+      _maxLength = maxLength;
     }
     
     public String getJsonPropertyName() {
@@ -1621,6 +1624,10 @@ public class User /* implements Serializable */{
     
     public boolean isRequired() {
       return _isRequired;
+    }
+    
+    public int getMaxLength() {
+      return _maxLength;
     }
     
     public static UserProfileProperty fromJsonPropertyName(String jsonPropertyName) {
