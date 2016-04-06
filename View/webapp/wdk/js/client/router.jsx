@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, useRouterHistory } from 'react-router';
 import { createHistory, useBasename } from 'history';
 
@@ -18,17 +17,16 @@ import SiteMapController from './components/SiteMapController';
  * Get routes based on `rootUrl`.
  *
  * @param {string} rootUrl The rootUrl used to match paths below.
- * @param {HTMLElement} rootElement Element to render app.
  * @param {Object} context Context object passed to WdkContext.
  * @param {Array<Object>} additionalRoutes Route configs to add to router.
  */
-export function start(rootUrl, rootElement, context, additionalRoutes = []) {
+export function create(rootUrl, context, additionalRoutes = []) {
   // This makes it possible to omit the rootUrl in the Link Component, etc.
   // The custom history object will preprend the rootUrl.
   // E.g., it will convert "/record/gene/123" => "/{rootUrl}/record/gene/123".
   let createAppHistory = useRouterHistory(useBasename(createHistory));
   let history = createAppHistory({ basename: rootUrl });
-  return ReactDOM.render((
+  return (
     <WdkContext {...context}>
       <Router history={history}>
         <Route path="/" component={AppController}>
@@ -45,5 +43,5 @@ export function start(rootUrl, rootElement, context, additionalRoutes = []) {
         </Route>
       </Router>
     </WdkContext>
-  ), rootElement);
+  );
 }
