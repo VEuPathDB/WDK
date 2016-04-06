@@ -953,7 +953,7 @@ public class User /* implements Serializable */{
   }
 
   public int getItemsPerPage() {
-    String prefValue = getGlobalPreference(User.PREF_ITEMS_PER_PAGE);
+    String prefValue = getProjectPreference(User.PREF_ITEMS_PER_PAGE);
     int itemsPerPage = (prefValue == null) ? 20 : Integer.parseInt(prefValue);
     return itemsPerPage;
   }
@@ -963,7 +963,7 @@ public class User /* implements Serializable */{
       itemsPerPage = 20;
     else if (itemsPerPage > 1000)
       itemsPerPage = 1000;
-    setGlobalPreference(User.PREF_ITEMS_PER_PAGE, Integer.toString(itemsPerPage));
+    setProjectPreference(User.PREF_ITEMS_PER_PAGE, Integer.toString(itemsPerPage));
     save();
   }
 
