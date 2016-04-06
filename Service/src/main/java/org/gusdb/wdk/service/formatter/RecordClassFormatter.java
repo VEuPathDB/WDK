@@ -8,7 +8,6 @@ import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.attribute.AttributeCategory;
-import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -73,7 +72,8 @@ public class RecordClassFormatter {
         JSONObject obj = new JSONObject()
           .put(Keys.NAME, reporter.getName())
           .put(Keys.DISPLAY_NAME, reporter.getDisplayName())
-          .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(reporter));
+          .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(reporter))
+          .put(Keys.SCOPES, reporter.getScopesList());
         array.put(obj);
       }
     }

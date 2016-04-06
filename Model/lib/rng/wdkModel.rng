@@ -1065,6 +1065,7 @@
           <element name="reporter">
             <attribute name="name" />
             <attribute name="displayName" />
+            <attribute name="scopes"/>
             <ref name="IncludeExclude" />
             <optional>
               <attribute name="inReportMaker">

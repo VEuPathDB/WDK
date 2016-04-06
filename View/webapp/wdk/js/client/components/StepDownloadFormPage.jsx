@@ -12,7 +12,7 @@ let ReporterSelect = props => {
       <span style={{marginRight:'0.5em'}}>Choose a Reporter:</span>
       <select value={selected} onChange={onChange}>
         <option value={NO_REPORTER_SELECTED}>Please Select...</option>
-        {reporters.filter(f => f.isInReport).map(reporter =>
+        {reporters.map(reporter =>
           ( <option key={reporter.name} value={reporter.name}>{reporter.displayName}</option> ))}
       </select>
     </div>

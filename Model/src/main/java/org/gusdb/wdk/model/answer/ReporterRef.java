@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.answer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
   private String name;
   private String displayName;
   private String implementation;
+  private String scopes;
   private boolean inReportMaker = true;
   private List<WdkModelText> propertyList = new ArrayList<>();
   private Map<String, String> properties = new LinkedHashMap<>();
@@ -71,7 +73,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
   public void setName(String name) {
     this.name = name;
   }
-
+  
   /**
    * @return the displayName
    */
@@ -108,6 +110,26 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
   public void setInReportMaker(boolean inReportMaker) {
     this.inReportMaker = inReportMaker;
   }
+  
+  /**
+   * @return the list of scopes
+   */
+  public String getScopes() {
+    return scopes;
+  }
+  
+  public List<String> getScopesList() {
+    return Arrays.asList(scopes.split("\\s*,\\s*"));
+  }
+  
+  /**
+   * @param scope
+   *          comma-separated list of scopes that reporter is visible
+   */
+  public void setScopes(String scopes) {
+    this.scopes = scopes;
+  }
+
 
   public void addProperty(WdkModelText property) {
     this.propertyList.add(property);

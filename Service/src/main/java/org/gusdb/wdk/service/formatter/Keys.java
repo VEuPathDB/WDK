@@ -44,6 +44,7 @@ public class Keys {
   public static final String IS_SORTABLE = "isSortable";
   public static final String IS_REMOVABLE = "isRemovable";
   public static final String USE_BASKET = "useBasket";
+  public static final String SCOPES = "scopes";
 
 
   // scoping-related keys
