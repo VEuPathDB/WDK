@@ -41,7 +41,7 @@ export default class StepDownloadFormViewStore extends WdkStore {
         return tryInitCompletion(state, userStore);
 
       case actionTypes.STEP_DOWNLOAD_RESET_STORE:
-        return initialize(state, this.getInitialState());
+        return initialize(state, this.getInitialState(), userStore);
 
       case actionTypes.STEP_DOWNLOAD_SELECT_REPORTER:
         return updateReporter(state, payload);
