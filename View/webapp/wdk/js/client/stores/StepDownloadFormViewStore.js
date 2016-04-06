@@ -72,7 +72,7 @@ function formLoading(state, payload) {
 function initialize(state, payload, userStore) {
 
   // only use reporters configured for the report download page
-  let reporters = payload.recordClass.formats.filter(f => f.isInReport);
+  let reporters = payload.recordClass && payload.recordClass.formats.filter(f => f.isInReport);
 
   let partialState = Object.assign({}, state, {
     step: payload.step,
