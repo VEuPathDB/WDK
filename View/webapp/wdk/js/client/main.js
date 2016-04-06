@@ -3,6 +3,7 @@ import './exposeModules';
 import mapValues from 'lodash/object/mapValues';
 import values from 'lodash/object/values';
 import pick from 'lodash/object/pick';
+import ReactDOM from 'react-dom';
 
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
@@ -34,22 +35,29 @@ export {
 };
 
 /**
- * Run the application.
+ * Initialize the application.
  *
  * @param {string} option.rootUrl Root URL used by the router.
  * @param {string} option.endpoint Base URL for WdkService.
  * @param {HTMLElement} option.rootElement DOM node to render the applicaiton.
  * @param {Array} option.applicationRoutes Addtional routes to register with the Router.
  */
-export function run({ rootUrl, endpoint, rootElement, applicationRoutes }) {
+export function initialize({ rootUrl, endpoint, rootElement, applicationRoutes }) {
   let dispatcher = new Dispatcher;
   let wdkService = new WdkService(endpoint);
   let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
   let stores = configureStores(Stores, dispatcher);
   let context = { dispatchAction, stores, };
+  let router = Router.create(rootUrl, context, applicationRoutes);
+  let render = () => ReactDOM.render(router, rootElement);
+  let unmount = () => ReactDOM.unmountComponentAtNode(rootElement);
   if (__DEV__) logActions(dispatcher, stores);
-  Router.start(rootUrl, rootElement, context, applicationRoutes);
-  return { dispatcher, wdkService, stores };
+  return {
+    stores,
+    dispatchAction,
+    render,
+    unmount
+  };
 }
 
 /**
