@@ -43,8 +43,8 @@ export {
  * @param {Array} option.applicationRoutes Addtional routes to register with the Router.
  */
 export function initialize({ rootUrl, endpoint, rootElement, applicationRoutes }) {
-  let dispatcher = new Dispatcher;
   let wdkService = new WdkService(endpoint);
+  let dispatcher = new Dispatcher;
   let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
   let stores = configureStores(Stores, dispatcher);
   let context = { dispatchAction, stores, };
@@ -53,8 +53,9 @@ export function initialize({ rootUrl, endpoint, rootElement, applicationRoutes }
   let unmount = () => ReactDOM.unmountComponentAtNode(rootElement);
   if (__DEV__) logActions(dispatcher, stores);
   return {
-    stores,
+    wdkService,
     dispatchAction,
+    stores,
     render,
     unmount
   };

@@ -2,22 +2,11 @@ var webpack = require('webpack');
 var node_env = process.env.NODE_ENV || 'production';
 var outputPath = './dist/wdk/js';
 
-var commonsPlugin = new webpack.optimize.CommonsChunkPlugin({
-  name: 'common',
-  path: outputPath,
-  filename: 'wdk.common.js'
-});
-
 module.exports = {
-  entry: {
-    'app': './webapp/wdk/js/app',
-    'client': './webapp/wdk/js/client/main'
-  },
+  entry: './webapp/wdk/js/app',
   output: {
     path: outputPath,
-    filename: 'wdk.[name].js',
-    library: [ 'Wdk', '[name]' ],
-    libraryTarget: 'umd',
+    filename: 'wdk.js'
   },
   bail: true,
   resolve: {
@@ -51,8 +40,7 @@ module.exports = {
           "process.env": {
             NODE_ENV: JSON.stringify("development")
           }
-        }),
-        commonsPlugin
+        })
       ]
 
     : [ new webpack.optimize.UglifyJsPlugin({ mangle: false }),
@@ -62,6 +50,6 @@ module.exports = {
           "process.env": {
             NODE_ENV: JSON.stringify("production")
           }
-        }),
-        commonsPlugin ]
+        })
+      ]
 };
