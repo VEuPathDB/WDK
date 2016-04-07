@@ -9,6 +9,7 @@ import './plugins';
 import './components';
 import './views';
 import './controllers';
+import './client';
 
 var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver; // jshint ignore:line
 
