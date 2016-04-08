@@ -68,7 +68,7 @@ public class ShowSummaryViewAction extends Action {
         }
 
         // automatic views return null handlers; use default if this is the case
-        SummaryViewHandler handler = view.getHandler();
+        SummaryViewHandler handler = view.getHandlerInstance();
         if (handler == null) {
           handler = new DefaultSummaryViewHandler();
         }
