@@ -1,5 +1,3 @@
-import './exposeModules';
-
 import mapValues from 'lodash/object/mapValues';
 import values from 'lodash/object/values';
 import pick from 'lodash/object/pick';
