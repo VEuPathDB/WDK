@@ -171,7 +171,7 @@ let formatColumns = columns => columns.map(
 );
 
 let formatData = data => data.map(
-  row => mapValues(row, formatAttributeValue)
+  row => mapValues(row, value => '<div class="wdk-DataTableCellContent">' + formatAttributeValue(value) + '</div>')
 );
 
 let formatSorting = (columns, sorting) => {
