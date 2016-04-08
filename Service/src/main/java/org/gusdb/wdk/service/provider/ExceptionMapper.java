@@ -25,6 +25,8 @@ import org.gusdb.wdk.service.error.ValueMaps;
 import org.gusdb.wdk.service.error.ValueMaps.RequestAttributeValueMap;
 import org.gusdb.wdk.service.error.ValueMaps.ServletContextValueMap;
 import org.gusdb.wdk.service.error.ValueMaps.SessionAttributeValueMap;
+import org.gusdb.wdk.service.request.RequestMisformatException;
+import org.json.JSONException;
 
 @Provider
 public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exception> {
@@ -62,9 +64,10 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
           .type(MediaType.TEXT_PLAIN).entity("Not Found").build();
     }
 
-    catch (WdkUserException e400) {
+    catch (JSONException | RequestMisformatException | WdkUserException e400) {
+      String errorMsg = "Improperly formatted, incomplete, or incorrect service request body";
       return Response.status(Status.BAD_REQUEST)
-          .type(MediaType.TEXT_PLAIN).entity("User error: " + e400.getMessage()).build();
+          .type(MediaType.TEXT_PLAIN).entity(errorMsg + ": " + e400.getMessage()).build();
     }
 
     catch (WebApplicationException eApp) {
