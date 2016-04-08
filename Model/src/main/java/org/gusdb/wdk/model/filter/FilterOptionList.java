@@ -15,14 +15,21 @@ public class FilterOptionList implements Iterable<FilterOption>{
   private static final Logger logger = Logger.getLogger(FilterOptionList.class);
 
   private final Question _question;
-  private final Map<String, FilterOption> _options = new LinkedHashMap<>();
+  private final Map<String, FilterOption> _options;
 
   public FilterOptionList(Question question) {
     _question = question;
+    _options = new LinkedHashMap<>();
   }
   
+  public FilterOptionList(FilterOptionList filterOptionList) {
+    _question = filterOptionList._question;
+    _options = new LinkedHashMap<String, FilterOption>(filterOptionList._options);
+  }
+
   public FilterOptionList(Question question, JSONArray jsOptions) throws WdkModelException {
     _question = question;
+    _options = new LinkedHashMap<>();
     for (int i = 0; i < jsOptions.length(); i++) {
       JSONObject jsFilterOption = jsOptions.getJSONObject(i);
       FilterOption option = new FilterOption(question, jsFilterOption);
