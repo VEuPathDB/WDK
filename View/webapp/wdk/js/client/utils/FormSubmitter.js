@@ -26,6 +26,13 @@ export function submitAsForm(conf) {
     form.appendChild(input);
   });
 
+  // append form to DOM and hide it
+  document.body.appendChild(form);
+  form.style.display = 'none';
+
   // submit the form
   form.submit();
+
+  // remove form from the DOM
+  document.body.removeChild(form);
 }
