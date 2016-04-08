@@ -20,7 +20,7 @@ export function getTree(ontology, leafPredicate) {
 export let getNodeChildren = node =>
   node.children;
 
-let nodeHasChildren = node =>
+export let nodeHasChildren = node =>
   getNodeChildren(node).length > 0;
 
 let includes = (array, value) =>
