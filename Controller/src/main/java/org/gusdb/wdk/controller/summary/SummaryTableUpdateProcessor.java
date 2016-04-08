@@ -2,8 +2,10 @@ package org.gusdb.wdk.controller.summary;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -75,7 +77,9 @@ public class SummaryTableUpdateProcessor {
           if (attributeNames == null) attributeNames = new String[0];
 
           if (command.equalsIgnoreCase("update")) {
-            List<String> attributeNamesList = new ArrayList<String>(Arrays.asList(attributeNames));
+            Set<String> attributeNamesList = new LinkedHashSet<String>(Arrays.asList(attributeNames));
+            // always add back primary key in case it is not present in input list
+            attributeNamesList.add(question.getRecordClass().getPrimaryKeyAttributeField().getName());
             for (String summaryName : summary) {
               if (attributeNamesList.contains(summaryName)) {
                 summaryList.add(summaryName);
