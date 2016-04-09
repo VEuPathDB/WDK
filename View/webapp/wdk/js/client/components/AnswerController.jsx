@@ -164,13 +164,10 @@ let AnswerController = React.createClass({
     let state = this.store.getState();
 
     // props.params and props.query are passed to this component by the Router.
-    let { params, location: { query } } = props;
+    let { params } = props;
+    let { query } = props.location;
 
-    // Get pagination info from `query`
-    let pagination = {
-      numRecords: query.numrecs || 1000,
-      offset: query.offset || 0
-    };
+    let pagination = { numRecords: 1000, offset: 0 };
 
     // XXX Could come from query param: sorting={attributeName}__{direction},...
     // let sorting = state.preferences[this.sortingPreferenceKey];
@@ -186,23 +183,9 @@ let AnswerController = React.createClass({
     //       sorting: sorting
     //     };
     //
-    let displayInfo = {
-      pagination,
-      sorting
-    };
+    let displayInfo = { pagination, sorting };
 
-    // TODO Add params to loadAnswer call
-    // RRD: not sure what this code is doing but I don't think this page needs
-    //   to support params in the query string; sending an empty object for now
-    let answerParams = {}; // wrap(query.param).map(p => {
-    //  let parts = p.split('__');
-    //  return { name: parts[0], value: parts[1] };
-    //});
-
-    let opts = {
-      displayInfo,
-      parameters: answerParams
-    };
+    let opts = { displayInfo, parameters: query };
 
     this.props.dispatchAction(loadAnswer(params.question, params.recordClass, opts));
   },
