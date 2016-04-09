@@ -28,10 +28,16 @@ function wrap(value) {
   return value;
 }
 
+/**
+ * Join array with delimeter. If array is undefined, return undefined.
+ */
 function maybeJoin(arr, delimeter) {
   if (arr !== undefined) return arr.join(delimeter);
 }
 
+/**
+ * Split a string on delimeter. If string is undefined, return undefined.
+ */
 function maybeSplit(str, delimeter) {
   if (str !== undefined) return str.split(delimeter);
 }
@@ -129,7 +135,6 @@ let AnswerController = React.createClass({
 
     // query keys to compare to determine if we need to fetch a new answer
     let answerQueryKeys = [ 'sortBy', 'sortDir', 'numrecs', 'offset' ];
-    let filterQueryKeys = [ 'q', 'attrs', 'tables' ];
 
     // determine if we need to fetch a new answer
     let answerWillChange = answerQueryKeys.reduce(function(willChange, key) {
@@ -138,23 +143,9 @@ let AnswerController = React.createClass({
 
     answerWillChange = answerWillChange || params.question !== nextParams.question;
 
-    let filterWillChange = filterQueryKeys.reduce(function(willChange, key) {
-      return willChange || query[key] !== nextQuery[key];
-    }, false);
-
     // fetch answer if the query has changed, or if the question name has changed
     if (answerWillChange) {
       this.fetchAnswer(nextProps);
-    }
-
-    // filter answer if the filter terms have changed
-    else if (filterWillChange) {
-      let filterOpts = {
-        terms: nextQuery.q,
-        attributes: maybeSplit(nextQuery.attrs, ','),
-        tables: maybeSplit(nextQuery.tables, ',')
-      };
-      this.props.dispatchAction(updateFilter(filterOpts));
     }
 
   },
@@ -213,14 +204,6 @@ let AnswerController = React.createClass({
       parameters: answerParams
     };
 
-    // Call the ActionCreator to fetch the Answer resource
-    let filterOpts = {
-      terms: query.q,
-      attributes: maybeSplit(query.attrs, ','),
-      tables: maybeSplit(query.tables, ',')
-    };
-
-    this.props.dispatchAction(updateFilter(filterOpts));
     this.props.dispatchAction(loadAnswer(params.question, params.recordClass, opts));
   },
 
@@ -301,22 +284,7 @@ let AnswerController = React.createClass({
     },
 
     onFilter(terms, attributes, tables) {
-      let { location, router } = this.props;
-      if (!terms) {
-        terms = attributes = tables = undefined;
-      }
-
-      let query = update(location.query, {
-        $merge: {
-          q: terms,
-          attrs: maybeJoin(attributes, ',') || undefined,
-          tables: maybeJoin(tables, ',') || undefined
-        }
-      });
-
-      let { pathname } = location;
-
-      router.replace({ pathname, query });
+      this.props.dispatchAction(updateFilter({ terms, attributes, tables }));
     }
 
   },
@@ -366,7 +334,7 @@ let AnswerController = React.createClass({
     //
     // to understand the embedded XML, see: https://facebook.github.io/react/docs/jsx-in-depth.html
     if (records && question && recordClass) {
-      if (filterAttributes.length === 0 && filterTables.length === 0) {
+      if (filterAttributes != null && filterTables != null && filterAttributes.length === 0 && filterTables.length === 0) {
         filterAttributes = recordClass.attributes.map(a => a.name);
         filterTables = recordClass.tables.map(t => t.name);
       }

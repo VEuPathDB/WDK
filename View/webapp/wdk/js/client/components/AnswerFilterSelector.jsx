@@ -1,5 +1,6 @@
 import {Component} from 'react';
 import ReactDOM from 'react-dom';
+import includes from 'lodash/collection/includes';
 import TabbableContainer from './TabbableContainer';
 import {wrappable} from '../utils/componentUtils';
 
@@ -83,14 +84,14 @@ class AnswerFilterSelector extends Component {
         {recordClass.attributes
           .filter(attr => attr.isDisplayable)
           .map(attr => {
-            let isChecked = filterAttributes.includes(attr.name);
+            let isChecked = includes(filterAttributes, attr.name);
             return renderFilterField(attr, isChecked, toggleAttribute);
           })}
 
         {recordClass.tables
           .filter(table => table.isDisplayable)
           .map(table => {
-            let isChecked = filterTables.includes(table.name);
+            let isChecked = includes(filterTables, table.name);
             return renderFilterField(table, isChecked, toggleTable);
           })}
 
