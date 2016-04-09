@@ -251,7 +251,8 @@ public class AnswerValue {
       _resultSizesByProject = new LinkedHashMap<String, Integer>(answerValue._resultSizesByProject);
 
     _sortingMap = new LinkedHashMap<String, Boolean>(answerValue._sortingMap);
-    _filter = answerValue._filter;
+    if (answerValue._filterOptions != null) _filterOptions = new FilterOptionList(answerValue._filterOptions);
+    if (answerValue._viewFilterOptions != null) _viewFilterOptions = new FilterOptionList(answerValue._viewFilterOptions);
 
     logger.debug("AnswerValue created by copying another AnswerValue");
   }
@@ -1012,8 +1013,9 @@ public class AnswerValue {
       // apply view filters if requested
       boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
       if (viewFiltersApplied && !excludeViewFilters){
-        //logger.debug("apply viewFilters(): excludeFilter: " + excludeFilter);
+        logger.info("apply viewFilters(): excludeFilter: " + excludeFilter + " " + _viewFilterOptions.getFilterOptions().keySet() + " " + this);
         innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
+	logger.info("innersql: " + innerSql);
         innerSql = " /* new view filter applied on id query */ " + innerSql;
       }
      
@@ -1441,6 +1443,7 @@ public class AnswerValue {
   }
 
   public void setViewFilterOptions(FilterOptionList viewFilterOptions) {
+    logger.info("setting options: " + this + " " + viewFilterOptions);
     _viewFilterOptions = viewFilterOptions;
     reset();
   }
