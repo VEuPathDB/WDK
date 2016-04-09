@@ -15,22 +15,22 @@ export default class AnswerViewStore extends WdkStore {
 
   getInitialState() {
     return {
-      meta: null,                // Object: meta object from last service response
-      records: null,             // Record[]: filtered records
-      question: null,            // Object: question for this answer page
-      recordClass: null,         // Object: record class for this answer page
-      allAttributes: null,       // Attrib[]: all attributes available in the answer (from recordclass and question)
-      visibleAttributes: null,   // String[]: ordered list of attributes currently being displayed
-      unfilteredRecords: null,   // Record[]: list of records from last service response
-      isLoading: false,          // boolean: whether to show loading icon
-      filterTerm: '',            // String: value user typed into filter box
-      filterAttributes: null,    // Attrib[]: list of attributes whose text is searched during filtering
-      filterTables: null,        // Table[]: list of tables whose text is searched during filtering
-      displayInfo: {             // Object: answer formatting object passed on answer request
-        sorting: null,
-        pagination: null,
-        attributes: null,
-        tables: null
+      meta: undefined,                // Object: meta object from last service response
+      records: undefined,             // Record[]: filtered records
+      question: undefined,            // Object: question for this answer page
+      recordClass: undefined,         // Object: record class for this answer page
+      allAttributes: undefined,       // Attrib[]: all attributes available in the answer (from recordclass and question)
+      visibleAttributes: undefined,   // String[]: ordered list of attributes currently being displayed
+      unfilteredRecords: undefined,   // Record[]: list of records from last service response
+      isLoading: false,               // boolean: whether to show loading icon
+      filterTerm: '',                 // String: value user typed into filter box
+      filterAttributes: [],           // Attrib[]: list of attributes whose text is searched during filtering -- FIXME handle undefined in Components
+      filterTables: [],               // Table[]: list of tables whose text is searched during filtering      -- FIXME handle undefined in Components
+      displayInfo: {                  // Object: answer formatting object passed on answer request
+        sorting: undefined,
+        pagination: undefined,
+        attributes: undefined,
+        tables: undefined
       }
     };
   }
