@@ -52,7 +52,10 @@ let Answer = React.createClass({
       displayInfo,
       allAttributes,
       visibleAttributes,
-      answerEvents,
+      onSort,
+      onMoveColumn,
+      onChangeColumns,
+      onFilter,
       format
     } = this.props;
 
@@ -82,7 +85,10 @@ let Answer = React.createClass({
             displayInfo={displayInfo}
             allAttributes={allAttributes}
             visibleAttributes={visibleAttributes}
-            {...answerEvents}
+            onSort={onSort}
+            onMoveColumn={onMoveColumn}
+            onChangeColumns={onChangeColumns}
+            onFilter={onFilter}
           />
         </div>
       </Main>
