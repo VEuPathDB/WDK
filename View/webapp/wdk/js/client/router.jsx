@@ -7,7 +7,7 @@ import AppController from './components/AppController';
 import IndexController from './components/IndexController';
 import RecordController from './components/RecordController';
 import NotFoundController from './components/NotFoundController';
-import AnswerController from './components/AnswerController';
+import AnswerRouteHandler from './components/AnswerRouteHandler';
 import QuestionListController from './components/QuestionListController';
 import StepDownloadFormController from './components/StepDownloadFormController';
 import UserProfileController from './components/UserProfileController';
@@ -31,7 +31,7 @@ export function create(rootUrl, context, additionalRoutes = []) {
       <Router history={history}>
         <Route path="/" component={AppController}>
           <IndexRoute component={IndexController}/>
-          <Route path="search/:recordClass/:question/result" component={AnswerController}/>
+          <Route path="search/:recordClass/:question/result" component={AnswerRouteHandler}/>
           <Route path="record/:recordClass/download/*" component={StepDownloadFormController}/>
           <Route path="record/:recordClass/*" component={RecordController}/>
           <Route path="step/:stepId/download" component={StepDownloadFormController}/>
