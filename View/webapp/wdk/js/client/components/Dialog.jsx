@@ -1,5 +1,5 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import {Component, Children} from 'react';
+import {render, unmountComponentAtNode, findDOMNode} from 'react-dom';
 import { wrappable } from '../utils/componentUtils';
 
 let $ = window.jQuery;
@@ -75,24 +75,14 @@ let $ = window.jQuery;
  *     });
  *
  */
-var Dialog = React.createClass({
-
-  getDefaultProps() {
-    return {
-      open: false,
-      modal: true,
-      title: '',
-      onOpen() {},
-      onClose() {}
-    };
-  },
+class Dialog extends Component {
 
   /**
    * Render the child component then open or close dialog
    */
   handlePropsChanged() {
-    ReactDOM.render(
-      React.Children.only(this.props.children),
+    render(
+      Children.only(this.props.children),
       this.node
     );
     if (this.props.open) {
@@ -101,11 +91,11 @@ var Dialog = React.createClass({
     else {
       $(this.node).dialog('close');
     }
-  },
+  }
 
   componentDidUpdate() {
     this.handlePropsChanged();
-  },
+  }
 
   /**
    * At this point, the DOM node has been created, so we can call the jQueryUI
@@ -120,10 +110,9 @@ var Dialog = React.createClass({
       title: this.props.title,
       autoOpen: false
     };
-    this.node = ReactDOM.findDOMNode(this);
     $(this.node).dialog(options);
     this.handlePropsChanged();
-  },
+  }
 
   /**
    * Destroy the dialog instance. This will also unmount the child component,
@@ -131,8 +120,8 @@ var Dialog = React.createClass({
    */
   componentWillUnmount() {
     $(this.node).dialog('destroy');
-    React.unmountComponentAtNode(ReactDOM.findDOMNode(this));
-  },
+    unmountComponentAtNode(this.node);
+  }
 
   /**
    * We only render a single div. Notably, the child component is not rendered
@@ -141,8 +130,18 @@ var Dialog = React.createClass({
    * we are doing with the jQueryUI plugin).
    */
   render() {
-    return <div/>;
+    return <div ref={node => this.node = node}/>;
   }
-});
+
+}
+
+Dialog.defaultProps = {
+  open: false,
+  modal: true,
+  title: '',
+  onOpen() {},
+  onClose() {}
+};
+
 
 export default wrappable(Dialog);
