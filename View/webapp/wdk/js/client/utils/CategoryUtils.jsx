@@ -1,6 +1,6 @@
 import get from 'lodash/object/get';
 import kebabCase from 'lodash/string/kebabCase';
-import { getTree, nodeHasProperty, getPropertyValue } from './OntologyUtils';
+import { getTree, nodeHasProperty, getPropertyValue, getPropertyValues } from './OntologyUtils';
 
 export let getId = node =>
   // replace whitespace with hyphens
@@ -52,7 +52,7 @@ function createNode(id, displayName, description) {
  * Creates and adds a subtree to the given category tree containing the
  * question-specific (i.e. dynamic) attributes associated with the given
  * question.  The subtree is added as the first child.
- * 
+ *
  * @param question question whose dynamic attributes should be added
  * @param categoryTree root node of a categories ontology tree to modify
  */
@@ -82,7 +82,7 @@ export let getNodeId = node =>
  * Create a predicate function to filter out of the Categories ontology tree those items appropriate for the given
  * scope that identify attributes for the current record class.  In the case of the Transcript Record Class, a
  * distinction is made depending on whether the summary view applies to transcripts or genes.
- * 
+ *
  * @param recordClassName - full name of the current record class
  */
 export let isQualifying = (recordClassName, scope) => node => {
@@ -102,7 +102,7 @@ export let BasicNodeComponent = props =>
 /**
  * Returns whether the passed node 'matches' the passed node's display name
  * or description.
- * 
+ *
  * @param node node to test
  * @param searchText search text to match against
  * @returns true if node 'matches' the passed search text
@@ -114,7 +114,7 @@ export function nodeSearchPredicate(node, searchText) {
 /**
  * Joins the values in textStrings, lower-cases the result, and searches it
  * for a lower-cased version of searchText.  Returns whether a match is found.
- * 
+ *
  * @param searchText value being searched for
  * @param textStrings array of strings to search
  * @return true if searchText is found, else false
