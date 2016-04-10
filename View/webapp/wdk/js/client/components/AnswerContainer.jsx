@@ -31,30 +31,24 @@ class AnswerContainer extends Component {
     this.store = this.props.stores.AnswerViewStore;
     this.sortingPreferenceKey = 'sorting::' + questionName;
 
-    // Bind methods of `this.answerEvents` to `this`. When they are called by
-    // child elements, any reference to `this` in the methods will refer to
-    // this component.
-    for (let key in this.answerEvents) {
-      this.answerEvents[key] = this.answerEvents[key].bind(this);
-    }
-
-    let state = this.store.getState();
-    if (state.question == null || state.question.urlSegment !== questionName) {
-      this.fetchAnswer(this.props);
-    }
-    else {
-      this.setState(this.store.getState());
-    }
-
-    this.storeSubscription = this.store.addListener(() => {
-      this.setState(this.store.getState());
-    });
-
     // bind handler methods
     this.onSort = this.onSort.bind(this);
     this.onMoveColumn = this.onMoveColumn.bind(this);
     this.onChangeColumns = this.onChangeColumns.bind(this);
     this.onFilter = this.onFilter.bind(this);
+  }
+
+  componentWillMount() {
+    let state = this.store.getState();
+    if (state.question == null || state.question.urlSegment !== this.props.questionName) {
+      this.fetchAnswer(this.props);
+    }
+    else {
+      this.setState(this.store.getState());
+    }
+    this.storeSubscription = this.store.addListener(() => {
+      this.setState(this.store.getState());
+    });
   }
 
   componentWillReceiveProps(nextProps) {
