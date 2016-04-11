@@ -18,7 +18,13 @@ export function loadCurrentSiteMap() {
     let ontologyPromise = wdkService.getOntology('SiteMap');
 
     let isQualifying =  node => {
-      return nodeHasProperty('scope', 'record', node) || nodeHasProperty('scope', 'menu', node) || nodeHasProperty('scope', 'webservice', node) || nodeHasProperty('scope', 'gbrowse', node) || nodeHasProperty('targetType', 'track', node);
+      return (
+        nodeHasProperty('scope', 'record', node) ||
+        nodeHasProperty('scope', 'menu', node) ||
+        nodeHasProperty('scope', 'webservice', node) ||
+        nodeHasProperty('scope', 'gbrowse', node) ||
+        nodeHasProperty('targetType', 'track', node)
+      );
     }
 
     return ontologyPromise.then((ontology) => {
