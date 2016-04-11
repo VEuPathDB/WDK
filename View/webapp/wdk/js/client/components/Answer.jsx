@@ -18,7 +18,7 @@ let getOffsetTop = (node, sum = 0) => {
 let Answer = React.createClass({
 
   getInitialState() {
-    return { height: 0 };
+    return { height: 0, width: 0 };
   },
 
   componentDidMount() {
@@ -32,12 +32,14 @@ let Answer = React.createClass({
 
   updateHeight() {
     if (this.refs.records) {
+      let minHeight = 335;
       let node = ReactDOM.findDOMNode(this.refs.records);
       let nodeOffsetTop = getOffsetTop(node);
       let calculatedHeight = window.innerHeight - nodeOffsetTop - 20;
-      let minHeight = 335;
+      let calculatedWidth = node.innerWidth;
       this.setState({
-        height: Math.max(calculatedHeight, minHeight)
+        height: Math.max(calculatedHeight, minHeight),
+        width: node.clientWidth
       });
     }
   },
@@ -79,6 +81,7 @@ let Answer = React.createClass({
           <Records
             ref="records"
             height={this.state.height}
+            width={this.state.width}
             meta={meta}
             records={records}
             recordClass={recordClass}
