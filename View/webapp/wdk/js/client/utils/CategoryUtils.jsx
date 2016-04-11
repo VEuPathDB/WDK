@@ -83,10 +83,12 @@ export let getNodeId = node =>
  * scope that identify attributes for the current record class.  In the case of the Transcript Record Class, a
  * distinction is made depending on whether the summary view applies to transcripts or genes.
  *
- * @param recordClassName - full name of the current record class
+ * @param type - type of the individual desired (typically 'attribute' or 'table')
+ * @param recordClassName - full name of the record class related to the nodes desired
+ * @param scope - scope of the desired nodes
  */
-export let isQualifying = (recordClassName, scope) => node => {
-  return nodeHasProperty('targetType', 'attribute', node)
+export let isQualifying = (type, recordClassName, scope) => node => {
+  return nodeHasProperty('targetType', type, node)
       && nodeHasProperty('recordClassName', recordClassName, node)
       && nodeHasProperty('scope', scope, node);
 };

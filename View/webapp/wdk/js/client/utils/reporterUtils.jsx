@@ -53,9 +53,13 @@ export function getAttributeSelections(userPrefs, question) {
   return question.defaultAttributes;
 }
 
-export function getAttributeTree(categoriesOntology, question, recordClass, summaryView) {
-  let viewName = {'_default':'gene', 'transcript-view':'transcript'}[summaryView];
-  let categoryTree = getTree(categoriesOntology, isQualifying(recordClass.name, viewName, 'download'));
+export function getAttributeTree(categoriesOntology, recordClass, question) {
+  let categoryTree = getTree(categoriesOntology, isQualifying('attribute', recordClass.name, 'download'));
   addSearchSpecificSubtree(question, categoryTree, recordClass.name, viewName);
+  return categoryTree;
+}
+
+export function getTableTree(categoriesOntology, recordClass) {
+  let categoryTree = getTree(categoriesOntology, isQualifying('table', recordClass.name, 'download'));
   return categoryTree;
 }
