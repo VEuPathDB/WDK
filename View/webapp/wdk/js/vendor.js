@@ -1,9 +1,9 @@
 // Make libraries available globally
 
-import * as lodash from 'lodash';
+import lodash from 'lodash';
 window._ = lodash;
 
-import * as Backbone from 'backbone';
+import Backbone from 'backbone';
 window.Backbone = Backbone;
 
 import * as React from 'react';
