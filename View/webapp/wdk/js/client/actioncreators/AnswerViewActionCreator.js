@@ -82,7 +82,8 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
           answer,
           question,
           recordClass,
-          displayInfo
+          displayInfo,
+          parameters
         }
       })
     }, error => {

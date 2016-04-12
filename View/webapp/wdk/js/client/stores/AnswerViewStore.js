@@ -19,6 +19,7 @@ export default class AnswerViewStore extends WdkStore {
       records: undefined,             // Record[]: filtered records
       question: undefined,            // Object: question for this answer page
       recordClass: undefined,         // Object: record class for this answer page
+      parameters: undefined,          // Object: parameters used for answer
       allAttributes: undefined,       // Attrib[]: all attributes available in the answer (from recordclass and question)
       visibleAttributes: undefined,   // String[]: ordered list of attributes currently being displayed
       unfilteredRecords: undefined,   // Record[]: list of records from last service response
@@ -62,7 +63,7 @@ export default class AnswerViewStore extends WdkStore {
 }
 
   function addAnswer(state, payload) {
-    let { answer, displayInfo, question, recordClass } = payload;
+    let { answer, displayInfo, question, recordClass, parameters } = payload;
 
     // in case we used a magic string to get attributes, reset fetched attributes in displayInfo
     displayInfo.attributes = answer.meta.attributes;
@@ -102,6 +103,7 @@ export default class AnswerViewStore extends WdkStore {
       meta: answer.meta,
       question,
       recordClass,
+      parameters,
       allAttributes,
       visibleAttributes,
       unfilteredRecords: answer.records,
