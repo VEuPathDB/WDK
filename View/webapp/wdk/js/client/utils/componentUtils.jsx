@@ -156,8 +156,13 @@ function logShallowComparison(obj1, obj2, label = 'Shallow comparison') {
   console.groupEnd(label)
 }
 
+
+/** Create a React Element using preformatted HTML */
 export function safeHtml(str, props = null, Component = 'span') {
-  return <Component {...props} dangerouslySetInnerHTML={{__html: str}}/>
+  // Use innerHTML to auto close tags
+  let container = document.createElement('div');
+  container.innerHTML = str;
+  return <Component {...props} dangerouslySetInnerHTML={{__html: container.innerHTML}}/>
 }
 
 /**

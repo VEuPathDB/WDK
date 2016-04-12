@@ -23,11 +23,14 @@ let Answer = React.createClass({
 
   componentDidMount() {
     this.updateHeight();
+    this.updateWidth();
     $(window).on('resize', this.updateHeight);
+    $(window).on('resize', this.updateWidth);
   },
 
   componentWillUnmount() {
     $(window).off('resize', this.updateHeight);
+    $(window).off('resize', this.updateWidth);
   },
 
   updateHeight() {
@@ -36,9 +39,16 @@ let Answer = React.createClass({
       let node = ReactDOM.findDOMNode(this.refs.records);
       let nodeOffsetTop = getOffsetTop(node);
       let calculatedHeight = window.innerHeight - nodeOffsetTop - 20;
-      let calculatedWidth = node.innerWidth;
       this.setState({
-        height: Math.max(calculatedHeight, minHeight),
+        height: Math.max(calculatedHeight, minHeight)
+      });
+    }
+  },
+
+  updateWidth() {
+    if (this.refs.records) {
+      let node = ReactDOM.findDOMNode(this.refs.records);
+      this.setState({
         width: node.clientWidth
       });
     }
@@ -70,7 +80,7 @@ let Answer = React.createClass({
     let Records = format === 'list' ? RecordList : AnswerTable;
 
     return (
-      <Main className="wdk-AnswerContainer">
+      <div className="wdk-AnswerContainer">
         <h1>{question.displayName}</h1>
         <div>{description}</div>
         <div className="wdk-Answer">
@@ -94,7 +104,7 @@ let Answer = React.createClass({
             onFilter={onFilter}
           />
         </div>
-      </Main>
+      </div>
     );
   }
 
