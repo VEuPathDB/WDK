@@ -68,6 +68,10 @@ body {
   padding: 0 1em;
 }
 
+.wdk-Answer {
+  position: relative;
+}
+
 .wdk-Answer-filter {
   position: relative;
   display: inline-block;
@@ -180,7 +184,7 @@ body {
 .wdk-AnswerTable-AttributeSelectorOpenButton {
   position: absolute;
   right: 2em;
-  top: 3em;
+  top: 0;
   font-size:1.2em;
 }
 .wdk-AnswerTable-attributeValue {
