@@ -75,7 +75,7 @@ class AnswerContainer extends Component {
   // another way would be to have a `sortAnswer` action creator.
   onSort(attribute, direction) {
     let attributeName = attribute.name;
-    let { questionName, recordClassName } = this.props;
+    let { questionName, recordClassName, parameters } = this.props;
     let newSort = { attributeName, direction };
     // Create a new array by removing existing sort def for attribute
     // and adding the new sort def to the beginning of the array, only
@@ -87,8 +87,9 @@ class AnswerContainer extends Component {
     sorting = [newSort].concat(sorting);
 
     let displayInfo = Object.assign({}, this.state.displayInfo, { sorting });
+    let opts = { displayInfo, parameters };
 
-    this.props.dispatchAction(loadAnswer(questionName, recordClassName, { displayInfo }));
+    this.props.dispatchAction(loadAnswer(questionName, recordClassName, opts));
   }
 
   // Call the `moveColumn` action creator. This will cause the state of
