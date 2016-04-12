@@ -1,4 +1,5 @@
 import {Component, PropTypes} from 'react';
+import isEqual from 'lodash/lang/isEqual';
 import {
   updateFilter,
   loadAnswer,
@@ -40,7 +41,7 @@ class AnswerContainer extends Component {
 
   componentWillMount() {
     let state = this.store.getState();
-    if (state.question == null || state.question.urlSegment !== this.props.questionName) {
+    if (state.question == null || state.question.urlSegment !== this.props.questionName || !isEqual(state.parameters, this.props.parameters)) {
       this.fetchAnswer(this.props);
     }
     else {
@@ -52,7 +53,7 @@ class AnswerContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.fetchAnswer(this.props);
+    this.fetchAnswer(nextProps);
   }
 
   componentWillUnmount() {
