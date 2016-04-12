@@ -10,6 +10,12 @@ export let attachmentTypes = [
   { value: "plain", display: "Show in Browser" }
 ];
 
+export let tabularAttachmentTypes = [
+  { value: "text", display: "Text File" },
+  { value: "excel", display: "Excel File**" },
+  { value: "plain", display: "Show in Browser"}
+];
+
 /**
  * Predicate to tell whether a given object should be shown in a reporter form
  */
