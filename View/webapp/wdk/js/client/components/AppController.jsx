@@ -3,29 +3,30 @@
  *
  * This controller is matched and rendered for __any__ route.
  */
-import React from 'react';
-import { wrappable, PureComponent } from '../utils/componentUtils';
+import {cloneElement, Children, Component, PropTypes} from 'react';
+import {wrappable} from '../utils/componentUtils';
 
-/*
- * RouterHandler is a special React component that the router uses to inject
- * matching child routes. For example, when the answer route is matched,
- * AnswerPage will be rendered as a child of RouteHandler.
+/**
+ * Root component
  */
-
-class AppController extends PureComponent {
+class AppController extends Component {
 
   render() {
-    let child = React.Children.only(this.props.children);
+    let child = Children.only(this.props.children);
     let childProps = Object.assign({}, this.props, this.context);
-    return React.cloneElement(child, childProps);
+    return (
+      <div className="wdk-RootContainer">
+        {cloneElement(child, childProps)}
+      </div>
+    );
   }
 
 }
 
 AppController.contextTypes = {
-  stores: React.PropTypes.object.isRequired,
-  dispatchAction: React.PropTypes.func.isRequired,
-  router: React.PropTypes.object.isRequired
+  stores: PropTypes.object.isRequired,
+  dispatchAction: PropTypes.func.isRequired,
+  router: PropTypes.object.isRequired
 };
 
 export default wrappable(AppController);

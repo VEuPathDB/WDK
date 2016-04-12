@@ -1,6 +1,5 @@
-import React from 'react';
-import { Router, Route, IndexRoute, useRouterHistory } from 'react-router';
-import { createHistory, useBasename } from 'history';
+import {cloneElement, Children, PropTypes} from 'react';
+import { Router, Route, IndexRoute } from 'react-router';
 
 import WdkContext from './WdkContext';
 import AppController from './components/AppController';
@@ -14,18 +13,11 @@ import UserProfileController from './components/UserProfileController';
 import SiteMapController from './components/SiteMapController';
 
 /**
- * Get routes based on `rootUrl`.
- *
- * @param {string} rootUrl The rootUrl used to match paths below.
+ * @param {string} history The history used to navigate between routes
  * @param {Object} context Context object passed to WdkContext.
  * @param {Array<Object>} additionalRoutes Route configs to add to router.
  */
-export function create(rootUrl, context, additionalRoutes = []) {
-  // This makes it possible to omit the rootUrl in the Link Component, etc.
-  // The custom history object will preprend the rootUrl.
-  // E.g., it will convert "/record/gene/123" => "/{rootUrl}/record/gene/123".
-  let createAppHistory = useRouterHistory(useBasename(createHistory));
-  let history = createAppHistory({ basename: rootUrl });
+export function create(history, context, additionalRoutes = []) {
   return (
     <WdkContext {...context}>
       <Router history={history}>

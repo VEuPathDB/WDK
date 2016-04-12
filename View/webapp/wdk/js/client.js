@@ -3,6 +3,9 @@
  * with the legacy code-base more easily.
  */
 
+/* global wdk */
+import {cloneElement} from 'react';
+import {render} from 'react-dom';
 import * as WdkClient from './client/main';
 
 wdk.namespace('wdk.client', ns => {
@@ -32,7 +35,7 @@ wdk.namespace('wdk.client', ns => {
     Object.defineProperty(ns, 'runtime', {
       value: runtime
     });
-    initialize = true;
+    initialized = true;
     return runtime;
   }
 
