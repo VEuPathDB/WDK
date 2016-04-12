@@ -1,5 +1,5 @@
 import {cloneElement, Children, PropTypes} from 'react';
-import {render} from 'react-dom';
+import {render, unmountComponentAtNode} from 'react-dom';
 import {Route, Router} from 'react-router';
 import WdkContext from './WdkContext';
 
@@ -10,13 +10,14 @@ import WdkContext from './WdkContext';
 export function create(context, history) {
   return function renderPartial(Component, props, targetNode) {
     let createElement = createPartialElementWith(props, context);
-    return render((
+    render((
       <WdkContext {...context}>
         <Router history={history} createElement={createElement}>
           <Route path="*" component={Component}/>
         </Router>
       </WdkContext>
     ), targetNode);
+    return () => unmountComponentAtNode(targetNode);
   }
 }
 
