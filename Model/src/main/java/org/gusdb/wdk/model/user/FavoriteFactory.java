@@ -235,8 +235,7 @@ public class FavoriteFactory {
     return count;
   }
 
-  public Map<RecordClass, List<Favorite>> getFavorites(User user)
-      throws WdkModelException {
+  public Map<RecordClass, List<Favorite>> getFavorites(User user) throws WdkModelException {
     String sql = "SELECT * FROM " + schema + TABLE_FAVORITES + " WHERE "
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID + " =?"
         + " ORDER BY " + COLUMN_RECORD_CLASS + " ASC, lower("
@@ -272,7 +271,8 @@ public class FavoriteFactory {
           Object value = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
           primaryKeys.put(columns[i - 1], value);
         }
-        PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(recordClass.getPrimaryKeyAttributeField(), primaryKeys);
+        RecordInstance record = new RecordInstance(user, recordClass, primaryKeys);
+        PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(recordClass.getPrimaryKeyAttributeField(), primaryKeys, record);
         Favorite favorite = new Favorite(user);
         favorite.setPrimaryKeys(pkValue);
         favorite.setNote(rs.getString(COLUMN_RECORD_NOTE));
@@ -280,7 +280,7 @@ public class FavoriteFactory {
         list.add(favorite);
       }
       return favorites;
-    } catch (SQLException e) {
+    } catch (SQLException|WdkUserException e) {
       throw new WdkModelException("Cannot get favorites for user "
           + user.getUserId(), e);
     } finally {
