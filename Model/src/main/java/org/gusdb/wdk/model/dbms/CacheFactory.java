@@ -398,7 +398,7 @@ public class CacheFactory {
         queryInfo.setQueryId(queryId);
         queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryId);
       }
-      logger.debug("Get QueryInfo: " + queryInfo);
+      //logger.debug("Get QueryInfo: " + queryInfo);
     }
     catch (SQLException e) {
       logger.debug("Bad sql: " + sql);
