@@ -1,14 +1,15 @@
 import mapValues from 'lodash/object/mapValues';
 import values from 'lodash/object/values';
 import pick from 'lodash/object/pick';
-import ReactDOM from 'react-dom';
+import {createElement} from 'react';
+import * as ReactDOM from 'react-dom';
 
 import { useRouterHistory } from 'react-router';
 import { createHistory } from 'history';
 
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
-import * as Router from './router';
+import WdkApplication from './components/WdkApplication';
 import * as PartialRenderer from './partialRenderer';
 import * as ActionCreators from './actioncreators';
 import * as Components from './components';
@@ -49,10 +50,17 @@ export function initialize({ rootUrl, endpoint, rootElement, applicationRoutes }
   let dispatcher = new Dispatcher;
   let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
   let stores = configureStores(Stores, dispatcher);
-  let history = useRouterHistory(createHistory)({ basename: rootUrl });
   let context = { dispatchAction, stores };
-  let routerElement = Router.create(history, context, applicationRoutes);
-  let render = () => ReactDOM.render(routerElement, rootElement);
+  let render = () => {
+    let applicationElement = createElement(
+      WdkApplication, {
+        rootUrl,
+        dispatchAction,
+        stores,
+        applicationRoutes
+      });
+    return ReactDOM.render(applicationElement, rootElement);
+  };
   let refreshHistory = useRouterHistory(createHistory)({ basename: rootUrl, forceRefresh: true });
   let renderPartial = PartialRenderer.create(context, refreshHistory);
   let unmount = () => ReactDOM.unmountComponentAtNode(rootElement);
@@ -61,7 +69,6 @@ export function initialize({ rootUrl, endpoint, rootElement, applicationRoutes }
     wdkService,
     dispatchAction,
     stores,
-    history,
     render,
     renderPartial,
     unmount

@@ -719,7 +719,7 @@ public class AnswerValue {
     logger.debug("Attribute query [" + attributeQuery.getFullName() + "] integrated.");
   }
 
-  public static PrimaryKeyAttributeValue getPrimaryKeyFromResultList(ResultList resultList, PrimaryKeyAttributeField pkField) throws WdkModelException, WdkUserException {
+  public static PrimaryKeyAttributeValue getPrimaryKeyFromResultList(ResultList resultList, PrimaryKeyAttributeField pkField) throws WdkModelException {
 
     Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
     for (String column : pkField.getColumnRefs()) {
@@ -1331,14 +1331,10 @@ public class AnswerValue {
       return size;
     }
 
-    RecordClass recordClass = _question.getRecordClass();
-    String innerSql = _idsQueryInstance.getSql();
-    int assignedWeight = _idsQueryInstance.getAssignedWeight();
-
-    // ignore invalid filters
-    AnswerFilterInstance filter = recordClass.getFilterInstance(filterName);
-    if (filter != null)
-      innerSql = filter.applyFilter(_user, innerSql, assignedWeight);
+    // create a copy of this AnswerValue, overriding current AnswerFilter with one passed in
+    AnswerValue modifiedAnswer = new AnswerValue(this, _startIndex, _endIndex);
+    modifiedAnswer.setFilterInstance(filterName);
+    String idSql = modifiedAnswer.getIdSql();
 
     // if display count requested, use custom plugin; else use default
     ResultSize countPlugin = (useDisplay ?
@@ -1346,7 +1342,7 @@ public class AnswerValue {
         new DefaultResultSizePlugin());
 
     // get size, cache, and return
-    size = countPlugin.getResultSize(this, innerSql);
+    size = countPlugin.getResultSize(modifiedAnswer, idSql);
     _resultSizesByFilter.put(filterName, size);
     return size;
   }
