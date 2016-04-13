@@ -376,7 +376,7 @@ let AnswerTable = React.createClass({
 
         <Table
           ref="table"
-          width={window.innerWidth - 45}
+          width={this.props.width}
           maxHeight={this.props.height - 32}
           rowsCount={records.length}
           rowHeight={28}

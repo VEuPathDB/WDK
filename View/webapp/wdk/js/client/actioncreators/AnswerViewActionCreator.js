@@ -1,3 +1,4 @@
+import pick from 'lodash/object/pick';
 // Action types
 export let actionTypes = {
   ANSWER_ADDED: 'answer/added',
@@ -64,7 +65,11 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
     let recordClassPromise = wdkService.findRecordClass(hasUrlSegment(recordClassUrlSegment));
     let answerPromise = questionPromise.then(question => {
       // Build XHR request data for '/answer'
-      let questionDefinition = { questionName: question.name, parameters, filters };
+      let questionDefinition = {
+        questionName: question.name,
+        parameters: pick(parameters, question.parameters),
+        filters
+      };
       let formatting = { formatConfig: displayInfo };
       return wdkService.getAnswer(questionDefinition, formatting);
     });
@@ -77,7 +82,8 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
           answer,
           question,
           recordClass,
-          displayInfo
+          displayInfo,
+          parameters
         }
       })
     }, error => {

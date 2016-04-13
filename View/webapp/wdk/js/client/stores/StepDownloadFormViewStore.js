@@ -41,7 +41,7 @@ export default class StepDownloadFormViewStore extends WdkStore {
         return tryInitCompletion(state, userStore);
 
       case actionTypes.STEP_DOWNLOAD_RESET_STORE:
-        return initialize(state, this.getInitialState());
+        return initialize(state, this.getInitialState(), userStore);
 
       case actionTypes.STEP_DOWNLOAD_SELECT_REPORTER:
         return updateReporter(state, payload);
@@ -72,7 +72,7 @@ function formLoading(state, payload) {
 function initialize(state, payload, userStore) {
 
   // only use reporters configured for the report download page
-  let reporters = payload.recordClass.formats.filter(f => f.isInReport);
+  let reporters = payload.recordClass && payload.recordClass.formats.filter(f => f.isInReport);
 
   let partialState = Object.assign({}, state, {
     step: payload.step,

@@ -36,28 +36,38 @@ let StepDownloadFormController = React.createClass({
   },
 
   componentDidMount() {
-    // initialize user store if it isn't already
-    if (this.state.userData.user == null) {
-      this.userActions.loadCurrentUser();
-    }
+    this.handleIncomingProps(this.props);
+  },
 
-    // must reinitialize with every new props
-    let params = this.props.params;
-    if ('stepId' in params) {
-      this.viewActions.loadPageDataFromStepId(params.stepId);
-    }
-    else if ('recordClass' in params) {
-      this.viewActions.loadPageDataFromRecord(params.recordClass, params.splat.split('/').join(','));
-    }
-    else {
-      console.error("Neither stepId nor recordClass param passed to StepDownloadFormController component");
-    }
+  componentWillReceiveProps(nextProps) {
+    this.handleIncomingProps(nextProps);
   },
 
   componentWillUnmount() {
     this.viewActions.unloadPageData();
     this.userStoreSubscription.remove();
     this.storeSubscription.remove();
+  },
+
+  handleIncomingProps(props) {
+    // initialize user store if it isn't already
+    if (this.state.userData.user == null) {
+      this.userActions.loadCurrentUser();
+    }
+
+    // must reinitialize with every new props
+    let params = props.params;
+    if ('stepId' in params) {
+      this.viewActions.loadPageDataFromStepId(params.stepId);
+      this.scope = 'results';
+    }
+    else if ('recordClass' in params) {
+      this.viewActions.loadPageDataFromRecord(params.recordClass, params.splat.split('/').join(','));
+      this.scope = 'record';
+    }
+    else {
+      console.error("Neither stepId nor recordClass param passed to StepDownloadFormController component");
+    }
   },
 
   isStateIncomplete(state) {
@@ -79,13 +89,16 @@ let StepDownloadFormController = React.createClass({
       this.viewActions.submitForm(step, selectedReporter, formState);
     };
 
+    let availableReporters = this.state.viewData.availableReporters
+    .filter(reporter => reporter.scopes.indexOf(this.scope) > -1);
+
     // build props object to pass to form component
     let formProps = {
       step: this.state.viewData.step,
       summaryView: this.props.location.query.summaryView,
       question: this.state.viewData.question,
       recordClass: this.state.viewData.recordClass,
-      availableReporters: this.state.viewData.availableReporters,
+      availableReporters: availableReporters,
       user: this.state.userData.user,
       preferences: this.state.userData.preferences,
       ontology: this.state.viewData.ontology,

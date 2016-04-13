@@ -1,6 +1,5 @@
 import { getChangeHandler, wrappable } from '../utils/componentUtils';
-import { isInReport, getAttributeTree, getAllAttributes, getAllTables, getAttributeSelections } from '../utils/reporterUtils';
-import ReporterCheckboxList from './ReporterCheckboxList';
+import { getAttributeTree, getTableTree, getAttributeSelections } from '../utils/reporterUtils';
 import CategoriesCheckboxTree from './CategoriesCheckboxTree';
 
 let WdkServiceJsonReporterForm = props => {
@@ -13,7 +12,7 @@ let WdkServiceJsonReporterForm = props => {
           // title and layout of the tree
           title="Choose Attributes"
           searchBoxPlaceholder="Search Attributes..."
-          tree={getAttributeTree(ontology, question, recordClass, summaryView)}
+          tree={getAttributeTree(ontology, recordClass, question)}
 
           // state of the tree
           selectedLeaves={formState.attributes}
@@ -26,10 +25,22 @@ let WdkServiceJsonReporterForm = props => {
           onSearchTextChange={getUiUpdateHandler('attributeSearchText')}
       />
 
-      <ReporterCheckboxList title="Choose Tables"
+      <CategoriesCheckboxTree
+          // title and layout of the tree
+          title="Choose Tables"
+          searchBoxPlaceholder="Search Tables..."
+          tree={getTableTree(ontology, recordClass)}
+
+          // state of the tree
+          selectedLeaves={formState.tables}
+          expandedBranches={formUiState.expandedTableNodes}
+          searchText={formUiState.tableSearchText}
+
+          // change handlers for each state element controlled by the tree
           onChange={getUpdateHandler('tables')}
-          fields={getAllTables(recordClass, isInReport)}
-          selectedFields={formState.tables}/>
+          onUiChange={getUiUpdateHandler('expandedTableNodes')}
+          onSearchTextChange={getUiUpdateHandler('tableSearchText')}
+      />
 
       <div style={{width:'30em',textAlign:'center', margin:'0.6em 0'}}>
         <input type="button" value="Submit" onClick={onSubmit}/>

@@ -354,7 +354,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
       $("#query_form_overlay").hide();
     } else {
       // ns.isSpan = false;
-      $("#query_form").remove();
+      $("#query_form").trigger("wdk-query-form-removed").remove();
       $("#query_form_overlay").remove();
       $(".original").remove();
       $("#stage-stack").html("");

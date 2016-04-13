@@ -39,6 +39,8 @@ import org.json.JSONObject;
 public class UserService extends WdkService {
   
   private static final String LOGIN_COOKIE_NAME = "wdk_check_auth";
+  private static final int PREFERENCE_NAME_MAX_LENGTH = 200;
+  private static final int PREFERENCE_VALUE_MAX_LENGTH = 4000;
 
   // ===== OAuth 2.0 + OpenID Connect Support =====
   /**
@@ -118,6 +120,7 @@ public class UserService extends WdkService {
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
       Map<UserProfileProperty, String> profileMap = request.getProfileMap();
       validateRequiredProfileProperties(profileMap, "PUT");
+      validateProfilePropertySizes(profileMap);
       loginCookie = processEmail(user, profileMap.get(UserProfileProperty.EMAIL));
       user.clearProfileProperties();
       for(UserProfileProperty key : profileMap.keySet()) {
@@ -126,6 +129,7 @@ public class UserService extends WdkService {
       Map<String, String> propertiesMap = request.getApplicationSpecificPropertiesMap();
       // Only do a complete replace of profile properties if at least one such property is provided.
       if(!propertiesMap.isEmpty()) {
+        validatePreferenceSizes(propertiesMap);
         user.clearGlobalPreferences();
         for(String key : propertiesMap.keySet()) {
           user.setGlobalPreference(key, propertiesMap.get(key));
@@ -166,11 +170,13 @@ public class UserService extends WdkService {
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
       Map<UserProfileProperty, String> profileMap = request.getProfileMap();
       validateRequiredProfileProperties(profileMap, "PATCH");
+      validateProfilePropertySizes(profileMap);
       loginCookie = processEmail(user, profileMap.get(UserProfileProperty.EMAIL));
       for(UserProfileProperty key : profileMap.keySet()) {
         user.setProfileProperty(key, profileMap.get(key));
       }
       Map<String, String> propertiesMap = request.getApplicationSpecificPropertiesMap();
+      validatePreferenceSizes(propertiesMap);
       for(String key : propertiesMap.keySet()) {
         user.setGlobalPreference(key, propertiesMap.get(key));
       }
@@ -204,6 +210,7 @@ public class UserService extends WdkService {
       JSONObject json = new JSONObject(body);
       UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json);
       Map<String, String> preferencesMap = request.getPreferencesMap();
+      validatePreferenceSizes(preferencesMap);
       user.clearProjectPreferences();
       for(String key : preferencesMap.keySet()) {
         user.setProjectPreference(key, preferencesMap.get(key));
@@ -211,7 +218,7 @@ public class UserService extends WdkService {
       user.save();
       return Response.noContent().build();
     }
-    catch(JSONException | RequestMisformatException  e) {
+    catch(JSONException | RequestMisformatException | WdkUserException  e) {
       return WdkService.getBadRequestBodyResponse(e.getMessage());
     }
   }
@@ -238,13 +245,14 @@ public class UserService extends WdkService {
       JSONObject json = new JSONObject(body);
       UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json);
       Map<String, String> preferencesMap = request.getPreferencesMap();
+      validatePreferenceSizes(preferencesMap);
       for(String key : preferencesMap.keySet()) {
         user.setProjectPreference(key, preferencesMap.get(key));
       }
       user.save();
       return Response.noContent().build();
     }
-    catch(JSONException | RequestMisformatException  e) {
+    catch(JSONException | RequestMisformatException | WdkUserException  e) {
       return WdkService.getBadRequestBodyResponse(e.getMessage());
     }
   }
@@ -270,6 +278,39 @@ public class UserService extends WdkService {
     if(!missingProperties.isEmpty()) {
       String missing = FormatUtil.join(missingProperties.toArray(), ",");
       throw new WdkUserException("The following properties must be present and non-empty: " + missing);
+    }
+  }
+  
+  /**
+   * Validates whether all provided profile property values have string lengths at or below the maximum limit 
+   * @param profileMap - map of values of user profile properties to values.  Note that this map was already scrubbed of
+   * unrecognized profile properties so only the value lengths must be validated and not the property names.
+   * @throws WdkUserException - thrown if one or more user profile properties exceeds its maximum allowed length.
+   */
+  protected void validateProfilePropertySizes(Map<UserProfileProperty, String> profileMap) throws WdkUserException {
+    List<String> lengthyPropertyValues = new ArrayList<>();
+    for(UserProfileProperty property : profileMap.keySet()) {
+      if(property.getMaxLength() < profileMap.get(property).length()) {
+        lengthyPropertyValues.add(property.getJsonPropertyName() + ":" + profileMap.get(property) + " (" + property.getMaxLength() + " max )");
+      }
+    }
+    if(!lengthyPropertyValues.isEmpty()) {
+      String lengthy = FormatUtil.join(lengthyPropertyValues.toArray(), ",");
+      throw new WdkUserException("The following property values exceed their maximum allowed lengths " + lengthy);
+    }
+  }
+  
+  protected void validatePreferenceSizes(Map<String, String> propertiesMap) throws WdkUserException {
+    List<String> lengthyData = new ArrayList<>();
+    for(String property : propertiesMap.keySet()) {
+      if(property.length() > PREFERENCE_NAME_MAX_LENGTH || propertiesMap.get(property).length() > PREFERENCE_VALUE_MAX_LENGTH) {
+        lengthyData.add(property + " : " + propertiesMap.get(property));
+      }
+    }
+    if(!lengthyData.isEmpty()) {
+      String lengthy = FormatUtil.join(lengthyData.toArray(), ",");
+      throw new WdkUserException("The following property names and/or values exceed their maximum allowed legnths of " +
+          PREFERENCE_NAME_MAX_LENGTH + " / " + PREFERENCE_VALUE_MAX_LENGTH + ": " + lengthy);
     }
   }
   

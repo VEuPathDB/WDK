@@ -47,7 +47,7 @@ public class ProcessSummaryViewAction extends Action {
     Map<String, String[]> params = getParamMap(request);
 
     // automatic views return null handlers; use default if this is the case
-    SummaryViewHandler handler = summaryView.getHandler();
+    SummaryViewHandler handler = summaryView.getHandlerInstance();
     if (handler == null) {
       handler = new DefaultSummaryViewHandler();
     }

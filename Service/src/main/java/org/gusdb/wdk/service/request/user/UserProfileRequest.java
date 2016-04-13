@@ -1,9 +1,11 @@
 package org.gusdb.wdk.service.request.user;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.user.User.UserProfileProperty;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.json.JSONException;
@@ -78,13 +80,21 @@ public class UserProfileRequest {
    * @throws JSONException - among other reasons, thrown in the event of a non-string value
    * detail message.
    */
-  protected static Map<UserProfileProperty,String> parseProfile(JSONObject json) throws JSONException {
+  protected static Map<UserProfileProperty,String> parseProfile(JSONObject json) throws JSONException, RequestMisformatException {
     List<String> profileNames = UserProfileProperty.JSON_PROPERTY_NAMES;
+    List<String> unrecognizedProperties = new ArrayList<>();
     Map<UserProfileProperty,String> map = new HashMap<>();
     for(Object key : json.keySet()) {
       if(profileNames.contains(key)) {
         map.put(UserProfileProperty.fromJsonPropertyName((String) key), json.getString((String) key).trim());
       }
+      else if(!APPLICATION_SPECIFIC_PROPERTIES.equals(key)) {
+        unrecognizedProperties.add((String) key);
+      }
+    }
+    if(!unrecognizedProperties.isEmpty()) {
+      String unrecognized = FormatUtil.join(unrecognizedProperties.toArray(), ",");
+      throw new RequestMisformatException("The request contains the following unrecognized profile property names: " + unrecognized);
     }
     return map;
   }

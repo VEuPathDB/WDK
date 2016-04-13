@@ -9,8 +9,8 @@
  *     </Doc>
  *
  */
-import { Component } from 'react';
-import { wrappable } from '../utils/componentUtils';
+import {Component} from 'react';
+import {wrappable} from '../utils/componentUtils';
 
 
 class Doc extends Component {
@@ -25,13 +25,10 @@ class Doc extends Component {
 
   render() {
     return (
-      <div className="wdk-RootContainer">
-        {this.props.children}
-      </div>
+      <div>{this.props.children}</div>
     );
   }
 
 }
-
 
 export default wrappable(Doc);
