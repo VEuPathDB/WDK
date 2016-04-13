@@ -859,7 +859,7 @@ public class AnswerValue {
       else
         sql.append(" AND ");
       sql.append("tqi.").append(column).append(" = pidq.").append(column);
-      sql.append(" ORDER BY pidq.row_index, tqi.row_index")
+      sql.append(" ORDER BY pidq.row_index, tqi.row_index");
     }
 
     // replace the id_sql macro.  this sql must include filters (but not view filters)
