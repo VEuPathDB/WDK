@@ -54,7 +54,7 @@
  */
 
 import { wrappable } from '../utils/componentUtils';
-import { Link } from 'react-router';
+import Link from './Link';
 import CheckboxTree from './CheckboxTree';
 import { getNodeChildren, getPropertyValue } from '../utils/OntologyUtils';
 import { getTargetType, getRefName, getDisplayName, getDescription, getNodeId, getId, searchAggregateText } from '../utils/CategoryUtils';
