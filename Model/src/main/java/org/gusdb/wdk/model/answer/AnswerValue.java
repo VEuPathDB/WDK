@@ -19,6 +19,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -845,9 +846,11 @@ public class AnswerValue {
     QueryInstance<?> queryInstance = tableQuery.makeInstance(_user, params, true, 0,
         new LinkedHashMap<String, String>());
     String tableSql = queryInstance.getSql();
-    StringBuffer sql = new StringBuffer("SELECT tq.* FROM (");
+    DBPlatform platform = _question.getWdkModel().getAppDb().getPlatform();
+    String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() +" as row_index FROM (" + tableSql + ") tq ";
+    StringBuffer sql = new StringBuffer("SELECT tqi.* FROM (");
     sql.append(idSql);
-    sql.append(") pidq, (").append(tableSql).append(") tq WHERE ");
+    sql.append(") pidq, (").append(tableSqlWithRowIndex).append(") tqi WHERE ");
 
     boolean firstColumn = true;
     for (String column : pkField.getColumnRefs()) {
@@ -855,11 +858,12 @@ public class AnswerValue {
         firstColumn = false;
       else
         sql.append(" AND ");
-      sql.append("tq.").append(column).append(" = pidq.").append(column);
+      sql.append("tqi.").append(column).append(" = pidq.").append(column);
+      sql.append(" ORDER BY pidq.row_index, tqi.row_index")
     }
 
     // replace the id_sql macro.  this sql must include filters (but not view filters)
-    String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true));
+    String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true, true));
     return sqlWithIdSql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + _idsQueryInstance.getSql() + ")");
   }
 
@@ -970,13 +974,13 @@ public class AnswerValue {
   }
 
   private String getPagedIdSql() throws WdkModelException, WdkUserException {
-      return getPagedIdSql(false);
+      return getPagedIdSql(false, false);
   }
 
-  private String getPagedIdSql(boolean excludeViewFilters) throws WdkModelException, WdkUserException {
+  private String getPagedIdSql(boolean excludeViewFilters, boolean includeRowIndex) throws WdkModelException, WdkUserException {
     String sortedIdSql = getSortedIdSql(excludeViewFilters);
     DatabaseInstance platform = _question.getWdkModel().getAppDb();
-    String sql = platform.getPlatform().getPagedSql(sortedIdSql, _startIndex, _endIndex);
+    String sql = platform.getPlatform().getPagedSql(sortedIdSql, _startIndex, _endIndex, includeRowIndex);
 
     // add comments to the sql
     sql = " /* a page of sorted ids */ " + sql;
