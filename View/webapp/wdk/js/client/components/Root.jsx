@@ -14,9 +14,10 @@ import SiteMapController from './SiteMapController';
 
 let REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
 let GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
+let RELATIVE_LINK_REGEXP = new RegExp('^((' + location.protocol + ')?//)?' + location.host);
 
-/** Wdk Application */
-export default class WdkApplication extends Component {
+/** Wdk Application Root */
+export default class Root extends Component {
 
   constructor(props, context) {
     super(props, context);
@@ -47,7 +48,7 @@ export default class WdkApplication extends Component {
 
   handleGlobalClick(event) {
     let hasModifiers = event.metaKey || event.altKey || event.shiftKey || event.ctrlKey || event.which !== 1;
-    let href = event.currentTarget.getAttribute('href');
+    let href = event.currentTarget.getAttribute('href').replace(RELATIVE_LINK_REGEXP, '');
     if (!hasModifiers && href.startsWith(this.props.rootUrl)) {
       this.history.push(href.slice(this.props.rootUrl.length));
       event.preventDefault();
@@ -71,14 +72,14 @@ export default class WdkApplication extends Component {
 
 }
 
-WdkApplication.propTypes = {
+Root.propTypes = {
   rootUrl: PropTypes.string,
   dispatchAction: PropTypes.func.isRequired,
   stores: PropTypes.object.isRequired,
   applicationRoutes: PropTypes.array.isRequired
 };
 
-WdkApplication.defaultProps = {
+Root.defaultProps = {
   rootUrl: '/'
 };
 
