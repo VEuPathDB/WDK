@@ -27,10 +27,10 @@ import com.lowagie.text.pdf.PdfWriter;
  * @author steve
  *
  */
-public abstract class ColumnarReporter extends StandardReporter {
+public abstract class AbstractTabularReporter extends StandardReporter {
 
 
-  private static Logger logger = Logger.getLogger(TabularReporter.class);
+  private static Logger logger = Logger.getLogger(AbstractTabularReporter.class);
 
   public static final String PROP_INCLUDE_HEADER = "includeHeader";
   public static final String PROP_COLUMN_DIVIDER = "divider";
@@ -40,7 +40,7 @@ public abstract class ColumnarReporter extends StandardReporter {
   private boolean showHeader = true;
   private String columnDivider = "\t";
 
-  public ColumnarReporter(AnswerValue answerValue, int startIndex, int endIndex) {
+  public AbstractTabularReporter(AnswerValue answerValue, int startIndex, int endIndex) {
       super(answerValue, startIndex, endIndex);
   }
 
@@ -138,7 +138,7 @@ public abstract class ColumnarReporter extends StandardReporter {
   
   protected abstract List<String> getHeader() throws WdkUserException, WdkModelException;
   
-  protected abstract ColumnarReporterRowsProvider getRowsProvider(AnswerValue answerValue) throws WdkUserException, WdkModelException;
+  protected abstract TabularReporterRowsProvider getRowsProvider(AnswerValue answerValue) throws WdkUserException, WdkModelException;
 
   private void format2Text(PrintWriter writer)
       throws WdkModelException, WdkUserException {
@@ -155,7 +155,7 @@ public abstract class ColumnarReporter extends StandardReporter {
     // get page based answers with a maximum size (defined in
     // PageAnswerIterator)
     for (AnswerValue answerValuePage : this) {
-      ColumnarReporterRowsProvider rows = getRowsProvider(answerValuePage);
+      TabularReporterRowsProvider rows = getRowsProvider(answerValuePage);
       try {
 	while (rows.hasNext()) {
 	  List<Object> row = rows.next();
@@ -197,7 +197,7 @@ public abstract class ColumnarReporter extends StandardReporter {
           // get page based answers with a maximum size (defined in
           // PageAnswerIterator)
           for (AnswerValue answerValuePage : this) {
-	    ColumnarReporterRowsProvider rows = getRowsProvider(answerValuePage);
+	    TabularReporterRowsProvider rows = getRowsProvider(answerValuePage);
 	    try {
 	      while (rows.hasNext()) {
                 List<Object> row = rows.next();
@@ -271,7 +271,7 @@ public abstract class ColumnarReporter extends StandardReporter {
       // get page based answers with a maximum size (defined in
       // PageAnswerIterator)
       for (AnswerValue answerValuePage : this) {
-	ColumnarReporterRowsProvider rows = getRowsProvider(answerValuePage);
+	TabularReporterRowsProvider rows = getRowsProvider(answerValuePage);
 	try {
 	  while (rows.hasNext()) {
 	    List<Object> row = rows.next();

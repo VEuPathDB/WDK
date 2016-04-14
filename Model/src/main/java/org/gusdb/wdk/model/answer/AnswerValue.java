@@ -50,7 +50,7 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.report.Reporter;
-import org.gusdb.wdk.model.report.TabularReporter;
+import org.gusdb.wdk.model.report.AttributesTabularReporter;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -626,7 +626,7 @@ public class AnswerValue {
   public Iterable<AnswerValue> getFullAnswers() throws WdkModelException, WdkUserException {
     // user tabular reporter as answer iterator
     int resultSize = this.getResultSize();
-    TabularReporter reporter = new TabularReporter(this, 1, resultSize);
+    AttributesTabularReporter reporter = new AttributesTabularReporter(this, 1, resultSize);
     return reporter;
   }
 

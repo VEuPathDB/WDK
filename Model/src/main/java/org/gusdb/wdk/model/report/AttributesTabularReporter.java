@@ -9,9 +9,9 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
-public class AttributesColumnarReporter extends ColumnarReporter {
+public class AttributesTabularReporter extends AbstractTabularReporter {
 
-  public AttributesColumnarReporter(AnswerValue answerValue, int startIndex, int endIndex) {
+  public AttributesTabularReporter(AnswerValue answerValue, int startIndex, int endIndex) {
     super(answerValue, startIndex, endIndex);
   }
   
@@ -22,7 +22,7 @@ public class AttributesColumnarReporter extends ColumnarReporter {
     return list;
   }
   
-  protected ColumnarReporterRowsProvider getRowsProvider(AnswerValue answerValuePage) throws WdkUserException, WdkModelException {
+  protected TabularReporterRowsProvider getRowsProvider(AnswerValue answerValuePage) throws WdkUserException, WdkModelException {
     return new AttributesRowProvider(answerValuePage, validateAttributeColumns());
   }
 
