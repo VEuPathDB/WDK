@@ -34,13 +34,12 @@ let setupTable = (node, props) => {
 
   let {
     childRow,
+    data,
     sorting,
     searchable,
     height,
     width
   } = props;
-
-  let data = formatData(props.data);
 
   let columns = childRow
     ? [ expandColumn, ...formatColumns(props.columns) ]
@@ -166,12 +165,15 @@ let formatColumns = columns => columns.map(
   column => Object.assign({
     data: column.name,
     className: 'wdk-DataTableCell wdk-DataTableCell__' + column.name,
-    title: column.displayName || column.name
+    title: column.displayName || column.name,
+    render(data, type) {
+      let value = formatAttributeValue(data);
+      if (type === 'display') {
+        return '<div class="wdk-DataTableCellContent">' + value + '</div>'
+      }
+      return value;
+    }
   }, column)
-);
-
-let formatData = data => data.map(
-  row => mapValues(row, value => '<div class="wdk-DataTableCellContent">' + formatAttributeValue(value) + '</div>')
 );
 
 let formatSorting = (columns, sorting) => {

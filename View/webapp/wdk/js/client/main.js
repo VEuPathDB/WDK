@@ -9,7 +9,7 @@ import { createHistory } from 'history';
 
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
-import WdkApplication from './components/WdkApplication';
+import Root from './components/Root';
 import * as PartialRenderer from './partialRenderer';
 import * as ActionCreators from './actioncreators';
 import * as Components from './components';
@@ -53,7 +53,7 @@ export function initialize({ rootUrl, endpoint, rootElement, applicationRoutes }
   let context = { dispatchAction, stores };
   let render = () => {
     let applicationElement = createElement(
-      WdkApplication, {
+      Root, {
         rootUrl,
         dispatchAction,
         stores,
