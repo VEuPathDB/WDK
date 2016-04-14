@@ -130,7 +130,6 @@
             </ul>
           </div>
         </c:if>
-        <imp:image style="margin-bottom: -13px; position: relative; top: -12px;" src="wdk/images/beta2-40.png" />
       </li>
     </c:if>
     <%--
