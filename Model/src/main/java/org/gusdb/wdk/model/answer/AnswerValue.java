@@ -847,10 +847,10 @@ public class AnswerValue {
         new LinkedHashMap<String, String>());
     String tableSql = queryInstance.getSql();
     DBPlatform platform = _question.getWdkModel().getAppDb().getPlatform();
-    String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() +" as row_index FROM (" + tableSql + ") tq ";
+    String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() + " as row_index FROM (" + tableSql + ") tq ";
     StringBuffer sql = new StringBuffer("SELECT tqi.* FROM (");
     sql.append(idSql);
-    sql.append(") pidq, (").append(tableSqlWithRowIndex).append(") tqi WHERE ");
+    sql.append(") pidq, ").append(tableSqlWithRowIndex).append(") tqi WHERE ");
 
     boolean firstColumn = true;
     for (String column : pkField.getColumnRefs()) {
@@ -859,8 +859,8 @@ public class AnswerValue {
       else
         sql.append(" AND ");
       sql.append("tqi.").append(column).append(" = pidq.").append(column);
-      sql.append(" ORDER BY pidq.row_index, tqi.row_index");
     }
+    sql.append(" ORDER BY pidq.row_index, tqi.row_index");
 
     // replace the id_sql macro.  this sql must include filters (but not view filters)
     String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true, true));
