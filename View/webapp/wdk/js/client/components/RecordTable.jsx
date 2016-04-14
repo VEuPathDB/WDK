@@ -47,7 +47,7 @@ let RecordTable = React.createClass({
           columns={columns}
           data={data}
           childRow={this.props.childRow}
-          searchable={this.props.value.length > 10}
+          searchable={this.props.value.length > 1}
         />
       </div>
     );
