@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.StandardReporter;
-import org.gusdb.wdk.model.report.TabularReporter;
+import org.gusdb.wdk.model.report.AttributesTabularReporter;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
 import org.json.JSONException;
@@ -103,9 +103,9 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
       hasHeader = String.valueOf(ADD_HEADER_BY_DEFAULT);
     Reporter reporter = answerValue.createReport(TABULAR_REPORTER_NAME, new MapBuilder<String,String>()
         .put(StandardReporter.Configuration.ATTACHMENT_TYPE, "text")
-        .put(TabularReporter.FIELD_HAS_HEADER, hasHeader.toLowerCase())
-        .put(TabularReporter.FIELD_DIVIDER, FormatUtil.TAB)
-        .put(TabularReporter.FIELD_SELECTED_COLUMNS, getProperty(EXTRACTED_ATTRIBS_PROP_KEY))
+        .put(AttributesTabularReporter.PROP_INCLUDE_HEADER, hasHeader.toLowerCase())
+        .put(AttributesTabularReporter.PROP_COLUMN_DIVIDER, FormatUtil.TAB)
+        .put(StandardReporter.Configuration.SELECTED_FIELDS, getProperty(EXTRACTED_ATTRIBS_PROP_KEY))
         .toMap());
     // write query results to disk
     Path outputFile = Paths.get(getStorageDirectory().toAbsolutePath().toString(), DATA_FILE_NAME);

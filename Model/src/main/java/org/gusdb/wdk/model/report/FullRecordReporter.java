@@ -47,7 +47,7 @@ import com.lowagie.text.pdf.PdfWriter;
  */
 public class FullRecordReporter extends StandardReporter {
 
-    private static Logger logger = Logger.getLogger(TabularReporter.class);
+    private static Logger logger = Logger.getLogger(FullRecordReporter.class);
 
     private static final String NEW_LINE = System.getProperty("line.separator");
 
