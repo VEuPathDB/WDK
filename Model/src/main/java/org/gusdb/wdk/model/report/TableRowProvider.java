@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 import org.gusdb.wdk.model.dbms.ResultList;
 
-public class TableRowProvider implements ColumnarReporterRowsProvider {
+public class TableRowProvider implements TabularReporterRowsProvider {
 
   AnswerValue answerValuePage;
   private int recordInstancesCursor = 0;
