@@ -94,40 +94,35 @@ class RecordController extends Component {
       let basketLoading = basketEntry && basketEntry.isLoading;
       let isInFavorites = favoritesEntry && favoritesEntry.isInFavorites;
       let favoritesLoading = favoritesEntry && favoritesEntry.isLoading;
-      let headerActions = (user.isGuest ? [
-        {
-          label: 'Login for basket and favorites',
-          className: 'open-dialog-login-form',
-          iconClassName: 'fa fa-lg fa-sign-in',
-          onClick(event) {
-            event.preventDefault();
-            console.warn('Replace the className based dialog opening with something else.');
-          }
-        }
-      ] : [
+      // FIXME Replace the open-dialog-login-form approach with a login utility function
+      let headerActions = [
         {
           label: isInBasket ? 'Remove from basket' : 'Add to basket',
+          className: user.isGuest ? 'open-dialog-login-form' : '',
           iconClassName: basketLoading ? loadingClassName : 'fa fa-shopping-basket',
           onClick(event) {
+            if (user.isGuest) return;
             event.preventDefault();
             dispatchAction(updateBasketStatus(recordView.record, !isInBasket));
           }
         },
         {
           label: isInFavorites ? 'Remove from favorites' : 'Add to favorites',
+          className: user.isGuest ? 'open-dialog-login-form' : '',
           iconClassName: favoritesLoading ? loadingClassName : 'fa fa-lg fa-star',
           onClick(event) {
+            if (user.isGuest) return;
             event.preventDefault();
             dispatchAction(updateFavoritesStatus(recordView.record, !isInFavorites));
           }
         },
-      ])
-      .concat({
-        label: 'Download ' + recordView.recordClass.displayName,
-        iconClassName: 'fa fa-lg fa-download',
-        href: '/record/' + recordView.recordClass.urlSegment + '/download/' +
-          recordView.record.id.map(pk => pk.value).join('/')
-      });
+        {
+          label: 'Download ' + recordView.recordClass.displayName,
+          iconClassName: 'fa fa-lg fa-download',
+          href: '/record/' + recordView.recordClass.urlSegment + '/download/' +
+            recordView.record.id.map(pk => pk.value).join('/')
+        }
+      ];
 
       return (
         <Doc title={title}>
