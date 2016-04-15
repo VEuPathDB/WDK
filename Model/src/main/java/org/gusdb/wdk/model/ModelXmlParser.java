@@ -242,10 +242,6 @@ public class ModelXmlParser extends XmlParser {
     model.setResources();
     model.setProperties(properties, replacedMacros);
 
-    // HACK - resolve adminEmail from prop
-    if (config.getAdminEmail() == null)
-      config.setAdminEmail(properties.get("SITE_ADMIN_EMAIL"));
-
     return model;
   }
 
