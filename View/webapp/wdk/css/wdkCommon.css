@@ -15,6 +15,19 @@
   }
 }
 
+/* apply a natural box layout model to all elements, but allowing components to change */
+/* See http://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
+html {
+  box-sizing: border-box;
+  height: 100%;
+}
+
+/* Unfortunately, this does not play well with legacy WDK CSS
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+*/
+
 body { 
   font-size: 12px; 
   text-align: left;
@@ -185,6 +198,15 @@ img[data-assets-src][src] {
 }
 .aleft {
   text-align: left;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   =Root styling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.wdk-RootContainer {
+  height: 100%;
+  background-color: #fcfcfc;
+  padding: 1em 2em;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
