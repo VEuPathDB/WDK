@@ -36,19 +36,6 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
   //file defining error filters
   private static final String FILTER_FILE = "/WEB-INF/wdk-model/config/errorsTag.filter";
   
-  private static String[] PUBLIC_PREFIXES = {
-      "",
-      "qa.",
-      "beta.",
-      "w1.",
-      "w2.",
-      "b1.",
-      "b2.",
-      "q1.",
-      "q2.",
-      "www."
-  };
-  
   @Context HttpServletRequest req;
   @Context ServletContext context;
   
@@ -113,7 +100,6 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
   private static ErrorContext getErrorContext(ServletContext context,
           HttpServletRequest request, WdkModel wdkModel) {
     return new ErrorContext(
-      PUBLIC_PREFIXES,
       wdkModel,
       context.getInitParameter("model"),
       request,

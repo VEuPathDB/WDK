@@ -3,8 +3,6 @@ package org.gusdb.wdk.service.error;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -30,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.wdk.model.WdkException;
 
 public class ErrorHandler {
 
@@ -51,15 +48,12 @@ public class ErrorHandler {
     private final ErrorContext _context;
     private final String _logMarker;
 
-    private boolean _showStacktrace;
-
     public ErrorHandler(Exception exception, Properties filters,
             ErrorContext context) {
         _exception = exception;
         _filters = filters;
         _context = context;
         _logMarker = UUID.randomUUID().toString();
-        _showStacktrace = !_context.isPublicSite();
     }
 
     public void handleErrors() {
@@ -72,9 +66,9 @@ public class ErrorHandler {
 
         // take action on this error depending on context and filter match
         String filterMatchWarning = "";
-        if (_context.siteIsMonitored()) {
+        if (_context.isSiteMonitored()) {
             if (matchedFilterKey == null) {
-                // error did not match filters
+                // error did not match filters, so it is not culled out.
                 constructAndSendMail(_exception, _context, _logMarker);
             }
             else {
@@ -90,14 +84,9 @@ public class ErrorHandler {
 
         // write log marker to log so we can see what was going on around this error
         LOG.error(_logMarker + filterMatchWarning);
-        
-        
     }
 
-    public void setShowStacktrace(boolean showStacktrace) {
-        _showStacktrace = showStacktrace;
-    }
-
+    
     /**
      * Check for matches to filters. Filters are regular expressions in a
      * property file. The file is optional. In which case, no filtering is
@@ -117,7 +106,7 @@ public class ErrorHandler {
      * 
      * twoPartNameIsNull = twoPartName is null twoPartNameIsNull.referer =
      * 
-     * Allowed subkeys are referer ip
+     * Allowed subkeys are referer and ip
      **/
     private static String filterMatch(Exception exception, Properties filters, HttpServletRequest request) {
 
@@ -182,24 +171,25 @@ public class ErrorHandler {
         return null;
     }
 
+    /**
+     * Populate and transmit an email to send to administators as long as adminstrator emails are present.
+     * @param exception
+     * @param context
+     * @param logMarker
+     */
     private static void constructAndSendMail(Exception exception, ErrorContext context, String logMarker) {
-
+      String[] recipients = context.getAdminEmails();
+      if(recipients.length > 0) {
         HttpServletRequest request = context.getRequest();
-        String[] recipients = context.getAdminEmails();
-
-        if (recipients.length == 0) {
-            LOG.error("SITE_ADMIN_EMAIL is not configured in model.prop; cannot send exception report.");
-            return;
-        }
-        
         String from = "tomcat@" + request.getServerName();
         String subject = getEmailSubject(context);
         String message = getEmailBody(exception, context, logMarker);
         sendMail(recipients, from, subject, message.toString());
+      }
     }
 
     private static String getEmailSubject(ErrorContext context) {
-        return context.getProjectName() + " Site Error" + " - " + context.getRequest().getRemoteHost();
+        return context.getProjectName() + " Service Error" + " - " + context.getRequest().getRemoteHost();
     }
 
     private static String getEmailBody(Exception exception, ErrorContext context, String logMarker) {

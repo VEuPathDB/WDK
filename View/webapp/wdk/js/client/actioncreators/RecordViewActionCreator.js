@@ -1,11 +1,5 @@
-import {
-  getTree,
-  nodeHasProperty,
-  getPropertyValue
-} from '../utils/OntologyUtils';
-import {
-  preorderSeq
-} from '../utils/TreeUtils';
+import {getTree, nodeHasProperty, getPropertyValue} from '../utils/OntologyUtils';
+import {preorderSeq} from '../utils/TreeUtils';
 
 export let actionTypes = {
   ACTIVE_RECORD_RECEIVED: 'record/active-record-received',

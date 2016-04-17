@@ -7,11 +7,17 @@
 
 @import 'wdk.libs.css';
 @import 'wdkCommon.css';
-@import 'wdk3.css';
 @import 'wdk-ajax.css';
 @import 'wdk-filter-param.css';
 @import 'dyk.css';
 @import 'Strategy.css';
 @import 'flexigrid.css';
 @import 'wdkFilter.css';
-@import 'checkboxTree.css';
+@import 'wdk-Answer.css';
+@import 'wdk-CollapsibleSection.css';
+@import 'wdk-DataTable.css';
+@import 'wdk-Loading.css';
+@import 'wdk-RadioList.css';
+@import 'wdk-Record.css';
+@import 'wdk-RecordList.css';
+@import 'wdk-CheckboxTree.css';
