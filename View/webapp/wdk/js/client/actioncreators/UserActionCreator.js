@@ -2,6 +2,7 @@
 export let actionTypes = {
   USER_LOADING: 'user/loading',
   USER_INITIALIZE_STORE: 'user/initialize',
+  USER_PROFILE_EDIT: 'user/profile-edit',
   USER_PROFILE_UPDATE: 'user/profile-update',
   USER_PROPERTY_UPDATE: 'user/property-update',
   USER_PREFERENCE_UPDATE: 'user/preference-update',
@@ -31,3 +32,33 @@ export function loadCurrentUser() {
     });
   };
 }
+
+export function editProfile(user) {
+  return {
+    type: actionTypes.USER_PROFILE_EDIT,
+    payload: {user}
+  };
+}
+
+export function updateProfile(user) {
+  return function run(dispatch, { wdkService }) {
+    dispatch({ type: actionTypes.USER_LOADING });
+
+    let userPromise = wdkService.updateCurrentUser(user);
+
+    return userPromise.then(() => {
+        dispatch({
+          type: actionTypes.USER_PROFILE_UPDATE,
+          payload: { user }
+        });
+        return { user };
+      }, error => {
+        dispatch({
+          type: actionTypes.APP_ERROR,
+          payload: { error }
+        });
+        throw error;
+      });
+  };
+}
+
