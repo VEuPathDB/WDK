@@ -7,8 +7,12 @@ let UserProfile = React.createClass({
   render() {
 
     // convert data into easily mappable objects
+    let userKeyData = [{key:'email', label:'Email'},
+                       {key:'firstName', label:"First Name"},
+                       {key:'lastName', label:"Last Name"},
+                       {key:'organization', label:'Organization'}];
     let userFields = toNamedMap(Object.keys(this.props.user)
-      .filter(value => value != 'properties' && value != 'id'), this.props.user);
+      .filter(value => value != 'properties' && value != 'id' && value !== 'isGuest'), this.props.user);
     let properties = toNamedMap(Object.keys(this.props.user.properties), this.props.user.properties);
     let preferences = toNamedMap(Object.keys(this.props.preferences), this.props.preferences);
 
@@ -23,8 +27,8 @@ let UserProfile = React.createClass({
             <div>
               <div>
                 <h1>Your Profile <i className="fa fa-pencil" onClick={this.editProfile}></i></h1>
-                {tableOf(userFields, false)}
-                  <h2>Properties</h2>
+                {userProfile(userKeyData, this.props.user)}
+                <h2>Properties</h2>
                 {tableOf(properties, true, "Name", "Value")}
               </div>
               <h2>Preferences</h2>
@@ -37,10 +41,12 @@ let UserProfile = React.createClass({
   },
 
   editProfile() {
+    this.props.user.confirmEmail = this.props.user.email;
     this.props.userEvents.onEditProfile(this.props.user);
   },
 
   updateProfile() {
+    delete this.props.user.confirmEmail;
     this.props.userEvents.onUpdateProfile(this.props.user);
   },
   
@@ -49,6 +55,16 @@ let UserProfile = React.createClass({
   }
 
 });
+
+function userProfile(keyData, user) {
+  return (
+    <table className="wdk-UserProfile-profileData">
+      <tbody>
+      { keyData.map(item => ( <tr key={item.label}><td>{item.label}:</td><td>{user[item.key]}</td></tr> )) }
+      </tbody>
+    </table>
+  );
+}
 
 function toNamedMap(keys, object) {
   return keys.map(key => ({ name: key, value: object[key] }));
@@ -67,29 +83,36 @@ function tableOf(objArray, addHeader, nameTitle, valueTitle) {
 
 function userForm(user, onFormStateChange, updateProfile, cancelEdit) {
   return(
-    <div className="wdk-userForm">
-      <h1>User Form</h1>
+    <form className="wdk-UserProfile-profileForm" name="userProfileForm">
+      <fieldset>
+        <legend>User Profile</legend>
+        <span>* = required</span>
+        <div>
+          <div><span>*</span><label>Email:</label></div>
+          <TextBox type='email' value={user.email} onChange={getChangeHandler('email', onFormStateChange, user)} maxLength='255' size='100' required placeholder='Your email is used as your unique user id' />
+        </div>
+        <div>
+          <div><span>*</span><label>Retype Email:</label></div>
+          <TextBox type='email' value={user.confirmEmail} onChange={getChangeHandler('confirmEmail', onFormStateChange, user)} maxLength='255' size='100' required placeholder='Your email is used as your unique user id' />
+        </div>
+        <div>
+          <div><span>*</span><label>First Name:</label></div>
+          <TextBox value={user.firstName} onChange={getChangeHandler('firstName', onFormStateChange, user)} maxLength='50' size='25' required />
+        </div>
+        <div>
+          <div><span>*</span><label>Last Name:</label></div>
+          <TextBox value={user.lastName} onChange={getChangeHandler('lastName', onFormStateChange, user)} maxLength='50' size='25' required />
+        </div>
+        <div>
+          <div><span>*</span><label>Organization:</label></div>
+          <TextBox value={user.organization} onChange={getChangeHandler('organization', onFormStateChange, user)} maxLength='255' size='100' required />
+        </div>
+      </fieldset>
       <div>
-        <div><label>First Name:</label></div>
-        <div><TextBox value={user.firstName} onChange={getChangeHandler('firstName', onFormStateChange, user)} /></div>
+        <button onClick={cancelEdit} >Cancel</button>
+        <button onClick={updateProfile} >Submit</button>
       </div>
-      <div>
-        <div><label>Last Name:</label></div>
-        <div><TextBox value={user.lastName} onChange={getChangeHandler('lastName', onFormStateChange, user)} /></div>
-      </div>
-      <div>
-        <div><label>Organization:</label></div>
-        <div><TextBox value={user.organization} onChange={getChangeHandler('organization', onFormStateChange, user)} /></div>
-      </div>
-      <div>
-         <div><label>Email:</label></div>
-         <div><TextBox value={user.email} onChange={getChangeHandler('email', onFormStateChange, user)} /></div>
-      </div>
-      <div>
-        <input type="submit" value="Cancel" onClick={cancelEdit} />
-        <input type="submit" value='Submit' onClick={updateProfile} />
-      </div>
-    </div>
+    </form>
   );
 }
 
