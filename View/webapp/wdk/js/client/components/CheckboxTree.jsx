@@ -120,9 +120,15 @@ let createStatefulTree = (root, getNodeChildren) => {
  */
 let applyPropsToStatefulTree = (root, props, isLeafVisible, stateExpandedList) => {
 
-  let { getNodeId, getNodeChildren, isSelectable, selectedList } = props;
+  let { getNodeId, getNodeChildren, isSelectable, isMultiPick, selectedList } = props;
   let propsExpandedList = props.expandedList;
 
+  // if single-pick then trim selected list so at most 1 item present
+  if (!isMultiPick && selectedList.length > 1) {
+    console.warn("CheckboxTree: isMultiPick = false, but more than one item selected.  Ignoring all but first item.");
+    selectedList = [ selectedList[0] ];
+  }
+  
   // if expanded list is null, then use default rules to determine expansion rather than explicit list
   let expandedList = propsExpandedList != null ? propsExpandedList : stateExpandedList;
   let expansionListProvided = (expandedList != null);
@@ -353,12 +359,19 @@ export default class CheckboxTree extends Component {
    * If toggled checkbox is an unselected non-leaf - identify the node's leaves and remove them from the select list to be returned
    */
   toggleSelection(node, selected) {
-    let { isSelectable, getNodeId, getNodeChildren, selectedList, onSelectionChange } = this.props;
+    let { isSelectable, getNodeId, getNodeChildren, isMultiPick, selectedList, onSelectionChange } = this.props;
     if (!isSelectable) {
       return;
     }
     if (isLeaf(node, getNodeChildren)) {
-      onSelectionChange(addOrRemove(selectedList, getNodeId(node)));
+      if (isMultiPick) {
+        onSelectionChange(addOrRemove(selectedList, getNodeId(node)));
+      }
+      else {
+        // radio button will only fire if changing from unselected -> selected;
+        //   if single-pick, any event means only the clicked node is the new list
+        onSelectionChange([ getNodeId(node) ]);
+      }
     }
     else {
       let newSelectedList = (selectedList ? selectedList.slice() : []);
@@ -382,7 +395,7 @@ export default class CheckboxTree extends Component {
    */
   render() {
     let {
-      name, showRoot, getNodeId, nodeComponent, isSelectable,
+      name, showRoot, getNodeId, nodeComponent, isSelectable, isMultiPick,
       isSearchable, currentList, defaultList, showSearchBox, searchText,
       searchBoxPlaceholder, searchBoxHelp, onSearchTextChange
     } = this.props;
@@ -416,6 +429,7 @@ export default class CheckboxTree extends Component {
               node={node}
               getNodeState={getNodeState}
               isSelectable={isSelectable}
+              isMultiPick={isMultiPick}
               isActiveSearch={isActiveSearch(this.props)}
               toggleSelection={this.toggleSelection}
               toggleExpansion={this.toggleExpansion}
@@ -435,6 +449,7 @@ CheckboxTree.defaultProps = {
   expandedList: null,
   isSelectable: false,
   selectedList: [],
+  isMultiPick: true,
   onSelectionChange: () => {},
   isSearchable: false,
   showSearchBox: true,
@@ -477,6 +492,9 @@ CheckboxTree.propTypes = {
 
   /** List of selected nodes as represented by their ids, defaults to [ ] */
   selectedList: PropTypes.array,
+
+  /** Tells whether more than one selection is allowed; defaults to true.  If false, only the first item in selectedList is selected, and radio boxes are rendered. */
+  isMultiPick: PropTypes.bool,
 
   /** Value to use for the name of the checkboxes in the tree */
   name: PropTypes.string,
