@@ -59,7 +59,7 @@ export default class AnswerViewActionCreator extends ActionCreator {
     // the service, but it doesn't appear to have any effect at this time. We
     // should be passing the attribute in based on info from the RecordClass.
     displayInfo.attributes = "__DISPLAYABLE_ATTRIBUTES__"; // special string for all displayable attributes
-    displayInfo.tables = [];
+    displayInfo.tables = "__DISPLAYABLE_TABLES__";
 
     this._dispatch({ type: actionTypes.ANSWER_LOADING });
 
