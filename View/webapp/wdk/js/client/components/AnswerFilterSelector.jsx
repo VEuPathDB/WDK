@@ -76,12 +76,12 @@ let AnswerFilterSelector = React.createClass({
           <a href="#" onClick={clearAll}>clear all</a>
         </p>
 
-        {recordClass.attributes.map(attr => {
+        {recordClass.attributes.filter(field => field.isDisplayable).map(attr => {
           let isChecked = filterAttributes.includes(attr.name);
           return renderFilterField(attr, isChecked, toggleAttribute);
         })}
 
-        {recordClass.tables.map(table => {
+        {recordClass.tables.filter(field => field.isDisplayable).map(table => {
           let isChecked = filterTables.includes(table.name);
           return renderFilterField(table, isChecked, toggleTable);
         })}
