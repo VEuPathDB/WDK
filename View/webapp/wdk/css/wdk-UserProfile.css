@@ -1,0 +1,30 @@
+.wdk-UserProfile-profileForm fieldset {
+  margin-bottom: 2em;
+  display: inline;
+}
+
+.wdk-UserProfile-profileForm legend {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.wdk-UserProfile-profileForm span {
+  color: red;
+}
+
+.wdk-UserProfile-profileForm fieldset>div {
+  padding: 0.3em;
+}
+
+.wdk-UserProfile-profileForm div>div:first-child {
+  display: inline-block;
+  width: 10em;
+}
+
+.wdk-UserProfile-profileForm div>label {
+  font-weight: bold;
+}
+
+.wdk-UserProfile-profileForm input[type='text|email'] {
+  display: inline-block;
+}
