@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
@@ -144,16 +145,22 @@ public class RecordService extends WdkService {
   @Path("{recordClassName}/instance")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response buildResult(@PathParam("recordClassName") String recordClassName, String body) throws WdkModelException, WdkUserException {
+  public Response buildResult(@PathParam("recordClassName") String recordClassName, String body) throws WdkModelException {
+    RecordInstance recordInstance = null;
     try {
       JSONObject json = new JSONObject(body);
       RecordClass rc = getRecordClass(recordClassName);
       RecordRequest request = RecordRequest.createFromJson(
           getCurrentUser(), json, rc, getWdkModelBean());
-      
-      RecordInstance recordInstance = getRecordInstance(getCurrentUser(), request);
+
+      recordInstance = getRecordInstance(getCurrentUser(), request);
 
       return Response.ok(RecordStreamer.getRecordAsStream(recordInstance, request.getAttributeNames(), request.getTableNames())).build();
+    }
+    catch (WdkUserException | RecordNotFoundException e) {
+      // these may be thrown when the PK values either don't exist or map to >1 record
+      String primaryKeys = (recordInstance == null ? "<unknown>" : recordInstance.getPrimaryKey().getValuesAsString());
+      return getNotFoundResponse(recordClassName + " record with primary key [" + primaryKeys + "]");
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.warn("Passed request body deemed unacceptable", e);

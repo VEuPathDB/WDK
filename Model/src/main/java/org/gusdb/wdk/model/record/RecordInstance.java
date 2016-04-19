@@ -66,7 +66,7 @@ public class RecordInstance extends AttributeValueContainer {
     List<Map<String, Object>> records = recordClass.lookupPrimaryKeys(user,
         pkValues);
     if (records.size() != 1)
-      throw new WdkModelException("The primary key doesn't map to "
+      throw new WdkUserException("The primary key doesn't map to "
           + "singular record: " + pkValues);
 
     pkValues = records.get(0);
@@ -162,7 +162,7 @@ public class RecordInstance extends AttributeValueContainer {
         // throwing exception prevents proper handling in front
         // end...just return?
         isValidRecord = false;
-        throw new WdkModelException("Attribute query " + queryName
+        throw new RecordNotFoundException("Attribute query " + queryName
             + " doesn't return any row: \n" + instance.getSql());
       }
 
