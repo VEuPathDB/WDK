@@ -43,6 +43,7 @@ public class ProjectFormatter {
       .put(Keys.PROJECT_ID, wdkModel.getProjectId())
       .put(Keys.BUILD_NUMBER, wdkModel.getBuildNumber())
       .put(Keys.RELEASE_DATE, wdkModel.getReleaseDate())
+      .put(Keys.STARTUP_TIME, wdkModel.getStartupTime())
       .put(Keys.WEBAPP_URL, config.getWebAppUrl())
       .put(Keys.WEBSERVICE_URL, config.getWebServiceUrl())
       .put(Keys.ASSETS_URL, config.getAssetsUrl())

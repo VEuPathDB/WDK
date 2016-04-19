@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -98,6 +99,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   private String gusHome;
   private ModelConfig modelConfig;
   private String projectId;
+  private long startupTime;
 
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
@@ -201,13 +203,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   @Override
   public WdkModel getInstance(String projectId, String gusHome) throws WdkModelException {
+    Date now = new Date();
     logger.info("Constructing WDK Model for " + projectId + " with GUS_HOME=" + gusHome);
     logger.info("WDK Model constructed by class: " + getCallingClass());
+    logger.info("Startup time " + now + " [" + now.getTime() + "]");
 
     Events.init();
     try {
       ModelXmlParser parser = new ModelXmlParser(gusHome);
       WdkModel wdkModel = parser.parseModel(projectId);
+      wdkModel.setStartupTime(now.getTime());
       wdkModel.doAdditionalStartup();
       logger.info("WDK Model construction complete.");
       return wdkModel;
@@ -298,6 +303,14 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   public String getDisplayName() {
     return displayName;
+  }
+
+  private void setStartupTime(long startupTime) {
+    this.startupTime = startupTime;
+  }
+
+  public long getStartupTime() {
+    return startupTime;
   }
 
   public void addIntroduction(WdkModelText introduction) {
