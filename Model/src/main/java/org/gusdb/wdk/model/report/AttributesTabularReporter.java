@@ -15,6 +15,7 @@ public class AttributesTabularReporter extends AbstractTabularReporter {
     super(answerValue, startIndex, endIndex);
   }
   
+  @Override
   protected List<String> getHeader() throws WdkUserException, WdkModelException {
     Set<AttributeField> attrFields = validateAttributeColumns();
     List<String> list = new ArrayList<String>();
@@ -22,6 +23,7 @@ public class AttributesTabularReporter extends AbstractTabularReporter {
     return list;
   }
   
+  @Override
   protected TabularReporterRowsProvider getRowsProvider(AnswerValue answerValuePage) throws WdkUserException, WdkModelException {
     return new AttributesRowProvider(answerValuePage, validateAttributeColumns());
   }
