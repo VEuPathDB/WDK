@@ -3,7 +3,7 @@ import { wrappable } from '../utils/componentUtils';
 import Doc from './Doc';
 import Loading from './Loading';
 import UserProfile from './UserProfile';
-import { loadCurrentUser } from '../actioncreators/UserActionCreator';
+import { loadCurrentUser, editProfile, updateProfile } from '../actioncreators/UserActionCreator';
 
 let UserProfileController = React.createClass({
 
@@ -19,6 +19,9 @@ let UserProfileController = React.createClass({
 
     // get current user store state
     this.setState(this.userStore.getState());
+    for (let key in this.userEvents) {
+      this.userEvents[key] = this.userEvents[key].bind(this);
+    }
   },
 
   componentDidMount() {
@@ -32,12 +35,30 @@ let UserProfileController = React.createClass({
     this.userStoreSubscription.remove();
   },
 
+  userEvents: {
+    onEditProfile: function(user) {
+      this.props.dispatchAction(editProfile(user));
+    },
+    onFormStateChange: function(newState) {
+      this.setState({user: newState});
+      Object.keys(newState).forEach(key => {
+        console.log(key + " => " + newState[key]);
+      });
+    },
+    onUpdateProfile: function(user) {
+      this.props.dispatchAction(updateProfile(user));
+    },
+    onCancelEdit: function(user) {
+      this.props.dispatchAction(loadCurrentUser());
+    }
+  },
+
   render() {
     let title = "User Profile";
     if (this.state.user == null || this.state.isLoading) {
       return ( <Doc title={title}><Loading/></Doc> );
     }
-    return ( <Doc title={title}><UserProfile {...this.state}/></Doc> );
+    return ( <Doc title={title}><UserProfile {...this.state} userEvents={this.userEvents}/></Doc> );
   }
 });
 

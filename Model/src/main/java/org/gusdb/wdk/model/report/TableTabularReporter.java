@@ -24,17 +24,19 @@ public class TableTabularReporter extends AbstractTabularReporter {
     if (tableField == null) {
       Set<Field> fields = validateColumns();
       for (Field field : fields) {
-	if (field instanceof AttributeField) {
-	  throw new WdkUserException("This report is for Tables only, not custom columns");
-	} else if (field instanceof TableField) {
-	  if (tableField != null) throw new WdkUserException("This report supports only a single table");
-	  tableField = (TableField) field;
-	}
+        if (field instanceof AttributeField) {
+          throw new WdkUserException("This report is for Tables only, not custom columns");
+        }
+        else if (field instanceof TableField) {
+          if (tableField != null) throw new WdkUserException("This report supports only a single table");
+          tableField = (TableField) field;
+        }
       }
     }
     return tableField;
   }
   
+  @Override
   protected List<String> getHeader() throws WdkUserException, WdkModelException {
     AttributeField[] fields = getTableField().getAttributeFields(FieldScope.REPORT_MAKER);
     List<String> list = new ArrayList<String>();
@@ -42,6 +44,7 @@ public class TableTabularReporter extends AbstractTabularReporter {
     return list;
   }
   
+  @Override
   protected TabularReporterRowsProvider getRowsProvider(AnswerValue answerValuePage) throws WdkUserException, WdkModelException {
     return new TableRowProvider(answerValuePage, getTableField());
   }

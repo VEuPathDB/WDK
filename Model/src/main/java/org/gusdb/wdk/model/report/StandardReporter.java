@@ -51,6 +51,11 @@ public abstract class StandardReporter extends Reporter {
     return "This reporter does not have config info yet.";
   }
 
+  /**
+   * @return set of validated fields
+   * @throws WdkModelException if an error occurs while validating
+   * @throws WdkUserException if column inputs are invalid
+   */
   protected Set<Field> validateColumns() throws WdkModelException, WdkUserException {
     // get a map of report maker fields
     Map<String, Field> fieldMap = getQuestion().getFields(FieldScope.REPORT_MAKER);

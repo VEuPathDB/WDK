@@ -6,6 +6,32 @@ import AccordionButton from './AccordionButton';
 const visibleElement = {display: "block"};
 const hiddenElement = {display: "none"};
 
+
+/**
+ * Expects the following props:
+ *   name: string
+ *   checked: bool
+ *   value: string
+ *   node: object
+ *   onChange: func
+ */
+class TreeRadio extends Component {
+
+  handleClick(event) {
+    let { checked, onChange, node } = this.props;
+    if (!checked) {
+      onChange(node, false);
+    }
+  }
+
+  render() {
+    let { name, checked, value } = this.props;
+    return (
+      <input type="radio" name={name} value={value} checked={checked} onChange={this.handleClick.bind(this)} />
+    );
+  }
+}
+
 class CheckboxTreeNode extends Component {
 
   shouldComponentUpdate(nextProps) {
@@ -18,6 +44,7 @@ class CheckboxTreeNode extends Component {
       node,
       getNodeState,
       isSelectable,
+      isMultiPick,
       isActiveSearch,
       toggleSelection,
       toggleExpansion,
@@ -39,15 +66,21 @@ class CheckboxTreeNode extends Component {
         {isLeafNode || isActiveSearch ? "" :
           (<AccordionButton expanded={isExpanded} node={node} toggleExpansion={toggleExpansion} />) }
         <label>
-          {isSelectable ?
-            <IndeterminateCheckbox
-              name={name}
-              checked={isSelected}
-              indeterminate={isIndeterminate}
-              node={node}
-              value={getNodeId(node)}
-              toggleCheckbox={toggleSelection} />
-            : ""
+          {!isSelectable || (!isMultiPick && !isLeafNode) ? "" :
+            isMultiPick ?
+              <IndeterminateCheckbox
+                name={name}
+                checked={isSelected}
+                indeterminate={isIndeterminate}
+                node={node}
+                value={getNodeId(node)}
+                toggleCheckbox={toggleSelection} /> :
+              <TreeRadio
+                name={name}
+                checked={isSelected}
+                value={getNodeId(node)}
+                node={node}
+                onChange={toggleSelection} />
           }
           <NodeComponent node={node} />
         </label>
@@ -60,6 +93,7 @@ class CheckboxTreeNode extends Component {
                 node={child}
                 getNodeState={getNodeState}
                 isSelectable={isSelectable}
+                isMultiPick={isMultiPick}
                 isActiveSearch={isActiveSearch}
                 toggleSelection={toggleSelection}
                 toggleExpansion={toggleExpansion}

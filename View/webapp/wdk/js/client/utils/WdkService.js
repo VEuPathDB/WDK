@@ -208,6 +208,13 @@ export default class WdkService {
     return fetchJson('get', this._serviceUrl + '/user/current');
   }
 
+  updateCurrentUser(user) {
+    let data = JSON.stringify({'firstName':user.firstName,'lastName':user.lastName,'organization':user.organization,'email':user.email });
+    let method = 'put';
+    let url = this._serviceUrl + '/user/current/profile';
+    return fetchJson(method, url, data).then(() => status);
+  }
+
   getCurrentUserPreferences() {
     return fetchJson('get', this._serviceUrl + '/user/current/preference');
   }
@@ -356,7 +363,7 @@ function fetchJson(method, url, body) {
       if (xhr.readyState !== 4) return;
 
       if (xhr.status >= 200 && xhr.status < 300) {
-        var json = JSON.parse(xhr.response);
+        var json = xhr.status === 204 ? null : JSON.parse(xhr.response);
         resolve(json, xhr.statusText, xhr);
       }
       else {

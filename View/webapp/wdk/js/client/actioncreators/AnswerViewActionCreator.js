@@ -57,7 +57,7 @@ export function loadAnswer(questionUrlSegment, recordClassUrlSegment, opts = {})
     // the service, but it doesn't appear to have any effect at this time. We
     // should be passing the attribute in based on info from the RecordClass.
     displayInfo.attributes = "__DISPLAYABLE_ATTRIBUTES__"; // special string for all displayable attributes
-    displayInfo.tables = [];
+    displayInfo.tables = "__DISPLAYABLE_TABLES__";         // special string for all displayable tables
 
     dispatch({ type: actionTypes.ANSWER_LOADING });
 

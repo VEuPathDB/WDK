@@ -23,10 +23,12 @@ public class AttributesRowProvider implements TabularReporterRowsProvider {
     this.fields = fields;
   }
    
+  @Override
   public boolean hasNext() throws WdkModelException, WdkUserException {
     return recordInstancesCursor < answerValuePage.getRecordInstances().length;
   }
   
+  @Override
   public List<Object> next() throws WdkModelException, WdkUserException {
     if (!hasNext()) throw new NoSuchElementException();
     RecordInstance record = answerValuePage.getRecordInstances()[recordInstancesCursor++];
@@ -38,5 +40,6 @@ public class AttributesRowProvider implements TabularReporterRowsProvider {
     return values;
   }
  
+  @Override
   public void close() throws WdkModelException, WdkUserException {}
 }
