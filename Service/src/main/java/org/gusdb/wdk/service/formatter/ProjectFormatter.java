@@ -12,10 +12,12 @@ import org.json.JSONObject;
  *   displayName; String,
  *   projectId: String,
  *   buildNumber: Number,
- *   releaseData: String,
+ *   releaseDate: String,
+ *   startupTime: Number,
  *   webAppUrl: String (relative URL),
  *   webServiceUrl: String (relative URL),
  *   assetsUrl: String (relative URL),
+ *   categoriesOntologyName: String,
  *   authentication: {
  *     method: String (see AuthenticationMethod enum),
  *     oauthUrl: String (absolute URL),
@@ -47,7 +49,7 @@ public class ProjectFormatter {
       .put(Keys.WEBAPP_URL, config.getWebAppUrl())
       .put(Keys.WEBSERVICE_URL, config.getWebServiceUrl())
       .put(Keys.ASSETS_URL, config.getAssetsUrl())
-      .put(Keys.AUTHENTICATION, authConfig)
-      .put(Keys.CATEGORIES_ONTOLOGY_NAME, wdkModel.getCategoriesOntologyName());
+      .put(Keys.CATEGORIES_ONTOLOGY_NAME, wdkModel.getCategoriesOntologyName())
+      .put(Keys.AUTHENTICATION, authConfig);
   }
 }
