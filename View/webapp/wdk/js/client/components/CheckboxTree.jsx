@@ -128,12 +128,16 @@ let applyPropsToStatefulTree = (root, props, isLeafVisible, stateExpandedList) =
     console.warn("CheckboxTree: isMultiPick = false, but more than one item selected.  Ignoring all but first item.");
     selectedList = [ selectedList[0] ];
   }
-  
+
   // if expanded list is null, then use default rules to determine expansion rather than explicit list
   let expandedList = propsExpandedList != null ? propsExpandedList : stateExpandedList;
   let expansionListProvided = (expandedList != null);
-  let generatedExpandedList = [];
+  let generatedExpandedList = new Set();
 
+  // convert arrays to sets for search efficiency
+  selectedList = new Set(selectedList);
+  expandedList = new Set(expandedList);
+  
   let mapFunction = (node, mappedChildren) => {
 
     let nodeId = getNodeId(node);
@@ -143,7 +147,7 @@ let applyPropsToStatefulTree = (root, props, isLeafVisible, stateExpandedList) =
 
     if (isLeaf(node, getNodeChildren)) {
       // only leaves can change via direct selectedness and direct visibility
-      let newIsSelected = (isSelectable && selectedList.indexOf(nodeId) !== -1);
+      let newIsSelected = (isSelectable && selectedList.has(nodeId));
       let newIsVisible = isLeafVisible(nodeId);
       if (newIsSelected !== isSelected || newIsVisible != isVisible) {
         modifyThisNode = true;
@@ -183,12 +187,11 @@ let applyPropsToStatefulTree = (root, props, isLeafVisible, stateExpandedList) =
       let newIsIndeterminate = !newIsSelected && (indeterminateChildFound || selectedChildFound);
       let newIsVisible = visibleChildFound;
       let newIsExpanded = (isActiveSearch(props) && newIsVisible) ||
-          (expansionListProvided ?
-              (expandedList.indexOf(nodeId) !== -1) :
+          (expansionListProvided ? expandedList.has(nodeId) :
               (indeterminateChildFound || (selectedChildFound && unselectedChildFound)));
 
       if (!expansionListProvided && newIsExpanded) {
-        generatedExpandedList.push(nodeId);
+        generatedExpandedList.add(nodeId);
       }
 
       if (modifyThisNode ||
@@ -214,7 +217,8 @@ let applyPropsToStatefulTree = (root, props, isLeafVisible, stateExpandedList) =
   // generate the new stateful tree, and expanded list (if necessary)
   let newStatefulTree = mapStructure(mapFunction, getStatefulChildren, root);
   return {
-    expandedList: (expansionListProvided ? expandedList : generatedExpandedList),
+    // convert whichever Set we want back to an array
+    expandedList: [...(expansionListProvided ? expandedList : generatedExpandedList)],
     statefulTree: newStatefulTree
   };
 };
