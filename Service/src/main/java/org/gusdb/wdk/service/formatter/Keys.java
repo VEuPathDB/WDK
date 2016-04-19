@@ -105,6 +105,7 @@ public class Keys {
   public static final String PROJECT_ID = "projectId";
   public static final String BUILD_NUMBER = "buildNumber";
   public static final String RELEASE_DATE = "releaseDate";
+  public static final String STARTUP_TIME = "startupTime";
   public static final String WEBAPP_URL = "webAppUrl";
   public static final String WEBSERVICE_URL = "webServiceUrl";
   public static final String ASSETS_URL = "assetsUrl";
