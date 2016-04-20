@@ -41,7 +41,7 @@ public class UserFormatter {
     // private fields viewable only by owner
     if (isOwner) {
       json.put(Keys.EMAIL, user.getEmail())
-          .put(Keys.PROPERTIES, getUserPrefsJson(user.getGlobalPreferences()));
+          .put(Keys.APPLICATION_SPECIFIC_PROPERTIES, getUserPrefsJson(user.getGlobalPreferences()));
       if (includePreferences) {
         json.put(Keys.PREFERENCES, getUserPrefsJson(user.getProjectPreferences()));
       }
