@@ -3,7 +3,7 @@ import { wrappable } from '../utils/componentUtils';
 import Doc from './Doc';
 import Loading from './Loading';
 import UserProfile from './UserProfile';
-import { loadCurrentUser, editProfile, updateProfile } from '../actioncreators/UserActionCreator';
+import { loadCurrentUser, editProfile, updateProfile, saveProfile } from '../actioncreators/UserActionCreator';
 
 let UserProfileController = React.createClass({
 
@@ -11,10 +11,14 @@ let UserProfileController = React.createClass({
 
     // get store used in this view controller
     this.userStore = this.props.stores.UserStore;
+    this.profileViewStore = this.props.stores.ProfileViewStore;
 
     // subscribe to changes in user store
     this.userStoreSubscription = this.userStore.addListener(() => {
       this.setState(this.userStore.getState());
+    });
+    this.profileViewStoreSubscription = this.profileViewStore.addListener(() => {
+      this.setState(this.profileViewStore.getState());
     });
 
     // get current user store state
@@ -33,6 +37,7 @@ let UserProfileController = React.createClass({
 
   componentWillUnmount() {
     this.userStoreSubscription.remove();
+    this.profileViewStore.remove();
   },
 
   userEvents: {
@@ -40,13 +45,21 @@ let UserProfileController = React.createClass({
       this.props.dispatchAction(editProfile(user));
     },
     onFormStateChange: function(newState) {
-      this.setState({user: newState});
-      Object.keys(newState).forEach(key => {
-        console.log(key + " => " + newState[key]);
-      });
+      this.props.dispatchAction(updateProfile(newState));
     },
-    onUpdateProfile: function(user) {
-      this.props.dispatchAction(updateProfile(user));
+    onEmailPreferenceChange: function(newPreferences) {
+      // Remove email preference properties
+      let properties = this.state.user.properties;
+      Object.keys(properties).forEach(function (key) {
+        if(key.startsWith('preference_global_email_')) delete properties[key];
+      });
+      // Replace with new email preferences
+      let newProperties = newPreferences.reduce((currentPreferences, newPreference) => Object.assign(currentPreferences, {[newPreference]: "on"}), properties);
+      this.setState(Object.assign({}, this.state.user, {properties : newProperties}));
+      this.props.dispatchAction(updateProfile(this.state.user));
+    },
+    onSaveProfile: function(user) {
+      this.props.dispatchAction(saveProfile(this.state.user));
     },
     onCancelEdit: function(user) {
       this.props.dispatchAction(loadCurrentUser());
