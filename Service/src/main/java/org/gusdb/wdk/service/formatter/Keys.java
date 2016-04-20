@@ -124,6 +124,7 @@ public class Keys {
   public static final String EMAIL = "email";
   public static final String ORGANIZATION = "organization";
   public static final String IS_GUEST = "isGuest";
+  public static final String APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
   public static final String PREFERENCES = "preferences";
 
 }
