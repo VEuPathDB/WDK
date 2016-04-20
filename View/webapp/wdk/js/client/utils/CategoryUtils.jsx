@@ -74,9 +74,11 @@ export function addSearchSpecificSubtree(question, categoryTree) {
  * @param node - given id
  * @returns {*} - id/value of node
  */
-export let getNodeId = node =>
-  // FIXME: document why the special case for attributes
-  getTargetType(node) === 'attribute' ? getRefName(node) : getId(node);
+export let getNodeId = function(node) {
+  // FIXME: document why the special case for attributes and tables
+  let targetType = getTargetType(node);
+  return (targetType === 'attribute' || targetType === 'table' ? getRefName(node) : getId(node));
+}
 
 /**
  * Create a predicate function to filter out of the Categories ontology tree those items appropriate for the given
