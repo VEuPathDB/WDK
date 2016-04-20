@@ -1,3 +1,9 @@
+i.edit {
+  font-size: 0.5em;
+  cursor: pointer;
+  margin-left: 0.5em;
+}
+
 .wdk-UserProfile-profileForm fieldset {
   margin-bottom: 2em;
   display: inline;
@@ -8,23 +14,37 @@
   font-weight: bold;
 }
 
-.wdk-UserProfile-profileForm span {
+.wdk-UserProfile-profileForm i {
   color: red;
+  font-size: 0.75em;
+  margin-right: 0.4em;
 }
 
 .wdk-UserProfile-profileForm fieldset>div {
   padding: 0.3em;
 }
 
-.wdk-UserProfile-profileForm div>div:first-child {
+.wdk-UserProfile-profileForm label {
   display: inline-block;
   width: 10em;
-}
-
-.wdk-UserProfile-profileForm div>label {
   font-weight: bold;
 }
 
 .wdk-UserProfile-profileForm input[type='text|email'] {
   display: inline-block;
+}
+
+.wdk-UserProfile-profileForm  .wdk-CheckboxListItem {
+  display: inline;
+  line-height: 1.5em;
+
+}
+
+.wdk-UserProfile-profileForm  .wdk-CheckboxListItem:nth-child(6n):after {
+  content: ' ';
+  display: block;
+}
+
+.wdk-UserProfile-profileForm .wdk-CheckboxListItem input {
+  margin-right: 0.5em;
 }

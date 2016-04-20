@@ -6,6 +6,7 @@ export let actionTypes = {
   USER_PROFILE_UPDATE: 'user/profile-update',
   USER_PROPERTY_UPDATE: 'user/property-update',
   USER_PREFERENCE_UPDATE: 'user/preference-update',
+  USER_PROFILE_SAVE: 'user/profile-save',
   APP_ERROR: 'user/error'
 };
 
@@ -41,6 +42,13 @@ export function editProfile(user) {
 }
 
 export function updateProfile(user) {
+  return {
+    type: actionTypes.USER_PROFILE_UPDATE,
+    payload: {user}
+  }
+}
+
+export function saveProfile(user) {
   return function run(dispatch, { wdkService }) {
     dispatch({ type: actionTypes.USER_LOADING });
 
@@ -48,7 +56,7 @@ export function updateProfile(user) {
 
     return userPromise.then(() => {
         dispatch({
-          type: actionTypes.USER_PROFILE_UPDATE,
+          type: actionTypes.USER_PROFILE_SAVE,
           payload: { user }
         });
         return { user };
