@@ -18,8 +18,17 @@ let UserProfile = React.createClass({
      */
     let userKeyData = [{key:'email', label:'Email'},
                        {key:'firstName', label:"First Name"},
+                       {key:'middleName', label:'Middle Name'},
                        {key:'lastName', label:"Last Name"},
-                       {key:'organization', label:'Organization'}];
+                       {key:'title', label:'Title'},
+                       {key:'department', label:'Department'},
+                       {key:'organization', label:'Organization'},
+                       {key:'address', label:'Street Address'},
+                       {key:'city', label:"City"},
+                       {key:'state', label:'State'},
+                       {key:'country', label:'Country'},
+                       {key:'zipCode', label:'Postal Code'},
+                       {key:'phoneNumber',label:'Phone Number'}];
 
     /**
      * Provides hardcode relationships between user email preferences and the display labels in the order the data
@@ -47,7 +56,8 @@ let UserProfile = React.createClass({
         {this.props.user !== null && !this.props.user.isGuest ?
           this.props.isEdit ?
             <div>
-              {userForm(this.props.user, emailPreferenceData, emailPreferenceSelections,
+              <h1>Profile Form</h1>
+              {userForm(this.props.user, emailPreferenceData, emailPreferenceSelections, this.onEmailChange,
                         this.props.userEvents.onFormStateChange, this.props.userEvents.onEmailPreferenceChange,
                         this.saveProfile, this.cancelEdit)}
             </div>
@@ -66,16 +76,39 @@ let UserProfile = React.createClass({
     );
   },
 
+  validateEmailConfirmation() {
+    let userEmail = document.getElementById("userEmail");
+    let confirmUserEmail = document.getElementById("confirmUserEmail");
+    if(userEmail != null  && confirmUserEmail != null) {
+      userEmail.value !== confirmUserEmail.value ? confirmUserEmail.setCustomValidity("Both email entries must match.") : confirmUserEmail.setCustomValidity("");
+    }
+  },
+
+  onEmailChange(newState) {
+    this.validateEmailConfirmation();
+    this.props.userEvents.onFormStateChange(newState);
+  },
+
   editProfile() {
     this.props.user.confirmEmail = this.props.user.email;
     this.props.userEvents.onEditProfile(this.props.user);
   },
 
   saveProfile(event) {
-    console.log("Reached save");
-    delete this.props.user.confirmEmail;
     event.preventDefault();
-    this.props.userEvents.onSaveProfile(this.props.user);
+    this.validateEmailConfirmation();
+    let inputs = document.querySelectorAll("input[type=text],input[type=email]");
+    let valid = true;
+    for(let input of inputs) {
+      if(!input.checkValidity()) {
+        valid = false;
+        break;
+      }
+    }
+    if(valid) {
+      delete this.props.user.confirmEmail;
+      this.props.userEvents.onSaveProfile(this.props.user);
+    }
   },
   
   cancelEdit() {
@@ -115,36 +148,76 @@ function tableOf(objArray, addHeader, nameTitle, valueTitle) {
   );
 }
 
-function userForm(user, emailPreferenceData, emailPreferenceSelections, onFormStateChange, onEmailPreferenceChange, saveProfile, cancelEdit) {
+function userForm(user, emailPreferenceData, emailPreferenceSelections, onEmailChange, onFormStateChange, onEmailPreferenceChange, saveProfile, cancelEdit) {
   return(
     <form className="wdk-UserProfile-profileForm" name="userProfileForm" onSubmit={saveProfile} >
       <p><i className="fa fa-asterisk"></i> = required</p>
       <fieldset>
         <legend>Identification</legend>
         <div>
-          <label><i className="fa fa-asterisk"></i>Email:</label>
-          <TextBox type='email' value={user.email} onChange={getChangeHandler('email', onFormStateChange, user)} maxLength='255' size='100' required placeholder='Your email is used as your unique user id' />
+          <label htmlFor="userEmail"><i className="fa fa-asterisk"></i>Email:</label>
+          <TextBox type='email' id='userEmail'
+                   value={user.email} onChange={getChangeHandler('email', onEmailChange, user)}
+                   maxLength='255' size='100' required placeholder='Your email is used as your unique user id' />
         </div>
         <div>
-          <label><i className="fa fa-asterisk"></i>Retype Email:</label>
-          <TextBox type='email' value={user.confirmEmail} onChange={getChangeHandler('confirmEmail', onFormStateChange, user)} maxLength='255' size='100' required placeholder='Your email is used as your unique user id' />
+          <label htmlFor="confirmUserEmail"><i className="fa fa-asterisk"></i>Retype Email:</label>
+          <TextBox type='email' id='confirmUserEmail'
+                   value={user.confirmEmail} onChange={getChangeHandler('confirmEmail', onEmailChange, user)}
+                   maxLength='255' size='100' required placeholder='Your email is used as your unique user id' />
         </div>
         <div>
-          <label><i className="fa fa-asterisk"></i>First Name:</label>
-          <TextBox value={user.firstName} onChange={getChangeHandler('firstName', onFormStateChange, user)} maxLength='50' size='25' required />
+          <label htmlFor="firstName"><i className="fa fa-asterisk"></i>First Name:</label>
+          <TextBox id="firstName" value={user.firstName} onChange={getChangeHandler('firstName', onFormStateChange, user)} maxLength='50' size='25' required />
         </div>
         <div>
-          <label><i className="fa fa-asterisk"></i>Last Name:</label>
-          <TextBox value={user.lastName} onChange={getChangeHandler('lastName', onFormStateChange, user)} maxLength='50' size='25' required />
+          <label htmlFor="middleName">Middle Name:</label>
+          <TextBox id="middleName" value={user.middleName} onChange={getChangeHandler('middleName', onFormStateChange, user)} maxLength='50' size='25'/>
         </div>
         <div>
-          <label><i className="fa fa-asterisk"></i>Organization:</label>
-          <TextBox value={user.organization} onChange={getChangeHandler('organization', onFormStateChange, user)} maxLength='255' size='100' required />
+          <label htmlFor="lastName"><i className="fa fa-asterisk"></i>Last Name:</label>
+          <TextBox id="lastName" value={user.lastName} onChange={getChangeHandler('lastName', onFormStateChange, user)} maxLength='50' size='25' required />
+        </div>
+        <div>
+          <label htmlFor="title">Title:</label>
+          <TextBox id="title" value={user.title} onChange={getChangeHandler('title', onFormStateChange, user)} maxLength='50' size='25' />
+        </div>
+        <div>
+          <label htmlFor="department">Department:</label>
+          <TextBox id="department" value={user.department} onChange={getChangeHandler('department', onFormStateChange, user)} maxLength='50' size='25' />
+        </div>
+        <div>
+          <label htmlFor="organization"><i className="fa fa-asterisk"></i>Organization:</label>
+          <TextBox id="organization" value={user.organization} onChange={getChangeHandler('organization', onFormStateChange, user)} maxLength='255' size='100' required />
         </div>
       </fieldset>
       <br />
       <fieldset>
-        <legend>Address Info</legend>
+        <legend>Contact Info</legend>
+        <div>
+          <label htmlFor="streetAddress">Street Address:</label>
+          <TextBox id="streetAddress" value={user.address} onChange={getChangeHandler('address', onFormStateChange, user)} maxLength='500' size='200'/>
+        </div>
+        <div>
+          <label htmlFor="city">City:</label>
+          <TextBox id="city" value={user.city} onChange={getChangeHandler('city', onFormStateChange, user)} maxLength='255' size='100'/>
+        </div>
+        <div>
+          <label htmlFor="state">State:</label>
+          <TextBox id="state" value={user.state} onChange={getChangeHandler('state', onFormStateChange, user)} maxLength='255' size='100'/>
+        </div>
+        <div>
+          <label htmlFor="country">Country:</label>
+          <TextBox id="country" value={user.country} onChange={getChangeHandler('country', onFormStateChange, user)} maxLength='255' size='100'/>
+        </div>
+        <div>
+          <label htmlFor="zipCode">Postal Code:</label>
+          <TextBox id="zipCode" value={user.zipCode} onChange={getChangeHandler('zipCode', onFormStateChange, user)} maxLength='20' size='10'/>
+        </div>
+        <div>
+          <label htmlFor="phoneNumber">Phone Number:</label>
+          <TextBox id="phoneNumber" value={user.phoneNumber} onChange={getChangeHandler('phoneNumber', onFormStateChange, user)} maxLength='50' size='25'/>
+        </div>
       </fieldset>
       <br />
       <fieldset>

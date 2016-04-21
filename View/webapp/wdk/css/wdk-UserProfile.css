@@ -28,6 +28,8 @@ i.edit {
   display: inline-block;
   width: 10em;
   font-weight: bold;
+  text-align: right;
+  padding-right: 1em;
 }
 
 .wdk-UserProfile-profileForm input[type='text|email'] {
