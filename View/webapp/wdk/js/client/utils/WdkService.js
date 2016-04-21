@@ -209,7 +209,7 @@ export default class WdkService {
   }
 
   updateCurrentUser(user) {
-    let data = JSON.stringify({'firstName':user.firstName,'lastName':user.lastName,'organization':user.organization,'email':user.email });
+    let data = JSON.stringify(user);
     let method = 'put';
     let url = this._serviceUrl + '/user/current/profile';
     return fetchJson(method, url, data).then(() => status);
