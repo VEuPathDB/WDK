@@ -1,4 +1,3 @@
-import get from 'lodash/object/get';
 import kebabCase from 'lodash/string/kebabCase';
 import { getTree, nodeHasProperty, getPropertyValue, getPropertyValues } from './OntologyUtils';
 
@@ -16,11 +15,11 @@ export let getRefName = node =>
   getPropertyValue('name', node);
 
 export let getDisplayName = node =>
-  get(node, [ 'wdkReference', 'displayName' ]) ||
+  (node.wdkReference && node.wdkReference.displayName) ||
   getPropertyValue('EuPathDB alternative term', node);
 
 export let getDescription = node =>
-  get(node, [ 'wdkReference', 'help' ]) ||
+  (node.wdkReference && node.wdkReference.help) ||
   getPropertyValue('hasDefinition', node);
 
 export let getSynonyms = node =>
