@@ -72,8 +72,9 @@ let UserProfile = React.createClass({
   },
 
   saveProfile(event) {
+    console.log("Reached save");
     delete this.props.user.confirmEmail;
-    event.defaultPrevented = true;
+    event.preventDefault();
     this.props.userEvents.onSaveProfile(this.props.user);
   },
   
@@ -152,7 +153,7 @@ function userForm(user, emailPreferenceData, emailPreferenceSelections, onFormSt
         <CheckboxList name="emailAlerts" items={emailPreferenceData} value={emailPreferenceSelections} onChange={onEmailPreferenceChange} />
       </fieldset>
       <div>
-        <button onClick={cancelEdit} >Cancel</button>
+        <button type="button" onClick={cancelEdit} >Cancel</button>
         <input type="submit" value="Submit" />
       </div>
     </form>
