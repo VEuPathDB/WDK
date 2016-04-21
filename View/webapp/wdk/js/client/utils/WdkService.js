@@ -1,22 +1,10 @@
 import stringify from 'json-stable-stringify';
 import difference from 'lodash/array/difference';
 import predicate from './Predicate';
-import {
-  preorderSeq
-} from './TreeUtils';
-import {
-  getTree,
-  getPropertyValue,
-} from './OntologyUtils';
-import {
-  getTargetType,
-  getRefName,
-  getDisplayName
-} from './CategoryUtils';
-import {
-  getAttribute,
-  getTable
-} from './WdkUtils';
+import {preorderSeq} from './TreeUtils';
+import {getTree, getPropertyValue} from './OntologyUtils';
+import {getTargetType, getRefName, getDisplayName} from './CategoryUtils';
+import {getAttribute, getTable} from './WdkUtils';
 
 /**
  * A helper to request resources from a Wdk REST Service.
@@ -120,37 +108,44 @@ export default class WdkService {
 
     // if we don't have the record, fetch whatever is requested
     if (!this._records.has(key)) {
-      let body = stringify({ primaryKey, attributes, tables });
-      this._records.set(key, fetchJson(method, url, body));
+      let request = { primaryKey, attributes, tables };
+      let response = fetchJson(method, url, stringify(request));
+      this._records.set(key, { request, response });
     }
 
     else {
+      let { request, response } = this._records.get(key);
       // determine which tables and attributes we need to retreive
-      this._records.set(key, this._records.get(key).then(record => {
-        let reqAttributes = difference(attributes, Object.keys(record.attributes));
-        let reqTables = difference(tables, Object.keys(record.tables));
+      let reqAttributes = difference(attributes, Object.keys(request.attributes));
+      let reqTables = difference(tables, Object.keys(request.tables));
 
-        // get addition attributes and tables
-        if (reqAttributes.length > 0 || reqTables.length > 0) {
-          let body = stringify({
-            primaryKey,
-            attributes: reqAttributes,
-            tables: reqTables
+      // get addition attributes and tables
+      if (reqAttributes.length > 0 || reqTables.length > 0) {
+        let newRequest = {
+          primaryKey,
+          attributes: reqAttributes,
+          tables: reqTables
+        };
+        let newResponse = fetchJson(method, url, stringify(newRequest));
+
+        let finalRequest = {
+          primaryKey,
+          attributes: request.attributes.concat(newRequest.attributes),
+          tables: request.tables.concat(newRequest.tables)
+        };
+        // merge old record attributes and tables with new record
+        let finalResponse = Promise.all([ response, newResponse ])
+        .then(([record, newRecord]) => {
+          return Object.assign({}, record, {
+            attributes: Object.assign({}, record.attributes, newRecord.attributes),
+            tables: Object.assign({}, record.tables, newRecord.tables)
           });
-
-          // merge old record attributes and tables with new record
-          return fetchJson(method, url, body).then(newRecord => {
-            Object.assign(record.attributes, newRecord.attributes);
-            Object.assign(record.tables, newRecord.tables);
-            return record;
-          });
-        }
-
-        return record;
-      }));
+        });
+        this._records.set(key, { request: finalRequest, response: finalResponse });
+      }
     }
 
-    return this._records.get(key);
+    return this._records.get(key).response;
   }
 
   getAnswer(questionDefinition, formatting) {
