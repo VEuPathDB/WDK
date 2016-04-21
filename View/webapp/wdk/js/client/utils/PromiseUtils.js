@@ -44,3 +44,17 @@ export function latest(promiseFactory) {
     );
   };
 }
+
+/**
+ * Calls `resolveHandler` and `rejectHandler` in the order of the promises
+ * in `promiseArray`, even if they resolve out of order.
+ *
+ * @param {Function} resolveHandler
+ * @param {Function} rejectHandler
+ * @param {Array<Promise<any>>} promiseArray
+ */
+export function seq(promiseArray, resolveHandler, rejectHandler) {
+  return promiseArray.reduce(function(seq$, promise$) {
+    return seq$.then(promise$.then(resolveHandler, rejectHandler));
+  }, Promise.resolve());
+}
