@@ -1,3 +1,5 @@
+import { filterOutProps } from '../utils/componentUtils';
+
 // Action types
 export let actionTypes = {
   USER_LOADING: 'user/loading',
@@ -52,7 +54,7 @@ export function saveProfile(user) {
   return function run(dispatch, { wdkService }) {
     dispatch({ type: actionTypes.USER_LOADING });
 
-    let userPromise = wdkService.updateCurrentUser(user);
+    let userPromise = wdkService.updateCurrentUser(filterOutProps(user,["isGuest","id"]));
 
     return userPromise.then(() => {
         dispatch({
