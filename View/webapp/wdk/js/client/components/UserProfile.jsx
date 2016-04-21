@@ -39,7 +39,7 @@ let UserProfile = React.createClass({
                                {value:'preference_global_email_toxodb', display:'ToxoDB'},
                                {value:'preference_global_email_trichdb', display:'TrichDB'},
                                {value:'preference_global_email_tritrypdb', display:'TriTrypDB'}];
-    let properties = toNamedMap(Object.keys(this.props.user.properties), this.props.user.properties);
+    let properties = toNamedMap(Object.keys(this.props.user.applicationSpecificProperties), this.props.user.applicationSpecificProperties);
     let emailPreferenceSelections = properties.filter(property => property.name.startsWith('preference_global_email_')).map(property => property.name);
 
     return (

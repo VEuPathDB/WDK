@@ -21,26 +21,32 @@ export default class ProfileViewStore extends WdkStore {
       case actionTypes.USER_PROFILE_UPDATE:
         return updateProfile(state, payload);
 
-      case actionTypes.USER_PROFILE_SAVE:
-        return saveProfile(state, payload);
-
       default:
         return state;
     }
   }
 }
 
-
+/**
+ * The effect is to alter the profile page to show the form
+ * @param state
+ * @param payload
+ * @returns {({}&*)|({}&*&*&{isLoading: boolean, isEdit: boolean})|any|({}&*&*)}
+ */
 function editProfile(state, payload) {
   return Object.assign({}, state, payload, {isLoading:false, isEdit: true });
 }
 
+
+/**
+ * Accepts every change to the user profile form and applies it to the state.
+ * @param state
+ * @param payload
+ * @returns {({}&*)|({}&*&*&{isLoading: boolean, isEdit: boolean})|any|({}&*&*)}
+ */
 function updateProfile(state, payload) {
   return Object.assign({}, state, payload, {isLoading:false, isEdit: true});
 }
 
-function saveProfile(state, payload) {
-  return Object.assign({}, state, payload, {isLoading:false, isEdit: false});
-}
 
 

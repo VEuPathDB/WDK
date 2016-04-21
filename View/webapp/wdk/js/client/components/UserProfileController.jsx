@@ -1,9 +1,11 @@
 import React from 'react';
-import { wrappable } from '../utils/componentUtils';
+import { wrappable, getValueOrDefault, filterOutProps } from '../utils/componentUtils';
 import Doc from './Doc';
 import Loading from './Loading';
 import UserProfile from './UserProfile';
 import { loadCurrentUser, editProfile, updateProfile, saveProfile } from '../actioncreators/UserActionCreator';
+
+const APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
 
 let UserProfileController = React.createClass({
 
@@ -48,15 +50,13 @@ let UserProfileController = React.createClass({
       this.props.dispatchAction(updateProfile(newState));
     },
     onEmailPreferenceChange: function(newPreferences) {
-      // Remove email preference properties
-      let properties = this.state.user.properties;
+      let properties = getValueOrDefault(this.state.user, APPLICATION_SPECIFIC_PROPERTIES, {});
       Object.keys(properties).forEach(function (key) {
         if(key.startsWith('preference_global_email_')) delete properties[key];
       });
       // Replace with new email preferences
       let newProperties = newPreferences.reduce((currentPreferences, newPreference) => Object.assign(currentPreferences, {[newPreference]: "on"}), properties);
-      this.setState(Object.assign({}, this.state.user, {properties : newProperties}));
-      this.props.dispatchAction(updateProfile(this.state.user));
+      this.props.dispatchAction(updateProfile(Object.assign({}, filterOutProps(this.state.user,[APPLICATION_SPECIFIC_PROPERTIES]), {[APPLICATION_SPECIFIC_PROPERTIES] : newProperties})));
     },
     onSaveProfile: function(user) {
       this.props.dispatchAction(saveProfile(this.state.user));
