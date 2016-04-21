@@ -107,23 +107,17 @@ function configureStores(Stores, dispatcher) {
  */
 function makeDispatchAction(dispatcher, services) {
   return function dispatchAction(action) {
-    try {
-      if (typeof action === 'function') {
-        // Call the function with dispatchAction and services
-        return action(dispatchAction, services);
-      }
-      else if (action == null) {
-        console.error("Warning: Action received is not defined or is null");
-      }
-      else if (action.type == null) {
-        console.error("Warning: Action received does not have a `type` property", action);
-      }
-      return dispatcher.dispatch(action);
+    if (typeof action === 'function') {
+      // Call the function with dispatchAction and services
+      return action(dispatchAction, services);
     }
-    catch (error) {
-      console.error(error);
-      throw error;
+    else if (action == null) {
+      console.error("Warning: Action received is not defined or is null");
     }
+    else if (action.type == null) {
+      console.error("Warning: Action received does not have a `type` property", action);
+    }
+    return dispatcher.dispatch(action);
   }
 }
 
