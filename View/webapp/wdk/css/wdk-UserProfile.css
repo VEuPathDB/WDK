@@ -28,9 +28,10 @@ i.edit {
   display: inline-block;
   width: 10em;
   font-weight: bold;
-  text-align: right;
   padding-right: 1em;
+  text-align:right;
 }
+
 
 .wdk-UserProfile-profileForm input[type='text|email'] {
   display: inline-block;
@@ -39,7 +40,10 @@ i.edit {
 .wdk-UserProfile-profileForm  .wdk-CheckboxListItem {
   display: inline;
   line-height: 1.5em;
+}
 
+.wdk-UserProfile-profileForm  .wdk-CheckboxListItem label {
+  text-align: left;
 }
 
 .wdk-UserProfile-profileForm  .wdk-CheckboxListItem:nth-child(6n):after {

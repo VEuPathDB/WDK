@@ -25,7 +25,7 @@ let UserProfile = React.createClass({
                        {key:'organization', label:'Organization'},
                        {key:'address', label:'Street Address'},
                        {key:'city', label:"City"},
-                       {key:'state', label:'State'},
+                       {key:'state', label:'State/Province'},
                        {key:'country', label:'Country'},
                        {key:'zipCode', label:'Postal Code'},
                        {key:'phoneNumber',label:'Phone Number'}];
@@ -201,7 +201,7 @@ function userForm(user, emailPreferenceData, emailPreferenceSelections, onEmailC
           <TextBox id="city" value={user.city} onChange={getChangeHandler('city', onFormStateChange, user)} maxLength='255' size='100'/>
         </div>
         <div>
-          <label htmlFor="state">State:</label>
+          <label htmlFor="state">State/Province:</label>
           <TextBox id="state" value={user.state} onChange={getChangeHandler('state', onFormStateChange, user)} maxLength='255' size='100'/>
         </div>
         <div>
