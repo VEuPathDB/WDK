@@ -515,13 +515,12 @@ public class UserFactory {
       user.setTitle(rsUser.getString("title"));
       user.setOrganization(rsUser.getString("organization"));
       user.setDepartment(rsUser.getString("department"));
-      user.setAddress(""); // TODO: FIX rsUser.getString("address"));
+      user.setAddress(rsUser.getString("address"));
       user.setCity(rsUser.getString("city"));
       user.setState(rsUser.getString("state"));
       user.setZipCode(rsUser.getString("zip_code"));
       user.setPhoneNumber(rsUser.getString("phone_number"));
       user.setCountry(rsUser.getString("country"));
-      user.setOpenId(rsUser.getString("address")); // TODO: FIX!!!
       // user.setOpenId(rsUser.getString("open_id"));
 
       // load the user's roles
