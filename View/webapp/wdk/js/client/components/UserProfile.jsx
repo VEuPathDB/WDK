@@ -189,6 +189,12 @@ function userForm(user, emailPreferenceData, emailPreferenceSelections, onEmailC
           <TextBox id="organization" value={user.organization} onChange={getChangeHandler('organization', onFormStateChange, user)} maxLength='255' size='100' required />
         </div>
       </fieldset>
+      <fieldset>
+        <legend>Password</legend>
+        <div>
+          <button type="button">Change Password</button>
+        </div>
+      </fieldset>
       <br />
       <fieldset>
         <legend>Contact Info</legend>

@@ -24,6 +24,10 @@ i.edit {
   padding: 0.3em;
 }
 
+.wdk-UserProfile-profileForm fieldset {
+  vertical-align: top;
+}
+
 .wdk-UserProfile-profileForm label {
   display: inline-block;
   width: 10em;
