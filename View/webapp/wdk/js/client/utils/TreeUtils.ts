@@ -166,6 +166,13 @@ export function mapNodes (nodeTransform: (root: Node) => Node, root: Node): Node
 }
 
 /**
+ * Get an array of nodes that satisfy nodePredicate
+ */
+export function filterNodes (nodePredicate: (node: Node) => boolean, node: Node) {
+  return preorderSeq(node).filter(nodePredicate).toArray();
+}
+
+/**
  * Simple convenience method to identify nodes that are leaves
  * @param {Object} node representing root of subtree (possibly a leaf)
  * @return {Boolean} indicates true if the node is a leaf and false otherwise

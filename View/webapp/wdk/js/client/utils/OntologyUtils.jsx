@@ -1,5 +1,4 @@
-import get from 'lodash/object/get';
-import { compactRootNodes, pruneDescendantNodes } from './TreeUtils';
+import {pruneDescendantNodes} from './TreeUtils';
 
 /**
  * Get a sub-tree from an Ontology. The `leafPredicate` function
@@ -30,8 +29,7 @@ export let nodeHasProperty = (name, value, node) =>
   includes(node.properties[name], value);
 
 export let getPropertyValues = (name, node) =>
-  get(node, [ 'properties', name ]) || [];
+  (node.properties && node.properties[name]) || [];
 
 export let getPropertyValue = (name, node) =>
-  get(node, [ 'properties', name, 0 ]);
-
+  node.properties && node.properties[name] && node.properties[name][0];

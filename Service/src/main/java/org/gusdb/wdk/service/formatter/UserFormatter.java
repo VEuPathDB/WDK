@@ -36,7 +36,15 @@ public class UserFormatter {
       .put(Keys.FIRST_NAME, user.getFirstName())
       .put(Keys.MIDDLE_NAME, user.getMiddleName())
       .put(Keys.LAST_NAME, user.getLastName())
+      .put(Keys.TITLE, user.getTitle())
+      .put(Keys.DEPARTMENT, user.getDepartment())
       .put(Keys.ORGANIZATION, user.getOrganization())
+      .put(Keys.ADDRESS, user.getAddress())
+      .put(Keys.CITY, user.getCity())
+      .put(Keys.STATE, user.getState())
+      .put(Keys.COUNTRY, user.getCountry())
+      .put(Keys.ZIP_CODE, user.getZipCode())
+      .put(Keys.PHONE_NUMBER, user.getPhoneNumber())
       .put(Keys.IS_GUEST, user.isGuest());
     // private fields viewable only by owner
     if (isOwner) {

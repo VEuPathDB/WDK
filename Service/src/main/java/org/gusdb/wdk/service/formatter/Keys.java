@@ -122,7 +122,15 @@ public class Keys {
   public static final String MIDDLE_NAME = "middleName";
   public static final String LAST_NAME = "lastName";
   public static final String EMAIL = "email";
+  public static final String TITLE = "title";
+  public static final String DEPARTMENT = "department";
   public static final String ORGANIZATION = "organization";
+  public static final String ADDRESS = "address";
+  public static final String CITY = "city";
+  public static final String STATE = "state";
+  public static final String COUNTRY = "country";
+  public static final String ZIP_CODE = "zipCode";
+  public static final String PHONE_NUMBER = "phoneNumber";
   public static final String IS_GUEST = "isGuest";
   public static final String APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
   public static final String PREFERENCES = "preferences";
