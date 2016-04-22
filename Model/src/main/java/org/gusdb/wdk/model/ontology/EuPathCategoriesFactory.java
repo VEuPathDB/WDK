@@ -73,7 +73,7 @@ public class EuPathCategoriesFactory {
   private final String WEBSERVICE = "webservice";
   
   // record classes whose individuals all have both scope website and menu
-  private String[][] otherRecordClassInfo = {{"Isolates", "IsolateRecordClasses.IsolateRecordClass"}, {"Genomic Sequences", "SequenceRecordClasses.SequenceRecordClass"}, {"Genomic Segments", "DynSpanRecordClasses.DynSpanRecordClass"}, {"SNPs", "SnpRecordClasses.SnpRecordClass"}, {"SNPs (from Chips)", "SnpChipRecordClasses.SnpChipRecordClass"}, {"ESTs", "EstRecordClasses.EstRecordClass"}, {"ORFs", "OrfRecordClasses.OrfRecordClass"}, {"Metabolic Pathways", "PathwayRecordClasses.PathwayRecordClass"}, {"Compounds", "CompoundRecordClasses.CompoundRecordClass"} };
+  private String[][] otherRecordClassInfo = {{"Popset Sequences", "PopsetRecordClasses.PopsetRecordClass"}, {"Genomic Sequences", "SequenceRecordClasses.SequenceRecordClass"}, {"Genomic Segments", "DynSpanRecordClasses.DynSpanRecordClass"}, {"SNPs", "SnpRecordClasses.SnpRecordClass"}, {"SNPs (from Chips)", "SnpChipRecordClasses.SnpChipRecordClass"}, {"ESTs", "EstRecordClasses.EstRecordClass"}, {"ORFs", "OrfRecordClasses.OrfRecordClass"}, {"Metabolic Pathways", "PathwayRecordClasses.PathwayRecordClass"}, {"Compounds", "CompoundRecordClasses.CompoundRecordClass"} };
   
   private  void getCategories() throws WdkModelException {
 
