@@ -729,7 +729,7 @@ public class UserFactory {
       psUser.setString(6, user.getOrganization());
       psUser.setString(7, user.getDepartment());
       psUser.setString(8, user.getTitle());
-      psUser.setString(9, user.getOpenId()); // TODO: FIX!!! user.getAddress());
+      psUser.setString(9, user.getAddress());
       psUser.setString(10, user.getCity());
       psUser.setString(11, user.getState());
       psUser.setString(12, user.getZipCode());
