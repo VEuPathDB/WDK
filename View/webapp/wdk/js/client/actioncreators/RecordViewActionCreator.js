@@ -42,7 +42,7 @@ export function setActiveRecord(recordClassName, primaryKeyValues) {
     ]).then(([recordClass, primaryKey, fullCategoryTree]) => {
       // Set up promises for actions
       let baseAction$ = getRecordBase(wdkService, recordClass, primaryKey, fullCategoryTree);
-      let tableActions = getRecordTables(wdkService, recordClass, primaryKey, fullCategoryTree);
+      let tableActions = getRecordTables(wdkService, recordClass, primaryKey, fullCategoryTree, 4);
       // Helper to handle errors
       let dispatchError = error => dispatch({
         type: actionTypes.ERROR_RECEIVED,
