@@ -1,9 +1,9 @@
-import {Component} from 'react';
+import {Component, PropTypes} from 'react';
 import {wrappable} from '../utils/componentUtils';
 import {setActiveRecord, updateSectionCollapsed} from '../actioncreators/RecordViewActionCreator';
 import {loadCurrentUser} from '../actioncreators/UserActionCreator';
-import {loadBasketStatus, updateBasketStatus} from '../actioncreators/BasketActionCreator';
-import {loadFavoritesStatus, updateFavoritesStatus} from '../actioncreators/FavoritesActionCreator';
+import {updateBasketStatus} from '../actioncreators/BasketActionCreator';
+import {updateFavoritesStatus} from '../actioncreators/FavoritesActionCreator';
 import Doc from './Doc';
 import Loading from './Loading';
 import RecordUI from './RecordUI';
@@ -57,12 +57,7 @@ class RecordController extends Component {
     if (this.state.user == null) {
       dispatchAction(loadCurrentUser());
     }
-    dispatchAction(setActiveRecord(recordClass, splat.split('/')))
-    .then(() => {
-      let record = props.stores.RecordViewStore.getState().record;
-      dispatchAction(loadBasketStatus(record));
-      dispatchAction(loadFavoritesStatus(record));
-    });
+    dispatchAction(setActiveRecord(recordClass, splat.split('/')));
   }
 
   renderLoading() {
@@ -85,7 +80,7 @@ class RecordController extends Component {
 
   renderRecord() {
     let { recordView, basketEntry, favoritesEntry, user } = this.state;
-    let { router, dispatchAction } = this.props;
+    let { dispatchAction } = this.props;
     if (recordView.record != null) {
       let title = recordView.recordClass.displayName + ' ' +
         recordView.record.displayName;
@@ -95,8 +90,9 @@ class RecordController extends Component {
       let isInFavorites = favoritesEntry && favoritesEntry.isInFavorites;
       let favoritesLoading = favoritesEntry && favoritesEntry.isLoading;
       // FIXME Replace the open-dialog-login-form approach with a login utility function
-      let headerActions = [
-        {
+      let headerActions = [];
+      if (recordView.recordClass.useBasket) {
+        headerActions.push({
           label: isInBasket ? 'Remove from basket' : 'Add to basket',
           className: user.isGuest ? 'open-dialog-login-form' : '',
           iconClassName: basketLoading ? loadingClassName : 'fa fa-shopping-basket',
@@ -105,24 +101,24 @@ class RecordController extends Component {
             event.preventDefault();
             dispatchAction(updateBasketStatus(recordView.record, !isInBasket));
           }
-        },
-        {
-          label: isInFavorites ? 'Remove from favorites' : 'Add to favorites',
-          className: user.isGuest ? 'open-dialog-login-form' : '',
-          iconClassName: favoritesLoading ? loadingClassName : 'fa fa-lg fa-star',
-          onClick(event) {
-            if (user.isGuest) return;
-            event.preventDefault();
-            dispatchAction(updateFavoritesStatus(recordView.record, !isInFavorites));
-          }
-        },
-        {
-          label: 'Download ' + recordView.recordClass.displayName,
-          iconClassName: 'fa fa-lg fa-download',
-          href: '/record/' + recordView.recordClass.urlSegment + '/download/' +
-            recordView.record.id.map(pk => pk.value).join('/')
+        });
+      }
+      headerActions.push({
+        label: isInFavorites ? 'Remove from favorites' : 'Add to favorites',
+        className: user.isGuest ? 'open-dialog-login-form' : '',
+        iconClassName: favoritesLoading ? loadingClassName : 'fa fa-lg fa-star',
+        onClick(event) {
+          if (user.isGuest) return;
+          event.preventDefault();
+          dispatchAction(updateFavoritesStatus(recordView.record, !isInFavorites));
         }
-      ];
+      },
+      {
+        label: 'Download ' + recordView.recordClass.displayName,
+        iconClassName: 'fa fa-lg fa-download',
+        href: '/record/' + recordView.recordClass.urlSegment + '/download/' +
+          recordView.record.id.map(pk => pk.value).join('/')
+      });
 
       return (
         <Doc title={title}>
@@ -146,6 +142,11 @@ class RecordController extends Component {
     );
   }
 
+}
+
+RecordController.propTypes = {
+  stores: PropTypes.object.isRequired,
+  dispatchAction: PropTypes.func.isRequired
 }
 
 export default wrappable(RecordController);
