@@ -66,8 +66,8 @@ let UserProfile = React.createClass({
               <div>
                 <h1>Your Profile<i className="fa fa-pencil edit" onClick={this.editProfile}></i></h1>
                 {userProfile(userKeyData, this.props.user)}
-                <h2>Properties</h2>
-                {tableOf(properties, true, "Name", "Value")}
+                <p>Receives email alerts about:</p>
+                {displayEmailPreferences(emailPreferenceSelections, emailPreferenceData)}
               </div>
             </div>
         : <div>You must first log on to read and alter your profile</div>
@@ -133,19 +133,17 @@ function userProfile(keyData, user) {
   );
 }
 
-function toNamedMap(keys, object) {
-  return keys.map(key => ({ name: key, value: object[key] }));
+function displayEmailPreferences(emailPreferenceSelections, emailPreferenceData) {
+  let filteredEmailPreferenceData = emailPreferenceData.filter(item => emailPreferenceSelections.indexOf(item.value ) > -1);
+  return (
+    <ul className="wdk-UserProfile-propertyData">
+      { filteredEmailPreferenceData.map(item => ( <li key={item.value}>{item.display}</li> )) }
+    </ul>
+  )
 }
 
-function tableOf(objArray, addHeader, nameTitle, valueTitle) {
-  return (
-    <table>
-      <tbody>
-        { addHeader ? ( <tr><th>{nameTitle}</th><th>{valueTitle}</th></tr> ) : null }
-        { objArray.map(val => ( <tr key={val.name}><td>{val.name}</td><td>{val.value}</td></tr> )) }
-      </tbody>
-    </table>
-  );
+function toNamedMap(keys, object) {
+  return keys.map(key => ({ name: key, value: object[key] }));
 }
 
 function userForm(user, emailPreferenceData, emailPreferenceSelections, onEmailChange, onFormStateChange, onEmailPreferenceChange, saveProfile, cancelEdit) {
