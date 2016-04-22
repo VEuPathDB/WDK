@@ -67,9 +67,6 @@ let RecordMainCategorySection = React.createClass({
       let table = category.wdkReference;
       let { name, displayName } = table;
       let value = record.tables[name];
-
-      if (value == null) return null;
-
       let wrapperClassBase = 'wdk-RecordTableWrapper';
       let wrapperClass = classnames(
         wrapperClassBase,
@@ -90,7 +87,9 @@ let RecordMainCategorySection = React.createClass({
           isCollapsed={isCollapsed}
           onCollapsedChange={this.toggleCollapse}
         >
-          <RecordTable value={value} table={table} record={record} recordClass={recordClass}/>
+          {value == null
+            ? <p>Loading...</p>
+            : <RecordTable value={value} table={table} record={record} recordClass={recordClass}/>}
         </CollapsibleSection>
       );
     }
