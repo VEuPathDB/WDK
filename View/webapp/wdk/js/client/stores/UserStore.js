@@ -32,15 +32,6 @@ export default class UserStore extends WdkStore {
       case actionTypes.USER_PROFILE_SAVE:
         return saveProfile(state, payload);
 
-      case actionTypes.BASKET_STATUS_LOADING:
-        return basketStatusLoading(state, payload);
-
-      case actionTypes.BASKET_STATUS_RECEIVED:
-        return basketStatus(state, payload);
-
-      case actionTypes.BASKET_STATUS_ERROR:
-        return basketStatusError(state, payload);
-
       case actionTypes.APP_ERROR:
         return userLoading(state, { isLoading: false });
 
@@ -60,58 +51,4 @@ function initializeUser(state, payload) {
 
 function saveProfile(state, payload) {
   return Object.assign({}, state, payload, {isLoading:false, isEdit: false});
-}
-
-function basketStatusLoading(state, { recordClassName, primaryKey }) {
-  return updateBasket(state, recordClassName, primaryKey, { isLoading: true });
-}
-
-function basketStatus(state, { recordClassName, primaryKey, inBasket }) {
-  return updateBasket(state, recordClassName, primaryKey, { isLoading: false, inBasket });
-}
-
-function basketStatusError(state, { recordClassName, primaryKey, error }) {
-  return updateBasket(state, recordClassName, primaryKey, { isLoading: false, error });
-}
-
-// merge `status` into the exsting basket object, or create a new one
-// this could be a lot cleaner using React's immutability helper addon:
-// http://facebook.github.io/react/docs/update.html
-//
-// We could replace the code below with this if we used it:
-//
-//    return update(state, {
-//      [recordClassName]: {
-//        [primaryKeyString]: { $merge: status }
-//      }
-//    });
-//
-function updateBasket(state, recordClassName, primaryKey, status) {
-  // stringify the primaryKey object
-  let primaryKeyString = JSON.stringify(primaryKey);
-  let currentBasket = state.baskets[recordClassName] || {};
-
-  // make a new copy of the basket item with the status object values merged
-  let basketItem = Object.assign(
-    {},
-    currentBasket[primaryKeyString],
-    status
-  );
-
-  // make a new copy of the recordclass basket, with the basketItem item merged
-  let basket = Object.assign(
-    {},
-    currentBasket,
-    { [primaryKeyString]: basketItem }
-  );
-
-  // make a new copy of all baskets, with the updated record class basket merged
-  let baskets = Object.assign(
-    {},
-    state.baskets,
-    { [recordClassName]: basket }
-  );
-
-  // finally, return a new state object with updated basket merged
-  return Object.assign({}, state, { baskets })
 }
