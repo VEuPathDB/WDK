@@ -81,7 +81,7 @@ class RecordController extends Component {
   renderRecord() {
     let { recordView, basketEntry, favoritesEntry, user } = this.state;
     let { dispatchAction } = this.props;
-    if (recordView.record != null) {
+    if (recordView.record != null && !recordView.isLoading) {
       let title = recordView.recordClass.displayName + ' ' +
         recordView.record.displayName;
       let loadingClassName = 'fa fa-circle-o-notch fa-spin';
