@@ -157,7 +157,7 @@ export default class WdkService {
       let { recordClassName } = response.meta;
       for (let record of response.records) {
         let key = makeRecordKey(recordClassName, record.id);
-        this._records.set(key, Promise.resolve(record));
+        // this._records.set(key, Promise.resolve(record));
       }
       return response;
     });
