@@ -138,6 +138,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           zIndex: 100
         });
 
+        $("#query_form .qf_section").height($("#query_form").height());
+
         $("#query_form_overlay").css("z-index", 100).height($("body").height());
       },
       error: function() {
