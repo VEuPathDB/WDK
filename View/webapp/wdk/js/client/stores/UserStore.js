@@ -11,14 +11,16 @@ export default class UserStore extends WdkStore {
       preferences: null,
       baskets: {},
       isLoading: false,
-      isEdit: false
+      isChanged: false,
+      outcome: "",
+      message: ""
     };
   }
 
   reduce(state, { type, payload }) {
     switch(type) {
       case actionTypes.USER_LOADING:
-        return userLoading(state, { isLoading: true });
+        return userLoading(state, { isLoading: true, isChanged: false, outcome: "" });
 
       case actionTypes.USER_INITIALIZE_STORE:
         return initializeUser(state, payload);
@@ -46,9 +48,9 @@ function userLoading(state, payload) {
 }
 
 function initializeUser(state, payload) {
-  return Object.assign({}, state, payload, { isLoading: false, isEdit: false });
+  return Object.assign({}, state, payload, { isLoading: false, isChanged: false, outcome: "" });
 }
 
 function saveProfile(state, payload) {
-  return Object.assign({}, state, payload, {isLoading:false, isEdit: false});
+  return Object.assign({}, state, payload, {isLoading:false, isChanged: false, outcome: "success"});
 }

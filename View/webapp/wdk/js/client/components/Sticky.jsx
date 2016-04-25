@@ -37,25 +37,23 @@ let Sticky = React.createClass({
   // Set position to fixed if top is above threshold, otherwise
   // set position to absolute.
   updateIsFixed() {
-    requestAnimationFrame(() => {
-      // See https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-      let rect = this.node.getBoundingClientRect();
-      let contentRect = this.contentNode.getBoundingClientRect();
-      if (rect.top < 0 && this.state.isFixed === false) {
-        this.setState({
-          isFixed: true,
-          height: rect.height,
-          width: contentRect.width
-        });
-      }
-      else if (rect.top >= 0 && this.state.isFixed === true) {
-        this.setState({
-          isFixed: false,
-          height: null,
-          width: null
-        });
-      }
-    });
+    // See https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
+    let rect = this.node.getBoundingClientRect();
+    let contentRect = this.contentNode.getBoundingClientRect();
+    if (rect.top < 0 && this.state.isFixed === false) {
+      this.setState({
+        isFixed: true,
+        height: rect.height,
+        width: contentRect.width
+      });
+    }
+    else if (rect.top >= 0 && this.state.isFixed === true) {
+      this.setState({
+        isFixed: false,
+        height: null,
+        width: null
+      });
+    }
   },
 
   render() {

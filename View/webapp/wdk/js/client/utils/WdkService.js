@@ -116,8 +116,8 @@ export default class WdkService {
     else {
       let { request, response } = this._records.get(key);
       // determine which tables and attributes we need to retreive
-      let reqAttributes = difference(attributes, Object.keys(request.attributes));
-      let reqTables = difference(tables, Object.keys(request.tables));
+      let reqAttributes = difference(attributes, request.attributes);
+      let reqTables = difference(tables, request.tables);
 
       // get addition attributes and tables
       if (reqAttributes.length > 0 || reqTables.length > 0) {
@@ -157,7 +157,7 @@ export default class WdkService {
       let { recordClassName } = response.meta;
       for (let record of response.records) {
         let key = makeRecordKey(recordClassName, record.id);
-        this._records.set(key, Promise.resolve(record));
+        // this._records.set(key, Promise.resolve(record));
       }
       return response;
     });
