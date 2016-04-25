@@ -1,7 +1,15 @@
-i.edit {
-  font-size: 0.5em;
-  cursor: pointer;
-  margin-left: 0.5em;
+.wdk-UserProfile-banner {
+  font-size: 14px;
+  width: 35em;
+  padding: 3em;
+}
+
+.wdk-UserProfile-error {
+  background: rgba(125, 0, 0, 0.4)
+}
+
+.wdk-UserProfile-success {
+  background: rgba(0, 125, 0, 0.4)
 }
 
 .wdk-UserProfile-profileForm fieldset {
@@ -34,6 +42,7 @@ i.edit {
   font-weight: bold;
   padding-right: 1em;
   text-align:right;
+  vertical-align: top;
 }
 
 
@@ -57,4 +66,9 @@ i.edit {
 
 .wdk-UserProfile-profileForm .wdk-CheckboxListItem input {
   margin-right: 0.5em;
+}
+
+.wdk-UserProfile-profileForm input[type="submit"]:disabled {
+  background: #ddd;
+  color: #777;
 }

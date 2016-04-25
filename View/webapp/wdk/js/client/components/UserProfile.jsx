@@ -1,5 +1,6 @@
 import React from 'react';
 import TextBox from './TextBox';
+import TextArea from './TextArea';
 import CheckboxList from './CheckboxList';
 import { wrappable, getChangeHandler } from '../utils/componentUtils';
 
@@ -10,25 +11,6 @@ import { wrappable, getChangeHandler } from '../utils/componentUtils';
 let UserProfile = React.createClass({
 
   render() {
-
-    /**
-     * Provides hardcoded relationships between user profile data designations and display labels in the order the data
-     * should be displayed.
-     * @type {*[]}
-     */
-    let userKeyData = [{key:'email', label:'Email'},
-                       {key:'firstName', label:"First Name"},
-                       {key:'middleName', label:'Middle Name'},
-                       {key:'lastName', label:"Last Name"},
-                       {key:'title', label:'Title'},
-                       {key:'department', label:'Department'},
-                       {key:'organization', label:'Organization'},
-                       {key:'address', label:'Street Address'},
-                       {key:'city', label:"City"},
-                       {key:'state', label:'State/Province'},
-                       {key:'country', label:'Country'},
-                       {key:'zipCode', label:'Postal Code'},
-                       {key:'phoneNumber',label:'Phone Number'}];
 
     /**
      * Provides hardcode relationships between user email preferences and the display labels in the order the data
@@ -50,31 +32,26 @@ let UserProfile = React.createClass({
                                {value:'preference_global_email_tritrypdb', display:'TriTrypDB'}];
     let properties = toNamedMap(Object.keys(this.props.user.applicationSpecificProperties), this.props.user.applicationSpecificProperties);
     let emailPreferenceSelections = properties.filter(property => property.name.startsWith('preference_global_email_')).map(property => property.name);
+    this.props.isChanged ? () => {} : this.props.user.confirmEmail = this.props.user.email;
+    let messageClass = this.props.outcome === "error" ? "wdk-UserProfile-banner wdk-UserProfile-error" :
+      this.props.outcome === "success" ? "wdk-UserProfile-banner wdk-UserProfile-success" : "wdk-UserProfile-banner";
 
     return (
       <div style={{ margin: "0 2em"}}>
         {this.props.user !== null && !this.props.user.isGuest ?
-          this.props.isEdit ?
-            <div>
-              <h1>Profile Form</h1>
-              {userForm(this.props.user, emailPreferenceData, emailPreferenceSelections, this.onEmailChange,
-                        this.props.userEvents.onFormStateChange, this.props.userEvents.onEmailPreferenceChange,
-                        this.saveProfile, this.cancelEdit)}
-            </div>
-            :
-            <div>
-              <div>
-                <h1>Your Profile<i className="fa fa-pencil edit" onClick={this.editProfile}></i></h1>
-                {userProfile(userKeyData, this.props.user)}
-                <p>Receives email alerts about:</p>
-                {displayEmailPreferences(emailPreferenceSelections, emailPreferenceData)}
-              </div>
-            </div>
+          <div>
+            <h1>Profile Form</h1>
+            {this.props.outcome.length > 0 ? <p className={messageClass}>{this.props.message}</p> : ""}
+            {userForm(this.props.user, emailPreferenceData, emailPreferenceSelections, this.onEmailChange,
+                      this.props.userEvents.onFormStateChange, this.props.userEvents.onEmailPreferenceChange,
+                      this.props.isChanged, this.saveProfile)}
+          </div>
         : <div>You must first log on to read and alter your profile</div>
         }
       </div>
     );
   },
+
 
   validateEmailConfirmation() {
     let userEmail = document.getElementById("userEmail");
@@ -87,11 +64,6 @@ let UserProfile = React.createClass({
   onEmailChange(newState) {
     this.validateEmailConfirmation();
     this.props.userEvents.onFormStateChange(newState);
-  },
-
-  editProfile() {
-    this.props.user.confirmEmail = this.props.user.email;
-    this.props.userEvents.onEditProfile(this.props.user);
   },
 
   saveProfile(event) {
@@ -109,29 +81,9 @@ let UserProfile = React.createClass({
       delete this.props.user.confirmEmail;
       this.props.userEvents.onSaveProfile(this.props.user);
     }
-  },
-  
-  cancelEdit() {
-    this.props.userEvents.onCancelEdit(this.props.user);
   }
 
 });
-
-/**
- * Provides a tabular display of the user profile data using labels and data item order provided
- * @param keyData - provides label to be used for each data item
- * @param user - user containing profile data
- * @returns {XML} - tabular display of user profile data
- */
-function userProfile(keyData, user) {
-  return (
-    <table className="wdk-UserProfile-profileData">
-      <tbody>
-      { keyData.map(item => ( <tr key={item.label}><td>{item.label}:</td><td>{user[item.key]}</td></tr> )) }
-      </tbody>
-    </table>
-  );
-}
 
 function displayEmailPreferences(emailPreferenceSelections, emailPreferenceData) {
   let filteredEmailPreferenceData = emailPreferenceData.filter(item => emailPreferenceSelections.indexOf(item.value ) > -1);
@@ -146,7 +98,7 @@ function toNamedMap(keys, object) {
   return keys.map(key => ({ name: key, value: object[key] }));
 }
 
-function userForm(user, emailPreferenceData, emailPreferenceSelections, onEmailChange, onFormStateChange, onEmailPreferenceChange, saveProfile, cancelEdit) {
+function userForm(user, emailPreferenceData, emailPreferenceSelections, onEmailChange, onFormStateChange, onEmailPreferenceChange, isChanged, saveProfile) {
   return(
     <form className="wdk-UserProfile-profileForm" name="userProfileForm" onSubmit={saveProfile} >
       <p><i className="fa fa-asterisk"></i> = required</p>
@@ -189,10 +141,11 @@ function userForm(user, emailPreferenceData, emailPreferenceSelections, onEmailC
           <TextBox id="organization" value={user.organization} onChange={getChangeHandler('organization', onFormStateChange, user)} maxLength='255' size='100' required />
         </div>
       </fieldset>
+      <br />
       <fieldset>
         <legend>Password</legend>
         <div>
-          <button type="button">Change Password</button>
+          <a href="#">Change your password</a>
         </div>
       </fieldset>
       <br />
@@ -200,7 +153,7 @@ function userForm(user, emailPreferenceData, emailPreferenceSelections, onEmailC
         <legend>Contact Info</legend>
         <div>
           <label htmlFor="streetAddress">Street Address:</label>
-          <TextBox id="streetAddress" value={user.address} onChange={getChangeHandler('address', onFormStateChange, user)} maxLength='500' size='200'/>
+          <TextArea id="streetAddress" value={user.address} onChange={getChangeHandler('address', onFormStateChange, user)} maxLength='500' cols='100' rows="3"/>
         </div>
         <div>
           <label htmlFor="city">City:</label>
@@ -230,8 +183,7 @@ function userForm(user, emailPreferenceData, emailPreferenceSelections, onEmailC
         <CheckboxList name="emailAlerts" items={emailPreferenceData} value={emailPreferenceSelections} onChange={onEmailPreferenceChange} />
       </fieldset>
       <div>
-        <button type="button" onClick={cancelEdit} >Cancel</button>
-        <input type="submit" value="Submit" />
+        <input type="submit" value="Save" disabled={isChanged ? "" : "disabled"} />
       </div>
     </form>
   );
