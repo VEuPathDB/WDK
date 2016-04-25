@@ -57,7 +57,8 @@ export function initialize({ rootUrl, endpoint, rootElement, applicationRoutes }
         rootUrl,
         dispatchAction,
         stores,
-        applicationRoutes
+        applicationRoutes,
+        wdkService
       });
     return ReactDOM.render(applicationElement, rootElement);
   };

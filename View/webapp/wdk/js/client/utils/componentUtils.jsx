@@ -16,6 +16,17 @@ export class PureComponent extends React.Component {
 }
 
 /**
+ * Add contextType property to TargetComponent, making wdkModel available via its
+ * context.
+ */
+export function injectWdkModel(target) {
+  target.contextTypes = Object.assign({}, target.contextTypes, {
+    wdkModel: React.PropTypes.object.isRequired
+  });
+  return target;
+}
+
+/**
  * A Component decorator that wraps the Component passed to it and returns a new
  * Component with a static method `wrap`. Use this method to replace the wrapped
  * Component. See the docs for `wrap` for more details.

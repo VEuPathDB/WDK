@@ -11,6 +11,7 @@ import QuestionListController from './QuestionListController';
 import StepDownloadFormController from './StepDownloadFormController';
 import UserProfileController from './UserProfileController';
 import SiteMapController from './SiteMapController';
+import Loading from './Loading';
 
 let REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
 let GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
@@ -44,6 +45,7 @@ export default class Root extends Component {
       </Route>
     );
     this.handleGlobalClick = this.handleGlobalClick.bind(this);
+    this.state = { wdkModel: undefined, wdkConfig: undefined };
   }
 
   handleGlobalClick(event) {
@@ -58,13 +60,27 @@ export default class Root extends Component {
   componentDidMount() {
     /** install global click handler */
     $(document).on('click', GLOBAL_CLICK_HANDLER_SELECTOR, this.handleGlobalClick);
+    Promise.all([
+      this.props.wdkService.getConfig(),
+      this.props.wdkService.getQuestions(),
+      this.props.wdkService.getRecordClasses()
+    ]).then(([config, questions, recordClasses]) => {
+      this.setState({ wdkModel: { config, questions, recordClasses }});
+    });
   }
 
   componentWillUnmount() {
     $(document).off('click', GLOBAL_CLICK_HANDLER_SELECTOR, this.handleGlobalClick);
   }
 
+  getChildContext() {
+    return {
+      wdkModel: this.state.wdkModel
+    };
+  }
+
   render() {
+    if (this.state.wdkModel == null) return <Loading/>;
     return (
       <Router history={this.history} createElement={this.createElement} routes={this.routes}/>
     );
@@ -72,11 +88,16 @@ export default class Root extends Component {
 
 }
 
+Root.childContextTypes = {
+  wdkModel: PropTypes.object
+};
+
 Root.propTypes = {
   rootUrl: PropTypes.string,
   dispatchAction: PropTypes.func.isRequired,
   stores: PropTypes.object.isRequired,
-  applicationRoutes: PropTypes.array.isRequired
+  applicationRoutes: PropTypes.array.isRequired,
+  wdkService: PropTypes.object.isRequired
 };
 
 Root.defaultProps = {

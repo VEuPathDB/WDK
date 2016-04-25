@@ -26,6 +26,10 @@ export default class WdkService {
     this._basketStatus = new Map();
   }
 
+  getConfig() {
+    return fetchJson('get', this._serviceUrl);
+  }
+
   getAnswerServiceUrl() {
     return this._serviceUrl + '/answer';
   }
