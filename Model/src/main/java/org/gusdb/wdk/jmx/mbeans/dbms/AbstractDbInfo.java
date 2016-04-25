@@ -182,6 +182,16 @@ public abstract class AbstractDbInfo implements DbInfo {
     */
   public void updateDblinkListWithValidity(ArrayList<Map<String, String>> dblinkList) {
 
+    /** This tests all dblinks in the database, resulting in 
+        lengthy timeout waits when a dblink is not available.
+        This is currently affecting production site management during a DDoS
+        attack at UGA.
+        Emergency disable this until it can be fixed.
+        -mheiges 25 April 2016
+    **/
+    if (true)
+      return;
+
     for (Map<String,String> map : dblinkList) {
       String sql = getDbLinkValidationSql(map.get("db_link"));
       if (sql == null) return;
@@ -190,6 +200,7 @@ public abstract class AbstractDbInfo implements DbInfo {
       PreparedStatement ps = null;
       String columnName = "isValid";
 
+      logger.info("updateDblinkListWithValidity() for " + map.get("db_link"));
       try {
         ps = SqlUtils.getPreparedStatement(_dataSource, sql);
         rs = ps.executeQuery();
