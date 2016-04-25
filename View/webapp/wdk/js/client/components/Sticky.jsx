@@ -31,7 +31,7 @@ let Sticky = React.createClass({
   componentWillUnmount() {
     window.removeEventListener('scroll', this.updateIsFixed);
     window.removeEventListener('wheel', this.updateIsFixed);
-    window.addEventListener('resize', this.updateIsFixed);
+    window.removeEventListener('resize', this.updateIsFixed);
   },
 
   // Set position to fixed if top is above threshold, otherwise
