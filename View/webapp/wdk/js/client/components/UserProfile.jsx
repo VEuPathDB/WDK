@@ -40,13 +40,13 @@ let UserProfile = React.createClass({
       <div style={{ margin: "0 2em"}}>
         {this.props.user !== null && !this.props.user.isGuest ?
           <div>
-            <h1>Profile Form</h1>
+            <h1>My Account</h1>
             {this.props.outcome.length > 0 ? <p className={messageClass}>{this.props.message}</p> : ""}
             {userForm(this.props.user, emailPreferenceData, emailPreferenceSelections, this.onEmailChange,
                       this.props.userEvents.onFormStateChange, this.props.userEvents.onEmailPreferenceChange,
                       this.props.isChanged, this.saveProfile)}
           </div>
-        : <div>You must first log on to read and alter your profile</div>
+        : <div>You must first log on to read and alter your account information</div>
         }
       </div>
     );
