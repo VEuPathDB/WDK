@@ -43,9 +43,6 @@ let UserProfileController = React.createClass({
   },
 
   userEvents: {
-    onEditProfile: function(user) {
-      this.props.dispatchAction(editProfile(user));
-    },
     onFormStateChange: function(newState) {
       this.props.dispatchAction(updateProfile(newState));
     },
@@ -59,10 +56,7 @@ let UserProfileController = React.createClass({
       this.props.dispatchAction(updateProfile(Object.assign({}, filterOutProps(this.state.user,[APPLICATION_SPECIFIC_PROPERTIES]), {[APPLICATION_SPECIFIC_PROPERTIES] : newProperties})));
     },
     onSaveProfile: function(user) {
-      this.props.dispatchAction(saveProfile(this.state.user));
-    },
-    onCancelEdit: function(user) {
-      this.props.dispatchAction(loadCurrentUser());
+      this.props.dispatchAction(saveProfile(this.state.user, this.errorHandler));
     }
   },
 

@@ -4,8 +4,8 @@ import { filterOutProps } from '../utils/componentUtils';
 export let actionTypes = {
   USER_LOADING: 'user/loading',
   USER_INITIALIZE_STORE: 'user/initialize',
-  USER_PROFILE_EDIT: 'user/profile-edit',
   USER_PROFILE_UPDATE: 'user/profile-update',
+  USER_PROFILE_ERROR: 'user/profile-error',
   USER_PROPERTY_UPDATE: 'user/property-update',
   USER_PREFERENCE_UPDATE: 'user/preference-update',
   USER_PROFILE_SAVE: 'user/profile-save',
@@ -36,12 +36,6 @@ export function loadCurrentUser() {
   };
 }
 
-export function editProfile(user) {
-  return {
-    type: actionTypes.USER_PROFILE_EDIT,
-    payload: {user}
-  };
-}
 
 export function updateProfile(user) {
   return {
@@ -59,16 +53,16 @@ export function saveProfile(user) {
     return userPromise.then(() => {
         dispatch({
           type: actionTypes.USER_PROFILE_SAVE,
-          payload: { user }
+          payload: { user, message : "Your profile has been successfully updated." }
         });
         return { user };
       }, error => {
         dispatch({
-          type: actionTypes.APP_ERROR,
-          payload: { error }
+          type: actionTypes.USER_PROFILE_ERROR,
+          payload: { message : error.response }
         });
-        throw error;
       });
   };
+
 }
 
