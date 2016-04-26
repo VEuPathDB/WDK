@@ -1,8 +1,15 @@
 import React from 'react';
+import { PropTypes } from 'react';
 import TextBox from './TextBox';
 import TextArea from './TextArea';
-import { wrappable, getChangeHandler } from '../utils/componentUtils';
+import { wrappable } from '../utils/componentUtils';
 
+/**
+ * This React stateless function displays the user contact data fieldset of the form
+ * @param props
+ * @returns {XML}
+ * @constructor
+ */
 const UserContact = (props) => {
   let user = props.user;
   return (
@@ -40,6 +47,17 @@ const UserContact = (props) => {
       </div>
     </fieldset>
   );
+};
+
+
+UserContact.propTypes = {
+
+  /** The user object to be modified */
+  user:  PropTypes.object.Required,
+
+  /** The on change handler for text box inputs */
+  onTextChange:  PropTypes.func.Required
+
 };
 
 export default wrappable(UserContact);

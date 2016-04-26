@@ -1,10 +1,20 @@
 import React from 'react';
+import { PropTypes } from 'react';
 import UserIdentity from './UserIdentity';
 import UserPassword from './UserPassword';
 import UserContact from './UserContact';
 import ApplicationSpecificProperties from './ApplicationSpecificProperties';
 import { wrappable } from '../utils/componentUtils';
 
+/** The user attribute that points to application specific properties */
+const APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
+
+/**
+ * This React component provides the form wrapper and enclosed fieldsets for the user profile/account form.
+ * @param props
+ * @returns {XML}
+ * @constructor
+ */
 const UserAccountForm = (props) => {
   let { user, onTextChange, onEmailChange, onFormStateChange, isChanged, saveProfile } = props;
 
@@ -17,12 +27,30 @@ const UserAccountForm = (props) => {
       <br />
       <UserContact user={user} onTextChange={onTextChange} />
       <br />
-      <ApplicationSpecificProperties user={user} onFormStateChange={onFormStateChange} />
+      <ApplicationSpecificProperties user={user} onFormStateChange={onFormStateChange} name={APPLICATION_SPECIFIC_PROPERTIES} />
       <div>
         <input type="submit" value="Save" disabled={isChanged ? "" : "disabled"} />
       </div>
     </form>
   );
-}
+};
+
+UserAccountForm.propTypes = {
+
+  /** The user object to be modified */
+  user: PropTypes.object.Required,
+
+  /** The on change handler for email text box inputs */
+  onEmailChange:  PropTypes.func.Required,
+
+  /** The on change handler for text box inputs */
+  onTextChange: PropTypes.func.Required,
+
+  /** Indicates that unsaved modifications currently exist - enables/disables submit button */
+  isChanged:  PropTypes.bool.Required,
+
+  /** The on submit handler for the form */
+  saveProfile:  PropTypes.func.Required
+};
 
 export default wrappable(UserAccountForm);
