@@ -15,7 +15,7 @@ import partial from 'lodash/function/partial';
 * @return {Array<Object>} an Array of items that pass the filter
 */
 export function filterItems(items, itemToSearchableString, searchQueryString) {
-    if (!searchExpression || !items) return items;
+    if (!searchQueryString || !items) return items;
 
     let terms = parseSearchQueryString(searchQueryString);
     return terms.reduce(function(items, term) {
