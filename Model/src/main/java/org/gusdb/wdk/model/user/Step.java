@@ -654,7 +654,9 @@ public class Step {
    */
   public void invalidateStep() throws WdkModelException {
     setValid(false);
-    stepFactory.setStepValidFlag(this);
+    if (!inMemoryOnly) {
+     stepFactory.setStepValidFlag(this);
+    }
   }
 
   /**
