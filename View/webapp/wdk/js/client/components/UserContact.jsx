@@ -53,10 +53,10 @@ const UserContact = (props) => {
 UserContact.propTypes = {
 
   /** The user object to be modified */
-  user:  PropTypes.object.Required,
+  user:  PropTypes.object.isRequired,
 
   /** The on change handler for text box inputs */
-  onTextChange:  PropTypes.func.Required
+  onTextChange:  PropTypes.func.isRequired
 
 };
 

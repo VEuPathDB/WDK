@@ -58,13 +58,13 @@ const UserIdentity = (props) => {
 UserIdentity.propTypes = {
 
   /** The user object to be modified */
-  user:  PropTypes.object.Required,
+  user:  PropTypes.object.isRequired,
 
   /** The on change handler for email text box inputs */
-  onEmailChange:  PropTypes.func.Required,
+  onEmailChange:  PropTypes.func.isRequired,
 
   /** The on change handler for text box inputs */
-  onTextChange:  PropTypes.func.Required
+  onTextChange:  PropTypes.func.isRequired
 
 };
 

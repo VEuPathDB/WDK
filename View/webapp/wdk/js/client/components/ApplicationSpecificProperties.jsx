@@ -17,13 +17,13 @@ const ApplicationSpecificProperties = React.createClass({
 ApplicationSpecificProperties.propTypes = {
 
   /** The user object to be modified */
-  user:  PropTypes.object.Required,
+  user:  PropTypes.object.isRequired,
 
   /** Called with a parameter representing the new state when a form element changes */
-  onFormStateChange:  PropTypes.func.Required,
+  onFormStateChange:  PropTypes.func.isRequired,
 
   /** The WDK name for the user's application specific properties */
-  name:  PropTypes.string.Required
+  name:  PropTypes.string.isRequired
 
 };
 

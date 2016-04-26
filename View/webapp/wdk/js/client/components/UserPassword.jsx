@@ -24,7 +24,7 @@ const UserPassword = (props) => {
 UserPassword.propTypes = {
 
   /** The user object to be modified */
-  user:  PropTypes.object.Required
+  user:  PropTypes.object.isRequired
 
 };
 

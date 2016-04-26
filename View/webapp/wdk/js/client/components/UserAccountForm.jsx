@@ -38,19 +38,19 @@ const UserAccountForm = (props) => {
 UserAccountForm.propTypes = {
 
   /** The user object to be modified */
-  user: PropTypes.object.Required,
+  user: PropTypes.object.isRequired,
 
   /** The on change handler for email text box inputs */
-  onEmailChange:  PropTypes.func.Required,
+  onEmailChange:  PropTypes.func.isRequired,
 
   /** The on change handler for text box inputs */
-  onTextChange: PropTypes.func.Required,
+  onTextChange: PropTypes.func.isRequired,
 
   /** Indicates that unsaved modifications currently exist - enables/disables submit button */
-  isChanged:  PropTypes.bool.Required,
+  isChanged:  PropTypes.bool.isRequired,
 
   /** The on submit handler for the form */
-  saveProfile:  PropTypes.func.Required
+  saveProfile:  PropTypes.func.isRequired
 };
 
 export default wrappable(UserAccountForm);
