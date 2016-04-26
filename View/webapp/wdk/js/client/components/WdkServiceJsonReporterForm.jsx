@@ -17,12 +17,12 @@ let WdkServiceJsonReporterForm = props => {
           // state of the tree
           selectedLeaves={formState.attributes}
           expandedBranches={formUiState.expandedAttributeNodes}
-          searchText={formUiState.attributeSearchText}
+          searchTerm={formUiState.attributeSearchText}
 
           // change handlers for each state element controlled by the tree
           onChange={getUpdateHandler('attributes')}
           onUiChange={getUiUpdateHandler('expandedAttributeNodes')}
-          onSearchTextChange={getUiUpdateHandler('attributeSearchText')}
+          onSearchTermChange={getUiUpdateHandler('attributeSearchText')}
       />
 
       <CategoriesCheckboxTree

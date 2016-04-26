@@ -13,36 +13,36 @@ export default class RealTimeSearchBox extends Component {
 
   constructor(props) {
     super(props);
-    this.handleSearchTextChange = this.handleSearchTextChange.bind(this);
+    this.handleSearchTermChange = this.handleSearchTermChange.bind(this);
     this.handleResetClick = this.handleResetClick.bind(this);
-    this.debounceOnSearchTextSet = debounce(this.props.onSearchTextChange, this.props.delayMs);
-    this.state = { searchText: this.props.initialSearchText };
+    this.debounceOnSearchTermSet = debounce(this.props.onSearchTermChange, this.props.delayMs);
+    this.state = { searchTerm: this.props.initialSearchTerm };
   }
 
   /**
-   * Update the state of this Component, and call debounced onSearchTextSet
+   * Update the state of this Component, and call debounced onSearchTermSet
    * callback.
    */
-  handleSearchTextChange(e) {
-    let searchText = e.target.value;
-    this.setState({ searchText });
-    this.debounceOnSearchTextSet(searchText);
+  handleSearchTermChange(e) {
+    let searchTerm = e.target.value;
+    this.setState({ searchTerm });
+    this.debounceOnSearchTermSet(searchTerm);
   }
 
   /**
-   * Update the state of this Component, and call onSearchTextSet callback
+   * Update the state of this Component, and call onSearchTermSet callback
    * immediately.
    */
   handleResetClick(e) {
     e.preventDefault();
-    this.setState({ searchText: '' });
-    this.props.onSearchTextChange('');
+    this.setState({ searchTerm: '' });
+    this.props.onSearchTermChange('');
   }
 
   render() {
     let { helpText, placeholderText } = this.props;
-    let searchText = this.state.searchText;
-    let isActiveSearch = searchText.length > 0;
+    let searchTerm = this.state.searchTerm;
+    let isActiveSearch = searchTerm.length > 0;
     let searchBoxClass = isActiveSearch ? "wdk-CheckboxTree-searchBoxEnabled" : "wdk-CheckboxTree-searchBoxDisabled";
     let showHelpIcon = (helpText != null && helpText != '');
     let cancelButtonStyle = { visibility: isActiveSearch ? 'visible' : 'hidden' };
@@ -50,9 +50,9 @@ export default class RealTimeSearchBox extends Component {
       <div className="wdk-searchBoxInfo">
         <span className={searchBoxClass}>
           <input type="text"
-            onChange={this.handleSearchTextChange}
+            onChange={this.handleSearchTermChange}
             placeholder={placeholderText}
-            value={searchText}
+            value={searchTerm}
           />
           <span style={cancelButtonStyle} onClick={this.handleResetClick}>
             <i className="fa fa-lg fa-times"></i>
@@ -69,8 +69,8 @@ export default class RealTimeSearchBox extends Component {
 }
 
 RealTimeSearchBox.defaultProps = {
-  initialSearchText: '',
-  onSearchTextChange: () => {},
+  initialSearchTerm: '',
+  onSearchTermChange: () => {},
   placeholderText: '',
   helpText: '',
   delayMs: 250,
@@ -79,10 +79,10 @@ RealTimeSearchBox.defaultProps = {
 RealTimeSearchBox.propTypes = {
 
   /** Initial search text; defaults to ''.  After mounting, search text is maintained by the component */
-  initialSearchText: PropTypes.string,
+  initialSearchTerm: PropTypes.string,
 
   /** Called when user alters text in the search box  */
-  onSearchTextChange: PropTypes.func,
+  onSearchTermChange: PropTypes.func,
 
   /** The placeholder string if no search text is present; defaults to ''. */
   placeholderText: PropTypes.string,
@@ -90,7 +90,7 @@ RealTimeSearchBox.propTypes = {
   /** Text to appear as tooltip of help icon, should describe how the search is performed. Defaults to empty (no icon) */
   helpText: PropTypes.string,
 
-  /** Delay in milliseconds after last character typed until onSearchTextChange is called.  Defaults to 250. */
+  /** Delay in milliseconds after last character typed until onSearchTermChange is called.  Defaults to 250. */
   delayMs: PropTypes.number
 }
 

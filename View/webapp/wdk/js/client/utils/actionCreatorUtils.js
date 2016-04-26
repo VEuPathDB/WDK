@@ -16,7 +16,7 @@ export function getStepBundle(stepId, service) {
   let ontologyPromise = service.getOntology();
 
   return Promise.all([ stepPromise, questionPromise, recordClassPromise, ontologyPromise ])
-    .then(([ step, question, recordClass, ontology ]) => ({ step, question, recordClass, ontology }));
+    .then(([ step, question, recordClass, ontology ]) => ({ step, question, recordClass, ontology, scope: 'results' }));
 }
 
 export function getSingleRecordStepBundle(recordClass, primaryKeyString, service) {
@@ -27,7 +27,8 @@ export function getSingleRecordStepBundle(recordClass, primaryKeyString, service
   // create single-record question and step for this record class
   let questionName = '__' + recordClass.name + '__singleRecordQuestion__';
   let step = {
-    displayName: 'Single Record',
+      // fill primary key string so we know which single record this question is 
+    displayName: primaryKeyString,
     answerSpec: {
       questionName: questionName,
       parameters: {
@@ -56,5 +57,5 @@ export function getSingleRecordStepBundle(recordClass, primaryKeyString, service
   };
 
   // wait for promise to contain a value, then return the bundle
-  return ontologyPromise.then(ontology => ({ recordClass, question, step, ontology }));
+  return ontologyPromise.then(ontology => ({ recordClass, question, step, ontology, scope: 'record' }));
 }

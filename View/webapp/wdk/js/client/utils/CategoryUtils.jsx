@@ -1,5 +1,7 @@
 import kebabCase from 'lodash/string/kebabCase';
-import { getTree, nodeHasProperty, getPropertyValue, getPropertyValues } from './OntologyUtils';
+import { mapStructure } from './TreeUtils';
+import { getTree, nodeHasChildren, getNodeChildren, nodeHasProperty,
+  getPropertyValue, getPropertyValues } from './OntologyUtils';
 
 export let getId = node =>
   // replace whitespace with hyphens
@@ -125,4 +127,24 @@ export function nodeSearchPredicate(node, searchText) {
 export function searchAggregateText(searchText, textStrings) {
   let aggregateText = textStrings.join(' ').toLowerCase();
   return (aggregateText.indexOf(searchText.toLowerCase()) !== -1);
+}
+
+/**
+ * Finds the "left-most" leaf in the tree and returns its ID using getNodeId()
+ */
+export function findFirstLeafId(ontologyTreeRoot) {
+  if (nodeHasChildren(ontologyTreeRoot)) {
+    return findFirstLeafId(getNodeChildren(ontologyTreeRoot)[0]);
+  }
+  return getNodeId(ontologyTreeRoot);
+}
+
+/**
+ * Returns an array of all the IDs of the leaf nodes in the passed tree
+ */
+export function getAllLeafIds(ontologyTreeRoot) {
+  let collectIds = (leafIds, node) =>
+    (!nodeHasChildren(node) ? leafIds.concat(getNodeId(node)) :
+      getNodeChildren(node).reduce(collectIds, leafIds));
+  return collectIds([], ontologyTreeRoot);
 }
