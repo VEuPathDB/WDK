@@ -5,19 +5,19 @@ import partial from 'lodash/function/partial';
 
 /**
 * Filter a provided list of (generic) items.
-* Uses a "multi-term" search approach.  The search expression is parsed into terms
+* Uses a "multi-term" search approach.  The search expression is parsed into query terms
 * (space delimited; quoted strings treated as one term).  Items match if their searchable string contains
 * all of the terms.
 *
 * @param {Array<Object>} items           The list of items to filter
-* @param {function}   itemToSearchableString A function from item=>String.  Returns the string to search, given an item
-* @param {string}     searchExpression      The query with which to filter records
-* @return an Array of items that pass the filter
+* @param {function}   itemToSearchableString A function from item=>String.  Returns the searchable string, given an item
+* @param {string}     searchQueryString      The query, in string form, with which to filter records
+* @return {Array<Object>} an Array of items that pass the filter
 */
-export function filterItems(items, itemToSearchableString, searchExpression) {
+export function filterItems(items, itemToSearchableString, searchQueryString) {
     if (!searchExpression || !items) return items;
 
-    let terms = parseSearchExpression(searchExpression);
+    let terms = parseSearchQueryString(searchQueryString);
     return terms.reduce(function(items, term) {
         let predicate = partial(isTermInString, itemToSearchableString(term));
         return items.filter(predicate);
@@ -25,37 +25,38 @@ export function filterItems(items, itemToSearchableString, searchExpression) {
 }
 
 /**
- * Split terms on whitespace, unless wrapped in quotes
- * @param terms
- * @returns {Array}
+ * Split search query string on whitespace, unless wrapped in quotes
+ * @param {string} searchQueryString A string representing the search query
+ * @returns {Array<String>} A set of query terms parsed from searchQueryString
  */
-export function parseSearchExpression(terms) {
-    let match = terms.match(/\w+|"[^"]*"/g) || [];
-    return match.map(function(term) {
+export function parseSearchQueryString(searchQueryString) {
+    let match = searchQueryString.match(/\w+|"[^"]*"/g) || [];
+    return match.map(function(queryTerm) {
         // remove wrapping quotes from phrases
-        return term.replace(/(^")|("$)/g, '');
+        return queryTerm.replace(/(^")|("$)/g, '');
     });
 }
 
 /**
- * Return a boolean indicating if all the terms are found in the searchableString
- * @param terms An array of terms to search with
+ * Return a boolean indicating if all the queryTerms are found in the searchableString
+ * @param queryTerms An array of queryTerms to search with
  * @param searchableString The string to search.
+ * @returns boolean
  */
-export function areTermsInString(terms, searchableString) {
-    return terms.reduce(function (matchesFlag, term) {
+export function areTermsInString(queryTerms, searchableString) {
+    return queryTerms.reduce(function (matchesFlag, term) {
         return matchesFlag && isTermInString(term, searchableString)
     }, true);
 }
 
 /**
- *
- * @param term
- * @param searchableString
- * @returns {boolean}
+ * Return a boolean indicating if the query term is found in the searchableString
+ * @param {string} queryTerm
+ * @param {string} searchableString
+ * @returns {boolean} true if a match
  */
-export function isTermInString(term, searchableString) {
-    return searchableString.toLowerCase().includes(term.toLowerCase());
+export function isTermInString(queryTerm, searchableString) {
+    return searchableString.toLowerCase().includes(queryTerm.toLowerCase());
 }
 
 
