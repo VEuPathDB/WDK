@@ -164,7 +164,7 @@ public abstract class AbstractDbInfo implements DbInfo {
       SqlUtils.closeResultSetAndStatement(rs);
     }
 
-    updateDblinkListWithValidity(dblinkList);
+    //updateDblinkListWithValidity(dblinkList);
   }
 
   /**
