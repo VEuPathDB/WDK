@@ -362,12 +362,14 @@ function fetchJson(method, url, body) {
       if (xhr.readyState !== 4) return;
 
       if (xhr.status >= 200 && xhr.status < 300) {
-        var json = xhr.status === 204 ? null : JSON.parse(xhr.response);
+        let json = xhr.status === 204 ? null : JSON.parse(xhr.response);
         resolve(json, xhr.statusText, xhr);
       }
       else {
-        var error = new Error(xhr.statusText)
-        error.response = xhr.response
+        let msg = `Cannot ${method.toUpperCase()} ${url} (${xhr.status})`;
+        let error = new Error(msg);
+        error.response = xhr.response;
+        error.status = xhr.status;
         reject(error);
       }
     }
