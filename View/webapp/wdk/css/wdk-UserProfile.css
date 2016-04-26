@@ -69,6 +69,9 @@
 }
 
 .wdk-UserProfile-profileForm input[type="submit"]:disabled {
-  background: #ddd;
+  background-color: #ddd;
   color: #777;
+  cursor: default;
+  border-radius: 4px;
+  border: none;
 }
