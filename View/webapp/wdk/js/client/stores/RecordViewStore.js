@@ -17,7 +17,7 @@ export default class RecordViewStore extends WdkStore {
   reduce(state, { type, payload }) {
     switch (type) {
       case actionTypes.ERROR_RECEIVED:
-        return Object.assign({}, this.getInitialState(), {
+        return Object.assign({}, state, {
           isLoading: false,
           error: payload.error
         });
