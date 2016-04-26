@@ -24,8 +24,12 @@ export function filterItems(items, itemToSearchableString, searchExpression) {
     }, items);
 }
 
-// Split terms on whitespace, unless wrapped in quotes
-function parseSearchExpression(terms) {
+/**
+ * Split terms on whitespace, unless wrapped in quotes
+ * @param terms
+ * @returns {Array}
+ */
+export function parseSearchExpression(terms) {
     let match = terms.match(/\w+|"[^"]*"/g) || [];
     return match.map(function(term) {
         // remove wrapping quotes from phrases
@@ -33,7 +37,24 @@ function parseSearchExpression(terms) {
     });
 }
 
-function isTermInString(term, searchableString) {
+/**
+ * Return a boolean indicating if all the terms are found in the searchableString
+ * @param terms An array of terms to search with
+ * @param searchableString The string to search.
+ */
+export function areTermsInString(terms, searchableString) {
+    return terms.reduce(function (matchesFlag, term) {
+        return matchesFlag && isTermInString(term, searchableString)
+    }, true);
+}
+
+/**
+ *
+ * @param term
+ * @param searchableString
+ * @returns {boolean}
+ */
+export function isTermInString(term, searchableString) {
     return searchableString.toLowerCase().includes(term.toLowerCase());
 }
 
