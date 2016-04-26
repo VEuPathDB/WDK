@@ -1,7 +1,14 @@
 import React from 'react';
+import { PropTypes } from 'react';
 import TextBox from './TextBox';
-import { wrappable, getChangeHandler } from '../utils/componentUtils';
+import { wrappable } from '../utils/componentUtils';
 
+/**
+ * This React stateless function displays the user identification fieldset of the form.
+ * @param props
+ * @returns {XML}
+ * @constructor
+ */
 const UserIdentity = (props) => {
   let user = props.user;
   return (
@@ -45,6 +52,20 @@ const UserIdentity = (props) => {
       </div>
     </fieldset>
   );
+};
+
+
+UserIdentity.propTypes = {
+
+  /** The user object to be modified */
+  user:  PropTypes.object.Required,
+
+  /** The on change handler for email text box inputs */
+  onEmailChange:  PropTypes.func.Required,
+
+  /** The on change handler for text box inputs */
+  onTextChange:  PropTypes.func.Required
+
 };
 
 export default wrappable(UserIdentity);
