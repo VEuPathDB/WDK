@@ -76,8 +76,8 @@ let SiteMap = props => {
     showSearchBox: true,
     searchBoxPlaceholder: "Search for data...",
     searchBoxHelp: "Each item's name and description will be searched for your exact input text",
-    searchText: props.searchText,
-    onSearchTextChange: props.siteMapActions.setSearchText,
+    searchTerm: props.searchText,
+    onSearchTermChange: props.siteMapActions.setSearchText,
     searchPredicate: siteMapSearchPredicate
   };
   return <CheckboxTree {...treeProps} />;

@@ -6,7 +6,7 @@ import CheckboxTree from './CheckboxTree';
 let CategoriesCheckboxTree = props => {
 
   let { title, searchBoxPlaceholder, tree, selectedLeaves, expandedBranches,
-    isMultiPick, searchText, onChange, onUiChange, onSearchTextChange } = props;
+    isMultiPick, searchTerm, onChange, onUiChange, onSearchTermChange } = props;
 
   if (isMultiPick === undefined) isMultiPick = true;
 
@@ -23,10 +23,10 @@ let CategoriesCheckboxTree = props => {
     getNodeId, getNodeChildren, searchPredicate: nodeSearchPredicate, nodeComponent: BasicNodeComponent,
 
     // set current data in the tree
-    tree, isMultiPick, selectedList: selectedLeaves, expandedList: expandedBranches, searchBoxPlaceholder, searchText,
+    tree, isMultiPick, selectedList: selectedLeaves, expandedList: expandedBranches, searchBoxPlaceholder, searchTerm,
 
     // set event handlers
-    onSelectionChange: onChange, onExpansionChange: onUiChange, onSearchTextChange: onSearchTextChange
+    onSelectionChange: onChange, onExpansionChange: onUiChange, onSearchTermChange
   };
 
   return (

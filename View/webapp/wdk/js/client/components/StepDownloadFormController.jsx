@@ -59,11 +59,9 @@ let StepDownloadFormController = React.createClass({
     let params = props.params;
     if ('stepId' in params) {
       this.viewActions.loadPageDataFromStepId(params.stepId);
-      this.scope = 'results';
     }
     else if ('recordClass' in params) {
       this.viewActions.loadPageDataFromRecord(params.recordClass, params.splat.split('/').join(','));
-      this.scope = 'record';
     }
     else {
       console.error("Neither stepId nor recordClass param passed to StepDownloadFormController component");
@@ -89,16 +87,14 @@ let StepDownloadFormController = React.createClass({
       this.viewActions.submitForm(step, selectedReporter, formState);
     };
 
-    let availableReporters = this.state.viewData.availableReporters
-    .filter(reporter => reporter.scopes.indexOf(this.scope) > -1);
-
     // build props object to pass to form component
     let formProps = {
       step: this.state.viewData.step,
       summaryView: this.props.location.query.summaryView,
       question: this.state.viewData.question,
       recordClass: this.state.viewData.recordClass,
-      availableReporters: availableReporters,
+      availableReporters: this.state.viewData.availableReporters,
+      scope: this.state.viewData.scope,
       user: this.state.userData.user,
       preferences: this.state.userData.preferences,
       ontology: this.state.viewData.ontology,

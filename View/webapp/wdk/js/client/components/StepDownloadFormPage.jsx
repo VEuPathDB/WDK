@@ -6,7 +6,7 @@ let NO_REPORTER_SELECTED = "_none_";
 
 let ReporterSelect = props => {
   let { reporters, selected, onChange } = props;
-  if (reporters.length == 0) return ( <noscript/> );
+  if (reporters.length < 2) return ( <noscript/> );
   return (
     <div>
       <span style={{marginRight:'0.5em'}}>Choose a Reporter:</span>
@@ -17,6 +17,17 @@ let ReporterSelect = props => {
       </select>
     </div>
   );
+}
+
+function getTitle(scope, step, recordClass) {
+  switch (scope) {
+    case 'results':
+      return "Download Results from Search: " + step.displayName + " (" + step.estimatedSize + " " + recordClass.displayNamePlural + ")";
+    case 'record':
+      return "Download " + recordClass.displayName + ": " + step.displayName;
+    default:
+      return "Download Results";
+  }
 }
 
 let StepDownloadFormPage = React.createClass({
@@ -33,7 +44,10 @@ let StepDownloadFormPage = React.createClass({
   render() {
 
     // get the props needed in this component's render
-    let { availableReporters, selectedReporter, recordClass, onSubmit } = this.props;
+    let { scope, step, availableReporters, selectedReporter, recordClass, onSubmit } = this.props;
+
+    // determine page title
+    let title = getTitle(scope, step, recordClass);
 
     // filter props we don't want to send to the child form
     let formProps = filterOutProps(this.props, [ 'onReporterChange' ]);
@@ -45,7 +59,7 @@ let StepDownloadFormPage = React.createClass({
 
     return (
       <div style={{margin: '1em 3em'}}>
-        <h1>Download Step Result: {this.props.step.displayName}</h1>
+        <h1>{title}</h1>
         <ReporterSelect reporters={availableReporters} selected={selectedReporter} onChange={this.changeReporter}/>
         <StepDownloadForm {...formProps}/>
       </div>
