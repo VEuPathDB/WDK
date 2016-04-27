@@ -57,7 +57,8 @@ import { wrappable } from '../utils/componentUtils';
 import Link from './Link';
 import CheckboxTree from './CheckboxTree';
 import { getNodeChildren, getPropertyValue } from '../utils/OntologyUtils';
-import { getTargetType, getRefName, getDisplayName, getDescription, getNodeId, getId, searchAggregateText } from '../utils/CategoryUtils';
+import { getTargetType, getRefName, getDisplayName, getDescription, getNodeId, getId } from '../utils/CategoryUtils';
+import { areTermsInString } from '../utils/SearchUtils';
 
 /**
  * Displays site map page, basically just a custom expandable tree
@@ -111,15 +112,16 @@ let getNodeData = node => {
     data.description = getDescription(node);
   }
   return data;
-}
+};
 
 /**
  * Defines how to search for site-map nodes
  */
-let siteMapSearchPredicate = (node, searchText) => {
+let siteMapSearchPredicate = (node, searchQueryTerms) => {
   let data = getNodeData(node);
-  return searchAggregateText(searchText, [ data.recordClassDisplayName, data.displayName, data.description ]);
-}
+  let searchableString = join([ data.recordClassDisplayName, data.displayName, data.description ]);
+  return areTermsInString(searchQueryTerms, searchableString);
+};
 
 /**
  * Defines how to display site-map nodes
@@ -150,6 +152,6 @@ let SiteMapNodeElement = ({ node }) => {
   }
   
   return ( <span title={data.description}>{data.displayName}</span> );
-}
+};
 
 export default wrappable(SiteMap);
