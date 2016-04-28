@@ -1,7 +1,6 @@
-import { Component, PropTypes } from 'react';
+import {Component} from 'react';
 import classnames from 'classnames';
-import { wrappable } from '../utils/componentUtils';
-import { getPropertyValue } from '../utils/OntologyUtils';
+import {wrappable} from '../utils/componentUtils';
 import Main from './Main';
 import Record from './Record';
 import RecordHeading from './RecordHeading';
@@ -48,6 +47,24 @@ class RecordUI extends Component {
 
     return (
       <Main className={classNames}>
+        <div
+          className="wdk-RecordMainSectionFieldToggles"
+          fixedClassName="wdk-RecordMainSectionFieldToggles__fixed"
+        >
+          <a href="#"
+            onClick={event => {
+              event.preventDefault();
+              this.props.showAllFields();
+            }}
+            title="Show all content" >Show All</a>
+          <br/>
+          <a href="#"
+            onClick={event => {
+              event.preventDefault();
+              this.props.hideAllFields();
+            }}
+            title="Hide all content" >Hide All</a>
+        </div>
         <RecordHeading
           record={this.props.record}
           recordClass={this.props.recordClass}
