@@ -13,6 +13,8 @@ export let actionTypes = {
   ERROR_RECEIVED: 'record/error-received',
   SHOW_SECTION: 'record/show-section',
   HIDE_SECTION: 'record/hide-section',
+  SHOW_ALL_FIELDS: 'record/show-all-fields',
+  HIDE_ALL_FIELDS: 'record/hide-all-fields',
   UPDATE_NAVIGATION_QUERY: 'record/update-navigation-query'
 };
 
@@ -66,6 +68,14 @@ export function updateSectionCollapsed(sectionName, isCollapsed) {
     type: isCollapsed ? actionTypes.HIDE_SECTION : actionTypes.SHOW_SECTION,
     payload: { name: sectionName }
   };
+}
+
+export function showAllFields() {
+  return { type: actionTypes.SHOW_ALL_FIELDS };
+}
+
+export function hideAllFields() {
+  return { type: actionTypes.HIDE_ALL_FIELDS };
 }
 
 /** Update navigation section search term -- currently unused */
@@ -142,4 +152,4 @@ function getRecordTables(wdkService, recordClass, primaryKey, fullCategoryTree, 
       };
     })
   });
-};
+}
