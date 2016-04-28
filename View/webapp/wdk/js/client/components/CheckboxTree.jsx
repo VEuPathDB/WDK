@@ -21,27 +21,29 @@ let TreeLinks = props => {
   } = props;
   return (
     <div className="wdk-CheckboxTree-links">
-      { showSelectionLinks &&
-        <span>
-          <a href="#" onClick={selectAll}>select all</a> |
-          <a href="#" onClick={selectNone}> clear all</a>
-          <br/>
-        </span> }
-
-      { showExpansionLinks &&
-        <span>
-          <a href="#" onClick={expandAll}> expand all</a> |
-          <a href="#" onClick={expandNone}> collapse all</a>
-          <br/>
-        </span> }
-
-      { showSelectionLinks &&
-        <span>
-          { showCurrentLink && <a href="#" onClick={selectCurrentList}>reset to current</a> }
-          { showCurrentLink && showDefaultLink ? " | " : "" }
-          { showDefaultLink && <a href="#" onClick={selectDefaultList}>reset to default</a> }
-          { (showCurrentLink || showDefaultLink) && <br/> }
-        </span> }
+      <div>
+        { showSelectionLinks &&
+          <span>
+            <a href="#" onClick={selectAll}>select all</a> |
+            <a href="#" onClick={selectNone}> clear all</a>
+            <br/>
+          </span> }
+  
+        { showExpansionLinks &&
+          <span>
+            <a href="#" onClick={expandAll}> expand all</a> |
+            <a href="#" onClick={expandNone}> collapse all</a>
+            <br/>
+          </span> }
+  
+        { showSelectionLinks &&
+          <span>
+            { showCurrentLink && <a href="#" onClick={selectCurrentList}>reset to current</a> }
+            { showCurrentLink && showDefaultLink ? " | " : "" }
+            { showDefaultLink && <a href="#" onClick={selectDefaultList}>reset to default</a> }
+            { (showCurrentLink || showDefaultLink) && <br/> }
+          </span> }
+      </div>
     </div>
   );
 };

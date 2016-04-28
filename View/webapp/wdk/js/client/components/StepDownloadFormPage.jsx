@@ -1,6 +1,7 @@
 import React from 'react';
 import { wrappable, filterOutProps } from '../utils/componentUtils';
 import StepDownloadForm from './StepDownloadForm';
+import PrimaryKeySpan from './PrimaryKeySpan';
 
 let NO_REPORTER_SELECTED = "_none_";
 
@@ -20,13 +21,15 @@ let ReporterSelect = props => {
 }
 
 function getTitle(scope, step, recordClass) {
+
+  PrimaryKeySpan
   switch (scope) {
     case 'results':
-      return "Download Results from Search: " + step.displayName + " (" + step.estimatedSize + " " + recordClass.displayNamePlural + ")";
+      return ( <h1>Download Results from Search: {step.displayName} ({step.estimatedSize} {recordClass.displayNamePlural})</h1> );
     case 'record':
-      return "Download " + recordClass.displayName + ": " + step.displayName;
+      return ( <h1>Download {recordClass.displayName}: <PrimaryKeySpan primaryKeyString={step.displayName}/></h1> );
     default:
-      return "Download Results";
+      return ( <h1>Download Results</h1> );
   }
 }
 
@@ -46,7 +49,7 @@ let StepDownloadFormPage = React.createClass({
     // get the props needed in this component's render
     let { scope, step, availableReporters, selectedReporter, recordClass, onSubmit } = this.props;
 
-    // determine page title
+    // create page title element
     let title = getTitle(scope, step, recordClass);
 
     // filter props we don't want to send to the child form
@@ -59,7 +62,7 @@ let StepDownloadFormPage = React.createClass({
 
     return (
       <div style={{margin: '1em 3em'}}>
-        <h1>{title}</h1>
+        {title}
         <ReporterSelect reporters={availableReporters} selected={selectedReporter} onChange={this.changeReporter}/>
         <StepDownloadForm {...formProps}/>
       </div>

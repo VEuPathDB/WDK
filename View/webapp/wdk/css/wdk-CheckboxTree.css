@@ -90,9 +90,16 @@
 }
 
 .wdk-CheckboxTree-links {
-  text-align: center;
+  text-align: left;
   font-size: 0.9em;
   margin: 0.5em 0;
+}
+
+.wdk-CheckboxTree-links > div {
+  width: 230px;
+  display: inline-block;
+  text-align: center;
+  padding: 0 1em 0 1.6em;
 }
 
 .wdk-searchboxInfoIcon {
