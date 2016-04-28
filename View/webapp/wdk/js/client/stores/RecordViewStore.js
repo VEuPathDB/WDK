@@ -1,5 +1,10 @@
+import union from 'lodash/array/union';
+import difference from 'lodash/array/difference';
+import property from 'lodash/utility/property';
 import WdkStore from './WdkStore';
-import { actionTypes } from '../actioncreators/RecordViewActionCreator';
+import {filterNodes} from '../utils/TreeUtils';
+import {getId, getTargetType} from '../utils/CategoryUtils';
+import {actionTypes} from '../actioncreators/RecordViewActionCreator';
 
 /** Store for record page */
 export default class RecordViewStore extends WdkStore {
@@ -40,10 +45,10 @@ export default class RecordViewStore extends WdkStore {
         });
       }
 
-    case actionTypes.ACTIVE_RECORD_UPDATED: {
-      let { record } = payload;
-      return Object.assign({}, state, { record });
-    }
+      case actionTypes.ACTIVE_RECORD_UPDATED: {
+        let { record } = payload;
+        return Object.assign({}, state, { record });
+      }
 
       case actionTypes.SHOW_SECTION: {
         let collapsedSections = updateList(
@@ -63,6 +68,26 @@ export default class RecordViewStore extends WdkStore {
         return Object.assign({}, state, { collapsedSections });
       }
 
+      /**
+       * Show all record fields (tables and attributes).
+       * Category section collapsed state will be preserved.
+       */
+      case actionTypes.SHOW_ALL_FIELDS: {
+        return Object.assign({}, state, {
+          collapsedSections: difference(state.collapsedSections, getAllFields(state))
+        });
+      }
+
+      /**
+       * Hide all record fields (tables and attributes).
+       * Category section collapsed state will be preserved.
+       */
+      case actionTypes.HIDE_ALL_FIELDS: {
+        return Object.assign({}, state, {
+          collapsedSections: union(state.collapsedSections, getAllFields(state))
+        });
+      }
+
       default:
         return state;
     }
@@ -71,5 +96,18 @@ export default class RecordViewStore extends WdkStore {
 
 RecordViewStore.actionTypes = actionTypes;
 
-let updateList = (item, add, list = []) =>
-  add ? list.concat(item) : list.filter(x => x !== item)
+/** Create a new array adding or removing item */
+function updateList(item, add, list = []) {
+  return add ? list.concat(item) : list.filter(x => x !== item);
+}
+
+/** Get all attributes and tables of active record */
+function getAllFields(state) {
+  return filterNodes(isFieldNode, state.categoryTree)
+  .map(getId);
+}
+
+function isFieldNode(node) {
+  let targetType = getTargetType(node);
+  return targetType === 'attribute' || targetType === 'table';
+}
