@@ -1,13 +1,16 @@
 import { getChangeHandler, wrappable } from '../utils/componentUtils';
 import { getAttributeTree, getTableTree, getAttributeSelections } from '../utils/reporterUtils';
+import { getAllLeafIds } from '../utils/CategoryUtils';
 import CategoriesCheckboxTree from './CategoriesCheckboxTree';
+import ReporterSortMessage from './ReporterSortMessage';
 
 let WdkServiceJsonReporterForm = props => {
-  let { question, recordClass, summaryView, ontology, formState, formUiState, onFormChange, onFormUiChange, onSubmit } = props;
+  let { scope, question, recordClass, summaryView, ontology, formState, formUiState, onFormChange, onFormUiChange, onSubmit } = props;
   let getUpdateHandler = fieldName => getChangeHandler(fieldName, onFormChange, formState);
   let getUiUpdateHandler = fieldName => getChangeHandler(fieldName, onFormUiChange, formUiState);
   return (
     <div>
+      <ReporterSortMessage scope={scope}/>
       <CategoriesCheckboxTree
           // title and layout of the tree
           title="Choose Attributes"
@@ -49,18 +52,26 @@ let WdkServiceJsonReporterForm = props => {
   );
 };
 
-WdkServiceJsonReporterForm.getInitialState = (downloadFormStoreState, userStoreState) => ({
-  formState: {
-    attributes: getAttributeSelections(
-        userStoreState.preferences, downloadFormStoreState.question),
-    tables: []
-  },
-  formUiState: {
-    expandedAttributeNodes: null,
-    attributeSearchText: "",
-    expandedTableNodes: null,
-    tableSearchText: ""
-  }
-});
+WdkServiceJsonReporterForm.getInitialState = (downloadFormStoreState, userStoreState) => {
+  let { scope, question, recordClass, ontology } = downloadFormStoreState;
+  // select all attribs and tables for record page, else column user prefs and no tables
+  let attribs = (scope === 'results' ?
+      getAttributeSelections(userStoreState.preferences, question) :
+      getAllLeafIds(getAttributeTree(ontology, recordClass, question)));
+  let tables = (scope === 'results' ? [] :
+      getAllLeafIds(getTableTree(ontology, recordClass)));
+  return {
+    formState: {
+      attributes: attribs,
+      tables:tables
+    },
+    formUiState: {
+      expandedAttributeNodes: null,
+      attributeSearchText: "",
+      expandedTableNodes: null,
+      tableSearchText: ""
+    }
+  };
+}
 
 export default WdkServiceJsonReporterForm;

@@ -102,9 +102,10 @@ function tryInitCompletion(thisStore, state, userStore) {
     //    calculate state and set isLoading to false
     let selectedReporterName = (state.availableReporters.length == 1 ?
         state.availableReporters[0].name : null);
-    return Object.assign({}, state, { isLoading: false }, thisStore
-        .getSelectedReporter(selectedReporterName, state.recordClass.name)
-        .getInitialState(state, userStoreState));
+    return Object.assign({}, state,
+        { isLoading: false, selectedReporter: selectedReporterName },
+        thisStore.getSelectedReporter(selectedReporterName, state.recordClass.name)
+            .getInitialState(state, userStoreState));
   }
 
   // one of the initialize actions has not yet been sent
