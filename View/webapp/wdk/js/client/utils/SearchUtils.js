@@ -18,10 +18,8 @@ export function filterItems(items, itemToSearchableString, searchQueryString) {
     if (!searchQueryString || !items) return items;
 
     let terms = parseSearchQueryString(searchQueryString);
-    return terms.reduce(function(items, term) {
-        let predicate = partial(isTermInString, itemToSearchableString(term));
-        return items.filter(predicate);
-    }, items);
+    let predicate = function (item) { return areTermsInString(terms, itemToSearchableString(item))};
+    return items.filter(predicate);
 }
 
 /**
@@ -56,7 +54,7 @@ export function areTermsInString(queryTerms, searchableString) {
  * @returns {boolean} true if a match
  */
 export function isTermInString(queryTerm, searchableString) {
-    return searchableString.toLowerCase().includes(queryTerm.toLowerCase());
+    return !queryTerm || (searchableString && searchableString.toLowerCase().includes(queryTerm.toLowerCase()));
 }
 
 

@@ -119,8 +119,10 @@ let getNodeData = node => {
  */
 let siteMapSearchPredicate = (node, searchQueryTerms) => {
   let data = getNodeData(node);
-  let searchableString = join([ data.recordClassDisplayName, data.displayName, data.description ]);
-  return areTermsInString(searchQueryTerms, searchableString);
+  let strings = [ data.recordClassDisplayName, data.displayName /* , data.description */ ];
+  let searchableString = strings.join();
+  let flag = areTermsInString(searchQueryTerms, searchableString);
+  return flag;
 };
 
 /**
