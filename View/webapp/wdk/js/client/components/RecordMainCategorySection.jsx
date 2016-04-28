@@ -53,6 +53,8 @@ let RecordMainCategorySection = React.createClass({
       return (
         <RecordAttribute
           {...attribute}
+          isCollapsed={isCollapsed}
+          onCollapsedChange={this.toggleCollapse}
           value={value}
           record={record}
           recordClass={recordClass}
