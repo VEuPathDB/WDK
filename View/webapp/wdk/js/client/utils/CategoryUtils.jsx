@@ -2,6 +2,8 @@ import kebabCase from 'lodash/string/kebabCase';
 import { mapStructure } from './TreeUtils';
 import { getTree, nodeHasChildren, getNodeChildren, nodeHasProperty,
   getPropertyValue, getPropertyValues } from './OntologyUtils';
+import { areTermsInString } from '../utils/SearchUtils';
+
 
 export let getId = node =>
   // replace whitespace with hyphens
@@ -112,21 +114,8 @@ export let BasicNodeComponent = props =>
  * @param searchText search text to match against
  * @returns true if node 'matches' the passed search text
  */
-export function nodeSearchPredicate(node, searchText) {
-  return searchAggregateText(searchText, [ getDisplayName(node), getDescription(node) ]);
-}
-
-/**
- * Joins the values in textStrings, lower-cases the result, and searches it
- * for a lower-cased version of searchText.  Returns whether a match is found.
- *
- * @param searchText value being searched for
- * @param textStrings array of strings to search
- * @return true if searchText is found, else false
- */
-export function searchAggregateText(searchText, textStrings) {
-  let aggregateText = textStrings.join(' ').toLowerCase();
-  return (aggregateText.indexOf(searchText.toLowerCase()) !== -1);
+export function nodeSearchPredicate(node, searchQueryTerms) {
+  return areTermsInString(searchQueryTerms, getDisplayName(node));
 }
 
 /**

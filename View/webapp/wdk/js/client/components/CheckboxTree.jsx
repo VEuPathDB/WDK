@@ -6,6 +6,7 @@ import RealTimeSearchBox from './RealTimeSearchBox';
 
 import { addOrRemove, propsDiffer } from '../utils/componentUtils';
 import { isLeaf, getLeaves, getBranches, mapStructure } from '../utils/TreeUtils';
+import { parseSearchQueryString } from '../utils/SearchUtils';
 
 const NODE_STATE_PROPERTY = '__expandableTreeState';
 const NODE_CHILDREN_PROPERTY = '__expandableTreeChildren';
@@ -251,9 +252,10 @@ let createIsLeafVisible =  props => {
   }
   // otherwise must construct array of visible leaves
   let visibleLeaves = new Set();
+  let searchTerms = parseSearchQueryString(searchTerm);
   let addVisibleLeaves = (node, parentMatches) => {
     // if parent matches, automatically match (always show children of matching parents)
-    let nodeMatches = (parentMatches || searchPredicate(node, searchTerm));
+    let nodeMatches = (parentMatches || searchPredicate(node, searchTerms));
     if (isLeaf(node, getNodeChildren)) {
       if (nodeMatches) {
         visibleLeaves.add(getNodeId(node));
@@ -533,6 +535,6 @@ CheckboxTree.propTypes = {
   /** Takes single arg: the new search text.  Called when user types into the search box */
   onSearchTermChange: PropTypes.func,
 
-  /** Takes (node, searchTerm) and returns boolean. Tells whether a node matches search criteria and should be shown */
+  /** Takes (node, searchTerms) and returns boolean. searchTerms is a list of query terms, parsed from the original input string. This function returns a boolean indicating if a node matches search criteria and should be shown */
   searchPredicate: PropTypes.func
 };
