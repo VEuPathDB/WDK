@@ -68,7 +68,8 @@ public class ErrorHandler {
         String filterMatchWarning = "";
         if (_context.isSiteMonitored()) {
             if (matchedFilterKey == null) {
-                // error did not match filters, so it is not culled out.
+                // error did not match filters, so it is not culled out
+                LOG.error(_exception);
                 constructAndSendMail(_exception, _context, _logMarker);
             }
             else {
@@ -79,7 +80,7 @@ public class ErrorHandler {
         }
         else {
             // site is not monitored; simply log the exception
-            LOG.error(stackTraceToString(_exception));
+            LOG.error(_exception);
         }
 
         // write log marker to log so we can see what was going on around this error
