@@ -7,6 +7,7 @@ import { postorderSeq } from '../utils/TreeUtils';
 import { wrappable, PureComponent } from '../utils/componentUtils';
 import { getPropertyValues, nodeHasProperty } from '../utils/OntologyUtils';
 import { getId, getDisplayName } from '../utils/CategoryUtils';
+import { parseSearchQueryString, areTermsInString } from '../utils/SearchUtils';
 
 class RecordNavigationSection extends PureComponent {
 
@@ -21,7 +22,7 @@ class RecordNavigationSection extends PureComponent {
   render() {
     let { navigationExpanded, navigationQuery } = this.state;
     let { collapsedSections, heading } = this.props;
-    let navigationQueryLower = navigationQuery.toLowerCase();
+    let searchQueryTerms = parseSearchQueryString(navigationQuery);
     let categoryWordsMap = makeCategoryWordsMap(this.props.categoryTree);
     let expandClassName = classnames({
       'wdk-RecordNavigationExpand fa': true,
@@ -58,7 +59,7 @@ class RecordNavigationSection extends PureComponent {
             onSectionToggle={this.props.onSectionToggle}
             showChildren={navigationExpanded}
             isCollapsed={category => includes(collapsedSections, getId(category))}
-            isVisible={category => includes(categoryWordsMap.get(category.properties), navigationQueryLower)}
+            isVisible={category => areTermsInString(searchQueryTerms, categoryWordsMap.get(category.properties))}
           />
         </div>
       </div>
@@ -102,4 +103,4 @@ let makeCategoryWordsMap = memoize((root) =>
     }
 
     return map.set(node.properties, words.join('\0').toLowerCase());
-  }, new Map))
+  }, new Map));
