@@ -6,6 +6,8 @@ import java.util.Properties;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -25,6 +27,8 @@ import org.gusdb.wdk.service.error.ValueMaps;
 import org.gusdb.wdk.service.error.ValueMaps.RequestAttributeValueMap;
 import org.gusdb.wdk.service.error.ValueMaps.ServletContextValueMap;
 import org.gusdb.wdk.service.error.ValueMaps.SessionAttributeValueMap;
+import org.gusdb.wdk.service.request.ConflictException;
+import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.json.JSONException;
 
@@ -45,16 +49,30 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     LOG.error(e.getMessage(), e);
     try { throw e; }
 
-    // FIXME: Not sure why this is not catching (and then sending 404 as it should)
     catch (NotFoundException | PathParamException e404) {
       return Response.status(Status.NOT_FOUND)
           .type(MediaType.TEXT_PLAIN).entity("Not Found").build();
     }
-
-    catch (JSONException | RequestMisformatException | WdkUserException e400) {
-      String errorMsg = "Improperly formatted, incomplete, or incorrect service request body";
+    
+    catch (ForbiddenException e403) {
+      return Response.status(Status.FORBIDDEN)
+          .type(MediaType.TEXT_PLAIN).entity(e403.getMessage()).build();
+    }
+    
+    catch (JSONException | RequestMisformatException | BadRequestException e400) {
       return Response.status(Status.BAD_REQUEST)
-          .type(MediaType.TEXT_PLAIN).entity(errorMsg + ": " + e400.getMessage()).build();
+          .type(MediaType.TEXT_PLAIN).entity(e400.getMessage()).build();
+    }
+    
+    catch (ConflictException e409) {
+      return Response.status(Status.CONFLICT)
+          .type(MediaType.TEXT_PLAIN).entity(e409.getMessage()).build();
+    }
+    
+    // Custom exception to handle client content issues
+    catch (DataValidationException | WdkUserException e422) {
+      return Response.status(new UnprocessableEntityStatusType())
+          .type(MediaType.TEXT_PLAIN).entity(e422.getMessage()).build();
     }
 
     catch (WebApplicationException eApp) {
