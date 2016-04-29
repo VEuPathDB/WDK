@@ -235,6 +235,10 @@
   font-weight: bold;
 }
 
+.wdk-RecordTableContainerContent {
+  margin-bottom: 2em;
+}
+
 .wdk-RecordTableList {
   vertical-align: top;
   display: inline-block;
