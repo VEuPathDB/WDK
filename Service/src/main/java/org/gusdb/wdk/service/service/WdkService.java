@@ -3,9 +3,11 @@ package org.gusdb.wdk.service.service;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
@@ -33,20 +35,17 @@ public abstract class WdkService {
   }
 
   protected static final Response getBadRequestBodyResponse(String message) {
-    return Response.status(Status.BAD_REQUEST).entity(
-        "Improperly formatted or incomplete service request body: " + message).build();
+    throw new BadRequestException(message);
   }
 
   protected static final Response getPermissionDeniedResponse() {
-    return Response.status(Status.FORBIDDEN).entity(
-        "Permission Denied.  You do not have access to this resource.").build();
+    throw new ForbiddenException("Permission Denied.  You do not have access to this resource.");
   }
-
+  
   protected static final Response getNotFoundResponse(String resourceName) {
-    return Response.status(Status.NOT_FOUND).entity(
-        "Resource specified [" + resourceName + "] does not exist.").build();
+    throw new NotFoundException("Resource specified [" + resourceName + "] does not exist.");
   }
-
+  
   @Context
   private HttpServletRequest _request;
 

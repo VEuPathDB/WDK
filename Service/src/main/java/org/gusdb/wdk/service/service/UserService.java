@@ -27,6 +27,8 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.User.UserProfileProperty;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserFormatter;
+import org.gusdb.wdk.service.request.ConflictException;
+import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserPreferencesRequest;
 import org.gusdb.wdk.service.request.user.UserProfileRequest;
@@ -104,7 +106,8 @@ public class UserService extends WdkService {
   @PUT
   @Path("{id}/profile")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response setUserProfile(@PathParam("id") String userIdStr, String body, @CookieParam(LOGIN_COOKIE_NAME) Cookie cookie) throws WdkModelException {
+  public Response setUserProfile(@PathParam("id") String userIdStr, String body,
+      @CookieParam(LOGIN_COOKIE_NAME) Cookie cookie) throws ConflictException, DataValidationException, WdkModelException {
     UserBundle userBundle = parseUserId(userIdStr);
     if (userBundle == null)
       return getNotFoundResponse("Unable to find user with ID " + userIdStr);
@@ -114,7 +117,7 @@ public class UserService extends WdkService {
     try {
       User user = userBundle.getUser();
       if(user.isGuest()) {
-        throw new WdkUserException("A guest user cannot update any records");
+        return getPermissionDeniedResponse();
       }
       JSONObject json = new JSONObject(body);
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
@@ -138,8 +141,8 @@ public class UserService extends WdkService {
       user.save();
       return loginCookie == null ? Response.noContent().build() : Response.noContent().cookie(loginCookie).build();
     }
-    catch(JSONException | RequestMisformatException | WdkUserException e) {
-      return WdkService.getBadRequestBodyResponse(e.getMessage());
+    catch(JSONException | RequestMisformatException e) {
+      return getBadRequestBodyResponse(e.getMessage());
     }
   }
   
@@ -149,12 +152,14 @@ public class UserService extends WdkService {
    * @param userIdStr - id or 'current'
    * @param body
    * @return - 204
-   * @throws WdkModelException
+   * @throws DataValidationException - in the event of a
+   * @throws WdkModelException - in the event of a server error
    */
   @PATCH
   @Path("{id}/profile")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response updateUserProfile(@PathParam("id") String userIdStr, String body, @CookieParam(LOGIN_COOKIE_NAME) Cookie cookie) throws WdkModelException {
+  public Response updateUserProfile(@PathParam("id") String userIdStr, String body, @CookieParam(LOGIN_COOKIE_NAME) Cookie cookie) 
+      throws ConflictException, DataValidationException, WdkModelException {
     UserBundle userBundle = parseUserId(userIdStr);
     if (userBundle == null)
       return getNotFoundResponse("Unable to find user with ID " + userIdStr);
@@ -164,7 +169,7 @@ public class UserService extends WdkService {
     try {
       User user = userBundle.getUser();
       if(user.isGuest()) {
-        throw new WdkUserException("A guest user cannot update any records");
+        getPermissionDeniedResponse();
       }
       JSONObject json = new JSONObject(body);
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
@@ -183,8 +188,8 @@ public class UserService extends WdkService {
       user.save();
       return loginCookie == null ? Response.noContent().build() : Response.noContent().cookie(loginCookie).build();
     }
-    catch(JSONException | RequestMisformatException | WdkUserException e) {
-      return WdkService.getBadRequestBodyResponse(e.getMessage());
+    catch(JSONException | RequestMisformatException e) {
+      return getBadRequestBodyResponse(e.getMessage());
     }
   }
   
@@ -194,12 +199,12 @@ public class UserService extends WdkService {
    * @param userIdStr
    * @param body
    * @return
-   * @throws WdkModelException
+   * @throws WdkModelException, RequestMisformatException
    */
   @PUT
   @Path("{id}/preference")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response putUserPrefs(@PathParam("id") String userIdStr, String body) throws WdkModelException {
+  public Response putUserPrefs(@PathParam("id") String userIdStr, String body) throws DataValidationException, WdkModelException {
     UserBundle userBundle = parseUserId(userIdStr);
     if (userBundle == null)
       return getNotFoundResponse("Unable to find user with ID " + userIdStr);
@@ -218,8 +223,8 @@ public class UserService extends WdkService {
       user.save();
       return Response.noContent().build();
     }
-    catch(JSONException | RequestMisformatException | WdkUserException  e) {
-      return WdkService.getBadRequestBodyResponse(e.getMessage());
+    catch(JSONException | RequestMisformatException e) {
+      return getBadRequestBodyResponse(e.getMessage());
     }
   }
 
@@ -229,12 +234,12 @@ public class UserService extends WdkService {
    * @param userIdStr
    * @param body
    * @return
-   * @throws WdkModelException
+   * @throws WdkModelException, RequestMisformatException
    */
   @PATCH
   @Path("{id}/preference")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response patchUserPrefs(@PathParam("id") String userIdStr, String body) throws WdkModelException {
+  public Response patchUserPrefs(@PathParam("id") String userIdStr, String body) throws WdkModelException, DataValidationException {
     UserBundle userBundle = parseUserId(userIdStr);
     if (userBundle == null)
       return getNotFoundResponse("Unable to find user with ID " + userIdStr);
@@ -252,9 +257,10 @@ public class UserService extends WdkService {
       user.save();
       return Response.noContent().build();
     }
-    catch(JSONException | RequestMisformatException | WdkUserException  e) {
-      return WdkService.getBadRequestBodyResponse(e.getMessage());
+    catch(JSONException | RequestMisformatException e) {
+      return getBadRequestBodyResponse(e.getMessage());
     }
+    
   }
   
   
@@ -263,9 +269,9 @@ public class UserService extends WdkService {
    * have all required properties.  PATCH only requires that any required properties
    * specified be non-empty.
    * @param profileMap - map of values of user profile properties to values
-   * @throws WdkUserException - thrown if one or more user profile properties is required to be present and/or non-empty.
+   * @throws RequestMisformatException - thrown if one or more user profile properties is required to be present and/or non-empty.
    */
-  protected void validateRequiredProfileProperties(Map<UserProfileProperty, String> profileMap, String operation) throws WdkUserException {
+  protected void validateRequiredProfileProperties(Map<UserProfileProperty, String> profileMap, String operation) throws RequestMisformatException {
     List<UserProfileProperty> requiredProperties = UserProfileProperty.REQUIRED_PROPERTIES;
     List<String> missingProperties = new ArrayList<>();
     for(UserProfileProperty property : requiredProperties) {
@@ -277,7 +283,7 @@ public class UserService extends WdkService {
     }
     if(!missingProperties.isEmpty()) {
       String missing = FormatUtil.join(missingProperties.toArray(), ",");
-      throw new WdkUserException("The following properties must be present and non-empty: " + missing);
+      throw new RequestMisformatException("The following properties must be present and non-empty: " + missing);
     }
   }
   
@@ -285,9 +291,9 @@ public class UserService extends WdkService {
    * Validates whether all provided profile property values have string lengths at or below the maximum limit 
    * @param profileMap - map of values of user profile properties to values.  Note that this map was already scrubbed of
    * unrecognized profile properties so only the value lengths must be validated and not the property names.
-   * @throws WdkUserException - thrown if one or more user profile properties exceeds its maximum allowed length.
+   * @throws DataValidationException - thrown if one or more user profile properties exceeds its maximum allowed length.
    */
-  protected void validateProfilePropertySizes(Map<UserProfileProperty, String> profileMap) throws WdkUserException {
+  protected void validateProfilePropertySizes(Map<UserProfileProperty, String> profileMap) throws DataValidationException {
     List<String> lengthyPropertyValues = new ArrayList<>();
     for(UserProfileProperty property : profileMap.keySet()) {
       if(property.getMaxLength() < profileMap.get(property).length()) {
@@ -296,11 +302,16 @@ public class UserService extends WdkService {
     }
     if(!lengthyPropertyValues.isEmpty()) {
       String lengthy = FormatUtil.join(lengthyPropertyValues.toArray(), ",");
-      throw new WdkUserException("The following property values exceed their maximum allowed lengths " + lengthy);
+      throw new DataValidationException("The following property values exceed their maximum allowed lengths " + lengthy);
     }
   }
   
-  protected void validatePreferenceSizes(Map<String, String> propertiesMap) throws WdkUserException {
+  /**
+   * Validates whether all preference names and values have string lengths at or below the corresponding maximum limits 
+   * @param propertiesMap - map of preferences as name/value pairs
+   * @throws DataValidationException - thrown if one or more user preference exceeds the maximum allowed legnth for either its name or value.
+   */
+  protected void validatePreferenceSizes(Map<String, String> propertiesMap) throws DataValidationException {
     List<String> lengthyData = new ArrayList<>();
     for(String property : propertiesMap.keySet()) {
       if(property.length() > PREFERENCE_NAME_MAX_LENGTH || propertiesMap.get(property).length() > PREFERENCE_VALUE_MAX_LENGTH) {
@@ -309,7 +320,7 @@ public class UserService extends WdkService {
     }
     if(!lengthyData.isEmpty()) {
       String lengthy = FormatUtil.join(lengthyData.toArray(), ",");
-      throw new WdkUserException("The following property names and/or values exceed their maximum allowed legnths of " +
+      throw new DataValidationException("The following property names and/or values exceed their maximum allowed legnths of " +
           PREFERENCE_NAME_MAX_LENGTH + " / " + PREFERENCE_VALUE_MAX_LENGTH + ": " + lengthy);
     }
   }
@@ -321,15 +332,15 @@ public class UserService extends WdkService {
    * @param user - the subject of a put or patch
    * @param email - the provided email
    * @throws WdkModelException
-   * @throws WdkUserException - thrown if the provided email address duplicates that of another account.
+   * @throws ConflictException - thrown if the provided email address duplicates that of another account.
    */
-  protected NewCookie processEmail(User user, String email) throws WdkModelException, WdkUserException {
+  protected NewCookie processEmail(User user, String email) throws ConflictException, WdkModelException {
     // Check to see if this email address matches that of the given user.  If so, no need to check further.
     if(email != null && !email.equalsIgnoreCase(user.getEmail())) {
       User emailUser = getWdkModel().getUserFactory().getUserByEmail(email);
       // Check if the new email address is on record with a different user
       if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
-        throw new WdkUserException("This email is already in use by another account.  Please choose another.");
+        throw new ConflictException("This email is already in use by another account.  Please choose another.");
       }
       return setUpdatedCookie(user, email);
     }
