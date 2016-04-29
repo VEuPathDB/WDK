@@ -86,7 +86,6 @@ public class AnswerRequestSpecificsFactory {
    */
   public static AnswerRequestSpecifics createFromJson(JSONObject specJson,
       Question question) throws RequestMisformatException {
-    try {
       AnswerRequestSpecifics specs = new AnswerRequestSpecifics();
 
       // set requested paging
@@ -119,10 +118,6 @@ public class AnswerRequestSpecificsFactory {
       }
 
       return specs;
-    }
-    catch (JSONException e) {
-      throw new RequestMisformatException("Could not parse answer request specs JSON", e);
-    }
   }
 
   private static Map<String, TableField> parseTableJson(JSONObject specJson, Question question) throws RequestMisformatException {

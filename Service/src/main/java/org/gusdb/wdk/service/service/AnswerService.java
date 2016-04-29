@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.service;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
@@ -71,7 +72,7 @@ public class AnswerService extends WdkService {
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response buildResult(String body) throws WdkModelException, WdkUserException {
+  public Response buildResult(String body) throws WdkModelException {
     try {
 
       JSONObject json = new JSONObject(body);
@@ -96,7 +97,7 @@ public class AnswerService extends WdkService {
 
       // regardless of whether format is specified, formatConfig is now required
       if (!formatting.has("formatConfig")) {
-        return getBadRequestBodyResponse("formatting object requires the formatConfig property");
+        throw new BadRequestException("formatting object requires the formatConfig property");
       }
       JSONObject formatConfig = formatting.getJSONObject("formatConfig");
 
@@ -115,9 +116,9 @@ public class AnswerService extends WdkService {
                   ContentDisposition.INLINE));
 
     }
-    catch (JSONException | RequestMisformatException e) {
+    catch (JSONException | RequestMisformatException | WdkUserException e) {
       LOG.info("Passed request body deemed unacceptable", e);
-      return getBadRequestBodyResponse(e.getMessage());
+      throw new BadRequestException(e.getMessage());
     }
   }
 
