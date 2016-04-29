@@ -25,7 +25,10 @@ wdk.namespace('wdk.views.strategy', function(ns) {
     }),
 
     showResults: preventEvent(function() {
-      if (this.model.isValid) {
+      if (  (this.isBoolean && this.model.isValid) ||         // combined step
+            (!this.isBoolean && this.model.isValid) ||        // first step
+            (!this.isBoolean && this.model.step.isValid)      // leaf step
+          ) {
         this.controller.newResults(this.strategy.frontId, this.model.frontId,
                               this.isBoolean);
       }
