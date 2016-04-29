@@ -152,6 +152,19 @@ export default class WdkService {
     return this._records.get(key).response;
   }
 
+  /**
+   * Get an answer from the answer service.
+   *
+   * @param {Object} questionDefinition
+   * @param {string} questionDefinition.questionName
+   * @param {Object} questionDefinition.parameters
+   * @param {string} questionDefinition.legacyFilterName
+   * @param {Array<Object>} questionDefinition.filters
+   * @param {Array<Object>} questionDefinition.viewFilters
+   * @param {number} questionDefinition.wdk_weight
+   * @param {Object} formatting
+   * @returns {Promise<Answer>}
+   */
   getAnswer(questionDefinition, formatting) {
     let method = 'post';
     let url = this.getAnswerServiceUrl();
