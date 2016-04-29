@@ -113,6 +113,10 @@ public class AnswerValueCache {
       }
     }
     catch (WdkModelException | WdkUserException ex) {
+      if(step.isValid()) {
+          LOG.debug("invalidating a step based on invalid param values, step: " + step.getStepId() + " question: " + step.getQuestionName());
+          step.invalidateStep();
+      }
       // if validate is false, the error will be ignored to allow the process to continue.
       if (validate)
         throw ex;
