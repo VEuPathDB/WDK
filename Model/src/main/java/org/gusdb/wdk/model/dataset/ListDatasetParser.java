@@ -79,10 +79,6 @@ public class ListDatasetParser extends AbstractDatasetParser {
     if (row.indexOf('\t') > 0)
       return "\t";
 
-    // then pipe
-    if (row.indexOf('|') >= 0)
-      return "\\|";
-
     // then comma
     if (row.indexOf(',') >= 0)
       return ",";
