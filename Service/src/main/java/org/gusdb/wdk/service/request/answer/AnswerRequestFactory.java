@@ -76,7 +76,7 @@ public class AnswerRequestFactory {
       return request;
     }
     catch (JSONException | WdkUserException e) {
-      throw new RequestMisformatException("Required value is missing or incorrect type", e);
+      throw new RequestMisformatException("Required value is missing or incorrect type: " + e.getMessage(), e);
     }
     catch (WdkModelException e) {
       throw new WdkRuntimeException("Error querying model during answer request parsing", e);
