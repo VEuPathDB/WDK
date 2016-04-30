@@ -191,7 +191,7 @@ let applyPropsToStatefulTree = (root, props, isLeafVisible, stateExpandedList) =
       let newIsVisible = visibleChildFound;
       let newIsExpanded = (isActiveSearch(props) && newIsVisible) ||
           (expansionListProvided ? expandedList.has(nodeId) :
-              (indeterminateChildFound || (selectedChildFound && unselectedChildFound)));
+              (indeterminateChildFound || (selectedChildFound && (!isMultiPick || unselectedChildFound))));
 
       if (!expansionListProvided && newIsExpanded) {
         generatedExpandedList.add(nodeId);
