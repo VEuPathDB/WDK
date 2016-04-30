@@ -25,8 +25,11 @@ let RecordMainCategorySection = React.createClass({
   mixins: [ PureRenderMixin ],
 
   toggleCollapse() {
-    let { category, isCollapsed } = this.props;
-    this.props.onSectionToggle(getId(category), !isCollapsed);
+    let { depth, category, isCollapsed } = this.props;
+    // only toggle non-top-level category and wdkReference nodes
+    if ('wdkReference' in category || depth > 1) {
+      this.props.onSectionToggle(getId(category), !isCollapsed);
+    }
   },
 
   render() {
@@ -103,15 +106,10 @@ let RecordMainCategorySection = React.createClass({
         <a className="wdk-RecordSectionLink" onClick={e => e.stopPropagation()} href={'#' + id}>&sect;</a>
       </div>
     );
-    return depth === 1 ? (
-      <div id={id} className={'wdk-RecordSection'} >
-        <Header className="wdk-RecordSectionHeader">{headerContent}</Header>
-        <div className="wdk-RecordSectionContent">{this.props.children}</div>
-      </div>
-    ) : (
+    return (
       <CollapsibleSection
         id={id}
-        className={'wdk-RecordSubsection'}
+        className={depth === 1 ? 'wdk-RecordSection' : 'wdk-RecordSubsection'}
         headerComponent={Header}
         headerContent={headerContent}
         isCollapsed={isCollapsed}
