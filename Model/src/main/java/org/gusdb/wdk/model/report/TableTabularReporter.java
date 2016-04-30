@@ -40,6 +40,7 @@ public class TableTabularReporter extends AbstractTabularReporter {
   protected List<String> getHeader() throws WdkUserException, WdkModelException {
     AttributeField[] fields = getTableField().getAttributeFields(FieldScope.REPORT_MAKER);
     List<String> list = new ArrayList<String>();
+    list.add(getTableField().getRecordClass().getPrimaryKeyAttributeField().getDisplayName());
     for (AttributeField field : fields) list.add(field.getDisplayName());
     return list;
   }
