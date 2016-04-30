@@ -54,6 +54,8 @@ public class TableRowProvider implements TabularReporterRowsProvider {
     tableValueRow.initializeFromResultList(resultList);
 
     List<Object> values = new ArrayList<Object>();
+    values.add(primaryKey.getDisplay());
+
     AttributeField[] fields = tableField.getAttributeFields(FieldScope.REPORT_MAKER);
     for (AttributeField field : fields) {
       Object value = tableValueRow.get(field.getName());
