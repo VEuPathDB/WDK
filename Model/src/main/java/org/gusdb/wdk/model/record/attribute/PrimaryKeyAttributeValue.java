@@ -77,8 +77,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
           label
         );
       } catch (Exception ex) {
-         logger.error("Failed to substitute sub-fields.", ex);
-         throw new WdkModelException(ex);
+         throw new WdkModelException("Failed to substitute sub-fields.", ex);
       }
     }
     return value;
