@@ -84,6 +84,7 @@ public class SingleRecordQuestion extends Question {
           "' PK requires exactly " + columnRefs.length + " values " + FormatUtil.arrayToString(columnRefs));
     }
 
+    // must be a map from String -> Object to comply with RecordInstance constructor :(
     Map<String, Object> pkMap = new HashMap<>();
     for (int i = 0; i < columnRefs.length; i++) {
       pkMap.put(columnRefs[i], pkValues[i]);
