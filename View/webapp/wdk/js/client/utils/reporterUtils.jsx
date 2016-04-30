@@ -59,13 +59,36 @@ export function getAttributeSelections(userPrefs, question) {
   return question.defaultAttributes;
 }
 
-export function getAttributeTree(categoriesOntology, recordClass, question) {
-  let categoryTree = getTree(categoriesOntology, isQualifying('attribute', recordClass.name, 'download'));
+export function getAttributeTree(categoriesOntology, recordClassName, question) {
+  let categoryTree = getTree(categoriesOntology, isQualifying('attribute', recordClassName, 'download'));
   addSearchSpecificSubtree(question, categoryTree);
   return categoryTree;
 }
 
-export function getTableTree(categoriesOntology, recordClass) {
-  let categoryTree = getTree(categoriesOntology, isQualifying('table', recordClass.name, 'download'));
+export function getTableTree(categoriesOntology, recordClassName) {
+  let categoryTree = getTree(categoriesOntology, isQualifying('table', recordClassName, 'download'));
   return categoryTree;
+}
+
+/**
+ * Special implementation of a regular form change handler that adds the
+ * recordclass's primary key to any new value passed in
+ */
+export function getAttributesChangeHandler(inputName, onParentChange, previousState, recordClass) {
+  return newAttribsArray => {
+    onParentChange(Object.assign({}, previousState, { [inputName]: addPk(newAttribsArray, recordClass) }));
+  };
+}
+
+/**
+ * Inspects the passed attributes array.  If the recordClass's primary key
+ * attribute is not already in the array, returns a copied array with the PK as
+ * the first element.  If not, simply returns the passed array.
+ */
+export function addPk(attributesArray, recordClass) {
+  if (attributesArray.indexOf(recordClass.primaryKeyAttributeName) === -1) {
+    return [recordClass.primaryKeyAttributeName].concat(attributesArray);
+  }
+  // PK already present, don't prepend
+  return attributesArray;
 }

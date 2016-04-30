@@ -1,5 +1,5 @@
 import { getChangeHandler, wrappable } from '../utils/componentUtils';
-import { getAttributeTree, getTableTree, getAttributeSelections } from '../utils/reporterUtils';
+import { getAttributeTree, getTableTree, getAttributeSelections, getAttributesChangeHandler, addPk } from '../utils/reporterUtils';
 import { getAllLeafIds } from '../utils/CategoryUtils';
 import CategoriesCheckboxTree from './CategoriesCheckboxTree';
 import ReporterSortMessage from './ReporterSortMessage';
@@ -13,9 +13,9 @@ let WdkServiceJsonReporterForm = props => {
       <ReporterSortMessage scope={scope}/>
       <CategoriesCheckboxTree
           // title and layout of the tree
-          title="Choose Attributes"
-          searchBoxPlaceholder="Search Attributes..."
-          tree={getAttributeTree(ontology, recordClass, question)}
+          title="Choose Columns:"
+          searchBoxPlaceholder="Search Columns..."
+          tree={getAttributeTree(ontology, recordClass.name, question)}
 
           // state of the tree
           selectedLeaves={formState.attributes}
@@ -23,16 +23,16 @@ let WdkServiceJsonReporterForm = props => {
           searchTerm={formUiState.attributeSearchText}
 
           // change handlers for each state element controlled by the tree
-          onChange={getUpdateHandler('attributes')}
+          onChange={getAttributesChangeHandler('attributes', onFormChange, formState, recordClass)}
           onUiChange={getUiUpdateHandler('expandedAttributeNodes')}
           onSearchTermChange={getUiUpdateHandler('attributeSearchText')}
       />
 
       <CategoriesCheckboxTree
           // title and layout of the tree
-          title="Choose Tables"
+          title="Choose Tables:"
           searchBoxPlaceholder="Search Tables..."
-          tree={getTableTree(ontology, recordClass)}
+          tree={getTableTree(ontology, recordClass.name)}
 
           // state of the tree
           selectedLeaves={formState.tables}
@@ -56,10 +56,10 @@ WdkServiceJsonReporterForm.getInitialState = (downloadFormStoreState, userStoreS
   let { scope, question, recordClass, ontology } = downloadFormStoreState;
   // select all attribs and tables for record page, else column user prefs and no tables
   let attribs = (scope === 'results' ?
-      getAttributeSelections(userStoreState.preferences, question) :
-      getAllLeafIds(getAttributeTree(ontology, recordClass, question)));
+      addPk(getAttributeSelections(userStoreState.preferences, question), recordClass) :
+      addPk(getAllLeafIds(getAttributeTree(ontology, recordClass.name, question)), recordClass));
   let tables = (scope === 'results' ? [] :
-      getAllLeafIds(getTableTree(ontology, recordClass)));
+      getAllLeafIds(getTableTree(ontology, recordClass.name)));
   return {
     formState: {
       attributes: attribs,
