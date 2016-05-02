@@ -10,10 +10,14 @@ package org.gusdb.wdk.service.request;
 public class DataValidationException extends Exception {
 
   private static final long serialVersionUID = 1L;
+  private static final String DEFAULT_MESSAGE = "HTTP 422 Unprocessable Entity";
 
-  /** No arg constructor */
+  /** 
+   * No arg constructor 
+   * Passing default message to superclass
+   */
   public DataValidationException() {
-    super();
+    super(DEFAULT_MESSAGE);
   }
 
   /**
@@ -26,10 +30,11 @@ public class DataValidationException extends Exception {
   
   /**
    * Passing the throwable into the superclass
+   * and applying the default message 
    * @param t
    */
   public DataValidationException(Throwable t) {
-    super(t);
+    super(DEFAULT_MESSAGE, t);
   }
   
   /**
