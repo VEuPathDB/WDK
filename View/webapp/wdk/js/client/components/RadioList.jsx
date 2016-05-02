@@ -16,12 +16,14 @@ let RadioList = React.createClass({
       <ul className={className}>
         {this.props.items.map(item => (
           <li key={item.value}>
-            <input type="radio"
-              name={this.props.name}
-              value={item.value}
-              checked={item.value === this.props.value}
-              onChange={this.onChange}/>
-            {item.display}
+            <label>
+              <input type="radio"
+                name={this.props.name}
+                value={item.value}
+                checked={item.value === this.props.value}
+                onChange={this.onChange}/>
+              {item.display}
+            </label>
           </li>
         ))}
       </ul>
