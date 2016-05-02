@@ -16,6 +16,9 @@ let CategoriesCheckboxTree = props => {
 
   let treeProps = {
 
+    // set help
+    searchBoxHelp: "Each column name will be searched. The column names will contain all your terms. Your terms are partially matched; for example, the term typ will match typically, type, atypical.",
+
     // set hard-coded values for searchable, selectable, expandable tree
     isSearchable: true, isSelectable: true,
 
