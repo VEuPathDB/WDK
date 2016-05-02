@@ -61,7 +61,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     
     catch (JSONException | RequestMisformatException | BadRequestException e400) {
       return Response.status(Status.BAD_REQUEST)
-          .type(MediaType.TEXT_PLAIN).entity(e400.getMessage()).build();
+          .type(MediaType.TEXT_PLAIN).entity(ExceptionMapper.createCompositeExceptionMessage(e400)).build();
     }
     
     catch (ConflictException e409) {
@@ -124,5 +124,38 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
       ValueMaps.toMap(new ServletContextValueMap(context)),
       ValueMaps.toMap(new RequestAttributeValueMap(request)),
       ValueMaps.toMap(new SessionAttributeValueMap(request.getSession())));
+  }
+  
+  /**
+   * Unwinds the exception stack, pulling out and assembling into one message, all
+   * the exception messages but only if a JSONException or a WdkUserException exists
+   * somewhere within the stack.  The unwinding stops when either exception is found.
+   * If neither exception is found, the message of the top leve exception only is
+   * returned.  The underlying JSOMException and WdkUserException message are potentially
+   * very informative.  This method is protection against a developer who neglects
+   * to bubble up that useful information.
+   * @param e = top level exception
+   * @return - string of concatenated exception messages
+   */
+  protected static String createCompositeExceptionMessage(Exception e) {
+    StringBuilder messages = new StringBuilder(e.getMessage() + System.lineSeparator());
+    String compositeMessage = e.getMessage();
+    Throwable t = null;
+    Throwable descendent = e;
+    boolean unwindable = false;
+    while((t = descendent.getCause()) != null) {
+      if(t.getMessage() != null) {
+        messages.append(t.getMessage() + System.lineSeparator());
+      }
+      if(t instanceof JSONException || t instanceof WdkUserException) {
+        unwindable = true;
+        break;
+      }
+      descendent = t;
+    }
+    if(unwindable) {
+      compositeMessage = messages.toString();
+    }
+    return compositeMessage;
   }
 }

@@ -118,7 +118,7 @@ public class AnswerService extends WdkService {
     }
     catch (JSONException | RequestMisformatException | WdkUserException e) {
       LOG.info("Passed request body deemed unacceptable", e);
-      throw new BadRequestException(e.getMessage());
+      throw new BadRequestException(e.getMessage(), e);
     }
   }
 
