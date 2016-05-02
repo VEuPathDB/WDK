@@ -16,8 +16,28 @@ public class DataValidationException extends Exception {
     super();
   }
 
-  /** Single arg constructor */
+  /**
+   * Passing the message into the superclass
+   * @param message
+   */
   public DataValidationException(String message) {
       super(message);
+  }
+  
+  /**
+   * Passing the throwable into the superclass
+   * @param t
+   */
+  public DataValidationException(Throwable t) {
+    super(t);
+  }
+  
+  /**
+   * Passing both a message and the throwable into the superclass
+   * @param message
+   * @param t
+   */
+  public DataValidationException(String message, Throwable t) {
+    super(message, t);
   }
 }
