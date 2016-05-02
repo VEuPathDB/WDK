@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -21,7 +22,6 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.User.UserProfileProperty;
@@ -117,7 +117,7 @@ public class UserService extends WdkService {
     try {
       User user = userBundle.getUser();
       if(user.isGuest()) {
-        return getPermissionDeniedResponse();
+        throw new ForbiddenException("The user is not logged in.");
       }
       JSONObject json = new JSONObject(body);
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
@@ -169,7 +169,7 @@ public class UserService extends WdkService {
     try {
       User user = userBundle.getUser();
       if(user.isGuest()) {
-        getPermissionDeniedResponse();
+        throw new ForbiddenException("The user is not logged in.");
       }
       JSONObject json = new JSONObject(body);
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
@@ -199,7 +199,7 @@ public class UserService extends WdkService {
    * @param userIdStr
    * @param body
    * @return
-   * @throws WdkModelException, RequestMisformatException
+   * @throws WdkModelException, DataValidationException
    */
   @PUT
   @Path("{id}/preference")
@@ -223,7 +223,7 @@ public class UserService extends WdkService {
       user.save();
       return Response.noContent().build();
     }
-    catch(JSONException | RequestMisformatException e) {
+    catch(RequestMisformatException e) {
       return getBadRequestBodyResponse(e.getMessage());
     }
   }
@@ -234,7 +234,7 @@ public class UserService extends WdkService {
    * @param userIdStr
    * @param body
    * @return
-   * @throws WdkModelException, RequestMisformatException
+   * @throws WdkModelException, DataValidationException
    */
   @PATCH
   @Path("{id}/preference")
