@@ -51,7 +51,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
 
     catch (NotFoundException | PathParamException e404) {
       return Response.status(Status.NOT_FOUND)
-          .type(MediaType.TEXT_PLAIN).entity("Not Found").build();
+          .type(MediaType.TEXT_PLAIN).entity(e404.getMessage()).build();
     }
     
     catch (ForbiddenException e403) {
@@ -72,7 +72,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     // Custom exception to handle client content issues
     catch (DataValidationException | WdkUserException e422) {
       return Response.status(new UnprocessableEntityStatusType())
-          .type(MediaType.TEXT_PLAIN).entity(e422.getMessage()).build();
+          .type(MediaType.TEXT_PLAIN).entity(ExceptionMapper.createCompositeExceptionMessage(e422)).build();
     }
 
     catch (WebApplicationException eApp) {

@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -41,6 +43,8 @@ import org.json.JSONObject;
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends WdkService {
 
+  private static final String QUESTION_RESOURCE = "Question Name: ";
+  
   /**
    * Get a list of all questions for a recordClass. Does not supply details of the questions (use another endpoint for that).
    */
@@ -58,7 +62,7 @@ public class QuestionService extends WdkService {
             getFlag(expandQuestions), getFlag(expandParams), getCurrentUser(), dependerParams).toString()).build();
     }
     catch (IllegalArgumentException e) {
-      return getBadRequestBodyResponse(e.getMessage());
+      throw new BadRequestException(e.getMessage(), e);
     }
   }
 
@@ -99,17 +103,23 @@ public class QuestionService extends WdkService {
       @QueryParam("expandParams") Boolean expandParams)
           throws WdkUserException, WdkModelException {
     Question question = getQuestionFromSegment(questionName);
-    if (question == null)
-      return getNotFoundResponse(questionName);
+    if(question == null)
+      throw new NotFoundException(WdkService.formatNotFound(QUESTION_RESOURCE + questionName));
     Map<String,String> dependedParamValues = new HashMap<String, String>();
     return Response.ok(QuestionFormatter.getQuestionJson(question,
         getFlag(expandParams), getCurrentUser(), dependedParamValues).toString()).build();
   }
 
-  private Question getQuestionFromSegment(String questionName) throws WdkModelException {
+  private Question getQuestionFromSegment(String questionName) {
     WdkModel model = getWdkModel();
-    Question q = model.getQuestionByUrlSegment(questionName);
-    return (q == null ? model.getQuestion(questionName) : q);
+    try {
+      Question q = model.getQuestionByUrlSegment(questionName);
+      return (q == null ? model.getQuestion(questionName) : q);
+    }
+    catch(WdkModelException e) {
+      // A WDK Model Exception here implies that a question of the name provided cannot be found.
+      throw new NotFoundException(WdkService.formatNotFound(QUESTION_RESOURCE + questionName));
+    }
   }
 
   /**
@@ -140,7 +150,7 @@ public class QuestionService extends WdkService {
           throws WdkUserException, WdkModelException {
     Question question = getQuestionFromSegment(questionName);
     if (question == null)
-      return getNotFoundResponse(questionName);
+      throw new NotFoundException(questionName);
     // extract context values from body
     Map<String, String> contextParamValues = new HashMap<String, String>(); 
     try {
@@ -148,7 +158,7 @@ public class QuestionService extends WdkService {
       contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
     }
     catch (JSONException e) {
-      return getBadRequestBodyResponse(e.getMessage());
+      throw new BadRequestException(e);
     }
 
     // confirm that we got all param values
@@ -191,7 +201,7 @@ public class QuestionService extends WdkService {
           throws WdkUserException, WdkModelException {
     Question question = getQuestionFromSegment(questionName);
     if (question == null)
-      return getNotFoundResponse(questionName);
+      throw new NotFoundException(WdkService.NOT_FOUND + questionName);
     Map<String, String> contextParamValues = new HashMap<String, String>();
     String changedParamName = null;
     String changedParamValue = null;
@@ -204,7 +214,7 @@ public class QuestionService extends WdkService {
       contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
     }
     catch (JSONException e) {
-      return getBadRequestBodyResponse(e.getMessage());
+      throw new BadRequestException(e);
     }
 
     // remove the changed param from the context (maybe we should throw an exception instead?)

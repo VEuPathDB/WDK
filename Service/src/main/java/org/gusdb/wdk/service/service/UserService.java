@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -43,6 +45,13 @@ public class UserService extends WdkService {
   private static final String LOGIN_COOKIE_NAME = "wdk_check_auth";
   private static final int PREFERENCE_NAME_MAX_LENGTH = 200;
   private static final int PREFERENCE_VALUE_MAX_LENGTH = 4000;
+  private static final String NOT_LOGGED_IN = "The user is not logged in.";
+  private static final String USER_RESOURCE = "User ID ";
+  private static final String DUPLICATE_EMAIL = "This email is already in use by another account.  Please choose another.";
+  private static final String PROFILE_VALUES_TOO_LONG = "The following profile values exceed their maximum allowed lengths ";
+  private static final String REQUIRED_VALUES = "The following items must be present and non-empty: ";
+  private static final String PROPERTIES_TOO_LONG = "The following property names and/or values exceed their maximum allowed lengths of ";
+  private static final String COOKIE_ENCODING_PROBLEM = "Unable to encode login cookie value: ";
 
   // ===== OAuth 2.0 + OpenID Connect Support =====
   /**
@@ -74,7 +83,7 @@ public class UserService extends WdkService {
           throws WdkModelException {
     UserBundle userBundle = parseUserId(userIdStr);
     if (userBundle == null)
-      return getNotFoundResponse("Unable to find user with ID " + userIdStr);
+      throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userIdStr));
     return Response.ok(
         UserFormatter.getUserJson(userBundle.getUser(),
             userBundle.isCurrentUser(), getFlag(includePreferences)).toString()
@@ -85,11 +94,7 @@ public class UserService extends WdkService {
   @Path("{id}/preference")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserPrefs(@PathParam("id") String userIdStr) {
-    UserBundle userBundle = parseUserId(userIdStr);
-    if (userBundle == null)
-      return getNotFoundResponse("Unable to find user with ID " + userIdStr);
-    if (!userBundle.isCurrentUser())
-      return getPermissionDeniedResponse();
+    UserBundle userBundle = validateUser(userIdStr);
     return Response.ok(UserFormatter.getUserPrefsJson(
         userBundle.getUser().getProjectPreferences()).toString()).build();
   }
@@ -100,7 +105,7 @@ public class UserService extends WdkService {
    * If the properties object is present but not populated, the profile properties will be removed.
    * @param userIdStr
    * @param body
-   * @return - 204
+   * @return - 204 - Success without content
    * @throws WdkModelException
    */
   @PUT
@@ -108,16 +113,12 @@ public class UserService extends WdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response setUserProfile(@PathParam("id") String userIdStr, String body,
       @CookieParam(LOGIN_COOKIE_NAME) Cookie cookie) throws ConflictException, DataValidationException, WdkModelException {
-    UserBundle userBundle = parseUserId(userIdStr);
-    if (userBundle == null)
-      return getNotFoundResponse("Unable to find user with ID " + userIdStr);
-    if (!userBundle.isCurrentUser())
-      return getPermissionDeniedResponse();
+    UserBundle userBundle = validateUser(userIdStr);
     NewCookie loginCookie = null;
     try {
       User user = userBundle.getUser();
       if(user.isGuest()) {
-        throw new ForbiddenException("The user is not logged in.");
+        throw new ForbiddenException(NOT_LOGGED_IN);
       }
       JSONObject json = new JSONObject(body);
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
@@ -142,7 +143,7 @@ public class UserService extends WdkService {
       return loginCookie == null ? Response.noContent().build() : Response.noContent().cookie(loginCookie).build();
     }
     catch(JSONException | RequestMisformatException e) {
-      return getBadRequestBodyResponse(e.getMessage());
+      throw new BadRequestException(e);
     }
   }
   
@@ -151,7 +152,7 @@ public class UserService extends WdkService {
    * request.  If the properties object is present but not populated, the profile properties will be removed.
    * @param userIdStr - id or 'current'
    * @param body
-   * @return - 204
+   * @return - 204 - Success without content
    * @throws DataValidationException - in the event of a
    * @throws WdkModelException - in the event of a server error
    */
@@ -160,16 +161,12 @@ public class UserService extends WdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateUserProfile(@PathParam("id") String userIdStr, String body, @CookieParam(LOGIN_COOKIE_NAME) Cookie cookie) 
       throws ConflictException, DataValidationException, WdkModelException {
-    UserBundle userBundle = parseUserId(userIdStr);
-    if (userBundle == null)
-      return getNotFoundResponse("Unable to find user with ID " + userIdStr);
-    if (!userBundle.isCurrentUser())
-      return getPermissionDeniedResponse();
+    UserBundle userBundle = validateUser(userIdStr);
     NewCookie loginCookie = null;
     try {
       User user = userBundle.getUser();
       if(user.isGuest()) {
-        throw new ForbiddenException("The user is not logged in.");
+        throw new ForbiddenException(NOT_LOGGED_IN);
       }
       JSONObject json = new JSONObject(body);
       UserProfileRequest request = UserProfileRequest.createFromJson(json);
@@ -189,7 +186,7 @@ public class UserService extends WdkService {
       return loginCookie == null ? Response.noContent().build() : Response.noContent().cookie(loginCookie).build();
     }
     catch(JSONException | RequestMisformatException e) {
-      return getBadRequestBodyResponse(e.getMessage());
+      throw new BadRequestException(e);
     }
   }
   
@@ -198,18 +195,14 @@ public class UserService extends WdkService {
    * request.  Existing project preferences are removed and re-populated with the contents of the request.
    * @param userIdStr
    * @param body
-   * @return
+   * @return - 204 - Success without content
    * @throws WdkModelException, DataValidationException
    */
   @PUT
   @Path("{id}/preference")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response putUserPrefs(@PathParam("id") String userIdStr, String body) throws DataValidationException, WdkModelException {
-    UserBundle userBundle = parseUserId(userIdStr);
-    if (userBundle == null)
-      return getNotFoundResponse("Unable to find user with ID " + userIdStr);
-    if (!userBundle.isCurrentUser())
-      return getPermissionDeniedResponse();
+    UserBundle userBundle = validateUser(userIdStr);
     try {
       User user = userBundle.getUser();
       JSONObject json = new JSONObject(body);
@@ -224,7 +217,7 @@ public class UserService extends WdkService {
       return Response.noContent().build();
     }
     catch(RequestMisformatException e) {
-      return getBadRequestBodyResponse(e.getMessage());
+      throw new BadRequestException(e);
     }
   }
 
@@ -233,18 +226,14 @@ public class UserService extends WdkService {
    * preferences remain unchanged.
    * @param userIdStr
    * @param body
-   * @return
+   * @return - 204 - Success without content
    * @throws WdkModelException, DataValidationException
    */
   @PATCH
   @Path("{id}/preference")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response patchUserPrefs(@PathParam("id") String userIdStr, String body) throws WdkModelException, DataValidationException {
-    UserBundle userBundle = parseUserId(userIdStr);
-    if (userBundle == null)
-      return getNotFoundResponse("Unable to find user with ID " + userIdStr);
-    if (!userBundle.isCurrentUser())
-      return getPermissionDeniedResponse();
+    UserBundle userBundle = validateUser(userIdStr);
     try {
       User user = userBundle.getUser();
       JSONObject json = new JSONObject(body);
@@ -258,11 +247,25 @@ public class UserService extends WdkService {
       return Response.noContent().build();
     }
     catch(JSONException | RequestMisformatException e) {
-      return getBadRequestBodyResponse(e.getMessage());
+      throw new BadRequestException(e);
     }
-    
   }
   
+  /**
+   * Insures that the subject user exists and that the calling user
+   * is the same as the subject user.  If either condition is not true,
+   * the appropriate exception (corresponding to 404 and 403 respectively) is thrown.
+   * @param userIdStr - id string of the subject user
+   * @return - a userBundle representing that user.
+   */
+  protected UserBundle validateUser(String userIdStr) {
+    UserBundle userBundle = parseUserId(userIdStr);
+    if (userBundle == null)
+      throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userIdStr));
+    if (!userBundle.isCurrentUser())
+      throw new ForbiddenException(WdkService.PERMISSION_DENIED);
+    return userBundle;
+  }
   
   /**
    * Validates whether are required properties are in place and non-empty.  PUT must
@@ -283,7 +286,7 @@ public class UserService extends WdkService {
     }
     if(!missingProperties.isEmpty()) {
       String missing = FormatUtil.join(missingProperties.toArray(), ",");
-      throw new RequestMisformatException("The following properties must be present and non-empty: " + missing);
+      throw new RequestMisformatException(REQUIRED_VALUES + missing);
     }
   }
   
@@ -302,7 +305,7 @@ public class UserService extends WdkService {
     }
     if(!lengthyPropertyValues.isEmpty()) {
       String lengthy = FormatUtil.join(lengthyPropertyValues.toArray(), ",");
-      throw new DataValidationException("The following property values exceed their maximum allowed lengths " + lengthy);
+      throw new DataValidationException(PROFILE_VALUES_TOO_LONG + lengthy);
     }
   }
   
@@ -320,8 +323,7 @@ public class UserService extends WdkService {
     }
     if(!lengthyData.isEmpty()) {
       String lengthy = FormatUtil.join(lengthyData.toArray(), ",");
-      throw new DataValidationException("The following property names and/or values exceed their maximum allowed legnths of " +
-          PREFERENCE_NAME_MAX_LENGTH + " / " + PREFERENCE_VALUE_MAX_LENGTH + ": " + lengthy);
+      throw new DataValidationException(PROPERTIES_TOO_LONG + PREFERENCE_NAME_MAX_LENGTH + " / " + PREFERENCE_VALUE_MAX_LENGTH + ": " + lengthy);
     }
   }
   
@@ -340,7 +342,7 @@ public class UserService extends WdkService {
       User emailUser = getWdkModel().getUserFactory().getUserByEmail(email);
       // Check if the new email address is on record with a different user
       if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
-        throw new ConflictException("This email is already in use by another account.  Please choose another.");
+        throw new ConflictException(DUPLICATE_EMAIL);
       }
       return setUpdatedCookie(user, email);
     }
@@ -362,7 +364,7 @@ public class UserService extends WdkService {
        codedCookieValue = URLEncoder.encode(uncodedCookieValue, "utf-8");
     }
     catch (UnsupportedEncodingException e) {
-      throw new WdkModelException("Unable to encode login cookie value: " + uncodedCookieValue, e);
+      throw new WdkModelException(COOKIE_ENCODING_PROBLEM + uncodedCookieValue, e);
     }
     return new NewCookie(LOGIN_COOKIE_NAME, codedCookieValue, "/", null, null, -1, false);
   }

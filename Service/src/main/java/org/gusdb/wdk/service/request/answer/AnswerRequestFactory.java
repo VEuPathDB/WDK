@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,7 +52,7 @@ public class AnswerRequestFactory {
    * @return answer request object constructed
    * @throws RequestMisformatException if JSON is malformed
    */
-  public static AnswerRequest createFromJson(JSONObject json, WdkModelBean model, User user) throws RequestMisformatException {
+  public static AnswerRequest createFromJson(JSONObject json, WdkModelBean model, User user) throws DataValidationException, RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
       String questionName = json.getString(Keys.QUESTION_NAME);
@@ -75,8 +76,11 @@ public class AnswerRequestFactory {
       }
       return request;
     }
-    catch (JSONException | WdkUserException e) {
+    catch (JSONException e) {
       throw new RequestMisformatException("Required value is missing or incorrect type", e);
+    }
+    catch (WdkUserException e) {
+      throw new DataValidationException(e);
     }
     catch (WdkModelException e) {
       throw new WdkRuntimeException("Error querying model during answer request parsing", e);
