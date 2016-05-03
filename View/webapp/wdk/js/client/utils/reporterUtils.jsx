@@ -90,10 +90,12 @@ export function addPk(attributesArray, recordClass) {
 }
 
 export function prependAttrib(attribName, attributesArray) {
-  if (attributesArray.indexOf(attribName) === -1) {
-    return [ attribName ].concat(attributesArray);
+  let currentIndex = attributesArray.indexOf(attribName);
+  if (currentIndex > -1) {
+    // attrib already present, copy passed array and remove existing instance
+    attributesArray = attributesArray.slice();
+    attributesArray.splice(currentIndex, 1);
   }
-  // value already present, don't prepend
-  return attributesArray;
-  
+  // prepend clean array with passed attrib name
+  return [ attribName ].concat(attributesArray);
 }
