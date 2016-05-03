@@ -12,7 +12,7 @@ export let attachmentTypes = [
 
 export let tabularAttachmentTypes = [
   { value: "text", display: "Text File" },
-  { value: "excel", display: "Excel File**" },
+  { value: "excel", display: "Excel File*" },
   { value: "plain", display: "Show in Browser"}
 ];
 
@@ -86,9 +86,14 @@ export function getAttributesChangeHandler(inputName, onParentChange, previousSt
  * the first element.  If not, simply returns the passed array.
  */
 export function addPk(attributesArray, recordClass) {
-  if (attributesArray.indexOf(recordClass.primaryKeyAttributeName) === -1) {
-    return [recordClass.primaryKeyAttributeName].concat(attributesArray);
+  return prependAttrib(recordClass.primaryKeyAttributeName, attributesArray);
+}
+
+export function prependAttrib(attribName, attributesArray) {
+  if (attributesArray.indexOf(attribName) === -1) {
+    return [ attribName ].concat(attributesArray);
   }
-  // PK already present, don't prepend
+  // value already present, don't prepend
   return attributesArray;
+  
 }
