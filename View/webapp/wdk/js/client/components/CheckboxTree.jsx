@@ -6,6 +6,7 @@ import RealTimeSearchBox from './RealTimeSearchBox';
 
 import { addOrRemove, propsDiffer } from '../utils/componentUtils';
 import { isLeaf, getLeaves, getBranches, mapStructure } from '../utils/TreeUtils';
+import { parseSearchQueryString } from '../utils/SearchUtils';
 
 const NODE_STATE_PROPERTY = '__expandableTreeState';
 const NODE_CHILDREN_PROPERTY = '__expandableTreeChildren';
@@ -20,27 +21,29 @@ let TreeLinks = props => {
   } = props;
   return (
     <div className="wdk-CheckboxTree-links">
-      { showSelectionLinks &&
-        <span>
-          <a href="#" onClick={selectAll}>select all</a> |
-          <a href="#" onClick={selectNone}> clear all</a>
-          <br/>
-        </span> }
-
-      { showExpansionLinks &&
-        <span>
-          <a href="#" onClick={expandAll}> expand all</a> |
-          <a href="#" onClick={expandNone}> collapse all</a>
-          <br/>
-        </span> }
-
-      { showSelectionLinks &&
-        <span>
-          { showCurrentLink && <a href="#" onClick={selectCurrentList}>reset to current</a> }
-          { showCurrentLink && showDefaultLink ? " | " : "" }
-          { showDefaultLink && <a href="#" onClick={selectDefaultList}>reset to default</a> }
-          { (showCurrentLink || showDefaultLink) && <br/> }
-        </span> }
+      <div>
+        { showSelectionLinks &&
+          <span>
+            <a href="#" onClick={selectAll}>select all</a> |
+            <a href="#" onClick={selectNone}> clear all</a>
+            <br/>
+          </span> }
+  
+        { showExpansionLinks &&
+          <span>
+            <a href="#" onClick={expandAll}> expand all</a> |
+            <a href="#" onClick={expandNone}> collapse all</a>
+            <br/>
+          </span> }
+  
+        { showSelectionLinks &&
+          <span>
+            { showCurrentLink && <a href="#" onClick={selectCurrentList}>reset to current</a> }
+            { showCurrentLink && showDefaultLink ? " | " : "" }
+            { showDefaultLink && <a href="#" onClick={selectDefaultList}>reset to default</a> }
+            { (showCurrentLink || showDefaultLink) && <br/> }
+          </span> }
+      </div>
     </div>
   );
 };
@@ -188,7 +191,7 @@ let applyPropsToStatefulTree = (root, props, isLeafVisible, stateExpandedList) =
       let newIsVisible = visibleChildFound;
       let newIsExpanded = (isActiveSearch(props) && newIsVisible) ||
           (expansionListProvided ? expandedList.has(nodeId) :
-              (indeterminateChildFound || (selectedChildFound && unselectedChildFound)));
+              (indeterminateChildFound || (selectedChildFound && (!isMultiPick || unselectedChildFound))));
 
       if (!expansionListProvided && newIsExpanded) {
         generatedExpandedList.add(nodeId);
@@ -227,8 +230,8 @@ let applyPropsToStatefulTree = (root, props, isLeafVisible, stateExpandedList) =
  * Returns true if a search is being actively performed (i.e. if this tree is
  * searchable, and search text is non-empty).
  */
-let isActiveSearch = ({ isSearchable, searchText }) =>
-    isSearchable && searchText.length > 0;
+let isActiveSearch = ({ isSearchable, searchTerm }) =>
+    isSearchable && searchTerm.length > 0;
 
 /**
  * Returns a function that takes a leaf node ID and returns true if leaf node
@@ -244,16 +247,17 @@ let isActiveSearch = ({ isSearchable, searchText }) =>
  * matches the search or if any ancestor matches the search).
  */
 let createIsLeafVisible =  props => {
-  let { tree, isSearchable, searchText, searchPredicate, getNodeId, getNodeChildren } = props;
+  let { tree, isSearchable, searchTerm, searchPredicate, getNodeId, getNodeChildren } = props;
   // if not searching, then all nodes are visible
-  if (!isActiveSearch({ isSearchable, searchText })) {
+  if (!isActiveSearch({ isSearchable, searchTerm })) {
     return nodeId => true;
   }
   // otherwise must construct array of visible leaves
   let visibleLeaves = new Set();
+  let searchTerms = parseSearchQueryString(searchTerm);
   let addVisibleLeaves = (node, parentMatches) => {
     // if parent matches, automatically match (always show children of matching parents)
-    let nodeMatches = (parentMatches || searchPredicate(node, searchText));
+    let nodeMatches = (parentMatches || searchPredicate(node, searchTerms));
     if (isLeaf(node, getNodeChildren)) {
       if (nodeMatches) {
         visibleLeaves.add(getNodeId(node));
@@ -325,11 +329,11 @@ export default class CheckboxTree extends Component {
    * be regenerated so the currently-matching nodes are made visible.
    */
   componentWillReceiveProps(nextProps) {
-    let { tree, getNodeChildren, isSearchMode, searchText, searchPredicate } = nextProps;
+    let { tree, getNodeChildren, isSearchMode, searchTerm, searchPredicate } = nextProps;
 
     // create new isLeafVisible if relevant props have changed
     let recreateIsLeafVisible = propsDiffer(this.props, nextProps,
-        ['isSearchable', 'searchText', 'searchPredicate']);
+        ['isSearchable', 'searchTerm', 'searchPredicate']);
     let isLeafVisible = (recreateIsLeafVisible ? createIsLeafVisible(nextProps) : this.state.isLeafVisible);
 
     // if certain props have changed, then recreate stateful tree from scratch;
@@ -400,8 +404,8 @@ export default class CheckboxTree extends Component {
   render() {
     let {
       name, showRoot, getNodeId, nodeComponent, isSelectable, isMultiPick,
-      isSearchable, currentList, defaultList, showSearchBox, searchText,
-      searchBoxPlaceholder, searchBoxHelp, onSearchTextChange
+      isSearchable, currentList, defaultList, showSearchBox, searchTerm,
+      searchBoxPlaceholder, searchBoxHelp, onSearchTermChange
     } = this.props;
     let treeLinkHandlers =
       pick(this, [ 'selectAll', 'selectNone', 'expandAll', 'expandNone',
@@ -409,9 +413,9 @@ export default class CheckboxTree extends Component {
     let topLevelNodes = (showRoot ? [ this.state.generated.statefulTree ] :
       getStatefulChildren(this.state.generated.statefulTree));
     let treeLinks = (
-      <TreeLinks {...treeLinkHandlers} showSelectionLinks={isSelectable}
+      <TreeLinks {...treeLinkHandlers} showSelectionLinks={isSelectable && isMultiPick}
         showCurrentLink={currentList != null} showDefaultLink={defaultList != null}
-        showExpansionLinks={!isActiveSearch({ isSearchable, searchText })} />
+        showExpansionLinks={!isActiveSearch({ isSearchable, searchTerm })} />
     );
     let myNodeComponent = (nodeComponent != null ? nodeComponent :
       (props => <span>{getNodeId(props.node)}</span>));
@@ -420,8 +424,8 @@ export default class CheckboxTree extends Component {
         {treeLinks}
         {!isSearchable || !showSearchBox ? "" : (
           <RealTimeSearchBox
-            initialSearchText={searchText}
-            onSearchTextChange={onSearchTextChange}
+            initialSearchTerm={searchTerm}
+            onSearchTermChange={onSearchTermChange}
             placeholderText={searchBoxPlaceholder}
             helpText={searchBoxHelp} />
         )}
@@ -459,8 +463,8 @@ CheckboxTree.defaultProps = {
   showSearchBox: true,
   searchBoxPlaceholder: "Search...",
   searchBoxHelp: '',
-  searchText: '',
-  onSearchTextChange: () => {},
+  searchTerm: '',
+  onSearchTermChange: () => {},
   searchPredicate: () => true
 }
 
@@ -521,18 +525,18 @@ CheckboxTree.propTypes = {
   /** Whether to show search box; defaults to true (but only if isSearchable is true).  Useful if searching is controlled elsewhere */
   showSearchBox: PropTypes.bool,
 
-  /** PlaceHolder text; shown in grey if searchText is empty */
+  /** PlaceHolder text; shown in grey if searchTerm is empty */
   searchBoxPlaceholder: PropTypes.string,
 
   /** Search box help text: if present, a help icon will appear; mouseover the icon and a tooltip will appear with this text */
   searchBoxHelp: PropTypes.string,
 
-  /** Current search text; if non-empty, expandability is disabled */
-  searchText: PropTypes.string,
+  /** Current search term; if non-empty, expandability is disabled */
+  searchTerm: PropTypes.string,
 
   /** Takes single arg: the new search text.  Called when user types into the search box */
-  onSearchTextChange: PropTypes.func,
+  onSearchTermChange: PropTypes.func,
 
-  /** Takes (node, searchText) and returns boolean. Tells whether a node matches search criteria and should be shown */
+  /** Takes (node, searchTerms) and returns boolean. searchTerms is a list of query terms, parsed from the original input string. This function returns a boolean indicating if a node matches search criteria and should be shown */
   searchPredicate: PropTypes.func
 };

@@ -16,6 +16,7 @@ public class Keys {
   public static final String ID = "id";
   public static final String NAME = "name";
   public static final String URL_SEGMENT = "urlSegment";
+  public static final String PRIMARY_KEY_ATTRIBUTE_NAME = "primaryKeyAttributeName";
   public static final String PRIMARY_KEY_REFS = "primaryKeyColumnRefs";
 
   // descriptive keys
@@ -45,7 +46,6 @@ public class Keys {
   public static final String IS_REMOVABLE = "isRemovable";
   public static final String USE_BASKET = "useBasket";
   public static final String SCOPES = "scopes";
-
 
   // scoping-related keys
   public static final String CATEGORIES = "categories";

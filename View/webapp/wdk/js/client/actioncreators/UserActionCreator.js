@@ -48,7 +48,7 @@ export function saveProfile(user) {
   return function run(dispatch, { wdkService }) {
     dispatch({ type: actionTypes.USER_LOADING });
 
-    let userPromise = wdkService.updateCurrentUser(filterOutProps(user,["isGuest","id","preferences","baskets"]));
+    let userPromise = wdkService.updateCurrentUser(filterOutProps(user,["isGuest","id","preferences"]));
 
     return userPromise.then(() => {
         dispatch({

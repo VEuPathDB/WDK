@@ -1,35 +1,38 @@
 import { getChangeHandler, wrappable } from '../utils/componentUtils';
-import { getAttributeTree, getTableTree, getAttributeSelections } from '../utils/reporterUtils';
+import { getAttributeTree, getTableTree, getAttributeSelections, getAttributesChangeHandler, addPk } from '../utils/reporterUtils';
+import { getAllLeafIds } from '../utils/CategoryUtils';
 import CategoriesCheckboxTree from './CategoriesCheckboxTree';
+import ReporterSortMessage from './ReporterSortMessage';
 
 let WdkServiceJsonReporterForm = props => {
-  let { question, recordClass, summaryView, ontology, formState, formUiState, onFormChange, onFormUiChange, onSubmit } = props;
+  let { scope, question, recordClass, summaryView, ontology, formState, formUiState, onFormChange, onFormUiChange, onSubmit } = props;
   let getUpdateHandler = fieldName => getChangeHandler(fieldName, onFormChange, formState);
   let getUiUpdateHandler = fieldName => getChangeHandler(fieldName, onFormUiChange, formUiState);
   return (
     <div>
+      <ReporterSortMessage scope={scope}/>
       <CategoriesCheckboxTree
           // title and layout of the tree
-          title="Choose Attributes"
-          searchBoxPlaceholder="Search Attributes..."
-          tree={getAttributeTree(ontology, recordClass, question)}
+          title="Choose Columns:"
+          searchBoxPlaceholder="Search Columns..."
+          tree={getAttributeTree(ontology, recordClass.name, question)}
 
           // state of the tree
           selectedLeaves={formState.attributes}
           expandedBranches={formUiState.expandedAttributeNodes}
-          searchText={formUiState.attributeSearchText}
+          searchTerm={formUiState.attributeSearchText}
 
           // change handlers for each state element controlled by the tree
-          onChange={getUpdateHandler('attributes')}
+          onChange={getAttributesChangeHandler('attributes', onFormChange, formState, recordClass)}
           onUiChange={getUiUpdateHandler('expandedAttributeNodes')}
-          onSearchTextChange={getUiUpdateHandler('attributeSearchText')}
+          onSearchTermChange={getUiUpdateHandler('attributeSearchText')}
       />
 
       <CategoriesCheckboxTree
           // title and layout of the tree
-          title="Choose Tables"
+          title="Choose Tables:"
           searchBoxPlaceholder="Search Tables..."
-          tree={getTableTree(ontology, recordClass)}
+          tree={getTableTree(ontology, recordClass.name)}
 
           // state of the tree
           selectedLeaves={formState.tables}
@@ -49,18 +52,26 @@ let WdkServiceJsonReporterForm = props => {
   );
 };
 
-WdkServiceJsonReporterForm.getInitialState = (downloadFormStoreState, userStoreState) => ({
-  formState: {
-    attributes: getAttributeSelections(
-        userStoreState.preferences, downloadFormStoreState.question),
-    tables: []
-  },
-  formUiState: {
-    expandedAttributeNodes: null,
-    attributeSearchText: "",
-    expandedTableNodes: null,
-    tableSearchText: ""
-  }
-});
+WdkServiceJsonReporterForm.getInitialState = (downloadFormStoreState, userStoreState) => {
+  let { scope, question, recordClass, ontology } = downloadFormStoreState;
+  // select all attribs and tables for record page, else column user prefs and no tables
+  let attribs = (scope === 'results' ?
+      addPk(getAttributeSelections(userStoreState.preferences, question), recordClass) :
+      addPk(getAllLeafIds(getAttributeTree(ontology, recordClass.name, question)), recordClass));
+  let tables = (scope === 'results' ? [] :
+      getAllLeafIds(getTableTree(ontology, recordClass.name)));
+  return {
+    formState: {
+      attributes: attribs,
+      tables:tables
+    },
+    formUiState: {
+      expandedAttributeNodes: null,
+      attributeSearchText: "",
+      expandedTableNodes: null,
+      tableSearchText: ""
+    }
+  };
+}
 
 export default WdkServiceJsonReporterForm;

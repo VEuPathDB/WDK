@@ -85,7 +85,6 @@ public class SqlResultList implements ResultList {
       return value;
     }
     catch (SQLException ex) {
-      logger.error("Cannot get value for column '" + columnName + "'");
       throw new WdkModelException("Cannot get value for column '" + columnName + "'", ex);
     }
   }

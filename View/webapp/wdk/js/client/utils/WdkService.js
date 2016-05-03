@@ -26,6 +26,10 @@ export default class WdkService {
     this._basketStatus = new Map();
   }
 
+  getConfig() {
+    return fetchJson('get', this._serviceUrl);
+  }
+
   getAnswerServiceUrl() {
     return this._serviceUrl + '/answer';
   }
@@ -148,6 +152,19 @@ export default class WdkService {
     return this._records.get(key).response;
   }
 
+  /**
+   * Get an answer from the answer service.
+   *
+   * @param {Object} questionDefinition
+   * @param {string} questionDefinition.questionName
+   * @param {Object} questionDefinition.parameters
+   * @param {string} questionDefinition.legacyFilterName
+   * @param {Array<Object>} questionDefinition.filters
+   * @param {Array<Object>} questionDefinition.viewFilters
+   * @param {number} questionDefinition.wdk_weight
+   * @param {Object} formatting
+   * @returns {Promise<Answer>}
+   */
   getAnswer(questionDefinition, formatting) {
     let method = 'post';
     let url = this.getAnswerServiceUrl();
@@ -358,12 +375,14 @@ function fetchJson(method, url, body) {
       if (xhr.readyState !== 4) return;
 
       if (xhr.status >= 200 && xhr.status < 300) {
-        var json = xhr.status === 204 ? null : JSON.parse(xhr.response);
+        let json = xhr.status === 204 ? null : JSON.parse(xhr.response);
         resolve(json, xhr.statusText, xhr);
       }
       else {
-        var error = new Error(xhr.statusText)
-        error.response = xhr.response
+        let msg = `Cannot ${method.toUpperCase()} ${url} (${xhr.status})`;
+        let error = new Error(msg);
+        error.response = xhr.response;
+        error.status = xhr.status;
         reject(error);
       }
     }

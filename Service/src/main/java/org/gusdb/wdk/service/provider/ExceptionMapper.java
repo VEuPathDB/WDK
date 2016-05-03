@@ -6,6 +6,8 @@ import java.util.Properties;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -25,6 +27,8 @@ import org.gusdb.wdk.service.error.ValueMaps;
 import org.gusdb.wdk.service.error.ValueMaps.RequestAttributeValueMap;
 import org.gusdb.wdk.service.error.ValueMaps.ServletContextValueMap;
 import org.gusdb.wdk.service.error.ValueMaps.SessionAttributeValueMap;
+import org.gusdb.wdk.service.request.ConflictException;
+import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.json.JSONException;
 
@@ -45,16 +49,30 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     LOG.error(e.getMessage(), e);
     try { throw e; }
 
-    // FIXME: Not sure why this is not catching (and then sending 404 as it should)
     catch (NotFoundException | PathParamException e404) {
       return Response.status(Status.NOT_FOUND)
-          .type(MediaType.TEXT_PLAIN).entity("Not Found").build();
+          .type(MediaType.TEXT_PLAIN).entity(e404.getMessage()).build();
     }
-
-    catch (JSONException | RequestMisformatException | WdkUserException e400) {
-      String errorMsg = "Improperly formatted, incomplete, or incorrect service request body";
+    
+    catch (ForbiddenException e403) {
+      return Response.status(Status.FORBIDDEN)
+          .type(MediaType.TEXT_PLAIN).entity(e403.getMessage()).build();
+    }
+    
+    catch (JSONException | RequestMisformatException | BadRequestException e400) {
       return Response.status(Status.BAD_REQUEST)
-          .type(MediaType.TEXT_PLAIN).entity(errorMsg + ": " + e400.getMessage()).build();
+          .type(MediaType.TEXT_PLAIN).entity(ExceptionMapper.createCompositeExceptionMessage(e400)).build();
+    }
+    
+    catch (ConflictException e409) {
+      return Response.status(Status.CONFLICT)
+          .type(MediaType.TEXT_PLAIN).entity(e409.getMessage()).build();
+    }
+    
+    // Custom exception to handle client content issues
+    catch (DataValidationException | WdkUserException e422) {
+      return Response.status(new UnprocessableEntityStatusType())
+          .type(MediaType.TEXT_PLAIN).entity(ExceptionMapper.createCompositeExceptionMessage(e422)).build();
     }
 
     catch (WebApplicationException eApp) {
@@ -106,5 +124,38 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
       ValueMaps.toMap(new ServletContextValueMap(context)),
       ValueMaps.toMap(new RequestAttributeValueMap(request)),
       ValueMaps.toMap(new SessionAttributeValueMap(request.getSession())));
+  }
+  
+  /**
+   * Unwinds the exception stack, pulling out and assembling into one message, all
+   * the exception messages but only if a JSONException or a WdkUserException exists
+   * somewhere within the stack.  The unwinding stops when either exception is found.
+   * If neither exception is found, the message of the top leve exception only is
+   * returned.  The underlying JSOMException and WdkUserException message are potentially
+   * very informative.  This method is protection against a developer who neglects
+   * to bubble up that useful information.
+   * @param e = top level exception
+   * @return - string of concatenated exception messages
+   */
+  protected static String createCompositeExceptionMessage(Exception e) {
+    StringBuilder messages = new StringBuilder(e.getMessage() + System.lineSeparator());
+    String compositeMessage = e.getMessage();
+    Throwable t = null;
+    Throwable descendent = e;
+    boolean unwindable = false;
+    while((t = descendent.getCause()) != null) {
+      if(t.getMessage() != null) {
+        messages.append(t.getMessage() + System.lineSeparator());
+      }
+      if(t instanceof JSONException || t instanceof WdkUserException) {
+        unwindable = true;
+        break;
+      }
+      descendent = t;
+    }
+    if(unwindable) {
+      compositeMessage = messages.toString();
+    }
+    return compositeMessage;
   }
 }

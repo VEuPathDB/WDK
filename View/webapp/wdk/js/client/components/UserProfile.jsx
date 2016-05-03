@@ -1,74 +1,97 @@
 import React from 'react';
-import TextBox from './TextBox';
-import TextArea from './TextArea';
-import CheckboxList from './CheckboxList';
+import { PropTypes } from 'react';
+import UserAccountForm from './UserAccountForm';
 import { wrappable, getChangeHandler } from '../utils/componentUtils';
 
+
 /**
- * React component for the user profile page/form
+ * React component for the user profile/account form
  * @type {*|Function}
  */
 let UserProfile = React.createClass({
 
   render() {
 
-    /**
-     * Provides hardcode relationships between user email preferences and the display labels in the order the data
-     * should be displayed.
-     * @type {*[]}
-     */
-    //TODO this will go in ApiCommonWebsite
-    let emailPreferenceData = [{value:'preference_global_email_amoebadb', display:'AmoebaDB'},
-                               {value:'preference_global_email_cryptodb', display:'CryptoDB'},
-                               {value:'preference_global_email_apidb', display:'EuPathDB'},
-                               {value:'preference_global_email_fungidb', display:'FungiDB'},
-                               {value:'preference_global_email_giardiadb', display:'GiardiaDB'},
-                               {value:'preference_global_email_microsporidiadb', display:'MicrosporidiaDB'},
-                               {value:'preference_global_email_piroplasmadb', display:'PiroplasmaDB'},
-                               {value:'preference_global_email_plasmodb', display:'PlasmoDB'},
-                               {value:'preference_global_email_schistodb', display:'SchistoDB'},
-                               {value:'preference_global_email_toxodb', display:'ToxoDB'},
-                               {value:'preference_global_email_trichdb', display:'TrichDB'},
-                               {value:'preference_global_email_tritrypdb', display:'TriTrypDB'}];
-    let properties = toNamedMap(Object.keys(this.props.user.applicationSpecificProperties), this.props.user.applicationSpecificProperties);
-    let emailPreferenceSelections = properties.filter(property => property.name.startsWith('preference_global_email_')).map(property => property.name);
+    // Before the form is modified, a 'fake' user property, confirmEmail, is created to populate the retype email input element.
     this.props.isChanged ? () => {} : this.props.user.confirmEmail = this.props.user.email;
-    let messageClass = this.props.outcome === "error" ? "wdk-UserProfile-banner wdk-UserProfile-error" :
-      this.props.outcome === "success" ? "wdk-UserProfile-banner wdk-UserProfile-success" : "wdk-UserProfile-banner";
+
+    // Only success and error outcomes are acted upon.  Any other outcome is assumed not to be associated with a save attempt.
+    let saveAttempt = this.props.outcome === "error" || this.props.outcome === "success";
+
+    // Banner L&F governed by outcome above.  Banner will not appear if no save attempt was made
+    let messageClass = this.props.outcome === "success" ? "wdk-UserProfile-banner wdk-UserProfile-success" : "wdk-UserProfile-banner wdk-UserProfile-error";
 
     return (
       <div style={{ margin: "0 2em"}}>
         {this.props.user !== null && !this.props.user.isGuest ?
           <div>
-            <h1>Profile Form</h1>
-            {this.props.outcome.length > 0 ? <p className={messageClass}>{this.props.message}</p> : ""}
-            {userForm(this.props.user, emailPreferenceData, emailPreferenceSelections, this.onEmailChange,
-                      this.props.userEvents.onFormStateChange, this.props.userEvents.onEmailPreferenceChange,
-                      this.props.isChanged, this.saveProfile)}
+            <h1>My Account</h1>
+            {saveAttempt ? <p className={messageClass}>{this.props.message}</p> : ""}
+            <UserAccountForm user={this.props.user}
+                             onTextChange={this.onTextChange}
+                             onEmailChange={this.onEmailChange}
+                             onFormStateChange={this.props.userEvents.onFormStateChange}
+                             isChanged={this.props.isChanged}
+                             saveProfile={this.saveProfile} />
           </div>
-        : <div>You must first log on to read and alter your profile</div>
+        : <div>You must first log on to read and alter your account information</div>
         }
       </div>
     );
   },
 
 
-  validateEmailConfirmation() {
-    let userEmail = document.getElementById("userEmail");
-    let confirmUserEmail = document.getElementById("confirmUserEmail");
+  /**
+   * Verifies that the email and the re-typed email match.  HTML5 validation doesn't handle this OOTB.
+   * @param newState - new user state
+   */
+  validateEmailConfirmation(newState) {
+    let userEmail = newState.email;
+    let confirmUserEmail = newState.confirmEmail;
     if(userEmail != null  && confirmUserEmail != null) {
-      userEmail.value !== confirmUserEmail.value ? confirmUserEmail.setCustomValidity("Both email entries must match.") : confirmUserEmail.setCustomValidity("");
+      let confirmUserEmailElement = document.getElementById("confirmUserEmail");
+      userEmail !== confirmUserEmail ? confirmUserEmailElement.setCustomValidity("Both email entries must match.") : confirmUserEmailElement.setCustomValidity("");
     }
   },
 
-  onEmailChange(newState) {
-    this.validateEmailConfirmation();
+  /**
+   * Callback issued by the TextBox React component when either email input is modified.  Unlike the input to a text input, this modification needs an extra
+   * validation step to insure that the email and it's re-typed version are identical.
+   * @param newState
+   */
+  onEmailUpdate(newState) {
+    this.validateEmailConfirmation(newState);
     this.props.userEvents.onFormStateChange(newState);
   },
 
+  /**
+   * Triggered by onChange handler of TextBox of type email.  Only different from handler of TextBox of type text because
+   * of an extra validation step.  Returns user with state change incorporated.
+   * @param field - name of user attribute being changed
+   * @returns {*}
+   */
+  onEmailChange(field) {
+    return getChangeHandler(field, this.onEmailUpdate, this.props.user)
+  },
+
+  /**
+   * Triggered by onChange handler of TextBOx of type text.  Returns user with state change incorporated.
+   * @param field - name of user attribute being changed
+   * @returns {*}
+   */
+  onTextChange(field) {
+    return getChangeHandler(field, this.props.userEvents.onFormStateChange, this.props.user);
+  },
+
+  /**
+   * Triggered by onSubmit handler of the user profile/account form.  Verifies again that the email and re-typed version match. Then
+   * checks the validity of all other inputs using HTML5 validity methods.  If all verifications pass, the re-typed email attribute is
+   * removed from the user object (as it was only introduced as a check of user typing) and the user object is saved.
+   * @param event
+   */
   saveProfile(event) {
     event.preventDefault();
-    this.validateEmailConfirmation();
+    this.validateEmailConfirmation(this.props.user);
     let inputs = document.querySelectorAll("input[type=text],input[type=email]");
     let valid = true;
     for(let input of inputs) {
@@ -85,108 +108,37 @@ let UserProfile = React.createClass({
 
 });
 
-function displayEmailPreferences(emailPreferenceSelections, emailPreferenceData) {
-  let filteredEmailPreferenceData = emailPreferenceData.filter(item => emailPreferenceSelections.indexOf(item.value ) > -1);
-  return (
-    <ul className="wdk-UserProfile-propertyData">
-      { filteredEmailPreferenceData.map(item => ( <li key={item.value}>{item.display}</li> )) }
-    </ul>
-  )
+
+UserProfile.propTypes = {
+
+  /** The user object to be modified */
+  user:  PropTypes.object.isRequired,
+
+  /** Hash holding the functions that trigger corresponding action creator actions */
+  userEvents:  PropTypes.shape({
+
+    /** Called with a parameter representing the new state when a form element changes */
+    onFormStateChange:  PropTypes.func.isRequired,
+
+    /** Called with a parameter representing the user data to be saved */
+    onSaveProfile:  PropTypes.func.isRequired
+  }),
+
+  /** Indicates that unsaved modifications currently exist */
+  isChanged:  PropTypes.bool.isRequired,
+
+  /**
+   *  Indicates the outcome of the user's save attempt.  A banner with a green background appears for 'success' and
+   *  a banner with a red background appears for 'error'.  Any other value will produce no banner.
+   */
+  outcome: PropTypes.string,
+
+  /**
+   * Message to the user explaining the outcome of the user's save attempt.  THe message will appear in the banner
+   * at the top of the form only if the outcome is neither 'success' nor 'error'.
+   */
+  message: PropTypes.string
 }
 
-function toNamedMap(keys, object) {
-  return keys.map(key => ({ name: key, value: object[key] }));
-}
-
-function userForm(user, emailPreferenceData, emailPreferenceSelections, onEmailChange, onFormStateChange, onEmailPreferenceChange, isChanged, saveProfile) {
-  return(
-    <form className="wdk-UserProfile-profileForm" name="userProfileForm" onSubmit={saveProfile} >
-      <p><i className="fa fa-asterisk"></i> = required</p>
-      <fieldset>
-        <legend>Identification</legend>
-        <div>
-          <label htmlFor="userEmail"><i className="fa fa-asterisk"></i>Email:</label>
-          <TextBox type='email' id='userEmail'
-                   value={user.email} onChange={getChangeHandler('email', onEmailChange, user)}
-                   maxLength='255' size='100' required placeholder='Your email is used as your unique user id' />
-        </div>
-        <div>
-          <label htmlFor="confirmUserEmail"><i className="fa fa-asterisk"></i>Retype Email:</label>
-          <TextBox type='email' id='confirmUserEmail'
-                   value={user.confirmEmail} onChange={getChangeHandler('confirmEmail', onEmailChange, user)}
-                   maxLength='255' size='100' required placeholder='Your email is used as your unique user id' />
-        </div>
-        <div>
-          <label htmlFor="firstName"><i className="fa fa-asterisk"></i>First Name:</label>
-          <TextBox id="firstName" value={user.firstName} onChange={getChangeHandler('firstName', onFormStateChange, user)} maxLength='50' size='25' required />
-        </div>
-        <div>
-          <label htmlFor="middleName">Middle Name:</label>
-          <TextBox id="middleName" value={user.middleName} onChange={getChangeHandler('middleName', onFormStateChange, user)} maxLength='50' size='25'/>
-        </div>
-        <div>
-          <label htmlFor="lastName"><i className="fa fa-asterisk"></i>Last Name:</label>
-          <TextBox id="lastName" value={user.lastName} onChange={getChangeHandler('lastName', onFormStateChange, user)} maxLength='50' size='25' required />
-        </div>
-        <div>
-          <label htmlFor="title">Title:</label>
-          <TextBox id="title" value={user.title} onChange={getChangeHandler('title', onFormStateChange, user)} maxLength='50' size='25' />
-        </div>
-        <div>
-          <label htmlFor="department">Department:</label>
-          <TextBox id="department" value={user.department} onChange={getChangeHandler('department', onFormStateChange, user)} maxLength='50' size='25' />
-        </div>
-        <div>
-          <label htmlFor="organization"><i className="fa fa-asterisk"></i>Organization:</label>
-          <TextBox id="organization" value={user.organization} onChange={getChangeHandler('organization', onFormStateChange, user)} maxLength='255' size='100' required />
-        </div>
-      </fieldset>
-      <br />
-      <fieldset>
-        <legend>Password</legend>
-        <div>
-          <a href="#">Change your password</a>
-        </div>
-      </fieldset>
-      <br />
-      <fieldset>
-        <legend>Contact Info</legend>
-        <div>
-          <label htmlFor="streetAddress">Street Address:</label>
-          <TextArea id="streetAddress" value={user.address} onChange={getChangeHandler('address', onFormStateChange, user)} maxLength='500' cols='100' rows="3"/>
-        </div>
-        <div>
-          <label htmlFor="city">City:</label>
-          <TextBox id="city" value={user.city} onChange={getChangeHandler('city', onFormStateChange, user)} maxLength='255' size='100'/>
-        </div>
-        <div>
-          <label htmlFor="state">State/Province:</label>
-          <TextBox id="state" value={user.state} onChange={getChangeHandler('state', onFormStateChange, user)} maxLength='255' size='100'/>
-        </div>
-        <div>
-          <label htmlFor="country">Country:</label>
-          <TextBox id="country" value={user.country} onChange={getChangeHandler('country', onFormStateChange, user)} maxLength='255' size='100'/>
-        </div>
-        <div>
-          <label htmlFor="zipCode">Postal Code:</label>
-          <TextBox id="zipCode" value={user.zipCode} onChange={getChangeHandler('zipCode', onFormStateChange, user)} maxLength='20' size='10'/>
-        </div>
-        <div>
-          <label htmlFor="phoneNumber">Phone Number:</label>
-          <TextBox id="phoneNumber" value={user.phoneNumber} onChange={getChangeHandler('phoneNumber', onFormStateChange, user)} maxLength='50' size='25'/>
-        </div>
-      </fieldset>
-      <br />
-      <fieldset>
-        <legend>Preferences</legend>
-        <p>Send me email alerts about:</p>
-        <CheckboxList name="emailAlerts" items={emailPreferenceData} value={emailPreferenceSelections} onChange={onEmailPreferenceChange} />
-      </fieldset>
-      <div>
-        <input type="submit" value="Save" disabled={isChanged ? "" : "disabled"} />
-      </div>
-    </form>
-  );
-}
 
 export default wrappable(UserProfile);

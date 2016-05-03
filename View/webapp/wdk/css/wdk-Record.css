@@ -153,6 +153,16 @@
   right: .6em;
 }
 
+.wdk-RecordMainSectionFieldToggles {
+  text-align: center;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
 .wdk-RecordSectionEnumeration {
   opacity: .5;
 }
@@ -223,6 +233,10 @@
 
 .wdk-RecordTableContainerHeader {
   font-weight: bold;
+}
+
+.wdk-RecordTableContainerContent {
+  margin-bottom: 2em;
 }
 
 .wdk-RecordTableList {

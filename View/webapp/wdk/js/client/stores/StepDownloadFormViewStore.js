@@ -14,6 +14,7 @@ export default class StepDownloadFormViewStore extends WdkStore {
       question: null,
       recordClass: null,
       availableReporters: [],
+      scope: null,
       ontology: null,
 
       // 'dynamic' data that is updated with user actions
@@ -33,18 +34,18 @@ export default class StepDownloadFormViewStore extends WdkStore {
         return formLoading(state, { isLoading: true });
 
       case actionTypes.STEP_DOWNLOAD_INITIALIZE_STORE:
-        return initialize(state, payload, userStore);
+        return initialize(this, state, payload, userStore);
 
       case userActionTypes.USER_INITIALIZE_STORE:
         // wait for user store to process this action, then try to complete
         this.getDispatcher().waitFor([userStore.getDispatchToken()]);
-        return tryInitCompletion(state, userStore);
+        return tryInitCompletion(this, state, userStore);
 
       case actionTypes.STEP_DOWNLOAD_RESET_STORE:
-        return initialize(state, this.getInitialState(), userStore);
+        return initialize(this, state, this.getInitialState(), userStore);
 
       case actionTypes.STEP_DOWNLOAD_SELECT_REPORTER:
-        return updateReporter(state, payload);
+        return updateReporter(this, state, userStore, payload);
 
       case actionTypes.STEP_DOWNLOAD_FORM_UPDATE:
         return updateFormState(state, payload);
@@ -59,6 +60,11 @@ export default class StepDownloadFormViewStore extends WdkStore {
         return state;
     }
   }
+
+  // subclasses should override to enable reporters configured in WDK
+  getSelectedReporter(selectedReporterName, recordClassName) {
+    return WdkServiceJsonReporterForm;
+  }
 }
 
 StepDownloadFormViewStore.actionTypes = actionTypes;
@@ -69,43 +75,47 @@ function formLoading(state, payload) {
   });
 }
 
-function initialize(state, payload, userStore) {
+function initialize(thisStore, state, payload, userStore) {
 
   // only use reporters configured for the report download page
-  let reporters = payload.recordClass && payload.recordClass.formats.filter(f => f.isInReport);
+  let availableReporters = payload.recordClass && payload.recordClass.formats
+      .filter(reporter => reporter.scopes.indexOf(payload.scope) > -1);
 
   let partialState = Object.assign({}, state, {
     step: payload.step,
     question: payload.question,
     recordClass: payload.recordClass,
-    availableReporters: reporters,
+    availableReporters: availableReporters,
+    scope: payload.scope,
     ontology: payload.ontology
   });
 
-  return tryInitCompletion(partialState, userStore);
+  return tryInitCompletion(thisStore, partialState, userStore);
 }
 
-function tryInitCompletion(state, userStore) {
+function tryInitCompletion(thisStore, state, userStore) {
 
   // otherwise, calculate form state for WDK JSON reporter
   let userStoreState = userStore.getState();
   if (state.step != null && userStoreState.user != null) {
     // both this and the user store have received initialize actions;
     //    calculate state and set isLoading to false
-    return Object.assign({}, state, { isLoading: false },
-        WdkServiceJsonReporterForm.getInitialState(state, userStoreState));
+    let selectedReporterName = (state.availableReporters.length == 1 ?
+        state.availableReporters[0].name : null);
+    return Object.assign({}, state,
+        { isLoading: false, selectedReporter: selectedReporterName },
+        thisStore.getSelectedReporter(selectedReporterName, state.recordClass.name)
+            .getInitialState(state, userStoreState));
   }
 
   // one of the initialize actions has not yet been sent
   return state;
 }
 
-function updateReporter(state, payload) {
-  return Object.assign({}, state, {
-    selectedReporter: payload.selectedReporter,
-    formState: null,
-    formUiState: null
-  });
+function updateReporter(thisStore, state, userStore, payload) {
+  return Object.assign({}, state, { selectedReporter: payload.selectedReporter }, thisStore
+      .getSelectedReporter(payload.selectedReporter, state.recordClass.name)
+      .getInitialState(state, userStore.getState()));
 }
 
 function updateFormState(state, payload) {

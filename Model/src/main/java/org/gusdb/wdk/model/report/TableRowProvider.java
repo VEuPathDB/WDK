@@ -13,8 +13,11 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValueRow;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
+//import org.apache.log4j.Logger;
+
 
 public class TableRowProvider implements TabularReporterRowsProvider {
+  //  private static final Logger logger = Logger.getLogger(TableRowProvider.class);
 
   AnswerValue answerValuePage;
   private TableField tableField;
@@ -27,7 +30,7 @@ public class TableRowProvider implements TabularReporterRowsProvider {
   }
 
   private ResultList getResultList() throws WdkModelException, WdkUserException {
-    if (resultList == null)
+    if (resultList == null) 
       resultList =  answerValuePage.getTableFieldResultList(tableField);
     return resultList;
   }
@@ -43,9 +46,7 @@ public class TableRowProvider implements TabularReporterRowsProvider {
   public List<Object> next() throws WdkModelException, WdkUserException {
     if (!hasNext()) throw new NoSuchElementException();
     hasNext = false;
-
     ResultList resultList = getResultList();
-    resultList.next();
 
     // make a tableValueRow for this row in the result set.  provides the record's formatting of a row in this table
     PrimaryKeyAttributeValue primaryKey = AnswerValue.getPrimaryKeyFromResultList(resultList, answerValuePage.getPrimaryKeyAttributeField());
@@ -53,6 +54,8 @@ public class TableRowProvider implements TabularReporterRowsProvider {
     tableValueRow.initializeFromResultList(resultList);
 
     List<Object> values = new ArrayList<Object>();
+    values.add(primaryKey.getDisplay());
+
     AttributeField[] fields = tableField.getAttributeFields(FieldScope.REPORT_MAKER);
     for (AttributeField field : fields) {
       Object value = tableValueRow.get(field.getName());

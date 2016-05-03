@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.user.User.UserProfileProperty;
 import org.gusdb.wdk.service.request.RequestMisformatException;
@@ -18,6 +19,8 @@ import org.json.JSONObject;
  *
  */
 public class UserProfileRequest {
+  
+  private static Logger LOG = Logger.getLogger(UserProfileRequest.class);
   
   private final static String APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
   
@@ -80,7 +83,7 @@ public class UserProfileRequest {
    * @throws JSONException - among other reasons, thrown in the event of a non-string value
    * detail message.
    */
-  protected static Map<UserProfileProperty,String> parseProfile(JSONObject json) throws JSONException, RequestMisformatException {
+  protected static Map<UserProfileProperty,String> parseProfile(JSONObject json) throws JSONException {
     List<String> profileNames = UserProfileProperty.JSON_PROPERTY_NAMES;
     List<String> unrecognizedProperties = new ArrayList<>();
     Map<UserProfileProperty,String> map = new HashMap<>();
@@ -94,7 +97,7 @@ public class UserProfileRequest {
     }
     if(!unrecognizedProperties.isEmpty()) {
       String unrecognized = FormatUtil.join(unrecognizedProperties.toArray(), ",");
-      throw new RequestMisformatException("The request contains the following unrecognized profile property names: " + unrecognized);
+      LOG.warn("This user service request contains the following unrecognized profile property names: " + unrecognized);
     }
     return map;
   }

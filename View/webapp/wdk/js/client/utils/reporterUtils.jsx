@@ -12,7 +12,7 @@ export let attachmentTypes = [
 
 export let tabularAttachmentTypes = [
   { value: "text", display: "Text File" },
-  { value: "excel", display: "Excel File**" },
+  { value: "excel", display: "Excel File*" },
   { value: "plain", display: "Show in Browser"}
 ];
 
@@ -59,13 +59,43 @@ export function getAttributeSelections(userPrefs, question) {
   return question.defaultAttributes;
 }
 
-export function getAttributeTree(categoriesOntology, recordClass, question) {
-  let categoryTree = getTree(categoriesOntology, isQualifying('attribute', recordClass.name, 'download'));
+export function getAttributeTree(categoriesOntology, recordClassName, question) {
+  let categoryTree = getTree(categoriesOntology, isQualifying('attribute', recordClassName, 'download'));
   addSearchSpecificSubtree(question, categoryTree);
   return categoryTree;
 }
 
-export function getTableTree(categoriesOntology, recordClass) {
-  let categoryTree = getTree(categoriesOntology, isQualifying('table', recordClass.name, 'download'));
+export function getTableTree(categoriesOntology, recordClassName) {
+  let categoryTree = getTree(categoriesOntology, isQualifying('table', recordClassName, 'download'));
   return categoryTree;
+}
+
+/**
+ * Special implementation of a regular form change handler that adds the
+ * recordclass's primary key to any new value passed in
+ */
+export function getAttributesChangeHandler(inputName, onParentChange, previousState, recordClass) {
+  return newAttribsArray => {
+    onParentChange(Object.assign({}, previousState, { [inputName]: addPk(newAttribsArray, recordClass) }));
+  };
+}
+
+/**
+ * Inspects the passed attributes array.  If the recordClass's primary key
+ * attribute is not already in the array, returns a copied array with the PK as
+ * the first element.  If not, simply returns the passed array.
+ */
+export function addPk(attributesArray, recordClass) {
+  return prependAttrib(recordClass.primaryKeyAttributeName, attributesArray);
+}
+
+export function prependAttrib(attribName, attributesArray) {
+  let currentIndex = attributesArray.indexOf(attribName);
+  if (currentIndex > -1) {
+    // attrib already present, copy passed array and remove existing instance
+    attributesArray = attributesArray.slice();
+    attributesArray.splice(currentIndex, 1);
+  }
+  // prepend clean array with passed attrib name
+  return [ attribName ].concat(attributesArray);
 }

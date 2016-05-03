@@ -9,6 +9,11 @@
 <c:set var="qSetName" value="none" />
 <c:set var="qSets" value="${model.questionSetsMap}" />
 <c:set var="qSet" value="${qSets[qSetName]}" />
+
+<c:set var="gqSet" value="${qSets['GeneQuestions']}"/>
+<c:set var="gqMap" value="${gqSet.questionsMap}"/>
+<c:set var="geneByTextQuestion" value="${gqMap['GenesByTextSearch']}"/>
+
 <c:set var="user" value="${sessionScope.wdkUser}"/>
 <c:set var="step" value="${requestScope.wdkStep}" />
 <c:choose>
@@ -35,8 +40,8 @@
 
 <c:set var="partialUrl" value="wizard.do?strategy=${strategyId}&step=${step.stepId}&action=${action}" />
 
-
 <imp:addStepHeader title="Add Step"/>
+  
 <div id="sections">
   <table id="sections-layout"><tr>
       <td id="section-1">
@@ -252,6 +257,7 @@
 
 
 
+
 <!-- ==================  SECTION 3 content : in each record type: questions OR (for genes : multicategory true ) question categories  ============================= -->
 
 <c:forEach var="rcs" items="${model.websiteRootCategories}">
@@ -259,7 +265,12 @@
   <div class="original" id="sl_${classId}" style="display:none">
     <ul class="menu_section">                                   <%--  <li>${rcs.value.name} is multicategory: ${rcs.value.multiCategory}</li> --%>
       <c:choose>
-        <c:when test="${rcs.value.multiCategory}">                           
+        <c:when test="${rcs.value.multiCategory}"> 
+
+          <li style="padding-bottom:3px" onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${geneByTextQuestion.fullName}&stage=question',null,'sl_${cat.name}',3,'next')">${geneByTextQuestion.displayName}
+                <imp:questionFeature question="${geneByTextQuestion}" />
+          </li>                   
+       
           <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">    <%-- GENES : section 3 CATEGORIES --%>
             <c:set var="cat" value="${catEntry.value}" />       
             <c:choose>
@@ -335,8 +346,8 @@
   // $("td#section-2 ul.menu_section:first > li:first").click();
 
   if( sdName === "Gene" ) {
-    ele = $('li.category[onclick*= "Annotation_and_curation" ]')[0];
-    wdk.addStepPopup.callWizard(null,ele,'sl_Annotation_and_curation',4);
+    ele = $('li.category[onclick*= "Annotation__curation_and_identifiers" ]')[0];   //background
+    wdk.addStepPopup.callWizard(null,ele,'sl_Annotation__curation_and_identifiers',4);  //selection
   }
-
+      
 </script>

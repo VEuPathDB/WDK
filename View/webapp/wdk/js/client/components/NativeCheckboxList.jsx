@@ -68,15 +68,17 @@ class NativeCheckboxList extends Component {
             let id = `${this.id}.${item.value}`;
             return (
               <div key={item.value} className="wdk-CheckboxListItem">
-                <input
-                  id={id}
-                  type="checkbox"
-                  name={this.props.name}
-                  value={item.value}
-                  checked={selectedItems.includes(item.value)}
-                  onChange={e => this.toggle(e, item)}
-                />
-                <label htmlFor={id}> {item.display} </label>
+                <label>
+                  <input
+                    id={id}
+                    type="checkbox"
+                    name={this.props.name}
+                    value={item.value}
+                    checked={selectedItems.includes(item.value)}
+                    onChange={e => this.toggle(e, item)}
+                  />
+                  {item.display}
+                </label>
               </div>
             );
           })}
