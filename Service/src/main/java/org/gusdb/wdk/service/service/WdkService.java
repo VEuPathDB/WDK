@@ -3,11 +3,7 @@ package org.gusdb.wdk.service.service;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
@@ -24,6 +20,9 @@ public abstract class WdkService {
   private static final Logger LOG = Logger.getLogger(WdkService.class);
 
   public static final String CURRENT_USER_MAGIC_STRING = "current";
+  
+  public static final String PERMISSION_DENIED = "Permission Denied.  You do not have access to this resource.";
+  public static final String NOT_FOUND = "Resource specified [%s] does not exist.";
 
   public static class UserBundle extends ThreeTuple<Integer,Boolean,User> {
     public UserBundle(Integer userId, Boolean isCurrentUser, User user) {
@@ -33,19 +32,16 @@ public abstract class WdkService {
     public boolean isCurrentUser() { return getSecond(); }
     public User getUser() { return getThird(); }
   }
-
-  protected static final Response getBadRequestBodyResponse(String message) {
-    throw new BadRequestException(message);
-  }
-
-  protected static final Response getPermissionDeniedResponse() {
-    throw new ForbiddenException("Permission Denied.  You do not have access to this resource.");
-  }
   
-  protected static final Response getNotFoundResponse(String resourceName) {
-    throw new NotFoundException("Resource specified [" + resourceName + "] does not exist.");
+  /**
+   * Composes a proper Not Found exception message using the supplied resource.
+   * @param resource
+   * @return - Not Found message with resource embedded.
+   */
+  public static String formatNotFound(String resource) {
+    return String.format(NOT_FOUND, resource);
   }
-  
+
   @Context
   private HttpServletRequest _request;
 

@@ -3,7 +3,9 @@ package org.gusdb.wdk.service.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -47,7 +49,7 @@ public class DatasetService extends WdkService {
     try {
       UserBundle userBundle = parseUserId(userIdStr);
       if (!userBundle.isCurrentUser()) {
-        return getPermissionDeniedResponse();
+        throw new ForbiddenException(WdkService.PERMISSION_DENIED);
       }
       JSONObject input = new JSONObject(body);
       JSONArray jsonIds = input.getJSONArray("ids");
@@ -79,7 +81,7 @@ public class DatasetService extends WdkService {
       return Response.ok(datasetMetadata.toString()).build();
     }
     catch (RequestMisformatException | JSONException | WdkUserException e) {
-      return getBadRequestBodyResponse(e.getMessage());
+      throw new BadRequestException(e);
     }
   }
 

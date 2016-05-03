@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
+import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.request.answer.AnswerRequest;
 import org.gusdb.wdk.service.request.answer.AnswerRequestFactory;
@@ -61,7 +62,7 @@ public class AnswerService extends WdkService {
 
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  public Response buildResultFromForm(@FormParam("data") String data) throws WdkModelException, WdkUserException {
+  public Response buildResultFromForm(@FormParam("data") String data) throws WdkModelException, DataValidationException {
     // log this request's JSON here since filter will not log form data
     if (RequestLoggingFilter.isLogEnabled()) {
       RequestLoggingFilter.logRequest("POST", getUriInfo(),
@@ -72,7 +73,7 @@ public class AnswerService extends WdkService {
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response buildResult(String body) throws WdkModelException {
+  public Response buildResult(String body) throws WdkModelException, DataValidationException {
     try {
 
       JSONObject json = new JSONObject(body);
@@ -116,9 +117,12 @@ public class AnswerService extends WdkService {
                   ContentDisposition.INLINE));
 
     }
-    catch (JSONException | RequestMisformatException | WdkUserException e) {
+    catch (JSONException | RequestMisformatException e) {
       LOG.info("Passed request body deemed unacceptable", e);
-      throw new BadRequestException(e.getMessage(), e);
+      throw new BadRequestException(e);
+    }
+    catch (WdkUserException e) {
+      throw new DataValidationException(e);
     }
   }
 

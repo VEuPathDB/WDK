@@ -1,7 +1,10 @@
 package org.gusdb.wdk.service.service;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -14,6 +17,7 @@ import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.service.factory.WdkStepFactory;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.request.RequestMisformatException;
+import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.answer.AnswerRequest;
 import org.gusdb.wdk.service.request.answer.AnswerRequestFactory;
 import org.json.JSONException;
@@ -21,6 +25,8 @@ import org.json.JSONObject;
 
 @Path("/step")
 public class StepService extends WdkService {
+  
+  public static final String STEP_RESOURCE = "Step ID ";
 
   @GET
   @Path("{stepId}")
@@ -31,10 +37,10 @@ public class StepService extends WdkService {
       step = getWdkModel().getStepFactory().getStepById(Integer.parseInt(stepId));
     }
     catch (NumberFormatException | WdkModelException e) {
-      return getNotFoundResponse(stepId);
+      throw new NotFoundException(WdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
     if (step.getUser().getUserId() != getCurrentUserId()) {
-      return getPermissionDeniedResponse();
+      throw new ForbiddenException(WdkService.PERMISSION_DENIED);
     }
     return Response.ok(StepFormatter.getStepJson(step).toString()).build();
   }
@@ -42,7 +48,7 @@ public class StepService extends WdkService {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createStep(String body) throws WdkModelException {
+  public Response createStep(String body) throws WdkModelException, DataValidationException {
     try {
       // TODO: This should NOT be the final API of a POST to /step.  The answerSpec should
       //   be a property of the input JSON, with other (optional?) properties containing other
@@ -53,7 +59,7 @@ public class StepService extends WdkService {
       return Response.ok(StepFormatter.getStepJson(step).toString()).build();
     }
     catch (JSONException | RequestMisformatException e) {
-      return getBadRequestBodyResponse(e.toString());
+      throw new BadRequestException(e);
     }
   }
 }
