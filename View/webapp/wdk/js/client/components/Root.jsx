@@ -25,7 +25,7 @@ export default class Root extends Component {
     this.history = useRouterHistory(createHistory)({ basename: this.props.rootUrl });
     // Used to inject wdk content as props of Route Component
     this.createElement = (RouteComponent, routerProps) => {
-      let { dispatchAction, stores, wdkServier } = this.props;
+      let { dispatchAction, stores, wdkService } = this.props;
       return (
         <RouteComponent {...routerProps} dispatchAction={dispatchAction} stores={stores} wdkService={wdkService}/>
       );
