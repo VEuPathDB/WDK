@@ -4,7 +4,6 @@ import predicate from './Predicate';
 import {preorderSeq} from './TreeUtils';
 import {getTree, getPropertyValue} from './OntologyUtils';
 import {getTargetType, getRefName, getDisplayName} from './CategoryUtils';
-import {getAttribute, getTable} from './WdkUtils';
 
 /**
  * A helper to request resources from a Wdk REST Service.
@@ -169,15 +168,7 @@ export default class WdkService {
     let method = 'post';
     let url = this.getAnswerServiceUrl();
     let body = stringify({ questionDefinition, formatting });
-    return fetchJson(method, url, body).then(response => {
-      // we will only cache individual records
-      let { recordClassName } = response.meta;
-      for (let record of response.records) {
-        let key = makeRecordKey(recordClassName, record.id);
-        // this._records.set(key, Promise.resolve(record));
-      }
-      return response;
-    });
+    return fetchJson(method, url, body);
   }
 
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
@@ -272,7 +263,7 @@ function resolveWdkReferences(entities$) {
         case 'attribute': {
           let attributeName = getRefName(node);
           let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
-          let wdkReference = getAttribute(recordClass, attributeName);
+          let wdkReference = recordClass.attributesMap.get(attributeName);
           Object.assign(node, { wdkReference });
           break;
         }
@@ -280,7 +271,7 @@ function resolveWdkReferences(entities$) {
         case 'table': {
           let tableName = getRefName(node);
           let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
-          let wdkReference = getTable(recordClass, tableName);
+          let wdkReference = recordClass.tablesMap.get(tableName);
           Object.assign(node, { wdkReference });
           break;
         }

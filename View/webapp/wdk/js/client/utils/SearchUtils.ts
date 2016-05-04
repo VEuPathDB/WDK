@@ -1,7 +1,6 @@
 /**
  * Created by steve on 3/28/2016.
  */
-import partial from 'lodash/function/partial';
 
 /**
 * Filter a provided list of (generic) items.
@@ -14,11 +13,11 @@ import partial from 'lodash/function/partial';
 * @param {string}     searchQueryString      The query, in string form, with which to filter records
 * @return {Array<Object>} an Array of items that pass the filter
 */
-export function filterItems(items, itemToSearchableString, searchQueryString) {
+export function filterItems<T>(items: Array<T>, itemToSearchableString: (item: T) => string, searchQueryString: string) {
     if (!searchQueryString || !items) return items;
 
     let terms = parseSearchQueryString(searchQueryString);
-    let predicate = function (item) { return areTermsInString(terms, itemToSearchableString(item))};
+    let predicate = function (item: T) { return areTermsInString(terms, itemToSearchableString(item))};
     return items.filter(predicate);
 }
 
@@ -27,8 +26,9 @@ export function filterItems(items, itemToSearchableString, searchQueryString) {
  * @param {string} searchQueryString A string representing the search query
  * @returns {Array<String>} A set of query terms parsed from searchQueryString
  */
-export function parseSearchQueryString(searchQueryString) {
-    let match = searchQueryString.match(/\w+|"[^"]*"/g) || [];
+export function parseSearchQueryString(searchQueryString: string) {
+    let match = searchQueryString.match(/\w+|"[^"]*"/g);
+    if (match == null) return [];
     return match.map(function(queryTerm) {
         // remove wrapping quotes from phrases
         return queryTerm.replace(/(^")|("$)/g, '');
@@ -41,7 +41,7 @@ export function parseSearchQueryString(searchQueryString) {
  * @param searchableString The string to search.
  * @returns boolean
  */
-export function areTermsInString(queryTerms, searchableString) {
+export function areTermsInString(queryTerms: Array<string>, searchableString: string) {
     return queryTerms.reduce(function (matchesFlag, term) {
         return matchesFlag && isTermInString(term, searchableString)
     }, true);
@@ -53,7 +53,7 @@ export function areTermsInString(queryTerms, searchableString) {
  * @param {string} searchableString
  * @returns {boolean} true if a match
  */
-export function isTermInString(queryTerm, searchableString) {
+export function isTermInString(queryTerm: string, searchableString: string = '') {
     return !queryTerm || (searchableString && searchableString.toLowerCase().includes(queryTerm.toLowerCase()));
 }
 

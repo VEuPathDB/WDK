@@ -1028,7 +1028,7 @@ td.lines {
 }
 
 td.linesalt {
-	background-color: #EEEEEE;
+	background-color: #EEEEEE; 
 	padding: 4px;
 }
 
@@ -1050,7 +1050,7 @@ tr.headerrow th {
 	font-size: 12px;
 	vertical-align:	middle;
 	padding: 1px 2px;
-	border-width: 2px 1px 2px 1px; /* 2px 0 2px 0; results headers side borders */
+	border-width: 1px;  /* 2px 1px 2px 1px; */  /* 2px 0 2px 0; results headers side borders */
 	border-style: solid;
 }
 
@@ -1068,12 +1068,12 @@ tr.headerInternalRow td {
 }
 
 tr.lines {
-	background-color: whitesmoke; /* was #FFFFFF */
+	background-color: white; /* whitesmoke; */ /* was #FFFFFF */
 }
 
 tr.linesalt > td {
 /*	background-color: #DDDDDD; */
-	background-color: #EEEEEE;
+	background-color: #fbfbfb;  /* #EEEEEE; */
 }
 
 tr.lines td, tr.linesalt td {

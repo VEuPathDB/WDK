@@ -20,9 +20,9 @@ let pendingPromise = { then() { } };
  * @param {Function} promiseFactory A function that returns a Promise.
  * @returns {Function} A function that returns a Promise.
  */
-export function latest(promiseFactory) {
-  let latestPromise = null;
-  return function createPromise(...args) {
+export function latest<T>(promiseFactory: (...args: any[]) => Promise<T>) {
+  let latestPromise: Promise<T> = null;
+  return function createPromise(...args: any[]) {
     let thisPromise = latestPromise = promiseFactory(...args);
     return thisPromise.then(
       data => {
@@ -30,7 +30,7 @@ export function latest(promiseFactory) {
           return data;
         }
         else {
-          return pendingPromise;
+          return <Promise<T>>pendingPromise;
         }
       },
       reason => {
@@ -38,7 +38,7 @@ export function latest(promiseFactory) {
           throw reason;
         }
         else {
-          return pendingPromise;
+          return <Promise<T>>pendingPromise;
         }
       }
     );
@@ -54,7 +54,7 @@ export function latest(promiseFactory) {
  * @param {Function} rejectHandler
  * @returns {Promise}
  */
-export function seq(promiseArray, resolveHandler, rejectHandler) {
+export function seq(promiseArray: Promise<any>[], resolveHandler: (res: any) => any, rejectHandler: (err: Error) => any) {
   return promiseArray.reduce(function(seq$, promise$) {
     return seq$.then(() => promise$.then(resolveHandler, rejectHandler));
   }, Promise.resolve());
