@@ -1153,10 +1153,10 @@ public class Step {
       }
       catch (WdkModelException | WdkUserException ex) {
         // attempt to mark steps invalid on the fly when there is an invalid parameter value
-        if(isValid()) {
+				/*    if(isValid()) {
           logger.debug("invalidating a step based on invalid param values, step: " + getStepId() + " question: " + getQuestionName());
           invalidateStep();
-        }
+					} */
         // if validate is false, the error will be ignored to allow the process to continue.
         if (validate) 
           throw ex;
