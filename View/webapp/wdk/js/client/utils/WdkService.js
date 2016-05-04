@@ -168,15 +168,7 @@ export default class WdkService {
     let method = 'post';
     let url = this.getAnswerServiceUrl();
     let body = stringify({ questionDefinition, formatting });
-    return fetchJson(method, url, body).then(response => {
-      // we will only cache individual records
-      let { recordClassName } = response.meta;
-      for (let record of response.records) {
-        let key = makeRecordKey(recordClassName, record.id);
-        // this._records.set(key, Promise.resolve(record));
-      }
-      return response;
-    });
+    return fetchJson(method, url, body);
   }
 
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
