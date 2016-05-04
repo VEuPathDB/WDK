@@ -1,18 +1,14 @@
-import { Component, PropTypes } from 'react';
-import classnames from 'classnames';
-import get from 'lodash/object/get';
-import { wrappable } from '../utils/componentUtils';
-import { getId, getLabel } from '../utils/CategoryUtils';
+import {wrappable, PureComponent} from '../utils/componentUtils';
+import {getId, getLabel} from '../utils/CategoryUtils';
 import * as t from '../utils/TreeUtils';
 import * as i from '../utils/IterableUtils';
-import shallowEqual from '../utils/shallowEqual';
 import RecordNavigationItem from './RecordNavigationItem';
 import Tree from './Tree';
 
 /**
  * Handle scroll events to mark the active category in the nav panel.
  */
-class RecordNavigationSectionCategories extends Component {
+class RecordNavigationSectionCategories extends PureComponent {
 
   constructor() {
     super(...arguments);
@@ -33,10 +29,6 @@ class RecordNavigationSectionCategories extends Component {
         this.props.showChildren !== previousProps.showChildren ) {
       this.setActiveCategory();
     }
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return !shallowEqual(nextProps, this.props) || !shallowEqual(nextState, this.state);
   }
 
   // If showChildren is true, iterate postorder to get the first left-most child
