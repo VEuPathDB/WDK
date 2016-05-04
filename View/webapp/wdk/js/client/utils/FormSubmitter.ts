@@ -1,8 +1,14 @@
+type Conf = {
+  method?: string;
+  target?: string;
+  action?: string;
+  inputs?: {[key:string]: string};
+};
 
-export function submitAsForm(conf) {
+export function submitAsForm(conf: Conf) {
 
   // allow missing or null config
-  if (conf == undefined || conf == null) conf == {};
+  if (conf == undefined || conf == null) conf = {};
 
   // get supported values from conf
   let method = conf.method || 'post';
