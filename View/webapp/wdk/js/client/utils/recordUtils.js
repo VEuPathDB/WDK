@@ -2,7 +2,7 @@ import partial from 'lodash/function/partial';
 import flattenDeep from 'lodash/array/flattenDeep';
 import pick from 'lodash/object/pick';
 import values from 'lodash/object/values';
-import { filterItems } from 'SearchUtils';
+import { filterItems } from './SearchUtils';
 
 /**
  * Filter the results of an answer and return the filtered results.
