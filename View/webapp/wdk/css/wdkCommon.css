@@ -1028,7 +1028,7 @@ td.lines {
 }
 
 td.linesalt {
-	background-color: #EEEEEE;
+	background-color: #EEEEEE; 
 	padding: 4px;
 }
 
@@ -1068,12 +1068,12 @@ tr.headerInternalRow td {
 }
 
 tr.lines {
-	background-color: whitesmoke; /* was #FFFFFF */
+	background-color: white; /* whitesmoke; */ /* was #FFFFFF */
 }
 
 tr.linesalt > td {
 /*	background-color: #DDDDDD; */
-	background-color: #EEEEEE;
+	background-color: #fbfbfb;  /* #EEEEEE; */
 }
 
 tr.lines td, tr.linesalt td {
