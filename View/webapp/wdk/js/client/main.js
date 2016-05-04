@@ -11,7 +11,6 @@ import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
 import Root from './components/Root';
 import * as PartialRenderer from './partialRenderer';
-import * as ActionCreators from './actioncreators';
 import * as Components from './components';
 import * as Stores from './stores';
 import * as ComponentUtils from './utils/componentUtils';
@@ -21,7 +20,6 @@ import * as TreeUtils from './utils/TreeUtils';
 import * as OntologyUtils from './utils/OntologyUtils';
 import * as CategoryUtils from './utils/CategoryUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
-import * as WdkUtils from './utils/WdkUtils';
 
 export {
   Components,
@@ -29,7 +27,6 @@ export {
   ComponentUtils,
   ReporterUtils,
   FormSubmitter,
-  WdkUtils,
   WdkService,
   IterableUtils,
   TreeUtils,
