@@ -33,9 +33,9 @@ let CategoriesCheckboxTree = props => {
   };
 
   return (
-    <div>
-      <h3>{title}</h3>
-      <div style={{padding: '0 2em'}}>
+    <div className="wdk-CategoriesCheckboxTree">
+      <h3 className="wdk-CategoriesCheckboxTreeHeading">{title}</h3>
+      <div className="wdk-CategoriesCheckboxTreeWrapper">
         <CheckboxTree {...treeProps} />
       </div>
     </div>
