@@ -76,9 +76,10 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     }
 
     catch (WebApplicationException eApp) {
-      return eApp.getResponse();
+      return Response.status(eApp.getResponse().getStatus())
+          .type(MediaType.TEXT_PLAIN).entity(ExceptionMapper.createCompositeExceptionMessage(eApp)).build();
     }
-    
+
     // Added email to site admins of data for exceptions not caught by filter
     catch (Exception other) {
       WdkModel wdkModel = ((WdkModelBean) context.getAttribute("wdkModel")).getModel();

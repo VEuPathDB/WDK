@@ -35,11 +35,11 @@ public class AnswerStreamer {
     };
   }
   
-  public static StreamingOutput getAnswerAsStream(final Reporter reporter)  {
+  public static StreamingOutput getAnswerAsStream(final Reporter reporter) {
     // FIXME: currently do not support real streaming; need to implement in AnswerValueBean
     return new StreamingOutput() {
       @Override
-      public void write(OutputStream stream) throws IOException, WebApplicationException {
+      public void write(OutputStream stream) throws IOException {
         try {
           reporter.report(stream);
         }
