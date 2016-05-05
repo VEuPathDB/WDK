@@ -8,7 +8,7 @@ libs_bundle   := $(shell pwd)/dist/wdk/js/wdk.libs.js
 css_bundle    := $(shell pwd)/dist/wdk/css/wdk.min.css
 test_bundle   := $(shell pwd)/test/dist/tests.js
 
-wdk_sources  := $(shell find webapp/wdk/js -name '*.js' -or -name '*.jsx' -or -name '*.ts') webpack.config.js
+wdk_sources  := $(shell find webapp/wdk/js -name '*.js' -or -name '*.jsx' -or -name '*.ts' -or -name '*.tsx') webpack.config.js
 
 # This exists mainly for legacy support. These should eventually
 # be included via npm and webpack. This will make it possible to
@@ -48,10 +48,16 @@ node_modules: npm-shrinkwrap.json
 node_modules/%: node_modules;
 
 # =============================================================================
+# Install typescript type definitions
+# =============================================================================
+typings: typings.json node_modules
+	typings install
+
+# =============================================================================
 # Webpack bundles. See webpack.config.js for details
 # =============================================================================
 
-$(wdk_bundle): $(wdk_sources) node_modules
+$(wdk_bundle): $(wdk_sources) node_modules typings
 	webpack
 
 # =============================================================================

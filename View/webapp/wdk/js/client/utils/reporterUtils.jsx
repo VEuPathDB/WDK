@@ -61,8 +61,7 @@ export function getAttributeSelections(userPrefs, question) {
 
 export function getAttributeTree(categoriesOntology, recordClassName, question) {
   let categoryTree = getTree(categoriesOntology, isQualifying('attribute', recordClassName, 'download'));
-  addSearchSpecificSubtree(question, categoryTree);
-  return categoryTree;
+  return addSearchSpecificSubtree(question, categoryTree);
 }
 
 export function getTableTree(categoriesOntology, recordClassName) {
