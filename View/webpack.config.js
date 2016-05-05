@@ -15,7 +15,7 @@ module.exports = {
       underscore: 'lodash'
     },
     // adding .jsx; the rest are defaults (this overwrites, so we're including them)
-    extensions: ["", ".webpack.js", ".web.js", ".ts", ".js", ".jsx"]
+    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js", ".jsx"]
   },
   externals: [
     { jquery: 'jQuery' }

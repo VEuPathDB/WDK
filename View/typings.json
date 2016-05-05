@@ -1,0 +1,10 @@
+{
+  "name": "wdk",
+  "version": false,
+  "dependencies": {},
+  "ambientDependencies": {
+    "json-stable-stringify": "registry:dt/json-stable-stringify#1.0.0+20160317120654",
+    "lodash": "registry:dt/lodash#3.10.0+20160330154726",
+    "react": "registry:dt/react#0.14.0+20160423065914"
+  }
+}
