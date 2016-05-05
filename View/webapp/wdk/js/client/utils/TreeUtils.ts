@@ -59,10 +59,10 @@ function* postorder<T>(root: T, getChildren: ChildrenGetter<T>): Iterable<T> {
  * @param {Object} root
  * @return {Seq}
  */
-export function preorderSeq(root: Node) {
+export function preorderSeq<T extends Node>(root: T) {
   return seq({
     *[Symbol.iterator]() {
-      yield* preorder(root, n => n.children);
+      yield* preorder(root, n => n.children as T[]);
     }
   })
 }
@@ -85,10 +85,10 @@ export function preorderSeq(root: Node) {
  * @param {Object} root
  * @return {Seq}
  */
-export function postorderSeq (root: Node) {
+export function postorderSeq<T extends Node>(root: T) {
   return seq({
     *[Symbol.iterator]() {
-      yield* postorder(root, n => n.children);
+      yield* postorder(root, n => n.children as T[]);
     }
   })
 }
@@ -119,7 +119,7 @@ export function mapStructure<T, U>(mapFn: (root: T, children: U[]) => U, getChil
  * @param {Object} root Root node of a tree.
  * @return {Object}
  */
-export function pruneDescendantNodes (fn: (node: Node) => boolean, root: Node) {
+export function pruneDescendantNodes<T extends Node>(fn: (node: T) => boolean, root: T) {
   let prunedChildren = pruneNodes(fn, root.children);
   return prunedChildren === root.children
     ? root

@@ -4,9 +4,9 @@ export interface OntologyNode extends Node {
   properties: {[key: string]: Array<string>}
 }
 
-export interface Ontology {
+export interface Ontology<Node extends OntologyNode> {
   name: string;
-  tree: OntologyNode;
+  tree: Node;
 }
 
 /**
@@ -16,8 +16,8 @@ export interface Ontology {
  * @param {Ontology} ontology
  * @param {Function} leafPredicate
  */
-export function getTree(ontology: Ontology, leafPredicate: (node: OntologyNode) => boolean) {
-  return pruneDescendantNodes(node => nodeHasChildren(<OntologyNode>node) || leafPredicate(<OntologyNode>node), ontology.tree);
+export function getTree<T extends OntologyNode>(ontology: Ontology<T>, leafPredicate: (node: T) => boolean) {
+  return pruneDescendantNodes(node => nodeHasChildren(node) || leafPredicate(node), ontology.tree);
 }
 
 /**
