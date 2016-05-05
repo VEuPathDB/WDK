@@ -10,6 +10,10 @@ interface ModelEntity {
 
 export interface RecordClass extends ModelEntity {
   description: string;
+  attributes: AttributeField[];
+  tables: TableField[];
+  attributesMap: Map<string, AttributeField>;
+  tablesMap: Map<string, TableField>;
 }
 
 export interface Question extends ModelEntity {
@@ -44,4 +48,36 @@ export interface AttributeField extends ModelEntity {
   isRemovable: boolean;
   type: string;
   truncateTo: number;
+}
+
+export interface TableField extends ModelEntity {
+  help: string;
+  type: string;
+  description: string;
+  attributes: AttributeField[];
+}
+
+export interface Record {
+  displayName: string;
+  overview?: string;
+  id: PrimaryKey;
+  recordClassName: string;
+  attributes: { [key: string]: AttributeValue };
+  tables: { [key: string]: TableValue };
+}
+
+export interface PrimaryKey extends Array<{
+  name: string;
+  value: string;
+}> {}
+
+type AttributeValue = string | LinkAttributeValue;
+
+export interface LinkAttributeValue {
+  url: string;
+  displayText: string;
+}
+
+export interface TableValue {
+  [index: number]: AttributeValue;
 }
