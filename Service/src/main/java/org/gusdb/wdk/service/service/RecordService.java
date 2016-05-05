@@ -1,5 +1,12 @@
 package org.gusdb.wdk.service.service;
 
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -13,6 +20,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -22,9 +31,13 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.User.UserProfileProperty;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
 import org.gusdb.wdk.service.formatter.TableFieldFormatter;
+import org.gusdb.wdk.service.provider.ExceptionMapper;
+import org.gusdb.wdk.service.provider.MultipleChoicesStatusType;
+import org.gusdb.wdk.service.provider.UnprocessableEntityStatusType;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.stream.RecordStreamer;
@@ -154,9 +167,31 @@ public class RecordService extends WdkService {
     try {
       JSONObject json = new JSONObject(body);
       RecordClass rc = getRecordClass(recordClassName);
-      RecordRequest request = RecordRequest.createFromJson(
-          getCurrentUser(), json, rc, getWdkModelBean());
-
+      RecordRequest request = RecordRequest.createFromJson(getCurrentUser(), json, rc, getWdkModelBean());
+      try {
+        List<Map<String,Object>> ids = rc.lookupPrimaryKeys(getCurrentUser(), request.getPrimaryKey());
+        if(ids.size() > 1) {
+          List<String> idList = mapToList(ids,
+            new Function<Map<String,Object>, String>() {
+              @Override
+              public String apply(Map<String,Object> pkValueMap) {
+                Iterator<String> iterator = pkValueMap.keySet().iterator();
+                StringBuilder idString = new StringBuilder();
+                while(iterator.hasNext()) {
+                  String key = iterator.next();
+                  idString.append(key + " = " + pkValueMap.get(key) + " ");
+                }
+                return idString.toString();
+              }
+            }
+          );
+          String idDisplay = FormatUtil.join(idList.toArray(), "\n");
+          return Response.status(new MultipleChoicesStatusType()).type(MediaType.TEXT_PLAIN).entity(idDisplay).build();
+        }
+      }  
+      catch(WdkUserException e) {
+        throw new BadRequestException(e);
+      }
       recordInstance = getRecordInstance(getCurrentUser(), request);
 
       return Response.ok(RecordStreamer.getRecordAsStream(recordInstance, request.getAttributeNames(), request.getTableNames())).build();
