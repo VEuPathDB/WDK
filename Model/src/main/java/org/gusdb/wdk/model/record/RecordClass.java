@@ -1805,7 +1805,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  List<Map<String, Object>> lookupPrimaryKeys(User user, Map<String, Object> pkValues)
+  public List<Map<String, Object>> lookupPrimaryKeys(User user, Map<String, Object> pkValues)
       throws WdkModelException, WdkUserException {
    
 
