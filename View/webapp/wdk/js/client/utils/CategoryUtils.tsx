@@ -18,7 +18,7 @@ interface CategoryNodeProperties {
 
 export interface CategoryNode extends OntologyNode {
   children: CategoryNode[];
-  properties: { [key: string]: string[]; } & CategoryNodeProperties;
+  properties: CategoryNodeProperties & { [key: string]: string[]; };
   wdkReference?: {
     name: string;
     displayName: string;
@@ -72,6 +72,7 @@ export function getSynonyms(node: CategoryNode) {
  */
 function createNode(id: string, displayName: string, description: string, children: CategoryNode[]): CategoryNode {
   return {
+    children,
     properties : {
       targetType : ["attribute"],
       name : [id]
@@ -80,9 +81,8 @@ function createNode(id: string, displayName: string, description: string, childr
       name: id,
       displayName : displayName,
       help : description
-    },
-    children: children
-  }
+    }
+  } as CategoryNode;
 }
 
 /**
