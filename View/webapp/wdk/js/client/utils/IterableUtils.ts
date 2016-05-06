@@ -240,6 +240,7 @@ export function find<T>(test: Predicate<T>, iter: Iterable<T>) {
   for (let item of iter) {
     if (test(item) === true) return item;
   }
+  return undefined;
 }
 
 /**
