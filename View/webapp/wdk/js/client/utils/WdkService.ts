@@ -172,7 +172,7 @@ export default class WdkService {
           return Object.assign({}, record, {
             attributes: Object.assign({}, record.attributes, newRecord.attributes),
             tables: Object.assign({}, record.tables, newRecord.tables)
-          });
+          }) as Record;
         });
         this._records.set(key, { request: finalRequest, response: finalResponse });
       }

@@ -1,4 +1,5 @@
 import {pruneDescendantNodes, Node} from './TreeUtils';
+import predicate from './Predicate';
 
 export interface OntologyNode extends Node {
   properties: {[key: string]: Array<string>}
@@ -17,7 +18,7 @@ export interface Ontology<Node extends OntologyNode> {
  * @param {Function} leafPredicate
  */
 export function getTree<T extends OntologyNode>(ontology: Ontology<T>, leafPredicate: (node: T) => boolean) {
-  return pruneDescendantNodes(node => nodeHasChildren(node) || leafPredicate(node), ontology.tree);
+  return pruneDescendantNodes(predicate(nodeHasChildren).or(leafPredicate), ontology.tree);
 }
 
 /**
