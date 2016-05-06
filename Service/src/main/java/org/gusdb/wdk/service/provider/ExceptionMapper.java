@@ -76,8 +76,14 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     }
 
     catch (WebApplicationException eApp) {
-      return Response.status(eApp.getResponse().getStatus())
-          .type(MediaType.TEXT_PLAIN).entity(ExceptionMapper.createCompositeExceptionMessage(eApp)).build();
+      // Per 06May2016  scrum
+      if(eApp.getCause() != null && eApp.getCause() instanceof Exception ) {
+        return this.toResponse((Exception) eApp.getCause());
+      }
+      else {
+        return Response.status(eApp.getResponse().getStatus())
+          .type(MediaType.TEXT_PLAIN).entity(eApp.getMessage()).build();
+      }
     }
 
     // Added email to site admins of data for exceptions not caught by filter
