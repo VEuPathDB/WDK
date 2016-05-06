@@ -108,6 +108,7 @@ export function addSearchSpecificSubtree(question: Question, categoryTree: Categ
       children: [ subtree ].concat(categoryTree.children)
     })
   }
+  return categoryTree;
 }
 
 /**
