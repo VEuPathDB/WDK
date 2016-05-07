@@ -47,24 +47,6 @@ class RecordUI extends Component {
 
     return (
       <Main className={classNames}>
-        <div
-          className="wdk-RecordMainSectionFieldToggles"
-          fixedClassName="wdk-RecordMainSectionFieldToggles__fixed"
-        >
-          <a href="#"
-            onClick={event => {
-              event.preventDefault();
-              this.props.showAllFields();
-            }}
-            title="Show all content" >Show All</a>
-          <br/>
-          <a href="#"
-            onClick={event => {
-              event.preventDefault();
-              this.props.hideAllFields();
-            }}
-            title="Hide all content" >Hide All</a>
-        </div>
         <RecordHeading
           record={this.props.record}
           recordClass={this.props.recordClass}
@@ -85,6 +67,19 @@ class RecordUI extends Component {
           />
         </Sticky>
         <div className="wdk-RecordMain">
+          <div className="wdk-RecordMainSectionFieldToggles">
+            <a href="#" title="Expand all content"
+              onClick={event => {
+                event.preventDefault();
+                this.props.showAllFields();
+              }}>Expand All</a>
+            {' | '}
+            <a href="#" title="Collapse all content"
+              onClick={event => {
+                event.preventDefault();
+                this.props.hideAllFields();
+              }}>Collapse All</a>
+          </div>
           <Record
             record={this.props.record}
             recordClass={this.props.recordClass}
