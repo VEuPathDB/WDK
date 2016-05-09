@@ -383,7 +383,7 @@ function compareOnotologyNodesBySortNumber(nodeA: CategoryNode, nodeB: CategoryN
   let sortOrderB = getPropertyValue('display order', nodeB);
 
   if (sortOrderA && sortOrderB) {
-    return sortOrderA >= sortOrderB ? 1 : -1;
+    return Number(sortOrderA) >= Number(sortOrderB) ? 1 : -1;
   }
 
   if (sortOrderA) {
