@@ -2,7 +2,6 @@ package org.gusdb.wdk.service.service;
 
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,13 +30,10 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.User.UserProfileProperty;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
 import org.gusdb.wdk.service.formatter.TableFieldFormatter;
-import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.provider.MultipleChoicesStatusType;
-import org.gusdb.wdk.service.provider.UnprocessableEntityStatusType;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.stream.RecordStreamer;
