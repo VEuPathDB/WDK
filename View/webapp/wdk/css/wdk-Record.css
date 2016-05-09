@@ -47,7 +47,7 @@
 }
 
 .wdk-RecordSidebar {
-  left: -322px;
+  left: -346px;
   width: 270px;
   position: absolute;
   padding-right: 48px;
@@ -85,7 +85,7 @@
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebar__fixed {
-  left: 2em;
+  left: 4em;
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebarToggle {

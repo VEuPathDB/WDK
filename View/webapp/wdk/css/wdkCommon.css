@@ -206,7 +206,15 @@ img[data-assets-src][src] {
 .wdk-RootContainer {
   height: 100%;
   background-color: #fcfcfc;
-  padding: 1em 2em;
+  padding: 1em 4em;
+}
+
+button.wdk-Link {
+  border: none;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  color: blue;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
