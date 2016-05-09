@@ -200,8 +200,7 @@ public class EuPathCategoriesFactory {
         }
       }
       
-      if (category.getDisplayName() != null) {
-        category.setDisplayName(category.getDisplayName().replaceAll(" ", "_"));
+      if (category.getName() != null) {
         category.setName(category.getName().replaceAll(",", "_"));
         for (Map<String, SearchCategory> map : maps)
           map.put(category.getName(), category);
