@@ -6,16 +6,18 @@ import {seq} from '../utils/PromiseUtils';
 import {loadBasketStatus} from '../actioncreators/BasketActionCreator';
 import {loadFavoritesStatus} from '../actioncreators/FavoritesActionCreator';
 
+// TODO Change SHOW/HIDE_{feature} and EXPAND/COLLAPSE_{feature} to
+// {feature}_VISIBILITY_CHANGED
 export let actionTypes = {
   ACTIVE_RECORD_RECEIVED: 'record/active-record-received',
   ACTIVE_RECORD_UPDATED: 'record/active-record-updated',
   ACTIVE_RECORD_LOADING: 'record/active-record-loading',
   ERROR_RECEIVED: 'record/error-received',
-  SHOW_SECTION: 'record/show-section',
-  HIDE_SECTION: 'record/hide-section',
-  SHOW_ALL_FIELDS: 'record/show-all-fields',
-  HIDE_ALL_FIELDS: 'record/hide-all-fields',
-  UPDATE_NAVIGATION_QUERY: 'record/update-navigation-query'
+  SECTION_VISIBILITY_CHANGED: 'record/section-visibility-changed',
+  ALL_FIELD_VISIBILITY_CHANGED: 'record/all-field-visibility-changed',
+  NAVIGATION_VISIBILITY_CHANGED: 'record/navigation-visibility-changed',
+  NAVIGATION_SUBCATEGORY_VISBILITY_CHANGED: 'record/navigation-subcategory-visbility-changed',
+  NAVIGATION_QUERY_CHANGED: 'record/navigation-query-changed'
 };
 
 let isInternalNode = partial(nodeHasProperty, 'scope', 'record-internal');
@@ -63,28 +65,43 @@ export function setActiveRecord(recordClassName, primaryKeyValues) {
 }
 
 /** Update a section's collapsed status */
-export function updateSectionCollapsed(sectionName, isCollapsed) {
+export function updateSectionVisibility(sectionName, isVisible) {
   return {
-    type: isCollapsed ? actionTypes.HIDE_SECTION : actionTypes.SHOW_SECTION,
-    payload: { name: sectionName }
+    type: actionTypes.SECTION_VISIBILITY_CHANGED,
+    payload: { name: sectionName, isVisible }
   };
 }
 
-export function showAllFields() {
-  return { type: actionTypes.SHOW_ALL_FIELDS };
-}
-
-export function hideAllFields() {
-  return { type: actionTypes.HIDE_ALL_FIELDS };
+export function updateAllFieldVisibility(isVisible) {
+  return {
+    type: actionTypes.ALL_FIELD_VISIBILITY_CHANGED,
+    payload: { isVisible }
+  }
 }
 
 /** Update navigation section search term -- currently unused */
 export function updateNavigationQuery(query) {
   return {
-    type: actionTypes.UPDATE_NAVIGATION_QUERY,
+    type: actionTypes.NAVIGATION_QUERY_CHANGED,
     payload: { query }
   };
 }
+
+export function updateNavigationVisibility(isVisible) {
+  return {
+    type: actionTypes.NAVIGATION_VISIBILITY_CHANGED,
+    payload: { isVisible }
+  }
+}
+
+export function updateNavigationSubcategoryVisibility(isVisible) {
+  return {
+    type: actionTypes.NAVIGATION_SUBCATEGORY_VISBILITY_CHANGED,
+    payload: { isVisible }
+  }
+}
+
+// helpers
 
 /**
  * Get the base record request payload object

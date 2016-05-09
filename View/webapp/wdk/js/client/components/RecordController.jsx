@@ -1,7 +1,14 @@
 import {Component, PropTypes} from 'react';
 import {wrappable} from '../utils/componentUtils';
 import {wrapActions} from '../utils/actionHelpers';
-import {setActiveRecord, updateSectionCollapsed, hideAllFields, showAllFields} from '../actioncreators/RecordViewActionCreator';
+import {
+  setActiveRecord,
+  updateSectionVisibility as toggleSection,
+  updateNavigationQuery,
+  updateAllFieldVisibility,
+  updateNavigationSubcategoryVisibility,
+  updateNavigationVisibility
+} from '../actioncreators/RecordViewActionCreator';
 import {loadCurrentUser} from '../actioncreators/UserActionCreator';
 import {updateBasketStatus} from '../actioncreators/BasketActionCreator';
 import {updateFavoritesStatus} from '../actioncreators/FavoritesActionCreator';
@@ -15,7 +22,13 @@ class RecordController extends Component {
   constructor(props) {
     super(props);
     this.state = this.getStateFromStores();
-    this.actions = wrapActions(this.props.dispatchAction, { toggleSection: updateSectionCollapsed, hideAllFields, showAllFields})
+    this.actions = wrapActions(this.props.dispatchAction, {
+      toggleSection,
+      updateNavigationQuery,
+      updateAllFieldVisibility,
+      updateNavigationSubcategoryVisibility,
+      updateNavigationVisibility
+    });
   }
 
   getStateFromStores() {

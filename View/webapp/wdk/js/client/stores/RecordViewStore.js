@@ -1,6 +1,5 @@
 import union from 'lodash/array/union';
 import difference from 'lodash/array/difference';
-import property from 'lodash/utility/property';
 import WdkStore from './WdkStore';
 import {filterNodes} from '../utils/TreeUtils';
 import {getId, getTargetType} from '../utils/CategoryUtils';
@@ -15,16 +14,19 @@ export default class RecordViewStore extends WdkStore {
       recordClass: undefined,
       collapsedSections: undefined,
       isLoading: undefined,
-      categoryTree: undefined
+      categoryTree: undefined,
+      navigationVisible: true,
+      navigationQuery: '',
+      navigationSubcategoriesExpanded: false
     };
   }
 
-  reduce(state, { type, payload }) {
-    switch (type) {
+  reduce(state, action) {
+    switch (action.type) {
       case actionTypes.ERROR_RECEIVED:
         return Object.assign({}, state, {
           isLoading: false,
-          error: payload.error
+          error: action.payload.error
         });
 
       case actionTypes.ACTIVE_RECORD_LOADING:
@@ -34,7 +36,7 @@ export default class RecordViewStore extends WdkStore {
         });
 
       case actionTypes.ACTIVE_RECORD_RECEIVED: {
-        let { record, recordClass, categoryTree } = payload;
+        let { record, recordClass, categoryTree } = action.payload;
 
         return Object.assign({}, state, {
           record,
@@ -46,47 +48,47 @@ export default class RecordViewStore extends WdkStore {
       }
 
       case actionTypes.ACTIVE_RECORD_UPDATED: {
-        let { record } = payload;
+        let { record } = action.payload;
         return Object.assign({}, state, { record });
       }
 
-      case actionTypes.SHOW_SECTION: {
+      case actionTypes.SECTION_VISIBILITY_CHANGED: {
         let collapsedSections = updateList(
-          payload.name,
-          false,
-          state.collapsedSections
-        );
-        return Object.assign({}, state, { collapsedSections });
-      }
-
-      case actionTypes.HIDE_SECTION: {
-        let collapsedSections = updateList(
-          payload.name,
-          true,
+          action.payload.name,
+          action.payload.isVisible,
           state.collapsedSections
         );
         return Object.assign({}, state, { collapsedSections });
       }
 
       /**
-       * Show all record fields (tables and attributes).
+       * Update visibility of all record fields (tables and attributes).
        * Category section collapsed state will be preserved.
        */
-      case actionTypes.SHOW_ALL_FIELDS: {
+      case actionTypes.ALL_FIELD_VISIBILITY_CHANGED: {
         return Object.assign({}, state, {
-          collapsedSections: difference(state.collapsedSections, getAllFields(state))
+          collapsedSections: action.payload.isVisible
+          ? difference(state.collapsedSections, getAllFields(state))
+          : union(state.collapsedSections, getAllFields(state))
         });
       }
 
-      /**
-       * Hide all record fields (tables and attributes).
-       * Category section collapsed state will be preserved.
-       */
-      case actionTypes.HIDE_ALL_FIELDS: {
+      case actionTypes.NAVIGATION_QUERY_CHANGED: {
         return Object.assign({}, state, {
-          collapsedSections: union(state.collapsedSections, getAllFields(state))
-        });
+          navigationQuery: action.payload.query
+        })
       }
+
+      case actionTypes.NAVIGATION_VISIBILITY_CHANGED: {
+        return Object.assign({}, state, {
+          navigationVisible: action.payload.isVisible
+        })
+      }
+
+      case actionTypes.NAVIGATION_SUBCATEGORY_VISBILITY_CHANGED:
+        return Object.assign({}, state, {
+          navigationSubcategoriesExpanded: action.payload.isVisible
+        })
 
       default:
         return state;
