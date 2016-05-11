@@ -4,11 +4,10 @@
  * This one used DataTables jQuery plugin
  */
 
-import { Component, PropTypes } from 'react';
-import ReactDOM from 'react-dom';
-import mapValues from 'lodash/object/mapValues';
-import partial from 'lodash/function/partial';
-import { formatAttributeValue, wrappable } from '../utils/componentUtils';
+import {createElement, PropTypes} from 'react';
+import {render} from 'react-dom';
+import {partial} from 'lodash';
+import {formatAttributeValue, wrappable} from '../utils/componentUtils';
 
 const $ = window.jQuery;
 
@@ -153,7 +152,7 @@ let renderChildRow = (row, targetNode, childRow) => {
 
   else {
     let props = { rowIndex: row.index(), rowData: row.data() };
-    ReactDOM.render(React.createElement(childRow, props), targetNode);
+    render(createElement(childRow, props), targetNode);
   }
 }
 
@@ -162,10 +161,14 @@ let renderChildRow = (row, targetNode, childRow) => {
 // -------
 
 let formatColumns = columns => columns.map(
-  column => Object.assign({
+  column => ({
     data: column.name,
     className: 'wdk-DataTableCell wdk-DataTableCell__' + column.name,
     title: column.displayName || column.name,
+    type: 'html',
+    visible: column.isDisplayable,
+    searchable: column.isDisplayable,
+    orderable: column.isSortable,
     render(data, type) {
       let value = formatAttributeValue(data);
       if (type === 'display') {
@@ -173,14 +176,14 @@ let formatColumns = columns => columns.map(
       }
       return value;
     }
-  }, column)
+  })
 );
 
 let formatSorting = (columns, sorting) => {
   if (sorting.length === 0) return [ [0, 'asc'] ];
 
   return sorting.map(sort => {
-    let index = columns.findIndex(column => column.name === sort.name);
+    let index = columns.findIndex(column => column.data === sort.name);
     if (index === -1) {
       console.warn("Could not determine sort index for the column " + sort.name);
       return [];
