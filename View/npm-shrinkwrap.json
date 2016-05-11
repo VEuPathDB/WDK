@@ -126,6 +126,16 @@
           "version": "6.8.0",
           "from": "babel-template@^6.8.0"
         },
+        "babel-runtime": {
+          "version": "6.6.1",
+          "from": "babel-runtime@^6.0.0",
+          "dependencies": {
+            "core-js": {
+              "version": "2.4.0",
+              "from": "core-js@^2.1.0"
+            }
+          }
+        },
         "babel-register": {
           "version": "6.8.0",
           "from": "babel-register@^6.8.0",
@@ -183,6 +193,22 @@
             "globals": {
               "version": "8.18.0",
               "from": "globals@^8.3.0"
+            },
+            "invariant": {
+              "version": "2.2.1",
+              "from": "invariant@^2.2.0",
+              "dependencies": {
+                "loose-envify": {
+                  "version": "1.1.0",
+                  "from": "loose-envify@^1.0.0",
+                  "dependencies": {
+                    "js-tokens": {
+                      "version": "1.0.3",
+                      "from": "js-tokens@^1.0.1"
+                    }
+                  }
+                }
+              }
             },
             "repeating": {
               "version": "1.1.3",
@@ -290,7 +316,7 @@
       "dependencies": {
         "loader-utils": {
           "version": "0.2.14",
-          "from": "loader-utils@^0.2.6",
+          "from": "loader-utils@^0.2.7",
           "dependencies": {
             "big.js": {
               "version": "3.1.3",
@@ -328,11 +354,35 @@
       "dependencies": {
         "babel-plugin-transform-es2015-template-literals": {
           "version": "6.8.0",
-          "from": "babel-plugin-transform-es2015-template-literals@^6.6.0"
+          "from": "babel-plugin-transform-es2015-template-literals@^6.6.0",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-es2015-literals": {
           "version": "6.8.0",
-          "from": "babel-plugin-transform-es2015-literals@^6.3.13"
+          "from": "babel-plugin-transform-es2015-literals@^6.3.13",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-es2015-function-name": {
           "version": "6.8.0",
@@ -420,6 +470,22 @@
                       "version": "8.18.0",
                       "from": "globals@^8.3.0"
                     },
+                    "invariant": {
+                      "version": "2.2.1",
+                      "from": "invariant@^2.2.0",
+                      "dependencies": {
+                        "loose-envify": {
+                          "version": "1.1.0",
+                          "from": "loose-envify@^1.0.0",
+                          "dependencies": {
+                            "js-tokens": {
+                              "version": "1.0.3",
+                              "from": "js-tokens@^1.0.1"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "repeating": {
                       "version": "1.1.3",
                       "from": "repeating@^1.1.3",
@@ -506,7 +572,7 @@
                         },
                         "js-tokens": {
                           "version": "1.0.3",
-                          "from": "js-tokens@^1.0.2"
+                          "from": "js-tokens@^1.0.1"
                         }
                       }
                     },
@@ -531,6 +597,22 @@
                     "globals": {
                       "version": "8.18.0",
                       "from": "globals@^8.3.0"
+                    },
+                    "invariant": {
+                      "version": "2.2.1",
+                      "from": "invariant@^2.2.0",
+                      "dependencies": {
+                        "loose-envify": {
+                          "version": "1.1.0",
+                          "from": "loose-envify@^1.0.0",
+                          "dependencies": {
+                            "js-tokens": {
+                              "version": "1.0.3",
+                              "from": "js-tokens@^1.0.1"
+                            }
+                          }
+                        }
+                      }
                     },
                     "repeating": {
                       "version": "1.1.3",
@@ -559,16 +641,50 @@
                   "from": "to-fast-properties@^1.0.1"
                 }
               }
+            },
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
             }
           }
         },
         "babel-plugin-transform-es2015-arrow-functions": {
           "version": "6.8.0",
-          "from": "babel-plugin-transform-es2015-arrow-functions@^6.3.13"
+          "from": "babel-plugin-transform-es2015-arrow-functions@^6.3.13",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-es2015-block-scoped-functions": {
           "version": "6.8.0",
-          "from": "babel-plugin-transform-es2015-block-scoped-functions@^6.3.13"
+          "from": "babel-plugin-transform-es2015-block-scoped-functions@^6.3.13",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-es2015-classes": {
           "version": "6.8.0",
@@ -676,6 +792,22 @@
                   "version": "8.18.0",
                   "from": "globals@^8.3.0"
                 },
+                "invariant": {
+                  "version": "2.2.1",
+                  "from": "invariant@^2.2.0",
+                  "dependencies": {
+                    "loose-envify": {
+                      "version": "1.1.0",
+                      "from": "loose-envify@^1.0.0",
+                      "dependencies": {
+                        "js-tokens": {
+                          "version": "1.0.3",
+                          "from": "js-tokens@^1.0.1"
+                        }
+                      }
+                    }
+                  }
+                },
                 "repeating": {
                   "version": "1.1.3",
                   "from": "repeating@^1.1.3",
@@ -701,6 +833,16 @@
             "babel-messages": {
               "version": "6.8.0",
               "from": "babel-messages@^6.8.0"
+            },
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
             },
             "babel-types": {
               "version": "6.8.1",
@@ -804,6 +946,22 @@
                       "version": "8.18.0",
                       "from": "globals@^8.3.0"
                     },
+                    "invariant": {
+                      "version": "2.2.1",
+                      "from": "invariant@^2.2.0",
+                      "dependencies": {
+                        "loose-envify": {
+                          "version": "1.1.0",
+                          "from": "loose-envify@^1.0.0",
+                          "dependencies": {
+                            "js-tokens": {
+                              "version": "1.0.3",
+                              "from": "js-tokens@^1.0.1"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "repeating": {
                       "version": "1.1.3",
                       "from": "repeating@^1.1.3",
@@ -849,6 +1007,16 @@
                       "from": "to-fast-properties@^1.0.1"
                     }
                   }
+                }
+              }
+            },
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
                 }
               }
             }
@@ -936,6 +1104,22 @@
                       "version": "8.18.0",
                       "from": "globals@^8.3.0"
                     },
+                    "invariant": {
+                      "version": "2.2.1",
+                      "from": "invariant@^2.2.0",
+                      "dependencies": {
+                        "loose-envify": {
+                          "version": "1.1.0",
+                          "from": "loose-envify@^1.0.0",
+                          "dependencies": {
+                            "js-tokens": {
+                              "version": "1.0.3",
+                              "from": "js-tokens@^1.0.1"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "repeating": {
                       "version": "1.1.3",
                       "from": "repeating@^1.1.3",
@@ -961,6 +1145,16 @@
                 "to-fast-properties": {
                   "version": "1.0.2",
                   "from": "to-fast-properties@^1.0.1"
+                }
+              }
+            },
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
                 }
               }
             }
@@ -1051,6 +1245,22 @@
                         "globals": {
                           "version": "8.18.0",
                           "from": "globals@^8.3.0"
+                        },
+                        "invariant": {
+                          "version": "2.2.1",
+                          "from": "invariant@^2.2.0",
+                          "dependencies": {
+                            "loose-envify": {
+                              "version": "1.1.0",
+                              "from": "loose-envify@^1.0.0",
+                              "dependencies": {
+                                "js-tokens": {
+                                  "version": "1.0.3",
+                                  "from": "js-tokens@^1.0.1"
+                                }
+                              }
+                            }
+                          }
                         },
                         "repeating": {
                           "version": "1.1.3",
@@ -1162,6 +1372,22 @@
                           "version": "8.18.0",
                           "from": "globals@^8.3.0"
                         },
+                        "invariant": {
+                          "version": "2.2.1",
+                          "from": "invariant@^2.2.0",
+                          "dependencies": {
+                            "loose-envify": {
+                              "version": "1.1.0",
+                              "from": "loose-envify@^1.0.0",
+                              "dependencies": {
+                                "js-tokens": {
+                                  "version": "1.0.3",
+                                  "from": "js-tokens@^1.0.1"
+                                }
+                              }
+                            }
+                          }
+                        },
                         "repeating": {
                           "version": "1.1.3",
                           "from": "repeating@^1.1.3",
@@ -1270,6 +1496,22 @@
                       "version": "8.18.0",
                       "from": "globals@^8.3.0"
                     },
+                    "invariant": {
+                      "version": "2.2.1",
+                      "from": "invariant@^2.2.0",
+                      "dependencies": {
+                        "loose-envify": {
+                          "version": "1.1.0",
+                          "from": "loose-envify@^1.0.0",
+                          "dependencies": {
+                            "js-tokens": {
+                              "version": "1.0.3",
+                              "from": "js-tokens@^1.0.1"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "repeating": {
                       "version": "1.1.3",
                       "from": "repeating@^1.1.3",
@@ -1303,6 +1545,16 @@
                   }
                 }
               }
+            },
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
             }
           }
         },
@@ -1310,6 +1562,16 @@
           "version": "6.8.0",
           "from": "babel-plugin-transform-es2015-duplicate-keys@^6.6.0",
           "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            },
             "babel-types": {
               "version": "6.8.1",
               "from": "babel-types@^6.8.0",
@@ -1388,6 +1650,22 @@
                       "version": "8.18.0",
                       "from": "globals@^8.3.0"
                     },
+                    "invariant": {
+                      "version": "2.2.1",
+                      "from": "invariant@^2.2.0",
+                      "dependencies": {
+                        "loose-envify": {
+                          "version": "1.1.0",
+                          "from": "loose-envify@^1.0.0",
+                          "dependencies": {
+                            "js-tokens": {
+                              "version": "1.0.3",
+                              "from": "js-tokens@^1.0.1"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "repeating": {
                       "version": "1.1.3",
                       "from": "repeating@^1.1.3",
@@ -1420,7 +1698,19 @@
         },
         "babel-plugin-transform-es2015-for-of": {
           "version": "6.8.0",
-          "from": "babel-plugin-transform-es2015-for-of@^6.6.0"
+          "from": "babel-plugin-transform-es2015-for-of@^6.6.0",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-es2015-sticky-regex": {
           "version": "6.8.0",
@@ -1508,6 +1798,22 @@
                       "version": "8.18.0",
                       "from": "globals@^8.3.0"
                     },
+                    "invariant": {
+                      "version": "2.2.1",
+                      "from": "invariant@^2.2.0",
+                      "dependencies": {
+                        "loose-envify": {
+                          "version": "1.1.0",
+                          "from": "loose-envify@^1.0.0",
+                          "dependencies": {
+                            "js-tokens": {
+                              "version": "1.0.3",
+                              "from": "js-tokens@^1.0.1"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "repeating": {
                       "version": "1.1.3",
                       "from": "repeating@^1.1.3",
@@ -1533,6 +1839,16 @@
                 "to-fast-properties": {
                   "version": "1.0.2",
                   "from": "to-fast-properties@^1.0.1"
+                }
+              }
+            },
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
                 }
               }
             }
@@ -1624,6 +1940,22 @@
                           "version": "8.18.0",
                           "from": "globals@^8.3.0"
                         },
+                        "invariant": {
+                          "version": "2.2.1",
+                          "from": "invariant@^2.2.0",
+                          "dependencies": {
+                            "loose-envify": {
+                              "version": "1.1.0",
+                              "from": "loose-envify@^1.0.0",
+                              "dependencies": {
+                                "js-tokens": {
+                                  "version": "1.0.3",
+                                  "from": "js-tokens@^1.0.1"
+                                }
+                              }
+                            }
+                          }
+                        },
                         "repeating": {
                           "version": "1.1.3",
                           "from": "repeating@^1.1.3",
@@ -1651,6 +1983,16 @@
                       "from": "to-fast-properties@^1.0.1"
                     }
                   }
+                }
+              }
+            },
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
                 }
               }
             },
@@ -1682,11 +2024,35 @@
         },
         "babel-plugin-check-es2015-constants": {
           "version": "6.8.0",
-          "from": "babel-plugin-check-es2015-constants@^6.3.13"
+          "from": "babel-plugin-check-es2015-constants@^6.3.13",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-es2015-spread": {
           "version": "6.8.0",
-          "from": "babel-plugin-transform-es2015-spread@^6.3.13"
+          "from": "babel-plugin-transform-es2015-spread@^6.3.13",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-es2015-parameters": {
           "version": "6.8.0",
@@ -1770,6 +2136,22 @@
                   "version": "8.18.0",
                   "from": "globals@^8.3.0"
                 },
+                "invariant": {
+                  "version": "2.2.1",
+                  "from": "invariant@^2.2.0",
+                  "dependencies": {
+                    "loose-envify": {
+                      "version": "1.1.0",
+                      "from": "loose-envify@^1.0.0",
+                      "dependencies": {
+                        "js-tokens": {
+                          "version": "1.0.3",
+                          "from": "js-tokens@^1.0.1"
+                        }
+                      }
+                    }
+                  }
+                },
                 "repeating": {
                   "version": "1.1.3",
                   "from": "repeating@^1.1.3",
@@ -1825,12 +2207,34 @@
                   "from": "to-fast-properties@^1.0.1"
                 }
               }
+            },
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
             }
           }
         },
         "babel-plugin-transform-es2015-destructuring": {
           "version": "6.8.0",
-          "from": "babel-plugin-transform-es2015-destructuring@^6.6.0"
+          "from": "babel-plugin-transform-es2015-destructuring@^6.6.0",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-es2015-block-scoping": {
           "version": "6.8.0",
@@ -1914,6 +2318,22 @@
                   "version": "8.18.0",
                   "from": "globals@^8.3.0"
                 },
+                "invariant": {
+                  "version": "2.2.1",
+                  "from": "invariant@^2.2.0",
+                  "dependencies": {
+                    "loose-envify": {
+                      "version": "1.1.0",
+                      "from": "loose-envify@^1.0.0",
+                      "dependencies": {
+                        "js-tokens": {
+                          "version": "1.0.3",
+                          "from": "js-tokens@^1.0.1"
+                        }
+                      }
+                    }
+                  }
+                },
                 "repeating": {
                   "version": "1.1.3",
                   "from": "repeating@^1.1.3",
@@ -1955,12 +2375,34 @@
                   "from": "babylon@^6.7.0"
                 }
               }
+            },
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
             }
           }
         },
         "babel-plugin-transform-es2015-typeof-symbol": {
           "version": "6.8.0",
-          "from": "babel-plugin-transform-es2015-typeof-symbol@^6.6.0"
+          "from": "babel-plugin-transform-es2015-typeof-symbol@^6.6.0",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-es2015-modules-commonjs": {
           "version": "6.8.0",
@@ -2044,6 +2486,22 @@
                       "version": "8.18.0",
                       "from": "globals@^8.3.0"
                     },
+                    "invariant": {
+                      "version": "2.2.1",
+                      "from": "invariant@^2.2.0",
+                      "dependencies": {
+                        "loose-envify": {
+                          "version": "1.1.0",
+                          "from": "loose-envify@^1.0.0",
+                          "dependencies": {
+                            "js-tokens": {
+                              "version": "1.0.3",
+                              "from": "js-tokens@^1.0.1"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "repeating": {
                       "version": "1.1.3",
                       "from": "repeating@^1.1.3",
@@ -2069,6 +2527,16 @@
                 "to-fast-properties": {
                   "version": "1.0.2",
                   "from": "to-fast-properties@^1.0.1"
+                }
+              }
+            },
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
                 }
               }
             },
@@ -2154,6 +2622,22 @@
                       "version": "8.18.0",
                       "from": "globals@^8.3.0"
                     },
+                    "invariant": {
+                      "version": "2.2.1",
+                      "from": "invariant@^2.2.0",
+                      "dependencies": {
+                        "loose-envify": {
+                          "version": "1.1.0",
+                          "from": "loose-envify@^1.0.0",
+                          "dependencies": {
+                            "js-tokens": {
+                              "version": "1.0.3",
+                              "from": "js-tokens@^1.0.1"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "repeating": {
                       "version": "1.1.3",
                       "from": "repeating@^1.1.3",
@@ -2187,6 +2671,16 @@
             "babel-plugin-syntax-async-functions": {
               "version": "6.8.0",
               "from": "babel-plugin-syntax-async-functions@^6.8.0"
+            },
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
             },
             "babel-traverse": {
               "version": "6.8.0",
@@ -2262,6 +2756,22 @@
                   "version": "8.18.0",
                   "from": "globals@^8.3.0"
                 },
+                "invariant": {
+                  "version": "2.2.1",
+                  "from": "invariant@^2.2.0",
+                  "dependencies": {
+                    "loose-envify": {
+                      "version": "1.1.0",
+                      "from": "loose-envify@^1.0.0",
+                      "dependencies": {
+                        "js-tokens": {
+                          "version": "1.0.3",
+                          "from": "js-tokens@^1.0.1"
+                        }
+                      }
+                    }
+                  }
+                },
                 "repeating": {
                   "version": "1.1.3",
                   "from": "repeating@^1.1.3",
@@ -2312,24 +2822,82 @@
       "dependencies": {
         "babel-plugin-syntax-flow": {
           "version": "6.8.0",
-          "from": "babel-plugin-syntax-flow@^6.3.13"
+          "from": "babel-plugin-syntax-flow@^6.3.13",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-syntax-jsx": {
           "version": "6.8.0",
-          "from": "babel-plugin-syntax-jsx@^6.3.13"
+          "from": "babel-plugin-syntax-jsx@^6.3.13",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-flow-strip-types": {
           "version": "6.8.0",
-          "from": "babel-plugin-transform-flow-strip-types@^6.3.13"
+          "from": "babel-plugin-transform-flow-strip-types@^6.3.13",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-react-display-name": {
           "version": "6.8.0",
-          "from": "babel-plugin-transform-react-display-name@^6.3.13"
+          "from": "babel-plugin-transform-react-display-name@^6.3.13",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         },
         "babel-plugin-transform-react-jsx": {
           "version": "6.8.0",
           "from": "babel-plugin-transform-react-jsx@^6.3.13",
           "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            },
             "babel-helper-builder-react-jsx": {
               "version": "6.8.0",
               "from": "babel-helper-builder-react-jsx@^6.8.0",
@@ -2412,6 +2980,22 @@
                           "version": "8.18.0",
                           "from": "globals@^8.3.0"
                         },
+                        "invariant": {
+                          "version": "2.2.1",
+                          "from": "invariant@^2.2.0",
+                          "dependencies": {
+                            "loose-envify": {
+                              "version": "1.1.0",
+                              "from": "loose-envify@^1.0.0",
+                              "dependencies": {
+                                "js-tokens": {
+                                  "version": "1.0.3",
+                                  "from": "js-tokens@^1.0.1"
+                                }
+                              }
+                            }
+                          }
+                        },
                         "repeating": {
                           "version": "1.1.3",
                           "from": "repeating@^1.1.3",
@@ -2446,7 +3030,19 @@
         },
         "babel-plugin-transform-react-jsx-source": {
           "version": "6.8.0",
-          "from": "babel-plugin-transform-react-jsx-source@^6.3.13"
+          "from": "babel-plugin-transform-react-jsx-source@^6.3.13",
+          "dependencies": {
+            "babel-runtime": {
+              "version": "6.6.1",
+              "from": "babel-runtime@^6.0.0",
+              "dependencies": {
+                "core-js": {
+                  "version": "2.4.0",
+                  "from": "core-js@^2.1.0"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -2461,20 +3057,10 @@
         "babel-regenerator-runtime": {
           "version": "6.5.0",
           "from": "babel-regenerator-runtime@^6.3.13"
-        }
-      }
-    },
-    "babel-plugin-transform-runtime": {
-      "version": "6.8.0",
-      "from": "babel-plugin-transform-runtime@^6.0.0"
-    },
-    "babel-runtime": {
-      "version": "6.6.1",
-      "from": "babel-runtime@^6.0.0",
-      "dependencies": {
-        "core-js": {
-          "version": "2.4.0",
-          "from": "core-js@^2.1.0"
+        },
+        "babel-runtime": {
+          "version": "6.6.1",
+          "from": "babel-runtime@^6.0.0"
         }
       }
     },
@@ -2554,8 +3140,7 @@
                 },
                 "caniuse-db": {
                   "version": "1.0.30000464",
-                  "from": "caniuse-db@^1.0.30000214",
-                  "resolved": "https://registry.npmjs.org/caniuse-db/-/caniuse-db-1.0.30000464.tgz"
+                  "from": "caniuse-db@^1.0.30000214"
                 }
               }
             },
@@ -2798,12 +3383,10 @@
                 "normalize-url": {
                   "version": "1.5.2",
                   "from": "normalize-url@^1.3.0",
-                  "resolved": "https://registry.npmjs.org/normalize-url/-/normalize-url-1.5.2.tgz",
                   "dependencies": {
                     "prepend-http": {
                       "version": "1.0.4",
-                      "from": "prepend-http@^1.0.0",
-                      "resolved": "https://registry.npmjs.org/prepend-http/-/prepend-http-1.0.4.tgz"
+                      "from": "prepend-http@^1.0.0"
                     },
                     "query-string": {
                       "version": "4.1.0",
@@ -2979,7 +3562,7 @@
         },
         "loader-utils": {
           "version": "0.2.14",
-          "from": "loader-utils@~0.2.2",
+          "from": "loader-utils@^0.2.7",
           "dependencies": {
             "big.js": {
               "version": "3.1.3",
@@ -3078,7 +3661,6 @@
                     "node-fetch": {
                       "version": "1.5.2",
                       "from": "node-fetch@^1.0.1",
-                      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-1.5.2.tgz",
                       "dependencies": {
                         "encoding": {
                           "version": "0.1.12",
@@ -3098,8 +3680,7 @@
                     },
                     "whatwg-fetch": {
                       "version": "1.0.0",
-                      "from": "whatwg-fetch@>=0.10.0",
-                      "resolved": "https://registry.npmjs.org/whatwg-fetch/-/whatwg-fetch-1.0.0.tgz"
+                      "from": "whatwg-fetch@>=0.10.0"
                     }
                   }
                 },
@@ -3144,26 +3725,10 @@
               "from": "whatwg-fetch@^0.9.0"
             }
           }
-        }
-      }
-    },
-    "immutable": {
-      "version": "3.8.1",
-      "from": "immutable@^3.7.4"
-    },
-    "invariant": {
-      "version": "2.2.1",
-      "from": "invariant@^2.1.0",
-      "dependencies": {
-        "loose-envify": {
-          "version": "1.1.0",
-          "from": "loose-envify@^1.0.0",
-          "dependencies": {
-            "js-tokens": {
-              "version": "1.0.3",
-              "from": "js-tokens@^1.0.1"
-            }
-          }
+        },
+        "immutable": {
+          "version": "3.8.1",
+          "from": "immutable@^3.7.4"
         }
       }
     },
@@ -3306,6 +3871,38 @@
         "hoist-non-react-statics": {
           "version": "1.0.5",
           "from": "hoist-non-react-statics@^1.0.5"
+        },
+        "invariant": {
+          "version": "2.2.1",
+          "from": "invariant@^2.2.1",
+          "dependencies": {
+            "loose-envify": {
+              "version": "1.1.0",
+              "from": "loose-envify@^1.0.0",
+              "dependencies": {
+                "js-tokens": {
+                  "version": "1.0.3",
+                  "from": "js-tokens@^1.0.1"
+                }
+              }
+            }
+          }
+        },
+        "warning": {
+          "version": "2.1.0",
+          "from": "warning@^2.1.0",
+          "dependencies": {
+            "loose-envify": {
+              "version": "1.1.0",
+              "from": "loose-envify@^1.0.0",
+              "dependencies": {
+                "js-tokens": {
+                  "version": "1.0.3",
+                  "from": "js-tokens@^1.0.1"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -3332,22 +3929,6 @@
             "object-assign": {
               "version": "4.1.0",
               "from": "object-assign@^4.0.1"
-            }
-          }
-        }
-      }
-    },
-    "warning": {
-      "version": "2.1.0",
-      "from": "warning@^2.0.0",
-      "dependencies": {
-        "loose-envify": {
-          "version": "1.1.0",
-          "from": "loose-envify@^1.0.0",
-          "dependencies": {
-            "js-tokens": {
-              "version": "1.0.3",
-              "from": "js-tokens@^1.0.1"
             }
           }
         }
@@ -3529,8 +4110,7 @@
                 },
                 "sha.js": {
                   "version": "2.2.6",
-                  "from": "sha.js@2.2.6",
-                  "resolved": "https://registry.npmjs.org/sha.js/-/sha.js-2.2.6.tgz"
+                  "from": "sha.js@2.2.6"
                 }
               }
             },
@@ -3552,7 +4132,7 @@
                 },
                 "inherits": {
                   "version": "2.0.1",
-                  "from": "inherits@~2.0.1"
+                  "from": "inherits@^2.0.1"
                 }
               }
             },
@@ -3570,8 +4150,7 @@
             },
             "process": {
               "version": "0.11.3",
-              "from": "process@^0.11.0",
-              "resolved": "https://registry.npmjs.org/process/-/process-0.11.3.tgz"
+              "from": "process@^0.11.0"
             },
             "punycode": {
               "version": "1.4.1",
@@ -3631,8 +4210,7 @@
                 },
                 "querystring": {
                   "version": "0.2.0",
-                  "from": "querystring@0.2.0",
-                  "resolved": "https://registry.npmjs.org/querystring/-/querystring-0.2.0.tgz"
+                  "from": "querystring@0.2.0"
                 }
               }
             },
@@ -3807,7 +4385,6 @@
             "chokidar": {
               "version": "1.5.0",
               "from": "chokidar@^1.0.0",
-              "resolved": "https://registry.npmjs.org/chokidar/-/chokidar-1.5.0.tgz",
               "dependencies": {
                 "anymatch": {
                   "version": "1.3.0",
@@ -4097,6 +4674,22 @@
           "version": "1.0.1",
           "from": "deep-equal@^1.0.0"
         },
+        "invariant": {
+          "version": "2.2.1",
+          "from": "invariant@^2.0.0",
+          "dependencies": {
+            "loose-envify": {
+              "version": "1.1.0",
+              "from": "loose-envify@^1.0.0",
+              "dependencies": {
+                "js-tokens": {
+                  "version": "1.0.3",
+                  "from": "js-tokens@^1.0.1"
+                }
+              }
+            }
+          }
+        },
         "query-string": {
           "version": "3.0.3",
           "from": "query-string@^3.0.0",
@@ -4104,6 +4697,22 @@
             "strict-uri-encode": {
               "version": "1.1.0",
               "from": "strict-uri-encode@^1.0.0"
+            }
+          }
+        },
+        "warning": {
+          "version": "2.1.0",
+          "from": "warning@^2.0.0",
+          "dependencies": {
+            "loose-envify": {
+              "version": "1.1.0",
+              "from": "loose-envify@^1.0.0",
+              "dependencies": {
+                "js-tokens": {
+                  "version": "1.0.3",
+                  "from": "js-tokens@^1.0.1"
+                }
+              }
             }
           }
         }
@@ -4141,7 +4750,7 @@
         },
         "loader-utils": {
           "version": "0.2.14",
-          "from": "loader-utils@^0.2.6",
+          "from": "loader-utils@^0.2.7",
           "dependencies": {
             "big.js": {
               "version": "3.1.3",
@@ -4181,8 +4790,7 @@
       "dependencies": {
         "any-promise": {
           "version": "1.3.0",
-          "from": "any-promise@^1.0.0",
-          "resolved": "https://registry.npmjs.org/any-promise/-/any-promise-1.3.0.tgz"
+          "from": "any-promise@^1.0.0"
         },
         "archy": {
           "version": "1.0.0",
@@ -4194,7 +4802,7 @@
         },
         "chalk": {
           "version": "1.1.3",
-          "from": "chalk@^1.1.0",
+          "from": "chalk@^1.0.0",
           "dependencies": {
             "ansi-styles": {
               "version": "2.2.1",
@@ -4268,7 +4876,7 @@
         },
         "minimist": {
           "version": "1.2.0",
-          "from": "minimist@^1.1.0"
+          "from": "minimist@^1.2.0"
         },
         "typings-core": {
           "version": "0.3.1",
@@ -4386,6 +4994,22 @@
                 }
               }
             },
+            "invariant": {
+              "version": "2.2.1",
+              "from": "invariant@^2.2.0",
+              "dependencies": {
+                "loose-envify": {
+                  "version": "1.1.0",
+                  "from": "loose-envify@^1.0.0",
+                  "dependencies": {
+                    "js-tokens": {
+                      "version": "1.0.3",
+                      "from": "js-tokens@^1.0.1"
+                    }
+                  }
+                }
+              }
+            },
             "is-absolute": {
               "version": "0.2.5",
               "from": "is-absolute@^0.2.3",
@@ -4428,7 +5052,7 @@
             },
             "mkdirp": {
               "version": "0.5.1",
-              "from": "mkdirp@~0.5.0",
+              "from": "mkdirp@^0.5.1",
               "dependencies": {
                 "minimist": {
                   "version": "0.0.8",
@@ -5028,8 +5652,7 @@
                           "dependencies": {
                             "prepend-http": {
                               "version": "1.0.4",
-                              "from": "prepend-http@^1.0.1",
-                              "resolved": "https://registry.npmjs.org/prepend-http/-/prepend-http-1.0.4.tgz"
+                              "from": "prepend-http@^1.0.1"
                             }
                           }
                         }
