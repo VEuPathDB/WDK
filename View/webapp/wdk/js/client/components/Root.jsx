@@ -60,10 +60,12 @@ export default class Root extends Component {
   componentDidMount() {
     /** install global click handler */
     $(document).on('click', GLOBAL_CLICK_HANDLER_SELECTOR, this.handleGlobalClick);
+    // kick off loading of static resources
     Promise.all([
       this.props.wdkService.getConfig(),
       this.props.wdkService.getQuestions(),
-      this.props.wdkService.getRecordClasses()
+      this.props.wdkService.getRecordClasses(),
+      this.props.wdkService.getOntology()
     ]).then(([config, questions, recordClasses]) => {
       this.setState({ wdkModel: { config, questions, recordClasses }});
     });
