@@ -52,6 +52,7 @@ node_modules/%: node_modules;
 # =============================================================================
 typings: typings.json node_modules
 	typings install
+	touch typings
 
 # =============================================================================
 # Webpack bundles. See webpack.config.js for details
