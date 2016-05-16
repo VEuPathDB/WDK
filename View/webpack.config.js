@@ -24,7 +24,10 @@ module.exports = {
     loaders: [
       { test: /\.tsx?$/, exclude: /node_modules/, loader: 'babel!ts' },
       { test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel' },
-      { test: /\.css$/, loader: "style-loader!css-loader?sourceMap" }
+      { test: /\.css$/, loader: "style-loader!css-loader?sourceMap" },
+      { test: /\.png$/, loader: "url-loader?limit=100000" },
+      { test: /\.gif/, loader: "url-loader?limit=100000" },
+      { test: /\.jpg$/, loader: "file-loader" }
     ]
   },
   node: {
