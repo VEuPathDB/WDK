@@ -42,13 +42,17 @@ export {
  * @param {HTMLElement} option.rootElement DOM node to render the applicaiton.
  * @param {Array} option.applicationRoutes Addtional routes to register with the Router.
  */
-export function initialize({ rootUrl, endpoint, rootElement, applicationRoutes }) {
+export function initialize({ rootUrl, endpoint, applicationRoutes }) {
   let wdkService = new WdkService(endpoint);
   let dispatcher = new Dispatcher;
   let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
   let stores = configureStores(Stores, dispatcher);
   let context = { dispatchAction, stores };
-  let render = () => {
+  wdkService.getConfig(),
+  wdkService.getQuestions(),
+  wdkService.getRecordClasses(),
+  wdkService.getOntology()
+  let render = (rootElement) => {
     let applicationElement = createElement(
       Root, {
         rootUrl,
@@ -61,15 +65,13 @@ export function initialize({ rootUrl, endpoint, rootElement, applicationRoutes }
   };
   let refreshHistory = useRouterHistory(createHistory)({ basename: rootUrl, forceRefresh: true });
   let renderPartial = PartialRenderer.create(context, refreshHistory);
-  let unmount = () => ReactDOM.unmountComponentAtNode(rootElement);
   if (__DEV__) logActions(dispatcher, stores);
   return {
     wdkService,
     dispatchAction,
     stores,
     render,
-    renderPartial,
-    unmount
+    renderPartial
   };
 }
 
