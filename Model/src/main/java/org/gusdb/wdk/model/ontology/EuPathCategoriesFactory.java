@@ -178,6 +178,7 @@ public class EuPathCategoriesFactory {
         category.setDisplayName(displayName);
         category.setShortDisplayName(nodeContents.containsKey("shortDisplayName")
             ? nodeContents.get("shortDisplayName").get(0) : null);
+        category.setName(nodeContents.containsKey("name") ? nodeContents.get("name").get(0) : displayName);
         
         // handle mapped children
         // if child an individual, stuff into new category as a question ref
@@ -199,8 +200,7 @@ public class EuPathCategoriesFactory {
         }
       }
       
-      if (category.getDisplayName() != null) {
-        category.setName(category.getDisplayName().replaceAll(" ", "_"));
+      if (category.getName() != null) {
         category.setName(category.getName().replaceAll(",", "_"));
         for (Map<String, SearchCategory> map : maps)
           map.put(category.getName(), category);

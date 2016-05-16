@@ -17,8 +17,6 @@
     "css-loader": "^0.15",
     "fixed-data-table": "^0.6",
     "flux": "^2.0.3",
-    "immutable": "^3.7.4",
-    "invariant": "^2.1.0",
     "json-stable-stringify": "^1.0.0",
     "lodash": "^3.9.3",
     "react": "^0.14",
@@ -29,11 +27,11 @@
     "react-addons-perf": "^0.14",
     "react-router": "^2.0.0",
     "style-loader": "^0.12.3",
-    "warning": "^2.0.0",
     "webpack": "^1.9.11",
     "history": "2.0.0",
     "ts-loader": "~0.8.1",
-    "typescript": "~1.8.9"
+    "typescript": "~1.8.9",
+    "typings": "~0.8.1"
   },
   "devDependencies": {
     "eslint": "^2.0.0",

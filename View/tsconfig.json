@@ -5,6 +5,14 @@
     "noImplicitAny": true,
     "removeComments": false,
     "preserveConstEnums": true,
-    "sourceMap": true
-  }
+    "allowSyntheticDefaultImports": true,
+    "noImplicitReturns": true,
+    "sourceMap": true,
+    "jsx": "react"
+  },
+  "exclude": [
+    "node_modules",
+    "typings/browser.d.ts",
+    "typings/browser"
+  ]
 }

@@ -76,7 +76,7 @@ public class TableField extends Field implements AttributeFieldContainer {
     this.descriptions.add(description);
   }
   
-  public void setSorting(String sortList) throws WdkModelException {
+  public void setSorting(String sortList) {
     // noop
   }
 

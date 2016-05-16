@@ -26,6 +26,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
  */
 public class ResultFactory {
 
+  @SuppressWarnings("unused")
   private Logger logger = Logger.getLogger(ResultFactory.class);
 
   private DatabaseInstance database;

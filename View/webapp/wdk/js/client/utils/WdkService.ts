@@ -1,9 +1,47 @@
 import stringify from 'json-stable-stringify';
-import difference from 'lodash/array/difference';
+import {difference} from 'lodash';
 import predicate from './Predicate';
 import {preorderSeq} from './TreeUtils';
-import {getTree, getPropertyValue} from './OntologyUtils';
-import {getTargetType, getRefName, getDisplayName} from './CategoryUtils';
+import {getTree, getPropertyValue, Ontology} from './OntologyUtils';
+import {getTargetType, getRefName, getDisplayName, CategoryNode} from './CategoryUtils';
+import {Question, RecordClass, Record, PrimaryKey} from './WdkModel';
+
+interface RecordRequest {
+  attributes: string[];
+  tables: string[];
+  primaryKey: string[];
+}
+
+interface AnswerQuestionDefinition {
+  questionName: string;
+  parameters?: { [key: string]: string };
+  legacyFilterName?: string;
+  filters?: { name: string; value: string; }[];
+  viewFilters?: { name: string; value: string; }[];
+  wdk_weight?: number;
+}
+
+interface AnswerFormatting {
+  pagination: { offset: number; numRecords: number; };
+  attributes: string[] | '__ALL_ATTRIBUTES__' | '__DISPLAYABLE_ATTRIBUTES__';
+  tables: string[] | '__ALL_TABLES__' | '__DISPLAYABLE_TABLES__';
+  sorting: [ { attributeName: string; direction: 'ASC' | 'DESC' } ];
+  contentDisposition?: 'inline' | 'attatchment';
+}
+
+interface ServiceError extends Error {
+  response: string;
+  status: number;
+}
+
+interface User {
+  id: number;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  organization: string;
+  email: string;
+}
 
 /**
  * A helper to request resources from a Wdk REST Service.
@@ -11,22 +49,18 @@ import {getTargetType, getRefName, getDisplayName} from './CategoryUtils';
  */
 export default class WdkService {
 
+  _questions: Promise<Question[]>;
+  _recordClasses: Promise<RecordClass[]>;
+  _records: Map<string, {request: RecordRequest; response: Promise<Record>}> = new Map;
+  _ontologies: Map<string, Promise<Ontology<CategoryNode>>> = new Map;
+
   /**
    * @param {string} serviceUrl Base url for Wdk REST Service.
    */
-  constructor(serviceUrl) {
-    this._serviceUrl = serviceUrl;
-
-    // caches
-    this._questions = null;
-    this._recordClasses = null;
-    this._records = new Map();
-    this._ontologies = new Map();
-    this._basketStatus = new Map();
-  }
+  constructor(private _serviceUrl: string) {  }
 
   getConfig() {
-    return fetchJson('get', this._serviceUrl);
+    return this.fetchJson('get', '/');
   }
 
   getAnswerServiceUrl() {
@@ -39,13 +73,9 @@ export default class WdkService {
    * @return {Promise<Array<Object>>}
    */
   getQuestions() {
-    let method = 'get';
-    let url = this._serviceUrl + '/question?expandQuestions=true';
-
     if (this._questions == null) {
-      this._questions = fetchJson(method, url);
+      this._questions = this.fetchJson('get', '/question?expandQuestions=true');
     }
-
     return this._questions;
   }
 
@@ -55,7 +85,7 @@ export default class WdkService {
    * @param {Function} test Predicate function the Question must satisfy
    * @return {Promise<Object?>}
    */
-  findQuestion(test) {
+  findQuestion(test: (question: Question) => boolean) {
     return this.getQuestions().then(qs => qs.find(test));
   }
 
@@ -66,12 +96,12 @@ export default class WdkService {
    */
   getRecordClasses() {
     let method = 'get';
-    let url = this._serviceUrl + '/record?expandRecordClasses=true&' +
+    let url = '/record?expandRecordClasses=true&' +
       'expandAttributes=true&expandTables=true&expandTableAttributes=true';
 
     if (this._recordClasses == null) {
-      this._recordClasses = fetchJson(method, url).then(
-        recordClasses => {
+      this._recordClasses = this.fetchJson(method, url).then(
+        (recordClasses: RecordClass[]) => {
           for (let recordClass of recordClasses) {
             // create indexes by name property for attributes and tables
             Object.assign(recordClass, {
@@ -98,21 +128,21 @@ export default class WdkService {
    * @param {Function} test Predicate the RecordClass must satisfy.
    * @return {Promise<Object?>}
    */
-  findRecordClass(test) {
+  findRecordClass(test: (recordClass: RecordClass) => boolean) {
     return this.getRecordClasses().then(rs => rs.find(test));
   }
 
-  getRecord(recordClassName, primaryKey, options = {}) {
+  getRecord(recordClassName: string, primaryKey: string[], options: {attributes?: string[]; tables?: string[];} = {}) {
     let key = makeRecordKey(recordClassName, primaryKey);
     let method = 'post';
-    let url = this._serviceUrl + '/record/' + recordClassName + '/instance';
+    let url = '/record/' + recordClassName + '/instance';
 
     let { attributes = [], tables = [] } = options;
 
     // if we don't have the record, fetch whatever is requested
     if (!this._records.has(key)) {
-      let request = { primaryKey, attributes, tables };
-      let response = fetchJson(method, url, stringify(request));
+      let request = { attributes, tables, primaryKey };
+      let response = this.fetchJson(method, url, stringify(request));
       this._records.set(key, { request, response });
     }
 
@@ -129,7 +159,7 @@ export default class WdkService {
           attributes: reqAttributes,
           tables: reqTables
         };
-        let newResponse = fetchJson(method, url, stringify(newRequest));
+        let newResponse = this.fetchJson(method, url, stringify(newRequest)) as Promise<Record>;
 
         let finalRequest = {
           primaryKey,
@@ -142,7 +172,7 @@ export default class WdkService {
           return Object.assign({}, record, {
             attributes: Object.assign({}, record.attributes, newRecord.attributes),
             tables: Object.assign({}, record.tables, newRecord.tables)
-          });
+          }) as Record;
         });
         this._records.set(key, { request: finalRequest, response: finalResponse });
       }
@@ -164,77 +194,78 @@ export default class WdkService {
    * @param {Object} formatting
    * @returns {Promise<Answer>}
    */
-  getAnswer(questionDefinition, formatting) {
+  getAnswer(questionDefinition: AnswerQuestionDefinition, formatting: AnswerFormatting) {
     let method = 'post';
-    let url = this.getAnswerServiceUrl();
+    let url = '/answer';
     let body = stringify({ questionDefinition, formatting });
-    return fetchJson(method, url, body);
+    return this.fetchJson(method, url, body);
   }
 
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
-  getBasketStatus(record) {
+  getBasketStatus(record: Record) {
     let action = 'check';
-    let data = JSON.stringify([ record.id.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
+    let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
-    let url = `${this._serviceUrl}/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return fetchJson(method, url).then(data => data.processed > 0);
+    let url = `/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
+    return this.fetchJson(method, url).then(data => data.processed > 0);
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
-  updateBasketStatus(record, status) {
+  updateBasketStatus(record: Record, status: boolean) {
     let action = status ? 'add' : 'remove';
-    let data = JSON.stringify([ record.id.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
+    let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
-    let url = `${this._serviceUrl}/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return fetchJson(method, url).then(() => status);
+    let url = `/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
+    return this.fetchJson(method, url).then(() => status);
   }
 
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
-  getFavoritesStatus(record) {
+  getFavoritesStatus(record: Record) {
     let action = 'check';
-    let data = JSON.stringify([ record.id.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
+    let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
-    let url = `${this._serviceUrl}/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return fetchJson(method, url).then(data => data.countProcessed > 0);
+    let url = `/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
+    return this.fetchJson(method, url).then(data => data.countProcessed > 0);
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
-  updateFavoritesStatus(record, status) {
+  updateFavoritesStatus(record: Record, status: boolean) {
     let action = status ? 'add' : 'remove';
-    let data = JSON.stringify([ record.id.reduce((data, p) => (data[p.name] = p.value, data), {}) ]);
+    let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
-    let url = `${this._serviceUrl}/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return fetchJson(method, url).then(() => status);
+    let url = `/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
+    return this.fetchJson(method, url).then(() => status);
   }
 
   getCurrentUser() {
-    return fetchJson('get', this._serviceUrl + '/user/current');
+    return this.fetchJson('get', '/user/current');
   }
 
-  updateCurrentUser(user) {
+  updateCurrentUser(user: User) {
     let data = JSON.stringify(user);
     let method = 'put';
-    let url = this._serviceUrl + '/user/current/profile';
-    return fetchJson(method, url, data).then(() => status);
+    let url = '/user/current/profile';
+    return this.fetchJson(method, url, data).then(() => status);
   }
 
   getCurrentUserPreferences() {
-    return fetchJson('get', this._serviceUrl + '/user/current/preference');
+    return this.fetchJson('get', '/user/current/preference');
   }
 
-  findStep(stepId) {
-    return fetchJson('get', this._serviceUrl + '/step/' + stepId);
+  findStep(stepId: number) {
+    return this.fetchJson('get', '/step/' + stepId);
   }
 
   getOntology(name = '__wdk_categories__') {
     if (!this._ontologies.has(name)) {
-      let ontology$ = fetchJson('get', this._serviceUrl + '/ontology/' + name);
+      let ontology$ = this.fetchJson('get', '/ontology/' + name);
       let recordClasses$ = this.getRecordClasses().then(r => makeIndex(r, 'name'));
       let questions$ = this.getQuestions().then(q => makeIndex(q, 'name'));
       let entities$ = Promise.all([ recordClasses$, questions$ ])
       .then(([ recordClasses, questions ]) => ({ recordClasses, questions }));
 
-      let finalOntology$ = ontology$
+      // FIXME this should maybe be of type CategoryOntology or Ontology<CategoryNode>
+      let finalOntology$: Promise<Ontology<CategoryNode>> = ontology$
       .then(resolveWdkReferences(entities$))
       .then(pruneUnresolvedReferences)
       .then(sortOntology);
@@ -244,9 +275,33 @@ export default class WdkService {
     return this._ontologies.get(name);
   }
 
+  fetchJson(method: string, url: string, body?: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState !== 4) return;
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          let json = xhr.status === 204 ? null : JSON.parse(xhr.response);
+          resolve(json);
+        }
+        else {
+          let msg = `Cannot ${method.toUpperCase()} ${url} (${xhr.status})`;
+          let error = new Error(msg) as ServiceError;
+          error.response = xhr.response;
+          error.status = xhr.status;
+          reject(error);
+        }
+      }
+      xhr.open(method, this._serviceUrl + url);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(body);
+    });
+  }
+
 }
 
-function makeRecordKey(recordClassName, primaryKeyValues) {
+function makeRecordKey(recordClassName: string, primaryKeyValues: string[]) {
   return recordClassName + ':' + stringify(primaryKeyValues);
 }
 
@@ -256,8 +311,8 @@ function makeRecordKey(recordClassName, primaryKeyValues) {
  * result. It might be useful for this to return a new copy of the ontology
  * in the future, but for now this saves some performance.
  */
-function resolveWdkReferences(entities$) {
-  return ontology => entities$.then(({ recordClasses, questions }) => {
+function resolveWdkReferences(entities$: Promise<{ recordClasses: Map<string, RecordClass>; questions: Map<string, Question>}>) {
+  return (ontology: Ontology<CategoryNode>) => entities$.then(({ recordClasses, questions }) => {
     for (let node of preorderSeq(ontology.tree)) {
       switch (getTargetType(node)) {
         case 'attribute': {
@@ -288,17 +343,17 @@ function resolveWdkReferences(entities$) {
   });
 }
 
-function isWdkReference(node) {
+function isWdkReference(node: CategoryNode) {
   let targetType = getTargetType(node);
   return targetType === 'attribute' || targetType === 'table' || targetType === 'search';
 }
 
-function isResolved(node) {
+function isResolved(node: CategoryNode) {
   return isWdkReference(node) ? node.wdkReference != null : true;
 }
 
-function pruneUnresolvedReferences(ontology) {
-  ontology.unprunedTree = ontology.tree;
+function pruneUnresolvedReferences(ontology: Ontology<CategoryNode>) {
+  //ontology.unprunedTree = ontology.tree;
   ontology.tree = getTree(ontology, isResolved);
   return ontology;
 }
@@ -307,26 +362,28 @@ function pruneUnresolvedReferences(ontology) {
  * Compare nodes based on the "sort order" property. If it is undefined,
  * compare based on displayName.
  */
-let compareOntologyNodes = predicate(compareOnotologyNodesBySortNumber)
-  .or(compareOntologyNodesByDisplayName);
+function compareOntologyNodes(nodeA: CategoryNode, nodeB: CategoryNode) {
+  let orderBySortNum = compareOnotologyNodesBySortNumber(nodeA, nodeB);
+  return orderBySortNum === 0 ? compareOntologyNodesByDisplayName(nodeA, nodeB) : orderBySortNum;
+}
 
 /**
  * Sort onotlogy node siblings. This function mutates the tree, so should
  * only be used before caching the ontology.
  */
-function sortOntology(ontology) {
+function sortOntology(ontology: Ontology<CategoryNode>) {
   for (let node of preorderSeq(ontology.tree)) {
     node.children.sort(compareOntologyNodes);
   }
   return ontology;
 }
 
-function compareOnotologyNodesBySortNumber(nodeA, nodeB) {
+function compareOnotologyNodesBySortNumber(nodeA: CategoryNode, nodeB: CategoryNode) {
   let sortOrderA = getPropertyValue('display order', nodeA);
   let sortOrderB = getPropertyValue('display order', nodeB);
 
   if (sortOrderA && sortOrderB) {
-    return sortOrderA - sortOrderB;
+    return Number(sortOrderA) >= Number(sortOrderB) ? 1 : -1;
   }
 
   if (sortOrderA) {
@@ -340,7 +397,7 @@ function compareOnotologyNodesBySortNumber(nodeA, nodeB) {
   return 0;
 }
 
-function compareOntologyNodesByDisplayName(nodeA, nodeB) {
+function compareOntologyNodesByDisplayName(nodeA: CategoryNode, nodeB: CategoryNode) {
   // attempt to sort by displayName
   let nameA = getDisplayName(nodeA) || '';
   let nameB = getDisplayName(nodeB) || '';
@@ -355,30 +412,7 @@ function compareOntologyNodesByDisplayName(nodeA, nodeB) {
  * @param {string} key
  * @return {Map<T>}
  */
-function makeIndex(array, key) {
+function makeIndex(array: any[], key: string) {
   return array.reduce((index, item) => index.set(item[key], item), new Map);
 }
 
-function fetchJson(method, url, body) {
-  return new Promise(function(resolve, reject) {
-    let xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState !== 4) return;
-
-      if (xhr.status >= 200 && xhr.status < 300) {
-        let json = xhr.status === 204 ? null : JSON.parse(xhr.response);
-        resolve(json, xhr.statusText, xhr);
-      }
-      else {
-        let msg = `Cannot ${method.toUpperCase()} ${url} (${xhr.status})`;
-        let error = new Error(msg);
-        error.response = xhr.response;
-        error.status = xhr.status;
-        reject(error);
-      }
-    }
-    xhr.open(method, url);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(body);
-  });
-}

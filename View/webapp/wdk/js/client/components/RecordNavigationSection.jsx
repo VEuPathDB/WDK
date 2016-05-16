@@ -11,30 +11,24 @@ import { parseSearchQueryString, areTermsInString } from '../utils/SearchUtils';
 
 class RecordNavigationSection extends PureComponent {
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      navigationExpanded: false,
-      navigationQuery: ''
-    };
-  }
-
   render() {
-    let { navigationExpanded, navigationQuery } = this.state;
-    let { collapsedSections, heading } = this.props;
+    let { collapsedSections, heading, navigationQuery, navigationSubcategoriesExpanded } = this.props;
     let searchQueryTerms = parseSearchQueryString(navigationQuery);
     let categoryWordsMap = makeCategoryWordsMap(this.props.categoryTree);
     let expandClassName = classnames({
       'wdk-RecordNavigationExpand fa': true,
-      'fa-plus-square': !navigationExpanded,
-      'fa-minus-square': navigationExpanded
+      'fa-plus-square': !navigationSubcategoriesExpanded,
+      'fa-minus-square': navigationSubcategoriesExpanded
     });
 
     return (
       <div className="wdk-RecordNavigationSection">
         <h2 className="wdk-RecordNavigationSectionHeader">
-          <button className={expandClassName}
-            onClick={() => void this.setState({ navigationExpanded: !navigationExpanded })}
+          <button type="button" className={expandClassName}
+            onClick={() => {
+              this.props.onNavigationSubcategoryVisibilityChange(
+                !this.props.navigationSubcategoriesExpanded);
+            }}
           /> {heading}
         </h2>
         <div className="wdk-RecordNavigationSearch">
@@ -44,10 +38,8 @@ class RecordNavigationSection extends PureComponent {
             type="text"
             value={navigationQuery}
             onChange={e => {
-              this.setState({
-                navigationQuery: e.target.value,
-                navigationExpanded: true
-              });
+              this.props.onNavigationQueryChange(e.target.value);
+              this.props.onNavigationSubcategoryVisibilityChange(true);
             }}
           />
         </div>
@@ -57,7 +49,7 @@ class RecordNavigationSection extends PureComponent {
             recordClass={this.props.recordClass}
             categories={this.props.categoryTree.children}
             onSectionToggle={this.props.onSectionToggle}
-            showChildren={navigationExpanded}
+            showChildren={navigationSubcategoriesExpanded}
             isCollapsed={category => includes(collapsedSections, getId(category))}
             isVisible={category => areTermsInString(searchQueryTerms, categoryWordsMap.get(category.properties))}
           />
