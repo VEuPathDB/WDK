@@ -53,8 +53,7 @@ node_modules/%: node_modules;
 # =============================================================================
 
 $(wdk_bundle): $(wdk_sources) node_modules
-# memory constraint needed for low memory environments
-	node --max_old_space_size=256 node_modules/.bin/webpack
+	webpack
 
 # =============================================================================
 # Concatenate libs into a single file, separated by newline
