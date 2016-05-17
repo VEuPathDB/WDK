@@ -772,7 +772,7 @@ img.plus-minus {
 #contentwrapper {
 	float: left;
 	width: 100%;
-	margin: 12px 0 12px 0;
+	padding: 12px 0;
 }
 
 #contentcolumn2 {
