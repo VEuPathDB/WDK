@@ -1,8 +1,5 @@
 /* global Scroller */
-import partial from 'lodash/function/partial';
-import values from 'lodash/object/values';
-import sum from 'lodash/math/sum';
-import noop from 'lodash/utility/noop';
+import {partial, values, sum, noop} from 'lodash';
 import { Table } from 'fixed-data-table';
 import React from 'react';
 import TouchableArea from './TouchableArea';

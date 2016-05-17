@@ -1,5 +1,5 @@
 import { Component, PropTypes } from 'react';
-import pick from 'lodash/object/pick';
+import {pick} from 'lodash';
 
 import CheckboxTreeNode from './CheckboxTreeNode';
 import RealTimeSearchBox from './RealTimeSearchBox';

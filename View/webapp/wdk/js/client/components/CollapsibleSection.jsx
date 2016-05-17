@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import zipWith from 'lodash/array/zipWith';
+import {zipWith} from 'lodash';
 import {wrappable, PureComponent} from '../utils/componentUtils';
 
 let {Component, PropTypes} = React;

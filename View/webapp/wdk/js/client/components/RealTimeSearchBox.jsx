@@ -6,7 +6,7 @@
  */
 
 import { Component, PropTypes } from 'react';
-import debounce from 'lodash/function/debounce';
+import {debounce} from 'lodash';
 import Tooltip from './Tooltip';
 
 export default class RealTimeSearchBox extends Component {

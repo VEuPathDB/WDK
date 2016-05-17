@@ -1,5 +1,4 @@
-import union from 'lodash/array/union';
-import difference from 'lodash/array/difference';
+import {difference, union} from 'lodash';
 import WdkStore from './WdkStore';
 import {filterNodes} from '../utils/TreeUtils';
 import {getId, getTargetType} from '../utils/CategoryUtils';

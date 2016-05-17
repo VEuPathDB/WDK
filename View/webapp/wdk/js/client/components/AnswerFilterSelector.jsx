@@ -1,6 +1,6 @@
 import {Component} from 'react';
 import ReactDOM from 'react-dom';
-import includes from 'lodash/collection/includes';
+import {includes} from 'lodash';
 import TabbableContainer from './TabbableContainer';
 import {wrappable} from '../utils/componentUtils';
 
