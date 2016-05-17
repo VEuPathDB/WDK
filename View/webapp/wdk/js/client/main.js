@@ -1,6 +1,4 @@
-import mapValues from 'lodash/object/mapValues';
-import values from 'lodash/object/values';
-import pick from 'lodash/object/pick';
+import {mapValues, values, pick} from 'lodash';
 import {createElement} from 'react';
 import * as ReactDOM from 'react-dom';
 

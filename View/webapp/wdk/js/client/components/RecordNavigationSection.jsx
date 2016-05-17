@@ -1,7 +1,6 @@
 import React from 'react';
 import classnames from 'classnames';
-import includes from 'lodash/collection/includes';
-import memoize from 'lodash/function/memoize';
+import {includes, memoize} from 'lodash';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
 import { postorderSeq } from '../utils/TreeUtils';
 import { wrappable, PureComponent } from '../utils/componentUtils';

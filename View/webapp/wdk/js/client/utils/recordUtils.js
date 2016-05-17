@@ -1,7 +1,4 @@
-import partial from 'lodash/function/partial';
-import flattenDeep from 'lodash/array/flattenDeep';
-import pick from 'lodash/object/pick';
-import values from 'lodash/object/values';
+import {flattenDeep, partial, pick, values} from 'lodash';
 import { filterItems } from './SearchUtils';
 
 /**

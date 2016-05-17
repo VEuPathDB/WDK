@@ -1,4 +1,4 @@
-import debounce from 'lodash/function/debounce';
+import {debounce} from 'lodash';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import AnswerFilterSelector from './AnswerFilterSelector';

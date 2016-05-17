@@ -1,4 +1,4 @@
-import pick from 'lodash/object/pick';
+import {pick} from 'lodash';
 // Action types
 export let actionTypes = {
   ANSWER_ADDED: 'answer/added',
