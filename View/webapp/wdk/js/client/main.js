@@ -46,10 +46,10 @@ export function initialize({ rootUrl, endpoint, applicationRoutes }) {
   let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
   let stores = configureStores(Stores, dispatcher);
   let context = { dispatchAction, stores };
-  wdkService.getConfig(),
-  wdkService.getQuestions(),
-  wdkService.getRecordClasses(),
-  wdkService.getOntology()
+  wdkService.getConfig();
+  wdkService.getQuestions();
+  wdkService.getRecordClasses();
+  wdkService.getOntology();
   let render = (rootElement) => {
     let applicationElement = createElement(
       Root, {
