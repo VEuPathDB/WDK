@@ -1,6 +1,6 @@
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
-import chunk from 'lodash/array/chunk';
+import {chunk} from 'lodash';
 import DataTable from './DataTable';
 import { renderAttributeValue, wrappable } from '../utils/componentUtils';
 

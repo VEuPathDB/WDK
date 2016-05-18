@@ -1,5 +1,5 @@
 import {Component, PropTypes} from 'react';
-import isEqual from 'lodash/lang/isEqual';
+import {isEqual} from 'lodash';
 import {
   updateFilter,
   loadAnswer,

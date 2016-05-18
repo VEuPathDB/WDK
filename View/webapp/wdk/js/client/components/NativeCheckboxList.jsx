@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import uid from 'lodash/utility/uniqueId';
+import {uniqueId} from 'lodash';
 import { wrappable } from '../utils/componentUtils';
 
 /**
@@ -11,7 +11,7 @@ class NativeCheckboxList extends Component {
 
   constructor(props) {
     super(...arguments);
-    this.id = uid('NativeCheckboxList.');
+    this.id = uniqueId('NativeCheckboxList.');
     this.controlled = this.props.selectedItems != null;
 
     if (!this.controlled) {

@@ -1,5 +1,4 @@
-import partial from 'lodash/function/partial';
-import chunk from 'lodash/array/chunk';
+import {chunk, partial} from 'lodash';
 import {getTree, nodeHasProperty, getPropertyValue} from '../utils/OntologyUtils';
 import {filterNodes} from '../utils/TreeUtils';
 import {seq} from '../utils/PromiseUtils';
