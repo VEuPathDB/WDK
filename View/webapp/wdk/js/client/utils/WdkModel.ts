@@ -81,3 +81,31 @@ export interface LinkAttributeValue {
 export interface TableValue {
   [index: number]: AttributeValue;
 }
+
+export interface Answer {
+  records: Record[];
+  meta: {
+    attributes: AttributeField[];
+    tables: TableField[];
+    recordClassName: string;
+    responseCount: number;
+    totalCount: number;
+  }
+}
+
+export interface AnswerSpec {
+  questionName: string;
+  parameters?: { [key: string]: string };
+  legacyFilterName?: string;
+  filters?: { name: string; value: string; }[];
+  viewFilters?: { name: string; value: string; }[];
+  wdk_weight?: number;
+}
+
+export interface AnswerFormatting {
+  pagination: { offset: number; numRecords: number; };
+  attributes: string[] | '__ALL_ATTRIBUTES__' | '__DISPLAYABLE_ATTRIBUTES__';
+  tables: string[] | '__ALL_TABLES__' | '__DISPLAYABLE_TABLES__';
+  sorting: [ { attributeName: string; direction: 'ASC' | 'DESC' } ];
+  contentDisposition?: 'inline' | 'attatchment';
+}
