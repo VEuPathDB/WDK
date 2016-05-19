@@ -61,7 +61,7 @@ export default class WdkService {
   });
   _cache: Map<string, Promise<any>> = new Map;
   _recordCache: Map<string, {request: RecordRequest; response: Promise<Record>}> = new Map;
-  _initialCheckDone: boolean = false;
+  _initialCheck: Promise<void>;
   _version: number;
 
   /**
@@ -313,11 +313,10 @@ export default class WdkService {
   }
 
   _checkStoreVersion() {
-    if (!this._initialCheckDone) {
-      this._initialCheckDone = true;
+    if (this._initialCheck == null) {
       let serviceConfig$ = this._fetchJson<ServiceConfig>('get', '/');
       let storeConfig$ = this._store.getItem<ServiceConfig>('config');
-      return Promise.all([ serviceConfig$, storeConfig$ ])
+      this._initialCheck = Promise.all([ serviceConfig$, storeConfig$ ])
       .then(([ serviceConfig, storeConfig ]) => {
         if (storeConfig == null || storeConfig.startupTime != serviceConfig.startupTime) {
           return this._store.clear().then(() => {
@@ -328,10 +327,10 @@ export default class WdkService {
       })
       .then(serviceConfig => {
         this._version = serviceConfig.startupTime;
-        return this._version;
+        return undefined;
       })
     }
-    return Promise.resolve(this._version);
+    return this._initialCheck;
   }
 
 }
