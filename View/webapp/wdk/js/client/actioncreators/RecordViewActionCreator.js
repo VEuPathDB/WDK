@@ -45,7 +45,8 @@ export function setActiveRecord(recordClassName, primaryKeyValues) {
     ]).then(([recordClass, primaryKey, fullCategoryTree]) => {
       // Set up promises for actions
       let baseAction$ = getRecordBase(wdkService, recordClass, primaryKey, fullCategoryTree);
-      let tableActions = getRecordTables(wdkService, recordClass, primaryKey, fullCategoryTree, 4);
+      // load all subsequent tables in a single request. we were doing it in batches of 4, but that hurts rendering!
+      let tableActions = getRecordTables(wdkService, recordClass, primaryKey, fullCategoryTree, 0);
       // Helper to handle errors
       let dispatchError = error => dispatch({
         type: actionTypes.ERROR_RECEIVED,
