@@ -397,6 +397,12 @@ function pruneUnresolvedReferences(ontology: Ontology<CategoryNode>) {
  * compare based on displayName.
  */
 function compareOntologyNodes(nodeA: CategoryNode, nodeB: CategoryNode) {
+  if (nodeA.children.length === 0)
+    return -1;
+
+  if (nodeB.children.length === 0)
+    return 1;
+
   let orderBySortNum = compareOnotologyNodesBySortNumber(nodeA, nodeB);
   return orderBySortNum === 0 ? compareOntologyNodesByDisplayName(nodeA, nodeB) : orderBySortNum;
 }
