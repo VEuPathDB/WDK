@@ -86,8 +86,8 @@
   font-size: 14px;
   /* Attempt to center arrow vertically with checkbox */
   line-height: 12px;
-  left: -10px;
-  width: 1.0em;
+  left: -8px;
+  width: 0em;
 }
 
 .wdk-CheckboxTree-links {
@@ -110,4 +110,8 @@
 .wdk-searchBoxInfo {
   white-space: nowrap;
   padding: .4em 0;
+}
+
+.wdk-searchBoxInfo, .wdk-CheckboxTree-links {
+  max-width: 25em;
 }
