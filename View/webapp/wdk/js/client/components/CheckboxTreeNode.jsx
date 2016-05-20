@@ -3,7 +3,7 @@ import { isLeaf } from '../utils/TreeUtils';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import AccordionButton from './AccordionButton';
 
-const visibleElement = {display: "block"};
+const visibleElement = {display: ""};
 const hiddenElement = {display: "none"};
 
 

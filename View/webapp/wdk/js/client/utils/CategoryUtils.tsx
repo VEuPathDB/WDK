@@ -62,6 +62,7 @@ export function getSynonyms(node: CategoryNode) {
   .concat(getPropertyValues('hasExactSynonym', node));
 }
 
+// TODO Make this more genericL createCategoryNode and createWdkEntityNode (or, createLeafNode??)
 /**
  * Returns a JSON object representing a simplified category tree node that will be properly interpreted
  * by the checkboxTreeController
@@ -70,7 +71,7 @@ export function getSynonyms(node: CategoryNode) {
  * @param description - tooltip
  * @returns {{properties: {targetType: string[], name: *[]}, wdkReference: {displayName: *, help: *}, children: Array}}
  */
-function createNode(id: string, displayName: string, description: string, children: CategoryNode[]): CategoryNode {
+export function createNode(id: string, displayName: string, description: string, children: CategoryNode[]): CategoryNode {
   return {
     children,
     properties : {
