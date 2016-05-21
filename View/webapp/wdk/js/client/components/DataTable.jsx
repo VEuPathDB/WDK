@@ -165,13 +165,13 @@ let formatColumns = columns => columns.map(
     data: column.name,
     className: 'wdk-DataTableCell wdk-DataTableCell__' + column.name,
     title: column.displayName || column.name,
-    type: 'html',
+    type: column.sortType,
     visible: column.isDisplayable,
     searchable: column.isDisplayable,
     orderable: column.isSortable,
     render(data, type) {
       let value = formatAttributeValue(data);
-      if (type === 'display') {
+      if (type === 'display' && value != null) {
         return '<div class="wdk-DataTableCellContent">' + value + '</div>'
       }
       return value;
