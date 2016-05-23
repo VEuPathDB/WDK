@@ -347,11 +347,12 @@ function makeRecordKey(recordClassName: string, primaryKeyValues: string[]) {
  */
 function resolveWdkReferences(entities$: Promise<{ recordClasses: Map<string, RecordClass>; questions: Map<string, Question>; }>) {
   return (ontology: Ontology<CategoryNode>) => entities$.then(({ recordClasses, questions }) => {
-    for (let node of preorderSeq(ontology.tree)) {
+    loop: for (let node of preorderSeq(ontology.tree)) {
       switch (getTargetType(node)) {
         case 'attribute': {
           let attributeName = getRefName(node);
           let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
+          if (recordClass == null) continue loop;
           let wdkReference = recordClass.attributesMap.get(attributeName);
           Object.assign(node, { wdkReference });
           break;
@@ -360,6 +361,7 @@ function resolveWdkReferences(entities$: Promise<{ recordClasses: Map<string, Re
         case 'table': {
           let tableName = getRefName(node);
           let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
+          if (recordClass == null) continue loop;
           let wdkReference = recordClass.tablesMap.get(tableName);
           Object.assign(node, { wdkReference });
           break;
