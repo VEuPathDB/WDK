@@ -270,7 +270,7 @@ export default class WdkService {
         if (xhr.readyState !== 4) return;
 
         if (xhr.status >= 200 && xhr.status < 300) {
-          let json = xhr.status === 204 ? null : JSON.parse(xhr.response);
+          let json = xhr.status === 204 ? null : JSON.parse(xhr.responseText);
           resolve(json);
         }
         else if (xhr.status === 409 && xhr.response === CLIENT_OUT_OF_SYNC_TEXT) {
@@ -281,7 +281,7 @@ export default class WdkService {
         else {
           let msg = `Cannot ${method.toUpperCase()} ${url} (${xhr.status})`;
           let error = new Error(msg) as ServiceError;
-          error.response = xhr.response;
+          error.response = xhr.responseText;
           error.status = xhr.status;
           reject(error);
         }
