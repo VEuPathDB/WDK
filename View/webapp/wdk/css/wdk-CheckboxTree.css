@@ -5,12 +5,14 @@
 }
 
 .wdk-CheckboxTree-searchBoxEnabled, .wdk-CheckboxTree-searchBoxDisabled {
-  padding: 1.0em 0 0 1.6em;
+  width: calc(100% - 2em);
+  display: inline-block;
 }
 
 .wdk-CheckboxTree-searchBoxEnabled input, .wdk-CheckboxTree-searchBoxDisabled input {
-  width: 20em;
+  width: 100%;
   vertical-align: middle;
+  padding: 2px;
 }
 
 /** Lighten search box placeholder */
@@ -42,7 +44,6 @@
 
 .wdk-CheckboxTree-accordionButton {
   cursor: pointer;
-  margin-right: -0.5em;
 }
 
 .wdk-CheckboxTree-list li label {
@@ -52,7 +53,7 @@
 }
 
 .wdk-CheckboxTree-list li label input {
-  margin-left: 0px;
+  margin-left: 4px;
 }
 
 .wdk-CheckboxTree-list li label span {
@@ -67,10 +68,10 @@
 .wdk-CheckboxTree-expandedItem:after {
   content:"";
   position:absolute;
-  top:20px;
-  left:-5px;
-  right:0;
-  bottom:0;
+  top: 20px;
+  left: 5px;
+  right: 0;
+  bottom: 0;
   width: 5px;
   background:url("../images/checkboxTree-vertical-line.png") repeat-y;
 }
@@ -84,9 +85,9 @@
   color: #AAA;
   font-size: 14px;
   /* Attempt to center arrow vertically with checkbox */
-  line-height: 10px;
-  left: -1.4em;
-  width: 1.0em;
+  line-height: 12px;
+  left: -8px;
+  width: 0em;
 }
 
 .wdk-CheckboxTree-links {
@@ -96,17 +97,21 @@
 }
 
 .wdk-CheckboxTree-links > div {
-  width: 230px;
+  width: 100%;
   display: inline-block;
   text-align: center;
-  padding: 0 1em 0 1.6em;
 }
 
 .wdk-searchboxInfoIcon {
   color: blue;
-  margin-left: 0.5em;  // 1em forces a htal scrollbar in add Columns popup
+  margin-left: 0.8em;  /* 1em forces a htal scrollbar in add Columns popup */
 }
 
-div.wdk-searchBoxInfo {
+.wdk-searchBoxInfo {
   white-space: nowrap;
+  padding: .4em 0;
+}
+
+.wdk-searchBoxInfo, .wdk-CheckboxTree-links {
+  max-width: 25em;
 }

@@ -1,10 +1,24 @@
 import stringify from 'json-stable-stringify';
-import {difference} from 'lodash';
+import {difference, once} from 'lodash';
+import localforage from 'localforage';
 import predicate from './Predicate';
 import {preorderSeq} from './TreeUtils';
 import {getTree, getPropertyValue, Ontology} from './OntologyUtils';
 import {getTargetType, getRefName, getDisplayName, CategoryNode} from './CategoryUtils';
-import {Question, RecordClass, Record, PrimaryKey} from './WdkModel';
+import {Answer, AnswerSpec, AnswerFormatting, Question, RecordClass, Record, PrimaryKey} from './WdkModel';
+import {User, UserPreferences, Step} from './WdkUser';
+
+/**
+ * Header added to service requests to indicate the version of the model
+ * current stored in cache.
+ */
+const CLIENT_WDK_VERSION_HEADER = 'X-CLIENT-WDK-TIMESTAMP';
+
+/**
+ * Response text returned by service that indicates the version of the cached
+ * model is stale, based on CLIENT_WDK_VERSION_HEADER.
+ */
+const CLIENT_OUT_OF_SYNC_TEXT = 'WDK-TIMESTAMP-MISMATCH';
 
 interface RecordRequest {
   attributes: string[];
@@ -12,55 +26,52 @@ interface RecordRequest {
   primaryKey: string[];
 }
 
-interface AnswerQuestionDefinition {
-  questionName: string;
-  parameters?: { [key: string]: string };
-  legacyFilterName?: string;
-  filters?: { name: string; value: string; }[];
-  viewFilters?: { name: string; value: string; }[];
-  wdk_weight?: number;
-}
-
-interface AnswerFormatting {
-  pagination: { offset: number; numRecords: number; };
-  attributes: string[] | '__ALL_ATTRIBUTES__' | '__DISPLAYABLE_ATTRIBUTES__';
-  tables: string[] | '__ALL_TABLES__' | '__DISPLAYABLE_TABLES__';
-  sorting: [ { attributeName: string; direction: 'ASC' | 'DESC' } ];
-  contentDisposition?: 'inline' | 'attatchment';
-}
-
 interface ServiceError extends Error {
   response: string;
   status: number;
 }
 
-interface User {
-  id: number;
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  organization: string;
-  email: string;
+interface ServiceConfig {
+  assetsUrl: string;
+  authentication: {
+    oauthUrl: string;
+    method: string;
+    oauthClientId: string;
+  };
+  buildNumber: string;
+  categoriesOntologyName: string;
+  description: string;
+  displayName: string;
+  projectId: string;
+  releaseDate: string;
+  startupTime: number;
+  webAppUrl: string;
+  webServiceUrl: string;
 }
 
 /**
  * A helper to request resources from a Wdk REST Service.
+ *
  * @class WdkService
  */
 export default class WdkService {
 
-  _questions: Promise<Question[]>;
-  _recordClasses: Promise<RecordClass[]>;
-  _records: Map<string, {request: RecordRequest; response: Promise<Record>}> = new Map;
-  _ontologies: Map<string, Promise<Ontology<CategoryNode>>> = new Map;
+  _store: LocalForage = localforage.createInstance({
+    name: 'WdkService/' + this._serviceUrl
+  });
+  _cache: Map<string, Promise<any>> = new Map;
+  _recordCache: Map<string, {request: RecordRequest; response: Promise<Record>}> = new Map;
+  _initialCheck: Promise<void>;
+  _version: number;
 
   /**
    * @param {string} serviceUrl Base url for Wdk REST Service.
    */
-  constructor(private _serviceUrl: string) {  }
+  constructor(private _serviceUrl: string) {
+  }
 
   getConfig() {
-    return this.fetchJson('get', '/');
+    return this._getFromCache('config', () => this._fetchJson<ServiceConfig>('get', '/'))
   }
 
   getAnswerServiceUrl() {
@@ -73,10 +84,7 @@ export default class WdkService {
    * @return {Promise<Array<Object>>}
    */
   getQuestions() {
-    if (this._questions == null) {
-      this._questions = this.fetchJson('get', '/question?expandQuestions=true');
-    }
-    return this._questions;
+    return this._getFromCache('questions', () => this._fetchJson<Question[]>('get', '/question?expandQuestions=true'));
   }
 
   /**
@@ -91,35 +99,22 @@ export default class WdkService {
 
   /**
    * Get all RecordClasses defined in WDK Model.
-   *
-   * @return {Promise<Array<Object>>}
    */
   getRecordClasses() {
-    let method = 'get';
-    let url = '/record?expandRecordClasses=true&' +
-      'expandAttributes=true&expandTables=true&expandTableAttributes=true';
-
-    if (this._recordClasses == null) {
-      this._recordClasses = this.fetchJson(method, url).then(
-        (recordClasses: RecordClass[]) => {
-          for (let recordClass of recordClasses) {
-            // create indexes by name property for attributes and tables
-            Object.assign(recordClass, {
-              attributesMap: makeIndex(recordClass.attributes, 'name'),
-              tablesMap: makeIndex(recordClass.tables, 'name')
-            });
-          }
-          return recordClasses;
-        },
-        error => {
-          // clear record classes; don't want partially populated list
-          this._recordClasses = null;
-          throw error;
-        }
-      );
-    }
-
-    return this._recordClasses;
+    let url = '/record?expandRecordClasses=true&expandAttributes=true&expandTables=true&expandTableAttributes=true';
+    return this._getFromCache('recordClasses', () => this._fetchJson<RecordClass[]>('get', url))
+    .then(recordClasses => {
+      // create indexes by name property for attributes and tables
+      // this is done after recordClasses have been retreived from the store
+      // since it cannot reliably serialize Maps
+      for (let recordClass of recordClasses) {
+        Object.assign(recordClass, {
+          attributesMap: makeIndex(recordClass.attributes, 'name'),
+          tablesMap: makeIndex(recordClass.tables, 'name')
+        });
+      }
+      return recordClasses;
+    });
   }
 
   /**
@@ -132,6 +127,13 @@ export default class WdkService {
     return this.getRecordClasses().then(rs => rs.find(test));
   }
 
+  /**
+   * Get a record instance identified by the provided record class and primary
+   * key, with the configured tables and attributes.
+   *
+   * The record instance will be stored in memory. Any subsequent requests will
+   * be merged with the in-memory request.
+   */
   getRecord(recordClassName: string, primaryKey: string[], options: {attributes?: string[]; tables?: string[];} = {}) {
     let key = makeRecordKey(recordClassName, primaryKey);
     let method = 'post';
@@ -140,14 +142,14 @@ export default class WdkService {
     let { attributes = [], tables = [] } = options;
 
     // if we don't have the record, fetch whatever is requested
-    if (!this._records.has(key)) {
+    if (!this._recordCache.has(key)) {
       let request = { attributes, tables, primaryKey };
-      let response = this.fetchJson(method, url, stringify(request));
-      this._records.set(key, { request, response });
+      let response = this._fetchJson<Record>(method, url, stringify(request));
+      this._recordCache.set(key, { request, response });
     }
 
     else {
-      let { request, response } = this._records.get(key);
+      let { request, response } = this._recordCache.get(key);
       // determine which tables and attributes we need to retreive
       let reqAttributes = difference(attributes, request.attributes);
       let reqTables = difference(tables, request.tables);
@@ -159,7 +161,7 @@ export default class WdkService {
           attributes: reqAttributes,
           tables: reqTables
         };
-        let newResponse = this.fetchJson(method, url, stringify(newRequest)) as Promise<Record>;
+        let newResponse = this._fetchJson<Record>(method, url, stringify(newRequest));
 
         let finalRequest = {
           primaryKey,
@@ -172,33 +174,23 @@ export default class WdkService {
           return Object.assign({}, record, {
             attributes: Object.assign({}, record.attributes, newRecord.attributes),
             tables: Object.assign({}, record.tables, newRecord.tables)
-          }) as Record;
+          });
         });
-        this._records.set(key, { request: finalRequest, response: finalResponse });
+        this._recordCache.set(key, { request: finalRequest, response: finalResponse });
       }
     }
 
-    return this._records.get(key).response;
+    return this._recordCache.get(key).response;
   }
 
   /**
    * Get an answer from the answer service.
-   *
-   * @param {Object} questionDefinition
-   * @param {string} questionDefinition.questionName
-   * @param {Object} questionDefinition.parameters
-   * @param {string} questionDefinition.legacyFilterName
-   * @param {Array<Object>} questionDefinition.filters
-   * @param {Array<Object>} questionDefinition.viewFilters
-   * @param {number} questionDefinition.wdk_weight
-   * @param {Object} formatting
-   * @returns {Promise<Answer>}
    */
-  getAnswer(questionDefinition: AnswerQuestionDefinition, formatting: AnswerFormatting) {
+  getAnswer(questionDefinition: AnswerSpec, formatting: AnswerFormatting) {
     let method = 'post';
     let url = '/answer';
     let body = stringify({ questionDefinition, formatting });
-    return this.fetchJson(method, url, body);
+    return this._fetchJson<Answer>(method, url, body);
   }
 
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
@@ -207,7 +199,7 @@ export default class WdkService {
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
     let url = `/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return this.fetchJson(method, url).then(data => data.processed > 0);
+    return this._fetchJson<any>(method, url).then(data => data.processed > 0);
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
@@ -216,7 +208,7 @@ export default class WdkService {
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
     let url = `/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return this.fetchJson(method, url).then(() => status);
+    return this._fetchJson(method, url).then(() => status);
   }
 
   // FIXME Replace with service call, e.g. GET /user/basket/{recordId}
@@ -225,7 +217,7 @@ export default class WdkService {
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
     let url = `/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return this.fetchJson(method, url).then(data => data.countProcessed > 0);
+    return this._fetchJson<any>(method, url).then(data => data.countProcessed > 0);
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
@@ -234,69 +226,111 @@ export default class WdkService {
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
     let url = `/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return this.fetchJson(method, url).then(() => status);
+    return this._fetchJson(method, url).then(() => status);
   }
 
   getCurrentUser() {
-    return this.fetchJson('get', '/user/current');
+    return this._fetchJson<User>('get', '/user/current');
   }
 
   updateCurrentUser(user: User) {
     let data = JSON.stringify(user);
     let method = 'put';
     let url = '/user/current/profile';
-    return this.fetchJson(method, url, data).then(() => status);
+    return this._fetchJson<void>(method, url, data).then(() => user);
   }
 
   getCurrentUserPreferences() {
-    return this.fetchJson('get', '/user/current/preference');
+    return this._fetchJson<UserPreferences>('get', '/user/current/preference');
   }
 
   findStep(stepId: number) {
-    return this.fetchJson('get', '/step/' + stepId);
+    return this._fetchJson<Step>('get', '/step/' + stepId);
   }
 
   getOntology(name = '__wdk_categories__') {
-    if (!this._ontologies.has(name)) {
-      let ontology$ = this.fetchJson('get', '/ontology/' + name);
+    return this._getFromCache('ontology/' + name, () => {
+      let ontology$ = this._fetchJson<Ontology<CategoryNode>>('get', '/ontology/' + name);
       let recordClasses$ = this.getRecordClasses().then(r => makeIndex(r, 'name'));
       let questions$ = this.getQuestions().then(q => makeIndex(q, 'name'));
       let entities$ = Promise.all([ recordClasses$, questions$ ])
       .then(([ recordClasses, questions ]) => ({ recordClasses, questions }));
 
-      // FIXME this should maybe be of type CategoryOntology or Ontology<CategoryNode>
-      let finalOntology$: Promise<Ontology<CategoryNode>> = ontology$
+      return ontology$
       .then(resolveWdkReferences(entities$))
       .then(pruneUnresolvedReferences)
       .then(sortOntology);
-
-      this._ontologies.set(name, finalOntology$);
-    }
-    return this._ontologies.get(name);
+    });
   }
 
-  fetchJson(method: string, url: string, body?: string): Promise<any> {
-    return new Promise((resolve, reject) => {
+  _fetchJson<T>(method: string, url: string, body?: string) {
+    return new Promise<T>((resolve, reject) => {
       let xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function() {
         if (xhr.readyState !== 4) return;
 
         if (xhr.status >= 200 && xhr.status < 300) {
-          let json = xhr.status === 204 ? null : JSON.parse(xhr.response);
+          let json = xhr.status === 204 ? null : JSON.parse(xhr.responseText);
           resolve(json);
+        }
+        else if (xhr.status === 409 && xhr.response === CLIENT_OUT_OF_SYNC_TEXT) {
+          this._store.clear();
+          alert('This page is no longer valid and will be reloaded when you click "OK"');
+          location.reload();
         }
         else {
           let msg = `Cannot ${method.toUpperCase()} ${url} (${xhr.status})`;
           let error = new Error(msg) as ServiceError;
-          error.response = xhr.response;
+          error.response = xhr.responseText;
           error.status = xhr.status;
           reject(error);
         }
       }
       xhr.open(method, this._serviceUrl + url);
       xhr.setRequestHeader('Content-Type', 'application/json');
+      if (this._version) {
+        xhr.setRequestHeader(CLIENT_WDK_VERSION_HEADER, String(this._version));
+      }
       xhr.send(body);
     });
+  }
+
+  /**
+   * Checks cache for item associated to key. If item is not in cache, then
+   * call onCacheMiss callback and set the resolved value in the cache.
+   */
+  _getFromCache<T>(key: string, onCacheMiss: () => Promise<T>) {
+    if (!this._cache.has(key)) {
+      let cacheValue$ = this._checkStoreVersion()
+      .then(() => this._store.getItem<T>(key))
+      .then(storeItem => {
+        if (storeItem != null) return storeItem;
+        return onCacheMiss().then(item => this._store.setItem(key, item));
+      });
+      this._cache.set(key, cacheValue$);
+    }
+    return <Promise<T>>this._cache.get(key);
+  }
+
+  _checkStoreVersion() {
+    if (this._initialCheck == null) {
+      let serviceConfig$ = this._fetchJson<ServiceConfig>('get', '/');
+      let storeConfig$ = this._store.getItem<ServiceConfig>('config');
+      this._initialCheck = Promise.all([ serviceConfig$, storeConfig$ ])
+      .then(([ serviceConfig, storeConfig ]) => {
+        if (storeConfig == null || storeConfig.startupTime != serviceConfig.startupTime) {
+          return this._store.clear().then(() => {
+            return this._store.setItem('config', serviceConfig);
+          });
+        }
+        return serviceConfig;
+      })
+      .then(serviceConfig => {
+        this._version = serviceConfig.startupTime;
+        return undefined;
+      })
+    }
+    return this._initialCheck;
   }
 
 }
@@ -311,13 +345,14 @@ function makeRecordKey(recordClassName: string, primaryKeyValues: string[]) {
  * result. It might be useful for this to return a new copy of the ontology
  * in the future, but for now this saves some performance.
  */
-function resolveWdkReferences(entities$: Promise<{ recordClasses: Map<string, RecordClass>; questions: Map<string, Question>}>) {
+function resolveWdkReferences(entities$: Promise<{ recordClasses: Map<string, RecordClass>; questions: Map<string, Question>; }>) {
   return (ontology: Ontology<CategoryNode>) => entities$.then(({ recordClasses, questions }) => {
-    for (let node of preorderSeq(ontology.tree)) {
+    loop: for (let node of preorderSeq(ontology.tree)) {
       switch (getTargetType(node)) {
         case 'attribute': {
           let attributeName = getRefName(node);
           let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
+          if (recordClass == null) continue loop;
           let wdkReference = recordClass.attributesMap.get(attributeName);
           Object.assign(node, { wdkReference });
           break;
@@ -326,6 +361,7 @@ function resolveWdkReferences(entities$: Promise<{ recordClasses: Map<string, Re
         case 'table': {
           let tableName = getRefName(node);
           let recordClass = recordClasses.get(getPropertyValue('recordClassName', node));
+          if (recordClass == null) continue loop;
           let wdkReference = recordClass.tablesMap.get(tableName);
           Object.assign(node, { wdkReference });
           break;
@@ -363,6 +399,12 @@ function pruneUnresolvedReferences(ontology: Ontology<CategoryNode>) {
  * compare based on displayName.
  */
 function compareOntologyNodes(nodeA: CategoryNode, nodeB: CategoryNode) {
+  if (nodeA.children.length === 0)
+    return -1;
+
+  if (nodeB.children.length === 0)
+    return 1;
+
   let orderBySortNum = compareOnotologyNodesBySortNumber(nodeA, nodeB);
   return orderBySortNum === 0 ? compareOntologyNodesByDisplayName(nodeA, nodeB) : orderBySortNum;
 }
@@ -415,4 +457,3 @@ function compareOntologyNodesByDisplayName(nodeA: CategoryNode, nodeB: CategoryN
 function makeIndex(array: any[], key: string) {
   return array.reduce((index, item) => index.set(item[key], item), new Map);
 }
-
