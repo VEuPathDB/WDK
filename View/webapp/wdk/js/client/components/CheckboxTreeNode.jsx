@@ -34,6 +34,13 @@ class TreeRadio extends Component {
 
 class CheckboxTreeNode extends Component {
 
+  constructor(props) {
+    super(props);
+    this.handleLabelClick = (e) => {
+      if (!this.props.isSelectable) this.props.toggleExpansion(this.props.node);
+    };
+  }
+
   shouldComponentUpdate(nextProps) {
     return (nextProps.node !== this.props.node);
   }
@@ -65,7 +72,7 @@ class CheckboxTreeNode extends Component {
       <li className={nodeType} style={nodeVisibilityCss}>
         {isLeafNode || isActiveSearch ? "" :
           (<AccordionButton expanded={isExpanded} node={node} toggleExpansion={toggleExpansion} />) }
-        <label>
+        <label onClick={this.handleLabelClick}>
           {!isSelectable || (!isMultiPick && !isLeafNode) ? "" :
             isMultiPick ?
               <IndeterminateCheckbox
