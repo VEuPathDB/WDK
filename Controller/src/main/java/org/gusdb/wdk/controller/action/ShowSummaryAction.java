@@ -109,6 +109,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
 
             // check if we want to skip to other pages
+						// noskip used in addstep
             boolean noSkip = request.getParameterMap().containsKey("noskip");
             ActionForward forward;
             if (request.getParameterMap().containsKey(
@@ -123,7 +124,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 if (format != null && format.length() > 0)
                   path += "&wdkReportFormat=" + format;
                 return new ActionForward(path, true);
-            } else if (!noSkip && answerValue.getResultSize() == 1
+            } else if (!noSkip && answerValue.getDisplayResultSize() == 1
                     && answerValue.getQuestion().isNoSummaryOnSingleRecord()) {
                 RecordBean rec = answerValue.getRecords().next();
                 forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
