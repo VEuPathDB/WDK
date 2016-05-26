@@ -76,7 +76,7 @@ class Seq<T> {
     return new Seq(flatMap(fn, this));
   }
 
-  uniq(fn: Predicate<T>) {
+  uniq() {
     return new Seq(uniq(this));
   }
 
@@ -131,6 +131,13 @@ class Seq<T> {
 
   rest() {
     return rest(this);
+  }
+
+  forEach(fn: (t:T) => void) {
+    for (let x of this) {
+      fn(x);
+    }
+    return this;
   }
 
 }
