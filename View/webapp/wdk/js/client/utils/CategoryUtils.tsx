@@ -24,6 +24,7 @@ export interface CategoryNode extends OntologyNode {
     name: string;
     displayName: string;
     help?: string;
+    summary?: string;
   };
 }
 
@@ -176,8 +177,10 @@ export function BasicNodeComponent(props: NodeComponentProps) {
  * @returns true if node 'matches' the passed search text
  */
 export function nodeSearchPredicate(node: CategoryNode, searchQueryTerms: string[]): boolean {
-  return areTermsInString(searchQueryTerms, getDisplayName(node)) ||
-    areTermsInString(searchQueryTerms, getDescription(node));
+  let targetType = getTargetType(node);
+  let searchString = targetType === 'search' ? getDisplayName(node) + ' ' + node.wdkReference.summary
+                   : getDisplayName(node) + ' ' + getDescription(node);
+  return areTermsInString(searchQueryTerms, searchString);
 }
 
 /**
