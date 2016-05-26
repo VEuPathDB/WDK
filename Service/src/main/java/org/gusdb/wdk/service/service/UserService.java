@@ -28,6 +28,7 @@ import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.User.UserProfileProperty;
 import org.gusdb.wdk.service.annotation.PATCH;
+import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.ConflictException;
 import org.gusdb.wdk.service.request.DataValidationException;
@@ -67,11 +68,13 @@ public class UserService extends WdkService {
    */
   @GET
   @Path("oauthStateToken")
-  @Produces(MediaType.TEXT_PLAIN)
+  @Produces(MediaType.APPLICATION_JSON)
   public Response getOauthStateToken() throws WdkModelException {
     String newToken = OAuthUtil.generateStateToken(getWdkModel());
     getSession().setAttribute(OAuthUtil.STATE_TOKEN_KEY, newToken);
-    return Response.ok(newToken).build();
+    JSONObject json = new JSONObject();
+    json.put(Keys.OAUTH_STATE_TOKEN, newToken);
+    return Response.ok(json.toString()).build();
   }
 
   @GET
