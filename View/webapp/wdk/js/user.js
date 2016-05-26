@@ -50,8 +50,9 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
     $.ajax({
       method: 'GET',
       url: tokenLink,
-      dataType: "text",
-      success: function(stateToken) {
+      dataType: "json",
+      success: function(data) {
+        var stateToken = data.oauthStateToken;
 
         // build URL to OAuth service and redirect
         var eventualDestination = window.location.href;
