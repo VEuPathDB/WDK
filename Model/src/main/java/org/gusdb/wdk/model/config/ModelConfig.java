@@ -118,6 +118,7 @@ public class ModelConfig implements OAuthConfig {
   private String oauthUrl = "";          // needed if method is OAUTH2
   private String oauthClientId = "";     // needed if method is OAUTH2
   private String oauthClientSecret = ""; // needed if method is OAUTH2
+  private String changePasswordUrl = ""; // probably needed if method is OAUTH2
 
   /**
    * Specify keystore file and pass phrase if SSL security checking is desired
@@ -398,6 +399,21 @@ public class ModelConfig implements OAuthConfig {
    */
   public void setOauthClientSecret(String oauthClientSecret) {
     this.oauthClientSecret = oauthClientSecret;
+  }
+
+  /**
+   * @return custom change password URL if specified
+   */
+  public String getChangePasswordUrl() {
+    return changePasswordUrl;
+  }
+
+  /**
+   * @param changePasswordUrl custom change password URL to set
+   */
+  public void setChangePasswordUrl(String changePasswordUrl) {
+    LOG.info("Overriding Change Password Page URL: " + changePasswordUrl);
+    this.changePasswordUrl = changePasswordUrl;
   }
 
   /**
