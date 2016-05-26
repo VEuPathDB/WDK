@@ -60,12 +60,20 @@ export function getAttributeSelections(userPrefs, question) {
 }
 
 export function getAttributeTree(categoriesOntology, recordClassName, question) {
-  let categoryTree = getTree(categoriesOntology, isQualifying('attribute', recordClassName, 'download'));
+  let categoryTree = getTree(categoriesOntology, isQualifying({
+    targetType: 'attribute',
+    recordClassName,
+    scope: 'download'
+  }));
   return addSearchSpecificSubtree(question, categoryTree);
 }
 
 export function getTableTree(categoriesOntology, recordClassName) {
-  let categoryTree = getTree(categoriesOntology, isQualifying('table', recordClassName, 'download'));
+  let categoryTree = getTree(categoriesOntology, isQualifying({
+    targetType: 'table',
+    recordClassName,
+    scope: 'download'
+  }));
   return categoryTree;
 }
 

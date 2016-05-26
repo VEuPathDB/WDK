@@ -8,6 +8,7 @@ import {Question} from './WdkModel';
 
 interface CategoryNodeProperties {
   targetType?: string[];
+  scope?: string[];
   label?: string[];
   name?: string[];
   'EuPathDB alternative term'?: string[];
@@ -43,8 +44,16 @@ export function getTargetType(node: CategoryNode) {
   return getPropertyValue('targetType', node);
 }
 
+export function getScope(node: CategoryNode) {
+  return getPropertyValue('scope', node);
+}
+
 export function getRefName(node: CategoryNode) {
   return getPropertyValue('name', node);
+}
+
+export function getRecordClassName(node: CategoryNode) {
+  return getPropertyValue('recordClassName', node);
 }
 
 export function getDisplayName(node: CategoryNode) {
@@ -124,20 +133,25 @@ export function getNodeId(node: CategoryNode): string {
   return (targetType === 'attribute' || targetType === 'table' ? getRefName(node) : getId(node));
 }
 
+interface CategoryNodePropertySpec {
+  targetType?: string;
+  recordClassName?: string;
+  scope?: string;
+};
+
+interface StringDict {
+  [key: string]: string;
+}
 /**
  * Create a predicate function to filter out of the Categories ontology tree those items appropriate for the given
  * scope that identify attributes for the current record class.  In the case of the Transcript Record Class, a
  * distinction is made depending on whether the summary view applies to transcripts or genes.
- *
- * @param type - type of the individual desired (typically 'attribute' or 'table')
- * @param recordClassName - full name of the record class related to the nodes desired
- * @param scope - scope of the desired nodes
  */
-export function isQualifying(type: TargetType, recordClassName: string, scope: Scope) {
+export function isQualifying(spec: CategoryNodePropertySpec) {
   return function(node: CategoryNode) {
-    return nodeHasProperty('targetType', type, node)
-        && nodeHasProperty('recordClassName', recordClassName, node)
-        && nodeHasProperty('scope', scope, node);
+    // We have to cast spec as StringDict to avoid an implicitAny error
+    // See http://stackoverflow.com/questions/32968332/how-do-i-prevent-the-error-index-signature-of-object-type-implicitly-has-an-an
+    return Object.keys(spec).every(prop => nodeHasProperty(prop, (spec as StringDict)[prop], node));
   };
 };
 
