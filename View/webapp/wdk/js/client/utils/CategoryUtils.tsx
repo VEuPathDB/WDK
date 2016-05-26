@@ -67,6 +67,13 @@ export function getDescription(node: CategoryNode) {
   getPropertyValue('hasDefinition', node);
 }
 
+export function getTooltipContent(node: CategoryNode) {
+  let targetType = getTargetType(node);
+  return targetType === 'search'
+    ? node.wdkReference.summary
+    : getDescription(node);
+}
+
 export function getSynonyms(node: CategoryNode) {
   return getPropertyValues('hasNarrowSynonym', node)
   .concat(getPropertyValues('hasExactSynonym', node));
@@ -177,10 +184,8 @@ export function BasicNodeComponent(props: NodeComponentProps) {
  * @returns true if node 'matches' the passed search text
  */
 export function nodeSearchPredicate(node: CategoryNode, searchQueryTerms: string[]): boolean {
-  let targetType = getTargetType(node);
-  let searchString = targetType === 'search' ? getDisplayName(node) + ' ' + node.wdkReference.summary
-                   : getDisplayName(node) + ' ' + getDescription(node);
-  return areTermsInString(searchQueryTerms, searchString);
+  return areTermsInString(searchQueryTerms, getDisplayName(node) + ' ' +
+                          getTooltipContent(node));
 }
 
 /**
