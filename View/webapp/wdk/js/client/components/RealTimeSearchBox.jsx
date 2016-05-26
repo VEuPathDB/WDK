@@ -15,6 +15,7 @@ export default class RealTimeSearchBox extends Component {
     super(props);
     this.handleSearchTermChange = this.handleSearchTermChange.bind(this);
     this.handleResetClick = this.handleResetClick.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
     this.debounceOnSearchTermSet = debounce(this.props.onSearchTermChange, this.props.delayMs);
     this.state = { searchTerm: this.props.initialSearchTerm };
   }
@@ -27,6 +28,16 @@ export default class RealTimeSearchBox extends Component {
     let searchTerm = e.target.value;
     this.setState({ searchTerm });
     this.debounceOnSearchTermSet(searchTerm);
+  }
+
+  /**
+   * Reset input if Escape is pressed.
+   */
+  handleKeyDown(e) {
+    if (e.key === 'Escape') {
+      this.setState({ searchTerm: '' });
+      this.props.onSearchTermChange('');
+    }
   }
 
   /**
@@ -51,6 +62,7 @@ export default class RealTimeSearchBox extends Component {
         <span className={searchBoxClass}>
           <input type="text"
             onChange={this.handleSearchTermChange}
+            onKeyDown={this.handleKeyDown}
             placeholder={placeholderText}
             value={searchTerm}
           />
