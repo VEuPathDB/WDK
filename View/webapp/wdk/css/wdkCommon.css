@@ -205,7 +205,6 @@ img[data-assets-src][src] {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 .wdk-RootContainer {
   height: 100%;
-  background-color: #fcfcfc;
   padding: 1em 4em;
 }
 
