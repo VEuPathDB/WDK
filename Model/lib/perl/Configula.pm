@@ -39,6 +39,7 @@ my %dblinkMap = (
     'icmrcomm'    => 'icemr.login_comment',
     'gus4commn'   => 'gus4commN.login_comment',
     'gus4comms'   => 'gus4commS.login_comment',
+    'gus4commT'   => 'gus4commT.login_comment',
     'prsmcomm'    => 'prism.login_comment',
     'prsmcomms'   => 'prisms.login_comment',
     'prsmcommn'   => 'prismn.login_comment',
