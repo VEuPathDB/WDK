@@ -291,6 +291,9 @@ input[type="reset"],
 input[type="submit"] {
   -webkit-appearance: button; /* 2 */
   cursor: pointer; /* 3 */
+  font-size: 135%;
+  border: 2px solid grey;
+  border-radius: 6px;
 }
 
 /**
