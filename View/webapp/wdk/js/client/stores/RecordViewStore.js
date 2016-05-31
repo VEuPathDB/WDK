@@ -3,6 +3,7 @@ import WdkStore from './WdkStore';
 import {filterNodes} from '../utils/TreeUtils';
 import {getId, getTargetType} from '../utils/CategoryUtils';
 import {actionTypes} from '../actioncreators/RecordViewActionCreator';
+import {actionTypes as userActionTypes} from '../actioncreators/UserActionCreator';
 
 /** Store for record page */
 export default class RecordViewStore extends WdkStore {
@@ -16,7 +17,13 @@ export default class RecordViewStore extends WdkStore {
       categoryTree: undefined,
       navigationVisible: true,
       navigationQuery: '',
-      navigationSubcategoriesExpanded: false
+      navigationSubcategoriesExpanded: false,
+      inBasket: undefined,
+      loadingBasketStatus: undefined,
+      basketError: undefined,
+      inFavorites: undefined,
+      loadingFavoritesStatus: undefined,
+      favoritesError: undefined
     };
   }
 
@@ -88,6 +95,52 @@ export default class RecordViewStore extends WdkStore {
         return Object.assign({}, state, {
           navigationSubcategoriesExpanded: action.payload.isVisible
         })
+
+      case userActionTypes.BASKET_STATUS_LOADING:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            loadingBasketStatus: true
+          })
+          : state;
+
+      case userActionTypes.BASKET_STATUS_RECEIVED:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            inBasket: action.payload.status,
+            loadingBasketStatus: false
+          })
+          : state;
+
+      case userActionTypes.BASKET_STATUS_ERROR:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            basketError: action.payload.error,
+            loadingBasketStatus: false
+          })
+          : state;
+
+      case userActionTypes.FAVORITES_STATUS_LOADING:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            loadingFavoritesStatus: true
+          })
+          : state;
+
+      case userActionTypes.FAVORITES_STATUS_RECEIVED:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            inFavorites: action.payload.status,
+            loadingFavoritesStatus: false
+          })
+          : state;
+
+      case userActionTypes.FAVORITES_STATUS_ERROR:
+        return action.payload.record.id === state.record.id
+          ? Object.assign({}, state, {
+            favoritesError: action.payload.error,
+            loadingFavoritesStatus: false
+          })
+          : state;
 
       default:
         return state;

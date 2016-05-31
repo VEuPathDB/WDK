@@ -33,16 +33,7 @@
       </li>
     </c:when>
     <c:otherwise>
-      <li>
-        <c:choose>
-          <c:when test="${authMethod eq 'OAUTH2'}">
-            <a href="javascript:void(0)" onclick="wdk.user.oauthLogin('${modelConfig.oauthUrl}','${modelConfig.oauthClientId}')">Login</a>
-          </c:when>
-          <c:when test="${authMethod eq 'USER_DB'}">
-            <a href="javascript:void(0)" class="open-dialog-login-form">Login</a>
-          </c:when>
-        </c:choose>
-      </li>
+      <li><a href="javascript:void(0)" onclick="wdk.user.login()">Login</a> </li>
       <li><a href="${pageContext.request.contextPath}/showRegister.do">Register</a></li>
     </c:otherwise>
   </c:choose>

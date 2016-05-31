@@ -139,8 +139,8 @@
            <c:set var="shareAction" value="if (confirm('Before you can share your strategy, you need to save it. Would you like to do that now?')) { ${saveAction} }" />
          </c:if>
          <c:if test="${wdkUser.guest}">
-           <c:set var="saveAction" value="wdk.user.login();"/>
-           <c:set var="shareAction" value="wdk.user.login();"/>
+           <c:set var="saveAction" value="wdk.user.login('save a strategy');"/>
+           <c:set var="shareAction" value="wdk.user.login('share a strategy');"/>
          </c:if>
          <select id="actions_${strategyId}" onchange="eval(this.value);this[0].selected='true';">
             <option value="return false;">---Actions---</option>
@@ -181,7 +181,7 @@
           <c:set var="checkboxTitle" value="This strategy must be revised before it can be made public.  It is invalid due to release updates."/>
         </c:when>
         <c:when test="${wdkUser.guest}">
-          <c:set var="makePublicAction" value="$(this).prop('checked',false); wdk.user.login();"/>
+          <c:set var="makePublicAction" value="$(this).prop('checked',false); wdk.user.login('make a strategy public');"/>
           <c:set var="checkboxTitle" value="You must log in before making any of your strategies public.  Click here to do so."/>
         </c:when>
         <c:when test="${strategy.isSaved}">

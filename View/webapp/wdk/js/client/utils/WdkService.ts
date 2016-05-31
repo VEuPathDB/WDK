@@ -244,6 +244,10 @@ export default class WdkService {
     return this._fetchJson<UserPreferences>('get', '/user/current/preference');
   }
 
+  getOauthStateToken() {
+    return this._fetchJson<string>('get', '/user/oauthStateToken');
+  }
+
   findStep(stepId: number) {
     return this._fetchJson<Step>('get', '/step/' + stepId);
   }
