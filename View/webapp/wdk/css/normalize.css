@@ -294,8 +294,14 @@ input[type="submit"] {
   font-size: 135%;
   border: 2px solid grey;
   border-radius: 6px;
+  background-color: white;
 }
-
+input[type="button"].addAttributesButton {
+  font-size: 100%; 
+}
+input[type="button"].paging-button {
+  font-size: 100%; 
+}
 /**
  * Re-set default cursor for disabled elements.
  */
