@@ -1,0 +1,35 @@
+.wdk-Alert {
+  text-align: center;
+}
+
+.wdk-Alert .ui-dialog-title {
+  width: 100%;
+  font-size: 1.1em;
+}
+
+.wdk-Alert .ui-dialog-titlebar {
+  background: none;
+  border: none;
+}
+
+.wdk-Alert .ui-dialog-titlebar-close {
+  display: none;
+}
+
+.wdk-Alert .ui-dialog-content {
+  font-size: 1.1em;
+}
+
+.wdk-Alert .ui-dialog-buttonpane button {
+  background: none;
+  min-width: 6em;
+}
+
+.wdk-Alert .ui-dialog-buttonpane button:focus {
+  outline-offset: -2px;
+  font-weight: bold;
+}
+
+.wdk-Alert .ui-dialog-buttonpane button span {
+  padding: .2em 1em;
+}

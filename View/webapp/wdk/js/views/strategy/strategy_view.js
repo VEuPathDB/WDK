@@ -38,7 +38,7 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       if (isSaved) {
         wdk.history.showHistShare(target, id, url);
       } else if (isGuest) {
-        wdk.user.login();
+        wdk.user.login('share a strategy');
       } else {
         if (confirm('Before you can share your strategy, you need to save it.' +
                     ' Would you like to do that now?')) {
@@ -49,7 +49,7 @@ wdk.namespace('wdk.views.strategy', function(ns) {
 
     save: preventEvent(function(e) {
       if (wdk.user.isGuest()) {
-        wdk.user.login();
+        wdk.user.login('save a strategy');
       } else {
         wdk.history.showUpdateDialog(e.currentTarget, true, false);
       }

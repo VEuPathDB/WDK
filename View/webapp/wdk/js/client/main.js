@@ -104,10 +104,15 @@ function configureStores(Stores, dispatcher) {
  * @param {any?} services
  */
 function makeDispatchAction(dispatcher, services) {
+  let logError = console.log.bind(console, 'Error in dispatchAction:');
+
   return function dispatchAction(action) {
     if (typeof action === 'function') {
       // Call the function with dispatchAction and services
       return action(dispatchAction, services);
+    }
+    else if (isPromise(action)) {
+      return action.then(dispatchAction).then(undefined, logError);
     }
     else if (action == null) {
       console.error("Warning: Action received is not defined or is null");
@@ -189,4 +194,13 @@ function logActions(dispatcher, stores) {
     console.info("state", mapValues(stores, store => store.getState()));
     console.groupEnd(action.type);
   });
+}
+
+/**
+ * Detect if `maybePromise` is a Promise.
+ * @param {any} maybePromise
+ * @returns {boolean}
+ */
+function isPromise(maybePromise) {
+  return maybePromise != null && typeof maybePromise.then === 'function';
 }
