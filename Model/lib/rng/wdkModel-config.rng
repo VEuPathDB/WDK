@@ -57,6 +57,9 @@
                 <attribute name="oauthClientSecret"/>
             </optional>
             <optional>
+                <attribute name="changePasswordUrl"/>
+            </optional>
+            <optional>
                 <attribute name="keyStoreFile"/>
             </optional>
             <optional>
