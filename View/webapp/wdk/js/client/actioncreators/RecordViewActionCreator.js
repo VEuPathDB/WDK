@@ -2,8 +2,6 @@ import {chunk, partial} from 'lodash';
 import {getTree, nodeHasProperty, getPropertyValue} from '../utils/OntologyUtils';
 import {filterNodes} from '../utils/TreeUtils';
 import {seq} from '../utils/PromiseUtils';
-import {loadBasketStatus} from '../actioncreators/BasketActionCreator';
-import {loadFavoritesStatus} from '../actioncreators/FavoritesActionCreator';
 
 // TODO Change SHOW/HIDE_{feature} and EXPAND/COLLAPSE_{feature} to
 // {feature}_VISIBILITY_CHANGED
@@ -55,11 +53,8 @@ export function setActiveRecord(recordClassName, primaryKeyValues) {
       // Calls dispatch on the array of promises in the provided order
       // even if they resolve out of order.
       seq([baseAction$].concat(tableActions), dispatch).catch(dispatchError);
-      // Load basket and favorites
-      baseAction$.then(action => {
-        dispatch(loadBasketStatus(action.payload.record));
-        dispatch(loadFavoritesStatus(action.payload.record));
-      });
+
+      return baseAction$;
     });
   }
 }
@@ -72,6 +67,7 @@ export function updateSectionVisibility(sectionName, isVisible) {
   };
 }
 
+/** Change the visibility for all record fields (attributes and tables) */
 export function updateAllFieldVisibility(isVisible) {
   return {
     type: actionTypes.ALL_FIELD_VISIBILITY_CHANGED,
@@ -79,7 +75,7 @@ export function updateAllFieldVisibility(isVisible) {
   }
 }
 
-/** Update navigation section search term -- currently unused */
+/** Update navigation section search term */
 export function updateNavigationQuery(query) {
   return {
     type: actionTypes.NAVIGATION_QUERY_CHANGED,
@@ -87,6 +83,7 @@ export function updateNavigationQuery(query) {
   };
 }
 
+/** Change the visbility of the navigation panel */
 export function updateNavigationVisibility(isVisible) {
   return {
     type: actionTypes.NAVIGATION_VISIBILITY_CHANGED,
@@ -94,6 +91,7 @@ export function updateNavigationVisibility(isVisible) {
   }
 }
 
+/** Change the visibility of subcategories in the navigation section */
 export function updateNavigationSubcategoryVisibility(isVisible) {
   return {
     type: actionTypes.NAVIGATION_SUBCATEGORY_VISBILITY_CHANGED,
@@ -101,7 +99,9 @@ export function updateNavigationSubcategoryVisibility(isVisible) {
   }
 }
 
+
 // helpers
+// -------
 
 /**
  * Get the base record request payload object

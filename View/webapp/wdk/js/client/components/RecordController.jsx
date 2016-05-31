@@ -9,9 +9,13 @@ import {
   updateNavigationSubcategoryVisibility,
   updateNavigationVisibility
 } from '../actioncreators/RecordViewActionCreator';
-import {loadCurrentUser} from '../actioncreators/UserActionCreator';
-import {updateBasketStatus} from '../actioncreators/BasketActionCreator';
-import {updateFavoritesStatus} from '../actioncreators/FavoritesActionCreator';
+import {
+  loadCurrentUser,
+  loadBasketStatus,
+  loadFavoritesStatus,
+  updateBasketStatus,
+  updateFavoritesStatus
+} from '../actioncreators/UserActionCreator';
 import Doc from './Doc';
 import Loading from './Loading';
 import RecordUI from './RecordUI';
@@ -34,18 +38,13 @@ class RecordController extends Component {
   getStateFromStores() {
     let recordView = this.props.stores.RecordViewStore.getState();
     let user = this.props.stores.UserStore.getState().user;
-    let record = recordView.record;
-    let basketEntry = record && this.props.stores.BasketStore.getEntry(record);
-    let favoritesEntry = record && this.props.stores.FavoritesStore.getEntry(record);
-    return { recordView, basketEntry, favoritesEntry, user };
+    return { recordView, user };
   }
 
   componentDidMount() {
     this.storeSubscriptions = [
       this.props.stores.RecordViewStore.addListener(() => this.setState(this.getStateFromStores())),
-      this.props.stores.UserStore.addListener(() => this.setState(this.getStateFromStores())),
-      this.props.stores.BasketStore.addListener(() => this.setState(this.getStateFromStores())),
-      this.props.stores.FavoritesStore.addListener(() => this.setState(this.getStateFromStores()))
+      this.props.stores.UserStore.addListener(() => this.setState(this.getStateFromStores()))
     ];
     this.loadData(this.props);
   }
@@ -68,7 +67,15 @@ class RecordController extends Component {
     if (this.state.user == null) {
       dispatchAction(loadCurrentUser());
     }
-    dispatchAction(setActiveRecord(recordClass, splat.split('/')));
+    dispatchAction(setActiveRecord(recordClass, splat.split('/')))
+    .then(() => {
+      let { record, recordClass } = this.props.stores.RecordViewStore.getState();
+      let { user } = this.props.stores.UserStore.getState();
+      if (recordClass.useBasket) {
+        dispatchAction(loadBasketStatus(user, record));
+        dispatchAction(loadFavoritesStatus(user, record));
+      }
+    });
   }
 
   renderLoading() {
@@ -90,38 +97,29 @@ class RecordController extends Component {
   }
 
   renderRecord() {
-    let { recordView, basketEntry, favoritesEntry, user } = this.state;
+    let { recordView, user } = this.state;
     let { dispatchAction } = this.props;
     if (recordView.record != null && !recordView.isLoading) {
       let title = recordView.recordClass.displayName + ' ' +
         recordView.record.displayName;
       let loadingClassName = 'fa fa-circle-o-notch fa-spin';
-      let isInBasket = basketEntry && basketEntry.isInBasket;
-      let basketLoading = basketEntry && basketEntry.isLoading;
-      let isInFavorites = favoritesEntry && favoritesEntry.isInFavorites;
-      let favoritesLoading = favoritesEntry && favoritesEntry.isLoading;
-      // FIXME Replace the open-dialog-login-form approach with a login utility function
       let headerActions = [];
       if (recordView.recordClass.useBasket) {
         headerActions.push({
-          label: isInBasket ? 'Remove from basket' : 'Add to basket',
-          className: user.isGuest ? 'open-dialog-login-form' : '',
-          iconClassName: basketLoading ? loadingClassName : 'fa fa-shopping-basket',
+          label: recordView.inBasket ? 'Remove from basket' : 'Add to basket',
+          iconClassName: recordView.loadingBasketStatus ? loadingClassName : 'fa fa-shopping-basket',
           onClick(event) {
-            if (user.isGuest) return;
             event.preventDefault();
-            dispatchAction(updateBasketStatus(recordView.record, !isInBasket));
+            dispatchAction(updateBasketStatus(user, recordView.record, !recordView.inBasket));
           }
         });
       }
       headerActions.push({
-        label: isInFavorites ? 'Remove from favorites' : 'Add to favorites',
-        className: user.isGuest ? 'open-dialog-login-form' : '',
-        iconClassName: favoritesLoading ? loadingClassName : 'fa fa-lg fa-star',
+        label: recordView.inFavorites ? 'Remove from favorites' : 'Add to favorites',
+        iconClassName: recordView.loadingFavoritesStatus ? loadingClassName : 'fa fa-lg fa-star',
         onClick(event) {
-          if (user.isGuest) return;
           event.preventDefault();
-          dispatchAction(updateFavoritesStatus(recordView.record, !isInFavorites));
+          dispatchAction(updateFavoritesStatus(user, recordView.record, !recordView.inFavorites));
         }
       },
       {

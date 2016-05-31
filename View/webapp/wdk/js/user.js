@@ -1,4 +1,5 @@
-/* jshint ignore:start */
+/* global wdk, wdkConfig */
+import {showLoginForm, showLoginWarning} from './client/actioncreators/UserActionCreator';
 
 // FIXME Review module
 // Some redundant functions, some undefined functions called, etc.
@@ -38,52 +39,13 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
     $('#user-control').html(html2);
   };
 
-  ns.login = function(redirectUrl) {
-    // pop login form in dialog and then hijack form submit
-    $("#wdk-dialog-login-form").dialog("open")
-        .find("input[name='redirectUrl']").val(redirectUrl);
-  };
-
-  ns.oauthLogin = function(oauthBaseUrl, oauthClientId) {
-    // first need to get anti-forgery state token for this session
-    var tokenLink = wdk.webappUrl('/service/user/oauthStateToken');
-    $.ajax({
-      method: 'GET',
-      url: tokenLink,
-      dataType: "json",
-      success: function(data) {
-        var stateToken = data.oauthStateToken;
-
-        // build URL to OAuth service and redirect
-        var eventualDestination = window.location.href;
-        var redirectUrlBase = window.location.protocol + "//" +
-            window.location.host + wdk.webappUrl('/processLogin.do');
-
-        var googleSpecific = (oauthBaseUrl.indexOf("google") != -1);
-        if (googleSpecific) {
-          // hacks to conform to google OAuth2 API
-          var redirectUrl = redirectUrlBase;
-          var authEndpoint = "auth";
-        }
-        else {
-          var redirectUrl = redirectUrlBase + '?redirectUrl=' +
-              encodeURIComponent(eventualDestination);
-          var authEndpoint = "authorize";
-        }
-
-        var oauthUrl = oauthBaseUrl + "/" + authEndpoint + "?" +
-            "response_type=code&" +
-            "scope=" + encodeURIComponent("openid email") + "&" +
-            "state=" + encodeURIComponent(stateToken) + "&" +
-            "client_id=" + oauthClientId + "&" +
-            "redirect_uri=" + encodeURIComponent(redirectUrl);
-
-        window.location = oauthUrl;
-      },
-      error: function() {
-        alert("Unable to fetch your WDK state token.  Please check your internet connection.");
-      }
-    });
+  ns.login = function(message, destination) {
+    if (message) {
+      wdk.client.runtime.dispatchAction(showLoginWarning(message, destination));
+    }
+    else {
+      wdk.client.runtime.dispatchAction(showLoginForm(destination));
+    }
   };
 
   ns.processLogin = function(submitButton) {
