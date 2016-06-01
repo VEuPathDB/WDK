@@ -96,7 +96,13 @@ public class ProcessRegisterAction extends WdkAction {
           result.setRequestAttribute(param, globalPreferences.get(param));
         }
       }
+      return result;
     }
-    return result;
+    else {
+      // FIXME: temporary hack to handle redirection from OAuth server
+      //   assume a request to here without params is a redirect from OAuth and
+      //   redirect back to the profile page
+      return new ActionResult().setViewName("profile");
+    }
   }
 }
