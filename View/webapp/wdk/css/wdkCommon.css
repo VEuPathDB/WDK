@@ -978,6 +978,10 @@ form[name=questionForm] .filter-button {
 		float:right;
 }
 
+table.Results_Table {
+  border: 1px solid #aaa;
+}
+
 td.headerrow {
 	height: 29px;
 	font-size: 15px;
@@ -1000,7 +1004,7 @@ tr.headerrow {
 tr.headerrow > th {
 	background-repeat: repeat-x;
 	background-position: top;
-	background-color: #EEEEEE;
+	background-color: #f2f2f2;
 }
 
 
@@ -1025,9 +1029,7 @@ tr.subheaderrow {
 }
 
 tr.subheaderrow th {
-	background-repeat: repeat-x;
-	background-position: top;
-	background-color: #EEEEEE;
+  padding: 4px 0;
 }
 
 td.lines {
@@ -1046,8 +1048,6 @@ table.results {
 }
 
 tr.subheaderrow th {
-	padding: 0px;  /* not needed in paging bar */
-/*	border-width: 2px 0 2px 0; */
 	border: 0;
 	border-style: solid;
 }
@@ -1059,6 +1059,7 @@ tr.headerrow th {
 	padding: 1px 2px;
 	border-width: 1px;  /* 2px 1px 2px 1px; */  /* 2px 0 2px 0; results headers side borders */
 	border-style: solid;
+                              border-color: #aaa;
 }
 
 /* result column headers */
@@ -1956,6 +1957,10 @@ span.marker a:link, span.marker a:visited {
 }
 .wdk-error::after {
   content: "!";
+}
+
+.flexigrid div.bDiv {
+  border: none;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
