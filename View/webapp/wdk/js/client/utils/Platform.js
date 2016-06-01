@@ -34,8 +34,17 @@ export function confirm(title, message) {
  */
 export function dialog(title, message, buttons, escapeValue) {
   return new Promise(function(resolve, reject) {
+    let $node = $('<div><p>' + message + '</p><div class="wdk-AlertButtons"></div></div>');
+    let $buttons = buttons.map(button => {
+      return $('<button>' + button.text + '</button>')
+      .attr('autofocus', !!button.focus)
+      .click(() => {
+        $node.dialog('close');
+        resolve(button.value);
+      });
+    });
+    $node.find('.wdk-AlertButtons').append($buttons);
     try {
-      let $node = $('<div><p>' + message + '</p></div>');
       $node.dialog({
         title: title,
         modal: true,
@@ -43,14 +52,6 @@ export function dialog(title, message, buttons, escapeValue) {
         resizable: false,
         dialogClass: 'wdk-Alert',
         minWidth: 350,
-        buttons: buttons.map(button => ({
-          text: button.text,
-          autofocus: !!button.focus,
-          click() {
-            $node.dialog('close');
-            resolve(button.value);
-          }
-        })),
         open() {
           $node.parent().find('[autofocus]').focus();
         },

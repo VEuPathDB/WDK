@@ -22,6 +22,7 @@ let RecordTable = React.createClass({
       let listColumnSize = Math.max(10, value.length / maxColumns);
       return (
         <div className={classnames}>
+          {table.description && <p>{table.description}</p>}
           {chunk(value, listColumnSize).map((tableChunk, index) =>
             <ul key={index} className="wdk-RecordTableList">
               {tableChunk.map((row, index) =>
@@ -35,16 +36,14 @@ let RecordTable = React.createClass({
 
     let columns = [{
       name: '@@defaultSort@@',
-      isDisplayable: false,
-      sortType: 'num'
-    }].concat(tableAttributes.map(attr => Object.assign({}, attr, {
-      sortType: attr.type === 'link' ? 'html' : undefined
-    })));
+      isDisplayable: false
+    }].concat(tableAttributes);
     let data = this.props.value.map((row, index) => {
       return Object.assign({}, row, { '@@defaultSort@@': index });
     });
     return (
       <div className={classnames}>
+        {table.description && <p>{table.description}</p>}
         <DataTable
           columns={columns}
           data={data}
