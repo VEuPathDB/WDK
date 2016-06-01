@@ -35,11 +35,8 @@ let RecordTable = React.createClass({
 
     let columns = [{
       name: '@@defaultSort@@',
-      isDisplayable: false,
-      sortType: 'num'
-    }].concat(tableAttributes.map(attr => Object.assign({}, attr, {
-      sortType: attr.type === 'link' ? 'html' : undefined
-    })));
+      isDisplayable: false
+    }].concat(tableAttributes);
     let data = this.props.value.map((row, index) => {
       return Object.assign({}, row, { '@@defaultSort@@': index });
     });

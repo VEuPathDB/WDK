@@ -36,22 +36,31 @@
   padding: 6px 8px;
 }
 
-.wdk-DataTableCellExpand {
+.wdk-DataTable .wdk-DataTableCell__childRowToggle {
   vertical-align: middle;
-  width: 2em;
-  cursor: pointer;
+  width: 3em;
+  padding: 0;
+}
+
+.wdk-DataTableCellExpand {
+  width: 3em;
+  padding: 0;
+  border: none;
+  line-height: 2;
+  background: transparent;
 }
 
 .wdk-DataTableCellExpand:before {
   font-family: FontAwesome;
-  content: "\f0fe";
-  font-size: 1.5em;
+  content: "\f0da"; /* caret-right */
+  font-size: 1.2em;
   text-align: center;
   display: block;
 }
 
 .wdk-DataTableRow__expanded .wdk-DataTableCellExpand:before {
-  content: "\f146";
+  content: "\f0d7"; /* caret-down */
+  color: initial;
 }
 
 .wdk-DataTableRow__expanded td.wdk-DataTableCell {

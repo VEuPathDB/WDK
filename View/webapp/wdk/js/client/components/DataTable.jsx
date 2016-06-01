@@ -11,10 +11,12 @@ import {formatAttributeValue, wrappable} from '../utils/componentUtils';
 
 const $ = window.jQuery;
 
+const expandButton = '<button type="button" class="wdk-DataTableCellExpand"></button>';
 const expandColumn = {
-  className: 'wdk-DataTableCell wdk-DataTableCellExpand',
+  className: 'wdk-DataTableCell wdk-DataTableCell__childRowToggle',
   orderable: false,
-  defaultContent: ''
+  title: expandButton,
+  defaultContent: expandButton
 };
 
 let DataTable = props => {
@@ -51,7 +53,17 @@ let setupTable = (node, props) => {
     columns,
     data,
     order,
-    searching: searchable
+    searching: searchable,
+    headerCallback(thead) {
+      let i = 0;
+      let $ths = $(thead).find('th');
+      if (childRow) {
+        $ths.eq(i++).attr('title', 'Show or hide all row details');
+      }
+      for (let column of props.columns) {
+        if (column.help != null) $ths.eq(i++).attr('title', column.help);
+      }
+    }
   });
 
   if (height != null)
@@ -70,7 +82,7 @@ let setupTable = (node, props) => {
   let showChildRow_ = partial(showChildRow, dataTable, childRow);
   let hideChildRow_ = partial(hideChildRow, dataTable);
 
-  $table.on('click', 'td.wdk-DataTableCellExpand', e => {
+  $table.on('click', 'td .wdk-DataTableCellExpand', e => {
     updateChildRows(() => {
       let tr = $(e.target).closest('tr');
       let row = dataTable.row(tr);
@@ -84,7 +96,7 @@ let setupTable = (node, props) => {
     }, dataTable, $table);
   });
 
-  $table.on('click', 'th.wdk-DataTableCellExpand', () => {
+  $table.on('click', 'th .wdk-DataTableCellExpand', () => {
     updateChildRows(() => {
       let allShown = isAllChildRowsShown(dataTable);
       let update = allShown ? hideChildRow_ : showChildRow_;
@@ -110,7 +122,7 @@ let updateChildRows = (fn, dataTable, $table) => {
     allShown = allShown && isShown;
   }
 
-  $table.find('th.wdk-DataTableCellExpand').closest('tr')
+  $table.find('th .wdk-DataTableCellExpand').closest('tr')
   .toggleClass('wdk-DataTableRow__expanded', allShown);
 };
 
@@ -132,7 +144,7 @@ let isAllChildRowsShown = (dataTable) => {
 }
 
 let updateToggleAllChildrenClass = (allShown) => {
-  $('th.wdk-DataTableCellExpand').closest('tr')
+  $('th .wdk-DataTableCellExpand').closest('tr')
   .toggleClass('wdk-DataTableRow__expanded', !allShown);
 }
 
