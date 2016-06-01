@@ -21,7 +21,7 @@ public class ProcessRegisterAction extends WdkAction {
 
   // since wdk and custom preferences are unknown by this class, must skip validation
   @Override protected boolean shouldValidateParams() { return false; }
-  @Override protected boolean shouldCheckSpam() { return true; }
+  @Override protected boolean shouldCheckSpam() { return false; } // FIXME: need a better solution; should be returning true here
   @Override protected Map<String, ParamDef> getParamDefs() { return null; }
 
   @Override
@@ -96,7 +96,13 @@ public class ProcessRegisterAction extends WdkAction {
           result.setRequestAttribute(param, globalPreferences.get(param));
         }
       }
+      return result;
     }
-    return result;
+    else {
+      // FIXME: temporary hack to handle redirection from OAuth server
+      //   assume a request to here without params is a redirect from OAuth and
+      //   redirect back to the profile page
+      return new ActionResult().setViewName("profile");
+    }
   }
 }
