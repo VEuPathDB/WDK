@@ -270,7 +270,7 @@ export default class WdkService {
   _fetchJson<T>(method: string, url: string, body?: string) {
     return new Promise<T>((resolve, reject) => {
       let xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function() {
+      xhr.onreadystatechange = () => {
         if (xhr.readyState !== 4) return;
 
         if (xhr.status >= 200 && xhr.status < 300) {
