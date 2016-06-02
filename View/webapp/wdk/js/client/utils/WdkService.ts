@@ -5,6 +5,7 @@ import predicate from './Predicate';
 import {preorderSeq} from './TreeUtils';
 import {getTree, getPropertyValue, Ontology} from './OntologyUtils';
 import {getTargetType, getRefName, getDisplayName, CategoryNode} from './CategoryUtils';
+import {alert} from './Platform';
 import {Answer, AnswerSpec, AnswerFormatting, Question, RecordClass, Record, PrimaryKey} from './WdkModel';
 import {User, UserPreferences, Step} from './WdkUser';
 
@@ -280,8 +281,11 @@ export default class WdkService {
         }
         else if (xhr.status === 409 && xhr.response === CLIENT_OUT_OF_SYNC_TEXT) {
           this._isInvalidating = true;
-          alert('This page is no longer valid and will be reloaded when you click "OK"');
-          this._store.clear().then(() => location.reload());
+          Promise.all([
+            this._store.clear(),
+            alert('Reload Page', 'This page is no longer valid and will be reloaded when you click "OK"')
+          ])
+          .then(() => location.reload());
         }
         else {
           let msg = `Cannot ${method.toUpperCase()} ${url} (${xhr.status})`;

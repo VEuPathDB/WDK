@@ -9,7 +9,7 @@ import $ from 'jquery';
 /**
  * @return {Promise<void>}
  */
-export function alert(title, message) {
+export function alert(title: string, message: string) {
   return dialog(title, message, [
     { text: 'OK', focus: true }
   ]);
@@ -18,11 +18,17 @@ export function alert(title, message) {
 /**
  * @return {Promise<boolean>}
  */
-export function confirm(title, message) {
+export function confirm(title: string, message: string) {
   return dialog(title, message, [
     { text: 'Cancel', value: false },
     { text: 'OK', value: true, focus: true }
   ], false);
+}
+
+interface ButtonDescriptor {
+  text: string;
+  value?: any;
+  focus?: boolean;
 }
 
 /**
@@ -32,12 +38,12 @@ export function confirm(title, message) {
  * @param {any} escapeValue The value to use when dialog is closed via pressing the escape key
  * @returns {Promise<any>}
  */
-export function dialog(title, message, buttons, escapeValue) {
+export function dialog(title: string, message: string, buttons: ButtonDescriptor[], escapeValue?: any) {
   return new Promise(function(resolve, reject) {
     let $node = $('<div><p>' + message + '</p><div class="wdk-AlertButtons"></div></div>');
     let $buttons = buttons.map(button => {
       return $('<button>' + button.text + '</button>')
-      .attr('autofocus', !!button.focus)
+      .attr('autofocus', button.focus && 'autofocus')
       .click(() => {
         $node.dialog('close');
         resolve(button.value);
@@ -55,7 +61,7 @@ export function dialog(title, message, buttons, escapeValue) {
         open() {
           $node.parent().find('[autofocus]').focus();
         },
-        close(event) {
+        close(event: KeyboardEvent) {
           if (event.key === 'Escape') {
             resolve(escapeValue);
           }
