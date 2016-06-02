@@ -9,11 +9,14 @@
  *     </Doc>
  *
  */
-import {Component} from 'react';
+import React from 'react';
 import {wrappable} from '../utils/componentUtils';
 
+type Props = {
+  title: string;
+};
 
-class Doc extends Component {
+class Doc extends React.Component<Props, void> {
 
   componentDidMount() {
     document.title = this.props.title;
