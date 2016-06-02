@@ -49,7 +49,7 @@ public class ClientCacheExpirationFilter implements ContainerRequestFilter {
   private String getClientTimestamp(ContainerRequestContext requestContext) {
     List<String> clientWdkTimestamps = requestContext.getHeaders().get(CLIENT_WDK_TIMESTAMP_HEADER);
     // if no headers with this name are found, return null
-    if (clientWdkTimestamps.isEmpty()) return null;
+    if (clientWdkTimestamps == null || clientWdkTimestamps.isEmpty()) return null;
     // if >1 header is found, return the last one
     //   (seems most sensible- the last one is the one the client intended)
     return clientWdkTimestamps.get(clientWdkTimestamps.size() - 1);
