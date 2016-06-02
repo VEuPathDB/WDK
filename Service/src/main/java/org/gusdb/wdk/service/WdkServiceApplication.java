@@ -8,6 +8,7 @@ import org.glassfish.jersey.client.filter.EncodingFeature;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.gusdb.fgputil.SetBuilder;
+import org.gusdb.wdk.service.filter.ClientCacheExpirationFilter;
 import org.gusdb.wdk.service.filter.MethodRewritingFilter;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
@@ -47,6 +48,7 @@ public class WdkServiceApplication extends Application {
     // add filter classes
     .add(MethodRewritingFilter.class)
     .add(RequestLoggingFilter.class)
+    .add(ClientCacheExpirationFilter.class)
     .addIf(compressResponses(), EncodingFilter.class)
 
     // add service classes
