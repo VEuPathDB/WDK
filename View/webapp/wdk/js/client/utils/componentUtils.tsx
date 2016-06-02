@@ -169,7 +169,7 @@ export function instrument<P>(Component: any, options: InstrumentOptions = {}) {
 
 /** Helper to log the results of a shallow comparison */
 function logShallowComparison<P>(obj1: P, obj2: P, label: string = 'Shallow comparison') {
-  console.group(label)
+  console.log(label, 'start')
   console.log('Comparing %o and %o', obj1, obj2);
   let allKeys = new Set(Object.keys(obj1).concat(Object.keys(obj2)));
   for (let key of allKeys) {
@@ -178,7 +178,7 @@ function logShallowComparison<P>(obj1: P, obj2: P, label: string = 'Shallow comp
       console.log('`%s` not equal', key);
     }
   }
-  console.groupEnd(label)
+  console.log(label, 'end')
 }
 
 
