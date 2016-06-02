@@ -63,6 +63,7 @@ export default class WdkService {
   _recordCache: Map<string, {request: RecordRequest; response: Promise<Record>}> = new Map;
   _initialCheck: Promise<void>;
   _version: number;
+  _isInvalidating = false;
 
   /**
    * @param {string} serviceUrl Base url for Wdk REST Service.
@@ -271,16 +272,16 @@ export default class WdkService {
     return new Promise<T>((resolve, reject) => {
       let xhr = new XMLHttpRequest();
       xhr.onreadystatechange = () => {
-        if (xhr.readyState !== 4) return;
+        if (xhr.readyState !== 4 || this._isInvalidating) return;
 
         if (xhr.status >= 200 && xhr.status < 300) {
           let json = xhr.status === 204 ? null : JSON.parse(xhr.responseText);
           resolve(json);
         }
         else if (xhr.status === 409 && xhr.response === CLIENT_OUT_OF_SYNC_TEXT) {
-          this._store.clear();
+          this._isInvalidating = true;
           alert('This page is no longer valid and will be reloaded when you click "OK"');
-          location.reload();
+          this._store.clear().then(() => location.reload());
         }
         else {
           let msg = `Cannot ${method.toUpperCase()} ${url} (${xhr.status})`;
