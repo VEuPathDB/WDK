@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -134,7 +135,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 Map<String, String> pkValues = rec.getPrimaryKey().getValues();
                 for (String pkColumn : pkValues.keySet()) {
                     String value = pkValues.get(pkColumn);
-                    path += "&" + pkColumn + "=" + value;
+                    path += "&" + pkColumn + "=" + URLEncoder.encode(value, "UTF-8");
                 }
                 return new ActionForward(path, true);
             }
