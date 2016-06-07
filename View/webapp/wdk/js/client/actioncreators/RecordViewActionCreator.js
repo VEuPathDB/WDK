@@ -143,7 +143,8 @@ function isLeafFor(recordClassName) {
 function getRecordBase(wdkService, recordClass, primaryKey, fullCategoryTree) {
   let options = {
     attributes: getAttributes(fullCategoryTree).map(getNodeName),
-    tables: getTables(fullCategoryTree).filter(isInternalNode).map(getNodeName)
+    tables: getTables(fullCategoryTree).filter(isInternalNode).map(getNodeName),
+    includeOverview: true
   };
   return wdkService.getRecord(recordClass.name, primaryKey, options)
   .then(record => {

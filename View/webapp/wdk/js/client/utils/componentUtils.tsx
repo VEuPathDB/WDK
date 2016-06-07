@@ -6,6 +6,10 @@ import {AttributeValue} from './WdkModel';
  * React Component utils
  */
 
+interface AnyObject {
+  [key: string]: any;
+}
+
 /**
  * Implements a shallow-equals algorithm for incoming props and state.
  * If they are shallowly equal, the component update will be skipped.
@@ -168,12 +172,12 @@ export function instrument<P>(Component: any, options: InstrumentOptions = {}) {
 }
 
 /** Helper to log the results of a shallow comparison */
-function logShallowComparison<P>(obj1: P, obj2: P, label: string = 'Shallow comparison') {
+function logShallowComparison<P extends AnyObject>(obj1: P, obj2: P, label: string = 'Shallow comparison') {
   console.group(label);
   console.log('Comparing %o and %o', obj1, obj2);
   let allKeys = new Set(Object.keys(obj1).concat(Object.keys(obj2)));
   for (let key of allKeys) {
-    let equal = (obj1 as any)[key] === (obj2 as any)[key];
+    let equal = obj1[key] === obj2[key];
     if (!equal) {
       console.log('`%s` not equal', key);
     }
@@ -197,19 +201,20 @@ export function safeHtml<P>(str = '', props: P = null, Component: any = 'span'):
  * Makes a copy of the passed original object, subtracting the properties with
  * names in the propsToFilter arg, which should be Array[String].
  */
-export function filterOutProps<P>(orig: P, propsToFilter: string[]) {
+export function filterOutProps<P extends AnyObject>(orig: P, propsToFilter: string[]) {
   return Object.keys(orig).reduce((obj, key) =>
     (propsToFilter.indexOf(key) !== -1 ? obj :
-      Object.assign(obj, { [key]: (orig as any)[key] })), {});
+      Object.assign(obj, { [key]: orig[key] })), {});
 }
 
 /**
  * Generates HTML markup for an attribute using duck-typing
  */
-export function formatAttributeValue(value: AttributeValue): string {
-  return (Object(value) === value && 'url' in (value as any))
-    ? `<a href="${value.url}">${value.displayText || value.url}</a>`
-    : value;
+export function formatAttributeValue(value?: AttributeValue): string {
+  if (typeof value === 'object' && value != null) {
+    return `<a href="${value.url}">${value.displayText || value.url}</a>`;
+  }
+  return value as string;
 }
 
 /**
@@ -245,7 +250,7 @@ export function addOrRemove<T>(array: T[], value: T) : T[] {
  * object or the property is null or undefined, returns default value.
  * Otherwise returns the value found.
  */
-export function getValueOrDefault<T>(object: {[key: string]: any}, propertyName: string, defaultValue: T): T {
+export function getValueOrDefault<T>(object: AnyObject, propertyName: string, defaultValue: T): T {
   return (object == null || object == undefined ||
       object[propertyName] == null || object[propertyName] == undefined ?
       defaultValue : object[propertyName]);
@@ -273,9 +278,9 @@ export function getChangeHandler<S extends {}, T>(inputName: string, onParentCha
  * @param {Array<String>} propertyNameList list of properties to examine
  * @return {boolean} false if all properties are referentially identical, else true
  */
-export function propsDiffer<P extends {}>(oldProps: P, newProps: P, propertyNameList: string[]) {
+export function propsDiffer<P extends AnyObject>(oldProps: P, newProps: P, propertyNameList: string[]) {
   for (let i = 0; i < propertyNameList.length; i++) {
-    if ((oldProps as any)[propertyNameList[i]] !== (newProps as any)[propertyNameList[i]]) {
+    if (oldProps[propertyNameList[i]] !== newProps[propertyNameList[i]]) {
       return true;
     }
   }

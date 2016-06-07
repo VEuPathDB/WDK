@@ -1,4 +1,4 @@
-/* global _ */
+/* global _, wdk */
 wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   var XHR_DATA_KEY = 'dependent-xhr';

@@ -71,7 +71,7 @@ export interface PrimaryKey extends Array<{
   value: string;
 }> {}
 
-export type AttributeValue = string & LinkAttributeValue;
+export type AttributeValue = string | LinkAttributeValue;
 
 export interface LinkAttributeValue {
   url: string;
