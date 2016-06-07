@@ -111,8 +111,8 @@ export default class WdkService {
       // since it cannot reliably serialize Maps
       for (let recordClass of recordClasses) {
         Object.assign(recordClass, {
-          attributesMap: makeIndex(recordClass.attributes, 'name'),
-          tablesMap: makeIndex(recordClass.tables, 'name')
+          attributesMap: makeIndex(recordClass.attributes, attr => attr.name),
+          tablesMap: makeIndex(recordClass.tables, table => table.name)
         });
       }
       return recordClasses;
@@ -136,16 +136,16 @@ export default class WdkService {
    * The record instance will be stored in memory. Any subsequent requests will
    * be merged with the in-memory request.
    */
-  getRecord(recordClassName: string, primaryKey: string[], options: {attributes?: string[]; tables?: string[];} = {}) {
+  getRecord(recordClassName: string, primaryKey: string[], options: {attributes?: string[]; tables?: string[]; includeOverview?: boolean;} = {}) {
     let key = makeRecordKey(recordClassName, primaryKey);
     let method = 'post';
     let url = '/record/' + recordClassName + '/instance';
 
-    let { attributes = [], tables = [] } = options;
+    let { attributes = [], tables = [], includeOverview = false } = options;
 
     // if we don't have the record, fetch whatever is requested
     if (!this._recordCache.has(key)) {
-      let request = { attributes, tables, primaryKey };
+      let request = { attributes, tables, primaryKey, includeOverview };
       let response = this._fetchJson<Record>(method, url, stringify(request));
       this._recordCache.set(key, { request, response });
     }
@@ -201,7 +201,7 @@ export default class WdkService {
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
     let url = `/../processBasket.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return this._fetchJson<any>(method, url).then(data => data.processed > 0);
+    return this._fetchJson<{processed: number}>(method, url).then(data => data.processed > 0);
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
@@ -219,7 +219,7 @@ export default class WdkService {
     let data = JSON.stringify([ record.id.reduce((data: {[key: string]: string;}, p: {name: string; value: string;}) => (data[p.name] = p.value, data), {}) ]);
     let method = 'get';
     let url = `/../processFavorite.do?action=${action}&type=${record.recordClassName}&data=${data}`;
-    return this._fetchJson<any>(method, url).then(data => data.countProcessed > 0);
+    return this._fetchJson<{countProcessed: number}>(method, url).then(data => data.countProcessed > 0);
   }
 
   // FIXME Replace with service call, e.g. PATCH /user/basket { add: [ {recordId} ] }
@@ -257,8 +257,8 @@ export default class WdkService {
   getOntology(name = '__wdk_categories__') {
     return this._getFromCache('ontology/' + name, () => {
       let ontology$ = this._fetchJson<Ontology<CategoryNode>>('get', '/ontology/' + name);
-      let recordClasses$ = this.getRecordClasses().then(r => makeIndex(r, 'name'));
-      let questions$ = this.getQuestions().then(q => makeIndex(q, 'name'));
+      let recordClasses$ = this.getRecordClasses().then(rs => makeIndex(rs, r => r.name));
+      let questions$ = this.getQuestions().then(qs => makeIndex(qs, q => q.name));
       let entities$ = Promise.all([ recordClasses$, questions$ ])
       .then(([ recordClasses, questions ]) => ({ recordClasses, questions }));
 
@@ -463,6 +463,6 @@ function compareOntologyNodesByDisplayName(nodeA: CategoryNode, nodeB: CategoryN
  * @param {string} key
  * @return {Map<T>}
  */
-function makeIndex(array: any[], key: string) {
-  return array.reduce((index, item) => index.set(item[key], item), new Map);
+function makeIndex<T, U>(array: U[], getKey: (u: U) => T) {
+  return array.reduce((index, item) => index.set(getKey(item), item), new Map<T, U>());
 }
