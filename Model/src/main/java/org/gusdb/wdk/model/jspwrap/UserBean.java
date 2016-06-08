@@ -393,7 +393,7 @@ public class UserBean /* implements Serializable */{
    * @see org.gusdb.wdk.model.user.User#changePassword(java.lang.String, java.lang.String, java.lang.String)
    */
   public void changePassword(String oldPassword, String newPassword, String confirmPassword)
-      throws WdkUserException {
+      throws WdkUserException, WdkModelException {
     user.changePassword(oldPassword, newPassword, confirmPassword);
   }
 

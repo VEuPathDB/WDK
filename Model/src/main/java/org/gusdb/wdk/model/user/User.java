@@ -931,7 +931,7 @@ public class User /* implements Serializable */{
   }
 
   public void changePassword(String oldPassword, String newPassword, String confirmPassword)
-      throws WdkUserException {
+      throws WdkUserException, WdkModelException {
     userFactory.changePassword(this.profile.get(UserProfileProperty.EMAIL), oldPassword, newPassword, confirmPassword);
   }
 
