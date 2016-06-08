@@ -27,12 +27,14 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.User.UserProfileProperty;
+import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.ConflictException;
 import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.RequestMisformatException;
+import org.gusdb.wdk.service.request.user.PasswordChangeRequest;
 import org.gusdb.wdk.service.request.user.UserPreferencesRequest;
 import org.gusdb.wdk.service.request.user.UserProfileRequest;
 import org.gusdb.wdk.session.OAuthUtil;
@@ -53,6 +55,8 @@ public class UserService extends WdkService {
   private static final String REQUIRED_VALUES = "The following items must be present and non-empty: ";
   private static final String PROPERTIES_TOO_LONG = "The following property names and/or values exceed their maximum allowed lengths of ";
   private static final String COOKIE_ENCODING_PROBLEM = "Unable to encode login cookie value: ";
+
+  private enum Access { PUBLIC, PRIVATE; }
 
   // ===== OAuth 2.0 + OpenID Connect Support =====
   /**
@@ -84,9 +88,7 @@ public class UserService extends WdkService {
       @PathParam("id") String userIdStr,
       @QueryParam("includePreferences") Boolean includePreferences)
           throws WdkModelException {
-    UserBundle userBundle = parseUserId(userIdStr);
-    if (userBundle == null)
-      throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userIdStr));
+    UserBundle userBundle = validateUser(userIdStr, Access.PUBLIC);
     return Response.ok(
         UserFormatter.getUserJson(userBundle.getUser(),
             userBundle.isCurrentUser(), getFlag(includePreferences)).toString()
@@ -97,7 +99,7 @@ public class UserService extends WdkService {
   @Path("{id}/preference")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserPrefs(@PathParam("id") String userIdStr) {
-    UserBundle userBundle = validateUser(userIdStr);
+    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
     return Response.ok(UserFormatter.getUserPrefsJson(
         userBundle.getUser().getProjectPreferences()).toString()).build();
   }
@@ -116,7 +118,7 @@ public class UserService extends WdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response setUserProfile(@PathParam("id") String userIdStr, String body,
       @CookieParam(LOGIN_COOKIE_NAME) Cookie cookie) throws ConflictException, DataValidationException, WdkModelException {
-    UserBundle userBundle = validateUser(userIdStr);
+    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
     NewCookie loginCookie = null;
     try {
       User user = userBundle.getUser();
@@ -164,7 +166,7 @@ public class UserService extends WdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateUserProfile(@PathParam("id") String userIdStr, String body, @CookieParam(LOGIN_COOKIE_NAME) Cookie cookie) 
       throws ConflictException, DataValidationException, WdkModelException {
-    UserBundle userBundle = validateUser(userIdStr);
+    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
     NewCookie loginCookie = null;
     try {
       User user = userBundle.getUser();
@@ -205,7 +207,7 @@ public class UserService extends WdkService {
   @Path("{id}/preference")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response putUserPrefs(@PathParam("id") String userIdStr, String body) throws DataValidationException, WdkModelException {
-    UserBundle userBundle = validateUser(userIdStr);
+    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
     try {
       User user = userBundle.getUser();
       JSONObject json = new JSONObject(body);
@@ -236,7 +238,7 @@ public class UserService extends WdkService {
   @Path("{id}/preference")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response patchUserPrefs(@PathParam("id") String userIdStr, String body) throws WdkModelException, DataValidationException {
-    UserBundle userBundle = validateUser(userIdStr);
+    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
     try {
       User user = userBundle.getUser();
       JSONObject json = new JSONObject(body);
@@ -253,19 +255,46 @@ public class UserService extends WdkService {
       throw new BadRequestException(e);
     }
   }
-  
+
+  @PUT
+  @Path("{id}/password")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response resetUserPassword(@PathParam("id") String userIdStr, String body)
+      throws WdkModelException, DataValidationException {
+    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
+    try {
+      User user = userBundle.getUser();
+      JSONObject json = new JSONObject(body);
+      PasswordChangeRequest request = PasswordChangeRequest.createFromJson(json);
+      UserFactory userMgr = getWdkModel().getUserFactory();
+      if (userMgr.isCorrectPassword(user.getEmail(), request.getOldPassword())) {
+        userMgr.savePassword(user.getEmail(), request.getNewPassword());
+        return Response.noContent().build();
+      }
+      else {
+        // user submitted wrong old password, permission denied
+        throw new ForbiddenException("Old password specified is not correct.");
+      }
+    }
+    catch (JSONException | RequestMisformatException e) {
+      throw new BadRequestException(e);
+    }
+  }
+
   /**
-   * Insures that the subject user exists and that the calling user
-   * is the same as the subject user.  If either condition is not true,
-   * the appropriate exception (corresponding to 404 and 403 respectively) is thrown.
-   * @param userIdStr - id string of the subject user
-   * @return - a userBundle representing that user.
+   * Ensures that the subject user exists and that the calling user has the
+   * permissions requested.  If either condition is not true, the appropriate
+   * exception (corresponding to 404 and 403 respectively) is thrown.
+   * 
+   * @param userIdStr id string of the subject user
+   * @param requestedAccess the access requested by the caller
+   * @return a userBundle representing that user
    */
-  protected UserBundle validateUser(String userIdStr) {
+  protected UserBundle validateUser(String userIdStr, Access requestedAccess) {
     UserBundle userBundle = parseUserId(userIdStr);
     if (userBundle == null)
       throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userIdStr));
-    if (!userBundle.isCurrentUser())
+    if (!userBundle.isCurrentUser() && Access.PRIVATE.equals(requestedAccess))
       throw new ForbiddenException(WdkService.PERMISSION_DENIED);
     return userBundle;
   }
