@@ -363,6 +363,18 @@ public class UserFactory {
     return getMergedUser(guest, getUser(userId));
   }
 
+  /**
+   * Returns whether email and password are a correct credentials combination.
+   * 
+   * @param email user email
+   * @param password user password
+   * @return true email corresponds to user and password is correct, else false
+   * @throws WdkModelException if error occurs while determining result
+   */
+  public boolean isCorrectPassword(String email, String password) throws WdkModelException {
+    return authenticate(email, password) != null;
+  }
+
   private User authenticate(String email, String password)
       throws WdkModelException {
     /*
@@ -1012,7 +1024,7 @@ public class UserFactory {
   }
 
   void changePassword(String email, String oldPassword, String newPassword,
-      String confirmPassword) throws WdkUserException {
+      String confirmPassword) throws WdkUserException, WdkModelException {
     email = email.trim();
 
     if (newPassword == null || newPassword.trim().length() == 0)
@@ -1056,7 +1068,7 @@ public class UserFactory {
   }
 
   public void savePassword(String email, String password)
-      throws WdkUserException {
+      throws WdkModelException {
     email = email.trim();
     PreparedStatement ps = null;
     String sql = "UPDATE " + userSchema
@@ -1068,10 +1080,14 @@ public class UserFactory {
       ps = SqlUtils.getPreparedStatement(dataSource, sql);
       ps.setString(1, encrypted);
       ps.setString(2, email);
-      ps.executeUpdate();
+      int numRowsUpdated = ps.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-user-update-password", start);
+      if (numRowsUpdated != 1) {
+        throw new WdkModelException("Password update for user with email '" +
+            email + "' updated " + numRowsUpdated + " rows.");
+      }
     } catch (SQLException ex) {
-      throw new WdkUserException(ex);
+      throw new WdkModelException(ex);
     } finally {
       SqlUtils.closeStatement(ps);
     }
