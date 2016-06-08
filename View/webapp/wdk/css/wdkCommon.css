@@ -1818,6 +1818,10 @@ color:darkred;font-style:italic;font-size:95%;
      = jQuery 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+.ui-front {
+  z-index: 10000000000;
+}
+
 .ui-tabs > .ui-widget-header {
     background: none;
     border: none;

@@ -104,7 +104,7 @@ function configureStores(Stores, dispatcher) {
  * @param {any?} services
  */
 function makeDispatchAction(dispatcher, services) {
-  let logError = console.log.bind(console, 'Error in dispatchAction:');
+  let logError = console.error.bind(console, 'Error in dispatchAction:');
 
   return function dispatchAction(action) {
     if (typeof action === 'function') {

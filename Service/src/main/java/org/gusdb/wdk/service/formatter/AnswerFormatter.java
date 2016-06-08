@@ -40,7 +40,7 @@ public class AnswerFormatter {
       JSONArray records = new JSONArray();
       int numRecordsReturned = 0;
       for (RecordInstance record : answerValue.getAnswerValue().getRecordInstances()) {
-        records.put(RecordFormatter.getRecordJson(record, attributeNames, tableNames));
+        records.put(RecordFormatter.getRecordJson(record, attributeNames, tableNames, false));
         numRecordsReturned++;
       }
       parent.put(Keys.RECORDS, records);
