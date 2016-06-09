@@ -1,5 +1,5 @@
-import WdkStore from './WdkStore';
-import {filterRecords} from '../utils/recordUtils';
+import { ReduceStore } from 'flux/utils';
+import { filterRecords } from '../utils/recordUtils';
 import { actionTypes } from '../actioncreators/AnswerViewActionCreator';
 
 let {
@@ -11,7 +11,7 @@ let {
   APP_ERROR
 } = actionTypes;
 
-export default class AnswerViewStore extends WdkStore {
+export default class AnswerViewStore extends ReduceStore {
 
   getInitialState() {
     return {
@@ -62,105 +62,105 @@ export default class AnswerViewStore extends WdkStore {
   }
 }
 
-  function addAnswer(state, payload) {
-    let { answer, displayInfo, question, recordClass, parameters } = payload;
+function addAnswer(state, payload) {
+  let { answer, displayInfo, question, recordClass, parameters } = payload;
 
-    // in case we used a magic string to get attributes, reset fetched attributes in displayInfo
-    displayInfo.attributes = answer.meta.attributes;
+  // in case we used a magic string to get attributes, reset fetched attributes in displayInfo
+  displayInfo.attributes = answer.meta.attributes;
 
-    // need to filter wdk_weight from multiple places;
-    let isNotWeight = attr => attr != 'wdk_weight' && attr.name != 'wdk_weight';
+  // need to filter wdk_weight from multiple places;
+  let isNotWeight = attr => attr != 'wdk_weight' && attr.name != 'wdk_weight';
 
-    // collect attributes from recordClass and question
-    let allAttributes = recordClass.attributes.concat(question.dynamicAttributes).filter(isNotWeight);
+  // collect attributes from recordClass and question
+  let allAttributes = recordClass.attributes.concat(question.dynamicAttributes).filter(isNotWeight);
 
-    // use previously selected visible attributes unless they don't exist
-    let visibleAttributes = state.visibleAttributes;
-    if (!visibleAttributes || state.meta.recordClassName !== answer.meta.recordClassName) {
-      // need to populate attribute details for visible attributes
-      visibleAttributes = answer.meta.attributes.map(attrName => {
-        // first try to find attribute in record class
-        let value = allAttributes.find(attr => attr.name === attrName);
-        if (value === null) {
-          // null value is bad, but we expect itRemove search weight from answer
-          //   meta since it doens't apply to non-Step answers
-          if (isNotWeight({ name: attrName })) {
-            console.warn("Attribute name '" + attrName +
-                "' does not correspond to a known attribute.  Skipping...");
-          }
+  // use previously selected visible attributes unless they don't exist
+  let visibleAttributes = state.visibleAttributes;
+  if (!visibleAttributes || state.meta.recordClassName !== answer.meta.recordClassName) {
+    // need to populate attribute details for visible attributes
+    visibleAttributes = answer.meta.attributes.map(attrName => {
+      // first try to find attribute in record class
+      let value = allAttributes.find(attr => attr.name === attrName);
+      if (value === null) {
+        // null value is bad, but we expect itRemove search weight from answer
+        //   meta since it doens't apply to non-Step answers
+        if (isNotWeight({ name: attrName })) {
+          console.warn("Attribute name '" + attrName +
+              "' does not correspond to a known attribute.  Skipping...");
         }
-        return value;
-      }).filter(element => element != null); // filter unfound attributes
-    }
-
-    // Remove search weight from answer meta since it doens't apply to non-Step answers
-    answer.meta.attributes = answer.meta.attributes.filter(isNotWeight);
-
-    /*
-     * This will update the keys `filteredRecords`, and `questionDefinition` in `state`.
-     */
-    return Object.assign({}, state, {
-      meta: answer.meta,
-      question,
-      recordClass,
-      parameters,
-      allAttributes,
-      visibleAttributes,
-      unfilteredRecords: answer.records,
-      records: filterRecords(answer.records, state),
-      isLoading: false,
-      displayInfo
-    });
+      }
+      return value;
+    }).filter(element => element != null); // filter unfound attributes
   }
 
-  /**
-   * Update the position of an attribute in the answer table.
-   *
-   * @param {string} columnName The name of the attribute being moved.
-   * @param {number} newPosition The 0-based index to move the attribute to.
+  // Remove search weight from answer meta since it doens't apply to non-Step answers
+  answer.meta.attributes = answer.meta.attributes.filter(isNotWeight);
+
+  /*
+   * This will update the keys `filteredRecords`, and `questionDefinition` in `state`.
    */
-  function moveTableColumn(state, { columnName, newPosition }) {
-    /* make a copy of list of attributes we will be altering */
-    let attributes = [ ...state.visibleAttributes ];
+  return Object.assign({}, state, {
+    meta: answer.meta,
+    question,
+    recordClass,
+    parameters,
+    allAttributes,
+    visibleAttributes,
+    unfilteredRecords: answer.records,
+    records: filterRecords(answer.records, state),
+    isLoading: false,
+    displayInfo
+  });
+}
 
-    /* The current position of the attribute being moved */
-    let currentPosition = attributes.findIndex(function(attribute) {
-      return attribute.name === columnName;
-    });
+/**
+ * Update the position of an attribute in the answer table.
+ *
+ * @param {string} columnName The name of the attribute being moved.
+ * @param {number} newPosition The 0-based index to move the attribute to.
+ */
+function moveTableColumn(state, { columnName, newPosition }) {
+  /* make a copy of list of attributes we will be altering */
+  let attributes = [ ...state.visibleAttributes ];
 
-    /* The attribute being moved */
-    let attribute = attributes[currentPosition];
+  /* The current position of the attribute being moved */
+  let currentPosition = attributes.findIndex(function(attribute) {
+    return attribute.name === columnName;
+  });
 
-    // remove attribute from array
-    attributes.splice(currentPosition, 1);
+  /* The attribute being moved */
+  let attribute = attributes[currentPosition];
 
-    // then, insert into new position
-    attributes.splice(newPosition, 0, attribute);
+  // remove attribute from array
+  attributes.splice(currentPosition, 1);
 
-    return updateVisibleAttributes(state, { attributes });
-  }
+  // then, insert into new position
+  attributes.splice(newPosition, 0, attribute);
 
-  function updateVisibleAttributes(state, { attributes }) {
-    // Create a new copy of visibleAttributes
-    let visibleAttributes = attributes.slice(0);
+  return updateVisibleAttributes(state, { attributes });
+}
 
-    // Create a new copy of state
-    return Object.assign({}, state, {
-      visibleAttributes
-    });
-  }
+function updateVisibleAttributes(state, { attributes }) {
+  // Create a new copy of visibleAttributes
+  let visibleAttributes = attributes.slice(0);
 
-  function updateFilter(state, payload) {
-    let filterSpec = {
-      filterTerm: payload.terms,
-      filterAttributes: payload.attributes || [],
-      filterTables: payload.tables || []
-    };
-    return Object.assign({}, state, filterSpec, {
-      records: filterRecords(state.unfilteredRecords, filterSpec)
-    });
-  }
+  // Create a new copy of state
+  return Object.assign({}, state, {
+    visibleAttributes
+  });
+}
 
-  function answerLoading(state, payload) {
-    return Object.assign({}, state, { isLoading: payload.isLoading });
-  }
+function updateFilter(state, payload) {
+  let filterSpec = {
+    filterTerm: payload.terms,
+    filterAttributes: payload.attributes || [],
+    filterTables: payload.tables || []
+  };
+  return Object.assign({}, state, filterSpec, {
+    records: filterRecords(state.unfilteredRecords, filterSpec)
+  });
+}
+
+function answerLoading(state, payload) {
+  return Object.assign({}, state, { isLoading: payload.isLoading });
+}
