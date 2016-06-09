@@ -1,7 +1,17 @@
 .wdk-UserProfile-banner {
-  font-size: 14px;
-  width: 35em;
-  padding: 3em;
+  font-size: 1.3em;
+  width: 45em;
+  padding: 0.4em 1.2em;
+  border-radius: 7px;
+  border: 1px solid #d3d3d3;
+}
+
+.wdk-UserProfile-modified {
+  background: lightblue
+}
+
+.wdk-UserProfile-pending {
+  background: lightyellow
 }
 
 .wdk-UserProfile-error {
@@ -44,7 +54,6 @@
   text-align:right;
   vertical-align: top;
 }
-
 
 .wdk-UserProfile-profileForm input[type='text|email'] {
   display: inline-block;
