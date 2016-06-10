@@ -52,6 +52,8 @@
   position: absolute;
   padding-right: 48px;
   transition: right 250ms ease;
+  z-index: 10;
+  background: white;
 }
 
 .wdk-RecordSidebar__fixed {
@@ -67,7 +69,7 @@
   position: absolute;
   top: 16px;
   right: 0;
-  background: transparent;
+  background: white;
   z-index: 1;
   font-size: 1.5em;
   transform: rotate(-90deg) translateY(76px) translateX(-62px);
