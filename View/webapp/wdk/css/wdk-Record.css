@@ -54,6 +54,8 @@
   transition: right 250ms ease;
   z-index: 10;
   background: white;
+  padding: 0 1em;
+  box-shadow: 0px 2px 10px silver;
 }
 
 .wdk-RecordSidebar__fixed {
@@ -68,7 +70,7 @@
 .wdk-RecordSidebarToggle {
   position: absolute;
   top: 16px;
-  right: 0;
+  right: -24px;
   background: white;
   z-index: 1;
   font-size: 1.5em;
@@ -82,12 +84,11 @@
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebar {
-  left: 0;
-  padding: 0;
+  left: -44px;
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebar__fixed {
-  left: 4em;
+  left: 4px;
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebarToggle {
@@ -112,15 +113,15 @@
 }
 
 .wdk-RecordNavigationSearchInput {
-  width: calc(100% - 3em);
+  width: calc(100% - 1.5em);
   padding: .5em;
 }
 
 .wdk-RecordNavigationCategories {
   overflow-y: auto;
   max-height: calc(100vh - 150px);
-  padding-right: 1em;
-  border-bottom: 1px solid lightgrey;
+  /* border-bottom: 1px solid lightgrey; */
+  padding-bottom: 1em;
 }
 
 .wdk-RecordNavigationItem {
