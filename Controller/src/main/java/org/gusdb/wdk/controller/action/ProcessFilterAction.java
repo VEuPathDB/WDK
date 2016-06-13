@@ -52,18 +52,11 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     try {
       int stepId = Integer.valueOf(strStepId);
 
-      // before changing step, need to check if strategy is saved, if yes, make a copy.
       StepBean step;
       String strStrategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
       if (strStrategyId != null && !strStrategyId.isEmpty()) {
         int strategyId = Integer.valueOf(strStrategyId.split("_", 2)[0]);
         StrategyBean strategy = user.getStrategy(strategyId);
-        if (strategy.getIsSaved()){
-          Map<Integer, Integer> stepIdMap = new HashMap<>();
-          strategy = user.copyStrategy(strategy, stepIdMap, strategy.getName());
-          // map the old step id to the new one
-          stepId = stepIdMap.get(stepId);
-        }
         step = strategy.getStepById(stepId);
       } else step = user.getStep(stepId);
       
@@ -81,7 +74,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
       ActionForward forward = new ActionForward(url.toString());
       forward.setRedirect(true);
-      System.out.println("Leaving ProcessFilterAction...");
+      logger.debug("Leaving ProcessFilterAction...");
       return forward;
     }
     catch (Exception ex) {
