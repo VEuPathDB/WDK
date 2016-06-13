@@ -266,11 +266,11 @@
     <ul class="menu_section">                                   <%--  <li>${rcs.value.name} is multicategory: ${rcs.value.multiCategory}</li> --%>
       <c:choose>
         <c:when test="${rcs.value.multiCategory}"> 
-
+<%--
           <li style="padding-bottom:3px" onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${geneByTextQuestion.fullName}&stage=question',null,'sl_${cat.name}',3,'next')">${geneByTextQuestion.displayName}
                 <imp:questionFeature question="${geneByTextQuestion}" />
           </li>                   
-       
+--%>       
           <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">    <%-- GENES : section 3 CATEGORIES --%>
             <c:set var="cat" value="${catEntry.value}" />       
             <c:choose>
