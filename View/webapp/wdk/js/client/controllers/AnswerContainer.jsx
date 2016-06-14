@@ -6,9 +6,9 @@ import {
   moveColumn,
   changeAttributes
 } from '../actioncreators/AnswerViewActionCreator';
-import Answer from './Answer';
-import Doc from './Doc';
-import Loading from './Loading';
+import Answer from '../components/Answer';
+import Doc from '../components/Doc';
+import Loading from '../components/Loading';
 
 /**
  * Container for Answer page.

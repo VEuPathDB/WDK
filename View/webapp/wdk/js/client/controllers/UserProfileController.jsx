@@ -1,8 +1,8 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
-import Doc from './Doc';
-import Loading from './Loading';
-import UserProfile from './UserProfile';
+import Doc from '../components/Doc';
+import Loading from '../components/Loading';
+import UserProfile from '../components/UserProfile';
 import { loadCurrentUser, updateProfile, saveProfile } from '../actioncreators/UserActionCreator';
 
 const APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
