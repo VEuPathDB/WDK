@@ -2,9 +2,9 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
 import { wrapActions } from '../utils/actionHelpers';
-import Doc from './Doc';
-import Loading from './Loading';
-import SiteMap from './SiteMap';
+import Doc from '../components/Doc';
+import Loading from '../components/Loading';
+import SiteMap from '../components/SiteMap';
 import * as SiteMapActionCreator from '../actioncreators/SiteMapActionCreator';
 
 let SiteMapController = React.createClass({
