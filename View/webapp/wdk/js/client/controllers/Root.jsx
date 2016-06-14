@@ -11,7 +11,7 @@ import QuestionListController from './QuestionListController';
 import StepDownloadFormController from './StepDownloadFormController';
 import UserProfileController from './UserProfileController';
 import SiteMapController from './SiteMapController';
-import Loading from './Loading';
+import Loading from '../components/Loading';
 
 let REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
 let GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;

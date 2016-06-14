@@ -2,9 +2,9 @@
 import React from 'react';
 import { wrappable } from '../utils/componentUtils';
 import { wrapActions } from '../utils/actionHelpers';
-import Doc from './Doc';
-import Loading from './Loading';
-import StepDownloadFormPage from './StepDownloadFormPage';
+import Doc from '../components/Doc';
+import Loading from '../components/Loading';
+import StepDownloadFormPage from '../components/StepDownloadFormPage';
 import * as StepDownloadFormViewActionCreator from '../actioncreators/StepDownloadFormViewActionCreator';
 import * as UserActionCreator from '../actioncreators/UserActionCreator';
 

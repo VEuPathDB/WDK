@@ -16,9 +16,9 @@ import {
   updateBasketStatus,
   updateFavoritesStatus
 } from '../actioncreators/UserActionCreator';
-import Doc from './Doc';
-import Loading from './Loading';
-import RecordUI from './RecordUI';
+import Doc from '../components/Doc';
+import Loading from '../components/Loading';
+import RecordUI from '../components/RecordUI';
 
 /** View Controller for record page */
 class RecordController extends Component {

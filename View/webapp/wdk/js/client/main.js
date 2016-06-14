@@ -7,10 +7,12 @@ import { createHistory } from 'history';
 
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
-import Root from './components/Root';
+import Root from './controllers/Root';
+
 import * as PartialRenderer from './partialRenderer';
 import * as Components from './components';
 import * as Stores from './stores';
+import * as Controllers from './controllers';
 import * as ComponentUtils from './utils/componentUtils';
 import * as IterableUtils from './utils/IterableUtils';
 import * as ReporterUtils from './utils/reporterUtils';
@@ -22,6 +24,7 @@ import * as FormSubmitter from './utils/FormSubmitter';
 export {
   Components,
   Stores,
+  Controllers,
   ComponentUtils,
   ReporterUtils,
   FormSubmitter,
@@ -37,10 +40,11 @@ export {
  *
  * @param {string} option.rootUrl Root URL used by the router.
  * @param {string} option.endpoint Base URL for WdkService.
- * @param {HTMLElement} option.rootElement DOM node to render the applicaiton.
- * @param {Array} option.applicationRoutes Addtional routes to register with the Router.
+ * @param {HTMLElement} option.rootElement DOM node to render the application.
+ * @param {Array} option.applicationRoutes Additional routes to register with the Router.
  */
 export function initialize({ rootUrl, endpoint, applicationRoutes }) {
+  // define the elements of the Flux architecture
   let wdkService = new WdkService(endpoint);
   let dispatcher = new Dispatcher;
   let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
@@ -50,6 +54,7 @@ export function initialize({ rootUrl, endpoint, applicationRoutes }) {
   wdkService.getQuestions();
   wdkService.getRecordClasses();
   wdkService.getOntology();
+  // define top-level page renderer
   let render = (rootElement) => {
     let applicationElement = createElement(
       Root, {
@@ -125,27 +130,32 @@ function makeDispatchAction(dispatcher, services) {
 }
 
 /**
- * Apply Component wrappers to WDK coponents. Keys of `componentWrappers`
- * should correspond to Component names in WDK. Values of `componentWrappers`
- * are factories that return a new Component.
+ * Apply Component wrappers to WDK components and controllers. Keys of
+ * 'componentWrappers' should correspond to Component or Controller names in
+ * WDK. Values of `componentWrappers` are factories that return a new component.
  *
  * @param {Object} componentWrappers
  */
 export function wrapComponents(componentWrappers) {
   for (let key in componentWrappers) {
+    // look in Components for class by this name
     let Component = Components[key];
+    // if not found, look in Controllers
+    if (Component == null) {
+      Component = Controllers[key];
+    }
+    // if still not found, warn and skip
     if (Component == null) {
       console.warn("Cannot wrap unknown WDK Component '" + key + "'.  Skipping...");
       continue;
     }
-    if (!("wrapComponent" in Components[key])) {
-      console.error(
-        "Warning: WDK Component `%s` is not wrappable.  WDK version will be used.",
-        key
-      );
+    // if found component/controller is not wrappable, log error and skip
+    if (!("wrapComponent" in Component)) {
+      console.error("Warning: WDK Component `%s` is not wrappable.  WDK version will be used.", key);
       continue;
     }
-    Components[key].wrapComponent(componentWrappers[key]);
+    // wrap found component/controller
+    Component.wrapComponent(componentWrappers[key]);
   }
 }
 
