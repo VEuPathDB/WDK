@@ -195,7 +195,7 @@ public class RecordService extends WdkService {
     catch (WdkUserException | RecordNotFoundException e) {
       // these may be thrown when the PK values either don't exist or map to >1 record
       String primaryKeys = (recordInstance == null ? "<unknown>" : recordInstance.getPrimaryKey().getValuesAsString());
-      throw new NotFoundException(WdkService.formatNotFound(RECORD_CLASS_RESOURCE + recordClassName + ", " + String.format(RECORD_RESOURCE, primaryKeys)));
+      throw new NotFoundException(WdkService.formatNotFound(RECORD_CLASS_RESOURCE + recordClassName + ", " + String.format(RECORD_RESOURCE, primaryKeys)) ,e);
     }
     catch (JSONException | RequestMisformatException e) {
       LOG.warn("Passed request body deemed unacceptable", e);
