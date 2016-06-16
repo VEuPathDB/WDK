@@ -549,6 +549,10 @@ public class Step {
     stepFactory.saveStepParamFilters(this);
     stepFactory.resetStepCounts(this);
 
+    // Update the in-memory estimateSize with the reset flag in case other
+    // step operations are called on the step object.
+    estimateSize = RESET_SIZE_FLAG;
+
     // get list of steps dependent on this one; all their results are now invalid
     List<Integer> stepIds = stepFactory.getStepAndParents(getStepId());
     // invalidate step analysis tabs for this step and wait for completion
