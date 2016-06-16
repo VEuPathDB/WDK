@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.filter;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -41,6 +42,8 @@ import org.gusdb.wdk.model.MDCUtil;
  */
 public class MDCServletFilter implements Filter {
   
+  private static final AtomicInteger requestId = new AtomicInteger(0);
+
   @Override
   public void init(FilterConfig filterConfig) { }
 
@@ -53,6 +56,7 @@ public class MDCServletFilter implements Filter {
     try {
       MDCUtil.setIpAddress(request.getRemoteAddr());
       MDCUtil.setRequestedDomain(request.getServerName());
+      MDCUtil.setRequestId(Integer.toHexString(requestId.getAndIncrement()));
 
       HttpSession session = ((HttpServletRequest)request).getSession(false);
       if (session != null) {

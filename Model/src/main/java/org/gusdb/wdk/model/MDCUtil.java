@@ -14,6 +14,8 @@ public class MDCUtil {
   public static final String LOG4J_IP_ADDRESS_KEY = "ipAddress";
   public static final String LOG4J_REQUESTED_DOMAIN_KEY = "requestedDomain";
   public static final String LOG4J_SESSION_ID_KEY = "sessionId";
+  public static final String LOG4J_REQUEST_ID_KEY = "requestId";
+
 
   public static void setIpAddress(String ipAddress) {
     if (ipAddress != null) {
@@ -23,6 +25,16 @@ public class MDCUtil {
 
   public static String getIpAddress() {
     return (String)MDC.get(LOG4J_IP_ADDRESS_KEY);
+  }
+
+  public static void setRequestId(String requestId) {
+    if (requestId != null) {
+      MDC.put(LOG4J_REQUEST_ID_KEY, requestId);
+    }
+  }
+
+  public static String getRequestId() {
+    return (String)MDC.get(LOG4J_REQUEST_ID_KEY);
   }
 
   public static void setRequestedDomain(String domain) {
