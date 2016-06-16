@@ -12,7 +12,7 @@ import javax.ws.rs.container.PreMatching;
 import org.gusdb.fgputil.runtime.ThreadId;
 
 /**
- * Contains filters to assign and unassign ThreadId values to threads handling
+ * Contains filters to assign and remove ThreadId values to threads handling
  * service requests.
  * 
  * @author rdoherty
@@ -20,8 +20,8 @@ import org.gusdb.fgputil.runtime.ThreadId;
 public class ThreadIdFilters {
 
   /**
-   * Adds a thread ID to this thread to identify processing done during this
-   * request.
+   * Assigns a new thread ID to this thread to identify processing done during
+   * the handling of this request.
    */
   @PreMatching
   @Priority(10)
@@ -41,7 +41,7 @@ public class ThreadIdFilters {
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
         throws IOException {
-      ThreadId.unassign();
+      ThreadId.remove();
     }
   }
 }
