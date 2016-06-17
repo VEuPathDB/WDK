@@ -63,16 +63,27 @@ my $parseLogRecord = sub {
   }
   chomp($logRecord);
 
-  my ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $execSeconds, $lastSeconds, $timestamp);
-  if (/(\d+) *\[WARN \] \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)\] ([0-9.]*) - (.*):(\d+) - .*QUERY LOG \[(.*)\] execute: ([0-9.]*) last page: ([0-9.]*) seconds/) {
-    ($digits, $day, $mon, $year, $hour, $min, $sec, $ip, $class, $line, $name, $execSeconds, $lastSeconds) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+  my ($day, $mon, $year, $hour, $min, $sec, $name, $execSeconds, $lastSeconds, $timestamp);
+
+  # 70863     [15/Jun/2016:16:20:14]   128.91.84.248 -      QUERY LOG first:    0.102 last:    0.103 [GeneAttributes.DnaGTracks__select-uncached] 
+  if (/\[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)\] .*QUERY LOG .* last:\s+([0-9.]*) \[(.*)\]/) {
+    ($day, $mon, $year, $hour, $min, $sec, $lastSeconds, $name) = ($1, $2, $3, $4, $5, $6, $7, $8);
 
     my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
     $timestamp = timelocal($sec, $min, $hour, $day, $monthNumber, $year - 1900);
-  } else {
-    $reject = 1;
   }
 
+  # previous format.  can be retired after gus4 release
+  elsif (/\[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)\] .*QUERY LOG \[(.*)\] .* last page: ([0-9.]*)/) {
+    ($day, $mon, $year, $hour, $min, $sec, $name, $lastSeconds) = ($1, $2, $3, $4, $5, $6, $7, $8);
+
+    my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
+    $timestamp = timelocal($sec, $min, $hour, $day, $monthNumber, $year - 1900);
+  }
+
+  else {
+    $reject = 1;
+  }
   return ($reject, $timestamp, $lastSeconds, $name);
 };
 
