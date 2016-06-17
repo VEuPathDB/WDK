@@ -112,7 +112,7 @@ examples-server: node_modules
 # =============================================================================
 
 client-tests: node_modules
-	tape -r babel-core/register -r babel-polyfill tests/client/**/*.js
+	tape -r ts-node/register -r babel-core/register -r babel-polyfill tests/client/**/*.js
 
 
 # =============================================================================
