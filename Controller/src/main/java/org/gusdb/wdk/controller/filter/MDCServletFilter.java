@@ -54,9 +54,11 @@ public class MDCServletFilter implements Filter {
   public void doFilter(ServletRequest request, ServletResponse response,
       FilterChain chain) throws IOException, ServletException {
     try {
+
+      MDCUtil.setRequestStartTime(System.currentTimeMillis());
       MDCUtil.setIpAddress(request.getRemoteAddr());
       MDCUtil.setRequestedDomain(request.getServerName());
-      MDCUtil.setRequestId(Integer.toHexString(requestId.getAndIncrement()));
+      MDCUtil.setRequestId(/*Integer.toHexString(*/String.valueOf(requestId.getAndIncrement()));
 
       HttpSession session = ((HttpServletRequest)request).getSession(false);
       if (session != null) {
