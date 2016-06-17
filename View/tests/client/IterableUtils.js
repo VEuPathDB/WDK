@@ -126,7 +126,7 @@ test('findLast', function(t) {
 
 test('reduce', function(t) {
   t.equal(
-    i.reduce((acc, n) => acc + n, 0, [1,2,3,4,5,6,7,8,9,10]),
+    i.reduce((acc, n) => (console.log(acc, n), acc + n), 0, [1,2,3,4,5,6,7,8,9,10]),
     55
   );
 
