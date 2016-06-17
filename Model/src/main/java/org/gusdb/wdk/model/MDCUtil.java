@@ -11,11 +11,24 @@ import org.apache.log4j.MDC;
  */
 public class MDCUtil {
 
+  public static final String LOG4J_REQUEST_TIMER = "requestTimer";
   public static final String LOG4J_IP_ADDRESS_KEY = "ipAddress";
   public static final String LOG4J_REQUESTED_DOMAIN_KEY = "requestedDomain";
   public static final String LOG4J_SESSION_ID_KEY = "sessionId";
   public static final String LOG4J_REQUEST_ID_KEY = "requestId";
 
+  public static void setRequestStartTime(final long startTime) {
+    MDC.put(LOG4J_REQUEST_TIMER, new Object(){
+      @Override public String toString() {
+        return (System.currentTimeMillis() - startTime) + "ms";
+      }
+    });
+  }
+
+  public static String getRequestDuration() {
+    Object obj = MDC.get(LOG4J_REQUEST_TIMER);
+    return (obj == null ? null : obj.toString());
+  }
 
   public static void setIpAddress(String ipAddress) {
     if (ipAddress != null) {
@@ -54,8 +67,10 @@ public class MDCUtil {
   }
 
   public static void clearValues() {
+    MDC.remove(LOG4J_REQUEST_TIMER);
     MDC.remove(LOG4J_IP_ADDRESS_KEY);
     MDC.remove(LOG4J_REQUESTED_DOMAIN_KEY);
     MDC.remove(LOG4J_SESSION_ID_KEY);
+    MDC.remove(LOG4J_REQUEST_ID_KEY);
   }
 }
