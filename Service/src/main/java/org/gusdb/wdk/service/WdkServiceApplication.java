@@ -11,7 +11,6 @@ import org.gusdb.fgputil.SetBuilder;
 import org.gusdb.wdk.service.filter.ClientCacheExpirationFilter;
 import org.gusdb.wdk.service.filter.MethodRewritingFilter;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
-import org.gusdb.wdk.service.filter.ThreadIdFilters;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.ApiService;
@@ -47,8 +46,6 @@ public class WdkServiceApplication extends Application {
     .add(ExceptionMapper.class)
 
     // add filter classes
-    .add(ThreadIdFilters.AssignmentFilter.class)
-    .add(ThreadIdFilters.RemovalFilter.class)
     .add(MethodRewritingFilter.class)
     .add(RequestLoggingFilter.class)
     .add(ClientCacheExpirationFilter.class)
