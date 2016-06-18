@@ -302,9 +302,12 @@ export function some<T>(test: Predicate<T>, iterable: Iterable<T>): boolean {
  */
 export function reduce<T, U>(fn: Reducer<T, U>, iterable: Iterable<T>): U;
 export function reduce<T, U>(fn: Reducer<T, U>, value: U, iterable: Iterable<T>): U;
-export function reduce<T, U>(fn: Reducer<T, U>, value: U | Iterable<T>, iterable?: Iterable<T>) {
+export function reduce<T, U>(fn: any, value: any, iterable?: any) {
   let result: U|T;
   if (arguments.length === 2) {
+    // No seed value, so we get the first value from iterable as the initial
+    // value and get the rest of the iterable for the rest of the reduce
+    // operation.
     iterable = rest(<Iterable<T>>value);
     result = first(<Iterable<T>>value);
   }
