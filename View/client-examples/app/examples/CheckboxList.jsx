@@ -17,48 +17,33 @@ export class Example extends React.Component {
   constructor() {
     super(...arguments);
     this.state = {
-      selectedItems: selectedItems.slice()
+      value: [ 'A', 'D' ]
     }
   }
 
-  toggleItem(event, item) {
-    let selectedItems = event.target.checked
-      ? [ ...this.state.selectedItems, item ]
-      : this.state.selectedItems.filter(i => i !== item);
-    this.setState({ selectedItems }, () => console.log(this.state));
-  }
-
-  selectAll() {
-    this.setState({
-      selectedItems: items.slice()
-    }, () => console.log(this.state))
-  }
-
-  clearAll() {
-    this.setState({
-      selectedItems: []
-    }, () => console.log(this.state));
+  toggleItem(value) {
+    this.setState({ value }, () => console.log('value', this.state.value));
   }
 
   render() {
     return (
       <div>
         <h3>Uncontrolled CheckboxList</h3>
+        <em>This behavior is no longer supported by CheckboxList. It will most
+        likely be replaced by a decorator component.</em>
         <CheckboxList
           name="example1"
-          onChange={(e, item) => console.log(e.target.checked, item.value)}
+          onChange={console.log.bind(console, 'value')}
           items={items}
-          defaultSelectedItems={selectedItems}
+          defaultValue={['A', 'B']}
         />
 
         <h3>Controlled CheckboxList</h3>
         <CheckboxList
           name="example2"
-          onChange={(event, item) => this.toggleItem(event, item)}
-          onSelectAll={() => this.selectAll()}
-          onClearAll={() => this.clearAll()}
+          onChange={(value) => this.toggleItem(value)}
           items={items}
-          selectedItems={this.state.selectedItems}
+          value={this.state.value}
         />
       </div>
     );
