@@ -10,7 +10,7 @@ import NativeCheckboxList from './NativeCheckboxList';
 let CheckboxList = React.createClass({
 
   onChange(event) {
-    this.props.onChange(addOrRemove(this.props.value, event.target.value));
+    this.props.onChange(addOrRemove(this.props.items, event.target.value));
   },
 
   onSelectAll() {
