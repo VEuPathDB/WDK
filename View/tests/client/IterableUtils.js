@@ -131,4 +131,33 @@ test('reduce', function(t) {
   );
 
   t.end();
+
+});
+
+test('some', function(t) {
+  t.equal(
+    i.some(n => n > 1, [0, 1, 2]),
+    true,
+    'some should return true if any members pass the supplied test'
+  );
+  t.equal(
+    i.some(n => n > 2, [0, 1, 2]),
+    false,
+    'some should return false if no member passes the supplied test'
+  );
+  t.end();
+});
+
+test('every', function(t) {
+  t.equal(
+    i.every(n => n >= 0, [0, 1, 2]),
+    true,
+    'some should return true if any members pass the supplied test'
+  );
+  t.equal(
+    i.every(n => n < 2, [0, 1, 2]),
+    false,
+    'some should return false if no member passes the supplied test'
+  );
+  t.end();
 });
