@@ -3,6 +3,8 @@ package org.gusdb.wdk.model.question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.apache.log4j.Logger;
+
 
 /**
  * An object representation of the {@code <category>/<question>}. It provides a
@@ -12,10 +14,11 @@ import org.gusdb.wdk.model.WdkModelText;
  * 
  */
 public class CategoryQuestionRef extends WdkModelText implements Comparable<CategoryQuestionRef>{
+  private static final Logger logger = Logger.getLogger(CategoryQuestionRef.class);
 
   private String usedBy;
   private Integer sortOrder = null;
-  private String questionDisplayName;
+  private String questionDisplayName = ""; // default to unknown (but still sortable)
 
   public String getUsedBy() {
     return usedBy;
@@ -43,15 +46,8 @@ public class CategoryQuestionRef extends WdkModelText implements Comparable<Cate
     this.sortOrder = new Integer(sortOrder);
   }
   
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
-   * .WdkModel)
-   */
-  @Override
-  public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
-    questionDisplayName = wdkModel.getQuestion(getQuestionFullName()).getDisplayName();
+  public void setQuestionDisplayName(String name) {
+    questionDisplayName = name;
   }
   
   @Override
