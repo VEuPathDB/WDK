@@ -49,7 +49,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
   }
   
   public static void logRequest(String method, UriInfo uriInfo, String body) {
-    StringBuilder log = new StringBuilder("HTTP Request: ")
+    StringBuilder log = new StringBuilder("HTTP ")
       .append(method).append(" /").append(uriInfo.getPath());
 
     // add query params if present
