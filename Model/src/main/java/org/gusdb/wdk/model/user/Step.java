@@ -808,7 +808,7 @@ public class Step {
   }
 
   public Step getStepByPreviousId(int previousId) throws WdkModelException {
-    logger.debug("gettting step by prev id. current=" + this + ", input=" + previousId);
+    logger.debug("getting step by prev id. current=" + this + ", input=" + previousId);
     Step target;
     if (this.previousStepId == previousId) {
       return this;
@@ -1135,22 +1135,30 @@ public class Step {
       User user = getUser();
       Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
       int endIndex = user.getItemsPerPage();
-      // try {
+
+      //try {
         answerValue = question.makeAnswerValue(user, paramValues, 1, endIndex, sortingMap, getFilter(),
             validate, assignedWeight);
         answerValue.setFilterOptions(getFilterOptions());
         answerValue.setViewFilterOptions(getViewFilterOptions());
         answerValue.setApplyViewFilters(applyViewFilters);
-      // }
-      // catch (WdkUserException ex) {
+        //}
+        //catch (WdkUserException ex) {
       //  throw new WdkModelException(ex);
-      // }
+        //logger.debug("**** makeAnswerValue ERROR:  should we invalidate step : " + getQuestionName());
+        //}
+
       try {
         this.estimateSize = answerValue.getResultSize();
       }
       catch (WdkModelException | WdkUserException ex) {
+        // attempt to mark steps invalid on the fly when there is an invalid parameter value
+        if(isValid()) {
+          logger.debug("invalidating a step based on invalid param values, step: " + getStepId() + " question: " + getQuestionName());
+          invalidateStep();
+        }
         // if validate is false, the error will be ignored to allow the process to continue.
-        if (validate)
+        if (validate) 
           throw ex;
         else
           logger.warn(ex);
@@ -1366,9 +1374,9 @@ public class Step {
       throw new WdkModelException("Params property value is not a JSON Object", e);
     }
 
-		//logger.debug("**********setting filters for step:");
+    //logger.debug("setting filters for step:");
     setFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_FILTERS));
-		//logger.debug("**********setting VIEW filters for step:");
+    //logger.debug("setting VIEW filters for step:");
     setViewFilterOptionsJSON(getFilterArrayOrNull(jsContent, KEY_VIEW_FILTERS));
   }
 
@@ -1430,14 +1438,14 @@ public class Step {
   }
 
   public void setFilterOptionsJSON(JSONArray jsOptions) throws WdkModelException {
-		// getQuestion() is null when we come from a newly created step from StepExpander in apicomm maint
-		if (jsOptions == null || questionName == null ) {
+    // getQuestion() is null when we come from a newly created step from StepExpander in apicomm maint
+    if (jsOptions == null || questionName == null ) {
       this.filterOptions = null;
     }
     else {
-			FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
-			validateFilterOptions(newList, false);
-			this.filterOptions = newList;
+      FilterOptionList newList = new FilterOptionList(getQuestion(), jsOptions);
+      validateFilterOptions(newList, false);
+      this.filterOptions = newList;
     }
   }
 

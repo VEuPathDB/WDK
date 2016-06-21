@@ -348,24 +348,25 @@ sub host_class {
   my ($self, $target_site) = @_;
   my ($host_class) = $target_site =~ m/^([^\.]+)\.[^\.]+\..+/;
   return '' unless $host_class;
-  $host_class = 'qa' if $host_class =~ m/^q/;
-  $host_class = 'alpha' if $host_class =~ m/^a/;
-  $host_class = 'beta' if $host_class =~ m/^b/;
-  $host_class = '' if $host_class =~ m/^w/;
+  $host_class = 'qa'    if $host_class =~ m/^q\d/;
+  $host_class = 'alpha' if $host_class =~ m/^a\d/;
+  $host_class = 'beta'  if $host_class =~ m/^b\d/;
+  $host_class = 'prism' if $host_class =~ m/^pr\d/;
+  $host_class = ''      if $host_class =~ m/^w\d/;
   return $host_class;
 }
 
 # given foo.goodb.org, return goodb.org
 sub base_domain {
   my ($self, $target_site) = @_;
-  my ($base_domain) = $target_site =~ m/([^\.]+\.[^\.]+)$/;
+  my ($base_domain) = $target_site =~ m/^(?:[^\.]+\.)?([^\.]+\..+)/;
   return $base_domain;
 }
 
 # convert, for example
 #  q1.toxodb.org to qa.toxodb.org
 #  w1.toxodb.org to toxodb.org
-#  integrate.toxodb.org to integrate.toxodb.org (no conversion)
+#  integrate.gus4.toxodb.org to integrate.gus4.toxodb.org (no conversion)
 sub canonical_hostname {
   my ($self, $target_site) = @_;
   return  $self->{'host_class_prefix'} . $self->base_domain($target_site);
