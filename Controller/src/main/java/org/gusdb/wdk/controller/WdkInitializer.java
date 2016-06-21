@@ -21,10 +21,7 @@ public class WdkInitializer {
   public static void initializeWdk(ServletContext servletContext) {
 
     try {
-      MDCUtil.setRequestId("init");
-      MDCUtil.setIpAddress("<no_ip_address>");
-      MDCUtil.setRequestStartTime(System.currentTimeMillis());
-
+      setLogParams("init");
       logger.info("Initializing WDK web application");
 
       String gusHome = GusHome.webInit(servletContext);
@@ -41,12 +38,10 @@ public class WdkInitializer {
       MDCUtil.clearValues();
     }
   }
-
   public static void terminateWdk(ServletContext servletContext) {
     try {
-      MDCUtil.setRequestId("term");
-      MDCUtil.setIpAddress("<no_ip_address>");
-      MDCUtil.setRequestStartTime(System.currentTimeMillis());
+      setLogParams("term");
+      logger.info("Terminating WDK web application");
 
       WdkModelBean wdkModel = getWdkModel(servletContext);
       if (wdkModel != null) {
@@ -87,5 +82,12 @@ public class WdkInitializer {
 
   public static WdkModelBean getWdkModel(ServletContext servletContext) {
     return (WdkModelBean)servletContext.getAttribute(CConstants.WDK_MODEL_KEY);
+  }
+
+  private static void setLogParams(String stage) {
+    MDCUtil.setRequestId(stage);
+    MDCUtil.setSessionId(stage);
+    MDCUtil.setIpAddress("<no_ip_address>");
+    MDCUtil.setRequestStartTime(System.currentTimeMillis());
   }
 }
