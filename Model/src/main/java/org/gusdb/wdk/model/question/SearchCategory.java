@@ -104,6 +104,15 @@ public class SearchCategory extends WdkModelBase {
     this.questionRefMap.put(questionRef.getQuestionFullName(), questionRef);
   }
   
+  /**
+   * use this to force the set of questions, eg, if using externally determined sorting.
+   * must be called after resolve references.
+   * @param questionRefMap
+   */
+  public void setResolvedQuestionRefMap(Map<String, CategoryQuestionRef> questionRefMap) {
+    this.questionRefMap = questionRefMap;
+  }
+  
   public Collection<CategoryQuestionRef> getQuestionRefs() {
     return questionRefMap.values();
   }
