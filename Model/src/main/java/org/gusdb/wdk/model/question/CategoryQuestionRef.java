@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.question;
 
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 
 /**
@@ -9,9 +11,11 @@ import org.gusdb.wdk.model.WdkModelText;
  * @author jerric
  * 
  */
-public class CategoryQuestionRef extends WdkModelText {
+public class CategoryQuestionRef extends WdkModelText implements Comparable<CategoryQuestionRef>{
 
   private String usedBy;
+  private Integer sortOrder = null;
+  private String questionDisplayName;
 
   public String getUsedBy() {
     return usedBy;
@@ -33,5 +37,33 @@ public class CategoryQuestionRef extends WdkModelText {
     if (strict) 
       return (usedBy != null && this.usedBy != null && this.usedBy.equalsIgnoreCase(usedBy));
     return (usedBy == null || this.usedBy == null || this.usedBy.equalsIgnoreCase(usedBy));
+  }
+  
+  public void setSortOrder(int sortOrder) {
+    this.sortOrder = new Integer(sortOrder);
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
+   * .WdkModel)
+   */
+  @Override
+  public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+    questionDisplayName = wdkModel.getQuestion(getQuestionFullName()).getDisplayName();
+  }
+  
+  @Override
+  public int compareTo(CategoryQuestionRef cqr) {
+    if (sortOrder != null) {
+      if (cqr.sortOrder != null) return sortOrder - cqr.sortOrder;
+      return 1;
+    } else {
+      if (cqr.sortOrder != null) return -1;
+      else {
+        return questionDisplayName.compareTo(cqr.questionDisplayName);
+      }
+    }
   }
 }
