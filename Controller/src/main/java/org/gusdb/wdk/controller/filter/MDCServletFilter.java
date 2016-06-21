@@ -42,7 +42,7 @@ import org.gusdb.wdk.model.MDCUtil;
  */
 public class MDCServletFilter implements Filter {
   
-  private static final AtomicInteger requestId = new AtomicInteger(0);
+  private static final AtomicInteger requestId = new AtomicInteger(1);
 
   @Override
   public void init(FilterConfig filterConfig) { }

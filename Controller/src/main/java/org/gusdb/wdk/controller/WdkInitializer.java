@@ -7,6 +7,7 @@ import javax.servlet.ServletContext;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.controller.wizard.Wizard;
+import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -19,23 +20,34 @@ public class WdkInitializer {
 
   public static void initializeWdk(ServletContext servletContext) {
 
-    logger.info("Initializing WDK web application");
-
-    String gusHome = GusHome.webInit(servletContext);
-    String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
-    String alwaysGoToSummary = servletContext.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
-    String loginUrl = servletContext.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
-
     try {
+      MDCUtil.setRequestId("init");
+      MDCUtil.setIpAddress("<no_ip_address>");
+      MDCUtil.setRequestStartTime(System.currentTimeMillis());
+
+      logger.info("Initializing WDK web application");
+
+      String gusHome = GusHome.webInit(servletContext);
+      String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
+      String alwaysGoToSummary = servletContext.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
+      String loginUrl = servletContext.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
+
       initMemberVars(servletContext, projectId, gusHome, alwaysGoToSummary, loginUrl);
     }
     catch (Exception ex) {
       throw new RuntimeException(ex);
     }
+    finally {
+      MDCUtil.clearValues();
+    }
   }
 
   public static void terminateWdk(ServletContext servletContext) {
     try {
+      MDCUtil.setRequestId("term");
+      MDCUtil.setIpAddress("<no_ip_address>");
+      MDCUtil.setRequestStartTime(System.currentTimeMillis());
+
       WdkModelBean wdkModel = getWdkModel(servletContext);
       if (wdkModel != null) {
         // insulate in case model never properly loaded
@@ -45,6 +57,9 @@ public class WdkInitializer {
     }
     catch (Exception ex) {
       throw new RuntimeException(ex);
+    }
+    finally {
+      MDCUtil.clearValues();
     }
   }
 
