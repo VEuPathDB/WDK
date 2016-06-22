@@ -23,9 +23,9 @@ let Sticky = React.createClass({
     this.node = ReactDOM.findDOMNode(this);
     this.$node = $(this.node);
     this.contentNode = ReactDOM.findDOMNode(this.refs.content);
-    window.addEventListener('scroll', this.updateIsFixed);
-    window.addEventListener('wheel', this.updateIsFixed);
-    window.addEventListener('resize', this.updateIsFixed);
+    window.addEventListener('scroll', this.updateIsFixed, { passive: true });
+    window.addEventListener('wheel', this.updateIsFixed, { passive: true });
+    window.addEventListener('resize', this.updateIsFixed, { passive: true });
   },
 
   componentWillUnmount() {
