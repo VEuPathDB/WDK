@@ -4,7 +4,7 @@
  * for that step using the passed service.  Returns a promise whose value is an
  * object with properties { step, question, recordClass }.
  */
-export function getStepBundle(stepId, service) {
+export function getStepBundlePromise(stepId, service) {
 
   let stepPromise = service.findStep(stepId);
   let questionPromise = stepPromise.then(step => {
@@ -13,16 +13,17 @@ export function getStepBundle(stepId, service) {
   let recordClassPromise = questionPromise.then(question => {
     return service.findRecordClass( rc => rc.name === question.recordClassName );
   });
-  let ontologyPromise = service.getOntology();
 
-  return Promise.all([ stepPromise, questionPromise, recordClassPromise, ontologyPromise ])
-    .then(([ step, question, recordClass, ontology ]) => ({ step, question, recordClass, ontology, scope: 'results' }));
+  return Promise.all([ stepPromise, questionPromise, recordClassPromise ])
+    .then(([ step, question, recordClass ]) => ({ step, question, recordClass }));
 }
 
-export function getSingleRecordStepBundle(recordClass, primaryKeyString, service) {
-
-  // kick off ontology fetch
-  let ontologyPromise = service.getOntology();
+/**
+ * Creates a single-record question for the passed recordClass and applies the
+ * passed primary key to create a step of that question.  Returns a promise
+ * whose value is an object with properties { step, question, recordClass }.
+ */
+export function getSingleRecordStepBundlePromise(recordClass, primaryKeyString) {
 
   // create single-record question and step for this record class
   let questionName = '__' + recordClass.name + '__singleRecordQuestion__';
@@ -56,6 +57,6 @@ export function getSingleRecordStepBundle(recordClass, primaryKeyString, service
     //stepAnalysisPlugins: [ ]
   };
 
-  // wait for promise to contain a value, then return the bundle
-  return ontologyPromise.then(ontology => ({ recordClass, question, step, ontology, scope: 'record' }));
+  // return a promise containing our generated bundle
+  return Promise.resolve({ recordClass, question, step });
 }

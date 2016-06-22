@@ -8,6 +8,7 @@ import { createHistory } from 'history';
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
 import Root from './controllers/Root';
+import { loadAllStaticData } from './actioncreators/StaticDataActionCreator';
 
 import * as PartialRenderer from './partialRenderer';
 import * as Components from './components';
@@ -19,6 +20,7 @@ import * as ReporterUtils from './utils/reporterUtils';
 import * as TreeUtils from './utils/TreeUtils';
 import * as OntologyUtils from './utils/OntologyUtils';
 import * as CategoryUtils from './utils/CategoryUtils';
+import * as StaticDataUtils from './utils/StaticDataUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
 
 export {
@@ -32,7 +34,8 @@ export {
   IterableUtils,
   TreeUtils,
   OntologyUtils,
-  CategoryUtils
+  CategoryUtils,
+  StaticDataUtils
 };
 
 /**
@@ -50,10 +53,8 @@ export function initialize({ rootUrl, endpoint, applicationRoutes }) {
   let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
   let stores = configureStores(Stores, dispatcher);
   let context = { dispatchAction, stores };
-  wdkService.getConfig();
-  wdkService.getQuestions();
-  wdkService.getRecordClasses();
-  wdkService.getOntology();
+  // load static WDK data into service cache and view stores that need it
+  dispatchAction(loadAllStaticData());
   // define top-level page renderer
   let render = (rootElement) => {
     let applicationElement = createElement(

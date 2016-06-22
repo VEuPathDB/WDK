@@ -46,7 +46,7 @@ CategoriesCheckboxTree.propTypes = {
   searchBoxPlaceholder: PropTypes.string,
   tree: CheckboxTree.propTypes.tree,
   /** String name representing what is being searched */
-  leafType: PropTypes.string.isRequired,
+  leafType: PropTypes.string.isRequired, // do not make optional- add this prop to your calling code!
   selectedLeaves: PropTypes.array,
   expandedBranches: PropTypes.array,
   nodeComponent: PropTypes.func,
@@ -61,7 +61,7 @@ CategoriesCheckboxTree.defaultProps = {
   nodeComponent: BasicNodeComponent,
   isMultiPick: true,
   isSelectable: true,
-  leafType: 'column' // remove once all consumers are passing in a value for this
+  leafType: 'column' // TODO remove once all consumers are passing in a value for this
 }
 
 export default wrappable(CategoriesCheckboxTree);

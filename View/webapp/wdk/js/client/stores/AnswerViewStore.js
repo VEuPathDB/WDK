@@ -1,17 +1,8 @@
-import { ReduceStore } from 'flux/utils';
+import WdkStore from './WdkStore';
 import { filterRecords } from '../utils/recordUtils';
 import { actionTypes } from '../actioncreators/AnswerViewActionCreator';
 
-let {
-  ANSWER_ADDED,
-  ANSWER_CHANGE_ATTRIBUTES,
-  ANSWER_LOADING,
-  ANSWER_MOVE_COLUMN,
-  ANSWER_UPDATE_FILTER,
-  APP_ERROR
-} = actionTypes;
-
-export default class AnswerViewStore extends ReduceStore {
+export default class AnswerViewStore extends WdkStore {
 
   getInitialState() {
     return {
@@ -36,24 +27,24 @@ export default class AnswerViewStore extends ReduceStore {
     };
   }
 
-  reduce(state, { type, payload }) {
+  handleAction(state, { type, payload }) {
     switch(type) {
-      case ANSWER_ADDED:
+      case actionTypes.ANSWER_ADDED:
         return addAnswer(state, payload);
 
-      case ANSWER_CHANGE_ATTRIBUTES:
+      case actionTypes.ANSWER_CHANGE_ATTRIBUTES:
         return updateVisibleAttributes(state, payload);
 
-      case ANSWER_LOADING:
+      case actionTypes.ANSWER_LOADING:
         return answerLoading(state, { isLoading: true });
 
-      case ANSWER_MOVE_COLUMN:
+      case actionTypes.ANSWER_MOVE_COLUMN:
         return moveTableColumn(state, payload);
 
-      case ANSWER_UPDATE_FILTER:
+      case actionTypes.ANSWER_UPDATE_FILTER:
         return updateFilter(state, payload);
 
-      case APP_ERROR:
+      case actionTypes.APP_ERROR:
         return answerLoading(state, { isLoading: false });
 
       default:

@@ -16,20 +16,20 @@ const APPLICATION_SPECIFIC_PROPERTIES = "applicationSpecificProperties";
  * @constructor
  */
 const UserAccountForm = (props) => {
-  let { user, onTextChange, onEmailChange, onFormStateChange, isChanged, saveProfile } = props;
+  let { user, onTextChange, onEmailChange, onFormStateChange, disableSubmit, saveProfile } = props;
 
   return(
     <form className="wdk-UserProfile-profileForm" name="userProfileForm" onSubmit={saveProfile} >
       <p><i className="fa fa-asterisk"></i> = required</p>
       <UserIdentity user={user} onEmailChange={onEmailChange} onTextChange={onTextChange} />
       <br />
-      <UserPassword user={user} />
+      <UserPassword user={user} wdkConfig={props.wdkConfig} />
       <br />
       <UserContact user={user} onTextChange={onTextChange} />
       <br />
       <ApplicationSpecificProperties user={user} onFormStateChange={onFormStateChange} name={APPLICATION_SPECIFIC_PROPERTIES} />
       <div>
-        <input type="submit" value="Save" disabled={isChanged ? "" : "disabled"} />
+        <input type="submit" value="Save" disabled={disableSubmit} />
       </div>
     </form>
   );
@@ -46,11 +46,14 @@ UserAccountForm.propTypes = {
   /** The on change handler for text box inputs */
   onTextChange: PropTypes.func.isRequired,
 
-  /** Indicates that unsaved modifications currently exist - enables/disables submit button */
-  isChanged:  PropTypes.bool.isRequired,
+  /** Indicates that submit button should be enabled/disabled */
+  disableSubmit:  PropTypes.bool.isRequired,
 
   /** The on submit handler for the form */
-  saveProfile:  PropTypes.func.isRequired
+  saveProfile:  PropTypes.func.isRequired,
+  
+  /** WDK config for setting correct change password link */
+  wdkConfig:  PropTypes.object.isRequired
 };
 
 export default wrappable(UserAccountForm);

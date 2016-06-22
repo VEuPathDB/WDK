@@ -6,10 +6,11 @@ import AppController from './AppController';
 import IndexController from './IndexController';
 import RecordController from './RecordController';
 import NotFoundController from './NotFoundController';
-import AnswerRouteHandler from './AnswerRouteHandler';
+import AnswerController from './AnswerController';
 import QuestionListController from './QuestionListController';
-import StepDownloadFormController from './StepDownloadFormController';
+import DownloadFormController from './DownloadFormController';
 import UserProfileController from './UserProfileController';
+import UserPasswordChangeController from './UserPasswordChangeController';
 import SiteMapController from './SiteMapController';
 import Loading from '../components/Loading';
 
@@ -17,7 +18,7 @@ let REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
 let GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
 let RELATIVE_LINK_REGEXP = new RegExp('^((' + location.protocol + ')?//)?' + location.host);
 
-/** Wdk Application Root */
+/** WDK Application Root */
 export default class Root extends Component {
 
   constructor(props, context) {
@@ -33,11 +34,12 @@ export default class Root extends Component {
     this.routes = (
       <Route path="/" component={AppController}>
         <IndexRoute component={IndexController}/>
-        <Route path="search/:recordClass/:question/result" component={AnswerRouteHandler}/>
-        <Route path="record/:recordClass/download/*" component={StepDownloadFormController}/>
+        <Route path="search/:recordClass/:question/result" component={AnswerController}/>
+        <Route path="record/:recordClass/download/*" component={DownloadFormController}/>
         <Route path="record/:recordClass/*" component={RecordController}/>
-        <Route path="step/:stepId/download" component={StepDownloadFormController}/>
+        <Route path="step/:stepId/download" component={DownloadFormController}/>
         <Route path="user/profile" component={UserProfileController}/>
+        <Route path="user/profile/password" component={UserPasswordChangeController}/>
         <Route path="data-finder" component={SiteMapController}/>
         <Route path="question-list" component={QuestionListController}/>
         {this.props.applicationRoutes.map(route => ( <Route key={route.path} {...route}/> ))}
@@ -45,7 +47,6 @@ export default class Root extends Component {
       </Route>
     );
     this.handleGlobalClick = this.handleGlobalClick.bind(this);
-    this.state = { wdkModel: undefined, wdkConfig: undefined };
   }
 
   handleGlobalClick(event) {
@@ -60,39 +61,18 @@ export default class Root extends Component {
   componentDidMount() {
     /** install global click handler */
     $(document).on('click', GLOBAL_CLICK_HANDLER_SELECTOR, this.handleGlobalClick);
-    // kick off loading of static resources
-    Promise.all([
-      this.props.wdkService.getConfig(),
-      this.props.wdkService.getQuestions(),
-      this.props.wdkService.getRecordClasses(),
-      this.props.wdkService.getOntology()
-    ]).then(([config, questions, recordClasses]) => {
-      this.setState({ wdkModel: { config, questions, recordClasses }});
-    });
   }
 
   componentWillUnmount() {
     $(document).off('click', GLOBAL_CLICK_HANDLER_SELECTOR, this.handleGlobalClick);
   }
 
-  getChildContext() {
-    return {
-      wdkModel: this.state.wdkModel
-    };
-  }
-
   render() {
-    if (this.state.wdkModel == null) return <Loading/>;
     return (
       <Router history={this.history} createElement={this.createElement} routes={this.routes}/>
     );
   }
-
 }
-
-Root.childContextTypes = {
-  wdkModel: PropTypes.object
-};
 
 Root.propTypes = {
   rootUrl: PropTypes.string,

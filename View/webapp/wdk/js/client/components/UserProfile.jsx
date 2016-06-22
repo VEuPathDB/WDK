@@ -3,6 +3,38 @@ import { PropTypes } from 'react';
 import UserAccountForm from './UserAccountForm';
 import { wrappable, getChangeHandler } from '../utils/componentUtils';
 
+export function interpretFormStatus(formStatus, errorMessage) {
+  // configure properties for banner and submit button enabling based on status
+  let messageClass = "wdk-UserProfile-banner ", message = "", disableSubmit = false;
+  switch (formStatus) {
+    case 'new':
+      disableSubmit = true;
+      break;
+    case 'modified':
+      message = "*** You have unsaved changes ***";
+      messageClass += "wdk-UserProfile-modified";
+      break;
+    case 'pending':
+      message = "Saving changes...";
+      messageClass += "wdk-UserProfile-pending";
+      disableSubmit = true;
+      break;
+    case 'success':
+      message = "Your changes have been successfully saved.";
+      messageClass += "wdk-UserProfile-success";
+      disableSubmit = true; // same as 'new'
+      break;
+    case 'error':
+      message = errorMessage;
+      messageClass += "wdk-UserProfile-error";
+  }
+  return { messageClass, message, disableSubmit };
+}
+
+export function FormMessage({ message, messageClass }) {
+  return ( message == '' ? <noscript/> :
+    <div className={messageClass}><span>{message}</span></div> );
+}
 
 /**
  * React component for the user profile/account form
@@ -11,35 +43,26 @@ import { wrappable, getChangeHandler } from '../utils/componentUtils';
 let UserProfile = React.createClass({
 
   render() {
-
-    // Before the form is modified, a 'fake' user property, confirmEmail, is created to populate the retype email input element.
-    this.props.isChanged ? () => {} : this.props.user.confirmEmail = this.props.user.email;
-
-    // Only success and error outcomes are acted upon.  Any other outcome is assumed not to be associated with a save attempt.
-    let saveAttempt = this.props.outcome === "error" || this.props.outcome === "success";
-
-    // Banner L&F governed by outcome above.  Banner will not appear if no save attempt was made
-    let messageClass = this.props.outcome === "success" ? "wdk-UserProfile-banner wdk-UserProfile-success" : "wdk-UserProfile-banner wdk-UserProfile-error";
-
+    let formConfig = interpretFormStatus(this.props.formStatus, this.props.errorMessage);
     return (
       <div style={{ margin: "0 2em"}}>
-        {this.props.user !== null && !this.props.user.isGuest ?
+        {this.props.userFormData.isGuest ?
+          <div>You must first log on to read and alter your account information</div> :
           <div>
             <h1>My Account</h1>
-            {saveAttempt ? <p className={messageClass}>{this.props.message}</p> : ""}
-            <UserAccountForm user={this.props.user}
+            <FormMessage {...formConfig}/>
+            <UserAccountForm user={this.props.userFormData}
+                             disableSubmit={formConfig.disableSubmit}
                              onTextChange={this.onTextChange}
                              onEmailChange={this.onEmailChange}
-                             onFormStateChange={this.props.userEvents.onFormStateChange}
-                             isChanged={this.props.isChanged}
-                             saveProfile={this.saveProfile} />
+                             onFormStateChange={this.props.userEvents.updateProfileForm}
+                             saveProfile={this.saveProfile}
+                             wdkConfig={this.props.config}/>
           </div>
-        : <div>You must first log on to read and alter your account information</div>
         }
       </div>
     );
   },
-
 
   /**
    * Verifies that the email and the re-typed email match.  HTML5 validation doesn't handle this OOTB.
@@ -48,7 +71,7 @@ let UserProfile = React.createClass({
   validateEmailConfirmation(newState) {
     let userEmail = newState.email;
     let confirmUserEmail = newState.confirmEmail;
-    if(userEmail != null  && confirmUserEmail != null) {
+    if (userEmail != null  && confirmUserEmail != null) {
       let confirmUserEmailElement = document.getElementById("confirmUserEmail");
       userEmail !== confirmUserEmail ? confirmUserEmailElement.setCustomValidity("Both email entries must match.") : confirmUserEmailElement.setCustomValidity("");
     }
@@ -61,7 +84,7 @@ let UserProfile = React.createClass({
    */
   onEmailUpdate(newState) {
     this.validateEmailConfirmation(newState);
-    this.props.userEvents.onFormStateChange(newState);
+    this.props.userEvents.updateProfileForm(newState);
   },
 
   /**
@@ -71,7 +94,7 @@ let UserProfile = React.createClass({
    * @returns {*}
    */
   onEmailChange(field) {
-    return getChangeHandler(field, this.onEmailUpdate, this.props.user)
+    return getChangeHandler(field, this.onEmailUpdate, this.props.userFormData)
   },
 
   /**
@@ -80,7 +103,7 @@ let UserProfile = React.createClass({
    * @returns {*}
    */
   onTextChange(field) {
-    return getChangeHandler(field, this.props.userEvents.onFormStateChange, this.props.user);
+    return getChangeHandler(field, this.props.userEvents.updateProfileForm, this.props.userFormData);
   },
 
   /**
@@ -91,7 +114,7 @@ let UserProfile = React.createClass({
    */
   saveProfile(event) {
     event.preventDefault();
-    this.validateEmailConfirmation(this.props.user);
+    this.validateEmailConfirmation(this.props.userFormData);
     let inputs = document.querySelectorAll("input[type=text],input[type=email]");
     let valid = true;
     for(let input of inputs) {
@@ -101,44 +124,40 @@ let UserProfile = React.createClass({
       }
     }
     if(valid) {
-      delete this.props.user.confirmEmail;
-      this.props.userEvents.onSaveProfile(this.props.user);
+      this.props.userEvents.submitProfileForm(this.props.userFormData);
     }
   }
 
 });
 
-
 UserProfile.propTypes = {
 
+  /** WDK config object */
+  config: PropTypes.object.isRequired,
+
   /** The user object to be modified */
-  user:  PropTypes.object.isRequired,
+  userFormData:  PropTypes.object.isRequired,
+
+  /**
+   *  Indicates the current status of form.  Display may change based on status.
+   *  Acceptable values are: [ 'new', 'modified', 'pending', 'success', 'error' ]
+   */
+  formStatus: PropTypes.string,
+
+  /**
+   * Message to the user explaining an error outcome of the user's save attempt.
+   */
+  errorMessage: PropTypes.string,
 
   /** Hash holding the functions that trigger corresponding action creator actions */
   userEvents:  PropTypes.shape({
 
     /** Called with a parameter representing the new state when a form element changes */
-    onFormStateChange:  PropTypes.func.isRequired,
+    updateProfileForm:  PropTypes.func.isRequired,
 
     /** Called with a parameter representing the user data to be saved */
-    onSaveProfile:  PropTypes.func.isRequired
-  }),
-
-  /** Indicates that unsaved modifications currently exist */
-  isChanged:  PropTypes.bool.isRequired,
-
-  /**
-   *  Indicates the outcome of the user's save attempt.  A banner with a green background appears for 'success' and
-   *  a banner with a red background appears for 'error'.  Any other value will produce no banner.
-   */
-  outcome: PropTypes.string,
-
-  /**
-   * Message to the user explaining the outcome of the user's save attempt.  THe message will appear in the banner
-   * at the top of the form only if the outcome is neither 'success' nor 'error'.
-   */
-  message: PropTypes.string
-}
-
+    submitProfileForm:  PropTypes.func.isRequired
+  })
+};
 
 export default wrappable(UserProfile);
