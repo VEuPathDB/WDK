@@ -19,7 +19,7 @@
 
   <c:choose>
     <c:when test="${isLoggedIn eq true}">
-      <li><a href="${pageContext.request.contextPath}/showProfile.do">${userName}'s Profile</a></li>
+      <li><a href="${pageContext.request.contextPath}/app/user/profile">${userName}'s Profile</a></li>
       <li id="user-control">
         <form name="logoutForm" method="post" action="${pageContext.request.contextPath}/processLogout.do"><jsp:text/></form>
         <c:choose>

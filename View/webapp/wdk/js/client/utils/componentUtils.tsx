@@ -286,3 +286,40 @@ export function propsDiffer<P extends AnyObject>(oldProps: P, newProps: P, prope
   }
   return false;
 }
+
+interface HandlerSetObject {
+  [key: string]: Function;
+}
+
+/**
+ * Bind a collection of action functions to a dispatchAction function.
+ *
+ * @param {Function} dispatchAction
+ * @param {Object<Function>} actions
+ */
+export function wrapActions(dispatchAction: Function, actions: HandlerSetObject): HandlerSetObject {
+  let wrappedActions: HandlerSetObject = {};
+  for (let key in actions) {
+    wrappedActions[key] = function wrappedAction(...args: any[]): Function {
+      return dispatchAction(actions[key](...args));
+    }
+  }
+  return wrappedActions;
+}
+
+/**
+ * Takes an object containing named functions and an object (usually 'this')
+ * and returns a new object containing copies of the original functions that
+ * are bound to objectToBind.
+ * 
+ * @param {Object} handlerSetObject set of named functions
+ * @param {Object} objectToBind object to which copies of named functions will be bound
+ * @return {Object} copy of handlerSetObject with newly bound copies of original functions
+ */
+export function bindEventHandlers(handlerSetObject: HandlerSetObject, objectToBind: any): HandlerSetObject {
+  let newHandlers: HandlerSetObject = {};
+  for (let key in handlerSetObject) {
+    newHandlers[key] = handlerSetObject[key].bind(objectToBind);
+  }
+  return newHandlers;
+}

@@ -1,31 +1,27 @@
-import React from 'react';
-import Link from '../components/Link';
 import { wrappable } from '../utils/componentUtils';
+import WdkViewController from './WdkViewController';
+import Link from '../components/Link';
 
-let QuestionListController = React.createClass({
+class QuestionListController extends WdkViewController {
 
-  componentWillMount() {
-    let store = this.stores.QuestionStore;
-    this.selectState(store.getState());
-    this.storeSubscription = store.subscribe(this.selectState);
-  },
+  getStoreName() {
+    return 'QuestionListStore';
+  }
 
-  componentWillUnmount() {
-    this.storeSubscription.remove();
-  },
+  isRenderDataLoaded(state) {
+    return state.questions != null;
+  }
 
-  selectState(state) {
-    this.setState({ questions: state.resources.questions });
-  },
+  getTitle() {
+    return "Question List";
+  }
 
-  render() {
-    if (!this.state) { return null; }
-    let { questions } = this.state;
-
+  renderView(state) {
     return (
       <div>
+        <h2>Available Questions</h2>
         <ol>
-          {questions.map(question => (
+          {state.questions.map(question => (
             <li key={question.name}>
               {question.displayName + ' - '}
               <Link to={`/answer/${question.name}`}>answer page</Link>
@@ -35,7 +31,6 @@ let QuestionListController = React.createClass({
       </div>
     );
   }
-
-});
+}
 
 export default wrappable(QuestionListController);

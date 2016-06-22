@@ -1,6 +1,6 @@
-import React from 'react';
+import { Component } from 'react';
 import { wrappable, filterOutProps } from '../utils/componentUtils';
-import StepDownloadForm from './StepDownloadForm';
+import DownloadForm from './DownloadForm';
 import PrimaryKeySpan from './PrimaryKeySpan';
 import RadioList from './RadioList';
 
@@ -21,7 +21,7 @@ let ReporterSelect = props => {
       </div>
     </div>
   );
-}
+};
 
 function getTitle(scope, step, recordClass) {
   switch (scope) {
@@ -39,22 +39,29 @@ function getTitle(scope, step, recordClass) {
   }
 }
 
-let StepDownloadFormPage = React.createClass({
+class DownloadFormContainer extends Component {
 
-  changeReporter(newValue) {
-    this.props.onReporterChange(newValue);
-  },
+  constructor(props) {
+    super(props);
+    this.onSubmit = this.onSubmit.bind(this);
+  }
+
+  // create parameterless form submission function for forms to use
+  onSubmit() {
+    let { submitForm, step, selectedReporter, formState } = this.props;
+    submitForm(step, selectedReporter, formState);
+  }
 
   render() {
 
     // get the props needed in this component's render
-    let { scope, step, availableReporters, selectedReporter, recordClass, onSubmit } = this.props;
+    let { scope, step, availableReporters, selectedReporter, recordClass, onSubmit, selectReporter } = this.props;
 
     // create page title element
     let title = getTitle(scope, step, recordClass);
 
     // filter props we don't want to send to the child form
-    let formProps = filterOutProps(this.props, [ 'onReporterChange' ]);
+    let formProps = filterOutProps(this.props, [ 'selectReporter', 'submitForm' ]);
 
     // incoming store value of null indicates no format currently selected
     if (selectedReporter == null) {
@@ -64,12 +71,12 @@ let StepDownloadFormPage = React.createClass({
     return (
       <div style={{margin: '1em 3em'}}>
         {title}
-        <ReporterSelect reporters={availableReporters} selected={selectedReporter} onChange={this.changeReporter}/>
-        <StepDownloadForm {...formProps}/>
+        <ReporterSelect reporters={availableReporters} selected={selectedReporter} onChange={selectReporter}/>
+        <DownloadForm {...formProps} onSubmit={this.onSubmit}/>
       </div>
     );
   }
 
-});
+}
 
-export default wrappable(StepDownloadFormPage);
+export default wrappable(DownloadFormContainer);
