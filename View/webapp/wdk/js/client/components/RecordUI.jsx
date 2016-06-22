@@ -44,6 +44,7 @@ class RecordUI extends Component {
         <Sticky className="wdk-RecordSidebar" fixedClassName="wdk-RecordSidebar__fixed">
           <button type="button" className="wdk-RecordSidebarToggle"
             onClick={() => {
+              if (!this.props.navigationVisible) window.scrollTo(0, window.scrollY);
               this.props.updateNavigationVisibility(!this.props.navigationVisible);
             }}
           >
