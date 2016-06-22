@@ -20,19 +20,6 @@ export class PureComponent<P, S> extends React.Component<P, S> {
   }
 }
 
-/**
- * Add contextType property to TargetComponent, making wdkModel available via its
- * context.
- */
-export function injectWdkModel<P>(target: React.ComponentClass<P>): React.ComponentClass<P>;
-export function injectWdkModel<P>(target: React.StatelessComponent<P>): React.StatelessComponent<P>;
-export function injectWdkModel<P>(target: any) {
-  target.contextTypes = Object.assign({}, target.contextTypes, {
-    wdkModel: React.PropTypes.object.isRequired
-  });
-  return target;
-}
-
 interface IWrapper<P> extends React.ComponentClass<P> {
   wrapComponent(factory: (Component: React.ComponentClass<P>) => React.ComponentClass<P>): void;
   wrapComponent(factory: (Component: React.ComponentClass<P>) => React.StatelessComponent<P>): void;
