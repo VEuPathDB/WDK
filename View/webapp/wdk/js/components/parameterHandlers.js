@@ -239,33 +239,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     }
 
-    // parse data from <script>
-    // var jsonContainer = $(node).find('script[type="application/json"][id="' + dataId + '"]');
-    // console.time('parse JSON :: ' + name);
-    // var filterData = JSON.parse(jsonContainer.html());
-    // console.timeEnd('parse JSON :: ' + name);
-
-    // console.time('validation not null queries :: ' + name);
-    // // validation
-    // [ 'metadata', 'metadataSpec', 'values' ]
-    //   .forEach(function(prop) {
-    //     var msg;
-    //     if (_.isEmpty(filterData[prop])) {
-    //       msg = 'Invalid data: ' + prop + ' may not be empty.';
-    //       alert(msg);
-    //       throw new Error(msg);
-    //     }
-    //   });
-    // console.timeEnd('validation not null queries :: ' + name);
-
-    // console.time('massage data :: ' + name);
-    // filterData = parseFilterData(filterData);
-    // console.timeEnd('massage data :: ' + name);
-
     var fields = _.keys(filterData.metadataSpec)
       .map(function(name) {
         return _.extend({
-          //filterable: _.contains(usedMetadata, name),
           term: name,
           display: name,
           visible: _.contains(defaultColumns, name)

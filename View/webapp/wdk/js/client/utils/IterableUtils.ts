@@ -11,8 +11,8 @@ interface Predicate<T> {
 interface Reducer<T, U> {
   (acc: U | T, x: T): U;
 }
-interface Collector<T> {
-  from: (i: Iterable<T>) => Collector<T>;
+interface Collector<T, U> {
+  from: (i: Iterable<T>) => U;
 };
 
 /**
@@ -108,6 +108,14 @@ class Seq<T> {
     return findLast(fn, this);
   }
 
+  every(fn: Predicate<T>) {
+    return every(fn, this);
+  }
+
+  some(fn: Predicate<T>) {
+    return some(fn, this);
+  }
+
   reduce<U>(fn: Reducer<T, U>, value?: U) {
     return value == null ? reduce(fn, this)
     : reduce(fn, value, this);
@@ -117,7 +125,7 @@ class Seq<T> {
     return this.reduce((arr: T[], item: T) => (arr.push(item), arr), []);
   }
 
-  into(Collector: Collector<T>) {
+  into<U>(Collector: Collector<T, U>) {
     return Collector.from(this);
   }
 
@@ -275,22 +283,39 @@ export function rest<T>(iterable: Iterable<T>) {
   return drop(1, iterable);
 }
 
+export function every<T>(test: Predicate<T>, iterable: Iterable<T>): boolean {
+  for (let x of iterable) {
+    if (test(x) === false) return false;
+  }
+  return true;
+}
+
+export function some<T>(test: Predicate<T>, iterable: Iterable<T>): boolean {
+  for (let x of iterable) {
+    if (test(x) === true) return true;
+  }
+  return false;
+}
+
 /**
  * Reduce collection to a single value.
  */
 export function reduce<T, U>(fn: Reducer<T, U>, iterable: Iterable<T>): U;
 export function reduce<T, U>(fn: Reducer<T, U>, value: U, iterable: Iterable<T>): U;
-export function reduce<T, U>(fn: Reducer<T, U>, value: U | Iterable<T>, iterable?: Iterable<T>) {
-  let seed: U|T;
+export function reduce<T, U>(fn: any, value: any, iterable?: any) {
+  let result: U|T;
   if (arguments.length === 2) {
+    // No seed value, so we get the first value from iterable as the initial
+    // value and get the rest of the iterable for the rest of the reduce
+    // operation.
     iterable = rest(<Iterable<T>>value);
-    seed = first(<Iterable<T>>value);
+    result = first(<Iterable<T>>value);
   }
   else {
-    seed = <U>value;
+    result = <U>value;
   }
   for (let item of iterable) {
-    seed = fn(seed, item);
+    result = fn(result, item);
   }
-  return value;
+  return result;
 }

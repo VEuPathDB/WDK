@@ -12,6 +12,7 @@ import org.gusdb.wdk.service.filter.ClientCacheExpirationFilter;
 import org.gusdb.wdk.service.filter.MethodRewritingFilter;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
+import org.gusdb.wdk.service.provider.LoggingWriterInterceptor;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.ApiService;
 import org.gusdb.wdk.service.service.DatasetService;
@@ -44,6 +45,7 @@ public class WdkServiceApplication extends Application {
 
     // add provider classes
     .add(ExceptionMapper.class)
+    .add(LoggingWriterInterceptor.class)
 
     // add filter classes
     .add(MethodRewritingFilter.class)

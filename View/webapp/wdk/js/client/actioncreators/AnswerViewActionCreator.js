@@ -131,7 +131,7 @@ export function changeAttributes(attributes) {
  * @param {Array<string>} spec.attributes The set of attribute names whose values should be queried.
  * @param {Array<string>} spec.tables The set of table names whose values should be queried.
  */
-export function updateFilter({ terms, attributes, tables }) {
+export function updateFilter(terms, attributes, tables) {
   return {
     type: actionTypes.ANSWER_UPDATE_FILTER,
     payload: { terms, attributes, tables }

@@ -1,8 +1,8 @@
-import {Component, PropTypes} from 'react';
+import {PropTypes} from 'react';
+import WdkViewController from './WdkViewController';
 import {wrappable} from '../utils/componentUtils';
-import {wrapActions} from '../utils/actionHelpers';
 import {
-  setActiveRecord,
+  loadRecordData,
   updateSectionVisibility as toggleSection,
   updateNavigationQuery,
   updateAllFieldVisibility,
@@ -10,84 +10,57 @@ import {
   updateNavigationVisibility
 } from '../actioncreators/RecordViewActionCreator';
 import {
-  loadCurrentUser,
-  loadBasketStatus,
-  loadFavoritesStatus,
   updateBasketStatus,
   updateFavoritesStatus
 } from '../actioncreators/UserActionCreator';
-import Doc from '../components/Doc';
-import Loading from '../components/Loading';
 import RecordUI from '../components/RecordUI';
 
 /** View Controller for record page */
-class RecordController extends Component {
+class RecordController extends WdkViewController {
 
-  constructor(props) {
-    super(props);
-    this.state = this.getStateFromStores();
-    this.actions = wrapActions(this.props.dispatchAction, {
+  getStoreName() {
+    return 'RecordViewStore';
+  }
+
+  getActionCreators() {
+    return {
       toggleSection,
       updateNavigationQuery,
       updateAllFieldVisibility,
       updateNavigationSubcategoryVisibility,
-      updateNavigationVisibility
-    });
+      updateNavigationVisibility,
+      updateBasketStatus,
+      updateFavoritesStatus
+    };
   }
 
-  getStateFromStores() {
-    let recordView = this.props.stores.RecordViewStore.getState();
-    let user = this.props.stores.UserStore.getState().user;
-    return { recordView, user };
+  isRenderDataLoaded(state) {
+    return state.record != null && !state.isLoading;
+  }
+
+  getTitle(state) {
+    return (state.recordClass == null || state.record == null ? "Loading..." :
+      state.recordClass.displayName + ' ' + state.record.displayName);
   }
 
   componentDidMount() {
-    this.storeSubscriptions = [
-      this.props.stores.RecordViewStore.addListener(() => this.setState(this.getStateFromStores())),
-      this.props.stores.UserStore.addListener(() => this.setState(this.getStateFromStores()))
-    ];
     this.loadData(this.props);
-  }
-
-  componentWillUnmount() {
-    this.storeSubscriptions.forEach(s => s.remove());
   }
 
   componentWillReceiveProps(nextProps) {
     // We need to do this to ignore hash changes.
-    // Seems like there is a better way to do this.
     if (this.props.location.pathname !== nextProps.location.pathname) {
       this.loadData(nextProps);
     }
   }
 
   loadData(props) {
-    let { dispatchAction } = props;
     let { recordClass, splat } = props.params;
-    if (this.state.user == null) {
-      dispatchAction(loadCurrentUser());
-    }
-    dispatchAction(setActiveRecord(recordClass, splat.split('/')))
-    .then(() => {
-      let { record, recordClass } = this.props.stores.RecordViewStore.getState();
-      let { user } = this.props.stores.UserStore.getState();
-      if (recordClass.useBasket) {
-        dispatchAction(loadBasketStatus(user, record));
-        dispatchAction(loadFavoritesStatus(user, record));
-      }
-    });
+    this.props.dispatchAction(loadRecordData(recordClass, splat.split('/')));
   }
 
-  renderLoading() {
-    if (this.state.recordView.isLoading) {
-      return (
-        <Loading/>
-      );
-    }
-  }
-
-  renderError() {
-    if (this.state.recordView.error) {
+  renderError(state) {
+    if (state.error) {
       return (
         <div style={{padding: '1.5em', fontSize: '2em', color: 'darkred', textAlign: 'center'}}>
           The requested record could not be loaded.
@@ -96,57 +69,51 @@ class RecordController extends Component {
     }
   }
 
-  renderRecord() {
-    let { recordView, user } = this.state;
-    let { dispatchAction } = this.props;
-    if (recordView.record != null && !recordView.isLoading) {
-      let title = recordView.recordClass.displayName + ' ' +
-        recordView.record.displayName;
-      let loadingClassName = 'fa fa-circle-o-notch fa-spin';
-      let headerActions = [];
-      if (recordView.recordClass.useBasket) {
-        headerActions.push({
-          label: recordView.inBasket ? 'Remove from basket' : 'Add to basket',
-          iconClassName: recordView.loadingBasketStatus ? loadingClassName : 'fa fa-shopping-basket',
-          onClick(event) {
-            event.preventDefault();
-            dispatchAction(updateBasketStatus(user, recordView.record, !recordView.inBasket));
-          }
-        });
-      }
+  renderRecord(state, eventHandlers) {
+    let { user, record, recordClass, inBasket, inFavorites,
+      loadingBasketStatus, loadingFavoritesStatus } = state;
+    let title = recordClass.displayName + ' ' + record.displayName;
+    let loadingClassName = 'fa fa-circle-o-notch fa-spin';
+    let headerActions = [];
+    if (recordClass.useBasket) {
       headerActions.push({
-        label: recordView.inFavorites ? 'Remove from favorites' : 'Add to favorites',
-        iconClassName: recordView.loadingFavoritesStatus ? loadingClassName : 'fa fa-lg fa-star',
+        label: inBasket ? 'Remove from basket' : 'Add to basket',
+        iconClassName: loadingBasketStatus ? loadingClassName : 'fa fa-shopping-basket',
         onClick(event) {
           event.preventDefault();
-          dispatchAction(updateFavoritesStatus(user, recordView.record, !recordView.inFavorites));
+          eventHandlers.updateBasketStatus(user, record, !inBasket);
         }
-      },
-      {
-        label: 'Download ' + recordView.recordClass.displayName,
-        iconClassName: 'fa fa-lg fa-download',
-        href: '/record/' + recordView.recordClass.urlSegment + '/download/' +
-          recordView.record.id.map(pk => pk.value).join('/')
       });
-
-      return (
-        <Doc title={title}>
-          <RecordUI
-            {...recordView}
-            {...this.actions}
-            headerActions={headerActions}
-          />
-        </Doc>
-      );
     }
+    headerActions.push({
+      label: inFavorites ? 'Remove from favorites' : 'Add to favorites',
+      iconClassName: loadingFavoritesStatus ? loadingClassName : 'fa fa-lg fa-star',
+      onClick(event) {
+        event.preventDefault();
+        eventHandlers.updateFavoritesStatus(user, record, !inFavorites);
+      }
+    },
+    {
+      label: 'Download ' + recordClass.displayName,
+      iconClassName: 'fa fa-lg fa-download',
+      href: '/record/' + recordClass.urlSegment + '/download/' +
+        record.id.map(pk => pk.value).join('/')
+    });
+
+    return (
+      <RecordUI
+        {...state}
+        {...eventHandlers}
+        headerActions={headerActions}
+      />
+    );
   }
 
-  render() {
+  renderView(state, eventHandlers) {
     return (
       <div>
-        {this.renderLoading()}
-        {this.renderError()}
-        {this.renderRecord()}
+        {this.renderError(state, eventHandlers)}
+        {this.renderRecord(state, eventHandlers)}
       </div>
     );
   }

@@ -2,6 +2,7 @@ import {chunk, partial} from 'lodash';
 import {getTree, nodeHasProperty, getPropertyValue} from '../utils/OntologyUtils';
 import {filterNodes} from '../utils/TreeUtils';
 import {seq} from '../utils/PromiseUtils';
+import {loadBasketStatus, loadFavoritesStatus} from './UserActionCreator';
 
 // TODO Change SHOW/HIDE_{feature} and EXPAND/COLLAPSE_{feature} to
 // {feature}_VISIBILITY_CHANGED
@@ -25,6 +26,19 @@ let getAttributes = partial(filterNodes, isAttributeNode);
 let getTables = partial(filterNodes, isTableNode);
 let getNodeName = partial(getPropertyValue, 'name');
 
+export function loadRecordData(recordClass, primaryKeyValues) {
+  return function run(dispatch, {wdkService}) {
+    dispatch(setActiveRecord(recordClass, primaryKeyValues))
+    .then(action => {
+      let { record, recordClass } = action.payload;
+      if (recordClass.useBasket) {
+        dispatch(loadBasketStatus(record));
+        dispatch(loadFavoritesStatus(record));
+      }
+    });
+  };
+}
+
 /**
  * Fetches the new record from the service and dispatches related
  * actions so that the store can update.
@@ -32,7 +46,7 @@ let getNodeName = partial(getPropertyValue, 'name');
  * @param {string} recordClassName
  * @param {Array<string>} primaryKeyValues
  */
-export function setActiveRecord(recordClassName, primaryKeyValues) {
+function setActiveRecord(recordClassName, primaryKeyValues) {
   return function run(dispatch, {wdkService}) {
     dispatch({ type: actionTypes.ACTIVE_RECORD_LOADING });
     // Fetch the record base and tables in parallel.

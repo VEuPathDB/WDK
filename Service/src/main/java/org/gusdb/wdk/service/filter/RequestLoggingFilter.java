@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
 
+import javax.annotation.Priority;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -22,6 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@Priority(30)
 public class RequestLoggingFilter implements ContainerRequestFilter {
 
   private static final Logger LOG = Logger.getLogger(RequestLoggingFilter.class);
@@ -47,7 +49,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
   }
   
   public static void logRequest(String method, UriInfo uriInfo, String body) {
-    StringBuilder log = new StringBuilder("HTTP Request: ")
+    StringBuilder log = new StringBuilder("HTTP ")
       .append(method).append(" /").append(uriInfo.getPath());
 
     // add query params if present

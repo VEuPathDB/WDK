@@ -4,12 +4,18 @@ import {filterNodes} from '../utils/TreeUtils';
 import {getId, getTargetType} from '../utils/CategoryUtils';
 import {actionTypes} from '../actioncreators/RecordViewActionCreator';
 import {actionTypes as userActionTypes} from '../actioncreators/UserActionCreator';
+import { StaticDataProps } from '../utils/StaticDataUtils';
 
 /** Store for record page */
 export default class RecordViewStore extends WdkStore {
 
+  getRequiredStaticDataProps() {
+    return [ StaticDataProps.USER ];
+  }
+
   getInitialState() {
     return {
+      user: undefined,
       record: undefined,
       recordClass: undefined,
       collapsedSections: undefined,
@@ -27,7 +33,7 @@ export default class RecordViewStore extends WdkStore {
     };
   }
 
-  reduce(state, action) {
+  handleAction(state, action) {
     switch (action.type) {
       case actionTypes.ERROR_RECEIVED:
         return Object.assign({}, state, {

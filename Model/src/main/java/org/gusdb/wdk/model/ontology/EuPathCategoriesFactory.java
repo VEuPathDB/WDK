@@ -82,7 +82,22 @@ public class EuPathCategoriesFactory {
     // Gene questions for menus
     String[] scopes2 = { MENU};
     processGeneQuestions(ontology, scopes2, websiteCategories, websiteRootCategories);
-
+    
+    // sort using ontology's sorting order, if present, else alphabetical.
+    for (SearchCategory category : websiteCategories.values()) {
+      // set the display name in the ref, so it can be used for sorting.  ignore questions not found in model
+      for (CategoryQuestionRef ref : category.getQuestionRefs()) {
+	try {
+	  ref.setQuestionDisplayName(model.getQuestion(ref.getQuestionFullName()).getDisplayName());
+	} catch (WdkModelException e) {}
+      }
+      List<CategoryQuestionRef> questionRefs = new ArrayList<CategoryQuestionRef>(category.getQuestionRefs());
+      Collections.sort(questionRefs);
+      Map<String, CategoryQuestionRef> sortedMap = new LinkedHashMap<String, CategoryQuestionRef>();
+      for (CategoryQuestionRef ref : questionRefs) sortedMap.put(ref.getQuestionFullName(), ref);
+      category.setResolvedQuestionRefMap(sortedMap);
+    }
+      
     // gene questions for webservice
     String[] scopes3 = { WEBSERVICE };
     processGeneQuestions(ontology, scopes3, webserviceCategories, webserviceRootCategories);

@@ -7,29 +7,28 @@ export default class SiteMapStore extends WdkStore {
   getInitialState() {
     return {
       tree: null,
-      isLoading: true,
+      isLoading: false,
       expandedList : [],
       searchText: ""
     };
   }
 
-  reduce(state, action) {
-    let { type, payload } = action;
+  handleAction(state, { type, payload }) {
     switch(type) {
       case actionTypes.SITEMAP_LOADING:
-        return siteMapLoading(state, { isLoading: true });
+        return setSiteMapLoading(state, true);
 
       case actionTypes.SITEMAP_INITIALIZE_STORE:
-        return initializeSiteMap(state, payload);
+        return initializeSiteMap(state, payload.tree);
 
       case actionTypes.SITEMAP_UPDATE_EXPANDED:
-        return updateExpanded(state, payload);
+        return updateExpanded(state, payload.expandedList);
 
       case actionTypes.SITEMAP_SET_SEARCH_TEXT:
-        return setSearchText(state, payload);
+        return setSearchText(state, payload.searchText);
 
       case actionTypes.APP_ERROR:
-        return siteMapLoading(state, { isLoading: false });
+        return setSiteMapLoading(state, false);
 
       default:
         return state;
@@ -37,20 +36,18 @@ export default class SiteMapStore extends WdkStore {
   }
 }
 
-function siteMapLoading(state, payload) {
-  return Object.assign({}, state, { isLoading: payload.isLoading });
+function setSiteMapLoading(state, isLoading) {
+  return Object.assign({}, state, { isLoading });
 }
 
-function initializeSiteMap(state, payload) {
-  return Object.assign({}, state, {
-    tree: payload.tree,
-    isLoading: false });
+function initializeSiteMap(state, tree) {
+  return Object.assign({}, state, { tree, isLoading: false });
 }
 
-function setSearchText(state, payload) {
-  return Object.assign({}, state, { searchText: payload.searchText, isLoading: false });
+function setSearchText(state, searchText) {
+  return Object.assign({}, state, { searchText });
 }
 
-function updateExpanded(state, payload) {
-  return Object.assign({}, state, { expandedList: payload.expandedList, isLoading: false });
+function updateExpanded(state, expandedList) {
+  return Object.assign({}, state, { expandedList });
 }

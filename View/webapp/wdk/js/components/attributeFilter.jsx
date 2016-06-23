@@ -1,4 +1,4 @@
-/* global _ */
+/* global _, wdk */
 import React from 'react';
 import FixedDataTable from 'fixed-data-table';
 import Loading from '../client/components/Loading';
@@ -16,7 +16,7 @@ var dateStringRe = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 function getFormatFromDateString(dateString) {
   var matches = dateString.match(dateStringRe);
   if (matches !== null) {
-    var [ , Y, m, d ] = matches;
+    var [ , , m, d ] = matches;
     return  d !== undefined ? '%Y-%m-%d'
           : m !== undefined ? '%Y-%m'
           : '%Y';

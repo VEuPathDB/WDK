@@ -8,8 +8,8 @@ import { createHistory } from 'history';
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
 import Root from './controllers/Root';
+import { loadAllStaticData } from './actioncreators/StaticDataActionCreator';
 
-import * as PartialRenderer from './partialRenderer';
 import * as Components from './components';
 import * as Stores from './stores';
 import * as Controllers from './controllers';
@@ -19,6 +19,7 @@ import * as ReporterUtils from './utils/reporterUtils';
 import * as TreeUtils from './utils/TreeUtils';
 import * as OntologyUtils from './utils/OntologyUtils';
 import * as CategoryUtils from './utils/CategoryUtils';
+import * as StaticDataUtils from './utils/StaticDataUtils';
 import * as FormSubmitter from './utils/FormSubmitter';
 
 export {
@@ -32,7 +33,8 @@ export {
   IterableUtils,
   TreeUtils,
   OntologyUtils,
-  CategoryUtils
+  CategoryUtils,
+  StaticDataUtils
 };
 
 /**
@@ -44,16 +46,16 @@ export {
  * @param {Array} option.applicationRoutes Additional routes to register with the Router.
  */
 export function initialize({ rootUrl, endpoint, applicationRoutes }) {
+
   // define the elements of the Flux architecture
   let wdkService = new WdkService(endpoint);
   let dispatcher = new Dispatcher;
   let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
   let stores = configureStores(Stores, dispatcher);
-  let context = { dispatchAction, stores };
-  wdkService.getConfig();
-  wdkService.getQuestions();
-  wdkService.getRecordClasses();
-  wdkService.getOntology();
+
+  // load static WDK data into service cache and view stores that need it
+  dispatchAction(loadAllStaticData());
+
   // define top-level page renderer
   let render = (rootElement) => {
     let applicationElement = createElement(
@@ -66,15 +68,16 @@ export function initialize({ rootUrl, endpoint, applicationRoutes }) {
       });
     return ReactDOM.render(applicationElement, rootElement);
   };
-  let refreshHistory = useRouterHistory(createHistory)({ basename: rootUrl, forceRefresh: true });
-  let renderPartial = PartialRenderer.create(context, refreshHistory);
+
+  // log all actions in dev environments
   if (__DEV__) logActions(dispatcher, stores);
+
+  // return WDK application components
   return {
     wdkService,
     dispatchAction,
     stores,
-    render,
-    renderPartial
+    render
   };
 }
 

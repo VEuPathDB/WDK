@@ -28,16 +28,16 @@ export function loadCurrentSiteMap() {
     }
 
     return ontologyPromise.then((ontology) => {
-      return dispatch({
+      dispatch({
         type: actionTypes.SITEMAP_INITIALIZE_STORE,
           payload: { tree: getTree(ontology, isQualifying) }
       });
-    }, error => {
+    }).catch(error => {
+      console.error(error);
       dispatch({
         type: actionTypes.APP_ERROR,
         payload: { error }
       });
-      throw error;
     });
   }
 }

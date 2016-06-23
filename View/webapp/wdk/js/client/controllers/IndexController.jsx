@@ -1,6 +1,5 @@
-import React from 'react';
-import Link from '../components/Link';
 import { wrappable } from '../utils/componentUtils';
+import Link from '../components/Link';
 
 // Link is a component used to create links to other routes.
 // See https://github.com/rackt/react-router/blob/master/docs/api/components/Link.md
@@ -21,21 +20,18 @@ import { wrappable } from '../utils/componentUtils';
  * and https://github.com/rackt/react-router/blob/master/docs/api/misc/Location.md
  * for more details.
  */
-let IndexController = React.createClass({
-
-  render() {
-    return (
-      <div>
-        <p>This is the future home of WDK 3.0</p>
-
-        <h2>Resources under development</h2>
-        <ul>
-          <li><Link to="/question-list">Question list</Link></li>
-        </ul>
-      </div>
-    );
-  }
-
-});
+function IndexController() {
+  return (
+    <div>
+      <p>This is the future home of WDK 3.0</p>
+      <h2>Resources under development</h2>
+      <ul>
+        <li><Link to="/question-list">Question list</Link></li>
+        <li><Link to="/user/profile">User Profile</Link></li>
+        <li><Link to="/data-finder">Data Finder</Link></li>
+      </ul>
+    </div>
+  );
+}
 
 export default wrappable(IndexController);

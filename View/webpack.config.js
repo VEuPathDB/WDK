@@ -22,8 +22,8 @@ module.exports = {
   ],
   module: {
     loaders: [
-      { test: /\.tsx?$/, exclude: /node_modules/, loader: 'babel!ts' },
-      { test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel' },
+      { test: /\.tsx?$/, exclude: /node_modules/, loader: 'babel?cacheDirectory!ts' },
+      { test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel?cacheDirectory' },
       { test: /\.css$/,  loader: "style-loader!css-loader?sourceMap" },
       { test: /\.png$/,  exclude: /node_modules/, loader: "url-loader?limit=100000" },
       { test: /\.gif/,   exclude: /node_modules/, loader: "url-loader?limit=100000" },

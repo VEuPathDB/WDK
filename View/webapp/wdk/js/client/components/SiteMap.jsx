@@ -81,7 +81,16 @@ let SiteMap = props => {
     onSearchTermChange: props.siteMapActions.setSearchText,
     searchPredicate: siteMapSearchPredicate
   };
-  return <CheckboxTree {...treeProps} />;
+  return (
+    <div>
+      <h1>Data Finder</h1>
+      <p>
+        Use this tool to find searches, tracks and data pages that might
+        contain data you are interested in.
+      </p>
+      <CheckboxTree {...treeProps} />
+    </div>
+  );
 };
 
 /**

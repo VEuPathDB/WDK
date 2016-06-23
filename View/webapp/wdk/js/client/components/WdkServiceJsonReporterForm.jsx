@@ -5,9 +5,9 @@ import CategoriesCheckboxTree from './CategoriesCheckboxTree';
 import ReporterSortMessage from './ReporterSortMessage';
 
 let WdkServiceJsonReporterForm = props => {
-  let { scope, question, recordClass, summaryView, ontology, formState, formUiState, onFormChange, onFormUiChange, onSubmit } = props;
-  let getUpdateHandler = fieldName => getChangeHandler(fieldName, onFormChange, formState);
-  let getUiUpdateHandler = fieldName => getChangeHandler(fieldName, onFormUiChange, formUiState);
+  let { scope, question, recordClass, summaryView, ontology, formState, formUiState, updateFormState, updateFormUiState, onSubmit } = props;
+  let getUpdateHandler = fieldName => getChangeHandler(fieldName, updateFormState, formState);
+  let getUiUpdateHandler = fieldName => getChangeHandler(fieldName, updateFormUiState, formUiState);
   return (
     <div>
       <ReporterSortMessage scope={scope}/>
@@ -23,7 +23,7 @@ let WdkServiceJsonReporterForm = props => {
           searchTerm={formUiState.attributeSearchText}
 
           // change handlers for each state element controlled by the tree
-          onChange={getAttributesChangeHandler('attributes', onFormChange, formState, recordClass)}
+          onChange={getAttributesChangeHandler('attributes', updateFormState, formState, recordClass)}
           onUiChange={getUiUpdateHandler('expandedAttributeNodes')}
           onSearchTermChange={getUiUpdateHandler('attributeSearchText')}
       />
@@ -52,11 +52,11 @@ let WdkServiceJsonReporterForm = props => {
   );
 };
 
-WdkServiceJsonReporterForm.getInitialState = (downloadFormStoreState, userStoreState) => {
-  let { scope, question, recordClass, ontology } = downloadFormStoreState;
+WdkServiceJsonReporterForm.getInitialState = (downloadFormStoreState) => {
+  let { scope, question, recordClass, ontology, preferences } = downloadFormStoreState;
   // select all attribs and tables for record page, else column user prefs and no tables
   let attribs = (scope === 'results' ?
-      addPk(getAttributeSelections(userStoreState.preferences, question), recordClass) :
+      addPk(getAttributeSelections(preferences, question), recordClass) :
       addPk(getAllLeafIds(getAttributeTree(ontology, recordClass.name, question)), recordClass));
   let tables = (scope === 'results' ? [] :
       getAllLeafIds(getTableTree(ontology, recordClass.name)));
