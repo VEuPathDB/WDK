@@ -66,18 +66,21 @@ wdk.namespace('wdk.models.filter', function(ns) {
           }, {});
         var counts = countByValues(fieldMetadata);
         var filteredCounts = countByValues(filteredMetadata);
-        return uniqMetadataValues(fieldMetadata).map(value => {
+        var undefinedCount = _.values(fieldMetadata).filter(_.isEmpty).length;
+        let distribution = uniqMetadataValues(fieldMetadata).map(value => {
           return {
             value,
             count: counts[value],
             filteredCount: filteredCounts[value] || 0
           };
-        }).concat({
-          value: null,
-          count: _.values(fieldMetadata).filter(_.isEmpty).length,
-          filteredCount: _.values(filteredMetadata).filter(_.isEmpty).length
         });
-
+        return undefinedCount > 0
+          ? distribution.concat({
+              value: null,
+              count: _.values(fieldMetadata).filter(_.isEmpty).length,
+              filteredCount: _.values(filteredMetadata).filter(_.isEmpty).length
+            })
+          : distribution;
       }.bind(this));
     },
 
