@@ -1,4 +1,5 @@
-/* global _, Backbone */
+/* global _, Backbone, wdk */
+import {makeTree} from './utils';
 
 // TODO How does this class relate to Flux?
 //
@@ -46,34 +47,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
   ns.FilterService = BaseClass.extend(Backbone.Events, {
 
-    // user actions to react to
-    actionListeners: {
-      selectField: function(field) {
-        this.setSelectedField(field);
-      },
-
-      addFilter: function(field, values) {
-        this.addFilter(field, values);
-      },
-
-      removeFilter: function(filter) {
-        this.removeFilter(filter);
-      },
-
-      addIgnored: function(datum) {
-        this.addIgnored(datum);
-      },
-
-      removeIgnored: function(datum) {
-        this.removeIgnored(datum);
-      },
-
-      updateColumns: function(fields) {
-        this.updateColumns(fields);
-      }
-    },
-
-    constructor: function(attrs, options) {
+    constructor: function(attrs) {
 
       // Partition options.filters into two arrays:
       //   * valid
@@ -94,7 +68,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.isLoading = false;
 
       // metadata properties
-      this.fields = attrs.fields || [];
+      this.fields = makeTree(attrs.fields || [], {});
 
       // list of filters
       this.filters = filterPartitions.valid || [];
@@ -108,25 +82,21 @@ wdk.namespace('wdk.models.filter', function(ns) {
       // filtered data
       this.filteredData = attrs.filteredData || [];
 
+      // ignored data
+      this.ignoredData = attrs.ignoredData || [];
+
       // visible columns in results
       this.columns = attrs.columns || [];
 
       // field distributions keyed by field term
       this.distributionMap = {};
 
-      // listen to actions
-      this.listenTo(options.intents, this.actionListeners);
-
-      // set isIgnored flag
-      if (attrs.ignored && attrs.ignored.length) {
-        this.data.forEach(function(datum) {
-          datum.isIgnored = attrs.ignored.indexOf(datum.term) > -1;
-        });
-      }
+      // map of metadata for each field
+      this.fieldMetadataMap = attrs.fieldMetadataMap || {};
 
       // selected field
       if (attrs.selectedField) {
-        this.setSelectedField(attrs.selectedField);
+        this.selectField(attrs.selectedField);
       }
 
       // apply filters
@@ -135,101 +105,62 @@ wdk.namespace('wdk.models.filter', function(ns) {
           this.filteredData = filteredData;
           this.emitChange();
         }.bind(this));
+
+      // bind all methods
+      _.bindAll(this);
     },
 
     emitChange: function() {
       this.trigger(CHANGE_EVENT);
     },
 
-    getState: function() {
-      return _.pick(this,
-                    'isLoading',
-                    'fields',
-                    'filters',
-                    'invalidFilters',
-                    'data',
-                    'filteredData',
-                    'columns',
-                    'selectedField',
-                    'distributionMap');
+    getState() {
+    return _.pick(
+      this,
+      'fields',
+      'filters',
+      'data',
+      'filteredData',
+      'ignoredData',
+      'columns',
+      'selectedField',
+      'isLoading',
+      'invalidFilters',
+      'distributionMap',
+      'fieldMetadataMap'
+    );
+
     },
 
-    setSelectedField: function(field) {
+    selectField: function(field) {
       this.isLoading = true;
+      this.selectedField = field;
       this.emitChange();
 
       this.getFieldDistribution(field)
         .then(function(distribution) {
           this.distributionMap[field.term] = distribution;
-          this.selectedField = field;
+          // this.selectedField = field;
           this.isLoading = false;
           this.emitChange();
         }.bind(this));
     },
 
-    // Only one filter per field
-    addFilter: function(field, values) {
-      var filter = _.find(this.filters, function(filter) {
-        return filter.field.term === field.term;
-      });
-
-      if (!filter) {
-        filter = { field: field, values: [] };
-        this.filters.push(filter);
-      }
-
-      if (field.type === 'string') {
-        this.addIncludesFilter(filter, values);
-      }
-      else if (field.type === 'number' || field.type === 'date') {
-        this.addRangeFilter(filter, values);
-      }
-      else {
-        throw new Error('Unkown field type `' + field.type + '` on field `' + field.term + '`.');
-      }
-    },
-
-    addIncludesFilter: function(filter, values) {
-      var field = filter.field;
-      var allValues = _.pluck(this.distributionMap[field.term], 'value');
-      if (_.difference(allValues, values).length === 0) {
-        // remove filter if all values are selected
-        this.removeFilter(filter);
-        return;
-      }
-
-      filter.values = values;
-      filter.display = filter.values.length
-        ? filter.field.display + ' is ' + filter.values.join(', ')
-        : 'No ' + filter.field.display + ' selected';
-      this.updateFilters(filter, filter.field !== this.selectedField);
-    },
-
-    addRangeFilter: function(filter, values) {
-      if (values.min === null && values.max === null) {
-        this.removeFilter(filter);
-        return;
-      }
-
-      filter.values = values;
-      filter.display = filter.field.display + ' between ' + filter.values.min + ' and ' + filter.values.max;
-      this.updateFilters(filter, filter.field !== this.selectedField);
-    },
-
-    removeFilter: function(filter) {
-      _.pull(this.filters, filter);
-      this.updateFilters(null, filter.field !== this.selectedField);
+    updateFilters: function(filters) {
+      this.filters = filters;
+      this.applyFilters();
     },
 
     // Filter is optional. If supplied, calculate it's selection.
     // If @selectedField is undefined, skip updating @distributionMap.
-    updateFilters: function(filter, shouldGetFieldDistribution) {
+    applyFilters: function() {
       this.isLoading = true;
       this.emitChange();
 
+      let filter = this.filters.find(filter => filter.field.term === this.selectedField.term);
       var promises = [
         this.getFilteredData(this.filters),
-        shouldGetFieldDistribution && this.selectedField && this.getFieldDistribution(this.selectedField),
+        this.selectedField && this.getFieldDistribution(this.selectedField),
         filter && this.getFilteredData([filter])
       ];
 
@@ -258,37 +189,10 @@ wdk.namespace('wdk.models.filter', function(ns) {
         });
     },
 
-    addIgnored: function(datum) {
-      datum.isIgnored = true;
-      this._cloneDatum(datum);
+    updateIgnoredData: function(data) {
+      this.ignoredData = data;
       this.emitChange();
     },
-
-    removeIgnored: function(datum) {
-      datum.isIgnored = false;
-      this._cloneDatum(datum);
-      this.emitChange();
-    },
-
-    _cloneDatum: function(datum) {
-      var { data, filteredData } = this;
-      var clone = _.cloneDeep(datum);
-
-      for (var index = 0; index < data.length; index++) {
-        if (data[index] == datum) {
-          data[index] = clone
-          break;
-        }
-      }
-
-      for (var index = 0; index < filteredData.length; index++) {
-        if (filteredData[index] == datum) {
-          filteredData[index] = clone
-          break;
-        }
-      }
-    },
-
 
     // Methods to override
     // ------------------

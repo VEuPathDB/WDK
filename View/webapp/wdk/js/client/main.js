@@ -2,9 +2,6 @@ import {mapValues, values, pick} from 'lodash';
 import {createElement} from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { useRouterHistory } from 'react-router';
-import { createHistory } from 'history';
-
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
 import Root from './controllers/Root';
