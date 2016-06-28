@@ -1,8 +1,9 @@
-/* global _, wdk */
+/* global _, wdk, ReactDOM */
 wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   var XHR_DATA_KEY = 'dependent-xhr';
   var PARAM_LOADING_EVENT = ns.PARAM_LOADING_EVENT = 'loading.wdk-param';
+  var PARAM_DESTROY_EVENT = ns.PARAM_DESTROY_EVENT = 'destroy.wdk-param';
 
   var displayTermMap;
   var termDisplayMap;
@@ -119,34 +120,35 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   function onDependedParamChange(dependedParam, dependentElement, dependentParamsMap) {
-        var dependedName = dependedParam.attr("name");
-        var $form = dependedParam.closest("form");
+    var dependedName = dependedParam.attr("name");
+    var $form = dependedParam.closest("form");
 
-        // map list of names to elements
-        // then reduce to a list of $.ajax deferred objects
-        var dependentDeferreds = dependentParamsMap[dependedName]
-          .map(function(dependentName) {
+    // map list of names to elements
+    // then reduce to a list of $.ajax deferred objects
+    var dependentDeferreds = dependentParamsMap[dependedName]
+      .map(function (dependentName) {
 
-            // return dependentParam reference
-            // and set ready flag to false on all its dependent params
-            return dependentElement.find(".dependentParam[name='" + dependentName + "']")
-              .find("input, select")
-                .prop("disabled", true)
-                .end();
-          })
-          .reduce(function(results, $dependentParam) {
-            var result =  updateDependentParam($dependentParam, dependentElement);
-            if (result) {
-              // stash promises returned by $.ajax
-              results.push(result);
-            }
-            return results;
-          }, []);
+        // return dependentParam reference
+        // and set ready flag to false on all its dependent params
+        return dependentElement.find(".dependentParam[name='" + dependentName + "']")
+          .trigger(PARAM_DESTROY_EVENT)
+          .find("input, select")
+          .prop("disabled", true)
+          .end();
+      })
+      .reduce(function (results, $dependentParam) {
+        var result = updateDependentParam($dependentParam, dependentElement);
+        if (result) {
+          // stash promises returned by $.ajax
+          results.push(result);
+        }
+        return results;
+      }, []);
 
-        // trigger form.change only when all deferreds are resolved
-        $.when(...dependentDeferreds).then(function() {
-          $form.change();
-        });
+    // trigger form.change only when all deferreds are resolved
+    $.when(...dependentDeferreds).then(function () {
+      $form.change();
+    });
   }
 
   //==============================================================================
@@ -205,10 +207,12 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   //==============================================================================
   function createFilterParam($param, questionName, dependedValue, filterData, keepPreviousValue) {
+    var { LazyFilterService } = wdk.models.filter;
+    var filterParamContainer = $param.find('.filter-param-container')[0];
     var $data = $param.data();
-    var filterParam = $data.filterParam;
-
-    if (filterParam) filterParam.remove();
+    $param.one(PARAM_DESTROY_EVENT, () => {
+      ReactDOM.unmountComponentAtNode(filterParamContainer)
+    });
 
     var form = $param.closest('form');
     var title = $data.title;
@@ -217,12 +221,10 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     var maxSelectedCount = $data.maxSelectedCount;
     var name = $param.attr('name');
     console.time('intialize render :: ' + name);
-    var defaultColumns = $data.defaultColumns;
+    var defaultColumns = $data.defaultColumns ? $data.defaultColumns.split(/\s+/) : [];
     var trimMetadataTerms = $data.trimMetadataTerms;
     var input = $param.find('input');
     var previousValue;
-
-    defaultColumns = defaultColumns ? defaultColumns.split(/\s+/) : [];
 
     // get previous values
     if (keepPreviousValue) {
@@ -243,48 +245,47 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       .map(function(name) {
         return _.extend({
           term: name,
-          display: name,
-          visible: _.contains(defaultColumns, name)
+          display: name
         }, filterData.metadataSpec[name]);
       });
 
-    filterParam = new wdk.controllers.FilterParam({
-      data: filterData.values,
-      metadata: filterData.metadata,
-      fields: fields,
-      filters: previousValue && previousValue.filters,
-      ignored: previousValue && previousValue.ignored,
-      trimMetadataTerms: trimMetadataTerms,
-      defaultColumns: defaultColumns,
-      title: title,
-      name: name,
-      questionName: questionName,
-      dependedValue: dependedValue
-    });
+    var selectedField = previousValue && previousValue.filters
+      ? fields.find(field => field.term === previousValue.filters[0].field.term)
+      : undefined;
 
-    $param.append(filterParam.el);
-    $param.trigger('filterParamDidMount', filterParam);
+    var filterParamOptions = { title, trimMetadataTerms };
+
+    var filterService = LazyFilterService.create({
+      name,
+      fields,
+      filters: previousValue && previousValue.filters,
+      ignoredData: previousValue && previousValue.ignored,
+      data: filterData.values,
+      questionName,
+      dependedValue,
+      selectedField
+    });
 
     // This is a circular reference and potential memory leak, although jQuery seems to make this safe.
     // See http://stackoverflow.com/questions/10092619/precise-explanation-of-javascript-dom-circular-reference-issue
-    $param.data('filterParam', filterParam);
+    $param.data('filterService', filterService);
+    $param.trigger('filterParamDidMount');
 
-    filterParam.on('change:value', function(filterParam, value) {
-      var ignored = value.data.filter(datum => datum.isIgnored);
-      var filteredData = value.filteredData.filter(datum => !ignored.includes(datum));
+    filterService.on('change', function() {
+      var ignored = filterService.data.filter(datum => datum.isIgnored);
+      var filteredData = filterService.filteredData.filter(datum => !ignored.includes(datum));
       input.val(JSON.stringify({
         values: _.pluck(filteredData, 'term'),
         ignored: _.pluck(ignored, 'term'),
-        filters: _.map(value.filters, _.partialRight(_.omit, 'selection'))
+        filters: _.map(filterService.filters, _.partialRight(_.omit, 'selection'))
       }));
 
       // trigger loading event on $param
-      triggerLoading($param, value.isLoading);
+      triggerLoading($param, filterService.isLoading);
+      renderFilterParam(filterService, filterParamOptions, filterParamContainer);
     });
 
-    // filterParam.on('ready', function() {
-      $param.find('.loading').hide();
-    // });
+    $param.find('.loading').hide();
 
     form.on('submit', function(e) {
       var filteredData = JSON.parse(input.val()).values;
@@ -312,7 +313,36 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     });
 
+    renderFilterParam(filterService, filterParamOptions, filterParamContainer);
+
     console.timeEnd('intialize render :: ' + name);
+  }
+
+  function renderFilterParam(filterService, options, el) {
+    let { AttributeFilter } = wdk.components.attributeFilter;
+    let state = filterService.getState();
+    ReactDOM.render(
+      <AttributeFilter
+        displayName={options.title}
+
+        fields={state.fields}
+        filters={state.filters}
+        dataCount={state.data.length}
+        filteredData={state.filteredData}
+        ignoredData={state.ignoredData}
+        columns={state.columns}
+        activeField={state.selectedField}
+        activeFieldSummary={state.selectedField && state.distributionMap[state.selectedField.term]}
+        fieldMetadataMap={state.fieldMetadataMap}
+
+        isLoading={state.isLoading}
+        invalidFilters={state.invalidFilters}
+
+        onActiveFieldChange={filterService.selectField}
+        onFiltersChange={filterService.updateFilters}
+        onColumnsChange={filterService.updateColumns}
+        onIgnoredDataChange={filterService.updateIgnoredData}
+      />, el);
   }
 
   function createFilteredSelect(vocab, paramName, $param, keepPreviousValue) {
@@ -614,7 +644,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     }).data( "ui-autocomplete" )._renderItem = function( ul, item ) {
       // only change here was to replace .text() with .html()
-      // and indenting 
+      // and indenting
       var content = $( "<li></li>" )
           .data( "ui-autocomplete-item", item )
           .append("<a>" + item.label + "</a>")
@@ -644,7 +674,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         .find("input, select").prop("disabled");
       if (notReady) return;
     }
-  
+
     var dependedValues = {};
     var hasValue = false;
     // the dependson may contain a comma separated list of param names the current param depends on
@@ -671,7 +701,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         dependedParam.focus();
         return;
       }
-        
+
       $.unique(values);
       if (values.length > 0) {
         dependedValues[dependedName] = values;
@@ -679,14 +709,14 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       }
     }
     if (!hasValue) return;
-    
+
     // get dependent param and question name, contruct url from them
-    var dependentParamSelector = "#" + paramName + 
+    var dependentParamSelector = "#" + paramName +
         "aaa > div.dependentParam[name='" + paramName + "']";
     dependentParam = element.find(dependentParamSelector);
     var questionName = dependentParam.closest("form")
         .find("input:hidden[name=questionFullName]").val();
-    var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
+    var sendReqUrl = 'getVocab.do?questionFullName=' + questionName +
         '&name=' + paramName + '&dependedValue=' + JSON.stringify(dependedValues);
 
     // Abort in-flight xhr to prevent race condition.
@@ -831,7 +861,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   function adjustEnumCountBoxes(enumParamId) {
     adjustEnumCountBox(enumParamId, 'input[type=checkbox]:checked');
   }
-  
+
   function adjustEnumCountBox(enumParamId, onSelector) {
     var count = 0;
     $('#'+enumParamId).find(onSelector).each(function () {
@@ -839,14 +869,14 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     });
     $('#'+enumParamId).find('span.currentlySelectedCount').html(count);
   }
-  
+
   function adjustEnumCountTree(enumParamId, countOnlyLeaves) {
     var treeElement = $('#'+enumParamId).find('.checkbox-tree')[0];
     var itemSelector = (countOnlyLeaves ? "li.jstree-leaf.jstree-checked" : "li.jstree-checked");
     var count = $(treeElement).find(itemSelector).length;
     $('#'+enumParamId).find('span.currentlySelectedCount').html(count);
   }
-  
+
   ns.init = init;
   ns.mapTypeAheads = mapTypeAheads;
   ns.adjustEnumCountSelect = adjustEnumCountSelect;

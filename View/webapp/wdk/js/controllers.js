@@ -8,7 +8,6 @@ import './controllers/basket';
 import './controllers/dyk';
 import './controllers/favorite';
 import './controllers/filter';
-import './controllers/filterParam';
 import './controllers/formUtil';
 import './controllers/histogram';
 import './controllers/history';

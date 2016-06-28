@@ -1,5 +1,6 @@
-/* global _, wdk */
+/* global _, wdk, $ */
 import React from 'react';
+import { findDOMNode } from 'react-dom';
 import FixedDataTable from 'fixed-data-table';
 import Loading from '../client/components/Loading';
 import Tooltip from '../client/components/Tooltip';
@@ -44,8 +45,6 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
   var { PropTypes } = React;
   var { Column } = FixedDataTable;
-  var { Field, Fields } = wdk.models.filter;
-
 
   var FilterList = React.createClass({
 
@@ -133,7 +132,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       field: PropTypes.object,
       filter: PropTypes.object,
       distribution: PropTypes.array,
-      onAddFilter: PropTypes.func
+      onChange: PropTypes.func
     },
 
     getDefaultProps: function() {
@@ -147,30 +146,33 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
       return (
         <div className="field-detail">
-          { !this.props.field
-            ? <EmptyField displayName={this.props.displayName}/>
-            : (
-                <div>
-                  <h3>{this.props.field.display}</h3>
-                  <div className="description">{this.props.field.description}</div>
-                  <FieldDetail key={this.props.field.term}
-                    displayName={this.props.displayName}
-                    field={this.props.field}
-                    distribution={this.props.distribution}
-                    filter={this.props.filter}
-                    onAddFilter={this.props.onAddFilter}/>
-                  <div className="legend">
-                    <div>
-                      <div className="bar"><div className="fill"></div></div>
-                      <div className="label">All {this.props.displayName}</div>
-                    </div>
-                    <div>
-                      <div className="bar"><div className="fill filtered"></div></div>
-                      <div className="label">{this.props.displayName} remaing when <em>other</em> criteria have been applied.</div>
+          { !this.props.field ? <EmptyField displayName={this.props.displayName}/>
+          : (
+              <div>
+                <h3>{this.props.field.display}</h3>
+                <div className="description">{this.props.field.description}</div>
+                { ! this.props.distribution ? <Loading/>
+                : <div>
+                    <FieldDetail key={this.props.field.term}
+                      displayName={this.props.displayName}
+                      field={this.props.field}
+                      distribution={this.props.distribution}
+                      filter={this.props.filter}
+                      onChange={this.props.onChange}/>
+                    <div className="legend">
+                      <div>
+                        <div className="bar"><div className="fill"></div></div>
+                        <div className="label">All {this.props.displayName}</div>
+                      </div>
+                      <div>
+                        <div className="bar"><div className="fill filtered"></div></div>
+                        <div className="label">{this.props.displayName} remaing when <em>other</em> criteria have been applied.</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
+                }
+              </div>
+            )
           }
         </div>
       );
@@ -184,7 +186,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       filteredData: PropTypes.array,
       fieldTree: PropTypes.array,
       selectedFields: PropTypes.array,
-      ignored: PropTypes.array,
+      ignoredData: PropTypes.array,
       metadata: PropTypes.object,
       displayName: PropTypes.string,
       onFieldsChange: PropTypes.func,
@@ -246,7 +248,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     isIgnored: function(field) {
-      return this.props.ignored.indexOf(field.term) > -1;
+      return this.props.ignoredData.indexOf(field) > -1;
     },
 
     getRow: function(index) {
@@ -254,34 +256,41 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     getRowClassName: function(index) {
-      return this.props.filteredData[index].isIgnored
+      return this.isIgnored(this.props.filteredData[index])
         ? 'wdk-AttributeFilter-ItemIgnored'
         : 'wdk-AttributeFilter-Item';
     },
 
     getCellData: function(cellDataKey, rowData) {
-      return cellDataKey == '__primary_key__' ? rowData :
-        this.props.metadata[cellDataKey][rowData.term].join(', ');
+      return this.props.metadata[cellDataKey][rowData.term].join(', ');
+    },
+
+    getPkCellData: function(cellDataKey, rowData) {
+      return {
+        datum: rowData,
+        isIgnored: this.isIgnored(rowData)
+      }
     },
 
     renderPk: function(cellData) {
-      var handleIgnored = event => {
-        this.props.onIgnored(cellData, !event.target.checked);
+      let { datum, isIgnored } = cellData;
+      var handleIgnored = () => {
+        this.props.onIgnored(datum, !isIgnored);
       };
       return (
         <label>
           <input
             type="checkbox"
-            checked={!cellData.isIgnored}
+            checked={!isIgnored}
             onChange={handleIgnored}
           />
-          {' ' + cellData.display + ' '}
+          {' ' + datum.display + ' '}
         </label>
       );
     },
 
     render: function() {
-      var { fieldTree, selectedFields, metadata, filteredData, displayName, tabWidth, totalSize } = this.props;
+      var { fieldTree, selectedFields, filteredData, displayName, tabWidth, totalSize } = this.props;
       var { dialogIsOpen } = this.state;
 
       if (!tabWidth) return null;
@@ -338,7 +347,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
             dataKey="__primary_key__"
             fixed={true}
             width={200}
-            cellDataGetter={this.getCellData}
+            cellDataGetter={this.getPkCellData}
             cellRenderer={this.renderPk}
             isRemovable={false}
             isSortable={true}
@@ -364,33 +373,48 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
   var AttributeFilter = React.createClass({
 
     propTypes: {
-      actions: PropTypes.object.isRequired,
-      store: PropTypes.object.isRequired,
+
       displayName: PropTypes.string,
-      trimMetadataTerms: PropTypes.bool
+
+      // state
+      fields: PropTypes.array.isRequired, // tree nodes
+      filters: PropTypes.array.isRequired,
+      dataCount: PropTypes.number.isRequired,
+      filteredData: PropTypes.array.isRequired,
+      ignoredData: PropTypes.array.isRequired,
+      columns: PropTypes.array.isRequired,
+      activeField: PropTypes.object,
+      activeFieldSummary: PropTypes.array,
+      fieldMetadataMap: PropTypes.object.isRequired,
+
+      // not sure if these belong here
+      isLoading: PropTypes.bool,
+      invalidFilters: PropTypes.array,  // derivable?
+
+      // event handlers
+      onActiveFieldChange: PropTypes.func.isRequired,
+      onFiltersChange: PropTypes.func.isRequired,
+      onColumnsChange: PropTypes.func.isRequired,
+      onIgnoredDataChange: PropTypes.func.isRequired
+
     },
 
     getDefaultProps: function() {
       return {
-        displayName: 'Items',
-        trimMetadataTerms: false
+        displayName: 'Items'
       };
     },
 
     getInitialState: function() {
-      return Object.assign({
+      return {
         sortTerm: '__primary_key__',
         sortDirection: 'ASC',
-        collapsed: false,
-      }, this.props.store.getState());
+        collapsed: false
+      };
     },
 
     componentDidMount: function() {
-      var $node = $(this.getDOMNode());
-      this.props.store.on('change', function() {
-        var newState = this.props.store.getState();
-        this.setState(newState);
-      }, this);
+      var $node = $(findDOMNode(this));
       $node.find('.filter-param-tabs').tabs({
         activate: function(event, ui) {
           this.setState({
@@ -402,12 +426,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     handleSelectFieldClick: function(field, event) {
       event.preventDefault();
-      this.props.actions.selectField(field);
-    },
-
-    handleRemoveFilterClick: function(filter, event) {
-      event.preventDefault();
-      this.props.actions.removeFilter(filter);
+      this.props.onActiveFieldChange(field);
     },
 
     handleCollapseClick: function(event) {
@@ -425,38 +444,85 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     handleFieldsChange: function(fields) {
-      this.props.actions.updateColumns(fields);
+      this.props.onColumnsChange(fields);
     },
 
     handleIgnored: function(datum, ignored) {
-      if (ignored) this.props.actions.addIgnored(datum);
-      else this.props.actions.removeIgnored(datum);
+      let ignoredData = ignored
+        ? this.props.ignoredData.concat(datum)
+        : this.props.ignoredData.filter(d => d !== datum);
+      this.props.onIgnoredDataChange(ignoredData);
     },
 
     handleSort: function(fieldTerm) {
-      var { sortTerm, sortDirection } = this.state;
-
-      var direction = fieldTerm == sortTerm && sortDirection == 'ASC'
+      let { sortTerm, sortDirection } = this.state;
+      let direction = fieldTerm == sortTerm && sortDirection == 'ASC'
         ? 'DESC' : 'ASC';
-
       this.setState({
         sortTerm: fieldTerm,
         sortDirection: direction
       });
     },
 
+    handleFilterRemove(filter) {
+      let filters = this.props.filters.filter(f => f !== filter);
+      this.props.onFiltersChange(filters);
+    },
+
+    handleFieldFilterChange(field, values, display) {
+      let filters = this.props.filters.filter(f => f.field.term !== field.term);
+      this.props.onFiltersChange(this.shouldAddFilter(field, values)
+        ? filters.concat({ field, values, display })
+        : filters
+      );
+    },
+
+    shouldAddFilter(field, values) {
+      return field.type === 'string' ? values.length !== this.props.activeFieldSummary.length
+           : field.type === 'number' ? values.min != null || values.max != null
+           : field.type === 'date' ? values.min != null || values.max != null
+           : false;
+    },
+
+    createStringFilter(field, values) {
+      if (values.length === this.props.activeFieldSummary.length) return null;
+      let display = values.length > 0
+        ? field.display + ' is ' + values.join(', ')
+        : 'No ' + field.display + ' selected';
+      return { field, values, display };
+    },
+
+    createNumberFilter(field, values) {
+      let { min, max } = values;
+      if (min === null && max === null) return null;
+      let distributionValues = this.props.activeFieldSummary.map(entry => entry.value);
+      let distributionMin = Math.min(...distributionValues);
+      let distributionMax = Math.max(...distributionValues);
+      let displayMin = min == null ? distributionMin : min;
+      let displayMax = max == null ? distributionMax : max;
+      let display = field.display + ' between ' + displayMin + ' and ' + displayMax;
+      return { field, values, display };
+    },
+
+    createDateFilter(field, values) {
+      return this.createNumberFilter(field, values);
+    },
+
     render: function() {
       var {
-        data,
+        dataCount,
         filteredData,
         fields,
         columns,
-        ignored,
+        ignoredData,
         filters,
         invalidFilters,
-        selectedField,
-        distributionMap,
-        isLoading,
+        activeField,
+        activeFieldSummary,
+        fieldMetadataMap
+      } = this.props;
+
+      let {
         tabWidth,
         sortTerm,
         sortDirection
@@ -464,37 +530,27 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
       var displayName = this.props.displayName;
       var selectedFilter = _.find(filters, filter => {
-        return filter.field.term === _.result(selectedField, 'term');
+        return filter.field.term === _.result(activeField, 'term');
       });
 
-      var actions = this.props.actions;
-      var metadata = this.props.store.metadata;
-
-      var filteredNotIgnored = filteredData.filter(datum => !datum.isIgnored);
+      var filteredNotIgnored = filteredData.filter(datum => ignoredData.indexOf(datum) === -1);
 
       var sortedFilteredData = _.sortBy(filteredData, function(datum) {
         var term = datum.term;
-        return sortTerm == '__primary_key__' ? term : metadata[sortTerm][term];
+        return sortTerm == '__primary_key__' ? term : fieldMetadataMap[sortTerm][term];
       });
 
       if (sortDirection == 'DESC') sortedFilteredData.reverse();
 
-      // Create tree from fields
-      // TODO Create tree in service
-      var treeOpts = _.pick(this.props, 'trimMetadataTerms');
-      var fieldTree = Fields.getTree(treeOpts, fields);
-
-
       return (
         <div>
-          {isLoading ? <Loading className="wdk-AttributeFilter-Loading" radius={4}/> : null}
           <FilterList
-            onFilterSelect={actions.selectField}
-            onFilterRemove={actions.removeFilter}
+            onFilterSelect={this.props.onActiveFieldChange}
+            onFilterRemove={this.handleFilterRemove}
             filters={filters}
             filteredDataCount={filteredNotIgnored.length}
-            dataCount={data.length}
-            selectedField={selectedField}/>
+            dataCount={dataCount}
+            selectedField={activeField}/>
 
           <InvalidFilterList filters={invalidFilters}/>
 
@@ -524,17 +580,17 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
               <div id="filters">
                 <div className="filters ui-helper-clearfix">
                   <FieldList
-                    fieldTree={fieldTree}
-                    onFieldSelect={actions.selectField}
-                    selectedField={selectedField}
+                    fieldTree={fields}
+                    onFieldSelect={this.props.onActiveFieldChange}
+                    selectedField={activeField}
                   />
 
                   <FieldFilter
                     displayName={displayName}
-                    field={selectedField}
+                    field={activeField}
                     filter={selectedFilter}
-                    distribution={distributionMap[_.result(selectedField, 'term')]}
-                    onAddFilter={actions.addFilter}
+                    distribution={activeFieldSummary}
+                    onChange={this.handleFieldFilterChange}
                   />
                 </div>
               </div>
@@ -551,11 +607,11 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                   sortTerm={sortTerm}
                   sortDirection={sortDirection}
                   filteredData={sortedFilteredData}
-                  totalSize={data.length}
+                  totalSize={dataCount}
                   selectedFields={columns}
-                  fieldTree={fieldTree}
-                  ignored={ignored}
-                  metadata={metadata}/>
+                  fieldTree={fields}
+                  ignoredData={ignoredData}
+                  metadata={fieldMetadataMap}/>
               </div>
             </div>
           </div>
@@ -611,13 +667,13 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
       node: PropTypes.object.isRequired,
       ItemComponent: PropTypes.func.isRequired,
       onFieldSelect: PropTypes.func.isRequired,
-      selectedField: PropTypes.object,
+      selectedField: PropTypes.object
     },
 
     getInitialState: function() {
-      return {
-        isCollapsed: true
-      };
+      let { node, selectedField } = this.props;
+      let isCollapsed = node.children.every( child => child.field !== selectedField)
+      return { isCollapsed };
     },
 
     handleToggleClick: function() {
@@ -636,17 +692,17 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
       return (
         <li key={node.field.term} className={className}>
-          { node.children
+          { node.children.length > 0
             ? [
               <h4 onClick={_.partial(this.handleToggleClick, node)}
                 key={node.field.term}
                 role="treeitem"
-                className={this.state.isCollapsed ? "collapsed link" : "link"}>{node.field.display}</h4>,
+                className={this.state.isCollapsed ? "collapsed" : ""}>{node.field.display}</h4>,
                 <div key={node.field.term + '-children'}>
                   <ul>
-                    {_.map(node.children, child => {
-                      return (<TreeNode key={child.field.term} node={child} {...restProps}/>);
-                    }, this)}
+                    {_.map(node.children, child => (
+                      <TreeNode key={child.field.term} node={child} {...restProps}/>
+                    ))}
                   </ul>
                 </div>
               ]
@@ -742,7 +798,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
       onSelected: React.PropTypes.func,
       onSelecting: React.PropTypes.func,
-      onUnselected: React.PropTypes.func,
+      onUnselected: React.PropTypes.func
     },
 
     getDefaultProps() {
@@ -777,7 +833,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     componentDidMount: function() {
       $(window).on('resize', this.handleResize);
-      $(this.getDOMNode())
+      $(findDOMNode(this))
         .on('plotselected .chart', this.handlePlotSelected)
         .on('plotselecting .chart', this.handlePlotSelecting)
         .on('plotunselected .chart', this.handlePlotUnselected)
@@ -908,7 +964,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
       if (this.plot) this.plot.destroy();
 
-      this.$chart = $(this.getDOMNode()).find('.chart');
+      this.$chart = $(findDOMNode(this)).find('.chart');
       this.plot = $.plot(this.$chart, seriesData, plotOptions);
     },
 
@@ -1000,7 +1056,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     propTypes: {
       toFilterValue: React.PropTypes.func.isRequired,
       toHistogramValue: React.PropTypes.func.isRequired,
-      onAddFilter: React.PropTypes.func.isRequired,
+      onChange: React.PropTypes.func.isRequired,
       field: React.PropTypes.object.isRequired,
       filter: React.PropTypes.object.isRequired,
       overview: React.PropTypes.node.isRequired,
@@ -1009,27 +1065,46 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     componentWillMount() {
       this.updateFilter = _.debounce(this.updateFilter, 50);
+      this.setDistributionRange(this.props);
+    },
+
+    componentWillReceiveProps(nextProps) {
+      this.setDistributionRange(nextProps);
+    },
+
+    setDistributionRange(props) {
+      var values = props.distribution.map(entry => entry.value);
+      var min = props.toFilterValue(Math.min(...values));
+      var max = props.toFilterValue(Math.max(...values));
+      this.distributionRange = { min, max };
     },
 
     handleChange() {
-      var inputMin = this.refs.min.getDOMNode().value
-      var inputMax = this.refs.max.getDOMNode().value
+      var inputMin = this.refs.min.value
+      var inputMax = this.refs.max.value
       var min = inputMin === '' ? null : this.props.toFilterValue(inputMin);
       var max = inputMax === '' ? null : this.props.toFilterValue(inputMax);
-      this.props.onAddFilter(this.props.field, { min, max });
+      this.emitChange({ min, max });
     },
 
     updateFilter(range) {
       var min = range.min == null ? null : this.props.toFilterValue(range.min);
       var max = range.max == null ? null : this.props.toFilterValue(range.max);
-      this.props.onAddFilter(this.props.field, { min, max });
+      this.emitChange({ min, max });
+    },
+
+    emitChange(range) {
+      let { field } = this.props;
+      let min = range.min == null ? this.distributionRange.min : range.min;
+      let max = range.max == null ? this.distributionRange.max : range.max;
+      let display = field.display + ' between ' + min + ' and ' + max;
+      this.props.onChange(field, range, display);
     },
 
     render: function() {
       var { field, filter, distribution, displayName } = this.props;
-      var values = distribution.map(entry => entry.value);
-      var distMin = this.props.toFilterValue(Math.min(...values));
-      var distMax = this.props.toFilterValue(Math.max(...values));
+      var distMin = this.distributionRange.min;
+      var distMax = this.distributionRange.max;
 
       var { min, max } = filter ? filter.values : {};
 
@@ -1089,6 +1164,9 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
   var fieldComponents = {};
 
+  var UNKNOWN_DISPLAY = 'unknown';
+  var UNKNOWN_VALUE = '@@unknown@@';
+
   fieldComponents.string = React.createClass({
 
     handleClick: function(event) {
@@ -1100,25 +1178,32 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     },
 
     handleChange: function() {
-      var field = this.props.field;
-      var values = $(this.getDOMNode())
+      var values = $(findDOMNode(this))
         .find('input[type=checkbox]:checked')
         .toArray()
-        .map(_.property('value'));
-      this.props.onAddFilter(field, values);
+        .map(_.property('value'))
+        .map(value => value === UNKNOWN_VALUE ? null : value);
+      this.emitChange(values);
     },
 
     handleSelectAll: function(event) {
       event.preventDefault();
-      var { field, distribution } = this.props;
+      var { distribution } = this.props;
       var values = _.pluck(distribution, 'value');
-      this.props.onAddFilter(field, values);
+      this.emitChange(values);
     },
 
     handleRemoveAll: function(event) {
       event.preventDefault();
-      var field = this.props.field;
-      this.props.onAddFilter(field, []);
+      this.emitChange([]);
+    },
+
+    emitChange(values) {
+      let { field } = this.props;
+      let display = values.length > 0
+        ? field.display + ' is ' + values.map(value => value === null ? UNKNOWN_DISPLAY : value).join(', ')
+        : 'No ' + field.display + ' selected';
+      this.props.onChange(field, values, display);
     },
 
     render: function() {
@@ -1145,7 +1230,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
       // sort Unkonwn to end of list
       var sortedDistribution = _.sortBy(this.props.distribution, function({ value }) {
-        return value === Field.UNKNOWN_VALUE ? '\u200b' : value;
+        return value === null ? '\u200b' : value;
       })
 
       return (
@@ -1179,11 +1264,13 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                     var filteredPercentage = (item.filteredCount / total) * 100;
                     var isChecked = !this.props.filter || _.contains(this.props.filter.values, item.value);
                     var trClassNames = 'member' + (isChecked ? ' selected' : '');
+                    var value = item.value || UNKNOWN_VALUE;
+                    var display = item.value || UNKNOWN_DISPLAY;
 
                     return (
-                      <tr key={item.value} className={trClassNames} onClick={this.handleClick}>
-                        <td><input value={item.value} type="checkbox" checked={isChecked} onChange={this.handleChange}/></td>
-                        <td><span className="value">{item.value}</span></td>
+                      <tr key={value} className={trClassNames} onClick={this.handleClick}>
+                        <td><input value={value} type="checkbox" checked={isChecked} onChange={this.handleChange}/></td>
+                        <td><span className="value">{display}</span></td>
                         <td><span className="frequency">{item.count}</span></td>
                         <td><span className="frequency">{item.filteredCount}</span></td>
                         <td><div className="bar">
@@ -1226,7 +1313,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     render() {
       var [ knownDist, unknownDist ] = _.partition(this.props.distribution, function(entry) {
-        return entry.value !== Field.UNKNOWN_VALUE;
+        return entry.value !== null;
       });
 
       var size = knownDist.reduce(function(sum, entry) {
@@ -1290,7 +1377,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     render: function() {
       var [ knownDist, unknownDist ] = _.partition(this.props.distribution, function(entry) {
-        return entry.value !== Field.UNKNOWN_VALUE;
+        return entry.value !== null;
       });
 
 
