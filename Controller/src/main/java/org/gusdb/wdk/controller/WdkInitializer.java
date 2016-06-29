@@ -16,13 +16,12 @@ import org.xml.sax.SAXException;
 
 public class WdkInitializer {
 
-  private static final Logger logger = Logger.getLogger(ApplicationInitListener.class);
+  private static final Logger LOG = Logger.getLogger(ApplicationInitListener.class);
 
   public static void initializeWdk(ServletContext servletContext) {
-
     try {
       MDCUtil.setNonRequestThreadVars("init");
-      logger.info("Initializing WDK web application");
+      LOG.info("Initializing WDK web application");
 
       String gusHome = GusHome.webInit(servletContext);
       String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
@@ -30,6 +29,8 @@ public class WdkInitializer {
       String loginUrl = servletContext.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
 
       initMemberVars(servletContext, projectId, gusHome, alwaysGoToSummary, loginUrl);
+
+      LOG.info("WDK web application initialization complete.");
     }
     catch (Exception ex) {
       throw new RuntimeException(ex);
@@ -38,16 +39,18 @@ public class WdkInitializer {
       MDCUtil.clearValues();
     }
   }
+
   public static void terminateWdk(ServletContext servletContext) {
     try {
       MDCUtil.setNonRequestThreadVars("term");
-      logger.info("Terminating WDK web application");
+      LOG.info("Terminating WDK web application");
 
       WdkModelBean wdkModel = getWdkModel(servletContext);
       if (wdkModel != null) {
         // insulate in case model never properly loaded
-        logger.info("Releasing resources for WDK Model.");
+        LOG.info("Releasing resources for WDK Model.");
         wdkModel.getModel().releaseResources();
+        LOG.info("WDK resource release complete.");
       }
     }
     catch (Exception ex) {
@@ -62,17 +65,18 @@ public class WdkInitializer {
       String gusHome, String alwaysGoToSummary, String loginUrl)
           throws WdkModelException, IOException, SAXException {
 
-    logger.info("Initializing model...");
+    LOG.info("Initializing model...");
     WdkModel wdkModelRaw = WdkModel.construct(projectId, gusHome);
     WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
 
-    logger.info("Initialized model object.  Setting on servlet context.");
+    LOG.info("Initialized model object.  Setting on servlet context.");
     servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
 
     // Set assetsUrl attribute. It will be null if not defined in the model
     servletContext.setAttribute(CConstants.WDK_ASSETS_URL_KEY, wdkModel.getModel().getModelConfig().getAssetsUrl());
 
     // load wizard
+    LOG.info("Loading wizard configuration.");
     Wizard wizard = Wizard.loadWizard(gusHome, wdkModel);
     servletContext.setAttribute(CConstants.WDK_WIZARD_KEY, wizard);
     servletContext.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY, alwaysGoToSummary);
