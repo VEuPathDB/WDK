@@ -143,22 +143,29 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     render: function() {
       var FieldDetail = getFieldDetail(this.props.field);
+      let fieldDetailProps = {
+        displayName: this.props.displayName,
+        field: this.props.field,
+        distribution: this.props.distribution,
+        filter: this.props.filter,
+        onChange: this.props.onChange
+      };
 
       return (
         <div className="field-detail">
           { !this.props.field ? <EmptyField displayName={this.props.displayName}/>
           : (
               <div>
-                <h3>{this.props.field.display}</h3>
+                <h3>
+                  {this.props.field.display + ' '}
+                  <Tooltip content={FieldDetail.getTooltipContent(fieldDetailProps)}>
+                    <i className="fa fa-question-circle" style={{ color: 'blue', fontSize: '1rem' }}/>
+                  </Tooltip>
+                </h3>
                 <div className="description">{this.props.field.description}</div>
                 { ! this.props.distribution ? <Loading/>
                 : <div>
-                    <FieldDetail key={this.props.field.term}
-                      displayName={this.props.displayName}
-                      field={this.props.field}
-                      distribution={this.props.distribution}
-                      filter={this.props.filter}
-                      onChange={this.props.onChange}/>
+                    <FieldDetail key={this.props.field.term} {...fieldDetailProps} />
                     <div className="legend">
                       <div>
                         <div className="bar"><div className="fill"></div></div>
@@ -375,6 +382,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     propTypes: {
 
       displayName: PropTypes.string,
+      collapsible: PropTypes.bool,
 
       // state
       fields: PropTypes.array.isRequired, // tree nodes
@@ -401,7 +409,8 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     getDefaultProps: function() {
       return {
-        displayName: 'Items'
+        displayName: 'Items',
+        collapsible: true
       };
     },
 
@@ -566,13 +575,16 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
               <ul className="wdk-AttributeFilter-TabNav">
                 <li><a href="#filters">Select {displayName}</a></li>
                 <li><a href="#data">View selected {displayName} ({filteredData.length})</a></li>
-                <li>
-                  <span
-                    className="wdk-AttributeFilter-Collapse link"
-                    title="Hide selection tool"
-                    onClick={this.handleCollapseClick}
-                  >Collapse</span>
-                </li>
+                {this.props.collapsible && (
+                  <li>
+                    <span
+                      className="wdk-AttributeFilter-Collapse link"
+                      title="Hide selection tool"
+                      onClick={this.handleCollapseClick}
+                    >Collapse</span>
+                  </li>
+                )}
+
               </ul>
 
 
@@ -1053,6 +1065,19 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
   var HistogramField = React.createClass({
 
+    statics: {
+      getTooltipContent(props) {
+        return (`
+          The graph below shows the distribution of ${props.field.display}
+          values. The red bar indicates the number of ${props.displayName}
+          that have the ${props.field.display} value and your other selection
+          criteria.
+
+          The slider to the left of the graph can be used to scale the Y-axis.
+        `);
+      }
+    },
+
     propTypes: {
       toFilterValue: React.PropTypes.func.isRequired,
       toHistogramValue: React.PropTypes.func.isRequired,
@@ -1169,6 +1194,29 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
   fieldComponents.string = React.createClass({
 
+    statics: {
+      getTooltipContent(props) {
+        var displayName = props.displayName;
+        var fieldDisplay = props.field.display;
+        return (
+         `<p>This table shows the distribution of ${displayName} with
+          respect to ${fieldDisplay}.</p>
+
+          <p>The <i>Total</i> column indicates the number of
+          ${displayName} with the given ${fieldDisplay}
+          value.</p>
+
+          <p>The <i>Matching</i> column indicates the number of
+          ${displayName} that match the critera chosen for other
+          qualities and that have the given ${fieldDisplay}
+          value.</p>
+
+          <p>You may add or remove ${displayName} with specific ${fieldDisplay}
+          values from your overall selection by checking or unchecking the
+          corresponding checkboxes.</p>`);
+      }
+    },
+
     handleClick: function(event) {
       if (!$(event.target).is('input[type=checkbox]')) {
         var $target = $(event.currentTarget).find('input[type=checkbox]');
@@ -1209,24 +1257,6 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
     render: function() {
       var dist = this.props.distribution;
       var total = _.reduce(dist, (acc, item) => acc + item.count, 0);
-      var displayName = this.props.displayName;
-      var fieldDisplay = this.props.field.display;
-      var tooltipContent =
-       `<p>This table shows the distribution of ${displayName} with
-        respect to ${fieldDisplay}.</p>
-
-        <p>The <i>Total</i> column indicates the number of
-        ${displayName} with the given ${fieldDisplay}
-        value.</p>
-
-        <p>The <i>Matching</i> column indicates the number of
-        ${displayName} that match the critera chosen for other
-        qualities and that have the given ${fieldDisplay}
-        value.</p>
-
-        <p>You may add or remove ${displayName} with specific ${fieldDisplay}
-        values from your overall selection by checking or unchecking the
-        corresponding checkboxes.</p>`;
 
       // sort Unkonwn to end of list
       var sortedDistribution = _.sortBy(this.props.distribution, function({ value }) {
@@ -1242,11 +1272,6 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
                 <a href="#select-all" onClick={this.handleSelectAll}>select all</a>
                 {' | '}
                 <a href="#clear-all" onClick={this.handleRemoveAll}>clear all</a>
-              </div>
-              <div style={{ position: 'absolute', right: '1em' }}>
-                <Tooltip content={tooltipContent}>
-                  <i className="fa fa-question-circle fa-lg" style={{ color: 'blue' }}/>
-                </Tooltip>
               </div>
               <table>
                 <thead>
@@ -1291,6 +1316,10 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
 
   fieldComponents.number = React.createClass({
+
+    statics: {
+      getTooltipContent: HistogramField.getTooltipContent
+    },
 
     // FIXME Handle intermediate strings S where Number(S) => NaN
     // E.g., S = '-'
@@ -1355,6 +1384,10 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
   });
 
   fieldComponents.date = React.createClass({
+
+    statics: {
+      getTooltipContent: HistogramField.getTooltipContent
+    },
 
     componentWillMount() {
       this.timeformat = getFormatFromDateString(this.props.distribution[0].value);
