@@ -29,14 +29,14 @@ interface IWrapper<P> extends React.ComponentClass<P> {
 
 /**
  * A Component decorator that wraps the Component passed to it and returns a new
- * Component with a static method `wrap`. Use this method to replace the wrapped
- * Component. See the docs for `wrap` for more details.
+ * Component with a static method `wrapComponent`. Use this method to replace
+ * the wrapped Component. See the docs for `wrapComponent` for more details.
  *
  *
  * Rationale
  * =========
  *
- * Components in WDK should be customizable by the implementor. The implementor
+ * Components in WDK should be customizable by the application. The application
  * should be able to replace the Component, surround the Component, or modify
  * the props passed to the Component. By creating a wrapper Component whose
  * internal Component can be replaced in-place, WDK code does not need to do
@@ -44,7 +44,7 @@ interface IWrapper<P> extends React.ComponentClass<P> {
  * what will most likely be a common task: modifying a WDK Component.
  *
  * There are other approaches that would require a uniform JavaScript build
- * environment, which would allow the implementor to perform overriding at
+ * environment, which would allow the application to perform overriding at
  * build time (similar to how we do this with JSP tags). We aren't quite at a
  * point where we can do this, and it might not be desirable.
  *
