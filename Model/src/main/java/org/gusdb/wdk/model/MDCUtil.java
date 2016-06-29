@@ -76,4 +76,11 @@ public class MDCUtil {
     MDC.remove(LOG4J_SESSION_ID_KEY);
     MDC.remove(LOG4J_REQUEST_ID_KEY);
   }
+
+  public static void setNonRequestThreadVars(String threadId) {
+    MDCUtil.setRequestId(threadId);
+    MDCUtil.setSessionId(threadId);
+    MDCUtil.setIpAddress("<no_ip_address>");
+    MDCUtil.setRequestStartTime(System.currentTimeMillis());
+  }
 }
