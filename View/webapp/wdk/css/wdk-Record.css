@@ -232,7 +232,7 @@
   padding: 0 1em;
 }
 
-.wdk-Record .wdk-CollapsibleSectionHeader {
+.wdk-Record .wdk-CollapsibleSectionHeader:not(.wdk-RecordSectionHeader) {
   font-size: 1.2em;
   font-weight: 500;
 }
