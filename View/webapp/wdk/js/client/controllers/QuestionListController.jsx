@@ -24,7 +24,9 @@ class QuestionListController extends WdkViewController {
           {state.questions.map(question => (
             <li key={question.name}>
               {question.displayName + ' - '}
-              <Link to={`/answer/${question.name}`}>answer page</Link>
+              { /* <Link to={`/answer/${question.name}`}>answer page</Link> */ }
+              <div>Summary:{question.summary}</div>
+              <div>Description: {question.description}</div>
             </li>
           ))}
         </ol>
