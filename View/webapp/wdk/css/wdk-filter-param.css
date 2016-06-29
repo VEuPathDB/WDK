@@ -1,7 +1,7 @@
 .filter-param h3 {
   margin: auto;
   margin-bottom: 1em;
-  text-transform: capitalize;
+  padding: 0;
 }
 .filter-param p {
   font-style: initial;
