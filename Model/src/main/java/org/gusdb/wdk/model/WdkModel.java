@@ -61,7 +61,6 @@ import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
-import org.jfree.util.Log;
 import org.xml.sax.SAXException;
 
 /**
