@@ -43,20 +43,12 @@ class RecordController extends WdkViewController {
       state.recordClass.displayName + ' ' + state.record.displayName);
   }
 
-  componentDidMount() {
-    this.loadData(this.props);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    // We need to do this to ignore hash changes.
-    if (this.props.location.pathname !== nextProps.location.pathname) {
-      this.loadData(nextProps);
+  loadData(state, props, previousProps) {
+    // We need to check pathname to ignore hash changes.
+    if (previousProps == null || props.location.pathname !== previousProps.location.pathname) {
+      let { recordClass, splat } = props.params;
+      this.dispatchAction(loadRecordData(recordClass, splat.split('/')));
     }
-  }
-
-  loadData(props) {
-    let { recordClass, splat } = props.params;
-    this.dispatchAction(loadRecordData(recordClass, splat.split('/')));
   }
 
   renderError(state) {
@@ -72,7 +64,6 @@ class RecordController extends WdkViewController {
   renderRecord(state, eventHandlers) {
     let { user, record, recordClass, inBasket, inFavorites,
       loadingBasketStatus, loadingFavoritesStatus } = state;
-    let title = recordClass.displayName + ' ' + record.displayName;
     let loadingClassName = 'fa fa-circle-o-notch fa-spin';
     let headerActions = [];
     if (recordClass.useBasket) {
