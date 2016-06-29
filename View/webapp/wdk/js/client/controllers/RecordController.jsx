@@ -56,7 +56,7 @@ class RecordController extends WdkViewController {
 
   loadData(props) {
     let { recordClass, splat } = props.params;
-    this.props.dispatchAction(loadRecordData(recordClass, splat.split('/')));
+    this.dispatchAction(loadRecordData(recordClass, splat.split('/')));
   }
 
   renderError(state) {
@@ -122,7 +122,7 @@ class RecordController extends WdkViewController {
 
 RecordController.propTypes = {
   stores: PropTypes.object.isRequired,
-  dispatchAction: PropTypes.func.isRequired
+  makeDispatchAction: PropTypes.func.isRequired
 }
 
 export default wrappable(RecordController);

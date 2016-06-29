@@ -1,6 +1,7 @@
 import {property} from 'lodash';
 import {filterOutProps} from '../utils/componentUtils';
 import {alert, confirm} from '../utils/Platform';
+import { broadcast } from '../utils/StaticDataUtils';
 
 export let actionTypes = {
 
@@ -34,10 +35,10 @@ export let actionTypes = {
 export function updateUserPreference(key, value) {
   // TODO: update preference on the backend here too!!!
   //   (need to decide on optimistic updates and/or alerting user if unable to update)
-  return {
+  return broadcast({
     type: actionTypes.USER_PREFERENCE_UPDATE,
     payload: { [key]: value }
-  };
+  });
 }
 
 function createProfileFormStatusAction(status, errorMessage) {
@@ -66,12 +67,12 @@ export function submitProfileForm(user) {
     wdkService.updateCurrentUser(trimmedUser)
       .then(() => {
         // success; update user first, then status in ProfileViewStore
-        dispatch({
+        dispatch(broadcast({
           type: actionTypes.USER_UPDATE,
           // NOTE: this prop name should be the same as that used in StaticDataActionCreator for 'user'
           // NOTE2: not all user props were sent to update but all should remain EXCEPT 'confirmEmail'
           payload: { user: filterOutProps(user, ["confirmEmail"]) }
-        });
+        }));
         dispatch(createProfileFormStatusAction('success'));
       })
       .catch(error => {
@@ -200,7 +201,7 @@ function basketAction(record, status) {
   return {
     type: actionTypes.BASKET_STATUS_RECEIVED,
     payload: { record, status }
-  }
+  };
 }
 
 /**
@@ -267,7 +268,7 @@ function favoritesAction(record, status) {
   return {
     type: actionTypes.FAVORITES_STATUS_RECEIVED,
     payload: { record, status }
-  }
+  };
 }
 
 /**
