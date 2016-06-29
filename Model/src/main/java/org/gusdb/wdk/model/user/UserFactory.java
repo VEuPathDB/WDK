@@ -982,8 +982,7 @@ public class UserFactory {
     resetPassword(user);
   }
 
-  private void resetPassword(User user) throws WdkUserException,
-      WdkModelException {
+  private void resetPassword(User user) throws WdkModelException {
     String email = user.getEmail();
 
     // generate a random password of 8 characters long, the range will be
