@@ -232,8 +232,9 @@
   padding: 0 1em;
 }
 
-.wdk-RecordTableContainerHeader {
-  font-weight: bold;
+.wdk-Record .wdk-CollapsibleSectionHeader {
+  font-size: 1.2em;
+  font-weight: 500;
 }
 
 .wdk-RecordTableContainerContent {
