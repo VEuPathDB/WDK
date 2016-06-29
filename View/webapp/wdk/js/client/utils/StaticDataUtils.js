@@ -7,3 +7,16 @@ export let StaticDataProps = {
   USER: "user",
   PREFERENCES: "preferences"
 };
+
+/**
+ * Adds an isBroadcast property to the passed action with value true.  Only
+ * object types are supported.
+ * 
+ * @param {Object} action to be broadcast
+ */
+export function broadcast(action) {
+  if (action === null || typeof action !== 'object') {
+    throw "Parameter 'action' is null or not an object; only objects are supported by this function.";
+  }
+  return Object.assign(action, { isBroadcast: true });
+}

@@ -55,13 +55,24 @@ class WdkViewController extends Component {
     return ( <span>Page for View Controller: {this.name}</span> );
   }
 
+  /*---------- Methods that may be overridden in special cases ----------*/
+
+  /**
+   * Returns the channel name.  If not overridden, this function returns the
+   * store name.
+   */
+  getChannelName() {
+    return this.getStoreName();
+  }
+
   /*------------- Methods that should probably not be overridden -------------*/
 
   /**
    * Registers with this controller's store if it has one and sets initial state
    */
   componentWillMount() {
-    this.wrappedEventHandlers = wrapActions(this.props.dispatchAction, this.getActionCreators());
+    this.dispatchAction = this.props.makeDispatchAction(this.getChannelName());
+    this.wrappedEventHandlers = wrapActions(this.dispatchAction, this.getActionCreators());
     let storeName = this.getStoreName();
     if (storeName != null) {
       let store = this.props.stores[storeName];
@@ -99,7 +110,8 @@ class WdkViewController extends Component {
   getChildContext() {
     return {
       store: this.store,
-      dispatchAction: this.props.dispatchAction
+      makeDispatchAction: this.props.makeDispatchAction,
+      dispatchAction: this.dispatchAction
     };
   }
 
@@ -125,6 +137,7 @@ class WdkViewController extends Component {
 
 WdkViewController.childContextTypes = {
   store: PropTypes.object,
+  makeDispatchAction: PropTypes.func,
   dispatchAction: PropTypes.func
 };
 

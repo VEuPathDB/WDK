@@ -41,12 +41,12 @@ class DownloadFormController extends WdkViewController {
 
   handleIncomingProps(props) {
     // must reinitialize with every new props
-    let { params, dispatchAction } = props;
+    let { params } = props;
     if ('stepId' in params) {
-      dispatchAction(DownloadFormActionCreator.loadPageDataFromStepId(params.stepId));
+      this.dispatchAction(DownloadFormActionCreator.loadPageDataFromStepId(params.stepId));
     }
     else if ('recordClass' in params) {
-      dispatchAction(DownloadFormActionCreator.loadPageDataFromRecord(
+      this.dispatchAction(DownloadFormActionCreator.loadPageDataFromRecord(
           params.recordClass, params.splat.split('/').join(',')));
     }
     else {

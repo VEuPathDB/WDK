@@ -32,6 +32,8 @@ wdk.namespace('wdk.client', ns => {
       return;
     }
     let runtime = WdkClient.initialize(config);
+    // create and add dispatchAction function with channel 'legacy'
+    Object.assign(runtime, { dispatchAction: runtime.makeDispatchAction('legacy')})
     Object.defineProperty(ns, 'runtime', {
       value: runtime
     });

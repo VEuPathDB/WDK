@@ -27,7 +27,7 @@ class SiteMapController extends WdkViewController {
 
   componentDidMount() {
     if (this.state.tree == null) {
-      this.props.dispatchAction(SiteMapActionCreator.loadCurrentSiteMap());
+      this.dispatchAction(SiteMapActionCreator.loadCurrentSiteMap());
     }
   }
 }
