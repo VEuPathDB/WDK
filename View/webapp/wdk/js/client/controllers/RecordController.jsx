@@ -35,12 +35,18 @@ class RecordController extends WdkViewController {
   }
 
   isRenderDataLoaded(state) {
-    return state.record != null && !state.isLoading;
+    return !state.isLoading;
   }
 
   getTitle(state) {
-    return (state.recordClass == null || state.record == null ? "Loading..." :
-      state.recordClass.displayName + ' ' + state.record.displayName);
+    return  state.error ? 'Error: ' + this.getErrorMessage(state)
+          : state.recordClass == null || state.record == null ? "Loading..."
+          : state.recordClass.displayName + ' ' + state.record.displayName;
+  }
+
+  getErrorMessage(state) {
+    return 'The requested record ' + (state.error.status === 404 ?
+      'does not exist.' : 'could not be loaded.');
   }
 
   loadData(state, props, previousProps) {
@@ -55,49 +61,51 @@ class RecordController extends WdkViewController {
     if (state.error) {
       return (
         <div style={{padding: '1.5em', fontSize: '2em', color: 'darkred', textAlign: 'center'}}>
-          The requested record could not be loaded.
+          {this.getErrorMessage(state)}
         </div>
       );
     }
   }
 
   renderRecord(state, eventHandlers) {
-    let { user, record, recordClass, inBasket, inFavorites,
-      loadingBasketStatus, loadingFavoritesStatus } = state;
-    let loadingClassName = 'fa fa-circle-o-notch fa-spin';
-    let headerActions = [];
-    if (recordClass.useBasket) {
+    if (state.record) {
+      let { user, record, recordClass, inBasket, inFavorites,
+        loadingBasketStatus, loadingFavoritesStatus } = state;
+      let loadingClassName = 'fa fa-circle-o-notch fa-spin';
+      let headerActions = [];
+      if (recordClass.useBasket) {
+        headerActions.push({
+          label: inBasket ? 'Remove from basket' : 'Add to basket',
+          iconClassName: loadingBasketStatus ? loadingClassName : 'fa fa-shopping-basket',
+          onClick(event) {
+            event.preventDefault();
+            eventHandlers.updateBasketStatus(user, record, !inBasket);
+          }
+        });
+      }
       headerActions.push({
-        label: inBasket ? 'Remove from basket' : 'Add to basket',
-        iconClassName: loadingBasketStatus ? loadingClassName : 'fa fa-shopping-basket',
+        label: inFavorites ? 'Remove from favorites' : 'Add to favorites',
+        iconClassName: loadingFavoritesStatus ? loadingClassName : 'fa fa-lg fa-star',
         onClick(event) {
           event.preventDefault();
-          eventHandlers.updateBasketStatus(user, record, !inBasket);
+          eventHandlers.updateFavoritesStatus(user, record, !inFavorites);
         }
+      },
+      {
+        label: 'Download ' + recordClass.displayName,
+        iconClassName: 'fa fa-lg fa-download',
+        href: '/record/' + recordClass.urlSegment + '/download/' +
+          record.id.map(pk => pk.value).join('/')
       });
-    }
-    headerActions.push({
-      label: inFavorites ? 'Remove from favorites' : 'Add to favorites',
-      iconClassName: loadingFavoritesStatus ? loadingClassName : 'fa fa-lg fa-star',
-      onClick(event) {
-        event.preventDefault();
-        eventHandlers.updateFavoritesStatus(user, record, !inFavorites);
-      }
-    },
-    {
-      label: 'Download ' + recordClass.displayName,
-      iconClassName: 'fa fa-lg fa-download',
-      href: '/record/' + recordClass.urlSegment + '/download/' +
-        record.id.map(pk => pk.value).join('/')
-    });
 
-    return (
-      <RecordUI
-        {...state}
-        {...eventHandlers}
-        headerActions={headerActions}
-      />
-    );
+      return (
+        <RecordUI
+          {...state}
+          {...eventHandlers}
+          headerActions={headerActions}
+        />
+      );
+    }
   }
 
   renderView(state, eventHandlers) {
