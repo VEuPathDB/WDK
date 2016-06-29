@@ -33,7 +33,7 @@ let RecordNavigationItem = props => {
           className="wdk-Record-sidebar-checkbox"
           type="checkbox"
           checked={!collapsed}
-          onChange={(e) => void props.onSectionToggle(id, !e.target.checked)}
+          onChange={(e) => void props.onSectionToggle(id, e.target.checked)}
         />
       }
 
@@ -42,7 +42,7 @@ let RecordNavigationItem = props => {
           href={'#' + id}
           className={titleClassnames}
           onClick={() => {
-            if (collapsed) props.onSectionToggle(id, false);
+            if (collapsed) props.onSectionToggle(id, true);
           }}
         > {enumeration.join('.') + ' ' + displayName} </a>
       }
