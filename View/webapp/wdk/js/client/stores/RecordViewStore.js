@@ -67,7 +67,7 @@ export default class RecordViewStore extends WdkStore {
       case actionTypes.SECTION_VISIBILITY_CHANGED: {
         let collapsedSections = updateList(
           action.payload.name,
-          action.payload.isVisible,
+          !action.payload.isVisible,
           state.collapsedSections
         );
         return Object.assign({}, state, { collapsedSections });

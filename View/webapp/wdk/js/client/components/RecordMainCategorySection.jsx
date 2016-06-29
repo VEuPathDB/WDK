@@ -28,7 +28,12 @@ let RecordMainCategorySection = React.createClass({
     let { depth, category, isCollapsed } = this.props;
     // only toggle non-top-level category and wdkReference nodes
     if ('wdkReference' in category || depth > 1) {
-      this.props.onSectionToggle(getId(category), !isCollapsed);
+      this.props.onSectionToggle(
+        getId(category),
+        // It's tempting to negate this value, but we are sending the value
+        // we want for isVisible here.
+        isCollapsed
+      );
     }
   },
 
