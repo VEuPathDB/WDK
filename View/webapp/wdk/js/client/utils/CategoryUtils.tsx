@@ -33,8 +33,9 @@ export type TargetType = 'search' | 'attribute' | 'table';
 export type Scope = 'record' | 'record-internal' | 'results' | 'results-internal' | 'download' | 'download-internal';
 
 export function getId(node: CategoryNode) {
-  // replace whitespace with hyphens
-  return kebabCase(getPropertyValue('label', node));
+  return (node.wdkReference && node.wdkReference.name) ||
+    // replace whitespace with hyphens
+    kebabCase(getLabel(node));
 }
 
 export function getLabel(node: CategoryNode) {
