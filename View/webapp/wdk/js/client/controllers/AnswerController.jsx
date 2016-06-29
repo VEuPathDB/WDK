@@ -104,15 +104,7 @@ class AnswerController extends WdkViewController {
     this.dispatchAction(loadAnswer(questionName, recordClassName, opts));
   }
 
-  componentDidMount() {
-    this.handleNewProps(this.props);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.handleNewProps(nextProps);
-  }
-
-  handleNewProps(props) {
+  loadData(state, props) {
     // incoming values from the router
     let questionName = props.params.question;
     let recordClassName = props.params.recordClass;
@@ -120,9 +112,9 @@ class AnswerController extends WdkViewController {
 
     // decide whether new answer needs to be loaded (may not need to be loaded
     //   if user goes someplace else and hits 'back' to here- store already correct)
-    if (this.state.question == null ||
-        this.state.question.urlSegment !== questionName ||
-        !isEqual(this.state.parameters, parameters)) {
+    if (state.question == null ||
+        state.question.urlSegment !== questionName ||
+        !isEqual(state.parameters, parameters)) {
 
       // (re)initialize the page
       let pagination = { numRecords: 1000, offset: 0 };

@@ -31,15 +31,7 @@ class DownloadFormController extends WdkViewController {
     return ( <DownloadFormContainer {...formProps}/> );
   }
 
-  componentDidMount() {
-    this.handleIncomingProps(this.props);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.handleIncomingProps(nextProps);
-  }
-
-  handleIncomingProps(props) {
+  loadData(props) {
     // must reinitialize with every new props
     let { params } = props;
     if ('stepId' in params) {

@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import {Component, PropTypes} from 'react';
-import {match, useRouterHistory, Router, Route, IndexRoute} from 'react-router';
+import {useRouterHistory, Router, Route, IndexRoute} from 'react-router';
 import {createHistory} from 'history';
 import AppController from './AppController';
 import IndexController from './IndexController';
@@ -12,7 +12,6 @@ import DownloadFormController from './DownloadFormController';
 import UserProfileController from './UserProfileController';
 import UserPasswordChangeController from './UserPasswordChangeController';
 import SiteMapController from './SiteMapController';
-import Loading from '../components/Loading';
 
 let REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
 let GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
