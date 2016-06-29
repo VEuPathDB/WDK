@@ -1,7 +1,7 @@
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
 import ChangePasswordForm from '../components/ChangePasswordForm';
-import { updateChangePasswordForm, savePassword } from '../actioncreators/UserActionCreator';
+import { updateChangePasswordForm, savePassword } from '../actioncreators/UserActionCreators';
 
 class UserPasswordChangeController extends WdkViewController {
 

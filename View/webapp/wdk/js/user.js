@@ -1,5 +1,5 @@
 /* global wdk, wdkConfig */
-import {showLoginForm, showLoginWarning} from './client/actioncreators/UserActionCreator';
+import {showLoginForm, showLoginWarning} from './client/actioncreators/UserActionCreators';
 
 // FIXME Review module
 // Some redundant functions, some undefined functions called, etc.

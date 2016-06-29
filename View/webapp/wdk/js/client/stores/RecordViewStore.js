@@ -2,8 +2,8 @@ import {difference, union} from 'lodash';
 import WdkStore from './WdkStore';
 import {filterNodes} from '../utils/TreeUtils';
 import {getId, getTargetType} from '../utils/CategoryUtils';
-import {actionTypes} from '../actioncreators/RecordViewActionCreator';
-import {actionTypes as userActionTypes} from '../actioncreators/UserActionCreator';
+import {actionTypes} from '../actioncreators/RecordViewActionCreators';
+import {actionTypes as userActionTypes} from '../actioncreators/UserActionCreators';
 import { StaticDataProps } from '../utils/StaticDataUtils';
 
 /** Store for record page */

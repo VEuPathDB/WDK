@@ -1,5 +1,5 @@
 import WdkStore from './WdkStore';
-import { actionTypes } from '../actioncreators/UserActionCreator';
+import { actionTypes } from '../actioncreators/UserActionCreators';
 import { StaticDataProps } from '../utils/StaticDataUtils';
 
 export default class UserPasswordChangeStore extends WdkStore {
