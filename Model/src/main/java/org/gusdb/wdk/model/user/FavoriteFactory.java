@@ -256,28 +256,35 @@ public class FavoriteFactory {
       Map<RecordClass, List<Favorite>> favorites = new LinkedHashMap<RecordClass, List<Favorite>>();
       while (rs.next()) {
         String rcName = rs.getString(COLUMN_RECORD_CLASS);
-        RecordClass recordClass = wdkModel.getRecordClass(rcName);
-        List<Favorite> list;
-        if (favorites.containsKey(recordClass)) {
-          list = favorites.get(recordClass);
-        } else {
-          list = new ArrayList<Favorite>();
-          favorites.put(recordClass, list);
+        // Start CWL 29JUN2016
+        // Added conditionals to avoid showing favorites for defunct record class sets or record classes
+        if(wdkModel.isExistsRecordClassSet(rcName)) {
+          RecordClass recordClass = wdkModel.getRecordClass(rcName);
+          if(recordClass != null) {
+            List<Favorite> list;
+            if (favorites.containsKey(recordClass)) {
+             list = favorites.get(recordClass);
+            } else {
+              list = new ArrayList<Favorite>();
+              favorites.put(recordClass, list);
+            }
+         
+            String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+            Map<String, Object> primaryKeys = new LinkedHashMap<String, Object>();
+            for (int i = 1; i <= columns.length; i++) {
+              Object value = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
+              primaryKeys.put(columns[i - 1], value);
+            }
+            RecordInstance record = new RecordInstance(user, recordClass, primaryKeys);
+            PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(recordClass.getPrimaryKeyAttributeField(), primaryKeys, record);
+            Favorite favorite = new Favorite(user);
+            favorite.setPrimaryKeys(pkValue);
+            favorite.setNote(rs.getString(COLUMN_RECORD_NOTE));
+            favorite.setGroup(rs.getString(COLUMN_RECORD_GROUP));
+            list.add(favorite);
+          }  
         }
-
-        String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-        Map<String, Object> primaryKeys = new LinkedHashMap<String, Object>();
-        for (int i = 1; i <= columns.length; i++) {
-          Object value = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
-          primaryKeys.put(columns[i - 1], value);
-        }
-        RecordInstance record = new RecordInstance(user, recordClass, primaryKeys);
-        PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(recordClass.getPrimaryKeyAttributeField(), primaryKeys, record);
-        Favorite favorite = new Favorite(user);
-        favorite.setPrimaryKeys(pkValue);
-        favorite.setNote(rs.getString(COLUMN_RECORD_NOTE));
-        favorite.setGroup(rs.getString(COLUMN_RECORD_GROUP));
-        list.add(favorite);
+        // End CWL 29JUN2016
       }
       return favorites;
     } catch (SQLException|WdkUserException e) {
