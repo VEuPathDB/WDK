@@ -8,11 +8,11 @@ import {
   updateAllFieldVisibility,
   updateNavigationSubcategoryVisibility,
   updateNavigationVisibility
-} from '../actioncreators/RecordViewActionCreator';
+} from '../actioncreators/RecordViewActionCreators';
 import {
   updateBasketStatus,
   updateFavoritesStatus
-} from '../actioncreators/UserActionCreator';
+} from '../actioncreators/UserActionCreators';
 import RecordUI from '../components/RecordUI';
 
 /** View Controller for record page */

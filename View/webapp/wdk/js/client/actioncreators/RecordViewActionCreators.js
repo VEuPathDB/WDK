@@ -2,7 +2,7 @@ import {chunk, partial} from 'lodash';
 import {getTree, nodeHasProperty, getPropertyValue} from '../utils/OntologyUtils';
 import {filterNodes} from '../utils/TreeUtils';
 import {seq} from '../utils/PromiseUtils';
-import {loadBasketStatus, loadFavoritesStatus} from './UserActionCreator';
+import {loadBasketStatus, loadFavoritesStatus} from './UserActionCreators';
 
 // TODO Change SHOW/HIDE_{feature} and EXPAND/COLLAPSE_{feature} to
 // {feature}_VISIBILITY_CHANGED

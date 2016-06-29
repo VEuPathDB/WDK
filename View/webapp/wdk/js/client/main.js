@@ -5,7 +5,7 @@ import * as ReactDOM from 'react-dom';
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
 import Root from './controllers/Root';
-import { loadAllStaticData } from './actioncreators/StaticDataActionCreator';
+import { loadAllStaticData } from './actioncreators/StaticDataActionCreators';
 
 import * as Components from './components';
 import * as Stores from './stores';

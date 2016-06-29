@@ -1,7 +1,7 @@
 import { ReduceStore } from 'flux/utils';
 import { StaticDataProps } from '../utils/StaticDataUtils';
-import { staticDataConfigMap } from '../actioncreators/StaticDataActionCreator';
-import { actionTypes as userActionTypes } from '../actioncreators/UserActionCreator';
+import { staticDataConfigMap } from '../actioncreators/StaticDataActionCreators';
+import { actionTypes as userActionTypes } from '../actioncreators/UserActionCreators';
 
 // create a map to static data item configs, but with actionTypes as keys instead of prop names
 let actionMap = Object.keys(staticDataConfigMap).reduce((actionMap, key) =>
@@ -28,7 +28,7 @@ export default class WdkStore extends ReduceStore {
   /**
    * Returns an Array<string> representing static props this store needs.
    * Override to automatically load static data items.  Strings passed should be
-   * constants in StaticDataActionCreator.StaticData and are ignored otherwise.
+   * constants in StaticDataUtils.StaticDataProps and are ignored otherwise.
    */
   getRequiredStaticDataProps() {
     return [];

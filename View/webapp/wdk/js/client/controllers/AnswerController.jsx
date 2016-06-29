@@ -7,7 +7,7 @@ import {
   updateFilter,
   moveColumn,
   changeAttributes
-} from '../actioncreators/AnswerViewActionCreator';
+} from '../actioncreators/AnswerViewActionCreators';
 import Answer from '../components/Answer';
 
 class AnswerController extends WdkViewController {

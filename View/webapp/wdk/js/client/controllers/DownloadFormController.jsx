@@ -1,6 +1,6 @@
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
-import * as DownloadFormActionCreator from '../actioncreators/DownloadFormActionCreator';
+import * as DownloadFormActionCreators from '../actioncreators/DownloadFormActionCreators';
 import DownloadFormContainer from '../components/DownloadFormContainer';
 
 class DownloadFormController extends WdkViewController {
@@ -10,7 +10,7 @@ class DownloadFormController extends WdkViewController {
   }
 
   getActionCreators() {
-    return DownloadFormActionCreator;
+    return DownloadFormActionCreators;
   }
 
   isRenderDataLoaded(state) {
@@ -43,10 +43,10 @@ class DownloadFormController extends WdkViewController {
     // must reinitialize with every new props
     let { params } = props;
     if ('stepId' in params) {
-      this.dispatchAction(DownloadFormActionCreator.loadPageDataFromStepId(params.stepId));
+      this.dispatchAction(DownloadFormActionCreators.loadPageDataFromStepId(params.stepId));
     }
     else if ('recordClass' in params) {
-      this.dispatchAction(DownloadFormActionCreator.loadPageDataFromRecord(
+      this.dispatchAction(DownloadFormActionCreators.loadPageDataFromRecord(
           params.recordClass, params.splat.split('/').join(',')));
     }
     else {

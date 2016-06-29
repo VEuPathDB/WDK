@@ -1,6 +1,6 @@
 import WdkStore from './WdkStore';
 import { StaticDataProps } from '../utils/StaticDataUtils';
-import { actionTypes } from '../actioncreators/DownloadFormActionCreator';
+import { actionTypes } from '../actioncreators/DownloadFormActionCreators';
 import WdkServiceJsonReporterForm from '../components/WdkServiceJsonReporterForm';
 
 export default class DownloadFormStore extends WdkStore {
