@@ -499,10 +499,28 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var questionName = jsonStep.questionName;
     var filteredName = "";
 
+    /*
+     * Start - CWL - 28JUN2016
+     * Replaced original contents of this conditional to extend filter display name list to
+     * include possible step filter display names as well.
+     */
     if (jsonStep.filtered) {
-      filteredName = "<span class='medium'><b>Applied Filter:&nbsp;</b>" +
-          jsonStep.filterName + "</span><hr>";
+      filteredName = "<span class='medium'><b>Applied Filters:&nbsp;</b>";
+      var filterDisplayNameList = "";
+      var filterDisplayNames = new Array();
+      if(jsonStep.stepFilterDisplayNames != null) {
+        filterDisplayNames.push(jsonStep.stepFilterDisplayNames);
+      }
+      if(jsonStep.filterName != null) {
+        filterDisplayNames.push(jsonStep.filterName);
+      }
+      filterDisplayNameList = filterDisplayNames.join(",");
+      filteredName += filterDisplayNameList;
+      filteredName += "</span><hr>";
     }
+    /*
+     * End - CWL
+     */
 
     if (jsonStep.isCollapsed) {
       name = jsonStep.strategy.name;

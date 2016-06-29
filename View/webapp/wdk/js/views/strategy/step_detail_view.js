@@ -44,10 +44,17 @@ wdk.namespace('wdk.views.strategy', function(ns) {
       this.previousStep = options.previousStep;
       this.isBoolean = options.isBoolean;
 
+      /*
+       * Start CWL 28JUN2016
+       * Per Dave Falke - filteredName is not used so this code is
+       * now useless - see controllers/strategy/view.js for fiter code. 
+       *
       if (this.model.filtered) {
         filteredName = "<span class='medium'><b>Applied Filter:&nbsp;</b>" +
           this.model.filterName + "</span><hr>";
       }
+      * End CWL
+      */
 
       if (this.model.isCollapsed) {
         name = this.model.strategy.name;
