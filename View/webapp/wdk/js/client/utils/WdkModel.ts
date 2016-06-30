@@ -19,6 +19,7 @@ export interface RecordClass extends ModelEntity {
 export interface Question extends ModelEntity {
   description: string;
   shortDisplayName: string;
+  recordClassName: string;
   help: string;
   newBuild: string;
   reviseBuild: string;
@@ -78,9 +79,7 @@ export interface LinkAttributeValue {
   displayText: string;
 }
 
-export interface TableValue {
-  [index: number]: AttributeValue;
-}
+export interface TableValue extends Array<AttributeValue> { }
 
 export interface Answer {
   records: Record[];

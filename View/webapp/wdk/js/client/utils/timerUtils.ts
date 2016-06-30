@@ -2,8 +2,8 @@
  * Utils related to timers and loops.
  */
 
-export let requestAnimationFrame;
-export let cancelAnimationFrame;
+export let requestAnimationFrame: (callback: FrameRequestCallback) => number;
+export let cancelAnimationFrame: (handle: number) => void;
 
 /** Normalize requestAnimationFrame functions */
 (function() {
@@ -13,13 +13,13 @@ export let cancelAnimationFrame;
   let lastTime = 0;
   let vendors = ['webkit', 'moz'];
   for(let x = 0; x < vendors.length && !requestAnimationFrame; ++x) {
-    requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-    cancelAnimationFrame =
-      window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+    // Lots of casting to any to avoid complicated casting and types that would never be exported.
+    requestAnimationFrame = <any>window[<any>(vendors[x]+'RequestAnimationFrame')];
+    cancelAnimationFrame = <any>window[<any>(vendors[x]+'CancelAnimationFrame')] || window[<any>(vendors[x]+'CancelRequestAnimationFrame')];
   }
 
   if (!requestAnimationFrame)
-    requestAnimationFrame = function(callback, element) {
+    requestAnimationFrame = function(callback) {
       let currTime = new Date().getTime();
       let timeToCall = Math.max(0, 16 - (currTime - lastTime));
       let id = window.setTimeout(function() { callback(currTime + timeToCall); },
@@ -43,6 +43,10 @@ export let cancelAnimationFrame;
  */
 export class IntervalList {
 
+  private _interval: number;
+  private _callbacks: Function[];
+  private _id: number;
+
   /**
    * @param {number} interval Time in ms.
    */
@@ -58,7 +62,7 @@ export class IntervalList {
    *
    * @param {Function} callback
    */
-  add(callback) {
+  add(callback: Function): void {
     this._callbacks.push(callback);
     if (this._id == null) {
       this.start();
@@ -71,9 +75,9 @@ export class IntervalList {
    *
    * @param {Function} callback
    */
-  remove(callback) {
-    let index = this._callbacks(callback);
-    if (index < 0) return false;
+  remove(callback: Function): void {
+    let index = this._callbacks.indexOf(callback);
+    if (index < 0) return;
     this._callbacks.splice(index, 1);
     if (this._callbacks.length === 0) {
       this.stop();
@@ -110,10 +114,10 @@ export class IntervalList {
     if (!this.isRunning()) {
       throw new Error("Attemping to stop an interval that is already stopped.");
     }
-    this.clearTimeout(this._id);
+    window.clearTimeout(this._id);
     this._id = null;
   }
 
 }
 
-function invoke(fn) { fn(); }
+function invoke(fn: Function) { fn(); }
