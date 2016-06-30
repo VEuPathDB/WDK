@@ -576,8 +576,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             WdkUserException, SQLException {
         JSONObject jsStrategy = new JSONObject();
         String subStratId = strategyId + "_" + step.getStepId();
-        Integer order = user.getStrategyOrder(subStratId);
-        if (order == null) order = 0; // the sub-strategy is not displayed
+        int order = user.getStrategyOrder(subStratId);
 
         jsStrategy.put("name", step.getCollapsedName());
         jsStrategy.put("id", subStratId);
