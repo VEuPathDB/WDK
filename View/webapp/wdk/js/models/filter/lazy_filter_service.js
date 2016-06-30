@@ -1,3 +1,4 @@
+/* global wdk, $, _ */
 import {
   countByValues,
   uniqMetadataValues,
@@ -11,11 +12,10 @@ wdk.namespace('wdk.models.filter', function(ns) {
   'use strict';
 
   var FilterService = wdk.models.filter.FilterService;
-  var Field = wdk.models.filter.Field;
 
   ns.LazyFilterService = FilterService.extend({
 
-    constructor: function(attrs, options) {
+    constructor: function(attrs) {
       if (!attrs.name) {
         throw new Error('LazyFilterService requires a "name" attribute.');
       }
@@ -27,21 +27,19 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.name = attrs.name;
       this.questionName = attrs.questionName;
       this.dependedValue = attrs.dependedValue;
-      this.metadata = {};
       this.metadataXhrQueue = new Map();
-      this.listenTo(options.intents, this.xhrActions);
       FilterService.prototype.constructor.apply(this, arguments);
     },
 
-    xhrActions: {
-      selectField: function(field) {
-        this.cancelXhr(this._pendingSelectField);
-        this._pendingSelectField = field;
-      },
+    selectField: function(field) {
+      this.cancelXhr(this._pendingSelectField);
+      this._pendingSelectField = field;
+      FilterService.prototype.selectField.call(this, field);
+    },
 
-      removeColumn: function(field) {
-        this.cancelXhr(field);
-      },
+    updateColumns: function(fields) {
+      fields.forEach(field => this.cancelXhr(field));
+      FilterService.prototype.updateColumns.call(this, fields);
     },
 
     cancelXhr: function(field) {
@@ -52,11 +50,9 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
     getFieldDistribution: function(field) {
       var term = field.term;
-      var type = field.type;
       var otherFilters =_.reject(this.filters, function(filter) {
         return filter.field.term === term;
       });
-
 
       // Retrieve metadata and filtered data and return a promise
       return Promise.all([
@@ -70,14 +66,21 @@ wdk.namespace('wdk.models.filter', function(ns) {
           }, {});
         var counts = countByValues(fieldMetadata);
         var filteredCounts = countByValues(filteredMetadata);
-        return uniqMetadataValues(fieldMetadata).map(value => {
+        var undefinedCount = _.values(fieldMetadata).filter(_.isEmpty).length;
+        let distribution = uniqMetadataValues(fieldMetadata).map(value => {
           return {
             value,
             count: counts[value],
             filteredCount: filteredCounts[value] || 0
           };
         });
-
+        return undefinedCount > 0
+          ? distribution.concat({
+              value: null,
+              count: _.values(fieldMetadata).filter(_.isEmpty).length,
+              filteredCount: _.values(filteredMetadata).filter(_.isEmpty).length
+            })
+          : distribution;
       }.bind(this));
     },
 
@@ -87,8 +90,8 @@ wdk.namespace('wdk.models.filter', function(ns) {
         var type = field.type;
 
         // if it's cached, return a promise that resolves immediately
-        if (this.metadata[term]) {
-          resolve(this.metadata[term]);
+        if (this.fieldMetadataMap[term]) {
+          resolve(this.fieldMetadataMap[term]);
           return;
         }
 
@@ -112,15 +115,15 @@ wdk.namespace('wdk.models.filter', function(ns) {
             // Each key is the sample term, and each value is an array of values
             // for the given term.
             fieldMetadata = _.indexBy(fieldMetadata, 'sample');
-            this.metadata[term] = this.data.reduce(function(parsedMetadata, d) {
+            this.fieldMetadataMap[term] = this.data.reduce(function(parsedMetadata, d) {
               // TODO Add formatting for date type
               var values = _.result(fieldMetadata[d.term], 'values');
-              parsedMetadata[d.term] = _.isUndefined(values) ? [ Field.UNKNOWN_VALUE ]
+              parsedMetadata[d.term] = _.isUndefined(values) ? []
                                      : type === 'number' ? values.map(Number)
                                      : values.map(String);
               return parsedMetadata;
             }, {});
-            resolve(this.metadata[term]);
+            resolve(this.fieldMetadataMap[term]);
           }.bind(this))
           .fail(function(err) {
             if (err.statusText !== 'abort') {
@@ -142,7 +145,7 @@ wdk.namespace('wdk.models.filter', function(ns) {
           // Map filters to a list of predicate functions to call on each data item
           var predicates = filters
             .map(function(filter) {
-              var metadata = this.metadata[filter.field.term];
+              var metadata = this.fieldMetadataMap[filter.field.term];
               if (filter.field.type == 'string') {
                 return getMemberPredicate(metadata, filter);
               } else if (filter.field.type == 'number' || filter.field.type == 'date') {

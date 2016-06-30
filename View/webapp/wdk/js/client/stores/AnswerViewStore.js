@@ -1,6 +1,6 @@
 import WdkStore from './WdkStore';
 import { filterRecords } from '../utils/recordUtils';
-import { actionTypes } from '../actioncreators/AnswerViewActionCreator';
+import { actionTypes } from '../actioncreators/AnswerViewActionCreators';
 
 export default class AnswerViewStore extends WdkStore {
 

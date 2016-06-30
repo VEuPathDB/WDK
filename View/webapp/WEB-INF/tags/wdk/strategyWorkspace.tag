@@ -33,7 +33,7 @@
    <li><span id="stratTitle" class="h4left">My Strategies:</span></li> 
 
    <li><a id="tab_strategy_new" title="Start a new strategy. (Your opened strategies will remain untouched)"   
-      href="javascript:wdk.addStepPopup.showPanel('strategy_new')">New</a></li>
+      href="app/query-grid">New</a></li>
 
    <li><a id="tab_strategy_results" title="View and interact with your opened strategies. To close a strategy, click the [X] in its upper right corner" 
 	    onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('strategy_results')">Opened <font class="subscriptCount">(${openCount})</font></a></li>

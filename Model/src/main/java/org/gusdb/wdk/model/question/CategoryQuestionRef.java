@@ -1,19 +1,17 @@
 package org.gusdb.wdk.model.question;
 
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
 import org.apache.log4j.Logger;
-
+import org.gusdb.wdk.model.WdkModelText;
 
 /**
  * An object representation of the {@code <category>/<question>}. It provides a
  * reference to a {@link Question} in the {@link SearchCategory} object.
  * 
  * @author jerric
- * 
  */
-public class CategoryQuestionRef extends WdkModelText implements Comparable<CategoryQuestionRef>{
+public class CategoryQuestionRef extends WdkModelText implements Comparable<CategoryQuestionRef> {
+
+  @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(CategoryQuestionRef.class);
 
   private String usedBy;

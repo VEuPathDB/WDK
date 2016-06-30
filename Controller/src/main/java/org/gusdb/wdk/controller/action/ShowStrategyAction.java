@@ -19,6 +19,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.filter.FilterOption;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.GroupBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -409,7 +410,6 @@ public class ShowStrategyAction extends ShowQuestionAction {
       jsStep.put("shortDisplayTypePlural", "unknown");
       jsStep.put("invalidQuestion", "true");
     }
-
         jsStep.put("shortName", step.getShortDisplayName());
         jsStep.put("results", updateResults ? step.getResultSize() : step.getEstimateSize());
         jsStep.put("questionName", step.getQuestionName());
@@ -418,6 +418,19 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("istransform", step.getIsTransform());
         jsStep.put("filtered", step.isFiltered());
         jsStep.put("filterName", step.getFilterDisplayName());
+        /* Start CWL 28JUN2016
+         * Added to surface step filter display names for use in Edit step dialog -
+         * including filter display name for those step filters that are not
+         * view-only.
+         */
+        JSONArray stepFilterDisplayNames = new JSONArray();
+        for(FilterOption option : step.getFilterOptions()) {
+          if(!option.getFilter().getIsViewOnly()) {
+            stepFilterDisplayNames.put(option.getFilter().getDisplay());
+          }  
+        }
+        jsStep.put("stepFilterDisplayNames", stepFilterDisplayNames);
+        /* End CWL 28JUL2016 */
         jsStep.put("urlParams", step.getQuestionUrlParams());
         jsStep.put("isValid", step.getIsValid());
         jsStep.put("validationMessage", // validation message deprecated

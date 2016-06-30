@@ -63,6 +63,7 @@ public class ThreadMonitor implements Runnable {
   // maintain compliance with Runnable interface.  TODO: assess refactor??
   @Override
   public void run() {
+    MDCUtil.setNonRequestThreadVars("thrm");
     if (!wdkModel.getModelConfig().isMonitorBlockedThreads()) {
       logger.info("Thread monitor not configured to run.  Monitor returning.");
       return; // thread monitor turned off

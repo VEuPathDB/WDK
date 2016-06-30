@@ -1,7 +1,7 @@
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
 import UserProfile from '../components/UserProfile';
-import { updateProfileForm, submitProfileForm } from '../actioncreators/UserActionCreator';
+import { updateProfileForm, submitProfileForm } from '../actioncreators/UserActionCreators';
 
 class UserProfileController extends WdkViewController {
 

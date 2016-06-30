@@ -1,7 +1,7 @@
 import { ReduceStore } from 'flux/utils';
 import { StaticDataProps } from '../utils/StaticDataUtils';
-import { staticDataConfigMap } from '../actioncreators/StaticDataActionCreator';
-import { actionTypes as userActionTypes } from '../actioncreators/UserActionCreator';
+import { staticDataConfigMap } from '../actioncreators/StaticDataActionCreators';
+import { actionTypes as userActionTypes } from '../actioncreators/UserActionCreators';
 
 // create a map to static data item configs, but with actionTypes as keys instead of prop names
 let actionMap = Object.keys(staticDataConfigMap).reduce((actionMap, key) =>
@@ -9,21 +9,60 @@ let actionMap = Object.keys(staticDataConfigMap).reduce((actionMap, key) =>
 
 export default class WdkStore extends ReduceStore {
 
-  constructor(dispatcher, storeContainer) {
-    super(dispatcher);
-    this.getStoreContainer = () => {
-      console.warn("Deprecated; we no longer want to share data between stores.");
-      return storeContainer;
-    };
+  /*--------------- Methods that should probably be overridden ---------------*/
+
+  /**
+   * Provides an empty object as initial state.
+   */
+  getInitialState() {
+    return {};
+  }
+
+  /**
+   * Does nothing by default for other actions; subclasses will probably override
+   */
+  handleAction(state, action) {
+    return state;
   }
 
   /**
    * Returns an Array<string> representing static props this store needs.
    * Override to automatically load static data items.  Strings passed should be
-   * constants in StaticDataActionCreator.StaticData and are ignored otherwise.
+   * constants in StaticDataUtils.StaticDataProps and are ignored otherwise.
    */
   getRequiredStaticDataProps() {
     return [];
+  }
+
+  /*---------- Methods that may be overridden in special cases ----------*/
+
+  /**
+   * Default handling of each static data item load.  Will only be called with
+   * required static data items.
+   */
+  handleStaticDataItemAction(state, itemName, payload) {
+    return Object.assign({}, state, { [itemName]: payload[itemName] });
+  }
+
+  /**
+   * By default this store will receive the action if the action's channel is
+   * undefined (indicating a broadcast action) or the channel matches this
+   * store's channel name.  To receive actions on channels intended for other
+   * stores, override this method.
+   */
+  storeShouldReceiveAction(channel) {
+    return (channel === undefined /* broadcast */ || channel === this.channel);
+  }
+
+  /*------------- Methods that should probably not be overridden -------------*/
+
+  constructor(dispatcher, channel, storeContainer) {
+    super(dispatcher);
+    this.channel = channel;
+    this.getStoreContainer = () => {
+      console.warn("Deprecated; we no longer want to share data between stores.");
+      return storeContainer;
+    };
   }
 
   /**
@@ -57,27 +96,16 @@ export default class WdkStore extends ReduceStore {
       // treat preference object as if it has just been loaded (with new values present)
       return this.handleStaticDataItemAction(state, StaticDataProps.PREFERENCES, newPrefs);
     }
-    else {
+    else if (this.storeShouldReceiveAction(action.channel)) {
       let newState = this.handleAction(state, action);
       if (newState == null) {
         console.warn("Null or undefined state returned from handleAction method of " + this.constructor.name);
       }
       return newState;
     }
-  }
-
-  /**
-   * Default handling of each static data item load.  Will only be called with
-   * required static data items.
-   */
-  handleStaticDataItemAction(state, itemName, payload) {
-    return Object.assign({}, state, { [itemName]: payload[itemName] });
-  }
-
-  /**
-   * Does nothing by default for other actions; subclasses will probably override
-   */
-  handleAction(state, action) {
-    return state;
+    else {
+      // store does not listen to this channel
+      return state;
+    }
   }
 }

@@ -1,5 +1,5 @@
 import WdkStore from './WdkStore';
-import { actionTypes } from '../actioncreators/UserActionCreator';
+import { actionTypes } from '../actioncreators/UserActionCreators';
 import { StaticDataProps } from '../utils/StaticDataUtils';
 
 export default class UserPasswordChangeStore extends WdkStore {
@@ -11,7 +11,7 @@ export default class UserPasswordChangeStore extends WdkStore {
   // defines the structure of this store's data
   getInitialState() {
     return {
-      user: null, // loaded by parent
+      user: null, // loaded by parent class
       passwordForm: getEmptyForm(),
       formStatus: 'new', // Values: [ 'new', 'modified', 'pending', 'success', 'error' ]
       errorMessage: undefined

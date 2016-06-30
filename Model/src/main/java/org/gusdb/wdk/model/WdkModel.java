@@ -363,11 +363,23 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     if (!recordClassSets.containsKey(recordClassSetName)) {
       String err = "WDK Model " + projectId + " does not contain a recordClass set with name " +
           recordClassSetName;
-
       throw new WdkModelException(err);
     }
     return recordClassSets.get(recordClassSetName);
   }
+  
+  // Start CWL 29JUN2016
+  /**
+   * Used to determine whether a record class set exists for the given reference
+   * @param recordClassReference
+   * @return - true if the record class set exists and false otherwise.
+   * @throws WdkModelException
+   */
+  public boolean isExistsRecordClassSet(String recordClassReference) throws WdkModelException {
+    Reference r = new Reference(recordClassReference);
+    return recordClassSets.containsKey(r.getSetName());
+  }
+  // End CWL 29JUN2016
 
   public RecordClassSet[] getAllRecordClassSets() {
     RecordClassSet sets[] = new RecordClassSet[recordClassSets.size()];

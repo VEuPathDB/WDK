@@ -1,6 +1,6 @@
 import { wrappable } from '../utils/componentUtils';
 import WdkViewController from './WdkViewController';
-import * as SiteMapActionCreator from '../actioncreators/SiteMapActionCreator';
+import * as SiteMapActionCreators from '../actioncreators/SiteMapActionCreators';
 import SiteMap from '../components/SiteMap';
 
 class SiteMapController extends WdkViewController {
@@ -10,7 +10,7 @@ class SiteMapController extends WdkViewController {
   }
 
   getActionCreators() {
-    return SiteMapActionCreator;
+    return SiteMapActionCreators;
   }
 
   isRenderDataLoaded(state) {
@@ -25,11 +25,12 @@ class SiteMapController extends WdkViewController {
     return ( <SiteMap {...state} siteMapActions={eventHandlers}/> );
   }
 
-  componentDidMount() {
-    if (this.state.tree == null) {
-      this.props.dispatchAction(SiteMapActionCreator.loadCurrentSiteMap());
+  loadData(state) {
+    if (state.tree == null) {
+      this.dispatchAction(SiteMapActionCreators.loadCurrentSiteMap());
     }
   }
+
 }
 
 export default wrappable(SiteMapController);

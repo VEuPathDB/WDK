@@ -6,13 +6,6 @@
 
 <%--
 Provides form input element for a given FilterParam.
-
-For a multi-selectable parameter a form element is provided as either a
-series of checkboxes or a multiselect menu depending on number of
-parameter options. Also, if number of options is over a threshold, this tag
-includes a checkAll button to select all options for the parameter.
-
-Otherwise a standard select menu is used.
 --%>
 
 <jsp:useBean id="idgen" class="org.gusdb.wdk.model.jspwrap.NumberUtilBean" scope="application" />
@@ -56,14 +49,10 @@ Otherwise a standard select menu is used.
     data-max-selected-count="${qp.maxSelectedCount}"
     data-data-id="filter-param-${qP.name}">
   <html:hidden property="value(${pNam})" />
-  <%--
-  <script type="application/json" id="filter-param-${qP.name}">
-    ${qP.jsonValues}
-  </script>
-  --%>
   <div class="loading">
     <imp:image src="wdk/images/wizard-busy.gif"/>
   </div>
+  <div class="filter-param-container"></div>
 </div>
 
 <%-- display invalid terms, if any. --%>

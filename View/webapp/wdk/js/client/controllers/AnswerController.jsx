@@ -7,7 +7,7 @@ import {
   updateFilter,
   moveColumn,
   changeAttributes
-} from '../actioncreators/AnswerViewActionCreator';
+} from '../actioncreators/AnswerViewActionCreators';
 import Answer from '../components/Answer';
 
 class AnswerController extends WdkViewController {
@@ -101,35 +101,27 @@ class AnswerController extends WdkViewController {
     let parameters = this.state.parameters;
     let opts = { displayInfo, parameters };
 
-    this.props.dispatchAction(loadAnswer(questionName, recordClassName, opts));
+    this.dispatchAction(loadAnswer(questionName, recordClassName, opts));
   }
 
-  componentDidMount() {
-    this.handleNewProps(this.props);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.handleNewProps(nextProps);
-  }
-
-  handleNewProps(props) {
+  loadData(state, props) {
     // incoming values from the router
     let questionName = props.params.question;
     let recordClassName = props.params.recordClass;
     let parameters = props.location.query;
 
-    // decide whether new answer needs to be loaded
-    // TODO: isn't this all the time?
-    if (this.state.question == null ||
-        this.state.question.urlSegment !== questionName ||
-        !isEqual(this.state.parameters, parameters)) {
+    // decide whether new answer needs to be loaded (may not need to be loaded
+    //   if user goes someplace else and hits 'back' to here- store already correct)
+    if (state.question == null ||
+        state.question.urlSegment !== questionName ||
+        !isEqual(state.parameters, parameters)) {
 
       // (re)initialize the page
       let pagination = { numRecords: 1000, offset: 0 };
       let sorting = [{ attributeName: 'primary_key', direction: 'ASC' }];
       let displayInfo = { pagination, sorting };
       let opts = { displayInfo, parameters };
-      props.dispatchAction(loadAnswer(questionName, recordClassName, opts));
+      this.dispatchAction(loadAnswer(questionName, recordClassName, opts));
     }
   }
 }

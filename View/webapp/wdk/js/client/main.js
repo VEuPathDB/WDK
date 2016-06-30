@@ -2,13 +2,10 @@ import {mapValues, values, pick} from 'lodash';
 import {createElement} from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { useRouterHistory } from 'react-router';
-import { createHistory } from 'history';
-
 import Dispatcher from './dispatcher/Dispatcher';
 import WdkService from './utils/WdkService';
 import Root from './controllers/Root';
-import { loadAllStaticData } from './actioncreators/StaticDataActionCreator';
+import { loadAllStaticData } from './actioncreators/StaticDataActionCreators';
 
 import * as Components from './components';
 import * as Stores from './stores';
@@ -44,27 +41,27 @@ export {
  * @param {string} option.endpoint Base URL for WdkService.
  * @param {HTMLElement} option.rootElement DOM node to render the application.
  * @param {Array} option.applicationRoutes Additional routes to register with the Router.
+ * @param {Object} option.storeWrappers Mapping from store name to replacement class
  */
-export function initialize({ rootUrl, endpoint, applicationRoutes }) {
+export function initialize({ rootUrl, endpoint, applicationRoutes, storeWrappers }) {
 
   // define the elements of the Flux architecture
   let wdkService = new WdkService(endpoint);
   let dispatcher = new Dispatcher;
-  let dispatchAction = makeDispatchAction(dispatcher, { wdkService });
-  let stores = configureStores(Stores, dispatcher);
+  let makeDispatchAction = getDispatchActionMaker(dispatcher, { wdkService });
+  let stores = configureStores(dispatcher, storeWrappers);
 
   // load static WDK data into service cache and view stores that need it
-  dispatchAction(loadAllStaticData());
+  makeDispatchAction()(loadAllStaticData());
 
   // define top-level page renderer
   let render = (rootElement) => {
     let applicationElement = createElement(
       Root, {
         rootUrl,
-        dispatchAction,
+        makeDispatchAction,
         stores,
-        applicationRoutes,
-        wdkService
+        applicationRoutes
       });
     return ReactDOM.render(applicationElement, rootElement);
   };
@@ -75,7 +72,7 @@ export function initialize({ rootUrl, endpoint, applicationRoutes }) {
   // return WDK application components
   return {
     wdkService,
-    dispatchAction,
+    makeDispatchAction,
     stores,
     render
   };
@@ -84,20 +81,52 @@ export function initialize({ rootUrl, endpoint, applicationRoutes }) {
 /**
  * Creates a `stores` object.
  *
- * @param {Object} Stores
  * @param {Dispatcher} dispatcher
+ * @param {Object} named functions that return store override classes
  */
-function configureStores(Stores, dispatcher) {
-  let stores = {};
-  return Object.assign(stores,
-      // filter WdkStore since it is "abstract" (does not provide implementation)
-      mapValues(pick(Stores, store => store.name != 'WdkStore' ),
-          Store => new Store(dispatcher, stores)));
+function configureStores(dispatcher, storeWrappers) {
+  let storeClasses = wrapStores(storeWrappers);
+  let storeInstances = {};
+  Object.keys(storeClasses).forEach(function(className) {
+    if (className != 'WdkStore') {
+      storeInstances[className] =
+        new storeClasses[className](dispatcher, className, storeInstances);
+    }
+  });
+  return storeInstances;
 }
 
 /**
- * Create a dispatch function `dispatchAction` that forwards calls to
- * `dispatcher.dispatch`.
+ * Apply WDK Store wrappers. Keys of `storeWrappers` should correspond to WDK
+ * Store names. Values of `storeWrappers` are functions that take the current
+ * Store class and return a new Store class.
+ *
+ * @param {Object} storeWrappers
+ */
+function wrapStores(storeWrappers) {
+  let stores = Object.assign({}, Stores);
+  for (let key in storeWrappers) {
+    let wdkStore = stores[key];
+    if (wdkStore == null) {
+      console.error("Warning: Cannot wrap unknown WDK Store `%s`.  Skipping...", key);
+      continue;
+    }
+    let storeWrapper = storeWrappers[key];
+    let storeWrapperType = typeof storeWrapper;
+    if (storeWrapperType !== 'function') {
+      console.error("Expected Store wrapper for `%s` to be a 'function', " +
+          "but is `%s`.", key, storeWrapperType);
+      continue;
+    }
+    stores[key] = storeWrapper(wdkStore);
+  }
+  return stores;
+}
+
+/**
+ * Create a function that takes a channel and creates a dispatch function
+ * `dispatchAction` that forwards calls to `dispatcher.dispatch` using the
+ * channel as a scope for the audience of the action.  In dispatchAction:
  *
  * If `action` is a function, it will be called with `dispatchAction` and
  * `services`. Calling it with `dispatchAction` allows for composability since
@@ -111,31 +140,43 @@ function configureStores(Stores, dispatcher) {
  * @param {Dispatcher} dispatcher
  * @param {any?} services
  */
-function makeDispatchAction(dispatcher, services) {
+function getDispatchActionMaker(dispatcher, services) {
   let logError = console.error.bind(console, 'Error in dispatchAction:');
-
-  return function dispatchAction(action) {
-    if (typeof action === 'function') {
-      // Call the function with dispatchAction and services
-      return action(dispatchAction, services);
+  return function makeDispatchAction(channel) {
+    if (channel === undefined) {
+      console.warn("Call to makeDispatchAction() with no channel defined.");
     }
-    else if (isPromise(action)) {
-      return action.then(dispatchAction).then(undefined, logError);
-    }
-    else if (action == null) {
-      console.error("Warning: Action received is not defined or is null");
-    }
-    else if (action.type == null) {
-      console.error("Warning: Action received does not have a `type` property", action);
-    }
-    return dispatcher.dispatch(action);
-  }
+    return function dispatchAction(action) {
+      if (typeof action === 'function') {
+        // Call the function with dispatchAction and services
+        return action(dispatchAction, services);
+      }
+      else if (isPromise(action)) {
+        return action.then(result => dispatchAction(result)).then(undefined, logError);
+      }
+      else if (action == null) {
+        console.error("Warning: Action received is not defined or is null");
+      }
+      else if (action.type == null) {
+        console.error("Warning: Action received does not have a `type` property", action);
+      }
+      if (action != null) {
+        // assign channel if requested
+        action.channel = (action.isBroadcast ? undefined : channel);
+      }
+      return dispatcher.dispatch(action);
+    };
+  };
 }
 
 /**
  * Apply Component wrappers to WDK components and controllers. Keys of
  * 'componentWrappers' should correspond to Component or Controller names in
  * WDK. Values of `componentWrappers` are factories that return a new component.
+ * 
+ * Note that this function applies wrappers "globally", meaning that all apps
+ * returned by initialize will use the wrapped components, regardless of when
+ * initialize and wrapComponents are called.
  *
  * @param {Object} componentWrappers
  */
@@ -159,37 +200,6 @@ export function wrapComponents(componentWrappers) {
     }
     // wrap found component/controller
     Component.wrapComponent(componentWrappers[key]);
-  }
-}
-
-/**
- * Apply WDK Store wrappers. Keys of `storeWrappers` should correspond to WDK
- * Store names. Values of `storeWrappers` are functions that take the current
- * Store class and return a new Store class.
- *
- * @param {Object} storeWrappers
- */
-export function wrapStores(storeWrappers) {
-  for (let key in storeWrappers) {
-    let Store = Stores[key];
-    if (Store == null) {
-      console.error(
-        "Warning: Cannot wrap unknown WDK Store `%s`.  Skipping...",
-        key
-      );
-      continue;
-    }
-    let storeWrapper = storeWrappers[key];
-    let storeWrapperType = typeof storeWrapper;
-    if (storeWrapperType !== 'function') {
-      console.error(
-        "Expected Store wrapper for `%s` to be a `function`, but got `%s`.",
-        key,
-        storeWrapperType
-      );
-      continue;
-    }
-    Stores[key] = storeWrapper(Store);
   }
 }
 

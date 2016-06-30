@@ -1,4 +1,4 @@
-import { StaticDataProps } from '../utils/StaticDataUtils';
+import { StaticDataProps, broadcast } from '../utils/StaticDataUtils';
 
 export let actionTypes = {
 
@@ -48,20 +48,20 @@ export function loadPreferences() { return getLoader(StaticDataProps.PREFERENCES
 
 function handleLoadError(error, dispatch) {
   console.error(error);
-  dispatch({
+  dispatch(broadcast({
     type: actionTypes.STATIC_DATA_LOAD_ERROR,
     payload: { error }
-  });
+  }));
 }
 
 function getPromise(dataItemName, dispatch, wdkService) {
   let { elementName, serviceCall, actionType } = staticDataConfigMap[dataItemName];
   return wdkService[serviceCall]().then(element => {
     console.log("WDK " + elementName + " loaded");
-    dispatch({
+    dispatch(broadcast({
       type: actionType,
       payload: { [elementName]: element }
-    });
+    }));
     return element;
   });
 }
@@ -83,10 +83,10 @@ export function loadAllStaticData() {
         payload[dataItemKeys[i]] = resultArray[i];
       }
       console.log("WDK static data loaded");
-      dispatch({
+      dispatch(broadcast({
         type: actionTypes.STATIC_DATA_LOADED,
         payload: payload
-      });
+      }));
     }).catch(error => { handleLoadError(error, dispatch); });
   };
 }

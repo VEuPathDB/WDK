@@ -1,6 +1,6 @@
 import WdkStore from './WdkStore';
 import { StaticDataProps } from '../utils/StaticDataUtils';
-import { actionTypes } from '../actioncreators/UserActionCreator';
+import { actionTypes } from '../actioncreators/UserActionCreators';
 
 export default class UserProfileStore extends WdkStore {
 

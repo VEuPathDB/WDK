@@ -2,8 +2,8 @@ import {difference, union} from 'lodash';
 import WdkStore from './WdkStore';
 import {filterNodes} from '../utils/TreeUtils';
 import {getId, getTargetType} from '../utils/CategoryUtils';
-import {actionTypes} from '../actioncreators/RecordViewActionCreator';
-import {actionTypes as userActionTypes} from '../actioncreators/UserActionCreator';
+import {actionTypes} from '../actioncreators/RecordViewActionCreators';
+import {actionTypes as userActionTypes} from '../actioncreators/UserActionCreators';
 import { StaticDataProps } from '../utils/StaticDataUtils';
 
 /** Store for record page */
@@ -67,7 +67,7 @@ export default class RecordViewStore extends WdkStore {
       case actionTypes.SECTION_VISIBILITY_CHANGED: {
         let collapsedSections = updateList(
           action.payload.name,
-          action.payload.isVisible,
+          !action.payload.isVisible,
           state.collapsedSections
         );
         return Object.assign({}, state, { collapsedSections });

@@ -1,5 +1,5 @@
 import WdkStore from './WdkStore';
-import { actionTypes } from '../actioncreators/SiteMapActionCreator';
+import { actionTypes } from '../actioncreators/SiteMapActionCreators';
 
 export default class SiteMapStore extends WdkStore {
 

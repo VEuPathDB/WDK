@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import {Component, PropTypes} from 'react';
-import {match, useRouterHistory, Router, Route, IndexRoute} from 'react-router';
+import {useRouterHistory, Router, Route, IndexRoute} from 'react-router';
 import {createHistory} from 'history';
 import AppController from './AppController';
 import IndexController from './IndexController';
@@ -12,7 +12,6 @@ import DownloadFormController from './DownloadFormController';
 import UserProfileController from './UserProfileController';
 import UserPasswordChangeController from './UserPasswordChangeController';
 import SiteMapController from './SiteMapController';
-import Loading from '../components/Loading';
 
 let REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
 let GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
@@ -26,9 +25,9 @@ export default class Root extends Component {
     this.history = useRouterHistory(createHistory)({ basename: this.props.rootUrl });
     // Used to inject wdk content as props of Route Component
     this.createElement = (RouteComponent, routerProps) => {
-      let { dispatchAction, stores, wdkService } = this.props;
+      let { makeDispatchAction, stores } = this.props;
       return (
-        <RouteComponent {...routerProps} dispatchAction={dispatchAction} stores={stores} wdkService={wdkService}/>
+        <RouteComponent {...routerProps} makeDispatchAction={makeDispatchAction} stores={stores}/>
       );
     };
     this.routes = (
@@ -76,10 +75,9 @@ export default class Root extends Component {
 
 Root.propTypes = {
   rootUrl: PropTypes.string,
-  dispatchAction: PropTypes.func.isRequired,
+  makeDispatchAction: PropTypes.func.isRequired,
   stores: PropTypes.object.isRequired,
-  applicationRoutes: PropTypes.array.isRequired,
-  wdkService: PropTypes.object.isRequired
+  applicationRoutes: PropTypes.array.isRequired
 };
 
 Root.defaultProps = {

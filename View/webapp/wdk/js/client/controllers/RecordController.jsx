@@ -8,11 +8,11 @@ import {
   updateAllFieldVisibility,
   updateNavigationSubcategoryVisibility,
   updateNavigationVisibility
-} from '../actioncreators/RecordViewActionCreator';
+} from '../actioncreators/RecordViewActionCreators';
 import {
   updateBasketStatus,
   updateFavoritesStatus
-} from '../actioncreators/UserActionCreator';
+} from '../actioncreators/UserActionCreators';
 import RecordUI from '../components/RecordUI';
 
 /** View Controller for record page */
@@ -35,78 +35,77 @@ class RecordController extends WdkViewController {
   }
 
   isRenderDataLoaded(state) {
-    return state.record != null && !state.isLoading;
+    return !state.isLoading;
   }
 
   getTitle(state) {
-    return (state.recordClass == null || state.record == null ? "Loading..." :
-      state.recordClass.displayName + ' ' + state.record.displayName);
+    return  state.error ? 'Error: ' + this.getErrorMessage(state)
+          : state.recordClass == null || state.record == null ? "Loading..."
+          : state.recordClass.displayName + ' ' + state.record.displayName;
   }
 
-  componentDidMount() {
-    this.loadData(this.props);
+  getErrorMessage(state) {
+    return 'The requested record ' + (state.error.status === 404 ?
+      'does not exist.' : 'could not be loaded.');
   }
 
-  componentWillReceiveProps(nextProps) {
-    // We need to do this to ignore hash changes.
-    if (this.props.location.pathname !== nextProps.location.pathname) {
-      this.loadData(nextProps);
+  loadData(state, props, previousProps) {
+    // We need to check pathname to ignore hash changes.
+    if (previousProps == null || props.location.pathname !== previousProps.location.pathname) {
+      let { recordClass, splat } = props.params;
+      this.dispatchAction(loadRecordData(recordClass, splat.split('/')));
     }
-  }
-
-  loadData(props) {
-    let { recordClass, splat } = props.params;
-    this.props.dispatchAction(loadRecordData(recordClass, splat.split('/')));
   }
 
   renderError(state) {
     if (state.error) {
       return (
         <div style={{padding: '1.5em', fontSize: '2em', color: 'darkred', textAlign: 'center'}}>
-          The requested record could not be loaded.
+          {this.getErrorMessage(state)}
         </div>
       );
     }
   }
 
   renderRecord(state, eventHandlers) {
-    let { user, record, recordClass, inBasket, inFavorites,
-      loadingBasketStatus, loadingFavoritesStatus } = state;
-    let title = recordClass.displayName + ' ' + record.displayName;
-    let loadingClassName = 'fa fa-circle-o-notch fa-spin';
-    let headerActions = [];
-    if (recordClass.useBasket) {
+    if (state.record) {
+      let { user, record, recordClass, inBasket, inFavorites,
+        loadingBasketStatus, loadingFavoritesStatus } = state;
+      let loadingClassName = 'fa fa-circle-o-notch fa-spin';
+      let headerActions = [];
+      if (recordClass.useBasket) {
+        headerActions.push({
+          label: inBasket ? 'Remove from basket' : 'Add to basket',
+          iconClassName: loadingBasketStatus ? loadingClassName : 'fa fa-shopping-basket',
+          onClick(event) {
+            event.preventDefault();
+            eventHandlers.updateBasketStatus(user, record, !inBasket);
+          }
+        });
+      }
       headerActions.push({
-        label: inBasket ? 'Remove from basket' : 'Add to basket',
-        iconClassName: loadingBasketStatus ? loadingClassName : 'fa fa-shopping-basket',
+        label: inFavorites ? 'Remove from favorites' : 'Add to favorites',
+        iconClassName: loadingFavoritesStatus ? loadingClassName : 'fa fa-lg fa-star',
         onClick(event) {
           event.preventDefault();
-          eventHandlers.updateBasketStatus(user, record, !inBasket);
+          eventHandlers.updateFavoritesStatus(user, record, !inFavorites);
         }
+      },
+      {
+        label: 'Download ' + recordClass.displayName,
+        iconClassName: 'fa fa-lg fa-download',
+        href: '/record/' + recordClass.urlSegment + '/download/' +
+          record.id.map(pk => pk.value).join('/')
       });
-    }
-    headerActions.push({
-      label: inFavorites ? 'Remove from favorites' : 'Add to favorites',
-      iconClassName: loadingFavoritesStatus ? loadingClassName : 'fa fa-lg fa-star',
-      onClick(event) {
-        event.preventDefault();
-        eventHandlers.updateFavoritesStatus(user, record, !inFavorites);
-      }
-    },
-    {
-      label: 'Download ' + recordClass.displayName,
-      iconClassName: 'fa fa-lg fa-download',
-      href: '/record/' + recordClass.urlSegment + '/download/' +
-        record.id.map(pk => pk.value).join('/')
-    });
 
-    return (
-      <RecordUI
-        {...state}
-        {...eventHandlers}
-        headerActions={headerActions}
-      />
-    );
+      return (
+        <RecordUI
+          {...state}
+          {...eventHandlers}
+          headerActions={headerActions}
+        />
+      );
+    }
   }
 
   renderView(state, eventHandlers) {
@@ -122,7 +121,7 @@ class RecordController extends WdkViewController {
 
 RecordController.propTypes = {
   stores: PropTypes.object.isRequired,
-  dispatchAction: PropTypes.func.isRequired
+  makeDispatchAction: PropTypes.func.isRequired
 }
 
 export default wrappable(RecordController);

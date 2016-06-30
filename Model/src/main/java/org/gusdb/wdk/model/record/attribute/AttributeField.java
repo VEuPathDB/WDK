@@ -191,7 +191,7 @@ public abstract class AttributeField extends Field implements Cloneable {
    * @param text
    * @return
    */
-  protected Map<String, AttributeField> parseFields(String text) {
+  protected Map<String, AttributeField> parseFields(String text) throws WdkModelException {
     Map<String, AttributeField> children = new LinkedHashMap<String, AttributeField>();
     Map<String, AttributeField> fields = container.getAttributeFieldMap();
 
@@ -199,9 +199,8 @@ public abstract class AttributeField extends Field implements Cloneable {
     while (matcher.find()) {
       String fieldName = matcher.group(1);
       if (!fields.containsKey(fieldName)) {
-        logger.warn("Invalid field macro in attribute" + " [" + name + "] of ["
+        throw new WdkModelException("Invalid field macro in attribute" + " [" + name + "] of ["
             + recordClass.getFullName() + "]: " + fieldName);
-        continue;
       }
 
       AttributeField field = fields.get(fieldName);
@@ -242,7 +241,7 @@ public abstract class AttributeField extends Field implements Cloneable {
     //   field is contained in a TableField, which does not call resolveReferences
     //   on its attributes.  Return an empty map in this case.
     if (wdkModel == null) {
-      return Collections.EMPTY_MAP;
+      return Collections.emptyMap();
     }
     return super.getPropertyLists();
   }
