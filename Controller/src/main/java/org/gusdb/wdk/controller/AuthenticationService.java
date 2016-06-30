@@ -127,10 +127,10 @@ public class AuthenticationService {
 
                     // TODO: fix these attributes. Believe we are using the wrong request URLs above
                     String first = verified.getIdentifier(); // (String)fetchResp.getAttributeValues("first").get(0);
-                    String last = null; // = (String)fetchResp.getAttributeValues("last").get(0);
+                    //String last = null; // = (String)fetchResp.getAttributeValues("last").get(0);
                     String email = (String)fetchResp.getAttributeValues("email").get(0);
                     
-                    user.setName(first + (last != null ? (" " + last) : ""));
+                    user.setName(first); // + (last != null ? (" " + last) : ""));
                     user.setEmail(email);
                   }
                 }
