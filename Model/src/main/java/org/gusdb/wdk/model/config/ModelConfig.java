@@ -346,7 +346,7 @@ public class ModelConfig implements OAuthConfig {
    * @param authenticationMethod configured authentication method
    */
   public void setAuthenticationMethod(String authenticationMethod) {
-    LOG.info("Setting authentication method: " + authenticationMethod);
+    LOG.debug("Setting authentication method: " + authenticationMethod);
     this.authenticationMethod = AuthenticationMethod.valueOf(authenticationMethod.toUpperCase());
   }
 
@@ -412,7 +412,7 @@ public class ModelConfig implements OAuthConfig {
    * @param changePasswordUrl custom change password URL to set
    */
   public void setChangePasswordUrl(String changePasswordUrl) {
-    LOG.info("Overriding Change Password Page URL: " + changePasswordUrl);
+    LOG.debug("Overriding Change Password Page URL: " + changePasswordUrl);
     this.changePasswordUrl = changePasswordUrl;
   }
 
