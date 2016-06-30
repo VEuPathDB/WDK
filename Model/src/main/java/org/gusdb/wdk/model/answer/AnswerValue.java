@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -49,8 +50,8 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
-import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.AttributesTabularReporter;
+import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -133,7 +134,7 @@ public class AnswerValue {
     private final String _filterName;
     private final boolean _useDisplay;
 
-    public FilterSizeTask(AnswerValue answer, ConcurrentMap<String, Integer> sizes, String filterName, boolean useDisplay) {
+    private FilterSizeTask(AnswerValue answer, ConcurrentMap<String, Integer> sizes, String filterName, boolean useDisplay) {
       _answer = answer;
       _sizes = sizes;
       _filterName = filterName;
@@ -148,7 +149,8 @@ public class AnswerValue {
             _answer.getFilterSize(_filterName));
         _sizes.put(_filterName, size);
       }
-      catch (WdkModelException | WdkUserException ex) {
+      catch (Exception ex) {
+        logger.error("Could not determine filter size for filter '" + _filterName + "'.", ex);
         _sizes.put(_filterName, -1);
       }
     }
@@ -179,8 +181,14 @@ public class AnswerValue {
   private Map<PrimaryKeyAttributeValue, RecordInstance> _pageRecordInstances;
 
   private Integer _resultSize; // size of total result
-  private Map<String, Integer> _resultSizesByFilter = new LinkedHashMap<>();
-  private Map<String, Integer> _resultSizesByProject;
+
+  // Map chain from boolean isDisplaySize -> filterName -> resultSize
+  private Map<Boolean, Map<String, Integer>> _resultSizesByFilter =
+      new MapBuilder<Boolean, Map<String, Integer>>()
+        .put(true, new ConcurrentHashMap<String,Integer>())
+        .put(false, new ConcurrentHashMap<String, Integer>())
+        .toMap();
+  private Map<String, Integer> _resultSizesByProject = null;
 
   private Map<String, Boolean> _sortingMap;
 
@@ -247,9 +255,10 @@ public class AnswerValue {
     _attributes = new AnswerValueAttributes(_user, _question);
     _resultFactory = answerValue._resultFactory;
     _resultSize = answerValue._resultSize;
-    _resultSizesByFilter = new LinkedHashMap<String, Integer>(answerValue._resultSizesByFilter);
-    if (answerValue._resultSizesByProject != null)
-      _resultSizesByProject = new LinkedHashMap<String, Integer>(answerValue._resultSizesByProject);
+
+    // Note: do not copy result size maps (i.e. _resultSizesByFilter and
+    //  _resultSizesByProject); they are essentially caches and should be
+    //   rebuilt by each new AnswerValue
 
     _sortingMap = new LinkedHashMap<String, Boolean>(answerValue._sortingMap);
     if (answerValue._filterOptions != null) _filterOptions = new FilterOptionList(answerValue._filterOptions);
@@ -1330,7 +1339,7 @@ public class AnswerValue {
 
   private int getFilterSize(String filterName, boolean useDisplay)
       throws WdkModelException, WdkUserException {
-    Integer size = _resultSizesByFilter.get(filterName);
+    Integer size = _resultSizesByFilter.get(useDisplay).get(filterName);
     if (size != null && _idsQueryInstance.getIsCacheable()) {
       return size;
     }
@@ -1347,7 +1356,7 @@ public class AnswerValue {
 
     // get size, cache, and return
     size = countPlugin.getResultSize(modifiedAnswer, idSql);
-    _resultSizesByFilter.put(filterName, size);
+    _resultSizesByFilter.get(useDisplay).put(filterName, size);
     return size;
   }
 
@@ -1380,7 +1389,8 @@ public class AnswerValue {
     _sortedIdSql = null;
     _pageRecordInstances = null;
     _resultSize = null;
-    _resultSizesByFilter.clear();
+    _resultSizesByFilter.get(true).clear();
+    _resultSizesByFilter.get(false).clear();
     _resultSizesByProject = null;
     _checksum = null;
   }
