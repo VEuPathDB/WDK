@@ -1,15 +1,14 @@
 {
-  "name": "wdk",
-  "version": false,
-  "dependencies": {},
-  "ambientDependencies": {
+  "globalDependencies": {
+    "fbemitter": "registry:dt/fbemitter#2.0.0+20160618175531",
     "flux": "registry:dt/flux#0.0.0+20160618175531",
-    "jquery": "registry:dt/jquery#1.10.0+20160417213236",
-    "jqueryui": "registry:dt/jqueryui#1.9.0+20160509160024",
+    "immutable": "registry:dt/immutable#3.8.1+20160608070634",
+    "jquery": "registry:dt/jquery#1.10.0+20160628074423",
+    "jqueryui": "registry:dt/jqueryui#1.9.0+20160627030821",
     "json-stable-stringify": "registry:dt/json-stable-stringify#1.0.0+20160317120654",
-    "localforage": "registry:dt/localforage#0.0.0+20160316155526",
-    "lodash": "registry:dt/lodash#3.10.0+20160330154726",
-    "react": "registry:dt/react#0.14.0+20160423065914",
+    "localforage": "registry:dt/localforage#0.0.0+20160629074517",
+    "lodash": "registry:dt/lodash#3.10.0+20160619033623",
+    "react": "registry:dt/react#0.14.0+20160621225615",
     "react-addons-shallow-compare": "registry:dt/react-addons-shallow-compare#0.14.0+20160316155526"
   }
 }
