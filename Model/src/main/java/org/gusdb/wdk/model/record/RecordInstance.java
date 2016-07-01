@@ -49,8 +49,6 @@ public class RecordInstance extends AttributeValueContainer {
 
   private boolean isValidRecord;
 
-  private String overview;
-
   /**
    * 
    * @param recordClass
@@ -478,18 +476,7 @@ public class RecordInstance extends AttributeValueContainer {
       throws WdkModelException, WdkUserException {
     return getAttributeValueMap(FieldScope.NON_INTERNAL);
   }
-  
-  public String getOverview() throws WdkModelException, WdkUserException {
-    String overviewText = recordClass.getRecordOverviewText();
-    if (this.overview == null && overviewText != null) {
-      this.overview = replaceMacrosWithAttributeValues(
-        overviewText,
-        "[recordOverview] of [" + recordClass.getFullName() + "]"
-      );
-    }
-    return this.overview;
-  }
-  
+    
   // /////////////////////////////////////////////////////////////////////////
   // protected methods
   // /////////////////////////////////////////////////////////////////////////
