@@ -190,7 +190,7 @@ public class RecordService extends WdkService {
       }
       recordInstance = getRecordInstance(getCurrentUser(), request);
 
-      return Response.ok(RecordStreamer.getRecordAsStream(recordInstance, request.getAttributeNames(), request.getTableNames(), request.getIncludeOverview())).build();
+      return Response.ok(RecordStreamer.getRecordAsStream(recordInstance, request.getAttributeNames(), request.getTableNames())).build();
     }
     catch (WdkUserException | RecordNotFoundException e) {
       // these may be thrown when the PK values either don't exist or map to >1 record
