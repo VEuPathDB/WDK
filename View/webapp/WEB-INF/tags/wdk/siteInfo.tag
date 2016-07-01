@@ -27,7 +27,7 @@
 <script>
   var wdkConfig = {
     modelName: '${fn:replace(siteName, "'", "\\'")}',
-    version: ${buildNumber},
+    version: '${fn:replace(buildNumber, "'", "\\'")}',
     assetsUrl: '${applicationScope.assetsUrl ne null ? applicationScope.assetsUrl : pageContext.request.contextPath}',
     webappUrl: '${fn:replace(pageContext.request.contextPath, "'", "\\'")}',
     guestUser: ${isGuest},
