@@ -31,7 +31,7 @@ class DownloadFormController extends WdkViewController {
     return ( <DownloadFormContainer {...formProps}/> );
   }
 
-  loadData(props) {
+  loadData(state, props) {
     // must reinitialize with every new props
     let { params } = props;
     if ('stepId' in params) {
