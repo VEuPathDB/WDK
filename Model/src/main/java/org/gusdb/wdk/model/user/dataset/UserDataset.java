@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.userdataset;
+package org.gusdb.wdk.model.user.dataset;
 
 import java.nio.file.Path;
 import java.util.Date;

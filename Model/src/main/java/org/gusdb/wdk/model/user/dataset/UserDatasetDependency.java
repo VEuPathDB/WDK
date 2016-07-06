@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.userdataset;
+package org.gusdb.wdk.model.user.dataset;
 
 /**
  * Describes a dependency of a user dataset on an application resource (such as

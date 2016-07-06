@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.userdataset;
+package org.gusdb.wdk.model.user.dataset;
 
 public interface UserDatasetMeta {
   void setName(String name);
