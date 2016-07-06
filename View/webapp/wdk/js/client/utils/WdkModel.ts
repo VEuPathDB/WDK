@@ -60,7 +60,6 @@ export interface TableField extends ModelEntity {
 
 export interface Record {
   displayName: string;
-  overview?: string;
   id: PrimaryKey;
   recordClassName: string;
   attributes: { [key: string]: AttributeValue };

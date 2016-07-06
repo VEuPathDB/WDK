@@ -31,7 +31,7 @@ public class RecordFormatter {
 
   private static final Logger LOG = Logger.getLogger(RecordFormatter.class);
 
-  public static JSONObject getRecordJson(RecordInstance record, Collection<String> attributeNames, Collection<String> tableNames, boolean includeOverview)
+  public static JSONObject getRecordJson(RecordInstance record, Collection<String> attributeNames, Collection<String> tableNames)
       throws WdkModelException, WdkUserException {
     JSONObject recordJson = new JSONObject()
       .put(Keys.DISPLAY_NAME, record.getPrimaryKey().getDisplay())
@@ -39,7 +39,6 @@ public class RecordFormatter {
       .put(Keys.RECORD_CLASS_NAME, record.getRecordClass().getFullName())
       .put(Keys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames))
       .put(Keys.TABLES, getRecordTablesJson(record, tableNames));
-    if (includeOverview) recordJson.put(Keys.OVERVIEW, record.getOverview());
     return recordJson;
   }
 

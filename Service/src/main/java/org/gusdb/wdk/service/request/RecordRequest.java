@@ -42,7 +42,6 @@ public class RecordRequest {
       request.setAttributeNames(parseAttributeNames(json.getJSONArray("attributes"), recordClass));
       request.setTableNames(parseTableNames(json.getJSONArray("tables"), recordClass));
       request.setPrimaryKey(parsePrimaryKey(json.getJSONArray("primaryKey"), recordClass));
-      request.setIncludeOverview(json.has("includeOverview") && json.getBoolean("includeOverview"));
       return request;
     }
     catch (JSONException | WdkUserException e) {
@@ -107,7 +106,6 @@ public class RecordRequest {
   private List<String> _attrNames = new ArrayList<String>();
   private List<String> _tableNames = new ArrayList<String>();
   private Map<String,Object> _primaryKey = new LinkedHashMap<String,Object>();
-  private boolean _includeOverview;
 
   private RecordRequest(RecordClass recordClass) {
     _recordClass = recordClass;
@@ -138,13 +136,5 @@ public class RecordRequest {
 
   private void setPrimaryKey(Map<String, Object> primaryKey) {
     _primaryKey = primaryKey;
-  }
-  
-  public boolean getIncludeOverview() {
-    return _includeOverview;
-  }
-  
-  private void setIncludeOverview(boolean includeOverview) {
-    _includeOverview = includeOverview;
   }
 }

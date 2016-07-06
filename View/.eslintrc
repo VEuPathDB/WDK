@@ -21,6 +21,7 @@
     "quotes": 0,
     "camelcase": 0,
     "no-underscore-dangle": 0,
+    "no-console": 0,
     "require-jsdoc": [1, {
       "require": {
         "FunctionDeclaration": true,

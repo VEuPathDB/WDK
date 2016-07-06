@@ -1,7 +1,6 @@
 import React from 'react';
 import {safeHtml, wrappable} from '../utils/componentUtils';
 import RecordActionLink from './RecordActionLink';
-import RecordOverview from './RecordOverview';
 
 let RecordHeading = props => {
   let { record, recordClass, headerActions } = props;
@@ -17,7 +16,6 @@ let RecordHeading = props => {
         })}
       </ul>
       <h1 className="wdk-RecordHeading">{recordClass.displayName}: {safeHtml(record.displayName)}</h1>
-      <RecordOverview record={record} recordClass={recordClass}/>
     </div>
   );
 }

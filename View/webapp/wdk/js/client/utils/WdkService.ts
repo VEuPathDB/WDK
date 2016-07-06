@@ -25,7 +25,6 @@ interface RecordRequest {
   attributes: string[];
   tables: string[];
   primaryKey: string[];
-  includeOverview?: boolean;
 }
 
 interface ServiceError extends Error {
@@ -137,16 +136,16 @@ export default class WdkService {
    * The record instance will be stored in memory. Any subsequent requests will
    * be merged with the in-memory request.
    */
-  getRecord(recordClassName: string, primaryKey: string[], options: {attributes?: string[]; tables?: string[]; includeOverview?: boolean;} = {}) {
+  getRecord(recordClassName: string, primaryKey: string[], options: {attributes?: string[]; tables?: string[];} = {}) {
     let key = makeRecordKey(recordClassName, primaryKey);
     let method = 'post';
     let url = '/record/' + recordClassName + '/instance';
 
-    let { attributes = [], tables = [], includeOverview = false } = options;
+    let { attributes = [], tables = [] } = options;
 
     // if we don't have the record, fetch whatever is requested
     if (!this._recordCache.has(key)) {
-      let request = { attributes, tables, primaryKey, includeOverview };
+      let request = { attributes, tables, primaryKey };
       let response = this._fetchJson<Record>(method, url, stringify(request));
       this._recordCache.set(key, { request, response });
     }
@@ -156,32 +155,27 @@ export default class WdkService {
       // determine which tables and attributes we need to retreive
       let reqAttributes = difference(attributes, request.attributes);
       let reqTables = difference(tables, request.tables);
-      // request overview if cached request didn't, but new request did
-      let reqIncludeOverview = !request.includeOverview && includeOverview;
 
       // get addition attributes and tables
-      if (reqAttributes.length > 0 || reqTables.length > 0 || reqIncludeOverview) {
+      if (reqAttributes.length > 0 || reqTables.length > 0) {
         let newRequest = {
           primaryKey,
           attributes: reqAttributes,
-          tables: reqTables,
-          includeOverview: reqIncludeOverview
+          tables: reqTables
         };
         let newResponse = this._fetchJson<Record>(method, url, stringify(newRequest));
 
         let finalRequest = {
           primaryKey,
           attributes: request.attributes.concat(newRequest.attributes),
-          tables: request.tables.concat(newRequest.tables),
-          includeOverview: reqIncludeOverview
+          tables: request.tables.concat(newRequest.tables)
         };
         // merge old record attributes and tables with new record
         let finalResponse = Promise.all([ response, newResponse ])
         .then(([record, newRecord]) => {
           return Object.assign({}, record, {
             attributes: Object.assign({}, record.attributes, newRecord.attributes),
-            tables: Object.assign({}, record.tables, newRecord.tables),
-            overview: reqIncludeOverview ? newRecord.overview : record.overview
+            tables: Object.assign({}, record.tables, newRecord.tables)
           });
         });
         this._recordCache.set(key, { request: finalRequest, response: finalResponse });

@@ -15,9 +15,9 @@ import org.gusdb.wdk.service.formatter.RecordFormatter;
 public class RecordStreamer {
 
   public static StreamingOutput getRecordAsStream(RecordInstance recordInstance,
-      List<String> attributeNames, List<String> tableNames, boolean includeOverview) throws WdkModelException, WdkUserException {
+      List<String> attributeNames, List<String> tableNames) throws WdkModelException, WdkUserException {
     // FIXME: currently do not support real streaming; need to implement in AnswerValueBean
-    final String result = RecordFormatter.getRecordJson(recordInstance, attributeNames, tableNames, includeOverview).toString();
+    final String result = RecordFormatter.getRecordJson(recordInstance, attributeNames, tableNames).toString();
     return new StreamingOutput() {
       @Override
       public void write(OutputStream stream) throws IOException, WebApplicationException {
