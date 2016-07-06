@@ -1,38 +1,8 @@
-
 /* Enclosing div for checkbox tree */
 .wdk-CheckboxTree {
   padding: 0.2em;
 }
 
-.wdk-CheckboxTree-searchBoxEnabled, .wdk-CheckboxTree-searchBoxDisabled {
-  width: calc(100% - 2em);
-  display: inline-block;
-}
-
-.wdk-CheckboxTree-searchBoxEnabled input, .wdk-CheckboxTree-searchBoxDisabled input {
-  width: 100%;
-  vertical-align: middle;
-  padding: 2px;
-}
-
-/** Lighten search box placeholder */
-.wdk-CheckboxTree-searchBoxEnabled input::-webkit-input-placeholder { color:#888; }
-.wdk-CheckboxTree-searchBoxDisabled input::-webkit-input-placeholder { color:#888; }
-.wdk-CheckboxTree-searchBoxEnabled input::-moz-placeholder { color:#888; }
-.wdk-CheckboxTree-searchBoxDisabled input::-moz-placeholder { color:#888; }
-.wdk-CheckboxTree-searchBoxEnabled input:-ms-input-placeholder { color:#888; }
-.wdk-CheckboxTree-searchBoxDisabled input:-ms-input-placeholder { color:#888; }
-.wdk-CheckboxTree-searchBoxEnabled input:-moz-placeholder { color:#888; }
-.wdk-CheckboxTree-searchBoxDisabled input:-moz-placeholder { color:#888; }
-
-.wdk-CheckboxTree-searchBoxEnabled i, .wdk-CheckboxTree-searchBoxDisabled i {
-  margin-left: -1.5em;
-  cursor:pointer;
-}
-
-.wdk-CheckboxTree-searchBoxEnabled i {
-  color: #CCC;
-}
 
 .wdk-CheckboxTree > ul {
   margin-top: 0.5em;
@@ -94,24 +64,11 @@
   text-align: left;
   font-size: 0.9em;
   margin: 0.5em 0;
+  max-width: 25em;
 }
 
 .wdk-CheckboxTree-links > div {
   width: 100%;
   display: inline-block;
   text-align: center;
-}
-
-.wdk-searchboxInfoIcon {
-  color: blue;
-  margin-left: 0.8em;  /* 1em forces a htal scrollbar in add Columns popup */
-}
-
-.wdk-searchBoxInfo {
-  white-space: nowrap;
-  padding: .4em 0;
-}
-
-.wdk-searchBoxInfo, .wdk-CheckboxTree-links {
-  max-width: 25em;
 }

@@ -1,14 +1,22 @@
+import { Component, PropTypes } from 'react';
+import {debounce} from 'lodash';
+import Tooltip from './Tooltip';
+
+/** classNames used by component */
+const baseClassName = 'wdk-RealTimeSearchBox';
+const inputClassName = baseClassName + 'Input';
+const labelClassName = baseClassName + 'Label';
+const cancelBtnClassName = baseClassName + 'CancelBtn';
+const infoIconClassName = baseClassName + 'InfoIcon';
+const cancelIconClassName = baseClassName + 'CancelIcon';
+const searchIconClassName = baseClassName + 'SearchIcon';
+
 /**
  * A 'real time' search box.  Changes are throttled by 'debounce' so text
  * change events are delayed to prevent repetitive costly searching.  Useful
  * when expensive operations are performed (e.g. search) in real time as the
  * user types in the box.  Also provides reset button to clear the box.
  */
-
-import { Component, PropTypes } from 'react';
-import {debounce} from 'lodash';
-import Tooltip from './Tooltip';
-
 export default class RealTimeSearchBox extends Component {
 
   constructor(props) {
@@ -44,35 +52,38 @@ export default class RealTimeSearchBox extends Component {
    * Update the state of this Component, and call onSearchTermSet callback
    * immediately.
    */
-  handleResetClick(e) {
-    e.preventDefault();
+  handleResetClick() {
     this.setState({ searchTerm: '' });
     this.props.onSearchTermChange('');
   }
 
   render() {
-    let { helpText, placeholderText } = this.props;
+    let { className, helpText, placeholderText } = this.props;
     let searchTerm = this.state.searchTerm;
     let isActiveSearch = searchTerm.length > 0;
-    let searchBoxClass = isActiveSearch ? "wdk-CheckboxTree-searchBoxEnabled" : "wdk-CheckboxTree-searchBoxDisabled";
     let showHelpIcon = (helpText != null && helpText != '');
-    let cancelButtonStyle = { visibility: isActiveSearch ? 'visible' : 'hidden' };
+    let activeModifier = isActiveSearch ? 'active' : 'inactive';
+    let helpModifier = showHelpIcon && 'withHelp';
     return (
-      <div className="wdk-searchBoxInfo">
-        <span className={searchBoxClass}>
-          <input type="text"
+      <div className={classname(baseClassName, activeModifier, helpModifier)
+        + ' ' + classname(className, activeModifier, helpModifier)}>
+        <label className={labelClassName}>
+          <input type="search"
+            className={inputClassName}
             onChange={this.handleSearchTermChange}
             onKeyDown={this.handleKeyDown}
             placeholder={placeholderText}
             value={searchTerm}
           />
-          <span style={cancelButtonStyle} onClick={this.handleResetClick}>
-            <i className="fa fa-lg fa-times"></i>
-          </span>
-        </span>
+          <i className={"fa fa-search " + searchIconClassName}/>
+          <button className={cancelBtnClassName}
+            type="button" onClick={this.handleResetClick}>
+            <i className={"fa fa-close " + cancelIconClassName}/>
+          </button>
+        </label>
         {showHelpIcon &&
           <Tooltip content={helpText}>
-            <i className="fa fa-question-circle fa-lg wdk-searchboxInfoIcon"/>
+            <i className={"fa fa-question-circle " + infoIconClassName}/>
           </Tooltip>
         }
       </div>
@@ -85,10 +96,13 @@ RealTimeSearchBox.defaultProps = {
   onSearchTermChange: () => {},
   placeholderText: '',
   helpText: '',
-  delayMs: 250,
+  delayMs: 250
 }
 
 RealTimeSearchBox.propTypes = {
+
+  /** Class name to include with default class name */
+  className: PropTypes.string,
 
   /** Initial search text; defaults to ''.  After mounting, search text is maintained by the component */
   initialSearchTerm: PropTypes.string,
@@ -106,3 +120,21 @@ RealTimeSearchBox.propTypes = {
   delayMs: PropTypes.number
 }
 
+/**
+ * Produce BEM style class names. The return value is a space-delimited
+ * list of class names. The first is `base`, and the rest are generated
+ * by joining `base` and each of `modifiers` with '__'.
+ *
+ * @example
+ * let allClassNames = className('Thing', 'active', 'blue');
+ * //=> 'Thing Thing__active Thing__blue'
+ *
+ * @param {string} base
+ * @param {string} ...modifiers
+ * @returns {string}
+ */
+function classname(base, ...modifiers) {
+  return modifiers.reduce((classnames, modifier) => {
+    return modifier ? classnames + ' ' + base + '__' + modifier : classnames;
+  }, base);
+}
