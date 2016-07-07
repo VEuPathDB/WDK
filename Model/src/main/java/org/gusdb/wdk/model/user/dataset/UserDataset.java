@@ -33,10 +33,16 @@ public interface UserDataset {
   Integer getNumberOfDataFiles();
   
   /**
-   * A list of data files
+   * A list of files
    * @return
    */
-  List<Path>getFiles();
+  List<UserDatasetFile>getFiles();
+  
+  /**
+   * Get a file by name.  We don't need more than the basename, because, within
+   * a dataset, it is just a flat set of files.
+   */
+  UserDatasetFile getFile(String name);
   
   /**
    * Get the list of users this dataset is shared with
