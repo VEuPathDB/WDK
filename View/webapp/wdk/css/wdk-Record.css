@@ -55,7 +55,8 @@
   z-index: 10;
   background: white;
   padding: 0 1em;
-  box-shadow: 0px 2px 10px silver;
+  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.3);
+  border: 1px solid #ccc;
 }
 
 .wdk-RecordSidebar__fixed {
@@ -96,10 +97,6 @@
   border: 0;
   transform: rotate(-90deg);
   padding: 0;
-}
-
-.wdk-RecordMain td {
-  word-break: break-word;
 }
 
 .wdk-RecordNavigationExpand {
@@ -186,7 +183,11 @@
 }
 
 .wdk-RecordSectionHeader:before, .wdk-RecordSectionHeader__collapsed:before {
-  content: '';
+  display: none;
+}
+
+.wdk-RecordSectionContent {
+  padding-left: 0;
 }
 
 .wdk-RecordSubsectionHeader {
@@ -212,7 +213,7 @@
 }
 
 .wdk-RecordAttributeSectionItem {
-  padding: 4px 1em;
+  padding: 4px 0;
 }
 
 .wdk-RecordAttributeName, .wdk-RecordAttributeValue {
@@ -226,10 +227,6 @@
   padding: 0 4px;
   word-break: break-word;
   top: 1px;
-}
-
-.wdk-RecordTableContainer {
-  padding: 0 1em;
 }
 
 .wdk-Record .wdk-CollapsibleSectionHeader:not(.wdk-RecordSectionHeader) {

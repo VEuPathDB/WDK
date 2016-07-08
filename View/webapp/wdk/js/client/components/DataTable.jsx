@@ -56,6 +56,7 @@ class DataTable extends PureComponent {
       data,
       order,
       searching: searchable,
+      info: searchable,
       headerCallback: (thead) => {
         let i = 0;
         let $ths = $(thead).find('th');
@@ -166,7 +167,7 @@ class DataTable extends PureComponent {
         {this.props.searchable && (
           <RealTimeSearchBox
             className="wdk-DataTableSearchBox"
-            placeholderText="Search table..."
+            placeholderText="Search this table..."
             onSearchTermChange={term => this._dataTable.search(term).draw()}
             delayMs={0}
           />

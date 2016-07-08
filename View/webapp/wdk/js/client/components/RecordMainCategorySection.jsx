@@ -106,10 +106,10 @@ let RecordMainCategorySection = React.createClass({
     let categoryName = getDisplayName(category);
     let Header = 'h' + Math.min(depth + 1, 6);
     let headerContent = (
-      <div>
+      <span>
         <span className="wdk-RecordSectionEnumeration">{enumeration}</span> {categoryName}
         <a className="wdk-RecordSectionLink" onClick={e => e.stopPropagation()} href={'#' + id}>&sect;</a>
-      </div>
+      </span>
     );
     return (
       <CollapsibleSection

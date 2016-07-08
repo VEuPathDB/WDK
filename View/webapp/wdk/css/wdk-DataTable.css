@@ -1,5 +1,5 @@
 .wdk-DataTable {
-  border: 1px solid #d8d8d8;
+  border: 1px solid #aaa;
   background-color: #fdfdfd;
 }
 
@@ -7,20 +7,24 @@
   width: 300px;
 }
 
+.wdk-DataTableContainer {
+  position: relative;
+  margin-top: 1em;
+}
+
 .wdk-DataTableContainer .dataTables_scroll {
   border-bottom: 1px solid lightgrey;
 }
 
 .wdk-DataTable th {
-  background-color: #f2f2f2;
-  border: 1px solid #d8d8d8;
+  background-color: #ddd;
+  border: 1px solid #aaa;
   padding: .6em;
 }
 
 .wdk-DataTable td {
   background-color: white;
-  border: 1px solid #d8d8d8;
-  word-break: break-word;
+  border: 1px solid #aaa;
   padding: 6px 8px;
 }
 
@@ -82,8 +86,11 @@
 }
 .wdk-DataTableContainer table.dataTable thead th.sorting:after {
   content: "\f175\f176";
-  color: #ccc;
+  color: #aaa;
   padding-top: 0.12em;
+}
+.wdk-DataTableContainer table.dataTable thead th.sorting:hover:after {
+  color: #888;
 }
 .wdk-DataTableContainer table.dataTable thead th.sorting_asc:after {
   content: "\f160";
@@ -98,5 +105,9 @@
 
 .wdk-DataTableContainer .dataTables_info {
   display: block;
-  padding: 4px;
+  padding: 4px 0;
+  color: #444;
+  position: absolute;
+  top: -3em;
+  margin-left: 310px;
 }
