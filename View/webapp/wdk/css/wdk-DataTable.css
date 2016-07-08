@@ -7,6 +7,11 @@
   width: 300px;
 }
 
+.wdk-DataTableContainer {
+  position: relative;
+  margin-top: 1em;
+}
+
 .wdk-DataTableContainer .dataTables_scroll {
   border-bottom: 1px solid lightgrey;
 }
@@ -102,4 +107,7 @@
   display: block;
   padding: 4px 0;
   color: #444;
+  position: absolute;
+  top: -3em;
+  margin-left: 310px;
 }

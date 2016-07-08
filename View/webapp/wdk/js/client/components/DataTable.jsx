@@ -56,6 +56,7 @@ class DataTable extends PureComponent {
       data,
       order,
       searching: searchable,
+      info: searchable,
       headerCallback: (thead) => {
         let i = 0;
         let $ths = $(thead).find('th');
