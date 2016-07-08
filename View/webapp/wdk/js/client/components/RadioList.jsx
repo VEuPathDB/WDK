@@ -22,7 +22,7 @@ let RadioList = React.createClass({
                 value={item.value}
                 checked={item.value === this.props.value}
                 onChange={this.onChange}/>
-              {item.display}
+              {' ' + item.display}
             </label>
           </li>
         ))}

@@ -2,13 +2,23 @@ import React from 'react';
 import classnames from 'classnames';
 import {includes, memoize} from 'lodash';
 import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
+import RealTimeSearchBox from './RealTimeSearchBox';
 import { postorderSeq } from '../utils/TreeUtils';
 import { wrappable, PureComponent } from '../utils/componentUtils';
 import { getPropertyValues, nodeHasProperty } from '../utils/OntologyUtils';
 import { getId, getDisplayName } from '../utils/CategoryUtils';
 import { parseSearchQueryString, areTermsInString } from '../utils/SearchUtils';
 
+/** Navigation panel for record page */
 class RecordNavigationSection extends PureComponent {
+
+  constructor(props) {
+    super(props);
+    this.handleSearchTermChange = term => {
+      this.props.onNavigationQueryChange(term);
+      this.props.onNavigationSubcategoryVisibilityChange(true);
+    };
+  }
 
   render() {
     let { collapsedSections, heading, navigationQuery, navigationSubcategoriesExpanded } = this.props;
@@ -30,18 +40,12 @@ class RecordNavigationSection extends PureComponent {
             }}
           /> {heading}
         </h2>
-        <div className="wdk-RecordNavigationSearch">
-          <input
-            className="wdk-RecordNavigationSearchInput"
-            placeholder={'Search ' + heading}
-            type="text"
-            value={navigationQuery}
-            onChange={e => {
-              this.props.onNavigationQueryChange(e.target.value);
-              this.props.onNavigationSubcategoryVisibilityChange(true);
-            }}
-          />
-        </div>
+        <RealTimeSearchBox
+          placeholderText={'Search ' + heading + '...'}
+          initialSearchTerm={navigationQuery}
+          onSearchTermChange={this.handleSearchTermChange}
+          delayMs={100}
+        />
         <div className="wdk-RecordNavigationCategories">
           <RecordNavigationSectionCategories
             record={this.props.record}

@@ -3,19 +3,7 @@
   background-color: #fdfdfd;
 }
 
-.wdk-DataTableContainer .dataTables_filter {
-  display: block;
-  padding: .4em 0;
-  margin: 0;
-}
-
-.wdk-DataTableContainer .dataTables_filter input {
-  padding: 4px;
-  width: 200px;
-  transition: width 250ms ease;
-}
-
-.wdk-DataTableContainer .dataTables_filter input:focus {
+.wdk-DataTableSearchBox {
   width: 300px;
 }
 
@@ -47,13 +35,17 @@
   padding: 0;
   border: none;
   line-height: 2;
-  background: transparent;
+  background: transparent !important;
+}
+
+.wdk-DataTableCellExpand:hover {
+  color: black;
 }
 
 .wdk-DataTableCellExpand:before {
   font-family: FontAwesome;
   content: "\f0da"; /* caret-right */
-  font-size: 1.2em;
+  font-size: 1.6em;
   text-align: center;
   display: block;
 }
