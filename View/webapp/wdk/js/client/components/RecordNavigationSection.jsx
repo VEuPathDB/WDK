@@ -41,7 +41,7 @@ class RecordNavigationSection extends PureComponent {
           /> {heading}
         </h2>
         <RealTimeSearchBox
-          placeholderText={'Search ' + heading + '...'}
+          placeholderText={'Search section names...'}
           initialSearchTerm={navigationQuery}
           onSearchTermChange={this.handleSearchTermChange}
           delayMs={100}
