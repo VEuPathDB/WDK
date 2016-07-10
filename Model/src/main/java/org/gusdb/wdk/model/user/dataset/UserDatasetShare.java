@@ -5,7 +5,7 @@ import java.util.Date;
 import org.gusdb.wdk.model.user.User;
 
 /**
- * The info needed to describe a sharing of a user dataset
+ * A simple data container with info needed to describe sharing of a user dataset
  * @author steve
  *
  */
