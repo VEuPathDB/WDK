@@ -3,12 +3,22 @@ package org.gusdb.wdk.model.user.dataset;
 import java.util.Date;
 import java.util.Map;
 
+import org.gusdb.wdk.model.PropertyList;
+
 /**
  * Provides access to collections of user datasets.
  * @author steve
  *
  */
 public interface UserDatasetStore {
+
+  /**
+   * Called at start up by the WDK.  The property list comes from
+   * model XML.
+   * @param configuration
+   */
+  void initialize(PropertyList configuration);
+  
   /**
    * For one user, provide a map from dataset ID to dataset.
    * @param userId
