@@ -1,8 +1,8 @@
-package org.gusdb.wdk.model.user.dataset.filesys;
+package org.gusdb.wdk.model.user.dataset.json;
 
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 
-public class FilesysUserDatasetDependency implements UserDatasetDependency {
+public class JsonUserDatasetDependency implements UserDatasetDependency {
 
   @Override
   public String getResourceIdentifier() {

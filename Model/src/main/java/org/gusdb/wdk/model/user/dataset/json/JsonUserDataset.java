@@ -1,17 +1,17 @@
-package org.gusdb.wdk.model.user.dataset.filesys;
+package org.gusdb.wdk.model.user.dataset.json;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.gusdb.wdk.model.user.User;
+
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetMeta;
 import org.gusdb.wdk.model.user.dataset.UserDatasetShare;
 
-public class FilesysUserDataset implements UserDataset {
+public class JsonUserDataset implements UserDataset {
 
   @Override
   public UserDatasetMeta getMeta() {
@@ -56,13 +56,13 @@ public class FilesysUserDataset implements UserDataset {
   }
 
   @Override
-  public void share(User user) {
+  public void share(Integer userId) {
     // TODO Auto-generated method stub
 
   }
 
   @Override
-  public void unshare(User user) {
+  public void unshare(Integer userId) {
     // TODO Auto-generated method stub
 
   }
