@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.User;
 
 public interface UserDataset {
   /**
@@ -56,13 +55,13 @@ public interface UserDataset {
    * Share this dataset with the specified user
    * @param user
    */
-  void share(User user) throws WdkModelException;
+  void share(Integer userId) throws WdkModelException;
   
   /**
    * Unshare this dataset with the specified user
    * @param user
    */
-  void unshare(User user) throws WdkModelException;
+  void unshare(Integer userId) throws WdkModelException;
   
   /**
    * Unshare this dataset with all users it was shared with
