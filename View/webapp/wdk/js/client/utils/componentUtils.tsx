@@ -20,6 +20,26 @@ export class PureComponent<P, S> extends React.Component<P, S> {
   }
 }
 
+/**
+ * Stateless function component decorator that prevents rerendering
+ * when props are equal use shallow comparison.
+ */
+export function pure<P>(Component: React.StatelessComponent<P>) {
+  return class PureWrapper extends React.Component<P, void> {
+    static get displayName() {
+      return `PureWrapper(${Component.displayName || Component.name})`;
+    }
+    shouldComponentUpdate(nextProps: P, nextState: void) {
+      return shallowCompare(this, nextProps, nextState);
+    }
+    render() {
+      return (
+        <Component {...this.props}/>
+      );
+    }
+  }
+}
+
 interface IWrapper<P> extends React.ComponentClass<P> {
   wrapComponent(factory: (Component: React.ComponentClass<P>) => React.ComponentClass<P>): void;
   wrapComponent(factory: (Component: React.ComponentClass<P>) => React.StatelessComponent<P>): void;
