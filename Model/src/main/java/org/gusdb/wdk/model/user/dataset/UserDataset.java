@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user.dataset;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +49,7 @@ public interface UserDataset {
    * (Should this return a User or a user ID?)
    * @return
    */
-  Collection<UserDatasetShare> getSharedWith() throws WdkModelException;
+  Set<UserDatasetShare> getSharedWith() throws WdkModelException;
   
   /**
    * Share this dataset with the specified user
