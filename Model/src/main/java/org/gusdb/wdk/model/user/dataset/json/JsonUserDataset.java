@@ -105,7 +105,7 @@ public class JsonUserDataset implements UserDataset {
 
   @Override
   public Collection<UserDatasetShare> getSharedWith() {
-    return Collections.unmodifiableCollection(shares.values());
+    return null;
   }
 
   @Override
@@ -142,7 +142,7 @@ public class JsonUserDataset implements UserDataset {
 
   @Override
   public Set<UserDatasetDependency> getDependencies() {
-    return Collections.unmodifiableSet(dependencies);
+    return null;
   }
 
   @Override
