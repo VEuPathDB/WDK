@@ -31,21 +31,20 @@ let RecordMainSection = React.createClass({
         {categories.map((category, index) => {
           let categoryName = getLabel(category);
           let categoryId = getId(category);
-          let enumeration = parentEnumeration == null
+          let enumeration = String(parentEnumeration == null
             ? index + 1
-            : parentEnumeration + '.' + (index + 1);
+            : parentEnumeration + '.' + (index + 1));
 
           return (
             <RecordMainCategorySection
               key={categoryName}
-              depth={depth}
               category={category}
-              record={record}
-              recordClass={this.props.recordClass}
+              depth={depth}
+              enumeration={enumeration}
               isCollapsed={collapsedSections.includes(categoryId)}
               onSectionToggle={this.props.onSectionToggle}
-              onTableToggle={this.props.onTableToggle}
-              enumeration={enumeration}
+              record={record}
+              recordClass={this.props.recordClass}
             >
             <RecordMainSection
               {...this.props}
