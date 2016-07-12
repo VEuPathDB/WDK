@@ -40,7 +40,7 @@ export {
  * @param {string} option.rootUrl Root URL used by the router.
  * @param {string} option.endpoint Base URL for WdkService.
  * @param {HTMLElement} option.rootElement DOM node to render the application.
- * @param {Array} option.applicationRoutes Additional routes to register with the Router.
+ * @param {React.Element} option.applicationRoutes Additional routes to register with the Router.
  * @param {Object} option.storeWrappers Mapping from store name to replacement class
  */
 export function initialize({ rootUrl, endpoint, applicationRoutes, storeWrappers }) {
