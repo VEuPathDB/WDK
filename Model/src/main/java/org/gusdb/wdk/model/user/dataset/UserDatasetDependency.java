@@ -23,5 +23,5 @@ public interface UserDatasetDependency {
    * A human readable form of the resource, for display to end user
    * @return
    */
-  String getDisplayable();
+  String getResourceDisplayName();
 }

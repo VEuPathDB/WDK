@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.json.JSONObject;
 
 /**
  * Provides access to collections of user datasets.  Only provides information about
@@ -41,4 +42,13 @@ public interface UserDatasetStore {
    * @return
    */
   Integer getQuota(Integer userId) throws WdkModelException;
+  
+  /**
+   * User can update the meta info a dataset the own.
+   * Client applications provide JSON to specify an update to meta info.  
+   * The implementor must use that to construct a UserDatasetMeta object.
+   * @param metaJson
+   * @return
+   */
+  void updateMetaFromJson(Integer userId, Integer datasetId, JSONObject metaJson);
 }

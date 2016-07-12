@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
+import org.json.JSONObject;
 
 public class FilesysUserDatasetStore implements org.gusdb.wdk.model.user.dataset.UserDatasetStore {
 
@@ -37,6 +38,12 @@ public class FilesysUserDatasetStore implements org.gusdb.wdk.model.user.dataset
   public Integer getQuota(Integer userId) throws WdkModelException {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public void updateMetaFromJson(Integer userId, Integer datasetId, JSONObject metaJson) {
+    // TODO Auto-generated method stub
+    
   }
   
   

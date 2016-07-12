@@ -48,8 +48,7 @@ public class JsonUserDatasetMeta implements UserDatasetMeta {
   }
 
   /**
-   * the serialized version.  for now, spit out the string acquired in construction.
-   * maybe later pretty print json from state.
+   * the underlying json object  
    */
   public JSONObject getJsonObject() {
     return jsonObject;

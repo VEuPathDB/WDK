@@ -5,6 +5,7 @@ import java.util.Date;
 
 /**
  * A simple data container with info needed to describe sharing of a user dataset
+ * with another user.
  * @author steve
  *
  */
