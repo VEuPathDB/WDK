@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,7 +38,7 @@ public class JsonUserDataset implements UserDataset {
   private Date created;
   private Date modified;
   private Date uploaded;
-  private Map<Integer, JsonUserDatasetShare> shares = new HashMap<Integer, JsonUserDatasetShare>();
+  private Map<Integer, JsonUserDatasetShare> sharesMap = new HashMap<Integer, JsonUserDatasetShare>();
   private Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
   private Set<JsonUserDatasetDependency> dependencies;
   private JSONObject jsonObject;
@@ -67,7 +68,7 @@ public class JsonUserDataset implements UserDataset {
       JSONArray sharesJson = jsonObject.getJSONArray(SHARES);
       for (int i=0; i<sharesJson.length(); i++) {
         JsonUserDatasetShare s = new JsonUserDatasetShare(sharesJson.getJSONObject(i));
-        shares.put(s.getUserId(), s);     
+        sharesMap.put(s.getUserId(), s);   
       }
     } catch (JSONException | ParseException e) {
       throw new WdkModelException(e);
@@ -104,25 +105,29 @@ public class JsonUserDataset implements UserDataset {
   }
 
   @Override
-  public Collection<UserDatasetShare> getSharedWith() {
-    return null;
+  public Set<UserDatasetShare> getSharedWith() {
+    Set<UserDatasetShare> shares = new HashSet<UserDatasetShare>();
+    for (JsonUserDatasetShare share : sharesMap.values()) shares.add(share);
+    return Collections.unmodifiableSet(shares);
   }
 
   @Override
   public void shareWith(Integer userId) {
-   if (!shares.containsKey(userId))
-     shares.put(userId, new JsonUserDatasetShare(userId));
+   if (!sharesMap.containsKey(userId)) {
+     JsonUserDatasetShare s = new JsonUserDatasetShare(userId);
+     sharesMap.put(userId, s);
+   }
   }
 
   @Override
   public void unshareWith(Integer userId) {
-    if (shares.containsKey(userId))
-      shares.remove(userId);
+    if (sharesMap.containsKey(userId))
+      sharesMap.remove(userId);
   }
 
   @Override
   public void unshareWithAllUsers() {
-    shares = new HashMap<Integer, JsonUserDatasetShare>();
+    sharesMap = new HashMap<Integer, JsonUserDatasetShare>();
   }
 
   @Override
@@ -140,9 +145,12 @@ public class JsonUserDataset implements UserDataset {
     return uploaded;
   }
 
+  // TODO: is this the right way to handle this subclassing?
   @Override
   public Set<UserDatasetDependency> getDependencies() {
-    return null;
+    Set<UserDatasetDependency> d = new HashSet<UserDatasetDependency>();
+    for (JsonUserDatasetDependency dependency : dependencies) d.add(dependency);
+    return Collections.unmodifiableSet(d);
   }
 
   @Override
