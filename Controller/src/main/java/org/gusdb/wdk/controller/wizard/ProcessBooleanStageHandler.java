@@ -103,7 +103,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
     }
 
     String customName = request.getParameter(PARAM_CUSTOM_NAME);
-    if (customName != childStep.getCustomName()) {
+    if (childStep != null && customName != childStep.getCustomName()) {
       childStep.setCustomName(customName);
       childStep.update(false);
     }
