@@ -1,25 +1,26 @@
 package org.gusdb.wdk.model.user.dataset;
 
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
 
 public interface UserDataset {
+
+  /**
+   * Get the user ID of the owner of this dataset
+   * @return
+   */
+  Integer getOwnerId();
+  
   /**
    * Get meta data object, which has the user's way of describing this dataset
    * @return
    */
   UserDatasetMeta getMeta() throws WdkModelException;
-  
-  /**
-   * Update the user's choice of meta info.  User can edit this info, causing
-   * a new meta data object to be provided.
-   * @param metainfo
-   */
-  void updateMeta(UserDatasetMeta metainfo) throws WdkModelException;
-  
+    
   /**
    * Get the datatype of this dataset.  
    * @return
@@ -36,7 +37,7 @@ public interface UserDataset {
    * A list of files
    * @return
    */
-  List<UserDatasetFile>getFiles() throws WdkModelException;
+  Map<String, UserDatasetFile>getFiles() throws WdkModelException;
   
   /**
    * Get a file by name.  We don't need more than the basename, because, within
@@ -49,25 +50,25 @@ public interface UserDataset {
    * (Should this return a User or a user ID?)
    * @return
    */
-  List<UserDatasetShare> getSharedWith() throws WdkModelException;
+  Collection<UserDatasetShare> getSharedWith() throws WdkModelException;
   
   /**
    * Share this dataset with the specified user
    * @param user
    */
-  void share(Integer userId) throws WdkModelException;
+  void shareWith(Integer userId) throws WdkModelException;
   
   /**
    * Unshare this dataset with the specified user
    * @param user
    */
-  void unshare(Integer userId) throws WdkModelException;
+  void unshareWith(Integer userId) throws WdkModelException;
   
   /**
    * Unshare this dataset with all users it was shared with
    * @param user
    */
-  void unshareAllUsers() throws WdkModelException;
+  void unshareWithAllUsers() throws WdkModelException;
   
   /**
    * Get the date this dataset was created, by whatever application created it.
@@ -81,6 +82,12 @@ public interface UserDataset {
    * @return
    */
   Date getModifiedDate() throws WdkModelException;
+  
+  /**
+   * The time this dataset was uploaded to the UserDatasetStore
+   * @return
+   */
+  Date getUploadedDate() throws WdkModelException;
   
   /**
    * Get the set of data dependencies (in the application database) that this dataset has.
