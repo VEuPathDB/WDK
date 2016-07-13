@@ -93,20 +93,7 @@ public interface UserDataset {
    * @return
    */
   Set<UserDatasetDependency> getDependencies() throws WdkModelException;
-  
-  /**
-   * Is this dataset compatible with the WDK's application database (based on its declared
-   * dependencies, compared to the content of the database)?
-   * @return
-   */
-  Boolean getIsCompatible() throws WdkModelException;
-  
-  /**
-   * Return an explanation for why this dataset is not compatible, if it is not.
-   * @return
-   */
-  String getIncompatibleReason() throws WdkModelException;
-  
+    
   /**
    * Get the size of the datafiles for this dataset.
    * @return
