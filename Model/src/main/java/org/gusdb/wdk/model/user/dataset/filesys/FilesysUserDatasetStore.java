@@ -2,12 +2,12 @@ package org.gusdb.wdk.model.user.dataset.filesys;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -142,7 +142,7 @@ public class FilesysUserDatasetStore implements org.gusdb.wdk.model.user.dataset
   private JSONObject makeDatasetJson(Path datasetJsonFile) throws WdkModelException {
 
     StringBuilder jsonStringBldr = new StringBuilder();
-    try (BufferedReader reader = Files.newBufferedReader(datasetJsonFile, Charset.forName("US-ASCII"))) {
+    try (BufferedReader reader = Files.newBufferedReader(datasetJsonFile, Charset.defaultCharset())) {
       String line = null;
       while ((line = reader.readLine()) != null)
         jsonStringBldr.append(line);
