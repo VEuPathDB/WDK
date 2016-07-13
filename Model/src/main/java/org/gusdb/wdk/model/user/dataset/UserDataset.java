@@ -9,6 +9,12 @@ import org.gusdb.wdk.model.WdkModelException;
 public interface UserDataset {
 
   /**
+   * The permanent ID of this dataset  
+   * @return
+   */
+  Integer getUserDatasetId();
+  
+  /**
    * Get the user ID of the owner of this dataset
    * @return
    */
