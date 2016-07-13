@@ -175,7 +175,7 @@ public class AnswerFilterLayout extends WdkModelBase {
    */
   @Override
   public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
-    if (resolved)
+    if (_resolved)
       return;
 
     // resolve the instances
@@ -236,7 +236,7 @@ public class AnswerFilterLayout extends WdkModelBase {
 		}
 
     referenceList = null;
-    resolved = true;
+    _resolved = true;
   }
 
   public Map<String, AnswerFilterInstance> getInstanceMap() {

@@ -286,7 +286,7 @@ public class SqlQuery extends Query {
   
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    if (resolved) return;
+    if (_resolved) return;
     super.resolveReferences(wdkModel);
     
     // set the dblink flag if any of the params is a datasetParam;

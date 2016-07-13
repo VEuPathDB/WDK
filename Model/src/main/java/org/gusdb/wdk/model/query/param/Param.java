@@ -167,9 +167,9 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     this.allowEmpty = param.allowEmpty;
     this.emptyValue = param.emptyValue;
     this.paramSet = param.paramSet;
-    this.wdkModel = param.wdkModel;
+    this._wdkModel = param._wdkModel;
     this.noTranslation = param.noTranslation;
-    this.resolved = param.resolved;
+    this._resolved = param._resolved;
     if (param.handlerReferences != null) {
       this.handlerReferences = new ArrayList<>();
       for (ParamHandlerReference reference : param.handlerReferences) {
@@ -186,7 +186,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   @Override
   public WdkModel getWdkModel() {
-    return wdkModel;
+    return _wdkModel;
   }
 
   /**
@@ -478,7 +478,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    *           if unable to load resources from model
    */
   public void setResources(WdkModel model) throws WdkModelException {
-    this.wdkModel = model;
+    this._wdkModel = model;
   }
 
   public final String replaceSql(String sql, String internalValue) {
@@ -611,12 +611,12 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    if (resolved)
+    if (_resolved)
       return;
 
     super.resolveReferences(wdkModel);
 
-    this.wdkModel = wdkModel;
+    this._wdkModel = wdkModel;
 
     // resolve reference for handler
     if (handlerReference != null) {

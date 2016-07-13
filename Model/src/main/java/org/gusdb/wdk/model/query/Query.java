@@ -205,7 +205,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   public boolean getIsCacheable() {
     // first check if global caching is turned off, if off, then return false; otherwise, use query's own 
     // settings.
-    if (!wdkModel.getModelConfig().isCaching()) return false;
+    if (!_wdkModel.getModelConfig().isCaching()) return false;
     return this.isCacheable;
   }
 
@@ -445,7 +445,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // logger.debug("Resolving " + getFullName() + " - " + resolved);
-    if (resolved)
+    if (_resolved)
       return;
 
     super.resolveReferences(wdkModel);
@@ -514,7 +514,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
             "Invalid PostCacheInsertSql. <sql> must be provided, and include the macros: " +
                 Utilities.MACRO_CACHE_TABLE + " and " + Utilities.MACRO_CACHE_INSTANCE_ID);
     }
-    resolved = true;
+    _resolved = true;
   }
 
   /**

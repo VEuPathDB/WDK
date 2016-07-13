@@ -33,33 +33,32 @@ public abstract class WdkModelBase {
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(WdkModelBase.class);
 
-  private Set<String> includeProjects;
-  private Set<String> excludeProjects;
+  protected WdkModel _wdkModel;
+  protected boolean _resolved = false;
 
-  protected boolean resolved = false;
+  private Set<String> _includeProjects;
+  private Set<String> _excludeProjects;
 
-  private List<PropertyList> propertyLists;
-  private Map<String, String[]> propertyListMap;
-
-  protected WdkModel wdkModel;
+  private List<PropertyList> _propertyLists;
+  private Map<String, String[]> _propertyListMap;
 
   public WdkModelBase() {
-    includeProjects = new LinkedHashSet<String>();
-    excludeProjects = new LinkedHashSet<String>();
-    propertyLists = new ArrayList<PropertyList>();
-    propertyListMap = new LinkedHashMap<String, String[]>();
+    _includeProjects = new LinkedHashSet<String>();
+    _excludeProjects = new LinkedHashSet<String>();
+    _propertyLists = new ArrayList<PropertyList>();
+    _propertyListMap = new LinkedHashMap<String, String[]>();
   }
 
   public WdkModelBase(WdkModelBase base) {
-    this.wdkModel = base.wdkModel;
-    resolved = base.resolved;
-    includeProjects = new LinkedHashSet<String>(base.includeProjects);
-    excludeProjects = new LinkedHashSet<String>(base.excludeProjects);
-    if (base.propertyLists != null)
-      propertyLists = new ArrayList<PropertyList>(base.propertyLists);
-    if (base.propertyListMap != null)
-      propertyListMap = new LinkedHashMap<String, String[]>(
-          base.propertyListMap);
+    _wdkModel = base._wdkModel;
+    _resolved = base._resolved;
+    _includeProjects = new LinkedHashSet<String>(base._includeProjects);
+    _excludeProjects = new LinkedHashSet<String>(base._excludeProjects);
+    if (base._propertyLists != null)
+      _propertyLists = new ArrayList<PropertyList>(base._propertyLists);
+    if (base._propertyListMap != null)
+      _propertyListMap = new LinkedHashMap<String, String[]>(
+          base._propertyListMap);
   }
 
   @Override
@@ -84,7 +83,7 @@ public abstract class WdkModelBase {
 
     String[] projects = excludeProjects.split(",");
     for (String project : projects) {
-      this.excludeProjects.add(project.trim());
+      _excludeProjects.add(project.trim());
     }
   }
 
@@ -99,7 +98,7 @@ public abstract class WdkModelBase {
 
     String[] projects = includeProjects.split(",");
     for (String project : projects) {
-      this.includeProjects.add(project.trim());
+      _includeProjects.add(project.trim());
     }
   }
 
@@ -109,10 +108,10 @@ public abstract class WdkModelBase {
    * @return true if the object is included in the current project
    */
   public boolean include(String projectId) {
-    if (includeProjects.isEmpty()) { // no inclusions assigned
-      return !excludeProjects.contains(projectId);
+    if (_includeProjects.isEmpty()) { // no inclusions assigned
+      return !_excludeProjects.contains(projectId);
     } else { // has inclusions
-      return includeProjects.contains(projectId);
+      return _includeProjects.contains(projectId);
     }
   }
 
@@ -120,7 +119,7 @@ public abstract class WdkModelBase {
    * @return the resolved
    */
   public boolean isResolved() {
-    return resolved;
+    return _resolved;
   }
 
   /**
@@ -129,7 +128,7 @@ public abstract class WdkModelBase {
    * @param propertyList
    */
   public void addPropertyList(PropertyList propertyList) {
-    this.propertyLists.add(propertyList);
+    _propertyLists.add(propertyList);
   }
 
   /**
@@ -140,17 +139,17 @@ public abstract class WdkModelBase {
    * @return list for the given name, or null if no list exists
    */
   public String[] getPropertyList(String propertyListName) {
-    if (!propertyListMap.containsKey(propertyListName))
-      return wdkModel.getDefaultPropertyList(propertyListName);
-    return propertyListMap.get(propertyListName);
+    if (!_propertyListMap.containsKey(propertyListName))
+      return _wdkModel.getDefaultPropertyList(propertyListName);
+    return _propertyListMap.get(propertyListName);
   }
 
   public Map<String, String[]> getPropertyLists() {
     // get the default property lists
-    Map<String, String[]> propLists = wdkModel.getDefaultPropertyLists();
+    Map<String, String[]> propLists = _wdkModel.getDefaultPropertyLists();
     // replace the default ones with the ones defined in the question
-    for (String plName : propertyListMap.keySet()) {
-      String[] values = propertyListMap.get(plName);
+    for (String plName : _propertyListMap.keySet()) {
+      String[] values = _propertyListMap.get(plName);
       propLists.put(plName, Arrays.copyOf(values, values.length));
     }
     return propLists;
@@ -165,20 +164,20 @@ public abstract class WdkModelBase {
    */
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude property lists
-    for (PropertyList propList : propertyLists) {
+    for (PropertyList propList : _propertyLists) {
       if (propList.include(projectId)) {
         String listName = propList.getName();
-        if (propertyListMap.containsKey(listName)) {
+        if (_propertyListMap.containsKey(listName)) {
           throw new WdkModelException("The node " + this.getClass().getName()
               + " has more than one " + "propertyList \"" + listName
               + "\" for project " + projectId);
         } else {
           propList.excludeResources(projectId);
-          propertyListMap.put(propList.getName(), propList.getValues());
+          _propertyListMap.put(propList.getName(), propList.getValues());
         }
       }
     }
-    propertyLists = null;
+    _propertyLists = null;
 
   }
 
@@ -186,10 +185,10 @@ public abstract class WdkModelBase {
    * @throws WdkModelException if error occurs resolving references
    */
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    this.wdkModel = wdkModel;
+    _wdkModel = wdkModel;
   }
 
   public WdkModel getWdkModel() {
-    return wdkModel;
+    return _wdkModel;
   }
 }

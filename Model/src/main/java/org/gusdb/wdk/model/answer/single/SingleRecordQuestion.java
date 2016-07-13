@@ -63,8 +63,8 @@ public class SingleRecordQuestion extends Question {
     }
     setWdkModel(wdkModel);
     setRecordClass(parts.recordClass);
-    dynamicAttributeSet = new DynamicAttributeSet();
-    dynamicAttributeSet.setQuestion(this);
+    _dynamicAttributeSet = new DynamicAttributeSet();
+    _dynamicAttributeSet.setQuestion(this);
   }
 
   @Override
@@ -76,11 +76,11 @@ public class SingleRecordQuestion extends Question {
     
     // build valid PK value list
     String[] pkValues = params.get(PRIMARY_KEY_PARAM_NAME).split(",");
-    PrimaryKeyAttributeField pkAttrField = recordClass.getPrimaryKeyAttributeField();
+    PrimaryKeyAttributeField pkAttrField = _recordClass.getPrimaryKeyAttributeField();
     String[] columnRefs =  pkAttrField.getColumnRefs();
 
     if (columnRefs.length != pkValues.length) {
-      throw new WdkUserException("RecordClass '" + recordClass.getFullName() +
+      throw new WdkUserException("RecordClass '" + _recordClass.getFullName() +
           "' PK requires exactly " + columnRefs.length + " values " + FormatUtil.arrayToString(columnRefs));
     }
 
@@ -90,7 +90,7 @@ public class SingleRecordQuestion extends Question {
       pkMap.put(columnRefs[i], pkValues[i]);
     }
 
-    return new SingleRecordAnswerValue(user, recordClass, this, pkMap);
+    return new SingleRecordAnswerValue(user, _recordClass, this, pkMap);
   }
 
   @Override
