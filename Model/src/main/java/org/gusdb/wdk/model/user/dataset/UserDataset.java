@@ -24,7 +24,7 @@ public interface UserDataset {
    * Get the datatype of this dataset.  
    * @return
    */
-  String getType() throws WdkModelException;
+  UserDatasetType getType() throws WdkModelException;
   
   /**
    * Get the number of datafiles in this dataset
@@ -117,5 +117,5 @@ public interface UserDataset {
    * Get the percent of quota the user has used up.
    * @return
    */
-  Integer getPercentQuota() throws WdkModelException;
+  Integer getPercentQuota(int quota) throws WdkModelException;
 }

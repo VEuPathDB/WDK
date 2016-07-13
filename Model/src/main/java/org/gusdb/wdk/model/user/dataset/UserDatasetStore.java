@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user.dataset;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONObject;
@@ -19,7 +20,7 @@ public interface UserDatasetStore {
    * properties in model XML.
    * @param configuration
    */
-  void initialize(Map<String, String> configuration) throws WdkModelException;
+  void initialize(Map<String, String> configuration, Set<UserDatasetTypeHandler> typeHandlers) throws WdkModelException;
   
   /**
    * For one user, provide a map from dataset ID to dataset.
