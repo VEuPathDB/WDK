@@ -11,7 +11,7 @@ public class JsonUserDatasetTypeFactory {
   public static final String NAME = "name";
   public static final String VERSION = "version";
   
-  public static UserDatasetType getUserDatasetType(JSONObject jsonObject) throws WdkModelException {
+  public static synchronized UserDatasetType getUserDatasetType(JSONObject jsonObject) throws WdkModelException {
     try {
       return UserDatasetTypeFactory.getUserDatasetType(jsonObject.getString(NAME), jsonObject.getString(VERSION));
     } catch (JSONException e) {

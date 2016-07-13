@@ -38,6 +38,7 @@ public class JsonUserDataset implements UserDataset {
   private static final String DEPENDENCIES  = "dependencies";
   private static final String SIZE  = "size";
   
+  private Integer userDatasetId;
   private JsonUserDatasetMeta meta;
   private UserDatasetType type;
   private Integer ownerId;
@@ -55,7 +56,8 @@ public class JsonUserDataset implements UserDataset {
    * @param jsonObject
    * @throws WdkModelException
    */
-  public JsonUserDataset(JSONObject jsonObject, Map<String, UserDatasetFile> dataFiles) throws WdkModelException {
+  public JsonUserDataset(Integer userDatasetId, JSONObject jsonObject, Map<String, UserDatasetFile> dataFiles) throws WdkModelException {
+    this.userDatasetId = userDatasetId;
     this.jsonObject = jsonObject;
     unpackJsonObject(jsonObject);
     this.dataFiles = dataFiles;
@@ -90,9 +92,15 @@ public class JsonUserDataset implements UserDataset {
   }
   
   @Override
+  public Integer getUserDatasetId() {
+    return userDatasetId;
+  }
+  
+  @Override
   public Integer getOwnerId() {
     return ownerId;
   }
+  
   @Override
   public UserDatasetMeta getMeta() {
     return meta;
