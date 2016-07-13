@@ -123,7 +123,7 @@ public class TableField extends Field implements AttributeFieldContainer {
    */
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    if (resolved)
+    if (_resolved)
       return;
     super.resolveReferences(wdkModel);
 
@@ -151,7 +151,7 @@ public class TableField extends Field implements AttributeFieldContainer {
       field.setRecordClass(recordClass);
     }
 
-    resolved = true;
+    _resolved = true;
   }
 
   /*

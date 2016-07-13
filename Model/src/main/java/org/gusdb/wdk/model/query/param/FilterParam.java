@@ -300,7 +300,7 @@ public class FilterParam extends FlatVocabParam {
     // run the composed sql, and get the metadata back
     Map<String, List<String>> metadata = new LinkedHashMap<>();
     ResultSet resultSet = null;
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
+    DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     try {
       PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, sql);
       ps.setFetchSize(FETCH_SIZE);

@@ -240,7 +240,7 @@ public abstract class AttributeField extends Field implements Cloneable {
     // KLUGE!!!  Override getPropertyLists().  If wdkModel is null, then this
     //   field is contained in a TableField, which does not call resolveReferences
     //   on its attributes.  Return an empty map in this case.
-    if (wdkModel == null) {
+    if (_wdkModel == null) {
       return Collections.emptyMap();
     }
     return super.getPropertyLists();

@@ -111,7 +111,7 @@ public class AnswerFilter extends WdkModelBase {
    */
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    if (resolved)
+    if (_resolved)
       return;
     // resolve the reference to the filter query
     SqlQuery query = (SqlQuery) wdkModel.resolveReference(queryRef);
@@ -143,7 +143,7 @@ public class AnswerFilter extends WdkModelBase {
     } else { // if no instance is defined, will create instances from the param.
       
     }
-    resolved = true;
+    _resolved = true;
   }
   
   /** TODO: this was started as a refactor; finish or delete

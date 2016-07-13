@@ -107,7 +107,7 @@ public class OntologyFactoryImpl extends WdkModelBase implements OntologyFactory
    */
   @Override
   public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
-    super.resolveReferences(wdkModel);
+    super.resolveReferences(_wdkModel);
     try {
       plugin = getPlugin();
     } catch (Exception ex) {

@@ -250,10 +250,10 @@ public class AnswerFilterInstance extends WdkModelBase {
    */
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    if (resolved)
+    if (_resolved)
       return;
 
-    this.wdkModel = wdkModel;
+    this._wdkModel = wdkModel;
 
     // make sure the params provides match with those in the filter query
     Map<String, Param> params = filterQuery.getParamMap();
@@ -281,7 +281,7 @@ public class AnswerFilterInstance extends WdkModelBase {
       // param.validate(user, paramValue);
     }
 
-    resolved = true;
+    _resolved = true;
   }
 
   public ResultList getResults(AnswerValue answerValue) throws WdkModelException, WdkUserException {
@@ -290,7 +290,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     String sql = idInstance.getSql();
     int assignedWeight = idInstance.getAssignedWeight();
     sql = applyFilter(answerValue.getUser(), sql, assignedWeight);
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
+    DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     try {
       ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
           idInstance.getQuery().getFullName() + "__" + name + "-filtered");

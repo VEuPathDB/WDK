@@ -135,7 +135,7 @@ public class SearchCategory extends WdkModelBase {
       if (questionRef.isUsedBy(usedBy, strict)) {
         String questionName = questionRef.getQuestionFullName();
         try {
-          Question question = (Question) wdkModel.resolveReference(questionName);
+          Question question = (Question) _wdkModel.resolveReference(questionName);
           questions.add(question);
         } 
         catch (WdkModelException e ){
@@ -222,7 +222,7 @@ public class SearchCategory extends WdkModelBase {
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    this.wdkModel = wdkModel;
+    this._wdkModel = wdkModel;
     // get try resolving the question
     List<String> toRemove = new ArrayList<>();
     for (String key : questionRefMap.keySet()) {
@@ -322,6 +322,6 @@ public class SearchCategory extends WdkModelBase {
 
   // temporary method for EuPathCategoriesFactory
   public void setWdkModel(WdkModel model) {
-    this.wdkModel = model;
+    this._wdkModel = model;
   }
 }
