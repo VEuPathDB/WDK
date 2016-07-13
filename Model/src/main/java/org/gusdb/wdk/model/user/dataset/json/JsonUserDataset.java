@@ -169,18 +169,6 @@ public class JsonUserDataset implements UserDataset {
   }
 
   @Override
-  public Boolean getIsCompatible() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public String getIncompatibleReason() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public Integer getSize() {
     return size;
   }
