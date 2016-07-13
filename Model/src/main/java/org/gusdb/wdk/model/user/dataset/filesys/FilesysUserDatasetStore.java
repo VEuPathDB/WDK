@@ -4,9 +4,11 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
+import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.json.JSONObject;
 
 public class FilesysUserDatasetStore implements org.gusdb.wdk.model.user.dataset.UserDatasetStore {
@@ -14,7 +16,7 @@ public class FilesysUserDatasetStore implements org.gusdb.wdk.model.user.dataset
   private File userRootDir;
   
   @Override
-  public void initialize(Map<String, String> configuration) throws WdkModelException {
+  public void initialize(Map<String, String> configuration, Set<UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
     String pathName = configuration.get("rootPath");
     if (pathName == null) throw new WdkModelException("Required configuration 'rootPath' not found.");
     userRootDir = Paths.get(pathName).toFile();
