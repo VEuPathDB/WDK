@@ -15,7 +15,12 @@ public class UserDatasetType {
   }
   
   public String getName() { return name; }
+  
   public String getVersion() { return version; }
+  
+  public String toString() {
+    return "(type=" + name + ", version=" + version + ")";
+  }
 }
 
 

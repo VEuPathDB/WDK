@@ -30,8 +30,58 @@ public interface UserDatasetStore {
   Map<Integer, UserDataset>getUserDatasets(Integer userId) throws WdkModelException;
   
   /**
+   * Get a user dataset.
+   * @param userId
+   * @param datasetId
+   * @return
+   * @throws WdkModelException
+   */
+  UserDataset getUserDataset(Integer userId, Integer datasetId) throws WdkModelException;
+  
+  /**
+   * Update user supplied meta data.  Client provides JSON to describe the new
+   * meta info.  Implementors must ensure this update is atomic.
+   * @param userId
+   * @param datasetId
+   * @param metaJson
+   */
+  void updateMetaFromJson(Integer userId, Integer datasetId, JSONObject metaJson) throws WdkModelException;
+  
+  /**
+   * Share one or more datasets from a host user to one or more recipient users.
+   * @param hostUserId
+   * @param datasetsIds
+   * @param recipientUserIds
+   */
+  void shareUserDatasets(Integer ownerUserId, Set<Integer>datasetIds, Set<Integer>recipientUserIds) throws WdkModelException;
+
+  
+  /**
+   * Delete the specified userDataset from the store.  Must unshare the dataset from 
+   * other datasets that see it as an external dataset.
+   * Implementors should ensure atomicity.
+   * @param userDataset
+   */
+  void deleteUserDataset(Integer userId, Integer datasetId) throws WdkModelException;
+  
+  /**
+   * Delete the specified external dataset.  Must unshare the dataset from 
+   * @param userId
+   * @param externalUserId
+   * @param externalDatasetId
+   */
+  void deleteExternalUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException;
+  
+  /**
+   * Check if a dataset is compatible with this application, based on its data dependencies.
+   * @param userDataset
+   * @return
+   */
+  UserDatasetCompatibility getCompatibility(UserDataset userDataset) throws WdkModelException;
+  
+  /**
    * For a particular user, the last modification time of any of their datasets.
-   * Useful for quick cache checks.
+   * Useful for quick cache checks.  We use Date as a platform neutral representation.
    * @param userId
    * @return
    */
@@ -44,12 +94,4 @@ public interface UserDatasetStore {
    */
   Integer getQuota(Integer userId) throws WdkModelException;
   
-  /**
-   * User can update the meta info a dataset the own.
-   * Client applications provide JSON to specify an update to meta info.  
-   * The implementor must use that to construct a UserDatasetMeta object.
-   * @param metaJson
-   * @return
-   */
-  void updateMetaFromJson(Integer userId, Integer datasetId, JSONObject metaJson);
 }

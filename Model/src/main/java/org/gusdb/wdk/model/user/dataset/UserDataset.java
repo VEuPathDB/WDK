@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.json.JSONObject;
 
 public interface UserDataset {
 
@@ -25,6 +26,15 @@ public interface UserDataset {
    * @return
    */
   UserDatasetMeta getMeta() throws WdkModelException;
+  
+  /**
+   * User can update the meta info a dataset the own.
+   * Client applications provide JSON to specify an update to meta info.  
+   * The implementor must use that to construct a UserDatasetMeta object.
+   * @param metaJson
+   * @return
+   */
+  void updateMetaFromJson(JSONObject metaJson) throws WdkModelException;
     
   /**
    * Get the datatype of this dataset.  
