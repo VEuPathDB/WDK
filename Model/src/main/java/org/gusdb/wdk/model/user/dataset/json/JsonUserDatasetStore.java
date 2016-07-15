@@ -53,8 +53,12 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   protected Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap;
 
   @Override
-  public abstract void initialize(Map<String, String> configuration, Set<UserDatasetTypeHandler> typeHandlers)
-      throws WdkModelException;
+  public void initialize(Map<String, String> configuration, Set<UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
+    initialize(configuration);
+    for (UserDatasetTypeHandler handler : typeHandlers) typeHandlersMap.put(handler.getUserDatasetType(), handler);
+  }
+  
+  protected abstract void initialize(Map<String, String> configuration) throws WdkModelException;
 
   @Override
   public abstract Map<Integer, UserDataset> getUserDatasets(Integer userId) throws WdkModelException;
