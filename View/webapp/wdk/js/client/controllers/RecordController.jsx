@@ -7,7 +7,8 @@ import {
   updateNavigationQuery,
   updateAllFieldVisibility,
   updateNavigationSubcategoryVisibility,
-  updateNavigationVisibility
+  updateNavigationVisibility,
+  updateActiveSection
 } from '../actioncreators/RecordViewActionCreators';
 import {
   updateBasketStatus,
@@ -30,7 +31,8 @@ class RecordController extends WdkViewController {
       updateNavigationSubcategoryVisibility,
       updateNavigationVisibility,
       updateBasketStatus,
-      updateFavoritesStatus
+      updateFavoritesStatus,
+      updateActiveSection
     };
   }
 
