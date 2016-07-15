@@ -10,6 +10,7 @@ export let actionTypes = {
   ACTIVE_RECORD_RECEIVED: 'record/active-record-received',
   ACTIVE_RECORD_UPDATED: 'record/active-record-updated',
   ACTIVE_RECORD_LOADING: 'record/active-record-loading',
+  ACTIVE_SECTION_CHANGED: 'record/active-section-changed',
   ERROR_RECEIVED: 'record/error-received',
   SECTION_VISIBILITY_CHANGED: 'record/section-visibility-changed',
   ALL_FIELD_VISIBILITY_CHANGED: 'record/all-field-visibility-changed',
@@ -82,6 +83,19 @@ export function updateSectionVisibility(sectionName, isVisible) {
   };
 }
 
+/**
+ * Set the active section (the section at the top of the viewport)
+ *
+ * @param {string} name The section identifier
+ * @param {number} offset? The section's viewport offset
+ */
+export function updateActiveSection(name) {
+  return {
+    type: actionTypes.ACTIVE_SECTION_CHANGED,
+    payload: { name }
+  };
+}
+
 /** Change the visibility for all record fields (attributes and tables) */
 export function updateAllFieldVisibility(isVisible) {
   return {
@@ -113,7 +127,6 @@ export function updateNavigationSubcategoryVisibility(isVisible) {
     payload: { isVisible }
   }
 }
-
 
 // helpers
 // -------

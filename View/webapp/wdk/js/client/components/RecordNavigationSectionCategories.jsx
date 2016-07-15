@@ -36,14 +36,15 @@ class RecordNavigationSectionCategories extends PureComponent {
   setActiveCategory() {
     let categories = this.props.showChildren
       ? t.preorderSeq({ children: this.props.categories })
-      : this.props.categories;
+        .filter(node => node.children.length > 0)
+      : i.seq(this.props.categories);
 
-    let activeCategory = i.seq(categories).findLast(node => {
+    let activeCategory = categories.findLast(node => {
       let id = getId(node);
       let domNode = document.getElementById(id);
       if (domNode == null) return;
       let rect = domNode.getBoundingClientRect();
-      return rect.top < 12 && rect.bottom > -12;
+      return rect.top <= 70;
     });
 
     this.setState({ activeCategory });

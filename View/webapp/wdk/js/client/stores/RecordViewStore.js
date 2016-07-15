@@ -85,6 +85,11 @@ export default class RecordViewStore extends WdkStore {
         return Object.assign({}, state, { collapsedSections });
       }
 
+      case actionTypes.ACTIVE_SECTION_CHANGED:
+        return Object.assign({}, state, {
+          activeSection: action.payload.name
+        });
+
       /**
        * Update visibility of all record fields (tables and attributes).
        * Category section collapsed state will be preserved.
