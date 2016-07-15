@@ -380,6 +380,7 @@ sub webapp_domain_map {
       'eupathdb'  => 'eupathdb.org',
       'fungidb'   => 'fungidb.org',
       'giardiadb' => 'giardiadb.org',
+      'mbio'      => 'microbiomedb.org',
       'micro'     => 'microsporidiadb.org',
       'piro'      => 'piroplasmadb.org',
       'plasmo'    => 'plasmodb.org',
