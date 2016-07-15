@@ -28,7 +28,6 @@ import org.json.JSONObject;
  */
 public class JsonUserDataset implements UserDataset {
 
-  private static final String META = "meta";
   private static final String TYPE = "type";
   private static final String OWNER = "owner";
   private static final String SHARES  = "shares";
@@ -49,38 +48,39 @@ public class JsonUserDataset implements UserDataset {
   private Map<Integer, JsonUserDatasetShare> sharesMap = new HashMap<Integer, JsonUserDatasetShare>();
   private Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
   private Set<JsonUserDatasetDependency> dependencies;
-  private JSONObject jsonObject;
+  private JSONObject datasetJsonObject;
+  private JSONObject metaJsonObject;
   
   /**
    * Construct from jsonObject, eg, when info is provided from larger json file
-   * @param jsonObject
+   * @param datasetJsonObject
    * @throws WdkModelException
    */
-  public JsonUserDataset(Integer userDatasetId, JSONObject jsonObject, Map<String, UserDatasetFile> dataFiles) throws WdkModelException {
+  public JsonUserDataset(Integer userDatasetId, JSONObject datasetJsonObject, JSONObject metaJsonObject, Map<String, UserDatasetFile> dataFiles) throws WdkModelException {
     this.userDatasetId = userDatasetId;
-    this.jsonObject = jsonObject;
-    unpackJsonObject(jsonObject);
+    this.datasetJsonObject = datasetJsonObject;
+    unpackJson(datasetJsonObject, metaJsonObject);
     this.dataFiles = dataFiles;
   }
   
   // TODO: consider active validation of the JSONObject
-  private void unpackJsonObject(JSONObject jsonObject) throws WdkModelException {
+  private void unpackJson(JSONObject datasetJsonObj, JSONObject metaJsonObj) throws WdkModelException {
     try {
-      this.meta = new JsonUserDatasetMeta(jsonObject.getJSONObject(META));
-      this.type = JsonUserDatasetTypeFactory.getUserDatasetType(jsonObject.getJSONObject(TYPE));
-      this.ownerId = jsonObject.getInt(OWNER);
-      this.size = jsonObject.getInt(SIZE);
-      this.created = new SimpleDateFormat().parse(jsonObject.getString(CREATED));
-      this.modified = new SimpleDateFormat().parse(jsonObject.getString(MODIFIED));
-      this.uploaded = new SimpleDateFormat().parse(jsonObject.getString(UPLOADED));
+      this.meta = new JsonUserDatasetMeta(metaJsonObj);
+      this.type = JsonUserDatasetTypeFactory.getUserDatasetType(datasetJsonObj.getJSONObject(TYPE));
+      this.ownerId = datasetJsonObj.getInt(OWNER);
+      this.size = datasetJsonObj.getInt(SIZE);
+      this.created = new SimpleDateFormat().parse(datasetJsonObj.getString(CREATED));
+      this.modified = new SimpleDateFormat().parse(datasetJsonObj.getString(MODIFIED));
+      this.uploaded = new SimpleDateFormat().parse(datasetJsonObj.getString(UPLOADED));
       
-      JSONArray dependenciesJson = jsonObject.getJSONArray(DEPENDENCIES);
+      JSONArray dependenciesJson = datasetJsonObj.getJSONArray(DEPENDENCIES);
       for (int i=0; i<dependenciesJson.length(); i++) 
         dependencies.add(new JsonUserDatasetDependency(dependenciesJson.getJSONObject(i)));
       
       // shares is optional on input.  create an empty one if absent.
-      if (!jsonObject.has(SHARES)) jsonObject.put(SHARES, new JSONArray());
-      JSONArray sharesJson = jsonObject.getJSONArray(SHARES);
+      if (!datasetJsonObj.has(SHARES)) datasetJsonObj.put(SHARES, new JSONArray());
+      JSONArray sharesJson = datasetJsonObj.getJSONArray(SHARES);
       for (int i=0; i<sharesJson.length(); i++) {
         JsonUserDatasetShare s = new JsonUserDatasetShare(sharesJson.getJSONObject(i));
         sharesMap.put(s.getUserId(), s);   
@@ -104,6 +104,11 @@ public class JsonUserDataset implements UserDataset {
   @Override
   public UserDatasetMeta getMeta() {
     return meta;
+  }
+  
+  @Override
+  public void updateMetaFromJson(JSONObject metaJson) throws WdkModelException {
+    meta = new JsonUserDatasetMeta(metaJson);
   }
 
   @Override
@@ -190,15 +195,25 @@ public class JsonUserDataset implements UserDataset {
     this.meta = meta;
   }
   
-  public JSONObject getJsonObject() {
+  /**
+   * Used for serializing to dataset store
+   * @return
+   */
+  public JSONObject getDatasetJsonObject() {
     
     // make sure the mutable stuff is up-to-date
     JSONArray sharesJson = new JSONArray();
     for (JsonUserDatasetShare share : sharesMap.values()) sharesJson.put(share.getJsonObject());
-    jsonObject.put(SHARES, sharesJson);
+    datasetJsonObject.put(SHARES, sharesJson);
     
-    jsonObject.put(META, meta.getJsonObject());
-    
-    return jsonObject;
+    return datasetJsonObject;
+  }
+  
+  /**
+   * used for serializing to dataset store
+   * @return
+   */
+  public JSONObject getMetaJsonObject() {
+    return metaJsonObject;
   }
 }

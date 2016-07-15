@@ -1,8 +1,11 @@
 package org.gusdb.wdk.model.user.dataset.filesys;
 
-import java.io.OutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 
 public class FilesysUserDatasetFile implements UserDatasetFile {
@@ -14,21 +17,26 @@ public class FilesysUserDatasetFile implements UserDatasetFile {
   }
 
   @Override
-  public OutputStream getFileContents() {
-    // TODO Auto-generated method stub
-    return null;
+  public InputStream getFileContents() throws WdkModelException {
+    try {
+      return Files.newInputStream(filePath);
+    } catch (IOException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   @Override
-  public Integer getFileSize() {
-    // TODO Auto-generated method stub
-    return null;
+  public Long getFileSize() throws WdkModelException {
+    try {
+      return Files.size(filePath);
+    } catch (IOException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   @Override
   public String getFileName() {
-    // TODO Auto-generated method stub
-    return null;
+    return filePath.getFileName().toString();
   }
 
 }

@@ -5,16 +5,23 @@ package org.gusdb.wdk.model.user.dataset;
  * @author steve
  *
  */
-public interface UserDatasetCompatibility {
+public class UserDatasetCompatibility {
+  private boolean isCompatible;
+  private String notCompatibleReason;
+  
+  public UserDatasetCompatibility(boolean isCompatible, String notCompatibleReason) {
+    this.isCompatible = isCompatible;
+    this.notCompatibleReason = notCompatibleReason;
+  }
   /**
    * If this dataset is compatible
    * @return
    */
-  boolean isCompatbile();
+  boolean isCompatible() { return isCompatible; }
   
   /**
    * If not compatible, the reason why not
    * @return
    */
-  String notCompatibleReason();
+  String notCompatibleReason() { return notCompatibleReason; }
 }
