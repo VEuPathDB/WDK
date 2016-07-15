@@ -14,12 +14,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
-import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDataset;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,8 +32,7 @@ public class FilesysUserDatasetStore extends org.gusdb.wdk.model.user.dataset.js
   private Path usersRootDir;
 
   @Override
-  public void initialize(Map<String, String> configuration, Set<UserDatasetTypeHandler> typeHandlers)
-      throws WdkModelException {
+  protected void initialize(Map<String, String> configuration) throws WdkModelException {
     String pathName = configuration.get("rootPath");
     if (pathName == null)
       throw new WdkModelException("Required configuration 'rootPath' not found.");
@@ -45,8 +41,6 @@ public class FilesysUserDatasetStore extends org.gusdb.wdk.model.user.dataset.js
     if (Files.isDirectory(usersRootDir))
       throw new WdkModelException(
           "Provided property 'rootPath' has value '" + pathName + "' which is not an existing directory");
-    
-    for (UserDatasetTypeHandler handler : typeHandlers) typeHandlersMap.put(handler.getUserDatasetType(), handler);
   }
 
   @Override
