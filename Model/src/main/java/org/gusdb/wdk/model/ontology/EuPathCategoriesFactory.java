@@ -34,7 +34,6 @@ import org.apache.log4j.Logger;
  */
 public class EuPathCategoriesFactory {
   
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(EuPathCategoriesFactory.class);
 
   // maps to collect the categories we make
@@ -110,6 +109,7 @@ public class EuPathCategoriesFactory {
     String[] scopes1 = { MENU, WEBSERVICE };
     for (String[] recordClassInfo : otherRecordClassInfo) {
       TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes1);
+      if (prunedOntologyTree == null) continue;
       List<Map<String, SearchCategory>> mapList =  new ArrayList<Map<String, SearchCategory>>();
       mapList.add(webserviceCategories);
       mapList.add(websiteCategories);
@@ -142,7 +142,7 @@ public class EuPathCategoriesFactory {
   }
 
   private TreeNode<OntologyNode> findPrunedOntology(Ontology ontology, String recordClassName, String scopes[]) {
-    Predicate<OntologyNode> predicate = new IsSearchPredicate(recordClassName, scopes);
+    Predicate<OntologyNode> predicate = new IsSearchPredicate(recordClassName, scopes, model);
     return Ontology.getFilteredOntology(ontology, predicate, false) ;
   }
   
@@ -226,21 +226,29 @@ public class EuPathCategoriesFactory {
    
   private class IsSearchPredicate implements Predicate<OntologyNode> {
 
-    String scopes[];
-    String recordClass;
+    private String scopes[];
+    private String recordClass;
+    private WdkModel model;
 
-    IsSearchPredicate(String recordClass, String scopes[]) {
+    IsSearchPredicate(String recordClass, String scopes[], WdkModel model) {
       this.recordClass = recordClass;
       this.scopes = scopes;
+      this.model = model;
     }
 
     @Override
       public boolean test(OntologyNode node) {
         boolean hasScope = false;
         for (String scope : scopes) if (node.containsKey("scope") && node.get("scope").contains(scope)) hasScope = true;
+        try {
         return node.containsKey("targetType") && node.get("targetType").contains("search")
-	  && node.containsKey("recordClassName") && node.get("recordClassName").contains(recordClass)
-	  && hasScope;
+            && node.containsKey("recordClassName") && node.get("recordClassName").contains(recordClass)
+            && model.getQuestion(node.get("name").get(0)) != null && hasScope;
+        } catch (WdkModelException e) {
+          LOG.debug("Error attempting to resolve ontology node with model entity.");
+          LOG.debug(e.getStackTrace());
+          return false;
+        }
       }
   }
 
