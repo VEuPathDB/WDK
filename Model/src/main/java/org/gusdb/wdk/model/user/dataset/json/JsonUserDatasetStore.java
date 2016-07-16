@@ -1,5 +1,9 @@
 package org.gusdb.wdk.model.user.dataset.json;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Date;
@@ -100,13 +104,16 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
   
   /**
-   * Given a user ID, return a Path to that user's datasets dir.
-   * @param userId
-   * @param createPathIfAbsent If the path doesn't exist make it.  If this is false, then err if absent
-   * @return
+   * Put all data files found in the provided directory into the map (from name to file)
+   * @param dataFilesDir
+   * @param dataFilesMap
    * @throws WdkModelException
    */
-  protected abstract Path getUserDatasetsDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException;
+  protected void putDataFilesIntoMap(Path dataFilesDir, Map<String, UserDatasetFile> dataFilesMap) throws WdkModelException {
+    putFilesIntoMap(dataFilesDir, dataFilesMap);
+  }
+  
+  protected abstract void putFilesIntoMap(Path dir, Map<String, UserDatasetFile> filesMap) throws WdkModelException;
 
   /**
    * Construct a user dataset object, given its location in the store.
@@ -172,14 +179,6 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    * @throws WdkModelException
    */
   protected abstract boolean isDirectory(Path dir) throws WdkModelException;
-
-  /**
-   * Put all data files found in the provided directory into the map (from name to file)
-   * @param dataFilesDir
-   * @param dataFilesMap
-   * @throws WdkModelException
-   */
-  protected abstract void putDataFilesIntoMap(Path dataFilesDir, Map<String, UserDatasetFile> dataFilesMap) throws WdkModelException;
 
   /**
    * Check if a dataset is compatible with this application, based on its type and data dependencies.
@@ -252,8 +251,19 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     writeExternalDatasetLink(getUserDatasetsDir(recipientUserId, true).resolve(EXTERNAL_DATASETS_DIR), ownerUserId, datasetId);
   }
   
-  protected abstract void writeExternalDatasetLink(Path recipientExternalDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException;
+  protected void writeExternalDatasetLink(Path recipientExternalDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
+    if (!isDirectory(recipientExternalDatasetsDir))
+      createDirectory(recipientExternalDatasetsDir);
+    Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(
+        getExternalDatasetFileName(ownerUserId, datasetId));
+    writeFile(externalDatasetFileName, new String(""));
 
+  }
+ 
+  protected abstract void createDirectory(Path dir) throws WdkModelException;
+  
+  protected abstract void writeFile(Path file, String contents) throws WdkModelException;
+  
   /**
    * Delete a dataset.  But, don't delete externalUserDataset references to it.  The UI
    * will let the recipient user of them know they are dangling.
@@ -286,8 +296,18 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    * @param datasetId
    * @throws WdkModelException
    */
-  public abstract void deleteExternalUserDataset(Path recipientExternalDatasetsDir, Path recipientRemovedDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException;
- 
+  public void deleteExternalUserDataset(Path recipientExternalDatasetsDir, Path recipientRemovedDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
+    if (isDirectory(recipientRemovedDatasetsDir))
+      createDirectory(recipientRemovedDatasetsDir);
+    Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(
+        getExternalDatasetFileName(ownerUserId, datasetId));
+    Path moveToFileName = recipientRemovedDatasetsDir.resolve(
+        getExternalDatasetFileName(ownerUserId, datasetId));
+    moveFileAtomic(externalDatasetFileName, moveToFileName);
+  }
+  
+  protected abstract void moveFileAtomic(Path from, Path to) throws WdkModelException;
+
   @Override
   public Date getModificationTime(Integer userId) throws WdkModelException {
     return getModificationTime(getUserDatasetsDir(userId, false));
@@ -303,18 +323,13 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
 
   protected Path getUserDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException {
     Path userDir = usersRootDir.resolve(userId.toString());
-    return getUserDir(userDir, createPathIfAbsent);
+    if (!isDirectory(userDir)) {
+      if (createPathIfAbsent) createDirectory(userDir);
+      else throw new WdkModelException("Can't find user directory " + userDir);
+    }
+    return userDir;
   }
   
-  /**
-   * Get an existing user dir.  Depending on the flag, if it doesn't exist, create it or throw an error
-   * @param userDir
-   * @param createPathIfAbsent
-   * @return
-   * @throws WdkModelException
-   */
-  protected abstract Path getUserDir(Path userDir, boolean createPathIfAbsent) throws WdkModelException;
-
   @Override
   public Integer getQuota(Integer userId) throws WdkModelException {
     Path quotaFile;
@@ -325,20 +340,44 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return getQuota(quotaFile);
   }
   
+  protected Integer getQuota(Path quotaFile) throws WdkModelException {
+    try (BufferedReader reader = Files.newBufferedReader(quotaFile, Charset.defaultCharset())) {
+      String line = reader.readLine();
+      if (line == null)
+        throw new WdkModelException("Empty quota file " + quotaFile);
+      return new Integer(line.trim());
+    }
+    catch (IOException x) {
+      throw new WdkModelException(x);
+    }
+  }
+  
+  protected abstract String readSingleLineFile(Path file) throws WdkModelException;
+  
   /**
    * return true if the file exists
    * @param file
    * @return
    */
   protected abstract boolean fileExists(Path file);
-  
+    
   /**
-   * read the provided quota file, and return the quota as an integer
-   * @param quotaFile
+   * Given a user ID, return a Path to that user's datasets dir.
+   * @param userId
+   * @param createPathIfAbsent If the path doesn't exist make it.  If this is false, then err if absent
    * @return
    * @throws WdkModelException
    */
-  protected abstract Integer getQuota(Path quotaFile) throws WdkModelException;
-  
+  protected Path getUserDatasetsDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException {
+    Path userDatasetsDir = getUserDir(userId, createPathIfAbsent).resolve("datasets");
+
+    if (!isDirectory(userDatasetsDir))
+      if (createPathIfAbsent)
+        createDirectory(userDatasetsDir);
+      else
+        throw new WdkModelException("Can't find user datasets directory " + userDatasetsDir);
+
+    return userDatasetsDir;
+  }
 
 }
