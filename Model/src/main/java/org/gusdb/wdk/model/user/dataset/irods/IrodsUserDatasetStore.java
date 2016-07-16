@@ -82,12 +82,6 @@ public class IrodsUserDatasetStore extends JsonUserDatasetStore {
   }
 
   @Override
-  protected Path getUserDir(Path userDir, boolean createPathIfAbsent) throws WdkModelException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   protected boolean fileExists(Path file) {
     // TODO Auto-generated method stub
     return false;
@@ -95,6 +89,36 @@ public class IrodsUserDatasetStore extends JsonUserDatasetStore {
 
   @Override
   protected Integer getQuota(Path quotaFile) throws WdkModelException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  protected void putFilesIntoMap(Path dir, Map<String, UserDatasetFile> filesMap) throws WdkModelException {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  protected void createDirectory(Path dir) throws WdkModelException {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  protected void writeFile(Path file, String contents) throws WdkModelException {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  protected void moveFileAtomic(Path from, Path to) throws WdkModelException {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  protected String readSingleLineFile(Path file) throws WdkModelException {
     // TODO Auto-generated method stub
     return null;
   }
