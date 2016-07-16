@@ -1,7 +1,9 @@
 package org.gusdb.wdk.model.user.dataset.json;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -9,9 +11,11 @@ import java.util.Set;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetCompatibility;
+import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -52,16 +56,34 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   protected static final String REMOVED_EXTERNAL_DATASETS_DIR = "removedExternalDatasets";
   protected Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap;
 
+  private Path usersRootDir;
+
   @Override
   public void initialize(Map<String, String> configuration, Set<UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
-    initialize(configuration);
+    usersRootDir = initialize(configuration);
     for (UserDatasetTypeHandler handler : typeHandlers) typeHandlersMap.put(handler.getUserDatasetType(), handler);
   }
   
-  protected abstract void initialize(Map<String, String> configuration) throws WdkModelException;
+  /**
+   * return usersRootDir
+   * @param configuration
+   * @return
+   * @throws WdkModelException
+   */
+  protected abstract Path initialize(Map<String, String> configuration) throws WdkModelException;
 
   @Override
-  public abstract Map<Integer, UserDataset> getUserDatasets(Integer userId) throws WdkModelException;
+  public Map<Integer, UserDataset> getUserDatasets(Integer userId) throws WdkModelException {
+
+    Path userDatasetsDir = getUserDatasetsDir(userId, false);
+
+    // iterate through datasets, creating a UD from each
+    Map<Integer, UserDataset> datasetsMap = new HashMap<Integer, UserDataset>();
+    fillDatasetsMap(userDatasetsDir, datasetsMap);
+    return Collections.unmodifiableMap(datasetsMap);
+  }
+  
+  protected abstract void fillDatasetsMap(Path userDatasetsDir, Map<Integer, UserDataset> datasetsMap) throws WdkModelException;
 
   @Override
   public JsonUserDataset getUserDataset(Integer userId, Integer datasetId) throws WdkModelException {
@@ -72,7 +94,61 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   
   protected abstract Path getUserDatasetsDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException;
 
-  protected abstract JsonUserDataset getUserDataset(Path datasetDir) throws WdkModelException;
+  /**
+   * Construct a user dataset object, given its location in the store.
+   * @param datasetDir
+   * @return
+   * @throws WdkModelException
+   */
+  protected JsonUserDataset getUserDataset(Path datasetDir) throws WdkModelException {
+
+    Integer datasetId;
+    try {
+      datasetId = Integer.parseInt(datasetDir.getFileName().toString());
+    }
+    catch (NumberFormatException e) {
+      throw new WdkModelException("Found file or directory '" + datasetDir.getFileName() +
+          "' in user datasets directory " + datasetDir.getParent() + ". It is not a dataset ID");
+    }
+    
+    JSONObject datasetJson = parseJsonFile(datasetDir.resolve("dataset.json")); ;
+    JSONObject metaJson = parseJsonFile(datasetDir.resolve("meta.json"));
+
+    Path datafilesDir = datasetDir.resolve("datafiles");
+    if (!isDirectory(datafilesDir))
+      throw new WdkModelException("Can't find datafiles directory " + datafilesDir);
+
+    Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
+
+    return new JsonUserDataset(datasetId, datasetJson, metaJson, dataFiles);
+  }
+  
+  /**
+   * Read a dataset.json file, and return the JSONObject that it parses to.
+   * @param jsonFile
+   * @return
+   * @throws WdkModelException
+   */
+  protected JSONObject parseJsonFile(Path jsonFile) throws WdkModelException {
+    
+    String contents = readFileContents(jsonFile);
+
+    JSONObject json;
+    try {
+      json = new JSONObject(contents);
+    }
+    catch (JSONException e) {
+      throw new WdkModelException("Could not parse " + jsonFile, e);
+    }
+    return json;
+  }
+  
+  protected abstract String readFileContents(Path file) throws WdkModelException;
+
+  
+  protected abstract boolean isDirectory(Path dir) throws WdkModelException;
+
+  protected abstract void putDataFilesIntoMap(Path dataFilesDir, Map<String, UserDatasetFile> dataFilesMap) throws WdkModelException;
 
   /**
    * Check if a dataset is compatible with this application, based on its type and data dependencies.
@@ -128,17 +204,66 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return ownerUserId + "." + datasetId;
   }
 
-  protected abstract void writeExternalDatasetLink(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException;
+  /**
+   * Write a file in a user's space, indicating that this user can see another user's dataset.
+   * @param ownerUserId
+   * @param datasetId
+   * @param recipientUserId
+   * @throws WdkModelException
+   */
+  protected void writeExternalDatasetLink(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
+    writeExternalDatasetLink(getUserDatasetsDir(recipientUserId, true).resolve(EXTERNAL_DATASETS_DIR), ownerUserId, datasetId);
+  }
+  
+  protected abstract void writeExternalDatasetLink(Path recipientExternalDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException;
+
+  /**
+   * Delete a dataset.  But, don't delete externalUserDataset references to it.  The UI
+   * will let the recipient user of them know they are dangling.
+   */
+  @Override
+  public void deleteUserDataset(Integer userId, Integer datasetId) throws WdkModelException {
+    deleteFileOrDirectory(getUserDatasetsDir(userId, false).resolve(datasetId.toString()));
+  }
+  
+  protected abstract void deleteFileOrDirectory(Path fileOrDir) throws WdkModelException;
 
   @Override
-  public abstract void deleteUserDataset(Integer userId, Integer datasetId) throws WdkModelException;
+  public void deleteExternalUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
+    Path recipientExternalDatasetsDir = getUserDatasetsDir(recipientUserId, true).resolve(EXTERNAL_DATASETS_DIR);
+    Path recipientRemovedDatasetsDir = getUserDatasetsDir(recipientUserId, true).resolve(REMOVED_EXTERNAL_DATASETS_DIR);
+    deleteExternalUserDataset(recipientExternalDatasetsDir, recipientRemovedDatasetsDir, ownerUserId, datasetId);
+  }
+  
+  public abstract void deleteExternalUserDataset(Path recipientExternalDatasetsDir, Path recipientRemovedDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException;
+ 
+  @Override
+  public Date getModificationTime(Integer userId) throws WdkModelException {
+    return getModificationTime(getUserDatasetsDir(userId, false));
+  }
+
+  protected abstract Date getModificationTime(Path fileOrDir) throws WdkModelException;
+
+  protected Path getUserDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException {
+    Path userDir = usersRootDir.resolve(userId.toString());
+    return getUserDir(userDir, createPathIfAbsent);
+  }
+  
+  protected abstract Path getUserDir(Path userDir, boolean createPathIfAbsent) throws WdkModelException;
 
   @Override
-  public abstract void deleteExternalUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException;
+  public Integer getQuota(Integer userId) throws WdkModelException {
+    Path quotaFile;
+    
+    Path defaultQuotaFile = usersRootDir.resolve("default_quota");
+    Path userQuotaFile = getUserDir(userId, false).resolve("quota");
+    quotaFile = fileExists(userQuotaFile)? userQuotaFile : defaultQuotaFile;
+    return getQuota(quotaFile);
+  }
+  
+  protected abstract boolean fileExists(Path file);
+  
+  protected abstract Integer getQuota(Path quotaFile) throws WdkModelException;
+  
 
-  @Override
-  public abstract Date getModificationTime(Integer userId) throws WdkModelException;
-
-  @Override
-  public abstract Integer getQuota(Integer userId) throws WdkModelException;
 }
