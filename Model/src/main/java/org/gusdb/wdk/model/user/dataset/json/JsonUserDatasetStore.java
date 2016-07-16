@@ -1,10 +1,7 @@
 package org.gusdb.wdk.model.user.dataset.json;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -61,21 +58,21 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   protected Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap;
 
   private Path usersRootDir;
-
+  
   @Override
   public void initialize(Map<String, String> configuration, Set<UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
-    usersRootDir = initialize(configuration);
+    String pathName = configuration.get("rootPath");
+    if (pathName == null)
+      throw new WdkModelException("Required configuration 'rootPath' not found.");
+    usersRootDir = Paths.get(pathName);
+
+    if (isDirectory(usersRootDir))
+      throw new WdkModelException(
+          "Provided property 'rootPath' has value '" + pathName + "' which is not an existing directory");
+    
     for (UserDatasetTypeHandler handler : typeHandlers) typeHandlersMap.put(handler.getUserDatasetType(), handler);
   }
   
-  /**
-   * Initialize using whatever properties are required for this implementation.  
-   * @param configuration
-   * @return A Path to the rootUsersDir
-   * @throws WdkModelException
-   */
-  protected abstract Path initialize(Map<String, String> configuration) throws WdkModelException;
-
   @Override
   public Map<Integer, UserDataset> getUserDatasets(Integer userId) throws WdkModelException {
 
@@ -341,15 +338,10 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
   
   protected Integer getQuota(Path quotaFile) throws WdkModelException {
-    try (BufferedReader reader = Files.newBufferedReader(quotaFile, Charset.defaultCharset())) {
-      String line = reader.readLine();
-      if (line == null)
-        throw new WdkModelException("Empty quota file " + quotaFile);
-      return new Integer(line.trim());
-    }
-    catch (IOException x) {
-      throw new WdkModelException(x);
-    }
+    String line = readSingleLineFile(quotaFile);
+    if (line == null)
+      throw new WdkModelException("Empty quota file " + quotaFile);
+    return new Integer(line.trim());
   }
   
   protected abstract String readSingleLineFile(Path file) throws WdkModelException;

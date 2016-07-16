@@ -7,7 +7,6 @@ import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Date;
@@ -23,20 +22,7 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
  */
 
 public class FilesysUserDatasetStore extends org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore {
-  
-  @Override
-  protected Path initialize(Map<String, String> configuration) throws WdkModelException {
-    String pathName = configuration.get("rootPath");
-    if (pathName == null)
-      throw new WdkModelException("Required configuration 'rootPath' not found.");
-    Path usersRootDir = Paths.get(pathName);
-
-    if (Files.isDirectory(usersRootDir))
-      throw new WdkModelException(
-          "Provided property 'rootPath' has value '" + pathName + "' which is not an existing directory");
-    return usersRootDir;
-  }
-  
+    
   @Override
   protected void fillDatasetsMap(Path userDatasetsDir, Map<Integer, UserDataset> datasetsMap) throws WdkModelException {
     try (DirectoryStream<Path> userDatasetsDirStream = Files.newDirectoryStream(userDatasetsDir)) {
