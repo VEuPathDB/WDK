@@ -12,12 +12,6 @@ import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore;
 public class IrodsUserDatasetStore extends JsonUserDatasetStore {
 
   @Override
-  protected Path initialize(Map<String, String> configuration) throws WdkModelException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   protected void fillDatasetsMap(Path userDatasetsDir, Map<Integer, UserDataset> datasetsMap)
       throws WdkModelException {
     // TODO Auto-generated method stub
