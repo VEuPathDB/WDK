@@ -10,16 +10,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
-import org.gusdb.wdk.model.user.dataset.json.JsonUserDataset;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * An implementation of JsonUserDatasetStore that uses the java nio Files operations
@@ -29,27 +24,22 @@ import org.json.JSONObject;
 
 public class FilesysUserDatasetStore extends org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore {
   
-  private Path usersRootDir;
-
   @Override
-  protected void initialize(Map<String, String> configuration) throws WdkModelException {
+  protected Path initialize(Map<String, String> configuration) throws WdkModelException {
     String pathName = configuration.get("rootPath");
     if (pathName == null)
       throw new WdkModelException("Required configuration 'rootPath' not found.");
-    usersRootDir = Paths.get(pathName);
+    Path usersRootDir = Paths.get(pathName);
 
     if (Files.isDirectory(usersRootDir))
       throw new WdkModelException(
           "Provided property 'rootPath' has value '" + pathName + "' which is not an existing directory");
+    return usersRootDir;
   }
+  
 
   @Override
-  public Map<Integer, UserDataset> getUserDatasets(Integer userId) throws WdkModelException {
-
-    Path userDatasetsDir = getUserDatasetsDir(userId, false);
-
-    // iterate through datasets, creating a UD from each
-    Map<Integer, UserDataset> datasetsMap = new HashMap<Integer, UserDataset>();
+  protected void fillDatasetsMap(Path userDatasetsDir, Map<Integer, UserDataset> datasetsMap) throws WdkModelException {
     try (DirectoryStream<Path> userDatasetsDirStream = Files.newDirectoryStream(userDatasetsDir)) {
       for (Path datasetDir : userDatasetsDirStream) {
         UserDataset dataset = getUserDataset(datasetDir);
@@ -59,33 +49,30 @@ public class FilesysUserDatasetStore extends org.gusdb.wdk.model.user.dataset.js
     catch (IOException | DirectoryIteratorException e) {
       throw new WdkModelException(e);
     }
-
-    return Collections.unmodifiableMap(datasetsMap);
+   
   }
   
-
-  @Override
-  public Date getModificationTime(Integer userId) throws WdkModelException {
+  protected Date getModificationTime(Path fileOrDir) throws WdkModelException {
     Date modTime = null;
     try {
-      modTime = new Date(Files.getLastModifiedTime(getUserDatasetsDir(userId, false)).toMillis());
+      modTime = new Date(Files.getLastModifiedTime(fileOrDir).toMillis());
     } catch (IOException e) {
       throw new WdkModelException(e);
     }
-    return modTime;
+    return modTime;  
   }
-
+  
   @Override
-  public Integer getQuota(Integer userId) throws WdkModelException {
-    Path quotaFile;
-    
-    Path defaultQuotaFile = usersRootDir.resolve("default_quota");
-    Path userQuotaFile = getUserDir(userId, false).resolve("quota");
-    quotaFile = Files.exists(userQuotaFile)? userQuotaFile : defaultQuotaFile;
-    
+  protected boolean fileExists(Path file) {
+    return Files.exists(file);
+  }
+  
+  @Override
+  protected Integer getQuota(Path quotaFile) throws WdkModelException {
     try (BufferedReader reader = Files.newBufferedReader(quotaFile, Charset.defaultCharset())) {
       String line = reader.readLine();
-      if (line == null) throw new WdkModelException("Empty quota file " + quotaFile);
+      if (line == null)
+        throw new WdkModelException("Empty quota file " + quotaFile);
       return new Integer(line.trim());
     }
     catch (IOException x) {
@@ -104,8 +91,8 @@ public class FilesysUserDatasetStore extends org.gusdb.wdk.model.user.dataset.js
     }
   }
   
-  private Path getUserDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException {
-    Path userDir = usersRootDir.resolve(userId.toString());
+  @Override
+  protected Path getUserDir(Path userDir, boolean createPathIfAbsent) throws WdkModelException {
     try {
       if (!Files.isDirectory(userDir))
         if (createPathIfAbsent) Files.createDirectory(userDir);
@@ -131,55 +118,29 @@ public class FilesysUserDatasetStore extends org.gusdb.wdk.model.user.dataset.js
     return userDatasetsDir;
   }
  
-  /**
-   * Construct a user dataset object, given its location in the store.
-   * @param datasetDir
-   * @return
-   * @throws WdkModelException
-   */
-  protected JsonUserDataset getUserDataset(Path datasetDir) throws WdkModelException {
-
-    Integer datasetId;
-    try {
-      datasetId = Integer.parseInt(datasetDir.getFileName().toString());
-    }
-    catch (NumberFormatException e) {
-      throw new WdkModelException("Found file or directory '" + datasetDir.getFileName() +
-          "' in user datasets directory " + datasetDir.getParent() + ". It is not a dataset ID");
-    }
-    
-    JSONObject datasetJson = parseJsonFile(datasetDir.resolve("dataset.json")); ;
-    JSONObject metaJson = parseJsonFile(datasetDir.resolve("meta.json"));
-
-    Path datafilesDir = datasetDir.resolve("datafiles");
-    if (!Files.isDirectory(datafilesDir))
-      throw new WdkModelException("Can't find datafiles directory " + datafilesDir);
-
-    Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
-
+  @Override
+  protected boolean isDirectory(Path dir) throws WdkModelException {
+    return Files.isDirectory(dir);
+  }
+  
+  @Override
+  protected void putDataFilesIntoMap(Path dataFilesDir, Map<String, UserDatasetFile> dataFilesMap) throws WdkModelException {
     // iterate through data files, creating a datafile obj for each
-    try (DirectoryStream<Path> datafileStream = Files.newDirectoryStream(datafilesDir)) {
+    try (DirectoryStream<Path> datafileStream = Files.newDirectoryStream(dataFilesDir)) {
       for (Path datafile : datafileStream) {
-        dataFiles.put(datafile.getFileName().toString(), new FilesysUserDatasetFile(datafile));
+        dataFilesMap.put(datafile.getFileName().toString(), new FilesysUserDatasetFile(datafile));
       }
     }
     catch (IOException | DirectoryIteratorException e) {
       throw new WdkModelException(e);
     }
-
-    return new JsonUserDataset(datasetId, datasetJson, metaJson, dataFiles);
   }
   
-  /**
-   * Read a dataset.json file, and return the JSONObject that it parses to.
-   * @param jsonFile
-   * @return
-   * @throws WdkModelException
-   */
-  private JSONObject parseJsonFile(Path jsonFile) throws WdkModelException {
-
+  @Override
+  protected String readFileContents(Path file) throws WdkModelException {
     StringBuilder jsonStringBldr = new StringBuilder();
-    try (BufferedReader reader = Files.newBufferedReader(jsonFile, Charset.defaultCharset())) {
+
+    try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
       String line = null;
       while ((line = reader.readLine()) != null)
         jsonStringBldr.append(line);
@@ -187,26 +148,11 @@ public class FilesysUserDatasetStore extends org.gusdb.wdk.model.user.dataset.js
     catch (IOException x) {
       throw new WdkModelException(x);
     }
-
-    JSONObject json;
-    try {
-      json = new JSONObject(jsonStringBldr);
-    }
-    catch (JSONException e) {
-      throw new WdkModelException("Could not parse " + jsonFile, e);
-    }
-    return json;
+    return jsonStringBldr.toString();
   }
   
-  /**
-   * Write a file in a user's space, indicating that this user can see another user's dataset.
-   * @param ownerUserId
-   * @param datasetId
-   * @param recipientUserId
-   * @throws WdkModelException
-   */
-  protected void writeExternalDatasetLink(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
-    Path recipientExternalDatasetsDir = getUserDatasetsDir(recipientUserId, true).resolve(EXTERNAL_DATASETS_DIR);
+  @Override
+  protected void writeExternalDatasetLink(Path recipientExternalDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
     try {
       if (!Files.isDirectory(recipientExternalDatasetsDir)) Files.createDirectory(recipientExternalDatasetsDir);
       Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(getExternalDatasetFileName(ownerUserId, datasetId));
@@ -216,24 +162,19 @@ public class FilesysUserDatasetStore extends org.gusdb.wdk.model.user.dataset.js
     }
   }
  
-  /**
-   * Delete a dataset.  But, don't delete externalUserDataset references to it.  The UI
-   * will let the recipient user of them know they are dangling.
-   */
   @Override
-  public void deleteUserDataset(Integer userId, Integer datasetId) throws WdkModelException {
+  protected void deleteFileOrDirectory(Path fileOrDir) throws WdkModelException {
     try {
-      Files.delete(getUserDatasetsDir(userId, false).resolve(datasetId.toString()));
+      Files.delete(fileOrDir);
     }
     catch (IOException e) {
       throw new WdkModelException(e);
-    }
+    }    
   }
 
   @Override
-  public void deleteExternalUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
-    Path recipientExternalDatasetsDir = getUserDatasetsDir(recipientUserId, true).resolve(EXTERNAL_DATASETS_DIR);
-    Path recipientRemovedDatasetsDir = getUserDatasetsDir(recipientUserId, true).resolve(REMOVED_EXTERNAL_DATASETS_DIR);    try {
+  public void deleteExternalUserDataset(Path recipientExternalDatasetsDir, Path recipientRemovedDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
+    try {
       if (!Files.isDirectory(recipientRemovedDatasetsDir)) Files.createDirectory(recipientRemovedDatasetsDir);
       Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(getExternalDatasetFileName(ownerUserId, datasetId));
       Path moveToFileName = recipientRemovedDatasetsDir.resolve(getExternalDatasetFileName(ownerUserId, datasetId));
@@ -241,8 +182,6 @@ public class FilesysUserDatasetStore extends org.gusdb.wdk.model.user.dataset.js
     } catch (IOException e) {
       throw new WdkModelException(e);
     }
-
-    
   }
 
 } 
