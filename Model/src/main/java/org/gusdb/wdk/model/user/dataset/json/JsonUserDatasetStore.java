@@ -65,9 +65,9 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
   
   /**
-   * return usersRootDir
+   * Initialize using whatever properties are required for this implementation.  
    * @param configuration
-   * @return
+   * @return A Path to the rootUsersDir
    * @throws WdkModelException
    */
   protected abstract Path initialize(Map<String, String> configuration) throws WdkModelException;
@@ -83,6 +83,13 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return Collections.unmodifiableMap(datasetsMap);
   }
   
+  /**
+   * Using the provided user datasets dir, fill in the provided map with all datasets in that dir.
+   * The map is from dataset ID to dataset
+   * @param userDatasetsDir
+   * @param datasetsMap
+   * @throws WdkModelException
+   */
   protected abstract void fillDatasetsMap(Path userDatasetsDir, Map<Integer, UserDataset> datasetsMap) throws WdkModelException;
 
   @Override
@@ -92,6 +99,13 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return getUserDataset(datasetDir);
   }
   
+  /**
+   * Given a user ID, return a Path to that user's datasets dir.
+   * @param userId
+   * @param createPathIfAbsent If the path doesn't exist make it.  If this is false, then err if absent
+   * @return
+   * @throws WdkModelException
+   */
   protected abstract Path getUserDatasetsDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException;
 
   /**
@@ -143,11 +157,28 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return json;
   }
   
+  /**
+   * Read the contents of the provided file into a string
+   * @param file
+   * @return
+   * @throws WdkModelException
+   */
   protected abstract String readFileContents(Path file) throws WdkModelException;
 
-  
+  /**
+   * Return true if the provided path is a directory that exists
+   * @param dir
+   * @return
+   * @throws WdkModelException
+   */
   protected abstract boolean isDirectory(Path dir) throws WdkModelException;
 
+  /**
+   * Put all data files found in the provided directory into the map (from name to file)
+   * @param dataFilesDir
+   * @param dataFilesMap
+   * @throws WdkModelException
+   */
   protected abstract void putDataFilesIntoMap(Path dataFilesDir, Map<String, UserDatasetFile> dataFilesMap) throws WdkModelException;
 
   /**
@@ -176,6 +207,12 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     writeFileAtomic(datasetJsonFile, dataset.getDatasetJsonObject().toString());
   }
   
+  /**
+   * Atomically write the provided contents to the provided path
+   * @param file
+   * @param contents
+   * @throws WdkModelException
+   */
   protected abstract void writeFileAtomic(Path file, String contents) throws WdkModelException;
   
   @Override
@@ -226,6 +263,11 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     deleteFileOrDirectory(getUserDatasetsDir(userId, false).resolve(datasetId.toString()));
   }
   
+  /**
+   * Delete the provided file or dir
+   * @param fileOrDir
+   * @throws WdkModelException
+   */
   protected abstract void deleteFileOrDirectory(Path fileOrDir) throws WdkModelException;
 
   @Override
@@ -235,6 +277,15 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     deleteExternalUserDataset(recipientExternalDatasetsDir, recipientRemovedDatasetsDir, ownerUserId, datasetId);
   }
   
+  /**
+   * Delete a link to an external dataset (specified by ownerUserId,datasetId).  Move the link from
+   * the external datasets dir to the removed external datasets dir
+   * @param recipientExternalDatasetsDir
+   * @param recipientRemovedDatasetsDir
+   * @param ownerUserId
+   * @param datasetId
+   * @throws WdkModelException
+   */
   public abstract void deleteExternalUserDataset(Path recipientExternalDatasetsDir, Path recipientRemovedDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException;
  
   @Override
@@ -242,6 +293,12 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return getModificationTime(getUserDatasetsDir(userId, false));
   }
 
+  /**
+   * get the last mod time of a file or dir
+   * @param fileOrDir
+   * @return
+   * @throws WdkModelException
+   */
   protected abstract Date getModificationTime(Path fileOrDir) throws WdkModelException;
 
   protected Path getUserDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException {
@@ -249,6 +306,13 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return getUserDir(userDir, createPathIfAbsent);
   }
   
+  /**
+   * Get an existing user dir.  Depending on the flag, if it doesn't exist, create it or throw an error
+   * @param userDir
+   * @param createPathIfAbsent
+   * @return
+   * @throws WdkModelException
+   */
   protected abstract Path getUserDir(Path userDir, boolean createPathIfAbsent) throws WdkModelException;
 
   @Override
@@ -261,8 +325,19 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return getQuota(quotaFile);
   }
   
+  /**
+   * return true if the file exists
+   * @param file
+   * @return
+   */
   protected abstract boolean fileExists(Path file);
   
+  /**
+   * read the provided quota file, and return the quota as an integer
+   * @param quotaFile
+   * @return
+   * @throws WdkModelException
+   */
   protected abstract Integer getQuota(Path quotaFile) throws WdkModelException;
   
 
