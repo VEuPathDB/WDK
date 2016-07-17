@@ -2,8 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import AnswerFilter from './AnswerFilter';
 import AnswerTable from './AnswerTable';
-import RecordList from './RecordList';
-import Main from './Main';
 import { wrappable } from '../utils/componentUtils';
 
 let $ = window.jQuery;
@@ -77,7 +75,6 @@ let Answer = React.createClass({
     let firstRec = pagination.offset + 1;
     let lastRec = Math.min(pagination.offset + pagination.numRecords,
                              meta.responseCount, records.length);
-    let Records = format === 'list' ? RecordList : AnswerTable;
 
     return (
       <div className="wdk-AnswerContainer">
@@ -88,7 +85,7 @@ let Answer = React.createClass({
           <p className="wdk-Answer-count">
             Showing {firstRec} - {lastRec} of {meta.totalCount} {displayNamePlural}
           </p>
-          <Records
+          <AnswerTable
             ref="records"
             height={this.state.height}
             width={this.state.width}

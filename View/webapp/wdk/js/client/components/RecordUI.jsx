@@ -4,8 +4,7 @@ import classnames from 'classnames';
 import {wrappable} from '../utils/componentUtils';
 import {postorderSeq} from '../utils/TreeUtils';
 import {getId} from '../utils/CategoryUtils';
-import Main from './Main';
-import Record from './Record';
+import RecordMainSection from './RecordMainSection';
 import RecordHeading from './RecordHeading';
 import RecordNavigationSection from './RecordNavigationSection';
 import Sticky from './Sticky';
@@ -90,7 +89,7 @@ class RecordUI extends Component {
     });
 
     return (
-      <Main className={classNames}>
+      <div className={classNames}>
         <RecordHeading
           record={this.props.record}
           recordClass={this.props.recordClass}
@@ -130,15 +129,15 @@ class RecordUI extends Component {
             <button type="button" title="Collapse all content" className="wdk-Link"
               onClick={this.props.updateAllFieldVisibility.bind(null, false)}>Collapse All</button>
           </div>
-          <Record
+          <RecordMainSection
             record={this.props.record}
             recordClass={this.props.recordClass}
-            categoryTree={this.props.categoryTree}
+            categories={this.props.categoryTree.children}
             collapsedSections={this.props.collapsedSections}
             onSectionToggle={this.props.toggleSection}
           />
         </div>
-      </Main>
+      </div>
     )
   }
 }
