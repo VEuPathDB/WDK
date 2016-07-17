@@ -1,23 +1,63 @@
 import React from 'react';
 import classnames from 'classnames';
 import {includes, memoize} from 'lodash';
-import RecordNavigationSectionCategories from './RecordNavigationSectionCategories';
-import RealTimeSearchBox from './RealTimeSearchBox';
-import { postorderSeq } from '../utils/TreeUtils';
+import { seq } from '../utils/IterableUtils';
+import { preorderSeq, postorderSeq } from '../utils/TreeUtils';
 import { wrappable, PureComponent } from '../utils/componentUtils';
 import { getPropertyValues, nodeHasProperty } from '../utils/OntologyUtils';
 import { getId, getDisplayName } from '../utils/CategoryUtils';
 import { parseSearchQueryString, areTermsInString } from '../utils/SearchUtils';
+import RecordNavigationItem from './RecordNavigationItem';
+import Tree from './Tree';
+import RealTimeSearchBox from './RealTimeSearchBox';
 
 /** Navigation panel for record page */
 class RecordNavigationSection extends PureComponent {
 
   constructor(props) {
     super(props);
-    this.handleSearchTermChange = term => {
-      this.props.onNavigationQueryChange(term);
-      this.props.onNavigationSubcategoryVisibilityChange(true);
-    };
+    this.handleSearchTermChange = this.handleSearchTermChange.bind(this);
+    this.setActiveCategory = this.setActiveCategory.bind(this);
+    this.state = { activeCategory: null };
+  }
+
+  componentDidMount() {
+    window.addEventListener('scroll', this.setActiveCategory);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.setActiveCategory);
+  }
+
+  componentDidUpdate(previousProps) {
+    if (this.props.collapsedSections !== previousProps.collapsedSections ||
+        this.props.showChildren !== previousProps.showChildren ) {
+      this.setActiveCategory();
+    }
+  }
+
+  // If showChildren is true, iterate postorder to get the first left-most child
+  // that is on-screen. Otherwise, we will only iterate top-level categories.
+  setActiveCategory() {
+    let categories = this.props.showChildren
+      ? preorderSeq(this.props.categoryTree)
+        .filter(node => node.children.length > 0)
+      : seq(this.props.categoryTree.children);
+
+    let activeCategory = categories.findLast(node => {
+      let id = getId(node);
+      let domNode = document.getElementById(id);
+      if (domNode == null) return;
+      let rect = domNode.getBoundingClientRect();
+      return rect.top <= 70;
+    });
+
+    this.setState({ activeCategory });
+  }
+
+  handleSearchTermChange(term) {
+    this.props.onNavigationQueryChange(term);
+    this.props.onNavigationSubcategoryVisibilityChange(true);
   }
 
   render() {
@@ -47,14 +87,16 @@ class RecordNavigationSection extends PureComponent {
           delayMs={100}
         />
         <div className="wdk-RecordNavigationCategories">
-          <RecordNavigationSectionCategories
-            record={this.props.record}
-            recordClass={this.props.recordClass}
-            categories={this.props.categoryTree.children}
-            onSectionToggle={this.props.onSectionToggle}
+          <Tree
+            tree={this.props.categoryTree.children}
+            id={c => getId(c)}
+            childNodes={c => c.children}
+            node={RecordNavigationItem}
             showChildren={navigationSubcategoriesExpanded}
+            onSectionToggle={this.props.onSectionToggle}
             isCollapsed={category => includes(collapsedSections, getId(category))}
             isVisible={category => areTermsInString(searchQueryTerms, categoryWordsMap.get(category.properties))}
+            activeCategory={this.state.activeCategory}
           />
         </div>
       </div>
