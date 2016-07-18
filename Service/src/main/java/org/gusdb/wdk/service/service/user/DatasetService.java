@@ -1,11 +1,10 @@
-package org.gusdb.wdk.service.service;
+package org.gusdb.wdk.service.service.user;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -22,14 +21,18 @@ import org.gusdb.wdk.model.dataset.AbstractDatasetParser;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.WdkDatasetException;
+import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Path("/user/{userId}/dataset")
-public class DatasetService extends WdkService {
+public class DatasetService extends UserService {
+
+  public DatasetService(@PathParam(USER_ID_PATH_PARAM) String uid) {
+    super(uid);
+  }
 
   /**
    * Input JSON should be:
@@ -43,14 +46,12 @@ public class DatasetService extends WdkService {
    * @return HTTP response for this request
    */
   @POST
+  @Path("dataset")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response addDatasetFromJson(@PathParam("userId") String userIdStr, String body) throws WdkModelException {
+  public Response addDatasetFromJson(String body) throws WdkModelException {
     try {
-      UserBundle userBundle = parseUserId(userIdStr);
-      if (!userBundle.isCurrentUser()) {
-        throw new ForbiddenException(WdkService.PERMISSION_DENIED);
-      }
+      UserBundle userBundle = getUserBundle(Access.PRIVATE);
       JSONObject input = new JSONObject(body);
       JSONArray jsonIds = input.getJSONArray("ids");
       if (jsonIds.length() == 0)
@@ -86,14 +87,14 @@ public class DatasetService extends WdkService {
   }
 
   @POST
+  @Path("dataset")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response addDatasetFromFile(
-      @PathParam("id") String userIdStr)
+  public Response addDatasetFromFile()
       //@FormParam("file") InputStream fileInputStream,
       //@FormParam("file") FormDataContentDisposition contentDispositionHeader)
   {
-
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
     return Response.ok("{ }").build();
 
   }
