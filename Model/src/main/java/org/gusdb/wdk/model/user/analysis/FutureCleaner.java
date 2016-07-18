@@ -42,8 +42,8 @@ public class FutureCleaner implements Callable<Boolean> {
   @Override
   public Boolean call() throws Exception {
     try {
-      LOG.info("Step Analysis Thread Monitor initialized and running.");
       MDCUtil.setNonRequestThreadVars("safc"); // safc = step analysis future cleaner
+      LOG.info("Step Analysis Thread Monitor initialized and running.");
       int waitedSecs = 0;
       boolean mostRecentAttemptSucceeded = true;
       while (true) {
