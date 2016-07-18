@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.service;
+package org.gusdb.wdk.service.service.user;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -8,16 +8,13 @@ import java.util.Map;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
@@ -28,97 +25,57 @@ import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.User.UserProfileProperty;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.gusdb.wdk.service.UserBundle;
+import org.gusdb.wdk.service.UserPreferenceValidator;
 import org.gusdb.wdk.service.annotation.PATCH;
-import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.ConflictException;
 import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.PasswordChangeRequest;
-import org.gusdb.wdk.service.request.user.UserPreferencesRequest;
 import org.gusdb.wdk.service.request.user.UserProfileRequest;
-import org.gusdb.wdk.session.OAuthUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+public class ProfileService extends UserService {
 
-@Path("/user")
-public class UserService extends WdkService {
-  
   private static final String LOGIN_COOKIE_NAME = "wdk_check_auth";
-  private static final int PREFERENCE_NAME_MAX_LENGTH = 200;
-  private static final int PREFERENCE_VALUE_MAX_LENGTH = 4000;
   private static final String NOT_LOGGED_IN = "The user is not logged in.";
-  private static final String USER_RESOURCE = "User ID ";
   private static final String DUPLICATE_EMAIL = "This email is already in use by another account.  Please choose another.";
   private static final String PROFILE_VALUES_TOO_LONG = "The following profile values exceed their maximum allowed lengths ";
   private static final String REQUIRED_VALUES = "The following items must be present and non-empty: ";
-  private static final String PROPERTIES_TOO_LONG = "The following property names and/or values exceed their maximum allowed lengths of ";
   private static final String COOKIE_ENCODING_PROBLEM = "Unable to encode login cookie value: ";
 
-  private enum Access { PUBLIC, PRIVATE; }
-
-  // ===== OAuth 2.0 + OpenID Connect Support =====
-  /**
-   * Create anti-forgery state token, add to session, and return.  This is
-   * requested by the client when the user tries to log in using an OAuth2
-   * server.  The value generated will be used to check the state token passed
-   * to the oauth processing action.  They must match for the login to succeed.
-   * We generate a new value each time; all but one of "overlapping" login
-   * attempts by the same user will thus fail.
-   * 
-   * @return OAuth 2.0 state token
-   * @throws WdkModelException if unable to read WDK secret key from file
-   */
-  @GET
-  @Path("oauthStateToken")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getOauthStateToken() throws WdkModelException {
-    String newToken = OAuthUtil.generateStateToken(getWdkModel());
-    getSession().setAttribute(OAuthUtil.STATE_TOKEN_KEY, newToken);
-    JSONObject json = new JSONObject();
-    json.put(Keys.OAUTH_STATE_TOKEN, newToken);
-    return Response.ok(json.toString()).build();
+  public ProfileService(@PathParam(USER_ID_PATH_PARAM) String uid) {
+    super(uid);
   }
 
   @GET
-  @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getById(
-      @PathParam("id") String userIdStr,
       @QueryParam("includePreferences") Boolean includePreferences)
           throws WdkModelException {
-    UserBundle userBundle = validateUser(userIdStr, Access.PUBLIC);
+    UserBundle userBundle = getUserBundle(Access.PUBLIC);
     return Response.ok(
         UserFormatter.getUserJson(userBundle.getUser(),
             userBundle.isCurrentUser(), getFlag(includePreferences)).toString()
     ).build();
   }
 
-  @GET
-  @Path("{id}/preference")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getUserPrefs(@PathParam("id") String userIdStr) {
-    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
-    return Response.ok(UserFormatter.getUserPrefsJson(
-        userBundle.getUser().getProjectPreferences()).toString()).build();
-  }
-  
   /**
    * Web service to replace profile and profile properties of existing user with those provided in the
    * request.  Existing profile information is removed and re-populated with the contents of the request.
    * If the properties object is present but not populated, the profile properties will be removed.
-   * @param userIdStr
    * @param body
    * @return - 204 - Success without content
    * @throws WdkModelException
    */
   @PUT
-  @Path("{id}/profile")
+  @Path("profile")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response setUserProfile(@PathParam("id") String userIdStr, String body,
-      @CookieParam(LOGIN_COOKIE_NAME) Cookie cookie) throws ConflictException, DataValidationException, WdkModelException {
-    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
+  public Response setUserProfile(String body)
+      throws ConflictException, DataValidationException, WdkModelException {
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
     NewCookie loginCookie = null;
     try {
       User user = userBundle.getUser();
@@ -138,7 +95,7 @@ public class UserService extends WdkService {
       Map<String, String> propertiesMap = request.getApplicationSpecificPropertiesMap();
       // Only do a complete replace of profile properties if at least one such property is provided.
       if(!propertiesMap.isEmpty()) {
-        validatePreferenceSizes(propertiesMap);
+        UserPreferenceValidator.validatePreferenceSizes(propertiesMap);
         user.clearGlobalPreferences();
         for(String key : propertiesMap.keySet()) {
           user.setGlobalPreference(key, propertiesMap.get(key));
@@ -151,7 +108,7 @@ public class UserService extends WdkService {
       throw new BadRequestException(e);
     }
   }
-  
+
   /**
    * Web service to replace profile and profile properties of existing user with those provided in the
    * request.  If the properties object is present but not populated, the profile properties will be removed.
@@ -162,11 +119,11 @@ public class UserService extends WdkService {
    * @throws WdkModelException - in the event of a server error
    */
   @PATCH
-  @Path("{id}/profile")
+  @Path("profile")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response updateUserProfile(@PathParam("id") String userIdStr, String body, @CookieParam(LOGIN_COOKIE_NAME) Cookie cookie) 
+  public Response updateUserProfile(String body) 
       throws ConflictException, DataValidationException, WdkModelException {
-    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
     NewCookie loginCookie = null;
     try {
       User user = userBundle.getUser();
@@ -183,7 +140,7 @@ public class UserService extends WdkService {
         user.setProfileProperty(key, profileMap.get(key));
       }
       Map<String, String> propertiesMap = request.getApplicationSpecificPropertiesMap();
-      validatePreferenceSizes(propertiesMap);
+      UserPreferenceValidator.validatePreferenceSizes(propertiesMap);
       for(String key : propertiesMap.keySet()) {
         user.setGlobalPreference(key, propertiesMap.get(key));
       }
@@ -194,74 +151,13 @@ public class UserService extends WdkService {
       throw new BadRequestException(e);
     }
   }
-  
-  /**
-   * Web service to replace project preferences of existing user with those provided in the
-   * request.  Existing project preferences are removed and re-populated with the contents of the request.
-   * @param userIdStr
-   * @param body
-   * @return - 204 - Success without content
-   * @throws WdkModelException, DataValidationException
-   */
-  @PUT
-  @Path("{id}/preference")
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response putUserPrefs(@PathParam("id") String userIdStr, String body) throws DataValidationException, WdkModelException {
-    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
-    try {
-      User user = userBundle.getUser();
-      JSONObject json = new JSONObject(body);
-      UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json);
-      Map<String, String> preferencesMap = request.getPreferencesMap();
-      validatePreferenceSizes(preferencesMap);
-      user.clearProjectPreferences();
-      for(String key : preferencesMap.keySet()) {
-        user.setProjectPreference(key, preferencesMap.get(key));
-      }
-      user.save();
-      return Response.noContent().build();
-    }
-    catch(RequestMisformatException e) {
-      throw new BadRequestException(e);
-    }
-  }
-
-  /**
-   * Web service to replace preferences of existing user with those provided in the request.  Unchanged
-   * preferences remain unchanged.
-   * @param userIdStr
-   * @param body
-   * @return - 204 - Success without content
-   * @throws WdkModelException, DataValidationException
-   */
-  @PATCH
-  @Path("{id}/preference")
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response patchUserPrefs(@PathParam("id") String userIdStr, String body) throws WdkModelException, DataValidationException {
-    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
-    try {
-      User user = userBundle.getUser();
-      JSONObject json = new JSONObject(body);
-      UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json);
-      Map<String, String> preferencesMap = request.getPreferencesMap();
-      validatePreferenceSizes(preferencesMap);
-      for(String key : preferencesMap.keySet()) {
-        user.setProjectPreference(key, preferencesMap.get(key));
-      }
-      user.save();
-      return Response.noContent().build();
-    }
-    catch(JSONException | RequestMisformatException e) {
-      throw new BadRequestException(e);
-    }
-  }
 
   @PUT
-  @Path("{id}/password")
+  @Path("password")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response resetUserPassword(@PathParam("id") String userIdStr, String body)
+  public Response resetUserPassword(String body)
       throws WdkModelException, DataValidationException {
-    UserBundle userBundle = validateUser(userIdStr, Access.PRIVATE);
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
     try {
       User user = userBundle.getUser();
       JSONObject json = new JSONObject(body);
@@ -281,24 +177,6 @@ public class UserService extends WdkService {
     }
   }
 
-  /**
-   * Ensures that the subject user exists and that the calling user has the
-   * permissions requested.  If either condition is not true, the appropriate
-   * exception (corresponding to 404 and 403 respectively) is thrown.
-   * 
-   * @param userIdStr id string of the subject user
-   * @param requestedAccess the access requested by the caller
-   * @return a userBundle representing that user
-   */
-  protected UserBundle validateUser(String userIdStr, Access requestedAccess) {
-    UserBundle userBundle = parseUserId(userIdStr);
-    if (userBundle == null)
-      throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userIdStr));
-    if (!userBundle.isCurrentUser() && Access.PRIVATE.equals(requestedAccess))
-      throw new ForbiddenException(WdkService.PERMISSION_DENIED);
-    return userBundle;
-  }
-  
   /**
    * Validates whether are required properties are in place and non-empty.  PUT must
    * have all required properties.  PATCH only requires that any required properties
@@ -321,7 +199,7 @@ public class UserService extends WdkService {
       throw new RequestMisformatException(REQUIRED_VALUES + missing);
     }
   }
-  
+
   /**
    * Validates whether all provided profile property values have string lengths at or below the maximum limit 
    * @param profileMap - map of values of user profile properties to values.  Note that this map was already scrubbed of
@@ -340,25 +218,7 @@ public class UserService extends WdkService {
       throw new DataValidationException(PROFILE_VALUES_TOO_LONG + lengthy);
     }
   }
-  
-  /**
-   * Validates whether all preference names and values have string lengths at or below the corresponding maximum limits 
-   * @param propertiesMap - map of preferences as name/value pairs
-   * @throws DataValidationException - thrown if one or more user preference exceeds the maximum allowed legnth for either its name or value.
-   */
-  protected void validatePreferenceSizes(Map<String, String> propertiesMap) throws DataValidationException {
-    List<String> lengthyData = new ArrayList<>();
-    for(String property : propertiesMap.keySet()) {
-      if(property.length() > PREFERENCE_NAME_MAX_LENGTH || propertiesMap.get(property).length() > PREFERENCE_VALUE_MAX_LENGTH) {
-        lengthyData.add(property + " : " + propertiesMap.get(property));
-      }
-    }
-    if(!lengthyData.isEmpty()) {
-      String lengthy = FormatUtil.join(lengthyData.toArray(), ",");
-      throw new DataValidationException(PROPERTIES_TOO_LONG + PREFERENCE_NAME_MAX_LENGTH + " / " + PREFERENCE_VALUE_MAX_LENGTH + ": " + lengthy);
-    }
-  }
-  
+
   /**
    * Insures that the provided email address, if provided, does not duplicate that of another account.  If
    * the new email passes validation, a new cookie is returned to be used for authentication following the
@@ -376,20 +236,23 @@ public class UserService extends WdkService {
       if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
         throw new ConflictException(DUPLICATE_EMAIL);
       }
-      return setUpdatedCookie(user, email);
+      return getUpdatedCookie(user, email);
     }
     return null;
   }
-  
+
   /**
    * Using the javax-rs cookie objects to create a new cookie associated with an email address change.  This
    * may be a temporary solution to the problem of email address changes invalidating the authentication cookie.
+   * 
+   * TODO: See LoginCookieFactory for legacy solution; should probably integrate the two together
+   * 
    * @param user - the user whose email is altered
    * @param email - the new email
    * @return - an updated authentication cookie or null if the original cookie is null
    * @throws WdkModelException - thrown in the new cookie value cannot be encoded.
    */
-  private NewCookie setUpdatedCookie(User user, String email) throws WdkModelException {
+  private NewCookie getUpdatedCookie(User user, String email) throws WdkModelException {
     String uncodedCookieValue = email + "-" + UserFactoryBean.md5(email + getWdkModel().getSecretKey());
     String codedCookieValue;
     try {

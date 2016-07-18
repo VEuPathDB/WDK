@@ -6,33 +6,19 @@ import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.log4j.Logger;
-import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.factory.WdkAnswerFactory;
 
 public abstract class WdkService {
 
-  private static final Logger LOG = Logger.getLogger(WdkService.class);
-
-  public static final String CURRENT_USER_MAGIC_STRING = "current";
-  
   public static final String PERMISSION_DENIED = "Permission Denied.  You do not have access to this resource.";
   public static final String NOT_FOUND = "Resource specified [%s] does not exist.";
 
-  public static class UserBundle extends ThreeTuple<Integer,Boolean,User> {
-    public UserBundle(Integer userId, Boolean isCurrentUser, User user) {
-      super(userId, isCurrentUser, user);
-    }
-    public int getUserId() { return getFirst(); }
-    public boolean isCurrentUser() { return getSecond(); }
-    public User getUser() { return getThird(); }
-  }
-  
   /**
    * Composes a proper Not Found exception message using the supplied resource.
    * @param resource
@@ -70,7 +56,7 @@ public abstract class WdkService {
   protected UserBean getCurrentUserBean() {
     return ((UserBean)_request.getSession().getAttribute("wdkUser"));
   }
-  
+
   protected int getCurrentUserId() throws WdkModelException {
     return getCurrentUserBean().getUserId();
   }
@@ -115,27 +101,12 @@ public abstract class WdkService {
   }
 
   /**
-   * Returns a tuple of <user_id, is_current_user, user> based on the input string.
+   * Returns a session-aware user bundle based on the input string.
    * 
-   * @param userIdStr potential user ID as string, or special string indicating current user
-   * @return Tuple of user information, or null if userIdStr is null or misformatted, or no user by the passed ID could be found
+   * @param userIdStr potential user ID as string, or special string 'current' indicating current user
+   * @return user bundle describing status of the requested user string
    */
   protected UserBundle parseUserId(String userIdStr) {
-    try {
-      User currentUser = getCurrentUser();
-      if (CURRENT_USER_MAGIC_STRING.equals(userIdStr)) {
-        return new UserBundle(currentUser.getUserId(), true, currentUser);
-      }
-      int userId = Integer.parseInt(userIdStr);
-      if (userId == currentUser.getUserId()) {
-        return new UserBundle(currentUser.getUserId(), true, currentUser);
-      }
-      User user = getWdkModel().getUserFactory().getUser(userId);
-      return new UserBundle(userId, false, user);
-    }
-    catch (WdkModelException | NumberFormatException | NullPointerException e) {
-      LOG.warn("User requested by ID that is misformatted or does not exist", e);
-      return null;
-    }
+    return UserBundle.createFromId(userIdStr, getCurrentUser(), getWdkModel().getUserFactory());
   }
 }

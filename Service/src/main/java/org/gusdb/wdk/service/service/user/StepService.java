@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.service;
+package org.gusdb.wdk.service.service.user;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -20,16 +20,20 @@ import org.gusdb.wdk.service.request.RequestMisformatException;
 import org.gusdb.wdk.service.request.DataValidationException;
 import org.gusdb.wdk.service.request.answer.AnswerRequest;
 import org.gusdb.wdk.service.request.answer.AnswerRequestFactory;
+import org.gusdb.wdk.service.service.WdkService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Path("/step")
-public class StepService extends WdkService {
-  
+public class StepService extends UserService {
+
+  public StepService(@PathParam(USER_ID_PATH_PARAM) String uid) {
+    super(uid);
+  }
+
   public static final String STEP_RESOURCE = "Step ID ";
 
   @GET
-  @Path("{stepId}")
+  @Path("step/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStep(@PathParam("stepId") String stepId) throws WdkModelException {
     Step step;
@@ -46,6 +50,7 @@ public class StepService extends WdkService {
   }
 
   @POST
+  @Path("step/{stepId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createStep(String body) throws WdkModelException, DataValidationException {
