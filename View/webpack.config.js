@@ -3,7 +3,7 @@ var node_env = process.env.NODE_ENV || 'production';
 var outputPath = './dist/wdk/js';
 
 module.exports = {
-  entry: './webapp/wdk/js/app',
+  entry: './webapp/wdk/js',
   output: {
     path: outputPath,
     filename: 'wdk.js'
