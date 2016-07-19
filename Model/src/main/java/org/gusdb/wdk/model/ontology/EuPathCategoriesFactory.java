@@ -144,7 +144,8 @@ public class EuPathCategoriesFactory {
     private void processPrimaryCategoryQuestions(Ontology ontology, String[] scopes, String displayName, String name, Map<String, SearchCategory> categoriesMap, Map<String, SearchCategory> rootCategoriesMap) {
 
     TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, name, scopes);
-
+    if (prunedOntologyTree == null) return;
+    
     if (prunedOntologyTree == null) { 
         return;
     }
