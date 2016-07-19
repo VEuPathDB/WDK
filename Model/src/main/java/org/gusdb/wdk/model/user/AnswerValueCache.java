@@ -33,7 +33,8 @@ public class AnswerValueCache {
 
   public AnswerValueCache(Step step) throws WdkModelException {
     _step = step;
-    _range = getDefaultPageRange(step.getUser());
+    // expandStep script generates step in memory with step_id 0 and user_id 0
+    if (step.getStepId() != 0) _range = getDefaultPageRange(step.getUser());
   }
 
   public void invalidateAll() {
