@@ -61,6 +61,8 @@ import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStorePlugin;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.xml.sax.SAXException;
@@ -102,6 +104,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
+  private UserDatasetStorePlugin userDatasetStorePlugin;
+  private UserDatasetStore userDatasetStore;
 
   private List<QuerySet> querySetList = new ArrayList<>();
   private Map<String, QuerySet> querySets = new LinkedHashMap<>();
@@ -1131,6 +1135,18 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   public File getXmlDataDir() {
     return xmlDataDir;
+  }
+  
+  public void setUserDatasetStorePlugin(UserDatasetStorePlugin plugin) {
+    this.userDatasetStorePlugin = plugin;
+  }
+  
+  public UserDatasetStore getUserDatasetStore() throws WdkModelException {
+    if (userDatasetStorePlugin != null && userDatasetStore == null) {
+      userDatasetStorePlugin.resolveReferences(this);
+      userDatasetStore = userDatasetStorePlugin.getUserDatasetStore();
+    }
+    return userDatasetStore;
   }
 
   public DatasetFactory getDatasetFactory() {
