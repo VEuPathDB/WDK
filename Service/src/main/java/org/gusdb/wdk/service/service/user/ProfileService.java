@@ -71,7 +71,6 @@ public class ProfileService extends UserService {
    * @throws WdkModelException
    */
   @PUT
-  @Path("profile")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response setUserProfile(String body)
       throws ConflictException, DataValidationException, WdkModelException {
@@ -119,7 +118,6 @@ public class ProfileService extends UserService {
    * @throws WdkModelException - in the event of a server error
    */
   @PATCH
-  @Path("profile")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateUserProfile(String body) 
       throws ConflictException, DataValidationException, WdkModelException {
