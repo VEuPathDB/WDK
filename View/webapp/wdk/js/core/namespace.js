@@ -1,5 +1,4 @@
-/* global global, wdk */
-import EventEmitter from 'events';
+/* global global */
 
 // adapted from https://github.com/semmypurewal/jermaine/blob/master/src/util/namespace.js
 //
@@ -16,10 +15,6 @@ import EventEmitter from 'events';
 //          //
 //          // attach some functionality to the ns object
 //        });
-
-// make wdk an event emitter
-window.wdk = Object.create(EventEmitter.prototype);
-EventEmitter.call(window.wdk);
 
 (function (ns, root) {
    "use strict";
@@ -73,7 +68,7 @@ EventEmitter.call(window.wdk);
 }("wdk", typeof window !== 'undefined' ? window : global));
 
 // for legacy
-wdk.namespace('wdk.util', function(ns) {
+window.wdk.namespace('wdk.util', function(ns) {
   'use strict';
-  ns.namespace = wdk.namespace;
+  ns.namespace = window.wdk.namespace;
 });

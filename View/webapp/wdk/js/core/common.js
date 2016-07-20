@@ -74,7 +74,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   */
 
  /**
-  * @deprecated See wdk.on
+  * @deprecated
   */
   function registerQuestionEvent(handler) {
     questionEvents.push(handler);
@@ -92,7 +92,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   */
 
  /**
-  * @deprecated See wdk.trigger
+  * @deprecated
   */
   function onloadQuestion() {
     for (var i= 0; i < questionEvents.length; i++) {
