@@ -7,7 +7,6 @@ import './user';
 import './models';
 import './plugins';
 import './components';
-import './views';
 import './controllers';
 import './client';
 
@@ -18,30 +17,18 @@ var MutationObserver = window.MutationObserver || window.WebKitMutationObserver 
 
 // Start the application. The ready callback is invoked
 // once the DOM has finished rendering.
-var app = wdk.application = wdk.app = wdk.core.Application.create({
+$(function wdkReady() {
+  wdk.cookieTest();
+  wdk.setUpDialogs();
+  wdk.setUpPopups();
+  wdk.load();
 
-  ready: function wdkReady() {
-    wdk.cookieTest();
-    wdk.setUpDialogs();
-    wdk.setUpPopups();
-    wdk.load();
-
-    if (MutationObserver) {
-      wdk._renderObserver = loadOnMutation(); // expose for debugging
-    } else {
-      wdk._renderInterval = loadOnInterval();
-    }
+  if (MutationObserver) {
+    wdk._renderObserver = loadOnMutation(); // expose for debugging
+  } else {
+    wdk._renderInterval = loadOnInterval();
   }
-
 });
-
-// Sugar to register custom question views.
-// wdk.views.core.QuestionView delegates to these views
-wdk.questionView = function registerQuestionView(questionName, ...rest) {
-  var name = 'question:' + questionName;
-  app.registerView(name, ...rest);
-  return wdk;
-};
 
 // Global event handlers
 // need to call draw on dataTables that are children of a tab panel

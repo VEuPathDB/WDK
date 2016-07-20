@@ -1,16 +1,10 @@
-/* jshint ignore:start */
-
-// FIXME jshint errors
+/* global wdk */
 
 window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   "use strict";
 
   var controller = wdk.strategy.controller,
-      StrategyView = wdk.views.strategy.StrategyView,
-      StepBoxView = wdk.views.strategy.StepBoxView,
-      StepDetailView = wdk.views.strategy.StepDetailView,
-      preventEvent = wdk.fn.preventEvent,
-      killEvent = wdk.fn.killEvent;
+      preventEvent = wdk.fn.preventEvent;
 
   // temp reference to wdk.strategy.model
   var modelNS = wdk.strategy.model;
@@ -112,7 +106,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         $(div_strat).append(stratNameMenu[0]);
         $(div_strat).append(stratNameMenu[1]);
         $(div_strat).append(createParentStep(strat));
-        var displaySteps = createSteps(strat,div_steps);
+        createSteps(strat,div_steps);
         $(div_strat).append(createRecordTypeName(strat));
         var button = document.createElement('a');
         var lsn = strat.getStep(strat.Steps.length,true).back_boolean_Id;
@@ -143,11 +137,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           .appendTo(div_strat)
           .addClass("diagram-wrapper");
 
-        var strategyView = new StrategyView({
-          el: div_strat,
-          model: strat,
-          controller: controller
-        });
+        attachStrategyEventListeners(div_strat, strat, controller);
 
         if (has_invalid) {
           getInvalidText().then(function(html) {
@@ -161,6 +151,77 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       }
     }
     return null;
+  }
+
+  function attachStrategyEventListeners(container, strategy, controller) {
+    let $container = $(container);
+    let clickEvent = 'click.strategy';
+
+    let handleCloseClick = preventEvent(function() {
+      controller.closeStrategy(strategy.frontId);
+    });
+
+    let handleRenameClick = preventEvent(function() {
+      $container.find('.strategy-name').editable('show');
+    });
+
+    let handleShareClick = preventEvent(function(e) {
+      var target = e.currentTarget,
+          id = strategy.backId,
+          url = wdk.exportBaseURL() + strategy.importId,
+          isSaved = strategy.isSaved,
+          isGuest = wdk.user.isGuest();
+
+      if (isSaved) {
+        wdk.history.showHistShare(target, id, url);
+      }
+      else if (isGuest) {
+        wdk.user.login('share a strategy');
+      }
+      else {
+        if (confirm('Before you can share your strategy, you need to save it.' +
+                    ' Would you like to do that now?')) {
+          wdk.history.showUpdateDialog(target, true, true);
+        }
+      }
+    });
+
+    let handleSaveClick = preventEvent(function(e) {
+      if (wdk.user.isGuest()) {
+        wdk.user.login('save a strategy');
+      }
+      else {
+        wdk.history.showUpdateDialog(e.currentTarget, true, false);
+      }
+    });
+
+    let handleCopyClick = preventEvent(function() {
+      controller.copyStrategy(strategy.backId);
+    });
+
+    let handleDeletClick = preventEvent(function() {
+      controller.deleteStrategy(strategy.backId);
+    });
+
+    let handleDescribeClick = preventEvent(function(e) {
+      var target = e.currentTarget;
+
+      if (strategy.description) {
+        wdk.history.showDescriptionDialog(target, !strategy.isSaved, false, strategy.isSaved);
+      }
+      else {
+        wdk.history.showUpdateDialog(target, !strategy.isSaved, false);
+      }
+    });
+
+    $container
+      .on(clickEvent, '.closeStrategy a', handleCloseClick)
+      .on(clickEvent, '[href="#rename"]', handleRenameClick)
+      .on(clickEvent, '[href="#share"]', handleShareClick)
+      .on(clickEvent, '[href="#save"]', handleSaveClick)
+      .on(clickEvent, '[href="#copy"]', handleCopyClick)
+      .on(clickEvent, '[href="#delete"]', handleDeletClick)
+      .on(clickEvent, '[href="#describe"]', handleDescribeClick);
   }
 
   // controls visibility of step box edit icons
@@ -179,8 +240,6 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   // based on the type of step -- future work
   function createSteps(strat,div_strat){
     var zIndex = 80;
-    var stepBoxViews = [];
-    var stepDetailView;
     var stepdiv;
     var cStp;
     var jsonStep;
@@ -200,24 +259,14 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       }
 
       $(stepdiv).find('[id^=step_]').each(function(index, el) {
-        stepDetailView = new StepDetailView({
-          el: $(el).find('.crumb_details'),
-          model: jsonStep,
-          controller: controller,
-          strategy: strat,
-          isBoolean: index === 1,
-          previousStep: prevJsonStep
-        });
+        let isBoolean = index === 1;
+        let detailContainer = $(el).find('.crumb_details')[0];
 
-        stepBoxViews.push(new StepBoxView({
-          el: el,
-          model: jsonStep,
-          controller: controller,
-          strategy: strat,
-          isBoolean: index === 1,
-          previousStep: prevJsonStep,
-          stepDetailView: stepDetailView
-        }));
+        attachStepDetailsEventListeners(detailContainer, jsonStep, strat,
+          controller, isBoolean, prevJsonStep);
+
+        attachStepBoxEventListeners(el, detailContainer, jsonStep, strat,
+          controller, isBoolean);
       });
 
       $(stepdiv).css({'z-index' : zIndex});
@@ -227,22 +276,200 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     //setEditIconToggling();
   }
 
+  function attachStepBoxEventListeners(container, detailContainer, step, strategy, controller, isBoolean) {
+    let $container = $(container);
+    let $detailContainer = $(detailContainer);
+
+    let handleResultsClick = preventEvent(function() {
+      if (  (isBoolean && step.isValid) ||         // combined step
+            (!isBoolean && step.isValid) ||        // first step
+            (!isBoolean && step.step.isValid)      // leaf step
+          ) {
+        controller.newResults(strategy.frontId, step.frontId, isBoolean);
+      }
+    });
+
+    let handleEditClick = preventEvent(function(e) {
+      e.stopPropagation();
+      showDetails();
+    });
+
+    let handleInvalidClick = preventEvent(function() {
+      showDetails();
+      $container.closest('.diagram').find('#invalid-step-text').remove();
+    });
+
+    $container
+      .on('click.step', '.results_link', handleResultsClick)
+      .on('click.step', '.edit-icon', handleEditClick)
+      .on('click.strategy', '.invalidStep', handleInvalidClick);
+
+    function showDetails() {
+      $('.crumb_details').hide();
+      $detailContainer.show();
+    }
+  }
+
+  function attachStepDetailsEventListeners(container, step, strategy, controller, isBoolean, previousStep) {
+    let $container = $(container);
+
+    let handleThenHide = function(fn) {
+      return preventEvent(function(e, ...rest) {
+        let disabled = $(e.currentTarget).hasClass('disabled');
+
+        if (!disabled) {
+          if (fn != null) fn(e, ...rest);
+          $container.hide();
+        }
+      });
+    };
+
+    // additional setup
+    let name = step.customName;
+
+    if (step.isCollapsed) {
+      name = step.strategy.name;
+    }
+    else if (step.isboolean) {
+      if (step.step.isCollapsed) {
+        name = step.step.strategy.name;
+      }
+      else {
+        name = step.step.customName;
+      }
+    }
+
+    let collapsedName = encodeURIComponent(name);//"Nested " + name;
+
+    if (step.isboolean && !step.isCollapsed) {
+      name = "<ul class='question_name'><li>STEP " + step.frontId +
+        " : Step " + (step.frontId - 1) + "</li><li class='operation " +
+        step.operation + "'></li><li>" + name + "</li></ul>";
+    }
+    else {
+      name = "<p class='question_name'><span>STEP " + step.frontId +
+        " : " + name + "</span></p>";
+    }
+
+    let showResults = handleThenHide(function() {
+      if (step.isValid) {
+        controller.newResults(strategy.frontId, step.frontId, isBoolean);
+      }
+    });
+
+    let rename = handleThenHide(function(e) {
+      wdk.step.Rename_Step(e.currentTarget, strategy.frontId, step.frontId);
+    });
+
+    let analyze = handleThenHide(function() {
+      var $button = $('#add-analysis button');
+
+      $button.trigger('click');
+
+      // scroll to section
+      $(window).scrollTop($button.offset().top - 10);
+    });
+
+    // aka, revise
+    let edit = handleThenHide(function(e) {
+      var targetStep = step.frontId === 1 || isBoolean || step.istransform
+        ? step
+        : step.step;
+
+      wdk.step.Edit_Step(e.currentTarget, targetStep.questionName,
+                         targetStep.urlParams,
+                         targetStep.isBoolean,
+                         targetStep.isTransform || targetStep.frontId === 1,
+                         targetStep.assignedWeight);
+    });
+
+    let expand = handleThenHide(function(e) {
+      controller.ExpandStep(e.currentTarget, strategy.frontId, step.frontId, collapsedName);
+    });
+
+    let collapse = handleThenHide(function(e) {
+      if (step.isUncollapsible) return;
+      controller.ExpandStep(e.currentTarget, strategy.frontId, step.frontId, collapsedName, true);
+    });
+
+    let insertStep = handleThenHide(function(e) {
+      var recordName = previousStep
+        ? previousStep.dataType
+        : step.dataType;
+
+      wdk.step.Insert_Step(e.currentTarget, recordName);
+    });
+
+    let destroy = handleThenHide(function() {
+      if (step.frontId === 1 && strategy.nonTransformLength === 1) {
+        controller.deleteStrategy(strategy.backId, false);
+      } else {
+        controller.DeleteStep(strategy.frontId, step.frontId);
+      }
+    });
+
+    let hideDetails = handleThenHide();
+
+    let setWeight = handleThenHide(function(e) {
+      controller.SetWeight(e.currentTarget, strategy.frontId, step.frontId);
+    });
+
+    let updateOperation = preventEvent(function(e) {
+      var url = 'wizard.do?action=revise&step=' + step.id + '&';
+      wdk.addStepPopup.callWizard(url, e.currentTarget, null, null, 'submit',
+                                  strategy.frontId);
+    });
+
+    // Attach event listeners
+    $container
+      .on('click.step',   '.view_step_link',          showResults)
+      .on('click.step',   '.rename_step_link',        rename)
+      .on('click.step',   '.analyze_step_link',       analyze)
+      .on('click.step',   '.edit_step_link',          edit)
+      .on('click.step',   '.expand_step_link',        expand)
+      .on('click.step',   '.collapse_step_link',      collapse)
+      .on('click.step',   '.insert_step_link',        insertStep)
+      .on('click.step',   '.delete_step_link',        destroy)
+      .on('click.step',   '.close_link',              hideDetails)
+      .on('click.step',   '.weight-button',           setWeight)
+      .on('submit.step',  'form[name=questionForm]',  updateOperation)
+
+    wdk.util.setDraggable($container, ".crumb_menu");
+
+    $container.appendTo('#strategy_results');
+    $container.css({
+      top: 10,
+      left: ($(window).width() - $container.width()) / 2,
+      position: "absolute"
+    });
+
+    wdk.util.initShowHide($container);
+
+    // not sure what this is for...
+    var op = $(".question_name .operation", $container);
+    if (op.length > 0) {
+      var opstring = op.removeClass("operation").attr('class');
+      op.addClass("operation");
+      $("input[value='" + opstring + "']", $container).attr('checked','checked');
+    }
+
+    if ($container.hasClass('crumb_name')) {
+      $container.children("img").attr("src",wdk.assetsUrl("wdk/images/minus.gif"));
+    }
+  }
+
   //Creates the boolean Step and the operand step displayed above it
   function multiStep(modelstep, prevjsonstep, jsonStep, sid) {
     // Create the boolean venn diagram box
     var filterImg = "";
-    var bool_link = "";
-    var details_link = "wdk.step.showDetails(this)";
     var results = modelstep.isLoading ? "Loading" : jsonStep.results;
 
     if (modelstep.isSpan) {
-      details_link = "void(0)";
       jsonStep.operation = "SPAN " + getSpanOperation(jsonStep.params);
     }
 
     if (jsonStep.isValid) {
-      bool_link = "wdk.strategy.controller.newResults(" + sid + "," +
-          modelstep.frontId + ", true)";
+      modelstep.frontId + ", true)";
     }
 
     if (jsonStep.filtered) {
