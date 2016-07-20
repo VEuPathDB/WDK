@@ -768,7 +768,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
     // comment out to use old categories
     if (!ontologyFactoryMap.isEmpty()) eupathCategoriesFactory = new EuPathCategoriesFactory(this);
-  }
+    
+    if (userDatasetStorePlugin != null && userDatasetStore == null) {
+      userDatasetStorePlugin.resolveReferences(this);
+      userDatasetStore = userDatasetStorePlugin.getUserDatasetStore();
+    }
+}
 
   private void excludeResources() throws WdkModelException {
     // decide model name, display name, and version
@@ -1012,9 +1017,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   @Override
   public String toString() {
+    String userDatasetStoreStr = getUserDatasetStore() == null? "" : getUserDatasetStore().toString() + "NL";
     return new StringBuilder("WdkModel: ").append("projectId='").append(_projectId).append("'").append(NL).append(
         "displayName='").append(displayName).append("'").append(NL).append("introduction='").append(
-        _introduction).append("'").append(NL).append(NL).append(uiConfig.toString()).append(
+        _introduction).append("'").append(NL).append(NL).append(userDatasetStoreStr).append(uiConfig.toString()).append(
         showSet("Param", paramSets)).append(showSet("Query", querySets)).append(
         showSet("RecordClass", recordClassSets)).append(showSet("XmlRecordClass", xmlRecordClassSets)).append(
         showSet("Question", questionSets)).append(showSet("XmlQuestion", xmlQuestionSets)).toString();
@@ -1141,11 +1147,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     this.userDatasetStorePlugin = plugin;
   }
   
-  public UserDatasetStore getUserDatasetStore() throws WdkModelException {
-    if (userDatasetStorePlugin != null && userDatasetStore == null) {
-      userDatasetStorePlugin.resolveReferences(this);
-      userDatasetStore = userDatasetStorePlugin.getUserDatasetStore();
-    }
+  public UserDatasetStore getUserDatasetStore() {
     return userDatasetStore;
   }
 

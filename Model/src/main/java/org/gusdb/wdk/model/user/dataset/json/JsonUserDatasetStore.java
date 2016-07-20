@@ -57,6 +57,8 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   protected static final String EXTERNAL_DATASETS_DIR = "externalDatasets";
   protected static final String REMOVED_EXTERNAL_DATASETS_DIR = "removedExternalDatasets";
   protected Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap;
+  
+  private static final String NL = System.lineSeparator();
 
   private Path usersRootDir;
   private JsonUserDatasetStoreAdaptor adaptor;
@@ -327,6 +329,16 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
         throw new WdkModelException("Can't find user datasets directory " + userDatasetsDir);
 
     return userDatasetsDir;
+  }
+  
+  public String toString() {
+    StringBuilder builder = new StringBuilder("UserDatasetStore: " + NL);
+    builder.append("  rootPath: " + usersRootDir + NL);
+    builder.append("  adaptor: " + adaptor.getClass() + NL);
+    for (UserDatasetType type : typeHandlersMap.keySet()) {
+      builder.append("  type handler: " + type + " " + typeHandlersMap.get(type).getClass() + NL);
+    }
+    return builder.toString();
   }
 
 }
