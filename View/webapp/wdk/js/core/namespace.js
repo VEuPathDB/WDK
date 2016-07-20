@@ -1,4 +1,5 @@
-/* global global */
+/* global global, wdk */
+import EventEmitter from 'events';
 
 // adapted from https://github.com/semmypurewal/jermaine/blob/master/src/util/namespace.js
 //
@@ -15,6 +16,10 @@
 //          //
 //          // attach some functionality to the ns object
 //        });
+
+// make wdk an event emitter
+window.wdk = Object.create(EventEmitter.prototype);
+EventEmitter.call(window.wdk);
 
 (function (ns, root) {
    "use strict";
@@ -72,7 +77,3 @@ wdk.namespace('wdk.util', function(ns) {
   'use strict';
   ns.namespace = wdk.namespace;
 });
-
-// make wdk an event bus
-_.extend(wdk ,Backbone.Events);
-
