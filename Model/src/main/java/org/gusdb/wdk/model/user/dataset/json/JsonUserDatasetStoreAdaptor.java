@@ -38,6 +38,12 @@ public interface JsonUserDatasetStoreAdaptor {
    * @throws WdkModelException
    */
   public void writeFileAtomic(Path file, String contents) throws WdkModelException;
+  
+  /**
+   * Creates a new directory.  If one already exists, an exception is thrown.
+   * @param dir - the directory path
+   * @throws WdkModelException
+   */
   public void createDirectory(Path dir) throws WdkModelException;
   
   public void writeFile(Path file, String contents) throws WdkModelException;
