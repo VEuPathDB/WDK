@@ -1,14 +1,6 @@
 import $ from 'jquery';
 import _ from 'lodash';
-
-import './vendor';
-import './core';
-import './user';
-import './models';
-import './plugins';
-import './components';
-import './controllers';
-import './client';
+import wdk from './wdk';
 
 var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver; // jshint ignore:line
 
@@ -30,28 +22,29 @@ $(function wdkReady() {
   }
 });
 
+
 // Global event handlers
-// need to call draw on dataTables that are children of a tab panel
-$(document).on('tabsactivate', function() {
-  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
-});
+// ---------------------
 
 // Break bfcache. The handler doesn't have to do anything for the desired
 // effect. See redmine #18839.
 $(window).on('unload', function() { });
 
+
 // Helper functions
 // ----------------
 
-// call wdk.load using setInterval
-/* jshint unused:false */
+/**
+ * call wdk.load using setInterval
+ */
 function loadOnInterval() {
   return setInterval(wdk.load, 200);
 }
 
-/** EXPERIMENTAL **/
-// call wdk.load based on DOM mutation
-/* jshint unused:false */
+/**
+ * EXPERIMENTAL
+ * call wdk.load based on DOM mutation
+ */
 function loadOnMutation() {
   var target = document.body;
   var config = { childList: true, subtree: true };
@@ -66,15 +59,16 @@ function loadOnMutation() {
   return observer;
 }
 
+/**
+ * Wrap wdk.load in an animation frame.
+ */
 function rafLoad($target) {
   requestAnimationFrame(_.partial(wdk.load, $target));
 }
 
-var throttledLoad = _.throttle(wdk.load, 100);
-
-var throttledRafLoad = _.throttle(rafLoad, 100);
-
-// get unique set of targets with addedNodes
+/**
+ * get unique set of targets with addedNodes
+ */
 function loadUniqueMutationTargets(mutations) {
   var targets = _.uniq(mutations.reduce(function(acc, mutation) {
     if (mutation.addedNodes.length > 0) acc.push(mutation.target);

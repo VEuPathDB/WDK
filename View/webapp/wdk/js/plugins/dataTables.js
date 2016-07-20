@@ -1,45 +1,54 @@
-wdk.util.namespace("window.wdk.plugin", function(ns, $) {
-  "use strict";
+/**
+ * Extensions to the DataTables plugin.
+ */
 
-  // custom types
+import $ from 'jquery';
 
-  // Example: 1.04e-3
-  $.extend( $.fn.dataTableExt.oSort, {
-    "scientific-pre": function ( a ) {
-      return Number(a);
-    },
 
-    "scientific-asc": function ( a, b ) {
-      return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-    },
+// Custom types
+// ------------
 
-    "scientific-desc": function ( a, b ) {
-      return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-    }
-  } );
+// Example: 1.04e-3
+$.extend( $.fn.dataTableExt.oSort, {
+  "scientific-pre": function ( a ) {
+    return Number(a);
+  },
 
-  $.fn.wdkDataTable = function(opts) {
-    return this.each(function() {
-      var $this = $(this),
-          sorting = $this.data("sorting"),
-          dataTableOpts = {
-            columns: null,
-            scrollX: "100%",
-            scrollY: "600px",
-            scrollCollapse: true,
-            paging: false,
-            jQueryUI: true,
-            language: {
-              search: "Filter:"
-            }
-          };
+  "scientific-asc": function ( a, b ) {
+    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+  },
+
+  "scientific-desc": function ( a, b ) {
+    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+  }
+} );
+
+
+// Custom plugin wrapper
+// ---------------------
+
+$.fn.wdkDataTable = function(opts) {
+  return this.each(function() {
+    var $this = $(this),
+      sorting = $this.data("sorting"),
+      dataTableOpts = {
+        columns: null,
+        scrollX: "100%",
+        scrollY: "600px",
+        scrollCollapse: true,
+        paging: false,
+        jQueryUI: true,
+        language: {
+          search: "Filter:"
+        }
+      };
 
       if ($this.length === 0) return;
 
       if (sorting) {
         dataTableOpts.aoColumns = $.map(sorting, function(s) {
           var column = {},
-              types = ['string', 'numeric', 'data', 'html'];
+            types = ['string', 'numeric', 'data', 'html'];
           if (s === true) {
             // if true, use defaults -- map wants [null]
             column = [null];
@@ -55,7 +64,14 @@ wdk.util.namespace("window.wdk.plugin", function(ns, $) {
 
       // allow options to be passed like in the default dataTable function
       return $this.dataTable($.extend(dataTableOpts, opts));
-    });
-  };
+  });
+};
 
+
+// Global event handlers
+// ---------------------
+
+// need to call draw on dataTables that are children of a tab panel
+$(document).on('tabsactivate', function() {
+  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
 });
