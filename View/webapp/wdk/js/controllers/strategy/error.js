@@ -1,5 +1,5 @@
 /* jshint evil:true */
-wdk.util.namespace("window.wdk.strategy.error", function (ns, $) {
+wdk.namespace("window.wdk.strategy.error", function (ns, $) {
   "use strict";
 
   var OOSMessage = "Your last request was sent from a page that is out " +

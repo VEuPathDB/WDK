@@ -1,6 +1,6 @@
 /* global wdk */
 
-window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
+wdk.namespace("window.wdk.strategy.view", function(ns, $) {
   "use strict";
 
   var controller = wdk.strategy.controller,

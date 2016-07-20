@@ -1,4 +1,4 @@
-wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
+wdk.namespace("window.wdk.publicStrats", function(ns, $) {
   "use strict";
 
   var publicStratDescriptionWarning = "Before making your strategy public, you " +

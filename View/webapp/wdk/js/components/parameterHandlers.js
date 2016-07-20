@@ -1,5 +1,5 @@
 /* global _, wdk, ReactDOM */
-wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
+wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   var XHR_DATA_KEY = 'dependent-xhr';
   var PARAM_LOADING_EVENT = ns.PARAM_LOADING_EVENT = 'loading.wdk-param';
