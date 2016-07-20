@@ -62,6 +62,6 @@ public interface JsonUserDatasetStoreAdaptor {
    * @param file
    * @return
    */
-  public boolean fileExists(Path file);
+  public boolean fileExists(Path file) throws WdkModelException;
 
 }
