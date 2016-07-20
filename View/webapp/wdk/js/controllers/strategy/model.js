@@ -5,7 +5,7 @@
  *  @namespace model
 **/
 
-wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
+wdk.namespace("window.wdk.strategy.model", function (ns, $) {
   "use strict";
 
   var Strategy,

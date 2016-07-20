@@ -17,7 +17,7 @@
  *
  */
 
-wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
+wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
   "use strict";
 
   var sidIndex = 0;

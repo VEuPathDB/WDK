@@ -1,7 +1,7 @@
 // =============================================================================
 // The js related to the display on question page
 
-wdk.util.namespace("wdk.question", function(ns) {
+wdk.namespace("wdk.question", function(ns) {
   "use strict";
 
   let initializers = new Map;

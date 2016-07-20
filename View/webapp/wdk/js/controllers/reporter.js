@@ -1,4 +1,4 @@
-wdk.util.namespace("wdk.reporter", function(ns, $) {
+wdk.namespace("wdk.reporter", function(ns, $) {
   "use strict";
 
   var $form, $fields, $defaultFields;

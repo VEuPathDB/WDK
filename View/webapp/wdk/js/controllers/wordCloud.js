@@ -3,7 +3,7 @@ Cary  Feb. 15, 2010
 Basket Button
 */
 
-wdk.util.namespace("window.wdk.result.wordCloud", function(ns, $) {
+wdk.namespace("window.wdk.result.wordCloud", function(ns, $) {
   "use strict";
 
   var init = function(wordCloud) {

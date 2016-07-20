@@ -1,4 +1,4 @@
-wdk.util.namespace("window.wdk.history", function(ns, $) {
+wdk.namespace("window.wdk.history", function(ns, $) {
   "use strict";
 
   // temp reference to wdk.strategy.model

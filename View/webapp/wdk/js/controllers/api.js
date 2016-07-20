@@ -10,7 +10,7 @@ in sayShowOrHide don't work
 
 */
 
-wdk.util.namespace("window.wdk.api", function(ns, $) {
+wdk.namespace("window.wdk.api", function(ns, $) {
   "use strict";
 
   // used by Firefox

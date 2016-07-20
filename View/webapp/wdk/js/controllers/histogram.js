@@ -1,4 +1,4 @@
-wdk.util.namespace("wdk.result.histogram", function(ns, $) {
+wdk.namespace("wdk.result.histogram", function(ns, $) {
   "use strict";
 
   var type;

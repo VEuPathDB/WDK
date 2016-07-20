@@ -1,5 +1,5 @@
 /* jshint evil:true */
-wdk.util.namespace("window.wdk.favorite", function(ns, $) {
+wdk.namespace("window.wdk.favorite", function(ns, $) {
   "use strict";
 
   function init(element) {

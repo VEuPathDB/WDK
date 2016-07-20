@@ -1,5 +1,5 @@
 /* global Spinner */
-wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
+wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
   "use strict";
 
   // "imports"

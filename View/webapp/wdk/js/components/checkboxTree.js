@@ -1,5 +1,5 @@
 /* jshint evil:true */
-wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
+wdk.namespace("window.wdk.checkboxTree", function(ns, $) {
   "use strict";
 
   var escapeSelectorComponent = wdk.util.escapeSelectorComponent;

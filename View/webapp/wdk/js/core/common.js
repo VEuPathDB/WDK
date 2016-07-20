@@ -1,7 +1,7 @@
 /* global wdkConfig */
 /* jshint evil:true */
 
-wdk.util.namespace("window.wdk", function(ns, $) {
+wdk.namespace("window.wdk", function(ns, $) {
   "use strict";
 
   // =============================================================================
