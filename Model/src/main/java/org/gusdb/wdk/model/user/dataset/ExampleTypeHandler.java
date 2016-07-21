@@ -1,8 +1,6 @@
 package org.gusdb.wdk.model.user.dataset;
 
 public class ExampleTypeHandler implements UserDatasetTypeHandler {
-  private String type;
-  private String version;
 
   @Override
   public UserDatasetCompatibility getCompatibility(UserDataset userDataset) {
@@ -11,6 +9,6 @@ public class ExampleTypeHandler implements UserDatasetTypeHandler {
 
   @Override
   public UserDatasetType getUserDatasetType() {
-    return UserDatasetTypeFactory.getUserDatasetType(type, version);
+    return UserDatasetTypeFactory.getUserDatasetType("example", "1.0");
   }
 }
