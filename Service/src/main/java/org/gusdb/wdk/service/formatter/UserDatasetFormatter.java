@@ -4,20 +4,26 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
+import org.gusdb.wdk.model.user.dataset.UserDatasetCompatibility;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetShare;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class UserDatasetFormatter {
 
-  public static JSONArray getUserDatasetsJson(Map<Integer, UserDataset> userDatasetsMap, boolean expand) throws WdkModelException {
+  public static JSONArray getUserDatasetsJson(Map<Integer, UserDataset> userDatasetsMap, UserDatasetStore userDatasetStore, boolean expand) throws WdkModelException {
     JSONArray datasetsJson = new JSONArray();
     for (Integer datasetId : userDatasetsMap.keySet()) {
       if (!expand) datasetsJson.put(datasetId);
-      else datasetsJson.put(getUserDatasetJson(userDatasetsMap.get(datasetId)));
+      else {
+        UserDataset dataset = userDatasetsMap.get(datasetId);
+        UserDatasetCompatibility compat = userDatasetStore.getTypeHandler(dataset.getType()).getCompatibility(dataset);
+        datasetsJson.put(getUserDatasetJson(dataset, compat));
+      }
     }
     return datasetsJson;
   }
@@ -48,11 +54,12 @@ public class UserDatasetFormatter {
   created: 1231238088881,
   uploaded: 1231398508344,
   sharedWith: [{user: 829424, time: 13252342341}, {user: 989921, time: 12332532332}],
-  dataFiles: [{name: "blah", size: "10M"}]
+  dataFiles: [{name: "blah", size: "10M"}],
+  compatibility: { isCompatible: true, notCompatibleReason: "" }
 }
 
    */
-  private static JSONObject getUserDatasetJson(UserDataset dataset) throws WdkModelException {
+  private static JSONObject getUserDatasetJson(UserDataset dataset, UserDatasetCompatibility compatibility) throws WdkModelException {
     JSONObject json = new JSONObject();
     JSONObject typeJson = new JSONObject();
     UserDatasetType type = dataset.getType();
@@ -92,6 +99,9 @@ public class UserDatasetFormatter {
       fileJson.put("size", file.getFileSize());
       sharesJson.put(filesJson);
     }
+    JSONObject compatJson = new JSONObject();
+    compatJson.put("isCompatible", compatibility.isCompatible());
+    compatJson.put("notCompatibleReason", compatibility.notCompatibleReason());
     return json;
   }
 }

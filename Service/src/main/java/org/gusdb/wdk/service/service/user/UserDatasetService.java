@@ -28,7 +28,7 @@ public class UserDatasetService extends UserService {
     UserDatasetStore userDatasetStore = getWdkModel().getUserDatasetStore();
     if (userDatasetStore == null) throw new WdkModelException("There is no userDatasetStore installed in the WDK Model.");
     Map<Integer, UserDataset> userDatasets = userDatasetStore.getUserDatasets(getCurrentUserId());
-    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, expand).toString()).build();
+    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, userDatasetStore, expand).toString()).build();
   }
 
 }

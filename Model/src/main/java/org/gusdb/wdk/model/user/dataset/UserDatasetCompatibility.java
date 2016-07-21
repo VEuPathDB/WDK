@@ -17,11 +17,11 @@ public class UserDatasetCompatibility {
    * If this dataset is compatible
    * @return
    */
-  boolean isCompatible() { return isCompatible; }
+  public boolean isCompatible() { return isCompatible; }
   
   /**
    * If not compatible, the reason why not
    * @return
    */
-  String notCompatibleReason() { return notCompatibleReason; }
+  public String notCompatibleReason() { return notCompatibleReason; }
 }

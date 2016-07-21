@@ -12,7 +12,6 @@ import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
-import org.gusdb.wdk.model.user.dataset.UserDatasetCompatibility;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
@@ -178,20 +177,11 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return json;
   }
   
-  /**
-   * Check if a dataset is compatible with this application, based on its type and data dependencies.
-   * @param userDataset
-   * @return
-   * @throws WdkModelException 
-   */
   @Override
-  public UserDatasetCompatibility getCompatibility(UserDataset userDataset) throws WdkModelException {
-    UserDatasetType type = userDataset.getType();
-    if (!typeHandlersMap.containsKey(type)) 
-      return new UserDatasetCompatibility(false, "Type " + type + " is not supported.");
-    return typeHandlersMap.get(type).getCompatibility(userDataset);
+  public UserDatasetTypeHandler getTypeHandler(UserDatasetType type) {
+    return typeHandlersMap.get(type);
   }
-
+  
   @Override
   public void updateMetaFromJson(Integer userId, Integer datasetId, JSONObject metaJson) throws WdkModelException {
     JsonUserDatasetMeta metaObj = new JsonUserDatasetMeta(metaJson);  // validate the input json
