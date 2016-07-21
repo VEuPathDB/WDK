@@ -6,7 +6,7 @@ import { getId, getDisplayName } from '../utils/CategoryUtils';
 let RecordNavigationItem = props => {
   if (props.node.children.length === 0) {
     return <noscript/>
-  };
+  }
 
   let category = props.node;
   let parentEnumeration = props.parentEnumeration;

@@ -1,6 +1,15 @@
 import $ from 'jquery';
 import _ from 'lodash';
-import wdk from './wdk';
+
+// Public javascript API for working with Wdk
+export * from './wdk';
+
+// window.wdk is internal and deprecated for public use
+let wdk = window.wdk;
+
+
+// Bootstrap
+// ---------
 
 var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver; // jshint ignore:line
 
