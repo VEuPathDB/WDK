@@ -30,6 +30,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -444,8 +445,15 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     }
                 }
             }
-            String qDisplayName = wdkModel.getQuestionDisplayName(qFullName);
-            if (qDisplayName == null) qDisplayName = qFullName;
+            String qDisplayName = null;
+            try {
+              Question q = wdkModel.getModel().getQuestion(qFullName);
+              qDisplayName = q.getDisplayName();
+            }
+            catch (WdkModelException e) {
+              // unable to find question; use qFullName
+              qDisplayName = qFullName;
+            }
 
             request.setAttribute("questionDisplayName", qDisplayName);
             request.setAttribute("customName", customName);

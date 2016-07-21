@@ -241,15 +241,6 @@ public class WdkModelBean implements ConnectionContainer {
         return new UserFactoryBean(wdkModel.getUserFactory());
     }
 
-    /**
-     * @param questionFullName
-     * @return
-     * @see org.gusdb.wdk.model.WdkModel#getQuestionDisplayName(java.lang.String)
-     */
-    public String getQuestionDisplayName(String questionFullName) {
-        return wdkModel.getQuestionDisplayName(questionFullName);
-    }
-
     public String getProjectId() {
         return wdkModel.getProjectId();
     }

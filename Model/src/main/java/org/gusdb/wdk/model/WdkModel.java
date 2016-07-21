@@ -1159,17 +1159,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     return _projectId;
   }
 
-  public String getQuestionDisplayName(String questionFullName) {
-    try {
-      Question question = (Question) resolveReference(questionFullName);
-      return question.getDisplayName();
-    }
-    catch (WdkModelException ex) {
-      // question doesn't exist, return null;
-      return null;
-    }
-  }
-
   /**
    * This method is supposed to be called by the digester
    * 
