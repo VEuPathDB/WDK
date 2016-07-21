@@ -73,11 +73,11 @@ public interface UserDatasetStore {
   void deleteExternalUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException;
   
   /**
-   * Check if a dataset is compatible with this application, based on its data dependencies.
-   * @param userDataset
-   * @return
+   * Return the type handler registered for the specified type.
+   * @param type
+   * @return null if not found.
    */
-  UserDatasetCompatibility getCompatibility(UserDataset userDataset) throws WdkModelException;
+  UserDatasetTypeHandler getTypeHandler(UserDatasetType type);
   
   /**
    * For a particular user, the last modification time of any of their datasets.

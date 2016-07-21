@@ -56,8 +56,8 @@ public class UserDatasetTypeHandlerPlugin extends WdkModelBase {
         throw new WdkModelException(msgStart + "must implement " + UserDatasetTypeHandler.class.getName());
       Constructor<?> constructor = implClass.getConstructor();
       typeHandler = (UserDatasetTypeHandler) constructor.newInstance();
-      typeHandler.setType(type);
-      typeHandler.setVersion(version);
+      if (!typeHandler.getUserDatasetType().getName().equals(type) || !typeHandler.getUserDatasetType().getVersion().equals(version))
+        throw new WdkModelException(msgStart + " is not compatible with " + type + " " + version);
     }
     catch (ClassNotFoundException e) {
       throw new WdkModelException(msgStart + "cannot be found.", e);
