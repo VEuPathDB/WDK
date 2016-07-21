@@ -107,6 +107,8 @@ import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.user.FavoriteReference;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStorePlugin;
+import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandlerPlugin;
 import org.gusdb.wdk.model.xml.XmlAttributeField;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
@@ -541,6 +543,12 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/ontology/property", WdkModelText.class, "addProperty");
     digester.addCallMethod("wdkModel/ontology/property", "setText", 0);
 
+    // userdatasetstore
+    configureNode(digester, "wdkModel/userDatasetStorePlugin", UserDatasetStorePlugin.class, "setUserDatasetStorePlugin");
+    configureNode(digester, "wdkModel/userDatasetStorePlugin/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod("wdkModel/userDatasetStorePlugin/property", "setText", 0);
+    configureNode(digester, "wdkModel/userDatasetStorePlugin/typeHandlerPlugin", UserDatasetTypeHandlerPlugin.class, "addTypeHandler");
+    
     // categories
     configureNode(digester, "wdkModel/searchCategory", SearchCategory.class, "addCategory");
 
