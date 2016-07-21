@@ -14,7 +14,6 @@ public class JsonUserDatasetDependency implements UserDatasetDependency {
   private String resourceIdentifier;
   private String resourceVersion;
   private String resourceDisplayName;
-  private JSONObject jsonObject;
   
   /**
    * Construct from jsonObject, eg, when info is provided from larger json file
@@ -22,7 +21,6 @@ public class JsonUserDatasetDependency implements UserDatasetDependency {
    * @throws WdkModelException
    */
   public JsonUserDatasetDependency(JSONObject jsonObject) throws WdkModelException {
-    this.jsonObject = jsonObject;
     try {
       this.resourceIdentifier = jsonObject.getString(RESOURCE_IDENTIFIER);
       this.resourceVersion = jsonObject.getString(RESOURCE_VERSION);
@@ -46,13 +44,5 @@ public class JsonUserDatasetDependency implements UserDatasetDependency {
   public String getResourceDisplayName() {
     return resourceDisplayName;
   }
-  
-  /**
-   * the underlying json object  
-   */
-  public JSONObject getJsonObject() {
-    return jsonObject;
-  }
-
-
+ 
 }

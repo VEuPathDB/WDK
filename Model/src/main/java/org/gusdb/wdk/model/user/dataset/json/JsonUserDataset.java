@@ -47,7 +47,7 @@ public class JsonUserDataset implements UserDataset {
   private Integer size;
   private Map<Integer, JsonUserDatasetShare> sharesMap = new HashMap<Integer, JsonUserDatasetShare>();
   private Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
-  private Set<JsonUserDatasetDependency> dependencies;
+  private Set<UserDatasetDependency> dependencies;
   private JSONObject datasetJsonObject;
   private JSONObject metaJsonObject;
   
@@ -159,7 +159,7 @@ public class JsonUserDataset implements UserDataset {
   }
 
   @Override
-  public Date getCreateDate() {
+  public Date getCreatedDate() {
     return created;
   }
 
@@ -173,12 +173,9 @@ public class JsonUserDataset implements UserDataset {
     return uploaded;
   }
 
-  // TODO: is this the right way to handle this subclassing?
   @Override
   public Set<UserDatasetDependency> getDependencies() {
-    Set<UserDatasetDependency> d = new HashSet<UserDatasetDependency>();
-    for (JsonUserDatasetDependency dependency : dependencies) d.add(dependency);
-    return Collections.unmodifiableSet(d);
+    return Collections.unmodifiableSet(dependencies);
   }
 
   @Override
