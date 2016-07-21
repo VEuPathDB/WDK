@@ -90,7 +90,7 @@ public interface UserDataset {
    * Storing this date with the dataset is the responsibility of that program, not the wdk.
    * @return
    */
-  Date getCreateDate() throws WdkModelException;
+  Date getCreatedDate() throws WdkModelException;
   
   /**
    * The last time it was modified, either meta info or outgoing or incoming sharing.
