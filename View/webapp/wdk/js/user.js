@@ -41,10 +41,10 @@ wdk.namespace("window.wdk.user", function(ns, $) {
 
   ns.login = function(message, destination) {
     if (message) {
-      wdk.client.runtime.dispatchAction(showLoginWarning(message, destination));
+      wdk.context.dispatchAction(showLoginWarning(message, destination));
     }
     else {
-      wdk.client.runtime.dispatchAction(showLoginForm(destination));
+      wdk.context.dispatchAction(showLoginForm(destination));
     }
   };
 

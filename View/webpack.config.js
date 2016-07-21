@@ -6,7 +6,8 @@ module.exports = {
   entry: './webapp/wdk/js',
   output: {
     path: outputPath,
-    filename: 'wdk.js'
+    filename: 'wdk.js',
+    library: 'Wdk'
   },
   bail: true,
   resolve: {
