@@ -1708,7 +1708,7 @@
 	  <ref name="property"/>
 	</zeroOrMore>
 	<oneOrMore>
-	  <element name="TypeHandlerPlugin">
+	  <element name="typeHandlerPlugin">
 	    <attribute name="type"/>
 	    <attribute name="version"/>
 	    <attribute name="implementation"/>

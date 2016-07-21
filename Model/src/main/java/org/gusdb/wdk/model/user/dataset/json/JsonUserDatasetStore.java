@@ -56,7 +56,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   protected static final String META_JSON_FILE = "meta.json";
   protected static final String EXTERNAL_DATASETS_DIR = "externalDatasets";
   protected static final String REMOVED_EXTERNAL_DATASETS_DIR = "removedExternalDatasets";
-  protected Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap;
+  protected Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap = new HashMap<UserDatasetType, UserDatasetTypeHandler>();
   
   private static final String NL = System.lineSeparator();
 
@@ -74,7 +74,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       throw new WdkModelException("Required configuration 'rootPath' not found.");
     usersRootDir = Paths.get(pathName);
 
-    if (adaptor.isDirectory(usersRootDir))
+    if (!adaptor.isDirectory(usersRootDir))
       throw new WdkModelException(
           "Provided property 'rootPath' has value '" + pathName + "' which is not an existing directory");
     

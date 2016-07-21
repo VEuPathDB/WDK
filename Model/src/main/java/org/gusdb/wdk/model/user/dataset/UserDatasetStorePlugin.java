@@ -20,8 +20,6 @@ public class UserDatasetStorePlugin extends WdkModelBase {
 
   private String implementationClass;
   private List<WdkModelText> propertyList = new ArrayList<>();
-  private Map<String, String> properties = new LinkedHashMap<>();
-  private Set<UserDatasetTypeHandler> typeHandlers = new HashSet<UserDatasetTypeHandler>();
   private Set<UserDatasetTypeHandlerPlugin> typeHandlerPlugins = new HashSet<UserDatasetTypeHandlerPlugin>();
   private UserDatasetStore userDatasetStore;
 
@@ -48,10 +46,6 @@ public class UserDatasetStorePlugin extends WdkModelBase {
     this.propertyList.add(property);
   }
 
-  public Map<String, String> getProperties() {
-    return new LinkedHashMap<String, String>(this.properties);
-  }
-  
   public void addTypeHandler(UserDatasetTypeHandlerPlugin plugin) {
     typeHandlerPlugins.add(plugin);
   }
@@ -82,12 +76,14 @@ public class UserDatasetStorePlugin extends WdkModelBase {
     }
     
     // call resolve references on handlers; add the resolved typeHandlers to our list
+    Set<UserDatasetTypeHandler> typeHandlers = new HashSet<UserDatasetTypeHandler>();
     for (UserDatasetTypeHandlerPlugin plugin : typeHandlerPlugins) {
       plugin.resolveReferences(getWdkModel());
       typeHandlers.add(plugin.getTypeHandler());
     }
     
     // stuff properties into a useable map
+    Map<String, String> properties = new LinkedHashMap<>();
     for (WdkModelText property : propertyList) {
         String propName = property.getName();
         String propValue = property.getText();
@@ -99,5 +95,8 @@ public class UserDatasetStorePlugin extends WdkModelBase {
             + "'");
     }
     propertyList = null;
+
+    // initialize the store
+    userDatasetStore.initialize(properties, typeHandlers);
   }
 }
