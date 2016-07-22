@@ -81,11 +81,11 @@
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebar {
-  left: -44px;
+  left: -24px;
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebar__fixed {
-  left: 4px;
+  left: 24px;
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebarToggle {
