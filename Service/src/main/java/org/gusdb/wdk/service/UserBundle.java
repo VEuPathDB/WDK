@@ -7,14 +7,14 @@ import org.gusdb.wdk.model.user.UserFactory;
 
 /**
  * Encapsulates information about the user of a requested user resource.  For example, if a request comes
- * in for /user/123, an instance of this class, given "123" will tell you the following:
+ * in for /user/123, an instance of this class, given target user ID "123" will tell you the following:
  * 
- * String originalUserIdString: value used to generate this UserBundle (e.g. "123")
- * bool isValidUserId: if "123" is an integer corresponding to an existing user ID in the system
+ * String targetUserIdString: value used to generate this UserBundle (e.g. "123")
+ * bool isValidTargetUserId: if "123" is an integer corresponding to an existing user ID in the system
  * int parsedUserId: raw user ID after parsing (set to -1 if not valid)
- * User incomingUser: user behind the parsed user ID
- * bool isCurrentUser: if the user behind the parsed user ID is the same as the current user
- * User currentUser: a reference to the current user (same object as user if isCurrentUser == true)
+ * User targetUser: user behind the parsed target user ID
+ * bool isSessionUser: whether the user behind the parsed user ID is the same as the current user
+ * User sessionUser: a reference to the session's current user (same object as targetUser if isSessionUser == true)
  * 
  * @author rdoherty
  */
@@ -22,68 +22,66 @@ public class UserBundle {
 
   private static final Logger LOG = Logger.getLogger(UserBundle.class);
 
-  public static final String CURRENT_USER_MAGIC_STRING = "current";
+  public static final String SESSSION_USER_MAGIC_STRING = "current";
 
-  private final String _incomingUserIdString;
+  private final String _targetUserIdString;
   private final boolean _isValidUserId;
-  private final int _parsedUserId;
-  private final User _incomingUser;
-  private final boolean _isCurrentUser;
-  private final User _currentUser;
+  private final User _targetUser;
+  private final boolean _isSessionUser;
+  private final User _sessionUser;
 
-  public static UserBundle createFromId(String userIdStr, User currentUser, UserFactory userFactory) {
+  public static UserBundle createFromTargetId(String userIdStr, User sessionUser, UserFactory userFactory) {
     try {
-      if (CURRENT_USER_MAGIC_STRING.equals(userIdStr)) {
-        return new UserBundle(CURRENT_USER_MAGIC_STRING, true, currentUser.getUserId(), currentUser, true, currentUser);
+      if (SESSSION_USER_MAGIC_STRING.equals(userIdStr)) {
+        return getSessionUserBundle(SESSSION_USER_MAGIC_STRING, sessionUser);
       }
       int userId = Integer.parseInt(userIdStr);
-      if (userId == currentUser.getUserId()) {
-        return new UserBundle(userIdStr, true, currentUser.getUserId(), currentUser, true, currentUser);
+      if (userId == sessionUser.getUserId()) {
+        return getSessionUserBundle(userIdStr, sessionUser);
       }
       User user = userFactory.getUser(userId);
-      return new UserBundle(userIdStr, true, user.getUserId(), user, false, currentUser);
+      return new UserBundle(userIdStr, true, user, false, sessionUser);
     }
     catch (WdkModelException | NumberFormatException | NullPointerException e) {
       LOG.warn("User requested by ID that is misformatted or does not exist", e);
       // userIdStr is null or misformatted, or no user by the passed ID could be found
-      return UserBundle.getBadIdBundle(userIdStr, currentUser);
+      return getBadIdBundle(userIdStr, sessionUser);
     }
   }
 
-  private UserBundle(String incomingUserIdString, boolean isValidUserId, int parsedUserId, User incomingUser, boolean isCurrentUser, User currentUser) {
-    _incomingUserIdString = incomingUserIdString;
+  private UserBundle(String targetUserIdString, boolean isValidUserId, User targetUser, boolean isSessionUser, User sessionUser) {
+    _targetUserIdString = targetUserIdString;
     _isValidUserId = isValidUserId;
-    _parsedUserId = parsedUserId;
-    _incomingUser = incomingUser;
-    _isCurrentUser = isCurrentUser;
-    _currentUser = currentUser;
+    _targetUser = targetUser;
+    _isSessionUser = isSessionUser;
+    _sessionUser = sessionUser;
+  }
+
+  private static UserBundle getSessionUserBundle(String userIdStr, User sessionUser) {
+    return new UserBundle(userIdStr, true, sessionUser, true, sessionUser);
   }
 
   private static UserBundle getBadIdBundle(String userIdStr, User currentUser) {
-    return new UserBundle(userIdStr, false, -1, null, false, currentUser);
+    return new UserBundle(userIdStr, false, null, false, currentUser);
   }
 
-  public String getIncomingUserIdString() {
-    return _incomingUserIdString;
+  public String getTargetUserIdString() {
+    return _targetUserIdString;
   }
 
   public boolean isValidUserId() {
     return _isValidUserId;
   }
 
-  public int getParsedUserId() {
-    return _parsedUserId;
+  public User getTargetUser() {
+    return _targetUser;
   }
 
-  public User getIncomingUser() {
-    return _incomingUser;
+  public boolean isSessionUser() {
+    return _isSessionUser;
   }
 
-  public boolean isCurrentUser() {
-    return _isCurrentUser;
-  }
-
-  public User getCurrentUser() {
-    return _currentUser;
+  public User getSessionUser() {
+    return _sessionUser;
   }
 }

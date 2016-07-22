@@ -25,19 +25,19 @@ public abstract class UserService extends WdkService {
   }
 
   /**
-   * Ensures the subject user exists and that the calling user has the
+   * Ensures the target user exists and that the session user has the
    * permissions requested.  If either condition is not true, the appropriate
    * exception (corresponding to 404 and 403 respectively) is thrown.
    * 
-   * @param userIdStr id string of the subject user
+   * @param userIdStr id string of the target user
    * @param requestedAccess the access requested by the caller
-   * @return a userBundle representing that user
+   * @return a userBundle representing the target user and his relationship to the session user
    */
-  protected UserBundle getUserBundle(Access requestedAccess) {
-    UserBundle userBundle = parseUserId(_userIdStr);
+  protected UserBundle getTargetUserBundle(Access requestedAccess) {
+    UserBundle userBundle = parseTargetUserId(_userIdStr);
     if (!userBundle.isValidUserId())
-      throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userBundle.getIncomingUserIdString()));
-    if (!userBundle.isCurrentUser() && Access.PRIVATE.equals(requestedAccess))
+      throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userBundle.getTargetUserIdString()));
+    if (!userBundle.isSessionUser() && Access.PRIVATE.equals(requestedAccess))
       throw new ForbiddenException(WdkService.PERMISSION_DENIED);
     return userBundle;
   }

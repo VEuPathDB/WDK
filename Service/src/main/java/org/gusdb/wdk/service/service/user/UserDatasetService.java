@@ -27,7 +27,7 @@ public class UserDatasetService extends UserService {
   public Response getUserDatasets(@QueryParam("expand") Boolean expand) throws WdkModelException {
     UserDatasetStore userDatasetStore = getWdkModel().getUserDatasetStore();
     if (userDatasetStore == null) throw new WdkModelException("There is no userDatasetStore installed in the WDK Model.");
-    Map<Integer, UserDataset> userDatasets = userDatasetStore.getUserDatasets(getCurrentUserId());
+    Map<Integer, UserDataset> userDatasets = userDatasetStore.getUserDatasets(getSessionUserId());
     return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, userDatasetStore, expand).toString()).build();
   }
 

@@ -43,7 +43,7 @@ public class StepService extends UserService {
     catch (NumberFormatException | WdkModelException e) {
       throw new NotFoundException(WdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
-    if (step.getUser().getUserId() != getCurrentUserId()) {
+    if (step.getUser().getUserId() != getSessionUserId()) {
       throw new ForbiddenException(WdkService.PERMISSION_DENIED);
     }
     return Response.ok(StepFormatter.getStepJson(step).toString()).build();
@@ -59,8 +59,8 @@ public class StepService extends UserService {
       //   be a property of the input JSON, with other (optional?) properties containing other
       //   step properties like custom name, etc.
       JSONObject json = new JSONObject(body);
-      AnswerRequest request = AnswerRequestFactory.createFromJson(json, getWdkModelBean(), getCurrentUser());
-      Step step = WdkStepFactory.createStep(request, getCurrentUser(), getWdkModel().getStepFactory());
+      AnswerRequest request = AnswerRequestFactory.createFromJson(json, getWdkModelBean(), getSessionUser());
+      Step step = WdkStepFactory.createStep(request, getSessionUser(), getWdkModel().getStepFactory());
       return Response.ok(StepFormatter.getStepJson(step).toString()).build();
     }
     catch (JSONException | RequestMisformatException e) {

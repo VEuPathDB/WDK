@@ -51,7 +51,7 @@ public class DatasetService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response addDatasetFromJson(String body) throws WdkModelException {
     try {
-      UserBundle userBundle = getUserBundle(Access.PRIVATE);
+      UserBundle userBundle = getTargetUserBundle(Access.PRIVATE);
       JSONObject input = new JSONObject(body);
       JSONArray jsonIds = input.getJSONArray("ids");
       if (jsonIds.length() == 0)
@@ -76,7 +76,7 @@ public class DatasetService extends UserService {
         }
       };
       Dataset dataset = getWdkModel().getDatasetFactory().createOrGetDataset(
-          userBundle.getIncomingUser(), parser, FormatUtil.join(ids.toArray(), " "), "");
+          userBundle.getTargetUser(), parser, FormatUtil.join(ids.toArray(), " "), "");
       JSONObject datasetMetadata = new JSONObject();
       datasetMetadata.put(Keys.ID, dataset.getDatasetId());
       return Response.ok(datasetMetadata.toString()).build();
@@ -94,7 +94,7 @@ public class DatasetService extends UserService {
       //@FormParam("file") InputStream fileInputStream,
       //@FormParam("file") FormDataContentDisposition contentDispositionHeader)
   {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
+    UserBundle userBundle = getTargetUserBundle(Access.PRIVATE);
     return Response.ok("{ }").build();
 
   }
