@@ -59,7 +59,7 @@ public class QuestionService extends WdkService {
       return Response.ok(QuestionFormatter.getQuestionsJson(
           (recordClassStr == null || recordClassStr.isEmpty() ? getAllQuestions(getWdkModel()) :
             getQuestionsForRecordClasses(getWdkModel(), recordClassStr.split(","))),
-            getFlag(expandQuestions), getFlag(expandParams), getCurrentUser(), dependerParams).toString()).build();
+            getFlag(expandQuestions), getFlag(expandParams), getSessionUser(), dependerParams).toString()).build();
     }
     catch (IllegalArgumentException e) {
       throw new BadRequestException(e.getMessage(), e);
@@ -107,7 +107,7 @@ public class QuestionService extends WdkService {
       throw new NotFoundException(WdkService.formatNotFound(QUESTION_RESOURCE + questionName));
     Map<String,String> dependedParamValues = new HashMap<String, String>();
     return Response.ok(QuestionFormatter.getQuestionJson(question,
-        getFlag(expandParams), getCurrentUser(), dependedParamValues).toString()).build();
+        getFlag(expandParams), getSessionUser(), dependedParamValues).toString()).build();
   }
 
   private Question getQuestionFromSegment(String questionName) {
@@ -166,10 +166,10 @@ public class QuestionService extends WdkService {
       if (!contextParamValues.containsKey(param.getName()))
         throw new WdkUserException("This call to the question service requires " +
             "that the body contain values for all params.  But it is missing one for: " + param.getName());
-      param.validate(getCurrentUser(), contextParamValues.get(param.getName()), contextParamValues);
+      param.validate(getSessionUser(), contextParamValues.get(param.getName()), contextParamValues);
     }
 
-    return Response.ok(QuestionFormatter.getQuestionJson(question, true, getCurrentUser(),
+    return Response.ok(QuestionFormatter.getQuestionJson(question, true, getSessionUser(),
         contextParamValues).toString()).build();
   }
 
@@ -224,12 +224,12 @@ public class QuestionService extends WdkService {
     Param changedParam = null;
     for (Param param : question.getParams()) if (param.getName().equals(changedParamName)) changedParam = param;
     if (changedParam == null) throw new WdkUserException("Param with name '" + changedParamName + "' is no longer valid for question '" + question.getName() + "'");
-    changedParam.validate(getCurrentUser(), changedParamValue, contextParamValues);
+    changedParam.validate(getSessionUser(), changedParamValue, contextParamValues);
     
     // find all dependencies of the changed param, and remove them from the context
     for (Param dependentParam : changedParam.getAllDependentParams()) contextParamValues.remove(dependentParam.getName());
 
-    return Response.ok(QuestionFormatter.getQuestionJson(question, true, getCurrentUser(),
+    return Response.ok(QuestionFormatter.getQuestionJson(question, true, getSessionUser(),
         contextParamValues, changedParam.getAllDependentParams()).toString()).build();
   }
 

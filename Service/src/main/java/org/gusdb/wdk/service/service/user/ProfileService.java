@@ -55,10 +55,10 @@ public class ProfileService extends UserService {
   public Response getById(
       @QueryParam("includePreferences") Boolean includePreferences)
           throws WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PUBLIC);
+    UserBundle userBundle = getTargetUserBundle(Access.PUBLIC);
     return Response.ok(
-        UserFormatter.getUserJson(userBundle.getIncomingUser(),
-            userBundle.isCurrentUser(), getFlag(includePreferences)).toString()
+        UserFormatter.getUserJson(userBundle.getTargetUser(),
+            userBundle.isSessionUser(), getFlag(includePreferences)).toString()
     ).build();
   }
 
@@ -74,10 +74,10 @@ public class ProfileService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response setUserProfile(String body)
       throws ConflictException, DataValidationException, WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
+    UserBundle userBundle = getTargetUserBundle(Access.PRIVATE);
     NewCookie loginCookie = null;
     try {
-      User user = userBundle.getIncomingUser();
+      User user = userBundle.getTargetUser();
       if(user.isGuest()) {
         throw new ForbiddenException(NOT_LOGGED_IN);
       }
@@ -121,10 +121,10 @@ public class ProfileService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateUserProfile(String body) 
       throws ConflictException, DataValidationException, WdkModelException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
+    UserBundle userBundle = getTargetUserBundle(Access.PRIVATE);
     NewCookie loginCookie = null;
     try {
-      User user = userBundle.getIncomingUser();
+      User user = userBundle.getTargetUser();
       if(user.isGuest()) {
         throw new ForbiddenException(NOT_LOGGED_IN);
       }
@@ -155,9 +155,9 @@ public class ProfileService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response resetUserPassword(String body)
       throws WdkModelException, DataValidationException {
-    UserBundle userBundle = getUserBundle(Access.PRIVATE);
+    UserBundle userBundle = getTargetUserBundle(Access.PRIVATE);
     try {
-      User user = userBundle.getIncomingUser();
+      User user = userBundle.getTargetUser();
       JSONObject json = new JSONObject(body);
       PasswordChangeRequest request = PasswordChangeRequest.createFromJson(json);
       UserFactory userMgr = getWdkModel().getUserFactory();

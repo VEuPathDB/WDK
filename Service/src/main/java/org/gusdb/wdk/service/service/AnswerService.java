@@ -81,7 +81,7 @@ public class AnswerService extends WdkService {
       // 1. Parse result request (question, params, etc.)
 
       JSONObject questionDefJson = json.getJSONObject("questionDefinition");
-      AnswerRequest request = AnswerRequestFactory.createFromJson(questionDefJson, getWdkModelBean(), getCurrentUser());
+      AnswerRequest request = AnswerRequestFactory.createFromJson(questionDefJson, getWdkModelBean(), getSessionUser());
 
       // 2. Parse (optional) request specifics (columns, pagination, etc.)
 

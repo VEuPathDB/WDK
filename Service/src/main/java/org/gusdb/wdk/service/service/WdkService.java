@@ -53,21 +53,21 @@ public abstract class WdkService {
     return _request.getSession();
   }
 
-  protected UserBean getCurrentUserBean() {
+  protected UserBean getSessionUserBean() {
     return ((UserBean)_request.getSession().getAttribute("wdkUser"));
   }
 
-  protected int getCurrentUserId() throws WdkModelException {
-    return getCurrentUserBean().getUserId();
+  protected int getSessionUserId() throws WdkModelException {
+    return getSessionUserBean().getUserId();
   }
 
-  protected User getCurrentUser() {
-    return getCurrentUserBean().getUser();
+  protected User getSessionUser() {
+    return getSessionUserBean().getUser();
   }
 
   protected WdkAnswerFactory getResultFactory() {
     if (_resultFactory == null) {
-      _resultFactory = new WdkAnswerFactory(getCurrentUserBean());
+      _resultFactory = new WdkAnswerFactory(getSessionUserBean());
     }
     return _resultFactory;
   }
@@ -103,10 +103,10 @@ public abstract class WdkService {
   /**
    * Returns a session-aware user bundle based on the input string.
    * 
-   * @param userIdStr potential user ID as string, or special string 'current' indicating current user
+   * @param userIdStr potential target user ID as string, or special string 'current' indicating session user
    * @return user bundle describing status of the requested user string
    */
-  protected UserBundle parseUserId(String userIdStr) {
-    return UserBundle.createFromId(userIdStr, getCurrentUser(), getWdkModel().getUserFactory());
+  protected UserBundle parseTargetUserId(String userIdStr) {
+    return UserBundle.createFromTargetId(userIdStr, getSessionUser(), getWdkModel().getUserFactory());
   }
 }
