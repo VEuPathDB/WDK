@@ -36,7 +36,7 @@ public class PreferenceService extends UserService {
   public Response getUserPrefs() {
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
     return Response.ok(UserFormatter.getUserPrefsJson(
-        userBundle.getUser().getProjectPreferences()).toString()).build();
+        userBundle.getIncomingUser().getProjectPreferences()).toString()).build();
   }
 
   /**
@@ -53,7 +53,7 @@ public class PreferenceService extends UserService {
   public Response putUserPrefs(String body) throws DataValidationException, WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
     try {
-      User user = userBundle.getUser();
+      User user = userBundle.getIncomingUser();
       JSONObject json = new JSONObject(body);
       UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json);
       Map<String, String> preferencesMap = request.getPreferencesMap();
@@ -84,7 +84,7 @@ public class PreferenceService extends UserService {
   public Response patchUserPrefs(String body) throws WdkModelException, DataValidationException {
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
     try {
-      User user = userBundle.getUser();
+      User user = userBundle.getIncomingUser();
       JSONObject json = new JSONObject(body);
       UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json);
       Map<String, String> preferencesMap = request.getPreferencesMap();
