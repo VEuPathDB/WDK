@@ -76,7 +76,7 @@ public class DatasetService extends UserService {
         }
       };
       Dataset dataset = getWdkModel().getDatasetFactory().createOrGetDataset(
-          userBundle.getUser(), parser, FormatUtil.join(ids.toArray(), " "), "");
+          userBundle.getIncomingUser(), parser, FormatUtil.join(ids.toArray(), " "), "");
       JSONObject datasetMetadata = new JSONObject();
       datasetMetadata.put(Keys.ID, dataset.getDatasetId());
       return Response.ok(datasetMetadata.toString()).build();

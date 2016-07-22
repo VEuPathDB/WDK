@@ -36,7 +36,7 @@ public abstract class UserService extends WdkService {
   protected UserBundle getUserBundle(Access requestedAccess) {
     UserBundle userBundle = parseUserId(_userIdStr);
     if (!userBundle.isValidUserId())
-      throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userBundle.getRequestedUserId()));
+      throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userBundle.getIncomingUserIdString()));
     if (!userBundle.isCurrentUser() && Access.PRIVATE.equals(requestedAccess))
       throw new ForbiddenException(WdkService.PERMISSION_DENIED);
     return userBundle;

@@ -57,7 +57,7 @@ public class ProfileService extends UserService {
           throws WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PUBLIC);
     return Response.ok(
-        UserFormatter.getUserJson(userBundle.getUser(),
+        UserFormatter.getUserJson(userBundle.getIncomingUser(),
             userBundle.isCurrentUser(), getFlag(includePreferences)).toString()
     ).build();
   }
@@ -77,7 +77,7 @@ public class ProfileService extends UserService {
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
     NewCookie loginCookie = null;
     try {
-      User user = userBundle.getUser();
+      User user = userBundle.getIncomingUser();
       if(user.isGuest()) {
         throw new ForbiddenException(NOT_LOGGED_IN);
       }
@@ -124,7 +124,7 @@ public class ProfileService extends UserService {
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
     NewCookie loginCookie = null;
     try {
-      User user = userBundle.getUser();
+      User user = userBundle.getIncomingUser();
       if(user.isGuest()) {
         throw new ForbiddenException(NOT_LOGGED_IN);
       }
@@ -157,7 +157,7 @@ public class ProfileService extends UserService {
       throws WdkModelException, DataValidationException {
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
     try {
-      User user = userBundle.getUser();
+      User user = userBundle.getIncomingUser();
       JSONObject json = new JSONObject(body);
       PasswordChangeRequest request = PasswordChangeRequest.createFromJson(json);
       UserFactory userMgr = getWdkModel().getUserFactory();
