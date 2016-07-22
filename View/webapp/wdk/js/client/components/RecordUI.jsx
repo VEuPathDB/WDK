@@ -52,9 +52,9 @@ class RecordUI extends Component {
       let rect = el.getBoundingClientRect();
       return rect.top <= 50 && rect.bottom > 50;
     });
-    if (activeElement != null) {
-      this.props.updateActiveSection(activeElement.id);
-    }
+    let activeSection = activeElement && activeElement.id;
+    if (activeSection != this.props.activeSection)
+      this.props.updateActiveSection(activeElement == null ? null : activeElement.id);
   }
 
   _scrollToActiveSection() {
