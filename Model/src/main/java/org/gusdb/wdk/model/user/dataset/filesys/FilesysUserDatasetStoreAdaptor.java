@@ -67,9 +67,10 @@ public class FilesysUserDatasetStoreAdaptor
     }
   }
 
-  public void writeFileAtomic(Path file, String contents) throws WdkModelException {
+  public void writeFileAtomic(Path file, String contents, boolean errorIfTargetExists) throws WdkModelException {
     Path tempFile = file.resolve("." + Long.toString(System.currentTimeMillis()));
     try {
+      if (errorIfTargetExists && Files.exists(file)) throw new WdkModelException("File already exists: " + file);
       Files.write(tempFile, contents.getBytes(), StandardOpenOption.CREATE_NEW);
       Files.move(tempFile, file, StandardCopyOption.ATOMIC_MOVE);
     }
@@ -79,9 +80,9 @@ public class FilesysUserDatasetStoreAdaptor
   }
 
   @Override
-  public void writeFile(Path file, String contents) throws WdkModelException {
+  public void writeEmptyFile(Path file) throws WdkModelException {
     try {
-      Files.write(file, contents.getBytes(), StandardOpenOption.CREATE);
+      Files.write(file, new String("").getBytes(), StandardOpenOption.CREATE);
     }
     catch (IOException e) {
       throw new WdkModelException(e);
@@ -89,21 +90,10 @@ public class FilesysUserDatasetStoreAdaptor
   }
 
   @Override
-  public boolean isDirectory(Path dir) throws WdkModelException {
-    return Files.isDirectory(dir);
-  }
-
-  @Override
-  public void putFilesIntoMap(Path dir, Map<String, UserDatasetFile> filesMap) throws WdkModelException {
-    // iterate through data files, creating a datafile obj for each
-    try (DirectoryStream<Path> datafileStream = Files.newDirectoryStream(dir)) {
-      for (Path datafile : datafileStream) {
-        filesMap.put(datafile.getFileName().toString(), new FilesysUserDatasetFile(datafile));
-      }
-    }
-    catch (IOException | DirectoryIteratorException e) {
-      throw new WdkModelException(e);
-    }
+  public boolean directoryExists(Path dir) throws WdkModelException {
+    if (Files.isDirectory(dir)) return true;
+    if (Files.exists(dir)) throw new WdkModelException("File exists and is not a directory: " + dir);
+    return false;
   }
 
   @Override

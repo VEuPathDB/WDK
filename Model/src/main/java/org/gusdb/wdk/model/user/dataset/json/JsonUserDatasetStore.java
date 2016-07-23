@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
+import org.gusdb.wdk.model.user.dataset.filesys.FilesysUserDatasetFile;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -73,7 +74,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       throw new WdkModelException("Required configuration 'rootPath' not found.");
     usersRootDir = Paths.get(pathName);
 
-    if (!adaptor.isDirectory(usersRootDir))
+    if (!adaptor.directoryExists(usersRootDir))
       throw new WdkModelException(
           "Provided property 'rootPath' has value '" + pathName + "' which is not an existing directory");
     
@@ -125,7 +126,8 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    * @throws WdkModelException
    */
   protected void putDataFilesIntoMap(Path dataFilesDir, Map<String, UserDatasetFile> dataFilesMap) throws WdkModelException {
-    adaptor.putFilesIntoMap(dataFilesDir, dataFilesMap);
+    for (Path path : adaptor.getPathsInDir(dataFilesDir))
+      dataFilesMap.put(path.getFileName().toString(), new FilesysUserDatasetFile(path));
   }
   
   /**
@@ -149,7 +151,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     JSONObject metaJson = parseJsonFile(datasetDir.resolve("meta.json"));
 
     Path datafilesDir = datasetDir.resolve("datafiles");
-    if (!adaptor.isDirectory(datafilesDir))
+    if (!adaptor.directoryExists(datafilesDir))
       throw new WdkModelException("Can't find datafiles directory " + datafilesDir);
 
     Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
@@ -186,12 +188,12 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   public void updateMetaFromJson(Integer userId, Integer datasetId, JSONObject metaJson) throws WdkModelException {
     JsonUserDatasetMeta metaObj = new JsonUserDatasetMeta(metaJson);  // validate the input json
     Path metaJsonFile = getUserDatasetsDir(userId, false).resolve(datasetId.toString()).resolve(META_JSON_FILE);
-    adaptor.writeFileAtomic(metaJsonFile, metaObj.getJsonObject().toString());
+    adaptor.writeFileAtomic(metaJsonFile, metaObj.getJsonObject().toString(), false);
   }
   
   protected void writeJsonUserDataset(JsonUserDataset dataset) throws WdkModelException {
     Path datasetJsonFile = getUserDatasetsDir(dataset.getOwnerId(), false).resolve(dataset.getUserDatasetId().toString()).resolve(DATASET_JSON_FILE);
-    adaptor.writeFileAtomic(datasetJsonFile, dataset.getDatasetJsonObject().toString());
+    adaptor.writeFileAtomic(datasetJsonFile, dataset.getDatasetJsonObject().toString(), false);
   }
     
   @Override
@@ -232,11 +234,11 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
   
   protected void writeExternalDatasetLink(Path recipientExternalDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
-    if (!adaptor.isDirectory(recipientExternalDatasetsDir))
+    if (!adaptor.directoryExists(recipientExternalDatasetsDir))
       adaptor.createDirectory(recipientExternalDatasetsDir);
     Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(
         getExternalDatasetFileName(ownerUserId, datasetId));
-    adaptor.writeFile(externalDatasetFileName, new String(""));
+    adaptor.writeEmptyFile(externalDatasetFileName);
 
   }
  
@@ -260,7 +262,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    * @throws WdkModelException
    */
   public void deleteExternalUserDataset(Path recipientExternalDatasetsDir, Path recipientRemovedDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
-    if (adaptor.isDirectory(recipientRemovedDatasetsDir))
+    if (!adaptor.directoryExists(recipientRemovedDatasetsDir))
       adaptor.createDirectory(recipientRemovedDatasetsDir);
     Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(
         getExternalDatasetFileName(ownerUserId, datasetId));
@@ -278,7 +280,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
 
   protected Path getUserDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException {
     Path userDir = usersRootDir.resolve(userId.toString());
-    if (!adaptor.isDirectory(userDir)) {
+    if (!adaptor.directoryExists(userDir)) {
       if (createPathIfAbsent) adaptor.createDirectory(userDir);
       else throw new WdkModelException("Can't find user directory " + userDir);
     }
@@ -312,7 +314,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   protected Path getUserDatasetsDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException {
     Path userDatasetsDir = getUserDir(userId, createPathIfAbsent).resolve("datasets");
 
-    if (!adaptor.isDirectory(userDatasetsDir))
+    if (!adaptor.directoryExists(userDatasetsDir))
       if (createPathIfAbsent)
         adaptor.createDirectory(userDatasetsDir);
       else
