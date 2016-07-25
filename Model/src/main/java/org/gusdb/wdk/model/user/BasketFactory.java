@@ -316,12 +316,7 @@ public class BasketFactory {
           + user.getEmail(), e);
     }
     finally {
-      if (rs == null) {
-        SqlUtils.closeStatement(ps);
-      }
-      else {
-        SqlUtils.closeResultSetAndStatement(rs);
-      }
+      SqlUtils.closeResultSetAndStatement(rs, ps);
     }
     return counts;
   }
@@ -384,11 +379,12 @@ public class BasketFactory {
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID + " = ? AND "
         + COLUMN_RECORD_CLASS + " =?";
     DataSource ds = wdkModel.getUserDb().getDataSource();
+    PreparedStatement ps = null;
     ResultSet rs = null;
     long start = System.currentTimeMillis();
     try {
       try {
-        PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
+        ps = SqlUtils.getPreparedStatement(ds, sql);
         ps.setFetchSize(100);
         ps.setString(1, wdkModel.getProjectId());
         ps.setInt(2, user.getUserId());
@@ -413,7 +409,7 @@ public class BasketFactory {
         }
         return records;
       } finally {
-        SqlUtils.closeResultSetAndStatement(rs);
+        SqlUtils.closeResultSetAndStatement(rs, ps);
       }
     } catch (SQLException ex) {
       throw new WdkModelException(ex);

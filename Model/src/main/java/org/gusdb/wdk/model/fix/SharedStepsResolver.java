@@ -148,7 +148,7 @@ public class SharedStepsResolver extends BaseCLI {
       throw new WdkModelException(ex);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
       SqlUtils.closeStatement(psUpdate);
     }
   }
@@ -201,7 +201,7 @@ public class SharedStepsResolver extends BaseCLI {
       throw new WdkModelException(ex);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
       SqlUtils.closeStatement(psUpdate);
     }
   }
@@ -244,7 +244,7 @@ public class SharedStepsResolver extends BaseCLI {
       return newId;
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
       SqlUtils.closeStatement(psUpdate);
       SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TEMP_STEP_TABLE, "delete-tmp-steps");
     }

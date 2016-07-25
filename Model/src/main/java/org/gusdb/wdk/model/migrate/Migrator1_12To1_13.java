@@ -158,7 +158,7 @@ public class Migrator1_12To1_13 implements Migrator {
         histories.add(item);
       }
     } finally {
-      SqlUtils.closeResultSetAndStatement(rsHistory);
+      SqlUtils.closeResultSetAndStatement(rsHistory, null);
     }
 
     PreparedStatement psHistory = null;

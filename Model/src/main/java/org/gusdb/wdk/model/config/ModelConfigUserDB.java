@@ -46,11 +46,12 @@ public class ModelConfigUserDB extends ModelConfigDB {
 
   public void checkSchema(WdkModel wdkModel) throws WdkModelException {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
+    PreparedStatement ps = null;
     ResultSet resultSet = null;
     try {
       String validationSql = "SELECT " + CONFIG_VALUE_COLUMN +
           " FROM " + userSchema + CONFIG_TABLE + " WHERE " + CONFIG_NAME_COLUMN + "= ?";
-      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, validationSql);
+      ps = SqlUtils.getPreparedStatement(dataSource, validationSql);
       ps.setString(1, CONFIG_USER_SCHEMA_VERSION);
       LOG.debug("Validating user schema with SQL '" + validationSql + "' and value [" + CONFIG_USER_SCHEMA_VERSION + "].");
       resultSet = ps.executeQuery();
@@ -67,7 +68,7 @@ public class ModelConfigUserDB extends ModelConfigDB {
       throw new WdkModelException(ex);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, ps);
     }
   }
 }
