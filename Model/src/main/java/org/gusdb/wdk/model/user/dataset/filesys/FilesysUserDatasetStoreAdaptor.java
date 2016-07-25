@@ -12,9 +12,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 
 /**
  * An implementation of JsonUserDatasetStoreAdaptor that uses the java nio Files operations
@@ -67,18 +65,17 @@ public class FilesysUserDatasetStoreAdaptor
     }
   }
 
-  public void writeFileAtomic(Path file, String contents, boolean errorIfTargetExists) throws WdkModelException {
-    Path tempFile = file.resolve("." + Long.toString(System.currentTimeMillis()));
+  @Override
+  public void writeFile(Path file, String contents, boolean errorIfAlreadyExists) throws WdkModelException {
+    StandardOpenOption option = errorIfAlreadyExists? StandardOpenOption.CREATE_NEW : StandardOpenOption.CREATE;
     try {
-      if (errorIfTargetExists && Files.exists(file)) throw new WdkModelException("File already exists: " + file);
-      Files.write(tempFile, contents.getBytes(), StandardOpenOption.CREATE_NEW);
-      Files.move(tempFile, file, StandardCopyOption.ATOMIC_MOVE);
+      Files.write(file, contents.getBytes(), option);
     }
     catch (IOException e) {
       throw new WdkModelException(e);
-    }
+    }   
   }
-
+  
   @Override
   public void writeEmptyFile(Path file) throws WdkModelException {
     try {
@@ -89,11 +86,10 @@ public class FilesysUserDatasetStoreAdaptor
     }
   }
 
-  @Override
-  public boolean directoryExists(Path dir) throws WdkModelException {
-    if (Files.isDirectory(dir)) return true;
-    if (Files.exists(dir)) throw new WdkModelException("File exists and is not a directory: " + dir);
-    return false;
+  
+  @Override 
+  public boolean isDirectory(Path dir) {
+    return Files.isDirectory(dir);
   }
 
   @Override

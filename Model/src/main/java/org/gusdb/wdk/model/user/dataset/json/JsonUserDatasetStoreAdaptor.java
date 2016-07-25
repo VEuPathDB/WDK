@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.WdkModelException;
 public interface JsonUserDatasetStoreAdaptor {
   
   /**
-   * Move a file
+   * Move a file, atomically
    * @param from
    * @param to
    * @throws WdkModelException if target already exists.
@@ -30,22 +30,23 @@ public interface JsonUserDatasetStoreAdaptor {
    * @throws WdkModelException If file doesn't exist or can't be read.
    */
   public String readFileContents(Path file) throws WdkModelException;
-
+  
   /**
-   * Return true if the provided directory path exists. 
+   * Return true if the provided path exists and is a directory
    * @param dir
    * @return
-   * @throws WdkModelException If exists but is not a directory.
+   * @throws WdkModelException
    */
-  public boolean directoryExists(Path dir) throws WdkModelException;
+  public boolean isDirectory(Path dir) throws WdkModelException;
+  
 
   /**
-   * Atomically write the provided contents to the provided path.  
+   * rite the provided contents to the provided path.  
    * @param file
    * @param contents
    * @throws WdkModelException
    */
-  public void writeFileAtomic(Path file, String contents, boolean errorIfTargetExists) throws WdkModelException;
+  public void writeFile(Path file, String contents, boolean errorIfTargetExists) throws WdkModelException;
   
   /**
    * Create a new directory.
@@ -55,7 +56,7 @@ public interface JsonUserDatasetStoreAdaptor {
   public void createDirectory(Path dir) throws WdkModelException;
   
   /**
-   * Write an empty file.  No error if file already exists.
+   * Write a file with no contents (like "touch" in unix).  No error if file already exists.
    * @param file
    * @param contents
    * @param errorIfTargetExists
@@ -78,10 +79,16 @@ public interface JsonUserDatasetStoreAdaptor {
    */
   public Date getModificationTime(Path fileOrDir) throws WdkModelException;
   
+  /**
+   * Read the first line of a file.
+   * @param file
+   * @return
+   * @throws WdkModelException if file doesn't exist.
+   */
   public String readSingleLineFile(Path file) throws WdkModelException;
   
   /**
-   * return true if the file exists
+   * Return true if the file exists
    * @param file
    * @return
    */

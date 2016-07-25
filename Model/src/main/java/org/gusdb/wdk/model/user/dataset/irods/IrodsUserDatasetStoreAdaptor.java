@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.user.dataset.irods;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor;
 
@@ -27,13 +28,13 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
   }
 
   @Override
-  public boolean directoryExists(Path dir) throws WdkModelException {
+  public boolean isDirectory(Path dir) throws WdkModelException {
     // TODO Auto-generated method stub
     return false;
   }
 
   @Override
-  public void writeFileAtomic(Path file, String contents, boolean errorIfTargetExists) throws WdkModelException {
+  public void writeFile(Path file, String contents, boolean errorIfTargetExists) throws WdkModelException {
     // TODO Auto-generated method stub
 
   }
@@ -69,7 +70,7 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
   }
 
   @Override
-  public boolean fileExists(Path file) {
+  public boolean fileExists(Path file) throws WdkModelException {
     // TODO Auto-generated method stub
     return false;
   }
