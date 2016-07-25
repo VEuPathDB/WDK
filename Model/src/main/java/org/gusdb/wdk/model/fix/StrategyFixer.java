@@ -145,8 +145,8 @@ public class StrategyFixer extends BaseCLI {
       LOG.info("Total " + count + " steps updated.");
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(rsChildren);
-      SqlUtils.closeResultSetAndStatement(rsRoots);
+      SqlUtils.closeResultSetAndStatement(rsChildren, psChildren);
+      SqlUtils.closeResultSetAndStatement(rsRoots, null);
       SqlUtils.closeStatement(psUpdate);
     }
 
@@ -195,8 +195,7 @@ public class StrategyFixer extends BaseCLI {
     }
     finally {
       SqlUtils.closeStatement(psUpdate);
-      SqlUtils.closeStatement(psSelect);
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, psSelect);
     }
   }
 }

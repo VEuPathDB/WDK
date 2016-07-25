@@ -43,7 +43,7 @@ public class TableTotalQueryTest extends QueryTest {
       return count;
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
   }
 }

@@ -218,28 +218,32 @@ public class CacheFactory {
     sqlInstance.append(" GROUP BY i.").append(COLUMN_QUERY_ID).append(", ");
     sqlInstance.append(" q.").append(COLUMN_QUERY_NAME).append(", ");
     sqlInstance.append(" q.").append(COLUMN_TABLE_NAME);
-    ResultSet resultSet = SqlUtils.executeQuery(dataSource, sqlInstance.toString(),
-        "wdk-cache-instance-summary");
-    System.err.println("========================= Cache Stattistics =========================");
-    int queryCount = 0;
-    while (resultSet.next()) {
-      int queryId = resultSet.getInt(COLUMN_QUERY_ID);
-      String queryName = resultSet.getString(COLUMN_QUERY_NAME);
-      String cacheTable = resultSet.getString(COLUMN_TABLE_NAME);
-      int instanceCount = resultSet.getInt("instances");
-
-      String sqlSize = "SELECT count(*) FROM " + cacheTable;
-      Object objSize = SqlUtils.executeScalar(dataSource, sqlSize, "wdk-cache-query-size");
-      int size = Integer.parseInt(objSize.toString());
-
-      System.err.println("CACHE [" + queryId + "] " + queryName + ": " + instanceCount +
-          " instances, total " + size + " rows");
-      queryCount++;
+    ResultSet resultSet = null;
+    try {
+      resultSet = SqlUtils.executeQuery(dataSource, sqlInstance.toString(), "wdk-cache-instance-summary");
+      System.err.println("========================= Cache Stattistics =========================");
+      int queryCount = 0;
+      while (resultSet.next()) {
+        int queryId = resultSet.getInt(COLUMN_QUERY_ID);
+        String queryName = resultSet.getString(COLUMN_QUERY_NAME);
+        String cacheTable = resultSet.getString(COLUMN_TABLE_NAME);
+        int instanceCount = resultSet.getInt("instances");
+  
+        String sqlSize = "SELECT count(*) FROM " + cacheTable;
+        Object objSize = SqlUtils.executeScalar(dataSource, sqlSize, "wdk-cache-query-size");
+        int size = Integer.parseInt(objSize.toString());
+  
+        System.err.println("CACHE [" + queryId + "] " + queryName + ": " + instanceCount +
+            " instances, total " + size + " rows");
+        queryCount++;
+      }
+      System.err.println();
+      System.err.println("Total: " + queryCount + " cache tables.");
+      System.err.println("====================== End of Cache Stattistics ======================");
     }
-    System.err.println();
-    System.err.println("Total: " + queryCount + " cache tables.");
-    System.err.println("====================== End of Cache Stattistics ======================");
-    SqlUtils.closeResultSetAndStatement(resultSet);
+    finally {
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
+    }
   }
 
   private void createQueryTable() {
@@ -315,7 +319,7 @@ public class CacheFactory {
       logger.error("Cannot query on table [" + TABLE_QUERY + "]. " + ex.getMessage());
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
 
     // drop the cache tables
@@ -405,9 +409,7 @@ public class CacheFactory {
       throw new WdkModelException("Unable to check query info.", e);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
-      if (resultSet == null)
-        SqlUtils.closeStatement(ps);
+      SqlUtils.closeResultSetAndStatement(resultSet, ps);
     }
 
     return queryInfo;
