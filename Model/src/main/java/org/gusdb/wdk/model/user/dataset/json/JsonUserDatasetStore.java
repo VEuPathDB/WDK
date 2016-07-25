@@ -74,7 +74,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       throw new WdkModelException("Required configuration 'rootPath' not found.");
     usersRootDir = Paths.get(pathName);
 
-    if (!adaptor.directoryExists(usersRootDir))
+    if (!directoryExists(usersRootDir))
       throw new WdkModelException(
           "Provided property 'rootPath' has value '" + pathName + "' which is not an existing directory");
     
@@ -151,7 +151,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     JSONObject metaJson = parseJsonFile(datasetDir.resolve("meta.json"));
 
     Path datafilesDir = datasetDir.resolve("datafiles");
-    if (!adaptor.directoryExists(datafilesDir))
+    if (!directoryExists(datafilesDir))
       throw new WdkModelException("Can't find datafiles directory " + datafilesDir);
 
     Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
@@ -188,12 +188,12 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   public void updateMetaFromJson(Integer userId, Integer datasetId, JSONObject metaJson) throws WdkModelException {
     JsonUserDatasetMeta metaObj = new JsonUserDatasetMeta(metaJson);  // validate the input json
     Path metaJsonFile = getUserDatasetsDir(userId, false).resolve(datasetId.toString()).resolve(META_JSON_FILE);
-    adaptor.writeFileAtomic(metaJsonFile, metaObj.getJsonObject().toString(), false);
+    writeFileAtomic(metaJsonFile, metaObj.getJsonObject().toString(), false);
   }
   
   protected void writeJsonUserDataset(JsonUserDataset dataset) throws WdkModelException {
     Path datasetJsonFile = getUserDatasetsDir(dataset.getOwnerId(), false).resolve(dataset.getUserDatasetId().toString()).resolve(DATASET_JSON_FILE);
-    adaptor.writeFileAtomic(datasetJsonFile, dataset.getDatasetJsonObject().toString(), false);
+    writeFileAtomic(datasetJsonFile, dataset.getDatasetJsonObject().toString(), false);
   }
     
   @Override
@@ -234,15 +234,26 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
   
   protected void writeExternalDatasetLink(Path recipientExternalDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
-    if (!adaptor.directoryExists(recipientExternalDatasetsDir))
+    if (!directoryExists(recipientExternalDatasetsDir))
       adaptor.createDirectory(recipientExternalDatasetsDir);
     Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(
         getExternalDatasetFileName(ownerUserId, datasetId));
     adaptor.writeEmptyFile(externalDatasetFileName);
 
   }
- 
   
+  public boolean directoryExists(Path dir) throws WdkModelException {
+    if (adaptor.isDirectory(dir)) return true;
+    if (adaptor.fileExists(dir)) throw new WdkModelException("File exists and is not a directory: " + dir);
+    return false;
+  }
+  
+  public void writeFileAtomic(Path file, String contents, boolean errorIfTargetExists) throws WdkModelException {
+    Path tempFile = file.resolve("." + Long.toString(System.currentTimeMillis()));
+      if (errorIfTargetExists && adaptor.fileExists(file)) throw new WdkModelException("File already exists: " + file);
+      adaptor.writeFile(tempFile, contents, true);
+      adaptor.moveFileAtomic(tempFile, file);
+  }
   /**
    * Delete a dataset.  But, don't delete externalUserDataset references to it.  The UI
    * will let the recipient user of them know they are dangling.
@@ -262,7 +273,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    * @throws WdkModelException
    */
   public void deleteExternalUserDataset(Path recipientExternalDatasetsDir, Path recipientRemovedDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
-    if (!adaptor.directoryExists(recipientRemovedDatasetsDir))
+    if (!directoryExists(recipientRemovedDatasetsDir))
       adaptor.createDirectory(recipientRemovedDatasetsDir);
     Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(
         getExternalDatasetFileName(ownerUserId, datasetId));
@@ -280,7 +291,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
 
   protected Path getUserDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException {
     Path userDir = usersRootDir.resolve(userId.toString());
-    if (!adaptor.directoryExists(userDir)) {
+    if (!directoryExists(userDir)) {
       if (createPathIfAbsent) adaptor.createDirectory(userDir);
       else throw new WdkModelException("Can't find user directory " + userDir);
     }
@@ -314,7 +325,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   protected Path getUserDatasetsDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException {
     Path userDatasetsDir = getUserDir(userId, createPathIfAbsent).resolve("datasets");
 
-    if (!adaptor.directoryExists(userDatasetsDir))
+    if (!directoryExists(userDatasetsDir))
       if (createPathIfAbsent)
         adaptor.createDirectory(userDatasetsDir);
       else
