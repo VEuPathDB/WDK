@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.user.dataset.json;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -47,7 +45,7 @@ public class JsonUserDataset implements UserDataset {
   private Integer size;
   private Map<Integer, JsonUserDatasetShare> sharesMap = new HashMap<Integer, JsonUserDatasetShare>();
   private Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
-  private Set<UserDatasetDependency> dependencies;
+  private Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
   private JSONObject datasetJsonObject;
   private JSONObject metaJsonObject;
   
@@ -70,9 +68,9 @@ public class JsonUserDataset implements UserDataset {
       this.type = JsonUserDatasetTypeFactory.getUserDatasetType(datasetJsonObj.getJSONObject(TYPE));
       this.ownerId = datasetJsonObj.getInt(OWNER);
       this.size = datasetJsonObj.getInt(SIZE);
-      this.created = new SimpleDateFormat().parse(datasetJsonObj.getString(CREATED));
-      this.modified = new SimpleDateFormat().parse(datasetJsonObj.getString(MODIFIED));
-      this.uploaded = new SimpleDateFormat().parse(datasetJsonObj.getString(UPLOADED));
+      this.created = new Date(datasetJsonObj.getLong(CREATED));
+      this.modified = new Date(datasetJsonObj.getLong(MODIFIED));
+      this.uploaded = new Date(datasetJsonObj.getLong(UPLOADED));
       
       JSONArray dependenciesJson = datasetJsonObj.getJSONArray(DEPENDENCIES);
       for (int i=0; i<dependenciesJson.length(); i++) 
@@ -86,7 +84,7 @@ public class JsonUserDataset implements UserDataset {
         sharesMap.put(s.getUserId(), s);   
       }
       
-    } catch (JSONException | ParseException e) {
+    } catch (JSONException e) {
       throw new WdkModelException(e);
     }
   }
