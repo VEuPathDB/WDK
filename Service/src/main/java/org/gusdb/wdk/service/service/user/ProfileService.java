@@ -55,7 +55,7 @@ public class ProfileService extends UserService {
   public Response getById(
       @QueryParam("includePreferences") Boolean includePreferences)
           throws WdkModelException {
-    UserBundle userBundle = getTargetUserBundle(Access.PUBLIC);
+    UserBundle userBundle = getUserBundle(Access.PUBLIC);
     return Response.ok(
         UserFormatter.getUserJson(userBundle.getTargetUser(),
             userBundle.isSessionUser(), getFlag(includePreferences)).toString()
@@ -74,7 +74,7 @@ public class ProfileService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response setUserProfile(String body)
       throws ConflictException, DataValidationException, WdkModelException {
-    UserBundle userBundle = getTargetUserBundle(Access.PRIVATE);
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
     NewCookie loginCookie = null;
     try {
       User user = userBundle.getTargetUser();
@@ -121,7 +121,7 @@ public class ProfileService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateUserProfile(String body) 
       throws ConflictException, DataValidationException, WdkModelException {
-    UserBundle userBundle = getTargetUserBundle(Access.PRIVATE);
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
     NewCookie loginCookie = null;
     try {
       User user = userBundle.getTargetUser();
@@ -155,7 +155,7 @@ public class ProfileService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response resetUserPassword(String body)
       throws WdkModelException, DataValidationException {
-    UserBundle userBundle = getTargetUserBundle(Access.PRIVATE);
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
     try {
       User user = userBundle.getTargetUser();
       JSONObject json = new JSONObject(body);

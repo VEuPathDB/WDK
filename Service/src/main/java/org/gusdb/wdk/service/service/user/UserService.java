@@ -33,7 +33,7 @@ public abstract class UserService extends WdkService {
    * @param requestedAccess the access requested by the caller
    * @return a userBundle representing the target user and his relationship to the session user
    */
-  protected UserBundle getTargetUserBundle(Access requestedAccess) {
+  protected UserBundle getUserBundle(Access requestedAccess) {
     UserBundle userBundle = parseTargetUserId(_userIdStr);
     if (!userBundle.isValidUserId())
       throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userBundle.getTargetUserIdString()));
