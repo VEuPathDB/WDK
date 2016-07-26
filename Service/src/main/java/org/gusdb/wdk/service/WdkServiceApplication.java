@@ -25,6 +25,7 @@ import org.gusdb.wdk.service.service.user.DatasetService;
 import org.gusdb.wdk.service.service.user.PreferenceService;
 import org.gusdb.wdk.service.service.user.ProfileService;
 import org.gusdb.wdk.service.service.user.StepService;
+import org.gusdb.wdk.service.service.user.UserDatasetService;
 
 public class WdkServiceApplication extends Application {
 
@@ -67,6 +68,7 @@ public class WdkServiceApplication extends Application {
     .add(OntologyService.class)
     .add(StepService.class)
     .add(DatasetService.class)
+    .add(UserDatasetService.class)
 
     // test
     .add(SampleService.class)

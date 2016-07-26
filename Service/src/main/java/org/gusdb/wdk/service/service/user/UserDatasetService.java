@@ -31,7 +31,7 @@ public class UserDatasetService extends UserService {
   @GET
   @Path("user-dataset")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getUserDatasets(@QueryParam("expand") Boolean expandDatasets) throws WdkModelException {
+  public Response getUserDatasets(@QueryParam("expandDetails") Boolean expandDatasets) throws WdkModelException {
     UserDatasetStore userDatasetStore = getWdkModel().getUserDatasetStore();
     if (userDatasetStore == null) throw new WdkModelException("There is no userDatasetStore installed in the WDK Model.");
     UserBundle userBundle = getUserBundle(Access.PUBLIC); // TODO: temporary, for debugging
