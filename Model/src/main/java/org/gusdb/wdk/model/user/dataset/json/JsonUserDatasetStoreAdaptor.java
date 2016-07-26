@@ -16,7 +16,8 @@ public interface JsonUserDatasetStoreAdaptor {
   public void moveFileAtomic(Path from, Path to) throws WdkModelException;
 
   /**
-   * Get the paths in the provided directory
+   * Get the paths in the provided directory.  Must close all resources before returning.
+   * Not recursive.
    * @param dir
    * @return
    * @throws WdkModelException if dir does not exist, or can't be read.
@@ -24,7 +25,8 @@ public interface JsonUserDatasetStoreAdaptor {
   public List<Path> getPathsInDir(Path dir) throws WdkModelException;
 
   /**
-   * Read the contents of the provided file into a string
+   * Read the contents of the provided file into a string. Must close all resources
+   * before returning.
    * @param file
    * @return
    * @throws WdkModelException If file doesn't exist or can't be read.
@@ -80,7 +82,7 @@ public interface JsonUserDatasetStoreAdaptor {
   public Date getModificationTime(Path fileOrDir) throws WdkModelException;
   
   /**
-   * Read the first line of a file.
+   * Read the first line of a file.  Must close all resources before returning.
    * @param file
    * @return
    * @throws WdkModelException if file doesn't exist.
@@ -88,7 +90,7 @@ public interface JsonUserDatasetStoreAdaptor {
   public String readSingleLineFile(Path file) throws WdkModelException;
   
   /**
-   * Return true if the file exists
+   * Return true if the file (or directory) exists
    * @param file
    * @return
    */
