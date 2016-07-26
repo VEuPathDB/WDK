@@ -23,33 +23,33 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class UserDatasetService extends UserService {
-  
+
   public UserDatasetService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
   }
 
   @GET
-  @Path("userDataset/{userId}")
+  @Path("user-dataset")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getUserDatasets(@PathParam("userId") String userId, @QueryParam("expand") Boolean expand) throws WdkModelException {
+  public Response getUserDatasets(@QueryParam("expand") Boolean expandDatasets) throws WdkModelException {
     UserDatasetStore userDatasetStore = getWdkModel().getUserDatasetStore();
     if (userDatasetStore == null) throw new WdkModelException("There is no userDatasetStore installed in the WDK Model.");
-    UserBundle userBundle = getTargetUserBundle(Access.PUBLIC); // TODO: temporary, for debugging
+    UserBundle userBundle = getUserBundle(Access.PUBLIC); // TODO: temporary, for debugging
     Map<Integer, UserDataset> userDatasets = userDatasetStore.getUserDatasets(userBundle.getTargetUser().getUserId());
-    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, userDatasetStore, expand).toString()).build();
+    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, userDatasetStore, expandDatasets).toString()).build();
   }
-  
+
   @POST
-  @Path("user/{userId}/{datasetId}/meta")
+  @Path("user-dataset/{datasetId}/meta")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response updateMetaInfo(@PathParam("userId") String userId, @PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException, DataValidationException {
+  public Response updateMetaInfo(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException, DataValidationException {
     try {
-      Integer datasetId = new Integer(datasetIdStr);
+      Integer datasetId = Integer.parseInt(datasetIdStr);
       JSONObject json = new JSONObject(body);
       UserDatasetStore userDatasetStore = getWdkModel().getUserDatasetStore();
       if (userDatasetStore == null) throw new WdkModelException("There is no userDatasetStore installed in the WDK Model.");
-      UserBundle userBundle = getTargetUserBundle(Access.PUBLIC); // TODO: temporary, for debugging
+      UserBundle userBundle = getUserBundle(Access.PUBLIC); // TODO: temporary, for debugging
       UserDataset userDataset = userDatasetStore.getUserDataset(userBundle.getTargetUser().getUserId(), datasetId);
       userDataset.updateMetaFromJson(json);
       return Response.ok("").build();
@@ -58,6 +58,4 @@ public class UserDatasetService extends UserService {
       throw new BadRequestException(e);
     }
   }
-
-
 }
