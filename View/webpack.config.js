@@ -6,7 +6,7 @@ module.exports = {
   entry: './webapp/wdk/js',
   output: {
     path: outputPath,
-    filename: 'wdk.js',
+    filename: 'wdk.bundle.js',
     library: 'Wdk'
   },
   bail: true,
