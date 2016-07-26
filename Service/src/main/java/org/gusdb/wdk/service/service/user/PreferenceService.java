@@ -34,7 +34,7 @@ public class PreferenceService extends UserService {
   @Path("preference")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserPrefs() {
-    UserBundle userBundle = getTargetUserBundle(Access.PRIVATE);
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
     return Response.ok(UserFormatter.getUserPrefsJson(
         userBundle.getTargetUser().getProjectPreferences()).toString()).build();
   }
@@ -51,7 +51,7 @@ public class PreferenceService extends UserService {
   @Path("preference")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response putUserPrefs(String body) throws DataValidationException, WdkModelException {
-    UserBundle userBundle = getTargetUserBundle(Access.PRIVATE);
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
     try {
       User user = userBundle.getTargetUser();
       JSONObject json = new JSONObject(body);
@@ -82,7 +82,7 @@ public class PreferenceService extends UserService {
   @Path("preference")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response patchUserPrefs(String body) throws WdkModelException, DataValidationException {
-    UserBundle userBundle = getTargetUserBundle(Access.PRIVATE);
+    UserBundle userBundle = getUserBundle(Access.PRIVATE);
     try {
       User user = userBundle.getTargetUser();
       JSONObject json = new JSONObject(body);
