@@ -22,6 +22,6 @@
   <!-- endload polyfills -->
 
   <imp:script charset="utf8" src="wdk/js/wdk.libs.js"/>
-  <imp:script charset="utf8" src="wdk/js/wdk.js"/>
+  <imp:script charset="utf8" src="wdk/js/wdk.bundle.js"/>
 
 </jsp:root>
