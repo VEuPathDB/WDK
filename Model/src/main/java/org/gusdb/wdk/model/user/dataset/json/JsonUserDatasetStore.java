@@ -74,9 +74,9 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       throw new WdkModelException("Required configuration 'rootPath' not found.");
     usersRootDir = Paths.get(pathName);
 
-    if (!directoryExists(usersRootDir))
-      throw new WdkModelException(
-          "Provided property 'rootPath' has value '" + pathName + "' which is not an existing directory");
+    //if (!directoryExists(usersRootDir))
+    //  throw new WdkModelException(
+    //      "Provided property 'rootPath' has value '" + pathName + "' which is not an existing directory");
     
     for (UserDatasetTypeHandler handler : typeHandlers) typeHandlersMap.put(handler.getUserDatasetType(), handler);
   }
