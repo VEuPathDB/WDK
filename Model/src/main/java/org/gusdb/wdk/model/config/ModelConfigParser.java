@@ -62,10 +62,10 @@ public class ModelConfigParser extends XmlParser {
         "setUserDB");
     
     // userdatasetstore
-    configureNode(digester, "wdkModel/userDatasetStore", ModelConfigUserDatasetStore.class, "setUserDatasetStoreConfig");
-    configureNode(digester, "wdkModel/userDatasetStore/property", WdkModelText.class, "addProperty");
-    digester.addCallMethod("wdkModel/userDatasetStore/property", "setText", 0);
-    configureNode(digester, "wdkModel/userDatasetStore/typeHandler", ModelConfigUserDatasetTypeHandler.class, "addTypeHandlerConfig");
+    configureNode(digester, "modelConfig/userDatasetStore", ModelConfigUserDatasetStore.class, "setUserDatasetStore");
+    configureNode(digester, "modelConfig/userDatasetStore/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod("modelConfig/userDatasetStore/property", "setText", 0);
+    configureNode(digester, "modelConfig/userDatasetStore/typeHandler", ModelConfigUserDatasetTypeHandler.class, "addTypeHandler");
 
     configureNode(digester, "modelConfig/queryMonitor", QueryMonitor.class,
         "setQueryMonitor");
