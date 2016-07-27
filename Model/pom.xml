@@ -76,6 +76,11 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+    
+    <dependency>
+        <groupId>org.irods.jargon</groupId>
+        <artifactId>jargon-core</artifactId>
+     </dependency>   
 
   </dependencies>
 
