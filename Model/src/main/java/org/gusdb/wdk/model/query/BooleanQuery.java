@@ -78,11 +78,11 @@ public class BooleanQuery extends SqlQuery {
   
   public void setRecordClass(RecordClass recordClass) throws WdkModelException {
     this.recordClass = recordClass;
-    this.wdkModel = recordClass.getWdkModel();
+    this._wdkModel = recordClass.getWdkModel();
     String rcName = recordClass.getFullName().replace('.', '_');
 
     // create or get the historyParam for the query
-    ParamSet internalParamSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+    ParamSet internalParamSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
     leftOperand = prepareOperand(internalParamSet, recordClass,
         LEFT_OPERAND_PARAM_PREFIX + rcName);
     leftOperand.setPrompt("Left Operand");
@@ -153,8 +153,8 @@ public class BooleanQuery extends SqlQuery {
       String rcName = recordClass.getFullName();
       operand.addRecordClassRef(new RecordClassReference(rcName));
       paramSet.addParam(operand);
-      operand.resolveReferences(wdkModel);
-      operand.setResources(wdkModel);
+      operand.resolveReferences(_wdkModel);
+      operand.setResources(_wdkModel);
     }
     return operand;
   }
@@ -169,8 +169,8 @@ public class BooleanQuery extends SqlQuery {
       param.setName(paramName);
       param.setNumber(false);
       param.setNoTranslation(true);
-      param.resolveReferences(wdkModel);
-      param.setResources(wdkModel);
+      param.resolveReferences(_wdkModel);
+      param.setResources(_wdkModel);
       paramSet.addParam(param);
     }
     return param;

@@ -1,115 +1,124 @@
 package org.gusdb.wdk.model.user.dataset;
 
-import java.nio.file.Path;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.WdkModelException;
+import org.json.JSONObject;
 
 public interface UserDataset {
+
+  /**
+   * The permanent ID of this dataset  
+   * @return
+   */
+  Integer getUserDatasetId();
+  
+  /**
+   * Get the user ID of the owner of this dataset
+   * @return
+   */
+  Integer getOwnerId();
+  
   /**
    * Get meta data object, which has the user's way of describing this dataset
    * @return
    */
-  UserDatasetMeta getMeta();
+  UserDatasetMeta getMeta() throws WdkModelException;
   
   /**
-   * Set the user's choice of meta info.  User is allowed to edit this info
-   * @param metainfo
+   * User can update the meta info a dataset the own.
+   * Client applications provide JSON to specify an update to meta info.  
+   * The implementor must use that to construct a UserDatasetMeta object.
+   * @param metaJson
+   * @return
    */
-  void setMeta(UserDatasetMeta metainfo);
-  
+  void updateMetaFromJson(JSONObject metaJson) throws WdkModelException;
+    
   /**
    * Get the datatype of this dataset.  
    * @return
    */
-  String getType();
+  UserDatasetType getType() throws WdkModelException;
   
   /**
    * Get the number of datafiles in this dataset
    * @return
    */
-  Integer getNumberOfDataFiles();
+  Integer getNumberOfDataFiles() throws WdkModelException;
   
   /**
    * A list of files
    * @return
    */
-  List<UserDatasetFile>getFiles();
+  Map<String, UserDatasetFile>getFiles() throws WdkModelException;
   
   /**
    * Get a file by name.  We don't need more than the basename, because, within
    * a dataset, it is just a flat set of files.
    */
-  UserDatasetFile getFile(String name);
+  UserDatasetFile getFile(String name) throws WdkModelException;
   
   /**
    * Get the list of users this dataset is shared with
    * (Should this return a User or a user ID?)
    * @return
    */
-  List<UserDatasetShare> getSharedWith();
+  Set<UserDatasetShare> getSharedWith() throws WdkModelException;
   
   /**
    * Share this dataset with the specified user
    * @param user
    */
-  void share(User user);
+  void shareWith(Integer userId) throws WdkModelException;
   
   /**
    * Unshare this dataset with the specified user
    * @param user
    */
-  void unshare(User user);
+  void unshareWith(Integer userId) throws WdkModelException;
   
   /**
    * Unshare this dataset with all users it was shared with
    * @param user
    */
-  void unshareAllUsers();
+  void unshareWithAllUsers() throws WdkModelException;
   
   /**
    * Get the date this dataset was created, by whatever application created it.
    * Storing this date with the dataset is the responsibility of that program, not the wdk.
    * @return
    */
-  Date getCreateDate();
+  Date getCreatedDate() throws WdkModelException;
   
   /**
    * The last time it was modified, either meta info or outgoing or incoming sharing.
    * @return
    */
-  Date getModifiedDate();
+  Date getModifiedDate() throws WdkModelException;
+  
+  /**
+   * The time this dataset was uploaded to the UserDatasetStore
+   * @return
+   */
+  Date getUploadedDate() throws WdkModelException;
   
   /**
    * Get the set of data dependencies (in the application database) that this dataset has.
    * @return
    */
-  Set<UserDatasetDependency> getDependencies();
-  
-  /**
-   * Is this dataset compatible with the WDK's application database (based on its declared
-   * dependencies, compared to the content of the database)?
-   * @return
-   */
-  Boolean getIsCompatible();
-  
-  /**
-   * Return an explanation for why this dataset is not compatible, if it is not.
-   * @return
-   */
-  String getIncompatibleReason();
-  
+  Set<UserDatasetDependency> getDependencies() throws WdkModelException;
+    
   /**
    * Get the size of the datafiles for this dataset.
    * @return
    */
-  Integer getSize();
+  Integer getSize() throws WdkModelException;
   
   /**
    * Get the percent of quota the user has used up.
    * @return
    */
-  Integer getPercentQuota();
+  Integer getPercentQuota(int quota) throws WdkModelException;
 }

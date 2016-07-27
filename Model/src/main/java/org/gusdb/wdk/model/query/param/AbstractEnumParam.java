@@ -361,7 +361,7 @@ public abstract class AbstractEnumParam extends Param {
         params = contextQuery.getParamMap();
       for (String paramRef : dependedParamRefs) {
         String paramName = paramRef.split("\\.", 2)[1].trim();
-        Param param = (params != null) ? params.get(paramName) : (Param) wdkModel.resolveReference(paramRef);
+        Param param = (params != null) ? params.get(paramName) : (Param) _wdkModel.resolveReference(paramRef);
         if (param != null) {
           dependedParams.add(param);
           param.addDependentParam(this);
@@ -401,7 +401,7 @@ public abstract class AbstractEnumParam extends Param {
    */
   @Override
   public String getDefault() throws WdkModelException {
-    return getDefault(wdkModel.getSystemUser(), new LinkedHashMap<String, String>());
+    return getDefault(_wdkModel.getSystemUser(), new LinkedHashMap<String, String>());
   }
 
   /**
@@ -772,7 +772,7 @@ public abstract class AbstractEnumParam extends Param {
       }
     }
 
-    resolved = true;
+    _resolved = true;
 
     // make sure the depended params exist in the context query.
     if (isDependentParam() && contextQuery != null) {
@@ -795,7 +795,7 @@ public abstract class AbstractEnumParam extends Param {
 
   @Override
   public Set<String> getAllValues() throws WdkModelException {
-    User user = wdkModel.getSystemUser();
+    User user = _wdkModel.getSystemUser();
     Set<String> values = new LinkedHashSet<>();
     if (isDependentParam()) {
       // dependent param, need to get all the combinations of the depended

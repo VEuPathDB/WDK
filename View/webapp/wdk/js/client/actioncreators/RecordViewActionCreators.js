@@ -4,18 +4,17 @@ import {filterNodes} from '../utils/TreeUtils';
 import {seq} from '../utils/PromiseUtils';
 import {loadBasketStatus, loadFavoritesStatus} from './UserActionCreators';
 
-// TODO Change SHOW/HIDE_{feature} and EXPAND/COLLAPSE_{feature} to
-// {feature}_VISIBILITY_CHANGED
 export let actionTypes = {
-  ACTIVE_RECORD_RECEIVED: 'record/active-record-received',
-  ACTIVE_RECORD_UPDATED: 'record/active-record-updated',
-  ACTIVE_RECORD_LOADING: 'record/active-record-loading',
-  ERROR_RECEIVED: 'record/error-received',
-  SECTION_VISIBILITY_CHANGED: 'record/section-visibility-changed',
-  ALL_FIELD_VISIBILITY_CHANGED: 'record/all-field-visibility-changed',
-  NAVIGATION_VISIBILITY_CHANGED: 'record/navigation-visibility-changed',
-  NAVIGATION_SUBCATEGORY_VISBILITY_CHANGED: 'record/navigation-subcategory-visbility-changed',
-  NAVIGATION_QUERY_CHANGED: 'record/navigation-query-changed'
+  ACTIVE_RECORD_RECEIVED: 'record-view/active-record-received',
+  ACTIVE_RECORD_UPDATED: 'record-view/active-record-updated',
+  ACTIVE_RECORD_LOADING: 'record-view/active-record-loading',
+  ACTIVE_SECTION_CHANGED: 'record-view/active-section-changed',
+  ERROR_RECEIVED: 'record-view/error-received',
+  SECTION_VISIBILITY_CHANGED: 'record-view/section-visibility-changed',
+  ALL_FIELD_VISIBILITY_CHANGED: 'record-view/all-field-visibility-changed',
+  NAVIGATION_VISIBILITY_CHANGED: 'record-view/navigation-visibility-changed',
+  NAVIGATION_SUBCATEGORY_VISBILITY_CHANGED: 'record-view/navigation-subcategory-visbility-changed',
+  NAVIGATION_QUERY_CHANGED: 'record-view/navigation-query-changed'
 };
 
 let isInternalNode = partial(nodeHasProperty, 'scope', 'record-internal');
@@ -26,8 +25,9 @@ let getAttributes = partial(filterNodes, isAttributeNode);
 let getTables = partial(filterNodes, isTableNode);
 let getNodeName = partial(getPropertyValue, 'name');
 
+/** Fetch page data from services */
 export function loadRecordData(recordClass, primaryKeyValues) {
-  return function run(dispatch, {wdkService}) {
+  return function run(dispatch) {
     dispatch(setActiveRecord(recordClass, primaryKeyValues))
     .then(action => {
       let { record, recordClass } = action.payload;
@@ -81,6 +81,19 @@ export function updateSectionVisibility(sectionName, isVisible) {
   };
 }
 
+/**
+ * Set the active section (the section at the top of the viewport)
+ *
+ * @param {string} name The section identifier
+ * @param {number} offset? The section's viewport offset
+ */
+export function updateActiveSection(name) {
+  return {
+    type: actionTypes.ACTIVE_SECTION_CHANGED,
+    payload: { name }
+  };
+}
+
 /** Change the visibility for all record fields (attributes and tables) */
 export function updateAllFieldVisibility(isVisible) {
   return {
@@ -112,7 +125,6 @@ export function updateNavigationSubcategoryVisibility(isVisible) {
     payload: { isVisible }
   }
 }
-
 
 // helpers
 // -------

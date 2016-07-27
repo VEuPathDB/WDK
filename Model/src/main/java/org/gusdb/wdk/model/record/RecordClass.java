@@ -333,7 +333,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   @Override
   public WdkModel getWdkModel() {
-    return wdkModel;
+    return _wdkModel;
   }
 
   public void setName(String name) {
@@ -739,10 +739,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
-    if (resolved)
+    if (_resolved)
       return;
     super.resolveReferences(model);
-    this.wdkModel = model;
+    this._wdkModel = model;
 
     if (name.length() == 0 || name.indexOf('\'') >= 0)
       throw new WdkModelException("recordClass name cannot be empty or " + "having single quotes: " + name);
@@ -761,13 +761,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       shortDisplayName = resultSizeQueryRef.getRecordShortDisplayName();
       displayNamePlural = resultSizeQueryRef.getRecordDisplayNamePlural();
       shortDisplayNamePlural = resultSizeQueryRef.getRecordShortDisplayNamePlural();
-        Query query = (Query) wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
+        Query query = (Query) _wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
       resultSizePlugin = new SqlQueryResultSizePlugin(query);
     }
     
     if (resultPropertyQueryRef != null) {
       resultPropertyQueryRef.resolveReferences(model);
-        Query query = (Query) wdkModel.resolveReference(resultPropertyQueryRef.getTwoPartName());
+        Query query = (Query) _wdkModel.resolveReference(resultPropertyQueryRef.getTwoPartName());
       resultPropertyPlugin = new SqlQueryResultPropertyPlugin(query, resultPropertyQueryRef.getPropertyName());
     }
     
@@ -872,9 +872,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     // register this URL segment with the model to ensure uniqueness
-    wdkModel.registerRecordClassUrlSegment(_urlSegment, getFullName());
+    _wdkModel.registerRecordClassUrlSegment(_urlSegment, getFullName());
 
-    resolved = true;
+    _resolved = true;
   }
 
   private void resolveCategoryTreeReferences(WdkModel model) throws WdkModelException {
@@ -1064,7 +1064,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   private Param getUserParam() throws WdkModelException {
     // create the missing user_id param for the attribute query
-    ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+    ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
     if (paramSet.contains(Utilities.PARAM_USER_ID))
       return paramSet.getParam(Utilities.PARAM_USER_ID);
 
@@ -1072,9 +1072,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     userParam.setName(Utilities.PARAM_USER_ID);
     userParam.setNumber(true);
 
-    userParam.excludeResources(wdkModel.getProjectId());
-    userParam.resolveReferences(wdkModel);
-    userParam.setResources(wdkModel);
+    userParam.excludeResources(_wdkModel.getProjectId());
+    userParam.resolveReferences(_wdkModel);
+    userParam.setResources(_wdkModel);
     paramSet.addParam(userParam);
     return userParam;
   }
@@ -1642,7 +1642,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     String questionName = Utilities.INTERNAL_QUESTION_SET + ".";
     questionName += getFullName().replace('.', '_');
     questionName += BasketFactory.REALTIME_BASKET_QUESTION_SUFFIX;
-    return (Question) wdkModel.resolveReference(questionName);
+    return (Question) _wdkModel.resolveReference(questionName);
   }
 
   /**
@@ -1656,12 +1656,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     String questionName = Utilities.INTERNAL_QUESTION_SET + ".";
     questionName += getFullName().replace('.', '_');
     questionName += BasketFactory.SNAPSHOT_BASKET_QUESTION_SUFFIX;
-    return (Question) wdkModel.resolveReference(questionName);
+    return (Question) _wdkModel.resolveReference(questionName);
   }
 
   public Question[] getTransformQuestions(boolean allowTypeChange) {
     List<Question> list = new ArrayList<Question>();
-    for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
+    for (QuestionSet questionSet : _wdkModel.getAllQuestionSets()) {
       for (Question question : questionSet.getQuestions()) {
         if (!question.getQuery().isTransform())
           continue;

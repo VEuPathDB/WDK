@@ -1,4 +1,4 @@
-wdk.util.namespace("window.wdk.stratTabCookie", function(ns, $) {
+wdk.namespace("window.wdk.stratTabCookie", function(ns, $) {
   "use strict";
 
   //CONSTANTS

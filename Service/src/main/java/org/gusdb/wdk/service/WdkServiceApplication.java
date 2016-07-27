@@ -15,14 +15,17 @@ import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.provider.LoggingWriterInterceptor;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.ApiService;
-import org.gusdb.wdk.service.service.DatasetService;
+import org.gusdb.wdk.service.service.OAuthService;
 import org.gusdb.wdk.service.service.OntologyService;
 import org.gusdb.wdk.service.service.ProjectService;
 import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.gusdb.wdk.service.service.SampleService;
-import org.gusdb.wdk.service.service.StepService;
-import org.gusdb.wdk.service.service.UserService;
+import org.gusdb.wdk.service.service.user.DatasetService;
+import org.gusdb.wdk.service.service.user.PreferenceService;
+import org.gusdb.wdk.service.service.user.ProfileService;
+import org.gusdb.wdk.service.service.user.StepService;
+import org.gusdb.wdk.service.service.user.UserDatasetService;
 
 public class WdkServiceApplication extends Application {
 
@@ -56,13 +59,16 @@ public class WdkServiceApplication extends Application {
     // add service classes
     .add(ProjectService.class)
     .add(ApiService.class)
-    .add(UserService.class)
+    .add(OAuthService.class)
+    .add(ProfileService.class)
+    .add(PreferenceService.class)
     .add(RecordService.class)
     .add(QuestionService.class)
     .add(AnswerService.class)
     .add(OntologyService.class)
     .add(StepService.class)
     .add(DatasetService.class)
+    .add(UserDatasetService.class)
 
     // test
     .add(SampleService.class)

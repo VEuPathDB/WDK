@@ -1,5 +1,5 @@
 /* global Spinner */
-wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
+wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
   "use strict";
 
   // "imports"
@@ -180,11 +180,13 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
           clearTimeout(loadTimer);
           clearTimeout(refreshTimer);
 
-          trigger('remove statuschange', {
+          var eventData = {
             name: data.analysisName,
-            id: analysisId,
-            $el: $(tabElement)
-          });
+            id: analysisId
+          };
+
+          trigger('remove', tabElement, eventData);
+          trigger('statuschange', tabElement, eventData);
 
           $panel.remove();
           $tabContainer.tabs("refresh");
@@ -236,10 +238,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
       data: { "analysisId": analysisId },
       success: function(data) {
         createAnalysisTab(data);
-        trigger('statuschange', {
+        trigger('statuschange', $element, {
           name: $element.data('analysis-name'),
-          id: data.analysisId,
-          $el: $element
+          id: data.analysisId
         });
       },
       error: function() {
@@ -381,10 +382,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
         // assign param tooltips if there are any
         wdk.tooltips.assignParamTooltips('.step-analysis-form-pane .help-link');
 
-        trigger('formload', {
+        trigger('formload', $element, {
           name: analysisObj.analysisName,
-          id: analysisId,
-          $el: $element
+          id: analysisId
         });
       },
       error: function() {
@@ -415,11 +415,12 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
         if (jqXHR.status === 200) {
           // analysis has completed
-          trigger('resultsload statuschange', {
+          var eventData = {
             name: $element.data('analysis-name'),
-            id: analysisId,
-            $el: $element
-          });
+            id: analysisId
+          };
+          trigger('resultsload', $element, eventData);
+          trigger('statuschange', $element, eventData);
         }
       },
       error: function() {
@@ -543,16 +544,9 @@ wdk.util.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
   // Trigger two wdk events: one generic and one specific to instance
   // eventNames is a space-delimited list of names
-  function trigger(eventNames, pubObject) {
-    var event = _.chain(eventNames.trim().split(/\s+/))
-      .map(function(name) {
-        return ['analysis:' + name, 'analysis:' + name + ':' + pubObject.name];
-      })
-      .flatten()
-      .value()
-      .join(' ');
-
-    wdk.trigger(event, pubObject);
+  function trigger(event, element, data) {
+    $(element).trigger('analysis:' + event, data);
+    $(element).trigger('analysis:' + event + ':' + data.name, data);
   }
 
   ns.configureAnalysisViews = configureAnalysisViews;

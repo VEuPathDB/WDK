@@ -1,6 +1,6 @@
 // WDK filter layout related scripts
 
-wdk.util.namespace("window.wdk.filter", function(ns, $) {
+wdk.namespace("window.wdk.filter", function(ns, $) {
   "use strict";
 
   function WdkFilterNew($el) {

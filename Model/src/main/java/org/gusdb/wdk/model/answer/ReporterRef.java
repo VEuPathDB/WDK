@@ -41,7 +41,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
 
   @Override
   public WdkModel getWdkModel() {
-    return wdkModel;
+    return _wdkModel;
   }
 
   /**
@@ -164,7 +164,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
   }
 
   public void setResources(WdkModel wdkModel) {
-    this.wdkModel = wdkModel;
+    this._wdkModel = wdkModel;
   }
 
   /*

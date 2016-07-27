@@ -92,7 +92,7 @@ public class AnswerParam extends Param {
    */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
-    if (resolved)
+    if (_resolved)
       return;
 
     super.resolveReferences(model);
@@ -131,7 +131,7 @@ public class AnswerParam extends Param {
     }
     */
 
-    this.resolved = true;
+    this._resolved = true;
   }
 
   /*

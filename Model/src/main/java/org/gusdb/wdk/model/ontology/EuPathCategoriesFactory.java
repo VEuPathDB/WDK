@@ -34,7 +34,6 @@ import org.apache.log4j.Logger;
  */
 public class EuPathCategoriesFactory {
   
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(EuPathCategoriesFactory.class);
 
   // maps to collect the categories we make
@@ -73,16 +72,22 @@ public class EuPathCategoriesFactory {
   private final String WEBSERVICE = "webservice";
   
   // record classes whose individuals all have both scope website and menu
-  private String[][] otherRecordClassInfo = {{"Popset Isolate Sequences", "PopsetRecordClasses.PopsetRecordClass"}, {"Genomic Sequences", "SequenceRecordClasses.SequenceRecordClass"}, {"Genomic Segments", "DynSpanRecordClasses.DynSpanRecordClass"}, {"SNPs", "SnpRecordClasses.SnpRecordClass"}, {"SNPs (from Chips)", "SnpChipRecordClasses.SnpChipRecordClass"}, {"ESTs", "EstRecordClasses.EstRecordClass"}, {"ORFs", "OrfRecordClasses.OrfRecordClass"}, {"Metabolic Pathways", "PathwayRecordClasses.PathwayRecordClass"}, {"Compounds", "CompoundRecordClasses.CompoundRecordClass"} };
+    private String[][] otherRecordClassInfo = {{"Popset Isolate Sequences", "PopsetRecordClasses.PopsetRecordClass"}, {"Genomic Sequences", "SequenceRecordClasses.SequenceRecordClass"}, {"Genomic Segments", "DynSpanRecordClasses.DynSpanRecordClass"}, {"SNPs", "SnpRecordClasses.SnpRecordClass"}, {"SNPs (from Chips)", "SnpChipRecordClasses.SnpChipRecordClass"}, {"ESTs", "EstRecordClasses.EstRecordClass"}, {"ORFs", "OrfRecordClasses.OrfRecordClass"}, {"Metabolic Pathways", "PathwayRecordClasses.PathwayRecordClass"}, {"Compounds", "CompoundRecordClasses.CompoundRecordClass"}};
   
   private  void getCategories() throws WdkModelException {
 
     Ontology ontology = model.getOntology("Categories");
 
-    // Gene questions for menus
-    String[] scopes2 = { MENU};
-    processGeneQuestions(ontology, scopes2, websiteCategories, websiteRootCategories);
-    
+    if (model.getProjectId().equals("MicrobiomeDB")) {
+        // Sample questions for menus
+        String[] scopes2 = { MENU};
+        processPrimaryCategoryQuestions(ontology, scopes2, "Samples", "SampleRecordClasses.SampleRecordClass",websiteCategories, websiteRootCategories);
+    }
+    else {
+        // Gene questions for menus
+        String[] scopes2 = { MENU};
+        processPrimaryCategoryQuestions(ontology, scopes2, "Genes", "TranscriptRecordClasses.TranscriptRecordClass",websiteCategories, websiteRootCategories);
+    }
     // sort using ontology's sorting order, if present, else alphabetical.
     for (SearchCategory category : websiteCategories.values()) {
       // set the display name in the ref, so it can be used for sorting.  ignore questions not found in model
@@ -97,19 +102,29 @@ public class EuPathCategoriesFactory {
       for (CategoryQuestionRef ref : questionRefs) sortedMap.put(ref.getQuestionFullName(), ref);
       category.setResolvedQuestionRefMap(sortedMap);
     }
-      
-    // gene questions for webservice
-    String[] scopes3 = { WEBSERVICE };
-    processGeneQuestions(ontology, scopes3, webserviceCategories, webserviceRootCategories);
-
-    // gene questions for datasets
-    String[] scopes4 = { INTERNAL };
-    processGeneQuestions(ontology, scopes4, datasetCategories, datasetRootCategories);
-
+    if (model.getProjectId().equals("MicrobiomeDB")) {
+        // Sample questions for webservice
+        String[] scopes3 = { WEBSERVICE };
+        processPrimaryCategoryQuestions(ontology, scopes3, "Samples", "SampleRecordClasses.SampleRecordClass",webserviceCategories, webserviceRootCategories);
+        
+        // gene questions for datasets
+        String[] scopes4 = { INTERNAL };
+        processPrimaryCategoryQuestions(ontology, scopes4, "Samples", "SampleRecordClasses.SampleRecordClass", datasetCategories, datasetRootCategories);
+    }
+    else {
+        // Sample questions for webservice
+        String[] scopes3 = { WEBSERVICE };
+        processPrimaryCategoryQuestions(ontology, scopes3, "Genes", "TranscriptRecordClasses.TranscriptRecordClass",webserviceCategories, webserviceRootCategories);
+        
+        // gene questions for datasets
+        String[] scopes4 = { INTERNAL };
+        processPrimaryCategoryQuestions(ontology, scopes4, "Genes", "TranscriptRecordClasses.TransciptRecordClass", datasetCategories, datasetRootCategories);
+    }
     // non-gene questions
     String[] scopes1 = { MENU, WEBSERVICE };
     for (String[] recordClassInfo : otherRecordClassInfo) {
       TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes1);
+      if (prunedOntologyTree == null) continue;
       List<Map<String, SearchCategory>> mapList =  new ArrayList<Map<String, SearchCategory>>();
       mapList.add(webserviceCategories);
       mapList.add(websiteCategories);
@@ -126,23 +141,27 @@ public class EuPathCategoriesFactory {
     }
   }
   
-  private void processGeneQuestions(Ontology ontology, String[] scopes, Map<String, SearchCategory> categoriesMap, Map<String, SearchCategory> rootCategoriesMap) {
+    private void processPrimaryCategoryQuestions(Ontology ontology, String[] scopes, String displayName, String name, Map<String, SearchCategory> categoriesMap, Map<String, SearchCategory> rootCategoriesMap) {
 
-    TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, "TranscriptRecordClasses.TranscriptRecordClass", scopes);
-
+    TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, name, scopes);
+    if (prunedOntologyTree == null) return;
+    
+    if (prunedOntologyTree == null) { 
+        return;
+    }
     // pass to mapper the categoriesMap to stuff the new categories into
     List<Map<String, SearchCategory>> mapList = new ArrayList<Map<String, SearchCategory>>();
     mapList.add(categoriesMap);
       
     // map the pruned ontology to a new root search category.  the root category holds the record class (for this scope)    
     SearchCategory rootCategory = prunedOntologyTree.mapStructure(new TreeNodeToSeachCategoryMapper(mapList, true));
-    rootCategory.setDisplayName("Genes");
-    rootCategory.setName("TranscriptRecordClasses.TranscriptRecordClass");
+    rootCategory.setDisplayName(displayName);
+    rootCategory.setName(name);
     rootCategoriesMap.put(rootCategory.getName(), rootCategory);
   }
 
   private TreeNode<OntologyNode> findPrunedOntology(Ontology ontology, String recordClassName, String scopes[]) {
-    Predicate<OntologyNode> predicate = new IsSearchPredicate(recordClassName, scopes);
+    Predicate<OntologyNode> predicate = new IsSearchPredicate(recordClassName, scopes, model);
     return Ontology.getFilteredOntology(ontology, predicate, false) ;
   }
   
@@ -226,21 +245,29 @@ public class EuPathCategoriesFactory {
    
   private class IsSearchPredicate implements Predicate<OntologyNode> {
 
-    String scopes[];
-    String recordClass;
+    private String scopes[];
+    private String recordClass;
+    private WdkModel model;
 
-    IsSearchPredicate(String recordClass, String scopes[]) {
+    IsSearchPredicate(String recordClass, String scopes[], WdkModel model) {
       this.recordClass = recordClass;
       this.scopes = scopes;
+      this.model = model;
     }
 
     @Override
       public boolean test(OntologyNode node) {
         boolean hasScope = false;
         for (String scope : scopes) if (node.containsKey("scope") && node.get("scope").contains(scope)) hasScope = true;
+        try {
         return node.containsKey("targetType") && node.get("targetType").contains("search")
-	  && node.containsKey("recordClassName") && node.get("recordClassName").contains(recordClass)
-	  && hasScope;
+            && node.containsKey("recordClassName") && node.get("recordClassName").contains(recordClass)
+            && model.getQuestion(node.get("name").get(0)) != null && hasScope;
+        } catch (WdkModelException e) {
+          LOG.debug("Error attempting to resolve ontology node with model entity.");
+          LOG.debug(e.getStackTrace());
+          return false;
+        }
       }
   }
 

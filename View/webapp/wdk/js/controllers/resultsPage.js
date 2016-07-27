@@ -7,7 +7,7 @@ resultsPage.js
 Provides functions to support results table
 */
 
-wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
+wdk.namespace("window.wdk.resultsPage", function(ns, $) {
   "use strict";
 
   // Called when a step is selected and the tabs container is inserted in DOM

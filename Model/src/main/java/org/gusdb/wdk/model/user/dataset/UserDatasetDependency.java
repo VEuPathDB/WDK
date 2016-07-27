@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.user.dataset;
 
 /**
- * Describes a dependency of a user dataset on an application resource (such as
+ * A simple data container describing the dependency of a user dataset on an application resource (such as
  * data in the application database).
  * @author steve
  *
@@ -23,5 +23,5 @@ public interface UserDatasetDependency {
    * A human readable form of the resource, for display to end user
    * @return
    */
-  String getDisplayable();
+  String getResourceDisplayName();
 }

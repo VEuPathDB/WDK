@@ -13,9 +13,9 @@ wdk.namespace('wdk.models.filter', function(ns) {
 
   var FilterService = wdk.models.filter.FilterService;
 
-  ns.LazyFilterService = FilterService.extend({
+  class LazyFilterService extends FilterService {
 
-    constructor: function(attrs) {
+    constructor(attrs) {
       if (!attrs.name) {
         throw new Error('LazyFilterService requires a "name" attribute.');
       }
@@ -24,31 +24,32 @@ wdk.namespace('wdk.models.filter', function(ns) {
         throw new Error('LazyFilterService requires a "questionName" attribute.');
       }
 
+      super(attrs);
+
       this.name = attrs.name;
       this.questionName = attrs.questionName;
       this.dependedValue = attrs.dependedValue;
       this.metadataXhrQueue = new Map();
-      FilterService.prototype.constructor.apply(this, arguments);
-    },
+    }
 
-    selectField: function(field) {
+    selectField(field) {
       this.cancelXhr(this._pendingSelectField);
       this._pendingSelectField = field;
       FilterService.prototype.selectField.call(this, field);
-    },
+    }
 
-    updateColumns: function(fields) {
+    updateColumns(fields) {
       fields.forEach(field => this.cancelXhr(field));
       FilterService.prototype.updateColumns.call(this, fields);
-    },
+    }
 
-    cancelXhr: function(field) {
+    cancelXhr(field) {
       if (field) {
         return _.result(this.metadataXhrQueue.get(field.term), 'abort');
       }
-    },
+    }
 
-    getFieldDistribution: function(field) {
+    getFieldDistribution(field) {
       var term = field.term;
       var otherFilters =_.reject(this.filters, function(filter) {
         return filter.field.term === term;
@@ -82,9 +83,9 @@ wdk.namespace('wdk.models.filter', function(ns) {
             })
           : distribution;
       }.bind(this));
-    },
+    }
 
-    getFieldMetadata: function(field) {
+    getFieldMetadata(field) {
       return new Promise(function(resolve, reject) {
         var term = field.term;
         var type = field.type;
@@ -135,9 +136,9 @@ wdk.namespace('wdk.models.filter', function(ns) {
             this.metadataXhrQueue.delete(term);
           }.bind(this));
       }.bind(this));
-    },
+    }
 
-    getFilteredData: function(filters) {
+    getFilteredData(filters) {
         return Promise.all(_.map(filters, function(filter) {
           return this.getFieldMetadata(filter.field);
         }, this)).then(function() {
@@ -159,6 +160,8 @@ wdk.namespace('wdk.models.filter', function(ns) {
         }.bind(this));
     }
 
-  });
+  }
+
+  ns.LazyFilterService = LazyFilterService;
 
 });

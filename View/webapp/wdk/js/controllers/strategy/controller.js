@@ -17,7 +17,7 @@
  *
  */
 
-wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
+wdk.namespace("window.wdk.strategy.controller", function (ns, $) {
   "use strict";
 
   var sidIndex = 0;
@@ -116,7 +116,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       });
 
     // update state when analysis status changes
-    wdk.on('analysis:statuschange', _.partial(fetchStrategies, mergeStrategies));
+    $(document).on('analysis:statuschange', function() {
+      fetchStrategies(mergeStrategies);
+    });
 
     // Add delegate submit handler here for question form
     // The callback is called when the event bubbles up to the body

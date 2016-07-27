@@ -1,4 +1,5 @@
-/* global _, Backbone, wdk */
+/* global _, wdk */
+import EventEmitter from 'events';
 import {makeTree} from './utils';
 
 // TODO How does this class relate to Flux?
@@ -41,13 +42,13 @@ import {makeTree} from './utils';
 wdk.namespace('wdk.models.filter', function(ns) {
   'use strict';
 
-  var BaseClass = wdk.core.BaseClass;
-
   var CHANGE_EVENT = 'change';
 
-  ns.FilterService = BaseClass.extend(Backbone.Events, {
+  /** Abstract service class */
+  class FilterService {
 
-    constructor: function(attrs) {
+    constructor(attrs) {
+      this._emitter = new EventEmitter();
 
       // Partition options.filters into two arrays:
       //   * valid
@@ -103,59 +104,63 @@ wdk.namespace('wdk.models.filter', function(ns) {
       this.getFilteredData(this.filters)
         .then(function(filteredData) {
           this.filteredData = filteredData;
-          this.emitChange();
+          this._emitChange();
         }.bind(this));
 
       // bind all methods
       _.bindAll(this);
-    },
+    }
 
-    emitChange: function() {
-      this.trigger(CHANGE_EVENT);
-    },
+    addListener(listener) {
+      this._emitter.on(CHANGE_EVENT, listener);
+      return {
+        remove: () => {
+          this._emitter.removeListener(CHANGE_EVENT, listener);
+        }
+      };
+    }
 
     getState() {
-    return _.pick(
-      this,
-      'fields',
-      'filters',
-      'data',
-      'filteredData',
-      'ignoredData',
-      'columns',
-      'selectedField',
-      'isLoading',
-      'invalidFilters',
-      'distributionMap',
-      'fieldMetadataMap'
-    );
+      return _.pick(
+        this,
+        'fields',
+        'filters',
+        'data',
+        'filteredData',
+        'ignoredData',
+        'columns',
+        'selectedField',
+        'isLoading',
+        'invalidFilters',
+        'distributionMap',
+        'fieldMetadataMap'
+      );
+    }
 
-    },
-
-    selectField: function(field) {
+    selectField(field) {
       this.isLoading = true;
       this.selectedField = field;
-      this.emitChange();
+      this._emitChange();
 
       this.getFieldDistribution(field)
         .then(function(distribution) {
           this.distributionMap[field.term] = distribution;
           // this.selectedField = field;
           this.isLoading = false;
-          this.emitChange();
+          this._emitChange();
         }.bind(this));
-    },
+    }
 
-    updateFilters: function(filters) {
+    updateFilters(filters) {
       this.filters = filters;
       this.applyFilters();
-    },
+    }
 
     // Filter is optional. If supplied, calculate it's selection.
     // If @selectedField is undefined, skip updating @distributionMap.
-    applyFilters: function() {
+    applyFilters() {
       this.isLoading = true;
-      this.emitChange();
+      this._emitChange();
 
       let filter = this.filters.find(filter => filter.field.term === this.selectedField.term);
       var promises = [
@@ -173,26 +178,26 @@ wdk.namespace('wdk.models.filter', function(ns) {
         }
         this.filteredData = filteredData;
         this.isLoading = false;
-        this.emitChange();
+        this._emitChange();
       }.bind(this));
-    },
+    }
 
-    updateColumns: function(fields) {
+    updateColumns(fields) {
       this.isLoading = true;
-      this.emitChange();
+      this._emitChange();
 
       Promise.all(fields.map(field => this.getFieldMetadata(field)))
         .then(() => {
           this.columns = fields;
           this.isLoading = false;
-          this.emitChange();
+          this._emitChange();
         });
-    },
+    }
 
-    updateIgnoredData: function(data) {
+    updateIgnoredData(data) {
       this.ignoredData = data;
-      this.emitChange();
-    },
+      this._emitChange();
+    }
 
     // Methods to override
     // ------------------
@@ -201,25 +206,31 @@ wdk.namespace('wdk.models.filter', function(ns) {
     //
     //     [ { value, count, filteredCount } ]
     //
-    getFieldDistribution: function(field) {
+    getFieldDistribution(field) {
       throw new Error('getFieldDistribution() should be implemented ' + field);
-    },
+    }
 
     // Returns a Promise-like that resolves with the filtered data.
     //
     //     [ { term, display } ]
     //
-    getFilteredData: function(filters) {
+    getFilteredData(filters) {
       throw new Error('getFilteredData() should be implemented ' + filters);
-    },
+    }
 
     // Returns a Promise-like that resolves with the field's metadata:
     //
     //     [ { data_term: field_value } ]
     //
-    getFieldMetadata: function(field) {
+    getFieldMetadata(field) {
       throw new Error('getFieldMetadata() should be implemented ' + field);
     }
 
-  });
+    _emitChange() {
+      this._emitter.emit(CHANGE_EVENT);
+    }
+
+  }
+
+  ns.FilterService = FilterService;
 });

@@ -1,7 +1,3 @@
-.wdk-Record {
-  padding: 0 1em;
-}
-
 /* clearfix */
 .wdk-Record:after {
   visibility: hidden;
@@ -36,7 +32,7 @@
 }
 
 .wdk-RecordMain, .wdk-RecordSidebar {
-  padding: 2.5em 0;
+  padding: 2.5em 1em;
   transition: margin-left 250ms ease;
   transition: left 250ms ease;
 }
@@ -85,11 +81,11 @@
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebar {
-  left: -44px;
+  left: -24px;
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebar__fixed {
-  left: 4px;
+  left: 24px;
 }
 
 .wdk-RecordContainer__withSidebar .wdk-RecordSidebarToggle {
@@ -229,7 +225,7 @@
   top: 1px;
 }
 
-.wdk-Record .wdk-CollapsibleSectionHeader:not(.wdk-RecordSectionHeader) {
+.wdk-RecordMain .wdk-CollapsibleSectionHeader:not(.wdk-RecordSectionHeader) {
   font-size: 1.2em;
   font-weight: 500;
 }

@@ -1,4 +1,4 @@
-wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
+wdk.namespace("window.wdk.tooltips", function(ns, $) {
   "use strict";
 
   /**

@@ -182,7 +182,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
         data = toString(records);
     }
 
-    logger.info("dataset parser: " + parserName + ", data: '" + data + "'");
+    logger.info("DATASET.geStableValue: dataset parser: " + parserName + ", data: '" + data + "'");
     if (data == null) {
       if (!param.isAllowEmpty())
         throw new WdkUserException("The dataset param '" + param.getPrompt() + "' does't allow empty value.");
@@ -220,7 +220,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
         if (first)
           first = false;
         else
-          buffer.append("|");
+          buffer.append(ListDatasetParser.DATASET_COLUMN_DIVIDER);
         buffer.append(value);
       }
       buffer.append("\n");

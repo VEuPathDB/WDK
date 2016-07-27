@@ -61,6 +61,8 @@
           <ref name="uiConfig" />
 
           <ref name="stepAnalysisPlugins" />
+  
+          <ref name="userDatasetStorePlugin"/>
 
         </choice>
       </oneOrMore>
@@ -1696,6 +1698,24 @@
         <text />
       </element>
     </zeroOrMore>
+  </define>
+
+  <define name="userDatasetStorePlugin">
+    <optional>
+      <element name="userDatasetStorePlugin">
+	<attribute name="implementation"/>
+	<zeroOrMore>
+	  <ref name="property"/>
+	</zeroOrMore>
+	<oneOrMore>
+	  <element name="typeHandlerPlugin">
+	    <attribute name="type"/>
+	    <attribute name="version"/>
+	    <attribute name="implementation"/>
+	  </element>
+	</oneOrMore>
+      </element>
+    </optional>
   </define>
 
   <define name="stepAnalysisPlugins">

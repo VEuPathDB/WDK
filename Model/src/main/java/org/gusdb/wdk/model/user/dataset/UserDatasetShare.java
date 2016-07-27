@@ -2,10 +2,10 @@ package org.gusdb.wdk.model.user.dataset;
 
 import java.util.Date;
 
-import org.gusdb.wdk.model.user.User;
 
 /**
- * The info needed to describe a sharing of a user dataset
+ * A simple data container with info needed to describe sharing of a user dataset
+ * with another user.
  * @author steve
  *
  */
@@ -14,7 +14,7 @@ public interface UserDatasetShare {
    * The user the dataset is shared with
    * @return
    */
-  User getUser();
+  Integer getUserId();
   
   /**
    * The time it was shared

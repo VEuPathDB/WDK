@@ -1,4 +1,5 @@
-import {mapValues, values, pick} from 'lodash';
+/* global __DEV__ */
+import {mapValues, values} from 'lodash';
 import {createElement} from 'react';
 import * as ReactDOM from 'react-dom';
 
@@ -10,40 +11,25 @@ import { loadAllStaticData } from './actioncreators/StaticDataActionCreators';
 import * as Components from './components';
 import * as Stores from './stores';
 import * as Controllers from './controllers';
-import * as ComponentUtils from './utils/componentUtils';
-import * as IterableUtils from './utils/IterableUtils';
-import * as ReporterUtils from './utils/reporterUtils';
-import * as TreeUtils from './utils/TreeUtils';
-import * as OntologyUtils from './utils/OntologyUtils';
-import * as CategoryUtils from './utils/CategoryUtils';
-import * as StaticDataUtils from './utils/StaticDataUtils';
-import * as FormSubmitter from './utils/FormSubmitter';
-
-export {
-  Components,
-  Stores,
-  Controllers,
-  ComponentUtils,
-  ReporterUtils,
-  FormSubmitter,
-  WdkService,
-  IterableUtils,
-  TreeUtils,
-  OntologyUtils,
-  CategoryUtils,
-  StaticDataUtils
-};
 
 /**
  * Initialize the application.
  *
- * @param {string} option.rootUrl Root URL used by the router.
+ * @param {string} option.rootUrl Root URL used by the router. If the current
+ *   page's url does not begin with this option's value, the application will
+ *   not render automatically.
+ * @param {string|HTMLElement} option.rootElement Where to mount the
+ *   application. Can be a selector string or an element. If this option does
+ *   not resolve to an element after the DOMContentLoaded event is fired, the
+ *   application will not render automatically.
  * @param {string} option.endpoint Base URL for WdkService.
  * @param {HTMLElement} option.rootElement DOM node to render the application.
- * @param {Array} option.applicationRoutes Additional routes to register with the Router.
- * @param {Object} option.storeWrappers Mapping from store name to replacement class
+ * @param {React.Element} option.applicationRoutes Additional routes to register
+ *   with the Router.
+ * @param {Object} option.storeWrappers Mapping from store name to replacement
+ *   class
  */
-export function initialize({ rootUrl, endpoint, applicationRoutes, storeWrappers }) {
+export function initialize({ rootUrl, rootElement, endpoint, applicationRoutes, storeWrappers }) {
 
   // define the elements of the Flux architecture
   let wdkService = new WdkService(endpoint);
@@ -54,28 +40,36 @@ export function initialize({ rootUrl, endpoint, applicationRoutes, storeWrappers
   // load static WDK data into service cache and view stores that need it
   makeDispatchAction()(loadAllStaticData());
 
-  // define top-level page renderer
-  let render = (rootElement) => {
-    let applicationElement = createElement(
-      Root, {
-        rootUrl,
-        makeDispatchAction,
-        stores,
-        applicationRoutes
-      });
-    return ReactDOM.render(applicationElement, rootElement);
-  };
-
   // log all actions in dev environments
   if (__DEV__) logActions(dispatcher, stores);
 
+  if (location.pathname.startsWith(rootUrl)) {
+    // render the root element once page has completely loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      let container = rootElement instanceof HTMLElement
+        ? rootElement
+        : document.querySelector(rootElement);
+      if (container != null) {
+        let applicationElement = createElement(
+          Root, {
+            rootUrl,
+            makeDispatchAction,
+            stores,
+            applicationRoutes
+          });
+        ReactDOM.render(applicationElement, container);
+      }
+      else if (__DEV__) {
+        console.log('Could not resolve rootElement %o. Application will not render automatically.', rootElement);
+      }
+    });
+  }
+  else if (__DEV__) {
+    console.log('The current page url does not start with the rootUrl %o. Application router will not be rendered.', rootUrl);
+  }
+
   // return WDK application components
-  return {
-    wdkService,
-    makeDispatchAction,
-    stores,
-    render
-  };
+  return { wdkService, makeDispatchAction, stores };
 }
 
 /**
@@ -173,7 +167,7 @@ function getDispatchActionMaker(dispatcher, services) {
  * Apply Component wrappers to WDK components and controllers. Keys of
  * 'componentWrappers' should correspond to Component or Controller names in
  * WDK. Values of `componentWrappers` are factories that return a new component.
- * 
+ *
  * Note that this function applies wrappers "globally", meaning that all apps
  * returned by initialize will use the wrapped components, regardless of when
  * initialize and wrapComponents are called.

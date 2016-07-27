@@ -7,12 +7,10 @@ import {
   updateNavigationQuery,
   updateAllFieldVisibility,
   updateNavigationSubcategoryVisibility,
-  updateNavigationVisibility
+  updateNavigationVisibility,
+  updateActiveSection
 } from '../actioncreators/RecordViewActionCreators';
-import {
-  updateBasketStatus,
-  updateFavoritesStatus
-} from '../actioncreators/UserActionCreators';
+import * as UserActionCreators from '../actioncreators/UserActionCreators';
 import RecordUI from '../components/RecordUI';
 
 /** View Controller for record page */
@@ -22,16 +20,17 @@ class RecordController extends WdkViewController {
     return 'RecordViewStore';
   }
 
+  // XXX Should parent class always include UserActionCreators, so all
+  // components have access to them?
   getActionCreators() {
-    return {
+    return Object.assign({
       toggleSection,
       updateNavigationQuery,
       updateAllFieldVisibility,
       updateNavigationSubcategoryVisibility,
       updateNavigationVisibility,
-      updateBasketStatus,
-      updateFavoritesStatus
-    };
+      updateActiveSection
+    }, UserActionCreators);
   }
 
   isRenderDataLoaded(state) {

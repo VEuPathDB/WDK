@@ -32,6 +32,8 @@ export default class Root extends Component {
     };
     this.routes = (
       <Route path="/" component={AppController}>
+        {/* Add application routes before WDK routes. This allows application routes to override WDK routes. */}
+        {this.props.applicationRoutes}
         <IndexRoute component={IndexController}/>
         <Route path="search/:recordClass/:question/result" component={AnswerController}/>
         <Route path="record/:recordClass/download/*" component={DownloadFormController}/>
@@ -41,7 +43,6 @@ export default class Root extends Component {
         <Route path="user/profile/password" component={UserPasswordChangeController}/>
         <Route path="data-finder" component={SiteMapController}/>
         <Route path="question-list" component={QuestionListController}/>
-        {this.props.applicationRoutes.map(route => ( <Route key={route.path} {...route}/> ))}
         <Route path="*" component={NotFoundController}/>
       </Route>
     );
@@ -77,7 +78,7 @@ Root.propTypes = {
   rootUrl: PropTypes.string,
   makeDispatchAction: PropTypes.func.isRequired,
   stores: PropTypes.object.isRequired,
-  applicationRoutes: PropTypes.array.isRequired
+  applicationRoutes: PropTypes.element.isRequired
 };
 
 Root.defaultProps = {

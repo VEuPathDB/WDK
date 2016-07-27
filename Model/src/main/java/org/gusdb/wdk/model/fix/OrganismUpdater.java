@@ -118,8 +118,8 @@ public class OrganismUpdater {
           continue;
 
         JSONObject jsParams = new JSONObject(content);
-				if (jsParams.has("params")) 
-						jsParams = jsParams.getJSONObject("params");
+        if (jsParams.has("params")) 
+          jsParams = jsParams.getJSONObject("params");
 
         if (jsParams!=null && changeParams(jsParams, clobKeys)) {
           content = jsParams.toString();
@@ -135,14 +135,14 @@ public class OrganismUpdater {
       if (count % 100 != 0)
         psUpdate.executeBatch();
       stepLogger.finish();
-logger.info("THE END:   " + count + " steps modified\n\n");
+      logger.info("THE END:   " + count + " steps modified\n\n");
     }
     catch (SQLException ex) {
       logger.error(ex);
       throw ex;
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, psSelect);
       SqlUtils.closeStatement(psUpdate);
     }
   }

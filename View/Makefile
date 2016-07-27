@@ -3,7 +3,7 @@ SHELL        := /bin/bash
 
 # The recipe for this target creates three files, wdk.common.js, wdk.app.js, and wdk.client.js.
 # wdk.common.js contains common code between wdk.app.js and wdk.client.js.
-wdk_bundle    := $(shell pwd)/dist/wdk/js/wdk.js
+wdk_bundle    := $(shell pwd)/dist/wdk/js/wdk.bundle.js
 libs_bundle   := $(shell pwd)/dist/wdk/js/wdk.libs.js
 css_bundle    := $(shell pwd)/dist/wdk/css/wdk.min.css
 test_bundle   := $(shell pwd)/test/dist/tests.js

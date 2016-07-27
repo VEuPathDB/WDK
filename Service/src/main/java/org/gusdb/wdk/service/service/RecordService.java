@@ -163,9 +163,9 @@ public class RecordService extends WdkService {
     try {
       JSONObject json = new JSONObject(body);
       RecordClass rc = getRecordClass(recordClassName);
-      RecordRequest request = RecordRequest.createFromJson(getCurrentUser(), json, rc, getWdkModelBean());
+      RecordRequest request = RecordRequest.createFromJson(getSessionUser(), json, rc, getWdkModelBean());
       try {
-        List<Map<String,Object>> ids = rc.lookupPrimaryKeys(getCurrentUser(), request.getPrimaryKey());
+        List<Map<String,Object>> ids = rc.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKey());
         if(ids.size() > 1) {
           List<String> idList = mapToList(ids,
             new Function<Map<String,Object>, String>() {
@@ -188,7 +188,7 @@ public class RecordService extends WdkService {
       catch(WdkUserException e) {
         throw new BadRequestException(e);
       }
-      recordInstance = getRecordInstance(getCurrentUser(), request);
+      recordInstance = getRecordInstance(getSessionUser(), request);
 
       return Response.ok(RecordStreamer.getRecordAsStream(recordInstance, request.getAttributeNames(), request.getTableNames())).build();
     }

@@ -1,5 +1,5 @@
 /* global _, wdk, ReactDOM */
-wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
+wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
   var XHR_DATA_KEY = 'dependent-xhr';
   var PARAM_LOADING_EVENT = ns.PARAM_LOADING_EVENT = 'loading.wdk-param';
@@ -255,7 +255,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
     var filterParamOptions = { title, trimMetadataTerms };
 
-    var filterService = LazyFilterService.create({
+    var filterService = new LazyFilterService({
       name,
       fields,
       filters: previousValue && previousValue.filters,
@@ -271,7 +271,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     $param.data('filterService', filterService);
     $param.trigger('filterParamDidMount');
 
-    filterService.on('change', function() {
+    filterService.addListener(function() {
       var ignored = filterService.data.filter(datum => datum.isIgnored);
       var filteredData = filterService.filteredData.filter(datum => !ignored.includes(datum));
       input.val(JSON.stringify({
@@ -306,8 +306,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
            'Please select', condition, title, 'to continue.',
            '</div>'
         ].join(' '));
-        filterParam.once('change:value', function() {
+        var sub = filterService.addListener(function() {
           $param.find('.ui-state-error').remove();
+          sub.remove();
         });
         $('html, body').animate({ scrollTop: $param.offset().top - 100 }, 200);
       }

@@ -1,6 +1,6 @@
 /* jshint scripturl:true */
 
-wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
+wdk.namespace("wdk.addStepPopup", function(ns, $) {
   "use strict";
 
   var global_isAdd;

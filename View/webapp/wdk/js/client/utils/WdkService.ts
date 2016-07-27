@@ -236,7 +236,7 @@ export default class WdkService {
   }
 
   updateCurrentUser(user: User) {
-    let url = '/user/current/profile';
+    let url = '/user/current';
     let data = JSON.stringify(user);
     return this._fetchJson<void>('put', url, data).then(() => user);
   }
@@ -252,11 +252,11 @@ export default class WdkService {
   }
 
   getOauthStateToken() {
-    return this._fetchJson<string>('get', '/user/oauthStateToken');
+    return this._fetchJson<string>('get', '/oauth/stateToken');
   }
 
-  findStep(stepId: number) {
-    return this._fetchJson<Step>('get', '/step/' + stepId);
+  findStep(stepId: number, userId: string = "current") {
+    return this._fetchJson<Step>('get', '/user/' + userId + '/step/' + stepId);
   }
 
   getOntology(name = '__wdk_categories__') {

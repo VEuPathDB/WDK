@@ -1,5 +1,5 @@
 /* global customBasketPage */
-wdk.util.namespace("window.wdk.basket", function(ns, $) {
+wdk.namespace("window.wdk.basket", function(ns, $) {
   "use strict";
 
   function configureBasket() {

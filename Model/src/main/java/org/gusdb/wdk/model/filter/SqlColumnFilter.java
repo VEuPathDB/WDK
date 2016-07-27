@@ -76,7 +76,7 @@ public abstract class SqlColumnFilter extends ColumnFilter {
 	      throw new WdkModelException(ex);
 	    }
 	    finally {
-	      SqlUtils.closeResultSetAndStatement(resultSet);
+	      SqlUtils.closeResultSetAndStatement(resultSet, null);
 	    }
 
 	    return new ListColumnFilterSummary(counts);

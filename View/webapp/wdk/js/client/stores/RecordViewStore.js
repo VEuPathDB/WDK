@@ -14,19 +14,31 @@ export default class RecordViewStore extends WdkStore {
   }
 
   getInitialState() {
+    // TODO combine related state into objects (e.g., navPanelState, basketState, &c)
     return {
+      // resources
       user: undefined,
       record: undefined,
       recordClass: undefined,
-      collapsedSections: undefined,
-      isLoading: undefined,
       categoryTree: undefined,
+
+      // are resources loading
+      isLoading: undefined,
+
+      // state assocated with category tree
+      collapsedSections: undefined,
+
+      // navigation panel state
       navigationVisible: true,
       navigationQuery: '',
       navigationSubcategoriesExpanded: false,
+
+      // basket state
       inBasket: undefined,
       loadingBasketStatus: undefined,
       basketError: undefined,
+
+      // favorite state
       inFavorites: undefined,
       loadingFavoritesStatus: undefined,
       favoritesError: undefined
@@ -35,6 +47,7 @@ export default class RecordViewStore extends WdkStore {
 
   handleAction(state, action) {
     switch (action.type) {
+
       case actionTypes.ERROR_RECEIVED:
         return Object.assign({}, state, {
           isLoading: false,
@@ -49,7 +62,6 @@ export default class RecordViewStore extends WdkStore {
 
       case actionTypes.ACTIVE_RECORD_RECEIVED: {
         let { record, recordClass, categoryTree } = action.payload;
-
         return Object.assign({}, state, {
           record,
           recordClass,
@@ -72,6 +84,11 @@ export default class RecordViewStore extends WdkStore {
         );
         return Object.assign({}, state, { collapsedSections });
       }
+
+      case actionTypes.ACTIVE_SECTION_CHANGED:
+        return Object.assign({}, state, {
+          activeSection: action.payload.name
+        });
 
       /**
        * Update visibility of all record fields (tables and attributes).
@@ -150,6 +167,7 @@ export default class RecordViewStore extends WdkStore {
 
       default:
         return state;
+
     }
   }
 }
@@ -167,6 +185,7 @@ function getAllFields(state) {
   .map(getId);
 }
 
+/** Test is node is a field node */
 function isFieldNode(node) {
   let targetType = getTargetType(node);
   return targetType === 'attribute' || targetType === 'table';
