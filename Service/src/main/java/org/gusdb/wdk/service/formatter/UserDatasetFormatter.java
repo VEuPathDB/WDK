@@ -22,7 +22,7 @@ public class UserDatasetFormatter {
       else {
         UserDataset dataset = userDatasetsMap.get(datasetId);
         UserDatasetCompatibility compat = userDatasetStore.getTypeHandler(dataset.getType()).getCompatibility(dataset);
-        datasetsJson.put(getUserDatasetJson(dataset, compat));
+        datasetsJson.put(getUserDatasetJson(dataset, compat, userDatasetStore));
       }
     }
     return datasetsJson;
@@ -59,7 +59,7 @@ public class UserDatasetFormatter {
 }
 
    */
-  private static JSONObject getUserDatasetJson(UserDataset dataset, UserDatasetCompatibility compatibility) throws WdkModelException {
+  private static JSONObject getUserDatasetJson(UserDataset dataset, UserDatasetCompatibility compatibility, UserDatasetStore store) throws WdkModelException {
     JSONObject json = new JSONObject();
     JSONObject typeJson = new JSONObject();
     UserDatasetType type = dataset.getType();
@@ -84,6 +84,8 @@ public class UserDatasetFormatter {
     json.put("modified", dataset.getModifiedDate().getTime());
     json.put("created", dataset.getCreatedDate().getTime());
     json.put("uploaded", dataset.getUploadedDate().getTime());
+    int quota = store.getQuota(dataset.getOwnerId());
+    json.put("percentQuotaUsed", new Integer(dataset.getSize() * 100 / quota));
     JSONArray sharesJson = new JSONArray();
     for (UserDatasetShare share : dataset.getSharedWith()) {
       JSONObject shareJson = new JSONObject();
