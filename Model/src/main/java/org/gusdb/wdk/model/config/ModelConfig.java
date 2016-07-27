@@ -66,6 +66,7 @@ public class ModelConfig implements OAuthConfig {
 
   private ModelConfigUserDB userDB;
   private ModelConfigAppDB appDB;
+  private ModelConfigUserDatasetStore userDatasetStoreConfig;
 
   private QueryMonitor queryMonitor = new QueryMonitor();
 
@@ -526,6 +527,18 @@ public class ModelConfig implements OAuthConfig {
 
   public void setCaching(boolean caching) {
     this.caching = caching;
+  }
+
+  public void setUserDatasetStore(ModelConfigUserDatasetStore udsConfig) {
+    this.userDatasetStoreConfig = udsConfig;
+  }
+  
+  /**
+   * The config for a user dataset store. Optional.  Might be null.
+   * @return
+   */
+  public ModelConfigUserDatasetStore getUserDatasetStoreConfig() {
+    return userDatasetStoreConfig;
   }
 
 }
