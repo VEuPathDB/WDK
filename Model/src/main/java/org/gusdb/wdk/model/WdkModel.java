@@ -36,6 +36,7 @@ import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStorePlugin;
 import org.gusdb.wdk.model.config.QueryMonitor;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
@@ -1142,6 +1143,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
   public UserDatasetStore getUserDatasetStore() {
     return userDatasetStore;
   }
+
+  public void setUserDatasetStorePlugin(UserDatasetStorePlugin plugin) {}
 
   public DatasetFactory getDatasetFactory() {
     return datasetFactory;
