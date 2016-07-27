@@ -35,6 +35,7 @@ import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
+import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
 import org.gusdb.wdk.model.config.QueryMonitor;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
@@ -62,7 +63,6 @@ import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
-import org.gusdb.wdk.model.user.dataset.UserDatasetStorePlugin;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.xml.sax.SAXException;
@@ -104,7 +104,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
-  private UserDatasetStorePlugin userDatasetStorePlugin;
   private UserDatasetStore userDatasetStore;
 
   private List<QuerySet> querySetList = new ArrayList<>();
@@ -563,6 +562,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
     _modelConfig = modelConfig;
     ModelConfigAppDB appDbConfig = modelConfig.getAppDB();
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
+    ModelConfigUserDatasetStore udsConfig= modelConfig.getUserDatasetStoreConfig();
+    if (udsConfig != null) userDatasetStore = udsConfig.getUserDatasetStore();
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
     appDb = new DatabaseInstance(appDbConfig, DB_INSTANCE_APP, true);
@@ -768,12 +769,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
     // comment out to use old categories
     if (!ontologyFactoryMap.isEmpty()) eupathCategoriesFactory = new EuPathCategoriesFactory(this);
-    
-    if (userDatasetStorePlugin != null && userDatasetStore == null) {
-      userDatasetStorePlugin.resolveReferences(this);
-      userDatasetStore = userDatasetStorePlugin.getUserDatasetStore();
-    }
-}
+ }
 
   private void excludeResources() throws WdkModelException {
     // decide model name, display name, and version
@@ -1141,10 +1137,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel> {
 
   public File getXmlDataDir() {
     return xmlDataDir;
-  }
-  
-  public void setUserDatasetStorePlugin(UserDatasetStorePlugin plugin) {
-    this.userDatasetStorePlugin = plugin;
   }
   
   public UserDatasetStore getUserDatasetStore() {
