@@ -180,10 +180,6 @@ public class JsonUserDataset implements UserDataset {
   public Integer getPercentQuota(int quota) {
     return new Integer(size * 100 / quota);
   }
-
-  public void updateMeta(JsonUserDatasetMeta meta) {
-    this.meta = meta;
-  }
   
   /**
    * Used for serializing to dataset store
