@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user.dataset;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -78,21 +77,24 @@ public interface UserDataset {
   /**
    * Get the date this dataset was created, by whatever application created it.
    * Storing this date with the dataset is the responsibility of that program, not the wdk.
+   * Milliseconds since epoch.
    * @return
    */
-  Date getCreatedDate() throws WdkModelException;
+  Long getCreatedDate() throws WdkModelException;
   
   /**
    * The last time it was modified, either meta info or outgoing or incoming sharing.
+   * Milliseconds since epoch.
    * @return
    */
-  Date getModifiedDate() throws WdkModelException;
+  Long getModifiedDate() throws WdkModelException;
   
   /**
    * The time this dataset was uploaded to the UserDatasetStore
+   * Milliseconds since epoch.
    * @return
    */
-  Date getUploadedDate() throws WdkModelException;
+  Long getUploadedDate() throws WdkModelException;
   
   /**
    * Get the set of data dependencies (in the application database) that this dataset has.

@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -283,10 +282,10 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
    * org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor#getModificationTime(Path)
    */
   @Override
-  public Date getModificationTime(Path fileOrDir) throws WdkModelException {
+  public Long getModificationTime(Path fileOrDir) throws WdkModelException {
     String pathName = fileOrDir.toString();
     IRODSFile file = getFile(pathName);
-    return new Date(file.lastModified());
+    return file.lastModified();
   }
 
   @Override

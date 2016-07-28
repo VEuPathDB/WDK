@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user.dataset;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -85,7 +84,7 @@ public interface UserDatasetStore {
    * @param userId
    * @return
    */
-  Date getModificationTime(Integer userId) throws WdkModelException;
+  Long getModificationTime(Integer userId) throws WdkModelException;
   
   /**
    * Get the size of this user's quota
