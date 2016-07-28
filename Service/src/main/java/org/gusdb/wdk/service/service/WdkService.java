@@ -122,6 +122,6 @@ public abstract class WdkService {
    * @throws WdkModelException if error occurs while accessing user data (probably a DB problem)
    */
   protected UserBundle parseTargetUserId(String userIdStr) throws WdkModelException {
-    return UserBundle.createFromTargetId(userIdStr, getSessionUser(), getWdkModel().getUserFactory());
+    return UserBundle.createFromTargetId(userIdStr, getSessionUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
   }
 }

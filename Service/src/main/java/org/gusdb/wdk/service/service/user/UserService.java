@@ -17,7 +17,7 @@ public abstract class UserService extends WdkService {
 
   private static final String USER_RESOURCE = "User ID ";
 
-  protected static enum Access { PUBLIC, PRIVATE; }
+  protected static enum Access { PUBLIC, PRIVATE, ADMIN; }
 
   private final String _userIdStr;
 
@@ -37,10 +37,13 @@ public abstract class UserService extends WdkService {
    */
   protected UserBundle getUserBundle(Access requestedAccess) throws WdkModelException {
     UserBundle userBundle = parseTargetUserId(_userIdStr);
-    if (!userBundle.isValidUserId())
+    if (!userBundle.isValidUserId()) {
       throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userBundle.getTargetUserIdString()));
-    if (!userBundle.isSessionUser() && Access.PRIVATE.equals(requestedAccess))
+    }
+    if ((!userBundle.isSessionUser() && Access.PRIVATE.equals(requestedAccess)) ||
+        (!userBundle.isAdminSession() && Access.ADMIN.equals(requestedAccess))) {
       throw new ForbiddenException(WdkService.PERMISSION_DENIED);
+    }
     return userBundle;
   }
 }

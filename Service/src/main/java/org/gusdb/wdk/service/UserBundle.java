@@ -30,18 +30,19 @@ public class UserBundle {
   private final User _targetUser;
   private final boolean _isSessionUser;
   private final User _sessionUser;
+  private final boolean _isAdminSession;
 
-  public static UserBundle createFromTargetId(String userIdStr, User sessionUser, UserFactory userFactory) throws WdkModelException {
+  public static UserBundle createFromTargetId(String userIdStr, User sessionUser, UserFactory userFactory, boolean isAdminSession) throws WdkModelException {
     try {
       if (SESSSION_USER_MAGIC_STRING.equals(userIdStr)) {
-        return getSessionUserBundle(SESSSION_USER_MAGIC_STRING, sessionUser);
+        return getSessionUserBundle(SESSSION_USER_MAGIC_STRING, sessionUser, isAdminSession);
       }
       int userId = Integer.parseInt(userIdStr);
       if (userId == sessionUser.getUserId()) {
-        return getSessionUserBundle(userIdStr, sessionUser);
+        return getSessionUserBundle(userIdStr, sessionUser, isAdminSession);
       }
       User user = userFactory.getUser(userId);
-      return new UserBundle(userIdStr, true, user, false, sessionUser);
+      return new UserBundle(userIdStr, true, user, false, sessionUser, isAdminSession);
     }
     catch (NoSuchUserException | NumberFormatException | NullPointerException e) {
       LOG.warn("User requested by ID that is misformatted or does not exist", e);
@@ -50,20 +51,22 @@ public class UserBundle {
     }
   }
 
-  private UserBundle(String targetUserIdString, boolean isValidUserId, User targetUser, boolean isSessionUser, User sessionUser) {
+  private UserBundle(String targetUserIdString, boolean isValidUserId, User targetUser,
+      boolean isSessionUser, User sessionUser, boolean isAdminSession) {
     _targetUserIdString = targetUserIdString;
     _isValidUserId = isValidUserId;
     _targetUser = targetUser;
     _isSessionUser = isSessionUser;
     _sessionUser = sessionUser;
+    _isAdminSession = isAdminSession;
   }
 
-  private static UserBundle getSessionUserBundle(String userIdStr, User sessionUser) {
-    return new UserBundle(userIdStr, true, sessionUser, true, sessionUser);
+  private static UserBundle getSessionUserBundle(String userIdStr, User sessionUser, boolean isAdminSession) {
+    return new UserBundle(userIdStr, true, sessionUser, true, sessionUser, isAdminSession);
   }
 
   private static UserBundle getBadIdBundle(String userIdStr, User currentUser) {
-    return new UserBundle(userIdStr, false, null, false, currentUser);
+    return new UserBundle(userIdStr, false, null, false, currentUser, false);
   }
 
   public String getTargetUserIdString() {
@@ -84,5 +87,9 @@ public class UserBundle {
 
   public User getSessionUser() {
     return _sessionUser;
+  }
+
+  public boolean isAdminSession() {
+    return _isAdminSession;
   }
 }
