@@ -1,10 +1,12 @@
 package org.gusdb.wdk.service.service.user;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -19,6 +21,7 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
 import org.gusdb.wdk.service.request.DataValidationException;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -59,8 +62,22 @@ public class UserDatasetService extends UserService {
   public Response shareWith(@PathParam("datasetId") String datasetIdStr, String body)
       throws WdkModelException, DataValidationException {
 
-    Integer shareWithUserId = new Integer(body);
-    getUserDataset(datasetIdStr).shareWith(shareWithUserId);
+    JSONObject jsonObj = new JSONObject(body);
+    
+    // put datasets to share into a set
+    JSONArray jsonDatasetsToShare = jsonObj.getJSONArray("datasetsToShare");
+        Set<Integer> datasetIdsToShare = new HashSet<Integer>();
+    for (int i=0; i<jsonDatasetsToShare.length(); i++) 
+      datasetIdsToShare.add(jsonDatasetsToShare.getInt(i));
+    
+    // put target users into a set
+    JSONArray jsonTargetUsers = jsonObj.getJSONArray("targetUsers");
+    Set<Integer> targetUserIds = new HashSet<Integer>();
+    for (int i=0; i<jsonTargetUsers.length(); i++) 
+      targetUserIds.add(jsonTargetUsers.getInt(i));
+    
+    getUserDatasetStore().shareUserDatasets(getUserId(), datasetIdsToShare, targetUserIds);
+
     return Response.ok("").build();
 
   }
