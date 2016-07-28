@@ -38,7 +38,7 @@ public class ErrorHandler {
     public interface WriterProvider {
         public PrintWriter getPrintWriter();
     }
-    
+
     public static class ValueTransform<T> {
         public String transformValue(String key, T value) { return value.toString(); }
     }
@@ -179,13 +179,13 @@ public class ErrorHandler {
      * @param logMarker
      */
     private static void constructAndSendMail(Exception exception, ErrorContext context, String logMarker) {
-      String[] recipients = context.getAdminEmails();
-      if(recipients.length > 0) {
+      List<String> recipients = context.getAdminEmails();
+      if (!recipients.isEmpty()) {
         HttpServletRequest request = context.getRequest();
         String from = "tomcat@" + request.getServerName();
         String subject = getEmailSubject(context);
         String message = getEmailBody(exception, context, logMarker);
-        sendMail(recipients, from, subject, message.toString());
+        sendMail(recipients.toArray(new String[recipients.size()]), from, subject, message.toString());
       }
     }
 

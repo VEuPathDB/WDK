@@ -33,7 +33,7 @@ public class PreferenceService extends UserService {
   @GET
   @Path("preference")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getUserPrefs() {
+  public Response getUserPrefs() throws WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
     return Response.ok(UserFormatter.getUserPrefsJson(
         userBundle.getTargetUser().getProjectPreferences()).toString()).build();

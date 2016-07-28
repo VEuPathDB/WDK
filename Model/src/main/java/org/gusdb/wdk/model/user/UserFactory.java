@@ -514,7 +514,7 @@ public class UserFactory {
       rsUser = psUser.executeQuery();
       QueryLogger.logEndStatementExecution(sql, "wdk-user-get-user-by-id", start);
       if (!rsUser.next()) {
-        throw new WdkModelException("Invalid user id: " + userId);
+        throw new NoSuchUserException("Invalid user id: " + userId);
       }
 
       // read user info

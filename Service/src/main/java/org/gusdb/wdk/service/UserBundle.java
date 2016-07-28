@@ -2,6 +2,7 @@ package org.gusdb.wdk.service;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.NoSuchUserException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 
@@ -30,7 +31,7 @@ public class UserBundle {
   private final boolean _isSessionUser;
   private final User _sessionUser;
 
-  public static UserBundle createFromTargetId(String userIdStr, User sessionUser, UserFactory userFactory) {
+  public static UserBundle createFromTargetId(String userIdStr, User sessionUser, UserFactory userFactory) throws WdkModelException {
     try {
       if (SESSSION_USER_MAGIC_STRING.equals(userIdStr)) {
         return getSessionUserBundle(SESSSION_USER_MAGIC_STRING, sessionUser);
@@ -42,7 +43,7 @@ public class UserBundle {
       User user = userFactory.getUser(userId);
       return new UserBundle(userIdStr, true, user, false, sessionUser);
     }
-    catch (WdkModelException | NumberFormatException | NullPointerException e) {
+    catch (NoSuchUserException | NumberFormatException | NullPointerException e) {
       LOG.warn("User requested by ID that is misformatted or does not exist", e);
       // userIdStr is null or misformatted, or no user by the passed ID could be found
       return getBadIdBundle(userIdStr, sessionUser);
