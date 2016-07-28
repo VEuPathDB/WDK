@@ -19,6 +19,8 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.filesys.FilesysUserDatasetFile;
 import org.json.JSONException;
 import org.json.JSONObject;
+//import org.apache.log4j.Logger;
+
 
 /**
  * An abstract implementation of UserDatasetStore that uses the JSON based
@@ -51,6 +53,8 @@ import org.json.JSONObject;
  */
 
 public abstract class JsonUserDatasetStore implements UserDatasetStore {
+  // private static final Logger LOG = Logger.getLogger(JsonUserDatasetStore.class);
+
   
   protected static final String DATASET_JSON_FILE = "dataset.json";
   protected static final String META_JSON_FILE = "meta.json";
@@ -249,11 +253,12 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
   
   public void writeFileAtomic(Path file, String contents, boolean errorIfTargetExists) throws WdkModelException {
-    Path tempFile = file.resolve("." + Long.toString(System.currentTimeMillis()));
-      if (errorIfTargetExists && adaptor.fileExists(file)) throw new WdkModelException("File already exists: " + file);
-      adaptor.writeFile(tempFile, contents, true);
-      adaptor.moveFileAtomic(tempFile, file);
+    if (errorIfTargetExists && adaptor.fileExists(file)) throw new WdkModelException("File already exists: " + file);
+    Path tempFile = file.getParent().resolve(file.getFileName().toString() + "." + Long.toString(System.currentTimeMillis()));
+    adaptor.writeFile(tempFile, contents, true);
+    adaptor.moveFileAtomic(tempFile, file);
   }
+
   /**
    * Delete a dataset.  But, don't delete externalUserDataset references to it.  The UI
    * will let the recipient user of them know they are dangling.
