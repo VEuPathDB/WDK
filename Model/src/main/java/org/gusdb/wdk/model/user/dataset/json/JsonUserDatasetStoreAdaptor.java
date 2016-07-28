@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.user.dataset.json;
 
 import java.nio.file.Path;
-import java.util.Date;
 import java.util.List;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -79,7 +78,7 @@ public interface JsonUserDatasetStoreAdaptor {
    * @return
    * @throws WdkModelException
    */
-  public Date getModificationTime(Path fileOrDir) throws WdkModelException;
+  public Long getModificationTime(Path fileOrDir) throws WdkModelException;
   
   /**
    * Read the first line of a file.  Must close all resources before returning.

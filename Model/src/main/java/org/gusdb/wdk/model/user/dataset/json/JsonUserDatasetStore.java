@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.user.dataset.json;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -87,7 +86,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
           "Provided property 'rootPath' has value '" + usersRootDir + "' which is not an existing directory");
   }
   
-  public Date getModificationTime(Integer userId) throws WdkModelException {
+  public Long getModificationTime(Integer userId) throws WdkModelException {
     return adaptor.getModificationTime(getUserDatasetsDir(userId, false));
   }
 
