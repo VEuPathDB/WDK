@@ -16,7 +16,7 @@ public interface JsonUserDatasetStoreAdaptor {
   public void moveFileAtomic(Path from, Path to) throws WdkModelException;
 
   /**
-   * Get the paths in the provided directory.  Must close all resources before returning.
+   * Get the absolute paths of the entries in the provided directory.  Must close all resources before returning.
    * Not recursive.
    * @param dir
    * @return
