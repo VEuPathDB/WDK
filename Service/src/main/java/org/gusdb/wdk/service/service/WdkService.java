@@ -16,7 +16,6 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.factory.WdkAnswerFactory;
-import org.jfree.util.Log;
 
 public abstract class WdkService {
 
