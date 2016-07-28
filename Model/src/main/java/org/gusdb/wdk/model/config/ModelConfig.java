@@ -1,5 +1,9 @@
 package org.gusdb.wdk.model.config;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -52,7 +56,7 @@ public class ModelConfig implements OAuthConfig {
   /**
    * the recipient of the super slow query log.
    */
-  private String adminEmail;
+  private List<String> adminEmails = Collections.EMPTY_LIST;
 
   /**
    * the subject of the registration email.
@@ -66,6 +70,7 @@ public class ModelConfig implements OAuthConfig {
 
   private ModelConfigUserDB userDB;
   private ModelConfigAppDB appDB;
+
   private ModelConfigUserDatasetStore userDatasetStoreConfig;
 
   private QueryMonitor queryMonitor = new QueryMonitor();
@@ -469,18 +474,16 @@ public class ModelConfig implements OAuthConfig {
   /**
    * @return the adminEmail
    */
-  public String getAdminEmail() {
-    return adminEmail;
+  public List<String> getAdminEmails() {
+    return adminEmails;
   }
 
   /**
-   * @param adminEmail
-   *          the adminEmail to set
+   * @param adminEmail comma-delimited list of admin email addresses
    */
   public void setAdminEmail(String adminEmail) {
-    if (adminEmail != null && adminEmail.length() == 0)
-      adminEmail = null;
-    this.adminEmail = adminEmail;
+    adminEmails = (adminEmail == null || adminEmail.trim().isEmpty() ?
+      Collections.EMPTY_LIST : Arrays.asList(adminEmail.trim().split("[,\\s]+")));
   }
 
   /**

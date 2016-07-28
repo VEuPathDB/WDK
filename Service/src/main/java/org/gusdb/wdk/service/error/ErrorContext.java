@@ -1,7 +1,7 @@
 package org.gusdb.wdk.service.error;
 
+import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -35,24 +35,20 @@ public class ErrorContext {
     public Map<String, Object> getRequestAttributeMap() { return _requestAttributeMap; }
     public Map<String, Object> getSessionAttributeMap() { return _sessionAttributeMap; }
 
-   
     /**
      * A site is considered monitored if the administrator email from adminEmail in the model-config.xml has content.
      * @return - true if the administrator email has content, false otherwise.
      */
     public boolean isSiteMonitored() {
-      String emailProp = _wdkModel.getModelConfig().getAdminEmail();
-      return emailProp != null && !emailProp.isEmpty();
+      return !getAdminEmails().isEmpty();
     }
-    
+
     /**
      * Collect the comma delimited list of administrator emails from adminEmail in the model-config.xml and
      * return them as an array
      * @return - array of administrator emails
      */
-    public String[] getAdminEmails() {
-        String emailProp = _wdkModel.getModelConfig().getAdminEmail();
-        return (emailProp == null || emailProp.isEmpty() ? new String[]{} :
-            Pattern.compile("[,\\s]+").split(emailProp));
+    public List<String> getAdminEmails() {
+      return _wdkModel.getModelConfig().getAdminEmails();
     }
 }
