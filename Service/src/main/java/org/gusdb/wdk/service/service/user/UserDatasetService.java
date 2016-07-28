@@ -5,6 +5,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -32,19 +33,18 @@ public class UserDatasetService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserDatasets(@QueryParam("expandDetails") Boolean expandDatasets) throws WdkModelException {
     UserDatasetStore userDatasetStore = getUserDatasetStore();
-    UserBundle userBundle = getUserBundle(Access.PUBLIC); // TODO: temporary, for debugging
-    Map<Integer, UserDataset> userDatasets = getUserDatasetStore().getUserDatasets(userBundle.getTargetUser().getUserId());
+    Map<Integer, UserDataset> userDatasets = getUserDatasetStore().getUserDatasets(getUserId());
     return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, userDatasetStore, expandDatasets).toString()).build();
   }
   
-  @POST
+  @PUT
   @Path("user-dataset/{datasetId}/meta")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response updateMetaInfo(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException, DataValidationException {
     try {
-      JSONObject json = new JSONObject(body);
-      getUserDataset(datasetIdStr).updateMetaFromJson(json);
+      JSONObject metaJson = new JSONObject(body);
+      getUserDatasetStore().updateMetaFromJson(getUserId(), new Integer(datasetIdStr), metaJson);
       return Response.ok("").build();
     }
     catch (JSONException e) {
@@ -52,7 +52,7 @@ public class UserDatasetService extends UserService {
     }
   }
 
-  @POST
+  @PUT
   @Path("user-dataset/{datasetId}/share")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
@@ -65,7 +65,7 @@ public class UserDatasetService extends UserService {
 
   }
   
-  @POST
+  @PUT
   @Path("user-dataset/{datasetId}/unshare")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
@@ -95,6 +95,10 @@ public class UserDatasetService extends UserService {
       throw new BadRequestException(e);
     }
     
+  }
+
+  private Integer getUserId() throws WdkModelException {
+    return getUserBundle(Access.PUBLIC).getTargetUser().getUserId();
   }
 
 }

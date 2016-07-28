@@ -105,11 +105,6 @@ public class JsonUserDataset implements UserDataset {
   }
   
   @Override
-  public void updateMetaFromJson(JSONObject metaJson) throws WdkModelException {
-    meta = new JsonUserDatasetMeta(metaJson);
-  }
-
-  @Override
   public UserDatasetType getType() {
     return type;
   }
