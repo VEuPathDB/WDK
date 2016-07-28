@@ -34,7 +34,8 @@ public class UserDatasetFormatter {
    * @throws WdkModelException
    * 
    * 
-{ type: {name: "RNA Seq", version: "1.0"},   # our API version
+{ id: 12345
+  type: {name: "RNA Seq", version: "1.0"},   # our API version
   dependencies: 
      [{resourceIdentifier: "pf3d7_genome_rsrc", 
        resourceVersion: "12/2/2015",
@@ -64,6 +65,7 @@ public class UserDatasetFormatter {
     JSONObject typeJson = new JSONObject();
     UserDatasetType type = dataset.getType();
     typeJson.put(type.getName(), type.getVersion());
+    json.put("id", dataset.getUserDatasetId());
     json.put("type", typeJson);
     JSONArray dependenciesJson = new JSONArray();    
     for (UserDatasetDependency dependency : dataset.getDependencies()) {
