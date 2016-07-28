@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user.dataset.irods;
 
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,6 +13,7 @@ public class IrodsUserDatasetStore extends JsonUserDatasetStore {
     super(new IrodsUserDatasetStoreAdaptor());
   }
   
+  @Override
   public void initialize(Map<String, String> configuration, Set<UserDatasetTypeHandler> typeHandlers) throws WdkModelException {
     super.initialize(configuration, typeHandlers);
     String zone = configuration.get("zone");
@@ -22,8 +22,7 @@ public class IrodsUserDatasetStore extends JsonUserDatasetStore {
     int port = Integer.parseInt(configuration.get("port"));
     String user = configuration.get("login");
     String password = configuration.get("password");
-    String rootPath = configuration.get("rootPath");
     IrodsUserDatasetStoreAdaptor.initializeIrods(host,port,user,password,zone,resource);
-    super.directoryExists(Paths.get(rootPath));
+    checkRootDirExists();
   }  
 }

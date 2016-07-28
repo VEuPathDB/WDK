@@ -77,12 +77,14 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     if (pathName == null)
       throw new WdkModelException("Required configuration 'rootPath' not found.");
     usersRootDir = Paths.get(pathName);
-
-    //if (!directoryExists(usersRootDir))
-    //  throw new WdkModelException(
-    //      "Provided property 'rootPath' has value '" + pathName + "' which is not an existing directory");
     
     for (UserDatasetTypeHandler handler : typeHandlers) typeHandlersMap.put(handler.getUserDatasetType(), handler);
+  }
+  
+  public void checkRootDirExists() throws WdkModelException {
+    if (!directoryExists(usersRootDir))
+      throw new WdkModelException(
+          "Provided property 'rootPath' has value '" + usersRootDir + "' which is not an existing directory");
   }
   
   public Date getModificationTime(Integer userId) throws WdkModelException {
