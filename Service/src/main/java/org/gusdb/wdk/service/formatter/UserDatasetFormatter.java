@@ -83,9 +83,9 @@ public class UserDatasetFormatter {
     json.put("meta", metaJson);
     json.put("owner", dataset.getOwnerId()); // same as user id
     json.put("size", dataset.getSize());
-    json.put("modified", dataset.getModifiedDate().getTime());
-    json.put("created", dataset.getCreatedDate().getTime());
-    json.put("uploaded", dataset.getUploadedDate().getTime());
+    json.put("modified", dataset.getModifiedDate());
+    json.put("created", dataset.getCreatedDate());
+    json.put("uploaded", dataset.getUploadedDate());
     int quota = store.getQuota(dataset.getOwnerId());
     json.put("percentQuotaUsed", new Integer(dataset.getSize() * 100 / quota));
     JSONArray sharesJson = new JSONArray();
