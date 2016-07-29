@@ -57,7 +57,7 @@ public class UserDatasetService extends UserService {
 
   /*
 {
- "targetUsers" : [12401233],
+ "targetUsers" : [12401223],
  "datasetsToShare" : [555,777]
 }
 
