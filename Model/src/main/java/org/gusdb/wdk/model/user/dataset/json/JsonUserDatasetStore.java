@@ -54,7 +54,7 @@ import org.json.JSONObject;
  */
 
 public abstract class JsonUserDatasetStore implements UserDatasetStore {
-  // private static final Logger LOG = Logger.getLogger(JsonUserDatasetStore.class);
+  //   private static final Logger LOG = Logger.getLogger(JsonUserDatasetStore.class);
 
   
   protected static final String DATASET_JSON_FILE = "dataset.json";
@@ -127,9 +127,10 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       if (datasetsOfExternalUser.containsKey(link.datasetId)) {
         UserDataset originalDataset = datasetsOfExternalUser.get(link.datasetId);
         Set<UserDatasetShare> shares = originalDataset.getSharedWith();
+
         boolean found = false;
         for (UserDatasetShare share : shares) {
-          if (share.getUserId() == userId) {
+          if (share.getUserId().equals(userId)) {
             found = true;
             break;
           }
