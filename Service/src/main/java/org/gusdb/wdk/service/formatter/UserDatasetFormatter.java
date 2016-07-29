@@ -15,8 +15,14 @@ import org.json.JSONObject;
 
 public class UserDatasetFormatter {
 
-  public static JSONArray getUserDatasetsJson(Map<Integer, UserDataset> userDatasetsMap, UserDatasetStore userDatasetStore, boolean expand) throws WdkModelException {
+  public static JSONArray getUserDatasetsJson(Map<Integer, UserDataset> userDatasetsMap, Map<Integer, UserDataset> externalUserDatasetsMap, UserDatasetStore userDatasetStore, boolean expand) throws WdkModelException {
     JSONArray datasetsJson = new JSONArray();
+    putDatasetsIntoJsonArray(datasetsJson, userDatasetsMap, userDatasetStore, expand); 
+    putDatasetsIntoJsonArray(datasetsJson, externalUserDatasetsMap, userDatasetStore, expand); 
+    return datasetsJson;
+  }
+  
+  static void putDatasetsIntoJsonArray(JSONArray datasetsJson, Map<Integer, UserDataset> userDatasetsMap, UserDatasetStore userDatasetStore, boolean expand) throws WdkModelException {
     for (Integer datasetId : userDatasetsMap.keySet()) {
       if (!expand) datasetsJson.put(datasetId);
       else {
@@ -25,7 +31,6 @@ public class UserDatasetFormatter {
         datasetsJson.put(getUserDatasetJson(dataset, compat, userDatasetStore));
       }
     }
-    return datasetsJson;
   }
   
   /**

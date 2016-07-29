@@ -26,6 +26,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class UserDatasetService extends UserService {
+  
+  /*
+   *  TODO: validate
+   *    - requested user exists
+   *    - sharing:
+   *      - target user exists
+   *      - shared dataset exists
+   *    - external datasets
+   *      - original dataset exists, and is still shared  
+   *
+   */
 
   public UserDatasetService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
@@ -37,7 +48,8 @@ public class UserDatasetService extends UserService {
   public Response getUserDatasets(@QueryParam("expandDetails") Boolean expandDatasets) throws WdkModelException {
     UserDatasetStore userDatasetStore = getUserDatasetStore();
     Map<Integer, UserDataset> userDatasets = getUserDatasetStore().getUserDatasets(getUserId());
-    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, userDatasetStore, expandDatasets).toString()).build();
+    Map<Integer, UserDataset> externalUserDatasets = getUserDatasetStore().getExternalUserDatasets(getUserId());
+    return Response.ok(UserDatasetFormatter.getUserDatasetsJson(userDatasets, externalUserDatasets, userDatasetStore, expandDatasets).toString()).build();
   }
   
   @PUT
