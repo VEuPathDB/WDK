@@ -55,6 +55,13 @@ public class UserDatasetService extends UserService {
     }
   }
 
+  /*
+{
+ "targetUsers" : [12401233],
+ "datasetsToShare" : [555,777]
+}
+
+   */
   @PUT
   @Path("user-dataset/{datasetId}/share")
   @Consumes(MediaType.APPLICATION_JSON)
