@@ -8,10 +8,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
+import org.gusdb.wdk.model.user.dataset.UserDatasetShare;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
@@ -85,21 +87,86 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       throw new WdkModelException(
           "Provided property 'rootPath' has value '" + usersRootDir + "' which is not an existing directory");
   }
-  
+    
   public Long getModificationTime(Integer userId) throws WdkModelException {
-    return adaptor.getModificationTime(getUserDatasetsDir(userId, false));
+    return adaptor.getModificationTime(getUserDatasetsDir(userId));
   }
 
   @Override
   public Map<Integer, UserDataset> getUserDatasets(Integer userId) throws WdkModelException {
 
-    Path userDatasetsDir = getUserDatasetsDir(userId, false);
+    Path userDatasetsDir = getUserDatasetsDir(userId);
 
     // iterate through datasets, creating a UD from each
     Map<Integer, UserDataset> datasetsMap = new HashMap<Integer, UserDataset>();
     fillDatasetsMap(userDatasetsDir, datasetsMap);
     return Collections.unmodifiableMap(datasetsMap);
   }
+  
+  public Map<Integer, UserDataset> getExternalUserDatasets(Integer userId) throws WdkModelException {
+
+    Map<Integer, UserDataset> extDsMap = new HashMap<Integer, UserDataset>();
+    Map<Integer, Map<Integer, UserDataset>> otherUsersCache = new HashMap<Integer, Map<Integer, UserDataset>>();
+
+    Path externalDatasetsDir = getUserDir(userId).resolve(EXTERNAL_DATASETS_DIR);
+    List<Path> externalLinkPaths = adaptor.getPathsInDir(externalDatasetsDir);
+    for (Path externalLinkPath : externalLinkPaths) {
+      ExternalDatasetLink link = getExternalLinkFromPath(externalLinkPath.getFileName());
+      if (!checkUserDirExists(link.externalUserId)) throw new WdkModelException("User ID in external dataset link " + externalLinkPath.getFileName() + " is not a user in the datasets store");
+
+      // get the datasets belonging to the external user.  (use cache to avoid re-querying repeated user IDs)
+      Map<Integer, UserDataset> datasetsOfExternalUser;
+      if (otherUsersCache.containsKey(link.externalUserId)) {
+        datasetsOfExternalUser = otherUsersCache.get(link.externalUserId);
+      } else {
+        datasetsOfExternalUser = getUserDatasets(link.externalUserId);
+        otherUsersCache.put(link.externalUserId, datasetsOfExternalUser);
+      }
+
+      // TODO: report if we can't follow the link, because owner removed or unshared it
+      if (datasetsOfExternalUser.containsKey(link.datasetId)) {
+        UserDataset originalDataset = datasetsOfExternalUser.get(link.datasetId);
+        Set<UserDatasetShare> shares = originalDataset.getSharedWith();
+        boolean found = false;
+        for (UserDatasetShare share : shares) {
+          if (share.getUserId() == userId) {
+            found = true;
+            break;
+          }
+        }
+        if (found) extDsMap.put(originalDataset.getUserDatasetId(), originalDataset);
+      }
+    }
+
+    return Collections.unmodifiableMap(extDsMap);
+  }
+  
+  ExternalDatasetLink getExternalLinkFromPath(Path externalLinkPath) throws WdkModelException {
+    String linkName = externalLinkPath.getFileName().toString();
+    String[] words = linkName.split(Pattern.quote("."));
+    if (words.length != 2)
+      throw new WdkModelException("Illegal external dataset link: " + linkName);
+    Integer externalUserId;
+    Integer externalDatasetId;
+    try {
+      externalUserId = new Integer(words[0]);
+      externalDatasetId = new Integer(words[1]);
+    }
+    catch (NumberFormatException e) {
+      throw new WdkModelException("Illegal external dataset link: " + linkName);
+    }
+    return new ExternalDatasetLink(externalUserId, externalDatasetId);
+  }
+  
+  class ExternalDatasetLink {
+    ExternalDatasetLink(Integer  externalUserId, Integer datasetId) {
+      this.externalUserId = externalUserId;
+      this.datasetId = datasetId;
+    }
+    Integer externalUserId;
+    Integer datasetId;
+  }
+  
   
   /**
    * Using the provided user datasets dir, fill in the provided map with all datasets in that dir.
@@ -119,7 +186,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   
   @Override
   public JsonUserDataset getUserDataset(Integer userId, Integer datasetId) throws WdkModelException {
-    Path userDatasetsDir = getUserDatasetsDir(userId, false);
+    Path userDatasetsDir = getUserDatasetsDir(userId);
     Path datasetDir = userDatasetsDir.resolve(datasetId.toString());
     return getUserDataset(datasetDir);
   }
@@ -192,12 +259,12 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   @Override
   public void updateMetaFromJson(Integer userId, Integer datasetId, JSONObject metaJson) throws WdkModelException {
     JsonUserDatasetMeta metaObj = new JsonUserDatasetMeta(metaJson);  // validate the input json
-    Path metaJsonFile = getUserDatasetsDir(userId, false).resolve(datasetId.toString()).resolve(META_JSON_FILE);
+    Path metaJsonFile = getUserDatasetsDir(userId).resolve(datasetId.toString()).resolve(META_JSON_FILE);
     writeFileAtomic(metaJsonFile, metaObj.getJsonObject().toString(), false);
   }
   
   protected void writeJsonUserDataset(JsonUserDataset dataset) throws WdkModelException {
-    Path datasetJsonFile = getUserDatasetsDir(dataset.getOwnerId(), false).resolve(dataset.getUserDatasetId().toString()).resolve(DATASET_JSON_FILE);
+    Path datasetJsonFile = getUserDatasetsDir(dataset.getOwnerId()).resolve(dataset.getUserDatasetId().toString()).resolve(DATASET_JSON_FILE);
     writeFileAtomic(datasetJsonFile, dataset.getDatasetJsonObject().toString(), false);
   }
     
@@ -235,7 +302,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    * @throws WdkModelException
    */
   protected void writeExternalDatasetLink(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
-    writeExternalDatasetLink(getUserDir(recipientUserId, true).resolve(EXTERNAL_DATASETS_DIR), ownerUserId, datasetId);
+    writeExternalDatasetLink(getUserDir(recipientUserId).resolve(EXTERNAL_DATASETS_DIR), ownerUserId, datasetId);
   }
   
   protected void writeExternalDatasetLink(Path recipientExternalDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
@@ -266,7 +333,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    */
   @Override
   public void deleteUserDataset(Integer userId, Integer datasetId) throws WdkModelException {
-    adaptor.deleteFileOrDirectory(getUserDatasetsDir(userId, false).resolve(datasetId.toString()));
+    adaptor.deleteFileOrDirectory(getUserDatasetsDir(userId).resolve(datasetId.toString()));
   }
   
   /**
@@ -290,26 +357,30 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   
   @Override
   public void deleteExternalUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
-    Path recipientExternalDatasetsDir = getUserDir(recipientUserId, true).resolve(EXTERNAL_DATASETS_DIR);
-    Path recipientRemovedDatasetsDir = getUserDir(recipientUserId, true).resolve(REMOVED_EXTERNAL_DATASETS_DIR);
+    Path recipientExternalDatasetsDir = getUserDir(recipientUserId).resolve(EXTERNAL_DATASETS_DIR);
+    Path recipientRemovedDatasetsDir = getUserDir(recipientUserId).resolve(REMOVED_EXTERNAL_DATASETS_DIR);
     deleteExternalUserDataset(recipientExternalDatasetsDir, recipientRemovedDatasetsDir, ownerUserId, datasetId);
   }
 
-  protected Path getUserDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException {
+  protected Path getUserDir(Integer userId) throws WdkModelException {
     Path userDir = usersRootDir.resolve(userId.toString());
     if (!directoryExists(userDir)) {
-      if (createPathIfAbsent) adaptor.createDirectory(userDir);
-      else throw new WdkModelException("Can't find user directory " + userDir);
+      throw new WdkModelException("Can't find user directory " + userDir);
     }
     return userDir;
   }
   
   @Override
+  public boolean checkUserDirExists(Integer userId)  throws WdkModelException {
+    return directoryExists(usersRootDir.resolve(userId.toString()));
+  }
+
+  @Override
   public Integer getQuota(Integer userId) throws WdkModelException {
     Path quotaFile;
     
     Path defaultQuotaFile = usersRootDir.resolve("default_quota");
-    Path userQuotaFile = getUserDir(userId, false).resolve("quota");
+    Path userQuotaFile = getUserDir(userId).resolve("quota");
     quotaFile = adaptor.fileExists(userQuotaFile)? userQuotaFile : defaultQuotaFile;
     return getQuota(quotaFile);
   }
@@ -328,18 +399,20 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    * @return
    * @throws WdkModelException
    */
-  protected Path getUserDatasetsDir(Integer userId, boolean createPathIfAbsent) throws WdkModelException {
-    Path userDatasetsDir = getUserDir(userId, createPathIfAbsent).resolve("datasets");
+  protected Path getUserDatasetsDir(Integer userId) throws WdkModelException {
+    Path userDatasetsDir = getUserDir(userId).resolve("datasets");
 
     if (!directoryExists(userDatasetsDir))
-      if (createPathIfAbsent)
-        adaptor.createDirectory(userDatasetsDir);
-      else
         throw new WdkModelException("Can't find user datasets directory " + userDatasetsDir);
 
     return userDatasetsDir;
   }
   
+  @Override
+  public boolean checkUserDatasetsDirExists(Integer userId)  throws WdkModelException {
+    return directoryExists(usersRootDir.resolve(userId.toString()).resolve("datasets"));
+  }
+
   public String toString() {
     StringBuilder builder = new StringBuilder("UserDatasetStore: " + NL);
     builder.append("  rootPath: " + usersRootDir + NL);
