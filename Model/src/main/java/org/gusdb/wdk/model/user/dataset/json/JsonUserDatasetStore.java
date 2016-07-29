@@ -208,7 +208,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       JsonUserDataset dataset = getUserDataset(ownerUserId, datasetId);
       for (Integer recipientUserId : recipientUserIds) {
         dataset.shareWith(recipientUserId);
-        Integer[] linkInfo = {ownerUserId, datasetId};
+        Integer[] linkInfo = {datasetId, recipientUserId};
         externalDatasetLinks.add(linkInfo);
       }
       writeJsonUserDataset(dataset);  // write this before the links
@@ -235,7 +235,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    * @throws WdkModelException
    */
   protected void writeExternalDatasetLink(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
-    writeExternalDatasetLink(getUserDatasetsDir(recipientUserId, true).resolve(EXTERNAL_DATASETS_DIR), ownerUserId, datasetId);
+    writeExternalDatasetLink(getUserDir(recipientUserId, true).resolve(EXTERNAL_DATASETS_DIR), ownerUserId, datasetId);
   }
   
   protected void writeExternalDatasetLink(Path recipientExternalDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
@@ -290,8 +290,8 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   
   @Override
   public void deleteExternalUserDataset(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
-    Path recipientExternalDatasetsDir = getUserDatasetsDir(recipientUserId, true).resolve(EXTERNAL_DATASETS_DIR);
-    Path recipientRemovedDatasetsDir = getUserDatasetsDir(recipientUserId, true).resolve(REMOVED_EXTERNAL_DATASETS_DIR);
+    Path recipientExternalDatasetsDir = getUserDir(recipientUserId, true).resolve(EXTERNAL_DATASETS_DIR);
+    Path recipientRemovedDatasetsDir = getUserDir(recipientUserId, true).resolve(REMOVED_EXTERNAL_DATASETS_DIR);
     deleteExternalUserDataset(recipientExternalDatasetsDir, recipientRemovedDatasetsDir, ownerUserId, datasetId);
   }
 
