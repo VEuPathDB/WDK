@@ -14,6 +14,11 @@
               description="truncate the result"
 %>
 
+<%@ attribute name="columnName"
+              required="false"
+              description="name of the column"
+%>
+
 <%@ attribute name="recordClass"
               type="org.gusdb.wdk.model.jspwrap.RecordClassBean"
               required="true"
@@ -33,10 +38,10 @@
   <c:if test="${attributeField.nowrap}">white-space:nowrap;</c:if>
 </c:set>
 
-<!-- we are setting truncate true in all columns (default is 100)
+<!-- truncate is set to true in wdk/resultTable.tag (default is 100)
      we use briefDisplay to access display value when available
 -->
-<!-- attributeValue.value is "text" in the model (no "display")
+<!-- attributeValue.value is "text" in textAttributes but briefDisplay will return the display value
 -->
 <c:set var="displayValue1">
   <c:choose>
@@ -44,9 +49,10 @@
     <c:otherwise>${attributeValue.value}</c:otherwise>
   </c:choose>
 </c:set>
+
 <!-- modifying the displayValue for a nicer UX -->
 <c:set var="displayValue">
-  <imp:updateDisplayValue displayValue = "${displayValue1}" />
+  <imp:updateDisplayValue columnName = "${columnName}" displayValue = "${displayValue1}" />
 </c:set>
 
 <td>
