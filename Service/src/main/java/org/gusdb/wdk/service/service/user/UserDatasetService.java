@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -21,6 +22,7 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
 import org.gusdb.wdk.service.request.DataValidationException;
+import org.gusdb.wdk.service.service.WdkService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -92,9 +94,11 @@ public class UserDatasetService extends UserService {
     // put target users into a set
     JSONArray jsonTargetUsers = jsonObj.getJSONArray("targetUsers");
     Set<Integer> targetUserIds = new HashSet<Integer>();
-    for (int i=0; i<jsonTargetUsers.length(); i++) 
-      targetUserIds.add(jsonTargetUsers.getInt(i));
-    
+    for (int i=0; i<jsonTargetUsers.length(); i++) {
+      Integer targetUserId = jsonTargetUsers.getInt(i);
+      validateTargetUserId(targetUserId);
+      targetUserIds.add(targetUserId);
+    }
     getUserDatasetStore().shareUserDatasets(getUserId(), datasetIdsToShare, targetUserIds);
 
     return Response.ok("").build();
@@ -135,6 +139,13 @@ public class UserDatasetService extends UserService {
 
   private Integer getUserId() throws WdkModelException {
     return getUserBundle(Access.PUBLIC).getTargetUser().getUserId();
+  }
+  
+  private void validateTargetUserId(Integer targetUserId) throws WdkModelException {
+    UserBundle targetUserBundle = UserBundle.createFromTargetId(targetUserId.toString(), getSessionUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
+    if (!targetUserBundle.isValidUserId()) {
+      throw new NotFoundException(WdkService.formatNotFound(UserService.USER_RESOURCE + targetUserBundle.getTargetUserIdString()));
+    }
   }
 
 }
