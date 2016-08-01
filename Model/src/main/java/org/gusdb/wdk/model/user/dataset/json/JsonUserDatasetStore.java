@@ -110,6 +110,8 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     Map<Integer, Map<Integer, UserDataset>> otherUsersCache = new HashMap<Integer, Map<Integer, UserDataset>>();
 
     Path externalDatasetsDir = getUserDir(userId).resolve(EXTERNAL_DATASETS_DIR);
+    if (!adaptor.isDirectory(externalDatasetsDir)) return extDsMap;
+    
     List<Path> externalLinkPaths = adaptor.getPathsInDir(externalDatasetsDir);
     for (Path externalLinkPath : externalLinkPaths) {
       ExternalDatasetLink link = getExternalLinkFromPath(externalLinkPath.getFileName());
