@@ -128,7 +128,13 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
     String toPathName = to.toString();
     try {
       IRODSAccessObjectFactory accessObjectFactory = system.getIRODSAccessObjectFactory();
+      IRODSFile destination = getFile(toPathName);
       DataTransferOperations dataXferOps = accessObjectFactory.getDataTransferOperations(account);
+      // Resorted to this workaround because Jargon cannot move one file into an already occupied
+      // location and no 'force' flag is implemented (apparently) in Jargon yet.
+      if(destination.exists() && destination.isFile()) {
+        destination.delete();
+      }
       dataXferOps.move(fromPathName, toPathName);
     }
     catch(JargonException je) {
