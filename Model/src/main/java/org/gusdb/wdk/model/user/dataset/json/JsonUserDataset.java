@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.user.dataset.json;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,9 +38,9 @@ public class JsonUserDataset implements UserDataset {
   private JsonUserDatasetMeta meta;
   private UserDatasetType type;
   private Integer ownerId;
-  private Date created;
-  private Date modified;
-  private Date uploaded;
+  private Long created;
+  private Long modified;
+  private Long uploaded;
   private Integer size;
   private Map<Integer, JsonUserDatasetShare> sharesMap = new HashMap<Integer, JsonUserDatasetShare>();
   private Map<String, UserDatasetFile> dataFiles = new HashMap<String, UserDatasetFile>();
@@ -68,9 +67,9 @@ public class JsonUserDataset implements UserDataset {
       this.type = JsonUserDatasetTypeFactory.getUserDatasetType(datasetJsonObj.getJSONObject(TYPE));
       this.ownerId = datasetJsonObj.getInt(OWNER);
       this.size = datasetJsonObj.getInt(SIZE);
-      this.created = new Date(datasetJsonObj.getLong(CREATED));
-      this.modified = new Date(datasetJsonObj.getLong(MODIFIED));
-      this.uploaded = new Date(datasetJsonObj.getLong(UPLOADED));
+      this.created = datasetJsonObj.getLong(CREATED);
+      this.modified = datasetJsonObj.getLong(MODIFIED);
+      this.uploaded = datasetJsonObj.getLong(UPLOADED);
       
       JSONArray dependenciesJson = datasetJsonObj.getJSONArray(DEPENDENCIES);
       for (int i=0; i<dependenciesJson.length(); i++) 
@@ -104,11 +103,6 @@ public class JsonUserDataset implements UserDataset {
     return meta;
   }
   
-  @Override
-  public void updateMetaFromJson(JSONObject metaJson) throws WdkModelException {
-    meta = new JsonUserDatasetMeta(metaJson);
-  }
-
   @Override
   public UserDatasetType getType() {
     return type;
@@ -157,17 +151,17 @@ public class JsonUserDataset implements UserDataset {
   }
 
   @Override
-  public Date getCreatedDate() {
+  public Long getCreatedDate() {
     return created;
   }
 
   @Override
-  public Date getModifiedDate() {
+  public Long getModifiedDate() {
     return modified;
   }
 
   @Override
-  public Date getUploadedDate() {
+  public Long getUploadedDate() {
     return uploaded;
   }
 
@@ -184,10 +178,6 @@ public class JsonUserDataset implements UserDataset {
   @Override
   public Integer getPercentQuota(int quota) {
     return new Integer(size * 100 / quota);
-  }
-
-  public void updateMeta(JsonUserDatasetMeta meta) {
-    this.meta = meta;
   }
   
   /**

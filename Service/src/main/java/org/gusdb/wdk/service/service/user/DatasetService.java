@@ -90,7 +90,7 @@ public class DatasetService extends UserService {
   @Path("dataset")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response addDatasetFromFile()
+  public Response addDatasetFromFile() throws WdkModelException
       //@FormParam("file") InputStream fileInputStream,
       //@FormParam("file") FormDataContentDisposition contentDispositionHeader)
   {

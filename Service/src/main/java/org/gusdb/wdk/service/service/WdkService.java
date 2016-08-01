@@ -1,8 +1,11 @@
 package org.gusdb.wdk.service.service;
 
+import java.util.List;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
@@ -65,6 +68,17 @@ public abstract class WdkService {
     return getSessionUserBean().getUser();
   }
 
+  protected boolean isSessionUserAdmin() throws WdkModelException {
+    List<String> adminEmails = getWdkModel().getModelConfig().getAdminEmails();
+    return adminEmails.contains(getSessionUser().getEmail());
+  }
+
+  protected void assertAdmin() throws WdkModelException {
+    if (!isSessionUserAdmin()) {
+      throw new ForbiddenException("Administrative access is required for this function.");
+    }
+  }
+
   protected WdkAnswerFactory getResultFactory() {
     if (_resultFactory == null) {
       _resultFactory = new WdkAnswerFactory(getSessionUserBean());
@@ -105,8 +119,9 @@ public abstract class WdkService {
    * 
    * @param userIdStr potential target user ID as string, or special string 'current' indicating session user
    * @return user bundle describing status of the requested user string
+   * @throws WdkModelException if error occurs while accessing user data (probably a DB problem)
    */
-  protected UserBundle parseTargetUserId(String userIdStr) {
-    return UserBundle.createFromTargetId(userIdStr, getSessionUser(), getWdkModel().getUserFactory());
+  protected UserBundle parseTargetUserId(String userIdStr) throws WdkModelException {
+    return UserBundle.createFromTargetId(userIdStr, getSessionUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
   }
 }

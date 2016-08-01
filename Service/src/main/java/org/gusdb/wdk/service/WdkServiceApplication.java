@@ -21,6 +21,7 @@ import org.gusdb.wdk.service.service.ProjectService;
 import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.gusdb.wdk.service.service.SampleService;
+import org.gusdb.wdk.service.service.SystemService;
 import org.gusdb.wdk.service.service.user.DatasetService;
 import org.gusdb.wdk.service.service.user.PreferenceService;
 import org.gusdb.wdk.service.service.user.ProfileService;
@@ -59,6 +60,7 @@ public class WdkServiceApplication extends Application {
     // add service classes
     .add(ProjectService.class)
     .add(ApiService.class)
+    .add(SystemService.class)
     .add(OAuthService.class)
     .add(ProfileService.class)
     .add(PreferenceService.class)

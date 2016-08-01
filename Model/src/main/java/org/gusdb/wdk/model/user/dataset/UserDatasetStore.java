@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user.dataset;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,6 +36,15 @@ public interface UserDatasetStore {
    * @throws WdkModelException
    */
   UserDataset getUserDataset(Integer userId, Integer datasetId) throws WdkModelException;
+  
+  /**
+   * Get the external user datasets shared with this user.
+   * @param userId
+   * @return Map of datasetId -> dataset
+   * @throws WdkModelException
+   */
+  Map<Integer, UserDataset> getExternalUserDatasets(Integer userId) throws WdkModelException;
+
   
   /**
    * Update user supplied meta data.  Client provides JSON to describe the new
@@ -85,7 +93,7 @@ public interface UserDatasetStore {
    * @param userId
    * @return
    */
-  Date getModificationTime(Integer userId) throws WdkModelException;
+  Long getModificationTime(Integer userId) throws WdkModelException;
   
   /**
    * Get the size of this user's quota
@@ -93,5 +101,24 @@ public interface UserDatasetStore {
    * @return
    */
   Integer getQuota(Integer userId) throws WdkModelException;
+  
+  /**
+   * Check if a user has a userId directory in the store. 
+   * @param userId
+   * @return true if so.
+   * @throws WdkModelException
+   */
+  boolean checkUserDirExists(Integer userId)  throws WdkModelException;
+
+  /**
+   * Check if a user has a datasets/ directory in the store. 
+   * @param userId
+   * @return true if so.
+   * @throws WdkModelException
+   */
+
+  boolean checkUserDatasetsDirExists(Integer userId)  throws WdkModelException;
+  
+
   
 }

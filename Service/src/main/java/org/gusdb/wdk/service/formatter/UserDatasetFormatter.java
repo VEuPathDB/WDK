@@ -15,17 +15,22 @@ import org.json.JSONObject;
 
 public class UserDatasetFormatter {
 
-  public static JSONArray getUserDatasetsJson(Map<Integer, UserDataset> userDatasetsMap, UserDatasetStore userDatasetStore, boolean expand) throws WdkModelException {
+  public static JSONArray getUserDatasetsJson(Map<Integer, UserDataset> userDatasetsMap, Map<Integer, UserDataset> externalUserDatasetsMap, UserDatasetStore userDatasetStore, boolean expand) throws WdkModelException {
     JSONArray datasetsJson = new JSONArray();
+    putDatasetsIntoJsonArray(datasetsJson, userDatasetsMap, userDatasetStore, expand); 
+    putDatasetsIntoJsonArray(datasetsJson, externalUserDatasetsMap, userDatasetStore, expand); 
+    return datasetsJson;
+  }
+  
+  static void putDatasetsIntoJsonArray(JSONArray datasetsJson, Map<Integer, UserDataset> userDatasetsMap, UserDatasetStore userDatasetStore, boolean expand) throws WdkModelException {
     for (Integer datasetId : userDatasetsMap.keySet()) {
       if (!expand) datasetsJson.put(datasetId);
       else {
         UserDataset dataset = userDatasetsMap.get(datasetId);
         UserDatasetCompatibility compat = userDatasetStore.getTypeHandler(dataset.getType()).getCompatibility(dataset);
-        datasetsJson.put(getUserDatasetJson(dataset, compat));
+        datasetsJson.put(getUserDatasetJson(dataset, compat, userDatasetStore));
       }
     }
-    return datasetsJson;
   }
   
   /**
@@ -34,7 +39,8 @@ public class UserDatasetFormatter {
    * @throws WdkModelException
    * 
    * 
-{ type: {name: "RNA Seq", version: "1.0"},   # our API version
+{ id: 12345
+  type: {name: "RNA Seq", version: "1.0"},   # our API version
   dependencies: 
      [{resourceIdentifier: "pf3d7_genome_rsrc", 
        resourceVersion: "12/2/2015",
@@ -59,11 +65,12 @@ public class UserDatasetFormatter {
 }
 
    */
-  private static JSONObject getUserDatasetJson(UserDataset dataset, UserDatasetCompatibility compatibility) throws WdkModelException {
+  private static JSONObject getUserDatasetJson(UserDataset dataset, UserDatasetCompatibility compatibility, UserDatasetStore store) throws WdkModelException {
     JSONObject json = new JSONObject();
     JSONObject typeJson = new JSONObject();
     UserDatasetType type = dataset.getType();
     typeJson.put(type.getName(), type.getVersion());
+    json.put("id", dataset.getUserDatasetId());
     json.put("type", typeJson);
     JSONArray dependenciesJson = new JSONArray();    
     for (UserDatasetDependency dependency : dataset.getDependencies()) {
@@ -81,9 +88,11 @@ public class UserDatasetFormatter {
     json.put("meta", metaJson);
     json.put("owner", dataset.getOwnerId()); // same as user id
     json.put("size", dataset.getSize());
-    json.put("modified", dataset.getModifiedDate().getTime());
-    json.put("created", dataset.getCreatedDate().getTime());
-    json.put("uploaded", dataset.getUploadedDate().getTime());
+    json.put("modified", dataset.getModifiedDate());
+    json.put("created", dataset.getCreatedDate());
+    json.put("uploaded", dataset.getUploadedDate());
+    int quota = store.getQuota(dataset.getOwnerId());
+    json.put("percentQuotaUsed", new Integer(dataset.getSize() * 100 / quota));
     JSONArray sharesJson = new JSONArray();
     for (UserDatasetShare share : dataset.getSharedWith()) {
       JSONObject shareJson = new JSONObject();

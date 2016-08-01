@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -39,10 +38,10 @@ public class FilesysUserDatasetStoreAdaptor
 
   }
 
-  public Date getModificationTime(Path fileOrDir) throws WdkModelException {
-    Date modTime = null;
+  public Long getModificationTime(Path fileOrDir) throws WdkModelException {
+    Long modTime = null;
     try {
-      modTime = new Date(Files.getLastModifiedTime(fileOrDir).toMillis());
+      modTime = Files.getLastModifiedTime(fileOrDir).toMillis();
     }
     catch (IOException e) {
       throw new WdkModelException(e);

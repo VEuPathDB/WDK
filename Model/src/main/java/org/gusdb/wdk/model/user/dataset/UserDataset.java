@@ -1,11 +1,9 @@
 package org.gusdb.wdk.model.user.dataset;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.json.JSONObject;
 
 public interface UserDataset {
 
@@ -26,16 +24,7 @@ public interface UserDataset {
    * @return
    */
   UserDatasetMeta getMeta() throws WdkModelException;
-  
-  /**
-   * User can update the meta info a dataset the own.
-   * Client applications provide JSON to specify an update to meta info.  
-   * The implementor must use that to construct a UserDatasetMeta object.
-   * @param metaJson
-   * @return
-   */
-  void updateMetaFromJson(JSONObject metaJson) throws WdkModelException;
-    
+      
   /**
    * Get the datatype of this dataset.  
    * @return
@@ -88,21 +77,24 @@ public interface UserDataset {
   /**
    * Get the date this dataset was created, by whatever application created it.
    * Storing this date with the dataset is the responsibility of that program, not the wdk.
+   * Milliseconds since epoch.
    * @return
    */
-  Date getCreatedDate() throws WdkModelException;
+  Long getCreatedDate() throws WdkModelException;
   
   /**
    * The last time it was modified, either meta info or outgoing or incoming sharing.
+   * Milliseconds since epoch.
    * @return
    */
-  Date getModifiedDate() throws WdkModelException;
+  Long getModifiedDate() throws WdkModelException;
   
   /**
    * The time this dataset was uploaded to the UserDatasetStore
+   * Milliseconds since epoch.
    * @return
    */
-  Date getUploadedDate() throws WdkModelException;
+  Long getUploadedDate() throws WdkModelException;
   
   /**
    * Get the set of data dependencies (in the application database) that this dataset has.
