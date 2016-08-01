@@ -15,7 +15,7 @@ public abstract class UserService extends WdkService {
   // subclasses must read the following path param to gain access to requested user
   protected static final String USER_ID_PATH_PARAM = "id";
 
-  private static final String USER_RESOURCE = "User ID ";
+  protected static final String USER_RESOURCE = "User ID ";
 
   protected static enum Access { PUBLIC, PRIVATE, ADMIN; }
 
