@@ -65,7 +65,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   
   private static final String NL = System.lineSeparator();
 
-  private Path usersRootDir;
+  protected Path usersRootDir;
   private JsonUserDatasetStoreAdaptor adaptor;
   
   public JsonUserDatasetStore(JsonUserDatasetStoreAdaptor adaptor) {
@@ -87,7 +87,8 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       throw new WdkModelException(
           "Provided property 'rootPath' has value '" + usersRootDir + "' which is not an existing directory");
   }
-    
+
+  @Override
   public Long getModificationTime(Integer userId) throws WdkModelException {
     return adaptor.getModificationTime(getUserDatasetsDir(userId));
   }
@@ -229,7 +230,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
           "' in user datasets directory " + datasetDir.getParent() + ". It is not a dataset ID");
     }
     
-    JSONObject datasetJson = parseJsonFile(datasetDir.resolve("dataset.json")); ;
+    JSONObject datasetJson = parseJsonFile(datasetDir.resolve("dataset.json"));
     JSONObject metaJson = parseJsonFile(datasetDir.resolve("meta.json"));
 
     Path datafilesDir = datasetDir.resolve("datafiles");
@@ -428,6 +429,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return directoryExists(usersRootDir.resolve(userId.toString()).resolve("datasets"));
   }
 
+  @Override
   public String toString() {
     StringBuilder builder = new StringBuilder("UserDatasetStore: " + NL);
     builder.append("  rootPath: " + usersRootDir + NL);
