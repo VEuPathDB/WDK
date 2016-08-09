@@ -34,12 +34,19 @@ export let actionTypes = {
 
 export function updateUserPreference(key, value) {
   return function run(dispatch, { wdkService }) {
-    wdkService.updateCurrentUserPreference({ [key]: value }).then(function() {
+    let prefUpdater = function() {
       dispatch(broadcast({
         type: actionTypes.USER_PREFERENCE_UPDATE,
         payload: { [key]: value }
       }));
-    });
+    };
+    wdkService.updateCurrentUserPreference({ [key]: value })
+      .then(prefUpdater)
+      .catch(error => {
+        console.error(error.response);
+        // update stores anyway; not a huge deal if preference doesn't make it to server
+        prefUpdater();
+      });
   };
 }
 
