@@ -251,6 +251,12 @@ export default class WdkService {
     return this._fetchJson<UserPreferences>('get', '/user/current/preference');
   }
 
+  updateCurrentUserPreference(entries) {
+    let url = '/user/current/preference';
+    let data = JSON.stringify(entries);
+    return this._fetchJson<void>('patch', url, data);
+  }
+
   getOauthStateToken() {
     return this._fetchJson<string>('get', '/oauth/stateToken');
   }
