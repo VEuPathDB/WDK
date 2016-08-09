@@ -33,12 +33,14 @@ export let actionTypes = {
 };
 
 export function updateUserPreference(key, value) {
-  // TODO: update preference on the backend here too!!!
-  //   (need to decide on optimistic updates and/or alerting user if unable to update)
-  return broadcast({
-    type: actionTypes.USER_PREFERENCE_UPDATE,
-    payload: { [key]: value }
-  });
+  return function run(dispatch, { wdkService }) {
+    wdkService.updateCurrentUserPreference({ [key]: value }).then(function() {
+      dispatch(broadcast({
+        type: actionTypes.USER_PREFERENCE_UPDATE,
+        payload: { [key]: value }
+      }));
+    });
+  };
 }
 
 function createProfileFormStatusAction(status, errorMessage) {
