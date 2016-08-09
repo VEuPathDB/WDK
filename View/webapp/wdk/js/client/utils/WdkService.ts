@@ -306,7 +306,7 @@ export default class WdkService {
           reject(error);
         }
       }
-      xhr.open(method, this._serviceUrl + url);
+      xhr.open(method.toUpperCase(), this._serviceUrl + url);
       xhr.setRequestHeader('Content-Type', 'application/json');
       if (this._version) {
         xhr.setRequestHeader(CLIENT_WDK_VERSION_HEADER, String(this._version));
