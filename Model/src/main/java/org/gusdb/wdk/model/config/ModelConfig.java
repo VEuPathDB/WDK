@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 
 /**
  * An object representaion of the {@code model-config.xml} file. It holds all the configuration information
@@ -472,10 +473,18 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @return the adminEmail
+   * @return the adminEmails as a list of individual addresses
    */
   public List<String> getAdminEmails() {
     return adminEmails;
+  }
+
+  /**
+   * @return comma-delimited list of admin emails; this is probably the
+   * original value contained in the XML file but possibly slightly different
+   */
+  public String getAdminEmail() {
+    return FormatUtil.join(adminEmails.toArray(), ",");
   }
 
   /**

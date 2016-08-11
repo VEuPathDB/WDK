@@ -18,9 +18,12 @@ import './components';
 import './controllers';
 
 import { initialize as initializeContext, wrapComponents } from './client/main';
-import * as Components from './client/components';
+
 import * as Stores from './client/stores';
 import * as Controllers from './client/controllers';
+import * as Components from './client/components';
+import * as ActionCreators from './client/actioncreators';
+
 import * as ComponentUtils from './client/utils/componentUtils';
 import * as IterableUtils from './client/utils/IterableUtils';
 import * as ReporterUtils from './client/utils/reporterUtils';
@@ -44,15 +47,16 @@ export function initialize(...args) {
 
 export {
   wrapComponents,
-  CategoryUtils,
-  ComponentUtils,
-  Components,
-  Controllers,
-  FormSubmitter,
-  IterableUtils,
-  OntologyUtils,
-  ReporterUtils,
-  StaticDataUtils,
   Stores,
-  TreeUtils
+  Controllers,
+  Components,
+  ActionCreators,
+  ComponentUtils,
+  IterableUtils,
+  ReporterUtils,
+  TreeUtils,
+  OntologyUtils,
+  CategoryUtils,
+  StaticDataUtils,
+  FormSubmitter
 };

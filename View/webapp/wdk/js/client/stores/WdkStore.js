@@ -94,7 +94,7 @@ export default class WdkStore extends ReduceStore {
       // incorporate new preference values into existing preference object
       let newPrefs = Object.assign({}, state[StaticDataProps.PREFERENCES], payload);
       // treat preference object as if it has just been loaded (with new values present)
-      return this.handleStaticDataItemAction(state, StaticDataProps.PREFERENCES, newPrefs);
+      return this.handleStaticDataItemAction(state, StaticDataProps.PREFERENCES, { [StaticDataProps.PREFERENCES]: newPrefs });
     }
     else if (this.storeShouldReceiveAction(action.channel)) {
       let newState = this.handleAction(state, action);

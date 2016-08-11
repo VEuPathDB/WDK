@@ -102,17 +102,16 @@ function wrapStores(storeWrappers) {
   for (let key in storeWrappers) {
     let wdkStore = stores[key];
     if (wdkStore == null) {
-      console.error("Warning: Cannot wrap unknown WDK Store `%s`.  Skipping...", key);
-      continue;
+      console.log("Creating new application store: `%s`.", key);
     }
     let storeWrapper = storeWrappers[key];
     let storeWrapperType = typeof storeWrapper;
     if (storeWrapperType !== 'function') {
       console.error("Expected Store wrapper for `%s` to be a 'function', " +
-          "but is `%s`.", key, storeWrapperType);
+          "but is `%s`.  Skipping...", key, storeWrapperType);
       continue;
     }
-    stores[key] = storeWrapper(wdkStore);
+    stores[key] = (wdkStore == null ? storeWrapper() : storeWrapper(wdkStore));
   }
   return stores;
 }

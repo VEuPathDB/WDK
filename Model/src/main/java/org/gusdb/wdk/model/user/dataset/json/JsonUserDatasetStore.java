@@ -65,7 +65,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   
   private static final String NL = System.lineSeparator();
 
-  private Path usersRootDir;
+  protected Path usersRootDir;
   private JsonUserDatasetStoreAdaptor adaptor;
   
   public JsonUserDatasetStore(JsonUserDatasetStoreAdaptor adaptor) {
@@ -87,7 +87,8 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       throw new WdkModelException(
           "Provided property 'rootPath' has value '" + usersRootDir + "' which is not an existing directory");
   }
-    
+
+  @Override
   public Long getModificationTime(Integer userId) throws WdkModelException {
     return adaptor.getModificationTime(getUserDatasetsDir(userId));
   }
@@ -103,12 +104,15 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return Collections.unmodifiableMap(datasetsMap);
   }
   
+  @Override
   public Map<Integer, UserDataset> getExternalUserDatasets(Integer userId) throws WdkModelException {
 
     Map<Integer, UserDataset> extDsMap = new HashMap<Integer, UserDataset>();
     Map<Integer, Map<Integer, UserDataset>> otherUsersCache = new HashMap<Integer, Map<Integer, UserDataset>>();
 
     Path externalDatasetsDir = getUserDir(userId).resolve(EXTERNAL_DATASETS_DIR);
+    if (!adaptor.isDirectory(externalDatasetsDir)) return extDsMap;
+    
     List<Path> externalLinkPaths = adaptor.getPathsInDir(externalDatasetsDir);
     for (Path externalLinkPath : externalLinkPaths) {
       ExternalDatasetLink link = getExternalLinkFromPath(externalLinkPath.getFileName());
@@ -123,11 +127,17 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
         otherUsersCache.put(link.externalUserId, datasetsOfExternalUser);
       }
 
+      // if the external dataset does exist in the other user,
+      // and if it is in fact shared with our user, then add it to the
+      // map of found external datasets
       // TODO: report if we can't follow the link, because owner removed or unshared it
       if (datasetsOfExternalUser.containsKey(link.datasetId)) {
+        
+        // find the original dataset, and grab its declared shares
         UserDataset originalDataset = datasetsOfExternalUser.get(link.datasetId);
         Set<UserDatasetShare> shares = originalDataset.getSharedWith();
 
+        // see if our user is among the declared shares
         boolean found = false;
         for (UserDatasetShare share : shares) {
           if (share.getUserId().equals(userId)) {
@@ -220,7 +230,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
           "' in user datasets directory " + datasetDir.getParent() + ". It is not a dataset ID");
     }
     
-    JSONObject datasetJson = parseJsonFile(datasetDir.resolve("dataset.json")); ;
+    JSONObject datasetJson = parseJsonFile(datasetDir.resolve("dataset.json"));
     JSONObject metaJson = parseJsonFile(datasetDir.resolve("meta.json"));
 
     Path datafilesDir = datasetDir.resolve("datafiles");
@@ -303,16 +313,21 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
    * @throws WdkModelException
    */
   protected void writeExternalDatasetLink(Integer ownerUserId, Integer datasetId, Integer recipientUserId) throws WdkModelException {
-    writeExternalDatasetLink(getUserDir(recipientUserId).resolve(EXTERNAL_DATASETS_DIR), ownerUserId, datasetId);
-  }
-  
-  protected void writeExternalDatasetLink(Path recipientExternalDatasetsDir, Integer ownerUserId, Integer datasetId) throws WdkModelException {
+
+    // create user dir, if it doesn't exist
+    Path recipientUserDir = getUserDir(recipientUserId);
+    if (!directoryExists(recipientUserDir))
+      adaptor.createDirectory(recipientUserDir);
+    
+    // create externalDatasets dir, if it doesn't exist
+    Path recipientExternalDatasetsDir = recipientUserDir.resolve(EXTERNAL_DATASETS_DIR);
     if (!directoryExists(recipientExternalDatasetsDir))
       adaptor.createDirectory(recipientExternalDatasetsDir);
+    
+    // write link file
     Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(
         getExternalDatasetFileName(ownerUserId, datasetId));
     adaptor.writeEmptyFile(externalDatasetFileName);
-
   }
   
   public boolean directoryExists(Path dir) throws WdkModelException {
@@ -414,6 +429,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     return directoryExists(usersRootDir.resolve(userId.toString()).resolve("datasets"));
   }
 
+  @Override
   public String toString() {
     StringBuilder builder = new StringBuilder("UserDatasetStore: " + NL);
     builder.append("  rootPath: " + usersRootDir + NL);

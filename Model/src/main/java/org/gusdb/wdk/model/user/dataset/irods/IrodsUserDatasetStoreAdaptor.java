@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStoreAdaptor;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.packinstr.TransferOptions.ForceOption;
 import org.irods.jargon.core.pub.DataTransferOperations;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
@@ -19,6 +20,7 @@ import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.pub.io.IRODSFileReader;
 import org.irods.jargon.core.pub.io.IRODSFileWriter;
+import org.irods.jargon.core.transfer.TransferControlBlock;
 
 /**
  * IRODS adaptor class provides an IRODS file system implementation of methods for user
@@ -128,8 +130,14 @@ public class IrodsUserDatasetStoreAdaptor implements JsonUserDatasetStoreAdaptor
     String toPathName = to.toString();
     try {
       IRODSAccessObjectFactory accessObjectFactory = system.getIRODSAccessObjectFactory();
+      IRODSFile sourceFile = getFile(fromPathName);
       DataTransferOperations dataXferOps = accessObjectFactory.getDataTransferOperations(account);
-      dataXferOps.move(fromPathName, toPathName);
+      // Resorted to this workaround because Jargon cannot move one file into an already occupied
+      // location and no 'force' flag is implemented (apparently) in Jargon yet.
+      TransferControlBlock tcb = accessObjectFactory.buildDefaultTransferControlBlockBasedOnJargonProperties();
+      tcb.getTransferOptions().setForceOption(ForceOption.USE_FORCE);
+      dataXferOps.copy(fromPathName, "", toPathName, null, tcb);
+      sourceFile.delete();
     }
     catch(JargonException je) {
       throw new WdkModelException("Unable to transfer " + fromPathName + " to " + toPathName + ". - ", je);
