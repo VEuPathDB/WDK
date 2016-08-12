@@ -194,6 +194,7 @@ public class RecordService extends WdkService {
     }
     catch (WdkUserException | RecordNotFoundException e) {
       // these may be thrown when the PK values either don't exist or map to >1 record
+      // OR the ID exists but the attribute query returns nothing
       String primaryKeys = (recordInstance == null ? "<unknown>" : recordInstance.getPrimaryKey().getValuesAsString());
       throw new NotFoundException(WdkService.formatNotFound(RECORD_CLASS_RESOURCE + recordClassName + ", " + String.format(RECORD_RESOURCE, primaryKeys)) ,e);
     }
