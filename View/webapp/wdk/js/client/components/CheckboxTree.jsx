@@ -11,6 +11,8 @@ import { parseSearchQueryString } from '../utils/SearchUtils';
 const NODE_STATE_PROPERTY = '__expandableTreeState';
 const NODE_CHILDREN_PROPERTY = '__expandableTreeChildren';
 
+let Bar = props => <span> | </span>;
+
 /**
  * Renders tree links to select, clear, expand, collapse all nodes, or reset to current or default
  */
@@ -24,25 +26,32 @@ let TreeLinks = props => {
       <div>
         { showSelectionLinks &&
           <span>
-            <a href="#" onClick={selectAll}>select all</a> |
-            <a href="#" onClick={selectNone}> clear all</a>
-            <br/>
+            <a href="#" onClick={selectAll}>select all</a>
+            <Bar/>
+            <a href="#" onClick={selectNone}>clear all</a>
           </span> }
-  
+
         { showExpansionLinks &&
           <span>
-            <a href="#" onClick={expandAll}> expand all</a> |
-            <a href="#" onClick={expandNone}> collapse all</a>
-            <br/>
+            { showSelectionLinks && <Bar/> }
+            <a href="#" onClick={expandAll}>expand all</a>
+            <Bar/>
+            <a href="#" onClick={expandNone}>collapse all</a>
           </span> }
   
-        { showSelectionLinks &&
+        { showSelectionLinks && showCurrentLink &&
           <span>
-            { showCurrentLink && <a href="#" onClick={selectCurrentList}>reset to current</a> }
-            { showCurrentLink && showDefaultLink ? " | " : "" }
-            { showDefaultLink && <a href="#" onClick={selectDefaultList}>reset to default</a> }
-            { (showCurrentLink || showDefaultLink) && <br/> }
-          </span> }
+            <Bar/>
+            <a href="#" onClick={selectCurrentList}>reset to current</a>
+          </span>
+        }
+
+        { showSelectionLinks && showDefaultLink &&
+          <span>
+            <Bar/>
+            <a href="#" onClick={selectDefaultList}>reset to default</a>
+          </span>
+        }
       </div>
     </div>
   );
