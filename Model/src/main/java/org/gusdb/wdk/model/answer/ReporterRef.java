@@ -33,6 +33,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
 
   private String name;
   private String displayName;
+  private String description;
   private String implementation;
   private String scopes;
   private boolean inReportMaker = true;
@@ -130,6 +131,13 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
     this.scopes = scopes;
   }
 
+  public void setDescription(WdkModelText description) {
+    this.description = description.getText();
+  }
+
+  public String getDescription() {
+    return (description == null ? displayName : description);
+  }
 
   public void addProperty(WdkModelText property) {
     this.propertyList.add(property);
