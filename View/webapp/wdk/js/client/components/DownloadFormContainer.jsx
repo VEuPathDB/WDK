@@ -10,7 +10,8 @@ let ReporterSelect = props => {
   let { reporters, selected, onChange } = props;
   if (reporters.length < 2) return ( <noscript/> );
   let nestedDivStyle = { display: 'inline-block', verticalAlign: 'top' };
-  let items = reporters.map(reporter => ({ value: reporter.name, display: reporter.displayName }));
+  let items = reporters.map(reporter =>
+    ({ value: reporter.name, display: reporter.displayName, description: reporter.description }));
   return (
     <div style={{ margin: '20px 0'}}>
       <div style={nestedDivStyle}>

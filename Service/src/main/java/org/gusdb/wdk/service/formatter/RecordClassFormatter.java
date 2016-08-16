@@ -73,6 +73,7 @@ public class RecordClassFormatter {
         JSONObject obj = new JSONObject()
           .put(Keys.NAME, reporter.getName())
           .put(Keys.DISPLAY_NAME, reporter.getDisplayName())
+          .put(Keys.DESCRIPTION, reporter.getDescription())
           .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(reporter))
           .put(Keys.SCOPES, reporter.getScopesList());
         array.put(obj);

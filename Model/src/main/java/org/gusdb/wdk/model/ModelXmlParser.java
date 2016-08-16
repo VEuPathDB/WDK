@@ -601,9 +601,10 @@ public class ModelXmlParser extends XmlParser {
     // reporter
     configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter", ReporterRef.class,
         "addReporterRef");
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter/property", WdkModelText.class,
-        "addProperty");
-    digester.addCallMethod("wdkModel/recordClassSet/recordClass/reporter/property", "setValue", 0);
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter/description", WdkModelText.class, "setDescription");
+    digester.addCallMethod("wdkModel/recordClassSet/recordClass/reporter/description", "setText", 0);
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod("wdkModel/recordClassSet/recordClass/reporter/property", "setText", 0);
 
     // filter layouts
     configureNode(digester, "wdkModel/recordClassSet/recordClass/answerFilterLayout",

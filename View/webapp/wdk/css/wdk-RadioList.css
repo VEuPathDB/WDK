@@ -8,3 +8,9 @@ ul.wdk-RadioList {
 ul.wdk-RadioList li span {
   margin-left: 0.5em
 }
+
+.wdk-RadioListInfoIcon {
+  color: blue;
+  margin: 1px 16px;
+  font-size: 1.2em;
+}
