@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -160,7 +161,7 @@ public class RecordInstance extends AttributeValueContainer {
         // throwing exception prevents proper handling in front
         // end...just return?
         isValidRecord = false;
-        throw new RecordNotFoundException("Attribute query " + queryName
+        throw new WdkModelException("Attribute query " + queryName
             + " doesn't return any row: \n" + instance.getSql());
       }
 
