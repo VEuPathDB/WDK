@@ -281,6 +281,7 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
 
     renderPk: function(cellData) {
       let { datum, isIgnored } = cellData;
+      let checkboxStyle = { visibility: 'hidden' };
       var handleIgnored = () => {
         this.props.onIgnored(datum, !isIgnored);
       };
@@ -288,8 +289,9 @@ wdk.namespace('wdk.components.attributeFilter', function(ns) {
         <label>
           <input
             type="checkbox"
+            style={checkboxStyle}
             checked={!isIgnored}
-            onChange={handleIgnored}
+            onChange={noop}
           />
           {' ' + datum.display + ' '}
         </label>
