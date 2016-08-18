@@ -45,9 +45,9 @@
     <tr>
       <td colspan="2" align="center" nowrap="nowrap">
         <span class="small">
-          <input type="submit" value="Login" id="login" style="width:76px;height:30px"/>
+          <input type="submit" value="Login" id="login" style="width:76px;height:30px;font-size:1em"/>
           <c:if test="${showCancel}">
-            <input type="button" value="Cancel" style="width:76px;height:30px" onclick="jQuery(this).closest('.ui-dialog-content').dialog('close');"/>
+            <input type="button" value="Cancel" style="width:76px;height:30px;font-size:1em" onclick="jQuery(this).closest('.ui-dialog-content').dialog('close');"/>
           </c:if>
         </span>
       </td>
