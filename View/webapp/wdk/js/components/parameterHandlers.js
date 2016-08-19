@@ -249,7 +249,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
         }, filterData.metadataSpec[name]);
       });
 
-    var selectedField = previousValue && previousValue.filters
+    var selectedField = previousValue && previousValue.filters && previousValue.filters[0]
       ? fields.find(field => field.term === previousValue.filters[0].field.term)
       : undefined;
 
