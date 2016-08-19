@@ -26,8 +26,8 @@ public class FilterOption {
 
   public FilterOption(Question question, JSONObject jsFilterOption) throws WdkModelException {
     String name = jsFilterOption.getString(KEY_NAME);
-      LOG.debug("FilterOption created (read from database?) for filter: " + name +  " on step with question: " +  question.getFullName() );
-    this._value = jsFilterOption.getJSONObject(KEY_VALUE);
+    LOG.debug("FilterOption created (read from database?) for filter: " + name +  " on step with question: " +  question.getFullName() );
+    this._value = jsFilterOption.has(KEY_VALUE) ? jsFilterOption.getJSONObject(KEY_VALUE) : null;
     this._filter = question.getFilter(name);
     if (jsFilterOption.has(KEY_DISABLED)){
       this._disabled = jsFilterOption.getBoolean(KEY_DISABLED);
