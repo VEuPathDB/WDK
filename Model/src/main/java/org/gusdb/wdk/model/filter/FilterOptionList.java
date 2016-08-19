@@ -40,7 +40,7 @@ public class FilterOptionList implements Iterable<FilterOption>{
 
   public boolean isFiltered() throws WdkModelException {
     for (FilterOption option : _options.values()) {
-  if (!option.isDisabled() && !option.isSetToDefaultValue()) return true;
+      if (!option.isDisabled() && !option.isSetToDefaultValue()) return true;
     }
     return false;
   }
