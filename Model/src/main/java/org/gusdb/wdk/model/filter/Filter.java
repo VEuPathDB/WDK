@@ -48,6 +48,14 @@ public interface Filter {
   void setIsViewOnly(boolean isViewOnly);
 
   /**
+   * @returns true if this filter will always be applied to steps whose questions include it, false if it
+   * can be removed from those steps
+   */
+  boolean getIsAlwaysApplied();
+
+  void setIsAlwaysApplied(boolean isAlwaysApplied);
+
+  /**
    * get the display value of the filter. The value will be displayed on the applied filter list.
    * 
    * @param answer
@@ -100,4 +108,5 @@ public interface Filter {
    * @return
    */
   boolean defaultValueEquals(JSONObject value) throws WdkModelException;
+
 }

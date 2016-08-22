@@ -310,7 +310,7 @@ public class StepFactory {
     step.setParamValues(dependentValues);
     logger.debug("Creating step: to set Filter Options and to add Default Filters");
     step.setFilterOptions(filterOptions);
-    addDefaultFiltersToStep(step);
+    applyAlwaysOnFiltersToNewStep(step);
     step.setEstimateSize(estimateSize);
     step.setAssignedWeight(assignedWeight);
     step.setException(exception);
@@ -346,7 +346,7 @@ public class StepFactory {
 
     // update step dependencies
     if (step.isCombined())
-      updateStepTree(user, step);
+      updateStepTree(step);
 
     logger.debug("Step created!!: " + stepId + "\n\n");
     return step;
@@ -664,11 +664,17 @@ public class StepFactory {
       step.setParamFilterJSON(new JSONObject(paramFilters));
     }
 
+    // New for GUS4: apply any default filter values to this step that are automatically applied to
+    //   new steps, but may not have been applied to steps already in the DB.  This allows model XML
+    //   authors to add default filters to the model without worrying about existing steps in the DB (as
+    //   long as they override and correctly implement the applyDefaultIfApplicable() method in their Filter.
+    checkAlwaysOnFiltersOnExistingStep(step);
+
     logger.debug("loaded step #" + stepId);
     return step;
   }
 
-  private void updateStepTree(User user, Step step) throws WdkModelException {
+  private void updateStepTree(Step step) throws WdkModelException {
     Question question = step.getQuestion();
     Map<String, String> displayParams = step.getParamValues();
 
@@ -804,7 +810,7 @@ public class StepFactory {
 
       // update dependencies
       if (step.isCombined())
-        updateStepTree(user, step);
+        updateStepTree(step);
     }
     catch (SQLException e) {
       throw new WdkModelException("Could not update step.", e);
@@ -1801,20 +1807,46 @@ public class StepFactory {
     });
     return ids;
   }
-  
-  // we need to add/pass the disabled property
-  private void addDefaultFiltersToStep(Step step) throws WdkModelException {
+
+  private void checkAlwaysOnFiltersOnExistingStep(Step step) throws WdkModelException {
+    Set<String> appliedFilterKeys = step.getFilterOptions().getFilterOptions().keySet();
+    Set<String> appliedViewFilterKeys = step.getViewFilterOptions().getFilterOptions().keySet();
+    boolean modified = false;
     for (Filter filter : step.getQuestion().getFilters().values()) {
-      //logger.debug("adding default filters: found something for filter: " + filter.getKey());
-			//logger.debug("CHECKING IF STEP IS COMBINED: " + step.isCombined());
-			// will read property from filter, affecting is_disabled
-			//	if(step.isCombined() && filter.getKey().contains("matched")) is_disabled = true;
-			boolean is_disabled = false;
-      if (filter.getDefaultValue(step) != null) {
-        logger.debug("adding filter default value (from Filter java IMPL): not null");
-        step.addFilterOption(filter.getKey(), filter.getDefaultValue(step), is_disabled);
-      } 
+      if (!filter.getIsAlwaysApplied()) {
+        // only need to apply always-applied filters
+        continue;
+      }
+      if ((filter.getIsViewOnly() && !appliedViewFilterKeys.contains(filter.getKey())) ||
+          (!filter.getIsViewOnly() && !appliedFilterKeys.contains(filter.getKey()))) {
+        // RRD - decided to NOT automatically apply always-on filter values but to throw exception instead
+        //throw new WdkModelException("Always-on filter '" + filter.getKey() + "' not found on step " + step.getStepId());
+        // always-on filter is not yet on; rectify the situation
+        //addFilterDefault(step, filter);
+        //modified = true;
+      }
+    }
+    if (modified) {
+      step.saveParamFilters();
     }
   }
 
+  // we need to add/pass the disabled property
+  private void applyAlwaysOnFiltersToNewStep(Step step) throws WdkModelException {
+    for (Filter filter : step.getQuestion().getFilters().values()) {
+      if (filter.getIsAlwaysApplied()) {
+        logger.debug("Adding filter '" + filter.getKey() + "' default value to step.");
+        addFilterDefault(step, filter);
+      }
+    }
+  }
+
+  private void addFilterDefault(Step step, Filter filter) throws WdkModelException {
+    if (filter.getIsViewOnly()) {
+      step.addViewFilterOption(filter.getKey(), filter.getDefaultValue(step));
+    }
+    else {
+      step.addFilterOption(filter.getKey(), filter.getDefaultValue(step), false);
+    }
+  }
 }

@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.filter;
 
-import org.json.JSONObject;
 import org.gusdb.wdk.model.user.Step;
+import org.json.JSONObject;
 
 public abstract class AbstractFilter implements Filter {
 
@@ -10,7 +10,8 @@ public abstract class AbstractFilter implements Filter {
   private String _description;
   private String _view;
   protected JSONObject _defaultValue;
-  private boolean _isViewOnly;
+  private boolean _isViewOnly = false;
+  private boolean _isAlwaysApplied = false;
   
   public AbstractFilter(String key) {
     _key = key;
@@ -69,5 +70,15 @@ public abstract class AbstractFilter implements Filter {
   @Override
   public void setIsViewOnly(boolean isViewOnly) {
     _isViewOnly = isViewOnly;
+  }
+
+  @Override
+  public boolean getIsAlwaysApplied() {
+    return _isAlwaysApplied;
+  }
+
+  @Override
+  public void setIsAlwaysApplied(boolean isAlwaysApplied) {
+    _isAlwaysApplied = isAlwaysApplied;
   }
 }
